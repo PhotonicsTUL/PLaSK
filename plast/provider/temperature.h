@@ -6,19 +6,15 @@ class TemperatureProvider {
 
 	std::vector<TemperatureReciver*> recivers;
 
-	std::shared_ptr< std::vector<double> > temperatures;
-
 	public:
+
+	std::shared_ptr< std::vector<double> > temperatures;
 
 	TemperatureProvider(): temperatures(new std::vector<double>) {}
 
-	std::vector<double> getTemperatures() { return *temperatures; }
+	std::vector<double>& getTemperatures() { return *temperatures; }
 
-	virtual void getTemperature(Grid& grid, Dest<double>& dest, InterpolationMethod method) = 0;
-
-	virtual bool isTemperatureUseGrid(Grid& grid);
-
-	std::shared_ptr< std::vector<double> > getTemperature(Grid& grid);
+	virtual std::shared_ptr< const std::vector<double> > getTemperatures(Grid& grid, InterpolationMethod method);
 
 	void fireTemperatureChanged();
 
