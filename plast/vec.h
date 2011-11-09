@@ -13,7 +13,7 @@ struct Vec {};
 template <>
 struct Vec<1> {
     typedef double type;
-    //typedef Vec<2>::type 
+    //typedef Vec<2>::type upspace_type;
 };
 
 //TODO Vec<2>, Vec<3>

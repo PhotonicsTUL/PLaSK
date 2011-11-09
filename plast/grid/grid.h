@@ -11,7 +11,11 @@ Grid represent set of points in space.
 template <int dim>
 struct Grid {
 
+    //Point type used by this grid.
     typedef Vec<dim> Vec_t;
+    
+    //Base class for all grids inharited from this class (1d, 2d, 3d grid base).
+    typedef Grid<dim> BaseClass;
 
     /**
     Base class for grid iterator implementation. Iterate over points in grid.
