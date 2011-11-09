@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 
+namespace plast {
 
 class TemperatureProvider {
 
@@ -26,4 +27,4 @@ struct TemperatureReciver {
 
 };
 
-
+}	//namespace plast
