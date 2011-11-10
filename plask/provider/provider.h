@@ -125,6 +125,7 @@ struct OnMeshInterpolatedProvider: public Provider< OnMeshInterpolatedReciver<Va
   
   typedef ValueConstVecPtr (ModuleType::*MethodPtr)(Mesh& mesh, InterpolationMethod method);
   
+  //TODO use std::function<ValueConstVecPtr(Mesh&, InterpolationMethod)> or maybe each provider should have pointer to module?
   ModuleType* module;
   MethodPtr module_value_get_method;
   
