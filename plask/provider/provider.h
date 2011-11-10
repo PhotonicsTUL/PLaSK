@@ -108,14 +108,14 @@ struct ValueReciver: public Reciver< ValueProvider<ValueT> > {
   
 };
 
-template <typename ValueT> struct OnGridInterpolatedReciver;
+template <typename ValueT> struct OnMeshInterpolatedReciver;
 
 /**
- * Template for base class for all providers which provide values in points describe by grid,
+ * Template for base class for all providers which provide values in points describe by mesh,
  * use interpolation, and has vector of data.
  */
 template <typename ModuleType, typename ValueT>
-struct OnGridInterpolatedProvider: public Provider< OnGridInterpolatedReciver<ValueT> > {
+struct OnMeshInterpolatedProvider: public Provider< OnMeshInterpolatedReciver<ValueT> > {
   
   typedef ValueT ValueType;
   
@@ -123,35 +123,35 @@ struct OnGridInterpolatedProvider: public Provider< OnGridInterpolatedReciver<Va
   
   typedef std::shared_ptr< const std::vector<ValueT> > ValueConstVecPtr;
   
-  typedef ValueConstVecPtr (ModuleType::*method_ptr_t)(Grid& grid, InterpolationMethod method);
+  typedef ValueConstVecPtr (ModuleType::*MethodPtr)(Mesh& mesh, InterpolationMethod method);
   
   ModuleType* module;
-  Method_Ptr module_value_get_method;
+  MethodPtr module_value_get_method;
   
   ValueVecPtr value;
   
-  OnGridInterpolatedProvider(ModuleType* module, Method_Ptr module_value_get_method)
+  OnMeshInterpolatedProvider(ModuleType* module, Method_Ptr module_value_get_method)
   : module(module), module_value_get_method(module_value_get_method) {
   }
   
-  ValueConstVecPtr operator()(Grid& grid, InterpolationMethod method) {
-    return module->*module_value_get_method(grid, method);
+  ValueConstVecPtr operator()(Mesh& mesh, InterpolationMethod method) {
+    return module->*module_value_get_method(mesh, method);
   }
   
 };
 
-template <typename OnGridInterpolatedProviderT>
-struct OnGridInterpolatedReciver: public Reciver< OnGridInterpolatedProviderT > {
+template <typename OnMeshInterpolatedProviderT>
+struct OnMeshInterpolatedReciver: public Reciver< OnMeshInterpolatedProviderT > {
   
   /**
    * Get value from provider.
    * @return value from provider
    * @throw NoProvider when provider is not available
    */
-  typename OnGridInterpolatedProviderT::ValueConstVecPtr operator()(Grid& grid, InterpolationMethod method) const throw (NoProvider) {
+  typename OnMeshInterpolatedProviderT::ValueConstVecPtr operator()(Mesh& mesh, InterpolationMethod method) const throw (NoProvider) {
     ensureHasProvider();
     changed = false;
-    return (*provider)(grid, method);
+    return (*provider)(mesh, method);
   }
   
 };

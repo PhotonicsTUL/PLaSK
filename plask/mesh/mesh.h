@@ -4,32 +4,32 @@
 namespace plask {
 
 /**
- * Base class for all grids.
- * Grid represent set of points in 3d space nad has/know/allow for:
+ * Base class for all meshs.
+ * Mesh represent set of points in 3d space nad has/know/allow for:
  * - number of points
  * - iterator over this points
  * - can calculate interpolated value for given points (in 3d), source values, and interpolation method
  */
-struct Grid {
+struct Mesh {
 };
 
 //TODO nieaktualne, ale coś może się przydać:
 /**
-Base class for all grids in given space.
-Grid represent set of points in space.
+Base class for all meshs in given space.
+Mesh represent set of points in space.
 @tparam dim number of space dimentions
 */
 template <int dim>
-struct Grid {
+struct Mesh {
 
-    // Point type used by this grid.
+    // Point type used by this mesh.
     typedef Vec<dim> Vec_t;
     
-    // Base class for all grids inharited from this class (1d, 2d, 3d grid base).
-    typedef Grid<dim> BaseClass;
+    // Base class for all meshs inharited from this class (1d, 2d, 3d mesh base).
+    typedef Mesh<dim> BaseClass;
 
     /**
-    Base class for grid iterator implementation. Iterate over points in grid.
+    Base class for mesh iterator implementation. Iterate over points in mesh.
     */
     struct IteratorImpl {
 	///@return current point
@@ -49,7 +49,7 @@ struct Grid {
     };
 
     /**
-    Iterator over points in grid.
+    Iterator over points in mesh.
     
     Wrapper over IteratorImpl.
     */

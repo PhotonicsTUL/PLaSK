@@ -7,19 +7,19 @@ namespace plask {
 Provides temperatures in all space.
 */
 template <ModuleType>
-class TemperatureProvider: public OnGridInterpolatedProvider<ModuleType, double> {
+class TemperatureProvider: public OnMeshInterpolatedProvider<ModuleType, double> {
 
 	TemperatureProvider(
 	  ModuleType* module,
-	  typename OnGridInterpolatedProvider<ModuleType, double>::Method_Ptr module_value_get_method
+	  typename OnMeshInterpolatedProvider<ModuleType, double>::MethodPtr module_value_get_method
 	)
-	: OnGridInterpolatedProvider<ModuleType, double>(module, module_value_get_method) {}
+	: OnMeshInterpolatedProvider<ModuleType, double>(module, module_value_get_method) {}
 
 };
 
 /**
 Recive (and typically use in calculation) temperature.
 */
-struct TemperatureReciver: OnGridInterpolatedReciver<TemperatureProvider> {};
+struct TemperatureReciver: OnMeshInterpolatedReciver<TemperatureProvider> {};
 
 } // namespace plask
