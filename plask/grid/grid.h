@@ -4,6 +4,17 @@
 namespace plask {
 
 /**
+ * Base class for all grids.
+ * Grid represent set of points in 3d space nad has/know/allow for:
+ * - number of points
+ * - iterator over this points
+ * - can calculate interpolated value for given points (in 3d), source values, and interpolation method
+ */
+struct Grid {
+};
+
+//TODO nieaktualne, ale coś może się przydać:
+/**
 Base class for all grids in given space.
 Grid represent set of points in space.
 @tparam dim number of space dimentions
