@@ -1,6 +1,8 @@
 
 namespace plask {
 
+//TODO Vec -> typy przestrzeni udostępniające typ dla pkt.
+
 /**
 Provide type for vector in given space: double for 1d, etc.
 
@@ -8,14 +10,14 @@ Use example: <code>Vec<2>::type my_2dvec_obj;</code>
 @tparam dim number of space dimentions
 */
 template <int dim>
-struct Vec {};
+struct Cartesian {};
 
 template <>
-struct Vec<1> {
-    typedef double type;
-    //typedef Vec<2>::type upspace_type;
+struct Cartesian<1> {
+    typedef double PointType;
+    //typedef Cartesian<2>::type upspace_type;
 };
 
-//TODO Vec<2>, Vec<3>
+//TODO Cartesian<2>, Cartesian<3>
 
 } // namespace plask

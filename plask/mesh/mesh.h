@@ -1,4 +1,4 @@
-#include "../vec.h"
+#include "../space.h"
 #include <memory>
 
 namespace plask {
@@ -11,9 +11,16 @@ namespace plask {
  * - can calculate interpolated value for given points (in 3d), source values, and interpolation method
  */
 struct Mesh {
+
+    ///@return number of points in mesh
+    virtual std::size_t getSize() const;
+
 };
 
 //TODO nieaktualne, ale coś może się przydać:
+//TODO zrobić Meshe o dużej wydajności w poszczególnych przestrzeniach (specjalizowane przestrzenią)
+//TODO i zaimplementować interfejs Mesh uzywając Mesh optymalizowany + funkcja konwertująca pkt. do 3d
+//TODO zamiast dim i Vec<dim> zrobić i specjalizować typami przestrzeni udostępniającymi typ punktu, itp.
 /**
 Base class for all meshs in given space.
 Mesh represent set of points in space.
