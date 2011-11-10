@@ -1,9 +1,9 @@
 
 
-namespace plast {
+namespace plask {
 
 /**
-Base class for all exceptions throwed by plast library.
+Base class for all exceptions throwed by plask library.
 */
 struct Exception: public std::runtime_error {
     Exception(const std::string& msg): std::runtime_error(msg) {}
@@ -26,4 +26,4 @@ struct NotSuchMaterial: public Exception {
     : Exception("No such material " + material_name), materialName(material_name) {}
 };
 
-}	//namespace plast
+} // namespace plask

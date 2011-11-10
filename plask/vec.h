@@ -1,5 +1,5 @@
 
-namespace plast {
+namespace plask {
 
 /**
 Provide type for vector in given space: double for 1d, etc.
@@ -18,4 +18,4 @@ struct Vec<1> {
 
 //TODO Vec<2>, Vec<3>
 
-}	//namespace plast
+} // namespace plask

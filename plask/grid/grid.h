@@ -1,7 +1,7 @@
 #include "../vec.h"
 #include <memory>
 
-namespace plast {
+namespace plask {
 
 /**
 Base class for all grids in given space.
@@ -11,10 +11,10 @@ Grid represent set of points in space.
 template <int dim>
 struct Grid {
 
-    //Point type used by this grid.
+    // Point type used by this grid.
     typedef Vec<dim> Vec_t;
     
-    //Base class for all grids inharited from this class (1d, 2d, 3d grid base).
+    // Base class for all grids inharited from this class (1d, 2d, 3d grid base).
     typedef Grid<dim> BaseClass;
 
     /**
@@ -67,4 +67,4 @@ struct Grid {
 };
 
 
-}	//namespace plast
+} // namespace plask

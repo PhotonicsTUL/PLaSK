@@ -1,7 +1,7 @@
 #include <memory>
 #include <vector>
 
-namespace plast {
+namespace plask {
 
 /**
 Provides temperatures in all space.
@@ -12,13 +12,11 @@ class TemperatureProvider {
 
 	public:
 
-	std::shared_ptr< std::vector<double> > temperatures;
+	std::shared_ptr< std::vector<double> > temperature;
 
-	TemperatureProvider(): temperatures(new std::vector<double>) {}
+	TemperatureProvider(): temperature(new std::vector<double>) {}
 
-	std::vector<double>& getTemperatures() { return *temperatures; }
-
-	virtual std::shared_ptr< const std::vector<double> > getTemperatures(Grid& grid, InterpolationMethod method);
+	virtual std::shared_ptr< const std::vector<double> > getTemperature(Grid& grid, InterpolationMethod method);
 
 	/**
 	Call onTemperatureChanged for all recivers.
@@ -45,9 +43,9 @@ struct TemperatureReciver {
 	@param grid set of points for which we need temperatures
 	@param mehod interpolation method
 	*/	
-	virtual std::shared_ptr< const std::vector<double> > getTemperatures(Grid& grid, InterpolationMethod method) throw (NoProvider) {
+	virtual std::shared_ptr< const std::vector<double> > getTemperature(Grid& grid, InterpolationMethod method) throw (NoProvider) {
 	    if (!provider) throw NoProvider("temperature");
-	    return provider->getTemperatures(grid, method);
+	    return provider->getTemperature(grid, method);
 	}
 	
 	void setProvider(TemperatureProvider* provider) {
@@ -55,4 +53,4 @@ struct TemperatureReciver {
 
 };
 
-}	//namespace plast
+} // namespace plask

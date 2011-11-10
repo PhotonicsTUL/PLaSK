@@ -1,7 +1,7 @@
 #include <string>
 #include "../exceptions.h"
 
-namespace plast {
+namespace plask {
 
 //TODO lepiej użyć inteligętnych wskaźników czy obciążyć użytkowników potrzebą kasowania niektórych materiałów
 //co jeśli klasa bazy materiałowej zostanie skasowana?
@@ -14,10 +14,10 @@ struct Material {
     ///Do nothing.
     virtual ~Material() {}
     
-    //@return @c true only for dyanimicaly created materials which are not managed by MaterialDB and must be manualy deleted in some situations
-    //virtual bool isDynamic() { return false; }
+    // @return @c true only for dyanimicaly created materials which are not managed by MaterialDB and must be manualy deleted in some situations
+    // virtual bool isDynamic() { return false; }
 
-    ///@return material name
+    /// @return material name
     virtual std::string getName() const = 0;
 
 };
@@ -49,4 +49,4 @@ struct MaterialsDB {
 
 };
 
-}	//namespace plast
+} // namespace plask
