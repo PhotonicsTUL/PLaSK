@@ -48,14 +48,18 @@ struct Reciver {
   
   ///true only if data provides by provider was changed after recent value getting
   bool changed;
+
+  Reciver(): changed(true) {}
   
   ~Reciver() {
     setProvider(0);
   }
   
   void setProvider(ProviderT* provider) {
+    if (this->provider == provider) return;
     if (this->provider) provider.remove(this);
     if (provider) provider.add(this);
+    onChange();
   }
   
   void onChange() {

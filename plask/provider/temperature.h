@@ -4,6 +4,19 @@
 namespace plask {
 
 /**
+TODO maybe:
+struct Temperature {
+	typedef double type;
+	static const bool isNumeric = true;
+}
+
+Provider<Distribution<Temperature>> temp;	//on grid temp. provider or:
+DistProvider<Temperature> temp;
+
+Provider<Temperature> temp;	//for one value provider
+*/
+
+/**
 Provides temperatures in all space.
 */
 template <ModuleType>
