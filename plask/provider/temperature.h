@@ -10,8 +10,12 @@ struct Temperature {
 	static const bool isNumeric = true;
 }
 
-Provider<Distribution<Temperature>> temp;	//on grid temp. provider or:
-DistProvider<Temperature> temp;
+struct Temperature : ScalarDistribution {};
+struct Temperature : Distribution<double> {};
+
+
+typedef Provider<Temperature> TemperatureProvider;	//on grid temp. provider or:
+
 
 Provider<Temperature> temp;	//for one value provider
 */
