@@ -33,6 +33,6 @@ class TemperatureProvider: public OnMeshInterpolatedProvider<ModuleType, double>
 /**
 Recive (and typically use in calculation) temperature.
 */
-struct TemperatureReciver: OnMeshInterpolatedReciver<TemperatureProvider> {};
+struct TemperatureReceiver: OnMeshInterpolatedReceiver<TemperatureProvider> {};
 
 } // namespace plask
