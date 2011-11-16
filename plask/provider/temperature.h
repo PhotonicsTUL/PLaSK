@@ -8,6 +8,7 @@ TODO maybe:
 struct Temperature {
 	typedef double type;
 	static const bool isNumeric = true;
+        static const bool isField = true;
 }
 
 struct Temperature : ScalarDistribution {};
@@ -18,6 +19,10 @@ typedef Provider<Temperature> TemperatureProvider;	//on grid temp. provider or:
 
 
 Provider<Temperature> temp;	//for one value provider
+
+//Or:
+struct Tempereture: ScalarField {}
+Provider<Temperature> temp;
 */
 
 /**

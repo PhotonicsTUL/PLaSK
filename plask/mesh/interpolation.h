@@ -38,7 +38,7 @@ Interpolate values (@a src_vec) from one mesh (@a src_mesh) to another one (@a d
 @param dst_mesh destination mesh
 @param method interpolation method to use
 @throw NotImplemented if given interpolation method is not implemented for used source mesh type
-@throw CriticalException if given interpolation method is bad
+@throw CriticalException if given interpolation method is not valid
 */
 template <typename SrcMeshT, typename DataT>
 inline std::shared_ptr<std::vector<DataT>>

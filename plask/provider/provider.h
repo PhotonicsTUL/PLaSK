@@ -13,15 +13,15 @@ namespace plask {
 
 /**
  * Template for base class for all Providers.
- * Implement listener pattern.
- * @tparam 
+ * Implement listener (observer) pattern (can be observed by reciver).
+ * @tparam ReceiverT type of reciver
  */
 template <typename ReceiverT>
-struct Provider {
+struct ProviderBase {
     
     std::set<ReceiverT*> receivers;
     
-    ~Provider() {
+    ~ProviderBase() {
         for (typename std::set<ReceiverT*>::iterator i = receivers.begin(); i != receivers.end(); ++i)
             i->provider = 0;
     }
@@ -47,17 +47,22 @@ struct Provider {
     
 };
 
+/**
+ * Base class for all recivers.
+ * Implement listener (observer) pattern (is listener for providers).
+ * @tparam ProviderT type of provider
+ */
 template <typename ProviderT>
-struct Receiver {
+struct ReceiverBase {
     
     ProviderT* provider;
     
     ///true only if data provides by provider was changed after recent value getting
     bool changed;
 
-    Receiver(): changed(true) {}
+    ReceiverBase(): changed(true) {}
     
-    ~Receiver() {
+    ~ReceiverBase() {
         setProvider(0);
     }
     
@@ -85,6 +90,8 @@ protected:
      * Set changed flag to false.
      * 
      * Subclass can call this just before reading value.
+     * 
+     * @throw NoProvider when provider is not available
      */
     void beforeGetValue() throw (NoProvider) {
         ensureHasProvider();
@@ -93,13 +100,19 @@ protected:
     
 };
 
+enum PropertyType {
+    SINGLE_VALUE_PROPERTY = 0,
+    FIELD_PROPERTY = 1,
+    INTERPOLATED_FIELD_PROPERTY = 2
+};
+
 template <typename ValueT> struct ValueReceiver;
 
 /**
  * Template for base class for all providers which provide one value, typically one double.
  */
 template <typename ValueT>
-struct ValueProvider: public Provider< ValueReceiver<ValueT> > {
+struct ValueProvider: public ProviderBase< ValueReceiver<ValueT> > {
     
     typedef ValueT ValueType;
     
@@ -116,7 +129,7 @@ struct ValueProvider: public Provider< ValueReceiver<ValueT> > {
 };
 
 template <typename ValueT>
-struct ValueReceiver: public Receiver< ValueProvider<ValueT> > {
+struct ValueReceiver: public ReceiverBase< ValueProvider<ValueT> > {
     
     /**
      * Get value from provider.
@@ -124,8 +137,8 @@ struct ValueReceiver: public Receiver< ValueProvider<ValueT> > {
      * @throw NoProvider when provider is not available
      */
     ValueT operator()() const throw (NoProvider) {
-        Receiver< ValueProvider<ValueT> >::beforeGetValue();
-        return Receiver< ValueProvider<ValueT> >::provider->value;
+        ReceiverBase< ValueProvider<ValueT> >::beforeGetValue();
+        return ReceiverBase< ValueProvider<ValueT> >::provider->value;
     }
     
 };
@@ -137,7 +150,7 @@ template <typename ValueT> struct OnMeshInterpolatedReceiver;
  * use interpolation, and has vector of data.
  */
 template <typename ModuleType, typename ValueT>
-struct OnMeshInterpolatedProvider: public Provider< OnMeshInterpolatedReceiver<ValueT> > {
+struct OnMeshInterpolatedProvider: public ProviderBase< OnMeshInterpolatedReceiver<ValueT> > {
     
     typedef ValueT ValueType;
     
@@ -164,7 +177,7 @@ struct OnMeshInterpolatedProvider: public Provider< OnMeshInterpolatedReceiver<V
 };
 
 template <typename OnMeshInterpolatedProviderT>
-struct OnMeshInterpolatedReceiver: public Receiver<OnMeshInterpolatedProviderT> {
+struct OnMeshInterpolatedReceiver: public ReceiverBase<OnMeshInterpolatedProviderT> {
     
     /**
      * Get value from provider.
@@ -172,8 +185,8 @@ struct OnMeshInterpolatedReceiver: public Receiver<OnMeshInterpolatedProviderT> 
      * @throw NoProvider when provider is not available
      */
     typename OnMeshInterpolatedProviderT::ValueConstVecPtr operator()(Mesh& mesh, InterpolationMethod method) const throw (NoProvider) {
-        Receiver<OnMeshInterpolatedProviderT>::beforeGetValue();
-        return (*Receiver<OnMeshInterpolatedProviderT>::provider)(mesh, method);
+        ReceiverBase<OnMeshInterpolatedProviderT>::beforeGetValue();
+        return (*ReceiverBase<OnMeshInterpolatedProviderT>::provider)(mesh, method);
     }
     
 };
