@@ -1,3 +1,6 @@
+#ifndef PLASK__MESH_H
+#define PLASK__MESH_H
+
 #include "../space.h"
 #include <memory>
 
@@ -16,6 +19,8 @@ struct Mesh {
     virtual std::size_t getSize() const;
 
 };
+
+#ifdef disable_fragment
 
 //TODO nieaktualne, ale coś może się przydać:
 //TODO zrobić Meshe o dużej wydajności w poszczególnych przestrzeniach (specjalizowane przestrzenią)
@@ -84,5 +89,9 @@ struct Mesh {
     //TODO end()
 };
 
+#endif
+
 
 } // namespace plask
+
+#endif  //PLASK__MESH_H

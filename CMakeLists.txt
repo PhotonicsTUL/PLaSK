@@ -33,10 +33,9 @@ if (PACK_EXE)
     find_program(CMAKE_STRIP NAMES strip)
 endif(PACK_EXE)
 
+# ----------===== plask library =====--------------------------------------------
 #creating configuration file for plask library
 #CONFIGURE_FILE(plask/config.h.cmake plask/config.h)
-
-# ----------===== plask library =====--------------------------------------------
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp plask/*.cxx plask/*.h)
 add_library(plask STATIC ${plask_src})
 #SET_TARGET_PROPERTIES(plask PROPERTIES COMPILE_FLAGS -fPIC)

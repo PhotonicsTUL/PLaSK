@@ -1,3 +1,6 @@
+#ifndef PLASK__SPACE_H
+#define PLASK__SPACE_H
+
 
 namespace plask {
 
@@ -21,3 +24,5 @@ struct Cartesian<1> {
 //TODO Cartesian<2>, Cartesian<3>
 
 } // namespace plask
+
+#endif  //PLASK__SPACE_H

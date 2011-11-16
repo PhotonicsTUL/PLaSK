@@ -1,7 +1,13 @@
+#ifndef PLASK__PROVIDER_H
+#define PLASK__PROVIDER_H
 
 #include <set>
 #include <memory>
 #include <vector>
+
+#include "../exceptions.h"
+#include "../mesh/mesh.h"
+#include "../mesh/interpolation.h"
 
 namespace plask {
 
@@ -16,7 +22,7 @@ struct Provider {
     std::set<ReceiverT*> receivers;
     
     ~Provider() {
-        for (std::set<ReceiverT*>::iterator i = receivers.begin(); i != receivers.end(); ++i)
+        for (typename std::set<ReceiverT*>::iterator i = receivers.begin(); i != receivers.end(); ++i)
             i->provider = 0;
     }
     
@@ -35,7 +41,7 @@ struct Provider {
      * Should be call recalculation of value represented by provider.
      */
     void fireChanged() {
-        for (std::set<ReceiverT*>::iterator i = receivers.begin(); i != receivers.end(); ++i)
+        for (typename std::set<ReceiverT*>::iterator i = receivers.begin(); i != receivers.end(); ++i)
             i->onChange();
     }
     
@@ -72,6 +78,19 @@ struct Receiver {
         if (!provider) throw NoProvider();	//TODO some name, maybe Provider should have virtual name or name field?
     }
     
+protected:
+    
+    /**
+     * Check if value can be read and throw exception if not.
+     * Set changed flag to false.
+     * 
+     * Subclass can call this just before reading value.
+     */
+    void beforeGetValue() throw (NoProvider) {
+        ensureHasProvider();
+        changed = false;
+    }
+    
 };
 
 template <typename ValueT> struct ValueReceiver;
@@ -105,9 +124,8 @@ struct ValueReceiver: public Receiver< ValueProvider<ValueT> > {
      * @throw NoProvider when provider is not available
      */
     ValueT operator()() const throw (NoProvider) {
-        ensureHasProvider();
-        changed = false;
-        return provider->value;
+        Receiver< ValueProvider<ValueT> >::beforeGetValue();
+        return Receiver< ValueProvider<ValueT> >::provider->value;
     }
     
 };
@@ -135,7 +153,7 @@ struct OnMeshInterpolatedProvider: public Provider< OnMeshInterpolatedReceiver<V
     
     ValueVecPtr value;
     
-    OnMeshInterpolatedProvider(ModuleType* module, Method_Ptr module_value_get_method)
+    OnMeshInterpolatedProvider(ModuleType* module, MethodPtr module_value_get_method)
     : module(module), module_value_get_method(module_value_get_method) {
     }
     
@@ -146,7 +164,7 @@ struct OnMeshInterpolatedProvider: public Provider< OnMeshInterpolatedReceiver<V
 };
 
 template <typename OnMeshInterpolatedProviderT>
-struct OnMeshInterpolatedReceiver: public Receiver< OnMeshInterpolatedProviderT > {
+struct OnMeshInterpolatedReceiver: public Receiver<OnMeshInterpolatedProviderT> {
     
     /**
      * Get value from provider.
@@ -154,9 +172,8 @@ struct OnMeshInterpolatedReceiver: public Receiver< OnMeshInterpolatedProviderT 
      * @throw NoProvider when provider is not available
      */
     typename OnMeshInterpolatedProviderT::ValueConstVecPtr operator()(Mesh& mesh, InterpolationMethod method) const throw (NoProvider) {
-        ensureHasProvider();
-        changed = false;
-        return (*provider)(mesh, method);
+        Receiver<OnMeshInterpolatedProviderT>::beforeGetValue();
+        return (*Receiver<OnMeshInterpolatedProviderT>::provider)(mesh, method);
     }
     
 };
@@ -164,3 +181,5 @@ struct OnMeshInterpolatedReceiver: public Receiver< OnMeshInterpolatedProviderT 
 
 
 }; //namespace plask
+
+#endif  //PLASK__PROVIDER_H
