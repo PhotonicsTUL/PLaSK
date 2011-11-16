@@ -14,26 +14,34 @@ namespace plask {
 /**
  * Template for base class for all Providers.
  * Implement listener (observer) pattern (can be observed by reciver).
- * @tparam ReceiverT type of reciver
+ * 
+ * Subclasses should have typedef for provided value type:
+ * typedef ... ProvidedValueType;
  */
-template <typename ReceiverT>
 struct ProviderBase {
     
-    std::set<ReceiverT*> receivers;
+    struct Listener {
+        ///called when value changed
+        virtual void onChange() = 0;
+        
+        ///called just before disconnect
+        virtual void onDisconnect(ProviderBase* from_where) {};
+    };
+    
+    std::set<Listener*> listeners;
     
     ~ProviderBase() {
-        for (typename std::set<ReceiverT*>::iterator i = receivers.begin(); i != receivers.end(); ++i)
-            i->provider = 0;
+        for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
+            (*i)->onDisconnect(this);
     }
     
-    void add(ReceiverT* receiver) {
-        receiver.provider = this;
-        receivers.insert(receiver);
+    void add(Listener* litener) {
+        listeners.insert(litener);
     }
     
-    void remove(ReceiverT* receiver) {
-        receiver.provider = 0;
-        receivers.remove(receiver);
+    void remove(Listener* litener) {
+        litener->onDisconnect(this);
+        listeners.erase(litener);
     }
     
     /**
@@ -41,8 +49,8 @@ struct ProviderBase {
      * Should be call recalculation of value represented by provider.
      */
     void fireChanged() {
-        for (typename std::set<ReceiverT*>::iterator i = receivers.begin(); i != receivers.end(); ++i)
-            i->onChange();
+        for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
+            (*i)->onChange();
     }
     
 };
@@ -53,7 +61,7 @@ struct ProviderBase {
  * @tparam ProviderT type of provider
  */
 template <typename ProviderT>
-struct ReceiverBase {
+struct ReceiverBase: public ProviderBase::Listener {
     
     ProviderT* provider;
     
@@ -68,8 +76,9 @@ struct ReceiverBase {
     
     void setProvider(ProviderT* provider) {
         if (this->provider == provider) return;
-        if (this->provider) provider.remove(this);
-        if (provider) provider.add(this);
+        if (this->provider) this->provider->listeners.erase(this);
+        if (provider) provider->add(this);
+        this->provider = provider;
         onChange();
     }
     
@@ -78,9 +87,27 @@ struct ReceiverBase {
         //TODO callback?
     }
     
+    virtual void onDisconnect(ProviderBase* from_where) {
+        if (from_where == provider) {
+            provider = 0;
+            onChange();
+        }
+    }
+    
     ///@throw NoProvider when provider is not available
     void ensureHasProvider() throw (NoProvider) {
         if (!provider) throw NoProvider();	//TODO some name, maybe Provider should have virtual name or name field?
+    }
+    
+    /**
+     * Get value from provider.
+     * @return value from provider
+     * @throw NoProvider when provider is not available
+     */
+    template<typename ...Args>
+    typename ProviderT::ProvidedValueType operator()(Args&&... params) throw (NoProvider) {
+        beforeGetValue();
+        return (*provider)(std::forward<Args>(params)...);
     }
     
 protected:
@@ -106,42 +133,65 @@ enum PropertyType {
     INTERPOLATED_FIELD_PROPERTY = 2
 };
 
-template <typename ValueT> struct ValueReceiver;
+template <typename PropertyTag, typename ValueType, PropertyType propertyType>
+struct ProviderImpl {};
+
+template <typename PropertyTag>
+struct Provider: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType> {
+    
+    //delegate all constructors to parent class
+    template<typename ...Args>
+    Provider(Args&&... params)
+    : ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType>(std::forward<Args>(params)...) {
+    };
+    
+};
+
+template <typename PropertyTag>
+struct Reciver: public ReceiverBase< Provider<PropertyTag> > {
+    
+    //delegate all constructors to parent class
+    /*template<typename ...Args>
+    Reciver(Args&&... params)
+    : ReceiverBase< Provider<PropertyTag> >(std::forward<Args>(params)...) {
+    };*/
+    
+};
 
 /**
  * Template for base class for all providers which provide one value, typically one double.
  */
-template <typename ValueT>
-struct ValueProvider: public ProviderBase< ValueReceiver<ValueT> > {
+template <typename PropertyTag, typename ValueT>
+struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public ProviderBase {
     
-    typedef ValueT ValueType;
+    typedef ValueT ProvidedValueType;
     
-    ValueT value;
+    ProvidedValueType value;
     
-    ValueT& operator()() { return value; }
+    ProvidedValueType& operator()() { return value; }
     
-    const ValueT& operator()() const { return value; }
-    
-    operator ValueT& () { return value; }
-    
-    operator const ValueT& () const { return value; }
+    const ProvidedValueType& operator()() const { return value; }
     
 };
 
-template <typename ValueT>
-struct ValueReceiver: public ReceiverBase< ValueProvider<ValueT> > {
+//TODO ProviderImpl for meshes:
+/*template <typename PropertyTag, typename ValueT>
+struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public ProviderBase {
     
-    /**
-     * Get value from provider.
-     * @return value from provider
-     * @throw NoProvider when provider is not available
-     */
-    ValueT operator()() const throw (NoProvider) {
-        ReceiverBase< ValueProvider<ValueT> >::beforeGetValue();
-        return ReceiverBase< ValueProvider<ValueT> >::provider->value;
-    }
+    typedef std::shared_ptr<std::vector<ValueT> > ProvidedValueType;
     
+    ProvidedValueType& operator()() ...
+    
+};*/
+
+/*struct TestProp {
+    typedef double ValueType;
+    static const PropertyType propertyType = SINGLE_VALUE_PROPERTY;
 };
+
+Provider<TestProp> test;
+Reciver<TestProp> testr;
+double x = testr();*/
 
 template <typename ValueT> struct OnMeshInterpolatedReceiver;
 
@@ -150,7 +200,7 @@ template <typename ValueT> struct OnMeshInterpolatedReceiver;
  * use interpolation, and has vector of data.
  */
 template <typename ModuleType, typename ValueT>
-struct OnMeshInterpolatedProvider: public ProviderBase< OnMeshInterpolatedReceiver<ValueT> > {
+struct OnMeshInterpolatedProvider: public ProviderBase {
     
     typedef ValueT ValueType;
     
