@@ -24,8 +24,11 @@ struct ProviderBase {
         ///called when value changed
         virtual void onChange() = 0;
         
-        ///called just before disconnect
-        virtual void onDisconnect(ProviderBase* from_where) {};
+        /**
+         * Called just before disconnect.
+         * @param from_where provider from which listener is disconnected
+         */
+        virtual void onDisconnect(ProviderBase* from_where) {}
     };
     
     std::set<Listener*> listeners;
@@ -105,7 +108,9 @@ struct ReceiverBase: public ProviderBase::Listener {
      * @throw NoProvider when provider is not available
      */
     template<typename ...Args>
-    typename ProviderT::ProvidedValueType operator()(Args&&... params) throw (NoProvider) {
+    decltype((*provider)(std::forward<Args>(params)...))
+    //typename ProviderT::ProvidedValueType
+    operator()(Args&&... params) throw (NoProvider) {
         beforeGetValue();
         return (*provider)(std::forward<Args>(params)...);
     }
@@ -164,7 +169,7 @@ struct Reciver: public ReceiverBase< Provider<PropertyTag> > {
 template <typename PropertyTag, typename ValueT>
 struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public ProviderBase {
     
-    typedef ValueT ProvidedValueType;
+    //typedef ValueT ProvidedValueType;
     
     ProvidedValueType value;
     
@@ -178,7 +183,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public Provider
 /*template <typename PropertyTag, typename ValueT>
 struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public ProviderBase {
     
-    typedef std::shared_ptr<std::vector<ValueT> > ProvidedValueType;
+    //typedef std::shared_ptr<std::vector<ValueT> > ProvidedValueType;
     
     ProvidedValueType& operator()() ...
     
