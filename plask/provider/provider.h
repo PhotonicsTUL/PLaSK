@@ -15,41 +15,53 @@ namespace plask {
  * Template for base class for all Providers.
  * Implement listener (observer) pattern (can be observed by reciver).
  * 
- * Subclasses should have typedef for provided value type:
- * typedef ... ProvidedValueType;
+ * Subclasses should have implemented operator()(...) which return provided value.
  */
 struct ProviderBase {
     
+    /**
+     * ProviderBase listener (observer). Can react to ProviderBase changes.
+     */
     struct Listener {
         ///called when value changed
         virtual void onChange() = 0;
         
         /**
-         * Called just before disconnect.
+         * Called just before disconnect. By default do nothing.
          * @param from_where provider from which listener is disconnected
          */
         virtual void onDisconnect(ProviderBase* from_where) {}
     };
     
+    ///Set of added (registered) listeners. This provider can call methods of listeners included in this set.
     std::set<Listener*> listeners;
     
+    ///Call onDisconnect for all liteners in listeners set.
     ~ProviderBase() {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
             (*i)->onDisconnect(this);
     }
     
+    /**
+     * Add litener to listeners set.
+     * @param listener listener to add (register)
+     */
     void add(Listener* litener) {
         listeners.insert(litener);
     }
     
+    /**
+     * Remove (unregister) listner from listeners set.
+     * @param listener listener to remove (unregister)
+     */
     void remove(Listener* litener) {
         litener->onDisconnect(this);
         listeners.erase(litener);
     }
     
     /**
-     * Call onChange for all receivers.
-     * Should be call recalculation of value represented by provider.
+     * Call onChange for all listeners.
+     * Should be called after change of value represented by this provider.
      */
     void fireChanged() {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
@@ -85,6 +97,7 @@ struct ReceiverBase: public ProviderBase::Listener {
         onChange();
     }
     
+    ///React on provider value changes. Set changed flag to true.
     void onChange() {
         changed = true;
         //TODO callback?
@@ -103,14 +116,14 @@ struct ReceiverBase: public ProviderBase::Listener {
     }
     
     /**
-     * Get value from provider.
+     * Get value from provider using its operator().
      * @return value from provider
      * @throw NoProvider when provider is not available
      */
     template<typename ...Args>
-    decltype((*provider)(std::forward<Args>(params)...))
+    auto
     //typename ProviderT::ProvidedValueType
-    operator()(Args&&... params) throw (NoProvider) {
+    operator()(Args&&... params) throw (NoProvider) -> decltype((*provider)(std::forward<Args>(params)...)) {
         beforeGetValue();
         return (*provider)(std::forward<Args>(params)...);
     }
@@ -144,11 +157,11 @@ struct ProviderImpl {};
 template <typename PropertyTag>
 struct Provider: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType> {
     
-    //delegate all constructors to parent class
+    ///Delegate all constructors to parent class.
     template<typename ...Args>
     Provider(Args&&... params)
     : ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType>(std::forward<Args>(params)...) {
-    };
+    }
     
 };
 
@@ -169,7 +182,7 @@ struct Reciver: public ReceiverBase< Provider<PropertyTag> > {
 template <typename PropertyTag, typename ValueT>
 struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public ProviderBase {
     
-    //typedef ValueT ProvidedValueType;
+    typedef ValueT ProvidedValueType;
     
     ProvidedValueType value;
     

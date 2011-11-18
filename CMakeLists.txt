@@ -36,6 +36,19 @@ endif(PACK_EXE)
 # ----------===== plask library =====--------------------------------------------
 #creating configuration file for plask library
 #CONFIGURE_FILE(plask/config.h.cmake plask/config.h)
-file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp plask/*.cxx plask/*.h)
-add_library(plask STATIC ${plask_src})
+
+#file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp plask/*.cxx plask/*.h)
+#add_library(plask STATIC ${plask_src})
+
 #SET_TARGET_PROPERTIES(plask PROPERTIES COMPILE_FLAGS -fPIC)
+
+# ----------===== unit tests =====--------------------------------------------
+FIND_PACKAGE(Boost COMPONENTS unit_test_framework)
+if (Boost_FOUND)
+	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+	file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx tests/plask/*.h)
+	ADD_EXECUTABLE(test_plask ${test_plask_src})
+	TARGET_LINK_LIBRARIES(test_plask ${Boost_LIBRARIES})	#plask
+else()
+	message("Boost.test not found. Build without unit tests.")
+endif()
