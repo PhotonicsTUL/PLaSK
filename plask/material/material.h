@@ -1,4 +1,8 @@
+#ifndef PLASK__MATERIAL_H
+#define PLASK__MATERIAL_H
+
 #include <string>
+#include <memory>	//shared_ptr
 #include "../exceptions.h"
 
 namespace plask {
@@ -7,8 +11,8 @@ namespace plask {
 //co jeśli klasa bazy materiałowej zostanie skasowana?
 
 /**
-Represent material, its physical properties.
-*/
+ * Represent material, its physical properties.
+ */
 struct Material {
 
     ///Do nothing.
@@ -17,7 +21,7 @@ struct Material {
     // @return @c true only for dyanimicaly created materials which are not managed by MaterialDB and must be manualy deleted in some situations
     // virtual bool isDynamic() { return false; }
 
-    /// @return material name
+    ///@return material name
     virtual std::string getName() const = 0;
 
 };
@@ -50,3 +54,5 @@ struct MaterialsDB {
 };
 
 } // namespace plask
+
+#endif	//PLASK__MATERIAL_H

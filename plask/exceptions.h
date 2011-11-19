@@ -1,7 +1,6 @@
 #ifndef PLASK__EXCEPTIONS_H
 #define PLASK__EXCEPTIONS_H
 
-
 #include <stdexcept>
 
 namespace plask {
@@ -33,10 +32,10 @@ struct NotImplemented: public Exception {
 /**
  * This excpetion is throw when material (typically with given name) is not found.
  */
-struct NotSuchMaterial: public Exception {
+struct NoSuchMaterial: public Exception {
     //std::string materialName;
 
-    NotSuchMaterial(const std::string& material_name)
+    NoSuchMaterial(const std::string& material_name)
     : Exception("No such material " + material_name)/*, materialName(material_name)*/ {}
 };
 
