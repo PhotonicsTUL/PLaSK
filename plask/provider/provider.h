@@ -15,9 +15,10 @@ namespace plask {
  * Template for base class for all Providers.
  * Implement listener (observer) pattern (can be observed by reciver).
  * 
- * Subclasses should have implemented operator()(...) which return provided value.
+ * Subclasses should only have implemented operator()(...) which return provided value.
+ * Reciver (for given provider type) can be easy implemented by subclassing Reciver class template.
  */
-struct ProviderBase {
+struct Provider {
     
     /**
      * ProviderBase listener (observer). Can react to ProviderBase changes.
@@ -30,14 +31,14 @@ struct ProviderBase {
          * Called just before disconnect. By default do nothing.
          * @param from_where provider from which listener is disconnected
          */
-        virtual void onDisconnect(ProviderBase* from_where) {}
+        virtual void onDisconnect(Provider* from_where) {}
     };
     
     ///Set of added (registered) listeners. This provider can call methods of listeners included in this set.
     std::set<Listener*> listeners;
     
     ///Call onDisconnect for all liteners in listeners set.
-    ~ProviderBase() {
+    ~Provider() {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
             (*i)->onDisconnect(this);
     }
@@ -81,16 +82,16 @@ struct ProviderBase {
  * @tparam ProviderT type of provider
  */
 template <typename ProviderT>
-struct ReceiverBase: public ProviderBase::Listener {
+struct Receiver: public Provider::Listener {
     
     ProviderT* provider;
     
     ///true only if data provides by provider was changed after recent value getting
     bool changed;
 
-    ReceiverBase(): provider(0), changed(true) {}
+    Receiver(): provider(0), changed(true) {}
     
-    ~ReceiverBase() {
+    ~Receiver() {
         setProvider(0);
     }
     
@@ -116,7 +117,7 @@ struct ReceiverBase: public ProviderBase::Listener {
         //TODO callback?
     }
     
-    virtual void onDisconnect(ProviderBase* from_where) {
+    virtual void onDisconnect(Provider* from_where) {
         if (from_where == provider) {
             provider = 0;
             onChange();
@@ -230,11 +231,11 @@ struct ProviderImpl {};
  * Specializations of this class are implementations of providers for given property tag.
  */
 template <typename PropertyTag>
-struct Provider: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType> {
+struct ProviderFor: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType> {
     
     ///Delegate all constructors to parent class.
     template<typename ...Args>
-    Provider(Args&&... params)
+    ProviderFor(Args&&... params)
     : ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType>(std::forward<Args>(params)...) {
     }
     
@@ -244,13 +245,13 @@ struct Provider: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, Prop
  * Specializations of this class are implementations of reciver for given property tag.
  */
 template <typename PropertyTag>
-struct Reciver: public ReceiverBase< Provider<PropertyTag> > {};
+struct ReciverFor: public Receiver< ProviderFor<PropertyTag> > {};
 
 /**
  * Template for base class for all providers which provide one value, typically one double.
  */
 template <typename PropertyTag, typename ValueT>
-struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public ProviderBase {
+struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public Provider {
     
     typedef ValueT ProvidedValueType;
     
@@ -288,7 +289,7 @@ template <typename ValueT> struct OnMeshInterpolatedReceiver;
  * use interpolation, and has vector of data.
  */
 template <typename ModuleType, typename ValueT>
-struct OnMeshInterpolatedProvider: public ProviderBase {
+struct OnMeshInterpolatedProvider: public Provider {
     
     typedef ValueT ValueType;
     
@@ -315,7 +316,7 @@ struct OnMeshInterpolatedProvider: public ProviderBase {
 };
 
 template <typename OnMeshInterpolatedProviderT>
-struct OnMeshInterpolatedReceiver: public ReceiverBase<OnMeshInterpolatedProviderT> {
+struct OnMeshInterpolatedReceiver: public Receiver<OnMeshInterpolatedProviderT> {
     
     /**
      * Get value from provider.
@@ -323,8 +324,8 @@ struct OnMeshInterpolatedReceiver: public ReceiverBase<OnMeshInterpolatedProvide
      * @throw NoProvider when provider is not available
      */
     typename OnMeshInterpolatedProviderT::ValueConstVecPtr operator()(Mesh& mesh, InterpolationMethod method) const throw (NoProvider) {
-        ReceiverBase<OnMeshInterpolatedProviderT>::beforeGetValue();
-        return (*ReceiverBase<OnMeshInterpolatedProviderT>::provider)(mesh, method);
+        Receiver<OnMeshInterpolatedProviderT>::beforeGetValue();
+        return (*Receiver<OnMeshInterpolatedProviderT>::provider)(mesh, method);
     }
     
 };
