@@ -1,3 +1,7 @@
+# After calling 'cmake' use:
+#  'make' to build all,
+#  'make test' to run tests.
+
 cmake_minimum_required (VERSION 2.8)
 project (plask)
 
@@ -52,8 +56,9 @@ if(MAKE_TESTS)
 		file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx tests/plask/*.h)
 		ADD_EXECUTABLE(test_plask ${test_plask_src})
 		TARGET_LINK_LIBRARIES(test_plask ${Boost_LIBRARIES})	#plask
-		ADD_TEST(plask ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask)
-		add_custom_command(TARGET test_plask POST_BUILD COMMAND test_plask)
+		ADD_TEST(plask ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask)	#can be execute by ctest
+		#add_custom_command(TARGET test_plask POST_BUILD COMMAND test_plask)	#execute when build
+		#add_custom_target(tests COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS test_plask)
 	else()
 		message("Boost Test Library not found. Build without unit tests.")
 	endif()

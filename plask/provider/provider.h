@@ -72,7 +72,12 @@ struct ProviderBase {
 
 /**
  * Base class for all recivers.
+ *
  * Implement listener (observer) pattern (is listener for providers).
+ * Delegeta all operator() calling to provider.
+ *
+ * For most providers types, reciver type can be defined as: <code>ReceiverBase<ProviderClass>;</code>
+ *
  * @tparam ProviderT type of provider
  */
 template <typename ProviderT>
@@ -83,7 +88,7 @@ struct ReceiverBase: public ProviderBase::Listener {
     ///true only if data provides by provider was changed after recent value getting
     bool changed;
 
-    ReceiverBase(): changed(true) {}
+    ReceiverBase(): provider(0), changed(true) {}
     
     ~ReceiverBase() {
         setProvider(0);
@@ -96,6 +101,14 @@ struct ReceiverBase: public ProviderBase::Listener {
         this->provider = provider;
         onChange();
     }
+    
+    void setProvider(ProviderT &provider) {
+		setProvider(&provider);
+    }
+    
+    ProviderT* getProvider() { return provider; }
+    
+    const ProviderT* getProvider() const { return provider; }
     
     ///React on provider value changes. Set changed flag to true.
     void onChange() {
@@ -145,15 +158,77 @@ protected:
     
 };
 
+/**
+ * Type of properies.
+ */
 enum PropertyType {
-    SINGLE_VALUE_PROPERTY = 0,
-    FIELD_PROPERTY = 1,
-    INTERPOLATED_FIELD_PROPERTY = 2
+    SINGLE_VALUE_PROPERTY = 0,	///<Single value property.
+    FIELD_PROPERTY = 1,			///<Property for field of values which can't be interpolate.
+    INTERPOLATED_FIELD_PROPERTY = 2	///<Property for field of values which can be interpolate.
+};	//TODO change this to empty classes(?)
+
+/**
+ * Helper class which makes easiest to define property tags class.
+ *
+ * Proporty tags class are used for Provider and Reciver templates specializations.,
+ *
+ * Properties tag class can be subclass of this, but never should be typedefs to this
+ * (tag class for each property must by separate class - always use different types for different properties).
+ */
+template <PropertyType _propertyType, typename _ValueType>
+struct Property {
+	///Type of property.
+	static const PropertyType propertyType = _propertyType;
+	///Type of provided value.
+	typedef _ValueType ValueType;
 };
 
+/**
+ * Helper class which makes easiest to define property tags class for single value (double type by default) properties.
+ *
+ * Properties tag class can be subclass of this, but never should be typedefs to this
+ * (tag class for each property must by separate class - always use different types for different properties).
+ */
+template<typename ValueType = double>
+struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueType> {};
+
+/**
+ * Helper class which makes easiest to define property tags class for non-scalar fields.
+ *
+ * Properties tag class can be subclass of this, but never should be typedefs to this
+ * (tag class for each property must by separate class - always use different types for different properties).
+ */
+template<typename ValueType>
+struct FieldProperty: public Property<FIELD_PROPERTY, ValueType> {};
+
+/**
+ * Helper class which makes easiest to define property tags class for possible to interpolate fields.
+ *
+ * Properties tag class can be subclass of this, but never should be typedefs to this
+ * (tag class for each property must by separate class - always use different types for different properties).
+ */
+template<typename ValueType = double>
+struct InterpolatedFieldProperty: public Property<INTERPOLATED_FIELD_PROPERTY, ValueType> {};
+
+/**
+ * Helper class which makes easiest to define property tags class for scalar fields (fields of doubles).
+ *
+ * Properties tag class can be subclass of this, but never should be typedefs to this
+ * (tag class for each property must by separate class - always use different types for different properties).
+ */
+typedef InterpolatedFieldProperty<double> ScalarField;
+
+/**
+ * Specializations of this class are implementations of providers for given property tag class and this tag properties.
+ *
+ * Don't use this class directly. Use Provider class.
+ */
 template <typename PropertyTag, typename ValueType, PropertyType propertyType>
 struct ProviderImpl {};
 
+/**
+ * Specializations of this class are implementations of providers for given property tag.
+ */
 template <typename PropertyTag>
 struct Provider: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType> {
     
@@ -165,16 +240,11 @@ struct Provider: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, Prop
     
 };
 
+/**
+ * Specializations of this class are implementations of reciver for given property tag.
+ */
 template <typename PropertyTag>
-struct Reciver: public ReceiverBase< Provider<PropertyTag> > {
-    
-    //delegate all constructors to parent class
-    /*template<typename ...Args>
-    Reciver(Args&&... params)
-    : ReceiverBase< Provider<PropertyTag> >(std::forward<Args>(params)...) {
-    };*/
-    
-};
+struct Reciver: public ReceiverBase< Provider<PropertyTag> > {};
 
 /**
  * Template for base class for all providers which provide one value, typically one double.
