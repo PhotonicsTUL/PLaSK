@@ -4,19 +4,36 @@
 #include "../space.h"
 #include <memory>
 
+#include "interpolation.h"
+
 namespace plask {
 
 /**
- * Base class for all meshs.
- * Mesh represent set of points in 3d space nad has/know/allow for:
- * - number of points
- * - iterator over this points
+ * Base class for all meshes.
+ * Mesh represent set of points in 3d space and:
+ * - know number of points
+ * - allow for iterate over this points
  * - can calculate interpolated value for given points (in 3d), source values, and interpolation method
  */
 struct Mesh {
 
     ///@return number of points in mesh
     virtual std::size_t getSize() const;
+    
+    /**
+     * Interpolate values (@a src_vec) from one mesh (@a src_mesh) to this one using given interpolation method.
+     * @param src_mesh, src_vec source
+     * @param method interpolation method to use
+     * @return vector with interpolated values
+     * @throw NotImplemented if given interpolation method is not implemented for used source mesh type
+     * @throw CriticalException if given interpolation method is not valid
+     */
+    template <typename SrcMeshT, typename DataT>
+    inline std::shared_ptr<const std::vector<DataT>>
+    fill(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>>& src_vec, InterpolationMethod method = DEFAULT)
+    throw (NotImplemented, CriticalException) {
+        return interpolate(src_mesh, src_vec, *this, method);
+    }
 
 };
 
