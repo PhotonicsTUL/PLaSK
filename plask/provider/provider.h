@@ -4,6 +4,7 @@
 #include <set>
 #include <memory>
 #include <vector>
+#include <functional>	//std::function
 
 #include "../exceptions.h"
 #include "../mesh/mesh.h"
@@ -13,10 +14,10 @@ namespace plask {
 
 /**
  * Template for base class for all Providers.
- * Implement listener (observer) pattern (can be observed by reciver).
+ * Implement listener (observer) pattern (can be observed by Receiver).
  * 
  * Subclasses should only have implemented operator()(...) which return provided value.
- * Reciver (for given provider type) can be easy implemented by subclassing Reciver class template.
+ * Receiver (for given provider type) can be easy implemented by subclassing Receiver class template.
  */
 struct Provider {
     
@@ -72,29 +73,36 @@ struct Provider {
 };
 
 /**
- * Base class for all recivers.
+ * Base class for all Receivers.
  *
  * Implement listener (observer) pattern (is listener for providers).
  * Delegeta all operator() calling to provider.
  *
- * For most providers types, reciver type can be defined as: <code>ReceiverBase<ProviderClass>;</code>
+ * For most providers types, Receiver type can be defined as: <code>ReceiverBase<ProviderClass>;</code>
  *
  * @tparam ProviderT type of provider
  */
 template <typename ProviderT>
 struct Receiver: public Provider::Listener {
     
+    ///Pointer to connected provider. Can be nullptr if no provider is connected.
     ProviderT* provider;
     
-    ///true only if data provides by provider was changed after recent value getting
+    ///Is @c true only if data provides by provider was changed after recent value getting.
     bool changed;
-
+	
+	///Construct Receiver without connected provider and with set changed flag.
     Receiver(): provider(0), changed(true) {}
     
+    ///Destructor. Disconnect from provider.
     ~Receiver() {
         setProvider(0);
     }
     
+    /**
+     * Change provider. If new provider is different from current one then changed flag is set.
+     * @param provider new provider, can be @c nullptr to only disconnect from current provider.
+     */
     void setProvider(ProviderT* provider) {
         if (this->provider == provider) return;
         if (this->provider) this->provider->listeners.erase(this);
@@ -103,12 +111,18 @@ struct Receiver: public Provider::Listener {
         onChange();
     }
     
+    /**
+     * Change provider. If new provider is different from current one then changed flag is set.
+     * @param provider new provider
+     */
     void setProvider(ProviderT &provider) {
 		setProvider(&provider);
     }
     
+    ///@return current provider or @c nullptr if there is no connected provider
     ProviderT* getProvider() { return provider; }
     
+    ///@return current provider or @c nullptr if there is no connected provider
     const ProviderT* getProvider() const { return provider; }
     
     ///React on provider value changes. Set changed flag to true.
@@ -134,9 +148,8 @@ struct Receiver: public Provider::Listener {
      * @return value from provider
      * @throw NoProvider when provider is not available
      */
-    template<typename ...Args>
-    auto
-    //typename ProviderT::ProvidedValueType
+    //TODO const version? only const version?
+    template<typename ...Args> auto
     operator()(Args&&... params) throw (NoProvider) -> decltype((*provider)(std::forward<Args>(params)...)) {
         beforeGetValue();
         return (*provider)(std::forward<Args>(params)...);
@@ -171,7 +184,7 @@ enum PropertyType {
 /**
  * Helper class which makes easiest to define property tags class.
  *
- * Proporty tags class are used for Provider and Reciver templates specializations.,
+ * Proporty tags class are used for Provider and Receiver templates specializations.,
  *
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
@@ -217,7 +230,7 @@ struct InterpolatedFieldProperty: public Property<INTERPOLATED_FIELD_PROPERTY, V
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-typedef InterpolatedFieldProperty<double> ScalarField;
+typedef InterpolatedFieldProperty<double> ScalarFieldProperty;
 
 /**
  * Specializations of this class are implementations of providers for given property tag class and this tag properties.
@@ -242,13 +255,13 @@ struct ProviderFor: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, P
 };
 
 /**
- * Specializations of this class are implementations of reciver for given property tag.
+ * Specializations of this class are implementations of Receiver for given property tag.
  */
 template <typename PropertyTag>
-struct ReciverFor: public Receiver< ProviderFor<PropertyTag> > {};
+struct ReceiverFor: public Receiver< ProviderFor<PropertyTag> > {};
 
 /**
- * Template for base class for all providers which provide one value, typically one double.
+ * Specialization which implement provider class which provide one value, typically one double.
  */
 template <typename PropertyTag, typename ValueT>
 struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public Provider {
@@ -263,7 +276,10 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public Provider
     
 };
 
-//TODO ProviderImpl for meshes:
+/**
+ * Specialization which implement provider class which provide values in points describe by mesh,
+ * and don't use interpolation.
+ */
 /*template <typename PropertyTag, typename ValueT>
 struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public ProviderBase {
     
@@ -273,22 +289,36 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public ProviderBase {
     
 };*/
 
-/*struct TestProp {
-    typedef double ValueType;
-    static const PropertyType propertyType = SINGLE_VALUE_PROPERTY;
+/**
+ * Specialization which implement provider class which provide values in points describe by mesh,
+ * use interpolation, and has vector of data.
+ */
+template <typename PropertyTag, typename ValueT>
+struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public Provider {
+    
+    typedef std::shared_ptr< const std::vector<ValueT> > ProvidedValueType;
+    
+    std::shared_ptr< const std::vector<ValueT> > value;
+    
+    ///Hold functor which fill mesh.
+    std::function<ProvidedValueType()> fillMesh;
+    
+    template<typename ...Args>
+    ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>(Args&&... params)
+    : fillMesh(std::forward<Args>(params)...) {
+    }
+    
+    ProvidedValueType& operator()(Mesh&& mesh, InterpolationMethod&& method) {
+		return fillMesh(mesh, method);
+    }
+
 };
 
-Provider<TestProp> test;
-Reciver<TestProp> testr;
-double x = testr();*/
-
-template <typename ValueT> struct OnMeshInterpolatedReceiver;
-
-/**
+/*
  * Template for base class for all providers which provide values in points describe by mesh,
  * use interpolation, and has vector of data.
  */
-template <typename ModuleType, typename ValueT>
+/*template <typename ModuleType, typename ValueT>
 struct OnMeshInterpolatedProvider: public Provider {
     
     typedef ValueT ValueType;
@@ -313,24 +343,7 @@ struct OnMeshInterpolatedProvider: public Provider {
         return module->*module_value_get_method(mesh, method);
     }
     
-};
-
-template <typename OnMeshInterpolatedProviderT>
-struct OnMeshInterpolatedReceiver: public Receiver<OnMeshInterpolatedProviderT> {
-    
-    /**
-     * Get value from provider.
-     * @return value from provider
-     * @throw NoProvider when provider is not available
-     */
-    typename OnMeshInterpolatedProviderT::ValueConstVecPtr operator()(Mesh& mesh, InterpolationMethod method) const throw (NoProvider) {
-        Receiver<OnMeshInterpolatedProviderT>::beforeGetValue();
-        return (*Receiver<OnMeshInterpolatedProviderT>::provider)(mesh, method);
-    }
-    
-};
-
-
+};*/
 
 }; //namespace plask
 
