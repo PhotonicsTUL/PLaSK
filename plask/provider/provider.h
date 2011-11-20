@@ -48,17 +48,17 @@ struct Provider {
      * Add litener to listeners set.
      * @param listener listener to add (register)
      */
-    void add(Listener* litener) {
-        listeners.insert(litener);
+    void add(Listener* listener) {
+        listeners.insert(listener);
     }
     
     /**
      * Remove (unregister) listner from listeners set.
      * @param listener listener to remove (unregister)
      */
-    void remove(Listener* litener) {
-        litener->onDisconnect(this);
-        listeners.erase(litener);
+    void remove(Listener* listener) {
+        listener->onDisconnect(this);
+        listeners.erase(listener);
     }
     
     /**

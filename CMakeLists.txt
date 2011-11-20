@@ -41,6 +41,7 @@ endif(PACK_EXE)
 #creating configuration file for plask library
 #CONFIGURE_FILE(plask/config.h.cmake plask/config.h)
 
+file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h)
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp plask/*.cxx plask/*.h)
 add_library(plask STATIC ${plask_src})
 
@@ -59,7 +60,22 @@ if(MAKE_TESTS)
 		ADD_TEST(plask ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask)	#can be execute by ctest
 		#add_custom_command(TARGET test_plask POST_BUILD COMMAND test_plask)	#execute when build
 		#add_custom_target(tests COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS test_plask)
-	else()
+	else(Boost_FOUND)
 		message("Boost Test Library not found. Build without unit tests.")
-	endif()
+	endif(Boost_FOUND)
 endif(MAKE_TESTS)
+
+# ----------===== documentation (api) =====--------------------------------------------
+option(BUILD_DOCUMENTATION "build doxygen documentation" OFF)
+if(BUILD_DOCUMENTATION)
+    find_package(Doxygen)
+    if(DOXYGEN_FOUND)
+        ADD_CUSTOM_TARGET(doc ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
+    else(DOXYGEN_FOUND)
+        message("Doxygen not found. Build without documentation.")
+    endif(DOXYGEN_FOUND)
+endif(BUILD_DOCUMENTATION)
+
+# ----------===== install =====--------------------------------------------
+install(TARGETS plask LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT libplask)
+install(FILES ${plask_headers} DESTINATION include/plask COMPONENT libplask-dev)
