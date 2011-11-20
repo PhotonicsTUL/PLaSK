@@ -1,6 +1,13 @@
 #ifndef PLASK__PROVIDER_H
 #define PLASK__PROVIDER_H
 
+/** @page providers Provider and receivers
+
+@section providers_about About
+This page describe providers and receivers mechanism, which allow for data exchange between modules.
+
+*/
+
 #include <set>
 #include <memory>
 #include <vector>
@@ -13,16 +20,17 @@
 namespace plask {
 
 /**
- * Template for base class for all Providers.
- * Implement listener (observer) pattern (can be observed by Receiver).
+ * Base class for all Providers.
+ *
+ * It implements listener (observer) pattern (can be observed by Receiver).
  * 
  * Subclasses should only have implemented operator()(...) which return provided value.
- * Receiver (for given provider type) can be easy implemented by subclassing Receiver class template.
+ * Receiver (for given provider type) can be easy implemented by inherit Receiver class template.
  */
 struct Provider {
     
     /**
-     * ProviderBase listener (observer). Can react to ProviderBase changes.
+     * Provider listener (observer). Can react to Provider changes.
      */
     struct Listener {
         ///called when value changed
@@ -76,9 +84,9 @@ struct Provider {
  * Base class for all Receivers.
  *
  * Implement listener (observer) pattern (is listener for providers).
- * Delegeta all operator() calling to provider.
+ * Delegate all operator() calling to provider.
  *
- * For most providers types, Receiver type can be defined as: <code>ReceiverBase<ProviderClass>;</code>
+ * For most providers types, Receiver type can be defined as: <code>Receiver<ProviderClass>;</code>
  *
  * @tparam ProviderT type of provider
  */
@@ -184,7 +192,7 @@ enum PropertyType {
 /**
  * Helper class which makes easiest to define property tags class.
  *
- * Proporty tags class are used for Provider and Receiver templates specializations.,
+ * Property tags class are used for Provider and Receiver templates specializations.,
  *
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
