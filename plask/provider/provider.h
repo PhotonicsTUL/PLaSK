@@ -180,6 +180,37 @@ protected:
     
 };
 
+template<typename _Signature> struct DelegateProvider;
+
+/**
+ * Template of class which is good base class for providers which delegate calls of operator() to external functor.
+ */
+template<typename _Res, typename... _ArgTypes>
+struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
+
+    ///Hold external functor.
+    std::function<_Res(_ArgTypes...)> valueGetter;
+    
+    /**
+     * Initialize valueGetter using given params.
+     * @param params parameters for valueGetter constructor
+     */
+    template<typename ...Args>
+    DelegateProvider<_Res(_ArgTypes...)>(Args&&... params)
+    : valueGetter(std::forward<Args>(params)...) {
+    }
+    
+    /**
+     * Call functor holded by valueGetter.
+     * @param params parameters for functor holded by valueGetter
+     * @return value returned by functor holded by valueGetter
+     */
+    _Res operator()(_ArgTypes&&... params) const {
+		return valueGetter(std::forward<_ArgTypes>(params)...);
+    }
+
+};
+
 /**
  * Type of properies.
  */
