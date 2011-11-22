@@ -11,6 +11,7 @@ Plask is...
 @section plask_tutorials Tutorials
 - @subpage modules "How to implement own module?"
 - @subpage providers "How to use and implement providers and recivers?"
+- @subpage meshes "How to use meshes and write own one?"
 
 */
 

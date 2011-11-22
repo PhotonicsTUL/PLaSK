@@ -2,36 +2,52 @@
 #define PLASK__MESH_H
 
 /** @page meshes Meshes
- * @section meshes_about About
- * Mesh represent (ordered) set of points in 3d space. All meshes in plask inherits from and implements plask::Mesh interface.
- * 
- * Typically, there are some data connected with points in mesh.
- * In plask, all this data are not stored in mesh class, and so they must be store separately.
- * Because points in mesh are ordered, and each one have unique index from <code>0</code> to <code>plask::Mesh::getSize()-1</code>
- * you can sore data in any indexed structure, like array or std::vector (which is recommended),
- * storing data for i-th point in mesh under i-th index.
- * 
- * @section meshes_interpolation Data interpolation
- * 
- * @section meshes_write How to implement new mesh and/or interpolation method
- * To implement new mesh you have to write class inherited from plask::Mesh. This required to:
- * - implement plask::Mesh::getSize method,
- * - implement iterator over mesh points.
- * 
- * To implement interpolation method (typically for case where your mesh is source mesh)
- * you have to write specialization or partial specialization of plask::InterpolationAlgorithm template
- * for specific: source mesh type, data type, and/or @ref plask::InterpolationMethod "interpolation method".
- * Your specialization must have implementation of static plask::InterpolationAlgorithm::interpolate method.
- * 
- * For example to implement LINEAR interpolation for MyMeshType source mesh type:
- @code
- template <typename DataT>    //for any data type
- struct InterpolationAlgorithm<MyMeshType, DataT, LINEAR> {
-     static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const Mesh& dst_mesh, std::vector<DataT>& dst_vec) throw (NotImplemented) {
+@section meshes_about About
+Mesh represent (ordered) set of points in 3d space. All meshes in plask inherits from and implements plask::Mesh interface.
+
+Typically, there are some data connected with points in mesh.
+In plask, all this data are not stored in mesh class, and so they must be store separately.
+Because points in mesh are ordered, and each one have unique index from <code>0</code> to <code>plask::Mesh::getSize()-1</code>
+you can sore data in any indexed structure, like array or std::vector (which is recommended),
+storing data for i-th point in mesh under i-th index.
+
+@section meshes_interpolation Data interpolation
+TODO
+
+@section meshes_write How to implement new mesh and/or interpolation method
+To implement new mesh you have to write class inherited from plask::Mesh. This required to:
+- implement plask::Mesh::getSize method,
+- implement iterator over mesh points.
+
+To implement interpolation method (typically for case where your mesh is source mesh)
+you have to write specialization or partial specialization of plask::InterpolationAlgorithm template
+for specific: source mesh type, data type, and/or @ref plask::InterpolationMethod "interpolation method".
+Your specialization must have implementation of static plask::InterpolationAlgorithm::interpolate method.
+ 
+For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshType source mesh type (one code for all data types):
+@code
+template <typename DataT>    //for any data type
+struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::LINEAR> {
+    static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh& dst_mesh, std::vector<DataT>& dst_vec)
+    throw (plask::NotImplemented) {
         //interpolation code
-     }
- };
- @endcode
+    }
+};
+@endcode
+Nota that above code is template and must be placed in header file.
+
+Next example, show how to implement algorithm which depends also from data type. To implement interpolation version for double you should write:
+@code
+template <>
+struct plask::InterpolationAlgorithm<MyMeshType, DataT, double> {
+    static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh& dst_mesh, std::vector<double>& dst_vec)
+    throw (plask::NotImplemented) {
+        //interpolation code for vectors of doubles
+    }
+};
+@endcode
+You can simultaneously have codes from both examples.
+In such case, for linear interpolation from MyMeshType mesh, compiler use second implementation to interpolate vectors of doubles, and first one in rest cases.
  */
 
 #include "../space.h"
