@@ -7,13 +7,31 @@
  * 
  * Typically, there are some data connected with points in mesh.
  * In plask, all this data are not stored in mesh class, and so they must be store separately.
- * Because points in mesh are ordered, and each one have unique index from <code>0</code> to <code>getSize()-1</code>
+ * Because points in mesh are ordered, and each one have unique index from <code>0</code> to <code>plask::Mesh::getSize()-1</code>
  * you can sore data in any indexed structure, like array or std::vector (which is recommended),
  * storing data for i-th point in mesh under i-th index.
  * 
  * @section meshes_interpolation Data interpolation
  * 
- * @section meshes_write How to implement new mesh and interpolation methods
+ * @section meshes_write How to implement new mesh and/or interpolation method
+ * To implement new mesh you have to write class inherited from plask::Mesh. This required to:
+ * - implement plask::Mesh::getSize method,
+ * - implement iterator over mesh points.
+ * 
+ * To implement interpolation method (typically for case where your mesh is source mesh)
+ * you have to write specialization or partial specialization of plask::InterpolationAlgorithm template
+ * for specific: source mesh type, data type, and/or @ref plask::InterpolationMethod "interpolation method".
+ * Your specialization must have implementation of static plask::InterpolationAlgorithm::interpolate method.
+ * 
+ * For example to implement LINEAR interpolation for MyMeshType source mesh type:
+ @code
+ template <typename DataT>    //for any data type
+ struct InterpolationAlgorithm<MyMeshType, DataT, LINEAR> {
+     static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const Mesh& dst_mesh, std::vector<DataT>& dst_vec) throw (NotImplemented) {
+        //interpolation code
+     }
+ };
+ @endcode
  */
 
 #include "../space.h"
@@ -61,9 +79,9 @@ struct Mesh {
 //TODO i zaimplementować interfejs Mesh uzywając Mesh optymalizowany + funkcja konwertująca pkt. do 3d
 //TODO zamiast dim i Vec<dim> zrobić i specjalizować typami przestrzeni udostępniającymi typ punktu, itp.
 /**
-Base class for all meshs in given space.
+Base class for all meshes in given space.
 Mesh represent set of points in space.
-@tparam dim number of space dimentions
+@tparam dim number of space dimensions
 */
 template <int dim>
 struct Mesh {

@@ -11,7 +11,7 @@ namespace plask {
 Supported interpolation methods.
 */
 enum InterpolationMethod {
-    DEFAULT = 0,        ///<default interpolation de[end from source
+    DEFAULT = 0,        ///<default interpolation depend from source
     LINEAR = 1          ///<linear interpolation
 };
 
@@ -19,6 +19,7 @@ const char* InterpolationMethodNames[] = { "DEFAULT", "LINEAR" };
 
 /**
 Specialization of this class are used for interpolation and can depend from source mesh type, data type and method.
+@see @ref meshes_write
 */
 template <typename SrcMeshT, typename DataT, InterpolationMethod method>
 struct InterpolationAlgorithm {

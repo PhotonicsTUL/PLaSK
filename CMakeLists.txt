@@ -29,7 +29,6 @@ ENDMACRO(compress targetname)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
-file(MAKE_DIRECTORY "bin" "lib")
 
 option(PACK_EXE "self-pack and strip executables" OFF)  #compress exe
 if (PACK_EXE)
