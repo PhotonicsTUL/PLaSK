@@ -25,8 +25,6 @@ BOOST_AUTO_TEST_CASE(single_value) {
 	receiver.setProvider(0);
 	BOOST_CHECK(receiver.changed);
 	BOOST_CHECK_THROW(receiver(), plask::NoProvider);
-        
-        BOOST_CHECK(false);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
