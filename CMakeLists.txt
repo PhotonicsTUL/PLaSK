@@ -58,7 +58,7 @@ if(MAKE_TESTS)
 		TARGET_LINK_LIBRARIES(test_plask ${Boost_LIBRARIES})	#plask
 		ADD_TEST(plask ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask)	#can be execute by ctest
 		#add_custom_command(TARGET test_plask POST_BUILD COMMAND test_plask)	#execute when build
-		#add_custom_target(tests COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS test_plask)
+		add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask)
 	else(Boost_FOUND)
 		message("Boost Test Library not found. Build without unit tests.")
 	endif(Boost_FOUND)
