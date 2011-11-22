@@ -23,37 +23,37 @@ namespace plask {
  * Base class for all Providers.
  *
  * It implements listener (observer) pattern (can be observed by Receiver).
- * 
+ *
  * Subclasses should only have implemented operator()(...) which return provided value.
  * Receiver (for given provider type) can be easy implemented by inherit Receiver class template.
  * 
  * @see @ref providers
  */
 struct Provider {
-    
+
     /**
      * Provider listener (observer). Can react to Provider changes.
      */
     struct Listener {
         ///called when value changed
         virtual void onChange() = 0;
-        
+
         /**
          * Called just before disconnect. By default do nothing.
          * @param from_where provider from which listener is disconnected
          */
         virtual void onDisconnect(Provider* from_where) {}
     };
-    
+
     ///Set of added (registered) listeners. This provider can call methods of listeners included in this set.
     std::set<Listener*> listeners;
-    
+
     ///Call onDisconnect for all liteners in listeners set.
     ~Provider() {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
             (*i)->onDisconnect(this);
     }
-    
+
     /**
      * Add litener to listeners set.
      * @param listener listener to add (register)
@@ -61,7 +61,7 @@ struct Provider {
     void add(Listener* listener) {
         listeners.insert(listener);
     }
-    
+
     /**
      * Remove (unregister) listner from listeners set.
      * @param listener listener to remove (unregister)
@@ -70,7 +70,7 @@ struct Provider {
         listener->onDisconnect(this);
         listeners.erase(listener);
     }
-    
+
     /**
      * Call onChange for all listeners.
      * Should be called after change of value represented by this provider.
@@ -79,7 +79,7 @@ struct Provider {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
             (*i)->onChange();
     }
-    
+
 };
 
 /**
@@ -96,21 +96,21 @@ struct Provider {
  */
 template <typename ProviderT>
 struct Receiver: public Provider::Listener {
-    
+
     ///Pointer to connected provider. Can be nullptr if no provider is connected.
     ProviderT* provider;
-    
+
     ///Is @c true only if data provides by provider was changed after recent value getting.
     bool changed;
-	
+
 	///Construct Receiver without connected provider and with set changed flag.
     Receiver(): provider(0), changed(true) {}
-    
+
     ///Destructor. Disconnect from provider.
     ~Receiver() {
         setProvider(0);
     }
-    
+
     /**
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, can be @c nullptr to only disconnect from current provider.
@@ -122,7 +122,7 @@ struct Receiver: public Provider::Listener {
         this->provider = provider;
         onChange();
     }
-    
+
     /**
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider
@@ -130,31 +130,31 @@ struct Receiver: public Provider::Listener {
     void setProvider(ProviderT &provider) {
 		setProvider(&provider);
     }
-    
+
     ///@return current provider or @c nullptr if there is no connected provider
     ProviderT* getProvider() { return provider; }
-    
+
     ///@return current provider or @c nullptr if there is no connected provider
     const ProviderT* getProvider() const { return provider; }
-    
+
     ///React on provider value changes. Set changed flag to true.
     void onChange() {
         changed = true;
         //TODO callback?
     }
-    
+
     virtual void onDisconnect(Provider* from_where) {
         if (from_where == provider) {
             provider = 0;
             onChange();
         }
     }
-    
+
     ///@throw NoProvider when provider is not available
     void ensureHasProvider() throw (NoProvider) {
         if (!provider) throw NoProvider();	//TODO some name, maybe Provider should have virtual name or name field?
     }
-    
+
     /**
      * Get value from provider using its operator().
      * @return value from provider
@@ -166,22 +166,22 @@ struct Receiver: public Provider::Listener {
         beforeGetValue();
         return (*provider)(std::forward<Args>(params)...);
     }
-    
+
 protected:
-    
+
     /**
      * Check if value can be read and throw exception if not.
      * Set changed flag to false.
-     * 
+     *
      * Subclass can call this just before reading value.
-     * 
+     *
      * @throw NoProvider when provider is not available
      */
     void beforeGetValue() throw (NoProvider) {
         ensureHasProvider();
         changed = false;
     }
-    
+
 };
 
 template<typename _Signature> struct DelegateProvider;
@@ -196,7 +196,7 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
 
     ///Hold external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
-    
+
     /**
      * Initialize valueGetter using given params.
      * @param params parameters for valueGetter constructor
@@ -205,7 +205,7 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
     DelegateProvider<_Res(_ArgTypes...)>(Args&&... params)
     : valueGetter(std::forward<Args>(params)...) {
     }
-    
+
     /**
      * Call functor holded by valueGetter.
      * @param params parameters for functor holded by valueGetter
@@ -221,9 +221,9 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
  * Type of properies.
  */
 enum PropertyType {
-    SINGLE_VALUE_PROPERTY = 0,	///<Single value property.
-    FIELD_PROPERTY = 1,			///<Property for field of values which can't be interpolate.
-    INTERPOLATED_FIELD_PROPERTY = 2	///<Property for field of values which can be interpolate.
+    SINGLE_VALUE_PROPERTY = 0,	        ///<Single value property
+    FIELD_PROPERTY = 1,			///<Property for field of values which can't be interpolated
+    INTERPOLATED_FIELD_PROPERTY = 2	///<Property for field of values which can be interpolated
 };	//TODO change this to empty classes(?)
 
 /**
@@ -290,13 +290,13 @@ struct ProviderImpl {};
  */
 template <typename PropertyTag>
 struct ProviderFor: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType> {
-    
+
     ///Delegate all constructors to parent class.
     template<typename ...Args>
     ProviderFor(Args&&... params)
     : ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType>(std::forward<Args>(params)...) {
     }
-    
+
 };
 
 /**
@@ -310,15 +310,15 @@ struct ReceiverFor: public Receiver< ProviderFor<PropertyTag> > {};
  */
 template <typename PropertyTag, typename ValueT>
 struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public Provider {
-    
+
     typedef ValueT ProvidedValueType;
-    
+
     ProvidedValueType value;
-    
+
     ProvidedValueType& operator()() { return value; }
-    
+
     const ProvidedValueType& operator()() const { return value; }
-    
+
 };
 
 /**
@@ -327,11 +327,11 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY>: public Provider
  */
 /*template <typename PropertyTag, typename ValueT>
 struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public ProviderBase {
-    
+
     //typedef std::shared_ptr<std::vector<ValueT> > ProvidedValueType;
-    
+
     ProvidedValueType& operator()() ...
-    
+
 };*/
 
 /**
@@ -340,19 +340,19 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public ProviderBase {
  */
 template <typename PropertyTag, typename ValueT>
 struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public Provider {
-    
+
     typedef std::shared_ptr< const std::vector<ValueT> > ProvidedValueType;
-    
+
     std::shared_ptr< const std::vector<ValueT> > value;
-    
+
     ///Hold functor which fill mesh.
     std::function<ProvidedValueType()> fillMesh;
-    
+
     template<typename ...Args>
     ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>(Args&&... params)
     : fillMesh(std::forward<Args>(params)...) {
     }
-    
+
     ProvidedValueType& operator()(Mesh&& mesh, InterpolationMethod&& method) {
         return fillMesh(mesh, method);
     }
@@ -365,29 +365,29 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public Provider {
  */
 /*template <typename ModuleType, typename ValueT>
 struct OnMeshInterpolatedProvider: public Provider {
-    
+
     typedef ValueT ValueType;
-    
+
     typedef std::shared_ptr< std::vector<ValueT> > ValueVecPtr;
-    
+
     typedef std::shared_ptr< const std::vector<ValueT> > ValueConstVecPtr;
-    
+
     typedef ValueConstVecPtr (ModuleType::*MethodPtr)(Mesh& mesh, InterpolationMethod method);
-    
+
     //TODO use std::function<ValueConstVecPtr(Mesh&, InterpolationMethod)> or maybe each provider should have pointer to module?
     ModuleType* module;
     MethodPtr module_value_get_method;
-    
+
     ValueVecPtr value;
-    
+
     OnMeshInterpolatedProvider(ModuleType* module, MethodPtr module_value_get_method)
     : module(module), module_value_get_method(module_value_get_method) {
     }
-    
+
     ValueConstVecPtr operator()(Mesh& mesh, InterpolationMethod method) {
         return module->*module_value_get_method(mesh, method);
     }
-    
+
 };*/
 
 }; //namespace plask
