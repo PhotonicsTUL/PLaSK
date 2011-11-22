@@ -26,6 +26,8 @@ namespace plask {
  * 
  * Subclasses should only have implemented operator()(...) which return provided value.
  * Receiver (for given provider type) can be easy implemented by inherit Receiver class template.
+ * 
+ * @see @ref providers
  */
 struct Provider {
     
@@ -89,6 +91,8 @@ struct Provider {
  * For most providers types, Receiver type can be defined as: <code>Receiver<ProviderClass>;</code>
  *
  * @tparam ProviderT type of provider
+ * 
+ * @see @ref providers
  */
 template <typename ProviderT>
 struct Receiver: public Provider::Listener {
@@ -183,7 +187,9 @@ protected:
 template<typename _Signature> struct DelegateProvider;
 
 /**
- * Template of class which is good base class for providers which delegate calls of operator() to external functor.
+ * Template of class which is good base class for providers which delegate calls of operator() to external functor (function or method).
+ * 
+ * @tparam _Res(_ArgTypes...) functor signature (result and arguments types)
  */
 template<typename _Res, typename... _ArgTypes>
 struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
@@ -206,7 +212,7 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
      * @return value returned by functor holded by valueGetter
      */
     _Res operator()(_ArgTypes&&... params) const {
-		return valueGetter(std::forward<_ArgTypes>(params)...);
+        return valueGetter(std::forward<_ArgTypes>(params)...);
     }
 
 };
@@ -230,10 +236,10 @@ enum PropertyType {
  */
 template <PropertyType _propertyType, typename _ValueType>
 struct Property {
-	///Type of property.
-	static const PropertyType propertyType = _propertyType;
-	///Type of provided value.
-	typedef _ValueType ValueType;
+    ///Type of property.
+    static const PropertyType propertyType = _propertyType;
+    ///Type of provided value.
+    typedef _ValueType ValueType;
 };
 
 /**
@@ -348,7 +354,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public Provider {
     }
     
     ProvidedValueType& operator()(Mesh&& mesh, InterpolationMethod&& method) {
-		return fillMesh(mesh, method);
+        return fillMesh(mesh, method);
     }
 
 };

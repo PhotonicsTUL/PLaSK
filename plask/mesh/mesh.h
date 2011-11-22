@@ -1,6 +1,21 @@
 #ifndef PLASK__MESH_H
 #define PLASK__MESH_H
 
+/** @page meshes Meshes
+ * @section meshes_about About
+ * Mesh represent (ordered) set of points in 3d space. All meshes in plask inherits from and implements plask::Mesh interface.
+ * 
+ * Typically, there are some data connected with points in mesh.
+ * In plask, all this data are not stored in mesh class, and so they must be store separately.
+ * Because points in mesh are ordered, and each one have unique index from <code>0</code> to <code>getSize()-1</code>
+ * you can sore data in any indexed structure, like array or std::vector (which is recommended),
+ * storing data for i-th point in mesh under i-th index.
+ * 
+ * @section meshes_interpolation Data interpolation
+ * 
+ * @section meshes_write How to implement new mesh and interpolation methods
+ */
+
 #include "../space.h"
 #include <memory>
 
@@ -11,9 +26,11 @@ namespace plask {
 /**
  * Base class for all meshes.
  * Mesh represent set of points in 3d space and:
- * - know number of points
- * - allow for iterate over this points
- * - can calculate interpolated value for given points (in 3d), source values, and interpolation method
+ * - know number of points,
+ * - allow for iterate over this points,
+ * - can calculate interpolated value for given points (in 3d), source values, and interpolation method.
+ * 
+ * @see @ref meshes
  */
 struct Mesh {
 
