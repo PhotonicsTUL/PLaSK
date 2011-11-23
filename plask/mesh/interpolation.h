@@ -9,6 +9,7 @@ namespace plask {
 
 /**
 Supported interpolation methods.
+@see @ref meshes_interpolation
 */
 enum InterpolationMethod {
     DEFAULT = 0,        ///<default interpolation depend from source
@@ -19,7 +20,7 @@ const char* InterpolationMethodNames[] = { "DEFAULT", "LINEAR" };
 
 /**
 Specialization of this class are used for interpolation and can depend from source mesh type, data type and method.
-@see @ref meshes_write
+@see @ref interpolation_write
 */
 template <typename SrcMeshT, typename DataT, InterpolationMethod method>
 struct InterpolationAlgorithm {
@@ -41,6 +42,7 @@ Interpolate values (@a src_vec) from one mesh (@a src_mesh) to another one (@a d
 @return vector with interpolated values
 @throw NotImplemented if given interpolation method is not implemented for used source mesh type
 @throw CriticalException if given interpolation method is not valid
+@see @ref interpolation_write
 */
 template <typename SrcMeshT, typename DataT>
 inline std::shared_ptr<const std::vector<DataT>>

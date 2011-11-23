@@ -16,7 +16,7 @@ TODO
 
 @section meshes_write How to implement new mesh?
 To implement new mesh you have to write class inherited from plask::Mesh. This required to:
-- implement plask::Mesh::getSize method,
+- implement @ref plask::Mesh::getSize getSize method,
 - implement iterator over mesh points.
 
 @section interpolation_write How to write new interpolation algorithm?
