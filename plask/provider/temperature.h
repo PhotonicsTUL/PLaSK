@@ -11,7 +11,7 @@ struct Temperature: ScalarFieldProperty {};
 typedef ProviderFor<Temperature> TemperatureProvider;
 
 /**
- * Recive temperature fields (temperature in points describe by given mesh).
+ * Receive temperature fields (temperature in points describe by given mesh).
  */
 typedef ReceiverFor<Temperature> TemperatureReceiver;
 

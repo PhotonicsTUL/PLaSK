@@ -6,7 +6,7 @@
 namespace plask {
 
 /**
- * Base class for all exceptions throwed by plask library.
+ * Base class for all exceptions thrown by plask library.
  */
 struct Exception: public std::runtime_error {
     Exception(const std::string& msg): std::runtime_error(msg) {}
@@ -20,7 +20,7 @@ struct CriticalException: public Exception {
 };
 
 /**
-This exce[tion is throw when some method is not implemented.
+This exception is thrown when some method is not implemented.
 */
 struct NotImplemented: public Exception {
     //std::string methodName;
@@ -30,7 +30,7 @@ struct NotImplemented: public Exception {
 };
 
 /**
- * This excpetion is throw when material (typically with given name) is not found.
+ * This exception is thrown when material (typically with given name) is not found.
  */
 struct NoSuchMaterial: public Exception {
     //std::string materialName;
@@ -39,6 +39,11 @@ struct NoSuchMaterial: public Exception {
     : Exception("No such material " + material_name)/*, materialName(material_name)*/ {}
 };
 
+/**
+ * This exception is thrown, typically on access to @ref plask::Receiver "receiver" data,
+ * when there is no @ref plask::Provider "provider" connected with it.
+ * @see @ref providers
+ */
 struct NoProvider: public Exception {
     NoProvider(): Exception("No provider.") {}
 };

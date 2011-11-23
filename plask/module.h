@@ -40,7 +40,7 @@ struct Module {
     virtual std::string getDescription() const { return ""; }
     
     /**
-     * Make calculations. Place for calculation code in inharited classes.
+     * Make calculations. Place for calculation code in inherited classes.
      * 
      * Can throw exception in case of errors.
      * 

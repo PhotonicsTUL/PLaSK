@@ -14,10 +14,12 @@ storing data for i-th point in mesh under i-th index.
 @section meshes_interpolation Data interpolation
 TODO
 
-@section meshes_write How to implement new mesh and/or interpolation method
+@section meshes_write How to implement new mesh?
 To implement new mesh you have to write class inherited from plask::Mesh. This required to:
 - implement plask::Mesh::getSize method,
 - implement iterator over mesh points.
+
+@section interpolation_write How to write new interpolation algorithm?
 
 To implement interpolation method (typically for case where your mesh is source mesh)
 you have to write specialization or partial specialization of plask::InterpolationAlgorithm template
@@ -34,7 +36,7 @@ struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::LINEAR> {
     }
 };
 @endcode
-Nota that above code is template and must be placed in header file.
+Note that above code is template and must be placed in header file.
 
 Next example, show how to implement algorithm which depends also from data type. To implement interpolation version for double you should write:
 @code

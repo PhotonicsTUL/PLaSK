@@ -48,14 +48,14 @@ struct Provider {
     ///Set of added (registered) listeners. This provider can call methods of listeners included in this set.
     std::set<Listener*> listeners;
 
-    ///Call onDisconnect for all liteners in listeners set.
+    ///Call onDisconnect for all lighteners in listeners set.
     ~Provider() {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
             (*i)->onDisconnect(this);
     }
 
     /**
-     * Add litener to listeners set.
+     * Add listener to listeners set.
      * @param listener listener to add (register)
      */
     void add(Listener* listener) {
@@ -63,7 +63,7 @@ struct Provider {
     }
 
     /**
-     * Remove (unregister) listner from listeners set.
+     * Remove (unregister) listener from listeners set.
      * @param listener listener to remove (unregister)
      */
     void remove(Listener* listener) {
@@ -89,6 +89,7 @@ struct Provider {
  * Delegate all operator() calling to provider.
  *
  * For most providers types, Receiver type can be defined as: <code>Receiver<ProviderClass>;</code>
+ * (where <code>ProviderClass</code> is type of provider class)
  *
  * @tparam ProviderT type of provider
  * 
@@ -187,8 +188,8 @@ protected:
 template<typename _Signature> struct DelegateProvider;
 
 /**
- * Template of class which is good base class for providers which delegate calls of operator() to external functor (function or method).
- * 
+ * Template of class which is good base class for providers which delegate calls of operator() to external functor
+ * (function or method).
  * @tparam _Res(_ArgTypes...) functor signature (result and arguments types)
  */
 template<typename _Res, typename... _ArgTypes>
@@ -218,7 +219,8 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
 };
 
 /**
- * Type of properies.
+ * Type of properties.
+ * @see @ref providers
  */
 enum PropertyType {
     SINGLE_VALUE_PROPERTY = 0,	        ///<Single value property
