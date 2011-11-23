@@ -13,21 +13,24 @@ storing data for i-th point in mesh under i-th index.
 
 @section meshes_interpolation Data interpolation
 Plask provides mechanism to calculate (interpolate) field of some physical properties in requested points
-if values of this field in differents points are known.
+if values of this field in different points are known.
 Both sets of points are describe by meshes and connected with this meshes vectors of values.
 
 Let denote:
-- @a src_mesh - set of points in which fields values are known
-- @a src_vec - vector of known fields values in points described by @a sec_mesh
-- @a dst_mesh - requested set of points, in which fields values should be calculate (interpolate)
-- @a dst_vec - vector of fields values in points described by @a dst_mesh, to calculate
+- @a src_mesh - set of points in which the field values are known
+- @a src_vec - vector of known field values, in points described by @a sec_mesh
+- @a dst_mesh - requested set of points, in which field values should be calculate (interpolate)
+- @a dst_vec - vector of field values in points described by @a dst_mesh, to calculate
 
 plask::interpolate method calculate and return @a dst_vec for given
 @a src_mesh, @a src_vec, @a dst_mesh and interpolation method.
 
 plask::interpolate can return new created vector or @a src_vec (if @a src_mesh and @a dst_mesh are the same mesh).
 For this reason @a src_vec is passed and @a dst_vec is return in std::shared_ptr - smart pointer
-which is responsiblity for deltete data in proper time.
+which is responsibility for delete data in proper time.
+
+Note that exact @a src_mesh type must be known at compile time, in source place where plask::interpolate is call
+(interpolation algorithm depends from this type).
 
 @section meshes_write How to implement new mesh?
 To implement new mesh you have to write class inherited from plask::Mesh. This required to:
@@ -89,10 +92,13 @@ struct Mesh {
     virtual std::size_t getSize() const;
     
     /**
-     * Interpolate values (@a src_vec) from one mesh (@a src_mesh) to this one using given interpolation method.
-     * @param src_mesh, src_vec source
+     * Calculate (interpolate) field of some physical properties in points describe by this mesh
+     * if values of this field in different points (@a src_mesh) are known.
+     * @param src_mesh, set of points in which the field values are known
+     * @param src_vec vector of known field values in points described by @a sec_mesh
      * @param method interpolation method to use
-     * @return vector with interpolated values
+     * @return vector of the field values in points described by this mesh,
+     *         can be equal to @a src_vec if @a src_mesh and this mesh are the same mesh
      * @throw NotImplemented if given interpolation method is not implemented for used source mesh type
      * @throw CriticalException if given interpolation method is not valid
      */

@@ -36,12 +36,12 @@ struct InterpolationAlgorithm {
 
 /**
 Calculate (interpolate) field of some physical properties in requested points (@a dst_mesh)
-if values of this field in differents points (@a src_mesh) are known.
+if values of this field in different points (@a src_mesh) are known.
 @param src_mesh, set of points in which fields values are known
-@param src_vec vector of known values in points described by @a sec_mesh
-@param dst_mesh requested set of points, in which fields values should be calculate (interpolate)
+@param src_vec vector of known field values in points described by @a sec_mesh
+@param dst_mesh requested set of points, in which the field values should be calculate (interpolate)
 @param method interpolation method to use
-@return vector of field values in points described by @a dst_mesh, can be equal to @a src_vec if @a src_mesh and @a dst_mesh are the same mesh
+@return vector of the field values in points described by @a dst_mesh, can be equal to @a src_vec if @a src_mesh and @a dst_mesh are the same mesh
 @throw NotImplemented if given interpolation method is not implemented for used source mesh type
 @throw CriticalException if given interpolation method is not valid
 @see @ref meshes_interpolation
