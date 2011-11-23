@@ -35,14 +35,16 @@ struct InterpolationAlgorithm {
 };
 
 /**
-Interpolate values (@a src_vec) from one mesh (@a src_mesh) to another one (@a dst_mesh) using given interpolation method.
-@param src_mesh, src_vec source
-@param dst_mesh destination mesh
+Calculate (interpolate) field of some physical properties in requested points (@a dst_mesh)
+if values of this field in differents points (@a src_mesh) are known.
+@param src_mesh, set of points in which fields values are known
+@param src_vec vector of known values in points described by @a sec_mesh
+@param dst_mesh requested set of points, in which fields values should be calculate (interpolate)
 @param method interpolation method to use
-@return vector with interpolated values
+@return vector of field values in points described by @a dst_mesh, can be equal to @a src_vec if @a src_mesh and @a dst_mesh are the same mesh
 @throw NotImplemented if given interpolation method is not implemented for used source mesh type
 @throw CriticalException if given interpolation method is not valid
-@see @ref interpolation_write
+@see @ref meshes_interpolation
 */
 template <typename SrcMeshT, typename DataT>
 inline std::shared_ptr<const std::vector<DataT>>

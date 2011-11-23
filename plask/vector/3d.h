@@ -34,7 +34,7 @@ struct Vector3d {
      * Construct vector with given coordinates.
      * @param x, y, z coordinates
      */
-    Vector2d(const T x, const T y, const T z): x(x), y(y), z(z) {}
+    Vector3d(const T x, const T y, const T z): x(x), y(y), z(z) {}
     
     /**
      * Compare to vectors, this and @a p.
@@ -124,7 +124,7 @@ struct Vector3d {
      * @param scale scalar
      * @return this vector divided by scalar
      */
-    Vector3d<T> operator/(const T& scale) const { return Vector3d<T>(x / scale, y / scale, z / scale); }
+    Vector3d<T> operator/(const T scale) const { return Vector3d<T>(x / scale, y / scale, z / scale); }
     
     /**
      * Divide coordinates of this vector by scalar @a scale.
@@ -140,5 +140,6 @@ struct Vector3d {
     
 };
 
+}       //namespace plask
 
 #endif

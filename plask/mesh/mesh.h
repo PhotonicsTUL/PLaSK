@@ -12,7 +12,22 @@ you can sore data in any indexed structure, like array or std::vector (which is 
 storing data for i-th point in mesh under i-th index.
 
 @section meshes_interpolation Data interpolation
-TODO
+Plask provides mechanism to calculate (interpolate) field of some physical properties in requested points
+if values of this field in differents points are known.
+Both sets of points are describe by meshes and connected with this meshes vectors of values.
+
+Let denote:
+- @a src_mesh - set of points in which fields values are known
+- @a src_vec - vector of known fields values in points described by @a sec_mesh
+- @a dst_mesh - requested set of points, in which fields values should be calculate (interpolate)
+- @a dst_vec - vector of fields values in points described by @a dst_mesh, to calculate
+
+plask::interpolate method calculate and return @a dst_vec for given
+@a src_mesh, @a src_vec, @a dst_mesh and interpolation method.
+
+plask::interpolate can return new created vector or @a src_vec (if @a src_mesh and @a dst_mesh are the same mesh).
+For this reason @a src_vec is passed and @a dst_vec is return in std::shared_ptr - smart pointer
+which is responsiblity for deltete data in proper time.
 
 @section meshes_write How to implement new mesh?
 To implement new mesh you have to write class inherited from plask::Mesh. This required to:

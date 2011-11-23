@@ -1,5 +1,5 @@
-#ifndef PLASK__VECTOR3D_H
-#define PLASK__VECTOR3D_H
+#ifndef PLASK__VECTOR2D_H
+#define PLASK__VECTOR2D_H
 
 #include <cmath>
 
@@ -121,7 +121,7 @@ struct Vector2d {
      * @param scale scalar
      * @return this vector divided by scalar
      */
-    Vector2d<T> operator/(const T& scale) const { return Vector2d<T>(x / scale, y / scale); }
+    Vector2d<T> operator/(const T scale) const { return Vector2d<T>(x / scale, y / scale); }
     
     /**
      * Divide coordinates of this vector by scalar @a scale.
