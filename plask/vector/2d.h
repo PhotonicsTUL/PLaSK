@@ -106,8 +106,8 @@ struct Vector2d {
     Vector2d<T> operator*(const T scale) const { return Vector2d<T>(x * scale, y * scale); }
     
     /**
-     * Multiple coordinates of this vector by scalar @a scale.
-     * @param scale scalar
+     * Multiple coordinates of this vector by @a scalar.
+     * @param scalar scalar
      * @return *this (after scale)
      */
     Vector2d<T>& operator*=(const T scalar) {
@@ -124,8 +124,8 @@ struct Vector2d {
     Vector2d<T> operator/(const T scale) const { return Vector2d<T>(x / scale, y / scale); }
     
     /**
-     * Divide coordinates of this vector by scalar @a scale.
-     * @param scale scalar
+     * Divide coordinates of this vector by @a scalar.
+     * @param scalar scalar
      * @return *this (after divide)
      */
     Vector2d<T>& operator/=(const T scalar) {

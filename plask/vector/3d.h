@@ -108,8 +108,8 @@ struct Vector3d {
     Vector3d<T> operator*(const T scale) const { return Vector3d<T>(x * scale, y * scale, z * scale); }
     
     /**
-     * Multiple coordinates of this vector by scalar @a scale.
-     * @param scale scalar
+     * Multiple coordinates of this vector by @a scalar.
+     * @param scalar scalar
      * @return *this (after scale)
      */
     Vector3d<T>& operator*=(const T scalar) {
@@ -120,15 +120,15 @@ struct Vector3d {
     }
     
     /**
-     * Calculate this vector divided by scalar @a scale.
-     * @param scale scalar
-     * @return this vector divided by scalar
+     * Calculate this vector divided by @a scalar.
+     * @param scalar scalar
+     * @return this vector divided by @a scalar
      */
-    Vector3d<T> operator/(const T scale) const { return Vector3d<T>(x / scale, y / scale, z / scale); }
+    Vector3d<T> operator/(const T scalar) const { return Vector3d<T>(x / scalar, y / scalar, z / scalar); }
     
     /**
-     * Divide coordinates of this vector by scalar @a scale.
-     * @param scale scalar
+     * Divide coordinates of this vector by @a scalar.
+     * @param scalar scalar
      * @return *this (after divide)
      */
     Vector3d<T>& operator/=(const T scalar) {

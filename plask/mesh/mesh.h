@@ -12,7 +12,7 @@ you can sore data in any indexed structure, like array or std::vector (which is 
 storing data for i-th point in mesh under i-th index.
 
 @section meshes_interpolation Data interpolation
-Plask provides mechanism to calculate (interpolate) field of some physical properties in requested points
+Plask provides mechanism to calculate (interpolate) a field of some physical properties in requested points
 if values of this field in different points are known.
 Both sets of points are describe by meshes and connected with this meshes vectors of values.
 
@@ -28,6 +28,8 @@ plask::interpolate method calculate and return @a dst_vec for given
 plask::interpolate can return new created vector or @a src_vec (if @a src_mesh and @a dst_mesh are the same mesh).
 For this reason @a src_vec is passed and @a dst_vec is return in std::shared_ptr - smart pointer
 which is responsibility for delete data in proper time.
+
+Typically, plask::interpolate is call inside providers of field of scalars (see @ref providers).
 
 Note that exact @a src_mesh type must be known at compile time, in source place where plask::interpolate is call
 (interpolation algorithm depends from this type).
@@ -73,6 +75,7 @@ In such case, for linear interpolation from MyMeshType mesh, compiler use second
 #include "../space.h"
 #include <memory>
 
+#include "../utils/iterators.h"
 #include "interpolation.h"
 
 namespace plask {
@@ -80,8 +83,8 @@ namespace plask {
 /**
  * Base class for all meshes.
  * Mesh represent set of points in 3d space and:
- * - know number of points,
- * - allow for iterate over this points,
+ * - knows number of points,
+ * - allows for iterate over this points,
  * - can calculate interpolated value for given points (in 3d), source values, and interpolation method.
  * 
  * @see @ref meshes
@@ -92,9 +95,9 @@ struct Mesh {
     virtual std::size_t getSize() const;
     
     /**
-     * Calculate (interpolate) field of some physical properties in points describe by this mesh
+     * Calculate (interpolate) a field of some physical properties in points describe by this mesh
      * if values of this field in different points (@a src_mesh) are known.
-     * @param src_mesh, set of points in which the field values are known
+     * @param src_mesh set of points in which the field values are known
      * @param src_vec vector of known field values in points described by @a sec_mesh
      * @param method interpolation method to use
      * @return vector of the field values in points described by this mesh,
@@ -108,6 +111,18 @@ struct Mesh {
     throw (NotImplemented, CriticalException) {
         return interpolate(src_mesh, src_vec, *this, method);
     }
+    
+    ///Base class for mesh iterator implementation.
+    typedef PolymorphicForwardIteratorImpl< const Vector3d<double> > IteratorImpl;
+    
+    ///Mesh iterator type.
+    typedef PolymorphicForwardIterator< const Vector3d<double> > Iterator;
+    
+    ///@return iterator at first point
+    virtual Iterator begin() = 0;
+    
+    ///@return iterate just after last point
+    virtual Iterator end() = 0;
 
 };
 
