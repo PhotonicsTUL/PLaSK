@@ -2,6 +2,7 @@
 #define PLASK__INTERPOLATION_H
 
 #include <typeinfo>  //for 'typeid'
+#include "plask/exceptions.h"
 
 struct Mesh;
 

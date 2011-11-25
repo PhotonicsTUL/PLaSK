@@ -26,7 +26,7 @@ namespace plask {
  *
  * Subclasses should only have implemented operator()(...) which return provided value.
  * Receiver (for given provider type) can be easy implemented by inherit Receiver class template.
- * 
+ *
  * @see @ref providers
  */
 struct Provider {
@@ -92,7 +92,7 @@ struct Provider {
  * (where <code>ProviderClass</code> is type of provider class)
  *
  * @tparam ProviderT type of provider
- * 
+ *
  * @see @ref providers
  */
 template <typename ProviderT>
@@ -195,7 +195,7 @@ template<typename _Signature> struct DelegateProvider;
 template<typename _Res, typename... _ArgTypes>
 struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
 
-    ///Hold external functor.
+    /// Hold external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
 
     /**

@@ -11,35 +11,16 @@ add_definitions(-std=c++0x)     # C++0x (C++11) standard
 include_directories(.)          # external modules can include plask using <plask/....h>
 include_directories(extlibs)    # place for local external libraries
 
-# compress and strip executable (target)
-MACRO(compress targetname)
-    if (PACK_EXE)
-        get_property(apppath TARGET ${targetname} PROPERTY LOCATION)
-        if (CMAKE_STRIP)
-            add_custom_command(TARGET ${targetname} POST_BUILD COMMAND ${CMAKE_STRIP}
-                                ARGS ${apppath})
-        endif(CMAKE_STRIP)
-        if (SELF_PACKER_FOR_EXECUTABLE)
-            add_custom_command(TARGET ${targetname} POST_BUILD COMMAND ${SELF_PACKER_FOR_EXECUTABLE}
-                                ARGS ${SELF_PACKER_FOR_EXECUTABLE_FLAGS} "-q" ${apppath})    #TODO remove "-q" when SelfPackers will be fixed
-        endif(SELF_PACKER_FOR_EXECUTABLE)
-    endif(PACK_EXE)
-ENDMACRO(compress targetname)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 
-option(PACK_EXE "self-pack and strip executables" OFF)  #compress exe
-if (PACK_EXE)
-    find_package(SelfPackers)
-    find_program(CMAKE_STRIP NAMES strip)
-endif(PACK_EXE)
 
-# ---------- user options --------------------------------------------
+
 option (BUILD_SHARED_LIBS "build also shared library" ON)
 option (BUILD_PYTHON_MODULE "build and install Python module plask" ON)
 option (MAKE_TESTS "build and run unit tests" ON)
+option(PACK_EXE "self-pack and strip executables" OFF)  #compress exe
 
 
 # ---------- Boost components --------------------------------------------
@@ -93,6 +74,26 @@ if (BUILD_PYTHON_MODULE)
 
 
 endif(BUILD_PYTHON_MODULE)
+
+# ---------- compress and strip executable (target) --------------------------------------------
+MACRO(compress targetname)
+    if (PACK_EXE)
+        get_property(apppath TARGET ${targetname} PROPERTY LOCATION)
+        if (CMAKE_STRIP)
+            add_custom_command(TARGET ${targetname} POST_BUILD COMMAND ${CMAKE_STRIP}
+                                ARGS ${apppath})
+        endif(CMAKE_STRIP)
+        if (SELF_PACKER_FOR_EXECUTABLE)
+            add_custom_command(TARGET ${targetname} POST_BUILD COMMAND ${SELF_PACKER_FOR_EXECUTABLE}
+                                ARGS ${SELF_PACKER_FOR_EXECUTABLE_FLAGS} "-q" ${apppath})    #TODO remove "-q" when SelfPackers will be fixed
+        endif(SELF_PACKER_FOR_EXECUTABLE)
+    endif(PACK_EXE)
+ENDMACRO(compress targetname)
+
+if (PACK_EXE)
+    find_package(SelfPackers)
+    find_program(CMAKE_STRIP NAMES strip)
+endif(PACK_EXE)
 
 # ----------===== unit tests =====--------------------------------------------
 if (MAKE_TESTS)
