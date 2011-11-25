@@ -3,6 +3,8 @@
 
 //general iterators utils
 
+#include <boost/iterator/iterator_facade.hpp>
+
 namespace plask {
 
 /**
@@ -46,53 +48,55 @@ struct PolymorphicForwardIteratorImpl {
 /**
 Polymorphic, forward iterator over value with type T.
     
-Hold and delgate all calls to PolymorficForwardIteratorImpl<T>.
+Hold and delgate all calls to implementation object which is a PolymorficForwardIteratorImpl<T> type.
 
 @tparam T type to iterate over (type returned by dereference operation)
 */
 template <typename T>
-struct PolymorphicForwardIterator {
+struct PolymorphicForwardIterator: public boost::iterator_facade< PolymorphicForwardIterator<T>, T, boost::forward_traversal_tag > {
         
     PolymorphicForwardIteratorImpl<T>* impl;
         
     public:
-        
-    PolymorphicForwardIterator(PolymorphicForwardIteratorImpl<T>* impl): impl(impl) {}
     
-    ///Delete wrapped iterator.
+    /**
+     * Construct iterator which hold given implementation object.
+     * @param impl Implementation object. It will be delete by constructor of this.
+     *             If it is @c nullptr you should not call any methods of this before assign 
+     */
+    PolymorphicForwardIterator(PolymorphicForwardIteratorImpl<T>* impl = nullptr): impl(impl) {}
+    
+    ///Delete wrapped iterator object.
     ~PolymorphicForwardIterator() { delete impl; }
         
-    //Copy constructor
+    /**
+     * Copy constructor. Clone implementation object.
+     * @param src Iterator from which implementation object should be clone. It mustn't hold @c nullptr.
+     */
     PolymorphicForwardIterator(const PolymorphicForwardIterator& src) { impl = src.impl->clone(); }
         
-    //Move constructor
+    /**
+     * Move constructor.
+     * Move ownership of wrapped implementation object from @a src to this.
+     * @param src iterator from which implementation object should be moved
+     */
     PolymorphicForwardIterator(PolymorphicForwardIterator &&src): impl(src.impl) { src.impl = 0; }
-        
-    T operator*() const { return impl->dereference(); }
     
-    bool operator==(const PolymorphicForwardIterator& other) const {
+    private: //--- implement methods used by boost::iterator_facade: ---
+    friend class boost::iterator_core_access;
+    template <class> friend class PolymorphicForwardIterator;
+
+    bool equal(const PolymorphicForwardIterator<T>& other) const {
         return impl->equal(other.impl);
     }
-    
-    bool operator!=(const PolymorphicForwardIterator& other) const {
-        return !impl->equal(other.impl);
-    }
-    
-    //pre-increment
-    PolymorphicForwardIterator<T>& operator++() {
+
+    void increment() {
         impl->increment();
-        return *this;
     }
-    
-    //post-increment
-    PolymorphicForwardIterator<T>& operator++(int) {
-        PolymorphicForwardIterator<T> result(*this);
-        impl->increment();
-        return result;
-    }
-    
-    //TODO use advance
-    
+
+    T dereference() const { return impl->dereference(); }
+
+    //TODO use advance?
 };
 
 

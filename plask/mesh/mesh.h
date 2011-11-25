@@ -113,16 +113,78 @@ struct Mesh {
     }
     
     ///Base class for mesh iterator implementation.
-    typedef PolymorphicForwardIteratorImpl< const Vector3d<double> > IteratorImpl;
+    typedef PolymorphicForwardIteratorImpl< Vector3d<double> > IteratorImpl;
     
     ///Mesh iterator type.
-    typedef PolymorphicForwardIterator< const Vector3d<double> > Iterator;
+    typedef PolymorphicForwardIterator< Vector3d<double> > Iterator;
+    
+    //To be more compatibile with STL:
+    typedef Iterator iterator;
+    typedef Iterator const_iterator;
     
     ///@return iterator at first point
     virtual Iterator begin() = 0;
     
     ///@return iterate just after last point
     virtual Iterator end() = 0;
+
+};
+
+//some functions useful for SimpleMeshAdapter specialization:
+inline Vector3d<double> useAsX(double x) { return Vector3d<double>(x, 0.0, 0.0); }
+inline Vector3d<double> useAsY(double y) { return Vector3d<double>(0.0, y, 0.0); }
+inline Vector3d<double> useAsZ(double z) { return Vector3d<double>(0.0, 0.0, z); }
+inline Vector3d<double> useAsXY(Vector2d<double> v) { return Vector3d<double>(v.x, v.y, 0.0); }
+inline Vector3d<double> useAsXZ(Vector2d<double> v) { return Vector3d<double>(v.x, 0.0, v.y); }
+inline Vector3d<double> useAsYZ(Vector2d<double> v) { return Vector3d<double>(0.0, v.x, v.y); }
+
+/**
+Template which specialization is class inharited from Mesh (is Mesh implementation).
+@tparam InternalMeshType Mesh type. Can be in diferent space.
+It must:
+    - InternalMeshType::PointType must be a typename of points used by InternalMeshType
+    - allow for iterate (has begin and end methods) over InternalMeshType::PointType, and has defined InternalMeshType::const_iterator for constant iterator type
+    - has getSize method
+@tparam toPoint3d function which are use to convert points from InternalMeshType space to Vector3d<double> (used by plask::Mesh)
+*/
+template <typename InternalMeshType, Vector3d<double> (*toPoint3d)(typename InternalMeshType::PointType)>
+struct SimpleMeshAdapter: public Mesh {
+
+    ///Holded, internal, typically optimized mesh.
+    InternalMeshType internal;
+    
+    /**
+     * Implementation of Mesh::IteratorImpl.
+     * Hold iterator of wrapped type (InternalMeshType::const_iterator) and delegate all calls to it.
+     */
+    struct IteratorImpl: public Mesh::IteratorImpl {
+    
+        typename InternalMeshType::const_iterator internal_iterator;
+        
+        IteratorImpl(typename InternalMeshType::const_iterator&& internal_iterator)
+        : internal_iterator(std::forward(internal_iterator)) {}
+    
+        virtual Vector3d<double> dereference() const {
+            return toPoint3d(*internal_iterator);
+        }
+        
+        virtual void increment() {
+            ++internal_iterator;
+        }
+        
+        virtual bool equal(const Mesh::IteratorImpl& other) const {
+            return internal_iterator == static_cast<IteratorImpl&>(other).internal_iterator;
+        }
+        
+    };
+    
+    virtual std::size_t getSize() const {
+        return internal.getSize();
+    }
+    
+    virtual Mesh::Iterator begin() { return Mesh::Iterator(internal.begin()); }
+    
+    virtual Mesh::Iterator end() { return Mesh::Iterator(internal.end()); }
 
 };
 
