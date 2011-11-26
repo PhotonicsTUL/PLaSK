@@ -25,18 +25,13 @@ struct PolymorphicForwardIteratorImpl {
      */
     virtual bool equal(const PolymorphicForwardIteratorImpl& other) const = 0;
     
-    /**
+    /*
      * Move iterator @a distanse steps forward. By default call increment @a distanse times.
      * @param distanse how many steps
      */
-    virtual void advance(std::size_t distanse) {
+    /*virtual void advance(std::size_t distanse) {
         while (distanse) { increment(); --distanse; }
-    }
-    
-    //a.
-        
-    //@return @c true only if there are more points to iterate over
-    //virtual void hasNext() const = 0;
+    }*/
         
     ///@return clone of @c *this
     virtual PolymorphicForwardIteratorImpl<T>* clone() const = 0;
@@ -52,6 +47,7 @@ Hold and delgate all calls to implementation object which is a PolymorficForward
 
 @tparam T type to iterate over (type returned by dereference operation)
 */
+//TODO operator* return reference
 template <typename T>
 struct PolymorphicForwardIterator: public boost::iterator_facade< PolymorphicForwardIterator<T>, T, boost::forward_traversal_tag > {
         
@@ -99,6 +95,13 @@ struct PolymorphicForwardIterator: public boost::iterator_facade< PolymorphicFor
     //TODO use advance?
 };
 
+/*
+ * Template to create iterators for containers which have operator[].
+ */
+/*template <typename ContainerType, typename value_type = ContainerType::value_type>
+struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType>, value_type, boost::random_access_traversal_tag > {
+
+};*/
 
 }       //namespace plask
     

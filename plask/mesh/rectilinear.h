@@ -10,43 +10,50 @@ namespace plask {
 
 class RectilinearMesh1d {
 
-	std::vector<double> nodes;
+	std::vector<double> points;
 
 public:
     
     typedef double PointType;
     
     typedef std::vector<double>::const_iterator const_iterator;
-	const_iterator begin() const { return nodes.begin(); }
-    const_iterator end() const { return nodes.end(); }
+	const_iterator begin() const { return points.begin(); }
+    const_iterator end() const { return points.end(); }
     
     //should we allow for non-const iterators?
     /*typedef std::vector<double>::iterator iterator;
-    iterator begin() { return nodes.begin(); }
-    iterator end() { return nodes.end(); }*/
+    iterator begin() { return points.begin(); }
+    iterator end() { return points.end(); }*/
     
 
     
     RectilinearMesh1d() {}
     
-    std::size_t getSize() const { return nodes.size(); }
+    std::size_t getSize() const { return points.size(); }
     
     /**
-     * Add node to this mesh.
-     * @param new_node_cord coordinate of node to add
+     * Add (1d) point to this mesh.
+     * @param new_node_cord coordinate of point to add
      */
-    void addNode(double new_node_cord);
+    void addPoint(double new_node_cord);
+    
+    /**
+     * Get point by index.
+     * @param index index of point, from 0 to getSize()-1
+     * @return point with given index
+     */
+    double operator[](std::size_t index) const { return points[index]; }
     
 };
 
 class RectilinearMesh2d {
 	
+	public:
+	
 	RectilinearMesh1d x;
 	RectilinearMesh1d y;
 	
-	public:
-	
-	class Iterator: public boost::iterator_facade< Iterator, Vector2d<double>, boost::random_access_traversal_tag > {
+	/*class Iterator: public boost::iterator_facade< Iterator, Vector2d<double>, boost::random_access_traversal_tag > {
 	
 		const RectilinearMesh1d* x_nodes;
 		RectilinearMesh1d::const_iterator x;	//TODO może 1 indeks... wszystkie operacje prościutkie poza dereferencją wymagającą dzielenia
@@ -58,7 +65,7 @@ class RectilinearMesh2d {
 		Iterator() {}
 		
 		Iterator(const RectilinearMesh1d* x_nodes, RectilinearMesh1d::const_iterator x, RectilinearMesh1d::const_iterator y)
-		: x_nodes(x_nodes), x(x), y(y) {}
+		: x_̣̣̣̣(x_nodes), x(x), y(y) {}
 		
 		bool equal(const Iterator& other) const {
 			return x == other.x && y == other.y;
@@ -80,9 +87,28 @@ class RectilinearMesh2d {
 			--x;
 		}
 		
-	};
+	};*/
 	
 	std::size_t getSize() const { return x.getSize() * y.getSize(); }
+	
+	/**
+     * Add (2d) point to this mesh.
+     * @param to_add point to add
+     */
+    void addPoint(const Vector2d<double>& to_add) {
+        x.addPoint(to_add.x);
+        y.addPoint(to_add.y);
+    }
+	
+	/**
+	 * Get point by index.
+     * @param index index of point, from 0 to getSize()-1
+     * @return point with given index
+     */
+    Vector2d<double> operator[](std::size_t index) const {
+        const std::size_t x_size = x.getSize();
+        return Vector2d<double>(x[index % x_size], y[index / x_size]);
+    }
 };
 
 }	//namespace plask
