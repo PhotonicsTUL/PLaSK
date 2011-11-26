@@ -95,13 +95,14 @@ struct PolymorphicForwardIterator: public boost::iterator_facade< PolymorphicFor
     //TODO use advance?
 };
 
-/*
+/**
  * Template to create iterators for containers which have operator[].
  */
-/*template <typename ContainerType, typename value_type = ContainerType::value_type>
-struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType>, value_type, boost::random_access_traversal_tag > {
+//TODO value_type = reference_type?
+template <typename ContainerType, typename T = decltype((*((ContainerType*)0))[0])>
+struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType, T>, T, boost::random_access_traversal_tag > {
 
-};*/
+};
 
 }       //namespace plask
     
