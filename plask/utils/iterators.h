@@ -10,8 +10,10 @@ namespace plask {
 
 /**
 Base class for forward, polymorphic iterators implementations.
-@tparam ValueT type to iterate over (type returned by dereference operation)
-@tparam ReferenceT type returned by dereference operation
+@tparam ValueT Type to iterate over.
+@tparam ReferenceT Type returned by dereference operation.
+Note that default type is not good if dereference return temporary object.
+In such case <code>const ValueT</code> can be a better choice.
 */
 template <typename ValueT, typename ReferenceT = ValueT&>
 struct PolymorphicForwardIteratorImpl {
@@ -60,7 +62,6 @@ Hold and delgate all calls to implementation object which is a specialization of
 
 @tparam ImplT specialization of PolymorphicForwardIteratorImpl
 */
-//TODO operator* return reference
 template <typename ImplT>
 struct PolymorphicForwardIterator:
     public boost::iterator_facade<
