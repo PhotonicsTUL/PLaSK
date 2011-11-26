@@ -4,18 +4,28 @@
 //general iterators utils
 
 #include <boost/iterator/iterator_facade.hpp>
+#include <type_traits>
 
 namespace plask {
 
 /**
 Base class for forward, polymorphic iterators implementations.
-@tparam T type to iterate over (type returned by dereference operation)
+@tparam ValueT type to iterate over (type returned by dereference operation)
+@tparam ReferenceT type returned by dereference operation
 */
-template <typename T>
+template <typename ValueT, typename ReferenceT = ValueT&>
 struct PolymorphicForwardIteratorImpl {
     
+    //some typedefs compatibile with stl:
+    
+    ///Type of elements pointed by the iterator.
+    typedef ValueT value_type;
+    
+    ///Type to represent a reference to an element pointed by the iterator.
+    typedef ReferenceT reference;
+    
     ///@return current value
-    virtual T dereference() const = 0;
+    virtual ReferenceT dereference() const = 0;
         
     ///Iterate to next value.
     virtual void increment() = 0;
@@ -33,25 +43,34 @@ struct PolymorphicForwardIteratorImpl {
         while (distanse) { increment(); --distanse; }
     }*/
         
-    ///@return clone of @c *this
-    virtual PolymorphicForwardIteratorImpl<T>* clone() const = 0;
+    /**
+     * Clone this iterator.
+     * @return clone of @c *this, reserved by @a new operator (clone caller must trust to delete it)
+     */
+    virtual PolymorphicForwardIteratorImpl<ValueT, ReferenceT>* clone() const = 0;
         
     //Do nothing.
     virtual ~PolymorphicForwardIteratorImpl() {}
 };
     
 /**
-Polymorphic, forward iterator over value with type T.
+Polymorphic, forward iterator.
     
-Hold and delgate all calls to implementation object which is a PolymorficForwardIteratorImpl<T> type.
+Hold and delgate all calls to implementation object which is a specialization of PolymorficForwardIteratorImpl template.
 
-@tparam T type to iterate over (type returned by dereference operation)
+@tparam ImplT specialization of PolymorphicForwardIteratorImpl
 */
 //TODO operator* return reference
-template <typename T>
-struct PolymorphicForwardIterator: public boost::iterator_facade< PolymorphicForwardIterator<T>, T, boost::forward_traversal_tag > {
+template <typename ImplT>
+struct PolymorphicForwardIterator:
+    public boost::iterator_facade<
+        PolymorphicForwardIterator<ImplT>,
+        typename ImplT::value_type,
+        boost::forward_traversal_tag,
+        typename ImplT::reference
+    > {
         
-    PolymorphicForwardIteratorImpl<T>* impl;
+    ImplT* impl;
         
     public:
     
@@ -60,7 +79,7 @@ struct PolymorphicForwardIterator: public boost::iterator_facade< PolymorphicFor
      * @param impl Implementation object. It will be delete by constructor of this.
      *             If it is @c nullptr you should not call any methods of this before assign 
      */
-    PolymorphicForwardIterator(PolymorphicForwardIteratorImpl<T>* impl = nullptr): impl(impl) {}
+    PolymorphicForwardIterator(ImplT* impl = nullptr): impl(impl) {}
     
     ///Delete wrapped iterator object.
     ~PolymorphicForwardIterator() { delete impl; }
@@ -78,11 +97,11 @@ struct PolymorphicForwardIterator: public boost::iterator_facade< PolymorphicFor
      */
     PolymorphicForwardIterator(PolymorphicForwardIterator &&src): impl(src.impl) { src.impl = 0; }
     
-    private: //--- implement methods used by boost::iterator_facade: ---
+    private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
     template <class> friend class PolymorphicForwardIterator;
 
-    bool equal(const PolymorphicForwardIterator<T>& other) const {
+    bool equal(const PolymorphicForwardIterator<ImplT>& other) const {
         return impl->equal(other.impl);
     }
 
@@ -90,17 +109,58 @@ struct PolymorphicForwardIterator: public boost::iterator_facade< PolymorphicFor
         impl->increment();
     }
 
-    T dereference() const { return impl->dereference(); }
+    typename ImplT::reference dereference() const { return impl->dereference(); }
 
     //TODO use advance?
 };
 
 /**
  * Template to create iterators for containers which have operator[].
+ * @tparam ContainerType type of container (can be const or non-const)
+ * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
+ * @tparam Reference iterator reference type, should be the same type which return container operator[]
  */
-//TODO value_type = reference_type?
-template <typename ContainerType, typename T = decltype((*((ContainerType*)0))[0])>
-struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType, T>, T, boost::random_access_traversal_tag > {
+template <
+    typename ContainerType,
+    typename Value = std::remove_reference<decltype((*((ContainerType*)0))[0])>,
+    typename Reference = decltype((*((ContainerType*)0))[0])>
+struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
+
+    ///Current iterator position (index).
+    std::size_t index;
+    
+    ///Pointer to container over which we iterate.
+    ContainerType* container;
+    
+    ///Construct uninitialized iterator. Don't use it before initialization.
+    IndexedIterator() {}
+    
+    /**
+     * Construct iterator which point to given in index in given container.
+     * @param container container to iterate over
+     * @param index index in @a container
+     */
+    IndexedIterator(ContainerType* container, std::size_t index): index(index), container(container) {}
+    
+    private: //--- methods used by boost::iterator_facade: ---
+    friend class boost::iterator_core_access;
+    template <class, class> friend class IndexedIterator;
+    
+    template <typename OtherT>
+    bool equal(const OtherT& other) const {
+        return index == other.index;
+    }
+    
+    void increment() { ++index; }
+    
+    void decrement() { --index; }
+    
+    void advance(std::ptrdiff_t to_add) { index += to_add; }
+    
+    template <typename OtherT>
+    std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
+    
+    Reference dereference() const { return (*container)[index]; }
 
 };
 

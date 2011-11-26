@@ -113,10 +113,10 @@ struct Mesh {
     }
     
     ///Base class for mesh iterator implementation.
-    typedef PolymorphicForwardIteratorImpl< Vector3d<double> > IteratorImpl;
+    typedef PolymorphicForwardIteratorImpl< Vector3d<double>, const Vector3d<double> > IteratorImpl;
     
     ///Mesh iterator type.
-    typedef PolymorphicForwardIterator< Vector3d<double> > Iterator;
+    typedef PolymorphicForwardIterator< IteratorImpl > Iterator;
     
     //To be more compatibile with STL:
     typedef Iterator iterator;
