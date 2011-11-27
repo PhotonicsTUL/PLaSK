@@ -2,22 +2,32 @@
 #define PLASK__RECTILINEAR_H
 
 #include <vector>
-#include <boost/iterator/iterator_facade.hpp>
 
 #include "../vector/2d.h"
+#include "../utils/iterators.h"
 
 namespace plask {
 
+/**
+ * Rectilinear mesh in 1d space.
+ */
 class RectilinearMesh1d {
 
+    ///Points coordinates in ascending order.
 	std::vector<double> points;
 
 public:
     
+    ///Type of points in this mesh.
     typedef double PointType;
     
+    ///Random access iterator type which alow iterate over all points in this mesh, in ascending order.
     typedef std::vector<double>::const_iterator const_iterator;
+    
+    ///@return iterator referring to the first point in this mesh
 	const_iterator begin() const { return points.begin(); }
+	
+	///@return iterator referring to the past-the-end point in this mesh
     const_iterator end() const { return points.end(); }
     
     //should we allow for non-const iterators?
@@ -25,14 +35,15 @@ public:
     iterator begin() { return points.begin(); }
     iterator end() { return points.end(); }*/
     
-
+    //Construct empty mesh.
+    //RectilinearMesh1d() {}
     
-    RectilinearMesh1d() {}
-    
+    ///@return number of points in mesh
     std::size_t getSize() const { return points.size(); }
     
     /**
      * Add (1d) point to this mesh.
+     * Point is add to mesh only if it is not already included in mesh.
      * @param new_node_cord coordinate of point to add
      */
     void addPoint(double new_node_cord);
@@ -40,55 +51,39 @@ public:
     /**
      * Get point by index.
      * @param index index of point, from 0 to getSize()-1
-     * @return point with given index
+     * @return point with given @a index
      */
-    double operator[](std::size_t index) const { return points[index]; }
+    const double& operator[](std::size_t index) const { return points[index]; }
     
 };
 
-class RectilinearMesh2d {
+/**
+ * Rectilinear mesh in 2d space.
+ */
+struct RectilinearMesh2d {
 	
-	public:
-	
+	///First coordinate of points in this mesh.
 	RectilinearMesh1d x;
+	
+	///Second coordinate of points in this mesh.
 	RectilinearMesh1d y;
 	
-	/*class Iterator: public boost::iterator_facade< Iterator, Vector2d<double>, boost::random_access_traversal_tag > {
+	///Type of points in this mesh.
+	typedef Vector2d<double> PointType;
 	
-		const RectilinearMesh1d* x_nodes;
-		RectilinearMesh1d::const_iterator x;	//TODO może 1 indeks... wszystkie operacje prościutkie poza dereferencją wymagającą dzielenia
-		RectilinearMesh1d::const_iterator y;
-		
-		public:
-		
-		//default constructor to satisfy the iterator requirements
-		Iterator() {}
-		
-		Iterator(const RectilinearMesh1d* x_nodes, RectilinearMesh1d::const_iterator x, RectilinearMesh1d::const_iterator y)
-		: x_̣̣̣̣(x_nodes), x(x), y(y) {}
-		
-		bool equal(const Iterator& other) const {
-			return x == other.x && y == other.y;
-		}
-
-		void increment() {
-			++x;
-			if (x == x_nodes->end()) {
-				x = x_nodes->begin();
-				++y;
-			}
-		}
-		
-		void decrement() {
-			if (x == x_nodes->begin()) {
-				--y;
-				x = x_nodes->end();
-			}
-			--x;
-		}
-		
-	};*/
+	/**
+	 * Random access iterator type which alow iterate over all points in this mesh, in order appointed by operator[].
+	 * This iterator type is indexed, which mean that it have (read-write) index field equal to 0 for begin() and growing up to getSize() for end().
+	 */
+	typedef IndexedIterator< const RectilinearMesh2d, PointType > const_iterator;
 	
+	///@return iterator referring to the first point in this mesh
+	const_iterator begin() const { return const_iterator(this, 0); }
+	
+	///@return iterator referring to the past-the-end point in this mesh
+	const_iterator end() const { return const_iterator(this, getSize()); }
+	
+	///@return number of points in mesh
 	std::size_t getSize() const { return x.getSize() * y.getSize(); }
 	
 	/**
@@ -102,8 +97,9 @@ class RectilinearMesh2d {
 	
 	/**
 	 * Get point by index.
+	 * Points are in order: (x[0], y[0]), (x[1], y[0]), ..., (x[x.getSize-1], y[0]), (x[0], y[1]), ..., (x[x.getSize()-1], y[y.getSize()-1])
      * @param index index of point, from 0 to getSize()-1
-     * @return point with given index
+     * @return point with given @a index
      */
     Vector2d<double> operator[](std::size_t index) const {
         const std::size_t x_size = x.getSize();

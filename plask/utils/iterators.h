@@ -118,20 +118,20 @@ struct PolymorphicForwardIterator:
 /**
  * Template to create iterators for containers which have operator[].
  * @tparam ContainerType type of container (can be const or non-const)
- * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
  * @tparam Reference iterator reference type, should be the same type which return container operator[]
+ * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
  */
 template <
     typename ContainerType,
-    typename Value = std::remove_reference<decltype((*((ContainerType*)0))[0])>,
-    typename Reference = decltype((*((ContainerType*)0))[0])>
+    typename Reference = decltype((((ContainerType*)0)->*(&ContainerType::operator[]))(0)),
+    typename Value = typename std::remove_reference<Reference>::type>
 struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
+
+    ///Pointer to container over which we iterate.
+    ContainerType* container;
 
     ///Current iterator position (index).
     std::size_t index;
-    
-    ///Pointer to container over which we iterate.
-    ContainerType* container;
     
     ///Construct uninitialized iterator. Don't use it before initialization.
     IndexedIterator() {}
@@ -141,11 +141,11 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
      * @param container container to iterate over
      * @param index index in @a container
      */
-    IndexedIterator(ContainerType* container, std::size_t index): index(index), container(container) {}
+    IndexedIterator(ContainerType* container, std::size_t index): container(container), index(index) {}
     
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
-    template <class, class> friend class IndexedIterator;
+    template <class, class, class> friend class IndexedIterator;
     
     template <typename OtherT>
     bool equal(const OtherT& other) const {
