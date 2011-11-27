@@ -87,6 +87,34 @@ struct RectilinearMesh2d {
 	std::size_t getSize() const { return x.getSize() * y.getSize(); }
 	
 	/**
+	 * Calculate this mesh index using indexes of x and y.
+	 * @param x_index index of x, from 0 to x.getSize()-1
+	 * @param y_index index of y, from 0 to y.getSize()-1
+	 * @return this mesh index, from 0 to getSize()-1
+	 */
+	std::size_t index(std::size_t x_index, std::size_t y_index) const {
+        return x_index + x.getSize() * y_index;
+	}
+	
+	/**
+	 * Calculate index of x using this mesh index.
+	 * @param mesh_index this mesh index, from 0 to getSize()-1
+	 * @return index of x, from 0 to x.getSize()-1
+	 */
+	std::size_t xIndex(std::size_t mesh_index) const {
+        return mesh_index % x.getSize();
+	}
+	
+	/**
+	 * Calculate index of y using this mesh index.
+	 * @param mesh_index this mesh index, from 0 to getSize()-1
+	 * @return index of y, from 0 to y.getSize()-1
+	 */
+	std::size_t yIndex(std::size_t mesh_index) const {
+        return mesh_index / x.getSize();
+	}
+	
+	/**
      * Add (2d) point to this mesh.
      * @param to_add point to add
      */
@@ -96,7 +124,7 @@ struct RectilinearMesh2d {
     }
 	
 	/**
-	 * Get point by index.
+	 * Get point with given mesh index.
 	 * Points are in order: (x[0], y[0]), (x[1], y[0]), ..., (x[x.getSize-1], y[0]), (x[0], y[1]), ..., (x[x.getSize()-1], y[y.getSize()-1])
      * @param index index of point, from 0 to getSize()-1
      * @return point with given @a index
@@ -104,6 +132,16 @@ struct RectilinearMesh2d {
     Vector2d<double> operator[](std::size_t index) const {
         const std::size_t x_size = x.getSize();
         return Vector2d<double>(x[index % x_size], y[index / x_size]);
+    }
+    
+    /**
+	 * Get point with given x and y indexes.
+	 * @param x_index index of x, from 0 to x.getSize()-1
+	 * @param y_index index of y, from 0 to y.getSize()-1
+     * @return point with given x and y indexes
+     */
+    Vector2d<double> operator()(std::size_t x_index, std::size_t y_index) const {
+        return Vector2d<double>(x[x_index], y[y_index]);
     }
 };
 
