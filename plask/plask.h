@@ -6,11 +6,11 @@
 /** @mainpage libplask manual
 
 @section plask_about About
-Plask is...
+PLaSK is... TODO
 
 @section plask_tutorials Tutorials
 - @subpage modules "How to implement own module?"
-- @subpage providers "How to use and implement providers and recivers?"
+- @subpage providers "How to use and implement providers and receivers?"
 - @subpage meshes "How to use meshes and write own one?"
 
 */

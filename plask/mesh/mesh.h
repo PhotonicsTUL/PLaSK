@@ -3,74 +3,88 @@
 
 /** @page meshes Meshes
 @section meshes_about About
-Mesh represent (ordered) set of points in 3d space. All meshes in plask inherits from and implements plask::Mesh interface.
+the mesh represents (ordered) set of points in 3d space. All meshes in PLaSK implements (inherits from)
+plask::Mesh interface.
 
-Typically, there are some data connected with points in mesh.
-In plask, all this data are not stored in mesh class, and so they must be store separately.
-Because points in mesh are ordered, and each one have unique index from <code>0</code> to <code>plask::Mesh::getSize()-1</code>
-you can sore data in any indexed structure, like array or std::vector (which is recommended),
-storing data for i-th point in mesh under i-th index.
+Typically, there is some data associated with points in mesh.
+In PLaSK, all this data is not stored in the mesh class, hence they must be stored separately.
+As the points in the mesh are ordered and each one have unique index in a range from <code>0</code>
+to <code>plask::Mesh::getSize()-1</code>,
+you can store data in any indexed structure, like an array or std::vector (which is recommended),
+storing the data value for the i-th point in the mesh under the i-th index.
 
 @section meshes_interpolation Data interpolation
-Plask provides mechanism to calculate (interpolate) a field of some physical properties in requested points
-if values of this field in different points are known.
-Both sets of points are describe by meshes and connected with this meshes vectors of values.
+PLaSK provides a mechanism to calculate (interpolate) a field of some physical quantity in arbitrary requested points,
+if values of this field are known in different points.
+Both sets of points are described by meshes and associated with the vectors of corresponding values.
 
-Let denote:
+Let us denote:
 - @a src_mesh - set of points in which the field values are known
-- @a src_vec - vector of known field values, in points described by @a sec_mesh
-- @a dst_mesh - requested set of points, in which field values should be calculate (interpolate)
-- @a dst_vec - vector of field values in points described by @a dst_mesh, to calculate
+- @a src_vec - vector of known field values, in points described by the @a sec_mesh
+- @a dst_mesh - requested set of points, in which field values should be calculated (interpolated)
+- @a dst_vec - vector of field values in points described by the @a dst_mesh, to calculate
 
-plask::interpolate method calculate and return @a dst_vec for given
+plask::interpolate method calculates and returns @a dst_vec for a given
 @a src_mesh, @a src_vec, @a dst_mesh and interpolation method.
 
-plask::interpolate can return new created vector or @a src_vec (if @a src_mesh and @a dst_mesh are the same mesh).
-For this reason @a src_vec is passed and @a dst_vec is return in std::shared_ptr - smart pointer
-which is responsibility for delete data in proper time.
+plask::interpolate can return a newly created vector or the @a src_vec if @a src_mesh and @a dst_mesh are the same.
+Furthermore, the lifespan of both source and destination data cannot be determined in advance.
+For this reason @a src_vec is passed and @a dst_vec is returned through an std::shared_ptr, a smart pointer
+which is responsible for deleting the data in the proper time (i.e. when all the existing modules delete their copy
+of the pointer, indicating they are not going to use this data any more). However, for this mechanism to work
+efficiently, all the modules must allocate the data using the std::shared_ptr, as desribed in
+@ref modules.
 
-Typically, plask::interpolate is call inside providers of field of scalars (see @ref providers).
+Typically, plask::interpolate is called inside providers of the fields of scalars or vectors (see @ref providers).
+Note that the exact @a src_mesh type must be known at the compile time by the module providing the data
+(usually this is the native mesh of the module). Interpolation algorithms depend on this type. On the other hand
+the @a dst_mesh can be very generic and needs only to provide the iterator over its points. This mechanism allows
+to connect the module providing some particular data with any module requesting it, regardless of its mesh.
 
-Note that exact @a src_mesh type must be known at compile time, in source place where plask::interpolate is call
-(interpolation algorithm depends from this type).
+@section meshes_write How to implement a new mesh?
+To implement a new mesh you have to write class inherited from the plask::Mesh. You are required to:
+- implement the @ref plask::Mesh::getSize getSize method,
+- implement the iterator over the mesh points.
 
-@section meshes_write How to implement new mesh?
-To implement new mesh you have to write class inherited from plask::Mesh. This required to:
-- implement @ref plask::Mesh::getSize getSize method,
-- implement iterator over mesh points.
+TODO: give mode details here!
 
-@section interpolation_write How to write new interpolation algorithm?
+@section interpolation_write How to write a new interpolation algorithm?
 
-To implement interpolation method (typically for case where your mesh is source mesh)
-you have to write specialization or partial specialization of plask::InterpolationAlgorithm template
+To implement an interpolation method (which you must usually do in any case where your mesh is the source mesh)
+you have to write a specialization or a partial specialization of the plask::InterpolationAlgorithm class template
 for specific: source mesh type, data type, and/or @ref plask::InterpolationMethod "interpolation method".
-Your specialization must have implementation of static plask::InterpolationAlgorithm::interpolate method.
+Your specialization must contain an implementation of the static method plask::InterpolationAlgorithm::interpolate.
  
-For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshType source mesh type (one code for all data types):
+For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshType source mesh type using the same code for all possible data types, you write:
 @code
 template <typename DataT>    //for any data type
 struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::LINEAR> {
     static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh& dst_mesh, std::vector<DataT>& dst_vec)
     throw (plask::NotImplemented) {
-        //interpolation code
+        // here comes your interpolation code
     }
 };
 @endcode
 Note that above code is template and must be placed in header file.
 
-Next example, show how to implement algorithm which depends also from data type. To implement interpolation version for double you should write:
+The next example, shows how to implement algorithm for a particular data type.
+To implement the interpolation version for the 'double' type, you should write:
 @code
 template <>
-struct plask::InterpolationAlgorithm<MyMeshType, DataT, double> {
+struct plask::InterpolationAlgorithm<MyMeshType, double, plask::LINEAR> {
     static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh& dst_mesh, std::vector<double>& dst_vec)
     throw (plask::NotImplemented) {
-        //interpolation code for vectors of doubles
+        // interpolation code for vectors of doubles
     }
 };
 @endcode
 You can simultaneously have codes from both examples.
-In such case, for linear interpolation from MyMeshType mesh, compiler use second implementation to interpolate vectors of doubles, and first one in rest cases.
- */
+In such case, when linear interpolation from the source mesh MyMeshType is requested,
+the compiler will use the second implementation to interpolate vectors of doubles
+and the first one in all other cases.
+
+The code of the function should iterate over all the points of the @a dst_mesh and fill the @a dst_vec with the interpolated values in the respective points. TODO: write more explanations, and give some examples
+*/
 
 #include "../space.h"
 #include <memory>
@@ -81,17 +95,17 @@ In such case, for linear interpolation from MyMeshType mesh, compiler use second
 namespace plask {
 
 /**
- * Base class for all meshes.
- * Mesh represent set of points in 3d space and:
+ * Base class for all the meshes.
+ * Mesh represent a set of points in 3d space and:
  * - knows number of points,
  * - allows for iterate over this points,
- * - can calculate interpolated value for given points (in 3d), source values, and interpolation method.
+ * - can calculate interpolated value for given destination points (in 3d), source values, and the interpolation method.
  * 
  * @see @ref meshes
  */
 struct Mesh {
 
-    ///@return number of points in mesh
+    /// @return number of points in mesh
     virtual std::size_t getSize() const;
     
     /**
@@ -112,25 +126,25 @@ struct Mesh {
         return interpolate(src_mesh, src_vec, *this, method);
     }
     
-    ///Base class for mesh iterator implementation.
+    /// Base class for mesh iterator implementation.
     typedef PolymorphicForwardIteratorImpl< Vector3d<double>, const Vector3d<double> > IteratorImpl;
     
-    ///Mesh iterator type.
+    /// Mesh iterator type.
     typedef PolymorphicForwardIterator< IteratorImpl > Iterator;
     
-    //To be more compatibile with STL:
+    // To be more compatibile with STL:
     typedef Iterator iterator;
     typedef Iterator const_iterator;
     
-    ///@return iterator at first point
+    /// @return iterator at first point
     virtual Iterator begin() = 0;
     
-    ///@return iterate just after last point
+    /// @return iterate just after last point
     virtual Iterator end() = 0;
 
 };
 
-//some functions useful for SimpleMeshAdapter specialization:
+// some functions useful for SimpleMeshAdapter specialization:
 inline Vector3d<double> useAsX(double x) { return Vector3d<double>(x, 0.0, 0.0); }
 inline Vector3d<double> useAsY(double y) { return Vector3d<double>(0.0, y, 0.0); }
 inline Vector3d<double> useAsZ(double z) { return Vector3d<double>(0.0, 0.0, z); }
@@ -139,7 +153,7 @@ inline Vector3d<double> useAsXZ(Vector2d<double> v) { return Vector3d<double>(v.
 inline Vector3d<double> useAsYZ(Vector2d<double> v) { return Vector3d<double>(0.0, v.x, v.y); }
 
 /**
-Template which specialization is class inharited from Mesh (is Mesh implementation).
+Template which specialization is class inherited from Mesh (is Mesh implementation).
 @tparam InternalMeshType Mesh type. Can be in diferent space.
 It must:
     - InternalMeshType::PointType must be a typename of points used by InternalMeshType
@@ -150,7 +164,7 @@ It must:
 template <typename InternalMeshType, Vector3d<double> (*toPoint3d)(typename InternalMeshType::PointType)>
 struct SimpleMeshAdapter: public Mesh {
 
-    ///Holded, internal, typically optimized mesh.
+    /// Holded, internal, typically optimized mesh.
     InternalMeshType internal;
     
     /**
@@ -212,19 +226,19 @@ struct Mesh {
     Base class for mesh iterator implementation. Iterate over points in mesh.
     */
     struct IteratorImpl {
-	///@return current point
+	/// @return current point
 	virtual Vec_t get() const = 0;
 	
-	///Iterate to next point.
+	/// Iterate to next point.
 	virtual void next() = 0;
 	
-	///@return @c true only if there are more points to iterate over
+	/// @return @c true only if there are more points to iterate over
 	virtual void hasNext() const = 0;
 	
-	///@return clone of @c *this
+	/// @return clone of @c *this
 	virtual IteratorImpl* clone() const = 0;
 	
-	//Do nothing.
+	// Do nothing.
 	virtual ~IteratorImpl() {}
     };
 
