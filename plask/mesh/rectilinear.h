@@ -49,8 +49,14 @@ public:
      */
     std::size_t findIndex(double to_find) const { return find(to_find) - begin(); }
     
+    /**
+     * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
+     * @param data values of data in points describe by this mesh
+     * @param point point in which value should be calculate
+     * @return interpolated value in point @a point
+     */
     template <typename RandomAccessContainer>
-    typename RandomAccessContainer::value_type linearInterpolation(RandomAccessContainer& data, double point);
+    auto interpolateLinear(RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type;
     
     //should we allow for non-const iterators?
     /*typedef std::vector<double>::iterator iterator;
@@ -81,14 +87,16 @@ public:
 
 //RectilinearMesh1d method templates implementation
 template <typename RandomAccessContainer>
-typename RandomAccessContainer::value_type RectilinearMesh1d::linearInterpolation(RandomAccessContainer& data, double point) {
-    //TODO what should do if mesh is empty?
+auto RectilinearMesh1d::interpolateLinear(RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
-    if (index == getSize()) return data[index - 1];
+    if (index == getSize()) return data[index - 1];     //TODO what should do if mesh is empty?
     if (index == 0 || operator [](index) == point) return data[index]; //hit exactly
     //here: d0=data[index-1] < point < data[index]=d1
-    auto d0 = data[index-1];
-    return d0 + (data[index] - d0) * (point - operator [](index-1)) / (operator [](index) - operator [](index-1));
+    //TODO which one is more stable?
+    //auto d0 = data[index-1];
+    //return d0 + (data[index] - d0) * (point - operator[](index-1)) / (operator[](index) - operator[](index-1));
+    return ((operator[](index) - point) * data[index-1] + (point - operator[](index-1)) * data[index])
+                        / (operator[](index) - operator[](index-1));
 }
 
 /**
