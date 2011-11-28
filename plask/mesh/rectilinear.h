@@ -30,6 +30,28 @@ public:
 	///@return iterator referring to the past-the-end point in this mesh
     const_iterator end() const { return points.end(); }
     
+    /**
+     * Find position where @a to_find point could be insert.
+     * @param to_find point to find
+     * @return First position where to_find could be insert.
+     *         Reffer to value equal to @a to_find only if @a to_find is already in mesh.
+     *         Can be equal to end() if to_find is higher than all points in mesh
+     *         (in such case returned iterator can't be dereferenced).
+     */
+    const_iterator find(double to_find) const;
+    
+    /**
+     * Find index where @a to_find point could be insert.
+     * @param to_find point to find
+     * @return First index where to_find could be insert.
+     *         Reffer to value equal to @a to_find only if @a to_find is already in mesh.
+     *         Can be equal to getSize() if to_find is higher than all points in mesh.
+     */
+    std::size_t findIndex(double to_find) const { return find(to_find) - begin(); }
+    
+    template <typename RandomAccessContainer>
+    typename RandomAccessContainer::value_type linearInterpolation(RandomAccessContainer& data, double point);
+    
     //should we allow for non-const iterators?
     /*typedef std::vector<double>::iterator iterator;
     iterator begin() { return points.begin(); }
@@ -56,6 +78,18 @@ public:
     const double& operator[](std::size_t index) const { return points[index]; }
     
 };
+
+//RectilinearMesh1d method templates implementation
+template <typename RandomAccessContainer>
+typename RandomAccessContainer::value_type RectilinearMesh1d::linearInterpolation(RandomAccessContainer& data, double point) {
+    //TODO what should do if mesh is empty?
+    std::size_t index = findIndex(point);
+    if (index == getSize()) return data[index - 1];
+    if (index == 0 || operator [](index) == point) return data[index]; //hit exactly
+    //here: d0=data[index-1] < point < data[index]=d1
+    auto d0 = data[index-1];
+    return d0 + (data[index] - d0) * (point - operator [](index-1)) / (operator [](index) - operator [](index-1));
+}
 
 /**
  * Rectilinear mesh in 2d space.
