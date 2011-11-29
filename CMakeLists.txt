@@ -17,7 +17,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 
 
 
-option (BUILD_SHARED_LIBS "build also shared library" ON)
+option (BUILD_SHARED_LIBS "build also shared library" OFF)
 option (BUILD_PYTHON_MODULE "build and install Python module plask" ON)
 option (MAKE_TESTS "build and run unit tests" ON)
 option(PACK_EXE "self-pack and strip executables" OFF)  #compress exe
@@ -103,7 +103,7 @@ if (MAKE_TESTS)
         include_directories(${Boost_INCLUDE_DIRS})
         file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx tests/plask/*.h)
         add_executable(test_plask ${test_plask_src})
-        target_link_libraries(test_plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} plask-shared)
+        target_link_libraries(test_plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} plask-static)
         add_test(plask ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask)
         add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask)
     else()
