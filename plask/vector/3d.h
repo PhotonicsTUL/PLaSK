@@ -7,96 +7,96 @@ namespace plask {
 
 /**
  * Vector in 3d space.
- */    
+ */
 template <typename T>
-struct Vector3d {
-    
+struct Vec3 {
+
     union {
-        ///Allow to access to vector coordinates by index.
-        T cordinate[3];
-    struct {
-        ///Allow to access to vector coordinates by name.
-        T x, y, z;
+        /// Allow to access to vector coordinates by index.
+        T coordinate[3];
+        struct {
+            /// Allow to access to vector coordinates by name.
+            T c0, c1, c2;
+        };
     };
-    };
-    
-    ///Construct uninitialized vector.
-    Vector3d() {}
-        
+
+    /// Construct uninitialized vector.
+    Vec3() {}
+
     /**
      * Copy constructor from all other 3d vectors.
      * @param p vector to copy from
      */
     template <typename OtherT>
-    Vector3d(const Vector3d<OtherT>& p): x(p.x), y(p.y), z(p.z) {}
-    
+    Vec3(const Vec3<OtherT>& p): c0(p.c0), c1(p.c1), c2(p.c2) {}
+
     /**
      * Construct vector with given coordinates.
-     * @param x, y, z coordinates
+     * @param c0, @param c1, @param c2 coordinates
      */
-    Vector3d(const T x, const T y, const T z): x(x), y(y), z(z) {}
-    
+    Vec3(const T c0, const T c1, const T c2): c0(c0), c1(c1), c2(c2) {}
+
     /**
      * Compare to vectors, this and @a p.
      * @param p vector to compare
      * @return true only if this vector and @a p have equals coordinates
      */
     template <typename OtherT>
-    bool operator==(const Vector3d<OtherT>& p) const { return p.x == x && p.y == y && p.z == z; }
+    bool operator==(const Vec3<OtherT>& p) const { return p.c0 == c0 && p.c1 == c1 && p.c2 == c2; }
 
     /**
      * Calculate square of vector length.
      * @return square of vector length
      */
-    T getLengthSqr() const { return x*x + y*y + z*z; }
-        
+    T lengthSqr() const { return c0*c0 + c1*c1 + c2*c2; }
+
     /**
      * Calculate vector length.
      * @return vector length
      */
-    T getLength() const { return sqrt(getLengthSqr()); }
-    
+    T length() const { return sqrt(lengthSqr()); }
+
     /**
      * Calculate sum of two vectors, @a this and @a to_add.
      * @param to_add vector to add, can have different data type (than result type will be found using C++ types promotions rules)
      * @return vectors sum
      */
     template <typename OtherT>
-    auto operator+(const Vector3d<OtherT>& to_add) -> Vector3d<decltype(x + to_add.x)> const {
-        return Vector3d<decltype(this->x + to_add.x)>(x + to_add.x, y + to_add.y, z + to_add.z);
+    auto operator+(const Vec3<OtherT>& to_add) -> Vec3<decltype(c0 + to_add.c0)> const {
+        return Vec3<decltype(this->c0 + to_add.c0)>(c0 + to_add.c0, c1 + to_add.c1, c2 + to_add.c2);
     }
-    
+
     /**
      * Increase coordinates of this vector by coordinates of other vector @a to_add.
      * @param to_add vector to add
      * @return *this (after increase)
      */
-    Vector3d<T>& operator+=(const Vector3d<T>& to_add) {
-        x += to_add.x;
-        y += to_add.y;
-        z += to_add.z;
+    Vec3<T>& operator+=(const Vec3<T>& to_add) {
+        c0 += to_add.c0;
+        c1 += to_add.c1;
+        c2 += to_add.c2;
         return *this;
     }
-    
+
     /**
      * Calculate difference of two vectors, @a this and @a to_sub.
      * @param to_sub vector to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
      * @return vectors difference
      */
     template <typename OtherT>
-    auto operator-(const Vector3d<OtherT>& to_sub) -> Vector3d<decltype(x - to_sub.x)> const {
-        return Vector3d<decltype(this->x - to_sub.x)>(x - to_sub.x, y - to_sub.y, z - to_sub.z);
+    auto operator-(const Vec3<OtherT>& to_sub) -> Vec3<decltype(c0 - to_sub.c0)> const {
+        return Vec3<decltype(this->c0 - to_sub.c0)>(c0 - to_sub.c0, c1 - to_sub.c1, c2 - to_sub.c2);
     }
-    
+
     /**
      * Decrease coordinates of this vector by coordinates of other vector @a to_sub.
      * @param to_sub vector to subtract
      * @return *this (after decrease)
      */
-    Vector3d<T>& operator-=(const Vector3d<T>& to_sub) {
-        x -= to_sub.x;
-        y -= to_sub.y;
-        z -= to_sub.z;
+    Vec3<T>& operator-=(const Vec3<T>& to_sub) {
+        c0 -= to_sub.c0;
+        c1 -= to_sub.c1;
+        c2 -= to_sub.c2;
         return *this;
     }
 
@@ -105,41 +105,50 @@ struct Vector3d {
      * @param scale scalar
      * @return this vector multiplied by scalar
      */
-    Vector3d<T> operator*(const T scale) const { return Vector3d<T>(x * scale, y * scale, z * scale); }
-    
+    Vec3<T> operator*(const T scale) const { return Vec3<T>(c0 * scale, c1 * scale, c2 * scale); }
+
     /**
      * Multiple coordinates of this vector by @a scalar.
      * @param scalar scalar
      * @return *this (after scale)
      */
-    Vector3d<T>& operator*=(const T scalar) {
-        x *= scalar;
-        y *= scalar;
-        z *= scalar;
+    Vec3<T>& operator*=(const T scalar) {
+        c0 *= scalar;
+        c1 *= scalar;
+        c2 *= scalar;
         return *this;
     }
-    
+
     /**
      * Calculate this vector divided by @a scalar.
      * @param scalar scalar
      * @return this vector divided by @a scalar
      */
-    Vector3d<T> operator/(const T scalar) const { return Vector3d<T>(x / scalar, y / scalar, z / scalar); }
-    
+    Vec3<T> operator/(const T scalar) const { return Vec3<T>(c0 / scalar, c1 / scalar, c2 / scalar); }
+
     /**
      * Divide coordinates of this vector by @a scalar.
      * @param scalar scalar
      * @return *this (after divide)
      */
-    Vector3d<T>& operator/=(const T scalar) {
-        x /= scalar;
-        y /= scalar;
-        z /= scalar;
+    Vec3<T>& operator/=(const T scalar) {
+        c0 /= scalar;
+        c1 /= scalar;
+        c2 /= scalar;
         return *this;
     }
-    
+
 };
 
-}       //namespace plask
+/**
+ * Vector in 3d physical space with Cartesian coordinates
+ */
+template <typename T>
+struct Vector3d {
+
+    // TODO!
+};
+
+} //namespace plask
 
 #endif

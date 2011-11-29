@@ -9,7 +9,7 @@ plask::Mesh interface.
 Typically, there is some data associated with points in mesh.
 In PLaSK, all this data is not stored in the mesh class, hence they must be stored separately.
 As the points in the mesh are ordered and each one have unique index in a range from <code>0</code>
-to <code>plask::Mesh::getSize()-1</code>,
+to <code>plask::Mesh::size()-1</code>,
 you can store data in any indexed structure, like an array or std::vector (which is recommended),
 storing the data value for the i-th point in the mesh under the i-th index.
 
@@ -61,11 +61,11 @@ There are two typical approaches to implementing new types of meshes:
 
 @subsection meshes_write_direct Direct implementation of plask::Mesh
 To implement a new mesh directly you have to write class inherited from the plask::Mesh. You are required to:
-- implement the @ref plask::Mesh::getSize getSize method;
+- implement the @ref plask::Mesh::size size method;
 - implement the iterator over the mesh points, which required to:
   - writing class inherited from plask::Mesh::IteratorImpl (and implement all its abstract methods),
   - writing @ref plask::Mesh::begin "begin()" and @ref plask::Mesh::end "end()" methods (typically this methods only returns <code>plask::Mesh::Iterator(new YourIteratorImpl(...))</code>).
-  
+
 TODO: example
 
 @subsection meshes_write_adapters Using adapters to generate plask::Mesh implementation
@@ -86,7 +86,7 @@ To implement an interpolation method (which you must usually do in any case wher
 you have to write a specialization or a partial specialization of the plask::InterpolationAlgorithm class template
 for specific: source mesh type, data type, and/or @ref plask::InterpolationMethod "interpolation method".
 Your specialization must contain an implementation of the static method plask::InterpolationAlgorithm::interpolate.
- 
+
 For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshType source mesh type using the same code for all possible data types, you write:
 @code
 template <typename DataT>    //for any data type
@@ -134,16 +134,16 @@ namespace plask {
  * - knows number of points,
  * - allows for iterate over this points,
  * - can calculate interpolated value for given destination points (in 3d), source values, and the interpolation method.
- * 
+ *
  * @see @ref meshes
  */
 struct Mesh {
 
     /// @return number of points in mesh
-    virtual std::size_t getSize() const;
-    
+    virtual std::size_t size() const = 0;
+
     /**
-     * Calculate (interpolate) a field of some physical properties in points describe by this mesh
+     * Calculate (interpolate) a field of some physical properties in points described by this mesh
      * if values of this field in different points (@a src_mesh) are known.
      * @param src_mesh set of points in which the field values are known
      * @param src_vec vector of known field values in points described by @a sec_mesh
@@ -156,35 +156,27 @@ struct Mesh {
     template <typename SrcMeshT, typename DataT>
     inline std::shared_ptr<const std::vector<DataT>>
     fill(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>>& src_vec, InterpolationMethod method = DEFAULT)
-    throw (NotImplemented, CriticalException) {
+         throw (NotImplemented, CriticalException) {
         return interpolate(src_mesh, src_vec, *this, method);
     }
-    
+
     /// Base class for mesh iterator implementation.
     typedef PolymorphicForwardIteratorImpl< Vector3d<double>, const Vector3d<double> > IteratorImpl;
-    
+
     /// Mesh iterator type.
     typedef PolymorphicForwardIterator< IteratorImpl > Iterator;
-    
+
     // To be more compatibile with STL:
     typedef Iterator iterator;
     typedef Iterator const_iterator;
-    
+
     /// @return iterator at first point
     virtual Iterator begin() = 0;
-    
+
     /// @return iterate just after last point
     virtual Iterator end() = 0;
 
 };
-
-// some functions useful for SimpleMeshAdapter specialization:
-inline Vector3d<double> useAsX(double x) { return Vector3d<double>(x, 0.0, 0.0); }
-inline Vector3d<double> useAsY(double y) { return Vector3d<double>(0.0, y, 0.0); }
-inline Vector3d<double> useAsZ(double z) { return Vector3d<double>(0.0, 0.0, z); }
-inline Vector3d<double> useAsXY(Vector2d<double> v) { return Vector3d<double>(v.x, v.y, 0.0); }
-inline Vector3d<double> useAsXZ(Vector2d<double> v) { return Vector3d<double>(v.x, 0.0, v.y); }
-inline Vector3d<double> useAsYZ(Vector2d<double> v) { return Vector3d<double>(0.0, v.x, v.y); }
 
 /**
 Template which specialization is class inherited from Mesh (is Mesh implementation).
@@ -192,120 +184,49 @@ Template which specialization is class inherited from Mesh (is Mesh implementati
 It must:
     - InternalMeshType::PointType must be a typename of points used by InternalMeshType
     - allow for iterate (has begin and end methods) over InternalMeshType::PointType, and has defined InternalMeshType::const_iterator for constant iterator type
-    - has getSize method
-@tparam toPoint3d function which are use to convert points from InternalMeshType space to Vector3d<double> (used by plask::Mesh)
+    - has size method
+@tparam toPoint3d function which is used to convert points from InternalMeshType space to Vector3d<double> (used by plask::Mesh)
 */
 template <typename InternalMeshType, Vector3d<double> (*toPoint3d)(typename InternalMeshType::PointType)>
 struct SimpleMeshAdapter: public Mesh {
 
     /// Holded, internal, typically optimized mesh.
     InternalMeshType internal;
-    
+
     /**
      * Implementation of Mesh::IteratorImpl.
      * Hold iterator of wrapped type (InternalMeshType::const_iterator) and delegate all calls to it.
      */
     struct IteratorImpl: public Mesh::IteratorImpl {
-    
+
         typename InternalMeshType::const_iterator internal_iterator;
-        
+
         IteratorImpl(typename InternalMeshType::const_iterator&& internal_iterator)
         : internal_iterator(std::forward(internal_iterator)) {}
-    
+
         virtual Vector3d<double> dereference() const {
             return toPoint3d(*internal_iterator);
         }
-        
+
         virtual void increment() {
             ++internal_iterator;
         }
-        
+
         virtual bool equal(const Mesh::IteratorImpl& other) const {
             return internal_iterator == static_cast<IteratorImpl&>(other).internal_iterator;
         }
-        
+
     };
-    
-    virtual std::size_t getSize() const {
-        return internal.getSize();
+
+    virtual std::size_t size() const {
+        return internal.size();
     }
-    
+
     virtual Mesh::Iterator begin() { return Mesh::Iterator(internal.begin()); }
-    
+
     virtual Mesh::Iterator end() { return Mesh::Iterator(internal.end()); }
 
 };
-
-#ifdef disable_fragment
-
-//TODO nieaktualne, ale coś może się przydać:
-//TODO zrobić Meshe o dużej wydajności w poszczególnych przestrzeniach (specjalizowane przestrzenią)
-//TODO i zaimplementować interfejs Mesh uzywając Mesh optymalizowany + funkcja konwertująca pkt. do 3d
-//TODO zamiast dim i Vec<dim> zrobić i specjalizować typami przestrzeni udostępniającymi typ punktu, itp.
-/**
-Base class for all meshes in given space.
-Mesh represent set of points in space.
-@tparam dim number of space dimensions
-*/
-template <int dim>
-struct Mesh {
-
-    // Point type used by this mesh.
-    typedef Vec<dim> Vec_t;
-    
-    // Base class for all meshs inharited from this class (1d, 2d, 3d mesh base).
-    typedef Mesh<dim> BaseClass;
-
-    /**
-    Base class for mesh iterator implementation. Iterate over points in mesh.
-    */
-    struct IteratorImpl {
-	/// @return current point
-	virtual Vec_t get() const = 0;
-	
-	/// Iterate to next point.
-	virtual void next() = 0;
-	
-	/// @return @c true only if there are more points to iterate over
-	virtual void hasNext() const = 0;
-	
-	/// @return clone of @c *this
-	virtual IteratorImpl* clone() const = 0;
-	
-	// Do nothing.
-	virtual ~IteratorImpl() {}
-    };
-
-    /**
-    Iterator over points in mesh.
-    
-    Wrapper over IteratorImpl.
-    */
-    class Iterator {
-	
-	IteratorImpl* impl;
-	
-	public:
-	
-	Iterator(IteratorImpl* impl): impl(impl) {}
-	
-	~Iterator() { delete impl; }
-	
-	//Copy constructor
-	Iterator(const Iterator& src) { impl = src.impl->clone(); }
-	
-	//Move constructor
-	Iterator(Iterator &&src): impl(src.impl) { src.impl = 0; }
-	
-	Vec_t operator*() const { return impl->get(); }
-    };
-    
-    virtual Iterator begin();
-    
-    //TODO end()
-};
-
-#endif
 
 
 } // namespace plask

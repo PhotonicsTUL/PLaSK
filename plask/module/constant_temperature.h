@@ -10,15 +10,15 @@ namespace plask {
  * Module which provide constant temperature in all space.
  */
 struct ConstantTemperatureModule: public Module {
-    
+
     virtual std::string getName() const {
-        return "constant temperature";
+        return "Constant Temperature";
     }
-    
+
     virtual std::string getDescription() const {
-        return "return constant temperature in all space";
+        return "Return a constant temperature in all space";
     }
-    
+
 };
 
 }       //namespace plask

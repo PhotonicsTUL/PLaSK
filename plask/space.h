@@ -24,12 +24,12 @@ struct Cartesian<1> {
 
 template <>
 struct Cartesian<2> {
-    typedef Vector2d<double> PointType;
+    typedef Vec2<double> PointType;
 };
 
 template <>
 struct Cartesian<3> {
-    typedef Vector3d<double> PointType;
+    typedef Vec3<double> PointType;
 };
 
 } // namespace plask
