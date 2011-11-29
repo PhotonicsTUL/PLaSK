@@ -13,6 +13,19 @@ to <code>plask::Mesh::getSize()-1</code>,
 you can store data in any indexed structure, like an array or std::vector (which is recommended),
 storing the data value for the i-th point in the mesh under the i-th index.
 
+@section meshes_internal Internal representation
+Most of mesh classes in PLaSK have @c internal field which is internal mesh interface.
+Typically this interface:
+- represents set of point in space different than 3d (for example 1d or 2d);
+- allow for faster calculation than generic mesh interface, and often has more futures (methods);
+- can be different for different types of meshes (there are no common base class for internal interfaces).
+
+In most cases, mesh use @c internal field methods to implement itself methods (especially, abstract methods of plask::Mesh),
+which required translation of points between 3d space (required by plask::Mesh interface)
+and space used by internal representation.
+Many mesh types can use objects with the same types as internal representation,
+but realize different translation strategy.
+
 @section meshes_interpolation Data interpolation
 PLaSK provides a mechanism to calculate (interpolate) a field of some physical quantity in arbitrary requested points,
 if values of this field are known in different points.
@@ -32,7 +45,7 @@ Furthermore, the lifespan of both source and destination data cannot be determin
 For this reason @a src_vec is passed and @a dst_vec is returned through an std::shared_ptr, a smart pointer
 which is responsible for deleting the data in the proper time (i.e. when all the existing modules delete their copy
 of the pointer, indicating they are not going to use this data any more). However, for this mechanism to work
-efficiently, all the modules must allocate the data using the std::shared_ptr, as desribed in
+efficiently, all the modules must allocate the data using the std::shared_ptr, as described in
 @ref modules.
 
 Typically, plask::interpolate is called inside providers of the fields of scalars or vectors (see @ref providers).
@@ -42,11 +55,30 @@ the @a dst_mesh can be very generic and needs only to provide the iterator over 
 to connect the module providing some particular data with any module requesting it, regardless of its mesh.
 
 @section meshes_write How to implement a new mesh?
-To implement a new mesh you have to write class inherited from the plask::Mesh. You are required to:
-- implement the @ref plask::Mesh::getSize getSize method,
-- implement the iterator over the mesh points.
+There are two typical approaches to implementing new types of meshes:
+- @ref meshes_write_direct "direct",
+- @ref meshes_write_adapters "using adapters" (this approach is recommended).
 
-TODO: give mode details here!
+@subsection meshes_write_direct Direct implementation of plask::Mesh
+To implement a new mesh directly you have to write class inherited from the plask::Mesh. You are required to:
+- implement the @ref plask::Mesh::getSize getSize method;
+- implement the iterator over the mesh points, which required to:
+  - writing class inherited from plask::Mesh::IteratorImpl (and implement all its abstract methods),
+  - writing @ref plask::Mesh::begin "begin()" and @ref plask::Mesh::end "end()" methods (typically this methods only returns <code>plask::Mesh::Iterator(new YourIteratorImpl(...))</code>).
+  
+TODO: example
+
+@subsection meshes_write_adapters Using adapters to generate plask::Mesh implementation
+You can specialize adapter template to generate class which inherit from plask::Mesh.
+
+To do this, you have to implement internal mesh representation class (see @ref meshes_internal) first.
+Your class must fulfill adapter templates requirements (it is one of adapter template parameters),
+and also can have extra methods for your internal use (for calculation).
+
+Adapter templates currently available in PLaSK:
+- plask::SimpleMeshAdapter
+
+TODO: example (here or in adapters description)
 
 @section interpolation_write How to write a new interpolation algorithm?
 
@@ -83,7 +115,9 @@ In such case, when linear interpolation from the source mesh MyMeshType is reque
 the compiler will use the second implementation to interpolate vectors of doubles
 and the first one in all other cases.
 
-The code of the function should iterate over all the points of the @a dst_mesh and fill the @a dst_vec with the interpolated values in the respective points. TODO: write more explanations, and give some examples
+The code of the function should iterate over all the points of the @a dst_mesh and fill the @a dst_vec with the interpolated values in the respective points.
+
+TODO: write more explanations, and give some examples
 */
 
 #include "../space.h"
