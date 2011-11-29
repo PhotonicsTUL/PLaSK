@@ -157,15 +157,6 @@ struct RectilinearMesh2d {
 	}
 	
 	/**
-     * Add (2d) point to this mesh.
-     * @param to_add point to add
-     */
-    void addPoint(const Vector2d<double>& to_add) {
-        x.addPoint(to_add.x);
-        y.addPoint(to_add.y);
-    }
-	
-	/**
 	 * Get point with given mesh index.
 	 * Points are in order: (x[0], y[0]), (x[1], y[0]), ..., (x[x.getSize-1], y[0]), (x[0], y[1]), ..., (x[x.getSize()-1], y[y.getSize()-1])
      * @param index index of point, from 0 to getSize()-1

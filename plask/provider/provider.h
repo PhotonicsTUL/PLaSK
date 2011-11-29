@@ -129,7 +129,15 @@ struct Receiver: public Provider::Listener {
      * @param provider new provider
      */
     void setProvider(ProviderT &provider) {
-		setProvider(&provider);
+	setProvider(&provider);
+    }
+    
+    void operator=(ProviderT *provider) {
+        setProvider(&provider);
+    }
+    
+    void operator=(ProviderT &provider) {
+        setProvider(&provider);
     }
 
     ///@return current provider or @c nullptr if there is no connected provider

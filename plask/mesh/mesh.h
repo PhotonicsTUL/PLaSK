@@ -3,7 +3,7 @@
 
 /** @page meshes Meshes
 @section meshes_about About
-the mesh represents (ordered) set of points in 3d space. All meshes in PLaSK implements (inherits from)
+The mesh represents (ordered) set of points in 3d space. All meshes in PLaSK implements (inherits from)
 plask::Mesh interface.
 
 Typically, there is some data associated with points in mesh.
