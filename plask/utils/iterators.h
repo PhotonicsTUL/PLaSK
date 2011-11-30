@@ -189,8 +189,8 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
     
     /**
      * Construct iterator which point to given in index in given container.
-     * @param container container to iterate over
-     * @param index index in @a container
+     * @param functor functor
+     * @param index index for which this iterator should refere, argument for functor
      */
     FunctorIndexedIterator(FunctorType functor, std::size_t index): functor(functor), index(index) {}
     

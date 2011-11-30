@@ -38,7 +38,7 @@ struct Vec3 {
 
     /**
      * Construct vector with given coordinates.
-     * @param c0, @param c1, @param c2 coordinates
+     * @param c0, c1, c2 coordinates
      */
     Vec3(const T c0, const T c1, const T c2): c0(c0), c1(c1), c2(c2) {}
 

@@ -237,8 +237,8 @@ struct RectilinearMesh2d {
      * @param c1_index index of c1, from 0 to c1.size()-1
      * @return this mesh index, from 0 to size()-1
      */
-    std::size_t index(std::size_t c0_index, std::size_t y_index) const {
-        return c0_index + c0.size() * y_index;
+    std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
+        return c0_index + c0.size() * c1_index;
     }
 
     /**
@@ -272,8 +272,8 @@ struct RectilinearMesh2d {
 
     /**
      * Get point with given x and y indexes.
-     * @param x_index index of c0, from 0 to c0.size()-1
-     * @param y_index index of c1, from 0 to c1.size()-1
+     * @param c0_index index of c0, from 0 to c0.size()-1
+     * @param c1_index index of c1, from 0 to c1.size()-1
      * @return point with given c0 and c1 indexes
      */
     Vec2<double> operator()(std::size_t c0_index, std::size_t c1_index) const {
