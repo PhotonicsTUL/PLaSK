@@ -130,8 +130,8 @@ struct RectilinearMesh2d {
         /**
         * Get point with given mesh index.
         * Points are in order depends from changed flag:
-        * - if its set: (c0[0], y[0]), (c0[0], y[1]), ..., (c0[0], y[y.size-1]), (c0[1], y[0]), ..., (c0[c0.size()-1], y[y.size()-1])
-        * - if its not set: (c0[0], y[0]), (c0[1], y[0]), ..., (c0[c0.size-1], y[0]), (c0[0], y[1]), ..., (c0[c0.size()-1], y[y.size()-1])
+        * - if its set: (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
+        * - if its not set: (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
         * @param index index of point, from 0 to size()-1
         * @return point with given @a index
         */
