@@ -18,6 +18,12 @@ struct Vec2 {
             /// Allow to access to vector coordinates by name.
             T c0, c1;
         };
+        struct {
+            T x, y;
+        };
+        struct {
+            T r, z;
+        };
     };
 
     /// Construct uninitialized vector.
