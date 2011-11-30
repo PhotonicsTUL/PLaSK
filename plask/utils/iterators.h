@@ -137,7 +137,7 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
     IndexedIterator() {}
     
     /**
-     * Construct iterator which point to given in index in given container.
+     * Construct iterator which point to given @a index in given @a container.
      * @param container container to iterate over
      * @param index index in @a container
      */
@@ -164,6 +164,62 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
     Reference dereference() const { return (*container)[index]; }
 
 };
+
+template <typename ContainerType>
+inline IndexedIterator<ContainerType> makeIndexedIterator(ContainerType* c, std::size_t index) {
+    return IndexedIterator<ContainerType>(c, index);
+}
+
+/**
+ * Template to create iterators which using functor having size argument.
+ * @tparam ContainerType type of container (can be const or non-const)
+ * @tparam Reference iterator reference type, should be the same type which return functor operator()
+ * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
+ */
+template <typename FunctorType,
+    typename Reference = decltype((((FunctorType*)0)->*(&FunctorType::operator()))(0)),
+    typename Value = typename std::remove_reference<Reference>::type>
+struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIterator<FunctorType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
+
+    ///Functor
+    FunctorType functor;
+
+    ///Current iterator position (index).
+    std::size_t index;
+    
+    /**
+     * Construct iterator which point to given in index in given container.
+     * @param container container to iterate over
+     * @param index index in @a container
+     */
+    FunctorIndexedIterator(FunctorType functor, std::size_t index): functor(functor), index(index) {}
+    
+    private: //--- methods used by boost::iterator_facade: ---
+    friend class boost::iterator_core_access;
+    template <class, class, class> friend class IndexedIterator;
+    
+    template <typename OtherT>
+    bool equal(const OtherT& other) const {
+        return index == other.index;
+    }
+    
+    void increment() { ++index; }
+    
+    void decrement() { --index; }
+    
+    void advance(std::ptrdiff_t to_add) { index += to_add; }
+    
+    template <typename OtherT>
+    std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
+    
+    Reference dereference() const { return functor(index); }
+
+};
+
+template <typename Functor>
+inline FunctorIndexedIterator<Functor> makeFunctorIndexedIterator(Functor f, std::size_t index) {
+    return FunctorIndexedIterator<Functor>(f, index);
+}
 
 }       //namespace plask
     

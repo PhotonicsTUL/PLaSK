@@ -141,6 +141,15 @@ struct Vec3 {
 };
 
 /**
+ * Multiple vector @a v by scalar @a scale.
+ * @param scale scalar
+ * @param v vector
+ * @return vector multiplied by scalar
+ */
+template <typename T>
+inline Vec3<T> operator*(const T scale, const Vec3<T>& v) { return v*scale; }
+
+/**
  * Vector in 3d physical space with Cartesian coordinates
  */
 template <typename T>

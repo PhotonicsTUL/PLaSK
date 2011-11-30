@@ -2,6 +2,7 @@
 #define PLASK__RECTILINEAR_H
 
 #include <vector>
+#include <algorithm>
 
 #include "../vector/2d.h"
 #include "../utils/iterators.h"
@@ -75,6 +76,32 @@ public:
      * @param new_node_cord coordinate of point to add
      */
     void addPoint(double new_node_cord);
+    
+    /**
+     * Add points from ordered range.
+     * @param begin, end ordered range of points in ascending order
+     * @param points_count_hint number of points in range (can be approximate, or 0)
+     * @tparam IteratorT input iterator
+     */
+    template <typename IteratorT>
+    void addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint);
+    
+    /**
+     * Add points from ordered range.
+     * @param begin, end ordered range of points in ascending order
+     * @tparam RandomAccessIteratorT random access iterator
+     */
+    //TODO use iterator traits and write version for input iterator
+    template <typename RandomAccessIteratorT>
+    void addOrderedPoints(RandomAccessIteratorT begin, RandomAccessIteratorT end) { addOrderedPoints(begin, end, end - begin); }
+    
+    /**
+     * Add to mesh points: first + i * len / points_count, where i is in range [0, points_count].
+     * @param first coordinate of first point
+     * @param len first+len is coordinate of last point
+     * @param points_count number of points to add
+     */
+    void addPoints(double first, double len, std::size_t points_count);
 
     /**
      * Get point by index.
@@ -99,13 +126,23 @@ auto RectilinearMesh1d::interpolateLinear(RandomAccessContainer& data, double po
                         / (operator[](index) - operator[](index-1));
 }
 
+template <typename IteratorT>
+inline void RectilinearMesh1d::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint) {
+    std::vector<double> result;
+    result.reserve(this->size() + points_count_hint);
+    std::set_union(this->points.begin(), this->points.end(), begin, end, std::back_inserter(result));
+    this->points = std::move(result);
+};
+
 /**
  * Rectilinear mesh in 2d space.
  */
 struct RectilinearMesh2d {
 
     /**
-     * Class which allow to access and iterate over RectilinearMesh2d points in choosen order.
+     * Class which allow to access and iterate over RectilinearMesh2d points in choosen order:
+     * - natural one: (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
+     * - or changed: (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
      */
     struct Accessor {
 
@@ -151,18 +188,18 @@ struct RectilinearMesh2d {
         }
 
         /**
-        * Calculate index of x using this mesh index.
+        * Calculate index of c0 using this mesh index.
         * @param mesh_index this mesh index, from 0 to size()-1
-        * @return index of x, from 0 to x.size()-1
+        * @return index of c0, from 0 to c0.size()-1
         */
         std::size_t index0(std::size_t mesh_index) const {
             return changed ? mesh_index / mesh.c1.size() : index0(mesh_index);
         }
 
         /**
-        * Calculate index of y using this mesh index.
+        * Calculate index of c1 using this mesh index.
         * @param mesh_index this mesh index, from 0 to size()-1
-        * @return index of y, from 0 to y.size()-1
+        * @return index of c1, from 0 to c1.size()-1
         */
         std::size_t index1(std::size_t mesh_index) const {
             return changed ? mesh_index % mesh.c1.size() : index1(mesh_index);
@@ -195,9 +232,9 @@ struct RectilinearMesh2d {
     std::size_t size() const { return c0.size() * c1.size(); }
 
     /**
-     * Calculate this mesh index using indexes of x and y.
-     * @param x_index index of x, from 0 to x.size()-1
-     * @param y_index index of y, from 0 to y.size()-1
+     * Calculate this mesh index using indexes of c0 and c1.
+     * @param c0_index index of c0, from 0 to c0.size()-1
+     * @param c1_index index of c1, from 0 to c1.size()-1
      * @return this mesh index, from 0 to size()-1
      */
     std::size_t index(std::size_t c0_index, std::size_t y_index) const {
@@ -205,9 +242,9 @@ struct RectilinearMesh2d {
     }
 
     /**
-     * Calculate index of x using this mesh index.
+     * Calculate index of c0 using this mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of x, from 0 to x.size()-1
+     * @return index of c0, from 0 to c1.size()-1
      */
     std::size_t index0(std::size_t mesh_index) const {
         return mesh_index % c0.size();
@@ -216,7 +253,7 @@ struct RectilinearMesh2d {
     /**
      * Calculate index of y using this mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of y, from 0 to y.size()-1
+     * @return index of c1, from 0 to c1.size()-1
      */
     std::size_t index1(std::size_t mesh_index) const {
         return mesh_index / c0.size();
@@ -224,7 +261,7 @@ struct RectilinearMesh2d {
 
     /**
      * Get point with given mesh index.
-     * Points are in order: (x[0], y[0]), (x[1], y[0]), ..., (x[x.size-1], y[0]), (x[0], y[1]), ..., (x[x.size()-1], y[y.size()-1])
+     * Points are in order: (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
      * @param index index of point, from 0 to size()-1
      * @return point with given @a index
      */
@@ -235,9 +272,9 @@ struct RectilinearMesh2d {
 
     /**
      * Get point with given x and y indexes.
-     * @param x_index index of x, from 0 to x.size()-1
-     * @param y_index index of y, from 0 to y.size()-1
-     * @return point with given x and y indexes
+     * @param x_index index of c0, from 0 to c0.size()-1
+     * @param y_index index of c1, from 0 to c1.size()-1
+     * @return point with given c0 and c1 indexes
      */
     Vec2<double> operator()(std::size_t c0_index, std::size_t c1_index) const {
         return Vec2<double>(c0[c0_index], c1[c1_index]);
