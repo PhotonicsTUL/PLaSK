@@ -131,11 +131,11 @@ struct Receiver: public Provider::Listener {
     void setProvider(ProviderT &provider) {
 	setProvider(&provider);
     }
-    
+
     void operator=(ProviderT *provider) {
         setProvider(&provider);
     }
-    
+
     void operator=(ProviderT &provider) {
         setProvider(&provider);
     }
@@ -160,7 +160,7 @@ struct Receiver: public Provider::Listener {
     }
 
     ///@throw NoProvider when provider is not available
-    void ensureHasProvider() throw (NoProvider) {
+    void ensureHasProvider() {
         if (!provider) throw NoProvider();	//TODO some name, maybe Provider should have virtual name or name field?
     }
 
@@ -171,7 +171,7 @@ struct Receiver: public Provider::Listener {
      */
     //TODO const version? only const version?
     template<typename ...Args> auto
-    operator()(Args&&... params) throw (NoProvider) -> decltype((*provider)(std::forward<Args>(params)...)) {
+    operator()(Args&&... params) -> decltype((*provider)(std::forward<Args>(params)...)) {
         beforeGetValue();
         return (*provider)(std::forward<Args>(params)...);
     }
@@ -186,7 +186,7 @@ protected:
      *
      * @throw NoProvider when provider is not available
      */
-    void beforeGetValue() throw (NoProvider) {
+    void beforeGetValue() {
         ensureHasProvider();
         changed = false;
     }
@@ -231,9 +231,9 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
  * @see @ref providers
  */
 enum PropertyType {
-    SINGLE_VALUE_PROPERTY = 0,	        ///<Single value property
-    FIELD_PROPERTY = 1,			///<Property for field of values which can't be interpolated
-    INTERPOLATED_FIELD_PROPERTY = 2	///<Property for field of values which can be interpolated
+    SINGLE_VALUE_PROPERTY = 0,	        ///< Single value property
+    FIELD_PROPERTY = 1,			///< Property for field of values which can't be interpolated
+    INTERPOLATED_FIELD_PROPERTY = 2	///< Property for field of values which can be interpolated
 };	//TODO change this to empty classes(?)
 
 /**
@@ -301,7 +301,7 @@ struct ProviderImpl {};
 template <typename PropertyTag>
 struct ProviderFor: ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType> {
 
-    ///Delegate all constructors to parent class.
+    /// Delegate all constructors to parent class.
     template<typename ...Args>
     ProviderFor(Args&&... params)
     : ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType>(std::forward<Args>(params)...) {

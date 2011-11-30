@@ -91,8 +91,8 @@ For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshTyp
 @code
 template <typename DataT>    //for any data type
 struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh& dst_mesh, std::vector<DataT>& dst_vec)
-    throw (plask::NotImplemented) {
+    static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh& dst_mesh, std::vector<DataT>& dst_vec) {
+
         // here comes your interpolation code
     }
 };
@@ -104,8 +104,8 @@ To implement the interpolation version for the 'double' type, you should write:
 @code
 template <>
 struct plask::InterpolationAlgorithm<MyMeshType, double, plask::LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh& dst_mesh, std::vector<double>& dst_vec)
-    throw (plask::NotImplemented) {
+    static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh& dst_mesh, std::vector<double>& dst_vec) {
+
         // interpolation code for vectors of doubles
     }
 };
@@ -124,7 +124,6 @@ TODO: write more explanations, and give some examples
 #include <memory>
 
 #include "../utils/iterators.h"
-#include "interpolation.h"
 
 namespace plask {
 
@@ -142,33 +141,15 @@ struct Mesh {
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
 
-    /**
-     * Calculate (interpolate) a field of some physical properties in points described by this mesh
-     * if values of this field in different points (@a src_mesh) are known.
-     * @param src_mesh set of points in which the field values are known
-     * @param src_vec vector of known field values in points described by @a sec_mesh
-     * @param method interpolation method to use
-     * @return vector of the field values in points described by this mesh,
-     *         can be equal to @a src_vec if @a src_mesh and this mesh are the same mesh
-     * @throw NotImplemented if given interpolation method is not implemented for used source mesh type
-     * @throw CriticalException if given interpolation method is not valid
-     */
-    template <typename SrcMeshT, typename DataT>
-    inline std::shared_ptr<const std::vector<DataT>>
-    fill(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>>& src_vec, InterpolationMethod method = DEFAULT)
-         throw (NotImplemented, CriticalException) {
-        return interpolate(src_mesh, src_vec, *this, method);
-    }
-
     /// Base class for mesh iterator implementation.
-    typedef PolymorphicForwardIteratorImpl< Vector3d<double>, const Vector3d<double> > IteratorImpl;
+    typedef PolymorphicForwardIteratorImpl<Vec3<double>, const Vec3<double>> IteratorImpl;
 
     /// Mesh iterator type.
-    typedef PolymorphicForwardIterator< IteratorImpl > Iterator;
+    typedef PolymorphicForwardIterator<IteratorImpl> Iterator;
 
     // To be more compatibile with STL:
     typedef Iterator iterator;
-    typedef Iterator const_iterator;
+    typedef const Iterator const_iterator;
 
     /// @return iterator at first point
     virtual Iterator begin() = 0;
@@ -179,24 +160,36 @@ struct Mesh {
 };
 
 /**
+  * Template for base classes for meshes over particular space
+  *
+  */
+template <typename S>
+struct MeshOver: public Mesh {
+
+    /// Type of the space over which the mesh is defined
+    typedef S Space;
+
+};
+
+/**
 Template which specialization is class inherited from Mesh (is Mesh implementation).
 @tparam InternalMeshType Mesh type. Can be in diferent space.
 It must:
     - InternalMeshType::PointType must be a typename of points used by InternalMeshType
     - allow for iterate (has begin and end methods) over InternalMeshType::PointType, and has defined InternalMeshType::const_iterator for constant iterator type
     - has size method
-@tparam toPoint3d function which is used to convert points from InternalMeshType space to Vector3d<double> (used by plask::Mesh)
-*/
-template <typename InternalMeshType, Vector3d<double> (*toPoint3d)(typename InternalMeshType::PointType)>
+@tparam toPoint3d function which is used to convert points from InternalMeshType space to Vec3<double> (used by plask::Mesh)
+* /
+template <typename InternalMeshType, Vec3<double> (*toPoint3d)(typename InternalMeshType::PointType)>
 struct SimpleMeshAdapter: public Mesh {
 
     /// Holded, internal, typically optimized mesh.
     InternalMeshType internal;
 
-    /**
+    / **
      * Implementation of Mesh::IteratorImpl.
-     * Hold iterator of wrapped type (InternalMeshType::const_iterator) and delegate all calls to it.
-     */
+     * Holds iterator of wrapped type (InternalMeshType::const_iterator) and delegate all calls to it.
+     * /
     struct IteratorImpl: public Mesh::IteratorImpl {
 
         typename InternalMeshType::const_iterator internal_iterator;
@@ -204,7 +197,7 @@ struct SimpleMeshAdapter: public Mesh {
         IteratorImpl(typename InternalMeshType::const_iterator&& internal_iterator)
         : internal_iterator(std::forward(internal_iterator)) {}
 
-        virtual Vector3d<double> dereference() const {
+        virtual Vec3<double> dereference() const {
             return toPoint3d(*internal_iterator);
         }
 
@@ -227,7 +220,7 @@ struct SimpleMeshAdapter: public Mesh {
     virtual Mesh::Iterator end() { return Mesh::Iterator(internal.end()); }
 
 };
-
+*/
 
 } // namespace plask
 

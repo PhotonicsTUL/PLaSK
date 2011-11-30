@@ -22,6 +22,9 @@ struct Vec3 {
             T x, y, z;
         };
         struct {
+            T a, b, c;
+        };
+        struct {
             T r, phi;
         };
     };
@@ -154,15 +157,6 @@ struct Vec3 {
  */
 template <typename T>
 inline Vec3<T> operator*(const T scale, const Vec3<T>& v) { return v*scale; }
-
-/**
- * Vector in 3d physical space with Cartesian coordinates
- */
-template <typename T>
-struct Vector3d {
-
-    // TODO!
-};
 
 } //namespace plask
 

@@ -17,7 +17,7 @@ struct Material {
 
     ///Do nothing.
     virtual ~Material() {}
-    
+
     // @return @c true only for dyanimicaly created materials which are not managed by MaterialDB and must be manualy deleted in some situations
     // virtual bool isDynamic() { return false; }
 
@@ -44,8 +44,8 @@ struct MaterialsDB {
     @return material with given name
     @throw NoSuchMaterial if material with given name not exists
     */
-    std::shared_ptr<Material> get(const std::string& name) throw (NoSuchMaterial);
-    
+    std::shared_ptr<Material> get(const std::string& name);
+
     /**
     Fill database with default materials.
     */
