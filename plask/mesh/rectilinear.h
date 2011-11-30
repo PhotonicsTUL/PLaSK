@@ -112,14 +112,14 @@ struct RectilinearMesh2d {
         ///Mesh for which we want to have access.
         const RectilinearMesh2d& mesh;
 
-        ///Is order reverse?
-        bool reverse;
+        ///Is order changed?
+        bool changed;
 
         typedef Vec2<double> PointType;
 
         typedef IndexedIterator< const Accessor, PointType > const_iterator;
 
-        Accessor(const RectilinearMesh2d& mesh, bool reverse): mesh(mesh), reverse(reverse) {}
+        Accessor(const RectilinearMesh2d& mesh, bool changed): mesh(mesh), changed(changed) {}
 
         ///@return iterator referring to the first point in this mesh
         const_iterator begin() const { return const_iterator(this, 0); }
@@ -129,16 +129,16 @@ struct RectilinearMesh2d {
 
         /**
         * Get point with given mesh index.
-        * Points are in order depends from reverse flag:
-        * - if its set: (x[0], y[0]), (x[0], y[1]), ..., (x[0], y[y.size-1]), (x[1], y[0]), ..., (x[x.size()-1], y[y.size()-1])
-        * - if its not set: (x[0], y[0]), (x[1], y[0]), ..., (x[x.size-1], y[0]), (x[0], y[1]), ..., (x[x.size()-1], y[y.size()-1])
+        * Points are in order depends from changed flag:
+        * - if its set: (c0[0], y[0]), (c0[0], y[1]), ..., (c0[0], y[y.size-1]), (c0[1], y[0]), ..., (c0[c0.size()-1], y[y.size()-1])
+        * - if its not set: (c0[0], y[0]), (c0[1], y[0]), ..., (c0[c0.size-1], y[0]), (c0[0], y[1]), ..., (c0[c0.size()-1], y[y.size()-1])
         * @param index index of point, from 0 to size()-1
         * @return point with given @a index
         */
         Vec2<double> operator[](std::size_t index) const {
-            if (reverse) {
-                const std::size_t y_size = mesh.y.size();
-                return Vec2<double>(mesh.x[index / y_size], mesh.y[index % y_size]);
+            if (changed) {
+                const std::size_t y_size = mesh.c1.size();
+                return Vec2<double>(mesh.c0[index / y_size], mesh.c1[index % y_size]);
             } else {
                 return mesh[index];
             }
@@ -147,7 +147,7 @@ struct RectilinearMesh2d {
         std::size_t size() const { return mesh.size(); }
 
         std::size_t index(std::size_t x_index, std::size_t y_index) const {
-            return reverse ? mesh.y.size() * x_index + y_index : mesh.index(x_index, y_index);
+            return changed ? mesh.c1.size() * x_index + y_index : mesh.index(x_index, y_index);
         }
 
         /**
@@ -156,7 +156,7 @@ struct RectilinearMesh2d {
         * @return index of x, from 0 to x.size()-1
         */
         std::size_t index0(std::size_t mesh_index) const {
-            return reverse ? mesh_index / mesh.y.size() : index0(mesh_index);
+            return changed ? mesh_index / mesh.c1.size() : index0(mesh_index);
         }
 
         /**
@@ -165,16 +165,16 @@ struct RectilinearMesh2d {
         * @return index of y, from 0 to y.size()-1
         */
         std::size_t index1(std::size_t mesh_index) const {
-            return reverse ? mesh_index % mesh.y.size() : index1(mesh_index);
+            return changed ? mesh_index % mesh.c1.size() : index1(mesh_index);
         }
 
     };
 
     ///First coordinate of points in this mesh.
-    RectilinearMesh1d x;
+    RectilinearMesh1d c0;
 
     ///Second coordinate of points in this mesh.
-    RectilinearMesh1d y;
+    RectilinearMesh1d c1;
 
     ///Type of points in this mesh.
     typedef Vec2<double> PointType;
@@ -192,7 +192,7 @@ struct RectilinearMesh2d {
     const_iterator end() const { return const_iterator(this, size()); }
 
     ///@return number of points in mesh
-    std::size_t size() const { return x.size() * y.size(); }
+    std::size_t size() const { return c0.size() * c1.size(); }
 
     /**
      * Calculate this mesh index using indexes of x and y.
@@ -200,8 +200,8 @@ struct RectilinearMesh2d {
      * @param y_index index of y, from 0 to y.size()-1
      * @return this mesh index, from 0 to size()-1
      */
-    std::size_t index(std::size_t x_index, std::size_t y_index) const {
-        return x_index + x.size() * y_index;
+    std::size_t index(std::size_t c0_index, std::size_t y_index) const {
+        return c0_index + c0.size() * y_index;
     }
 
     /**
@@ -210,7 +210,7 @@ struct RectilinearMesh2d {
      * @return index of x, from 0 to x.size()-1
      */
     std::size_t index0(std::size_t mesh_index) const {
-        return mesh_index % x.size();
+        return mesh_index % c0.size();
     }
 
     /**
@@ -219,7 +219,7 @@ struct RectilinearMesh2d {
      * @return index of y, from 0 to y.size()-1
      */
     std::size_t index1(std::size_t mesh_index) const {
-        return mesh_index / x.size();
+        return mesh_index / c0.size();
     }
 
     /**
@@ -229,8 +229,8 @@ struct RectilinearMesh2d {
      * @return point with given @a index
      */
     Vec2<double> operator[](std::size_t index) const {
-        const std::size_t x_size = x.size();
-        return Vec2<double>(x[index % x_size], y[index / x_size]);
+        const std::size_t c0_size = c0.size();
+        return Vec2<double>(c0[index % c0_size], c1[index / c0_size]);
     }
 
     /**
@@ -239,8 +239,8 @@ struct RectilinearMesh2d {
      * @param y_index index of y, from 0 to y.size()-1
      * @return point with given x and y indexes
      */
-    Vec2<double> operator()(std::size_t x_index, std::size_t y_index) const {
-        return Vec2<double>(x[x_index], y[y_index]);
+    Vec2<double> operator()(std::size_t c0_index, std::size_t c1_index) const {
+        return Vec2<double>(c0[c0_index], c1[c1_index]);
     }
 };
 

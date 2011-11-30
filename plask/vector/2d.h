@@ -28,7 +28,7 @@ struct Vec2 {
      * @param p vector to copy from
      */
     template <typename OtherT>
-    Vec2(const Vec2<OtherT>& p): c0(p.x0), c1(p.x1) {}
+    Vec2(const Vec2<OtherT>& p): c0(p.c0), c1(p.c1) {}
 
     /**
      * Construct vector with given coordinates.
@@ -135,6 +135,15 @@ struct Vec2 {
     }
 
 };
+
+/**
+ * Multiple vector @a v by scalar @a scale.
+ * @param scale scalar
+ * @param v vector
+ * @return vector multiplied by scalar
+ */
+template <typename T>
+inline Vec2<T> operator*(const T scale, const Vec2<T>& v) { return v*scale; }
 
 }       //namespace plask
 
