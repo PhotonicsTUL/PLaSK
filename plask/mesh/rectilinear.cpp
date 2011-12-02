@@ -16,8 +16,10 @@ void RectilinearMesh1d::addPoint(double new_node_cord) {
 }
 
 void RectilinearMesh1d::addPoints(double first, double len, std::size_t points_count) {
+    if (points_count == 0) return;
+    --points_count;
     auto get_el = [&](std::size_t i) { return first + i * len / points_count; };
-    addOrderedPoints(makeFunctorIndexedIterator(get_el, 0), makeFunctorIndexedIterator(get_el, points_count+1), points_count);
+    addOrderedPoints(makeFunctorIndexedIterator(get_el, 0), makeFunctorIndexedIterator(get_el, points_count+1), points_count+1);
 }
 
 }	//namespace plask
