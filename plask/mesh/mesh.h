@@ -59,8 +59,10 @@ There are two typical approaches to implementing new types of meshes:
 - @ref meshes_write_direct "direct",
 - @ref meshes_write_adapters "using adapters" (this approach is recommended).
 
-@subsection meshes_write_direct Direct implementation of plask::Mesh
-To implement a new mesh directly you have to write class inherited from the plask::Mesh. You are required to:
+@subsection meshes_write_direct Direct implementation of plask::Mesh\<SPACE\>
+To implement a new mesh directly you have to write class inherited from the plask::Mesh\<SPACE\>, where space is a type of space your mesh is defined over.
+It can be one of: @a SpaceXY (2D Cartesian coordinates), @a SpaceRZ (2D cylindrical coordinates) or @a SpaceXYZ (3D cooridinates).
+You are required to:
 - implement the @ref plask::Mesh::size size method;
 - implement the iterator over the mesh points, which required to:
   - writing class inherited from plask::Mesh::IteratorImpl (and implement all its abstract methods),
@@ -68,8 +70,12 @@ To implement a new mesh directly you have to write class inherited from the plas
 
 TODO: example
 
+@subsection spaces_and_coordinates A note about spaces and coordinates
+
+TODO
+
 @subsection meshes_write_adapters Using adapters to generate plask::Mesh implementation
-You can specialize adapter template to generate class which inherit from plask::Mesh.
+You can specialize adapter template to generate class which inheritting from plask::Mesh. TODO
 
 To do this, you have to implement internal mesh representation class (see @ref meshes_internal) first.
 Your class must fulfill adapter templates requirements (it is one of adapter template parameters),
@@ -91,7 +97,7 @@ For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshTyp
 @code
 template <typename DataT>    //for any data type
 struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh& dst_mesh, std::vector<DataT>& dst_vec) {
+    static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename MyMeshType::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
 
         // here comes your interpolation code
     }
@@ -104,7 +110,7 @@ To implement the interpolation version for the 'double' type, you should write:
 @code
 template <>
 struct plask::InterpolationAlgorithm<MyMeshType, double, plask::LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh& dst_mesh, std::vector<double>& dst_vec) {
+    static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh<typename MyMeshType::Space>& dst_mesh, std::vector<double>& dst_vec) {
 
         // interpolation code for vectors of doubles
     }
@@ -136,13 +142,20 @@ namespace plask {
  *
  * @see @ref meshes
  */
+template <typename S>
 struct Mesh {
 
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
 
+    /// Type of the space over which the mesh is defined
+    typedef S Space;
+
+    /// Type of vector representing coordinates in local space
+    typedef typename S::CoordsType LocalCoords;
+
     /// Base class for mesh iterator implementation.
-    typedef PolymorphicForwardIteratorImpl<Vec3<double>, const Vec3<double>> IteratorImpl;
+    typedef PolymorphicForwardIteratorImpl<LocalCoords, const LocalCoords> IteratorImpl;
 
     /// Mesh iterator type.
     typedef PolymorphicForwardIterator<IteratorImpl> Iterator;
@@ -159,21 +172,10 @@ struct Mesh {
 
 };
 
-/**
-  * Template for base classes for meshes over particular space
-  *
-  */
-template <typename S>
-struct MeshOver: public Mesh {
-
-    /// Type of the space over which the mesh is defined
-    typedef S Space;
-
-};
 
 /**
 Template which specialization is class inherited from Mesh (is Mesh implementation).
-@tparam InternalMeshType Mesh type. Can be in diferent space.
+@tparam InternalMeshType Mesh type.
 It must:
     - InternalMeshType::PointType must be a typename of points used by InternalMeshType
     - allow for iterate (has begin and end methods) over InternalMeshType::PointType, and has defined InternalMeshType::const_iterator for constant iterator type

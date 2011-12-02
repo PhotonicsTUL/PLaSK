@@ -363,7 +363,8 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY>: public Provider {
     : fillMesh(std::forward<Args>(params)...) {
     }
 
-    ProvidedValueType& operator()(Mesh&& mesh, InterpolationMethod&& method) {
+    template <typename S>
+    ProvidedValueType& operator()(Mesh<S>&& mesh, InterpolationMethod&& method) {
         return fillMesh(mesh, method);
     }
 

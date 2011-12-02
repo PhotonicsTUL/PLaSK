@@ -151,6 +151,7 @@ struct Vec2 {
 template <typename T>
 inline Vec2<T> operator*(const T scale, const Vec2<T>& v) { return v*scale; }
 
-}       //namespace plask
+
+} //namespace plask
 
 #endif

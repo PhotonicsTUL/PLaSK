@@ -19,6 +19,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 
 option (BUILD_SHARED_LIBS "build also shared library" OFF)
 option (BUILD_PYTHON_MODULE "build and install Python module plask" ON)
+option(BUILD_DOCUMENTATION "build doxygen documentation" OFF)
 option (MAKE_TESTS "build and run unit tests" ON)
 option(PACK_EXE "self-pack and strip executables" OFF)  #compress exe
 
@@ -120,13 +121,17 @@ if (MAKE_TESTS)
 endif(MAKE_TESTS)
 
 # ----------===== documentation (api) =====--------------------------------------------
-option(BUILD_DOCUMENTATION "build doxygen documentation" OFF)
+find_package(Doxygen)
+
 if(BUILD_DOCUMENTATION)
-    find_package(Doxygen)
     if(DOXYGEN_FOUND)
         add_custom_target(doc ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
     else()
         message("Doxygen not found. Build without documentation.")
+    endif()
+else()
+    if(DOXYGEN_FOUND)
+        add_custom_target(doc ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
     endif()
 endif()
 
