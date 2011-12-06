@@ -12,7 +12,7 @@ PLaSK is... TODO
 - @subpage modules "How to implement own module?"
 - @subpage providers "How to use and implement providers and receivers?"
 - @subpage meshes "How to use meshes and write an own one?"
-
+- @subpage interpolation "All about interpolation."
 */
 
 

@@ -109,6 +109,11 @@ public:
      * @return point with given @a index
      */
     const double& operator[](std::size_t index) const { return points[index]; }
+    
+    /**
+     * Remove all points from mesh.
+     */
+    void clear();
 
 };
 
@@ -212,6 +217,54 @@ struct RectilinearMesh2d {
 
     ///Second coordinate of points in this mesh.
     RectilinearMesh1d c1;
+    
+    /**
+     * Get first coordinate of points in this mesh.
+     * @return c0
+     */
+    RectilinearMesh1d& x() { return c0; }
+    
+    /**
+     * Get first coordinate of points in this mesh.
+     * @return c0
+     */
+    const RectilinearMesh1d& x() const { return c0; }
+    
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return c1
+     */
+    RectilinearMesh1d& y() { return c1; }
+    
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return c1
+     */
+    const RectilinearMesh1d& y() const { return c1; }
+    
+    /**
+     * Get first coordinate of points in this mesh.
+     * @return c0
+     */
+    RectilinearMesh1d& r() { return c0; }
+    
+    /**
+     * Get first coordinate of points in this mesh.
+     * @return c0
+     */
+    const RectilinearMesh1d& r() const { return c0; }
+    
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return c1
+     */
+    RectilinearMesh1d& z() { return c1; }
+    
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return c1
+     */
+    const RectilinearMesh1d& z() const { return c1; }
 
     ///Type of points in this mesh.
     typedef Vec2<double> PointType;
@@ -244,7 +297,7 @@ struct RectilinearMesh2d {
     /**
      * Calculate index of c0 using this mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of c0, from 0 to c1.size()-1
+     * @return index of c0, from 0 to c0.size()-1
      */
     std::size_t index0(std::size_t mesh_index) const {
         return mesh_index % c0.size();
@@ -278,6 +331,14 @@ struct RectilinearMesh2d {
      */
     Vec2<double> operator()(std::size_t c0_index, std::size_t c1_index) const {
         return Vec2<double>(c0[c0_index], c1[c1_index]);
+    }
+    
+    /**
+     * Remove all points from mesh.
+     */
+    void clear() {
+        c0.clear();
+        c1.clear();
     }
 };
 

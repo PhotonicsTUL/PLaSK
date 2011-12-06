@@ -22,4 +22,9 @@ void RectilinearMesh1d::addPoints(double first, double len, std::size_t points_c
     addOrderedPoints(makeFunctorIndexedIterator(get_el, 0), makeFunctorIndexedIterator(get_el, points_count+1), points_count+1);
 }
 
+void RectilinearMesh1d::clear() {
+    points.clear();
+}
+
+
 }	//namespace plask
