@@ -164,6 +164,11 @@ inline void RectilinearMesh1d::addOrderedPoints(IteratorT begin, IteratorT end, 
 
 /**
  * Rectilinear mesh in 2d space.
+ * 
+ * Includes two 1d rectilinear meshes:
+ * - c0 (alternative names: x(), r())
+ * - c1 (alternative names: y(), z())
+ * Represent all points (x, y) such that x is in c0 and y is in c1.
  */
 struct RectilinearMesh2d {
 
