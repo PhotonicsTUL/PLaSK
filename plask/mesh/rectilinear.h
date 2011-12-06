@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <initializer_list>
 
 #include "../vector/2d.h"
 #include "../utils/iterators.h"
@@ -64,21 +65,41 @@ public:
     iterator begin() { return points.begin(); }
     iterator end() { return points.end(); }*/
 
-    //Construct empty mesh.
-    //RectilinearMesh1d() {}
+    ///Construct empty mesh.
+    RectilinearMesh1d() {}
+    
+    /**
+     * Construct mesh with given points.
+     * It use algorithm which has quadric time complexity.
+     * @param points points, in any order
+     */
+    RectilinearMesh1d(std::initializer_list<PointType> points);
+    
+    /**
+     * Compares meshes.
+     * It use algorithm which has linear time complexity.
+     * @param to_compare mesh to compare
+     * @return true only if this mesh and to_compare represents the same set of points
+     */
+    bool operator==(const RectilinearMesh1d& to_compare) const;
 
     ///@return number of points in mesh
     std::size_t size() const { return points.size(); }
+    
+    ///@return true only if there are no points in mesh
+    bool empty() const { return points.empty(); }
 
     /**
      * Add (1d) point to this mesh.
      * Point is add to mesh only if it is not already included in mesh.
+     * It use algorithm which has O(size()) time complexity.
      * @param new_node_cord coordinate of point to add
      */
     void addPoint(double new_node_cord);
     
     /**
      * Add points from ordered range.
+     * It use algorithm which has linear time complexity.
      * @param begin, end ordered range of points in ascending order
      * @param points_count_hint number of points in range (can be approximate, or 0)
      * @tparam IteratorT input iterator
@@ -88,6 +109,7 @@ public:
     
     /**
      * Add points from ordered range.
+     * It use algorithm which has linear time complexity.
      * @param begin, end ordered range of points in ascending order
      * @tparam RandomAccessIteratorT random access iterator
      */
@@ -97,6 +119,7 @@ public:
     
     /**
      * Add to mesh points: first + i * len / points_count, where i is in range [0, points_count].
+     * It use algorithm which has linear time complexity.
      * @param first coordinate of first point
      * @param len first+len is coordinate of last point
      * @param points_count number of points to add
@@ -283,6 +306,9 @@ struct RectilinearMesh2d {
 
     ///@return number of points in mesh
     std::size_t size() const { return c0.size() * c1.size(); }
+    
+    ///@return true only if there are no points in mesh
+    bool empty() const { return c0.empty() || c1.empty(); }
 
     /**
      * Calculate this mesh index using indexes of c0 and c1.

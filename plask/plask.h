@@ -8,6 +8,11 @@
 @section plask_about About
 PLaSK is... TODO
 
+PLaSK project consists of:
+- libplask - C++ calculation library. This is main PLaSK component (heart of PLaSK). It can be used directly, but also all other components depends from and uses it.
+- libplask python bindings - which allow to use libplask from python scripts.
+- graphical experiments designer
+
 @section plask_tutorials Tutorials
 - @subpage modules "How to implement own module?"
 - @subpage providers "How to use and implement providers and receivers?"

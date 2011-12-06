@@ -2,6 +2,14 @@
 
 namespace plask {
 
+RectilinearMesh1d::RectilinearMesh1d(std::initializer_list< PointType > points) {
+    for (PointType p: points) addPoint(p);
+}
+
+bool RectilinearMesh1d::operator==(const plask::RectilinearMesh1d& to_compare) const {
+    return points == to_compare.points;
+}
+    
 RectilinearMesh1d::const_iterator RectilinearMesh1d::find(double to_find) const {
     return std::lower_bound(points.begin(), points.end(), to_find);
 }
