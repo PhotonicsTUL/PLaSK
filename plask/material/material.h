@@ -28,8 +28,11 @@ struct Material {
 
 /**
 Material which consist with few real materials.
+It calculate avarages for all properties.
 */
 struct MixedMaterial: public Material {
+    
+    //std::map<std::shared_ptr<Material>, double> materials;
 
     //virtual bool isDynamic() { return true; }
 
