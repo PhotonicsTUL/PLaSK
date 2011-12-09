@@ -1,5 +1,7 @@
 #include "primitives.h"
 
+#include <algorithm>
+
 namespace plask {
 
 inline void ensureLo(double& to_be_lo, double how_lo) {
@@ -12,7 +14,7 @@ inline void ensureHi(double& to_be_hi, double how_hi) {
 
 //------------- Rect2d ---------------------
     
-void Rect2d::fix() const {
+void Rect2d::fix() {
     if (lower.x > upper.x) std::swap(lower.x, upper.x);
     if (lower.y > upper.y) std::swap(lower.y, upper.y);
 }
@@ -32,7 +34,7 @@ bool Rect2d::intersect(const plask::Rect2d& other) const {
     );
 }
 
-void Rect2d::include(const Vec2< double >& p) const {
+void Rect2d::include(const Vec2< double >& p) {
     if (p.x < lower.x) lower.x = p.x; else ensureHi(upper.x, p.x);
     if (p.y < lower.y) lower.y = p.y; else ensureHi(upper.y, p.y);
 }
@@ -46,7 +48,7 @@ void Rect2d::include(const plask::Rect2d& other) {
 
 //------------- Rect3d ---------------------
 
-void Rect3d::fix() const {
+void Rect3d::fix() {
     if (lower.x > upper.x) std::swap(lower.x, upper.x);
     if (lower.y > upper.y) std::swap(lower.y, upper.y);
     if (lower.z > upper.z) std::swap(lower.z, upper.z);
@@ -70,7 +72,7 @@ bool Rect3d::intersect(const plask::Rect3d& other) const {
     );
 }
 
-void Rect3d::include(const Vec3< double >& p) const {
+void Rect3d::include(const Vec3< double >& p) {
     if (p.x < lower.x) lower.x = p.x; else ensureHi(upper.x, p.x);
     if (p.y < lower.y) lower.y = p.y; else ensureHi(upper.y, p.y);
     if (p.z < lower.z) lower.z = p.z; else ensureHi(upper.z, p.z);

@@ -68,7 +68,7 @@ struct Vec2 {
      * @return vectors sum
      */
     template <typename OtherT>
-    auto operator+(const Vec2<OtherT>& to_add) -> Vec2<decltype(c0 + to_add.c0)> const {
+    auto operator+(const Vec2<OtherT>& to_add) const -> Vec2<decltype(c0 + to_add.c0)> {
         return Vec2<decltype(this->c0 + to_add.c0)>(c0 + to_add.c0, c1 + to_add.c1);
     }
 
@@ -89,7 +89,7 @@ struct Vec2 {
      * @return vectors difference
      */
     template <typename OtherT>
-    auto operator-(const Vec2<OtherT>& to_sub) -> Vec2<decltype(c0 - to_sub.c0)> const {
+    auto operator-(const Vec2<OtherT>& to_sub) const -> Vec2<decltype(c0 - to_sub.c0)> {
         return Vec2<decltype(this->c0 - to_sub.c0)>(c0 - to_sub.c0, c1 - to_sub.c1);
     }
 

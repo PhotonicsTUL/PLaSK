@@ -18,7 +18,7 @@ struct Rect2d {
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
      * Change x or y of lower and upper if necessary.
      */
-    void fix() const;
+    void fix();
         
     /**
      * Check if point is inside rectangle.
@@ -60,33 +60,33 @@ struct Rect3d {
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
      * Change x or y of lower and upper if necessary.
      */
-    void fix() const;
+    void fix();
         
     /**
      * Check if point is inside rectangle.
      * @param p point
      * @return true only if point is inside this rectangle
      */
-    bool inside(const Vec2<double>& p) const;
+    bool inside(const Vec3<double>& p) const;
     
     /**
      * Check if this and other rectangles have common points.
      * @param other rectangle
      * @return true only if this and other have common points
      */
-    bool intersect(const Rect2d& other) const;
+    bool intersect(const Rect3d& other) const;
     
     /**
      * Make this rectangle, the minimal rectangle which include this and given point @a p.
      * @param p point which should be inside rectangle
      */
-    void include(const Vec2<double>& p);
+    void include(const Vec3<double>& p);
     
     /**
      * Make this rectangle, the minimal rectangle which include this and @a other rectangle.
      * @param other point which should be inside rectangle
      */
-    void include(const Rect2d& other);
+    void include(const Rect3d& other);
     
 };
 

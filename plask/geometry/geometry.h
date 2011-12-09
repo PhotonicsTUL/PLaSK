@@ -19,6 +19,11 @@ struct GeometryElement {
      */
     virtual bool isLeaf() const { return false; }
     
+    /**
+     * Virtual destructor. Do nothing.
+     */
+    virtual ~GeometryElement() {}
+    
 };
 
 template < int dim >
@@ -50,7 +55,7 @@ struct GeometryElementD: public GeometryElement {
      */
     virtual Rect getBoundingBox() const = 0;
     
-    virtual Vec getBoundingBoxSize() const { return getBoundingBox().size(); };
+    virtual Vec getBoundingBoxSize() const { return getBoundingBox().size(); }
     
     //virtual GeometryElementD<dim>* getLeaf(const Vec& p) const; //shared_ptr?
     
