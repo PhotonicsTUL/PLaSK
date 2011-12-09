@@ -71,6 +71,9 @@ struct GeometryElementD: public GeometryElement {
     
 };
 
+/**
+ * Template for base class for all leaf nodes.
+ */
 template < int dim >
 struct GeometryElementLeaf: GeometryElementD<dim> {
     
