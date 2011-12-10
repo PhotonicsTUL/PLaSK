@@ -1,7 +1,11 @@
 #ifndef PLASK__PLASK_H
 #define PLASK__PLASK_H
 
-//allow for easy include all plask futures, also includes manual main page in doxygen format
+/** @file
+This file allow for easy include all plask futures.
+
+It also includes manual main page in doxygen format.
+*/
 
 /** @mainpage libplask manual
 

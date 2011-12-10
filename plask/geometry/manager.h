@@ -1,6 +1,11 @@
 #ifndef PLASK__GEOMETRY_MANAGER_H
 #define PLASK__GEOMETRY_MANAGER_H
 
+/** @file
+This file includes:
+- plask::GeometryManager class.
+*/
+
 #include <string>
 #include <map>
 #include <set>

@@ -1,6 +1,10 @@
 #ifndef PLASK__GEOMETRY_LEAF_H
 #define PLASK__GEOMETRY_LEAF_H
 
+/** @file
+This file includes geometry elements leafs classes.
+*/
+
 #include "element.h"
 
 namespace plask {
