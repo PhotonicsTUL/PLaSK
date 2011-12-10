@@ -14,6 +14,8 @@ struct Rect2d {
         
     Vec2<double> size() const { return upper - lower; }
     
+    Rect2d(const Vec2<double>& lower, const Vec2<double>& upper): lower(lower), upper(upper) {}
+    
     /**
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
      * Change x or y of lower and upper if necessary.
@@ -46,6 +48,10 @@ struct Rect2d {
      */
     void include(const Rect2d& other);
     
+    Rect2d translated(const Vec2<double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
+    
+    void translate(const Vec2<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+    
 };
 
 struct Rect3d {
@@ -55,6 +61,8 @@ struct Rect3d {
     Vec3<double> upper;
         
     Vec3<double> size() const { return upper - lower; }
+    
+    Rect3d(const Vec3<double>& lower, const Vec3<double>& upper): lower(lower), upper(upper) {}
     
     /**
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
@@ -88,6 +96,10 @@ struct Rect3d {
      */
     void include(const Rect3d& other);
     
+    Rect3d translated(const Vec3<double>& translation_vec) const { return Rect3d(lower + translation_vec, upper + translation_vec); }
+    
+    void translate(const Vec3<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+    
 };
 
 /**
@@ -101,6 +113,8 @@ struct Primitive<2> {
     typedef Rect2d Rect;
     typedef Vec2<double> Vec;
     static const int dim = 2;
+    
+    static const Vec ZERO_VEC;
 };
 
 template <>
@@ -108,6 +122,8 @@ struct Primitive<3> {
     typedef Rect3d Rect;
     typedef Vec3<double> Vec;
     static const int dim = 3;
+    
+    static const Vec ZERO_VEC;
 };
 
 }       // namespace plask

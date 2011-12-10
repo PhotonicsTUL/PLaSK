@@ -14,6 +14,8 @@ even if one of the pair element is inserted to geometry graph in more than one p
 
 Each hint allow to choose one child for geometry element container and it is a pair:
 geometry element container -> element in container.
+
+Typically, hints are returned by methods which adds new elements to containers.
 */
 struct PathHints {
 
@@ -26,10 +28,22 @@ struct PathHints {
 	///Hints map.
 	HintMap hintFor;
 
+	/**
+	 * Add hint to hints map. Overwrite if hint for given container already exists.
+	 * @param hint hint to add
+	 */
 	void addHint(const Hint& hint);
 	
+	/**
+	 * Add hint to hints map. Overwrite if hint for given container already exists.
+	 * @param hint hint to add
+	 */
 	PathHints& operator+=(const Hint& hint) { addHint(hint); return *this; }
 	
+	/**
+	 * Add hint to hints map. Overwrite if hint for given container already exists.
+	 * @param container, child hint to add
+	 */
 	void addHint(GeometryElement* container, GeometryElement* child);
 	
 	/**

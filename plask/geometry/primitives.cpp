@@ -87,4 +87,7 @@ void Rect3d::include(const plask::Rect3d& other) {
     ensureHi(upper.z, other.upper.z);
 }
 
+const Primitive<2>::Vec Primitive<2>::ZERO_VEC = Vec(0.0, 0.0);
+const Primitive<3>::Vec Primitive<3>::ZERO_VEC = Vec(0.0, 0.0, 0.0);
+
 }

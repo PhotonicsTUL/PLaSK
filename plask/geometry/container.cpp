@@ -4,7 +4,7 @@
 namespace plask {
 
 void PathHints::addHint(const Hint& hint) {
-	hintFor.insert(hint);
+	addHint(hint.first, hint.second);
 }
 
 void PathHints::addHint(GeometryElement* container, GeometryElement* child) {

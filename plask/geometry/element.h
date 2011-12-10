@@ -46,14 +46,14 @@ struct GeometryElementD: public GeometryElement {
      * @param p point
      * @return true only if this geometry includes point @a p
      */
-    virtual bool includes(const Vec& p) const = 0;
+    virtual bool inside(const Vec& p) const = 0;
     
     /**
      * Check if geometry includes some point from given @a area.
      * @param area rectangular area
      * @return true only if this geometry includes some points from @a area
      */
-    virtual bool includes(const Rect& area) const = 0;
+    virtual bool intersect(const Rect& area) const = 0;
     
     /**
      * Calculate minimal rectangle which includes all points of geometry element.
@@ -81,13 +81,17 @@ struct GeometryElementD: public GeometryElement {
  * Template for base class for all leaf nodes.
  */
 template < int dim >
-struct GeometryElementLeaf: GeometryElementD<dim> {
+struct GeometryElementLeaf: public GeometryElementD<dim> {
+    
+    typedef typename GeometryElementD<dim>::Vec Vec;
     
     std::shared_ptr<Material> material;
     
+    GeometryElementLeaf<dim>(std::shared_ptr<Material> material): material(material) {}
+    
     virtual GeometryElementType getType() const { return GE_TYPE_LEAF; }
     
-    virtual std::shared_ptr<Material> getMaterial(const typename GeometryElementD<dim>::Vec& p) const {
+    virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
         return includes(p) ? material : nullptr;
     }
     
@@ -96,13 +100,17 @@ struct GeometryElementLeaf: GeometryElementD<dim> {
 /**
  * Template for base class for all transform nodes.
  */
-template < int dim, typename ChildType >
-struct GeometryElementTransform: GeometryElementD<dim> {
+template < int dim, typename ChildType = GeometryElementD<dim> >
+struct GeometryElementTransform: public GeometryElementD<dim> {
+    
+    GeometryElementTransform(ChildType* child): _child(child) {}
     
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
     
+    ChildType& child() { return *child; }   //TODO check if child != nullptr
+    
     protected:
-    ChildType* child;
+    ChildType* _child;
     
 };
 
@@ -110,7 +118,7 @@ struct GeometryElementTransform: GeometryElementD<dim> {
  * Template for base class for all container nodes.
  */
 template < int dim >
-struct GeometryElementContainer: GeometryElementD<dim> {
+struct GeometryElementContainer: public GeometryElementD<dim> {
     
     virtual GeometryElementType getType() const { return GE_TYPE_CONTAINER; }
     
