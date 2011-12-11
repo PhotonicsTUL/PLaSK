@@ -2,7 +2,7 @@
 #define PLASK__INTERPOLATION_H
 
 /** @page interpolation Interpolation
-@section meshes_interpolation About
+@section meshes_interpolation About interpolation
 PLaSK provides a mechanism to calculate (interpolate) a field of some physical quantity in arbitrary requested points,
 if values of this field are known in different points.
 Both sets of points are described by @ref meshes "meshes" and associated with the vectors of corresponding values.
@@ -87,7 +87,9 @@ enum InterpolationMethod {
     LINEAR = 1,         ///< linear interpolation
     SPLINE = 2,         ///< spline interpolation
     //...add new interpolation algoritms here...
+#   ifndef DOXYGEN
     __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop
+#   endif // DOXYGEN
 };
 
 static const char* InterpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE" /*attach new interpolation algoritm names here*/};
@@ -111,6 +113,7 @@ struct InterpolationAlgorithm
     }
 };
 
+#ifndef DOXYGEN
 // The following structures are solely used for metaprogramming
 template <typename SrcMeshT, typename DataT, int iter>
 struct __InterpolateMeta__
@@ -131,13 +134,14 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
         throw CriticalException("No such interpolation method.");
     }
 };
+#endif // DOXYGEN
 
 
 /**
  * Calculate (interpolate when needed) a field of some physical properties in requested points of (@a dst_mesh)
  * if values of this field in points of (@a src_mesh) are known.
  * @param src_mesh set of points in which fields values are known
- * @param src_vec vector of known field values in points described by @a sec_mesh
+ * @param src_vec_ptr pointer to the vector of known field values in points described by @a sec_mesh
  * @param dst_mesh requested set of points, in which the field values should be calculated (interpolated)
  * @param method interpolation method to use
  * @return vector of the field values in points described by @a dst_mesh, can be equal to @a src_vec
@@ -148,22 +152,29 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  */
 template <typename SrcMeshT, typename DataT>
 inline std::shared_ptr<const std::vector<DataT>>
-interpolate(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>>& src_vec,
-            Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT,
-            std::shared_ptr<const std::vector<DataT>> dst_vec = (std::shared_ptr<const std::vector<DataT>>)nullptr) {
+interpolate(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>>& src_vec_ptr,
+            Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT)
+{
 
-    if (&src_mesh == &dst_mesh) return src_vec; // meshes are identical, so just return src_vec
+    if (&src_mesh == &dst_mesh) return src_vec_ptr; // meshes are identical, so just return src_vec
 
-    std::shared_ptr<std::vector<DataT>> result;
-    if (dst_vec == nullptr) result = std::shared_ptr<std::vector<DataT>>(new std::vector<DataT>);
-    else result = (std::shared_ptr<std::vector<DataT>>&)dst_vec;
-
+    std::shared_ptr<std::vector<DataT>> result {new std::vector<DataT>};
     result->resize(dst_mesh.size());
-    __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, *src_vec, dst_mesh, *result, method);
-
+    __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, *src_vec_ptr, dst_mesh, *result, method);
     return result;
 }
 
+#ifndef DOXYGEN
+// This is necessary for passing non-const src_vec_ptr.
+// Apparently C++ has problems with proper casting is the vector is template argument of shared_ptr
+template <typename SrcMeshT, typename DataT>
+inline std::shared_ptr<const std::vector<DataT>>
+interpolate(SrcMeshT& src_mesh, std::shared_ptr<std::vector<DataT>>& src_vec_ptr,
+            Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT) {
+    std::shared_ptr<const std::vector<DataT>> src_const_vec_ptr = (std::shared_ptr<const std::vector<DataT>>&)src_vec_ptr;
+    return interpolate(src_mesh, src_const_vec_ptr, dst_mesh, method);
+}
+#endif // DOXYGEN
 
 } // namespace plask
 

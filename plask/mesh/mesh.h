@@ -2,7 +2,7 @@
 #define PLASK__MESH_H
 
 /** @page meshes Meshes
-@section meshes_about About
+@section meshes_about About meshes
 The mesh represents (ordered) set of points in 3d space. All meshes in PLaSK implements (inherits from)
 plask::Mesh interface.
 

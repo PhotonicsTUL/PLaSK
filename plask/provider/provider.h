@@ -3,7 +3,7 @@
 
 /** @page providers Provider and receivers
 
-@section providers_about About
+@section providers_about About provider-receiver mechanism
 This page describe providers and receivers mechanism, which allow for data exchange between modules.
 
 */

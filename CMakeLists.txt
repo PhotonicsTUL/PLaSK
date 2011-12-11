@@ -3,7 +3,7 @@
 cmake_minimum_required (VERSION 2.8)
 project (plask)
 
-set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer PHysics)
+set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
 set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
 
 
@@ -31,6 +31,7 @@ else(${VERSION_REVISION})
 endif(${VERSION_REVISION})
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 message(STATUS "PLaSK version ${VERSION}")
+
 
 # ---------- configurable options --------------------------------------------
 option (BUILD_SHARED_LIBS "build also shared library" OFF)
@@ -136,11 +137,11 @@ if(BUILD_DOCUMENTATION)
     else()
         message("Doxygen not found. Building without documentation.")
     endif()
-else()
+else(BUILD_DOCUMENTATION)
     if(DOXYGEN_FOUND)
         add_custom_target(doc ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
     endif()
-endif()
+endif(BUILD_DOCUMENTATION)
 
 # ----------===== install =====--------------------------------------------
 if(BUILD_SHARED_LIBS)
@@ -184,5 +185,6 @@ set(CPACK_SOURCE_IGNORE_FILES
 "^${PROJECT_SOURCE_DIR}/debug/"
 "^${PROJECT_SOURCE_DIR}/release/"
 )
+
 include(CPack)
 

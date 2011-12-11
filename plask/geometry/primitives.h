@@ -7,13 +7,13 @@
 namespace plask {
 
 struct Rect2d {
-    
+
     Vec2<double> lower;
-        
+
     Vec2<double> upper;
-        
+
     Vec2<double> size() const { return upper - lower; }
-    
+
     Rect2d(const Vec2<double>& lower, const Vec2<double>& upper): lower(lower), upper(upper) {}
     
     /**
@@ -21,33 +21,33 @@ struct Rect2d {
      * Change x or y of lower and upper if necessary.
      */
     void fix();
-        
+
     /**
      * Check if point is inside rectangle.
      * @param p point
      * @return true only if point is inside this rectangle
      */
     bool inside(const Vec2<double>& p) const;
-    
+
     /**
      * Check if this and other rectangles have common points.
      * @param other rectangle
      * @return true only if this and other have common points
      */
     bool intersect(const Rect2d& other) const;
-    
+
     /**
      * Make this rectangle, the minimal rectangle which include this and given point @a p.
      * @param p point which should be inside rectangle
      */
     void include(const Vec2<double>& p);
-    
+
     /**
      * Make this rectangle, the minimal rectangle which include this and @a other rectangle.
      * @param other point which should be inside rectangle
      */
     void include(const Rect2d& other);
-    
+
     Rect2d translated(const Vec2<double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
     
     void translate(const Vec2<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
@@ -55,13 +55,13 @@ struct Rect2d {
 };
 
 struct Rect3d {
-    
+
     Vec3<double> lower;
-        
+
     Vec3<double> upper;
-        
+
     Vec3<double> size() const { return upper - lower; }
-    
+
     Rect3d(const Vec3<double>& lower, const Vec3<double>& upper): lower(lower), upper(upper) {}
     
     /**
@@ -69,33 +69,33 @@ struct Rect3d {
      * Change x or y of lower and upper if necessary.
      */
     void fix();
-        
+
     /**
      * Check if point is inside rectangle.
      * @param p point
      * @return true only if point is inside this rectangle
      */
     bool inside(const Vec3<double>& p) const;
-    
+
     /**
      * Check if this and other rectangles have common points.
      * @param other rectangle
      * @return true only if this and other have common points
      */
     bool intersect(const Rect3d& other) const;
-    
+
     /**
      * Make this rectangle, the minimal rectangle which include this and given point @a p.
      * @param p point which should be inside rectangle
      */
     void include(const Vec3<double>& p);
-    
+
     /**
      * Make this rectangle, the minimal rectangle which include this and @a other rectangle.
      * @param other point which should be inside rectangle
      */
     void include(const Rect3d& other);
-    
+
     Rect3d translated(const Vec3<double>& translation_vec) const { return Rect3d(lower + translation_vec, upper + translation_vec); }
     
     void translate(const Vec3<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
@@ -126,7 +126,7 @@ struct Primitive<3> {
     static const Vec ZERO_VEC;
 };
 
-}       // namespace plask
+} // namespace plask
 
 #endif
 

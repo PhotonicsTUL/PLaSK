@@ -2,7 +2,8 @@
 #define PLASK__MODULE_H
 
 /** @page modules Modules
- * @section modules_write How to write new calculation module?
+ * @section about About modules
+ * @section modules_write How to write new a calculation module?
  * To write module you should:
  * -# Write new class which inherit from plask::Module.
  * -# Implement plask::Module::getName method. This method should just return name of your module.
@@ -23,31 +24,31 @@ namespace plask {
  * Base class for all modules.
  */
 struct Module {
-    
+
     /**
      * Do nothing.
      */
     virtual ~Module() {}
-    
+
     /**
      * @return name of this module
      */
     virtual std::string getName() const = 0;
-    
+
     /**
      * @return description of this module (empty string by default)
      */
     virtual std::string getDescription() const { return ""; }
-    
+
     /**
      * Make calculations. Place for calculation code in inherited classes.
-     * 
+     *
      * Can throw exception in case of errors.
-     * 
+     *
      * By default do nothing.
      */
     virtual void calculate() {}
-    
+
 };
 
 }       //namespace plask
