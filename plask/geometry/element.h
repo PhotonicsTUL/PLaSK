@@ -20,6 +20,17 @@ enum GeometryElementType {
 };
 
 /**
+ * Transform coordinates of points between two geometries.
+ * 
+ * Transform objects can be composed.
+ */
+struct GeometryTransform {
+    //Vec3 to(Vec3)
+    //Vec3 from(Vec3)
+    //GeometryTransform compose(GeometryTransform)
+};
+
+/**
  * Base class for all geometries.
  */
 struct GeometryElement {
@@ -34,6 +45,8 @@ struct GeometryElement {
      * Virtual destructor. Do nothing.
      */
     virtual ~GeometryElement() {}
+    
+    //virtual GeometryTransform getTransform()
     
 };
 
