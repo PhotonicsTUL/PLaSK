@@ -1,6 +1,11 @@
 #ifndef PLASK__MODULE_H
 #define PLASK__MODULE_H
 
+/** @file
+This file includes base class for modules.
+@see @ref modules
+*/
+
 /** @page modules Modules
  * @section about About modules
  * @section modules_write How to write new a calculation module?

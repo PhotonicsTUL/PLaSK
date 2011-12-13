@@ -1,6 +1,10 @@
 #ifndef PLASK__EXCEPTIONS_H
 #define PLASK__EXCEPTIONS_H
 
+/** @file
+This file includes definitions of all exceptions classes which are used in PLaSK.
+*/
+
 #include <stdexcept>
 
 namespace plask {
