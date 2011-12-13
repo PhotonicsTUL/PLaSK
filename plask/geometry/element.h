@@ -7,6 +7,7 @@ This file includes base classes for geometries elements.
 
 
 #include <memory>
+#include <set>
 
 #include "../material/material.h"
 #include "primitives.h"
@@ -93,6 +94,12 @@ struct GeometryElementD: public GeometryElement {
     
     //virtual std::vector<Material*> getMaterials(Mesh);        ??
     
+    /**
+     * Calculate bounding boxes of all leafs.
+     * @return bounding boxes of all leafs
+     */
+    virtual std::set<Rect> getLeafsBoundingBoxes() const = 0;
+    
 };
 
 /**
@@ -102,6 +109,7 @@ template < int dim >
 struct GeometryElementLeaf: public GeometryElementD<dim> {
     
     typedef typename GeometryElementD<dim>::Vec Vec;
+    typedef typename GeometryElementD<dim>::Rect Rect;
     
     std::shared_ptr<Material> material;
     
@@ -111,6 +119,12 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     
     virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
         return includes(p) ? material : nullptr;
+    }
+    
+    virtual std::set<Rect> getLeafsBoundingBoxes() const {
+        std::set<Rect> result;
+        result.insert(GeometryElementD<dim>::getBoundingBox());
+        return result;
     }
     
 };
