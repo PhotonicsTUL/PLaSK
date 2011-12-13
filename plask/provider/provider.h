@@ -1,6 +1,11 @@
 #ifndef PLASK__PROVIDER_H
 #define PLASK__PROVIDER_H
 
+/** @file
+This file includes base classes and templates which allow to generate providers and recivers.
+@see @ref providers
+*/
+
 /** @page providers Provider and receivers
 
 @section providers_about About provider-receiver mechanism

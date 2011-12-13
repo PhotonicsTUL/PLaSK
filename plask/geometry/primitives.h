@@ -1,6 +1,10 @@
 #ifndef PLASK__PRIMITIVES_H
 #define PLASK__PRIMITIVES_H
 
+/** @file
+This file includes useful geometry primitives, like rectangles, etc.
+*/
+
 #include "../vector/2d.h"
 #include "../vector/3d.h"
 

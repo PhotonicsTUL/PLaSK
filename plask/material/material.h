@@ -1,6 +1,10 @@
 #ifndef PLASK__MATERIAL_H
 #define PLASK__MATERIAL_H
 
+/** @file
+This file includes base classes for materials and matrial database class.
+*/
+
 #include <string>
 #include <memory>	//shared_ptr
 #include "../exceptions.h"
@@ -27,15 +31,24 @@ struct Material {
 };
 
 /**
-Material which consist with few real materials.
-It calculate avarages for all properties.
-*/
+ * Material which consist with few real materials.
+ * It calculate avarages for all properties.
+ */
 struct MixedMaterial: public Material {
     
     //std::map<std::shared_ptr<Material>, double> materials;
 
     //virtual bool isDynamic() { return true; }
 
+};
+
+/**
+ * Material which wrap one material and rotate its tensors properties.
+ */
+struct RotatedMaterial: public Material {
+    
+    std::shared_ptr<Material> wrapped;
+    
 };
 
 /**

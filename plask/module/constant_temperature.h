@@ -1,6 +1,10 @@
 #ifndef PLASK__CONSTANT_TEMPERATURE_H
 #define PLASK__CONSTANT_TEMPERATURE_H
 
+/** @file
+This file includes module which provide constant temperature.
+*/
+
 #include "../module.h"
 #include "../provider/provider.h"
 

@@ -1,6 +1,10 @@
 #ifndef PLASK__ITERATORS_H
 #define PLASK__ITERATORS_H
 
+/** @file
+This file includes iterators utils.
+*/
+
 //general iterators utils
 
 #include <boost/iterator/iterator_facade.hpp>

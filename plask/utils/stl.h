@@ -1,6 +1,10 @@
 #ifndef PLASK__STL_H
 #define PLASK__STL_H
 
+/** @file
+This file includes tools which are comparability with STL containers, etc.
+*/
+
 namespace plask {
 
 template <typename map_t>

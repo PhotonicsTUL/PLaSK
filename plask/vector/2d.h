@@ -139,6 +139,14 @@ struct Vec2 {
         c1 /= scalar;
         return *this;
     }
+    
+    /**
+     * Calculate vector opposite to this.
+     * @return Vec2<T>(-c0, -c1)
+     */
+    Vec2<T> operator-() {
+        return Vec2<T>(-c0, -c1);
+    }
 
 };
 

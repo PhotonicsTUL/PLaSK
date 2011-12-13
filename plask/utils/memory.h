@@ -1,5 +1,13 @@
+#ifndef PLASK__MEMORY_H
+#define PLASK__MEMORY_H
+
+/** @file
+This file includes utils to operate on memory, pointers, smart pointers, etc.
+*/
 
 #include <memory>
+
+namespace plask {
 
 /**
  * Copy @a ptr data if is not the only shared_ptr instance managing the current object, i.e. whether ptr.unique() is @c false (ptr.use_count() != 1).
@@ -32,3 +40,7 @@ template <typename T>
 inline void makeUnique(std::shared_ptr<T>& ptr) {
     ptr = getUnique(ptr);
 }
+
+}       // namespace plask
+
+#endif

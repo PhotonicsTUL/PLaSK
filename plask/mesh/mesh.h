@@ -1,6 +1,11 @@
 #ifndef PLASK__MESH_H
 #define PLASK__MESH_H
 
+/** @file
+This file includes base classes for meshes.
+@see @ref meshes
+*/
+
 /** @page meshes Meshes
 @section meshes_about About meshes
 The mesh represents (ordered) set of points in 3d space. All meshes in PLaSK implements (inherits from)

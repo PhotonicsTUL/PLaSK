@@ -1,6 +1,11 @@
 #ifndef PLASK__GEOMETRY_ELEMENT_H
 #define PLASK__GEOMETRY_ELEMENT_H
 
+/** @file
+This file includes base classes for geometries elements.
+*/
+
+
 #include <memory>
 
 #include "../material/material.h"
