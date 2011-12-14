@@ -21,6 +21,7 @@ namespace plask {
     };
 }
 
+
 BOOST_AUTO_TEST_SUITE(interpolation_algorithms)
 
     BOOST_AUTO_TEST_CASE(interpolation_choice) {
@@ -36,7 +37,7 @@ BOOST_AUTO_TEST_SUITE(interpolation_algorithms)
                           plask::NotImplemented);
 
         // Check simple interpolate
-        std::shared_ptr<const std::vector<int>>ret_data = plask::interpolate(src_mesh, src_data, dst_mesh, plask::LINEAR);
+        std::shared_ptr<const std::vector<int>>ret_data = plask::interpolate<plask::DummyMesh,int>(src_mesh, src_data, dst_mesh, plask::LINEAR);
         BOOST_CHECK_EQUAL((*ret_data)[0], 11);
     }
 

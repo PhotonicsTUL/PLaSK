@@ -152,7 +152,7 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  */
 template <typename SrcMeshT, typename DataT>
 inline std::shared_ptr<const std::vector<DataT>>
-interpolate(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>>& src_vec_ptr,
+interpolate(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>> src_vec_ptr,
             Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT)
 {
 
@@ -169,10 +169,10 @@ interpolate(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>>& src_v
 // Apparently C++ has problems with proper casting is the vector is template argument of shared_ptr
 template <typename SrcMeshT, typename DataT>
 inline std::shared_ptr<const std::vector<DataT>>
-interpolate(SrcMeshT& src_mesh, std::shared_ptr<std::vector<DataT>>& src_vec_ptr,
+interpolate(SrcMeshT& src_mesh, std::shared_ptr<std::vector<DataT>> src_vec_ptr,
             Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT) {
-    std::shared_ptr<const std::vector<DataT>> src_const_vec_ptr = (std::shared_ptr<const std::vector<DataT>>&)src_vec_ptr;
-    return interpolate(src_mesh, src_const_vec_ptr, dst_mesh, method);
+//     std::shared_ptr<const std::vector<DataT>> src_const_vec_ptr = src_vec_ptr;
+    return interpolate(src_mesh, (std::shared_ptr<const std::vector<DataT>>&&)src_vec_ptr, dst_mesh, method);
 }
 #endif // DOXYGEN
 
