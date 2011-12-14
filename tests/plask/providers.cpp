@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(providers_and_recivers)
 
 BOOST_AUTO_TEST_CASE(single_value) {
 	struct OneDouble: public plask::SingleValueProperty<double> {};
-	plask::ProviderFor<OneDouble> provider;
+	plask::ProviderFor<OneDouble>::WithValue provider;
 	plask::ReceiverFor<OneDouble> receiver;
 	
 	BOOST_CHECK_THROW(receiver(), plask::NoProvider);
