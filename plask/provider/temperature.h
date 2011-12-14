@@ -3,6 +3,9 @@
 
 namespace plask {
 
+/**
+ * Physical property tag class for temperature.
+ */
 struct Temperature: ScalarFieldProperty {};
 
 /**

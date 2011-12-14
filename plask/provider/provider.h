@@ -2,14 +2,65 @@
 #define PLASK__PROVIDER_H
 
 /** @file
-This file includes base classes and templates which allow to generate providers and recivers.
+This file includes base classes and templates which allow to generate providers and receivers.
 @see @ref providers
-*/
 
-/** @page providers Provider and receivers
+
+@page providers Provider and receivers
 
 @section providers_about About provider-receiver mechanism
 This page describe providers and receivers mechanism, which allow for data exchange between modules.
+
+Provider is an object which has type derived from plask::Provider and provide some value(s)
+(has operator() which return provided value(s)).
+It also has set of listeners which are inform about changes of provided data.
+
+Receiver is an object of class derived from plask::Provider::Listener, which is typically connected
+with provider and allow for reading value(s) provided by it
+(has operator() which return provided value(s)).
+
+Each type of provider has corresponding type of receiver (see plask::Receiver),
+and only provider and receiver witch corresponding types can be connected.
+
+@section providers_in_modules Using providers and receivers in modules
+Each module should have one provider class field for each physical property which it want to make
+available for other modules and reports and it also should have one receiver field for each physical
+property which value it wants to know (needs for calculations).
+
+Example:
+@code
+TODO
+@endcode
+
+@section providers_writing Writing new providers and receivers types
+
+@subsection providers_writing_easy Easy (half-automatic) way
+The easiest way to create new provider and corresponding receiver types is to write physical property
+tag class and use it to specialize plask::ProviderFor and plask::ReceiverFor templates.
+
+Physical property tag class is an class which only has static fields and typedefs which describe
+physical property. It can be easy obtain by subclass specialization of one of templates:
+- plask::Property - allow to obtain all possible physical properties tags classes, but require many parameters
+- plask::SingleValueProperty - allow to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value
+- plask::FieldProperty
+- plask::InterpolatedFieldProperty
+- plask::ScalarFieldProperty
+
+Example:
+@code
+//Physical property tag class for temperature.
+struct Temperature: ScalarFieldProperty {};
+
+//Type for provider class:
+typedef ProviderFor<Temperature> TemperatureProvider;
+
+//Type for receiver class:
+typedef ReceiverFor<Temperature> TemperatureReceiver;
+@endcode
+
+@subsection providers_writing_easy Flexible (manual) way
+
+
 
 */
 
