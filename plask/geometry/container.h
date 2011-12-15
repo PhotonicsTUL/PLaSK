@@ -7,6 +7,7 @@ This file includes containers of geometries elements.
 
 #include <map>
 #include <vector>
+#include <algorithm>
 #include "element.h"
 #include "transform.h"
 
@@ -113,6 +114,15 @@ struct TrasnalateContainer: GeometryElementContainer<dim> {
             if (r != nullptr) return r;
         }
         return nullptr;
+    }
+    
+    virtual std::set<Rect> getLeafsBoundingBoxes() const {
+        std::set<Rect> result;
+        for (TranslationT* child: childs) {
+            std::set<Rect> child_leafs_boxes = child->getLeafsBoundingBoxes();
+            result.insert(child_leafs_boxes.begin(), child_leafs_boxes.end());
+        }
+        return result;
     }
     
 };

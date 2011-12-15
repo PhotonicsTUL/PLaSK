@@ -30,6 +30,14 @@ struct Translation: public GeometryElementTransform<dim> {
     virtual bool intersect(const Rect& area) const {
         return child().intersect(area.translated(-translation));
     }
+    
+    virtual std::set<Rect> getLeafsBoundingBoxes() const {
+        std::set<Rect> childs_leads_bb = child().getLeafsBoundingBoxes();
+        std::set<Rect> result;
+        Vec inv_tr = - translation;
+        for (Rect& c: childs_leads_bb) result.insert(c.translated(inv_tr));
+        return result;
+    }
 
 };
 

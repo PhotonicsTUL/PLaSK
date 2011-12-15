@@ -42,7 +42,7 @@ You should start reading from section \subpage modules "How to implement an own 
 
 - \subpage modules "How to implement an own module?"
     - \subpage providers "How to use providers and receivers for data exchange?"
-- \subpage new_providers "How to implement new providers and receivers for new data types?"
+- \subpage providers_writing "How to implement new providers and receivers for new data types?"
 - \subpage meshes "How to use meshes and write an own one?"
     - \subpage interpolation "All about interpolation."
 */
