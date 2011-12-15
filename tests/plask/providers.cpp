@@ -2,7 +2,7 @@
 
 #include <plask/provider/provider.h>
 
-BOOST_AUTO_TEST_SUITE(providers_and_recivers)
+BOOST_AUTO_TEST_SUITE(providers) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(single_value) {
     struct OneDouble: public plask::SingleValueProperty<double> {};

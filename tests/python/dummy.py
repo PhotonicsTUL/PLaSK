@@ -6,7 +6,7 @@ import random
 
 # TODO: write proper test cases
 
-class SimpleProviders(unittest.TestCase):
+class SimpleDummy(unittest.TestCase):
 
     def setUp(self):
         '''test case initialization'''

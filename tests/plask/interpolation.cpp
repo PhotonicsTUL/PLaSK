@@ -22,7 +22,7 @@ namespace plask {
 }
 
 
-BOOST_AUTO_TEST_SUITE(interpolation_algorithms)
+BOOST_AUTO_TEST_SUITE(interpolation) // MUST be the same as the file name
 
     BOOST_AUTO_TEST_CASE(interpolation_choice) {
         plask::DummyMesh src_mesh, dst_mesh;

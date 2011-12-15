@@ -3,7 +3,7 @@
 #include <plask/vector/2d.h>
 #include <plask/vector/3d.h>
 
-BOOST_AUTO_TEST_SUITE(vectors)
+BOOST_AUTO_TEST_SUITE(vectors) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(Vector2d) {
     plask::Vec2<double> v_d(1.0, 2.0);
