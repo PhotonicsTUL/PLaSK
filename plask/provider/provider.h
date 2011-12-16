@@ -263,6 +263,60 @@ protected:
 
 };
 
+/**
+ * Specialization of this template is abstract base class for provider which provide one value (for example one double).
+ * @tparam ValueT type of provided value
+ */
+template <typename ValueT>
+struct SingleValueProvider: public Provider {
+
+    ///Type of provided value.
+    typedef ValueT ProvidedValueType;
+
+    /**
+     * Provided value getter.
+     * @return provided value
+     */
+    virtual ProvidedValueType operator()() const = 0;
+
+};
+
+//TODO typedef for SingleValueReceiver (GCC 4.7 needed)
+
+/**
+ * Specialization of this template is abstract base class for provider which provide values in points describe by mesh
+ * and don't use interpolation.
+ */
+template <typename ValueT, typename SpaceType>
+struct OnMeshProvider: public Provider {
+
+    typedef std::shared_ptr< const std::vector<ValueT> > ProvidedValueType;
+
+    virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const = 0;
+
+};
+
+//TODO typedef for OnMeshReceiver (GCC 4.7 needed)
+
+/**
+ * Specialization of this template is abstract base class for provider class which provide values in points describe by mesh and use interpolation.
+ */
+template <typename ValueT, typename SpaceType>
+struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceType> {
+
+    typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
+
+    virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) const = 0;
+
+    ///Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
+    virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const {
+        return this->operator()(dst_mesh, DEFAULT);
+    }
+
+};
+
+//TODO typedef for OnMeshReceiverWithInterpolation (GCC 4.7 needed)
+
 template<typename _Signature> struct DelegateProvider;
 
 /**
@@ -421,19 +475,18 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
 //struct ReceiverFor: public Receiver< ProviderFor<PropertyTag> > {};
 
 /**
- * Specialization which implement abstract provider class which provide one value, typically one double.
+ * Partial specialization which implement abstract provider class which provide one value, typically one double.
  * 
  * @tparam PropertyTag
  * @tparam ValueT type of provided value
  * @tparam SpaceType ignored
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
-struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: public Provider {
+struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: public SingleValueProvider<ValueT> {
 
-    typedef ValueT ProvidedValueType;
+    ///Type of provided value.
+    typedef typename  SingleValueProvider<ValueT>::ProvidedValueType ProvidedValueType;
 
-    virtual ProvidedValueType operator()() const = 0;
-    
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
      */
@@ -452,15 +505,14 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
 };
 
 /**
- * Specialization which implement provider class which provide values in points describe by mesh,
+ * Partial specialization which implement providers classes which provide values in points describe by mesh,
  * and don't use interpolation.
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
-struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public Provider {
+struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMeshProvider<ValueT, SpaceType> {
 
-    typedef std::shared_ptr< const std::vector<ValueT> > ProvidedValueType;
-    
-    virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const = 0;
+    ///Type of provided value.
+    typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
     
     /*
      * Template for implementation of field provider class which holds vector of values and mesh inside.
@@ -492,15 +544,12 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public Prov
 };
 
 /**
- * Specialization which implement provider class which provide values in points describe by mesh,
- * use interpolation, and has vector of data.
+ * Specialization which implement provider class which provide values in points describe by mesh and use interpolation.
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
-struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>: public Provider {
+struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>: public OnMeshProviderWithInterpolation<ValueT, SpaceType> {
 
-    typedef std::shared_ptr< const std::vector<ValueT> > ProvidedValueType;
-    
-    virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) const = 0;
+    typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
     
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
