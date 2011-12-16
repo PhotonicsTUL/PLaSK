@@ -17,7 +17,8 @@ namespace plask {
 enum GeometryElementType {
     GE_TYPE_LEAF = 0,         ///<leaf element (has no child)
     GE_TYPE_TRANSFORM = 1,    ///<transform element (has one child)
-    GE_TYPE_CONTAINER = 2     ///<container (more than one child)
+    GE_TYPE_CONTAINER = 2,    ///<container (more than one child)
+    GE_TYPE_SPACE_CHANGER = 3 ///<transform element changing its space, typically changing number of dimensions (has one child)
 };
 
 /**
@@ -40,7 +41,7 @@ struct GeometryElement {
      * Check if geometry is: leaf, transform or container type element.
      * @return type of this element
      */
-    virtual GeometryElementType getType() const;
+    virtual GeometryElementType getType() const = 0;
     
     /**
      * Virtual destructor. Do nothing.
@@ -139,11 +140,35 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
     
-    ChildType& child() { return *child; }   //TODO check if child != nullptr
+    ChildType& child() { return *_child; }   //TODO check if child != nullptr
+
+    const ChildType& child() const { return *_child; }   //TODO check if child != nullptr
     
     protected:
     ChildType* _child;
     
+};
+
+/**
+ * Template for base class for all space changer nodes.
+ */
+template < int this_dim, int child_dim, typename ChildType = GeometryElementD<child_dim> >
+struct GeometryElementChangeSpace: public GeometryElementD<this_dim> {
+
+    typedef typename ChildType::Rect ChildRect;
+    typedef typename ChildType::Vec ChildVec;
+
+    GeometryElementChangeSpace(ChildType* child): _child(child) {}
+
+    virtual GeometryElementType getType() const { return GE_TYPE_SPACE_CHANGER; }
+
+    ChildType& child() { return *_child; }   //TODO check if child != nullptr
+
+    const ChildType& child() const { return *_child; }   //TODO check if child != nullptr
+
+    protected:
+    ChildType* _child;
+
 };
 
 /**
