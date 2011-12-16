@@ -42,6 +42,14 @@ struct GeometryElement {
      * @return type of this element
      */
     virtual GeometryElementType getType() const = 0;
+
+    /**
+     * Check if element is ready for calculation.
+     * Throw exception if element is in bad state and can't be used in calculations, for example has not required children, etc.
+     * Default implementation do nothing, but inharited class can change this bechaviour.
+     * @throw Exception if element is not ready for calculation
+     */
+    virtual void validate() const throw (Exception) {}
     
     /**
      * Virtual destructor. Do nothing.
@@ -134,13 +142,23 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 template < int dim, typename ChildType = GeometryElementD<dim> >
 struct GeometryElementTransform: public GeometryElementD<dim> {
     
-    GeometryElementTransform(ChildType* child): _child(child) {}
+    explicit GeometryElementTransform(ChildType* child = 0): _child(child) {}
     
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
     
-    ChildType& child() { return *_child; }   //TODO check if child != nullptr
+    ChildType& getChild() { return *_child; }
 
-    const ChildType& child() const { return *_child; }   //TODO check if child != nullptr
+    const ChildType& getChild() const { return *_child; }
+
+    void setChild(ChildType* child) { _child = child; }
+
+    void setChild(ChildType& child) { _child = &child; }
+
+    bool hasChild() const { return _child != nullptr; }
+
+    virtual void validate() const throw (Exception) {
+        if (!hasChild()) throw NoChildException();
+    }
     
     protected:
     ChildType* _child;
@@ -151,21 +169,14 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
  * Template for base class for all space changer nodes.
  */
 template < int this_dim, int child_dim, typename ChildType = GeometryElementD<child_dim> >
-struct GeometryElementChangeSpace: public GeometryElementD<this_dim> {
+struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, ChildType> {
 
     typedef typename ChildType::Rect ChildRect;
     typedef typename ChildType::Vec ChildVec;
 
-    GeometryElementChangeSpace(ChildType* child): _child(child) {}
+    explicit GeometryElementChangeSpace(ChildType* child = 0): GeometryElementTransform<this_dim, ChildType>(child) {}
 
     virtual GeometryElementType getType() const { return GE_TYPE_SPACE_CHANGER; }
-
-    ChildType& child() { return *_child; }   //TODO check if child != nullptr
-
-    const ChildType& child() const { return *_child; }   //TODO check if child != nullptr
-
-    protected:
-    ChildType* _child;
 
 };
 

@@ -5,23 +5,23 @@
 namespace plask {
 
 bool CartesianExtend::inside(const Vec& p) const {
-    return canBeInside(p) && child().inside(childVec(p));
+    return canBeInside(p) && getChild().inside(childVec(p));
 }
 
 bool CartesianExtend::intersect(const Rect& area) const {
-    return canIntersect(area) && child().intersect(childRect(area));
+    return canIntersect(area) && getChild().intersect(childRect(area));
 }
 
 CartesianExtend::Rect CartesianExtend::getBoundingBox() const {
-    return parentRect(child().getBoundingBox());
+    return parentRect(getChild().getBoundingBox());
 }
 
 std::shared_ptr<Material> CartesianExtend::getMaterial(const Vec& p) const {
-    return canBeInside(p) ? child().getMaterial(childVec(p)) : nullptr;
+    return canBeInside(p) ? getChild().getMaterial(childVec(p)) : nullptr;
 }
 
 std::vector<CartesianExtend::Rect> CartesianExtend::getLeafsBoundingBoxes() const {
-    std::vector<ChildRect> c = child().getLeafsBoundingBoxes();
+    std::vector<ChildRect> c = getChild().getLeafsBoundingBoxes();
     std::vector<Rect> result(c.size());
     std::transform(c.begin(), c.end(), result.begin(), [&](const ChildRect& r) { return parentRect(r); });
     return result;

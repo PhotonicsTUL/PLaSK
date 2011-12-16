@@ -52,6 +52,14 @@ struct NoProvider: public Exception {
     NoProvider(): Exception("No provider.") {}
 };
 
+/**
+ * Exceptions of this class are throw by some geometry element classes when there is no required child.
+ */
+struct NoChildException: public Exception {
+    NoChildException(): Exception("No child.") {}
+};
+
+
 } // namespace plask
 
 #endif  //PLASK__EXCEPTIONS_H

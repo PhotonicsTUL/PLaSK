@@ -13,26 +13,26 @@ struct Translation: public GeometryElementTransform<dim> {
 
     typedef typename GeometryElementTransform<dim>::Vec Vec;
     typedef typename GeometryElementTransform<dim>::Rect Rect;
-    using GeometryElementTransform<dim>::child;
+    using GeometryElementTransform<dim>::getChild;
 
     Vec translation;
 
     Translation(GeometryElementD<dim>* child, const Vec& translation): GeometryElementTransform<dim>(child), translation(translation) {}
 
     virtual Rect getBoundingBox() {
-        return child().getBoundingBox().translated(translation);
+        return getChild().getBoundingBox().translated(translation);
     }
 
     virtual bool inside(const Vec& p) const {
-        return child().inside(p-translation);
+        return getChild().inside(p-translation);
     }
 
     virtual bool intersect(const Rect& area) const {
-        return child().intersect(area.translated(-translation));
+        return getChild().intersect(area.translated(-translation));
     }
     
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
-        std::vector<Rect> result = child().getLeafsBoundingBoxes();
+        std::vector<Rect> result = getChild().getLeafsBoundingBoxes();
         Vec inv_tr = - translation;
         for (Rect& r: result) r.translate(inv_tr);
         return result;
