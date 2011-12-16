@@ -116,11 +116,11 @@ struct TrasnalateContainer: GeometryElementContainer<dim> {
         return nullptr;
     }
     
-    virtual std::set<Rect> getLeafsBoundingBoxes() const {
-        std::set<Rect> result;
+    virtual std::vector<Rect> getLeafsBoundingBoxes() const {
+        std::vector<Rect> result;
         for (TranslationT* child: childs) {
-            std::set<Rect> child_leafs_boxes = child->getLeafsBoundingBoxes();
-            result.insert(child_leafs_boxes.begin(), child_leafs_boxes.end());
+            std::vector<Rect> child_leafs_boxes = child->getLeafsBoundingBoxes();
+            result.insert(result.end(), child_leafs_boxes.begin(), child_leafs_boxes.end());
         }
         return result;
     }

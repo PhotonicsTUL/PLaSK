@@ -21,6 +21,8 @@ struct CartesianExtend: public GeometryElementChangeSpace<3, 2>, public Calculat
 
     virtual std::shared_ptr<Material> getMaterial(const Vec& p) const;
 
+    virtual std::vector<Rect> getLeafsBoundingBoxes() const;
+
 private:
     ///@return true only if p can be inside this, false if for sure its not inside
     bool canBeInside(const Vec& p) const { return 0.0 <= p.c2 || p.c2 <= length; }

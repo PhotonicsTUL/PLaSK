@@ -1,5 +1,7 @@
 #include "space_changer_cartesian.h"
 
+#include <algorithm>
+
 namespace plask {
 
 bool CartesianExtend::inside(const Vec& p) const {
@@ -16,6 +18,13 @@ CartesianExtend::Rect CartesianExtend::getBoundingBox() const {
 
 std::shared_ptr<Material> CartesianExtend::getMaterial(const Vec& p) const {
     return canBeInside(p) ? child().getMaterial(childVec(p)) : nullptr;
+}
+
+std::vector<CartesianExtend::Rect> CartesianExtend::getLeafsBoundingBoxes() const {
+    std::vector<ChildRect> c = child().getLeafsBoundingBoxes();
+    std::vector<Rect> result(c.size());
+    std::transform(c.begin(), c.end(), result.begin(), [&](const ChildRect& r) { return parentRect(r); });
+    return result;
 }
 
 }   // namespace plask

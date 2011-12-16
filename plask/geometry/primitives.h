@@ -18,6 +18,9 @@ struct Rect2d {
 
     Vec2<double> size() const { return upper - lower; }
 
+    ///Construct uninitilized Rect2d.
+    Rect2d() {}
+
     Rect2d(const Vec2<double>& lower, const Vec2<double>& upper): lower(lower), upper(upper) {}
     
     /**
@@ -65,6 +68,9 @@ struct Rect3d {
     Vec3<double> upper;
 
     Vec3<double> size() const { return upper - lower; }
+
+    ///Construct uninitilized Rect2d.
+    Rect3d() {}
 
     Rect3d(const Vec3<double>& lower, const Vec3<double>& upper): lower(lower), upper(upper) {}
     

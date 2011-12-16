@@ -52,20 +52,25 @@ struct RotatedMaterial: public Material {
 };
 
 /**
-Materials database.
-*/
+ * Materials database.
+ *
+ * Create materials (each on first get), and cache it.
+ */
 struct MaterialsDB {
 
     /**
-    @return material with given name
-    @throw NoSuchMaterial if material with given name not exists
-    */
+     * @param name material name (with encoded parameters)
+     * @return material with given name
+     * @throw NoSuchMaterial if material with given name not exists
+     */
+    //TODO domieszka w osobnym parametrze?
     std::shared_ptr<Material> get(const std::string& name);
 
     /**
-    Fill database with default materials.
-    */
-    void init();
+     * Fill database with default materials creators.
+     */
+    //TODO materials will be cr
+    //void init();
 
 };
 

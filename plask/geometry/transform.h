@@ -31,11 +31,10 @@ struct Translation: public GeometryElementTransform<dim> {
         return child().intersect(area.translated(-translation));
     }
     
-    virtual std::set<Rect> getLeafsBoundingBoxes() const {
-        std::set<Rect> childs_leads_bb = child().getLeafsBoundingBoxes();
-        std::set<Rect> result;
+    virtual std::vector<Rect> getLeafsBoundingBoxes() const {
+        std::vector<Rect> result = child().getLeafsBoundingBoxes();
         Vec inv_tr = - translation;
-        for (Rect& c: childs_leads_bb) result.insert(c.translated(inv_tr));
+        for (Rect& r: result) r.translate(inv_tr);
         return result;
     }
 
