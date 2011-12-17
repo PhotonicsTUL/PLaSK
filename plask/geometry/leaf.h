@@ -24,7 +24,7 @@ struct Box: public GeometryElementLeaf<dim> {
 	
 	Box(const Vec& size, std::shared_ptr<Material> material): GeometryElementLeaf<dim>(material), size(size) {}
 	
-	virtual Rect getBoundingBox() {
+	virtual Rect getBoundingBox() const {
 		return Rect(Primitive<dim>::ZERO_VEC, size);
 	}
 	

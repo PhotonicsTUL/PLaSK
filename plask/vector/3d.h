@@ -8,7 +8,7 @@ namespace plask {
 /**
  * Vector in 3d space.
  */
-template <typename T>
+template <typename T = double>
 struct Vec3 {
 
     union {
@@ -46,12 +46,20 @@ struct Vec3 {
     Vec3(const T c0, const T c1, const T c2): c0(c0), c1(c1), c2(c2) {}
 
     /**
-     * Compare to vectors, this and @a p.
+     * Compare two vectors, this and @a p.
      * @param p vector to compare
      * @return true only if this vector and @a p have equals coordinates
      */
     template <typename OtherT>
     bool operator==(const Vec3<OtherT>& p) const { return p.c0 == c0 && p.c1 == c1 && p.c2 == c2; }
+    
+    /**
+     * Compare two vectors, this and @a p.
+     * @param p vector to compare
+     * @return true only if this vector and @a p don't have equals coordinates
+     */
+    template <typename OtherT>
+    bool operator!=(const Vec3<OtherT>& p) const { return p.c0 != c0 || p.c1 != c1 || p.c2 != c2; }
 
     /**
      * Calculate square of vector length.
@@ -151,8 +159,18 @@ struct Vec3 {
      * Calculate vector opposite to this.
      * @return Vec3<T>(-c0, -c1, -c2)
      */
-    Vec3<T> operator-() {
+    Vec3<T> operator-() const {
         return Vec3<T>(-c0, -c1, -c2);
+    }
+    
+    /**
+     * Print vector to stream using format (where c0, c1 and c2 are vector coordinates): [c0, c1, c2]
+     * @param out print destination, output stream
+     * @param to_print vector to print
+     * @return out stream
+     */
+    friend inline std::ostream& operator<<(std::ostream& out, const Vec3<T>& to_print) {
+        return out << '[' << to_print.c0 << ", " << to_print.c1 << ", " << to_print.c2 << ']';
     }
 
 };
@@ -166,6 +184,14 @@ struct Vec3 {
 template <typename T>
 inline Vec3<T> operator*(const T scale, const Vec3<T>& v) { return v*scale; }
 
+/**
+ * Helper to create 3d vector.
+ * @param c0, c1, c2 vector coordinates. 
+ */ 
+template <typename T>
+inline Vec3<T> vec(const T c0, const T c1, const T c2) {
+    return Vec3<T>(c0, c1, c2);
+}
 
 } //namespace plask
 

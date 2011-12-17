@@ -24,6 +24,20 @@ struct Rect2d {
     Rect2d(const Vec2<double>& lower, const Vec2<double>& upper): lower(lower), upper(upper) {}
     
     /**
+     * Compare two rectangles, this and @a r.
+     * @param r rectangle to compare
+     * @return true only if this rectangle and @a p have equals coordinates
+     */
+    bool operator==(const Rect2d& r) const;
+    
+    /**
+     * Compare two rectangles, this and @a r.
+     * @param r rectangle to compare
+     * @return true only if this rectangle and @a p don't have equals coordinates
+     */
+    bool operator!=(const Rect2d& r) const;
+    
+    /**
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
      * Change x or y of lower and upper if necessary.
      */
@@ -59,6 +73,16 @@ struct Rect2d {
     
     void translate(const Vec2<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
     
+    /**
+     * Print rectangle to stream.
+     * @param out print destination, output stream
+     * @param to_print rectangle to print
+     * @return out stream
+     */
+    friend inline std::ostream& operator<<(std::ostream& out, const Rect2d& to_print) {
+        return out << '[' << to_print.lower << ", " << to_print.upper << ']';
+    }
+    
 };
 
 struct Rect3d {
@@ -73,6 +97,20 @@ struct Rect3d {
     Rect3d() {}
 
     Rect3d(const Vec3<double>& lower, const Vec3<double>& upper): lower(lower), upper(upper) {}
+    
+    /**
+     * Compare two rectangles, this and @a r.
+     * @param r rectangle to compare
+     * @return true only if this rectangle and @a p have equals coordinates
+     */
+    bool operator==(const Rect3d& r) const;
+    
+    /**
+     * Compare two rectangles, this and @a r.
+     * @param r rectangle to compare
+     * @return true only if this rectangle and @a p don't have equals coordinates
+     */
+    bool operator!=(const Rect3d& r) const;
     
     /**
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
@@ -109,6 +147,16 @@ struct Rect3d {
     Rect3d translated(const Vec3<double>& translation_vec) const { return Rect3d(lower + translation_vec, upper + translation_vec); }
     
     void translate(const Vec3<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+    
+    /**
+     * Print rectangle to stream.
+     * @param out print destination, output stream
+     * @param to_print rectangle to print
+     * @return out stream
+     */
+    friend inline std::ostream& operator<<(std::ostream& out, const Rect3d& to_print) {
+        return out << '[' << to_print.lower << ", " << to_print.upper << ']';
+    }
     
 };
 

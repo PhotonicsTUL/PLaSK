@@ -13,7 +13,15 @@ inline void ensureHi(double& to_be_hi, double how_hi) {
 }
 
 //------------- Rect2d ---------------------
-    
+
+bool Rect2d::operator ==(const Rect2d &r) const {
+    return lower == r.lower && upper == r.upper;
+}
+
+bool Rect2d::operator !=(const Rect2d &r) const {
+    return lower != r.lower || upper != r.upper;
+}
+
 void Rect2d::fix() {
     if (lower.x > upper.x) std::swap(lower.x, upper.x);
     if (lower.y > upper.y) std::swap(lower.y, upper.y);
@@ -47,6 +55,14 @@ void Rect2d::include(const plask::Rect2d& other) {
 }
 
 //------------- Rect3d ---------------------
+
+bool Rect3d::operator ==(const Rect3d &r) const {
+    return lower == r.lower && upper == r.upper;
+}
+
+bool Rect3d::operator !=(const Rect3d &r) const {
+    return lower != r.lower || upper != r.upper;
+}
 
 void Rect3d::fix() {
     if (lower.x > upper.x) std::swap(lower.x, upper.x);

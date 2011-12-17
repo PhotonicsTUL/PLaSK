@@ -119,6 +119,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     
     typedef typename GeometryElementD<dim>::Vec Vec;
     typedef typename GeometryElementD<dim>::Rect Rect;
+    using GeometryElementD<dim>::getBoundingBox;
     
     std::shared_ptr<Material> material;
     
@@ -127,11 +128,11 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     virtual GeometryElementType getType() const { return GE_TYPE_LEAF; }
     
     virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
-        return includes(p) ? material : nullptr;
+        return inside(p) ? material : nullptr;
     }
     
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
-        return { GeometryElementD<dim>::getBoundingBox() };
+        return { getBoundingBox() };
     }
     
 };

@@ -18,9 +18,15 @@ struct Translation: public GeometryElementTransform<dim> {
     Vec translation;
 
     Translation(GeometryElementD<dim>* child, const Vec& translation): GeometryElementTransform<dim>(child), translation(translation) {}
+    
+    Translation(GeometryElementD<dim>& child, const Vec& translation): GeometryElementTransform<dim>(&child), translation(translation) {}
 
-    virtual Rect getBoundingBox() {
+    virtual Rect getBoundingBox() const {
         return getChild().getBoundingBox().translated(translation);
+    }
+    
+    virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
+        return getChild().getMaterial(p-translation);
     }
 
     virtual bool inside(const Vec& p) const {
