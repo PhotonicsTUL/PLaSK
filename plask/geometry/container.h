@@ -134,11 +134,15 @@ struct StackContainer2d: GeometryElementContainer<2> {
     typedef GeometryElementD<2> ChildT;
     typedef Translation<2> TranslationT;
     
-    StackContainer2d();
+    explicit StackContainer2d(const double baseHeight = 0.0);
     
     PathHints::Hint push_back(ChildT* el, const double x_translation);
     
     const TranslationT* getChildForHeight(double height) const;
+    
+    virtual bool inside(const Vec& p) const;
+    
+    virtual std::shared_ptr<Material> getMaterial(const Vec& p) const;
     
 private:
     std::vector< TranslationT* > children;

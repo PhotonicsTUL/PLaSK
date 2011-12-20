@@ -17,8 +17,8 @@ GeometryElement* PathHints::getChild(GeometryElement* container) const {
 
 
 
-StackContainer2d::StackContainer2d() {
-    stackHeights.push_back(0.0);
+StackContainer2d::StackContainer2d(const double baseHeight) {
+    stackHeights.push_back(baseHeight);
 }
 
 PathHints::Hint StackContainer2d::push_back(StackContainer2d::ChildT* el, const double x_translation) {
@@ -35,6 +35,17 @@ const plask::StackContainer2d::TranslationT* StackContainer2d::getChildForHeight
     if (it == stackHeights.end() || it == stackHeights.begin()) return nullptr;
     return children[it-stackHeights.begin()-1];
 }
+
+bool StackContainer2d::inside(const Vec& p) const {
+    const TranslationT* c = getChildForHeight(p.y);
+    return c ? c->inside(p) : 0;
+}
+
+std::shared_ptr< Material > StackContainer2d::getMaterial(const Vec& p) const {
+    const TranslationT* c = getChildForHeight(p.y);
+    return c ? c->getMaterial(p) : nullptr;
+}
+
 
 
 }	// namespace plask
