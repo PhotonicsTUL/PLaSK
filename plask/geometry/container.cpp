@@ -38,7 +38,7 @@ const plask::StackContainer2d::TranslationT* StackContainer2d::getChildForHeight
 
 bool StackContainer2d::inside(const Vec& p) const {
     const TranslationT* c = getChildForHeight(p.y);
-    return c ? c->inside(p) : 0;
+    return c ? c->inside(p) : false;
 }
 
 std::shared_ptr< Material > StackContainer2d::getMaterial(const Vec& p) const {

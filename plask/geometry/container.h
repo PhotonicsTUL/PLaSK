@@ -67,50 +67,49 @@ struct PathHints {
 };
 
 /**
- * Geometry elements container in which all child is connected with translation vector.
+ * Template which implment container using stl container of pointers to some geometry elements objects (Translation by default).
+ * @tparam dim GeometryElementContainer dimension
+ * @tparam container_type container of pointers to children
  */
-//TODO some implementation are naive, and can be done faster with some caches
-template < int dim >
-struct TrasnalateContainer: GeometryElementContainer<dim> {
+template <int dim, typename container_type = std::vector<Translation<dim>*> >
+struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
     
     typedef typename GeometryElementContainer<dim>::Vec Vec;
     typedef typename GeometryElementContainer<dim>::Rect Rect;
-    typedef GeometryElementD<dim> ChildT;
-    typedef Translation<dim> TranslationT;
     
-    std::vector< TranslationT* > children;
+protected:
+    container_type children;
     
-    ~TrasnalateContainer() {
-        for (TranslationT* child: children) delete child;
-    }
-    
-    PathHints::Hint add(ChildT* el, const Vec& translation) {
-        TranslationT* trans_geom = new TranslationT(el, translation);
-        children.push_back(trans_geom);
-        return PathHints::Hint(this, trans_geom);
+public:
+    ~GeometryElementContainerImpl() {
+        for (auto child: children) delete child;
     }
     
     virtual bool inside(const Vec& p) const {
-        for (TranslationT* child: children) if (child->inside(p)) return true;
+        for (auto child: children) if (child->inside(p)) return true;
         return false;
     }
     
     virtual bool intersect(const Rect& area) const {
-        for (TranslationT* child: children) if (child->intersect(area)) return true;
+        for (auto child: children) if (child->intersect(area)) return true;
         return false;
     }
     
     virtual Rect getBoundingBox() const {
         //if (childs.empty()) throw?
-        Rect result = children[0].getBoundingBox();
+        Rect result = children[0]->getBoundingBox();
         for (std::size_t i = 1; i < children.size(); ++i)
-            result.include(children[i].getBoundingBox());
+            result.include(children[i]->getBoundingBox());
         return result;
     }
     
+    /**
+     * Check children in reverse order and check if any returns material.
+     * @return material or nullptr
+     */
     virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
-        for (TranslationT* child: children) {
-            std::shared_ptr<Material> r = child->getMaterial(p);
+        for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
+            std::shared_ptr<Material> r = (*child_it)->getMaterial(p);
             if (r != nullptr) return r;
         }
         return nullptr;
@@ -118,7 +117,7 @@ struct TrasnalateContainer: GeometryElementContainer<dim> {
     
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
         std::vector<Rect> result;
-        for (TranslationT* child: children) {
+        for (auto child: children) {
             std::vector<Rect> child_leafs_boxes = child->getLeafsBoundingBoxes();
             result.insert(result.end(), child_leafs_boxes.begin(), child_leafs_boxes.end());
         }
@@ -127,17 +126,56 @@ struct TrasnalateContainer: GeometryElementContainer<dim> {
     
 };
 
-struct StackContainer2d: GeometryElementContainer<2> {
+/**
+ * Geometry elements container in which all child is connected with translation vector.
+ */
+//TODO some implementation are naive, and can be done faster with some caches
+template < int dim >
+struct TrasnalateContainer: public GeometryElementContainerImpl<dim> {
+    
+    typedef typename GeometryElementContainer<dim>::Vec Vec;
+    typedef typename GeometryElementContainer<dim>::Rect Rect;
+    typedef GeometryElementD<dim> ChildT;
+    typedef Translation<dim> TranslationT;
+    
+    using GeometryElementContainerImpl<dim>::children;
+    
+    PathHints::Hint add(ChildT* el, const Vec& translation) {
+        TranslationT* trans_geom = new TranslationT(el, translation);
+        children.push_back(trans_geom);
+        return PathHints::Hint(this, trans_geom);
+    }
+    
+};
+
+/**
+ * Container which have children in stack/layers.
+ */
+struct StackContainer2d: public GeometryElementContainerImpl<2> {
     
     typedef typename GeometryElementContainer<2>::Vec Vec;
     typedef typename GeometryElementContainer<2>::Rect Rect;
     typedef GeometryElementD<2> ChildT;
     typedef Translation<2> TranslationT;
     
+    using GeometryElementContainerImpl<2>::children;
+    
+    /**
+     * @param baseHeight height where should start first element
+     */
     explicit StackContainer2d(const double baseHeight = 0.0);
     
-    PathHints::Hint push_back(ChildT* el, const double x_translation);
+    /**
+     * Add children to stack top.
+     * @param el element to add
+     * @param x_trasnlation horizontal translation of element
+     */
+    PathHints::Hint push_back(ChildT* el, const double x_translation = 0.0);
     
+    /**
+     * @param height
+     * @return child which are on given @a height or @c nullptr
+     */
     const TranslationT* getChildForHeight(double height) const;
     
     virtual bool inside(const Vec& p) const;
@@ -145,7 +183,6 @@ struct StackContainer2d: GeometryElementContainer<2> {
     virtual std::shared_ptr<Material> getMaterial(const Vec& p) const;
     
 private:
-    std::vector< TranslationT* > children;
     
     ///stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements)
     std::vector<double> stackHeights;
