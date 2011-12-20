@@ -78,38 +78,38 @@ struct TrasnalateContainer: GeometryElementContainer<dim> {
     typedef GeometryElementD<dim> ChildT;
     typedef Translation<dim> TranslationT;
     
-    std::vector< TranslationT* > childs;
+    std::vector< TranslationT* > children;
     
     ~TrasnalateContainer() {
-        for (TranslationT* child: childs) delete child;
+        for (TranslationT* child: children) delete child;
     }
     
     PathHints::Hint add(ChildT* el, const Vec& translation) {
         TranslationT* trans_geom = new TranslationT(el, translation);
-        childs.push_back(trans_geom);
+        children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);
     }
     
     virtual bool inside(const Vec& p) const {
-        for (TranslationT* child: childs) if (child->inside(p)) return true;
+        for (TranslationT* child: children) if (child->inside(p)) return true;
         return false;
     }
     
     virtual bool intersect(const Rect& area) const {
-        for (TranslationT* child: childs) if (child->intersect(area)) return true;
+        for (TranslationT* child: children) if (child->intersect(area)) return true;
         return false;
     }
     
     virtual Rect getBoundingBox() const {
         //if (childs.empty()) throw?
-        Rect result = childs[0].getBoundingBox();
-        for (std::size_t i = 1; i < childs.size(); ++i)
-            result.include(childs[i].getBoundingBox());
+        Rect result = children[0].getBoundingBox();
+        for (std::size_t i = 1; i < children.size(); ++i)
+            result.include(children[i].getBoundingBox());
         return result;
     }
     
     virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
-        for (TranslationT* child: childs) {
+        for (TranslationT* child: children) {
             std::shared_ptr<Material> r = child->getMaterial(p);
             if (r != nullptr) return r;
         }
@@ -118,12 +118,33 @@ struct TrasnalateContainer: GeometryElementContainer<dim> {
     
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
         std::vector<Rect> result;
-        for (TranslationT* child: childs) {
+        for (TranslationT* child: children) {
             std::vector<Rect> child_leafs_boxes = child->getLeafsBoundingBoxes();
             result.insert(result.end(), child_leafs_boxes.begin(), child_leafs_boxes.end());
         }
         return result;
     }
+    
+};
+
+struct StackContainer2d: GeometryElementContainer<2> {
+    
+    typedef typename GeometryElementContainer<2>::Vec Vec;
+    typedef typename GeometryElementContainer<2>::Rect Rect;
+    typedef GeometryElementD<2> ChildT;
+    typedef Translation<2> TranslationT;
+    
+    StackContainer2d();
+    
+    PathHints::Hint push_back(ChildT* el, const double x_translation);
+    
+    const TranslationT* getChildForHeight(double height) const;
+    
+private:
+    std::vector< TranslationT* > children;
+    
+    ///stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements)
+    std::vector<double> stackHeights;
     
 };
 
