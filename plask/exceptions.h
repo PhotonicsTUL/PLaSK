@@ -31,16 +31,9 @@ struct NotImplemented: public Exception {
 
     NotImplemented(const std::string& method_name)
     : Exception("Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
-};
-
-/**
- * This exception is thrown when material (typically with given name) is not found.
- */
-struct NoSuchMaterial: public Exception {
-    //std::string materialName;
-
-    NoSuchMaterial(const std::string& material_name)
-    : Exception("No such material " + material_name)/*, materialName(material_name)*/ {}
+    
+    NotImplemented(const std::string& where, const std::string& method_name)
+    : Exception("In " + where + ": Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
 };
 
 /**
@@ -57,6 +50,42 @@ struct NoProvider: public Exception {
  */
 struct NoChildException: public Exception {
     NoChildException(): Exception("No child.") {}
+};
+
+/*
+ * Exceptions of this class are throw when some string parser find errors.
+ */
+/*struct ParseException: public Exception {
+    ParseException(): Exception("Parse error.") {}
+    ParseException(std::string& msg): Exception("Parse error: " + msg) {}
+};*/
+
+//-------------- Connected with materials: -----------------------
+
+/**
+ * This exception is thrown when material (typically with given name) is not found.
+ */
+struct NoSuchMaterial: public Exception {
+    //std::string materialName;
+
+    NoSuchMaterial(const std::string& material_name)
+    : Exception("No such material " + material_name)/*, materialName(material_name)*/ {}
+};
+
+struct MaterialMethodNotImplemented: public NotImplemented {
+    
+    MaterialMethodNotImplemented(const std::string& material_name, const std::string& method_name)
+    : NotImplemented("material " + material_name, method_name) {
+    }
+    
+};
+
+/**
+ * Exceptions of this class are throw when material string parser find errors.
+ */
+struct MaterialParseException: public Exception {
+    MaterialParseException(): Exception("Material parse error.") {}
+    MaterialParseException(const std::string& msg): Exception("Material parse error: " + msg) {}
 };
 
 
