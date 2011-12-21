@@ -5,12 +5,12 @@
 
 namespace plask {
 
-std::shared_ptr< Material > plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector< double >& components_amounts,
+std::shared_ptr< Material > plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector< double >& composition,
                                                     DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) const throw (NoSuchMaterial)
 {
     auto it = constructors.find(parsed_name_with_donor);
     if (it == constructors.end()) throw NoSuchMaterial(parsed_name_with_donor);
-    return std::shared_ptr<Material>(it->second(components_amounts, dopant_amount_type, dopant_amount));
+    return std::shared_ptr<Material>(it->second(composition, dopant_amount_type, dopant_amount));
 }
 
 const char* getElementEnd(const char* begin, const char* end) {
@@ -33,6 +33,7 @@ double toDouble(const std::string& s) {
     }
 }
 
+//TODO fix to have amounts after any element
 void parseNameWithComponents(const char* begin, const char* end, std::vector<std::string>& components, std::vector<double>& components_amounts) {
     while (begin != end) {
         const char* comp_end = getElementEnd(begin, end);
