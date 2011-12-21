@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_CASE(dim1) {
     BOOST_REQUIRE_EQUAL(mesh.size(), 2);
     BOOST_CHECK_EQUAL(mesh[0], 1.0);
     BOOST_CHECK_EQUAL(mesh[1], 3.0);
-    mesh.addPoints(1.0, 1.0, 3);
+    mesh.addPointsLinear(1.0, 2.0, 3);
     BOOST_CHECK(mesh == plask::RectilinearMesh1d({1.0, 1.5, 2.0, 3.0}));
     mesh.clear();
     BOOST_CHECK_EQUAL(mesh.empty(), true);

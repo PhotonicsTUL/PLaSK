@@ -71,14 +71,14 @@ public:
 
     ///Construct empty mesh.
     RectilinearMesh1d() {}
-    
+
     /**
      * Construct mesh with given points.
      * It use algorithm which has quadric time complexity.
      * @param points points, in any order
      */
     RectilinearMesh1d(std::initializer_list<PointType> points);
-    
+
     /**
      * Compares meshes.
      * It use algorithm which has linear time complexity.
@@ -89,7 +89,7 @@ public:
 
     ///@return number of points in mesh
     std::size_t size() const { return points.size(); }
-    
+
     ///@return true only if there are no points in mesh
     bool empty() const { return points.empty(); }
 
@@ -100,7 +100,7 @@ public:
      * @param new_node_cord coordinate of point to add
      */
     void addPoint(double new_node_cord);
-    
+
     /**
      * Add points from ordered range.
      * It use algorithm which has linear time complexity.
@@ -110,25 +110,25 @@ public:
      */
     template <typename IteratorT>
     void addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint);
-    
+
     /**
      * Add points from ordered range.
-     * It use algorithm which has linear time complexity.
+     * It uses algorithm which has linear time complexity.
      * @param begin, end ordered range of points in ascending order
      * @tparam RandomAccessIteratorT random access iterator
      */
     //TODO use iterator traits and write version for input iterator
     template <typename RandomAccessIteratorT>
     void addOrderedPoints(RandomAccessIteratorT begin, RandomAccessIteratorT end) { addOrderedPoints(begin, end, end - begin); }
-    
+
     /**
-     * Add to mesh points: first + i * len / points_count, where i is in range [0, points_count].
-     * It use algorithm which has linear time complexity.
-     * @param first coordinate of first point
-     * @param len first+len is coordinate of last point
+     * Add to mesh points: first + i * (last-first) / points_count, where i is in range [0, points_count].
+     * It uses algorithm which has linear time complexity.
+     * @param first coordinate of the first point
+     * @param last coordinate of the last point
      * @param points_count number of points to add
      */
-    void addPoints(double first, double len, std::size_t points_count);
+    void addPointsLinear(double first, double last, std::size_t points_count);
 
     /**
      * Get point by index.
@@ -136,7 +136,7 @@ public:
      * @return point with given @a index
      */
     const double& operator[](std::size_t index) const { return points[index]; }
-    
+
     /**
      * Remove all points from mesh.
      */
@@ -168,7 +168,7 @@ inline void RectilinearMesh1d::addOrderedPoints(IteratorT begin, IteratorT end, 
 
 /**
  * Rectilinear mesh in 2d space.
- * 
+ *
  * Includes two 1d rectilinear meshes:
  * - c0 (alternative names: x(), r())
  * - c1 (alternative names: y(), z())
@@ -249,49 +249,49 @@ struct RectilinearMesh2d {
 
     ///Second coordinate of points in this mesh.
     RectilinearMesh1d c1;
-    
+
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
     RectilinearMesh1d& x() { return c0; }
-    
+
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
     const RectilinearMesh1d& x() const { return c0; }
-    
+
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
     RectilinearMesh1d& y() { return c1; }
-    
+
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
     const RectilinearMesh1d& y() const { return c1; }
-    
+
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
     RectilinearMesh1d& r() { return c0; }
-    
+
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
     const RectilinearMesh1d& r() const { return c0; }
-    
+
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
     RectilinearMesh1d& z() { return c1; }
-    
+
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
@@ -315,7 +315,7 @@ struct RectilinearMesh2d {
 
     ///@return number of points in mesh
     std::size_t size() const { return c0.size() * c1.size(); }
-    
+
     ///@return true only if there are no points in mesh
     bool empty() const { return c0.empty() || c1.empty(); }
 
@@ -367,7 +367,7 @@ struct RectilinearMesh2d {
     Vec2<double> operator()(std::size_t c0_index, std::size_t c1_index) const {
         return Vec2<double>(c0[c0_index], c1[c1_index]);
     }
-    
+
     /**
      * Remove all points from mesh.
      */

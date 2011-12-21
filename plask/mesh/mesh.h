@@ -69,7 +69,7 @@ TODO: example (here or in adapters description)
 */
 
 #include "../space.h"
-#include <memory>
+#include <boost/shared_ptr.hpp>
 
 #include "../utils/iterators.h"
 

@@ -25,7 +25,7 @@ struct Translation: public GeometryElementTransform<dim> {
         return getChild().getBoundingBox().translated(translation);
     }
     
-    virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
+    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const {
         return getChild().getMaterial(p-translation);
     }
 

@@ -6,7 +6,7 @@ This file includes base classes for geometries elements.
 */
 
 
-#include <memory>
+#include <boost/shared_ptr.hpp>
 #include <vector>
 
 #include "../material/material.h"
@@ -23,7 +23,7 @@ enum GeometryElementType {
 
 /**
  * Transform coordinates of points between two geometries.
- * 
+ *
  * Transform objects can be composed.
  */
 struct GeometryTransform {
@@ -36,7 +36,7 @@ struct GeometryTransform {
  * Base class for all geometries.
  */
 struct GeometryElement {
-    
+
     /**
      * Check if geometry is: leaf, transform or container type element.
      * @return type of this element
@@ -50,65 +50,65 @@ struct GeometryElement {
      * @throw Exception if element is not ready for calculation
      */
     virtual void validate() const throw (Exception) {}
-    
+
     /**
      * Virtual destructor. Do nothing.
      */
     virtual ~GeometryElement() {}
-    
+
     //virtual GeometryTransform getTransform()
-    
+
 };
 
 template < int dimensions >
 struct GeometryElementD: public GeometryElement {
-    
+
     static const int dim = dimensions;
     typedef typename Primitive<dim>::Rect Rect;
     typedef typename Primitive<dim>::Vec Vec;
-    
+
     //virtual Rect getBoundingBox() const;
-    
+
     /**
      * Check if geometry includes point.
      * @param p point
      * @return true only if this geometry includes point @a p
      */
     virtual bool inside(const Vec& p) const = 0;
-    
+
     /**
      * Check if geometry includes some point from given @a area.
      * @param area rectangular area
      * @return true only if this geometry includes some points from @a area
      */
     virtual bool intersect(const Rect& area) const = 0;
-    
+
     /**
      * Calculate minimal rectangle which includes all points of geometry element.
      * @return calculated rectangle
      */
     virtual Rect getBoundingBox() const = 0;
-    
+
     virtual Vec getBoundingBoxSize() const { return getBoundingBox().size(); }
-    
+
     //virtual GeometryElementD<dim>* getLeaf(const Vec& p) const; //shared_ptr?
-    
+
     //virtual std::vector<GeometryElementD<dim>*> getLeafs() const;     //shared_ptr?
-    
+
     /**
      * @param p point
      * @return material in given point, or @c nullptr if this GeometryElement not includes point @a p
      */
-    virtual std::shared_ptr<Material> getMaterial(const Vec& p) const = 0;
-    
+    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const = 0;
+
     //virtual std::vector<Material*> getMaterials(Mesh);        ??
-    
+
     /**
      * Calculate bounding boxes of all leafs.
      * @return bounding boxes of all leafs
      */
     virtual std::vector<Rect> getLeafsBoundingBoxes() const = 0;
-    
+
 };
 
 /**
@@ -116,25 +116,25 @@ struct GeometryElementD: public GeometryElement {
  */
 template < int dim >
 struct GeometryElementLeaf: public GeometryElementD<dim> {
-    
+
     typedef typename GeometryElementD<dim>::Vec Vec;
     typedef typename GeometryElementD<dim>::Rect Rect;
     using GeometryElementD<dim>::getBoundingBox;
-    
-    std::shared_ptr<Material> material;
-    
-    GeometryElementLeaf<dim>(std::shared_ptr<Material> material): material(material) {}
-    
+
+    boost::shared_ptr<Material> material;
+
+    GeometryElementLeaf<dim>(boost::shared_ptr<Material> material): material(material) {}
+
     virtual GeometryElementType getType() const { return GE_TYPE_LEAF; }
-    
-    virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
-        return inside(p) ? material : nullptr;
+
+    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const {
+        return inside(p) ? material : boost::shared_ptr<Material>();
     }
-    
+
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
         return { getBoundingBox() };
     }
-    
+
 };
 
 /**
@@ -142,11 +142,11 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
  */
 template < int dim, typename ChildType = GeometryElementD<dim> >
 struct GeometryElementTransform: public GeometryElementD<dim> {
-    
+
     explicit GeometryElementTransform(ChildType* child = 0): _child(child) {}
-    
+
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
-    
+
     ChildType& getChild() { return *_child; }
 
     const ChildType& getChild() const { return *_child; }
@@ -160,10 +160,10 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     virtual void validate() const throw (Exception) {
         if (!hasChild()) throw NoChildException();
     }
-    
+
     protected:
     ChildType* _child;
-    
+
 };
 
 /**
@@ -186,9 +186,9 @@ struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, Chi
  */
 template < int dim >
 struct GeometryElementContainer: public GeometryElementD<dim> {
-    
+
     virtual GeometryElementType getType() const { return GE_TYPE_CONTAINER; }
-    
+
 };
 
 }       // namespace plask

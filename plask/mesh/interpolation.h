@@ -18,10 +18,10 @@ plask::interpolate method calculates and returns @a dst_vec for a given
 
 plask::interpolate can return a newly created vector or the @a src_vec if @a src_mesh and @a dst_mesh are the same.
 Furthermore, the lifespan of both source and destination data cannot be determined in advance.
-For this reason @a src_vec is passed and @a dst_vec is returned through an std::shared_ptr, a smart pointer
+For this reason @a src_vec is passed and @a dst_vec is returned through an boost::shared_ptr, a smart pointer
 which is responsible for deleting the data in the proper time (i.e. when all the existing modules delete their copy
 of the pointer, indicating they are not going to use this data any more). However, for this mechanism to work
-efficiently, all the modules must allocate the data using the std::shared_ptr, as described in
+efficiently, all the modules must allocate the data using the boost::shared_ptr, as described in
 @ref modules.
 
 Typically, plask::interpolate is called inside providers of the fields of scalars or vectors (see @ref providers).
@@ -151,14 +151,14 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  * @see @ref meshes_interpolation
  */
 template <typename SrcMeshT, typename DataT>
-inline std::shared_ptr<const std::vector<DataT>>
-interpolate(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>> src_vec_ptr,
+inline boost::shared_ptr<const std::vector<DataT>>
+interpolate(SrcMeshT& src_mesh, boost::shared_ptr<const std::vector<DataT>> src_vec_ptr,
             Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT)
 {
 
     if (&src_mesh == &dst_mesh) return src_vec_ptr; // meshes are identical, so just return src_vec
 
-    std::shared_ptr<std::vector<DataT>> result {new std::vector<DataT>};
+    boost::shared_ptr<std::vector<DataT>> result {new std::vector<DataT>};
     result->resize(dst_mesh.size());
     __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, *src_vec_ptr, dst_mesh, *result, method);
     return result;
@@ -168,11 +168,11 @@ interpolate(SrcMeshT& src_mesh, std::shared_ptr<const std::vector<DataT>> src_ve
 // This is necessary for passing non-const src_vec_ptr.
 // Apparently C++ has problems with proper casting is the vector is template argument of shared_ptr
 template <typename SrcMeshT, typename DataT>
-inline std::shared_ptr<const std::vector<DataT>>
-interpolate(SrcMeshT& src_mesh, std::shared_ptr<std::vector<DataT>> src_vec_ptr,
+inline boost::shared_ptr<const std::vector<DataT>>
+interpolate(SrcMeshT& src_mesh, boost::shared_ptr<std::vector<DataT>> src_vec_ptr,
             Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT) {
-//     std::shared_ptr<const std::vector<DataT>> src_const_vec_ptr = src_vec_ptr;
-    return interpolate(src_mesh, (std::shared_ptr<const std::vector<DataT>>&&)src_vec_ptr, dst_mesh, method);
+//     boost::shared_ptr<const std::vector<DataT>> src_const_vec_ptr = src_vec_ptr;
+    return interpolate(src_mesh, (boost::shared_ptr<const std::vector<DataT>>&&)src_vec_ptr, dst_mesh, method);
 }
 #endif // DOXYGEN
 

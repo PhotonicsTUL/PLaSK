@@ -16,8 +16,8 @@ CartesianExtend::Rect CartesianExtend::getBoundingBox() const {
     return parentRect(getChild().getBoundingBox());
 }
 
-std::shared_ptr<Material> CartesianExtend::getMaterial(const Vec& p) const {
-    return canBeInside(p) ? getChild().getMaterial(childVec(p)) : nullptr;
+boost::shared_ptr<Material> CartesianExtend::getMaterial(const Vec& p) const {
+    return canBeInside(p) ? getChild().getMaterial(childVec(p)) : boost::shared_ptr<Material>();
 }
 
 std::vector<CartesianExtend::Rect> CartesianExtend::getLeafsBoundingBoxes() const {

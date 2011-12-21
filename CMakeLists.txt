@@ -43,7 +43,13 @@ option(PACK_EXE "self-pack and strip executables" OFF)  #compress exe
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
-find_package(Boost COMPONENTS unit_test_framework python)
+set(boost_components unit_test_framework)
+
+if(BUILD_PYTHON_MODULE)
+    list(APPEND boost_components python)
+endif()
+
+find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
 
 ## ---------- Fortran name mangling --------------------------------------------
@@ -113,14 +119,12 @@ if(MAKE_TESTS)
         add_executable(test_plask ${test_plask_src})
         target_link_libraries(test_plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} plask)
         set(plask_test_depends "DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask")
-
         file(GLOB_RECURSE plask_tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/plask FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
         list(REMOVE_ITEM plask_tests main.cpp)
         foreach(test_file ${plask_tests})
             get_filename_component(test ${test_file} NAME_WE)
             add_test(plask/${test} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask -t ${test})
         endforeach()
-
     else(Boost_UNIT_TEST_FRAMEWORK_FOUND)
         message("Boost Test Library not found. Building without C++ unit tests.")
     endif(Boost_UNIT_TEST_FRAMEWORK_FOUND)

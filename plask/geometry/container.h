@@ -73,28 +73,28 @@ struct PathHints {
  */
 template <int dim, typename container_type = std::vector<Translation<dim>*> >
 struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
-    
+
     typedef typename GeometryElementContainer<dim>::Vec Vec;
     typedef typename GeometryElementContainer<dim>::Rect Rect;
-    
+
 protected:
     container_type children;
-    
+
 public:
     ~GeometryElementContainerImpl() {
         for (auto child: children) delete child;
     }
-    
+
     virtual bool inside(const Vec& p) const {
         for (auto child: children) if (child->inside(p)) return true;
         return false;
     }
-    
+
     virtual bool intersect(const Rect& area) const {
         for (auto child: children) if (child->intersect(area)) return true;
         return false;
     }
-    
+
     virtual Rect getBoundingBox() const {
         //if (childs.empty()) throw?
         Rect result = children[0]->getBoundingBox();
@@ -102,19 +102,19 @@ public:
             result.include(children[i]->getBoundingBox());
         return result;
     }
-    
+
     /**
      * Check children in reverse order and check if any returns material.
      * @return material or nullptr
      */
-    virtual std::shared_ptr<Material> getMaterial(const Vec& p) const {
+    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const {
         for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
-            std::shared_ptr<Material> r = (*child_it)->getMaterial(p);
+            boost::shared_ptr<Material> r = (*child_it)->getMaterial(p);
             if (r != nullptr) return r;
         }
-        return nullptr;
+        return boost::shared_ptr<Material>();
     }
-    
+
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
         std::vector<Rect> result;
         for (auto child: children) {
@@ -123,7 +123,7 @@ public:
         }
         return result;
     }
-    
+
 };
 
 /**
@@ -132,61 +132,61 @@ public:
 //TODO some implementation are naive, and can be done faster with some caches
 template < int dim >
 struct TrasnalateContainer: public GeometryElementContainerImpl<dim> {
-    
+
     typedef typename GeometryElementContainer<dim>::Vec Vec;
     typedef typename GeometryElementContainer<dim>::Rect Rect;
     typedef GeometryElementD<dim> ChildT;
     typedef Translation<dim> TranslationT;
-    
+
     using GeometryElementContainerImpl<dim>::children;
-    
+
     PathHints::Hint add(ChildT* el, const Vec& translation) {
         TranslationT* trans_geom = new TranslationT(el, translation);
         children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);
     }
-    
+
 };
 
 /**
  * Container which have children in stack/layers.
  */
 struct StackContainer2d: public GeometryElementContainerImpl<2> {
-    
+
     typedef typename GeometryElementContainer<2>::Vec Vec;
     typedef typename GeometryElementContainer<2>::Rect Rect;
     typedef GeometryElementD<2> ChildT;
     typedef Translation<2> TranslationT;
-    
+
     using GeometryElementContainerImpl<2>::children;
-    
+
     /**
      * @param baseHeight height where should start first element
      */
     explicit StackContainer2d(const double baseHeight = 0.0);
-    
+
     /**
      * Add children to stack top.
      * @param el element to add
      * @param x_trasnlation horizontal translation of element
      */
     PathHints::Hint push_back(ChildT* el, const double x_translation = 0.0);
-    
+
     /**
      * @param height
      * @return child which are on given @a height or @c nullptr
      */
     const TranslationT* getChildForHeight(double height) const;
-    
+
     virtual bool inside(const Vec& p) const;
-    
-    virtual std::shared_ptr<Material> getMaterial(const Vec& p) const;
-    
+
+    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const;
+
 private:
-    
+
     ///stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements)
     std::vector<double> stackHeights;
-    
+
 };
 
 

@@ -15,29 +15,29 @@ For dim equals:
 - 3 - cuboid
 */
 template <int dim>
-struct Box: public GeometryElementLeaf<dim> {
+struct Block: public GeometryElementLeaf<dim> {
 
-	typedef typename GeometryElementLeaf<dim>::Vec Vec;
-	typedef typename GeometryElementLeaf<dim>::Rect Rect;
+    typedef typename GeometryElementLeaf<dim>::Vec Vec;
+    typedef typename GeometryElementLeaf<dim>::Rect Rect;
 
-	Vec size;
-	
-	Box(const Vec& size, std::shared_ptr<Material> material): GeometryElementLeaf<dim>(material), size(size) {}
-	
-	virtual Rect getBoundingBox() const {
-		return Rect(Primitive<dim>::ZERO_VEC, size);
-	}
-	
-	virtual bool inside(const Vec& p) const {
-		return getBoundingBox().inside(p);
-	}
-	
-	virtual bool intersect(const Rect& area) const {
-		return getBoundingBox().intersect(area);
-	}
+    Vec size;
+
+    Block(const Vec& size, boost::shared_ptr<Material> material): GeometryElementLeaf<dim>(material), size(size) {}
+
+    virtual Rect getBoundingBox() const {
+        return Rect(Primitive<dim>::ZERO_VEC, size);
+    }
+
+    virtual bool inside(const Vec& p) const {
+        return getBoundingBox().inside(p);
+    }
+
+    virtual bool intersect(const Rect& area) const {
+        return getBoundingBox().intersect(area);
+    }
 
 };
 
-}	// namespace plask
+}    // namespace plask
 
 #endif // PLASK__GEOMETRY_LEAF_H
