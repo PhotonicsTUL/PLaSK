@@ -4,12 +4,11 @@
 #include <plask/geometry/transform.h>
 
 
-#include <config.h>
 
 #include "common/dump_material.h"
 
 struct Leafs2d {
-    shared_ptr<plask::Material> dumpMaterial;
+    plask::shared_ptr<plask::Material> dumpMaterial;
     plask::Block<2> block_5_3;
     Leafs2d(): dumpMaterial(new DumpMaterial()), block_5_3(plask::vec(5.0, 3.0), dumpMaterial) {}
 };

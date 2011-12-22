@@ -1,12 +1,15 @@
 #ifndef PLASK__CONFIG_H
 #define PLASK__CONFIG_H
 
+// PLaSK version
+#define PLASK_VERSION_MAJOR ${VERSION_MAJOR}
+#define PLASK_VERSION_MINOR ${VERSION_MINOR}
+#define PLASK_VERSION ${VERSION}
 
 // Declare shared pointer to use
-// (when boost::python gets compatibile with std::shared_ptr, check boost version and use std if possible
+// (when boost::python gets compatibile with std::shared_ptr, check boost version and use std if possible)
 #include <boost/shared_ptr.hpp>
-using boost::shared_ptr;
-
+namespace plask { using boost::shared_ptr; }
 
 #endif // PLASK__CONFIG_H
 // kate: syntax c++;

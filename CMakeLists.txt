@@ -22,25 +22,30 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 execute_process(COMMAND svnversion -n WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE VERSION_REVISION)
 string(REGEX REPLACE "[0-9]+:|[A-Za-z]+" "" VERSION_REVISION ${VERSION_REVISION})
 if(${VERSION_REVISION})
     set(VERSION_REVISION "r${VERSION_REVISION}")
-else(${VERSION_REVISION})
+else()
     set(VERSION_REVISION 0)
-endif(${VERSION_REVISION})
+endif()
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 message(STATUS "PLaSK version ${VERSION}")
 
+# ---------- Configurable options --------------------------------------------
+include(CMakeDependentOption)
 
-# ---------- configurable options --------------------------------------------
-option (BUILD_SHARED_LIBS "build also shared library" OFF)
-option (BUILD_PYTHON_MODULE "build and install Python module plask" ON)
-option(BUILD_DOCUMENTATION "build doxygen documentation" OFF)
-option (MAKE_TESTS "build and run unit tests" ON)
-option(PACK_EXE "self-pack and strip executables" OFF)  #compress exe
+option(BUILD_SHARED_LIBS "Build shared library." OFF)
+
+option (BUILD_DOCUMENTATION "Build doxygen documentation." OFF)
+
+option (BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
+cmake_dependent_option(BUILD_PYTHON_MODULE "Build importable python module." OFF "BUILD_PYTHON" OFF)
+cmake_dependent_option(BUILD_PYTHON_EXECUTABLE "Build executable with embedded Python interpreter." ON "BUILD_PYTHON" OFF)
+
+option (BUILD_TESTS "Build and run unit tests." ON)
+option (PACK_EXE "Self-pack and strip executables." OFF)  #compress exe
 
 
 # ---------- Boost components --------------------------------------------
@@ -64,35 +69,55 @@ find_package(Boost REQUIRED COMPONENTS ${boost_components})
 #endif()
 
 
-# ----------===== plask library =====--------------------------------------------
-# creating configuration file for plask library
-#CONFIGURE_FILE(plask/config.h.cmake plask/config.h)
+# ----------===== Build =====--------------------------------------------
 
-file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h)
-file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp plask/*.cxx)
+file(GLOB_RECURSE plask_headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS plask/*.h)
 
+file(GLOB_RECURSE plask_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS plask/*.cpp)
+
+file(GLOB_RECURSE python_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS python/*.cpp)
+list(REMOVE_ITEM python_src python/exe_main.cpp)
+
+
+# ---------- plask library --------------------------------------------
 
 if (BUILD_SHARED_LIBS)
-    add_library(plask SHARED ${plask_src})
+    add_library(libplask SHARED ${plask_src})
 else()
-    add_library(plask STATIC ${plask_src})
+    add_library(libplask STATIC ${plask_src})
 endif()
+set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
-# ----------===== Python =====--------------------------------------------
+# ---------- Python --------------------------------------------
 
-if (BUILD_PYTHON_MODULE)
+if (BUILD_PYTHON)
     # Find Python
     find_package(PythonInterp REQUIRED)
     find_package(PythonLibs REQUIRED)
     find_package(numpy REQUIRED)
 
-    # --- Here build the modules ---
+    include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
+    if (BUILD_PYTHON_MODULE)
+        if (BUILD_SHARED_LIBS)
+            add_library(plask_module MODULE ${python_src})
+            target_link_libraries(plask_module libplask)
+        else()
+            add_library(plask_module MODULE ${python_src} ${plask_src})
+        endif()
+        set_target_properties(plask_module PROPERTIES OUTPUT_NAME plask_ PREFIX "")
+        target_link_libraries(plask_module ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+    endif(BUILD_PYTHON_MODULE)
 
-endif(BUILD_PYTHON_MODULE)
+    if (BUILD_PYTHON_EXECUTABLE)
+        add_executable(plask python/exe_main.cpp ${python_src})
+        target_link_libraries(plask libplask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+    endif(BUILD_PYTHON_EXECUTABLE)
 
-# ---------- compress and strip executable (target) --------------------------------------------
-MACRO(compress targetname)
+endif(BUILD_PYTHON)
+
+# ---------- Compress and strip executable (target) --------------------------------------------
+macro(compress targetname)
     if (PACK_EXE)
         get_property(apppath TARGET ${targetname} PROPERTY LOCATION)
         if (CMAKE_STRIP)
@@ -104,7 +129,7 @@ MACRO(compress targetname)
                                 ARGS ${SELF_PACKER_FOR_EXECUTABLE_FLAGS} "-q" ${apppath})    #TODO remove "-q" when SelfPackers will be fixed
         endif(SELF_PACKER_FOR_EXECUTABLE)
     endif(PACK_EXE)
-ENDMACRO(compress targetname)
+endmacro(compress targetname)
 
 if (PACK_EXE)
     find_package(SelfPackers)
@@ -112,14 +137,14 @@ if (PACK_EXE)
 endif(PACK_EXE)
 
 # ----------===== unit tests =====--------------------------------------------
-if(MAKE_TESTS)
+if(BUILD_TESTS)
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
         include_directories(${Boost_INCLUDE_DIRS})
-        file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
+        file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp)
         add_executable(test_plask ${test_plask_src})
-        target_link_libraries(test_plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} plask)
+        target_link_libraries(test_plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
         set(plask_test_depends "DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask")
         file(GLOB_RECURSE plask_tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/plask FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
         list(REMOVE_ITEM plask_tests main.cpp)
@@ -141,7 +166,7 @@ if(MAKE_TESTS)
 
     add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure ${plask_test_depends})
 
-endif(MAKE_TESTS)
+endif(BUILD_TESTS)
 
 # ----------===== documentation (api) =====--------------------------------------------
 find_package(Doxygen)
@@ -160,9 +185,9 @@ endif(BUILD_DOCUMENTATION)
 
 # ----------===== install =====--------------------------------------------
 if(BUILD_SHARED_LIBS)
-    install(TARGETS plask LIBRARY DESTINATION lib COMPONENT core)
+    install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
 else()
-    install(TARGETS plask ARCHIVE DESTINATION lib COMPONENT dev)
+    install(TARGETS libplask ARCHIVE DESTINATION lib COMPONENT dev)
 endif()
 
 install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN ".*" EXCLUDE)
@@ -203,3 +228,5 @@ set(CPACK_SOURCE_IGNORE_FILES
 
 include(CPack)
 
+# ----------===== config.h =====--------------------------------------------
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
