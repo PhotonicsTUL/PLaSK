@@ -3,12 +3,10 @@
 #include <plask/geometry/leaf.h>
 #include <plask/geometry/transform.h>
 
-#include <plask/material/material.h>
+
 #include <config.h>
 
-struct DumpMaterial: public plask::Material {
-    virtual std::string getName() const { return "Dump"; }
-};
+#include "common/dump_material.h"
 
 struct Leafs2d {
     shared_ptr<plask::Material> dumpMaterial;

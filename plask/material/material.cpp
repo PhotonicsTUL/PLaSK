@@ -3,10 +3,57 @@
 #include "../utils/string.h"
 #include <boost/lexical_cast.hpp>
 
+#include <cmath>
+
 namespace plask {
 
+void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator begin, std::vector<double>::iterator end) {
+    auto no_info = end;
+    double sum = 0.0;
+    for (auto i = begin; i != end; ++i) {
+        if (isnan(*i)) {
+            if (no_info != end)
+                throw plask::MaterialParseException("Two elements in group have no information about ammount.");
+            else
+                no_info = i;
+        } else {
+            sum += *i;
+            if (sum > 1.0)
+                throw plask::MaterialParseException("Sum of composition ammounts in group exceed 1.");
+        }
+    }
+    if (no_info != end) {
+        *no_info = 1.0 - sum;
+    } else {
+        if (sum != 1.0)
+             throw plask::MaterialParseException("Sum of composition ammounts in group diffrent from 1.");
+    }
+}
+    
+void fillMaterialCompositionAmountsI(std::vector< double >& composition, unsigned int pattern) {
+    auto end = composition.end();
+    while (pattern != 0) {
+        unsigned group_size = pattern % 10;     //last group size
+        if (end - composition.begin() < group_size)
+            throw plask::CriticalException("Wrong material composition pattern.");
+        auto begin = end - group_size;
+        fillGroupMaterialCompositionAmounts(begin, end);
+        end = begin;
+        pattern /= 10;
+    }
+    if (end != composition.end())
+        throw plask::CriticalException("Wrong material composition pattern.");
+}
+
+std::vector< double > fillMaterialCompositionAmounts(const std::vector< double >& composition, unsigned int pattern) {
+    std::vector<double> result = composition;
+    fillMaterialCompositionAmountsI(result, pattern);
+    return result;
+}
+
+    
 shared_ptr< Material > plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector< double >& composition,
-                                                    DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) const throw (NoSuchMaterial)
+                                                    DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) const
 {
     auto it = constructors.find(parsed_name_with_donor);
     if (it == constructors.end()) throw NoSuchMaterial(parsed_name_with_donor);
@@ -71,8 +118,8 @@ void parseDopant(const char* begin, const char* end, std::string& dopant_elem_na
     dopant_amount = toDouble(std::get<1>(p));
 }
 
-shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components, const std::string& dopant_descr) const throw (NoSuchMaterial, MaterialParseException)
-{
+shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components, const std::string& dopant_descr) const {
+    
     std::vector<std::string> components;
     std::vector<double> components_amounts;
     parseNameWithComposition(name_with_components.data(), name_with_components.data() + name_with_components.size(), components, components_amounts);
@@ -92,7 +139,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components,
     return get(parsed_name_with_dopant, components_amounts, dopant_amount_type, dopant_amount);
 }
 
-shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const throw (NoSuchMaterial, MaterialParseException) {
+shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     auto pair = splitString2(full_name, ':');
     return get(std::get<0>(pair), std::get<1>(pair));
 }
