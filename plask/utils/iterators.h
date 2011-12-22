@@ -169,6 +169,13 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
 
 };
 
+/**
+ * Get IndexedIterator for given container.
+ * @param c container
+ * @param index initial iterator position
+ * @return iterator over container @a c with position @a index
+ * @see @ref IndexedIterator
+ */
 template <typename ContainerType>
 inline IndexedIterator<ContainerType> makeIndexedIterator(ContainerType* c, std::size_t index) {
     return IndexedIterator<ContainerType>(c, index);
@@ -220,6 +227,13 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
 
 };
 
+/**
+ * Get FunctorIndexedIterator for given functor.
+ * @param f functor
+ * @param index initial iterator position
+ * @return iterator which using functor @a f and has position @a index
+ * @see @ref FunctorIndexedIterator
+ */
 template <typename Functor>
 inline FunctorIndexedIterator<Functor> makeFunctorIndexedIterator(Functor f, std::size_t index) {
     return FunctorIndexedIterator<Functor>(f, index);

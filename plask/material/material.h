@@ -63,9 +63,9 @@ struct MaterialsDB {
 
     ///Amounts of dopands.
     enum DOPANT_AMOUNT_TYPE {
-        NO_DOPANT,
-        DOPING_CONCENTRATION,
-        CARRIER_CONCENTRATION
+        NO_DOPANT,              ///<no dopand
+        DOPING_CONCENTRATION,   ///<doping concentration
+        CARRIER_CONCENTRATION   ///<carrier concentration
     };
 
     typedef Material* construct_material_f(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
@@ -124,6 +124,12 @@ public:
      * @param constructor function which can create material instance
      */
     void add(const std::string& name, construct_material_f* constructor);
+    
+    /**
+     * Add material with given type to DB.
+     * All information about material (like name, composition amount pattern) are read from static MaterialType fields.
+     */
+    //template <typename MaterialType> add();
 
     /**
      * Fill database with default materials creators.

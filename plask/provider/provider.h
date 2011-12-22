@@ -290,8 +290,13 @@ struct SingleValueProvider: public Provider {
 template <typename ValueT, typename SpaceType>
 struct OnMeshProvider: public Provider {
 
+    ///Type of value provided by this (returned by operator()).
     typedef shared_ptr< const std::vector<ValueT> > ProvidedValueType;
 
+    /**
+     * @param dst_mesh set of requested points
+     * @return values in points describe by mesh @a dst_mesh
+     */
     virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const = 0;
 
 };
@@ -299,16 +304,27 @@ struct OnMeshProvider: public Provider {
 //TODO typedef for OnMeshReceiver (GCC 4.7 needed)
 
 /**
- * Specialization of this template is abstract base class for provider class which provide values in points describe by mesh and use interpolation.
+ * Specialization of this template is abstract base class for provider class which provide values in points describe by mesh
+ * and use interpolation.
  */
 template <typename ValueT, typename SpaceType>
 struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceType> {
 
+    ///Type of value provided by this (returned by operator()).
     typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
 
+    /**
+     * @param dst_mesh set of requested points
+     * @param method method which should be use to do interpolation
+     * @return values in points describe by mesh @a dst_mesh
+     */
     virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) const = 0;
 
-    ///Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
+    /**
+     * Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
+     * @param dst_mesh set of requested points
+     * @return values in points describe by mesh @a dst_mesh
+     */
     virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const {
         return this->operator()(dst_mesh, DEFAULT);
     }
@@ -491,9 +507,23 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
      * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
      */
     struct WithValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
+        
+        ///Type of provided value.
         typedef ValueT ProvidedValueType;
+        
+        ///Provided value.
         ProvidedValueType value;
+        
+        /**
+         * Get provided value.
+         * @return provided value
+         */
         ProvidedValueType& operator()() { return value; }
+        
+        /**
+         * Get provided value.
+         * @return provided value
+         */
         virtual ProvidedValueType operator()() const { return value; }
     };
 
@@ -549,26 +579,44 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
 template <typename PropertyTag, typename ValueT, typename SpaceType>
 struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>: public OnMeshProviderWithInterpolation<ValueT, SpaceType> {
 
+    ///Type of provided value.
     typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
     
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
-     * operator() call interpolate.
+     * operator() call plask::interpolate.
      * @tparam MeshType type of mesh which is used for calculation and which describe places of data points
      */
     template <typename MeshType>
     struct WithValue: public ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType> {
         
+        ///Type of provided value.
         typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
         
+        ///Provided value. Values in points describe by this->mesh.
         ProvidedValueType values;
         
+        ///Mesh which describe in which points are this->values.
         MeshType mesh;
         
+        /**
+         * Get provided value in points describe by this->mesh.
+         * @return provided value in points describe by this->mesh
+         */
         ProvidedValueType& operator()() { return values; }
         
+        /**
+         * Get provided value in points describe by this->mesh.
+         * @return provided value in points describe by this->mesh
+         */
         const ProvidedValueType& operator()() const { return values; }
         
+        /**
+         * Calculate interpolated values using plask::interpolate.
+         * @param dst_mesh set of requested points
+         * @param method method which should be use to do interpolation
+         * @return values in points describe by mesh @a dst_mesh
+         */
         virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) {
             return interpolate(mesh, values, dst_mesh, method);
         }
