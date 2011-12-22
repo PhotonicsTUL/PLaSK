@@ -82,9 +82,9 @@ list(REMOVE_ITEM python_src python/exe_main.cpp)
 # ---------- plask library --------------------------------------------
 
 if (BUILD_SHARED_LIBS)
-    add_library(libplask SHARED ${plask_src})
+    add_library(libplask SHARED ${plask_src} ${plask_headers})  #qtcreator needs have ${plask_headers} to show this files in IDE
 else()
-    add_library(libplask STATIC ${plask_src})
+    add_library(libplask STATIC ${plask_src} ${plask_headers})
 endif()
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
@@ -142,7 +142,7 @@ if(BUILD_TESTS)
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
         include_directories(${Boost_INCLUDE_DIRS})
-        file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp)
+        file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
         add_executable(test_plask ${test_plask_src})
         target_link_libraries(test_plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
         set(plask_test_depends "DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask")
