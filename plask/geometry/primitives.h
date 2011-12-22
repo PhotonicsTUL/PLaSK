@@ -10,17 +10,34 @@ This file includes useful geometry primitives, like rectangles, etc.
 
 namespace plask {
 
+/**
+ * Rectangle class.
+ * 
+ * Allow for some basic operation on rectangles.
+ * Has almost identical interface as Rect3d.
+ */
 struct Rect2d {
 
+    ///Lower corner of rectangle (with minimal all coordinates).
     Vec2<double> lower;
 
+    ///Upper corner of rectangle (with maximal all coordinates).
     Vec2<double> upper;
 
+    /**
+     * Get size of rectangle.
+     * @return size of rectangle (its width and height)
+     */
     Vec2<double> size() const { return upper - lower; }
 
     ///Construct uninitilized Rect2d.
     Rect2d() {}
 
+    /**
+     * Construct rectangle.
+     * @param lower lower corner of rectangle (with minimal all coordinates)
+     * @param upper upper corner of rectangle (with maximal all coordinates)
+     */
     Rect2d(const Vec2<double>& lower, const Vec2<double>& upper): lower(lower), upper(upper) {}
     
     /**
@@ -85,10 +102,18 @@ struct Rect2d {
     
 };
 
+/**
+ * Cuboid class.
+ *
+ * Allow for some basic operation on cuboid.
+ * Has almost identical interface as Rect2d.
+ */
 struct Rect3d {
 
+    ///Position of lower corner of cuboid (with minimal all coordinates).
     Vec3<double> lower;
 
+    ///Position of upper corner of cuboid (with maximal all coordinates).
     Vec3<double> upper;
 
     Vec3<double> size() const { return upper - lower; }
