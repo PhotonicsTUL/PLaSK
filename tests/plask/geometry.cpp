@@ -4,14 +4,14 @@
 #include <plask/geometry/transform.h>
 
 #include <plask/material/material.h>
-#include <boost/shared_ptr.hpp>
+#include <config.h>
 
 struct DumpMaterial: public plask::Material {
     virtual std::string getName() const { return "Dump"; }
 };
 
 struct Leafs2d {
-    boost::shared_ptr<plask::Material> dumpMaterial;
+    shared_ptr<plask::Material> dumpMaterial;
     plask::Block<2> block_5_3;
     Leafs2d(): dumpMaterial(new DumpMaterial()), block_5_3(plask::vec(5.0, 3.0), dumpMaterial) {}
 };

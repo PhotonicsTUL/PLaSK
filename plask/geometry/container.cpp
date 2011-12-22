@@ -41,9 +41,9 @@ bool StackContainer2d::inside(const Vec& p) const {
     return c ? c->inside(p) : false;
 }
 
-boost::shared_ptr<Material> StackContainer2d::getMaterial(const Vec& p) const {
+shared_ptr<Material> StackContainer2d::getMaterial(const Vec& p) const {
     const TranslationT* c = getChildForHeight(p.y);
-    return c ? c->getMaterial(p) : boost::shared_ptr<Material>();
+    return c ? c->getMaterial(p) : shared_ptr<Material>();
 }
 
 

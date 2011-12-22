@@ -19,7 +19,7 @@ struct CartesianExtend: public GeometryElementChangeSpace<3, 2>, public Calculat
 
     virtual Rect getBoundingBox() const;
 
-    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const;
+    virtual shared_ptr<Material> getMaterial(const Vec& p) const;
 
     virtual std::vector<Rect> getLeafsBoundingBoxes() const;
 

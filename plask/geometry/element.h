@@ -6,7 +6,7 @@ This file includes base classes for geometries elements.
 */
 
 
-#include <boost/shared_ptr.hpp>
+#include <config.h>
 #include <vector>
 
 #include "../material/material.h"
@@ -99,7 +99,7 @@ struct GeometryElementD: public GeometryElement {
      * @param p point
      * @return material in given point, or @c nullptr if this GeometryElement not includes point @a p
      */
-    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const = 0;
+    virtual shared_ptr<Material> getMaterial(const Vec& p) const = 0;
 
     //virtual std::vector<Material*> getMaterials(Mesh);        ??
 
@@ -121,14 +121,14 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     typedef typename GeometryElementD<dim>::Rect Rect;
     using GeometryElementD<dim>::getBoundingBox;
 
-    boost::shared_ptr<Material> material;
+    shared_ptr<Material> material;
 
-    GeometryElementLeaf<dim>(boost::shared_ptr<Material> material): material(material) {}
+    GeometryElementLeaf<dim>(shared_ptr<Material> material): material(material) {}
 
     virtual GeometryElementType getType() const { return GE_TYPE_LEAF; }
 
-    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const {
-        return inside(p) ? material : boost::shared_ptr<Material>();
+    virtual shared_ptr<Material> getMaterial(const Vec& p) const {
+        return inside(p) ? material : shared_ptr<Material>();
     }
 
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {

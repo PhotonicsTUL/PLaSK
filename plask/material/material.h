@@ -6,7 +6,7 @@ This file includes base classes for materials and matrial database class.
 */
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <config.h>
 #include <map>
 #include <vector>
 #include "../exceptions.h"
@@ -38,7 +38,7 @@ struct Material {
  */
 struct MixedMaterial: public Material {
 
-    //std::map<boost::shared_ptr<Material>, double> materials;
+    //std::map<shared_ptr<Material>, double> materials;
 
     //virtual bool isDynamic() { return true; }
 
@@ -49,7 +49,7 @@ struct MixedMaterial: public Material {
  */
 struct RotatedMaterial: public Material {
 
-    boost::shared_ptr<Material> wrapped;
+    shared_ptr<Material> wrapped;
 
 };
 
@@ -84,7 +84,7 @@ public:
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @a parsed_name_with_donor
      */
-    boost::shared_ptr<Material> get(const std::string& parsed_name_with_donor, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type = NO_DOPANT, double dopant_amount = 0.0) const throw (NoSuchMaterial);
+    shared_ptr<Material> get(const std::string& parsed_name_with_donor, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type = NO_DOPANT, double dopant_amount = 0.0) const throw (NoSuchMaterial);
 
     /**
      * Create material object.
@@ -94,7 +94,7 @@ public:
      * @throw NoSuchMaterial if database doesn't know material with name @a parsed_name_with_donor
      * @throw MaterialParseException if can't parse @a name_with_components or @a dopant_descr
      */
-    boost::shared_ptr<Material> get(const std::string& name_with_components, const std::string& dopant_descr) const throw (NoSuchMaterial, MaterialParseException);
+    shared_ptr<Material> get(const std::string& name_with_components, const std::string& dopant_descr) const throw (NoSuchMaterial, MaterialParseException);
 
     /**
      * Create material object.
@@ -103,7 +103,7 @@ public:
      * @throw NoSuchMaterial if material with given name not exists
      * @throw MaterialParseException if can't parse @a full_name
      */
-    boost::shared_ptr<Material> get(const std::string& full_name) const throw (NoSuchMaterial, MaterialParseException);
+    shared_ptr<Material> get(const std::string& full_name) const throw (NoSuchMaterial, MaterialParseException);
 
     /**
      * Add material to DB. Replace existing material if there is one already in DB.

@@ -22,7 +22,7 @@ struct Block: public GeometryElementLeaf<dim> {
 
     Vec size;
 
-    Block(const Vec& size, boost::shared_ptr<Material> material): GeometryElementLeaf<dim>(material), size(size) {}
+    Block(const Vec& size, shared_ptr<Material> material): GeometryElementLeaf<dim>(material), size(size) {}
 
     virtual Rect getBoundingBox() const {
         return Rect(Primitive<dim>::ZERO_VEC, size);

@@ -5,12 +5,12 @@
 
 namespace plask {
 
-boost::shared_ptr< Material > plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector< double >& composition,
+shared_ptr< Material > plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector< double >& composition,
                                                     DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) const throw (NoSuchMaterial)
 {
     auto it = constructors.find(parsed_name_with_donor);
     if (it == constructors.end()) throw NoSuchMaterial(parsed_name_with_donor);
-    return boost::shared_ptr<Material>(it->second(composition, dopant_amount_type, dopant_amount));
+    return shared_ptr<Material>(it->second(composition, dopant_amount_type, dopant_amount));
 }
 
 const char* getElementEnd(const char* begin, const char* end) {
@@ -73,7 +73,7 @@ void parseDopant(const char* begin, const char* end, std::string& dopant_elem_na
     dopant_amount = toDouble(std::get<1>(p));
 }
 
-boost::shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components, const std::string& dopant_descr) const throw (NoSuchMaterial, MaterialParseException)
+shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components, const std::string& dopant_descr) const throw (NoSuchMaterial, MaterialParseException)
 {
     std::vector<std::string> components;
     std::vector<double> components_amounts;
@@ -94,7 +94,7 @@ boost::shared_ptr< Material > MaterialsDB::get(const std::string& name_with_comp
     return get(parsed_name_with_dopant, components_amounts, dopant_amount_type, dopant_amount);
 }
 
-boost::shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const throw (NoSuchMaterial, MaterialParseException) {
+shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const throw (NoSuchMaterial, MaterialParseException) {
     auto pair = splitString2(full_name, ':');
     return get(std::get<0>(pair), std::get<1>(pair));
 }

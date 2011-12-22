@@ -14,6 +14,7 @@ add_definitions(-std=c++0x)     # C++0x (C++11) standard
 
 include_directories(.)          # external modules can include plask using <plask/....h>
 include_directories(extlibs)    # place for local external libraries
+include_directories(${CMAKE_BINARY_DIR}) # for include config.h
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
@@ -21,6 +22,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 execute_process(COMMAND svnversion -n WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE VERSION_REVISION)
 string(REGEX REPLACE "[0-9]+:|[A-Za-z]+" "" VERSION_REVISION ${VERSION_REVISION})
@@ -67,7 +69,7 @@ find_package(Boost REQUIRED COMPONENTS ${boost_components})
 #CONFIGURE_FILE(plask/config.h.cmake plask/config.h)
 
 file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h)
-file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp plask/*.cxx plask/*.h)
+file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp plask/*.cxx)
 
 
 if (BUILD_SHARED_LIBS)
@@ -115,7 +117,7 @@ if(MAKE_TESTS)
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
         include_directories(${Boost_INCLUDE_DIRS})
-        file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx tests/plask/*.h)
+        file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
         add_executable(test_plask ${test_plask_src})
         target_link_libraries(test_plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} plask)
         set(plask_test_depends "DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask")

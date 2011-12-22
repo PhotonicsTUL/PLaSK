@@ -107,12 +107,12 @@ public:
      * Check children in reverse order and check if any returns material.
      * @return material or nullptr
      */
-    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const {
+    virtual shared_ptr<Material> getMaterial(const Vec& p) const {
         for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
-            boost::shared_ptr<Material> r = (*child_it)->getMaterial(p);
+            shared_ptr<Material> r = (*child_it)->getMaterial(p);
             if (r != nullptr) return r;
         }
-        return boost::shared_ptr<Material>();
+        return shared_ptr<Material>();
     }
 
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
@@ -180,7 +180,7 @@ struct StackContainer2d: public GeometryElementContainerImpl<2> {
 
     virtual bool inside(const Vec& p) const;
 
-    virtual boost::shared_ptr<Material> getMaterial(const Vec& p) const;
+    virtual shared_ptr<Material> getMaterial(const Vec& p) const;
 
 private:
 

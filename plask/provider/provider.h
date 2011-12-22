@@ -65,7 +65,7 @@ typedef ReceiverFor<Temperature> TemperatureReceiver;
 */
 
 #include <set>
-#include <boost/shared_ptr.hpp>
+#include <config.h>
 #include <vector>
 #include <functional>	//std::function
 
@@ -290,7 +290,7 @@ struct SingleValueProvider: public Provider {
 template <typename ValueT, typename SpaceType>
 struct OnMeshProvider: public Provider {
 
-    typedef boost::shared_ptr< const std::vector<ValueT> > ProvidedValueType;
+    typedef shared_ptr< const std::vector<ValueT> > ProvidedValueType;
 
     virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const = 0;
 

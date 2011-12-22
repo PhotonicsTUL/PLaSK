@@ -5,7 +5,7 @@
 This file includes utils to operate on memory, pointers, smart pointers, etc.
 */
 
-#include <boost/shared_ptr.hpp>
+#include <config.h>
 
 namespace plask {
 
@@ -16,7 +16,7 @@ namespace plask {
  * @tparam T type of object managing by @a ptr, must have copy constructor
  */
 template <typename T>
-inline boost::shared_ptr<T> getUnique(const boost::shared_ptr<T>& ptr) {
+inline shared_ptr<T> getUnique(const shared_ptr<T>& ptr) {
     return ptr.unique() ? ptr : new T(*ptr);
 }
 
@@ -27,7 +27,7 @@ inline boost::shared_ptr<T> getUnique(const boost::shared_ptr<T>& ptr) {
  * @tparam T type of object managing by @a ptr, must have copy constructor
  */
 template <typename T>
-inline boost::shared_ptr<T> getUnique(const boost::shared_ptr<const T>& ptr) {
+inline shared_ptr<T> getUnique(const shared_ptr<const T>& ptr) {
     return ptr.unique() ? ptr : new T(*ptr);
 }
 
@@ -37,7 +37,7 @@ inline boost::shared_ptr<T> getUnique(const boost::shared_ptr<const T>& ptr) {
  * @tparam T type of object managing by @a ptr, must have copy constructor
  */
 template <typename T>
-inline void makeUnique(boost::shared_ptr<T>& ptr) {
+inline void makeUnique(shared_ptr<T>& ptr) {
     ptr = getUnique(ptr);
 }
 
