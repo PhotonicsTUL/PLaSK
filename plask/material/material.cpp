@@ -33,23 +33,20 @@ double toDouble(const std::string& s) {
     }
 }
 
-//TODO fix to have amounts after any element
-void parseNameWithComponents(const char* begin, const char* end, std::vector<std::string>& components, std::vector<double>& components_amounts) {
+void parseNameWithComposition(const char* begin, const char* end, std::vector<std::string>& components, std::vector<double>& components_amounts) {
     while (begin != end) {
         const char* comp_end = getElementEnd(begin, end);
         if (comp_end == begin)
             throw MaterialParseException(std::string("Expected element but found character: ") + *begin);
-        if (comp_end == end) {
-            components.push_back(std::string(begin, comp_end));
-            begin = comp_end;   //this finish loop
+        const char* amount_end = getAmountEnd(comp_end, end);
+        if (amount_end == comp_end) {       //no amount info for this element
+            components_amounts.push_back(std::numeric_limits<double>::quiet_NaN());
+            begin = amount_end;
         } else {
-            const char* amount_end = getAmountEnd(comp_end, end);
-            if (amount_end == comp_end)
-                throw MaterialParseException(std::string("Expected element amount in brackets but found character: ") + *amount_end);
             if (amount_end == end)
                 throw MaterialParseException("Unexpected end of input while reading amount of element. Couldn't find ')'.");
             components_amounts.push_back(toDouble(std::string(comp_end+1, amount_end)));
-            begin = amount_end+1;
+            begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
         }
     }
 }
@@ -69,6 +66,7 @@ void parseDopant(const char* begin, const char* end, std::string& dopant_elem_na
         throw MaterialParseException("Unexpected space or '=' but found character: " + *name_end);
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
     auto p = splitString2(std::string(name_end, end), '=');
+    //TODO check std::get<0>(p) if is p/n compatibile with dopant_elem_name
     dopant_amount_type = MaterialsDB::CARRIER_CONCENTRATION;
     dopant_amount = toDouble(std::get<1>(p));
 }
@@ -77,7 +75,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components,
 {
     std::vector<std::string> components;
     std::vector<double> components_amounts;
-    parseNameWithComponents(name_with_components.data(), name_with_components.data() + name_with_components.size(), components, components_amounts);
+    parseNameWithComposition(name_with_components.data(), name_with_components.data() + name_with_components.size(), components, components_amounts);
 
     std::string parsed_name_with_dopant;
     for (std::string c: components) parsed_name_with_dopant += c;

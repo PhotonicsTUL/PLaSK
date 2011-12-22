@@ -78,7 +78,7 @@ public:
     /**
      * Create material object.
      * @param parsed_name_with_donor material name with donor name in format material_name[:donor_name], for example: "AlGaN" or "AlGaN:Mg"
-     * @param composition amounts of elements, without last one
+     * @param composition amounts of elements, with NaN for each element for composition was not writen
      * @param dopant_amount_type type of amount of dopand, needed to interpetation of @a dopant_amount
      * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
      * @return constructed material
