@@ -44,15 +44,16 @@ option (BUILD_PYTHON "Build and install Python interface to PLaSK (recommended).
 cmake_dependent_option(BUILD_PYTHON_MODULE "Build importable python module." OFF "BUILD_PYTHON" OFF)
 cmake_dependent_option(BUILD_PYTHON_EXECUTABLE "Build executable with embedded Python interpreter." ON "BUILD_PYTHON" OFF)
 
-option (BUILD_TESTS "Build and run unit tests." ON)
-option (PACK_EXE "Self-pack and strip executables." OFF)  #compress exe
+option (BUILD_TESTS "Build unit tests." ON)
+cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTS" OFF)
+option (PACK_EXE "Self-pack and strip executables." OFF)  # compress exe
 
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
 set(boost_components unit_test_framework)
 
-if(BUILD_PYTHON_MODULE)
+if(BUILD_PYTHON)
     list(APPEND boost_components python)
 endif()
 
@@ -71,18 +72,17 @@ find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
 # ----------===== Build =====--------------------------------------------
 
-file(GLOB_RECURSE plask_headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS plask/*.h)
+file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h)
 
-file(GLOB_RECURSE plask_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS plask/*.cpp)
+file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp)
 
-file(GLOB_RECURSE python_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS python/*.cpp)
-list(REMOVE_ITEM python_src python/exe_main.cpp)
+file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp)
 
 
 # ---------- plask library --------------------------------------------
 
 if (BUILD_SHARED_LIBS)
-    add_library(libplask SHARED ${plask_src} ${plask_headers})  #qtcreator needs have ${plask_headers} to show this files in IDE
+    add_library(libplask SHARED ${plask_src} ${plask_headers})  # QtCreator needs have ${plask_headers} to show this files in IDE
 else()
     add_library(libplask STATIC ${plask_src} ${plask_headers})
 endif()
@@ -96,21 +96,29 @@ if (BUILD_PYTHON)
     find_package(PythonLibs REQUIRED)
     find_package(numpy REQUIRED)
 
+    # Require Python >= 2.6
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CheckPythonversion.py "from sys import version_info as v\nif v.major == 2 and v.minor >= 6: print 'YES'\nelse: print 'NO'")
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CheckPythonversion.py" OUTPUT_VARIABLE PYTHON_SUFFICIENT_VERSION)
+    string(STRIP ${PYTHON_SUFFICIENT_VERSION} PYTHON_SUFFICIENT_VERSION)
+    if (NOT PYTHON_SUFFICIENT_VERSION)
+        message(FATAL_ERROR "Python 2.6 or newer required.")
+    endif()
+
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
     if (BUILD_PYTHON_MODULE)
         if (BUILD_SHARED_LIBS)
-            add_library(plask_module MODULE ${python_src})
-            target_link_libraries(plask_module libplask)
+            add_library(modplask MODULE ${python_plask_src})
+            target_link_libraries(modplask libplask)
         else()
-            add_library(plask_module MODULE ${python_src} ${plask_src})
+            add_library(modplask MODULE ${python_plask_src} ${plask_src})
         endif()
-        set_target_properties(plask_module PROPERTIES OUTPUT_NAME plask_ PREFIX "")
-        target_link_libraries(plask_module ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+        set_target_properties(modplask PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY "lib/plask")
+        target_link_libraries(modplask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
     endif(BUILD_PYTHON_MODULE)
 
     if (BUILD_PYTHON_EXECUTABLE)
-        add_executable(plask python/exe_main.cpp ${python_src})
+        add_executable(plask python/exe_main.cpp ${python_plask_src})
         target_link_libraries(plask libplask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
     endif(BUILD_PYTHON_EXECUTABLE)
 
@@ -142,9 +150,10 @@ if(BUILD_TESTS)
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
         include_directories(${Boost_INCLUDE_DIRS})
-        file(GLOB_RECURSE test_plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
-        add_executable(test_plask ${test_plask_src})
-        target_link_libraries(test_plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
+        file(GLOB_RECURSE test-plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
+        add_executable(test-plask ${test-plask_src})
+        set_target_properties(test-plask PROPERTIES OUTPUT_NAME test_plask)
+        target_link_libraries(test-plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
         set(plask_test_depends "DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_plask")
         file(GLOB_RECURSE plask_tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/plask FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
         list(REMOVE_ITEM plask_tests main.cpp)
@@ -156,15 +165,28 @@ if(BUILD_TESTS)
         message("Boost Test Library not found. Building without C++ unit tests.")
     endif(Boost_UNIT_TEST_FRAMEWORK_FOUND)
 
-    if(BUILD_PYTHON_MODULE)
+    if(BUILD_PYTHON)
         file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python/*.py)
         foreach(test_file ${python_tests})
             get_filename_component(test ${test_file} NAME_WE)
-            add_test(NAME python/${test} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/python COMMAND "${PYTHON_EXECUTABLE}" -B -m unittest -v ${test})
+            if(BUILD_PYTHON_EXECUTABLE)
+                add_test(NAME python-builtin/${test} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/python
+                         COMMAND plask main ${test_file})
+                set_tests_properties(python-builtin/${test} PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python;PYTHONDONTWRITEBYTECODE=YES")
+            endif()
+            if(BUILD_PYTHON_MODULE)
+                add_test(NAME python-module/${test} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/python
+                         COMMAND "${PYTHON_EXECUTABLE}" -B -m unittest -v ${test})
+                set_tests_properties(python-module/${test} PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib/plask")
+            endif()
         endforeach()
     endif(BUILD_PYTHON_MODULE)
 
-    add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure ${plask_test_depends})
+    if (RUN_TESTS)
+        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure ${plask_test_depends})
+    else()
+        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure ${plask_test_depends})
+    endif()
 
 endif(BUILD_TESTS)
 
@@ -227,6 +249,14 @@ set(CPACK_SOURCE_IGNORE_FILES
 )
 
 include(CPack)
+
+# ----------===== Debug helpers =====--------------------------------------------
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask
+         "PYTHONPATH=${CMAKE_SOURCE_DIR}/python PYTHONDONTWRITEBYTECODE=YES ${CMAKE_BINARY_DIR}/bin/plask $@\n")
+    file(COPY ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask DESTINATION ${CMAKE_BINARY_DIR}
+         FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE OWNER_WRITE)
+endif()
 
 # ----------===== config.h =====--------------------------------------------
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)

@@ -4,7 +4,7 @@
 // PLaSK version
 #define PLASK_VERSION_MAJOR ${VERSION_MAJOR}
 #define PLASK_VERSION_MINOR ${VERSION_MINOR}
-#define PLASK_VERSION ${VERSION}
+#define PLASK_VERSION "${VERSION}"
 
 // Declare shared pointer to use
 // (when boost::python gets compatibile with std::shared_ptr, check boost version and use std if possible)

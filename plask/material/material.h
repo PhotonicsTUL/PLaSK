@@ -18,10 +18,10 @@ namespace plask {
  */
 struct Material {
 
-    ///Do nothing.
+    /// Do nothing.
     virtual ~Material() {}
 
-    ///@return material name
+    /// @return material name
     virtual std::string getName() const = 0;
 
 };
@@ -63,13 +63,13 @@ struct MaterialsDB {
 
     ///Amounts of dopands.
     enum DOPANT_AMOUNT_TYPE {
-        NO_DOPANT,              ///<no dopand
-        DOPING_CONCENTRATION,   ///<doping concentration
-        CARRIER_CONCENTRATION   ///<carrier concentration
+        NO_DOPANT,              ///< no dopand
+        DOPING_CONCENTRATION,   ///< doping concentration
+        CARRIER_CONCENTRATION   ///< carrier concentration
     };
 
     typedef Material* construct_material_f(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
-    
+
     /**
      * Construct material with given type.
      * @tparam MaterialType type of material to construct, must fill requirments:
@@ -124,7 +124,7 @@ public:
      * @param constructor function which can create material instance
      */
     void add(const std::string& name, construct_material_f* constructor);
-    
+
     /**
      * Add material with given type to DB.
      * All information about material (like name, composition amount pattern) are read from static MaterialType fields.

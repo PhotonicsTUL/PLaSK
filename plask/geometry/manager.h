@@ -15,24 +15,24 @@ This file includes:
 namespace plask {
 
 /**
- * Geometry manager futures:
+ * Geometry manager features:
  * - read/write geometries
- * - reserve and free memory needs by geometry description
- * - allows for access to geomtrie elements (also by names)
+ * - reserve and free memory needed by geometry structure
+ * - allow access to geometry elements (also by names)
  */
 struct GeometryManager {
 
-	///Store pointers to all elements.
+	/// Store pointers to all elements.
 	std::set<GeometryElement*> elements;
 
-	///Allow to access to path hints by name.
+	/// Allow to access path hints by name.
 	std::map<std::string, PathHints*> pathHints;
-	
-	///Allow to access to elements by name.
+
+	/// Allow to access elements by name.
 	std::map<std::string, GeometryElement*> namedElements;
 
     GeometryManager();
-    
+
     ///Delete all elements.
     ~GeometryManager();
 };

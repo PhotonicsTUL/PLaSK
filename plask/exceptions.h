@@ -24,14 +24,14 @@ struct CriticalException: public Exception {
 };
 
 /**
-This exception is thrown when some method is not implemented.
-*/
+ * This exception is thrown when some method is not implemented.
+ */
 struct NotImplemented: public Exception {
     //std::string methodName;
 
     NotImplemented(const std::string& method_name)
     : Exception("Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
-    
+
     NotImplemented(const std::string& where, const std::string& method_name)
     : Exception("In " + where + ": Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
 };
@@ -73,11 +73,11 @@ struct NoSuchMaterial: public Exception {
 };
 
 struct MaterialMethodNotImplemented: public NotImplemented {
-    
+
     MaterialMethodNotImplemented(const std::string& material_name, const std::string& method_name)
     : NotImplemented("material " + material_name, method_name) {
     }
-    
+
 };
 
 /**

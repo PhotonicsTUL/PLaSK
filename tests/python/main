@@ -1,0 +1,22 @@
+import sys, unittest
+
+if __name__ == '__main__':
+    execfile(sys.argv[1])
+    tests = []
+    for m in globals().values():
+        try:
+            if issubclass(m, unittest.TestCase):
+                tests.append(m)
+        except TypeError:
+            pass
+
+    errors = 0
+
+    for m in tests:
+            suite = unittest.TestLoader().loadTestsFromTestCase(m)
+            result = unittest.TextTestRunner().run(suite)
+            errors += len(result.errors) + len(result.failures)
+
+    sys.exit(errors)
+
+#kate: syntax Python;
