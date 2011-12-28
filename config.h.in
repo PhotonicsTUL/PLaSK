@@ -11,5 +11,15 @@
 #include <boost/shared_ptr.hpp>
 namespace plask { using boost::shared_ptr; }
 
+
+// Math library
+#include <cmath>
+
+// Complex numbers library
+#include <complex>
+namespace plask { using std::complex; }
+
+
+
 #endif // PLASK__CONFIG_H
 // kate: syntax c++;

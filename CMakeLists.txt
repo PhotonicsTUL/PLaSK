@@ -180,7 +180,7 @@ if(BUILD_TESTS)
                 set_tests_properties(python-module/${test} PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib/plask")
             endif()
         endforeach()
-    endif(BUILD_PYTHON_MODULE)
+    endif(BUILD_PYTHON)
 
     if (RUN_TESTS)
         add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure ${plask_test_depends})

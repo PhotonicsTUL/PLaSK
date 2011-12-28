@@ -1,8 +1,8 @@
 #ifndef PLASK__VECTOR2D_H
 #define PLASK__VECTOR2D_H
 
-#include <cmath>
 #include <iostream>
+#include <config.h>
 
 namespace plask {
 
@@ -50,7 +50,7 @@ struct Vec2 {
      */
     template <typename OtherT>
     bool operator==(const Vec2<OtherT>& p) const { return p.c0 == c0 && p.c1 == c1; }
-    
+
     /**
      * Compare two vectors, this and @a p.
      * @param p vector to compare
@@ -60,16 +60,16 @@ struct Vec2 {
     bool operator!=(const Vec2<OtherT>& p) const { return p.c0 != c0 || p.c1 != c1; }
 
     /**
-     * Calculate square of vector length.
-     * @return square of vector length
+     * Calculate square of vector magnitude.
+     * @return square of vector magnitude
      */
-    T lengthSqr() const { return c0*c0 + c1*c1; }
+    inline T magnitude2() const { return c0*c0 + c1*c1; }
 
     /**
-     * Calculate vector length.
-     * @return vector length
+     * Calculate vector magnitude.
+     * @return vector magnitude
      */
-    T length() const { return sqrt(lengthSqr()); }
+    inline T magnitude() const { return sqrt(magnitude2()); }
 
     /**
      * Calculate sum of two vectors, @a this and @a to_add.
@@ -148,7 +148,7 @@ struct Vec2 {
         c1 /= scalar;
         return *this;
     }
-    
+
     /**
      * Calculate vector opposite to this.
      * @return Vec2<T>(-c0, -c1)
@@ -156,7 +156,7 @@ struct Vec2 {
     Vec2<T> operator-() const {
         return Vec2<T>(-c0, -c1);
     }
-    
+
     /**
      * Print vector to stream using format (where c0 and c1 are vector coordinates): [c0, c1]
      * @param out print destination, output stream
@@ -179,9 +179,34 @@ template <typename T>
 inline Vec2<T> operator*(const T scale, const Vec2<T>& v) { return v*scale; }
 
 /**
+ * Calculate square of vector magnitude.
+ * @param v a vector
+ * @return square of vector magnitude
+ */
+template <typename T>
+T abs2(const Vec2<T>& v) { return v.magnitude2(); }
+
+/**
+ * Calculate vector magnitude.
+ * @param v a vector
+ * @return vector magnitude
+ */
+template <typename T>
+T abs(const Vec2<T>& v) { return v.magnitude(); }
+
+/**
+ * Compute dot product of two vectors @a v1 and @a v2
+ * @param v1 first vector
+ * @param v2 second vector
+ * @return dot product v1·v2
+ */
+template <typename T>
+T dot(const Vec2<T>& v1, const Vec2<T>& v2) { return v1.c0 * v2.c0 + v1.c1 * v2.c1; }
+
+/**
  * Helper to create 2d vector.
- * @param c0, c1 vector coordinates. 
- */ 
+ * @param c0, c1 vector coordinates.
+ */
 template <typename T>
 inline Vec2<T> vec(const T c0, const T c1) {
     return Vec2<T>(c0, c1);

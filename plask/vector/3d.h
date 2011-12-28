@@ -1,7 +1,8 @@
 #ifndef PLASK__VECTOR3D_H
 #define PLASK__VECTOR3D_H
 
-#include <cmath>
+#include <iostream>
+#include <config.h>
 
 namespace plask {
 
@@ -9,8 +10,8 @@ namespace plask {
  * Vector in 3d space.
  */
 template <typename T = double>
-struct Vec3 {
 
+struct Vec3 {
     union {
         /// Allow to access to vector coordinates by index.
         T coordinate[3];
@@ -52,7 +53,7 @@ struct Vec3 {
      */
     template <typename OtherT>
     bool operator==(const Vec3<OtherT>& p) const { return p.c0 == c0 && p.c1 == c1 && p.c2 == c2; }
-    
+
     /**
      * Compare two vectors, this and @a p.
      * @param p vector to compare
@@ -62,16 +63,16 @@ struct Vec3 {
     bool operator!=(const Vec3<OtherT>& p) const { return p.c0 != c0 || p.c1 != c1 || p.c2 != c2; }
 
     /**
-     * Calculate square of vector length.
-     * @return square of vector length
+     * Calculate square of vector magnitude.
+     * @return square of vector magnitude
      */
-    T lengthSqr() const { return c0*c0 + c1*c1 + c2*c2; }
+    inline T magnitude2() const { return c0*c0 + c1*c1 + c2*c2; }
 
     /**
-     * Calculate vector length.
-     * @return vector length
+     * Calculate vector magnitude.
+     * @return vector magnitude
      */
-    T length() const { return sqrt(lengthSqr()); }
+    inline T magnitude() const { return sqrt(magnitude2()); }
 
     /**
      * Calculate sum of two vectors, @a this and @a to_add.
@@ -154,7 +155,7 @@ struct Vec3 {
         c2 /= scalar;
         return *this;
     }
-    
+
     /**
      * Calculate vector opposite to this.
      * @return Vec3<T>(-c0, -c1, -c2)
@@ -162,7 +163,7 @@ struct Vec3 {
     Vec3<T> operator-() const {
         return Vec3<T>(-c0, -c1, -c2);
     }
-    
+
     /**
      * Print vector to stream using format (where c0, c1 and c2 are vector coordinates): [c0, c1, c2]
      * @param out print destination, output stream
@@ -185,9 +186,34 @@ template <typename T>
 inline Vec3<T> operator*(const T scale, const Vec3<T>& v) { return v*scale; }
 
 /**
+ * Calculate square of vector magnitude.
+ * @param v a vector
+ * @return square of vector magnitude
+ */
+template <typename T>
+T abs2(const Vec3<T>& v) { return v.magnitude2(); }
+
+/**
+ * Calculate vector magnitude.
+ * @param v a vector
+ * @return vector magnitude
+ */
+template <typename T>
+T abs(const Vec3<T>& v) { return v.magnitude(); }
+
+/**
+ * Compute dot product of two vectors @a v1 and @a v2
+ * @param v1 first vector
+ * @param v2 second vector
+ * @return dot product v1·v2
+ */
+template <typename T>
+T dot(const Vec3<T>& v1, const Vec3<T>& v2) { return v1.c0 * v2.c0 + v1.c1 * v2.c1 + v1.c2 * v2.c2; }
+
+/**
  * Helper to create 3d vector.
- * @param c0, c1, c2 vector coordinates. 
- */ 
+ * @param c0, c1, c2 vector coordinates.
+ */
 template <typename T>
 inline Vec3<T> vec(const T c0, const T c1, const T c2) {
     return Vec3<T>(c0, c1, c2);

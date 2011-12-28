@@ -2,12 +2,13 @@
 #define PLASK__PYTHON_GEOMETRY_ELEMENT_H
 
 #include "geometry.h"
+#include <plask/geometry/element.h>
 
 namespace plask { namespace python {
 
 /// Initialize class GeometryElementD for Python
-DECLARE_GEOMETRY_ELEMENT(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
-    ABSTRACT_GEOMETRY_ELEMENT(GeometryElementD)
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
+    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementD, GeometryElement)
         .def("inside", &GeometryElementD<dim>::inside)
         .def("intersect", &GeometryElementD<dim>::intersect)
         .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox)
@@ -28,8 +29,8 @@ void GeometryElementTransform_setChild(GeometryElementTransform<dim>& self, Geom
     self.setChild(*child);
 }
 /// Initialize class GeometryElementTransform for Python
-DECLARE_GEOMETRY_ELEMENT(GeometryElementTransform, "GeometryElementTransform", "Base class for all "," transform nodes") {
-    ABSTRACT_GEOMETRY_ELEMENT(GeometryElementTransform)
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementTransform, "GeometryElementTransform", "Base class for all "," transform nodes") {
+    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementTransform, GeometryElementD<dim>)
         .add_property("child",
             py::make_function(&GeometryElementTransform_getChild<dim>, py::return_internal_reference<1>()),
             py::make_function(&GeometryElementTransform_setChild<dim>, py::with_custodian_and_ward<1, 2>()))
@@ -37,12 +38,12 @@ DECLARE_GEOMETRY_ELEMENT(GeometryElementTransform, "GeometryElementTransform", "
     ;
 }
 
-DECLARE_GEOMETRY_ELEMENT(GeometryElementContainer, "GeometryElementContainer", "Base class for all "," containers") {
-    ABSTRACT_GEOMETRY_ELEMENT(GeometryElementContainer)
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementContainer, "GeometryElementContainer", "Base class for all "," containers") {
+    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementContainer, GeometryElementD<dim>)
     ;
 }
 
-inline static void init_geometry_element_h()
+inline static void register_geometry_element_h()
 {
     py::enum_<GeometryElementType>("ElementType")
         .value("LEAF", GE_TYPE_LEAF)
@@ -51,7 +52,7 @@ inline static void init_geometry_element_h()
         .value("CONTAINER", GE_TYPE_CONTAINER)
     ;
 
-    py::class_<GeometryElement, shared_ptr<GeometryElement>, boost::noncopyable>("GeometryElement",
+    py::class_<GeometryElement, boost::noncopyable>("GeometryElement",
         "Base class for all geometry elements.", py::no_init)
         .add_property("type", &GeometryElement::getType)
         .def("validate", &GeometryElement::validate)
@@ -63,10 +64,16 @@ inline static void init_geometry_element_h()
     init_GeometryElementTransform<2>();
     init_GeometryElementTransform<3>();
 
-    //TODO: GeometryElementChangeSpace
-
     init_GeometryElementContainer<2>();
     init_GeometryElementContainer<3>();
+
+    // Space changer
+    py::class_<GeometryElementChangeSpace<3,2>, py::bases<GeometryElementTransform<3>>, boost::noncopyable>
+    ("GeometryElementChangeSpace2Dto3D", "Base class for elements changing space 2D to 3D", py::no_init);
+
+    py::class_<GeometryElementChangeSpace<2,3>, py::bases<GeometryElementTransform<2>>, boost::noncopyable>
+    ("GeometryElementChangeSpace3Dto2D", "Base class for elements changing space 3D to 2D using some averaging or cross-section", py::no_init);
+
 }
 
 

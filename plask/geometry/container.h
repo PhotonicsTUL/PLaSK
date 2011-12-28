@@ -131,7 +131,7 @@ public:
  */
 //TODO some implementation are naive, and can be done faster with some caches
 template < int dim >
-struct TrasnalateContainer: public GeometryElementContainerImpl<dim> {
+struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 
     typedef typename GeometryElementContainer<dim>::Vec Vec;
     typedef typename GeometryElementContainer<dim>::Rect Rect;
