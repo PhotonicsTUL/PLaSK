@@ -3,22 +3,28 @@ from modplask import *
 ## ## plask vectors ## ##
 
 def vector(*args):
+    '''Create a new vector'''
     classes = {(2,float): vector2d_float, (2,complex): vector2d_complex, (3,float): vector3d_float, (3,complex): vector3d_complex}
     t = args[-1]
-    if type(t) == type:
+    if type(t) == type or t is None:
         typ = t
-        c = args[:-1]
+        comps = args[:-1]
     else:
-        typ = float
-        c = args
+        typ = None
+        comps = args
+    if typ is None:
+        try:
+            comps = [ float(c) for c in comps ]
+        except TypeError:
+            c = [ complex(c) for c in comps ]
+            typ = complex
+        else:
+            typ = float
     try:
-        return classes[len(c),typ](*c)
+        return classes[len(comps),typ](*comps)
     except KeyError:
         raise TypeError("unrecognized vector type")
 
-for V in [vector3d_float, vector3d_complex]:
-    V.phi = V.y
-    V.a, V.b, V.c = V.x, V.y, V.z
 
 ## ## plask.material ## ##
 

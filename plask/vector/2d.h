@@ -14,7 +14,7 @@ struct Vec2 {
 
     union {
         /// Allow to access to vector coordinates by index.
-        T coordinate[2];
+        T components[2];
         struct {
             /// Allow to access to vector coordinates by name.
             T c0, c1;
@@ -58,6 +58,26 @@ struct Vec2 {
      */
     template <typename OtherT>
     bool operator!=(const Vec2<OtherT>& p) const { return p.c0 != c0 || p.c1 != c1; }
+
+    /**
+     * Get i-th component
+     * WARNING This function does not check if param is valid (for efficiency reasons)
+     * @param number of coordinate
+     * @return i-th component
+     */
+    inline T& operator[](size_t i) {
+        return components[i];
+    }
+
+    /**
+     * Get i-th component
+     * WARNING This function does not check if param is valid (for efficiency reasons)
+     * @param number of coordinate
+     * @return i-th component
+     */
+    inline T operator[](size_t i) const {
+        return components[i];
+    }
 
     /**
      * Calculate square of vector magnitude.
@@ -184,7 +204,7 @@ inline Vec2<T> operator*(const T scale, const Vec2<T>& v) { return v*scale; }
  * @return square of vector magnitude
  */
 template <typename T>
-T abs2(const Vec2<T>& v) { return v.magnitude2(); }
+inline T abs2(const Vec2<T>& v) { return v.magnitude2(); }
 
 /**
  * Calculate vector magnitude.
@@ -192,7 +212,15 @@ T abs2(const Vec2<T>& v) { return v.magnitude2(); }
  * @return vector magnitude
  */
 template <typename T>
-T abs(const Vec2<T>& v) { return v.magnitude(); }
+inline T abs(const Vec2<T>& v) { return v.magnitude(); }
+
+/**
+ * Calculate vector conjugate.
+ * @param v a vector
+ * @return conjugate vector
+ */
+template <typename T>
+inline Vec2<T> conj(const Vec2<T>& v) { return Vec2<T> {conj(v.c0), conj(v.c1)}; }
 
 /**
  * Compute dot product of two vectors @a v1 and @a v2
@@ -200,8 +228,10 @@ T abs(const Vec2<T>& v) { return v.magnitude(); }
  * @param v2 second vector
  * @return dot product v1·v2
  */
-template <typename T>
-T dot(const Vec2<T>& v1, const Vec2<T>& v2) { return v1.c0 * v2.c0 + v1.c1 * v2.c1; }
+template <typename T1, typename T2>
+inline auto dot(const Vec2<T1>& v1, const Vec2<T2>& v2) -> decltype(v1.c0*v2.c0) {
+    return v1.c0 * v2.c0 + v1.c1 * v2.c1;
+}
 
 /**
  * Helper to create 2d vector.

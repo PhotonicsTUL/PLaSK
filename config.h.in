@@ -17,7 +17,7 @@ namespace plask { using boost::shared_ptr; }
 
 // Complex numbers library
 #include <complex>
-namespace plask { using std::complex; }
+namespace plask { using std::complex; using std::conj; }
 
 
 

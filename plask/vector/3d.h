@@ -14,7 +14,7 @@ template <typename T = double>
 struct Vec3 {
     union {
         /// Allow to access to vector coordinates by index.
-        T coordinate[3];
+        T components[3];
         struct {
             /// Allow to access to vector coordinates by name.
             T c0, c1, c2;
@@ -61,6 +61,26 @@ struct Vec3 {
      */
     template <typename OtherT>
     bool operator!=(const Vec3<OtherT>& p) const { return p.c0 != c0 || p.c1 != c1 || p.c2 != c2; }
+
+    /**
+     * Get i-th component
+     * WARNING This function does not check if param is valid (for efficiency reasons)
+     * @param number of coordinate
+     * @return i-th component
+     */
+    inline T& operator[](size_t i) {
+        return components[i];
+    }
+
+    /**
+     * Get i-th component
+     * WARNING This function does not check if param is valid (for efficiency reasons)
+     * @param number of coordinate
+     * @return i-th component
+     */
+    inline T operator[](size_t i) const {
+        return components[i];
+    }
 
     /**
      * Calculate square of vector magnitude.
@@ -202,13 +222,23 @@ template <typename T>
 T abs(const Vec3<T>& v) { return v.magnitude(); }
 
 /**
+ * Calculate vector conjugate.
+ * @param v a vector
+ * @return conjugate vector
+ */
+template <typename T>
+inline Vec3<T> conj(const Vec3<T>& v) { return Vec3<T> {conj(v.c0), conj(v.c1), conj(v.c2)}; }
+
+/**
  * Compute dot product of two vectors @a v1 and @a v2
  * @param v1 first vector
  * @param v2 second vector
  * @return dot product v1·v2
  */
-template <typename T>
-T dot(const Vec3<T>& v1, const Vec3<T>& v2) { return v1.c0 * v2.c0 + v1.c1 * v2.c1 + v1.c2 * v2.c2; }
+template <typename T1, typename T2>
+inline auto dot(const Vec3<T1>& v1, const Vec3<T2>& v2) -> decltype(v1.c0*v2.c0) {
+    return v1.c0 * v2.c0 + v1.c1 * v2.c1 + v1.c2 * v2.c2;
+}
 
 /**
  * Helper to create 3d vector.
