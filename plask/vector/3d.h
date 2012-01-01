@@ -65,7 +65,7 @@ struct Vec3 {
     /**
      * Get i-th component
      * WARNING This function does not check if param is valid (for efficiency reasons)
-     * @param number of coordinate
+     * @param i number of coordinate
      * @return i-th component
      */
     inline T& operator[](size_t i) {
@@ -75,10 +75,10 @@ struct Vec3 {
     /**
      * Get i-th component
      * WARNING This function does not check if param is valid (for efficiency reasons)
-     * @param number of coordinate
+     * @param i number of coordinate
      * @return i-th component
      */
-    inline T operator[](size_t i) const {
+    inline const T& operator[](size_t i) const {
         return components[i];
     }
 

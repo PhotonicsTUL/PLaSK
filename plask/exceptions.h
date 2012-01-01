@@ -36,6 +36,8 @@ struct NotImplemented: public Exception {
     : Exception("In " + where + ": Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
 };
 
+//-------------- Connected with providers/receivers: -----------------------
+
 /**
  * This exception is thrown, typically on access to @ref plask::Receiver "receiver" data,
  * when there is no @ref plask::Provider "provider" connected with it.
@@ -45,12 +47,7 @@ struct NoProvider: public Exception {
     NoProvider(): Exception("No provider.") {}
 };
 
-/**
- * Exceptions of this class are throw by some geometry element classes when there is no required child.
- */
-struct NoChildException: public Exception {
-    NoChildException(): Exception("No child.") {}
-};
+
 
 /*
  * Exceptions of this class are throw when some string parser find errors.
@@ -72,6 +69,9 @@ struct NoSuchMaterial: public Exception {
     : Exception("No such material " + material_name)/*, materialName(material_name)*/ {}
 };
 
+/**
+ * This exception is thrown by material methods which are not implemented.
+ */
 struct MaterialMethodNotImplemented: public NotImplemented {
 
     MaterialMethodNotImplemented(const std::string& material_name, const std::string& method_name)
@@ -88,6 +88,50 @@ struct MaterialParseException: public Exception {
     MaterialParseException(const std::string& msg): Exception("Material parse error: " + msg) {}
 };
 
+//-------------- Connected with geometry: -----------------------
+
+/**
+ * Exceptions of this class are throw by some geometry element classes when there is no required child.
+ */
+struct NoChildException: public Exception {
+    NoChildException(): Exception("No child.") {}
+};
+
+/**
+ * This exception is thrown when geometry element (typically with given name) is not found.
+ */
+struct NoSuchGeometryElementType: public Exception {
+    //std::string materialName;
+
+    NoSuchGeometryElementType(const std::string& element_type_name)
+    : Exception("No geometry element with given type name " + element_type_name)/*, materialName(material_name)*/ {}
+};
+
+/**
+ * Exceptions of this class are throw by some geometry element classes when there is no required child.
+ */
+struct GeometryElementNamesConflictException: public Exception {
+    GeometryElementNamesConflictException(const std::string& element_name): Exception("Geometry element with given name \"" + element_name + "\" already exists.") {}
+};
+
+/**
+ * This exception is thrown when geometry element (typically with given name) is not found.
+ */
+struct NoSuchGeometryElement: public Exception {
+    //std::string materialName;
+
+    NoSuchGeometryElement(const std::string& element_name)
+    : Exception("No geometry element with name " + element_name)/*, materialName(material_name)*/ {}
+};
+
+
+struct UnexpectedGeometryElementTypeException: public Exception {
+    UnexpectedGeometryElementTypeException(): Exception("Geometry element has unexpected type.") {}
+};
+
+struct NoAttrException: public Exception {
+    NoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribiute " + attr_name) {}
+};
 
 } // namespace plask
 
