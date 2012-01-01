@@ -110,12 +110,43 @@ struct GeometryManager {
      * @throw NoAttrException if XML tag has no required attribiutes
      */
     template <typename RequiredElementType>
-    RequiredElementType& readElement(XMLReader& source) {
-        RequiredElementType* result = dynamic_cast<RequiredElementType*>(&source);
-        if (!result) throw UnexpectedGeometryElementTypeException();
-        return *result;
-    }
+    RequiredElementType& readElement(XMLReader& source);
+    
+    /**
+     * Read all elements up to end of XML tag and call functor(element) for each element which was read.
+     * @param source
+     * @param functor
+     * @tparam FunctorType unary functor which can take RequiredElementType& as argument
+     * @tparam RequiredElementType required type of element
+     */
+    template <typename FunctorType, typename RequiredElementType = GeometryElement>
+    void readAllElements(XMLReader& source, FunctorType functor);
 };
+
+//specialization for most types
+template <typename RequiredElementType>
+inline RequiredElementType& GeometryManager::readElement(XMLReader& source) {
+    RequiredElementType* result = dynamic_cast<RequiredElementType*>(&readElement(source));
+    if (!result) throw UnexpectedGeometryElementTypeException();
+    return *result;
+}
+
+//specialization for GeometryElement which doesn't required dynamic_cast
+template <>
+inline GeometryElement& GeometryManager::readElement<GeometryElement>(XMLReader& source) {
+    return readElement(source);
+}
+
+template <typename FunctorType, typename RequiredElementType>
+inline void GeometryManager::readAllElements(XMLReader& source, FunctorType functor) {
+    while(source.read()) {
+        switch (source.getNodeType()) {
+            case irr::io::EXN_ELEMENT_END: return;  
+            case irr::io::EXN_ELEMENT: functor(readElement<RequiredElementType>(source));
+            //TODO what with all other XML types (which now are just ignored)?
+        }
+    }
+}
 
 }	// namespace plask
 
