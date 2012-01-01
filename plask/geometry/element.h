@@ -140,10 +140,12 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 /**
  * Template for base class for all transform nodes.
  */
-template < int dim, typename ChildType = GeometryElementD<dim> >
+template < int dim, typename Child_Type = GeometryElementD<dim> >
 struct GeometryElementTransform: public GeometryElementD<dim> {
 
-    explicit GeometryElementTransform(ChildType* child = 0): _child(child) {}
+    typedef Child_Type ChildType;
+    
+    explicit GeometryElementTransform(ChildType* child = nullptr): _child(child) {}
 
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
 

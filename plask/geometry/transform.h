@@ -17,9 +17,11 @@ struct Translation: public GeometryElementTransform<dim> {
 
     Vec translation;
 
-    Translation(GeometryElementD<dim>* child, const Vec& translation): GeometryElementTransform<dim>(child), translation(translation) {}
+    explicit Translation(GeometryElementD<dim>* child = 0, const Vec& translation = Primitive<dim>::ZERO_VEC)
+        : GeometryElementTransform<dim>(child), translation(translation) {}
     
-    Translation(GeometryElementD<dim>& child, const Vec& translation): GeometryElementTransform<dim>(&child), translation(translation) {}
+    explicit Translation(GeometryElementD<dim>& child, const Vec& translation = Primitive<dim>::ZERO_VEC)
+        : GeometryElementTransform<dim>(&child), translation(translation) {}
 
     virtual Rect getBoundingBox() const {
         return getChild().getBoundingBox().translated(translation);

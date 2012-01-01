@@ -100,6 +100,11 @@ struct GeometryManager {
     GeometryElement& readElement(XMLReader& source);
     
     /**
+     * Skip current element in source and read exactly one geometry element (which also skip).
+     */
+    GeometryElement& readExactlyOneChild(XMLReader& source);
+    
+    /**
      * Call readElement(source) and try dynamic cast it to @a RequiredElementType.
      * @param source xml data source from which element data should be read
      * @return element (casted to RequiredElementType) which was read and create or to which reference was read
@@ -111,6 +116,9 @@ struct GeometryManager {
      */
     template <typename RequiredElementType>
     RequiredElementType& readElement(XMLReader& source);
+    
+    template <typename RequiredElementType>
+    RequiredElementType& readExactlyOneChild(XMLReader& source);
     
     /**
      * Read all elements up to end of XML tag and call functor(element) for each element which was read.
@@ -135,6 +143,20 @@ inline RequiredElementType& GeometryManager::readElement(XMLReader& source) {
 template <>
 inline GeometryElement& GeometryManager::readElement<GeometryElement>(XMLReader& source) {
     return readElement(source);
+}
+
+//specialization for most types
+template <typename RequiredElementType>
+inline RequiredElementType& GeometryManager::readExactlyOneChild(XMLReader& source) {
+    RequiredElementType* result = dynamic_cast<RequiredElementType*>(&readExactlyOneChild(source));
+    if (!result) throw UnexpectedGeometryElementTypeException();
+    return *result;
+}
+
+//specialization for GeometryElement which doesn't required dynamic_cast
+template <>
+inline GeometryElement& GeometryManager::readExactlyOneChild<GeometryElement>(XMLReader& source) {
+    return readExactlyOneChild(source);
 }
 
 template <typename FunctorType, typename RequiredElementType>

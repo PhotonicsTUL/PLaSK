@@ -41,14 +41,18 @@ GeometryElement& GeometryManager::readElement(XMLReader &source) {
     auto reader_it = elementReaders.find(nodeName);
     if (reader_it == elementReaders.end())
         throw NoSuchGeometryElementType(nodeName);
+    const char* name = source.getAttributeValue("name");    //must be call before reader call (reader function can change XMLReader)
     GeometryElement* new_element = reader_it->second(*this, source);
-    elements.insert(new_element);   //first this to ensure that memory will be freed
-    const char* name = source.getAttributeValue("name");
+    elements.insert(new_element);   //first this, to ensure that memory will be freed
     if (name) {
         if (!namedElements.insert(std::map<std::string, GeometryElement*>::value_type(name, new_element)).second)
             throw GeometryElementNamesConflictException(name);
     }
     return *new_element;
+}
+
+GeometryElement &GeometryManager::readExactlyOneChild(XMLReader &source) {
+    //TODO implementation
 }
 
 }	// namespace plask
