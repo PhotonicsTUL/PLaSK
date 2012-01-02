@@ -39,7 +39,7 @@ struct GeometryManager {
      *
      * Map: xml tag name -> element reader function.
      */
-    static std::map<std::string, element_read_f*> elementReaders;
+    static std::map<std::string, element_read_f*>& elementReaders();
     
     /**
      * Add reader to elementReaders.
@@ -63,7 +63,7 @@ struct GeometryManager {
     std::set<GeometryElement*> elements;
 
     /// Allow to access path hints by name.
-    std::map<std::string, PathHints*> pathHints;
+    std::map<std::string, PathHints> pathHints;
 
     /// Allow to access elements by name.
     std::map<std::string, GeometryElement*> namedElements;

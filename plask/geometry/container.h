@@ -140,7 +140,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 
     using GeometryElementContainerImpl<dim>::children;
 
-    PathHints::Hint add(ChildT* el, const Vec& translation) {
+    PathHints::Hint add(ChildT* el, const Vec& translation = Primitive<dim>::ZERO_VEC) {
         TranslationT* trans_geom = new TranslationT(el, translation);
         children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);

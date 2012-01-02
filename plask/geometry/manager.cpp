@@ -4,7 +4,10 @@
 
 namespace plask {
 
-std::map<std::string, GeometryManager::element_read_f*> GeometryManager::elementReaders;
+std::map<std::string, GeometryManager::element_read_f*>& GeometryManager::elementReaders() {
+    static std::map<std::string, GeometryManager::element_read_f*> result;
+    return result;
+}
 
 GeometryManager::GeometryManager(MaterialsDB& materialsDB): materialsDB(materialsDB) {
 }
@@ -24,20 +27,21 @@ GeometryElement& GeometryManager::requireElement(const std::string &name) {
 }
 
 void GeometryManager::registerElementReader(const std::string &tag_name, element_read_f *reader) {
-    elementReaders[tag_name] = reader;
+    elementReaders()[tag_name] = reader;
 }
 
 GeometryElement& GeometryManager::readElement(XMLReader &source) {
     std::string nodeName = source.getNodeName();
     if (nodeName == "ref")
         return requireElement(XML::requireAttr(source, "name"));
-    auto reader_it = elementReaders.find(nodeName);
-    if (reader_it == elementReaders.end())
+    auto reader_it = elementReaders().find(nodeName);
+    if (reader_it == elementReaders().end())
         throw NoSuchGeometryElementType(nodeName);
-    const char* name = source.getAttributeValue("name");    //must be call before reader call (reader function can change XMLReader)
+    const char* name_exists = source.getAttributeValue("name");    //must be call before reader call (reader function can change XMLReader)
+    std::string name = name_exists;     //reader can also delete name_exists, we need copy
     GeometryElement* new_element = reader_it->second(*this, source);
     elements.insert(new_element);   //first this, to ensure that memory will be freed
-    if (name) {
+    if (name_exists) {
         if (!namedElements.insert(std::map<std::string, GeometryElement*>::value_type(name, new_element)).second)
             throw GeometryElementNamesConflictException(name);
     }
