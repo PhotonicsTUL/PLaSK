@@ -2,7 +2,7 @@
 
 #include "../exceptions.h"
 
-namespace plask {
+namespace plask { namespace XML {
 
 std::string requireAttr(XMLReader &source, const char* attr_name) {
     const char* result = source.getAttributeValue(attr_name);
@@ -32,4 +32,4 @@ void requireTagEnd(XMLReader& reader) {
 
 
 
-} // namespace plask
+} } // namespace plask::XML

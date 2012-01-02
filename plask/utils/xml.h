@@ -1,7 +1,7 @@
 #ifndef PLASK__XML_H
 #define PLASK__XML_H
 
-#include "irrxml/irrXML.h"
+#include <irrxml/irrXML.h>
 
 #include <string>
 #include <boost/lexical_cast.hpp>

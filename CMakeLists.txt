@@ -13,7 +13,7 @@ add_definitions(-Wall)          # all warnings
 add_definitions(-std=c++0x)     # C++0x (C++11) standard
 
 include_directories(.)          # external modules can include plask using <plask/....h>
-include_directories(extlibs)    # place for local external libraries
+include_directories(extlib)    # place for local external libraries
 include_directories(${CMAKE_BINARY_DIR}) # for include config.h
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
@@ -76,15 +76,18 @@ file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h)
 
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp)
 
+#external libs which are compiled by us
+file(GLOB_RECURSE plask_extlib_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
+
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp)
 
 
 # ---------- plask library --------------------------------------------
 
 if (BUILD_SHARED_LIBS)
-    add_library(libplask SHARED ${plask_src} ${plask_headers})  # QtCreator needs have ${plask_headers} to show this files in IDE
+    add_library(libplask SHARED ${plask_src} ${plask_extlib_src} ${plask_headers})  # QtCreator needs have ${plask_headers} to show this files in IDE
 else()
-    add_library(libplask STATIC ${plask_src} ${plask_headers})
+    add_library(libplask STATIC ${plask_src} ${plask_extlib_src} ${plask_headers})
 endif()
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
