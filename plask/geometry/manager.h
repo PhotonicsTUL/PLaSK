@@ -54,7 +54,7 @@ struct GeometryManager {
      * Each element can create one global instanse of this class to register own reader.
      */
     struct RegisterElementReader {
-        RegisterElementReader(const std::string& tag_name, element_read_f reader) {
+        RegisterElementReader(const std::string& tag_name, element_read_f* reader) {
             GeometryManager::registerElementReader(tag_name, reader);   
         }
     };

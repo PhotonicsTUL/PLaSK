@@ -135,12 +135,12 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 
     typedef typename GeometryElementContainer<dim>::Vec Vec;
     typedef typename GeometryElementContainer<dim>::Rect Rect;
-    typedef GeometryElementD<dim> ChildT;
+    typedef GeometryElementD<dim> ChildType;
     typedef Translation<dim> TranslationT;
 
     using GeometryElementContainerImpl<dim>::children;
 
-    PathHints::Hint add(ChildT* el, const Vec& translation = Primitive<dim>::ZERO_VEC) {
+    PathHints::Hint add(ChildType* el, const Vec& translation = Primitive<dim>::ZERO_VEC) {
         TranslationT* trans_geom = new TranslationT(el, translation);
         children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);
@@ -155,7 +155,7 @@ struct StackContainer2d: public GeometryElementContainerImpl<2> {
 
     typedef typename GeometryElementContainer<2>::Vec Vec;
     typedef typename GeometryElementContainer<2>::Rect Rect;
-    typedef GeometryElementD<2> ChildT;
+    typedef GeometryElementD<2> ChildType;
     typedef Translation<2> TranslationT;
 
     using GeometryElementContainerImpl<2>::children;
@@ -170,7 +170,9 @@ struct StackContainer2d: public GeometryElementContainerImpl<2> {
      * @param el element to add
      * @param x_trasnlation horizontal translation of element
      */
-    PathHints::Hint push_back(ChildT* el, const double x_translation = 0.0);
+    PathHints::Hint push_back(ChildType* el, const double x_translation = 0.0);
+    
+    PathHints::Hint add(ChildType* el, const double x_translation = 0.0) { return push_back(el, x_translation); };
 
     /**
      * @param height
