@@ -44,8 +44,11 @@ GeometryElement& GeometryManager::readElement(XMLReader &source) {
     return *new_element;
 }
 
-GeometryElement &GeometryManager::readExactlyOneChild(XMLReader &source) {
-    //TODO implementation
+GeometryElement& GeometryManager::readExactlyOneChild(XMLReader& source) {
+    XML::requireTag(source);
+    GeometryElement& result = readElement(source);
+    XML::requireTagEnd(source);
+    return result;
 }
 
 }	// namespace plask

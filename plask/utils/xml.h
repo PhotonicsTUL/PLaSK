@@ -27,10 +27,12 @@ inline T requireAttr(XMLReader& reader, const char* name) {
 }
 
 /**
- * Call reader.read().
+ * Call reader.read(), one or more time (skeep comments).
  * @throw XMLUnexpectedEndException if there is no next element
  */
 void requireNext(XMLReader& reader);
+
+void requireTag(XMLReader& reader);
 
 void requireTagEnd(XMLReader& reader);
 
