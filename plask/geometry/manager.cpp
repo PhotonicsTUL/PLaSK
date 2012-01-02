@@ -6,7 +6,7 @@ namespace plask {
 
 std::map<std::string, GeometryManager::element_read_f*> GeometryManager::elementReaders;
 
-GeometryManager::GeometryManager() {
+GeometryManager::GeometryManager(MaterialsDB& materialsDB): materialsDB(materialsDB) {
 }
 
 GeometryManager::~GeometryManager() {
@@ -27,17 +27,10 @@ void GeometryManager::registerElementReader(const std::string &tag_name, element
     elementReaders[tag_name] = reader;
 }
 
-std::string requireAttr(XMLReader &source, const char* attr_name) {
-    const char* result = source.getAttributeValue(attr_name);
-    if (result == nullptr)
-        throw NoAttrException(source.getNodeName(), attr_name);
-    return result;
-}
-
 GeometryElement& GeometryManager::readElement(XMLReader &source) {
     std::string nodeName = source.getNodeName();
     if (nodeName == "ref")
-        return requireElement(requireAttr(source, "name"));
+        return requireElement(XML::requireAttr(source, "name"));
     auto reader_it = elementReaders.find(nodeName);
     if (reader_it == elementReaders.end())
         throw NoSuchGeometryElementType(nodeName);

@@ -24,4 +24,7 @@ GeometryElement* read_translation3d(GeometryManager& manager, XMLReader& source)
     return translation.release();
 }
 
+GeometryManager::RegisterElementReader translation2d_reader("translation2d", read_translation2d);
+GeometryManager::RegisterElementReader translation3d_reader("translation3d", read_translation3d);
+
 }   // namespace plask

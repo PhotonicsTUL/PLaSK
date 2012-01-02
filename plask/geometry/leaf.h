@@ -22,7 +22,8 @@ struct Block: public GeometryElementLeaf<dim> {
 
     Vec size;
 
-    Block(const Vec& size, shared_ptr<Material> material): GeometryElementLeaf<dim>(material), size(size) {}
+    explicit Block(const Vec& size = Primitive<dim>::ZERO_VEC, shared_ptr<Material> material = shared_ptr<Material>())
+        : GeometryElementLeaf<dim>(material), size(size) {}
 
     virtual Rect getBoundingBox() const {
         return Rect(Primitive<dim>::ZERO_VEC, size);

@@ -14,6 +14,8 @@ This file includes:
 
 #include "../utils/xml.h"
 
+#include "../material/material.h"
+
 namespace plask {
 
 /**
@@ -57,16 +59,22 @@ struct GeometryManager {
         }
     };
 
-	/// Store pointers to all elements.
-	std::set<GeometryElement*> elements;
+    /// Store pointers to all elements.
+    std::set<GeometryElement*> elements;
 
-	/// Allow to access path hints by name.
-	std::map<std::string, PathHints*> pathHints;
+    /// Allow to access path hints by name.
+    std::map<std::string, PathHints*> pathHints;
 
-	/// Allow to access elements by name.
-	std::map<std::string, GeometryElement*> namedElements;
+    /// Allow to access elements by name.
+    std::map<std::string, GeometryElement*> namedElements;
+    
+    /// Material database used by geometry (leafs).
+    MaterialsDB& materialsDB;
 
-    GeometryManager();
+    /**
+     * @param materialsDB material database used by geometry (leafs)
+     */
+    GeometryManager(MaterialsDB& materialsDB);
 
     ///Delete all elements.
     ~GeometryManager();

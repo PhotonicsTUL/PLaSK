@@ -88,6 +88,19 @@ struct MaterialParseException: public Exception {
     MaterialParseException(const std::string& msg): Exception("Material parse error: " + msg) {}
 };
 
+//-------------- Connected with XML: -----------------------
+struct XMLNoAttrException: public Exception {
+    XMLNoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribiute " + attr_name) {}
+};
+
+struct XMLUnexpectedEndException: public Exception {
+    XMLUnexpectedEndException(): Exception("Unexpected end of XML data.") {}
+};
+
+struct XMLUnexpectedElementException: public Exception {
+    XMLUnexpectedElementException(const std::string& what_is_expected): Exception("There is no expected " + what_is_expected + " in XML.") {}
+};
+
 //-------------- Connected with geometry: -----------------------
 
 /**
@@ -129,9 +142,7 @@ struct UnexpectedGeometryElementTypeException: public Exception {
     UnexpectedGeometryElementTypeException(): Exception("Geometry element has unexpected type.") {}
 };
 
-struct NoAttrException: public Exception {
-    NoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribiute " + attr_name) {}
-};
+
 
 } // namespace plask
 

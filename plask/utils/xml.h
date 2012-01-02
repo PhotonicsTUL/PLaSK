@@ -1,3 +1,6 @@
+#ifndef PLASK__XML_H
+#define PLASK__XML_H
+
 #include "irrxml/irrXML.h"
 
 #include <string>
@@ -16,6 +19,23 @@ inline T getAttribiute(XMLReader& reader, const char* name, T&& default_value) {
     return boost::lexical_cast<T>(attr_str);
 }
 
+std::string requireAttr(XMLReader &source, const char* attr_name);
+
+template <typename T>
+inline T requireAttr(XMLReader& reader, const char* name) {
+    return boost::lexical_cast<T>(requireAttr(reader, name));
+}
+
+/**
+ * Call reader.read().
+ * @throw XMLUnexpectedEndException if there is no next element
+ */
+void requireNext(XMLReader& reader);
+
+void requireTagEnd(XMLReader& reader);
+
 }
 
 }
+
+#endif // PLASK__XML_H
