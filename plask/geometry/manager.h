@@ -35,8 +35,7 @@ struct GeometryManager {
     typedef GeometryElement* element_read_f(GeometryManager& manager, XMLReader& source);
     
     /**
-     * Global elements readers register.
-     *
+     * @return Global elements readers register.
      * Map: xml tag name -> element reader function.
      */
     static std::map<std::string, element_read_f*>& elementReaders();
@@ -128,15 +127,21 @@ struct GeometryManager {
     template <typename RequiredElementType>
     RequiredElementType& readExactlyOneChild(XMLReader& source);
     
-    /**
+    /*
      * Read all elements up to end of XML tag and call functor(element) for each element which was read.
      * @param source
      * @param functor
      * @tparam FunctorType unary functor which can take RequiredElementType& as argument
      * @tparam RequiredElementType required type of element
      */
-    template <typename FunctorType, typename RequiredElementType = GeometryElement>
-    void readAllElements(XMLReader& source, FunctorType functor);
+    /*template <typename FunctorType, typename RequiredElementType = GeometryElement>
+    void readAllElements(XMLReader& source, FunctorType functor);*/
+    
+    /**
+     * Load geometry from XML file.
+     * @param fileName name of XML file
+     */
+    void loadFromFile(const std::string& fileName);
 };
 
 //specialization for most types
@@ -167,7 +172,7 @@ inline GeometryElement& GeometryManager::readExactlyOneChild<GeometryElement>(XM
     return readExactlyOneChild(source);
 }
 
-template <typename FunctorType, typename RequiredElementType>
+/*template <typename FunctorType, typename RequiredElementType>
 inline void GeometryManager::readAllElements(XMLReader& source, FunctorType functor) {
     while(source.read()) {
         switch (source.getNodeType()) {
@@ -176,7 +181,7 @@ inline void GeometryManager::readAllElements(XMLReader& source, FunctorType func
             //TODO what with all other XML types (which now are just ignored)?
         }
     }
-}
+}*/
 
 }	// namespace plask
 

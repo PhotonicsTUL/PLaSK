@@ -27,7 +27,7 @@ inline T requireAttr(XMLReader& reader, const char* name) {
 }
 
 /**
- * Call reader.read(), one or more time (skeep comments).
+ * Call reader.read(), one or more time (skip comments).
  * @throw XMLUnexpectedEndException if there is no next element
  */
 void requireNext(XMLReader& reader);
@@ -35,6 +35,12 @@ void requireNext(XMLReader& reader);
 void requireTag(XMLReader& reader);
 
 void requireTagEnd(XMLReader& reader);
+
+/**
+ * Skip XML comments.
+ * @return @c true if read non-comment or @c false if XML data end
+ */
+bool skipComments(XMLReader& reader);
 
 }
 

@@ -30,6 +30,11 @@ void requireTagEnd(XMLReader& reader) {
         throw XMLUnexpectedElementException("end of tag");
 }
 
+bool skipComments(XMLReader& reader) {
+    bool result;
+    while (reader.getNodeType() == irr::io::EXN_COMMENT && (result = reader.read()));
+    return result;
+}
 
 
 } } // namespace plask::XML

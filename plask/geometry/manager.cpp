@@ -55,4 +55,21 @@ GeometryElement& GeometryManager::readExactlyOneChild(XMLReader& source) {
     return result;
 }
 
+//TODO skip geometry elements ends
+void GeometryManager::loadFromFile(const std::string &fileName) {
+    std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(fileName.c_str()));
+    XML::requireNext(*reader);
+    if (reader->getNodeName() != std::string("geometry"))
+        throw XMLUnexpectedElementException("<geometry> tag");   
+    while(reader->read()) {
+        switch (reader->getNodeType()) {
+            case irr::io::EXN_ELEMENT_END: return;  //end of geometry
+            case irr::io::EXN_ELEMENT: readElement(*reader);
+            case irr::io::EXN_COMMENT: break;   //just ignore
+            default: throw XMLUnexpectedElementException("begin of geometry element tag or </geometry>");  
+        }
+    }
+    throw XMLUnexpectedEndException();     
+}
+
 }	// namespace plask
