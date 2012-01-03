@@ -14,6 +14,7 @@ This file includes base classes for geometries elements.
 
 namespace plask {
 
+///Type of geometry element.
 enum GeometryElementType {
     GE_TYPE_LEAF = 0,         /// <leaf element (has no child)
     GE_TYPE_TRANSFORM = 1,    /// <transform element (has one child)
@@ -60,6 +61,10 @@ struct GeometryElement {
 
 };
 
+/**
+ * Template of base classes for geometry elements in space with given number of dimensions (2 or 3).
+ * @tparam dimensions number of dimensions, 2 or 3
+ */
 template < int dimensions >
 struct GeometryElementD: public GeometryElement {
 
@@ -112,7 +117,8 @@ struct GeometryElementD: public GeometryElement {
 };
 
 /**
- * Template for base class for all leaf nodes.
+ * Template of base classes for all leaf nodes.
+ * @tparam dim number of dimensions
  */
 template < int dim >
 struct GeometryElementLeaf: public GeometryElementD<dim> {
@@ -138,7 +144,10 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 };
 
 /**
- * Template for base class for all transform nodes.
+ * Template of base class for all transform nodes.
+ * Transform node has exactly one child node and represent element which is equal to child after transform.
+ * @tparam dim number of dimensions of this element
+ * @tparam Child_Type type od child, can be in space with different number of dimensions than this is (in such case see @ref GeometryElementChangeSpace).
  */
 template < int dim, typename Child_Type = GeometryElementD<dim> >
 struct GeometryElementTransform: public GeometryElementD<dim> {
@@ -169,9 +178,13 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 };
 
 /**
- * Template for base class for all space changer nodes.
+ * Template of base class for all space changer nodes.
+ * Space changer if transform node which is in space with different number of dimensions than its child.
+ * @tparam this_dim number of dimensions of this element
+ * @tparam child_dim number of dimensions of child element
+ * @tparam ChildType type od child, should be in space with @a child_dim number of dimensions
  */
-template < int this_dim, int child_dim, typename ChildType = GeometryElementD<child_dim> >
+template < int this_dim, int child_dim = 5 - this_dim, typename ChildType = GeometryElementD<child_dim> >
 struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, ChildType> {
 
     typedef typename ChildType::Rect ChildRect;
@@ -179,16 +192,19 @@ struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, Chi
 
     explicit GeometryElementChangeSpace(ChildType* child = 0): GeometryElementTransform<this_dim, ChildType>(child) {}
 
+    ///@return GE_TYPE_SPACE_CHANGER
     virtual GeometryElementType getType() const { return GE_TYPE_SPACE_CHANGER; }
 
 };
 
 /**
- * Template for base class for all container nodes.
+ * Template of base class for all container nodes.
+ * Container nodes can include one or more child nodes.
  */
 template < int dim >
 struct GeometryElementContainer: public GeometryElementD<dim> {
 
+    ///@return GE_TYPE_CONTAINER
     virtual GeometryElementType getType() const { return GE_TYPE_CONTAINER; }
 
 };

@@ -8,6 +8,9 @@
 
 namespace plask {
 
+/**
+ * XML pull parser.
+ */
 typedef irr::io::IrrXMLReader XMLReader; 
 
 namespace XML {

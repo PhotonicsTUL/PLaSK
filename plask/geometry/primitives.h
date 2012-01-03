@@ -186,26 +186,47 @@ struct Rect3d {
 };
 
 /**
- * Typedefs for primitives for given space dimensions.
+ * Define types of primitives and constsants in space with given number of dimensions.
+ * @tparam dim number of dimensions, 2 or 3
  */
 template <int dim>
 struct Primitive {};
 
+/**
+ * Specialization of Primitive, which define types of primitives and constsants in space with 2 dimensions.
+ */
 template <>
 struct Primitive<2> {
+    
+    ///Rectangle type in 2d space.
     typedef Rect2d Rect;
+    
+    ///Vector type in 2d space.
     typedef Vec2<double> Vec;
+    
+    ///Number of dimensions (2).
     static const int dim = 2;
     
+    ///Zeroed 2d vector.
     static const Vec ZERO_VEC;
 };
 
+/**
+ * Specialization of Primitive, which define types of primitives and constsants in space with 3 dimensions.
+ */
 template <>
 struct Primitive<3> {
+    
+    ///Rectangle type (cuboid) in 3d space.
     typedef Rect3d Rect;
+    
+    ///Vector type in 3d space.
     typedef Vec3<double> Vec;
+    
+    ///Number of dimensions (3).
     static const int dim = 3;
     
+    ///Zeroed 3d vector.
     static const Vec ZERO_VEC;
 };
 
