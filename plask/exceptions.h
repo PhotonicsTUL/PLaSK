@@ -76,7 +76,7 @@ struct NoSuchMaterial: public Exception {
 
     ///@param material_name name of material which not exists
     NoSuchMaterial(const std::string& material_name)
-    : Exception("No such material " + material_name)/*, materialName(material_name)*/ {}
+        : Exception("No such material \"" + material_name + "\"")/*, materialName(material_name)*/ {}
 };
 
 /**
@@ -112,7 +112,7 @@ struct XMLNoAttrException: public Exception {
      * @param where where (typically in which tag) there are no required attribiute
      * @param attr_name name of required attribiute
      */
-    XMLNoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribiute " + attr_name) {}
+    XMLNoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribiute \"" + attr_name + "\"") {}
 };
 
 /**

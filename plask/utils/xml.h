@@ -45,6 +45,21 @@ void requireTagEnd(XMLReader& reader);
  */
 bool skipComments(XMLReader& reader);
 
+///Allow to read XML from standard C++ input stream (std::istream).
+struct StreamReaderCallback: public irr::io::IFileReadCallBack {
+    
+    std::istream& input;
+    
+    int size;
+    
+    StreamReaderCallback(std::istream& input);
+    
+    virtual int read(void* buffer, int sizeToRead);
+
+    virtual int getSize() { return size; }
+    
+};
+
 }
 
 }

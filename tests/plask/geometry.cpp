@@ -1,9 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include <plask/geometry/leaf.h>
-#include <plask/geometry/transform.h>
-
-
+#include <plask/geometry/geometry.h>
 
 #include "common/dump_material.h"
 
@@ -37,5 +34,11 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK(translation.getMaterial(plask::vec(4.0, 22.0)) == nullptr);
     }
 
+    BOOST_AUTO_TEST_CASE(manager_loading) {
+        plask::MaterialsDB materialsDB;
+        initDumpMaterialDb(materialsDB);
+        plask::GeometryManager manager(materialsDB);
+        manager.loadFromXMLString("<geometry><block2d x=\"4\" y=\"2\" material=\"Dump\"></block></geometry>");
+    }
 
 BOOST_AUTO_TEST_SUITE_END()

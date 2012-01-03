@@ -85,6 +85,7 @@ void parseNameWithComposition(const char* begin, const char* end, std::vector<st
         const char* comp_end = getElementEnd(begin, end);
         if (comp_end == begin)
             throw MaterialParseException(std::string("Expected element but found character: ") + *begin);
+        components.push_back(std::string(begin, comp_end));
         const char* amount_end = getAmountEnd(comp_end, end);
         if (amount_end == comp_end) {       //no amount info for this element
             components_amounts.push_back(std::numeric_limits<double>::quiet_NaN());

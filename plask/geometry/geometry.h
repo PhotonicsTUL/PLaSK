@@ -1,6 +1,10 @@
 #ifndef PLASK__GEOMETRY_H
 #define PLASK__GEOMETRY_H
 
+/** @file
+This file includes all plask geometry headers.
+*/
+
 /**
 @section geometry Geometry
 @subsection geometry_about About
@@ -15,7 +19,11 @@ Types of geometry elements / vertices (see also plask::GeometryElementType):
 
 */
 
-#include "element.h"
+#include "leaf.h"
+#include "transform.h"
+#include "container.h"
+
+#include "manager.h"
 
 namespace plask {
 

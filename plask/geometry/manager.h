@@ -127,6 +127,12 @@ struct GeometryManager {
     template <typename RequiredElementType>
     RequiredElementType& readExactlyOneChild(XMLReader& source);
     
+    void loadFromReader(XMLReader& reader);
+    
+    void loadFromXMLStream(std::istream &input);
+    
+    void loadFromXMLString(const std::string &input_XML_str);
+    
     /*
      * Read all elements up to end of XML tag and call functor(element) for each element which was read.
      * @param source

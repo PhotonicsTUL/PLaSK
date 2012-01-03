@@ -38,7 +38,7 @@ GeometryElement& GeometryManager::readElement(XMLReader &source) {
     if (reader_it == elementReaders().end())
         throw NoSuchGeometryElementType(nodeName);
     const char* name_exists = source.getAttributeValue("name");    //must be call before reader call (reader function can change XMLReader)
-    std::string name = name_exists;     //reader can also delete name_exists, we need copy
+    std::string name = name_exists ? name_exists : "";     //reader can also delete name_exists, we need copy
     GeometryElement* new_element = reader_it->second(*this, source);
     elements.insert(new_element);   //first this, to ensure that memory will be freed
     if (name_exists) {
@@ -55,21 +55,37 @@ GeometryElement& GeometryManager::readExactlyOneChild(XMLReader& source) {
     return result;
 }
 
-//TODO skip geometry elements ends
-void GeometryManager::loadFromFile(const std::string &fileName) {
-    std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(fileName.c_str()));
-    XML::requireNext(*reader);
-    if (reader->getNodeName() != std::string("geometry"))
+void GeometryManager::loadFromReader(XMLReader &reader) {
+    if (reader.getNodeType() != irr::io::EXN_ELEMENT || reader.getNodeName() != std::string("geometry"))
         throw XMLUnexpectedElementException("<geometry> tag");   
-    while(reader->read()) {
-        switch (reader->getNodeType()) {
+    while(reader.read()) {
+        switch (reader.getNodeType()) {
             case irr::io::EXN_ELEMENT_END: return;  //end of geometry
-            case irr::io::EXN_ELEMENT: readElement(*reader);
+            case irr::io::EXN_ELEMENT: readElement(reader); break;
             case irr::io::EXN_COMMENT: break;   //just ignore
             default: throw XMLUnexpectedElementException("begin of geometry element tag or </geometry>");  
         }
     }
-    throw XMLUnexpectedEndException();     
+    throw XMLUnexpectedEndException();
+}
+
+void GeometryManager::loadFromXMLStream(std::istream &input) {
+    XML::StreamReaderCallback cb(input);
+    std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(&cb));
+    XML::requireNext(*reader);
+    loadFromReader(*reader);
+}
+
+void GeometryManager::loadFromXMLString(const std::string &input_XML_str) {
+    std::istringstream stream(input_XML_str);
+    loadFromXMLStream(stream);
+}
+
+//TODO skip geometry elements ends
+void GeometryManager::loadFromFile(const std::string &fileName) {
+    std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(fileName.c_str()));
+    XML::requireNext(*reader);
+    loadFromReader(*reader);
 }
 
 }	// namespace plask

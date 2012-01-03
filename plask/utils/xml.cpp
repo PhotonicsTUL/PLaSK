@@ -36,5 +36,19 @@ bool skipComments(XMLReader& reader) {
     return result;
 }
 
+StreamReaderCallback::StreamReaderCallback(std::istream &input)
+: input(input) {
+    std::streampos beg = input.tellg();
+    input.seekg(0, std::ios::end);
+    std::streampos end = input.tellg();
+    input.seekg(beg);
+    size = end - beg;
+}
+
+int StreamReaderCallback::read(void *buffer, int sizeToRead) {
+    input.read((char*) buffer, sizeToRead);
+    return input.gcount();
+}
+
 
 } } // namespace plask::XML
