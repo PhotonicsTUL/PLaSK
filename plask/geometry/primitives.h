@@ -86,8 +86,17 @@ struct Rect2d {
      */
     void include(const Rect2d& other);
 
+    /**
+     * Get translated copy of this.
+     * @param translation_vec translation vector
+     * @return this trasnalated by @a translation_vec
+     */
     Rect2d translated(const Vec2<double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
 
+    /**
+     * Translate this by @a translation_vec.
+     * @param translation_vec translation vector
+     */
     void translate(const Vec2<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
 
     /**
@@ -116,11 +125,20 @@ struct Rect3d {
     ///Position of upper corner of cuboid (with maximal all coordinates).
     Vec3<double> upper;
 
+    /**
+     * Calculate size of this. 
+     * @return upper - lower
+     */
     Vec3<double> size() const { return upper - lower; }
 
-    ///Construct uninitilized Rect2d.
+    ///Construct uninitilized Rect3d.
     Rect3d() {}
 
+    /**
+     * Construct Rect3d with given lower and upper corner positions.
+     * @param lower position of lower corner of cuboid (with minimal all coordinates)
+     * @param upper position of upper corner of cuboid (with maximal all coordinates)
+     */
     Rect3d(const Vec3<double>& lower, const Vec3<double>& upper): lower(lower), upper(upper) {}
 
     /**
@@ -139,7 +157,7 @@ struct Rect3d {
 
     /**
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
-     * Change x or y of lower and upper if necessary.
+     * Swap x or y of lower and upper if necessary.
      */
     void fix();
 

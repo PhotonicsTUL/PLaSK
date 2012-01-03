@@ -11,7 +11,7 @@ Terminology (names) from trees theory are used in PLaSK (element C is child of P
 Types of geometry elements / vertices (see also plask::GeometryElementType):
 - leafs (terminal nodes) - each doesn't have children and stores information about material
 - transformation nodes - each has exactly one child, and represent this child after transformation (sometimes transformation element is in different space than it's child)
-- containers - each has one or more children
+- containers - each has one or more children and represents figure which consist of this children
 
 */
 

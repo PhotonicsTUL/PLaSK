@@ -168,11 +168,18 @@ struct StackContainer2d: public GeometryElementContainerImpl<2> {
     /**
      * Add children to stack top.
      * @param el element to add
-     * @param x_trasnlation horizontal translation of element
+     * @param x_translation horizontal translation of element
+     * @return path hint
      */
     PathHints::Hint push_back(ChildType* el, const double x_translation = 0.0);
     
-    PathHints::Hint add(ChildType* el, const double x_translation = 0.0) { return push_back(el, x_translation); };
+    /**
+     * Add children to stack top.
+     * @param el element to add
+     * @param x_translation horizontal translation of element
+     * @return path hint
+     */
+    PathHints::Hint add(ChildType* el, const double x_translation = 0.0) { return push_back(el, x_translation); }
 
     /**
      * @param height

@@ -50,7 +50,7 @@ struct GeometryElement {
      * Default implementation do nothing, but inharited class can change this bechaviour.
      * @throw Exception if element is not ready for calculation
      */
-    virtual void validate() const throw (Exception) {}
+    virtual void validate() const {}
 
     /**
      * Virtual destructor. Do nothing.
@@ -158,17 +158,39 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
 
+    /**
+     * Get child. 
+     * @return child
+     */
     ChildType& getChild() { return *_child; }
 
+    /**
+     * Get child. 
+     * @return child
+     */
     const ChildType& getChild() const { return *_child; }
 
+    /**
+     * Set new child. Old one is not delete by this.
+     * @param child new child
+     */
     void setChild(ChildType* child) { _child = child; }
 
+    /**
+     * Set new child. Old one is not delete by this.
+     * @param child new child
+     */
     void setChild(ChildType& child) { _child = &child; }
 
+    /**
+     * @return @c true only if child is set (not null) 
+     */
     bool hasChild() const { return _child != nullptr; }
 
-    virtual void validate() const throw (Exception) {
+    /**
+     * Throw NoChildException if child is not set.
+     */
+    virtual void validate() const {
         if (!hasChild()) throw NoChildException();
     }
 

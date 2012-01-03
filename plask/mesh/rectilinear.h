@@ -218,14 +218,24 @@ struct RectilinearMesh2d {
             }
         }
 
+        /**
+         * Get number of points in mesh.
+         * @return number of points in mesh
+         */
         std::size_t size() const { return mesh.size(); }
 
-        std::size_t index(std::size_t x_index, std::size_t y_index) const {
-            return changed ? mesh.c1.size() * x_index + y_index : mesh.index(x_index, y_index);
+        /**
+         * Calculate mesh index using indexes of c0 and c1.
+         * @param c0_index index of c0, from 0 to c0.size()-1
+         * @param c1_index index of c1, from 0 to c1.size()-1
+         * @return this mesh index, from 0 to size()-1
+         */
+        std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
+            return changed ? mesh.c1.size() * c0_index + c1_index : mesh.index(c0_index, c1_index);
         }
 
         /**
-        * Calculate index of c0 using this mesh index.
+        * Calculate index of c0 using mesh index.
         * @param mesh_index this mesh index, from 0 to size()-1
         * @return index of c0, from 0 to c0.size()-1
         */
@@ -234,7 +244,7 @@ struct RectilinearMesh2d {
         }
 
         /**
-        * Calculate index of c1 using this mesh index.
+        * Calculate index of c1 using mesh index.
         * @param mesh_index this mesh index, from 0 to size()-1
         * @return index of c1, from 0 to c1.size()-1
         */
@@ -313,7 +323,10 @@ struct RectilinearMesh2d {
     ///@return iterator referring to the past-the-end point in this mesh
     const_iterator end() const { return const_iterator(this, size()); }
 
-    ///@return number of points in mesh
+    /**
+     * Get number of points in mesh.
+     * @return number of points in mesh
+     */
     std::size_t size() const { return c0.size() * c1.size(); }
 
     ///@return true only if there are no points in mesh

@@ -68,14 +68,24 @@ struct MaterialsDB {
         CARRIER_CONCENTRATION   ///< carrier concentration
     };
 
+    /**
+     * Type of function which construct material.
+     * @param composition amounts of elements, with NaN for each element for composition was not writen
+     * @param dopant_amount_type type of amount of dopand, needed to interpetation of @a dopant_amount
+     * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
+     */
     typedef Material* construct_material_f(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
 
     /**
-     * Construct material with given type.
+     * Template of function which construct material with given type.
+     * @param composition amounts of elements, with NaN for each element for composition was not writen
+     * @param dopant_amount_type type of amount of dopand, needed to interpetation of @a dopant_amount
+     * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
      * @tparam MaterialType type of material to construct, must fill requirments:
      * - inharited from plask::Material
      * - has public, static unsigned COMPOSITION_PATTERN field which determinates sizes of composition groups (for example: 21 means that there are two groups, first group has size 2 and second has size 1)
      * - must have constructor which takes parameters: std::vector<double> composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount
+     * - this constructor can suppose that composition is complete (without NaN)
      */
     //TODO set some by methods? what with materials witout dopands?
     template <typename MaterialType> Material* construct(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
