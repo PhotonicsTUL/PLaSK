@@ -12,15 +12,11 @@ class Importing(unittest.TestCase):
     def testImporting(self):
         '''Check if plask is present'''
         import plask
-        try: self.assertIn('modplask', sys.modules) # assertIn only present in Pythoin 2.7 and higher
+        try: self.assertIn('modplask', sys.modules) # assertIn only present in Python 2.7 and higher
         except NameError: self.assertTrue('modplask' in sys.modules)
 
         def use_modplask_directly(): print modplask.__file__
         self.assertRaises(NameError, use_modplask_directly)
-
-        #self.assertRaises(TypeError, random.shuffle, (1,2,3))
-        #self.assertEqual(self.seq, range(10))
-        #self.assertTrue(element in self.seq)
 
     def testAutoImported(self):
         '''Test if the plask is auto-imported to global namespace for plask binary'''

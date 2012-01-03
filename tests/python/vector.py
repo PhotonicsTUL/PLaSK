@@ -32,8 +32,16 @@ class Vector(unittest.TestCase):
         self.assertEqual( [self.a2.x, self.a2.y], [1,2] )
         self.assertEqual( [self.a2.r, self.a2.z], [1,2] )
         self.assertEqual( [self.a2[0], self.a2[1]], [1,2] )
+        self.assertEqual( [self.a3[-3], self.a3[-2], self.a3[-1]], [1,2,3] )
         self.assertEqual( [self.a3.r, self.a3.phi, self.a3.z], [1,2,3] )
         self.assertEqual( [self.a3.a, self.a3.b, self.a3.c], [1,2,3] )
+
+    def testExceptions(self):
+        '''Test if proper exceptions are thrown'''
+        self.assertRaises( IndexError, lambda: self.a2[2] )
+        self.assertRaises( IndexError, lambda: self.a3[3] )
+        self.assertRaises( IndexError, lambda: self.a2[-3] )
+        self.assertRaises( IndexError, lambda: self.a3[-4] )
 
     def testOperations(self):
         '''Test vector mathematical operations'''
@@ -50,6 +58,7 @@ class Vector(unittest.TestCase):
         self.assertEqual( -self.a2, plask.vector(-1,-2) )
         self.assertEqual( 2 * self.a2, plask.vector(2, 4) )
         self.assertEqual( 10 * self.b3, self.c3 )
+        self.assertEqual( self.b3 * 10, self.c3 )
         self.assertEqual( self.c3, 10 * self.b3 )
         self.a2 *= 2
         self.a2 += self.b2

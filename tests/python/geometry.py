@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import plask.material
+import plask, plask.material, plask.geometry
 
 class Geometry(unittest.TestCase):
 
@@ -16,3 +16,19 @@ class Geometry(unittest.TestCase):
     def testMemoryManagement(self):
         '''Test if the objects live in memory as long as needed'''
         pass
+
+    def testPrimitives(self):
+        '''Test the properties of primitives'''
+        r2a = plask.geometry.Rect2D()
+        r2a.lower = plask.vector(3., 2.)
+        r2a.upper = plask.vector(1., 5.)
+        r2a.fix()
+        self.assertEqual( r2a.lower, plask.vector(1,2) )
+        self.assertEqual( r2a.upper, plask.vector(3,5) )
+        r2b = plask.geometry.Rect2D(plask.vector(3., 2.), plask.vector(1., 5.))
+        r2b.fix()
+        self.assertEqual( r2b.lower, plask.vector(1,2) )
+        self.assertEqual( r2b.upper, plask.vector(3,5) )
+        r3a = plask.geometry.Rect3D(3.,2.,1., 1.,5.,0.)
+        r3b = plask.geometry.Rect3D(plask.vector(1.,2.,0.), plask.vector(3.,5.,1.))
+        self.assertEqual( r3a, r3b )

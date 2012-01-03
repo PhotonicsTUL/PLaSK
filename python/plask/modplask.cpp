@@ -27,20 +27,22 @@ BOOST_PYTHON_MODULE(modplask)
     py::class_<plask::SpaceXY> spacexy("SpaceXY",
         "Cartesian two-dimensional space. The structure is assumed to be uniform in z-direction. "
         "The y-axis is perpendicular to epitaxial layers.");
-    spacexy.attr("DIMS") = plask::SpaceXY::DIMS;
+    spacexy.attr("DIMS") = int(plask::SpaceXY::DIMS);
 
     py::class_<plask::SpaceRZ> spacerz("SpaceRZ",
         "Cyllindrical two-dimensional space. The structure is assumed to have cyllindrical symmetery. "
         "The axis of the cylinder (z-axis) is perpendicular to epitaxial layers.");
-    spacerz.attr("DIMS") = plask::SpaceRZ::DIMS;
+    spacerz.attr("DIMS") = int(plask::SpaceRZ::DIMS);
 
     py::class_<plask::SpaceXYZ> spacexyz("SpaceXYZ",
         "Cartesian three-dimensional space. Its z-axis is perpendicular to epitaxial layers.");
-    spacexyz.attr("DIMS") = plask::SpaceXYZ::DIMS;
+    spacexyz.attr("DIMS") = int(plask::SpaceXYZ::DIMS);
+
 
     // Init subpackages
     plask::python::initMaterial();
     plask::python::initGeometry();
+
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

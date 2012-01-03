@@ -106,7 +106,9 @@ int main(int argc, const char *argv[])
         try {
             py::object interactive = py::import("plask.interactive");
             interactive.attr("_import_all_") = from_import;
-            py::list sys_argv; for (int i = 0; i < argc; i++) sys_argv.append(argv[i]);
+            py::list sys_argv;
+            if (argc == 1) sys_argv.append("");
+            for (int i = 1; i < argc; i++) sys_argv.append(argv[i]);
             interactive.attr("interact")(py::object(), sys_argv);
         } catch (py::error_already_set) {
             PyErr_Print();

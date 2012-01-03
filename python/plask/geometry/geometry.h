@@ -11,7 +11,7 @@
     template <int dim> inline static void init_##cls()
 
 #define ABSTRACT_GEOMETRY_ELEMENT_23D(cls, base) \
-    py::class_<cls<dim>, py::bases<base>, boost::noncopyable> (cls##_pyname<dim>(), cls##_pydoc<dim>(), py::no_init)
+    py::class_<cls<dim>, shared_ptr<cls<dim>>, py::bases<base>, boost::noncopyable> (cls##_pyname<dim>(), cls##_pydoc<dim>(), py::no_init)
 
 namespace plask { namespace python {
 

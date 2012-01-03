@@ -12,8 +12,8 @@ namespace plask {
 
 /**
  * Rectangle class.
- * 
- * Allow for some basic operation on rectangles.
+ *
+ * Allows for some basic operation on rectangles.
  * Has almost identical interface as Rect3d.
  */
 struct Rect2d {
@@ -39,21 +39,21 @@ struct Rect2d {
      * @param upper upper corner of rectangle (with maximal all coordinates)
      */
     Rect2d(const Vec2<double>& lower, const Vec2<double>& upper): lower(lower), upper(upper) {}
-    
+
     /**
      * Compare two rectangles, this and @a r.
      * @param r rectangle to compare
      * @return true only if this rectangle and @a p have equals coordinates
      */
     bool operator==(const Rect2d& r) const;
-    
+
     /**
      * Compare two rectangles, this and @a r.
      * @param r rectangle to compare
      * @return true only if this rectangle and @a p don't have equals coordinates
      */
     bool operator!=(const Rect2d& r) const;
-    
+
     /**
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
      * Change x or y of lower and upper if necessary.
@@ -61,7 +61,7 @@ struct Rect2d {
     void fix();
 
     /**
-     * Check if point is inside rectangle.
+     * Check if the point is inside rectangle.
      * @param p point
      * @return true only if point is inside this rectangle
      */
@@ -75,21 +75,21 @@ struct Rect2d {
     bool intersect(const Rect2d& other) const;
 
     /**
-     * Make this rectangle, the minimal rectangle which include this and given point @a p.
+     * Make this rectangle, the minimal one which include this and given point @a p.
      * @param p point which should be inside rectangle
      */
     void include(const Vec2<double>& p);
 
     /**
-     * Make this rectangle, the minimal rectangle which include this and @a other rectangle.
+     * Make this rectangle, the minimal one which include this and @a other rectangle.
      * @param other point which should be inside rectangle
      */
     void include(const Rect2d& other);
 
     Rect2d translated(const Vec2<double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
-    
+
     void translate(const Vec2<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
-    
+
     /**
      * Print rectangle to stream.
      * @param out print destination, output stream
@@ -99,7 +99,7 @@ struct Rect2d {
     friend inline std::ostream& operator<<(std::ostream& out, const Rect2d& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
-    
+
 };
 
 /**
@@ -122,21 +122,21 @@ struct Rect3d {
     Rect3d() {}
 
     Rect3d(const Vec3<double>& lower, const Vec3<double>& upper): lower(lower), upper(upper) {}
-    
+
     /**
      * Compare two rectangles, this and @a r.
      * @param r rectangle to compare
      * @return true only if this rectangle and @a p have equals coordinates
      */
     bool operator==(const Rect3d& r) const;
-    
+
     /**
      * Compare two rectangles, this and @a r.
      * @param r rectangle to compare
      * @return true only if this rectangle and @a p don't have equals coordinates
      */
     bool operator!=(const Rect3d& r) const;
-    
+
     /**
      * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
      * Change x or y of lower and upper if necessary.
@@ -158,21 +158,21 @@ struct Rect3d {
     bool intersect(const Rect3d& other) const;
 
     /**
-     * Make this rectangle, the minimal rectangle which include this and given point @a p.
+     * Make this rectangle, the minimal one which include this and given point @a p.
      * @param p point which should be inside rectangle
      */
     void include(const Vec3<double>& p);
 
     /**
-     * Make this rectangle, the minimal rectangle which include this and @a other rectangle.
+     * Make this rectangle, the minimal one which include this and @a other rectangle.
      * @param other point which should be inside rectangle
      */
     void include(const Rect3d& other);
 
     Rect3d translated(const Vec3<double>& translation_vec) const { return Rect3d(lower + translation_vec, upper + translation_vec); }
-    
+
     void translate(const Vec3<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
-    
+
     /**
      * Print rectangle to stream.
      * @param out print destination, output stream
@@ -182,7 +182,7 @@ struct Rect3d {
     friend inline std::ostream& operator<<(std::ostream& out, const Rect3d& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
-    
+
 };
 
 /**
@@ -206,7 +206,7 @@ struct Primitive<2> {
     
     ///Number of dimensions (2).
     static const int dim = 2;
-    
+
     ///Zeroed 2d vector.
     static const Vec ZERO_VEC;
 };
@@ -225,7 +225,7 @@ struct Primitive<3> {
     
     ///Number of dimensions (3).
     static const int dim = 3;
-    
+
     ///Zeroed 3d vector.
     static const Vec ZERO_VEC;
 };

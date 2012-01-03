@@ -16,7 +16,7 @@ namespace plask {
 **/
 struct SpaceXY {
 
-    const static int DIMS = 2;
+    enum  { DIMS = 2 };
 
     typedef Vec2<double> CoordsType;
 
@@ -79,7 +79,7 @@ struct SpaceXY {
 **/
 struct SpaceRZ {
 
-    const static int DIMS = 2;
+    enum { DIMS = 2 };
 
     typedef Vec2<double> CoordsType;
 
@@ -186,7 +186,7 @@ struct SpaceRZ {
 **/
 struct SpaceXYZ {
 
-    const static int DIMS = 3;
+    enum { DIMS = 3 };
 
     typedef Vec2<double> CoordsType;
 

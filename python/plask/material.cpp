@@ -47,7 +47,7 @@ void initMaterial() {
         .def("getName", &Material::getName)
     ;
 
-    py::class_<CustomMaterialWrap, py::bases<Material>, boost::noncopyable>("CustomMaterial");
+    py::class_<CustomMaterialWrap, shared_ptr<CustomMaterialWrap>, py::bases<Material>, boost::noncopyable>("CustomMaterial");
 
     def("_registerMaterial", registerMaterial);
 }

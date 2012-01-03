@@ -27,15 +27,15 @@ void initGeometry() {
 
     register_geometry_element_h();
     register_geometry_primitive_h();
-    //register_geometry_container_h
+    register_geometry_container_h();
 
     // manager.h
 
-    py::class_<GeometryManager>("Geometry",
-        "Main geometry manager. It manages the whole geometry of analyzed device "
-        "and provides methods to read and write it to an XML file.")
-
-    ;
+//     py::class_<GeometryManager>("Geometry",
+//         "Main geometry manager. It manages the whole geometry of analyzed device "
+//         "and provides methods to read and write it to an XML file.")
+//
+//     ;
 
 
 }

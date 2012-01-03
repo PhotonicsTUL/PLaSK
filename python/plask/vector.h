@@ -19,8 +19,8 @@ template <typename T> struct Vec<3,T> { typedef Vec3<T> type; typedef py::init<T
 // v = vector[i]
 template <int dim, typename T>
 static T __getitem__(typename Vec<dim,T>::type& self, int i) {
-    if (i < 0) i = dim - i;
-    if (i >= dim) {
+    if (i < 0) i = dim + i;
+    if (i >= dim || i < 0) {
         const char message[] = "vector index out of range";
         PyErr_SetString(PyExc_IndexError, message);
         throw py::error_already_set();
@@ -31,8 +31,8 @@ static T __getitem__(typename Vec<dim,T>::type& self, int i) {
 // vector[i] = v
 template <int dim, typename T>
 static T __setitem__(typename Vec<dim,T>::type& self, int i, T v) {
-    if (i < 0) i = dim - i;
-    if (i >= dim) {
+    if (i < 0) i = dim + i;
+    if (i >= dim || i < 0) {
         const char message[] = "vector index out of range";
         PyErr_SetString(PyExc_IndexError, message);
         throw py::error_already_set();
