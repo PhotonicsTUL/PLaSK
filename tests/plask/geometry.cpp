@@ -38,7 +38,11 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         plask::MaterialsDB materialsDB;
         initDumpMaterialDb(materialsDB);
         plask::GeometryManager manager(materialsDB);
-        manager.loadFromXMLString("<geometry><block2d x=\"4\" y=\"2\" material=\"Dump\"></block></geometry>");
+        manager.loadFromXMLString("<geometry><block2d name=\"block\" x=\"4\" y=\"2\" material=\"Dump\"></block></geometry>");
+        //TODO there is a bug in irrXML that it is not generate two events for <block2d x=\"4\" y=\"2\" material=\"Dump\"/>
+        BOOST_CHECK_EQUAL(manager.elements.size(), 1);
+        BOOST_CHECK(manager.getElement("block") != nullptr);
+        BOOST_CHECK(manager.getElement("notexist") == nullptr);
     }
 
 BOOST_AUTO_TEST_SUITE_END()
