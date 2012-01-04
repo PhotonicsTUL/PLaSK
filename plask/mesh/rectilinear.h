@@ -27,7 +27,7 @@ public:
     ///Type of points in this mesh.
     typedef double PointType;
 
-    ///Random access iterator type which alow iterate over all points in this mesh, in ascending order.
+    ///Random access iterator type which allow iterate over all points in this mesh, in ascending order.
     typedef std::vector<double>::const_iterator const_iterator;
 
     ///@return iterator referring to the first point in this mesh
@@ -40,7 +40,7 @@ public:
      * Find position where @a to_find point could be insert.
      * @param to_find point to find
      * @return First position where to_find could be insert.
-     *         Reffer to value equal to @a to_find only if @a to_find is already in mesh.
+     *         Refer to value equal to @a to_find only if @a to_find is already in mesh.
      *         Can be equal to end() if to_find is higher than all points in mesh
      *         (in such case returned iterator can't be dereferenced).
      */
@@ -50,7 +50,7 @@ public:
      * Find index where @a to_find point could be insert.
      * @param to_find point to find
      * @return First index where to_find could be insert.
-     *         Reffer to value equal to @a to_find only if @a to_find is already in mesh.
+     *         Refer to value equal to @a to_find only if @a to_find is already in mesh.
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
     std::size_t findIndex(double to_find) const { return find(to_find) - begin(); }
@@ -83,7 +83,7 @@ public:
      * Compares meshes.
      * It use algorithm which has linear time complexity.
      * @param to_compare mesh to compare
-     * @return true only if this mesh and to_compare represents the same set of points
+     * @return @c true only if this mesh and @a to_compare represents the same set of points
      */
     bool operator==(const RectilinearMesh1d& to_compare) const;
 
@@ -312,7 +312,7 @@ struct RectilinearMesh2d {
     typedef Vec2<double> PointType;
 
     /**
-     * Random access iterator type which alow iterate over all points in this mesh, in order appointed by operator[].
+     * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].
      * This iterator type is indexed, which mean that it have (read-write) index field equal to 0 for begin() and growing up to size() for end().
      */
     typedef IndexedIterator< const RectilinearMesh2d, PointType > const_iterator;

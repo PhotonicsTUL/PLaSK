@@ -47,7 +47,7 @@ struct GeometryElement {
     /**
      * Check if element is ready for calculation.
      * Throw exception if element is in bad state and can't be used in calculations, for example has not required children, etc.
-     * Default implementation do nothing, but inharited class can change this bechaviour.
+     * Default implementation do nothing, but inherited class can change this behavior.
      * @throw Exception if element is not ready for calculation
      */
     virtual void validate() const {}
@@ -147,7 +147,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
  * Template of base class for all transform nodes.
  * Transform node has exactly one child node and represent element which is equal to child after transform.
  * @tparam dim number of dimensions of this element
- * @tparam Child_Type type od child, can be in space with different number of dimensions than this is (in such case see @ref GeometryElementChangeSpace).
+ * @tparam Child_Type type of child, can be in space with different number of dimensions than this is (in such case see @ref GeometryElementChangeSpace).
  */
 template < int dim, typename Child_Type = GeometryElementD<dim> >
 struct GeometryElementTransform: public GeometryElementD<dim> {
@@ -204,7 +204,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
  * Space changer if transform node which is in space with different number of dimensions than its child.
  * @tparam this_dim number of dimensions of this element
  * @tparam child_dim number of dimensions of child element
- * @tparam ChildType type od child, should be in space with @a child_dim number of dimensions
+ * @tparam ChildType type of child, should be in space with @a child_dim number of dimensions
  */
 template < int this_dim, int child_dim = 5 - this_dim, typename ChildType = GeometryElementD<child_dim> >
 struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, ChildType> {

@@ -30,7 +30,7 @@ struct Rect2d {
      */
     Vec2<double> size() const { return upper - lower; }
 
-    ///Construct uninitilized Rect2d.
+    ///Construct uninitialized Rect2d.
     Rect2d() {}
 
     /**
@@ -89,7 +89,7 @@ struct Rect2d {
     /**
      * Get translated copy of this.
      * @param translation_vec translation vector
-     * @return this trasnalated by @a translation_vec
+     * @return this translated by @a translation_vec
      */
     Rect2d translated(const Vec2<double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
 
@@ -131,7 +131,7 @@ struct Rect3d {
      */
     Vec3<double> size() const { return upper - lower; }
 
-    ///Construct uninitilized Rect3d.
+    ///Construct uninitialized Rect3d.
     Rect3d() {}
 
     /**
@@ -204,14 +204,14 @@ struct Rect3d {
 };
 
 /**
- * Define types of primitives and constsants in space with given number of dimensions.
+ * Define types of primitives and constants in space with given number of dimensions.
  * @tparam dim number of dimensions, 2 or 3
  */
 template <int dim>
 struct Primitive {};
 
 /**
- * Specialization of Primitive, which define types of primitives and constsants in space with 2 dimensions.
+ * Specialization of Primitive, which define types of primitives and constants in space with 2 dimensions.
  */
 template <>
 struct Primitive<2> {
@@ -230,7 +230,7 @@ struct Primitive<2> {
 };
 
 /**
- * Specialization of Primitive, which define types of primitives and constsants in space with 3 dimensions.
+ * Specialization of Primitive, which define types of primitives and constants in space with 3 dimensions.
  */
 template <>
 struct Primitive<3> {

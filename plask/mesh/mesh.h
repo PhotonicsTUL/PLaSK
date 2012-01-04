@@ -56,7 +56,7 @@ TODO: example
 TODO
 
 @subsection meshes_write_adapters Using adapters to generate plask::Mesh implementation
-You can specialize adapter template to generate class which inheritting from plask::Mesh. TODO
+You can specialize adapter template to generate class which inheriting from plask::Mesh. TODO
 
 To do this, you have to implement internal mesh representation class (see @ref meshes_internal) first.
 Your class must fulfill adapter templates requirements (it is one of adapter template parameters),

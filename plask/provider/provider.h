@@ -379,7 +379,7 @@ struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _Base
     std::function<_Res(_ArgTypes...)> valueGetter;
 
     /**
-     * Initialize valueGetter using given params.
+     * Initialize valueGetter using given parameters.
      * @param params parameters for valueGetter constructor
      */
     template<typename ...Args>
@@ -388,9 +388,9 @@ struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _Base
     }
 
     /**
-     * Call functor holded by valueGetter.
-     * @param params parameters for functor holded by valueGetter
-     * @return value returned by functor holded by valueGetter
+     * Call functor hold by valueGetter.
+     * @param params parameters for functor hold by valueGetter
+     * @return value returned by functor hold by valueGetter
      */
     _Res operator()(_ArgTypes... params) const {
         return valueGetter(std::forward<_ArgTypes>(params)...);

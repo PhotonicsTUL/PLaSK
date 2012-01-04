@@ -29,7 +29,7 @@ struct GeometryManager {
     /**
      * Create new geometry element (using new operator) with parameters reading from XML source.
      * Can call managers methods to read children (GeometryManager::readElement).
-     * Should throw excpetion if can't create element.
+     * Should throw exception if can't create element.
      * Result will be delete (using delete operator) by caller.
      */
     typedef GeometryElement* element_read_f(GeometryManager& manager, XMLReader& source);
@@ -102,7 +102,7 @@ struct GeometryManager {
      * @return element which was read and create or to which reference was read
      * @throw GeometryElementNamesConflictException if element with read name already exists
      * @throw NoSuchGeometryElement if ref element reference to element which not exists
-     * @throw NoAttrException if XML tag has no required attribiutes
+     * @throw NoAttrException if XML tag has no required attributes
      */
     GeometryElement& readElement(XMLReader& source);
     
@@ -119,7 +119,7 @@ struct GeometryManager {
      * @throw UnexpectedGeometryElementTypeException if requested element is not of type RequiredElementType
      * @throw GeometryElementNamesConflictException if element with read name already exists
      * @throw NoSuchGeometryElement if ref element reference to element which not exists
-     * @throw NoAttrException if XML tag has no required attribiutes
+     * @throw NoAttrException if XML tag has no required attributes
      */
     template <typename RequiredElementType>
     RequiredElementType& readElement(XMLReader& source);

@@ -4,9 +4,9 @@
 namespace plask {
 
 /**
- * Base class for calculation spaces.
+ * Base class for calculation spaces. Modules can do calculation in calculation space with specific type.
  *
- * Typically, calculation space classes wrap or are the same as conrate element of geometry.
+ * Typically, calculation space classes wrap or are the same as geometry element with specific type.
  */
 class CalculationSpace {
 

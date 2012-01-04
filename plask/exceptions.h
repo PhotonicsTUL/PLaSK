@@ -105,18 +105,18 @@ struct MaterialParseException: public Exception {
 
 //-------------- Connected with XML: -----------------------
 /**
- * Exceptions of this class are throw when required attribiute is not found in XML tag.
+ * Exceptions of this class are throw when required attribute is not found in XML tag.
  */
 struct XMLNoAttrException: public Exception {
     /**
      * @param where where (typically in which tag) there are no required attribiute
      * @param attr_name name of required attribiute
      */
-    XMLNoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribiute \"" + attr_name + "\"") {}
+    XMLNoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribute \"" + attr_name + "\"") {}
 };
 
 /**
- * Exceptions of this class are throw when XML file/data stream unexpeclty end.
+ * Exceptions of this class are throw when XML file/data stream unexpected end.
  */
 struct XMLUnexpectedEndException: public Exception {
     XMLUnexpectedEndException(): Exception("Unexpected end of XML data.") {}

@@ -13,7 +13,7 @@ namespace plask {
  * Structure representing 2D Cartesian space.
  *
  * Provides means of converting coordinates and vector components between local and global coordinates
-**/
+ */
 struct SpaceXY {
 
     enum  { DIMS = 2 };
@@ -76,7 +76,7 @@ struct SpaceXY {
  * Structure representing 2D cylindrical space.
  *
  * Provides means of converting coordinates and vector components between local and global coordinates
-**/
+ */
 struct SpaceRZ {
 
     enum { DIMS = 2 };
@@ -183,7 +183,7 @@ struct SpaceRZ {
  * Structure representing 3D Cartesian space.
  *
  * Provides means of converting coordinates and vector components between local and global coordinates
-**/
+ */
 struct SpaceXYZ {
 
     enum { DIMS = 3 };

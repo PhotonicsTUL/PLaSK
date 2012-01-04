@@ -2,7 +2,7 @@
 #define PLASK__MATERIAL_H
 
 /** @file
-This file includes base classes for materials and matrial database class.
+This file includes base classes for materials and material database class.
 */
 
 #include <string>
@@ -28,7 +28,7 @@ struct Material {
 
 /**
  * Material which consist with few real materials.
- * It calculate avarages for all properties.
+ * It calculate averages for all properties.
  */
 struct MixedMaterial: public Material {
 
@@ -46,10 +46,10 @@ struct RotatedMaterial: public Material {
 };
 
 /**
- * Check if material composition is compatibile with pattern and change NaN-s in composition to calculated ammounts.
- * @param composition ammounts of elements composition with NaN on position for which ammounts has not been taken
+ * Check if material composition is compatible with pattern and change NaN-s in composition to calculated amounts.
+ * @param composition ammounts of elements composition with NaN on position for which amounts has not been taken
  * @param pattern sizes of elements groups
- * @return version of @a composition complement with calculated ammounts
+ * @return version of @a composition complement with calculated amounts
  */
 std::vector<double> fillMaterialCompositionAmounts(const std::vector<double>& composition, unsigned pattern);
 
@@ -70,8 +70,8 @@ struct MaterialsDB {
 
     /**
      * Type of function which construct material.
-     * @param composition amounts of elements, with NaN for each element for composition was not writen
-     * @param dopant_amount_type type of amount of dopand, needed to interpetation of @a dopant_amount
+     * @param composition amounts of elements, with NaN for each element for composition was not written
+     * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
      * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
      */
     typedef Material* construct_material_f(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
@@ -79,9 +79,9 @@ struct MaterialsDB {
     /**
      * Template of function which construct material with given type.
      * @param composition amounts of elements, with NaN for each element for composition was not writen
-     * @param dopant_amount_type type of amount of dopand, needed to interpetation of @a dopant_amount
+     * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
      * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
-     * @tparam MaterialType type of material to construct, must fill requirments:
+     * @tparam MaterialType type of material to construct, must fill requirements:
      * - inharited from plask::Material
      * - has public, static unsigned COMPOSITION_PATTERN field which determinates sizes of composition groups (for example: 21 means that there are two groups, first group has size 2 and second has size 1)
      * - must have constructor which takes parameters: std::vector<double> composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount

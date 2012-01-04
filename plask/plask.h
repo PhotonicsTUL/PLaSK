@@ -21,7 +21,7 @@ PLaSK project consists of:
 - \b plask-gui: Graphical user interface and visual experiment designer which eases definition of an analyzed structure and helps in setting-up and performing simulations.
 
 This documentation is intended for developers who want to write new PLaSK modules or enhance the core functionality. However, before you begin it is advisable to read the User Manual
-in order to get familiar with the PLaSK architecture and the way the computatins are performed. Here you will find the technical details of the software.
+in order to get familiar with the PLaSK architecture and the way the computations are performed. Here you will find the technical details of the software.
 
 \section plask_source_code PLaSK source code
 
@@ -31,7 +31,7 @@ The also requires the Boost C++ library and the modules might need some other li
 bindings and the communication between C++ and Python parts require the Boost Python library. The graphical experiment designer is written in Python and uses the Qt graphics library
 (with PySide bindings) and Matplotlib for presenting the calculation results in attractive form. You should get familiar with all these technologies if you want to make modifications to PLaSK.
 
-\remarks Although it is possible to compile and use PLaSK without Python, it is strongly discouraged, as all the simulation logic would have to be witten in C++ and compiled for every
+\remarks Although it is possible to compile and use PLaSK without Python, it is strongly discouraged, as all the simulation logic would have to be written in C++ and compiled for every
 structure analyzed. Such approach is also hardly documented and not tested.
 
 

@@ -67,7 +67,7 @@ struct PathHints {
 };
 
 /**
- * Template which implment container using stl container of pointers to some geometry elements objects (Translation by default).
+ * Template which implement container using stl container of pointers to some geometry elements objects (Translation by default).
  * @tparam dim GeometryElementContainer dimension
  * @tparam container_type container of pointers to children
  */
@@ -105,7 +105,7 @@ public:
 
     /**
      * Check children in reverse order and check if any returns material.
-     * @return material or nullptr
+     * @return material or @c nullptr
      */
     virtual shared_ptr<Material> getMaterial(const Vec& p) const {
         for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
