@@ -10,6 +10,7 @@ This file includes containers of geometries elements.
 #include <algorithm>
 #include "element.h"
 #include "transform.h"
+#include "../utils/metaprog.h"
 
 namespace plask {
 
@@ -149,16 +150,59 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 };
 
 /**
- * Container which have children in stack/layers.
+ * Common code for stack containers (which have children in stack/layers).
  */
-struct StackContainer2d: public GeometryElementContainerImpl<2> {
+template <int dim>
+struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
 
-    typedef typename GeometryElementContainer<2>::DVec DVec;
-    typedef typename GeometryElementContainer<2>::Rect Rect;
-    typedef GeometryElementD<2> ChildType;
-    typedef Translation<2> TranslationT;
+    typedef typename GeometryElementContainer<dim>::DVec DVec;
+    typedef typename GeometryElementContainer<dim>::Rect Rect;
+    typedef GeometryElementD<dim> ChildType;
+    typedef Translation<dim> TranslationT;
 
-    using GeometryElementContainerImpl<2>::children;
+    using GeometryElementContainerImpl<dim>::children;
+
+    /**
+     * @param baseHeight height where should start first element
+     */
+    explicit StackContainerBaseImpl(const double baseHeight = 0.0) {
+        stackHeights.push_back(baseHeight);
+    }
+
+    /**
+     * @param height
+     * @return child which are on given @a height or @c nullptr
+     */
+    virtual const TranslationT* getChildForHeight(double height) const {
+        auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
+        if (it == stackHeights.end() || it == stackHeights.begin()) return nullptr;
+        return children[it-stackHeights.begin()-1];
+    }
+    
+    virtual bool inside(const DVec& p) const {
+        const TranslationT* c = getChildForHeight(p.c1);
+        return c ? c->inside(p) : false;
+    }
+
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
+        const TranslationT* c = getChildForHeight(p.c1);
+        return c ? c->getMaterial(p) : shared_ptr<Material>();
+    }
+
+    protected:
+
+    ///stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements)
+    std::vector<double> stackHeights;
+
+};
+
+
+/**
+ * 2d container which have children in stack/layers.
+ */
+struct StackContainer2d: public StackContainerBaseImpl<2> {
+
+    using StackContainerBaseImpl<2>::children;
 
     /**
      * @param baseHeight height where should start first element
@@ -168,35 +212,83 @@ struct StackContainer2d: public GeometryElementContainerImpl<2> {
     /**
      * Add children to stack top.
      * @param el element to add
-     * @param x_translation horizontal translation of element
+     * @param tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint push_back(ChildType* el, const double x_translation = 0.0);
+    PathHints::Hint push_back(ChildType* el, const double tran_translation = 0.0);
 
     /**
      * Add children to stack top.
      * @param el element to add
-     * @param x_translation horizontal translation of element
+     * @param tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint add(ChildType* el, const double x_translation = 0.0) { return push_back(el, x_translation); }
-
-    /**
-     * @param height
-     * @return child which are on given @a height or @c nullptr
-     */
-    const TranslationT* getChildForHeight(double height) const;
-
-    virtual bool inside(const DVec& p) const;
-
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const;
-
-private:
-
-    ///stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements)
-    std::vector<double> stackHeights;
+    PathHints::Hint add(ChildType* el, const double tran_translation = 0.0) { return push_back(el, tran_translation); }
 
 };
+
+/**
+ * 3d container which have children in stack/layers.
+ */
+struct StackContainer3d: public StackContainerBaseImpl<3> {
+
+    using StackContainerBaseImpl<3>::children;
+
+    /**
+     * @param baseHeight height where should start first element
+     */
+    explicit StackContainer3d(const double baseHeight = 0.0);
+
+    /**
+     * Add children to stack top.
+     * @param el element to add
+     * @param lon_translation, tran_translation horizontal translation of element
+     * @return path hint
+     */
+    PathHints::Hint push_back(ChildType* el, const double lon_translation = 0.0, const double tran_translation = 0.0);
+
+    /**
+     * Add children to stack top.
+     * @param el element to add
+     * @param lon_translation, tran_translation horizontal translation of element
+     * @return path hint
+     */
+    PathHints::Hint add(ChildType* el, const double lon_translation = 0.0, const double tran_translation = 0.0) { return push_back(el, lon_translation, tran_translation); }
+
+};
+
+template <int dim>
+class MultiStack: public chooseType<dim-2, StackContainer2d, StackContainer3d> {
+    
+    typedef chooseType<dim-2, StackContainer2d, StackContainer3d> UpperClass;
+    
+    static double modulo(double a, double divider) { 
+        return a - static_cast<double>( static_cast<int>( a / divider ) ) * divider;
+    }
+    
+public:
+    using UpperClass::getChildForHeight;
+    using UpperClass::baseHeight;
+    using UpperClass::stackHeights;
+    
+    ///How muny times all stack is repeat.
+    unsigned repeat_count;
+    
+    MultiStack(const double baseHeight = 0.0, unsigned repeat_count = 1): UpperClass(baseHeight) {}
+    
+    //redefinision of virtual class makes many geometry elment methods impl. fine
+    const typename UpperClass::TranslationT* getChildForHeight(double height) const {
+        const double zeroBasedStackHeight = stackHeights.back() - baseHeight;
+        const double zeroBasedRequestHeight = height - baseHeight;
+        if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)
+            return nullptr;
+            //throw OutOfBoundException("MultiStack::getChildForHeight", "height", height, baseHeight, zeroBasedStackHeight * repeat_count + baseHeight);
+        return UpperClass::getChildForHeight(modulo(zeroBasedRequestHeight, zeroBasedStackHeight) + baseHeight);
+    }
+    
+    
+};
+
 
 
 }	// namespace plask

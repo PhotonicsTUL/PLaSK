@@ -210,6 +210,22 @@ template <int dim>
 struct Primitive {};
 
 /**
+ * Specialization of Primitive, which define types of primitives and constants in space with 1 dimensions.
+ */
+template <>
+struct Primitive<1> {
+
+    /// Real (double) vector type in 1d space.
+    typedef double DVec;
+
+    /// Number of dimensions (1).
+    static const int dim = 1;
+
+    /// Zeroed 1d vector.
+    static const DVec ZERO_VEC;
+};
+
+/**
  * Specialization of Primitive, which define types of primitives and constants in space with 2 dimensions.
  */
 template <>

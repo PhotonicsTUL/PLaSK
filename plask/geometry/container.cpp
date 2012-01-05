@@ -19,33 +19,26 @@ GeometryElement* PathHints::getChild(GeometryElement* container) const {
 
 
 
-StackContainer2d::StackContainer2d(const double baseHeight) {
-    stackHeights.push_back(baseHeight);
-}
+StackContainer2d::StackContainer2d(const double baseHeight): StackContainerBaseImpl<2>(baseHeight) {}
 
-PathHints::Hint StackContainer2d::push_back(StackContainer2d::ChildType* el, const double x_translation) {
+PathHints::Hint StackContainer2d::push_back(StackContainer2d::ChildType* el, const double tran_translation) {
     Rect2d bb = el->getBoundingBox();
-    const double y_translation = stackHeights.back() - bb.lower.c1;
-    TranslationT* trans_geom = new TranslationT(el, vec(x_translation, y_translation));
+    const double up_translation = stackHeights.back() - bb.lower.up;
+    TranslationT* trans_geom = new TranslationT(el, vec(tran_translation, up_translation));
     children.push_back(trans_geom);
-    stackHeights.push_back(bb.upper.c1 + y_translation);
+    stackHeights.push_back(bb.upper.up + up_translation);
     return PathHints::Hint(this, trans_geom);
 }
 
-const plask::StackContainer2d::TranslationT* StackContainer2d::getChildForHeight(double height) const {
-    auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
-    if (it == stackHeights.end() || it == stackHeights.begin()) return nullptr;
-    return children[it-stackHeights.begin()-1];
-}
+StackContainer3d::StackContainer3d(const double baseHeight): StackContainerBaseImpl<3>(baseHeight) {}
 
-bool StackContainer2d::inside(const DVec& p) const {
-    const TranslationT* c = getChildForHeight(p.c1);
-    return c ? c->inside(p) : false;
-}
-
-shared_ptr<Material> StackContainer2d::getMaterial(const DVec& p) const {
-    const TranslationT* c = getChildForHeight(p.c1);
-    return c ? c->getMaterial(p) : shared_ptr<Material>();
+PathHints::Hint StackContainer3d::push_back(StackContainer3d::ChildType* el, const double lon_translation, const double tran_translation) {
+    Rect3d bb = el->getBoundingBox();
+    const double up_translation = stackHeights.back() - bb.lower.up;
+    TranslationT* trans_geom = new TranslationT(el, vec(lon_translation, tran_translation, up_translation));
+    children.push_back(trans_geom);
+    stackHeights.push_back(bb.upper.up + up_translation);
+    return PathHints::Hint(this, trans_geom);
 }
 
 // ---- containers readers: ----

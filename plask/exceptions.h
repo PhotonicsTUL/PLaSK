@@ -6,6 +6,7 @@ This file includes definitions of all exceptions classes which are used in PLaSK
 */
 
 #include <stdexcept>
+#include "utils/format.h"
 
 namespace plask {
 
@@ -16,6 +17,13 @@ struct Exception: public std::runtime_error {
     
     ///@param msg error message
     Exception(const std::string& msg): std::runtime_error(msg) {}
+    
+    /**
+     * Format error message using boost::format.
+     */
+    template <typename... T>
+    Exception(const std::string& msg, const T&... args): std::runtime_error(format(msg, args...)) {
+    }
 };
 
 /**
@@ -43,6 +51,20 @@ struct NotImplemented: public Exception {
      */
     NotImplemented(const std::string& where, const std::string& method_name)
     : Exception("In " + where + ": Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
+};
+
+/**
+ * This exception is thrown when some value (function argument) out of bound.
+ */
+struct OutOfBoundException: public Exception {
+    
+    ///@param msg error message
+    OutOfBoundException(const std::string& where, const std::string& argname)
+        : Exception("%1%: argument %2% out of bound", where, argname) {}
+    
+    template <typename BoundType>
+    OutOfBoundException(const std::string& where, const std::string& argname, const BoundType& was, const BoundType& lo, const BoundType& hi)
+        : Exception("%1%: argument %2% out of bound, should be between %3% and %4%, but was %5%.", where, argname, lo, hi, was) {}
 };
 
 //-------------- Connected with providers/receivers: -----------------------
