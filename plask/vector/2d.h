@@ -44,9 +44,9 @@ struct Vec<2, T> {
 
     /**
      * Construct vector with given coordinates.
-     * @param c0, c1 coordinates
+     * @param c0__tran, c1__up coordinates
      */
-    Vec(const T c0, const T c1): c0(c0), c1(c1) {}
+    Vec(const T c0__tran, const T c1__up): c0(c0__tran), c1(c1__up) {}
 
     /**
      * Compare two vectors, this and @a p.
@@ -238,8 +238,8 @@ inline auto dot(const Vec<2,complex<double>>& v1, const Vec<2,complex<double>>& 
  * @param c0, c1 vector coordinates.
  */
 template <typename T>
-inline Vec<2,T> vec(const T c0, const T c1) {
-    return Vec<2,T>(c0, c1);
+inline Vec<2,T> vec(const T c0__tran, const T c1__up) {
+    return Vec<2,T>(c0__tran, c1__up);
 }
 
 } //namespace plask

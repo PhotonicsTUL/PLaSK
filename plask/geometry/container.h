@@ -258,9 +258,9 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
 };
 
 template <int dim>
-class MultiStack: public chooseType<dim-2, StackContainer2d, StackContainer3d> {
+class MultiStackContainer: public chooseType<dim-2, StackContainer2d, StackContainer3d>::type {
     
-    typedef chooseType<dim-2, StackContainer2d, StackContainer3d> UpperClass;
+    typedef typename chooseType<dim-2, StackContainer2d, StackContainer3d>::type UpperClass;
     
     static double modulo(double a, double divider) { 
         return a - static_cast<double>( static_cast<int>( a / divider ) ) * divider;
@@ -268,24 +268,69 @@ class MultiStack: public chooseType<dim-2, StackContainer2d, StackContainer3d> {
     
 public:
     using UpperClass::getChildForHeight;
-    using UpperClass::baseHeight;
     using UpperClass::stackHeights;
+    using UpperClass::children;
+    
+    typedef typename MultiStackContainer::Rect Rect;
+    
+protected:
+    
+    /*
+     * Get number of all children.
+     * @return number of all children
+     */
+    //std::size_t size() const { return children.size() * repeat_count; }
+    
+    /*
+     * Get child with translation.
+     * @param index index of child
+     * @return child with given index
+     */
+    //typename UpperClass::TranslationT& operator[] (std::size_t index) { return children[index % children.size()]; }
+    
+public:
     
     ///How muny times all stack is repeat.
     unsigned repeat_count;
     
-    MultiStack(const double baseHeight = 0.0, unsigned repeat_count = 1): UpperClass(baseHeight) {}
+    MultiStackContainer(const double baseHeight = 0.0, unsigned repeat_count = 1): UpperClass(baseHeight), repeat_count(repeat_count) {}
     
     //redefinision of virtual class makes many geometry elment methods impl. fine
     const typename UpperClass::TranslationT* getChildForHeight(double height) const {
-        const double zeroBasedStackHeight = stackHeights.back() - baseHeight;
-        const double zeroBasedRequestHeight = height - baseHeight;
+        const double zeroBasedStackHeight = stackHeights.back() - stackHeights.front();
+        const double zeroBasedRequestHeight = height - stackHeights.front();
         if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)
             return nullptr;
             //throw OutOfBoundException("MultiStack::getChildForHeight", "height", height, baseHeight, zeroBasedStackHeight * repeat_count + baseHeight);
-        return UpperClass::getChildForHeight(modulo(zeroBasedRequestHeight, zeroBasedStackHeight) + baseHeight);
+        return UpperClass::getChildForHeight(modulo(zeroBasedRequestHeight, zeroBasedStackHeight) + stackHeights.front());
     }
     
+    virtual bool intersect(const Rect& area) const {
+        const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
+        for (unsigned r = 0; r < repeat_count; ++r)
+            if (UpperClass::intersect(area.translatedUp(minusZeroBasedStackHeight*r)))
+                return true;
+        return false;
+    }
+    
+    virtual Rect getBoundingBox() const {
+        Rect result = UpperClass::getBoundingBox();
+        result.upper.up += result.sizeUp() * (repeat_count-1);
+        return result;
+    }
+    
+    virtual std::vector<Rect> getLeafsBoundingBoxes() const {
+        std::vector<Rect> result = UpperClass::getLeafsBoundingBoxes();
+        std::size_t size = result.size();   //oryginal size
+        const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
+        for (unsigned r = 1; r < repeat_count; ++r) {
+            result.insert(result.end(), result.begin(), result.begin() + size);
+            const double delta = minusZeroBasedStackHeight * r;
+            for (auto i = result.end() - size; i != result.end(); ++i)
+                i->translateUp(delta);
+        }
+        return result;
+    }
     
 };
 

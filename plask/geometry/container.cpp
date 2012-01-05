@@ -111,14 +111,27 @@ GeometryElement* read_TranslationContainer3d(GeometryManager& manager, XMLReader
 }
 
 GeometryElement* read_StackContainer2d(GeometryManager& manager, XMLReader& source) {
-    std::unique_ptr< StackContainer2d > result(new StackContainer2d());
-    read_children(*result, manager, source,
-        [&]() {
-            double translation = XML::getAttribiute(source, "x", 0.0);
-            return result->add(&manager.readExactlyOneChild< typename StackContainer2d::ChildType >(source), translation);
-        }
-    );
-    return result.release();
+    double baseH = XML::getAttribiute(source, "baseHeight", 0.0);
+    if (source.getAttributeValue("repeat") == nullptr) {
+        std::unique_ptr< StackContainer2d > result(new StackContainer2d(baseH));
+        read_children(*result, manager, source,
+            [&]() {
+                double translation = XML::getAttribiute(source, "x", 0.0);
+                return result->add(&manager.readExactlyOneChild< typename StackContainer2d::ChildType >(source), translation);
+            }
+        );
+        return result.release();
+    } else {
+        unsigned repeat = XML::getAttribiute(source, "repeat", 1);
+        std::unique_ptr< MultiStackContainer<2> > result(new MultiStackContainer<2>(baseH, repeat));
+        read_children(*result, manager, source,
+            [&]() {
+                double translation = XML::getAttribiute(source, "x", 0.0);
+                return result->add(&manager.readExactlyOneChild< typename StackContainer2d::ChildType >(source), translation);
+            }
+        );
+        return result.release();
+    }
 }
 
 GeometryManager::RegisterElementReader container2d_reader("container2d", read_TranslationContainer2d);

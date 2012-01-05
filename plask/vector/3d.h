@@ -258,8 +258,8 @@ inline auto dot(const Vec<3,complex<double>>& v1, const Vec<3,complex<double>>& 
  * @param c0, c1, c2 vector coordinates.
  */
 template <typename T>
-inline Vec<3,T> vec(const T c0, const T c1, const T c2) {
-    return Vec<3,T>(c0, c1, c2);
+inline Vec<3,T> vec(const T c0__lon, const T c1__tran, const T c2__up) {
+    return Vec<3,T>(c0__lon, c1__tran, c2__up);
 }
 
 } //namespace plask

@@ -28,6 +28,12 @@ struct Rect2d {
      * @return size of rectangle (its width and height)
      */
     Vec<2,double> size() const { return upper - lower; }
+    
+    /**
+     * Calculate size of this in up direction.
+     * @return upper.up - lower.up
+     */
+    double sizeUp() const { return upper.up - lower.up; }
 
     ///Construct uninitialized Rect2d.
     Rect2d() {}
@@ -91,12 +97,25 @@ struct Rect2d {
      * @return this translated by @a translation_vec
      */
     Rect2d translated(const Vec<2,double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
-
+    
+    /**
+     * Get translated copy of this.
+     * @param trasnalation_in_up_dir translation in up direction
+     * @return this translated up by @a trasnalation_in_up_dir
+     */
+    Rect2d translatedUp(const double trasnalation_in_up_dir) const { return translated(vec(0.0, trasnalation_in_up_dir)); }
+    
     /**
      * Translate this by @a translation_vec.
      * @param translation_vec translation vector
      */
     void translate(const Vec<2,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+    
+    /**
+     * Translate this up by @a trasnalation_in_up_dir.
+     * @param trasnalation_in_up_dir translation in up direction
+     */
+    void translateUp(const double trasnalation_in_up_dir) { lower.up += trasnalation_in_up_dir; upper.up += trasnalation_in_up_dir; }
 
     /**
      * Print rectangle to stream.
@@ -129,6 +148,12 @@ struct Rect3d {
      * @return upper - lower
      */
     Vec<3,double> size() const { return upper - lower; }
+    
+    /**
+     * Calculate size of this in up direction.
+     * @return upper.up - lower.up
+     */
+    double sizeUp() const { return upper.up - lower.up; }
 
     ///Construct uninitialized Rect3d.
     Rect3d() {}
@@ -188,7 +213,20 @@ struct Rect3d {
 
     Rect3d translated(const Vec<3,double>& translation_vec) const { return Rect3d(lower + translation_vec, upper + translation_vec); }
 
+    /**
+     * Get translated copy of this.
+     * @param trasnalation_in_up_dir translation in up direction
+     * @return this translated up by @a trasnalation_in_up_dir
+     */
+    Rect3d translatedUp(const double trasnalation_in_up_dir) const { Rect3d r = *this; r.translateUp(trasnalation_in_up_dir); return r; }
+    
     void translate(const Vec<3,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+    
+    /**
+     * Translate this up by @a trasnalation_in_up_dir.
+     * @param trasnalation_in_up_dir translation in up direction
+     */
+    void translateUp(const double trasnalation_in_up_dir) { lower.up += trasnalation_in_up_dir; upper.up += trasnalation_in_up_dir; }
 
     /**
      * Print rectangle to stream.

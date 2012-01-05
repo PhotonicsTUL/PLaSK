@@ -21,7 +21,7 @@ For example:
 */
 template <int nr, typename... types>
 struct chooseType {
-    typedef typename std::tuple_element<nr, std::tuple<types...>> type;
+    typedef typename std::tuple_element<nr, std::tuple<types...>>::type type;
 };
 
 //TODO better impl. but not compilable in GCC 4.6 (unimplement)
