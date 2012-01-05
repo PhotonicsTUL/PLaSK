@@ -1,56 +1,30 @@
-#include <string>
-
-#include <boost/python.hpp>
-namespace py = boost::python;
-
-#include <config.h>
 #include <plask/space.h>
 
-#include "vector.h"
+#include "globals.h"
+using namespace plask::python;
 
 // Declare some initialization functions
 namespace plask { namespace python {
 
 void initMaterial();
 void initGeometry();
+void register_vector();
 
-}}
-
-
-// Some config variables
-struct Config {
-    // Which axis is up (z or y)
-    static bool z_up;
-    static std::string get_vaxis() {
-        if (z_up) return "z"; else return "y";
-    }
-    static void set_vaxis(std::string axis) {
-        if (axis != "z" and axis != "y") {
-            PyErr_SetString(PyExc_ValueError, "Only z or x allowed for vaxis");
-            throw py::error_already_set();
-        }
-        z_up = axis == "z";
-    }
-};
+// Config
+Config config;
 bool Config::z_up = true;
 
+}}
 
 BOOST_PYTHON_MODULE(modplask)
 {
     py::scope scope; // Default scope
 
-
     // Config
-    py::class_<Config, boost::noncopyable> config("config", "Global PLaSK configuration.", py::no_init);
-
-    config.add_property("vaxis", &Config::get_vaxis, &Config::set_vaxis,
-                             "Denotes orientation of coordinate system. Holds the name of an axis which is vertical, i.e. along layers growth direction.")
-    ;
-
-
+    register_config();
 
     // Vectors
-    plask::python::register_vector_h();
+    register_vector();
 
 
     // Space
@@ -70,8 +44,8 @@ BOOST_PYTHON_MODULE(modplask)
 
 
     // Init subpackages
-    plask::python::initMaterial();
-    plask::python::initGeometry();
+    initMaterial();
+    initGeometry();
 
 
     // PLaSK version

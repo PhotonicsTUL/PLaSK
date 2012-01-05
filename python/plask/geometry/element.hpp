@@ -57,7 +57,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementContainer, "GeometryElementContainer
 }
 
 
-inline static void register_geometry_element_h()
+inline static void register_geometry_element()
 {
     py::enum_<GeometryElementType>("ElementType")
         .value("LEAF", GE_TYPE_LEAF)

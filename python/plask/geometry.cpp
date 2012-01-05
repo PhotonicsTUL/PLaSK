@@ -5,10 +5,10 @@ namespace py = boost::python;
 #include <plask/geometry/manager.h>
 #include <plask/geometry/leaf.h>
 
-#include "geometry/element.h"
-#include "geometry/primitive.h"
-#include "geometry/leafs.h"
-#include "geometry/container.h"
+#include "geometry/element.hpp"
+#include "geometry/primitive.hpp"
+#include "geometry/leafs.hpp"
+#include "geometry/container.hpp"
 
 namespace plask { namespace python {
 
@@ -26,10 +26,10 @@ void initGeometry() {
         "of analyzed device."; //TODO maybe more extensive description
 
 
-    register_geometry_element_h();
-    register_geometry_primitive_h();
+    register_geometry_element();
+    register_geometry_primitive();
     register_geometry_leafs();
-    register_geometry_container_h();
+    register_geometry_container();
 
     // manager.h
 

@@ -35,7 +35,7 @@ bool PathHints__contains__(const PathHints& self, const GeometryElement* key) { 
 
 
 
-void register_geometry_container_h()
+void register_geometry_container()
 {
     py::class_<PathHints>("PathHints", "Hints are used to to find unique path for all GeometryElement pairs, "
                                             "even if one of the pair element is inserted to geometry graph in more than one place.")

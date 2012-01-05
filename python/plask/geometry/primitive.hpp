@@ -71,7 +71,7 @@ static std::string Rect3d__repr__(const Rect3d& to_print) {
 
 
 /// Register primitives to Python
-inline static void register_geometry_primitive_h()
+inline static void register_geometry_primitive()
 {
     void (Rect2d::*includeR2p)(const Vec<2,double>&) = &Rect2d::include;
     void (Rect2d::*includeR2R)(const Rect2d&)       = &Rect2d::include;
