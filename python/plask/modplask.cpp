@@ -1,3 +1,5 @@
+#include <string>
+
 #include <boost/python.hpp>
 namespace py = boost::python;
 
@@ -14,9 +16,37 @@ void initGeometry();
 
 }}
 
+
+// Some config variables
+struct Config {
+    // Which axis is up (z or y)
+    static bool z_up;
+    static std::string get_vaxis() {
+        if (z_up) return "z"; else return "y";
+    }
+    static void set_vaxis(std::string axis) {
+        if (axis != "z" and axis != "y") {
+            PyErr_SetString(PyExc_ValueError, "Only z or x allowed for vaxis");
+            throw py::error_already_set();
+        }
+        z_up = axis == "z";
+    }
+};
+bool Config::z_up = true;
+
+
 BOOST_PYTHON_MODULE(modplask)
 {
     py::scope scope; // Default scope
+
+
+    // Config
+    py::class_<Config, boost::noncopyable> config("config", "Global PLaSK configuration.", py::no_init);
+
+    config.add_property("vaxis", &Config::get_vaxis, &Config::set_vaxis,
+                             "Denotes orientation of coordinate system. Holds the name of an axis which is vertical, i.e. along layers growth direction.")
+    ;
+
 
 
     // Vectors

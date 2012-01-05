@@ -189,7 +189,7 @@ struct RectilinearMesh2d {
         ///Is order changed?
         bool changed;
 
-        typedef Vec2<double> PointType;
+        typedef Vec<2,double> PointType;
 
         typedef IndexedIterator< const Accessor, PointType > const_iterator;
 
@@ -209,10 +209,10 @@ struct RectilinearMesh2d {
         * @param index index of point, from 0 to size()-1
         * @return point with given @a index
         */
-        Vec2<double> operator[](std::size_t index) const {
+        Vec<2,double> operator[](std::size_t index) const {
             if (changed) {
                 const std::size_t y_size = mesh.c1.size();
-                return Vec2<double>(mesh.c0[index / y_size], mesh.c1[index % y_size]);
+                return Vec<2,double>(mesh.c0[index / y_size], mesh.c1[index % y_size]);
             } else {
                 return mesh[index];
             }
@@ -309,7 +309,7 @@ struct RectilinearMesh2d {
     const RectilinearMesh1d& z() const { return c1; }
 
     ///Type of points in this mesh.
-    typedef Vec2<double> PointType;
+    typedef Vec<2,double> PointType;
 
     /**
      * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].
@@ -366,9 +366,9 @@ struct RectilinearMesh2d {
      * @param index index of point, from 0 to size()-1
      * @return point with given @a index
      */
-    Vec2<double> operator[](std::size_t index) const {
+    Vec<2,double> operator[](std::size_t index) const {
         const std::size_t c0_size = c0.size();
-        return Vec2<double>(c0[index % c0_size], c1[index / c0_size]);
+        return Vec<2,double>(c0[index % c0_size], c1[index / c0_size]);
     }
 
     /**
@@ -377,8 +377,8 @@ struct RectilinearMesh2d {
      * @param c1_index index of c1, from 0 to c1.size()-1
      * @return point with given c0 and c1 indexes
      */
-    Vec2<double> operator()(std::size_t c0_index, std::size_t c1_index) const {
-        return Vec2<double>(c0[c0_index], c1[c1_index]);
+    Vec<2,double> operator()(std::size_t c0_index, std::size_t c1_index) const {
+        return Vec<2,double>(c0[c0_index], c1[c1_index]);
     }
 
     /**

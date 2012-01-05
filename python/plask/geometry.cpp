@@ -7,6 +7,7 @@ namespace py = boost::python;
 
 #include "geometry/element.h"
 #include "geometry/primitive.h"
+#include "geometry/leafs.h"
 #include "geometry/container.h"
 
 namespace plask { namespace python {
@@ -27,6 +28,7 @@ void initGeometry() {
 
     register_geometry_element_h();
     register_geometry_primitive_h();
+    register_geometry_leafs();
     register_geometry_container_h();
 
     // manager.h

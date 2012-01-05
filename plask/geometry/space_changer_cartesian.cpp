@@ -4,7 +4,7 @@
 
 namespace plask {
 
-bool CartesianExtend::inside(const Vec& p) const {
+bool CartesianExtend::inside(const DVec& p) const {
     return canBeInside(p) && getChild().inside(childVec(p));
 }
 
@@ -16,7 +16,7 @@ CartesianExtend::Rect CartesianExtend::getBoundingBox() const {
     return parentRect(getChild().getBoundingBox());
 }
 
-shared_ptr<Material> CartesianExtend::getMaterial(const Vec& p) const {
+shared_ptr<Material> CartesianExtend::getMaterial(const DVec& p) const {
     return canBeInside(p) ? getChild().getMaterial(childVec(p)) : shared_ptr<Material>();
 }
 

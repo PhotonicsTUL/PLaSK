@@ -21,9 +21,11 @@ def vector(*args):
         else:
             typ = float
     try:
-        return classes[len(comps),typ](*comps)
+        cls = classes[len(comps),typ]
     except KeyError:
         raise TypeError("unrecognized vector type")
+    if config.vaxis == "y":
+        if len(comps) == 3: comps = comps[2],comps[0],comps[1]
 
 
 ## ## plask.material ## ##

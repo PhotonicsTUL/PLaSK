@@ -11,37 +11,37 @@ namespace plask {
 template <int dim>
 struct Translation: public GeometryElementTransform<dim> {
 
-    typedef typename GeometryElementTransform<dim>::Vec Vec;
+    typedef typename GeometryElementTransform<dim>::DVec DVec;
     typedef typename GeometryElementTransform<dim>::Rect Rect;
     using GeometryElementTransform<dim>::getChild;
 
-    Vec translation;
+    DVec translation;
 
-    explicit Translation(GeometryElementD<dim>* child = 0, const Vec& translation = Primitive<dim>::ZERO_VEC)
+    explicit Translation(GeometryElementD<dim>* child = 0, const DVec& translation = Primitive<dim>::ZERO_VEC)
         : GeometryElementTransform<dim>(child), translation(translation) {}
-    
-    explicit Translation(GeometryElementD<dim>& child, const Vec& translation = Primitive<dim>::ZERO_VEC)
+
+    explicit Translation(GeometryElementD<dim>& child, const DVec& translation = Primitive<dim>::ZERO_VEC)
         : GeometryElementTransform<dim>(&child), translation(translation) {}
 
     virtual Rect getBoundingBox() const {
         return getChild().getBoundingBox().translated(translation);
     }
-    
-    virtual shared_ptr<Material> getMaterial(const Vec& p) const {
+
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         return getChild().getMaterial(p-translation);
     }
 
-    virtual bool inside(const Vec& p) const {
+    virtual bool inside(const DVec& p) const {
         return getChild().inside(p-translation);
     }
 
     virtual bool intersect(const Rect& area) const {
         return getChild().intersect(area.translated(-translation));
     }
-    
+
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
         std::vector<Rect> result = getChild().getLeafsBoundingBoxes();
-        Vec inv_tr = - translation;
+        DVec inv_tr = - translation;
         for (Rect& r: result) r.translate(inv_tr);
         return result;
     }

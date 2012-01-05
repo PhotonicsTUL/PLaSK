@@ -34,7 +34,6 @@ class Vector(unittest.TestCase):
         self.assertEqual( [self.a2[0], self.a2[1]], [1,2] )
         self.assertEqual( [self.a3[-3], self.a3[-2], self.a3[-1]], [1,2,3] )
         self.assertEqual( [self.a3.r, self.a3.phi, self.a3.z], [1,2,3] )
-        self.assertEqual( [self.a3.a, self.a3.b, self.a3.c], [1,2,3] )
 
     def testExceptions(self):
         '''Test if proper exceptions are thrown'''

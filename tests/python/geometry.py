@@ -32,3 +32,6 @@ class Geometry(unittest.TestCase):
         r3a = plask.geometry.Rect3D(3.,2.,1., 1.,5.,0.)
         r3b = plask.geometry.Rect3D(plask.vector(1.,2.,0.), plask.vector(3.,5.,1.))
         self.assertEqual( r3a, r3b )
+
+    def testPathHints(self):
+        '''Test if path hints work'''

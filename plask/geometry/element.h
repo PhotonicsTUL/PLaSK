@@ -70,7 +70,7 @@ struct GeometryElementD: public GeometryElement {
 
     static const int dim = dimensions;
     typedef typename Primitive<dim>::Rect Rect;
-    typedef typename Primitive<dim>::Vec Vec;
+    typedef typename Primitive<dim>::DVec DVec;
 
     //virtual Rect getBoundingBox() const;
 
@@ -79,7 +79,7 @@ struct GeometryElementD: public GeometryElement {
      * @param p point
      * @return true only if this geometry includes point @a p
      */
-    virtual bool inside(const Vec& p) const = 0;
+    virtual bool inside(const DVec& p) const = 0;
 
     /**
      * Check if geometry includes some point from given @a area.
@@ -94,7 +94,7 @@ struct GeometryElementD: public GeometryElement {
      */
     virtual Rect getBoundingBox() const = 0;
 
-    virtual Vec getBoundingBoxSize() const { return getBoundingBox().size(); }
+    virtual DVec getBoundingBoxSize() const { return getBoundingBox().size(); }
 
     //virtual GeometryElementD<dim>* getLeaf(const Vec& p) const; //shared_ptr?
 
@@ -104,7 +104,7 @@ struct GeometryElementD: public GeometryElement {
      * @param p point
      * @return material in given point, or @c nullptr if this GeometryElement not includes point @a p
      */
-    virtual shared_ptr<Material> getMaterial(const Vec& p) const = 0;
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const = 0;
 
     //virtual std::vector<Material*> getMaterials(Mesh);        ??
 
@@ -123,7 +123,7 @@ struct GeometryElementD: public GeometryElement {
 template < int dim >
 struct GeometryElementLeaf: public GeometryElementD<dim> {
 
-    typedef typename GeometryElementD<dim>::Vec Vec;
+    typedef typename GeometryElementD<dim>::DVec DVec;
     typedef typename GeometryElementD<dim>::Rect Rect;
     using GeometryElementD<dim>::getBoundingBox;
 
@@ -133,7 +133,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 
     virtual GeometryElementType getType() const { return GE_TYPE_LEAF; }
 
-    virtual shared_ptr<Material> getMaterial(const Vec& p) const {
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         return inside(p) ? material : shared_ptr<Material>();
     }
 
@@ -153,19 +153,19 @@ template < int dim, typename Child_Type = GeometryElementD<dim> >
 struct GeometryElementTransform: public GeometryElementD<dim> {
 
     typedef Child_Type ChildType;
-    
+
     explicit GeometryElementTransform(ChildType* child = nullptr): _child(child) {}
 
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
 
     /**
-     * Get child. 
+     * Get child.
      * @return child
      */
     ChildType& getChild() { return *_child; }
 
     /**
-     * Get child. 
+     * Get child.
      * @return child
      */
     const ChildType& getChild() const { return *_child; }
@@ -183,7 +183,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     void setChild(ChildType& child) { _child = &child; }
 
     /**
-     * @return @c true only if child is set (not null) 
+     * @return @c true only if child is set (not null)
      */
     bool hasChild() const { return _child != nullptr; }
 
@@ -210,7 +210,7 @@ template < int this_dim, int child_dim = 5 - this_dim, typename ChildType = Geom
 struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, ChildType> {
 
     typedef typename ChildType::Rect ChildRect;
-    typedef typename ChildType::Vec ChildVec;
+    typedef typename ChildType::DVec ChildVec;
 
     explicit GeometryElementChangeSpace(ChildType* child = 0): GeometryElementTransform<this_dim, ChildType>(child) {}
 

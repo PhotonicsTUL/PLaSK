@@ -122,9 +122,9 @@ It must:
     - InternalMeshType::PointType must be a typename of points used by InternalMeshType
     - allow for iterate (has begin and end methods) over InternalMeshType::PointType, and has defined InternalMeshType::const_iterator for constant iterator type
     - has size method
-@tparam toPoint3d function which is used to convert points from InternalMeshType space to Vec3<double> (used by plask::Mesh)
+@tparam toPoint3d function which is used to convert points from InternalMeshType space to Vec<3,double> (used by plask::Mesh)
 * /
-template <typename InternalMeshType, Vec3<double> (*toPoint3d)(typename InternalMeshType::PointType)>
+template <typename InternalMeshType, Vec<3,double> (*toPoint3d)(typename InternalMeshType::PointType)>
 struct SimpleMeshAdapter: public Mesh {
 
     /// Holded, internal, typically optimized mesh.
@@ -141,7 +141,7 @@ struct SimpleMeshAdapter: public Mesh {
         IteratorImpl(typename InternalMeshType::const_iterator&& internal_iterator)
         : internal_iterator(std::forward(internal_iterator)) {}
 
-        virtual Vec3<double> dereference() const {
+        virtual Vec<3,double> dereference() const {
             return toPoint3d(*internal_iterator);
         }
 

@@ -74,7 +74,7 @@ struct PathHints {
 template <int dim, typename container_type = std::vector<Translation<dim>*> >
 struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
 
-    typedef typename GeometryElementContainer<dim>::Vec Vec;
+    typedef typename GeometryElementContainer<dim>::DVec DVec;
     typedef typename GeometryElementContainer<dim>::Rect Rect;
 
 protected:
@@ -85,7 +85,7 @@ public:
         for (auto child: children) delete child;
     }
 
-    virtual bool inside(const Vec& p) const {
+    virtual bool inside(const DVec& p) const {
         for (auto child: children) if (child->inside(p)) return true;
         return false;
     }
@@ -107,7 +107,7 @@ public:
      * Check children in reverse order and check if any returns material.
      * @return material or @c nullptr
      */
-    virtual shared_ptr<Material> getMaterial(const Vec& p) const {
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
             shared_ptr<Material> r = (*child_it)->getMaterial(p);
             if (r != nullptr) return r;
@@ -133,14 +133,14 @@ public:
 template < int dim >
 struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 
-    typedef typename GeometryElementContainer<dim>::Vec Vec;
+    typedef typename GeometryElementContainer<dim>::DVec DVec;
     typedef typename GeometryElementContainer<dim>::Rect Rect;
     typedef GeometryElementD<dim> ChildType;
     typedef Translation<dim> TranslationT;
 
     using GeometryElementContainerImpl<dim>::children;
 
-    PathHints::Hint add(ChildType* el, const Vec& translation = Primitive<dim>::ZERO_VEC) {
+    PathHints::Hint add(ChildType* el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         TranslationT* trans_geom = new TranslationT(el, translation);
         children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);
@@ -153,7 +153,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
  */
 struct StackContainer2d: public GeometryElementContainerImpl<2> {
 
-    typedef typename GeometryElementContainer<2>::Vec Vec;
+    typedef typename GeometryElementContainer<2>::DVec DVec;
     typedef typename GeometryElementContainer<2>::Rect Rect;
     typedef GeometryElementD<2> ChildType;
     typedef Translation<2> TranslationT;
@@ -172,7 +172,7 @@ struct StackContainer2d: public GeometryElementContainerImpl<2> {
      * @return path hint
      */
     PathHints::Hint push_back(ChildType* el, const double x_translation = 0.0);
-    
+
     /**
      * Add children to stack top.
      * @param el element to add
@@ -187,9 +187,9 @@ struct StackContainer2d: public GeometryElementContainerImpl<2> {
      */
     const TranslationT* getChildForHeight(double height) const;
 
-    virtual bool inside(const Vec& p) const;
+    virtual bool inside(const DVec& p) const;
 
-    virtual shared_ptr<Material> getMaterial(const Vec& p) const;
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const;
 
 private:
 

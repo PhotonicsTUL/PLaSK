@@ -19,27 +19,27 @@ Block is filled with one material.
 template <int dim>
 struct Block: public GeometryElementLeaf<dim> {
 
-    typedef typename GeometryElementLeaf<dim>::Vec Vec;
+    typedef typename GeometryElementLeaf<dim>::DVec DVec;
     typedef typename GeometryElementLeaf<dim>::Rect Rect;
 
     /**
      * Size and upper corner of block. Lower corner is zeroed vector.
      */
-    Vec size;
+    DVec size;
 
     /**
      * Create block.
      * @param size size/upper corner of block
      * @param material block material
      */
-    explicit Block(const Vec& size = Primitive<dim>::ZERO_VEC, shared_ptr<Material> material = shared_ptr<Material>())
+    explicit Block(const DVec& size = Primitive<dim>::ZERO_VEC, shared_ptr<Material> material = shared_ptr<Material>())
         : GeometryElementLeaf<dim>(material), size(size) {}
 
     virtual Rect getBoundingBox() const {
         return Rect(Primitive<dim>::ZERO_VEC, size);
     }
 
-    virtual bool inside(const Vec& p) const {
+    virtual bool inside(const DVec& p) const {
         return getBoundingBox().inside(p);
     }
 

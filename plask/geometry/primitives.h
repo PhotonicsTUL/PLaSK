@@ -5,8 +5,7 @@
 This file includes useful geometry primitives, like rectangles, etc.
 */
 
-#include "../vector/2d.h"
-#include "../vector/3d.h"
+#include "../vec.h"
 
 namespace plask {
 
@@ -19,16 +18,16 @@ namespace plask {
 struct Rect2d {
 
     ///Lower corner of rectangle (with minimal all coordinates).
-    Vec2<double> lower;
+    Vec<2,double> lower;
 
     ///Upper corner of rectangle (with maximal all coordinates).
-    Vec2<double> upper;
+    Vec<2,double> upper;
 
     /**
      * Get size of rectangle.
      * @return size of rectangle (its width and height)
      */
-    Vec2<double> size() const { return upper - lower; }
+    Vec<2,double> size() const { return upper - lower; }
 
     ///Construct uninitialized Rect2d.
     Rect2d() {}
@@ -38,7 +37,7 @@ struct Rect2d {
      * @param lower lower corner of rectangle (with minimal all coordinates)
      * @param upper upper corner of rectangle (with maximal all coordinates)
      */
-    Rect2d(const Vec2<double>& lower, const Vec2<double>& upper): lower(lower), upper(upper) {}
+    Rect2d(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
 
     /**
      * Compare two rectangles, this and @a r.
@@ -55,8 +54,8 @@ struct Rect2d {
     bool operator!=(const Rect2d& r) const;
 
     /**
-     * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
-     * Change x or y of lower and upper if necessary.
+     * Ensure that lower[0] <= upper[0] and lower[1] <= upper[1].
+     * Exchange x or y of lower and upper if necessary.
      */
     void fix();
 
@@ -65,7 +64,7 @@ struct Rect2d {
      * @param p point
      * @return true only if point is inside this rectangle
      */
-    bool inside(const Vec2<double>& p) const;
+    bool inside(const Vec<2,double>& p) const;
 
     /**
      * Check if this and other rectangles have common points.
@@ -78,7 +77,7 @@ struct Rect2d {
      * Make this rectangle, the minimal one which include this and given point @a p.
      * @param p point which should be inside rectangle
      */
-    void include(const Vec2<double>& p);
+    void include(const Vec<2,double>& p);
 
     /**
      * Make this rectangle, the minimal one which include this and @a other rectangle.
@@ -91,13 +90,13 @@ struct Rect2d {
      * @param translation_vec translation vector
      * @return this translated by @a translation_vec
      */
-    Rect2d translated(const Vec2<double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
+    Rect2d translated(const Vec<2,double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
 
     /**
      * Translate this by @a translation_vec.
      * @param translation_vec translation vector
      */
-    void translate(const Vec2<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+    void translate(const Vec<2,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
 
     /**
      * Print rectangle to stream.
@@ -120,16 +119,16 @@ struct Rect2d {
 struct Rect3d {
 
     ///Position of lower corner of cuboid (with minimal all coordinates).
-    Vec3<double> lower;
+    Vec<3,double> lower;
 
     ///Position of upper corner of cuboid (with maximal all coordinates).
-    Vec3<double> upper;
+    Vec<3,double> upper;
 
     /**
-     * Calculate size of this. 
+     * Calculate size of this.
      * @return upper - lower
      */
-    Vec3<double> size() const { return upper - lower; }
+    Vec<3,double> size() const { return upper - lower; }
 
     ///Construct uninitialized Rect3d.
     Rect3d() {}
@@ -139,7 +138,7 @@ struct Rect3d {
      * @param lower position of lower corner of cuboid (with minimal all coordinates)
      * @param upper position of upper corner of cuboid (with maximal all coordinates)
      */
-    Rect3d(const Vec3<double>& lower, const Vec3<double>& upper): lower(lower), upper(upper) {}
+    Rect3d(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
 
     /**
      * Compare two rectangles, this and @a r.
@@ -156,8 +155,8 @@ struct Rect3d {
     bool operator!=(const Rect3d& r) const;
 
     /**
-     * Ensure that: lower.x <= upper.x and lower.y <= upper.y.
-     * Swap x or y of lower and upper if necessary.
+     * Ensure that lower[0] <= upper.c0, lower[1] <= upper[1], and lower[2] <= upper[3].
+     * Excange components of lower and upper if necessary.
      */
     void fix();
 
@@ -166,7 +165,7 @@ struct Rect3d {
      * @param p point
      * @return true only if point is inside this rectangle
      */
-    bool inside(const Vec3<double>& p) const;
+    bool inside(const Vec<3,double>& p) const;
 
     /**
      * Check if this and other rectangles have common points.
@@ -179,7 +178,7 @@ struct Rect3d {
      * Make this rectangle, the minimal one which include this and given point @a p.
      * @param p point which should be inside rectangle
      */
-    void include(const Vec3<double>& p);
+    void include(const Vec<3,double>& p);
 
     /**
      * Make this rectangle, the minimal one which include this and @a other rectangle.
@@ -187,9 +186,9 @@ struct Rect3d {
      */
     void include(const Rect3d& other);
 
-    Rect3d translated(const Vec3<double>& translation_vec) const { return Rect3d(lower + translation_vec, upper + translation_vec); }
+    Rect3d translated(const Vec<3,double>& translation_vec) const { return Rect3d(lower + translation_vec, upper + translation_vec); }
 
-    void translate(const Vec3<double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+    void translate(const Vec<3,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
 
     /**
      * Print rectangle to stream.
@@ -215,18 +214,18 @@ struct Primitive {};
  */
 template <>
 struct Primitive<2> {
-    
-    ///Rectangle type in 2d space.
+
+    /// Rectangle type in 2d space.
     typedef Rect2d Rect;
-    
-    ///Vector type in 2d space.
-    typedef Vec2<double> Vec;
-    
-    ///Number of dimensions (2).
+
+    /// Real (double) vector type in 2d space.
+    typedef Vec<2,double> DVec;
+
+    /// Number of dimensions (2).
     static const int dim = 2;
 
-    ///Zeroed 2d vector.
-    static const Vec ZERO_VEC;
+    /// Zeroed 2d vector.
+    static const DVec ZERO_VEC;
 };
 
 /**
@@ -234,18 +233,18 @@ struct Primitive<2> {
  */
 template <>
 struct Primitive<3> {
-    
-    ///Rectangle type (cuboid) in 3d space.
+
+    /// Rectangle type (cuboid) in 3d space.
     typedef Rect3d Rect;
-    
-    ///Vector type in 3d space.
-    typedef Vec3<double> Vec;
-    
-    ///Number of dimensions (3).
+
+    /// Real (double) vector type in 3d space.
+    typedef Vec<3,double> DVec;
+
+    /// Number of dimensions (3).
     static const int dim = 3;
 
-    ///Zeroed 3d vector.
-    static const Vec ZERO_VEC;
+    /// Zeroed 3d vector.
+    static const DVec ZERO_VEC;
 };
 
 } // namespace plask

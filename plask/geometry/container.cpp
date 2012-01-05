@@ -25,10 +25,10 @@ StackContainer2d::StackContainer2d(const double baseHeight) {
 
 PathHints::Hint StackContainer2d::push_back(StackContainer2d::ChildType* el, const double x_translation) {
     Rect2d bb = el->getBoundingBox();
-    const double y_translation = stackHeights.back() - bb.lower.y;
+    const double y_translation = stackHeights.back() - bb.lower.c1;
     TranslationT* trans_geom = new TranslationT(el, vec(x_translation, y_translation));
     children.push_back(trans_geom);
-    stackHeights.push_back(bb.upper.y + y_translation);
+    stackHeights.push_back(bb.upper.c1 + y_translation);
     return PathHints::Hint(this, trans_geom);
 }
 
@@ -38,13 +38,13 @@ const plask::StackContainer2d::TranslationT* StackContainer2d::getChildForHeight
     return children[it-stackHeights.begin()-1];
 }
 
-bool StackContainer2d::inside(const Vec& p) const {
-    const TranslationT* c = getChildForHeight(p.y);
+bool StackContainer2d::inside(const DVec& p) const {
+    const TranslationT* c = getChildForHeight(p.c1);
     return c ? c->inside(p) : false;
 }
 
-shared_ptr<Material> StackContainer2d::getMaterial(const Vec& p) const {
-    const TranslationT* c = getChildForHeight(p.y);
+shared_ptr<Material> StackContainer2d::getMaterial(const DVec& p) const {
+    const TranslationT* c = getChildForHeight(p.c1);
     return c ? c->getMaterial(p) : shared_ptr<Material>();
 }
 
@@ -60,17 +60,17 @@ shared_ptr<Material> StackContainer2d::getMaterial(const Vec& p) const {
  */
 template <typename ConstructedType, typename ChildParamF>
 void read_children(ConstructedType& result, GeometryManager& manager, XMLReader& source, ChildParamF child_param_read) {
-    
+
     while (source.read()) {
         switch (source.getNodeType()) {
-            
+
             case irr::io::EXN_ELEMENT_END:
                 return; // container has been read
 
             case irr::io::EXN_ELEMENT:
                 if (source.getNodeName() == std::string("child")) {
                     const char* have_path_name = source.getAttributeValue("path");
-                    std::string path = have_path_name; 
+                    std::string path = have_path_name;
                     PathHints::Hint hint = child_param_read();
                     if (have_path_name)
                         manager.pathHints[path].addHint(hint);
@@ -79,10 +79,10 @@ void read_children(ConstructedType& result, GeometryManager& manager, XMLReader&
                     XML::requireTagEnd(source);
                     //result.add(&manager.readExactlyOneChild< typename ConstructedType::ChildType >(source));
                 }
-                
+
             case irr::io::EXN_COMMENT:
                 break;  //skip comments
-            
+
             default:
                 throw XMLUnexpectedElementException("<child> or geometry element tag");
         }
@@ -94,9 +94,9 @@ GeometryElement* read_TranslationContainer2d(GeometryManager& manager, XMLReader
     std::unique_ptr< TranslationContainer<2> > result(new TranslationContainer<2>());
     read_children(*result, manager, source,
         [&]() {
-            TranslationContainer<2>::Vec translation;
-            translation.x = XML::getAttribiute(source, "x", 0.0);
-            translation.y = XML::getAttribiute(source, "y", 0.0);
+            TranslationContainer<2>::DVec translation;
+            translation.c0 = XML::getAttribiute(source, "x", 0.0);
+            translation.c1 = XML::getAttribiute(source, "y", 0.0);
             return result->add(&manager.readExactlyOneChild< typename TranslationContainer<2>::ChildType >(source), translation);
         }
     );
@@ -107,10 +107,10 @@ GeometryElement* read_TranslationContainer3d(GeometryManager& manager, XMLReader
     std::unique_ptr< TranslationContainer<3> > result(new TranslationContainer<3>());
     read_children(*result, manager, source,
         [&]() {
-            TranslationContainer<3>::Vec translation;
-            translation.x = XML::getAttribiute(source, "x", 0.0);
-            translation.y = XML::getAttribiute(source, "y", 0.0);
-            translation.z = XML::getAttribiute(source, "z", 0.0);
+            TranslationContainer<3>::DVec translation;
+            translation.c0 = XML::getAttribiute(source, "x", 0.0);
+            translation.c1 = XML::getAttribiute(source, "y", 0.0);
+            translation.c2 = XML::getAttribiute(source, "z", 0.0);
             return result->add(&manager.readExactlyOneChild< typename TranslationContainer<3>::ChildType >(source), translation);
         }
     );
