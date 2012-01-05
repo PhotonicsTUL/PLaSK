@@ -151,7 +151,7 @@ struct NoSuchGeometryElementType: public Exception {
      * @param element_type_name name of element type which is not found
      */
     NoSuchGeometryElementType(const std::string& element_type_name)
-    : Exception("No geometry element with given type name " + element_type_name)/*, materialName(material_name)*/ {}
+        : Exception("No geometry element with given type name \"" + element_type_name + "\"")/*, materialName(material_name)*/ {}
 };
 
 /**

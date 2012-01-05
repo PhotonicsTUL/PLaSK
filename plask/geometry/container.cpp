@@ -75,7 +75,9 @@ void read_children(ConstructedType& result, GeometryManager& manager, XMLReader&
                     if (have_path_name)
                         manager.pathHints[path].addHint(hint);
                 } else {
-                    result.add(&manager.readExactlyOneChild< typename ConstructedType::ChildType >(source));
+                    result.add(&manager.readElement< typename ConstructedType::ChildType >(source));
+                    XML::requireTagEnd(source);
+                    //result.add(&manager.readExactlyOneChild< typename ConstructedType::ChildType >(source));
                 }
                 
             case irr::io::EXN_COMMENT:
@@ -83,7 +85,6 @@ void read_children(ConstructedType& result, GeometryManager& manager, XMLReader&
             
             default:
                 throw XMLUnexpectedElementException("<child> or geometry element tag");
-            //TODO what with all other XML types (which now are just ignored)?
         }
     }
     throw XMLUnexpectedEndException();
