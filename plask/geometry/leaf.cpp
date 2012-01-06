@@ -13,8 +13,8 @@ inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
 
 template <typename BlockType>
 inline void setupBlock2d3d(GeometryReader& reader, BlockType& block) {
-//     block.size.x = XML::requireAttr<double>(source, "x");
-//     block.size.y = XML::requireAttr<double>(source, "y");
+    block.size.tran = XML::requireAttr<double>(reader.source, reader.getAxisTranName());
+    block.size.up = XML::requireAttr<double>(reader.source, reader.getAxisUpName());
     setupLeaf(reader, block);
 }
 
@@ -26,7 +26,7 @@ GeometryElement* read_block2d(GeometryReader& reader) {
 
 GeometryElement* read_block3d(GeometryReader& reader) {
     std::unique_ptr< Block<3> > block(new Block<3>());
-//     block->size.z = XML::requireAttr<double>(source, "z");
+    block->size.lon = XML::requireAttr<double>(reader.source, reader.getAxisLonName());
     setupBlock2d3d(reader, *block);
     return block.release();
 }

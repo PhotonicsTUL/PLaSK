@@ -22,11 +22,21 @@ inline T getAttribiute(XMLReader& reader, const char* name, T&& default_value) {
     return boost::lexical_cast<T>(attr_str);
 }
 
+template <typename T>
+inline T getAttribiute(XMLReader& reader, const std::string& name, T&& default_value) {
+    return getAttribiute<T>(reader, name.c_str(), std::forward<T>(default_value));
+}
+
 std::string requireAttr(XMLReader &source, const char* attr_name);
 
 template <typename T>
 inline T requireAttr(XMLReader& reader, const char* name) {
     return boost::lexical_cast<T>(requireAttr(reader, name));
+}
+
+template <typename T>
+inline T requireAttr(XMLReader& reader, const std::string& name) {
+    return requireAttr<T>(reader, name.c_str());
 }
 
 /**

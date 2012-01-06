@@ -207,6 +207,16 @@ struct UnexpectedGeometryElementTypeException: public Exception {
     UnexpectedGeometryElementTypeException(): Exception("Geometry element has unexpected type.") {}
 };
 
+/**
+ * This exception is thrown when axis (typically with given name) is not found.
+ */
+struct NoSuchAxisNames: public Exception {
+    //std::string materialName;
+
+    ///@param axis_names name of axis which not exists
+    NoSuchAxisNames(const std::string& axis_names)
+        : Exception("No such axis names \"%1%\".", axis_names) {}
+};
 
 
 } // namespace plask

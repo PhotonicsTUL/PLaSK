@@ -10,5 +10,8 @@ std::tuple< std::string, std::string > splitString2(const std::string& to_split,
 
 }
 
+std::string removedChars(const std::string& str, const std::string& chars_to_remove) {
+    return filterChars(str, [&chars_to_remove](char c) { return chars_to_remove.find(c) == std::string::npos; });
+}
     
 }       // namespace plask

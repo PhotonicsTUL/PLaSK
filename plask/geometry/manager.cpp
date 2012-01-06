@@ -28,7 +28,8 @@ GeometryElement& GeometryManager::requireElement(const std::string &name) {
 void GeometryManager::loadFromReader(XMLReader &XMLreader) {
     GeometryReader reader(*this, XMLreader);
     if (XMLreader.getNodeType() != irr::io::EXN_ELEMENT || XMLreader.getNodeName() != std::string("geometry"))
-        throw XMLUnexpectedElementException("<geometry> tag");   
+        throw XMLUnexpectedElementException("<geometry> tag");
+    GeometryReader::ReadAxisNames read_axis_tag(reader);
     while(XMLreader.read()) {
         switch (XMLreader.getNodeType()) {
             case irr::io::EXN_ELEMENT_END: return;  //end of geometry

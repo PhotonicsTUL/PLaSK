@@ -89,8 +89,8 @@ GeometryElement* read_TranslationContainer2d(GeometryReader& reader) {
     read_children(*result, reader,
         [&]() {
             TranslationContainer<2>::DVec translation;
-            translation.c0 = XML::getAttribiute(reader.source, "x", 0.0);
-            translation.c1 = XML::getAttribiute(reader.source, "y", 0.0);
+            translation.tran = XML::getAttribiute(reader.source, reader.getAxisLonName(), 0.0);
+            translation.up = XML::getAttribiute(reader.source, reader.getAxisUpName(), 0.0);
             return result->add(&reader.readExactlyOneChild< typename TranslationContainer<2>::ChildType >(), translation);
         }
     );
@@ -102,9 +102,9 @@ GeometryElement* read_TranslationContainer3d(GeometryReader& reader) {
     read_children(*result, reader,
         [&]() {
             TranslationContainer<3>::DVec translation;
-            translation.c0 = XML::getAttribiute(reader.source, "x", 0.0);
-            translation.c1 = XML::getAttribiute(reader.source, "y", 0.0);
-            translation.c2 = XML::getAttribiute(reader.source, "z", 0.0);
+            translation.c0 = XML::getAttribiute(reader.source, reader.getAxisName(0), 0.0);
+            translation.c1 = XML::getAttribiute(reader.source, reader.getAxisName(1), 0.0);
+            translation.c2 = XML::getAttribiute(reader.source, reader.getAxisName(2), 0.0);
             return result->add(&reader.readExactlyOneChild< typename TranslationContainer<3>::ChildType >(), translation);
         }
     );
@@ -117,7 +117,7 @@ GeometryElement* read_StackContainer2d(GeometryReader& reader) {
         std::unique_ptr< StackContainer2d > result(new StackContainer2d(baseH));
         read_children(*result, reader,
             [&]() {
-                double translation = XML::getAttribiute(reader.source, "x", 0.0);
+                double translation = XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0);
                 return result->add(&reader.readExactlyOneChild< typename StackContainer2d::ChildType >(), translation);
             }
         );
@@ -127,7 +127,7 @@ GeometryElement* read_StackContainer2d(GeometryReader& reader) {
         std::unique_ptr< MultiStackContainer<2> > result(new MultiStackContainer<2>(baseH, repeat));
         read_children(*result, reader,
             [&]() {
-                double translation = XML::getAttribiute(reader.source, "x", 0.0);
+                double translation = XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0);
                 return result->add(&reader.readExactlyOneChild< typename StackContainer2d::ChildType >(), translation);
             }
         );

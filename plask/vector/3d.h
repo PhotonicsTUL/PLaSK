@@ -13,6 +13,12 @@ namespace plask {
     struct Vec {};
 #endif // VEC_TEMPLATE_DEFINED
 
+namespace axis {
+    const std::size_t lon_index = 0;
+    const std::size_t tran_index = 1;
+    const std::size_t up_index = 2;
+}   // axis
+    
 /**
  * Vector in 3d space.
  */
