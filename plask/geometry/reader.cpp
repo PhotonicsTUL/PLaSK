@@ -34,8 +34,9 @@ void GeometryReader::registerElementReader(const std::string &tag_name, element_
 AxisNames::Register GeometryReader::axisNamesRegister(
         //c0, c1, c2, axis names:
         AxisNames::Register
-        ("x", "y", "z", "xy", "se", "zup")
-        ("z", "x", "y", "zx", "ee", "yup")
+        ("x", "y", "z", "yz", "se", "zup")
+        ("z", "x", "y", "xy", "ee", "yup")
+        ("r", "phi", "z", "rz", "rad")
         ("lon", "tran", "up")
 );
 
