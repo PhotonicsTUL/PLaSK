@@ -2,6 +2,7 @@
 #include "../utils/stl.h"
 
 #include "manager.h"
+#include "reader.h"
 
 namespace plask {
 
@@ -52,24 +53,24 @@ PathHints::Hint StackContainer3d::push_back(StackContainer3d::ChildType* el, con
  * @param child_param_read call for each \<child\> tag, should create child, add it to container and return PathHints::Hint
  */
 template <typename ConstructedType, typename ChildParamF>
-void read_children(ConstructedType& result, GeometryManager& manager, XMLReader& source, ChildParamF child_param_read) {
+void read_children(ConstructedType& result, GeometryReader& reader, ChildParamF child_param_read) {
 
-    while (source.read()) {
-        switch (source.getNodeType()) {
+    while (reader.source.read()) {
+        switch (reader.source.getNodeType()) {
 
             case irr::io::EXN_ELEMENT_END:
                 return; // container has been read
 
             case irr::io::EXN_ELEMENT:
-                if (source.getNodeName() == std::string("child")) {
-                    const char* have_path_name = source.getAttributeValue("path");
+                if (reader.source.getNodeName() == std::string("child")) {
+                    const char* have_path_name = reader.source.getAttributeValue("path");
                     std::string path = have_path_name;
                     PathHints::Hint hint = child_param_read();
                     if (have_path_name)
-                        manager.pathHints[path].addHint(hint);
+                        reader.manager.pathHints[path].addHint(hint);
                 } else {
-                    result.add(&manager.readElement< typename ConstructedType::ChildType >(source));
-                    XML::requireTagEnd(source);
+                    result.add(&reader.readElement< typename ConstructedType::ChildType >());
+                    XML::requireTagEnd(reader.source);
                     //result.add(&manager.readExactlyOneChild< typename ConstructedType::ChildType >(source));
                 }
 
@@ -83,60 +84,60 @@ void read_children(ConstructedType& result, GeometryManager& manager, XMLReader&
     throw XMLUnexpectedEndException();
 }
 
-GeometryElement* read_TranslationContainer2d(GeometryManager& manager, XMLReader& source) {
+GeometryElement* read_TranslationContainer2d(GeometryReader& reader) {
     std::unique_ptr< TranslationContainer<2> > result(new TranslationContainer<2>());
-    read_children(*result, manager, source,
+    read_children(*result, reader,
         [&]() {
             TranslationContainer<2>::DVec translation;
-            translation.c0 = XML::getAttribiute(source, "x", 0.0);
-            translation.c1 = XML::getAttribiute(source, "y", 0.0);
-            return result->add(&manager.readExactlyOneChild< typename TranslationContainer<2>::ChildType >(source), translation);
+            translation.c0 = XML::getAttribiute(reader.source, "x", 0.0);
+            translation.c1 = XML::getAttribiute(reader.source, "y", 0.0);
+            return result->add(&reader.readExactlyOneChild< typename TranslationContainer<2>::ChildType >(), translation);
         }
     );
     return result.release();
 }
 
-GeometryElement* read_TranslationContainer3d(GeometryManager& manager, XMLReader& source) {
+GeometryElement* read_TranslationContainer3d(GeometryReader& reader) {
     std::unique_ptr< TranslationContainer<3> > result(new TranslationContainer<3>());
-    read_children(*result, manager, source,
+    read_children(*result, reader,
         [&]() {
             TranslationContainer<3>::DVec translation;
-            translation.c0 = XML::getAttribiute(source, "x", 0.0);
-            translation.c1 = XML::getAttribiute(source, "y", 0.0);
-            translation.c2 = XML::getAttribiute(source, "z", 0.0);
-            return result->add(&manager.readExactlyOneChild< typename TranslationContainer<3>::ChildType >(source), translation);
+            translation.c0 = XML::getAttribiute(reader.source, "x", 0.0);
+            translation.c1 = XML::getAttribiute(reader.source, "y", 0.0);
+            translation.c2 = XML::getAttribiute(reader.source, "z", 0.0);
+            return result->add(&reader.readExactlyOneChild< typename TranslationContainer<3>::ChildType >(), translation);
         }
     );
     return result.release();
 }
 
-GeometryElement* read_StackContainer2d(GeometryManager& manager, XMLReader& source) {
-    double baseH = XML::getAttribiute(source, "baseHeight", 0.0);
-    if (source.getAttributeValue("repeat") == nullptr) {
+GeometryElement* read_StackContainer2d(GeometryReader& reader) {
+    double baseH = XML::getAttribiute(reader.source, "from", 0.0);
+    if (reader.source.getAttributeValue("repeat") == nullptr) {
         std::unique_ptr< StackContainer2d > result(new StackContainer2d(baseH));
-        read_children(*result, manager, source,
+        read_children(*result, reader,
             [&]() {
-                double translation = XML::getAttribiute(source, "x", 0.0);
-                return result->add(&manager.readExactlyOneChild< typename StackContainer2d::ChildType >(source), translation);
+                double translation = XML::getAttribiute(reader.source, "x", 0.0);
+                return result->add(&reader.readExactlyOneChild< typename StackContainer2d::ChildType >(), translation);
             }
         );
         return result.release();
     } else {
-        unsigned repeat = XML::getAttribiute(source, "repeat", 1);
+        unsigned repeat = XML::getAttribiute(reader.source, "repeat", 1);
         std::unique_ptr< MultiStackContainer<2> > result(new MultiStackContainer<2>(baseH, repeat));
-        read_children(*result, manager, source,
+        read_children(*result, reader,
             [&]() {
-                double translation = XML::getAttribiute(source, "x", 0.0);
-                return result->add(&manager.readExactlyOneChild< typename StackContainer2d::ChildType >(source), translation);
+                double translation = XML::getAttribiute(reader.source, "x", 0.0);
+                return result->add(&reader.readExactlyOneChild< typename StackContainer2d::ChildType >(), translation);
             }
         );
         return result.release();
     }
 }
 
-GeometryManager::RegisterElementReader container2d_reader("container2d", read_TranslationContainer2d);
-GeometryManager::RegisterElementReader container3d_reader("container3d", read_TranslationContainer3d);
-GeometryManager::RegisterElementReader stack2d_reader("stack2d", read_StackContainer2d);
+GeometryReader::RegisterElementReader container2d_reader("container2d", read_TranslationContainer2d);
+GeometryReader::RegisterElementReader container3d_reader("container3d", read_TranslationContainer3d);
+GeometryReader::RegisterElementReader stack2d_reader("stack2d", read_StackContainer2d);
 
 
 }	// namespace plask

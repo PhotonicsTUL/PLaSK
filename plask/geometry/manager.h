@@ -25,38 +25,6 @@ namespace plask {
  * - allow access to geometry elements (also by names)
  */
 struct GeometryManager {
-    
-    /**
-     * Create new geometry element (using new operator) with parameters reading from XML source.
-     * Can call managers methods to read children (GeometryManager::readElement).
-     * Should throw exception if can't create element.
-     * Result will be delete (using delete operator) by caller.
-     */
-    typedef GeometryElement* element_read_f(GeometryManager& manager, XMLReader& source);
-    
-    /**
-     * @return Global elements readers register.
-     * Map: xml tag name -> element reader function.
-     */
-    static std::map<std::string, element_read_f*>& elementReaders();
-    
-    /**
-     * Add reader to elementReaders.
-     * @param tag_name XML tag name
-     * @param reader element reader function
-     */ 
-    static void registerElementReader(const std::string& tag_name, element_read_f* reader);
-    
-    /**
-     * Helper which call registerElementReader in constructor.
-     *
-     * Each element can create one global instanse of this class to register own reader.
-     */
-    struct RegisterElementReader {
-        RegisterElementReader(const std::string& tag_name, element_read_f* reader) {
-            GeometryManager::registerElementReader(tag_name, reader);   
-        }
-    };
 
     /// Store pointers to all elements.
     std::set<GeometryElement*> elements;
@@ -93,41 +61,7 @@ struct GeometryManager {
      */
     GeometryElement& requireElement(const std::string& name);
     
-    /**
-     * Read geometry element from @a source and add it GeometryManager structures.
-     *
-     * Typically it creates new geometry element using elementReaders,
-     * but it also support references and can return existing elements.
-     * @param source xml data source from which element data should be read
-     * @return element which was read and create or to which reference was read
-     * @throw GeometryElementNamesConflictException if element with read name already exists
-     * @throw NoSuchGeometryElement if ref element reference to element which not exists
-     * @throw NoAttrException if XML tag has no required attributes
-     */
-    GeometryElement& readElement(XMLReader& source);
-    
-    /**
-     * Skip current element in source and read exactly one geometry element (which also skip).
-     */
-    GeometryElement& readExactlyOneChild(XMLReader& source);
-    
-    /**
-     * Call readElement(source) and try dynamic cast it to @a RequiredElementType.
-     * @param source xml data source from which element data should be read
-     * @return element (casted to RequiredElementType) which was read and create or to which reference was read
-     * @tparam RequiredElementType required type of element
-     * @throw UnexpectedGeometryElementTypeException if requested element is not of type RequiredElementType
-     * @throw GeometryElementNamesConflictException if element with read name already exists
-     * @throw NoSuchGeometryElement if ref element reference to element which not exists
-     * @throw NoAttrException if XML tag has no required attributes
-     */
-    template <typename RequiredElementType>
-    RequiredElementType& readElement(XMLReader& source);
-    
-    template <typename RequiredElementType>
-    RequiredElementType& readExactlyOneChild(XMLReader& source);
-    
-    void loadFromReader(XMLReader& reader);
+    void loadFromReader(XMLReader& XMLreader);
     
     void loadFromXMLStream(std::istream &input);
     
@@ -149,45 +83,6 @@ struct GeometryManager {
      */
     void loadFromFile(const std::string& fileName);
 };
-
-//specialization for most types
-template <typename RequiredElementType>
-inline RequiredElementType& GeometryManager::readElement(XMLReader& source) {
-    RequiredElementType* result = dynamic_cast<RequiredElementType*>(&readElement(source));
-    if (!result) throw UnexpectedGeometryElementTypeException();
-    return *result;
-}
-
-//specialization for GeometryElement which doesn't required dynamic_cast
-template <>
-inline GeometryElement& GeometryManager::readElement<GeometryElement>(XMLReader& source) {
-    return readElement(source);
-}
-
-//specialization for most types
-template <typename RequiredElementType>
-inline RequiredElementType& GeometryManager::readExactlyOneChild(XMLReader& source) {
-    RequiredElementType* result = dynamic_cast<RequiredElementType*>(&readExactlyOneChild(source));
-    if (!result) throw UnexpectedGeometryElementTypeException();
-    return *result;
-}
-
-//specialization for GeometryElement which doesn't required dynamic_cast
-template <>
-inline GeometryElement& GeometryManager::readExactlyOneChild<GeometryElement>(XMLReader& source) {
-    return readExactlyOneChild(source);
-}
-
-/*template <typename FunctorType, typename RequiredElementType>
-inline void GeometryManager::readAllElements(XMLReader& source, FunctorType functor) {
-    while(source.read()) {
-        switch (source.getNodeType()) {
-            case irr::io::EXN_ELEMENT_END: return;  
-            case irr::io::EXN_ELEMENT: functor(readElement<RequiredElementType>(source));
-            //TODO what with all other XML types (which now are just ignored)?
-        }
-    }
-}*/
 
 }	// namespace plask
 
