@@ -173,14 +173,16 @@ if(BUILD_TESTS)
         foreach(test_file ${python_tests})
             get_filename_component(test ${test_file} NAME_WE)
             if(BUILD_PYTHON_EXECUTABLE)
-                add_test(NAME python-builtin/${test} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/python
-                         COMMAND plask main ${test_file})
-                set_tests_properties(python-builtin/${test} PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python;PYTHONDONTWRITEBYTECODE=YES")
+                add_test(NAME python-builtin/${test}
+                         COMMAND plask ${CMAKE_CURRENT_SOURCE_DIR}/tests/python/main ${test_file})
+                set_tests_properties(python-builtin/${test} PROPERTIES
+                                     ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python;PYTHONDONTWRITEBYTECODE=YES")
             endif()
             if(BUILD_PYTHON_MODULE)
-                add_test(NAME python-module/${test} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests/python
-                         COMMAND "${PYTHON_EXECUTABLE}" -B -m unittest -v ${test})
-                set_tests_properties(python-module/${test} PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib/plask")
+                add_test(NAME python-module/${test}
+                         COMMAND "${PYTHON_EXECUTABLE}" -B ${CMAKE_CURRENT_SOURCE_DIR}/tests/python/main ${test_file})
+                set_tests_properties(python-module/${test} PROPERTIES
+                                     ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib/plask")
             endif()
         endforeach()
     endif(BUILD_PYTHON)
