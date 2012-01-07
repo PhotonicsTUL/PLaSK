@@ -5,12 +5,14 @@ namespace py = boost::python;
 #include <plask/geometry/manager.h>
 #include <plask/geometry/leaf.h>
 
-#include "geometry/element.hpp"
-#include "geometry/primitive.hpp"
-#include "geometry/leafs.hpp"
-#include "geometry/container.hpp"
-
 namespace plask { namespace python {
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void register_geometry_element();
+void register_geometry_primitive();
+void register_geometry_leafs();
+void register_geometry_container();
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,7 +26,6 @@ void initGeometry() {
     scope.attr("__doc__") =
         "This module provides 2D and 3D geometry elements, necessary to describe the structure "
         "of analyzed device."; //TODO maybe more extensive description
-
 
     register_geometry_element();
     register_geometry_primitive();

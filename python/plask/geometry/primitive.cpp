@@ -1,11 +1,7 @@
-#ifndef PLASK__PYTHON_GEOMETRY_PRIMITIVE_H
-#define PLASK__PYTHON_GEOMETRY_PRIMITIVE_H
-
-#include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-namespace py = boost::python;
 
 #include <plask/geometry/primitives.h>
+
 #include "geometry.h"
 
 namespace plask { namespace python {
@@ -25,13 +21,13 @@ static shared_ptr<Rect2d> Rect2d_constructor_4numbers(double x1, double y1, doub
     R->fix();
     return R;
 }
-// __str__(v)
+// __str__(v) FIXME: make it more pythonic
 static std::string Rect2d__str__(const Rect2d& to_print) {
     std::stringstream out;
     out << to_print;
     return out.str();
 }
-// __repr__(v)
+// __repr__(v) FIXME: make it more pythonic
 static std::string Rect2d__repr__(const Rect2d& to_print) {
     std::stringstream out;
     out << "Rect2D(" << to_print << ")";
@@ -54,24 +50,21 @@ static shared_ptr<Rect3d> Rect3d_constructor_4numbers(double x1, double y1, doub
     R->fix();
     return R;
 }
-// __str__(v)
+// __str__(v) FIXME: make it more Pythonic
 static std::string Rect3d__str__(const Rect3d& to_print) {
     std::stringstream out;
     out << to_print;
     return out.str();
 }
-// __repr__(v)
+// __repr__(v) FIXME: make it more Pythonic
 static std::string Rect3d__repr__(const Rect3d& to_print) {
     std::stringstream out;
     out << "Rect3D(" << to_print << ")";
     return out.str();
 }
 
-
-
-
 /// Register primitives to Python
-inline static void register_geometry_primitive()
+void register_geometry_primitive()
 {
     void (Rect2d::*includeR2p)(const Vec<2,double>&) = &Rect2d::include;
     void (Rect2d::*includeR2R)(const Rect2d&)       = &Rect2d::include;
@@ -80,8 +73,8 @@ inline static void register_geometry_primitive()
         .def("__init__", py::make_constructor(&Rect2d_constructor_default))
         .def("__init__", py::make_constructor(&Rect2d_constructor_2vec))
         .def("__init__", py::make_constructor(&Rect2d_constructor_4numbers))
-        .def_readwrite("lower", &Rect2d::lower, "Lower left corner of the rectangle")
-        .def_readwrite("upper", &Rect2d::upper, "Upper right corner of the rectangle")
+        .add_property("lower", vec_rw_property(&Rect2d::lower), "Lower left corner of the rectangle")
+        .add_property("upper", vec_rw_property(&Rect2d::upper), "Upper right corner of the rectangle")
         .def("fix", &Rect2d::fix, "Ensure that lower[0] <= upper[0] and lower[1] <= upper[1]. Exchange components of lower and upper if necessary.")
         .def(py::self == py::self)
         .def(py::self != py::self)
@@ -103,8 +96,8 @@ inline static void register_geometry_primitive()
         .def("__init__", py::make_constructor(&Rect3d_constructor_default))
         .def("__init__", py::make_constructor(&Rect3d_constructor_2vec))
         .def("__init__", py::make_constructor(&Rect3d_constructor_4numbers))
-        .def_readwrite("lower", &Rect3d::lower, "Closer lower left corner of the rectangle")
-        .def_readwrite("upper", &Rect3d::upper, "Farer upper right corner of the rectangle")
+        .add_property("lower", vec_rw_property(&Rect3d::lower), "Closer lower left corner of the rectangle")
+        .add_property("upper", vec_rw_property(&Rect3d::upper), "Farther upper right corner of the rectangle")
         .def("fix", &Rect3d::fix, "Ensure that lower[0] <= upper.c0, lower[1] <= upper[1], and lower[2] <= upper[3].  Exchange components of lower and upper if necessary.")
         .def(py::self == py::self)
         .def(py::self != py::self)
@@ -130,4 +123,3 @@ inline static void register_geometry_primitive()
 }
 
 }} // namespace plask::python
-#endif // PLASK__PYTHON_GEOMETRY_PRIMITIVE_H

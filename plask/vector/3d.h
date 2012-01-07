@@ -203,22 +203,6 @@ template <typename T>
 inline Vec<3,T> operator*(const T scale, const Vec<3,T>& v) { return v*scale; }
 
 /**
- * Calculate square of vector magnitude.
- * @param v a vector
- * @return square of vector magnitude
- */
-template <typename T>
-T abs2(const Vec<3,T>& v) { return v.magnitude2(); }
-
-/**
- * Calculate vector magnitude.
- * @param v a vector
- * @return vector magnitude
- */
-template <typename T>
-T abs(const Vec<3,T>& v) { return v.magnitude(); }
-
-/**
  * Calculate vector conjugate.
  * @param v a vector
  * @return conjugate vector

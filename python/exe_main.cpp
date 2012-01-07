@@ -3,6 +3,7 @@
 namespace py = boost::python;
 
 #include <iostream>
+#include <vector>
 #include <string>
 
 #include <plask/exceptions.h>
@@ -39,7 +40,24 @@ static void initPlaskModule(int argc, const char* argv[])
     }
 }
 
-#include <vector>
+//******************************************************************************
+static void from_import_all(const char* name, py::dict globals)
+{
+    py::object module = py::import(name);
+    py::dict module_dict = py::dict(module.attr("__dict__"));
+    py::list all;
+
+    try {
+        all = py::list(module.attr("__all__"));
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        all = module_dict.keys();
+    }
+    py::stl_input_iterator<std::string> begin(all), end;
+    for (auto item = begin; item != end; item++) {
+        if ((*item)[0] != '_') globals[*item] = module_dict[*item];
+    }
+}
 
 //******************************************************************************
 int main(int argc, const char *argv[])
@@ -70,20 +88,17 @@ int main(int argc, const char *argv[])
 
     // Test if we should use the file or start an interactive mode
     if(argc > 1 && !force_interactive) { // load commands from file
+
         // Add plask to the global namespace
         py::object plask = py::import("plask");
         py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
+
         globals["plask"] = plask; // import plask
         if (from_import) { // from plask import *
-            py::list plask_all;
-            py::dict plask_dict = py::dict(plask.attr("__dict__"));
-            try { plask_all = py::list(plask.attr("__all__"));
-            } catch (py::error_already_set) { plask_all = plask_dict.keys(); PyErr_Clear(); }
-            py::stl_input_iterator<std::string> begin(plask_all), end;
-            for (auto item = begin; item != end; item++) {
-                if ((*item)[0] != '_') globals[*item] = plask_dict[*item];
-            }
+            from_import_all("plask", globals);
         }
+        // Import numpy
+        from_import_all("numpy", globals);
 
         try {
             // We dont use python::exec_file, as we want to set "from __future__ import divisions" flag
@@ -102,8 +117,10 @@ int main(int argc, const char *argv[])
             PyErr_Print();
             return 103;
         }
+
     } else { // start the interactive console
-        try {
+
+try {
             py::object interactive = py::import("plask.interactive");
             interactive.attr("_import_all_") = from_import;
             py::list sys_argv;

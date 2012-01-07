@@ -1,13 +1,6 @@
-#ifndef PLASK__LEAFS_H
-#define PLASK__LEAFS_H
-
-#include <boost/python.hpp>
-namespace py = boost::python;
-
-#include <config.h>
+#include <plask/geometry/leaf.h>
 
 #include "geometry.h"
-#include <plask/geometry/leaf.h>
 
 namespace plask { namespace python {
 
@@ -45,5 +38,3 @@ void register_geometry_leafs()
 
 
 }} // namespace plask::python
-
-#endif // PLASK__LEAFS_H

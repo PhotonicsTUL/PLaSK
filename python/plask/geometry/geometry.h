@@ -1,6 +1,9 @@
 #ifndef PLASK__PYTHON_GEOMETRY_H
 #define PLASK__PYTHON_GEOMETRY_H
 
+#include "../globals.h"
+
+
 #define DECLARE_GEOMETRY_ELEMENT_23D(cls, pyname, pydoc1, pydoc2) \
     template <int dim> inline static const char* cls##_pyname () { return pyname; } \
     template <> inline const char* cls##_pyname<2> () { return pyname "2D"; } \

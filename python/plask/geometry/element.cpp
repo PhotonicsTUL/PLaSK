@@ -1,9 +1,3 @@
-#ifndef PLASK__PYTHON_GEOMETRY_ELEMENT_H
-#define PLASK__PYTHON_GEOMETRY_ELEMENT_H
-
-#include <boost/python.hpp>
-namespace py = boost::python;
-
 #include "geometry.h"
 #include <plask/geometry/element.h>
 
@@ -57,7 +51,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementContainer, "GeometryElementContainer
 }
 
 
-inline static void register_geometry_element()
+void register_geometry_element()
 {
     py::enum_<GeometryElementType>("ElementType")
         .value("LEAF", GE_TYPE_LEAF)
@@ -92,4 +86,3 @@ inline static void register_geometry_element()
 
 
 }} // namespace plask::python
-#endif // PLASK__PYTHON_GEOMETRY_ELEMENT_H

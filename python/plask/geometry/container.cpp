@@ -1,16 +1,10 @@
-#ifndef PLASK__PYTHON_GEOMETRY_CONTAINER_H
-#define PLASK__PYTHON_GEOMETRY_CONTAINER_H
-
-#include <boost/python.hpp>
 #include <boost/python/suite/indexing/map_indexing_suite.hpp>
-namespace py = boost::python;
 
 #include <plask/geometry/container.h>
 
 #include "geometry.h"
 
 namespace plask { namespace python {
-
 
 
 /// Wrapper for PathHints::getChild.
@@ -54,4 +48,3 @@ void register_geometry_container()
 
 
 }} // namespace plask::python
-#endif // PLASK__PYTHON_GEOMETRY_CONTAINER_H

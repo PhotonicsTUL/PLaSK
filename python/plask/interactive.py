@@ -33,11 +33,12 @@ DAMAGE.
 
 BANNER = '''\
 You are entering interactive mode of PLaSK.
-Module 'plask' is already imported'''
+Modules 'plask' is already imported'''
 
 preexec_source = '''\
 from __future__ import division
 import plask
+from numpy import *
 '''
 
 no_ipython = """\

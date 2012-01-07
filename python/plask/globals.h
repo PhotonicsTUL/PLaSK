@@ -8,6 +8,10 @@ namespace py = boost::python;
 
 namespace plask { namespace python {
 
+#define vec_ro_property(v) py::make_getter(v, py::return_value_policy<py::return_by_value>())
+#define vec_rw_property(v) py::make_getter(v, py::return_value_policy<py::return_by_value>()), \
+                           py::make_setter(v, py::return_value_policy<py::return_by_value>())
+
 // Some config variables
 struct Config
 {
@@ -19,7 +23,7 @@ struct Config
     }
     void set_vaxis(std::string axis) {
         if (axis != "z" and axis != "y") {
-            PyErr_SetString(PyExc_ValueError, "Only z or y allowed for axis_up");
+            PyErr_SetString(PyExc_ValueError, "Only z or y allowed for vertical_axis");
             throw py::error_already_set();
         }
         z_up = axis == "z";
@@ -27,13 +31,13 @@ struct Config
 
     std::string __str__() {
         return std::string()
-            + "axis_up:   " + (z_up?"z":"y")
+            + "vertical_axis:   " + (z_up?"z":"y")
         ;
     }
 
     std::string __repr__() {
         return std::string()
-            + "config.axis_up = " + (z_up?"'z'":"'y'")
+            + "config.vertical_axis = " + (z_up?"'z'":"'y'")
         ;
     }
 
@@ -46,7 +50,7 @@ inline static void register_config()
     py::class_<Config>("config", "Global PLaSK configuration.", py::no_init)
         .def("__str__", &Config::__str__)
         .def("__repr__", &Config::__repr__)
-        .add_property("axis_up", &Config::get_vaxis, &Config::set_vaxis,
+        .add_property("vertical_axis", &Config::get_vaxis, &Config::set_vaxis,
                       "Denotes orientation of coordinate system. Holds the name a vertical axis which i.e. the one along layers growth direction.")
     ;
     py::scope().attr("config") = config;
