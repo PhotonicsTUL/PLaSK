@@ -37,6 +37,16 @@ struct Vec<3, T> {
         struct { T z, x, y; } ee;       // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
         struct { T z, x, y; } y_up;     // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
     };
+    
+    /**
+     * Type of iterator over components.
+     */
+    typedef T* iterator;
+    
+    /**
+     * Type of const iterator over components.
+     */
+    typedef const T* const_iterator;
 
     /// Construct uninitialized vector.
     Vec() {}
@@ -50,9 +60,43 @@ struct Vec<3, T> {
 
     /**
      * Construct vector with given coordinates.
-     * @param c0, c1, c2 coordinates
+     * @param c0__lon, c1__tran, c2__up coordinates
      */
-    Vec(const T c0, const T c1, const T c2): c0(c0), c1(c1), c2(c2) {}
+    Vec(const T c0__lon, const T c1__tran, const T c2__up): c0(c0__lon), c1(c1__tran), c2(c2__up) {}
+    
+    /**
+     * Construct vector with components read from input iterator (including C array).
+     * @param inputIt input iterator with minimum 3 elements available
+     * @tparam InputIteratorType input iterator type, must allow for preincrementation and derefrence operation
+     */
+    template <typename InputIteratorType>
+    Vec(InputIteratorType inputIt) {
+        c0 = *inputIt; ++inputIt; c1 = *inputIt; ++inputIt; c2 = *inputIt;
+    }
+    
+    /**
+     * Get begin iterator over components.
+     * @return begin iterator over components
+     */
+    iterator begin() { return components; }
+    
+    /**
+     * Get begin const iterator over components.
+     * @return begin const iterator over components
+     */
+    const_iterator begin() const { return components; }
+    
+    /**
+     * Get end iterator over components.
+     * @return end iterator over components
+     */
+    iterator end() { return components + 3; }
+    
+    /**
+     * Get end const iterator over components.
+     * @return end const iterator over components
+     */
+    const_iterator end() const { return components + 3; }
 
     /**
      * Compare two vectors, this and @a p.
