@@ -31,12 +31,12 @@ struct Vec<2, T> {
         struct { T x, y; } ee;      // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
         struct { T x, y; } y_up;    // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
     };
-    
+
     /**
      * Type of iterator over components.
      */
     typedef T* iterator;
-    
+
     /**
      * Type of const iterator over components.
      */
@@ -57,35 +57,36 @@ struct Vec<2, T> {
      * @param c0__tran, c1__up coordinates
      */
     Vec(const T c0__tran, const T c1__up): c0(c0__tran), c1(c1__up) {}
-    
+
     /**
      * Construct vector with components read from input iterator (including C array).
-     * @param inputIt input iterator with minimum 2 elements available
-     * @tparam InputIteratorType input iterator type, must allow for preincrementation and derefrence operation
+     * @param inputIt input iterator with minimum 3 elements available
+     * @tparam InputIteratorType input iterator type, must allow for postincrementation and derefrence operation
      */
     template <typename InputIteratorType>
-    Vec(InputIteratorType inputIt) {
-        c0 = *inputIt; ++inputIt; c1 = *inputIt;
+    static inline Vec<2,T> fromIterator(InputIteratorType inputIt) {
+        return Vec<2,T>(*(inputIt++), *(inputIt++));
     }
-    
+
+
     /**
      * Get begin iterator over components.
      * @return begin iterator over components
      */
     iterator begin() { return components; }
-    
+
     /**
      * Get begin const iterator over components.
      * @return begin const iterator over components
      */
     const_iterator begin() const { return components; }
-    
+
     /**
      * Get end iterator over components.
      * @return end iterator over components
      */
     iterator end() { return components + 2; }
-    
+
     /**
      * Get end const iterator over components.
      * @return end const iterator over components
@@ -175,7 +176,10 @@ struct Vec<2, T> {
      * @param scale scalar
      * @return this vector multiplied by scalar
      */
-    Vec<2,T> operator*(const T scale) const { return Vec<2,T>(c0 * scale, c1 * scale); }
+    template <typename OtherT>
+    auto operator*(const OtherT scale) const -> Vec<2,decltype(c0*scale)> {
+        return Vec<2,decltype(c0*scale)>(c0 * scale, c1 * scale);
+    }
 
     /**
      * Multiple coordinates of this vector by @a scalar.
@@ -225,16 +229,6 @@ struct Vec<2, T> {
     }
 
 };
-
-
-/**
- * Multiple vector @a v by scalar @a scale.
- * @param scale scalar
- * @param v vector
- * @return vector multiplied by scalar
- */
-template <typename T>
-inline Vec<2,T> operator*(const T scale, const Vec<2,T>& v) { return v*scale; }
 
 /**
  * Calculate vector conjugate.

@@ -18,7 +18,7 @@ namespace axis {
     const std::size_t tran_index = 1;
     const std::size_t up_index = 2;
 }   // axis
-    
+
 /**
  * Vector in 3d space.
  */
@@ -37,12 +37,12 @@ struct Vec<3, T> {
         struct { T z, x, y; } ee;       // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
         struct { T z, x, y; } y_up;     // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
     };
-    
+
     /**
      * Type of iterator over components.
      */
     typedef T* iterator;
-    
+
     /**
      * Type of const iterator over components.
      */
@@ -63,35 +63,35 @@ struct Vec<3, T> {
      * @param c0__lon, c1__tran, c2__up coordinates
      */
     Vec(const T c0__lon, const T c1__tran, const T c2__up): c0(c0__lon), c1(c1__tran), c2(c2__up) {}
-    
+
     /**
      * Construct vector with components read from input iterator (including C array).
      * @param inputIt input iterator with minimum 3 elements available
-     * @tparam InputIteratorType input iterator type, must allow for preincrementation and derefrence operation
+     * @tparam InputIteratorType input iterator type, must allow for postincrementation and derefrence operation
      */
     template <typename InputIteratorType>
-    Vec(InputIteratorType inputIt) {
-        c0 = *inputIt; ++inputIt; c1 = *inputIt; ++inputIt; c2 = *inputIt;
+    static inline Vec<3,T> fromIterator(InputIteratorType inputIt) {
+        return Vec<3,T>(*(inputIt++), *(inputIt++), *(inputIt++));
     }
-    
+
     /**
      * Get begin iterator over components.
      * @return begin iterator over components
      */
     iterator begin() { return components; }
-    
+
     /**
      * Get begin const iterator over components.
      * @return begin const iterator over components
      */
     const_iterator begin() const { return components; }
-    
+
     /**
      * Get end iterator over components.
      * @return end iterator over components
      */
     iterator end() { return components + 3; }
-    
+
     /**
      * Get end const iterator over components.
      * @return end const iterator over components
@@ -183,7 +183,10 @@ struct Vec<3, T> {
      * @param scale scalar
      * @return this vector multiplied by scalar
      */
-    Vec<3,T> operator*(const T scale) const { return Vec<3,T>(c0 * scale, c1 * scale, c2 * scale); }
+    template <typename OtherT>
+    auto operator*(const OtherT scale) const -> Vec<3,decltype(c0*scale)> {
+        return Vec<3,decltype(c0*scale)>(c0 * scale, c1 * scale, c2 * scale);
+    }
 
     /**
      * Multiple coordinates of this vector by @a scalar.

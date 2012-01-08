@@ -26,7 +26,7 @@ in order to get familiar with the PLaSK architecture and the way the computation
 \section plask_source_code PLaSK source code
 
 PLaSK is designed using modern programming technologies. The core and computational modules are written in C++ language using its latest 2011 standard. It means that it can be compiled
-only with compilers supporting this standard. The encouraged choices are GCC (ver. 4.4 and above) or ICC. However other compilers migh work as well.
+only with compilers supporting this standard. The encouraged choices are GCC (ver. 4.6 and above) or ICC. However other compilers migh work as well.
 The also requires the Boost C++ library and the modules might need some other libraries to be installed as well (eg. BLAS and LAPACK). The user interface is provided through Python
 bindings and the communication between C++ and Python parts require the Boost Python library. The graphical experiment designer is written in Python and uses the Qt graphics library
 (with PySide bindings) and Matplotlib for presenting the calculation results in attractive form. You should get familiar with all these technologies if you want to make modifications to PLaSK.

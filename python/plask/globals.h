@@ -8,10 +8,6 @@ namespace py = boost::python;
 
 namespace plask { namespace python {
 
-#define vec_ro_property(v) py::make_getter(v, py::return_value_policy<py::return_by_value>())
-#define vec_rw_property(v) py::make_getter(v, py::return_value_policy<py::return_by_value>()), \
-                           py::make_setter(v, py::return_value_policy<py::return_by_value>())
-
 // Some config variables
 struct Config
 {
@@ -55,6 +51,37 @@ inline static void register_config()
     ;
     py::scope().attr("config") = config;
 }
+
+// ----------------------------------------------------------------------------------------------------------------------
+
+// Format complex numbers in Python way
+namespace detail {
+
+template <typename T>
+struct Sc {
+    T v;
+    Sc(T c) : v(c) {}
+    friend inline std::ostream& operator<<(std::ostream& out, const Sc& c) {
+        out << c.v;
+        return out;
+    }
+};
+template <>
+struct Sc<dcomplex> {
+    dcomplex v;
+    Sc(dcomplex c) : v(c) {}
+    friend inline std::ostream& operator<<(std::ostream& out, const Sc& c) {
+        double r = c.v.real(), i = c.v.imag();
+        out << "(" << r << ((i>=0)?"+":"") << i << "j)";
+        return out;
+    }
+};
+
+} // namespace plask::python::detail
+
+template <typename T>
+inline detail::Sc<T> sc(const T& v) { return detail::Sc<T>(v); }
+
 
 }} // namespace plask::python
 

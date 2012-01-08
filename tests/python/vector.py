@@ -9,38 +9,67 @@ class Vector(unittest.TestCase):
     def setUp(self):
         pass
         self.a2 = plask.vec(1,2)
-        self.b2 = plask.vec(10,20, dtype=float)
-        self.c2 = plask.vec(100,200, dtype=complex)
+        self.b2 = plask.vec(10,20)
+        self.c2 = plask.vec(100,200)
         self.d2 = plask.vec(1+2j, 0)
         self.a3 = plask.vec(1,2,3)
-        self.b3 = plask.vec(10,20,30, dtype=float)
-        self.c3 = plask.vec(100,200,300, dtype=complex)
+        self.b3 = plask.vec(10,20,30)
+        self.c3 = plask.vec(100,200,300)
         self.d3 = plask.vec(1+2j, 0, 0)
 
     def testFactory(self):
-        '''Test automatic choice of proper class in vector factory'''
-        self.assertEqual( self.a2.dtype, float )
-        self.assertEqual( self.b2.dtype, float )
-        self.assertEqual( self.c2.dtype, complex )
-        self.assertEqual( self.d2.dtype, complex )
-        self.assertEqual( self.a3.dtype, float )
-        self.assertEqual( self.b3.dtype, float )
-        self.assertEqual( self.c3.dtype, complex )
-        self.assertEqual( self.d3.dtype, complex )
+        '''Test vector creation by component names'''
+        va = plask.config.vertical_axis
+
+        plask.config.vertical_axis = 'z'
+        self.assertEqual( plask.vec(y=1, z=2), plask.vec(1,2) )
+        self.assertEqual( plask.vec(r=1, z=2), plask.vec(1,2) )
+        self.assertEqual( vec(z=3, x=1, y=2), vec(1,2,3) )
+        self.assertEqual( vec(r=1, z=3, phi=2), vec(1,2,3) )
+        self.assertRaises( TypeError, lambda: plask.vec(x=1, y=2) ) # for vertical_axis = 'z' x component is not allowed in 2D
+        self.assertRaises( TypeError, lambda: plask.vec(bad_x=1, z=2, y=1) )
+        self.assertRaises( TypeError, lambda: plask.vec(r=1, y=2, z=3) )
+
+        plask.config.vertical_axis = 'y'
+        self.assertEqual( vec(x=1, y=2), vec(1,2) )
+        self.assertEqual( vec(y=3, x=2, z=1), vec(1,2,3) )
+        self.assertRaises( TypeError, lambda: plask.vec(r=1, z=2) )
+        self.assertRaises( TypeError, lambda: plask.vec(phi=1, y=2, z=3) )
+        self.assertRaises( TypeError, lambda: plask.vec(x=1, bad_x=2) )
+
+        plask.config.vertical_axis = va
 
     def testItemAccess(self):
         '''Test if the items can be accessed corretly using all possible ways'''
+        self.assertEqual( [self.a2[0], self.a2[1]], [1,2] )
+        self.assertEqual( [self.a3[-3], self.a3[-2], self.a3[-1]], [1,2,3] )
+
+        self.c3[0] = 1j
+        self.assertEqual( self.c3, plask.vec(1j,200,300) )
+        self.c3[0] = 100.
+
+        a = plask.vec(1,2)
+        a[1] = 2j
+        self.assertEqual( a, plask.vec(1,2j) )
+        a = plask.vec(1,2,3)
+        a[1] = 2j
+        self.assertEqual( a, plask.vec(1,2j,3) )
+
+        va = plask.config.vertical_axis
+
+        plask.config.vertical_axis = 'z'
         #self.assertEqual( [self.a2.x, self.a2.y], [1,2] )
         #self.assertEqual( [self.a2.r, self.a2.z], [1,2] )
-        #self.assertEqual( [self.a2[0], self.a2[1]], [1,2] )
-        #self.assertEqual( [self.a3[-3], self.a3[-2], self.a3[-1]], [1,2,3] )
         #self.assertEqual( [self.a3.r, self.a3.phi, self.a3.z], [1,2,3] )
-        pass
+
+        plask.config.vertical_axis = 'y'
+
+        plask.config.vertical_axis = va
+
 
     def testExceptions(self):
         '''Test if proper exceptions are thrown'''
         self.assertRaises( TypeError, lambda: plask.vec(1,2,z=3) )
-        self.assertRaises( TypeError, lambda: plask.vec(1,2,3+1j, dtype=float) )
         #self.assertRaises( IndexError, lambda: self.a2[2] )
         #self.assertRaises( IndexError, lambda: self.a3[3] )
         #self.assertRaises( IndexError, lambda: self.a2[-3] )
@@ -48,11 +77,13 @@ class Vector(unittest.TestCase):
 
     def testOperations(self):
         '''Test vector mathematical operations'''
+        self.assertEqual( self.c2, plask.vec(100, 200) )
+        self.assertEqual( plask.vec(100, 200, 300), self.c3 )
         self.assertTrue( self.c2 )
-        self.assertTrue( not plask.vec(0,0e-30))
-        self.assertTrue( not plask.vec(0,0,0))
-        self.assertTrue( not plask.vec(0,0,0j))
-        self.assertEqual( self.a2.abs2(), 5 )
+        #self.assertTrue( not plask.vec(0,0e-30))
+        #self.assertTrue( not plask.vec(0,0,0))
+        #self.assertTrue( not plask.vec(0,0,0j))
+        #self.assertEqual( self.a2.abs2(), 5 )
         self.assertTrue ( self.a2 != self.c2)
         self.assertTrue ( self.a2 == plask.vec(1,2) )
         #self.assertEqual( self.a2 + self.c2, plask.vec(101,202) )
