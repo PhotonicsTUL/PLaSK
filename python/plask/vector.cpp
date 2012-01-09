@@ -35,6 +35,10 @@ static T vec__setitem__(Vec<dim,T>& self, int i, T v) {
     self.component[i] = v;
 }
 
+// len(v)
+template <int dim>
+static int vec__len__() { return dim; }
+
 // __str__(v)
 template <int dim, typename T>
 static std::string vec__str__(const Vec<dim,T>& to_print) {
@@ -82,14 +86,6 @@ template <int dim, typename T>
 static Vec<dim,T> copy_vec(const Vec<dim,T>& v) {
     return v;
 }
-
-// Multiplication
-template <int dim, typename T, typename OtherT, typename ResultT>
-static Vec<dim,ResultT> vec__mul__(const Vec<dim,T>& v, OtherT c) { return v * c; }
-
-template <int dim, typename T, typename OtherT, typename ResultT>
-static Vec<dim,ResultT> vec__rmul__(OtherT c, const Vec<dim,T>& v) { return c * v; }
-
 
 // dtype
 template <typename T> inline static py::handle<> plain_vec_dtype() { return py::handle<>(); }
@@ -139,34 +135,35 @@ inline static py::class_<Vec<dim,T>> register_vector_class()
         .def("__getitem__", vec__getitem__<dim,T>)
         .def("__setitem__", vec__getitem__<dim,T>)
         .def("__iter__", &Vec_iterator<dim,T>::new_iterator, py::with_custodian_and_ward_postcall<0,1>())
+        .def("__len__", &vec__len__<dim>)
+        .def("__str__", &vec__str__<dim,T>)
+        .def("__repr__", &vec__repr__<dim,T>)
         .def(py::self == py::other<VR>())
         .def(py::self == py::other<VC>())
         .def(py::self != py::other<VR>())
         .def(py::self != py::other<VC>())
-//         .def("abs2", &V::abs2, "Squared vector abs")
-//         .def("__abs__", &V::abs, "Vector magnitue")
-//         .def("abs", &V::abs, "Vector magnitue")
-        .def("copy", &copy_vec<dim,T>)
         .def(py::self + py::other<VR>())
         .def(py::self + py::other<VC>())
         .def(py::self - py::other<VR>())
         .def(py::self - py::other<VC>())
         .def( - py::self)
-        .def("__mul__", &vec__mul__<dim,T,double,T>)
-        .def("__mul__", &vec__mul__<dim,T,dcomplex,dcomplex>)
-        .def("__rmul__", &vec__rmul__<dim,T,double,T>)
-        .def("__rmul__", &vec__rmul__<dim,T,dcomplex,dcomplex>)
+        .def(py::self * dcomplex())
+        .def(py::self * double())
+        .def(dcomplex() * py::self)
+        .def(double() * py::self)
         .def(py::self += py::other<V>())
         .def(py::self -= py::other<V>())
         .def(py::self *= T())
-        .def("__str__", &vec__str__<dim,T>)
-        .def("__repr__", &vec__repr__<dim,T>)
-        .def("dot", dr, "Dot product with another vector")
-        .def("dot", dc, "Dot product with another vector")
         .def("__mul__", dr)
         .def("__mul__", dc)
+        .def("dot", dr, "Dot product with another vector")
+        .def("dot", dc, "Dot product with another vector")
         .def("conjugate", c)
         .def("conj", c)
+        .def("abs2", (double (*)(const Vec<dim,T>&))&abs2<dim,T>, "Squared vector abs")
+        .def("abs", (double (*)(const Vec<dim,T>&))&abs<dim,T>, "Vector magnitue")
+        .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>, "Vector magnitue")
+        .def("copy", &copy_vec<dim,T>)
         .add_property("dtype", &vec_dtype<dim,T>)
     ;
 
@@ -202,9 +199,7 @@ struct PyVec
         return VecReturner<vdim,T>::result(c);
     }
 
-    int len() { return dim; }
-
-    py::object getitem(int i) {
+    py::object __getitem__(int i) {
         if (i < 0) i = dim + i;
         if (i >= dim || i < 0) {
             const char message[] = "vector index out of range";
@@ -215,7 +210,7 @@ struct PyVec
     }
 
     // vector[i] = v
-    void setitem(int i, py::object v) {
+    void __setitem__(int i, py::object v) {
         if (i < 0) i = dim + i;
         if (i >= dim || i < 0) {
             const char message[] = "vector index out of range";
@@ -225,32 +220,104 @@ struct PyVec
         components[i] = v;
     }
 
-    // __str__(v)
-    std::string str() {
+    py::object __iter__() {
+        return components.attr("__iter__")();
+    }
+
+    int __len__() { return dim; }
+
+    std::string __str__() {
         std::stringstream out;
         out << "[";
         for (int i = 0; i < dim; ++i) out << std::string(py::extract<std::string>(py::str(components[i]))) << (i!=dim-1 ? ", " : "]");
         return out.str();
     }
 
-    // __repr__(v)
-    std::string repr() {
+    std::string __repr__() {
         std::stringstream out;
         out << "vector(";
         for (int i = 0; i < dim; ++i) out << std::string(py::extract<std::string>(py::str(components[i]))) << (i!=dim-1 ? ", " : ")");
         return out.str();
     }
 
-    // __eq__(v)
-    bool eq(const PyVec& v) {
+    bool __eq__(const PyVec& v) {
         if (dim != v.dim) return false;
         for (int i = 0; i < v.dim; ++i)
             if (components[i] != v.components[i]) return false;
         return true;
     }
 
-    // __ne__(v)
-    bool ne(const PyVec& v) { return ! eq(v); }
+    bool __ne__(const PyVec& v) { return ! __eq__(v); }
+
+    PyVec __add__(const PyVec& v) {
+        if (v.dim != dim) {
+            PyErr_SetString(PyExc_TypeError, "incompatibile vector dimensions");
+            throw py::error_already_set();
+        }
+        py::list result;
+        for (int i = 0; i < dim; i++) result.append(components[i] + v.components[i]);
+        return PyVec(result);
+    }
+
+    PyVec __sub__(const PyVec& v) {
+        if (v.dim != dim) {
+            PyErr_SetString(PyExc_TypeError, "incompatibile vector dimensions");
+            throw py::error_already_set();
+        }
+        py::list result;
+        for (int i = 0; i < dim; i++) result.append(components[i] - v.components[i]);
+        return PyVec(result);
+    }
+
+    PyVec __neg__() {
+        py::list result;
+        py::object zero = py::object(0.);
+        for (int i = 0; i < dim; i++) result.append(zero - components[i]);
+        return PyVec(result);
+    }
+
+    PyVec __mul__(py::object c) {
+        py::list result;
+        for (int i = 0; i < dim; i++) result.append(components[i] * c);
+        return PyVec(result);
+    }
+
+    PyVec __rmul__(py::object c) {
+        py::list result;
+        for (int i = 0; i < dim; i++) result.append(c * components[i]);
+        return PyVec(result);
+    }
+
+    py::object dot(const PyVec& v) {
+        if (v.dim != dim) {
+            PyErr_SetString(PyExc_TypeError, "incompatibile vector dimensions");
+            throw py::error_already_set();
+        }
+        py::object result = py::object(0.);
+        for (int i = 0; i < dim; i++) result += components[i] * v.components[i];
+        return result;
+    }
+
+    PyVec conj() {
+        py::list result;
+        for (int i = 0; i < dim; i++) result.append(components[i].attr("conjugate")());
+        return PyVec(result);
+    }
+
+    py::object abs2() {
+        return this->dot(*this).attr("real");
+    }
+
+    double abs() {
+        return sqrt(py::extract<double>(abs2()));
+    }
+
+    PyVec copy() {
+        py::list result;
+        for (int i = 0; i < dim; i++) result.append(components[i].attr("conjugate")());
+        return PyVec(result);
+    }
+
 
 
     py::object dtype() { return py::object(); }
@@ -367,18 +434,33 @@ void register_vector()
     register_vector_class<3,double>();
     register_vector_class<3,dcomplex>();
 
-//     py::implicitly_convertible<Vec<2,double>,Vec<2,dcomplex>>();
-//     py::implicitly_convertible<Vec<3,double>,Vec<3,dcomplex>>();
+    py::implicitly_convertible<Vec<2,double>,Vec<2,dcomplex>>();
+    py::implicitly_convertible<Vec<3,double>,Vec<3,dcomplex>>();
 
     py::class_<PyVec, shared_ptr<PyVec>> pyvec("vector", __doc__, py::no_init);
     pyvec
         .def("__init__", raw_constructor(&pyvec__init__, 0))
-        .def("__getitem__", &PyVec::getitem)
-        .def("__setitem__", &PyVec::setitem)
-        .def("__str__", &PyVec::str)
-        .def("__repr__", &PyVec::repr)
-        .def("__eq__", &PyVec::eq)
-        .def("__ne__", &PyVec::ne)
+        .def("__getitem__", &PyVec::__getitem__)
+        .def("__setitem__", &PyVec::__setitem__)
+        .def("__iter__", &PyVec::__iter__)
+        .def("__len__", &PyVec::__len__)
+        .def("__str__", &PyVec::__str__)
+        .def("__repr__", &PyVec::__repr__)
+        .def("__eq__", &PyVec::__eq__)
+        .def("__ne__", &PyVec::__ne__)
+        .def("__add__", &PyVec::__add__)
+        .def("__sub__", &PyVec::__sub__)
+        .def("__neg__", &PyVec::__neg__)
+        .def("__mul__", &PyVec::__mul__)
+        .def("__rmul__", &PyVec::__rmul__)
+        .def("__mul__", &PyVec::dot)
+        .def("dot", &PyVec::dot)
+        .def("conjugate", &PyVec::conj)
+        .def("conj", &PyVec::conj)
+        .def("abs2", &PyVec::abs2)
+        .def("abs", &PyVec::abs)
+        .def("__abs__", &PyVec::abs)
+        .def("copy", &PyVec::copy)
         .add_property("dtype", &PyVec::dtype)
     ;
 
