@@ -31,7 +31,7 @@ std::vector<CartesianExtend::Rect> CartesianExtend::getLeafsBoundingBoxes() cons
 GeometryElement* read_cartesianExtend(GeometryReader& reader) {
     double length = XML::requireAttr<double>(reader.source, "length");
     //TODO read space size
-    return new CartesianExtend(length);
+    return new CartesianExtend(&reader.readExactlyOneChild<typename CartesianExtend::ChildType>(), length);
 }
 
 GeometryReader::RegisterElementReader cartesianExtend2d_reader("extend", read_cartesianExtend);

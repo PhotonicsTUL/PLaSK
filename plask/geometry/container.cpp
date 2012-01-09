@@ -111,14 +111,16 @@ GeometryElement* read_TranslationContainer3d(GeometryReader& reader) {
     return result.release();
 }
 
+#define baseH_attr "from"
+
 GeometryElement* read_StackContainer2d(GeometryReader& reader) {
-    double baseH = XML::getAttribiute(reader.source, "from", 0.0);
+    double baseH = XML::getAttribiute(reader.source, baseH_attr, 0.0);
     if (reader.source.getAttributeValue("repeat") == nullptr) {
         std::unique_ptr< StackContainer2d > result(new StackContainer2d(baseH));
         read_children(*result, reader,
             [&]() {
-                double translation = XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0);
-                return result->add(&reader.readExactlyOneChild< typename StackContainer2d::ChildType >(), translation);
+                return result->add(&reader.readExactlyOneChild< typename StackContainer2d::ChildType >(),
+                                   XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0));
             }
         );
         return result.release();
@@ -127,8 +129,34 @@ GeometryElement* read_StackContainer2d(GeometryReader& reader) {
         std::unique_ptr< MultiStackContainer<2> > result(new MultiStackContainer<2>(baseH, repeat));
         read_children(*result, reader,
             [&]() {
-                double translation = XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0);
-                return result->add(&reader.readExactlyOneChild< typename StackContainer2d::ChildType >(), translation);
+                return result->add(&reader.readExactlyOneChild< typename StackContainer2d::ChildType >(),
+                                   XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0));
+            }
+        );
+        return result.release();
+    }
+}
+
+GeometryElement* read_StackContainer3d(GeometryReader& reader) {
+    double baseH = XML::getAttribiute(reader.source, baseH_attr, 0.0);
+    if (reader.source.getAttributeValue("repeat") == nullptr) {
+        std::unique_ptr< StackContainer3d > result(new StackContainer3d(baseH));
+        read_children(*result, reader,
+           [&]() {
+                return result->add(&reader.readExactlyOneChild< typename StackContainer3d::ChildType >(),
+                                   XML::getAttribiute(reader.source, reader.getAxisLonName(), 0.0),
+                                   XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0));
+            }
+        );
+        return result.release();
+    } else {
+        unsigned repeat = XML::getAttribiute(reader.source, "repeat", 1);
+        std::unique_ptr< MultiStackContainer<3> > result(new MultiStackContainer<3>(baseH, repeat));
+        read_children(*result, reader,
+            [&]() {
+                return result->add(&reader.readExactlyOneChild< typename StackContainer3d::ChildType >(),
+                                   XML::getAttribiute(reader.source, reader.getAxisLonName(), 0.0),
+                                   XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0));
             }
         );
         return result.release();
@@ -138,6 +166,7 @@ GeometryElement* read_StackContainer2d(GeometryReader& reader) {
 GeometryReader::RegisterElementReader container2d_reader("container2d", read_TranslationContainer2d);
 GeometryReader::RegisterElementReader container3d_reader("container3d", read_TranslationContainer3d);
 GeometryReader::RegisterElementReader stack2d_reader("stack2d", read_StackContainer2d);
+GeometryReader::RegisterElementReader stack3d_reader("stack3d", read_StackContainer3d);
 
 
 }	// namespace plask
