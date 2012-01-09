@@ -1,6 +1,7 @@
 #include "space_changer_cartesian.h"
 
 #include <algorithm>
+#include "reader.h"
 
 namespace plask {
 
@@ -26,5 +27,13 @@ std::vector<CartesianExtend::Rect> CartesianExtend::getLeafsBoundingBoxes() cons
     std::transform(c.begin(), c.end(), result.begin(), [&](const ChildRect& r) { return parentRect(r); });
     return result;
 }
+
+GeometryElement* read_cartesianExtend(GeometryReader& reader) {
+    double length = XML::requireAttr<double>(reader.source, "length");
+    //TODO read space size
+    return new CartesianExtend(length);
+}
+
+GeometryReader::RegisterElementReader cartesianExtend2d_reader("extend", read_cartesianExtend);
 
 }   // namespace plask
