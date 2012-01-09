@@ -217,6 +217,8 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      */
     PathHints::Hint push_back(ChildType* el, const double tran_translation = 0.0);
 
+    PathHints::Hint push_back(ChildType& el, const double tran_translation = 0.0) { return push_back(&el, tran_translation); }
+
     /**
      * Add children to stack top.
      * @param el element to add
@@ -225,6 +227,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      */
     PathHints::Hint add(ChildType* el, const double tran_translation = 0.0) { return push_back(el, tran_translation); }
 
+    PathHints::Hint add(ChildType& el, const double tran_translation = 0.0) { return push_back(&el, tran_translation); }
 };
 
 /**
@@ -247,14 +250,23 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      */
     PathHints::Hint push_back(ChildType* el, const double lon_translation = 0.0, const double tran_translation = 0.0);
 
+    PathHints::Hint push_back(ChildType& el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
+        return push_back(&el, lon_translation, tran_translation);
+    }
+
     /**
      * Add children to stack top.
      * @param el element to add
      * @param lon_translation, tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint add(ChildType* el, const double lon_translation = 0.0, const double tran_translation = 0.0) { return push_back(el, lon_translation, tran_translation); }
+    PathHints::Hint add(ChildType* el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
+        return push_back(el, lon_translation, tran_translation);
+    }
 
+    PathHints::Hint add(ChildType& el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
+        return push_back(&el, lon_translation, tran_translation);
+    }
 };
 
 template <int dim>
@@ -271,7 +283,8 @@ public:
     using UpperClass::stackHeights;
     using UpperClass::children;
     
-    typedef typename MultiStackContainer::Rect Rect;
+    typedef typename UpperClass::Rect Rect;
+    typedef typename UpperClass::DVec DVec;
     
 protected:
     
@@ -287,6 +300,20 @@ protected:
      * @return child with given index
      */
     //typename UpperClass::TranslationT& operator[] (std::size_t index) { return children[index % children.size()]; }
+
+    /**
+     * Reduce @a height to be in first repetation.
+     * @param height to reduce
+     * @return @c true only if height is inside this stack (only in such case @a height is reduced)
+     */
+    const bool inStackHeight(double& height) const {
+        const double zeroBasedStackHeight = stackHeights.back() - stackHeights.front();
+        const double zeroBasedRequestHeight = height - stackHeights.front();
+        if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)
+            return false;
+        height = modulo(zeroBasedRequestHeight, zeroBasedStackHeight) + stackHeights.front();
+        return true;
+    }
     
 public:
     
@@ -294,15 +321,11 @@ public:
     unsigned repeat_count;
     
     MultiStackContainer(const double baseHeight = 0.0, unsigned repeat_count = 1): UpperClass(baseHeight), repeat_count(repeat_count) {}
-    
+
     //redefinision of virtual class makes many geometry elment methods impl. fine
     const typename UpperClass::TranslationT* getChildForHeight(double height) const {
-        const double zeroBasedStackHeight = stackHeights.back() - stackHeights.front();
-        const double zeroBasedRequestHeight = height - stackHeights.front();
-        if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)
-            return nullptr;
-            //throw OutOfBoundException("MultiStack::getChildForHeight", "height", height, baseHeight, zeroBasedStackHeight * repeat_count + baseHeight);
-        return UpperClass::getChildForHeight(modulo(zeroBasedRequestHeight, zeroBasedStackHeight) + stackHeights.front());
+        if (!inStackHeight(height)) return nullptr;
+        return UpperClass::getChildForHeight(height);
     }
     
     virtual bool intersect(const Rect& area) const {
@@ -330,6 +353,12 @@ public:
                 i->translateUp(delta);
         }
         return result;
+    }
+
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
+        DVec p_reduced = p;
+        if (!inStackHeight(p_reduced.up)) return shared_ptr<Material>();
+        return UpperClass::getMaterial(p_reduced);
     }
     
 };

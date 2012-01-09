@@ -56,6 +56,12 @@ struct AxisNames {
     
 };
 
+/**
+ * Allow to read geometry from XML.
+ *
+ * Have referances to both: XML data source reader and geometry manager.
+ * Manage names of axis while reading.
+ */
 struct GeometryReader {
 
     /**
@@ -99,10 +105,26 @@ struct GeometryReader {
     /**
      * Get current axis name.
      * @param axis_index axis index
+     * @return name of axis which have an @a axis_index
      */
     std::string getAxisName(std::size_t axis_index) { return axisNames->operator [](axis_index); }
+
+    /**
+     * Get current lon direction axis name.
+     * @return name of lon axis
+     */
     std::string getAxisLonName() { return getAxisName(axis::lon_index); }
+
+    /**
+     * Get current tran direction axis name.
+     * @return name of tran axis
+     */
     std::string getAxisTranName() { return getAxisName(axis::tran_index); }
+
+    /**
+     * Get current up direction axis name.
+     * @return name of up axis
+     */
     std::string getAxisUpName() { return getAxisName(axis::up_index); }
     
     /**
@@ -142,6 +164,7 @@ struct GeometryReader {
 
     /**
      * Skip current element in source and read exactly one geometry element (which also skip).
+     * @return element which was read and create or to which reference was read
      */
     GeometryElement& readExactlyOneChild();
 
@@ -157,6 +180,11 @@ struct GeometryReader {
     template <typename RequiredElementType>
     RequiredElementType& readElement();
 
+    /**
+     * Call readExactlyOneChild() and try dynamic cast it to @a RequiredElementType.
+     * @return element (casted to RequiredElementType) which was read and create or to which reference was read
+     * @tparam RequiredElementType required type of element
+     */
     template <typename RequiredElementType>
     RequiredElementType& readExactlyOneChild();
 };

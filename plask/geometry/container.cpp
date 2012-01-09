@@ -47,8 +47,7 @@ PathHints::Hint StackContainer3d::push_back(StackContainer3d::ChildType* el, con
 /**
  * Read children, construct ConstructedType::ChildType for each, call child_param_read if children is in \<child\> tag.
  * Read "path" parameter from each \<child\> tag.
- * @param result where add children, must to have add(ConstructedType::ChildType*) method
- * @param manager geometry manager
+ * @param reader reader
  * @param source XML data source
  * @param child_param_read call for each \<child\> tag, should create child, add it to container and return PathHints::Hint
  */
@@ -112,10 +111,11 @@ GeometryElement* read_TranslationContainer3d(GeometryReader& reader) {
 }
 
 #define baseH_attr "from"
+#define repeat_attr "repeat"
 
 GeometryElement* read_StackContainer2d(GeometryReader& reader) {
     double baseH = XML::getAttribiute(reader.source, baseH_attr, 0.0);
-    if (reader.source.getAttributeValue("repeat") == nullptr) {
+    if (reader.source.getAttributeValue(repeat_attr) == nullptr) {
         std::unique_ptr< StackContainer2d > result(new StackContainer2d(baseH));
         read_children(*result, reader,
             [&]() {
@@ -125,7 +125,7 @@ GeometryElement* read_StackContainer2d(GeometryReader& reader) {
         );
         return result.release();
     } else {
-        unsigned repeat = XML::getAttribiute(reader.source, "repeat", 1);
+        unsigned repeat = XML::getAttribiute(reader.source, repeat_attr, 1);
         std::unique_ptr< MultiStackContainer<2> > result(new MultiStackContainer<2>(baseH, repeat));
         read_children(*result, reader,
             [&]() {
@@ -139,7 +139,7 @@ GeometryElement* read_StackContainer2d(GeometryReader& reader) {
 
 GeometryElement* read_StackContainer3d(GeometryReader& reader) {
     double baseH = XML::getAttribiute(reader.source, baseH_attr, 0.0);
-    if (reader.source.getAttributeValue("repeat") == nullptr) {
+    if (reader.source.getAttributeValue(repeat_attr) == nullptr) {
         std::unique_ptr< StackContainer3d > result(new StackContainer3d(baseH));
         read_children(*result, reader,
            [&]() {
@@ -150,7 +150,7 @@ GeometryElement* read_StackContainer3d(GeometryReader& reader) {
         );
         return result.release();
     } else {
-        unsigned repeat = XML::getAttribiute(reader.source, "repeat", 1);
+        unsigned repeat = XML::getAttribiute(reader.source, repeat_attr, 1);
         std::unique_ptr< MultiStackContainer<3> > result(new MultiStackContainer<3>(baseH, repeat));
         read_children(*result, reader,
             [&]() {

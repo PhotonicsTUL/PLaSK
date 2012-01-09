@@ -34,6 +34,16 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK(translation.getMaterial(plask::vec(4.0, 22.0)) == nullptr);
     }
 
+    BOOST_FIXTURE_TEST_CASE(multistack2d, Leafs2d) {
+        plask::MultiStackContainer<2> multistack(10.0, 5);
+        multistack.add(block_5_3);
+        multistack.add(block_5_3);
+        //5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
+        BOOST_CHECK_EQUAL(multistack.getBoundingBox(), plask::Rect2d(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
+        BOOST_CHECK_EQUAL(multistack.getMaterial(plask::vec(4.0, 39.0)), dumpMaterial);
+        BOOST_CHECK(multistack.getMaterial(plask::vec(4.0, 41.0)) == nullptr);
+    }
+
    BOOST_AUTO_TEST_CASE(manager_loading) {
         plask::MaterialsDB materialsDB;
         initDumpMaterialDb(materialsDB);
