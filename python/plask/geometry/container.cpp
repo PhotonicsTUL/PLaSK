@@ -6,6 +6,7 @@
 
 namespace plask { namespace python {
 
+//TODO: make PathHints better manage memory or replace it with normal Python dict
 
 /// Wrapper for PathHints::getChild.
 /// Throws exception if there is no such element
@@ -34,13 +35,24 @@ void register_geometry_container()
     py::class_<PathHints>("PathHints", "Hints are used to to find unique path for all GeometryElement pairs, "
                                             "even if one of the pair element is inserted to geometry graph in more than one place.")
         .def("__len__", &PathHints__len__)
+
         .def("__getitem__", &PathHints_getChild, py::return_internal_reference<1>())
-        .def("__setitem__", (void (PathHints::*)(const PathHints::Hint&))(&PathHints::addHint))
+
+        .def("__setitem__", (void (PathHints::*)(GeometryElement*,GeometryElement*)) &PathHints::addHint,
+                            py::with_custodian_and_ward<1,2, py::with_custodian_and_ward<1,3>>())
+
         .def("__delitem__", &PathHints__delitem__)
+
         .def("__contains__", &PathHints__contains__)
+
         .def("__iter__", py::iterator<PathHints::HintMap, py::return_internal_reference<>>())
-        .def("addHint", (void (PathHints::*)(const PathHints::Hint&))(&PathHints::addHint), "Add hint to hints map. Overwrite if hint for given container already exists.")
-        .def("addHint", (void (PathHints::*)(GeometryElement*,GeometryElement*))(&PathHints::addHint), "Add hint to hints map. Overwrite if hint for given container already exists.")
+
+        .def("addHint", (void (PathHints::*)(const PathHints::Hint&)) &PathHints::addHint,
+             "Add hint to hints map. Overwrite if hint for given container already exists.", py::with_custodian_and_ward<1,2>())
+
+        .def("addHint", (void (PathHints::*)(GeometryElement*,GeometryElement*)) &PathHints::addHint,
+             "Add hint to hints map. Overwrite if hint for given container already exists.", py::with_custodian_and_ward<1,2, py::with_custodian_and_ward<1,3>>())
+
         .def("getChild", &PathHints_getChild, "Get child for given container.", py::return_internal_reference<1>())
     ;
 }

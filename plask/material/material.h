@@ -112,7 +112,7 @@ public:
     /**
      * Create material object.
      * @param name_with_components elements composition in format element1(amount1)...elementN(amountN), where some amounts are optional for example: "Al(0.7)GaN"
-     * @param dopant_descr empty string if there is no dopand or description of dopant in format elementname=amount or elementname p/n=amount, for example: "Mg=7e18" or "Mg p=7e18"
+     * @param dopant_descr empty string if there is no doping or description of dopant in format elementname=amount or elementname p/n=amount, for example: "Mg=7e18" or "Mg p=7e18"
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @a parsed_name_with_donor
      * @throw MaterialParseException if can't parse @a name_with_components or @a dopant_descr

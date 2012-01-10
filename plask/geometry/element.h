@@ -101,6 +101,7 @@ struct GeometryElementD: public GeometryElement {
     //virtual std::vector<GeometryElementD<dim>*> getLeafs() const;     //shared_ptr?
 
     /**
+     * Return material in a given point inside the geometry element
      * @param p point
      * @return material in given point, or @c nullptr if this GeometryElement not includes point @a p
      */

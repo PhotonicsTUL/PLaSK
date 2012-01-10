@@ -13,36 +13,36 @@ void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator begin, st
     for (auto i = begin; i != end; ++i) {
         if (isnan(*i)) {
             if (no_info != end)
-                throw plask::MaterialParseException("Two elements in group have no information about ammount.");
+                throw plask::MaterialParseException("Both elements in group have no information about composition amount");
             else
                 no_info = i;
         } else {
             sum += *i;
             if (sum > 1.0)
-                throw plask::MaterialParseException("Sum of composition ammounts in group exceed 1.");
+                throw plask::MaterialParseException("Sum of composition ammounts in group exceeds 1");
         }
     }
     if (no_info != end) {
         *no_info = 1.0 - sum;
     } else {
-        if (sum != 1.0)
-             throw plask::MaterialParseException("Sum of composition ammounts in group diffrent from 1.");
+        if (!is_zero(sum - 1.0))
+             throw plask::MaterialParseException("Sum of composition ammounts in group diffrent from 1");
     }
 }
-    
+
 void fillMaterialCompositionAmountsI(std::vector< double >& composition, unsigned int pattern) {
     auto end = composition.end();
     while (pattern != 0) {
         unsigned group_size = pattern % 10;     //last group size
         if (end - composition.begin() < group_size)
-            throw plask::CriticalException("Wrong material composition pattern.");
+            throw plask::CriticalException("Wrong material composition pattern");
         auto begin = end - group_size;
         fillGroupMaterialCompositionAmounts(begin, end);
         end = begin;
         pattern /= 10;
     }
     if (end != composition.end())
-        throw plask::CriticalException("Wrong material composition pattern.");
+        throw plask::CriticalException("Wrong material composition pattern");
 }
 
 std::vector< double > fillMaterialCompositionAmounts(const std::vector< double >& composition, unsigned int pattern) {
@@ -51,7 +51,7 @@ std::vector< double > fillMaterialCompositionAmounts(const std::vector< double >
     return result;
 }
 
-    
+
 shared_ptr< Material > plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector< double >& composition,
                                                     DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) const
 {
@@ -92,7 +92,7 @@ void parseNameWithComposition(const char* begin, const char* end, std::vector<st
             begin = amount_end;
         } else {
             if (amount_end == end)
-                throw MaterialParseException("Unexpected end of input while reading amount of element. Couldn't find ')'.");
+                throw MaterialParseException("Unexpected end of input while reading amount of element. Couldn't find ')'");
             components_amounts.push_back(toDouble(std::string(comp_end+1, amount_end)));
             begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
         }
@@ -102,16 +102,19 @@ void parseNameWithComposition(const char* begin, const char* end, std::vector<st
 void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, MaterialsDB::DOPANT_AMOUNT_TYPE& dopant_amount_type, double& dopant_amount) {
     const char* name_end = getElementEnd(begin, end);
     if (name_end == begin)
-         throw MaterialParseException("There is no expected dopant element name.");
+         throw MaterialParseException("No dopant name");
     dopant_elem_name.assign(begin, name_end);
     if (*name_end == '=') {
-        if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading amount of dopant.");
+        if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading dopants concentation");
         dopant_amount_type = MaterialsDB::DOPING_CONCENTRATION;
         dopant_amount = toDouble(std::string(name_end+1, end));
         return;
     }
-    if (!isspace(*name_end))
-        throw MaterialParseException("Unexpected space or '=' but found character: " + *name_end);
+    if (!isspace(*name_end)) {
+        std::stringstream out;
+        out << "Expected space or '=' but found '" << *name_end << "' instead";
+        throw MaterialParseException(out.str());
+    }
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
     auto p = splitString2(std::string(name_end, end), '=');
     //TODO check std::get<0>(p) if is p/n compatibile with dopant_elem_name
@@ -120,7 +123,7 @@ void parseDopant(const char* begin, const char* end, std::string& dopant_elem_na
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components, const std::string& dopant_descr) const {
-    
+
     std::vector<std::string> components;
     std::vector<double> components_amounts;
     parseNameWithComposition(name_with_components.data(), name_with_components.data() + name_with_components.size(), components, components_amounts);

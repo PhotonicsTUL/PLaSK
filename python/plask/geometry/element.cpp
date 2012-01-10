@@ -6,12 +6,12 @@ namespace plask { namespace python {
 /// Initialize class GeometryElementD for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementD, GeometryElement)
-        .def("inside", &GeometryElementD<dim>::inside)
-        .def("intersect", &GeometryElementD<dim>::intersect)
-        .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox)
-        .add_property("boundingBoxSize", &GeometryElementD<dim>::getBoundingBoxSize)
-        .add_property("material", &GeometryElementD<dim>::getMaterial)
-        .add_property("leafsBoundigBoxes", &GeometryElementD<dim>::getLeafsBoundingBoxes)
+        .def("inside", &GeometryElementD<dim>::inside, "Return True if the geometry element includes a point")
+        .def("intersect", &GeometryElementD<dim>::intersect, "Return True if the geometry element has common points with an area")
+        .def("getMaterial", &GeometryElementD<dim>::getMaterial, "Return material at given point, provided that it is inside the bounding box and None otherwise")
+        .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox, "Minimal rectangle which includes all points of the geometry element")
+        .add_property("boundingBoxSize", &GeometryElementD<dim>::getBoundingBoxSize, "Size of the bounding box")
+        .add_property("leafsBoundigBoxes", &GeometryElementD<dim>::getLeafsBoundingBoxes, "Calculate bounding boxes of all leafs")
     ;
 }
 
@@ -19,7 +19,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
 /// Initialize class GeometryElementLeaf for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, "GeometryElementLeaf", "Base class for all "," leaves") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, GeometryElementD<dim>)
-        .add_property("material", &GeometryElementLeaf<dim>::getMaterial, &GeometryElementLeaf<dim>::material)
+        .def_readwrite("material", &GeometryElementLeaf<dim>::material, "material of the geometry object")
     ;
 }
 
@@ -68,6 +68,9 @@ void register_geometry_element()
 
     init_GeometryElementD<2>();
     init_GeometryElementD<3>();
+
+    init_GeometryElementLeaf<2>();
+    init_GeometryElementLeaf<3>();
 
     init_GeometryElementTransform<2>();
     init_GeometryElementTransform<3>();
