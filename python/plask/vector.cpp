@@ -97,6 +97,67 @@ template <> inline py::handle<> plain_vec_dtype<dcomplex>() {
 }
 template <int dim, typename T> py::handle<> vec_dtype(const Vec<dim,T>&) { return plain_vec_dtype<T>(); }
 
+
+
+// Access components by name
+template <typename T, typename V, int dim, char c, bool z_up>
+struct VecAccessor {
+    inline static T getComponent(const V& self) {
+        std::stringstream out;
+        out << "component " << c << " does not make sense for this vector if config.vertical_axis = '" << (z_up?'z':'y') << "'";
+        PyErr_SetString(PyExc_AttributeError, out.str().c_str());
+        throw py::error_already_set();
+        return T(); // Make compiler happy, never reached anyway
+    }
+    inline static void setComponent(V& self, T val) {
+        std::stringstream out;
+        out << "component " << c << " does not make sense for this vector if config.vertical_axis = '" << (z_up?'z':'y') << "'";
+        PyErr_SetString(PyExc_AttributeError, out.str().c_str());
+        throw py::error_already_set();
+    }
+};
+
+// Implementations for particular names
+#define COMP(dim, name, z_up, i) \
+    template <typename T, typename V> \
+    struct VecAccessor<T,V, dim,name,z_up> { \
+        inline static T getComponent(const V& self) { return self.components[i]; } \
+        inline static void setComponent(V& self, T val) { self.components[i] = val; } \
+    }
+
+COMP(2, 'x', false, 0);
+COMP(2, 'y', false, 1);
+
+COMP(2, 'y', true, 0);
+COMP(2, 'r', true, 0);
+COMP(2, 'z', true, 1);
+
+COMP(3, 'z', false, 0);
+COMP(3, 'x', false, 1);
+COMP(3, 'y', false, 2);
+
+COMP(3, 'x', true, 0);
+COMP(3, 'r', true, 0);
+COMP(3, 'y', true, 1);
+COMP(3, 'p', true, 1);
+COMP(3, 'z', true, 2);
+
+
+// Getter and setter functions
+template <int dim, typename T, char c>
+T get_vec_component(Vec<dim,T>& self) {
+    if (Config::z_up) return VecAccessor<T, Vec<dim,T>, dim, c, true>::getComponent(self);
+    return VecAccessor<T, Vec<dim,T>, dim, c, false>::getComponent(self);
+}
+template <int dim, typename T, char c>
+void set_vec_component(Vec<dim,T>& self, const T& val) {
+    if (Config::z_up) VecAccessor<T, Vec<dim,T>, dim, c, true>::setComponent(self, val);
+    else VecAccessor<T, Vec<dim,T>, dim, c, false>::setComponent(self, val);
+}
+
+#define vec_component_property(name) &get_vec_component<dim,T,name>, &set_vec_component<dim,T,name>
+
+
 // Python doc
 const static char* __doc__ =
         "General vector class in PLaSK. It can inteligently hold both 2D and 3D vectors.\n\n"
@@ -128,10 +189,11 @@ inline static py::class_<Vec<dim,T>> register_vector_class()
     V (*c)(const V&) = &plask::conj<T>;
 
     py::class_<V> vec_class = py::class_<V>("vector", __doc__, py::no_init)
-//         .def_readwrite("x", &V::x)
-//         .def_readwrite("y", &V::y)
-//         .def_readwrite("r", &V::r)
-//         .def_readwrite("z", &V::z)
+        .add_property("x", vec_component_property('x'))
+        .add_property("y", vec_component_property('y'))
+        .add_property("z", vec_component_property('z'))
+        .add_property("r", vec_component_property('r'))
+        .add_property("phi", vec_component_property('p'))
         .def("__getitem__", vec__getitem__<dim,T>)
         .def("__setitem__", vec__getitem__<dim,T>)
         .def("__iter__", &Vec_iterator<dim,T>::new_iterator, py::with_custodian_and_ward_postcall<0,1>())
@@ -218,6 +280,38 @@ struct PyVec
             throw py::error_already_set();
         }
         components[i] = v;
+    }
+
+    // Getter and setter functions
+    template <char c>
+    py::object getComponent() {
+        if (Config::z_up) {
+            if (dim == 2)
+                return VecAccessor<py::object, PyVec, 2, c, true>::getComponent(*this);
+            else
+                return VecAccessor<py::object, PyVec, 3, c, true>::getComponent(*this);
+        } else {
+            if (dim == 2)
+                return VecAccessor<py::object, PyVec, 2, c, false>::getComponent(*this);
+            else
+                return VecAccessor<py::object, PyVec, 3, c, false>::getComponent(*this);
+        }
+        return py::object(); // make compiler happy
+    }
+
+    template <char c>
+    void setComponent(py::object val) {
+        if (Config::z_up) {
+            if (dim == 2)
+                VecAccessor<py::object, PyVec, 2, c, true>::setComponent(*this, val);
+            else
+                VecAccessor<py::object, PyVec, 3, c, true>::setComponent(*this, val);
+        } else {
+            if (dim == 2)
+                VecAccessor<py::object, PyVec, 2, c, false>::setComponent(*this, val);
+            else
+                VecAccessor<py::object, PyVec, 3, c, false>::setComponent(*this, val);
+        }
     }
 
     py::object __iter__() {
@@ -318,10 +412,7 @@ struct PyVec
         return PyVec(result);
     }
 
-
-
     py::object dtype() { return py::object(); }
-
 
   private:
       template <int dim, typename T> struct VecReturner { inline static Vec<dim,T> result(T* c) {} };
@@ -426,6 +517,7 @@ static shared_ptr<PyVec> pyvec__init__(py::tuple args, py::dict kwargs)
 }
 
 
+#define pyvec_component_property(name) &PyVec::getComponent<name>, &PyVec::setComponent<name>
 
 void register_vector()
 {
@@ -442,6 +534,11 @@ void register_vector()
         .def("__init__", raw_constructor(&pyvec__init__, 0))
         .def("__getitem__", &PyVec::__getitem__)
         .def("__setitem__", &PyVec::__setitem__)
+        .add_property("x", pyvec_component_property('x'))
+        .add_property("y", pyvec_component_property('y'))
+        .add_property("z", pyvec_component_property('z'))
+        .add_property("r", pyvec_component_property('r'))
+        .add_property("phi", pyvec_component_property('p'))
         .def("__iter__", &PyVec::__iter__)
         .def("__len__", &PyVec::__len__)
         .def("__str__", &PyVec::__str__)

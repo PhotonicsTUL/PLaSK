@@ -58,11 +58,18 @@ class Vector(unittest.TestCase):
         va = plask.config.vertical_axis
 
         plask.config.vertical_axis = 'z'
-        #self.assertEqual( [self.a2.x, self.a2.y], [1,2] )
-        #self.assertEqual( [self.a2.r, self.a2.z], [1,2] )
-        #self.assertEqual( [self.a3.r, self.a3.phi, self.a3.z], [1,2,3] )
+        self.assertEqual( [self.a2.y, self.a2.z], [1, 2] )
+        self.assertEqual( [self.a2.r, self.a2.z], [1, 2] )
+        self.assertEqual( [self.a3.x, self.a3.y, self.a3.z], [1, 2, 3] )
+        self.assertEqual( [self.a3.r, self.a3.phi, self.a3.z], [1, 2, 3] )
 
         plask.config.vertical_axis = 'y'
+        self.assertEqual( [self.a2.x, self.a2.y], [1, 2] )
+        self.assertEqual( [self.a3.z, self.a3.x, self.a3.y], [1, 2, 3] )
+
+        self.c3.x = 2j
+        self.assertEqual( [self.c3.z, self.c3.x, self.c3.y], [100, 2j, 300] )
+        self.c3.x = 200
 
         plask.config.vertical_axis = va
 
@@ -70,10 +77,10 @@ class Vector(unittest.TestCase):
     def testExceptions(self):
         '''Test if proper exceptions are thrown'''
         self.assertRaises( TypeError, lambda: plask.vec(1,2,z=3) )
-        #self.assertRaises( IndexError, lambda: self.a2[2] )
-        #self.assertRaises( IndexError, lambda: self.a3[3] )
-        #self.assertRaises( IndexError, lambda: self.a2[-3] )
-        #self.assertRaises( IndexError, lambda: self.a3[-4] )
+        self.assertRaises( IndexError, lambda: self.a2[2] )
+        self.assertRaises( IndexError, lambda: self.a3[3] )
+        self.assertRaises( IndexError, lambda: self.a2[-3] )
+        self.assertRaises( IndexError, lambda: self.a3[-4] )
 
     def testOperations(self):
         '''Test vector mathematical operations'''
