@@ -173,7 +173,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
      * @param height
      * @return child which are on given @a height or @c nullptr
      */
-    virtual const TranslationT* getChildForHeight(double height) const {
+    const TranslationT* getChildForHeight(double height) const {
         auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
         if (it == stackHeights.end() || it == stackHeights.begin()) return nullptr;
         return children[it-stackHeights.begin()-1];
@@ -306,7 +306,7 @@ protected:
      * @param height to reduce
      * @return @c true only if height is inside this stack (only in such case @a height is reduced)
      */
-    const bool inStackHeight(double& height) const {
+    const bool reduceHeight(double& height) const {
         const double zeroBasedStackHeight = stackHeights.back() - stackHeights.front();
         const double zeroBasedRequestHeight = height - stackHeights.front();
         if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)
@@ -322,9 +322,9 @@ public:
     
     MultiStackContainer(const double baseHeight = 0.0, unsigned repeat_count = 1): UpperClass(baseHeight), repeat_count(repeat_count) {}
 
-    //redefinision of virtual class makes many geometry elment methods impl. fine
+    //this is not used but, just for case redefine UpperClass::getChildForHeight
     const typename UpperClass::TranslationT* getChildForHeight(double height) const {
-        if (!inStackHeight(height)) return nullptr;
+        if (!reduceHeight(height)) return nullptr;
         return UpperClass::getChildForHeight(height);
     }
     
@@ -354,10 +354,16 @@ public:
         }
         return result;
     }
+    
+    virtual bool inside(const DVec& p) const {
+        DVec p_reduced = p;
+        if (!reduceHeight(p_reduced.up)) return false;
+        return UpperClass::inside(p_reduced);
+    }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         DVec p_reduced = p;
-        if (!inStackHeight(p_reduced.up)) return shared_ptr<Material>();
+        if (!reduceHeight(p_reduced.up)) return shared_ptr<Material>();
         return UpperClass::getMaterial(p_reduced);
     }
     
