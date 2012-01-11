@@ -11,17 +11,17 @@ GeometryManager::GeometryManager(MaterialsDB& materialsDB): materialsDB(material
 }
 
 GeometryManager::~GeometryManager() {
-    for (GeometryElement* e: elements) delete e;
+    //for (GeometryElement* e: elements) delete e;
 }
 
-GeometryElement *GeometryManager::getElement(const std::string &name) {
-    return map_find(namedElements, name);
+shared_ptr<GeometryElement> GeometryManager::getElement(const std::string &name) {
+    return map_find(namedElements, name, shared_ptr<GeometryElement>());
 }
 
-GeometryElement& GeometryManager::requireElement(const std::string &name) {
-    GeometryElement* result = getElement(name);
+shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &name) {
+    shared_ptr<GeometryElement> result = getElement(name);
     if (result == nullptr) throw NoSuchGeometryElement(name);
-    return *result;
+    return result;
 }
 
 //TODO move to reader (?)

@@ -156,7 +156,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
      * @param el new child
      * @param translation trasnalation of child
      */
-    PathHints::Hint add(ChildType& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
+    PathHints::Hint add(shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         TranslationT* trans_geom = new TranslationT(el, translation);
         children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);
@@ -237,7 +237,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * @param tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint push_back(ChildType& el, const double tran_translation = 0.0);
+    PathHints::Hint push_back(shared_ptr<ChildType> el, const double tran_translation = 0.0);
 
     /**
      * Add children to stack top.
@@ -245,7 +245,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * @param tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint add(ChildType& el, const double tran_translation = 0.0) { return push_back(el, tran_translation); }
+    PathHints::Hint add(shared_ptr<ChildType> el, const double tran_translation = 0.0) { return push_back(el, tran_translation); }
 };
 
 /**
@@ -266,7 +266,7 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * @param lon_translation, tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint push_back(ChildType& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
+    PathHints::Hint push_back(shared_ptr<ChildType> el, const double lon_translation = 0.0, const double tran_translation = 0.0);
 
     /**
      * Add children to stack top.
@@ -274,7 +274,7 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * @param lon_translation, tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint add(ChildType& el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
+    PathHints::Hint add(shared_ptr<ChildType> el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
         return push_back(el, lon_translation, tran_translation);
     }
 };

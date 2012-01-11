@@ -52,7 +52,7 @@ plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XM
     axisNames = &axisNamesRegister.get("lon, tran, up");
 }
 
-GeometryElement& GeometryReader::readElement() {
+shared_ptr<GeometryElement> GeometryReader::readElement() {
     std::string nodeName = source.getNodeName();
     if (nodeName == "ref")
         return manager.requireElement(XML::requireAttr(source, "name"));
@@ -61,19 +61,19 @@ GeometryElement& GeometryReader::readElement() {
     if (reader_it == elementReaders().end())
         throw NoSuchGeometryElementType(nodeName);
     boost::optional<std::string> name = XML::getAttribute(source, "name");
-    GeometryElement* new_element = reader_it->second(*this);
-    manager.elements.insert(new_element);   //first this, to ensure that memory will be freed
+    shared_ptr<GeometryElement> new_element = reader_it->second(*this);
+    //manager.elements.insert(new_element);   //first this, to ensure that memory will be freed
     if (name) {
-        if (!manager.namedElements.insert(std::map<std::string, GeometryElement*>::value_type(*name, new_element)).second)
+        if (!manager.namedElements.insert(std::map<std::string, shared_ptr<GeometryElement> >::value_type(*name, new_element)).second)
             throw GeometryElementNamesConflictException(*name);
     }
-    return *new_element;
+    return new_element;
 }
 
-GeometryElement& GeometryReader::readExactlyOneChild() {
+shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
     XML::requireTag(source);
     std::string tag_name = source.getNodeName();
-    GeometryElement& result = readElement();
+    shared_ptr<GeometryElement> result = readElement();
     XML::requireTagEnd(source, tag_name);
     return result;
 }

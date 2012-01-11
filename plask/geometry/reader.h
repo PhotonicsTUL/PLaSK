@@ -92,7 +92,7 @@ struct GeometryReader {
      * Should throw exception if can't create element.
      * Result will be delete (using delete operator) by caller.
      */
-    typedef GeometryElement* element_read_f(GeometryReader& reader);
+    typedef shared_ptr<GeometryElement> element_read_f(GeometryReader& reader);
 
     /**
      * @return Global elements readers register.
@@ -182,13 +182,13 @@ struct GeometryReader {
      * @throw NoSuchGeometryElement if ref element reference to element which not exists
      * @throw NoAttrException if XML tag has no required attributes
      */
-    GeometryElement& readElement();
+    shared_ptr<GeometryElement> readElement();
 
     /**
      * Skip current element in source and read exactly one geometry element (which also skip).
      * @return element which was read and create or to which reference was read
      */
-    GeometryElement& readExactlyOneChild();
+    shared_ptr<GeometryElement> readExactlyOneChild();
 
     /**
      * Call readElement() and try dynamic cast it to @a RequiredElementType.
@@ -200,7 +200,7 @@ struct GeometryReader {
      * @throw NoAttrException if XML tag has no required attributes
      */
     template <typename RequiredElementType>
-    RequiredElementType& readElement();
+    shared_ptr<RequiredElementType> readElement();
 
     /**
      * Call readExactlyOneChild() and try dynamic cast it to @a RequiredElementType.
@@ -208,34 +208,34 @@ struct GeometryReader {
      * @tparam RequiredElementType required type of element
      */
     template <typename RequiredElementType>
-    RequiredElementType& readExactlyOneChild();
+    shared_ptr<RequiredElementType> readExactlyOneChild();
 };
 
 //specialization for most types
 template <typename RequiredElementType>
-inline RequiredElementType& GeometryReader::readElement() {
-    RequiredElementType* result = dynamic_cast<RequiredElementType*>(&readElement());
+inline shared_ptr<RequiredElementType> GeometryReader::readElement() {
+    shared_ptr<RequiredElementType> result = dynamic_pointer_cast<RequiredElementType>(readElement());
     if (!result) throw UnexpectedGeometryElementTypeException();
-    return *result;
+    return result;
 }
 
 //specialization for GeometryElement which doesn't required dynamic_cast
 template <>
-inline GeometryElement& GeometryReader::readElement<GeometryElement>() {
+inline shared_ptr<GeometryElement> GeometryReader::readElement<GeometryElement>() {
     return readElement();
 }
 
 //specialization for most types
 template <typename RequiredElementType>
-inline RequiredElementType& GeometryReader::readExactlyOneChild() {
-    RequiredElementType* result = dynamic_cast<RequiredElementType*>(&readExactlyOneChild());
+inline shared_ptr<RequiredElementType> GeometryReader::readExactlyOneChild() {
+    shared_ptr<RequiredElementType> result = dynamic_pointer_cast<RequiredElementType>(readExactlyOneChild());
     if (!result) throw UnexpectedGeometryElementTypeException();
-    return *result;
+    return result;
 }
 
 //specialization for GeometryElement which doesn't required dynamic_cast
 template <>
-inline GeometryElement& GeometryReader::readExactlyOneChild<GeometryElement>() {
+inline shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild<GeometryElement>() {
     return readExactlyOneChild();
 }
 

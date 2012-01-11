@@ -12,17 +12,17 @@ inline void setupTranslation2d3d(GeometryReader& reader, TranslationType& transl
     translation.setChild(reader.readExactlyOneChild<typename TranslationType::ChildType>());
 }
 
-GeometryElement* read_translation2d(GeometryReader& reader) {
-    std::unique_ptr< Translation<2> > translation(new Translation<2>());
+shared_ptr<GeometryElement> read_translation2d(GeometryReader& reader) {
+    shared_ptr< Translation<2> > translation(new Translation<2>());
     setupTranslation2d3d(reader, *translation);
-    return translation.release();
+    return translation;
 }
 
-GeometryElement* read_translation3d(GeometryReader& reader) {
-    std::unique_ptr< Translation<3> > translation(new Translation<3>());
+shared_ptr<GeometryElement> read_translation3d(GeometryReader& reader) {
+    shared_ptr< Translation<3> > translation(new Translation<3>());
     translation->translation.lon = XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0);
     setupTranslation2d3d(reader, *translation);
-    return translation.release();
+    return translation;
 }
 
 GeometryReader::RegisterElementReader translation2d_reader("translation2d", read_translation2d);

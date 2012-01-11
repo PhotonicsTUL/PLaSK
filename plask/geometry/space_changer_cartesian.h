@@ -16,7 +16,7 @@ struct CartesianExtend: public GeometryElementChangeSpace<3, 2>/*, public Calcul
     //Size of calculation space.
     //Rect2d spaceSize;
 
-    explicit CartesianExtend(ChildType* child, double length): GeometryElementChangeSpace<3, 2>(child), length(length) {}
+    explicit CartesianExtend(shared_ptr<ChildType> child, double length): GeometryElementChangeSpace<3, 2>(child), length(length) {}
 
     explicit CartesianExtend(double length/*, Rect2d spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 

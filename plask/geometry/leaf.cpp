@@ -18,17 +18,17 @@ inline void setupBlock2d3d(GeometryReader& reader, BlockType& block) {
     setupLeaf(reader, block);
 }
 
-GeometryElement* read_block2d(GeometryReader& reader) {
-    std::unique_ptr< Block<2> > block(new Block<2>());
+shared_ptr<GeometryElement> read_block2d(GeometryReader& reader) {
+    shared_ptr< Block<2> > block(new Block<2>());
     setupBlock2d3d(reader, *block);
-    return block.release();
+    return block;
 }
 
-GeometryElement* read_block3d(GeometryReader& reader) {
-    std::unique_ptr< Block<3> > block(new Block<3>());
+shared_ptr<GeometryElement> read_block3d(GeometryReader& reader) {
+    shared_ptr< Block<3> > block(new Block<3>());
     block->size.lon = XML::requireAttr<double>(reader.source, reader.getAxisLonName());
     setupBlock2d3d(reader, *block);
-    return block.release();
+    return block;
 }
 
 GeometryReader::RegisterElementReader block2d_reader("block2d", read_block2d);

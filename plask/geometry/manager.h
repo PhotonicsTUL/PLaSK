@@ -26,14 +26,14 @@ namespace plask {
  */
 struct GeometryManager {
 
-    /// Store pointers to all elements.
-    std::set<GeometryElement*> elements;
+    // Store pointers to all elements.
+    //std::set<GeometryElement*> elements;
 
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;
 
     /// Allow to access elements by name.
-    std::map<std::string, GeometryElement*> namedElements;
+    std::map<std::string, shared_ptr<GeometryElement> > namedElements;
     
     /// Material database used by geometry (leafs).
     MaterialsDB& materialsDB;
@@ -51,7 +51,7 @@ struct GeometryManager {
      * @param name name of element
      * @return element with given name or nullptr if there is no element with given name
      */
-    GeometryElement* getElement(const std::string& name);
+    shared_ptr<GeometryElement> getElement(const std::string& name);
     
     /**
      * Get element with given name or throw exception if element with given name does not exist.
@@ -59,7 +59,7 @@ struct GeometryManager {
      * @return element with given name
      * @throw NoSuchGeometryElement if there is no element with given name
      */
-    GeometryElement& requireElement(const std::string& name);
+    shared_ptr<GeometryElement> requireElement(const std::string& name);
     
     void loadFromReader(XMLReader& XMLreader);
     

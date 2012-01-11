@@ -155,7 +155,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 
     typedef Child_Type ChildType;
 
-    explicit GeometryElementTransform(ChildType* child = nullptr): _child(child) {}
+    explicit GeometryElementTransform(shared_ptr<ChildType> child = nullptr): _child(child) {}
 
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
 
@@ -163,26 +163,20 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      * Get child.
      * @return child
      */
-    ChildType& getChild() { return *_child; }
+    shared_ptr<ChildType> getChild() { return _child; }
 
     /**
      * Get child.
      * @return child
      */
-    const ChildType& getChild() const { return *_child; }
+    shared_ptr<const ChildType> getChild() const { return _child; }
 
     /**
      * Set new child. Old one is not delete by this.
      * @param child new child
      */
-    void setChild(ChildType* child) { _child = child; }
-
-    /**
-     * Set new child. Old one is not delete by this.
-     * @param child new child
-     */
-    void setChild(ChildType& child) { _child = &child; }
-
+    void setChild(shared_ptr<ChildType> child) { _child = child; }
+    
     /**
      * @return @c true only if child is set (not null)
      */
@@ -196,7 +190,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     }
 
     protected:
-    ChildType* _child;
+    shared_ptr<ChildType> _child;
 
 };
 
@@ -213,7 +207,7 @@ struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, Chi
     typedef typename ChildType::Rect ChildRect;
     typedef typename ChildType::DVec ChildVec;
 
-    explicit GeometryElementChangeSpace(ChildType* child = 0): GeometryElementTransform<this_dim, ChildType>(child) {}
+    explicit GeometryElementChangeSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransform<this_dim, ChildType>(child) {}
 
     ///@return GE_TYPE_SPACE_CHANGER
     virtual GeometryElementType getType() const { return GE_TYPE_SPACE_CHANGER; }
