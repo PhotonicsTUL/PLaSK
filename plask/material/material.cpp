@@ -110,11 +110,8 @@ void parseDopant(const char* begin, const char* end, std::string& dopant_elem_na
         dopant_amount = toDouble(std::string(name_end+1, end));
         return;
     }
-    if (!isspace(*name_end)) {
-        std::stringstream out;
-        out << "Expected space or '=' but found '" << *name_end << "' instead";
-        throw MaterialParseException(out.str());
-    }
+    if (!isspace(*name_end))
+        throw MaterialParseException("Expected space or '=' but found '%1%' instead", *name_end);
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
     auto p = splitString2(std::string(name_end, end), '=');
     //TODO check std::get<0>(p) if is p/n compatibile with dopant_elem_name

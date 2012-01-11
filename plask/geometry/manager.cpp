@@ -33,8 +33,8 @@ void GeometryManager::loadFromReader(XMLReader &XMLreader) {
     while(XMLreader.read()) {
         switch (XMLreader.getNodeType()) {
             case irr::io::EXN_ELEMENT_END:
-               // if (XMLreader.getNodeName() != std::string("geometry"))
-               //     throw XMLUnexpectedElementException("end of \"geometry\" tag");
+                //if (XMLreader.getNodeName() != std::string("geometry"))
+                //    throw XMLUnexpectedElementException("end of \"geometry\" tag");
                 return;  //end of geometry
             case irr::io::EXN_ELEMENT:
                 reader.readElement();

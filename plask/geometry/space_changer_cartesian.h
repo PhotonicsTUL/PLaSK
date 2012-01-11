@@ -9,16 +9,16 @@ namespace plask {
 /**
  * Represent 3d geometry element which are extend of 2d element (child) in lon direction.
  */
-struct CartesianExtend: public GeometryElementChangeSpace<3, 2>, public CalculationSpace {
+struct CartesianExtend: public GeometryElementChangeSpace<3, 2>/*, public CalculationSpace*/ {
 
     double length;
 
-    ///Size of calculation space.
-    Rect2d spaceSize;
+    //Size of calculation space.
+    //Rect2d spaceSize;
 
     explicit CartesianExtend(ChildType* child, double length): GeometryElementChangeSpace<3, 2>(child), length(length) {}
 
-    explicit CartesianExtend(double length, Rect2d spaceSize): length(length), spaceSize(spaceSize) {}
+    explicit CartesianExtend(double length/*, Rect2d spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
     virtual bool inside(const DVec& p) const;
 
