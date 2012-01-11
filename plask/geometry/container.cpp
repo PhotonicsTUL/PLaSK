@@ -54,6 +54,8 @@ PathHints::Hint StackContainer3d::push_back(StackContainer3d::ChildType& el, con
 template <typename ConstructedType, typename ChildParamF>
 void read_children(ConstructedType& result, GeometryReader& reader, ChildParamF child_param_read) {
 
+    std::string tag_name = reader.source.getNodeName();
+    
     while (reader.source.read()) {
         switch (reader.source.getNodeType()) {
 
@@ -62,14 +64,13 @@ void read_children(ConstructedType& result, GeometryReader& reader, ChildParamF 
 
             case irr::io::EXN_ELEMENT:
                 if (reader.source.getNodeName() == std::string("child")) {
-                    const char* have_path_name = reader.source.getAttributeValue("path");
-                    std::string path = have_path_name;
+                    boost::optional<std::string> path = XML::getAttribute(reader.source, "path");
                     PathHints::Hint hint = child_param_read();
-                    if (have_path_name)
-                        reader.manager.pathHints[path].addHint(hint);
+                    if (path)
+                        reader.manager.pathHints[*path].addHint(hint);
                 } else {
                     result.add(reader.readElement< typename ConstructedType::ChildType >());
-                    XML::requireTagEnd(reader.source);
+                    XML::requireTagEnd(reader.source, tag_name);
                     //result.add(&manager.readExactlyOneChild< typename ConstructedType::ChildType >(source));
                 }
 
@@ -88,8 +89,8 @@ GeometryElement* read_TranslationContainer2d(GeometryReader& reader) {
     read_children(*result, reader,
         [&]() {
             TranslationContainer<2>::DVec translation;
-            translation.tran = XML::getAttribiute(reader.source, reader.getAxisLonName(), 0.0);
-            translation.up = XML::getAttribiute(reader.source, reader.getAxisUpName(), 0.0);
+            translation.tran = XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0);
+            translation.up = XML::getAttribute(reader.source, reader.getAxisUpName(), 0.0);
             return result->add(reader.readExactlyOneChild< typename TranslationContainer<2>::ChildType >(), translation);
         }
     );
@@ -101,9 +102,9 @@ GeometryElement* read_TranslationContainer3d(GeometryReader& reader) {
     read_children(*result, reader,
         [&]() {
             TranslationContainer<3>::DVec translation;
-            translation.c0 = XML::getAttribiute(reader.source, reader.getAxisName(0), 0.0);
-            translation.c1 = XML::getAttribiute(reader.source, reader.getAxisName(1), 0.0);
-            translation.c2 = XML::getAttribiute(reader.source, reader.getAxisName(2), 0.0);
+            translation.c0 = XML::getAttribute(reader.source, reader.getAxisName(0), 0.0);
+            translation.c1 = XML::getAttribute(reader.source, reader.getAxisName(1), 0.0);
+            translation.c2 = XML::getAttribute(reader.source, reader.getAxisName(2), 0.0);
             return result->add(reader.readExactlyOneChild< typename TranslationContainer<3>::ChildType >(), translation);
         }
     );
@@ -114,23 +115,23 @@ GeometryElement* read_TranslationContainer3d(GeometryReader& reader) {
 #define repeat_attr "repeat"
 
 GeometryElement* read_StackContainer2d(GeometryReader& reader) {
-    double baseH = XML::getAttribiute(reader.source, baseH_attr, 0.0);
+    double baseH = XML::getAttribute(reader.source, baseH_attr, 0.0);
     if (reader.source.getAttributeValue(repeat_attr) == nullptr) {
         std::unique_ptr< StackContainer2d > result(new StackContainer2d(baseH));
         read_children(*result, reader,
             [&]() {
                 return result->add(reader.readExactlyOneChild< typename StackContainer2d::ChildType >(),
-                                   XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0));
+                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
             }
         );
         return result.release();
     } else {
-        unsigned repeat = XML::getAttribiute(reader.source, repeat_attr, 1);
+        unsigned repeat = XML::getAttribute(reader.source, repeat_attr, 1);
         std::unique_ptr< MultiStackContainer<2> > result(new MultiStackContainer<2>(baseH, repeat));
         read_children(*result, reader,
             [&]() {
                 return result->add(reader.readExactlyOneChild< typename StackContainer2d::ChildType >(),
-                                   XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0));
+                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
             }
         );
         return result.release();
@@ -138,25 +139,25 @@ GeometryElement* read_StackContainer2d(GeometryReader& reader) {
 }
 
 GeometryElement* read_StackContainer3d(GeometryReader& reader) {
-    double baseH = XML::getAttribiute(reader.source, baseH_attr, 0.0);
+    double baseH = XML::getAttribute(reader.source, baseH_attr, 0.0);
     if (reader.source.getAttributeValue(repeat_attr) == nullptr) {
         std::unique_ptr< StackContainer3d > result(new StackContainer3d(baseH));
         read_children(*result, reader,
            [&]() {
                 return result->add(reader.readExactlyOneChild< typename StackContainer3d::ChildType >(),
-                                   XML::getAttribiute(reader.source, reader.getAxisLonName(), 0.0),
-                                   XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0));
+                                   XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0),
+                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
             }
         );
         return result.release();
     } else {
-        unsigned repeat = XML::getAttribiute(reader.source, repeat_attr, 1);
+        unsigned repeat = XML::getAttribute(reader.source, repeat_attr, 1);
         std::unique_ptr< MultiStackContainer<3> > result(new MultiStackContainer<3>(baseH, repeat));
         read_children(*result, reader,
             [&]() {
                 return result->add(reader.readExactlyOneChild< typename StackContainer3d::ChildType >(),
-                                   XML::getAttribiute(reader.source, reader.getAxisLonName(), 0.0),
-                                   XML::getAttribiute(reader.source, reader.getAxisTranName(), 0.0));
+                                   XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0),
+                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
             }
         );
         return result.release();

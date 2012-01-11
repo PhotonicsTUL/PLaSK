@@ -32,10 +32,17 @@ void GeometryManager::loadFromReader(XMLReader &XMLreader) {
     GeometryReader::ReadAxisNames read_axis_tag(reader);
     while(XMLreader.read()) {
         switch (XMLreader.getNodeType()) {
-            case irr::io::EXN_ELEMENT_END: return;  //end of geometry
-            case irr::io::EXN_ELEMENT: reader.readElement(); break;
-            case irr::io::EXN_COMMENT: break;   //just ignore
-            default: throw XMLUnexpectedElementException("begin of geometry element tag or </geometry>");  
+            case irr::io::EXN_ELEMENT_END:
+               // if (XMLreader.getNodeName() != std::string("geometry"))
+               //     throw XMLUnexpectedElementException("end of \"geometry\" tag");
+                return;  //end of geometry
+            case irr::io::EXN_ELEMENT:
+                reader.readElement();
+                break;
+            case irr::io::EXN_COMMENT:
+                break;   //just ignore
+            default:
+                throw XMLUnexpectedElementException("begin of geometry element tag or </geometry>");  
         }
     }
     throw XMLUnexpectedEndException();

@@ -8,7 +8,7 @@ namespace plask {
 template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
     leaf.material = reader.manager.materialsDB.get(XML::requireAttr(reader.source, "material"));
-    XML::requireTagEnd(reader.source);
+    XML::requireTagEnd(reader.source, reader.source.getNodeName());
 }
 
 template <typename BlockType>

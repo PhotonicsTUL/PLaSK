@@ -5,6 +5,7 @@
 
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 namespace plask {
 
@@ -16,15 +17,21 @@ typedef irr::io::IrrXMLReader XMLReader;
 namespace XML {
 
 template <typename T>
-inline T getAttribiute(XMLReader& reader, const char* name, T&& default_value) {
+inline T getAttribute(XMLReader& reader, const char* name, T&& default_value) {
     const char* attr_str = reader.getAttributeValue(name);
     if (attr_str == nullptr) return default_value;
     return boost::lexical_cast<T>(attr_str);
 }
 
 template <typename T>
-inline T getAttribiute(XMLReader& reader, const std::string& name, T&& default_value) {
-    return getAttribiute<T>(reader, name.c_str(), std::forward<T>(default_value));
+inline T getAttribute(XMLReader& reader, const std::string& name, T&& default_value) {
+    return getAttribute<T>(reader, name.c_str(), std::forward<T>(default_value));
+}
+
+boost::optional<std::string> getAttribute(XMLReader& reader, const char* name);
+
+inline boost::optional<std::string> getAttribute(XMLReader& reader, const std::string& name) {
+    return getAttribute(reader, name.c_str());
 }
 
 std::string requireAttr(XMLReader &source, const char* attr_name);
@@ -47,7 +54,7 @@ void requireNext(XMLReader& reader);
 
 void requireTag(XMLReader& reader);
 
-void requireTagEnd(XMLReader& reader);
+void requireTagEnd(XMLReader& reader, const std::string& tag);
 
 /**
  * Skip XML comments.

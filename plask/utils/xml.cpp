@@ -4,6 +4,11 @@
 
 namespace plask { namespace XML {
 
+boost::optional<std::string> getAttribute(XMLReader& reader, const char* name) {
+    const char* v = reader.getAttributeValue(name);
+    return v != nullptr ? boost::optional<std::string>(v) : boost::optional<std::string>();
+}
+    
 std::string requireAttr(XMLReader &source, const char* attr_name) {
     const char* result = source.getAttributeValue(attr_name);
     if (result == nullptr)
@@ -24,10 +29,12 @@ void requireTag(XMLReader& reader) {
         throw XMLUnexpectedElementException("begin of tag");    
 }
 
-void requireTagEnd(XMLReader& reader) {
+void requireTagEnd(XMLReader& reader, const std::string& tag) {
+    if (reader.getNodeType() == irr::io::EXN_ELEMENT && reader.isEmptyElement())
+        return;
     requireNext(reader);
-    if (reader.getNodeType() != irr::io::EXN_ELEMENT_END)
-        throw XMLUnexpectedElementException("end of tag");
+    if (reader.getNodeType() != irr::io::EXN_ELEMENT_END || reader.getNodeName() != tag)
+        throw XMLUnexpectedElementException("end of tag \"" +tag + "\"");
 }
 
 bool skipComments(XMLReader& reader) {

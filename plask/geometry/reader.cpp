@@ -60,21 +60,21 @@ GeometryElement& GeometryReader::readElement() {
     auto reader_it = elementReaders().find(nodeName);
     if (reader_it == elementReaders().end())
         throw NoSuchGeometryElementType(nodeName);
-    const char* name_exists = source.getAttributeValue("name");    //must be call before reader call (reader function can change XMLReader)
-    std::string name = name_exists ? name_exists : "";     //reader can also delete name_exists, we need copy
+    boost::optional<std::string> name = XML::getAttribute(source, "name");
     GeometryElement* new_element = reader_it->second(*this);
     manager.elements.insert(new_element);   //first this, to ensure that memory will be freed
-    if (name_exists) {
-        if (!manager.namedElements.insert(std::map<std::string, GeometryElement*>::value_type(name, new_element)).second)
-            throw GeometryElementNamesConflictException(name);
+    if (name) {
+        if (!manager.namedElements.insert(std::map<std::string, GeometryElement*>::value_type(*name, new_element)).second)
+            throw GeometryElementNamesConflictException(*name);
     }
     return *new_element;
 }
 
 GeometryElement& GeometryReader::readExactlyOneChild() {
     XML::requireTag(source);
+    std::string tag_name = source.getNodeName();
     GeometryElement& result = readElement();
-    XML::requireTagEnd(source);
+    XML::requireTagEnd(source, tag_name);
     return result;
 }
 
