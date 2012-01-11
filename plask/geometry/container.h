@@ -75,7 +75,10 @@ struct PathHints {
 template <int dim, typename container_type = std::vector<Translation<dim>*> >
 struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
 
+    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
+    
+    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Rect Rect;
 
 protected:
@@ -105,8 +108,8 @@ public:
     }
 
     /**
-     * Check children in reverse order and check if any returns material.
-     * @return material or @c nullptr
+     * Iterate over children in reverse order and check if any returns material.
+     * @return material of first child which returns non @c nullptr or @c nullptr if all children return @c nullptr
      */
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
@@ -134,14 +137,26 @@ public:
 template < int dim >
 struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 
+    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
+    
+    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Rect Rect;
+    
+    ///Type of this child.
     typedef GeometryElementD<dim> ChildType;
+    
+    ///Type of translation geometry elment in space of this.
     typedef Translation<dim> TranslationT;
 
     using GeometryElementContainerImpl<dim>::children;
 
-    PathHints::Hint add(ChildType* el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
+    /**
+     * Add new child (trasnlated) to end of children vector.
+     * @param el new child
+     * @param translation trasnalation of child
+     */
+    PathHints::Hint add(ChildType& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         TranslationT* trans_geom = new TranslationT(el, translation);
         children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);
@@ -155,9 +170,16 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 template <int dim>
 struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
 
+    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
+    
+    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Rect Rect;
+    
+    ///Type of this child.
     typedef GeometryElementD<dim> ChildType;
+    
+    ///Type of translation geometry elment in space of this.
     typedef Translation<dim> TranslationT;
 
     using GeometryElementContainerImpl<dim>::children;
@@ -210,14 +232,12 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
     explicit StackContainer2d(const double baseHeight = 0.0);
 
     /**
-     * Add children to stack top.
+     * Add child to stack top.
      * @param el element to add
      * @param tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint push_back(ChildType* el, const double tran_translation = 0.0);
-
-    PathHints::Hint push_back(ChildType& el, const double tran_translation = 0.0) { return push_back(&el, tran_translation); }
+    PathHints::Hint push_back(ChildType& el, const double tran_translation = 0.0);
 
     /**
      * Add children to stack top.
@@ -225,9 +245,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * @param tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint add(ChildType* el, const double tran_translation = 0.0) { return push_back(el, tran_translation); }
-
-    PathHints::Hint add(ChildType& el, const double tran_translation = 0.0) { return push_back(&el, tran_translation); }
+    PathHints::Hint add(ChildType& el, const double tran_translation = 0.0) { return push_back(el, tran_translation); }
 };
 
 /**
@@ -248,11 +266,7 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * @param lon_translation, tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint push_back(ChildType* el, const double lon_translation = 0.0, const double tran_translation = 0.0);
-
-    PathHints::Hint push_back(ChildType& el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
-        return push_back(&el, lon_translation, tran_translation);
-    }
+    PathHints::Hint push_back(ChildType& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
 
     /**
      * Add children to stack top.
@@ -260,20 +274,21 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * @param lon_translation, tran_translation horizontal translation of element
      * @return path hint
      */
-    PathHints::Hint add(ChildType* el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
-        return push_back(el, lon_translation, tran_translation);
-    }
-
     PathHints::Hint add(ChildType& el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
-        return push_back(&el, lon_translation, tran_translation);
+        return push_back(el, lon_translation, tran_translation);
     }
 };
 
 template <int dim>
 class MultiStackContainer: public chooseType<dim-2, StackContainer2d, StackContainer3d>::type {
     
+    ///Type of parent class of this.
     typedef typename chooseType<dim-2, StackContainer2d, StackContainer3d>::type UpperClass;
     
+    /**
+     * @param a, divider
+     * @return $a - \floor{\frac{a}{divider}} * divider$
+     */
     static double modulo(double a, double divider) { 
         return a - static_cast<double>( static_cast<int>( a / divider ) ) * divider;
     }
@@ -283,9 +298,12 @@ public:
     using UpperClass::stackHeights;
     using UpperClass::children;
     
-    typedef typename UpperClass::Rect Rect;
+    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename UpperClass::DVec DVec;
     
+    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    typedef typename UpperClass::Rect Rect;
+
 protected:
     
     /*
@@ -302,7 +320,7 @@ protected:
     //typename UpperClass::TranslationT& operator[] (std::size_t index) { return children[index % children.size()]; }
 
     /**
-     * Reduce @a height to be in first repetation.
+     * Reduce @a height to be in first repetition.
      * @param height to reduce
      * @return @c true only if height is inside this stack (only in such case @a height is reduced)
      */
@@ -317,10 +335,14 @@ protected:
     
 public:
     
-    ///How muny times all stack is repeat.
+    ///How many times all stack is repeated.
     unsigned repeat_count;
     
-    MultiStackContainer(const double baseHeight = 0.0, unsigned repeat_count = 1): UpperClass(baseHeight), repeat_count(repeat_count) {}
+    /**
+     * @param baseHeight height where should start first element
+     * @param repeat_count how many times stack should be repeated, must be 1 or more
+     */
+    explicit MultiStackContainer(const double baseHeight = 0.0, unsigned repeat_count = 1): UpperClass(baseHeight), repeat_count(repeat_count) {}
 
     //this is not used but, just for case redefine UpperClass::getChildForHeight
     const typename UpperClass::TranslationT* getChildForHeight(double height) const {

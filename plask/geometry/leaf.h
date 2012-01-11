@@ -19,7 +19,10 @@ Block is filled with one material.
 template <int dim>
 struct Block: public GeometryElementLeaf<dim> {
 
+    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementLeaf<dim>::DVec DVec;
+    
+    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementLeaf<dim>::Rect Rect;
 
     /**

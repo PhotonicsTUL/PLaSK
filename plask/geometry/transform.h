@@ -6,20 +6,35 @@
 namespace plask {
 
 /**
- * Translate child by vector.
+ * Represent geometry element equal to its child translated by vector.
  */
 template <int dim>
 struct Translation: public GeometryElementTransform<dim> {
 
+    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementTransform<dim>::DVec DVec;
+    
+    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementTransform<dim>::Rect Rect;
+    
     using GeometryElementTransform<dim>::getChild;
 
+    /**
+     * Translation vector.
+     */
     DVec translation;
 
+    /**
+     * @param child child geometry element, element to translate
+     * @param translation translation
+     */
     explicit Translation(GeometryElementD<dim>* child = 0, const DVec& translation = Primitive<dim>::ZERO_VEC)
         : GeometryElementTransform<dim>(child), translation(translation) {}
 
+    /**
+     * @param child child geometry element, element to translate
+     * @param translation translation
+     */
     explicit Translation(GeometryElementD<dim>& child, const DVec& translation = Primitive<dim>::ZERO_VEC)
         : GeometryElementTransform<dim>(&child), translation(translation) {}
 

@@ -8,11 +8,21 @@ namespace plask {
 
 //struct GeometryManager;
 
+/**
+ * Hold names of axises.
+ * 
+ * Can change: axis number (from 0 to 2) <-> axis name (string)
+ */
 struct AxisNames {
     
+    /**
+     * Register of axis names.
+     */
     struct Register {
+        ///Name of system of axis names -> AxisNames
         std::map<std::string, AxisNames> axisNames;
         
+        ///Construct empty register.
         Register() {}
         
         template<typename... Params>
@@ -44,14 +54,26 @@ struct AxisNames {
         const AxisNames& get(const std::string& name) const;
     };
     
+    ///Name of axises (by index).
     std::string byIndex[3];
     
+    ///Construct uninitialized object. Do nothing.
     AxisNames() {}
     
     AxisNames(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name);
     
+    /**
+     * Get axis name by index.
+     * @param i index of axis name, from 0 to 2
+     * @return name of i-th axis
+     */
     const std::string& operator[](const std::size_t i) const { return byIndex[i]; }
     
+    /**
+     * Get axis index by name.
+     * @param name axis name
+     * @return index (from 0 to 2) of axis with given @a name or 3 if no axis with given name
+     */
     std::size_t operator[](const std::string& name) const;
     
 };
@@ -59,7 +81,7 @@ struct AxisNames {
 /**
  * Allow to read geometry from XML.
  *
- * Have referances to both: XML data source reader and geometry manager.
+ * Have references to both: XML data source reader and geometry manager.
  * Manage names of axis while reading.
  */
 struct GeometryReader {
@@ -88,7 +110,7 @@ struct GeometryReader {
     /**
      * Helper which call registerElementReader in constructor.
      *
-     * Each element can create one global instanse of this class to register own reader.
+     * Each element can create one global instance of this class to register own reader.
      */
     struct RegisterElementReader {
         RegisterElementReader(const std::string& tag_name, element_read_f* reader) {
