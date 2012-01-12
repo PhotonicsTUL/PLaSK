@@ -65,6 +65,18 @@ struct GeometryElement {
     virtual ~GeometryElement() {}
 
     //virtual GeometryTransform getTransform()
+    
+protected:
+    
+    /**
+     * Throw CyclicReferenceException if potential_parent is in subtree with this in root. 
+     */
+    void ensureCanHasAsParent(GeometryElement& potential_parent);
+    
+    /**
+     * Throw CyclicReferenceException if potential_child has this in subtree. 
+     */
+    void ensureCanHasAsChild(GeometryElement& potential_child) { potential_child.ensureCanHasAsParent(*this); }
 
 };
 
@@ -183,10 +195,21 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     shared_ptr<const ChildType> getChild() const { return _child; }
 
     /**
-     * Set new child. Old one is not delete by this.
+     * Set new child.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after setting the new child.
      * @param child new child
      */
-    void setChild(shared_ptr<ChildType> child) { _child = child; }
+    void setChildUnsafe(const shared_ptr<ChildType>& child) { _child = child; }
+    
+    /**
+     * Set new child.
+     * @param child new child
+     * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
+     */
+    void setChild(const shared_ptr<ChildType>& child) {
+        ensureCanHasAsChild(*child);
+        setChildUnsafe(child);
+    }
     
     /**
      * @return @c true only if child is set (not null)
@@ -201,7 +224,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     }
 
     virtual bool isInSubtree(GeometryElement& el) const {
-        return &el == this || _child->isInSubtree(el);
+        return &el == this || (hasChild() && _child->isInSubtree(el));
     }
 
     protected:

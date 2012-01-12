@@ -168,6 +168,13 @@ struct NoChildException: public Exception {
 };
 
 /**
+ * Exceptions of this class are throw when called operation on geometry graph will cause cyclic reference.
+ */
+struct CyclicReferenceException: public Exception {
+    CyclicReferenceException(): Exception("Detected cycle in geometry graph.") {}
+};
+
+/**
  * This exception is thrown when geometry element (typically with given name) is not found.
  */
 struct NoSuchGeometryElementType: public Exception {

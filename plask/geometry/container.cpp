@@ -22,7 +22,12 @@ GeometryElement* PathHints::getChild(GeometryElement* container) const {
 
 StackContainer2d::StackContainer2d(const double baseHeight): StackContainerBaseImpl<2>(baseHeight) {}
 
-PathHints::Hint StackContainer2d::push_back(shared_ptr<ChildType> el, const double tran_translation) {
+PathHints::Hint StackContainer2d::add(const shared_ptr<StackContainerBaseImpl::ChildType> &el, const double tran_translation) {
+    ensureCanHasAsChild(*el);
+    return addUnsafe(el, tran_translation);
+}
+
+PathHints::Hint StackContainer2d::addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation) {
     Rect2d bb = el->getBoundingBox();
     const double up_translation = stackHeights.back() - bb.lower.up;
     TranslationT* trans_geom = new TranslationT(el, vec(tran_translation, up_translation));
@@ -33,7 +38,12 @@ PathHints::Hint StackContainer2d::push_back(shared_ptr<ChildType> el, const doub
 
 StackContainer3d::StackContainer3d(const double baseHeight): StackContainerBaseImpl<3>(baseHeight) {}
 
-PathHints::Hint StackContainer3d::push_back(shared_ptr<StackContainer3d::ChildType> el, const double lon_translation, const double tran_translation) {
+PathHints::Hint StackContainer3d::add(const shared_ptr<ChildType>& el, const double lon_translation, const double tran_translation) {
+    ensureCanHasAsChild(*el);
+    return addUnsafe(el, lon_translation, tran_translation);
+}
+
+PathHints::Hint StackContainer3d::addUnsafe(const shared_ptr<ChildType>& el, const double lon_translation, const double tran_translation) {
     Rect3d bb = el->getBoundingBox();
     const double up_translation = stackHeights.back() - bb.lower.up;
     TranslationT* trans_geom = new TranslationT(el, vec(lon_translation, tran_translation, up_translation));

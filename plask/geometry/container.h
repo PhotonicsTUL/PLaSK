@@ -160,13 +160,25 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 
     /**
      * Add new child (trasnlated) to end of children vector.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el new child
      * @param translation trasnalation of child
      */
-    PathHints::Hint add(shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         TranslationT* trans_geom = new TranslationT(el, translation);
         children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);
+    }
+    
+    /**
+     * Add new child (trasnlated) to end of children vector.
+     * @param el new child
+     * @param translation trasnalation of child
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint add(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
+        ensureCanHasAsChild(*el);
+        return addUnsafe(el, translation);
     }
 
 };
@@ -239,20 +251,31 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
     explicit StackContainer2d(const double baseHeight = 0.0);
 
     /**
-     * Add child to stack top.
-     * @param el element to add
-     * @param tran_translation horizontal translation of element
-     * @return path hint
-     */
-    PathHints::Hint push_back(shared_ptr<ChildType> el, const double tran_translation = 0.0);
-
-    /**
      * Add children to stack top.
      * @param el element to add
      * @param tran_translation horizontal translation of element
      * @return path hint
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(shared_ptr<ChildType> el, const double tran_translation = 0.0) { return push_back(el, tran_translation); }
+    PathHints::Hint add(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);   
+    
+    /**
+     * Add child to stack top.
+     * @param el element to add
+     * @param tran_translation horizontal translation of element
+     * @return path hint
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint push_back(shared_ptr<ChildType> el, const double tran_translation = 0.0) { return add(el, tran_translation); }
+
+    /**
+     * Add children to stack top.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to add
+     * @param tran_translation horizontal translation of element
+     * @return path hint
+     */
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
 };
 
 /**
@@ -270,20 +293,31 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
     /**
      * Add children to stack top.
      * @param el element to add
-     * @param lon_translation, tran_translation horizontal translation of element
+     * @param tran_translation horizontal translation of element
      * @return path hint
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_back(shared_ptr<ChildType> el, const double lon_translation = 0.0, const double tran_translation = 0.0);
-
+    PathHints::Hint add(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);  
+    
     /**
      * Add children to stack top.
      * @param el element to add
      * @param lon_translation, tran_translation horizontal translation of element
      * @return path hint
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(shared_ptr<ChildType> el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
-        return push_back(el, lon_translation, tran_translation);
+    PathHints::Hint push_back(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
+        return add(el, lon_translation, tran_translation);
     }
+
+    /**
+     * Add children to stack top.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to add
+     * @param lon_translation, tran_translation horizontal translation of element
+     * @return path hint
+     */
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
 };
 
 template <int dim>
@@ -294,7 +328,7 @@ class MultiStackContainer: public chooseType<dim-2, StackContainer2d, StackConta
     
     /**
      * @param a, divider
-     * @return $a - \floor{\frac{a}{divider}} * divider$
+     * @return \f$a - \floor{a / divider} * divider\f$
      */
     static double modulo(double a, double divider) { 
         return a - static_cast<double>( static_cast<int>( a / divider ) ) * divider;
