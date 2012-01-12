@@ -2,11 +2,15 @@ from modplask import *
 
 ## ## plask.material ## ##
 
-def registerMaterial(Material):
+material.database = material.MaterialsDB()
+
+def registerMaterial(Material, DB=None):
     '''Function to register a new material'''
-    if not 'name' in Material.__dict__:
-        Material.name = Material.__name__
-    material._registerMaterial(Material.name, Material) # register to C++
+    if 'name' not in Material.__dict__:
+        Material.name = lambda self: Material.__name__
+    if DB is None:
+        DB = material.database
+    material._registerMaterial(Material.name(Material()), Material, DB) # register to C++
     return Material
 
 material.new = material.registerMaterial = registerMaterial

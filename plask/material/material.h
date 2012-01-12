@@ -22,7 +22,7 @@ struct Material {
     virtual ~Material() {}
 
     /// @return material name
-    virtual std::string getName() const = 0;
+    virtual std::string name() const = 0;
 
 #ifdef DISABLE___
 
@@ -416,11 +416,12 @@ struct MaterialsDB {
 
     /**
      * Type of function which construct material.
+     * @param name plain material name
      * @param composition amounts of elements, with NaN for each element for composition was not written
      * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
      * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
      */
-    typedef Material* construct_material_f(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
+    typedef Material* construct_material_f(const std::string& name, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
 
     /**
      * Template of function which construct material with given type.
@@ -433,7 +434,7 @@ struct MaterialsDB {
      * - must have constructor which takes parameters: std::vector<double> composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount
      * - this constructor can suppose that composition is complete (without NaN)
      */
-    //TODO set some by methods? what with materials witout dopands?
+    //TODO set some by methods? what with materials without dopands?
     template <typename MaterialType> Material* construct(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
         return new MaterialType( fillMaterialCompositionAmounts(MaterialType::COMPOSITION_PATTERN), dopant_amount_type, dopant_amount );
     }
@@ -490,7 +491,7 @@ public:
     /**
      * Fill database with default materials creators.
      */
-    //TODO materials will be cr
+    //TODO materials will be created
     //void init();
 };
 

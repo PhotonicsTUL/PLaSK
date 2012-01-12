@@ -1,4 +1,4 @@
-#include <boost/python/suite/indexing/map_indexing_suite.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <plask/geometry/container.h>
 
@@ -6,55 +6,57 @@
 
 namespace plask { namespace python {
 
-//TODO: make PathHints better manage memory or replace it with normal Python dict
-
-/// Wrapper for PathHints::getChild.
-/// Throws exception if there is no such element
-GeometryElement* PathHints_getChild(const PathHints& self, GeometryElement* container) {
-    GeometryElement* value = self.getChild(container);
-    if (value == nullptr) {
-        PyErr_SetString(PyExc_KeyError, "No such container in hints");
-        throw py::error_already_set();
-    }
-    return value;
+DECLARE_GEOMETRY_ELEMENT_23D(TranslationContainer, "TranslationContainer",
+                             "Geometry elements container in which every child has an associated translation vector ("," version)")
+{
+    GEOMETRY_ELEMENT_23D_DEFAULT(TranslationContainer, GeometryElementContainer<dim>)
+        .def("add", &TranslationContainer<dim>::add, "Add new element to the container")
+    ;
 }
 
-// Some other wrappers:
-
-size_t PathHints__len__(const PathHints& self) { return self.hintFor.size(); }
-
-void PathHints__delitem__(PathHints& self, const GeometryElement* key) { self.hintFor.erase(const_cast< GeometryElement*>(key)); }
-
-bool PathHints__contains__(const PathHints& self, const GeometryElement* key) { return self.hintFor.find(const_cast< GeometryElement*>(key)) != self.hintFor.end(); }
-
-
-
+DECLARE_GEOMETRY_ELEMENT_23D(MultiStackContainer, "MultiStackContainer",
+                             "Stack container which repeats its contents\n\n"
+                             "MultiStackContainer","(repeatCount = 1, baseLevel = 0) -> Create new multi-stack with repeatCount repetitions")
+{
+    GEOMETRY_ELEMENT_23D_DEFAULT(MultiStackContainer, typename MultiStackContainer<dim>::UpperClass)
+        .def_readwrite("repeats", &MultiStackContainer<dim>::repeat_count, "Number of repeats of the stack content")
+    ;
+}
 
 void register_geometry_container()
 {
-    py::class_<PathHints>("PathHints", "Hints are used to to find unique path for all GeometryElement pairs, "
-                                            "even if one of the pair element is inserted to geometry graph in more than one place.")
-        .def("__len__", &PathHints__len__)
+    // Path hints (jest for future use)
 
-        .def("__getitem__", &PathHints_getChild, py::return_internal_reference<1>())
+    py::class_<PathHints::Hint>("PathHint",
+                                "Objects of this class are returned by methods which add new elements to containers and can be added to path Hints",
+                                py::no_init);
 
-        .def("__setitem__", (void (PathHints::*)(GeometryElement*,GeometryElement*)) &PathHints::addHint,
-                            py::with_custodian_and_ward<1,2, py::with_custodian_and_ward<1,3>>())
-
-        .def("__delitem__", &PathHints__delitem__)
-
-        .def("__contains__", &PathHints__contains__)
-
-        .def("__iter__", py::iterator<PathHints::HintMap, py::return_internal_reference<>>())
-
-        .def("addHint", (void (PathHints::*)(const PathHints::Hint&)) &PathHints::addHint,
-             "Add hint to hints map. Overwrite if hint for given container already exists.", py::with_custodian_and_ward<1,2>())
-
-        .def("addHint", (void (PathHints::*)(GeometryElement*,GeometryElement*)) &PathHints::addHint,
-             "Add hint to hints map. Overwrite if hint for given container already exists.", py::with_custodian_and_ward<1,2, py::with_custodian_and_ward<1,3>>())
-
-        .def("getChild", &PathHints_getChild, "Get child for given container.", py::return_internal_reference<1>())
+    py::class_<PathHints>("PathHints", "Hints are used to to find unique path for every element in the geometry tree, "
+                                       "even if this element is inserted to geometry graph in more than one place.")
+        .def("add", (void (PathHints::*)(const PathHints::Hint&)) &PathHints::addHint, "Add hint to hints map.")
+        .def(py::self += py::other<PathHints::Hint>())
     ;
+
+    // Translation container
+    init_TranslationContainer<2>();
+    init_TranslationContainer<3>();
+
+    // Stack container
+
+    py::class_<StackContainer2d>("StackContainer2D",
+        "Container that organizes its childern in vertical stack (2D version)\n\n"
+        "StackContainer2D(baseLevel = 0) -> Create the stack with the bottom side of the first element at the baseLevel (in container local coordinates)",
+        py::init<double>())
+        .def("add", &StackContainer2d::add, "Add new element to the container")
+    ;
+
+    py::class_<StackContainer3d>("StackContainer3D",
+        "Container that organizes its childern in vertical stack (3D version)\n\n"
+        "StackContainer3D(baseLevel = 0) -> Create the stack with the bottom side of the first element at the baseLevel (in container local coordinates)",
+        py::init<double>())
+        .def("add", &StackContainer3d::add, "Add new element to the container")
+    ;
+
 }
 
 

@@ -3,10 +3,10 @@
 #include <plask/material/material.h>
 
 struct DumbMaterial: public plask::Material {
-    virtual std::string getName() const { return "Dumb"; }
+    virtual std::string name() const { return "Dumb"; }
 };
 
-inline plask::Material* construct_dumb_material(const std::vector<double>& composition, plask::MaterialsDB::DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
+inline plask::Material* construct_dumb_material(const std::string& name, const std::vector<double>& composition, plask::MaterialsDB::DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
     return new DumbMaterial();
 }
 

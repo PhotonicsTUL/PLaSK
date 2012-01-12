@@ -6,12 +6,12 @@ namespace plask { namespace python {
 /// Initialize class GeometryElementD for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementD, GeometryElement)
-        .def("inside", &GeometryElementD<dim>::inside, "Return True if the geometry element includes a point")
-        .def("intersect", &GeometryElementD<dim>::intersect, "Return True if the geometry element has common points with an area")
-        .def("getMaterial", &GeometryElementD<dim>::getMaterial, "Return material at given point, provided that it is inside the bounding box and None otherwise")
-        .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox, "Minimal rectangle which includes all points of the geometry element")
+        .def("inside", &GeometryElementD<dim>::inside, "Return True if the geometry element includes a point (in local coordinates)")
+        .def("intersect", &GeometryElementD<dim>::intersect, "Return True if the geometry element has common points (in local coordinates) with an area")
+        .def("getMaterial", &GeometryElementD<dim>::getMaterial, "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
+        .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox, "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
         .add_property("boundingBoxSize", &GeometryElementD<dim>::getBoundingBoxSize, "Size of the bounding box")
-        .add_property("leafsBoundigBoxes", &GeometryElementD<dim>::getLeafsBoundingBoxes, "Calculate bounding boxes of all leafs")
+        .add_property("leafsBoundigBoxes", &GeometryElementD<dim>::getLeafsBoundingBoxes, "Calculate bounding boxes of all leafs (in local coordinates)")
     ;
 }
 
@@ -24,23 +24,13 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, "GeometryElementLeaf", "Base c
 }
 
 
-/// Wrapper for GeometryElementTransform::getChild (required because of the overloading)
-template <int dim>
-static const GeometryElementD<dim>* GeometryElementTransform_getChild(const GeometryElementTransform<dim>& self) {
-    return &self.getChild();
-}
-/// Wrapper for GeometryElementTransform::setChild (required because of the overloading)
-template <int dim>
-static void GeometryElementTransform_setChild(GeometryElementTransform<dim>& self, GeometryElementD<dim>* child) {
-    self.setChild(*child);
-}
 /// Initialize class GeometryElementTransform for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementTransform, "GeometryElementTransform", "Base class for all "," transform nodes") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementTransform, GeometryElementD<dim>)
         .add_property("child",
-            py::make_function(&GeometryElementTransform_getChild<dim>, py::return_internal_reference<>()),
-            py::make_function(&GeometryElementTransform_setChild<dim>, py::with_custodian_and_ward<1, 2>()))
-        .def("hasChild", &GeometryElementTransform<2>::hasChild)
+                      (shared_ptr<typename GeometryElementTransform<dim>::ChildType> (GeometryElementTransform<dim>::*)()) &GeometryElementTransform<dim>::getChild,
+                      &GeometryElementTransform<dim>::setChild)
+        .def("hasChild", &GeometryElementTransform<dim>::hasChild)
     ;
 }
 

@@ -77,7 +77,7 @@ struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
-    
+
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Rect Rect;
 
@@ -138,7 +138,7 @@ public:
 };
 
 /**
- * Geometry elements container in which all child is connected with translation vector.
+ * Geometry elements container in which every child has an associated translation vector.
  */
 //TODO some implementation are naive, and can be done faster with some caches
 template < int dim >
@@ -146,20 +146,20 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
-    
+
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Rect Rect;
-    
+
     ///Type of this child.
     typedef GeometryElementD<dim> ChildType;
-    
+
     ///Type of translation geometry elment in space of this.
     typedef Translation<dim> TranslationT;
 
     using GeometryElementContainerImpl<dim>::children;
 
     /**
-     * Add new child (trasnlated) to end of children vector.
+     * Add new child (translated) to end of children vector.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el new child
      * @param translation trasnalation of child
@@ -169,7 +169,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
         children.push_back(trans_geom);
         return PathHints::Hint(this, trans_geom);
     }
-    
+
     /**
      * Add new child (trasnlated) to end of children vector.
      * @param el new child
@@ -191,13 +191,13 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
-    
+
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Rect Rect;
-    
+
     ///Type of this child.
     typedef GeometryElementD<dim> ChildType;
-    
+
     ///Type of translation geometry elment in space of this.
     typedef Translation<dim> TranslationT;
 
@@ -219,7 +219,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
         if (it == stackHeights.end() || it == stackHeights.begin()) return nullptr;
         return children[it-stackHeights.begin()-1];
     }
-    
+
     virtual bool inside(const DVec& p) const {
         const TranslationT* c = getChildForHeight(p.c1);
         return c ? c->inside(p) : false;
@@ -246,7 +246,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
     using StackContainerBaseImpl<2>::children;
 
     /**
-     * @param baseHeight height where should start first element
+     * @param baseHeight height where the first element should start
      */
     explicit StackContainer2d(const double baseHeight = 0.0);
 
@@ -257,8 +257,8 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * @return path hint
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);   
-    
+    PathHints::Hint add(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
+
     /**
      * Add child to stack top.
      * @param el element to add
@@ -286,7 +286,7 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
     using StackContainerBaseImpl<3>::children;
 
     /**
-     * @param baseHeight height where should start first element
+     * @param baseHeight height where the first element should start
      */
     explicit StackContainer3d(const double baseHeight = 0.0);
 
@@ -297,8 +297,8 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * @return path hint
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);  
-    
+    PathHints::Hint add(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
+
     /**
      * Add children to stack top.
      * @param el element to add
@@ -322,37 +322,37 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
 
 template <int dim>
 class MultiStackContainer: public chooseType<dim-2, StackContainer2d, StackContainer3d>::type {
-    
+
     ///Type of parent class of this.
     typedef typename chooseType<dim-2, StackContainer2d, StackContainer3d>::type UpperClass;
-    
+
     /**
      * @param a, divider
      * @return \f$a - \floor{a / divider} * divider\f$
      */
-    static double modulo(double a, double divider) { 
+    static double modulo(double a, double divider) {
         return a - static_cast<double>( static_cast<int>( a / divider ) ) * divider;
     }
-    
+
 public:
     using UpperClass::getChildForHeight;
     using UpperClass::stackHeights;
     using UpperClass::children;
-    
+
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename UpperClass::DVec DVec;
-    
+
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename UpperClass::Rect Rect;
 
 protected:
-    
+
     /*
      * Get number of all children.
      * @return number of all children
      */
     //std::size_t size() const { return children.size() * repeat_count; }
-    
+
     /*
      * Get child with translation.
      * @param index index of child
@@ -361,7 +361,7 @@ protected:
     //typename UpperClass::TranslationT& operator[] (std::size_t index) { return children[index % children.size()]; }
 
     /**
-     * Reduce @a height to be in first repetition.
+     * Reduce @a height to the first repetition.
      * @param height to reduce
      * @return @c true only if height is inside this stack (only in such case @a height is reduced)
      */
@@ -373,24 +373,24 @@ protected:
         height = modulo(zeroBasedRequestHeight, zeroBasedStackHeight) + stackHeights.front();
         return true;
     }
-    
+
 public:
-    
-    ///How many times all stack is repeated.
+
+    /// How many times all stack is repeated.
     unsigned repeat_count;
-    
+
     /**
-     * @param baseHeight height where should start first element
      * @param repeat_count how many times stack should be repeated, must be 1 or more
+     * @param baseHeight height where the first element should start
      */
-    explicit MultiStackContainer(const double baseHeight = 0.0, unsigned repeat_count = 1): UpperClass(baseHeight), repeat_count(repeat_count) {}
+    explicit MultiStackContainer(unsigned repeat_count = 1, const double baseHeight = 0.0): UpperClass(baseHeight), repeat_count(repeat_count) {}
 
     //this is not used but, just for case redefine UpperClass::getChildForHeight
     const typename UpperClass::TranslationT* getChildForHeight(double height) const {
         if (!reduceHeight(height)) return nullptr;
         return UpperClass::getChildForHeight(height);
     }
-    
+
     virtual bool intersect(const Rect& area) const {
         const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
         for (unsigned r = 0; r < repeat_count; ++r)
@@ -398,13 +398,13 @@ public:
                 return true;
         return false;
     }
-    
+
     virtual Rect getBoundingBox() const {
         Rect result = UpperClass::getBoundingBox();
         result.upper.up += result.sizeUp() * (repeat_count-1);
         return result;
     }
-    
+
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
         std::vector<Rect> result = UpperClass::getLeafsBoundingBoxes();
         std::size_t size = result.size();   //oryginal size
@@ -417,7 +417,7 @@ public:
         }
         return result;
     }
-    
+
     virtual bool inside(const DVec& p) const {
         DVec p_reduced = p;
         if (!reduceHeight(p_reduced.up)) return false;
@@ -429,7 +429,7 @@ public:
         if (!reduceHeight(p_reduced.up)) return shared_ptr<Material>();
         return UpperClass::getMaterial(p_reduced);
     }
-    
+
 };
 
 

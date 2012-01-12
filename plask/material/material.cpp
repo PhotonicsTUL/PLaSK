@@ -57,7 +57,7 @@ shared_ptr< Material > plask::MaterialsDB::get(const std::string& parsed_name_wi
 {
     auto it = constructors.find(parsed_name_with_donor);
     if (it == constructors.end()) throw NoSuchMaterial(parsed_name_with_donor);
-    return shared_ptr<Material>(it->second(composition, dopant_amount_type, dopant_amount));
+    return shared_ptr<Material>(it->second(it->first, composition, dopant_amount_type, dopant_amount));
 }
 
 const char* getElementEnd(const char* begin, const char* end) {

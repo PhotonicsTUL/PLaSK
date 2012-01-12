@@ -65,7 +65,7 @@ template <typename ConstructedType, typename ChildParamF>
 void read_children(ConstructedType& result, GeometryReader& reader, ChildParamF child_param_read) {
 
     std::string tag_name = reader.source.getNodeName();
-    
+
     while (reader.source.read()) {
         switch (reader.source.getNodeType()) {
 
@@ -180,4 +180,4 @@ GeometryReader::RegisterElementReader stack2d_reader("stack2d", read_StackContai
 GeometryReader::RegisterElementReader stack3d_reader("stack3d", read_StackContainer3d);
 
 
-}	// namespace plask
+} // namespace plask

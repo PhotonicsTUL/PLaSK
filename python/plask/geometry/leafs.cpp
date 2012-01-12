@@ -27,12 +27,20 @@ static shared_ptr<Block<3>> Cuboid_constructor_vec(const Vec<3,double>& size, sh
 
 void register_geometry_leafs()
 {
-    py::class_<Block<2>, shared_ptr<Block<2>>, py::bases<GeometryElementLeaf<2>>>("Rectangle", "Geometry object (2D): a rectangle filled with one material")
+    py::class_<Block<2>, shared_ptr<Block<2>>, py::bases<GeometryElementLeaf<2>>>("Rectangle",
+        "Geometry object (2D): a rectangle filled with one material\n\n"
+        "Rectangle(size) -> initialize rectangle with size given in two-dimensional vector\n"
+        "Rectangle(width, height) -> initialize rectangle with given width and height"
+        )
         .def("__init__", py::make_constructor(&Rectangle_constructor_wh))
         .def("__init__", py::make_constructor(&Rectangle_constructor_vec))
     ;
 
-    py::class_<Block<3>, shared_ptr<Block<3>>, py::bases<GeometryElementLeaf<3>>>("Cuboid", "Geometry object (3D): a cuboid filled with one material")
+    py::class_<Block<3>, shared_ptr<Block<3>>, py::bases<GeometryElementLeaf<3>>>("Cuboid",
+        "Geometry object (3D): a cuboid filled with one material\n\n"
+        "Cuboid(size) -> initialize rectangle with size given in three-dimensional vector\n"
+        "Cuboid(depth, width, height) -> initialize rectangle with given depth, width, and height"
+        )
         .def("__init__", py::make_constructor(&Cuboid_constructor_dwh))
         .def("__init__", py::make_constructor(&Cuboid_constructor_vec))
     ;

@@ -24,7 +24,7 @@ struct chooseType {
     typedef typename std::tuple_element<nr, std::tuple<types...>>::type type;
 };
 
-//TODO better impl. but not compilable in GCC 4.6 (unimplement)
+//TODO better impl. but not compilable with GCC 4.6 (unimplemented)
 /*template <int nr, typename firstType, typename... restTypes> struct chooseType {
     ///Choosed type.
     typedef typename chooseType<nr-1, restTypes...>::type type;

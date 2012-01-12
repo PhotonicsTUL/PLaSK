@@ -41,7 +41,7 @@ static int vec__len__() { return dim; }
 
 // __str__(v)
 template <int dim, typename T>
-static std::string vec__str__(const Vec<dim,T>& to_print) {
+std::string vec__str__(const Vec<dim,T>& to_print) {
     std::stringstream out;
     out << "[";
     for (int i = 0; i < dim; ++i) out << sc(to_print.components[i]) << (i!=dim-1 ? ", " : "]");
@@ -50,7 +50,7 @@ static std::string vec__str__(const Vec<dim,T>& to_print) {
 
 // __repr__(v)
 template <int dim, typename T>
-static std::string vec__repr__(const Vec<dim,T>& to_print) {
+std::string vec__repr__(const Vec<dim,T>& to_print) {
     std::stringstream out;
     out << "vector(";
     for (int i = 0; i < dim; ++i) out << sc(to_print.components[i]) << (i!=dim-1 ? ", " : ")");
@@ -163,7 +163,7 @@ const static char* __doc__ =
         "General vector class in PLaSK. It can inteligently hold both 2D and 3D vectors.\n\n"
         "vector(#, #[, #]) -> initialize with ordered components\n"
         "vector(x=#, y=#, z=#) -> initialize with Cartesian components (z or x skipped for 2D)\n"
-        "vector(r=#, phi=#, z=#) -> initialize with cylindrical components (phi skipped for 2D)\n"
+        "vector(r=#, phi=#, z=#) -> initialize with cylindrical components (phi skipped for 2D)\n\n"
         "The order of its components always corresponds to the structure orientation\n"
         "(with the last component parallel to the epitaxial growth direction.\n\n"
         "However, the component names depend on the config.axis_up configuration option.\n"
@@ -172,7 +172,7 @@ const static char* __doc__ =
         "in 2D vectors it is [y,z] (x-component skipped) or [r,z] (you can refer to\n"
         "Cartesian or cylindrical cooridinates at your preference). In 3D vectors it is\n"
         "[x,y,z] or [r,phi,z].\n\n"
-        "For config.vertical_axis = 'z' the order becomes: [x,y] and [z,x,y] for 2D and 3D vectors, "
+        "For config.vertical_axis = 'z' the order becomes: [x,y] and [z,x,y] for 2D and 3D vectors,\n"
         "respectively. In this case, cylindrical component names are not allowed.";
 
 // Register vector class to python

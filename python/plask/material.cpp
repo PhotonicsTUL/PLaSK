@@ -7,27 +7,48 @@ namespace py = boost::python;
 
 namespace plask { namespace python {
 
-/**
- * Base class for all the materials derived in Python
- */
-struct CustomMaterial : public Material {};
+
+// Hack to cheat Boost assertion
+struct WrappedMaterial : public Material {};
 
 /**
- * Wrapper for CustomMaterial class.
+ * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
  */
-struct CustomMaterialWrap : public CustomMaterial, py::wrapper<CustomMaterial>
+struct MaterialWrap : public WrappedMaterial, py::wrapper<WrappedMaterial>
 {
-    virtual std::string getName() const { return py::extract<std::string>(this->get_override("name")); }
+    virtual std::string name() const {
+        if (py::override override = this->get_override("name")) return override();
+        else return "Material";
+    }
 };
+
+/**
+ * Function constructing custom Python material whre read from XML file
+ *
+ * \param name plain material name
+ * \param composition amounts of elements, with NaN for each element for composition was not written
+ * \param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
+ * \param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
+ */
+inline plask::Material* constructCustomMaterial(const std::string& name, const std::vector<double>& composition,
+                                                plask::MaterialsDB::DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
+    // TODO
+}
+
+
 /**
  * Function registering custom material class to plask
  * \param name name of the material
  * \param material_class Python class object of the custom material
  */
-void registerMaterial(const std::string& name, py::object material_class)
+void registerMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
 {
-    // TODO
+    db.add(name, &constructCustomMaterial);
+}
+
+std::string test(Material* m) {
+    return m->name();
 }
 
 void initMaterial() {
@@ -42,14 +63,22 @@ void initMaterial() {
         "as the current state of the art. However, you can derive an abstract class plask.material.CustomMaterial "
         "to create your own one."; //TODO maybe more extensive description
 
-    py::class_<Material, shared_ptr<Material>, boost::noncopyable>("Material", "Base class for all materials.", py::no_init)
-        .add_property("name", &Material::getName)
-        .def("getName", &Material::getName)
+
+    py::class_<MaterialsDB, shared_ptr<MaterialsDB>> materialsDB("MaterialsDB", "Material database class"); materialsDB
+        .def("get", (shared_ptr<Material> (MaterialsDB::*)(const std::string&, const std::string&) const) &MaterialsDB::get, "Get material of given name and doping")
+        .def("get", (shared_ptr<Material> (MaterialsDB::*)(const std::string&) const) &MaterialsDB::get, "Get material of given name and doping")
     ;
 
-    py::class_<CustomMaterialWrap, shared_ptr<CustomMaterialWrap>, py::bases<Material>, boost::noncopyable>("CustomMaterial");
 
-    def("_registerMaterial", registerMaterial);
+    py::class_<Material, shared_ptr<Material>, boost::noncopyable>("Material", "Base class for all materials.", py::no_init)
+        .def("name", &Material::name)
+    ;
+
+    py::class_<MaterialWrap, shared_ptr<MaterialWrap>, py::bases<Material>, boost::noncopyable>("Material", "Base class for all materials.");
+
+    py::def("_registerMaterial", registerMaterial);
+
+    py::def("test", test);
 }
 
 }} // namespace plask::python
