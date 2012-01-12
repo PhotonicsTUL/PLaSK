@@ -128,6 +128,13 @@ public:
         return result;
     }
 
+    virtual bool isInSubtree(GeometryElement& el) const {
+        if (&el == this) return true;
+        for (auto child: children)
+            if (child->isInSubtree(el))
+                return true;
+        return false;
+    }
 };
 
 /**

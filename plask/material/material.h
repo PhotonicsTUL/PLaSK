@@ -24,6 +24,352 @@ struct Material {
     /// @return material name
     virtual std::string getName() const = 0;
 
+#ifdef DISABLE___
+
+    /**
+     * Get lattice constant [A].
+     * @param T temperature [K]
+     * @param x lattice paramter [-]
+     * @return lattice constant [A]
+     */
+    virtual double lattC(double T, char x) const;
+
+    /**
+     * @param T temperature [K]
+     * @param Point point in the Brillouin zone [-]
+     * @return energy gap Eg [eV]
+     */
+    virtual double Eg(double T, char Point) const;
+
+    /**
+     * Get conduction band offset CBO [eV].
+     * @param T temperature [K]
+     * @param Point point in the Brillouin zone [-]
+     * @return conduction band offset CBO [eV]
+     */
+    virtual double CBO(double T, char Point) const;
+
+    /**
+     * Get valance band offset VBO[eV].
+     * @param T temperature [K]
+     * @return valance band offset VBO[eV]
+     */
+    virtual double VBO(double T) const;
+
+    /**
+     * Get split-off energy Dso [eV].
+     * @param T temperature [K]
+     * @return split-off energy Dso [eV]
+     */
+    virtual double Dso(double T) const;
+
+    /**
+     * Get split-off mass Mso [\f$m_0\f$].
+     * @param T temperature [K]
+     * @return split-off mass Mso [\f$m_0\f$]
+     */
+    virtual double Mso(double T) const;
+
+    /**
+     * Get electron effective mass Me [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return split-off mass Mso [\f$m_0\f$]
+     */
+    virtual double Me(double T, char Point) const;
+
+    /**
+     * Get electron effective mass Me in vertical direction [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return electron effective mass Me in vertical direction [\f$m_0\f$]
+     */
+    virtual double Me_v(double T, char Point) const;
+
+    /**
+     * Get electron effective mass Me in lateral direction [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return electron effective mass Me in lateral direction [\f$m_0\f$]
+     */
+    virtual double Me_l(double T, char Point) const;
+
+    /**
+     * Get heavy hole effective mass Mhh [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return heavy hole effective mass Mhh [\f$m_0\f$]
+     */
+    virtual double Mhh(double T, char Point) const;
+
+    /**
+     * Get heavy hole effective mass Me in vertical direction [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return heavy hole effective mass Mhh [\f$m_0\f$]
+     */
+    virtual double Mhh_v(double T, char Point) const;
+
+    /**
+     * Get heavy hole effective mass Me in lateral direction [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return heavy hole effective mass Me in lateral direction [\f$m_0\f$]
+     */
+    virtual double Mhh_l(double T, char Point) const;
+
+    /**
+     * Get light hole effective mass Mlh [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return light hole effective mass Mlh [\f$m_0\f$]
+     */
+    virtual double Mlh(double T, char Point) const;
+
+    /**
+     * Get light hole effective mass Me in vertical direction [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return light hole effective mass Me in vertical direction [\f$m_0\f$]
+     */
+    virtual double Mlh_v(double T, char Point) const;
+
+    /**
+     * Get light hole effective mass Me in lateral direction [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return light hole effective mass Me in lateral direction [\f$m_0\f$]
+     */
+    virtual double Mlh_l(double T, char Point) const;
+
+    /**
+     * Get hole effective mass Mh [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param EqType equation type [-]
+     * @return hole effective mass Mh [\f$m_0\f$]
+     */
+    virtual double Mh(double T, char EqType) const;
+
+    /**
+     * Get hole effective mass Me in vertical direction [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return hole effective mass Me in vertical direction [\f$m_0\f$]
+     */
+    virtual double Mh_v(double T, char Point) const;
+
+    /**
+     * Get hole effective mass Me in lateral direction [\f$m_0\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return hole effective mass Me in lateral direction [\f$m_0\f$]
+     */
+    virtual double Mh_l(double T, char Point) const;
+
+    /**
+     * Get dielectric constant EpsR [-].
+     * @param T temperature [K]
+     * @return dielectric constant EpsR [-]
+     */
+    virtual double eps(double T) const;
+
+    /**
+     * Get electron affinity Chi[eV].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return electron affinity Chi [eV]
+     */
+    virtual double chi(double T, char Point) const;
+
+    virtual inline double chi(char Point) const {
+	return chi(300, Point);
+    }
+
+    /**
+     * Get effective density of states in the conduction band Nc [\f$m^{-3}\f$].
+     * @param T temperature [K]
+     * @param Point point in Brillouin zone [-]
+     * @return effective density of states in the conduction band Nc [\f$m^{-3}\f$]
+     */
+    virtual double Nc(double T, char Point) const;
+
+    /**
+     * Get effective density of states in the valance band Nv [\f$m^{-3}\f$].
+     * @param T temperature [K]
+     * @return effective density of states in the valance band Nv [\f$m^{-3}\f$]
+     */
+    virtual double Nc(double T)	const;
+
+    /**
+     * Get intrinsic carrier concentration Ni [\f$m^{-3}\f$].
+     * @param T temperature [K]
+     * @return intrinsic carrier concentration Ni [\f$m^{-3}\f$]
+     */
+    virtual double Ni(double T)	const;
+
+    /**
+     * Get free carrier concentration N [\f$m^{-3}\f$].
+     * @param T temperature [K]
+     * @return free carrier concentration N [\f$m^{-3}\f$]
+     */
+    virtual double Nf(double T)	const;
+
+    /**
+     * Get donor ionisation energy EactD [eV].
+     * @param T temperature [K]
+     * @return donor ionisation energy EactD [eV]
+     */
+    virtual double EactD(double T) const;
+
+    /**
+     * Get acceptor ionisation energy EactA [eV].
+     * @param T temperature [K]
+     * @return acceptor ionisation energy EactA [eV]
+     */
+    virtual double EactA(double T) const;
+
+    /**
+     * Get mobility [m^2/(V*s)].
+     * @param T temperature [K]
+     * @return mobility [m^2/(V*s)]
+     */
+    virtual double mob(double T) const;
+
+    /**
+     * Get electrical conductivity Sigma [S/m].
+     * @param T temperature [K]
+     * @return electrical conductivity Sigma [S/m]
+     */
+    virtual double cond(double T) const;
+
+    /**
+     * Get electrical conductivity in vertical direction Sigma [S/m].
+     * @param T temperature [K]
+     * @return electrical conductivity in vertical direction Sigma [S/m]
+     */
+    virtual double cond_v(double T) const;
+
+    /**
+     * Get electrical conductivity in lateral direction Sigma [S/m].
+     * @param T temperature [K]
+     * @return electrical conductivity in lateral direction Sigma[S/m]
+     */
+    virtual double cond_l(double T) const;
+
+    /**
+     * Get electrical resistivity [Ohm*m].
+     * @param T temperature [K]
+     * @return electrical resistivity [Ohm*m]
+     */
+    virtual double res(double T) const;
+
+    /**
+     * Get electrical resistivity in vertical direction [Ohm*m].
+     * @param T temperature [K]
+     * @return electrical resistivity in vertical direction [Ohm*m]
+     */
+    virtual double res_v(double T) const;
+
+    /**
+     * Get electrical resistivity in lateral direction [Ohm*m].
+     * @param T temperature [K]
+     * @return electrical resistivity in vertical direction [Ohm*m]
+     */
+    virtual double res_l(double T) const;
+
+    /**
+     * Get monomolecular recombination coefficient A [1/s].
+     * @param T temperature [K]
+     * @return monomolecular recombination coefficient A [1/s]
+     */
+    virtual double A(double T) const;
+
+    /**
+     * Get radiative recombination coefficient B[m^3/s].
+     * @param T temperature [K]
+     * @return radiative recombination coefficient B[m^3/s]
+     */
+    virtual double B(double T) const;
+
+    /**
+     * Get Auger recombination coefficient C [m^6/s].
+     * @param T temperature [K]
+     * @return Auger recombination coefficient C [m^6/s]
+     */
+    virtual double C(double T) const;
+
+    /**
+     * Get ambipolar diffusion coefficient D[m^2/s].
+     * @param T temperature [K]
+     * @return ambipolar diffusion coefficient D[m^2/s]
+     */
+    virtual double D(double T) const;
+
+    /**
+     * Get thermal conductivity k[W/(m*K)].
+     * @param T temperature [K]
+     * @param Thickness thickness [m]
+     * @return ambipolar diffusion coefficient D[m^2/s]
+     */
+    virtual double thermCond(double T, double Thick) const;
+
+    /**
+     * Get thermal conductivity in vertical direction k [W/(m*K)].
+     * @param T temperature [K]
+     * @param Thickness thickness [m]
+     * @return thermal conductivity in vertical direction k [W/(m*K)]
+     */
+    virtual double thermCond_v(double T, double Thick) const;
+
+    /**
+     * Get thermal conductivity in lateral direction k [W/(m*K)].
+     * @param T temperature [K]
+     * @param Thickness thickness [m]
+     * @return thermal conductivity in lateral direction k [W/(m*K)]
+     */
+    virtual double thermCond_l(double T, double Thick) const;
+
+    /**
+     * Get density [kg/m^3].
+     * @param T temperature [K]
+     * @return density [kg/m^3]
+     */
+    virtual double dens(double T) const;
+
+    /**
+     * Get specific heat at constant pressure [J/(kg*K)].
+     * @param T temperature [K]
+     * @return specific heat at constant pressure [J/(kg*K)]
+     */
+    virtual double specHeat(double T) const;
+
+    /**
+     * Get refractive index nR [-].
+     * @param WaveLen Wavelength [nm]
+     * @param T temperature [K]
+     * @return refractive index nR [-]
+     */
+    virtual double nr(double WaveLen, double T) const;
+
+    /**
+     * Get absorption coefficient alpha[-].
+     * @param WaveLen Wavelength [nm]
+     * @param T temperature [K]
+     * @return absorption coefficient alpha[-]
+     */
+    virtual double absp(double WaveLen, double T) const;
+
+    /**
+     * Get refractive index nR[-].
+     * @param WaveLen Wavelength [nm]
+     * @param T temperature [K]
+     * @return refractive index nR[-]
+     */
+    virtual dcomplex Nr(double WaveLen, double T) const;
+
+#endif
+    //virtual std::tuple<double, double, double, double, double> Nr(double WaveLen, double T..??..) const;// refractive index (tensor) nR[-]: Wavelength[nm], Temperature[K]
+
 };
 
 /**

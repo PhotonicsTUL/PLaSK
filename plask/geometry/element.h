@@ -51,6 +51,13 @@ struct GeometryElement {
      * @throw Exception if element is not ready for calculation
      */
     virtual void validate() const {}
+    
+    /**
+     * Check if @a el is in subtree with @c this in root.
+     * @param el element to search for
+     * @return @c true only if @a el is in subtree with @c this in root
+     */
+    virtual bool isInSubtree(GeometryElement& el) const = 0;
 
     /**
      * Virtual destructor. Do nothing.
@@ -142,6 +149,10 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return { getBoundingBox() };
     }
 
+    virtual bool isInSubtree(GeometryElement& el) const {
+        return &el == this;
+    }
+
 };
 
 /**
@@ -187,6 +198,10 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      */
     virtual void validate() const {
         if (!hasChild()) throw NoChildException();
+    }
+
+    virtual bool isInSubtree(GeometryElement& el) const {
+        return &el == this || _child->isInSubtree(el);
     }
 
     protected:
