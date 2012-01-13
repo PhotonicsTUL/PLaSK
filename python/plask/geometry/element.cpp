@@ -3,12 +3,39 @@
 
 namespace plask { namespace python {
 
+// Some helpful wrappers
+template <int dim> struct GeometryElementD_inside {};
+template <> struct GeometryElementD_inside<2> {
+    static inline bool call(const GeometryElementD<2>& self, double c0, double c1) {
+        return self.inside(Vec<2,double>(c0, c1));
+    }
+};
+template <> struct GeometryElementD_inside<3> {
+    static inline bool call(const GeometryElementD<3>& self, double c0, double c1, double c2) {
+        return self.inside(Vec<3,double>(c0, c1, c2));
+    }
+};
+
+template <int dim> struct GeometryElementD_getMaterial {};
+template <> struct GeometryElementD_getMaterial<2> {
+    static inline shared_ptr<Material> call(const GeometryElementD<2>& self, double c0, double c1) {
+        return self.getMaterial(Vec<2,double>(c0, c1));
+    }
+};
+template <> struct GeometryElementD_getMaterial<3> {
+    static inline shared_ptr<Material> call(const GeometryElementD<3>& self, double c0, double c1, double c2) {
+        return self.getMaterial(Vec<3,double>(c0, c1, c2));
+    }
+};
+
 /// Initialize class GeometryElementD for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementD, GeometryElement)
         .def("inside", &GeometryElementD<dim>::inside, "Return True if the geometry element includes a point (in local coordinates)")
+        .def("inside", &GeometryElementD_inside<dim>::call, "Return True if the geometry element includes a point (in local coordinates)")
         .def("intersect", &GeometryElementD<dim>::intersect, "Return True if the geometry element has common points (in local coordinates) with an area")
         .def("getMaterial", &GeometryElementD<dim>::getMaterial, "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
+        .def("getMaterial", &GeometryElementD_getMaterial<dim>::call, "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
         .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox, "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
         .add_property("boundingBoxSize", &GeometryElementD<dim>::getBoundingBoxSize, "Size of the bounding box")
         .add_property("leafsBoundigBoxes", &GeometryElementD<dim>::getLeafsBoundingBoxes, "Calculate bounding boxes of all leafs (in local coordinates)")

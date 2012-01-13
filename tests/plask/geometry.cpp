@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK_EQUAL(rect.upper, plask::vec(3.0, 2.0));
     }
 
-    BOOST_FIXTURE_TEST_CASE(leaf_box2d, Leafs2d) {
+    BOOST_FIXTURE_TEST_CASE(leaf_rectangle, Leafs2d) {
         BOOST_CHECK_EQUAL(block_5_3->getBoundingBox().upper, plask::vec(5.0, 3.0));
         BOOST_CHECK_EQUAL(block_5_3->getBoundingBox().lower, plask::vec(0.0, 0.0));
         BOOST_CHECK_EQUAL(block_5_3->getMaterial(plask::vec(4.0, 2.0)), dumbMaterial);
