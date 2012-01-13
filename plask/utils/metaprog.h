@@ -10,7 +10,7 @@ This file includes meta-programing tools.
 namespace plask {
 
 /**
-Choost nr-th type from types list.
+Choose nr-th type from types list.
 
 For example:
 @code
