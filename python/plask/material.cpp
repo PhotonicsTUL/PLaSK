@@ -7,10 +7,11 @@ namespace py = boost::python;
 
 namespace plask { namespace python {
 
+/// Map of all custom Python materials
+std::map<std::string, py::object> custom_materials;
 
 // Hack to cheat Boost assertion
 struct WrappedMaterial : public Material {};
-
 /**
  * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
@@ -27,13 +28,17 @@ struct MaterialWrap : public WrappedMaterial, py::wrapper<WrappedMaterial>
  * Function constructing custom Python material whre read from XML file
  *
  * \param name plain material name
+ * By now the following parameters are ignored
  * \param composition amounts of elements, with NaN for each element for composition was not written
  * \param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
  * \param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
  */
-inline plask::Material* constructCustomMaterial(const std::string& name, const std::vector<double>& composition,
+inline shared_ptr<Material> constructCustomMaterial(const std::string& name, const std::vector<double>& composition,
                                                 plask::MaterialsDB::DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
-    // TODO
+    py::object material = custom_materials[name]();
+
+    //TODO check for constructors with different signatures
+    return py::extract<shared_ptr<Material>>(material);
 }
 
 
@@ -44,11 +49,9 @@ inline plask::Material* constructCustomMaterial(const std::string& name, const s
  */
 void registerMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
 {
+    //TODO issue a warning if material with such name already exists
+    custom_materials[name] = material_class;
     db.add(name, &constructCustomMaterial);
-}
-
-std::string test(Material* m) {
-    return m->name();
 }
 
 void initMaterial() {
@@ -76,9 +79,7 @@ void initMaterial() {
 
     py::class_<MaterialWrap, shared_ptr<MaterialWrap>, py::bases<Material>, boost::noncopyable>("Material", "Base class for all materials.");
 
-    py::def("_registerMaterial", registerMaterial);
-
-    py::def("test", test);
+    py::def("registerMaterial", registerMaterial);
 }
 
 }} // namespace plask::python

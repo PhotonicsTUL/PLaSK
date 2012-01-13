@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Based on the sympy session.py:
 

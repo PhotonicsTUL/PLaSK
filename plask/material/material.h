@@ -409,7 +409,7 @@ struct MaterialsDB {
 
     ///Amounts of dopands.
     enum DOPANT_AMOUNT_TYPE {
-        NO_DOPANT,              ///< no dopand
+        NO_DOPING,              ///< no dopand
         DOPING_CONCENTRATION,   ///< doping concentration
         CARRIER_CONCENTRATION   ///< carrier concentration
     };
@@ -421,7 +421,7 @@ struct MaterialsDB {
      * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
      * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
      */
-    typedef Material* construct_material_f(const std::string& name, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
+    typedef shared_ptr<Material> construct_material_f(const std::string& name, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
 
     /**
      * Template of function which construct material with given type.
@@ -435,7 +435,7 @@ struct MaterialsDB {
      * - this constructor can suppose that composition is complete (without NaN)
      */
     //TODO set some by methods? what with materials without dopands?
-    template <typename MaterialType> Material* construct(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
+        template <typename MaterialType> shared_ptr<Material> construct(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
         return new MaterialType( fillMaterialCompositionAmounts(MaterialType::COMPOSITION_PATTERN), dopant_amount_type, dopant_amount );
     }
 
@@ -454,7 +454,7 @@ public:
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @a parsed_name_with_donor
      */
-    shared_ptr<Material> get(const std::string& parsed_name_with_donor, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type = NO_DOPANT, double dopant_amount = 0.0) const;
+    shared_ptr<Material> get(const std::string& parsed_name_with_donor, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type = NO_DOPING, double dopant_amount = 0.0) const;
 
     /**
      * Create material object.

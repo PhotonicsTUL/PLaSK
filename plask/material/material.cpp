@@ -129,7 +129,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components,
     for (std::string& c: components) parsed_name_with_dopant += c;
 
     double dopant_amount = 0.0;
-    DOPANT_AMOUNT_TYPE dopant_amount_type = NO_DOPANT;
+    DOPANT_AMOUNT_TYPE dopant_amount_type = NO_DOPING;
     if (!dopant_descr.empty()) {
         std::string dopant_name;
         parseDopant(dopant_descr.data(), dopant_descr.data() + dopant_descr.size(), dopant_name, dopant_amount_type, dopant_amount);

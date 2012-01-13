@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from modplask import *
 
 ## ## plask.material ## ##
@@ -10,10 +11,10 @@ def registerMaterial(Material, DB=None):
         Material.name = lambda self: Material.__name__
     if DB is None:
         DB = material.database
-    material._registerMaterial(Material.name(Material()), Material, DB) # register to C++
+    material.registerMaterial(Material.name(Material()), Material, DB) # register to C++
     return Material
 
-material.new = material.registerMaterial = registerMaterial
+material.new = material.register = registerMaterial
 #del registerMaterial
 
 ## ## plask.geometry ## ##
