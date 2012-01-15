@@ -24,15 +24,15 @@ class Vector(unittest.TestCase):
         plask.config.vertical_axis = 'z'
         self.assertEqual( plask.vec(y=1, z=2), plask.vec(1,2) )
         self.assertEqual( plask.vec(r=1, z=2), plask.vec(1,2) )
-        self.assertEqual( vec(z=3, x=1, y=2), vec(1,2,3) )
-        self.assertEqual( vec(r=1, z=3, phi=2), vec(1,2,3) )
+        self.assertEqual( plask.vec(z=3, x=1, y=2), plask.vec(1,2,3) )
+        self.assertEqual( plask.vec(r=1, z=3, phi=2), plask.vec(1,2,3) )
         self.assertRaises( TypeError, lambda: plask.vec(x=1, y=2) ) # for vertical_axis = 'z' x component is not allowed in 2D
         self.assertRaises( TypeError, lambda: plask.vec(bad_x=1, z=2, y=1) )
         self.assertRaises( TypeError, lambda: plask.vec(r=1, y=2, z=3) )
 
         plask.config.vertical_axis = 'y'
-        self.assertEqual( vec(x=1, y=2), vec(1,2) )
-        self.assertEqual( vec(y=3, x=2, z=1), vec(1,2,3) )
+        self.assertEqual( plask.vec(x=1, y=2), plask.vec(1,2) )
+        self.assertEqual( plask.vec(y=3, x=2, z=1), plask.vec(1,2,3) )
         self.assertRaises( TypeError, lambda: plask.vec(r=1, z=2) )
         self.assertRaises( TypeError, lambda: plask.vec(phi=1, y=2, z=3) )
         self.assertRaises( TypeError, lambda: plask.vec(x=1, bad_x=2) )
