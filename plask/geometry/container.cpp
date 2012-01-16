@@ -64,12 +64,14 @@ PathHints::Hint StackContainer3d::addUnsafe(const shared_ptr<ChildType>& el, con
 template <typename ConstructedType, typename ChildParamF>
 void read_children(ConstructedType& result, GeometryReader& reader, ChildParamF child_param_read) {
 
-    std::string tag_name = reader.source.getNodeName();
+    std::string container_tag_name = reader.source.getNodeName();
 
     while (reader.source.read()) {
         switch (reader.source.getNodeType()) {
 
             case irr::io::EXN_ELEMENT_END:
+                if (reader.source.getNodeName() != container_tag_name)
+                    throw XMLUnexpectedElementException("end of \"" + container_tag_name + "\" tag");
                 return; // container has been read
 
             case irr::io::EXN_ELEMENT:
@@ -77,10 +79,11 @@ void read_children(ConstructedType& result, GeometryReader& reader, ChildParamF 
                     boost::optional<std::string> path = XML::getAttribute(reader.source, "path");
                     PathHints::Hint hint = child_param_read();
                     if (path)
-                        reader.manager.pathHints[*path].addHint(hint);
+                        reader.manager.pathHints[*path].addHint(hint);  //this call readExactlyOneChild
                 } else {
+                    //std::string element_tag_name = reader.source.getNodeName();
                     result.add(reader.readElement< typename ConstructedType::ChildType >());
-                    XML::requireTagEnd(reader.source, tag_name);
+                    //XML::requireTagEndOrEmptyTag(reader.source, element_tag_name);
                     //result.add(&manager.readExactlyOneChild< typename ConstructedType::ChildType >(source));
                 }
 

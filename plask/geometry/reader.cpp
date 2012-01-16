@@ -71,10 +71,10 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
 }
 
 shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
+    std::string parent_tag = source.getNodeName();
     XML::requireTag(source);
-    std::string tag_name = source.getNodeName();
     shared_ptr<GeometryElement> result = readElement();
-    XML::requireTagEnd(source, tag_name);
+    XML::requireTagEnd(source, parent_tag);
     return result;
 }
 

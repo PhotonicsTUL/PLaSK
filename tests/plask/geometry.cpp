@@ -49,7 +49,6 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         initDumbMaterialDb(materialsDB);
         plask::GeometryManager manager(materialsDB);
         manager.loadFromXMLString("<geometry axis=\"xy\"><stack2d repeat=\"2\"><child><rectangle name=\"block\" x=\"4\" y=\"2\" material=\"Dumb\" /></child><ref name=\"block\" /></stack2d></geometry>");
-        //TODO there is a bug in irrXML that it does not generate two events for <rectangle x=\"4\" y=\"2\" material=\"Dumb\"/>
         //BOOST_CHECK_EQUAL(manager.elements.size(), 3);
         BOOST_CHECK(manager.getElement("block") != nullptr);
         BOOST_CHECK(manager.getElement("notexist") == nullptr);

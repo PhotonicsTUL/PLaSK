@@ -56,6 +56,8 @@ void requireTag(XMLReader& reader);
 
 void requireTagEnd(XMLReader& reader, const std::string& tag);
 
+void requireTagEndOrEmptyTag(XMLReader& reader, const std::string& tag);
+
 /**
  * Skip XML comments.
  * @return @c true if read non-comment or @c false if XML data end

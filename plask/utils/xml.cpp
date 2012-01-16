@@ -30,11 +30,15 @@ void requireTag(XMLReader& reader) {
 }
 
 void requireTagEnd(XMLReader& reader, const std::string& tag) {
-    if (reader.getNodeType() == irr::io::EXN_ELEMENT && reader.isEmptyElement())
-        return;
     requireNext(reader);
     if (reader.getNodeType() != irr::io::EXN_ELEMENT_END || reader.getNodeName() != tag)
         throw XMLUnexpectedElementException("end of tag \"" +tag + "\"");
+}
+
+void requireTagEndOrEmptyTag(XMLReader& reader, const std::string& tag) {
+    if (reader.getNodeType() == irr::io::EXN_ELEMENT && reader.isEmptyElement())
+        return;
+    requireTagEnd(reader, tag);
 }
 
 bool skipComments(XMLReader& reader) {
