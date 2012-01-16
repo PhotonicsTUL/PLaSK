@@ -87,10 +87,11 @@ struct AxisNames {
 struct GeometryReader {
 
     /**
-     * Create new geometry element (using new operator) with parameters reading from XML source.
+     * Create new geometry element with parameters reading from XML source.
+     *
+     * After return reader should point to end of tag of this element.
      * Can call managers methods to read children (GeometryReader::readElement).
      * Should throw exception if can't create element.
-     * Result will be delete (using delete operator) by caller.
      */
     typedef shared_ptr<GeometryElement> element_read_f(GeometryReader& reader);
 
@@ -177,6 +178,8 @@ struct GeometryReader {
      *
      * Typically it creates new geometry element using elementReaders,
      * but it also support references and can return existing elements.
+     *
+     * After call source reader point to end of tag which represent read element.
      * @return element which was read and create or to which reference was read
      * @throw GeometryElementNamesConflictException if element with read name already exists
      * @throw NoSuchGeometryElement if ref element reference to element which not exists
@@ -185,8 +188,11 @@ struct GeometryReader {
     shared_ptr<GeometryElement> readElement();
 
     /**
-     * Skip current element in source and read exactly one geometry element (which also skip).
-     * @return element which was read and create or to which reference was read
+     * Helper function to read elements which have exactly one child (typically: transform).
+     *
+     * Befor call source reader should point to parent element tag (typically transform element)
+     * and after call it will be point to end of parent element tag.
+     * @return child element which was read and create or to which reference was read
      */
     shared_ptr<GeometryElement> readExactlyOneChild();
 
@@ -204,7 +210,7 @@ struct GeometryReader {
 
     /**
      * Call readExactlyOneChild() and try dynamic cast it to @a RequiredElementType.
-     * @return element (casted to RequiredElementType) which was read and create or to which reference was read
+     * @return element (casted to RequiredElementType) which was return by readExactlyOneChild()
      * @tparam RequiredElementType required type of element
      */
     template <typename RequiredElementType>
