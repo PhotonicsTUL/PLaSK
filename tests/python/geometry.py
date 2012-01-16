@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 import unittest
 
+import sys
+if sys.version < "2.7":
+    unittest.TestCase.assertIsNone = lambda self, value: self.assertTrue(item is None)
+
 import plask, plask.material, plask.geometry
 
 class SimpleGeometry(unittest.TestCase):

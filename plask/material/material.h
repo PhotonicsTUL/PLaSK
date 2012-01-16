@@ -373,7 +373,7 @@ struct Material {
 };
 
 /**
- * Material which consist with few real materials.
+ * Material which consist of several real materials.
  * It calculate averages for all properties.
  */
 struct MixedMaterial: public Material {
@@ -408,7 +408,7 @@ std::vector<double> fillMaterialCompositionAmounts(const std::vector<double>& co
 struct MaterialsDB {
 
     ///Amounts of dopands.
-    enum DOPANT_AMOUNT_TYPE {
+    enum DOPING_AMOUNT_TYPE {
         NO_DOPING,              ///< no dopand
         DOPING_CONCENTRATION,   ///< doping concentration
         CARRIER_CONCENTRATION   ///< carrier concentration
@@ -421,40 +421,38 @@ struct MaterialsDB {
      * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
      * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
      */
-    typedef shared_ptr<Material> construct_material_f(const std::string& name, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount);
+    typedef shared_ptr<Material> construct_material_f(const std::string& name, const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount);
 
     /**
      * Template of function which construct material with given type.
      * @param composition amounts of elements, with NaN for each element for composition was not writen
      * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
-     * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
+     * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPING
      * @tparam MaterialType type of material to construct, must fill requirements:
-     * - inharited from plask::Material
+     * - inherited from plask::Material
      * - has public, static unsigned COMPOSITION_PATTERN field which determinates sizes of composition groups (for example: 21 means that there are two groups, first group has size 2 and second has size 1)
-     * - must have constructor which takes parameters: std::vector<double> composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount
+     * - must have constructor which takes parameters: std::vector<double> composition, DOPING_AMOUNT_TYPE dopant_amount_type, double dopant_amount
      * - this constructor can suppose that composition is complete (without NaN)
      */
     //TODO set some by methods? what with materials without dopands?
-        template <typename MaterialType> shared_ptr<Material> construct(const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type, double dopant_amount) {
-        return new MaterialType( fillMaterialCompositionAmounts(MaterialType::COMPOSITION_PATTERN), dopant_amount_type, dopant_amount );
+    template <typename MaterialType> shared_ptr<Material> construct(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
+        return shared_ptr<Material>( new MaterialType(fillMaterialCompositionAmounts(MaterialType::COMPOSITION_PATTERN), doping_amount_type, doping_amount) );
     }
 
-private:
-    ///Map: material name -> materials constructors functions
+    /// Map: material name -> materials constructors functions
+    //  (it needs to be public to enable access from Python interface)
     std::map<std::string, construct_material_f*> constructors;
-
-public:
 
     /**
      * Create material object.
      * @param parsed_name_with_donor material name with donor name in format material_name[:donor_name], for example: "AlGaN" or "AlGaN:Mg"
      * @param composition amounts of elements, with NaN for each element for composition was not writen
-     * @param dopant_amount_type type of amount of dopand, needed to interpetation of @a dopant_amount
-     * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
+     * @param doping_amount_type type of amount of dopand, needed to interpetation of @a dopant_amount
+     * @param doping_amount amount of dopand, is ignored if @a doping_amount_type is @c NO_DOPANT
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @a parsed_name_with_donor
      */
-    shared_ptr<Material> get(const std::string& parsed_name_with_donor, const std::vector<double>& composition, DOPANT_AMOUNT_TYPE dopant_amount_type = NO_DOPING, double dopant_amount = 0.0) const;
+    shared_ptr<Material> get(const std::string& parsed_name_with_dpant, const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type = NO_DOPING, double doping_amount = 0.0) const;
 
     /**
      * Create material object.

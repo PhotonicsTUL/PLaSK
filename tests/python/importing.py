@@ -3,6 +3,9 @@
 import unittest
 
 import sys
+if sys.version < "2.7":
+    unittest.TestCase.assertIn = lambda self, item, container: self.assertTrue(item in container)
+
 
 class Importing(unittest.TestCase):
 
@@ -12,8 +15,7 @@ class Importing(unittest.TestCase):
     def testImporting(self):
         '''Check if plask is present'''
         import plask
-        try: self.assertIn('modplask', sys.modules) # assertIn only present in Python 2.7 and higher
-        except NameError: self.assertTrue('modplask' in sys.modules)
+        self.assertIn('modplask', sys.modules)
 
         def use_modplask_directly(): print modplask.__file__
         self.assertRaises(NameError, use_modplask_directly)

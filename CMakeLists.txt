@@ -100,7 +100,7 @@ if (BUILD_PYTHON)
     find_package(numpy REQUIRED)
 
     # Require Python >= 2.6
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CheckPythonversion.py "from sys import version_info as v\nif v.major == 2 and v.minor >= 6: print 'YES'\nelse: print 'NO'")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CheckPythonversion.py "from sys import version\nif version >= '2.6': print 'YES'\nelse: print 'NO'")
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CheckPythonversion.py" OUTPUT_VARIABLE PYTHON_SUFFICIENT_VERSION)
     string(STRIP ${PYTHON_SUFFICIENT_VERSION} PYTHON_SUFFICIENT_VERSION)
     if (NOT PYTHON_SUFFICIENT_VERSION)
