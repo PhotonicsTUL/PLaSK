@@ -10,6 +10,7 @@ namespace plask {
 void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator begin, std::vector<double>::iterator end) {
     auto no_info = end;
     double sum = 0.0;
+    unsigned n = 0;
     for (auto i = begin; i != end; ++i) {
         if (isnan(*i)) {
             if (no_info != end)
@@ -18,10 +19,11 @@ void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator begin, st
                 no_info = i;
         } else {
             sum += *i;
-            if (sum > 1.0)
-                throw plask::MaterialParseException("Sum of composition ammounts in group exceeds 1");
+            ++n;
         }
     }
+    if (n > 0 && sum - 1.0 > SMALL*n)
+        throw plask::MaterialParseException("Sum of composition ammounts in group exceeds 1");
     if (no_info != end) {
         *no_info = 1.0 - sum;
     } else {
