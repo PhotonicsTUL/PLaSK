@@ -188,9 +188,25 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
         return addUnsafe(el, translation);
     }
     
-    /*void remove(const ChildType* el) {
-        std::remove_if(children.begin(), children.end(), []() {  });
-    }*/
+    /**
+     * Remove all children exactly equal to @a el.
+     * @param el child(ren) to remove
+     */
+    void remove(const ChildType* el) {
+        children.erease(
+            std::remove_if(children.begin(), children.end(), [&el](ChildType* c) { return c->child == el; }),
+            children.end()
+        );
+    }
+    
+    /**
+     * Remove child pointed, for this container, in @a hints.
+     * @param hints path hints
+     */
+    void remove(const PathHints& hints) {
+        auto c = hints.getChild(this);
+        if (c) children.erase(std::find(children.begin(), children.end(), c));
+    }
 
 };
 
