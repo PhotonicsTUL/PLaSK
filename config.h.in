@@ -9,9 +9,13 @@
 // Declare shared pointer to use
 // (when boost::python gets compatibile with std::shared_ptr, check boost version and use std if possible)
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 namespace plask {
     using boost::shared_ptr;
     using boost::dynamic_pointer_cast;
+    using boost::weak_ptr;
+    using boost::enable_shared_from_this;
 }
 
 

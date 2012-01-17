@@ -1,5 +1,4 @@
 #include "container.h"
-#include "../utils/stl.h"
 
 #include "manager.h"
 #include "reader.h"
@@ -10,15 +9,35 @@ void PathHints::addHint(const Hint& hint) {
     addHint(hint.first, hint.second);
 }
 
-void PathHints::addHint(GeometryElement* container, GeometryElement* child) {
+void PathHints::addHint(weak_ptr<GeometryElement> container, weak_ptr<GeometryElement> child) {
     hintFor[container] = child;
 }
 
-GeometryElement* PathHints::getChild(GeometryElement* container) const {
-    return map_find(hintFor, container);
+shared_ptr<GeometryElement> PathHints::getChild(shared_ptr<GeometryElement> container) {
+    auto e = hintFor.find(container);
+    if (e == hintFor.end()) return shared_ptr<GeometryElement>();
+    shared_ptr<GeometryElement> result = e->second.lock();
+    if (!result || e->first.expired()) {        //child or container was deleted (in second case, new container is under same address as was old one)
+        hintFor.erase(container);
+        return shared_ptr<GeometryElement>();
+    }
+    return result;
 }
 
+shared_ptr<GeometryElement> PathHints::getChild(shared_ptr<GeometryElement> container) const {
+    auto e = hintFor.find(container);
+    return (e == hintFor.end() || e->first.expired()) ? shared_ptr<GeometryElement>() : e->second.lock();
+}
 
+void PathHints::cleanDeleted() {
+    for(auto i = hintFor.begin(); i != hintFor.end(); ) {
+        if (i->first.expired() || i->second.expired())
+            hintFor.erase(i++);
+        else
+            ++i;
+}
+
+}
 
 StackContainer2d::StackContainer2d(const double baseHeight): StackContainerBaseImpl<2>(baseHeight) {}
 
@@ -30,10 +49,10 @@ PathHints::Hint StackContainer2d::add(const shared_ptr<StackContainerBaseImpl::C
 PathHints::Hint StackContainer2d::addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation) {
     Rect2d bb = el->getBoundingBox();
     const double up_translation = stackHeights.back() - bb.lower.up;
-    TranslationT* trans_geom = new TranslationT(el, vec(tran_translation, up_translation));
+    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(tran_translation, up_translation)));
     children.push_back(trans_geom);
     stackHeights.push_back(bb.upper.up + up_translation);
-    return PathHints::Hint(this, trans_geom);
+    return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
 StackContainer3d::StackContainer3d(const double baseHeight): StackContainerBaseImpl<3>(baseHeight) {}
@@ -46,10 +65,10 @@ PathHints::Hint StackContainer3d::add(const shared_ptr<ChildType>& el, const dou
 PathHints::Hint StackContainer3d::addUnsafe(const shared_ptr<ChildType>& el, const double lon_translation, const double tran_translation) {
     Rect3d bb = el->getBoundingBox();
     const double up_translation = stackHeights.back() - bb.lower.up;
-    TranslationT* trans_geom = new TranslationT(el, vec(lon_translation, tran_translation, up_translation));
+    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(lon_translation, tran_translation, up_translation)));
     children.push_back(trans_geom);
     stackHeights.push_back(bb.upper.up + up_translation);
-    return PathHints::Hint(this, trans_geom);
+    return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
 // ---- containers readers: ----

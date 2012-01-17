@@ -28,23 +28,23 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
     }
 
     BOOST_FIXTURE_TEST_CASE(translate2d, Leafs2d) {
-        plask::Translation<2> translation(block_5_3, plask::vec(10.0, 20.0));    //should be in [10, 20] - [15, 23]
-        BOOST_CHECK_EQUAL(translation.getBoundingBox(), plask::Rect2d(plask::vec(10, 20), plask::vec(15, 23)));
-        BOOST_CHECK_EQUAL(translation.getMaterial(plask::vec(12.0, 22.0)), dumbMaterial);
-        BOOST_CHECK(translation.getMaterial(plask::vec(4.0, 22.0)) == nullptr);
+        plask::shared_ptr<plask::Translation<2>> translation(new plask::Translation<2>(block_5_3, plask::vec(10.0, 20.0)));    //should be in [10, 20] - [15, 23]
+        BOOST_CHECK_EQUAL(translation->getBoundingBox(), plask::Rect2d(plask::vec(10, 20), plask::vec(15, 23)));
+        BOOST_CHECK_EQUAL(translation->getMaterial(plask::vec(12.0, 22.0)), dumbMaterial);
+        BOOST_CHECK(translation->getMaterial(plask::vec(4.0, 22.0)) == nullptr);
     }
 
     BOOST_FIXTURE_TEST_CASE(multistack2d, Leafs2d) {
-        plask::MultiStackContainer<2> multistack(5, 10.0);
-        multistack.add(block_5_3);
-        multistack.add(block_5_3);
+        plask::shared_ptr<plask::MultiStackContainer<2>> multistack(new plask::MultiStackContainer<2>(5, 10.0));
+        multistack->add(block_5_3);
+        multistack->add(block_5_3);
         //5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
-        BOOST_CHECK_EQUAL(multistack.getBoundingBox(), plask::Rect2d(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
-        BOOST_CHECK_EQUAL(multistack.getMaterial(plask::vec(4.0, 39.0)), dumbMaterial);
-        BOOST_CHECK(multistack.getMaterial(plask::vec(4.0, 41.0)) == nullptr);
+        BOOST_CHECK_EQUAL(multistack->getBoundingBox(), plask::Rect2d(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
+        BOOST_CHECK_EQUAL(multistack->getMaterial(plask::vec(4.0, 39.0)), dumbMaterial);
+        BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 41.0)) == nullptr);
     }
 
-   BOOST_AUTO_TEST_CASE(manager_loading) {
+    BOOST_AUTO_TEST_CASE(manager_loading) {
         plask::MaterialsDB materialsDB;
         initDumbMaterialDb(materialsDB);
         plask::GeometryManager manager(materialsDB);

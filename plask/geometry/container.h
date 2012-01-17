@@ -28,9 +28,7 @@ Typically, hints are returned by methods which adds new elements to containers.
 struct PathHints {
 
     ///Type for map: geometry element container -> element in container
-    typedef std::map<GeometryElement*, GeometryElement*> HintMap;
-    //TODO co z wieloma ojcami, może powinno być GeometryElement* -> set<GeometryElement*> (bo kontenery też mogą mieć wiele ojców) albo mapy w obie strony
-    //TODO może GeometryElement* -> int
+    typedef std::map< weak_ptr<GeometryElement>, weak_ptr<GeometryElement> > HintMap;
 
     ///Pair type: geometry element container -> element in container
     typedef HintMap::value_type Hint;
@@ -57,13 +55,24 @@ struct PathHints {
      * Add hint to hints map. Overwrite if hint for given container already exists.
      * @param container, child hint to add
      */
-    void addHint(GeometryElement* container, GeometryElement* child);
+    void addHint(weak_ptr<GeometryElement> container, weak_ptr<GeometryElement> child);
 
     /**
      * Get child for given container.
      * @return child for given container or @c nullptr if there is no hint for given container
      */
-    GeometryElement* getChild(GeometryElement* container) const;
+    shared_ptr<GeometryElement> getChild(shared_ptr<GeometryElement> container);
+    
+    /**
+     * Get child for given container.
+     * @return child for given container or @c nullptr if there is no hint for given container
+     */
+    shared_ptr<GeometryElement> getChild(shared_ptr<GeometryElement> container) const;
+    
+    /**
+     * Remove all hints which refer to deleted objects.
+     */
+    void cleanDeleted();
 
 };
 
@@ -72,7 +81,7 @@ struct PathHints {
  * @tparam dim GeometryElementContainer dimension
  * @tparam container_type container of pointers to children
  */
-template <int dim, typename container_type = std::vector<Translation<dim>*> >
+template <int dim, typename container_type = std::vector< shared_ptr< Translation<dim> > > >
 struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
@@ -85,9 +94,6 @@ protected:
     container_type children;
 
 public:
-    ~GeometryElementContainerImpl() {
-        for (auto child: children) delete child;
-    }
 
     virtual bool inside(const DVec& p) const {
         for (auto child: children) if (child->inside(p)) return true;
@@ -157,6 +163,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
     typedef Translation<dim> TranslationT;
 
     using GeometryElementContainerImpl<dim>::children;
+    using GeometryElementContainerImpl<dim>::shared_from_this;
 
     /**
      * Add new child (translated) to end of children vector.
@@ -165,9 +172,9 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
      * @param translation trasnalation of child
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
-        TranslationT* trans_geom = new TranslationT(el, translation);
+        shared_ptr<TranslationT> trans_geom(new TranslationT(el, translation));
         children.push_back(trans_geom);
-        return PathHints::Hint(this, trans_geom);
+        return PathHints::Hint(shared_from_this(), trans_geom);
     }
 
     /**
@@ -180,6 +187,10 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
         ensureCanHasAsChild(*el);
         return addUnsafe(el, translation);
     }
+    
+    /*void remove(const ChildType* el) {
+        std::remove_if(children.begin(), children.end(), []() {  });
+    }*/
 
 };
 
@@ -217,7 +228,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
     const TranslationT* getChildForHeight(double height) const {
         auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
         if (it == stackHeights.end() || it == stackHeights.begin()) return nullptr;
-        return children[it-stackHeights.begin()-1];
+        return children[it-stackHeights.begin()-1].get();
     }
 
     virtual bool inside(const DVec& p) const {

@@ -16,10 +16,10 @@ namespace plask {
 
 ///Type of geometry element.
 enum GeometryElementType {
-    GE_TYPE_LEAF = 0,         /// <leaf element (has no child)
-    GE_TYPE_TRANSFORM = 1,    /// <transform element (has one child)
-    GE_TYPE_SPACE_CHANGER = 2,/// <transform element which changing its space, typically changing number of dimensions (has one child)
-    GE_TYPE_CONTAINER = 3     /// <container (more than one child)
+    GE_TYPE_LEAF = 0,         ///< leaf element (has no child)
+    GE_TYPE_TRANSFORM = 1,    ///< transform element (has one child)
+    GE_TYPE_SPACE_CHANGER = 2,///< transform element which changing its space, typically changing number of dimensions (has one child)
+    GE_TYPE_CONTAINER = 3     ///< container (more than one child)
 };
 
 /**
@@ -36,7 +36,7 @@ struct GeometryTransform {
 /**
  * Base class for all geometries.
  */
-struct GeometryElement {
+struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     /**
      * Check if geometry is: leaf, transform or container type element.
