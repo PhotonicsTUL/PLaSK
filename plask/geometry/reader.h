@@ -30,27 +30,54 @@ struct AxisNames {
             this->operator()(c0_name, c1_name, c2_name, names...);
         }
         
+        /**
+         * Add axis names to register.
+         * @param c0_name, c1_name, c2_name axis names
+         * @param name name of axis names, register key
+         */
         void addname(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name, const std::string& name) {
             axisNames[name] = AxisNames(c0_name, c1_name, c2_name);
         }
         
+        /**
+         * Add axis names using as key: c0_name + c1_name + c2_name
+         * @param c0_name, c1_name, c2_name axis names
+         */
         Register& operator()(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name) {
             addname(c0_name, c1_name, c2_name, c0_name + c1_name + c2_name);
             return *this;
         }
         
+        /**
+         * Add axis names to register using as keys given @a name and c0_name + c1_name + c2_name.
+         * @param c0_name, c1_name, c2_name axis names
+         * @param name name of axis names, register key
+         * @tparam Param1 std::string or const char*
+         */   
         template<typename Param1>
         Register& operator()(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name, const Param1& name) {
             addname(c0_name, c1_name, c2_name, name);
             return this->operator()(c0_name, c1_name, c2_name);
         }
 
+        /**
+         * Add axis names to register using as keys given names and c0_name + c1_name + c2_name.
+         * @param c0_name, c1_name, c2_name axis names
+         * @param firstName, names names of axis names, register keys
+         * @tparam Param1, Params each of type std::string or const char*
+         */
         template<typename Param1, typename... Params>
         Register& operator()(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name, const Param1& firstName, const Params&... names) {
             addname(c0_name, c1_name, c2_name, firstName);
             return this->operator()(c0_name, c1_name, c2_name, names...);
         }
         
+        /**
+         * Get axis names with given name (key).
+         * @param name register keys
+         * @return axis names
+         * @throw NoSuchAxisNames if axis names with given name not exists in register
+         */
         const AxisNames& get(const std::string& name) const;
     };
     

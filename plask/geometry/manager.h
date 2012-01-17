@@ -61,10 +61,22 @@ struct GeometryManager {
      */
     shared_ptr<GeometryElement> requireElement(const std::string& name);
     
+    /**
+     * Load geometry using XML reader.
+     * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
+     */
     void loadFromReader(XMLReader& XMLreader);
     
+    /**
+     * Load geometry from (XML) stream.
+     * @param input stream to read from, with XML content
+     */
     void loadFromXMLStream(std::istream &input);
     
+    /**
+     * Load geometry from string which consist of XML.
+     * @param input_XML_str string with XML content
+     */
     void loadFromXMLString(const std::string &input_XML_str);
     
     /*
