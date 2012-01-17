@@ -9,11 +9,11 @@ set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works
 
 # ---------- common options --------------------------------------------
 
-#add_definitions(-Wall)          # all warnings
+#add_definitions(-Wall)         # all warnings
 add_definitions(-std=c++0x)     # C++0x (C++11) standard
 
 include_directories(.)          # external modules can include plask using <plask/....h>
-include_directories(extlib)    # place for local external libraries
+include_directories(extlib)     # place for local external libraries
 include_directories(${CMAKE_BINARY_DIR}) # for include config.h
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
@@ -24,9 +24,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 execute_process(COMMAND svnversion -n WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE VERSION_REVISION)
-if(${VERSION_REVISION})
-	string(REGEX REPLACE "[0-9]+:|[A-Za-z]+" "" VERSION_REVISION ${VERSION_REVISION})
-    set(VERSION_REVISION "r${VERSION_REVISION}")
+if(NOT ${VERSION_REVISION} STREQUAL "")
+    string(REGEX REPLACE "[0-9]+:|[A-Za-z]+" "" VERSION_REVISION ${VERSION_REVISION})
+    if(${VERSION_REVISION})
+        set(VERSION_REVISION "r${VERSION_REVISION}")
+    else()
+        set(VERSION_REVISION 0)
+    endif()
 else()
     set(VERSION_REVISION 0)
 endif()

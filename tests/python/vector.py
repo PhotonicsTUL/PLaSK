@@ -33,6 +33,7 @@ class Vector(unittest.TestCase):
         plask.config.vertical_axis = 'y'
         self.assertEqual( plask.vec(x=1, y=2), plask.vec(1,2) )
         self.assertEqual( plask.vec(y=3, x=2, z=1), plask.vec(1,2,3) )
+        self.assertRaises( TypeError, lambda: plask.vec(y=1, z=2) ) # for vertical_axis = 'y' z component is not allowed in 2D
         self.assertRaises( TypeError, lambda: plask.vec(r=1, z=2) )
         self.assertRaises( TypeError, lambda: plask.vec(phi=1, y=2, z=3) )
         self.assertRaises( TypeError, lambda: plask.vec(x=1, bad_x=2) )
