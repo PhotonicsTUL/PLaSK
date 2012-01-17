@@ -9,6 +9,7 @@ This file includes base classes for materials and material database class.
 #include <config.h>
 #include <map>
 #include <vector>
+#include <functional>
 #include "../exceptions.h"
 
 namespace plask {
@@ -415,13 +416,39 @@ struct MaterialsDB {
     };
 
     /**
+     * Object of this class (inharited from it) construct material instance.
+     */
+    struct MaterialConstructor {
+        
+        /**
+         * Create material.
+         * @param composition amounts of elements, with NaN for each element for composition was not written
+         * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
+         * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
+         */ 
+        virtual shared_ptr<Material> operator()(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const = 0;
+        
+    };
+    
+    /**
      * Type of function which construct material.
-     * @param name plain material name
      * @param composition amounts of elements, with NaN for each element for composition was not written
      * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
      * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
      */
-    typedef shared_ptr<Material> construct_material_f(const std::string& name, const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount);
+    typedef Material* construct_material_f(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount);
+    
+    /**
+     * Construct material instance using construct_f function.
+     */
+    struct FunctionBasedMaterialConstructor: public MaterialConstructor {
+        construct_material_f* constructFunction;
+        FunctionBasedMaterialConstructor(construct_material_f* constructFunction): constructFunction(constructFunction) {}
+        virtual shared_ptr<Material> operator()(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const {
+            return shared_ptr<Material>(constructFunction(composition, doping_amount_type, dopant_amount));
+        }
+    };
+    
 
     /**
      * Template of function which construct material with given type.
@@ -435,13 +462,13 @@ struct MaterialsDB {
      * - this constructor can suppose that composition is complete (without NaN)
      */
     //TODO set some by methods? what with materials without dopands?
-    template <typename MaterialType> shared_ptr<Material> construct(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
-        return shared_ptr<Material>( new MaterialType(fillMaterialCompositionAmounts(MaterialType::COMPOSITION_PATTERN), doping_amount_type, doping_amount) );
+    template <typename MaterialType> Material* construct(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
+        return new MaterialType(fillMaterialCompositionAmounts(MaterialType::COMPOSITION_PATTERN), doping_amount_type, doping_amount);
     }
 
     /// Map: material name -> materials constructors functions
     //  (it needs to be public to enable access from Python interface)
-    std::map<std::string, construct_material_f*> constructors;
+    std::map<std::string, std::unique_ptr<const MaterialConstructor> > constructors;
 
     /**
      * Create material object.
@@ -473,6 +500,13 @@ struct MaterialsDB {
      */
     shared_ptr<Material> get(const std::string& full_name) const;
 
+    /**
+     * Add material to DB. Replace existing material if there is one already in DB.
+     * @param name material name (with donor after ':')
+     * @param constructor object which can create material instance; must be created by new operator and material DB will call delete for it
+     */
+    void add(const std::string& name, const MaterialConstructor* constructor);
+    
     /**
      * Add material to DB. Replace existing material if there is one already in DB.
      * @param name material name (with donor after ':')

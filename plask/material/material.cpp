@@ -59,7 +59,7 @@ shared_ptr< Material > plask::MaterialsDB::get(const std::string& parsed_name_wi
 {
     auto it = constructors.find(parsed_name_with_donor);
     if (it == constructors.end()) throw NoSuchMaterial(parsed_name_with_donor);
-    return shared_ptr<Material>(it->second(it->first, composition, doping_amount_type, doping_amount));
+    return (*it->second)(composition, doping_amount_type, doping_amount);
 }
 
 const char* getElementEnd(const char* begin, const char* end) {
@@ -147,8 +147,12 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     return get(std::get<0>(pair), std::get<1>(pair));
 }
 
+void MaterialsDB::add(const std::string& name, const MaterialConstructor* constructor) {
+    constructors[name] = std::unique_ptr<const MaterialConstructor>(constructor);
+}
+
 void MaterialsDB::add(const std::string& name, plask::MaterialsDB::construct_material_f* constructor) {
-    constructors[name] = constructor;
+    add(name, new FunctionBasedMaterialConstructor(constructor));
 }
 
 
