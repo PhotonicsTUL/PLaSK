@@ -1,5 +1,5 @@
-#include <boost/python.hpp>
-namespace py = boost::python;
+#include "globals.h"
+#include <boost/python/stl_iterator.hpp>
 
 #include <config.h>
 #include <plask/utils/string.h>
@@ -16,9 +16,8 @@ struct MaterialWrap : public Material
 {
     PyObject* self;
 
-    MaterialWrap () : self(self) { std::cerr << "MaterialWrap::MaterialWrap(self)\n"; }
-
-    ~MaterialWrap() { /*py::decref(self);*/ std::cerr << "MaterialWrap::~MaterialWrap\n"; }
+    // MaterialWrap () {}
+    // ~MaterialWrap() { /* py::decref(self); */ }
 
     virtual std::string name() const {
         return py::extract<std::string>(py::object(py::detail::borrowed_reference(self)).attr("name"));
@@ -50,8 +49,14 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
 {
     py::object material_class;
 
+    bool has_dopant;
+    std::string dopant;
+
   public:
-    PythonMaterialConstructor(py::object material_class) : material_class(material_class) {}
+    PythonMaterialConstructor(py::object material_class) : material_class(material_class), has_dopant(false) {}
+
+    PythonMaterialConstructor(py::object material_class, std::string dopant) : material_class(material_class),
+        has_dopant(true), dopant(dopant) {}
 
     inline shared_ptr<Material> operator()(const std::vector<double>& composition, MaterialsDB::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
     {
@@ -71,6 +76,7 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
         // We pass doping information in **kwargs
         py::dict kwargs;
         if (doping_amount_type !=  MaterialsDB::NO_DOPING) {
+            if (has_dopant) kwargs["dope"] = dopant;
             kwargs[ doping_amount_type == MaterialsDB::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
         }
 
@@ -91,9 +97,19 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
  */
 void registerMaterial(const std::string& name, py::object material_class, shared_ptr<MaterialsDB> db)
 {
-    //TODO issue a warning if material with such name already exists
-    PythonMaterialConstructor* constructor = new PythonMaterialConstructor(material_class);
-    db->add(name, constructor);
+    db->add(name, new PythonMaterialConstructor(material_class));
+
+    // Register name with allowed dopants
+    py::list dopants;
+    try {
+        dopants = py::list(material_class.attr("dopants"));
+        py::stl_input_iterator<std::string> begin(dopants), end;
+        for (auto i = begin; i != end; ++i)
+            db->add(name + ":" + *i, new PythonMaterialConstructor(material_class, *i));
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+
 }
 
 /**
@@ -122,11 +138,54 @@ py::object MaterialsDB_iter(const MaterialsDB& DB) {
  * \param kwargs doping in the form: Mg=1e18, n=2e19; maybe also concentrations: Al=0.3
  * \return found material object
  **/
-shared_ptr<Material> MaterialsDB_factory(const MaterialsDB& DB, const std::string& name, py::tuple args, py::dict kwargs) {
+shared_ptr<Material> MaterialsDB_factory(const MaterialsDB& DB, std::string name, py::tuple args, py::dict kwargs) {
 
-    //TODO Parse args and kwargs
+    // Translate composition
+    std::vector<double> composition;
+    py::stl_input_iterator<double> begin(args), end;
+    for (auto i = begin; i != end; ++i)
+        composition.push_back(*i);
 
-    return DB.get(name, {}, MaterialsDB::NO_DOPING, 0.0);
+    // Get doping
+    bool doping = false;
+    try {
+        std::string dopant = py::extract<std::string>(kwargs["dope"]);
+        name = name + ":" + dopant;
+        doping = true;
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+    MaterialsDB::DOPING_AMOUNT_TYPE doping_type = MaterialsDB::NO_DOPING;
+    double concentation = 0;
+
+    if (doping) {
+        py::object cobj;
+        bool has_dc = false;
+        try {
+            cobj = kwargs["dc"];
+            doping_type = MaterialsDB::DOPANT_CONCENTRATION;
+            has_dc = true;
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+        try {
+            cobj = kwargs["cc"];
+            doping_type = MaterialsDB::CARRIER_CONCENTRATION;
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+        if (doping_type == MaterialsDB::NO_DOPING) {
+            PyErr_SetString(PyExc_ValueError, "neither dopant nor carrier concentrations specified");
+            throw py::error_already_set();
+        } else if (doping_type == MaterialsDB::CARRIER_CONCENTRATION && has_dc) {
+            PyErr_SetString(PyExc_ValueError, "dopant and carrier concentrations specified simultanously");
+            throw py::error_already_set();
+        }
+
+        concentation = py::extract<double>(cobj);
+    }
+
+    return DB.get(name, composition, doping_type, concentation);
 }
 
 
