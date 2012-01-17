@@ -40,9 +40,9 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.materialVBO("Mat", plask.material.database, 1.0), 2.0 )
 
 
-        @plask.material.new
+        @plask.material.new (name="Mat:Dp")
         class MatDp(plask.material.Material):
-            name = "Mat:Dp"
+
             def __init__(self, *args, **kwargs):
                 super(MatDp, self).__init__()
                 self.args = args,
