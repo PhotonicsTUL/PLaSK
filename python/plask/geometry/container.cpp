@@ -27,7 +27,7 @@ inline static py::tuple Stack__getitem__(const S& self, int i) {
         PyErr_SetString(PyExc_IndexError, "index out of range");
         throw py::error_already_set();
     }
-    Translation<dim>* t = self.children[i];
+    shared_ptr<Translation<dim>> t = self.children[i];
     return py::make_tuple(t->getChild(), t->translation);
 }
 
@@ -44,7 +44,7 @@ inline static py::tuple MultiStack__getitem__(const MultiStackContainer<dim>& se
         throw py::error_already_set();
     }
     int j = i % n, I = i / n;
-    Translation<dim>* t = self.children[j];
+    shared_ptr<Translation<dim>> t = self.children[j];
     return py::make_tuple( t->getChild(), t->translation + vvec<dim>(I * (self.stackHeights.back()-self.stackHeights.front())) );
 }
 

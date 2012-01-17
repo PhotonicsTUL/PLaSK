@@ -169,6 +169,12 @@ if(BUILD_TESTS)
     endif(Boost_UNIT_TEST_FRAMEWORK_FOUND)
 
     if(BUILD_PYTHON)
+
+        file(GLOB_RECURSE python_tests_module_src FOLLOW_SYMLINKS tests/python/*.cpp)
+        add_library(plasktest MODULE ${python_tests_module_src})
+        set_target_properties(plasktest PROPERTIES PREFIX "")
+        target_link_libraries(plasktest ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+
         file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python/*.py)
         foreach(test_file ${python_tests})
             get_filename_component(test ${test_file} NAME_WE)
@@ -176,13 +182,13 @@ if(BUILD_TESTS)
                 add_test(NAME python-builtin/${test}
                          COMMAND plask ${CMAKE_CURRENT_SOURCE_DIR}/tests/python/main ${test_file})
                 set_tests_properties(python-builtin/${test} PROPERTIES
-                                     ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python;PYTHONDONTWRITEBYTECODE=YES")
+                                     ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib;PYTHONDONTWRITEBYTECODE=YES")
             endif()
             if(BUILD_PYTHON_MODULE)
                 add_test(NAME python-module/${test}
                          COMMAND "${PYTHON_EXECUTABLE}" -B ${CMAKE_CURRENT_SOURCE_DIR}/tests/python/main ${test_file})
                 set_tests_properties(python-module/${test} PROPERTIES
-                                     ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib/plask")
+                                     ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib/plask:${CMAKE_BINARY_DIR}/lib;PYTHONDONTWRITEBYTECODE=YES")
             endif()
         endforeach()
     endif(BUILD_PYTHON)
@@ -224,6 +230,8 @@ if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
             PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
 endif()
 
+# TODO: install python part
+
 # ----------===== packaging =====--------------------------------------------
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Photonic LAser Simulation Kit")
@@ -258,7 +266,7 @@ include(CPack)
 # ----------===== Debug helpers =====--------------------------------------------
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask
-         "PYTHONPATH=${CMAKE_SOURCE_DIR}/python PYTHONDONTWRITEBYTECODE=YES ${CMAKE_BINARY_DIR}/bin/plask $@\n")
+         "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib PYTHONDONTWRITEBYTECODE=YES ${CMAKE_BINARY_DIR}/bin/plask $@\n")
     file(COPY ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask DESTINATION ${CMAKE_BINARY_DIR}
          FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE OWNER_WRITE)
 endif()

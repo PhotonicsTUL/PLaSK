@@ -108,7 +108,7 @@ void parseDopant(const char* begin, const char* end, std::string& dopant_elem_na
     dopant_elem_name.assign(begin, name_end);
     if (*name_end == '=') {
         if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading dopants concentation");
-        doping_amount_type = MaterialsDB::DOPING_CONCENTRATION;
+        doping_amount_type = MaterialsDB::DOPANT_CONCENTRATION;
         doping_amount = toDouble(std::string(name_end+1, end));
         return;
     }

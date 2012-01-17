@@ -22,11 +22,12 @@ def registerMaterial(Material, DB=None):
             raise TypeError("Material class must be a subclass of plask.material.Material")
 
     if 'name' not in Material.__dict__:
-        Material.name = lambda self: Material.__name__
+        Material.name = Material.__name__
 
     if DB is None:
         DB = material.database
-    material.registerMaterial(Material.name(Material()), Material, DB) # register to C++
+    print Material.name
+    material.registerMaterial(Material.name, Material, DB) # register to C++
 
     return Material
 
@@ -39,4 +40,4 @@ material.new = registerMaterial
 
 
 
-## ##  ## ##
+## ##  ## ##)

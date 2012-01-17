@@ -2,44 +2,86 @@
 namespace py = boost::python;
 
 #include <config.h>
+#include <plask/utils/string.h>
 #include <plask/exceptions.h>
 #include <plask/material/material.h>
 
 namespace plask { namespace python {
 
-/// Map of all custom Python materials
-std::map<std::string, py::object> custom_materials;
-
-// Hack to cheat Boost assertion
-struct WrappedMaterial : public Material {};
 /**
  * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
  */
-struct MaterialWrap : public WrappedMaterial, py::wrapper<WrappedMaterial>
+struct MaterialWrap : public Material
 {
+    PyObject* self;
+
+    MaterialWrap () : self(self) { std::cerr << "MaterialWrap::MaterialWrap(self)\n"; }
+
+    ~MaterialWrap() { /*py::decref(self);*/ std::cerr << "MaterialWrap::~MaterialWrap\n"; }
+
     virtual std::string name() const {
-        if (py::override override = this->get_override("name")) return override();
-        else return "Material";
+        return py::extract<std::string>(py::object(py::detail::borrowed_reference(self)).attr("name"));
+    }
+
+    virtual double VBO(double T) const {
+        return py::call_method<double>(self, "VBO", T);
+    }
+
+    static shared_ptr<Material> __init__() {
+        MaterialWrap* ptr = new MaterialWrap();
+        auto sptr = shared_ptr<Material>(ptr);
+        auto obj = py::object(sptr);
+        ptr->self = obj.ptr();
+        return sptr;
+    }
+
+};
+
+
+/**
+ * Object constructing custom Python material whre read from XML file
+ *
+ * \param name plain material name
+ *
+ * Other parameters are ignored
+ */
+class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
+{
+    py::object material_class;
+
+  public:
+    PythonMaterialConstructor(py::object material_class) : material_class(material_class) {}
+
+    inline shared_ptr<Material> operator()(const std::vector<double>& composition, MaterialsDB::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
+    {
+
+        // We pass composition parameters as *args to constructor
+        py::list args;
+        bool all_nan = true;
+        for (auto i = composition.begin(); i != composition.end(); ++i) {
+            if (!isnan(*i)) { all_nan = false; break; }
+        }
+        if (!all_nan) {
+            for (auto i = composition.begin(); i != composition.end(); ++i) {
+                args.append(*i);
+            }
+        }
+
+        // We pass doping information in **kwargs
+        py::dict kwargs;
+        if (doping_amount_type !=  MaterialsDB::NO_DOPING) {
+            kwargs[ doping_amount_type == MaterialsDB::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
+        }
+
+        py::object material = material_class(*py::tuple(args), **kwargs);
+
+        MaterialWrap* ptr = dynamic_cast<MaterialWrap*>((Material*)py::extract<Material*>(material));
+        ptr->self = py::incref(material.ptr());
+        return shared_ptr<Material>(ptr);
     }
 };
 
-/**
- * Function constructing custom Python material whre read from XML file
- *
- * \param name plain material name
- * By now the following parameters are ignored
- * \param composition amounts of elements, with NaN for each element for composition was not written
- * \param doping_amount_type type of amount of dopand, needed to interpretation of @a doping_amount
- * \param doping_amount amount of dopand, is ignored if @a doping_amount_type is @c NO_DOPANT
- */
-inline shared_ptr<Material> constructCustomMaterial(const std::string& name, const std::vector<double>& composition,
-                                                    MaterialsDB::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
-    py::object material = custom_materials[name]();
-
-    //TODO check for constructors with different signatures
-    return py::extract<shared_ptr<Material>>(material);
-}
 
 
 /**
@@ -47,23 +89,20 @@ inline shared_ptr<Material> constructCustomMaterial(const std::string& name, con
  * \param name name of the material
  * \param material_class Python class object of the custom material
  */
-void registerMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
+void registerMaterial(const std::string& name, py::object material_class, shared_ptr<MaterialsDB> db)
 {
     //TODO issue a warning if material with such name already exists
-    custom_materials[name] = material_class;
-    db.add(name, &constructCustomMaterial);
+    PythonMaterialConstructor* constructor = new PythonMaterialConstructor(material_class);
+    db->add(name, constructor);
 }
-
 
 /**
  * \return the list of all materials in database
  */
 py::list MaterialsDB_list(const MaterialsDB& DB) {
     py::list materials;
-    for (auto material : DB.constructors) {
-        //TODO strip doping part from name
-        materials.append(material.first);
-    }
+    for (auto material = DB.constructors.begin(); material != DB.constructors.end(); ++material )
+        materials.append(material->first);
     return materials;
 }
 
@@ -84,14 +123,12 @@ py::object MaterialsDB_iter(const MaterialsDB& DB) {
  * \return found material object
  **/
 shared_ptr<Material> MaterialsDB_factory(const MaterialsDB& DB, const std::string& name, py::tuple args, py::dict kwargs) {
-    auto material = DB.constructors.find(name);
-    if (material == DB.constructors.end()) {
-        PyErr_SetString(PyExc_KeyError, ("Material " + name + " does not exist in database").c_str());
-        throw py::error_already_set();
-    }
+
     //TODO Parse args and kwargs
-    return material->second(name, {}, MaterialsDB::NO_DOPING, 0.0);
+
+    return DB.get(name, {}, MaterialsDB::NO_DOPING, 0.0);
 }
+
 
 void initMaterial() {
 
@@ -105,8 +142,7 @@ void initMaterial() {
         "as the current state of the art. However, you can derive an abstract class plask.material.Material "
         "to create your own materials."; //TODO maybe more extensive description
 
-
-    py::class_<MaterialsDB, shared_ptr<MaterialsDB>> materialsDB("MaterialsDB", "Material database class"); materialsDB
+    py::class_<MaterialsDB, shared_ptr<MaterialsDB>, boost::noncopyable> materialsDB("MaterialsDB", "Material database class"); materialsDB
         .def("get", (shared_ptr<Material> (MaterialsDB::*)(const std::string&, const std::string&) const) &MaterialsDB::get, "Get material of given name and doping")
         .def("get", (shared_ptr<Material> (MaterialsDB::*)(const std::string&) const) &MaterialsDB::get, "Get material of given name and doping")
         .add_property("materials", &MaterialsDB_list, "Return the list of all materials in database")
@@ -114,16 +150,14 @@ void initMaterial() {
         .def("__iter__", &MaterialsDB_iter)
     ;
 
-
     // Common material interface
     py::class_<Material, shared_ptr<Material>, boost::noncopyable>("Material", "Base class for all materials.", py::no_init)
-        .def("name", &Material::name)
+        .def("__init__", py::make_constructor(&MaterialWrap::__init__))
+        .add_property("name", &Material::name)
+        .def("VBO", &Material::VBO)
     ;
 
-
-    // Wrapper and registration for custom materials
-    py::class_<MaterialWrap, shared_ptr<MaterialWrap>, py::bases<Material>, boost::noncopyable>("Material", "Base class for all materials.");
-    py::def("registerMaterial", registerMaterial);
+    py::def("registerMaterial", &registerMaterial);
 }
 
 }} // namespace plask::python
