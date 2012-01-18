@@ -44,14 +44,11 @@ class MaterialWrap : public Material
     };
 
     shared_ptr<Material> base;
-
-  public:
     PyObject* self;
 
+  public:
     MaterialWrap () : base(new EmptyBase) {}
     MaterialWrap (shared_ptr<Material> base) : base(base) {}
-
-    ~MaterialWrap() { std::cerr<<"~MaterialWrap [" << this << "]\n";  }
 
     virtual std::string name() const {
         return attr<std::string>("name");
