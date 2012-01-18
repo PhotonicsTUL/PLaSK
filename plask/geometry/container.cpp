@@ -47,11 +47,11 @@ PathHints::Hint StackContainer2d::add(const shared_ptr<StackContainerBaseImpl::C
 }
 
 PathHints::Hint StackContainer2d::addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation) {
-    Rect2d bb = el->getBoundingBox();
-    const double up_translation = stackHeights.back() - bb.lower.up;
-    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(tran_translation, up_translation)));
+    double el_translation, next_height;
+    calcHeight(el, stackHeights.back(), el_translation, next_height);
+    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(tran_translation, el_translation)));
     children.push_back(trans_geom);
-    stackHeights.push_back(bb.upper.up + up_translation);
+    stackHeights.push_back(next_height);
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
@@ -63,11 +63,11 @@ PathHints::Hint StackContainer3d::add(const shared_ptr<ChildType>& el, const dou
 }
 
 PathHints::Hint StackContainer3d::addUnsafe(const shared_ptr<ChildType>& el, const double lon_translation, const double tran_translation) {
-    Rect3d bb = el->getBoundingBox();
-    const double up_translation = stackHeights.back() - bb.lower.up;
-    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(lon_translation, tran_translation, up_translation)));
+    double el_translation, next_height;
+    calcHeight(el, stackHeights.back(), el_translation, next_height);
+    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(lon_translation, tran_translation, el_translation)));
     children.push_back(trans_geom);
-    stackHeights.push_back(bb.upper.up + up_translation);
+    stackHeights.push_back(next_height);
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 

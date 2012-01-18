@@ -24,13 +24,18 @@ Each hint allow to choose one child for geometry element container and it is a p
 geometry element container -> element in container.
 
 Typically, hints are returned by methods which adds new elements to containers.
+
+@see @ref geometry_paths
 */
 struct PathHints {
 
     ///Type for map: geometry element container -> element in container
     typedef std::map< weak_ptr<GeometryElement>, weak_ptr<GeometryElement> > HintMap;
 
-    ///Pair type: geometry element container -> element in container
+    /**
+     * Type for arc in graph. Pair: container of geometry elements -> element in container.
+     * @see @ref geometry_paths
+     */
     typedef HintMap::value_type Hint;
 
     ///Hints map.
@@ -92,6 +97,19 @@ struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
 
 protected:
     container_type children;
+    
+    /**
+     * Remove all children which fulfil predicate.
+     * @param predicate return true only if child passed as argument should be deleted
+     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
+     */
+    template <typename PredicateT>
+    void removeAll(PredicateT predicate) {
+        children.erease(
+            std::remove_if(children.begin(), children.end(), predicate),
+            children.end()
+        );
+    }
 
 public:
 
@@ -170,6 +188,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el new child
      * @param translation trasnalation of child
+     * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         shared_ptr<TranslationT> trans_geom(new TranslationT(el, translation));
@@ -181,6 +200,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
      * Add new child (trasnlated) to end of children vector.
      * @param el new child
      * @param translation trasnalation of child
+     * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
@@ -189,19 +209,26 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
     }
     
     /**
+     * Remove all children which fulfil predicate.
+     * @param predicate return true only if child passed as argument should be deleted
+     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
+     */
+    template <typename PredicateT>
+    void remove(PredicateT predicate) {
+        removeAll(predicate);
+    }
+    
+    /**
      * Remove all children exactly equal to @a el.
      * @param el child(ren) to remove
      */
     void remove(const ChildType* el) {
-        children.erease(
-            std::remove_if(children.begin(), children.end(), [&el](ChildType* c) { return c->child == el; }),
-            children.end()
-        );
+        removeAll([&el](ChildType* c) { return c->child == el; });
     }
     
     /**
      * Remove child pointed, for this container, in @a hints.
-     * @param hints path hints
+     * @param hints path hints, see @ref geometry_paths
      */
     void remove(const PathHints& hints) {
         auto c = hints.getChild(this);
@@ -256,14 +283,72 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
         const TranslationT* c = getChildForHeight(p.c1);
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
+    
+    /**
+     * Remove all children which fulfil predicate.
+     * @param predicate return true only if child passed as argument should be deleted
+     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
+     */
+    template <typename PredicateT>
+    void remove(PredicateT predicate) {
+        removeAll(predicate);
+        updateAllHeights();
+    }
+    
+    /**
+     * Remove all children exactly equal to @a el.
+     * @param el child(ren) to remove
+     */
+    void remove(const ChildType* el) {
+        removeAll([&el](ChildType* c) { return c->child == el; });
+        updateAllHeights();
+    }
+    
+    /**
+     * Remove child pointed, for this container, in @a hints.
+     * @param hints path hints, see @ref geometry_paths
+     */
+    void remove(const PathHints& hints) {
+        auto c = hints.getChild(this);
+        if (c) {
+            children.erase(std::find(children.begin(), children.end(), c));
+            updateAllHeights();
+        }
+    }
 
     protected:
 
     ///stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements)
     std::vector<double> stackHeights;
+
+    /**
+     * Calculate element up translation and height of stack with element @a el.
+     * @param el[in] geometry element (typically: which is or will be in stack)
+     * @param prev_height[in] height of stack under an @a el
+     * @param el_translation[out] up translation which should element @a el have
+     * @param next_height[out] height of stack with an @a el on top (up to @a el)
+     */
+    void calcHeight(const shared_ptr<ChildType>& el, double prev_height, double& el_translation, double& next_height) {
+        auto bb = el->getBoundingBox();
+        el_translation = prev_height - bb.lower.up;
+        next_height = bb.upper.up + el_translation;
+    }
     
+    /**
+     * Update stack height (fragment with pointed child on top) and pointed child up translation.
+     * @param child_index index of child
+     */
     void updateHeight(std::size_t child_index) {
-        
+        calcHeight(children[child_index]->child, stackHeights[child_index], children[child_index]->translation.up, children[child_index+1]);
+    }
+    
+    /**
+     * Update stack heights and up translation of all children, with indexes from @a first_child_index.
+     * @param first_child_index index of first child to update
+     */
+    void updateAllHeights(std::size_t first_child_index = 0) {
+        for ( ; first_child_index < children.size(); ++first_child_index)
+            updateHeight(first_child_index);
     }
 
 };
@@ -285,7 +370,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * Add children to stack top.
      * @param el element to add
      * @param tran_translation horizontal translation of element
-     * @return path hint
+     * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
@@ -294,7 +379,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * Add child to stack top.
      * @param el element to add
      * @param tran_translation horizontal translation of element
-     * @return path hint
+     * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_back(shared_ptr<ChildType> el, const double tran_translation = 0.0) { return add(el, tran_translation); }
@@ -304,7 +389,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
      * @param tran_translation horizontal translation of element
-     * @return path hint
+     * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
 
@@ -326,7 +411,7 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * Add children to stack top.
      * @param el element to add
      * @param tran_translation horizontal translation of element
-     * @return path hint
+     * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
@@ -335,7 +420,7 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * Add children to stack top.
      * @param el element to add
      * @param lon_translation, tran_translation horizontal translation of element
-     * @return path hint
+     * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_back(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
@@ -347,7 +432,7 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
      * @param lon_translation, tran_translation horizontal translation of element
-     * @return path hint
+     * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
 };
