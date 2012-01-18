@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import unittest
 
+from numpy import *
+
 import plasktest as ptest
 
 import sys
@@ -115,7 +117,7 @@ class Material(unittest.TestCase):
 
         m2 = self.DB.get("WithBase")
         self.assertEqual( m2.name, "WithBase" )
-        self.assertEqual( m2.VBO(1.0), 0.5 )
+        self.assertEqual( m2.VBO(2.0), 1.0 )
 
         self.assertEqual( ptest.materialName("WithBase", self.DB), "WithBase" )
         self.assertEqual( ptest.materialVBO("WithBase", self.DB, 1.0), 0.5 )

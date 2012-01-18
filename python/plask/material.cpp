@@ -80,7 +80,7 @@ class MaterialWrap : public Material
 
 
 /**
- * Object constructing custom Python material whre read from XML file
+ * Object constructing custom Python material where read from XML file
  *
  * \param name plain material name
  *
