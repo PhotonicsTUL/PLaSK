@@ -425,7 +425,7 @@ struct PyVec
 // Python constructor
 static shared_ptr<PyVec> pyvec__init__(py::tuple args, py::dict kwargs)
 {
-    int n = py::len(args);
+    int n = py::len(args) - 1;
 
     py::list params;
 
@@ -505,7 +505,7 @@ static shared_ptr<PyVec> pyvec__init__(py::tuple args, py::dict kwargs)
         PyErr_SetString(PyExc_TypeError, "components must be provided entirely in a list or by names");
         throw py::error_already_set();
     } else {
-        params = py::list(args);
+        params = py::list(args.slice(1, n+1));
     }
 
     if (n != 2 && n != 3) {

@@ -1,4 +1,5 @@
 #include "globals.h"
+#include <boost/python/raw_function.hpp>
 #include <boost/python/stl_iterator.hpp>
 
 #include <config.h>
@@ -6,32 +7,75 @@
 #include <plask/exceptions.h>
 #include <plask/material/material.h>
 
+#include "../util/raw_constructor.h"
+
+
 namespace plask { namespace python {
 
 /**
  * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
  */
-struct MaterialWrap : public Material
+class MaterialWrap : public Material
 {
+    template <typename T>
+    inline T attr(const char* attribute) const {
+        return py::extract<T>(py::object(py::detail::borrowed_reference(self)).attr(attribute));
+    }
+
+    bool overriden(char const* name) const
+    {
+        py::converter::registration const& r = py::converter::registered<Material>::converters;
+        PyTypeObject* class_object = r.get_class_object();
+        if (self)
+        {
+            if (py::handle<> m = py::handle<>(py::allow_null(::PyObject_GetAttrString(self, const_cast<char*>(name))))) {
+                PyObject* borrowed_f = 0;
+                if (PyMethod_Check(m.get()) && ((PyMethodObject*)m.get())->im_self == self && class_object->tp_dict != 0)
+                    borrowed_f = PyDict_GetItemString(class_object->tp_dict, const_cast<char*>(name));
+                if (borrowed_f != ((PyMethodObject*)m.get())->im_func) return true;
+            }
+        }
+        return false;
+    }
+
+    struct EmptyBase : public Material {
+        virtual std::string name() const { return ""; }
+    };
+
+    shared_ptr<Material> base;
+
+  public:
     PyObject* self;
 
-    // MaterialWrap () {}
-    // ~MaterialWrap() { /* py::decref(self); */ }
+    MaterialWrap () : base(new EmptyBase) {}
+    MaterialWrap (shared_ptr<Material> base) : base(base) {}
+
+    ~MaterialWrap() { std::cerr<<"~MaterialWrap [" << this << "]\n";  }
 
     virtual std::string name() const {
-        return py::extract<std::string>(py::object(py::detail::borrowed_reference(self)).attr("name"));
+        return attr<std::string>("name");
     }
 
     virtual double VBO(double T) const {
-        return py::call_method<double>(self, "VBO", T);
+        if (overriden("VBO")) return py::call_method<double>(self, "VBO", T);
+        return base->VBO(T);
     }
 
-    static shared_ptr<Material> __init__() {
-        MaterialWrap* ptr = new MaterialWrap();
+    static shared_ptr<Material> __init__(py::tuple args, py::dict kwargs) {
+        if (py::len(args) > 2 || py::len(kwargs) != 0) {
+            PyErr_SetString(PyExc_TypeError, "wrong number of arguments");
+            throw py::error_already_set();
+        }
+        MaterialWrap* ptr;
+        if (py::len(args) == 2) {
+            shared_ptr<Material> base = py::extract<shared_ptr<Material>>(args[1]);
+            ptr = new MaterialWrap(base);
+        } else {
+            ptr = new MaterialWrap();
+        }
         auto sptr = shared_ptr<Material>(ptr);
-        auto obj = py::object(sptr);
-        ptr->self = obj.ptr();
+        ptr->self = py::object(args[0]).ptr();  // key line !!!
         return sptr;
     }
 
@@ -48,15 +92,10 @@ struct MaterialWrap : public Material
 class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
 {
     py::object material_class;
-
-    bool has_dopant;
     std::string dopant;
 
   public:
-    PythonMaterialConstructor(py::object material_class) : material_class(material_class), has_dopant(false) {}
-
-    PythonMaterialConstructor(py::object material_class, std::string dopant) : material_class(material_class),
-        has_dopant(true), dopant(dopant) {}
+    PythonMaterialConstructor(py::object material_class, std::string dope="") : material_class(material_class), dopant(dope) {}
 
     inline shared_ptr<Material> operator()(const std::vector<double>& composition, MaterialsDB::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
     {
@@ -76,15 +115,13 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
         // We pass doping information in **kwargs
         py::dict kwargs;
         if (doping_amount_type !=  MaterialsDB::NO_DOPING) {
-            if (has_dopant) kwargs["dope"] = dopant;
+            kwargs["dope"] = dopant;
             kwargs[ doping_amount_type == MaterialsDB::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
         }
 
         py::object material = material_class(*py::tuple(args), **kwargs);
 
-        MaterialWrap* ptr = dynamic_cast<MaterialWrap*>((Material*)py::extract<Material*>(material));
-        ptr->self = py::incref(material.ptr());
-        return shared_ptr<Material>(ptr);
+        return py::extract<shared_ptr<Material>>(material);
     }
 };
 
@@ -97,19 +134,8 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
  */
 void registerMaterial(const std::string& name, py::object material_class, shared_ptr<MaterialsDB> db)
 {
-    db->add(name, new PythonMaterialConstructor(material_class));
-
-    // Register name with allowed dopants
-    py::list dopants;
-    try {
-        dopants = py::list(material_class.attr("dopants"));
-        py::stl_input_iterator<std::string> begin(dopants), end;
-        for (auto i = begin; i != end; ++i)
-            db->add(name + ":" + *i, new PythonMaterialConstructor(material_class, *i));
-    } catch (py::error_already_set) {
-        PyErr_Clear();
-    }
-
+    std::string dopant = std::get<1>(splitString2(name, ':'));
+    db->add(name, new PythonMaterialConstructor(material_class, dopant));
 }
 
 /**
@@ -131,20 +157,46 @@ py::object MaterialsDB_iter(const MaterialsDB& DB) {
 
 /**
  * Create material basing on its name and additional parameters
- *
- * \param DB database to search (self in Python class)
- * \param name generic name of the material (e.g. "AlGaAs")
- * \param args list of concentrations
- * \param kwargs doping in the form: Mg=1e18, n=2e19; maybe also concentrations: Al=0.3
- * \return found material object
  **/
-shared_ptr<Material> MaterialsDB_factory(const MaterialsDB& DB, std::string name, py::tuple args, py::dict kwargs) {
+shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 
-    // Translate composition
+    if (py::len(args) != 2) {
+        PyErr_SetString(PyExc_ValueError, "MaterialsDB.get(self, name, **kwargs) takes exactly two non-keyword arguments");
+        throw py::error_already_set();
+    }
+
+    const MaterialsDB* DB = py::extract<MaterialsDB*>(args[0]);
+    std::string name = py::extract<std::string>(args[1]);
+
+    // Test if we have just a name string
+    if (py::len(kwargs) == 0) return DB->get(name);
+
+    // Otherwise parse other args
+
+    // Get element names and check for compositions in kwargs
+    std::vector<std::string> elements;
+    std::string element;
+    int l = name.length();
+    for (int i = 0; i < l; ++i) {
+        char c = name[i];
+        if (c < 'a' || c > 'z') {
+            if (element != "") elements.push_back(element);
+            element = "";
+        }
+        element += c;
+    }
+    elements.push_back(element);
     std::vector<double> composition;
-    py::stl_input_iterator<double> begin(args), end;
-    for (auto i = begin; i != end; ++i)
-        composition.push_back(*i);
+    for (auto element = elements.begin(); element != elements.end(); ++element) {
+        double c;
+        try {
+            c = py::extract<double>(kwargs[*element]);
+        } catch (py::error_already_set) {
+            c = nan("");
+            PyErr_Clear();
+        }
+        composition.push_back(c);
+    }
 
     // Get doping
     bool doping = false;
@@ -185,9 +237,18 @@ shared_ptr<Material> MaterialsDB_factory(const MaterialsDB& DB, std::string name
         concentation = py::extract<double>(cobj);
     }
 
-    return DB.get(name, composition, doping_type, concentation);
+    return DB->get(name, composition, doping_type, concentation);
 }
 
+py::list Material__completeComposition(py::object src, unsigned int pattern) {
+    std::vector<double> in;
+    py::stl_input_iterator<double> begin(src), end;
+    for (auto i = begin; i != end; ++i) in.push_back(*i);
+    std::vector<double> out = Material::completeComposition(in, pattern);
+    py::list dst;
+    for (auto i = out.begin(); i != out.end(); ++i) dst.append(*i);
+    return dst;
+}
 
 void initMaterial() {
 
@@ -202,16 +263,16 @@ void initMaterial() {
         "to create your own materials."; //TODO maybe more extensive description
 
     py::class_<MaterialsDB, shared_ptr<MaterialsDB>, boost::noncopyable> materialsDB("MaterialsDB", "Material database class"); materialsDB
-        .def("get", (shared_ptr<Material> (MaterialsDB::*)(const std::string&, const std::string&) const) &MaterialsDB::get, "Get material of given name and doping")
-        .def("get", (shared_ptr<Material> (MaterialsDB::*)(const std::string&) const) &MaterialsDB::get, "Get material of given name and doping")
+        .def("get", py::raw_function(&MaterialsDB_get), "Get material of given name and doping")
         .add_property("materials", &MaterialsDB_list, "Return the list of all materials in database")
-        .def("factory", &MaterialsDB_factory, "Return material based on its generic name and parameters passes in args and kwargs")
         .def("__iter__", &MaterialsDB_iter)
     ;
 
     // Common material interface
     py::class_<Material, shared_ptr<Material>, boost::noncopyable>("Material", "Base class for all materials.", py::no_init)
-        .def("__init__", py::make_constructor(&MaterialWrap::__init__))
+        .def("__init__", raw_constructor(&MaterialWrap::__init__))
+        .def("_completeComposition", &Material__completeComposition, "Fix incomplete material composition basing on patten")
+        .staticmethod("_completeComposition")
         .add_property("name", &Material::name)
         .def("VBO", &Material::VBO)
     ;

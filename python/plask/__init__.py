@@ -5,10 +5,12 @@ from modplask import *
 ## ## plask.material ## ##
 
 material.database = material.MaterialsDB()
-for m in material.database:
-    material.__dict__[m] = lambda name, *args, **kwargs: material.database.factory(name, args, kwargs)
 
-def registerMaterial(Material=None, name=None, dopants=None, DB=None):
+# Create factories for default materials
+for mat in material.database:
+    material.__dict__[mat] = lambda **kwargs: material.database.get(mat.split(":")[0], **kwargs)
+
+def registerMaterial(Material=None, name=None, DB=None):
     '''Function to register a new material'''
 
     # A trick allowing passing arguments to decorator
@@ -24,12 +26,6 @@ def registerMaterial(Material=None, name=None, dopants=None, DB=None):
         Material.name = name
     else:
         Material.name = Material.__name__
-
-    if dopants is not None:
-        if dopants in Material.__dict__:
-            raise ValueError("Dopants specified both in decorator parameter and class body")
-        else:
-            Materia.dopants = dopants
 
     if DB is None:
         DB = material.database

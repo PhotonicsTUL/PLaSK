@@ -9,7 +9,7 @@ namespace plask { namespace python {
 
 namespace detail {
 
-  template <class F>
+  template <typename F>
   struct raw_constructor_dispatcher
   {
       raw_constructor_dispatcher(F f) : f(boost::python::make_constructor(f)) {}
@@ -20,10 +20,9 @@ namespace detail {
           boost::python::object a(ra);
           return boost::python::incref(
               boost::python::object(
-                  f(
-                      boost::python::object(a[0])
-                    , boost::python::object(a.slice(1, len(a)))
-                    , keywords ? boost::python::dict(boost::python::detail::borrowed_reference(keywords)) : boost::python::dict()
+                  f(boost::python::object(a[0]),
+                    a,
+                    keywords ? boost::python::dict(boost::python::detail::borrowed_reference(keywords)) : boost::python::dict()
                   )
               ).ptr()
           );
@@ -35,7 +34,7 @@ namespace detail {
 
 } // namespace detail
 
-template <class F>
+template <typename F>
 boost::python::object raw_constructor(F f, std::size_t min_args = 0)
 {
     return boost::python::detail::make_raw_function(

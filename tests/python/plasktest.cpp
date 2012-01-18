@@ -34,6 +34,10 @@ double materialVBO(std::string m, plask::MaterialsDB& DB, double T) {
     return mat->VBO(T);
 }
 
+void print_ptr(py::object o) {
+    std::cerr << "ptr: " << o.ptr() << "\n";
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
@@ -42,4 +46,6 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("materialName", &materialName);
     py::def("materialVBO", &materialVBO);
+
+    py::def("print_ptr", &print_ptr);
 }

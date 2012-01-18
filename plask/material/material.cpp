@@ -7,14 +7,14 @@
 
 namespace plask {
 
-void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator begin, std::vector<double>::iterator end) {
+inline void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator begin, std::vector<double>::iterator end) {
     auto no_info = end;
     double sum = 0.0;
     unsigned n = 0;
     for (auto i = begin; i != end; ++i) {
         if (isnan(*i)) {
             if (no_info != end)
-                throw plask::MaterialParseException("Both elements in group have no information about composition amount");
+                throw plask::MaterialParseException("More than one element in group have no information about composition amount");
             else
                 no_info = i;
         } else {
@@ -32,10 +32,10 @@ void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator begin, st
     }
 }
 
-void fillMaterialCompositionAmountsI(std::vector< double >& composition, unsigned int pattern) {
+inline void fillMaterialCompositionAmountsI(std::vector< double >& composition, unsigned int pattern) {
     auto end = composition.end();
     while (pattern != 0) {
-        unsigned group_size = pattern % 10;     //last group size
+        unsigned group_size = pattern % 10;     // last group size
         if (end - composition.begin() < group_size)
             throw plask::CriticalException("Wrong material composition pattern");
         auto begin = end - group_size;
@@ -43,7 +43,7 @@ void fillMaterialCompositionAmountsI(std::vector< double >& composition, unsigne
         end = begin;
         pattern /= 10;
     }
-    if (end != composition.end())
+    if (end != composition.begin())
         throw plask::CriticalException("Wrong material composition pattern");
 }
 
@@ -110,6 +110,10 @@ void parseDopant(const char* begin, const char* end, std::string& dopant_elem_na
         if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading dopants concentation");
         doping_amount_type = MaterialsDB::DOPANT_CONCENTRATION;
         doping_amount = toDouble(std::string(name_end+1, end));
+        return;
+    } else if (name_end+1 == end) { // there might be some reason to specify material with dopant but undoped (can be caught in material constructor)
+        doping_amount_type = MaterialsDB::NO_DOPING;
+        doping_amount = 0.;
         return;
     }
     if (!isspace(*name_end))

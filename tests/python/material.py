@@ -16,75 +16,106 @@ class Material(unittest.TestCase):
         self.DB = plask.material.database
         ptest.addMyMaterial(self.DB)
 
+
     def testMaterial(self):
         '''Test basic behavior of Material class'''
-        pass
+        self.assertEqual( plask.material.Material._completeComposition([0.6, nan, 0.1, nan, 0.2], 23), [0.6, 0.4, 0.1, 0.7, 0.2] )
+
 
     def testCustomMaterial(self):
         '''Test creation of custom materials'''
 
         @plask.material.new
-        class Mat(plask.material.Material):
-            dopants = ['Si', 'Ge']
-
-            def __init__(self, *args, **kwargs):
-                super(Mat, self).__init__()
-                self.args = args,
-                self.kwargs = kwargs;
-
+        class MyMat(plask.material.Material):
+            def __init__(self):
+                super(MyMat, self).__init__()
+                print >>sys.stderr, "MyMat.__init__",
+                ptest.print_ptr(self)
+            def __del__(self):
+                print >>sys.stderr, "MyMat.__del__",
+                ptest.print_ptr(self)
             def VBO(self, T):
                 return 2.*T
 
-        m = Mat()
-        self.assertEqual(m.name, "Mat")
+        self.assertIn( "MyMat", self.DB )
+
+        m = MyMat()
+        self.assertEqual(m.name, "MyMat")
         self.assertEqual( m.VBO(1.0), 2.0 )
         del m
 
-        self.assertIn( "Mat", self.DB )
+        self.assertEqual( ptest.materialName("MyMat", plask.material.database), "MyMat" )
+        self.assertEqual( ptest.materialVBO("MyMat", plask.material.database, 1.0), 2.0 )
 
-        self.assertEqual( ptest.materialName("Mat", plask.material.database), "Mat" )
-        self.assertEqual( ptest.materialVBO("Mat", plask.material.database, 1.0), 2.0 )
-
-        m = self.DB.get("Mat:Si=1e17")
-        self.assertEqual( m.name, "Mat" )
-        del m
-        self.assertEqual( ptest.materialName("Mat:Si=1e16", plask.material.database), "Mat" )
-        self.assertEqual( ptest.materialName("Mat:Ge=1e15", plask.material.database), "Mat" )
-        with self.assertRaises(RuntimeError): self.DB.get("Mat:Mg=1e14")
+        if sys.version >= 2.7:
+            with self.assertRaises(RuntimeError): self.DB.get("MyMat:Si=1e14")
 
 
-        @plask.material.new (name="Mat:Dp")
-        class MatDp(plask.material.Material):
-
+        @plask.material.new
+        class MyMatDp(plask.material.Material):
+            name = "MyMat:Dp"
             def __init__(self, *args, **kwargs):
-                super(MatDp, self).__init__()
-                print >> sys.stderr, "args:", args
-                print >> sys.stderr, "kwargs:", kwargs
+                super(MyMatDp, self).__init__()
                 self.args = args,
                 self.kwargs = kwargs;
-
+                print >>sys.stderr, "MyMat:Dp.__init__",
+                ptest.print_ptr(self)
+            def __del__(self):
+                print >>sys.stderr, "MyMat:Dp.__del__",
+                ptest.print_ptr(self)
             def VBO(self, T):
                 return self.kwargs['dc'] * T
 
-        m = self.DB.get("Mat:Dp=3.0")
-        self.assertEqual( m.name, "Mat:Dp" )
+        m = self.DB.get("MyMat:Dp=3.0")
+        self.assertEqual( m.__class__, MyMatDp )
+        self.assertEqual( m.name, "MyMat:Dp" )
         self.assertEqual( m.VBO(1.0), 3.0 )
 
-        Mat = lambda *args, **kwargs: self.DB.factory("Mat", args, kwargs)
-        m = Mat(dope="Dp", dc=5.0)
-        self.assertEqual( m.name, "Mat:Dp" )
+        MyMat = lambda **kwargs: self.DB.get("MyMat", **kwargs)
+        m = MyMat(Mat=0.2, dope="Dp", dc=5.0)
+        self.assertEqual( m.name, "MyMat:Dp" )
         self.assertEqual( m.VBO(1.0), 5.0 )
         del m
+        self.assertEqual( ptest.materialName("MyMat:Dp=3.0", plask.material.database), "MyMat:Dp" )
+        self.assertEqual( ptest.materialVBO("MyMat:Dp=3.0", plask.material.database, 1.0), 3.0 )
 
-        self.assertEqual( ptest.materialName("Mat:Dp=3.0", plask.material.database), "Mat:Dp" )
-        self.assertEqual( ptest.materialVBO("Mat:Dp=3.0", plask.material.database, 1.0), 3.0 )
+
+        @plask.material.new
+        class NotComplete(plask.material.Material):
+            pass
+
+        n = NotComplete()
+        self.assertEqual( n.name, "NotComplete" )
+        if sys.version >= 2.7:
+            with self.assertRaisesRegexp(RuntimeError, "Method not implemented"): n.VBO(1.0)
+
+        #self.assertTrue(False)
 
 
     def testExistingMaterial(self):
         '''Test if existing material works correctly'''
-        self.assertEqual( ptest.materialName("MyMaterial", plask.material.database), "MyMaterial" )
-        self.assertEqual( ptest.materialVBO("MyMaterial", plask.material.database, 1.0), 0.5 )
-        self.assertEqual( self.DB.factory("MyMaterial", (), {}).name, "MyMaterial" )
-        self.assertEqual( self.DB.factory("MyMaterial", (), {}).VBO(1.0), 0.5 )
+        m = self.DB.get("MyMaterial")
         self.assertEqual( self.DB.get("MyMaterial").name, "MyMaterial" )
         self.assertEqual( self.DB.get("MyMaterial").VBO(1.0), 0.5 )
+        self.assertEqual( ptest.materialName("MyMaterial", self.DB), "MyMaterial" )
+        self.assertEqual( ptest.materialVBO("MyMaterial", self.DB, 1.0), 0.5 )
+
+
+    def testMaterialWithBase(self):
+        mm = self.DB.get("MyMaterial")
+
+        @plask.material.new
+        class WithBase(plask.material.Material):
+            def __init__(self):
+                super(WithBase, self).__init__(mm)
+
+        m1 = WithBase()
+        self.assertEqual( m1.name, "WithBase" )
+        self.assertEqual( m1.VBO(1.0), 0.5 )
+
+        m2 = self.DB.get("WithBase")
+        self.assertEqual( m2.name, "WithBase" )
+        self.assertEqual( m2.VBO(1.0), 0.5 )
+
+        self.assertEqual( ptest.materialName("WithBase", self.DB), "WithBase" )
+        self.assertEqual( ptest.materialVBO("WithBase", self.DB, 1.0), 0.5 )
