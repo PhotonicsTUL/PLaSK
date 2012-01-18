@@ -11,6 +11,7 @@ This file includes rectilinear meshes for 1d, 2d, and 3d spaces.
 
 #include "../vector/2d.h"
 #include "../utils/iterators.h"
+#include "../utils/interpolation.h"
 
 namespace plask {
 
@@ -54,15 +55,6 @@ public:
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
     std::size_t findIndex(double to_find) const { return find(to_find) - begin(); }
-
-    /**
-     * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
-     * @param data values of data in points describe by this mesh
-     * @param point point in which value should be calculate
-     * @return interpolated value in point @a point
-     */
-    template <typename RandomAccessContainer>
-    auto interpolateLinear(RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type;
 
     //should we allow for non-const iterators?
     /*typedef std::vector<double>::iterator iterator;
@@ -141,6 +133,15 @@ public:
      * Remove all points from mesh.
      */
     void clear();
+        
+    /**
+     * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
+     * @param data values of data in points describe by this mesh
+     * @param point point in which value should be calculate
+     * @return interpolated value in point @a point
+     */
+    template <typename RandomAccessContainer>
+    auto interpolateLinear(RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type;
 
 };
 
@@ -150,12 +151,8 @@ auto RectilinearMesh1d::interpolateLinear(RandomAccessContainer& data, double po
     std::size_t index = findIndex(point);
     if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
     if (index == 0 || operator [](index) == point) return data[index]; //hit exactly
-    //here: d0=data[index-1] < point < data[index]=d1
-    //TODO which one is more stable?
-    //auto d0 = data[index-1];
-    //return d0 + (data[index] - d0) * (point - operator[](index-1)) / (operator[](index) - operator[](index-1));
-    return ((operator[](index) - point) * data[index-1] + (point - operator[](index-1)) * data[index])
-                        / (operator[](index) - operator[](index-1));
+    //here: points[index-1] < point < points[index]
+    return interpolate::linear(points[index-1], data[index-1], points[index], data[index], point);
 }
 
 template <typename IteratorT>
@@ -259,54 +256,78 @@ struct RectilinearMesh2d {
 
     ///Second coordinate of points in this mesh.
     RectilinearMesh1d c1;
+    
+    /**
+     * Get first coordinate of points in this mesh.
+     * @return c0
+     */
+    RectilinearMesh1d& tran() { return c0; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    RectilinearMesh1d& x() { return c0; }
+    const RectilinearMesh1d& tran() const { return c0; }
+
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return c1
+     */
+    RectilinearMesh1d& up() { return c1; }
+
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return c1
+     */
+    const RectilinearMesh1d& up() const { return c1; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    const RectilinearMesh1d& x() const { return c0; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return c1
-     */
-    RectilinearMesh1d& y() { return c1; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return c1
-     */
-    const RectilinearMesh1d& y() const { return c1; }
+    RectilinearMesh1d& ee_x() { return c0; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    RectilinearMesh1d& r() { return c0; }
+    const RectilinearMesh1d& ee_x() const { return c0; }
+
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return c1
+     */
+    RectilinearMesh1d& ee_y() { return c1; }
+
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return c1
+     */
+    const RectilinearMesh1d& ee_y() const { return c1; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    const RectilinearMesh1d& r() const { return c0; }
+    RectilinearMesh1d& rad_r() { return c0; }
+
+    /**
+     * Get first coordinate of points in this mesh.
+     * @return c0
+     */
+    const RectilinearMesh1d& rad_r() const { return c0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    RectilinearMesh1d& z() { return c1; }
+    RectilinearMesh1d& rad_z() { return c1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    const RectilinearMesh1d& z() const { return c1; }
+    const RectilinearMesh1d& rad_z() const { return c1; }
 
     ///Type of points in this mesh.
     typedef Vec<2,double> PointType;
@@ -388,7 +409,37 @@ struct RectilinearMesh2d {
         c0.clear();
         c1.clear();
     }
+    
+    /**
+     * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
+     * @param data values of data in points describe by this mesh
+     * @param point point in which value should be calculate
+     * @return interpolated value in point @a point
+     */
+    template <typename RandomAccessContainer>
+    auto interpolateLinear(RandomAccessContainer& data, Vec<2, double> point) -> typename std::remove_reference<decltype(data[0])>::type;
 };
+
+//RectilinearMesh1d method templates implementation
+template <typename RandomAccessContainer>
+auto RectilinearMesh2d::interpolateLinear(RandomAccessContainer& data, Vec<2, double> point) -> typename std::remove_reference<decltype(data[0])>::type {
+    std::size_t index0 = c0.findIndex(point.c0);
+    std::size_t index1 = c1.findIndex(point.c1);
+    //TODO rest
+    /*if (index0 == c0.size())
+        return c1.interpolateLinear*/
+    
+    
+    /*std::size_t index = findIndex(point);
+    if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
+    if (index == 0 || operator [](index) == point) return data[index]; //hit exactly
+    //here: d0=data[index-1] < point < data[index]=d1
+    //TODO which one is more stable?
+    //auto d0 = data[index-1];
+    //return d0 + (data[index] - d0) * (point - operator[](index-1)) / (operator[](index) - operator[](index-1));
+    return ((points[index] - point) * data[index-1] + (point - points[index-1]) * data[index])
+                        / (points[index] - points[index-1]);*/
+}
 
 }	//namespace plask
 

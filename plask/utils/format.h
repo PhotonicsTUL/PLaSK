@@ -1,6 +1,10 @@
 #ifndef PLASK__FORMAT_H
 #define PLASK__FORMAT_H
 
+/** @file
+This file includes utils to format strings.
+*/
+
 #include <boost/format.hpp> //TODO maybe better to take simple code from http://en.wikipedia.org/wiki/Variadic_templates
 
 namespace plask {
