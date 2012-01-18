@@ -47,7 +47,7 @@ void fillMaterialCompositionAmountsI(std::vector< double >& composition, unsigne
         throw plask::CriticalException("Wrong material composition pattern");
 }
 
-std::vector< double > fillMaterialCompositionAmounts(const std::vector< double >& composition, unsigned int pattern) {
+std::vector< double > Material::completeComposition(const std::vector< double >& composition, unsigned int pattern) {
     std::vector<double> result = composition;
     fillMaterialCompositionAmountsI(result, pattern);
     return result;

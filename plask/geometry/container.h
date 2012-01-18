@@ -261,6 +261,10 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
 
     ///stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements)
     std::vector<double> stackHeights;
+    
+    void updateHeight(std::size_t child_index) {
+        
+    }
 
 };
 
@@ -303,6 +307,7 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * @return path hint
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
+
 };
 
 /**
