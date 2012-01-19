@@ -1,8 +1,7 @@
+#include "geometry.h"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <plask/geometry/primitives.h>
-
-#include "geometry.h"
 
 namespace plask { namespace python {
 

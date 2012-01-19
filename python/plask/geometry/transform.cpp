@@ -1,6 +1,6 @@
-#include <plask/geometry/transform.h>
-
 #include "geometry.h"
+
+#include <plask/geometry/transform.h>
 
 namespace plask { namespace python {
 

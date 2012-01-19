@@ -101,7 +101,7 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
         py::list args;
         bool all_nan = true;
         for (auto i = composition.begin(); i != composition.end(); ++i) {
-            if (!isnan(*i)) { all_nan = false; break; }
+            if (!std::isnan(*i)) { all_nan = false; break; }
         }
         if (!all_nan) {
             for (auto i = composition.begin(); i != composition.end(); ++i) {

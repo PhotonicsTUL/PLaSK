@@ -1,6 +1,7 @@
 #ifndef PLASK__PYTHON_GLOBALS_H
 #define PLASK__PYTHON_GLOBALS_H
 
+#include <cmath>
 #include <boost/python.hpp>
 namespace py = boost::python;
 

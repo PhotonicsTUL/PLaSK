@@ -173,7 +173,7 @@ if(BUILD_TESTS)
 
         add_library(plasktest MODULE ${python_tests_module_src})
         set_target_properties(plasktest PROPERTIES PREFIX "")
-        if (BUILD_PYTHON_MODULE)
+        if (BUILD_PYTHON_MODULE OR WIN32)
             target_link_libraries(plasktest ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
         else()
             target_link_libraries(plasktest ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
@@ -222,7 +222,12 @@ endif(BUILD_DOCUMENTATION)
 
 # ----------===== install =====--------------------------------------------
 if(BUILD_SHARED_LIBS)
-    install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
+    if(WIN32)
+        install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core
+                                 ARCHIVE DESTINATION lib COMPONENT dev)
+    else()
+        install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
+    endif()
 else()
     install(TARGETS libplask ARCHIVE DESTINATION lib COMPONENT dev)
 endif()

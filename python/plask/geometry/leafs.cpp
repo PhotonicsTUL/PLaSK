@@ -1,6 +1,6 @@
-#include <plask/geometry/leaf.h>
-
 #include "geometry.h"
+
+#include <plask/geometry/leaf.h>
 
 namespace plask { namespace python {
 

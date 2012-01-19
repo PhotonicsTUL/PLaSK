@@ -154,11 +154,11 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     virtual GeometryElementType getType() const { return GE_TYPE_LEAF; }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return inside(p) ? material : shared_ptr<Material>();
+        return this->inside(p) ? material : shared_ptr<Material>();
     }
 
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
-        return { getBoundingBox() };
+        return { this->getBoundingBox() };
     }
 
     virtual bool isInSubtree(GeometryElement& el) const {
@@ -207,7 +207,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
      */
     void setChild(const shared_ptr<ChildType>& child) {
-        ensureCanHasAsChild(*child);
+        this->ensureCanHasAsChild(*child);
         setChildUnsafe(child);
     }
     

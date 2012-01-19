@@ -90,7 +90,7 @@ inline void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator be
     double sum = 0.0;
     unsigned n = 0;
     for (auto i = begin; i != end; ++i) {
-        if (isnan(*i)) {
+        if (std::isnan(*i)) {
             if (no_info != end)
                 throw plask::MaterialParseException("More than one element in group have no information about composition amount");
             else
