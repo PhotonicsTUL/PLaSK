@@ -425,20 +425,37 @@ template <typename RandomAccessContainer>
 auto RectilinearMesh2d::interpolateLinear(RandomAccessContainer& data, Vec<2, double> point) -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index0 = c0.findIndex(point.c0);
     std::size_t index1 = c1.findIndex(point.c1);
-    //TODO rest
-    /*if (index0 == c0.size())
-        return c1.interpolateLinear*/
     
+    if (index0 == 0) {
+        if (index1 == 0) return data[0];
+        if (index1 == c1.size()) return data[index(0, index1-1)];
+        return interpolate::linear(c1.points[index1-1], data[index(0, index1-1)], c1.points[index1], data[index(0, index1)], point.c1);
+    }
     
-    /*std::size_t index = findIndex(point);
-    if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
-    if (index == 0 || operator [](index) == point) return data[index]; //hit exactly
-    //here: d0=data[index-1] < point < data[index]=d1
-    //TODO which one is more stable?
-    //auto d0 = data[index-1];
-    //return d0 + (data[index] - d0) * (point - operator[](index-1)) / (operator[](index) - operator[](index-1));
-    return ((points[index] - point) * data[index-1] + (point - points[index-1]) * data[index])
-                        / (points[index] - points[index-1]);*/
+    if (index0 == c0.size()) {
+        --index0;
+        if (index1 == 0) return data[index(index0, 0)];
+        if (index1 == c1.size()) return data[index(index0, index1-1)];
+        return interpolate::linear(c1.points[index1-1], data[index(index0, index1-1)], c1.points[index1], data[index(index0, index1)], point.c1);
+    }
+    
+    if (index1 == 0)
+        return interpolate::linear(c0.points[index0-1], data[index(index0-1, 0)], c0.points[index0], data[index(index0, 0)], point.c0);
+    
+    if (index1 == c1.size()) {
+        --index1;
+        return interpolate::linear(c0.points[index0-1], data[index(index0-1, index1)], c0.points[index0], data[index(index0, index1)], point.c0);
+    }
+    
+    return interpolate::bilinear(c0.points[index0-1], c0.points[index0],
+                                 c1.points[index1-1], c1.points[index1],
+                                 data[index(index0-1, index1-1)],
+                                 data[index(index0,   index1-1)],
+                                 data[index(index0,   index1  )],
+                                 data[index(index0-1, index1  )],
+                                 point.c0,
+                                 point.c1
+                                );
 }
 
 }	//namespace plask
