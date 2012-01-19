@@ -33,8 +33,6 @@ struct Material {
     /// @return material name
     virtual std::string name() const = 0;
 
-#ifdef DISABLE___
-
     /**
      * Get lattice constant [A].
      * @param T temperature [K]
@@ -58,19 +56,12 @@ struct Material {
      */
     virtual double CBO(double T, char Point) const;
 
-#endif
-
     /**
      * Get valance band offset VBO[eV].
      * @param T temperature [K]
      * @return valance band offset VBO[eV]
      */
-    virtual double VBO(double T) const {
-        throw NotImplemented("VBO");
-        assert(0);
-    };
-
-#ifdef DISABLE___
+    virtual double VBO(double T) const;
 
     /**
      * Get split-off energy Dso [eV].
@@ -383,8 +374,10 @@ struct Material {
      */
     virtual dcomplex Nr(double WaveLen, double T) const;
 
-#endif
     //virtual std::tuple<double, double, double, double, double> Nr(double WaveLen, double T..??..) const;// refractive index (tensor) nR[-]: Wavelength[nm], Temperature[K]
+    
+protected:
+    void throwNotImplemented(const std::string& method_name) const;
 
 };
 
