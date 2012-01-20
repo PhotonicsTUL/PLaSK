@@ -38,6 +38,25 @@ namespace plask { namespace interpolate {
                 / (p_t - p_b) / (p_r - p_l);
     }
     
+    /**
+     * Calculate trililinear interpolation (in 3d space).
+     * @param p_l, p_r, p_b, p_t left, right, bottom, top postions, must fulfill: p_l < p_r, p_b < p_t
+     * @param p_lo, p_hi positions of points in thirth direction, must fulfill p_lo < p_hi
+     * @param lo_d_lb, lo_d_rb, lo_d_rt, lo_d_lt value in points: lo-left-bottom, lo-right-bottom, lo-right-top, lo-left-top
+     * @param hi_d_lb, hi_d_rb, hi_d_rt, hi_d_lt value in points: hi-left-bottom, hi-right-bottom, hi-right-top, hi-left-top
+     * @param p_x, p_y, p_lohi requested point
+     * @return interpolate value, calculate for requested point @a p_x, @a p_y, @a p_lohi
+     */
+    template <typename T>
+    inline T trilinear(double p_l, double p_r, double p_b, double p_t, double p_lo, double p_hi,
+                      const T& lo_d_lb, const T& lo_d_rb, const T& lo_d_rt, const T& lo_d_lt,
+                      const T& hi_d_lb, const T& hi_d_rb, const T& hi_d_rt, const T& hi_d_lt,
+                      double p_x, double p_y, double p_lohi) {
+        return linear(p_lo, bilinear(p_l, p_r, p_b, p_t, lo_d_lb, lo_d_rb, lo_d_rt, lo_d_lt, p_x, p_y),
+                      p_hi, bilinear(p_l, p_r, p_b, p_t, hi_d_lb, hi_d_rb, hi_d_rt, hi_d_lt, p_x, p_y),
+                      p_lohi);
+    }
+    
 } }
 
 #endif
