@@ -116,6 +116,9 @@ if (BUILD_PYTHON)
     if (BUILD_PYTHON_MODULE)
         add_library(modplask MODULE ${python_plask_src})
         set_target_properties(modplask PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY "lib/plask")
+        if(WIN32)
+            set_target_properties(modplask PROPERTIES SUFFIX ".pyd")
+        endif()
         target_link_libraries(modplask libplask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
     endif(BUILD_PYTHON_MODULE)
 
@@ -175,8 +178,16 @@ if(BUILD_TESTS)
         set_target_properties(plasktest PROPERTIES PREFIX "")
         if (BUILD_PYTHON_MODULE OR WIN32)
             target_link_libraries(plasktest ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
+            if(WIN32)
+                set_target_properties(plasktest PROPERTIES SUFFIX ".pyd")
+            endif()
         else()
             target_link_libraries(plasktest ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+        endif()
+
+        if(WIN32)
+            set(PATH $ENV{PATH})
+            string(REPLACE ";" "\;" PATH "${PATH}")
         endif()
 
         file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python/*.py)
@@ -185,14 +196,24 @@ if(BUILD_TESTS)
             if(BUILD_PYTHON_EXECUTABLE)
                 add_test(NAME python-builtin/${test}
                          COMMAND plask ${CMAKE_CURRENT_SOURCE_DIR}/tests/python/main ${test_file})
-                set_tests_properties(python-builtin/${test} PROPERTIES
-                                     ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib;PYTHONDONTWRITEBYTECODE=YES")
+                if(WIN32)
+                    set_tests_properties(python-builtin/${test} PROPERTIES
+                                         ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}\\python\;${CMAKE_BINARY_DIR}\\lib;PYTHONDONTWRITEBYTECODE=YES;PATH=${PATH}\;${CMAKE_BINARY_DIR}\\bin")
+                else()
+                    set_tests_properties(python-builtin/${test} PROPERTIES
+                                         ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib;PYTHONDONTWRITEBYTECODE=YES")
+                endif()
             endif()
             if(BUILD_PYTHON_MODULE)
                 add_test(NAME python-module/${test}
                          COMMAND "${PYTHON_EXECUTABLE}" -B ${CMAKE_CURRENT_SOURCE_DIR}/tests/python/main ${test_file})
-                set_tests_properties(python-module/${test} PROPERTIES
-                                     ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib/plask:${CMAKE_BINARY_DIR}/lib;PYTHONDONTWRITEBYTECODE=YES")
+                if(WIN32)
+                    set_tests_properties(python-module/${test} PROPERTIES
+                                         ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}\\python\;${CMAKE_BINARY_DIR}\\lib\\plask\;${CMAKE_BINARY_DIR}\\lib;PYTHONDONTWRITEBYTECODE=YES;PATH=${PATH}\;${CMAKE_BINARY_DIR}\\bin")
+                else()
+                    set_tests_properties(python-module/${test} PROPERTIES
+                                         ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib/plask:${CMAKE_BINARY_DIR}/lib;PYTHONDONTWRITEBYTECODE=YES")
+                endif()
             endif()
         endforeach()
     endif(BUILD_PYTHON)
@@ -273,7 +294,7 @@ set(CPACK_SOURCE_IGNORE_FILES
 include(CPack)
 
 # ----------===== Debug helpers =====--------------------------------------------
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
+if(CMAKE_BUILD_TYPE STREQUAL Debug AND NOT WIN32)
     file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask
          "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib PYTHONDONTWRITEBYTECODE=YES ${CMAKE_BINARY_DIR}/bin/plask $@\n")
     file(COPY ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask DESTINATION ${CMAKE_BINARY_DIR}

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import sys
+import sys, os
 if sys.version < "2.7":
     unittest.TestCase.assertIn = lambda self, item, container: self.assertTrue(item in container)
 
@@ -14,6 +14,10 @@ class Importing(unittest.TestCase):
 
     def testImporting(self):
         '''Check if plask is present'''
+        print >>sys.stderr, "PATH:\n   ", os.environ['PATH']
+        print >>sys.stderr, "PYTHONPATH:"
+        for p in sys.path:
+            print >>sys.stderr, "    %s" % p
         import plask
         self.assertIn('modplask', sys.modules)
 
