@@ -83,13 +83,16 @@ class Material(unittest.TestCase):
 
 
         @plask.material.new
-        class NotComplete(plask.material.Material):
-            pass
+        class WithChar(plask.material.Material):
+            def chi(self, T, p):
+                print >>sys.stderr, "WithChar:", p
+                return 1.5
 
-        n = NotComplete()
-        self.assertEqual( n.name, "NotComplete" )
+        c = WithChar()
+        self.assertEqual( c.name, "WithChar" )
         if sys.version >= 2.7:
-            with self.assertRaisesRegexp(RuntimeError, "Method not implemented"): n.VBO(1.0)
+            with self.assertRaisesRegexp(RuntimeError, "Method not implemented"): c.VBO(1.0)
+        self.assertEqual( ptest.call_chi(c, 'A'), 1.5)
 
         #self.assertTrue(False)
 
@@ -101,6 +104,8 @@ class Material(unittest.TestCase):
         self.assertEqual( self.DB.get("MyMaterial").VBO(1.0), 0.5 )
         self.assertEqual( ptest.materialName("MyMaterial", self.DB), "MyMaterial" )
         self.assertEqual( ptest.materialVBO("MyMaterial", self.DB, 1.0), 0.5 )
+        self.assertEqual( ptest.call_chi(m, 'B'), 1.0)
+        self.assertEqual( m.chi('C'), 1.0)
 
 
     def testMaterialWithBase(self):

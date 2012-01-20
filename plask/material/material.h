@@ -26,7 +26,7 @@ struct Material {
      * @return version of @a composition complement with calculated amounts
      */
     static std::vector<double> completeComposition(const std::vector<double>& composition, unsigned pattern);
-    
+
     /// Do nothing.
     virtual ~Material() {}
 
@@ -189,7 +189,7 @@ struct Material {
     virtual double chi(double T, char Point) const;
 
     virtual inline double chi(char Point) const {
-	return chi(300, Point);
+        return chi(300, Point);
     }
 
     /**
@@ -205,21 +205,21 @@ struct Material {
      * @param T temperature [K]
      * @return effective density of states in the valance band Nv [\f$m^{-3}\f$]
      */
-    virtual double Nc(double T)	const;
+    virtual double Nc(double T) const;
 
     /**
      * Get intrinsic carrier concentration Ni [\f$m^{-3}\f$].
      * @param T temperature [K]
      * @return intrinsic carrier concentration Ni [\f$m^{-3}\f$]
      */
-    virtual double Ni(double T)	const;
+    virtual double Ni(double T) const;
 
     /**
      * Get free carrier concentration N [\f$m^{-3}\f$].
      * @param T temperature [K]
      * @return free carrier concentration N [\f$m^{-3}\f$]
      */
-    virtual double Nf(double T)	const;
+    virtual double Nf(double T) const;
 
     /**
      * Get donor ionisation energy EactD [eV].
@@ -375,7 +375,7 @@ struct Material {
     virtual dcomplex Nr(double WaveLen, double T) const;
 
     //virtual std::tuple<double, double, double, double, double> Nr(double WaveLen, double T..??..) const;// refractive index (tensor) nR[-]: Wavelength[nm], Temperature[K]
-    
+
 protected:
     void throwNotImplemented(const std::string& method_name) const;
 

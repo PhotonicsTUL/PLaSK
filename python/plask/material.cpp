@@ -18,6 +18,9 @@ namespace plask { namespace python {
  */
 class MaterialWrap : public Material
 {
+    shared_ptr<Material> base;
+    PyObject* self;
+
     template <typename T>
     inline T attr(const char* attribute) const {
         return py::extract<T>(py::object(py::detail::borrowed_reference(self)).attr(attribute));
@@ -39,25 +42,19 @@ class MaterialWrap : public Material
         return false;
     }
 
+    template <typename R, typename F, typename... Args>
+    inline R override(const char* name, F f, Args... args) const {
+        if (overriden(name)) return py::call_method<double>(self, name, args...);
+        return ((*base).*f)(args...);
+    }
+
     struct EmptyBase : public Material {
         virtual std::string name() const { return ""; }
     };
 
-    shared_ptr<Material> base;
-    PyObject* self;
-
   public:
     MaterialWrap () : base(new EmptyBase) {}
     MaterialWrap (shared_ptr<Material> base) : base(base) {}
-
-    virtual std::string name() const {
-        return attr<std::string>("name");
-    }
-
-    virtual double VBO(double T) const {
-        if (overriden("VBO")) return py::call_method<double>(self, "VBO", T);
-        return base->VBO(T);
-    }
 
     static shared_ptr<Material> __init__(py::tuple args, py::dict kwargs) {
         if (py::len(args) > 2 || py::len(kwargs) != 0) {
@@ -75,6 +72,58 @@ class MaterialWrap : public Material
         ptr->self = py::object(args[0]).ptr();  // key line !!!
         return sptr;
     }
+
+
+    // Here there are overrided methods from Material clas
+
+    /// @return material name
+    virtual std::string name() const { return attr<std::string>("name"); }
+    virtual double lattC(double T, char x) const { return override<double>("lattC", &Material::lattC, T, x); }
+    virtual double Eg(double T, const char Point) const { return override<double>("Eg", &Material::Eg, T, Point); }
+    virtual double CBO(double T, const char Point) const { return override<double>("CBO", &Material::CBO, T, Point); }
+    virtual double VBO(double T) const { return override<double>("VBO", &Material::VBO, T); }
+    virtual double Dso(double T) const { return override<double>("Dso", &Material::Dso, T); }
+    virtual double Mso(double T) const { return override<double>("Mso", &Material::Mso, T); }
+    virtual double Me(double T, const char Point) const { return override<double>("Me", &Material::Me, T, Point); }
+    virtual double Me_v(double T, const char Point) const { return override<double>("Me_v", &Material::Me_v, T, Point); }
+    virtual double Me_l(double T, const char Point) const { return override<double>("Me_l", &Material::Me_l, T, Point); }
+    virtual double Mhh(double T, const char Point) const { return override<double>("Mhh", &Material::Mhh, T, Point); }
+    virtual double Mhh_v(double T, const char Point) const { return override<double>("Mhh_v", &Material::Mhh_v, T, Point); }
+    virtual double Mhh_l(double T, const char Point) const { return override<double>("Mhh_l", &Material::Mhh_l, T, Point); }
+    virtual double Mlh(double T, const char Point) const { return override<double>("Mlh", &Material::Mlh, T, Point); }
+    virtual double Mlh_v(double T, const char Point) const { return override<double>("Mlh_v", &Material::Mlh_v, T, Point); }
+    virtual double Mlh_l(double T, const char Point) const { return override<double>("Mlh_l", &Material::Mlh_l, T, Point); }
+    virtual double Mh(double T, char EqType) const { return override<double>("Mh", &Material::Mh, T, EqType); }
+    virtual double Mh_v(double T, const char Point) const { return override<double>("Mh_v", &Material::Mh_v, T, Point); }
+    virtual double Mh_l(double T, const char Point) const { return override<double>("Mh_l", &Material::Mh_l, T, Point); }
+    virtual double eps(double T) const { return override<double>("eps", &Material::eps, T); }
+    virtual double chi(double T, const char Point) const { return override<double>("chi", (double (Material::*)(double, char) const) &Material::chi, T, Point); }
+    virtual double Nc(double T, const char Point) const { return override<double>("Nc", (double (Material::*)(double, char) const) &Material::Nc, T, Point); }
+    virtual double Ni(double T) const { return override<double>("Ni", &Material::Ni, T); }
+    virtual double Nf(double T) const { return override<double>("Nf", &Material::Nf, T); }
+    virtual double EactD(double T) const { return override<double>("EactD", &Material::EactD, T); }
+    virtual double EactA(double T) const { return override<double>("EactA", &Material::EactA, T); }
+    virtual double mob(double T) const { return override<double>("mob", &Material::mob, T); }
+    virtual double cond(double T) const { return override<double>("cond", &Material::cond, T); }
+    virtual double cond_v(double T) const { return override<double>("cond_v", &Material::cond_v, T); }
+    virtual double cond_l(double T) const { return override<double>("cond_l", &Material::cond_l, T); }
+    virtual double res(double T) const { return override<double>("res", &Material::res, T); }
+    virtual double res_v(double T) const { return override<double>("res_v", &Material::res_v, T); }
+    virtual double res_l(double T) const { return override<double>("res_l", &Material::res_l, T); }
+    virtual double A(double T) const { return override<double>("A", &Material::A, T); }
+    virtual double B(double T) const { return override<double>("B", &Material::B, T); }
+    virtual double C(double T) const { return override<double>("C", &Material::C, T); }
+    virtual double D(double T) const { return override<double>("D", &Material::D, T); }
+    virtual double thermCond(double T, double Thick) const { return override<double>("thermCond", &Material::thermCond, T, Thick); }
+    virtual double thermCond_v(double T, double Thick) const { return override<double>("thermCond_v", &Material::thermCond_v, T, Thick); }
+    virtual double thermCond_l(double T, double Thick) const { return override<double>("thermCond_l", &Material::thermCond_l, T, Thick); }
+    virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
+    virtual double specHeat(double T) const { return override<double>("specHeat", &Material::specHeat, T); }
+    virtual double nr(double WaveLen, double T) const { return override<double>("nr", &Material::nr, WaveLen, T); }
+    virtual double absp(double WaveLen, double T) const { return override<double>("absp", &Material::absp, WaveLen, T); }
+    virtual dcomplex Nr(double WaveLen, double T) const { return override<dcomplex>("Nr", &Material::Nr, WaveLen, T); }
+
+    // End of overriden methods
 
 };
 
@@ -100,12 +149,12 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
         // We pass composition parameters as *args to constructor
         py::list args;
         bool all_nan = true;
-        for (auto i = composition.begin(); i != composition.end(); ++i) {
-            if (!std::isnan(*i)) { all_nan = false; break; }
+        for (auto c : composition) {
+            if (!std::isnan(c)) { all_nan = false; break; }
         }
         if (!all_nan) {
-            for (auto i = composition.begin(); i != composition.end(); ++i) {
-                args.append(*i);
+            for (auto c : composition) {
+                args.append(c);
             }
         }
 
@@ -140,7 +189,7 @@ void registerMaterial(const std::string& name, py::object material_class, shared
  */
 py::list MaterialsDB_list(const MaterialsDB& DB) {
     py::list materials;
-    for (auto material = DB.constructors.begin(); material != DB.constructors.end(); ++material )
+    for (auto material = DB.constructors.begin(); material != DB.constructors.end(); ++material)
         materials.append(material->first);
     return materials;
 }
@@ -184,10 +233,10 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     }
     elements.push_back(element);
     std::vector<double> composition;
-    for (auto element = elements.begin(); element != elements.end(); ++element) {
+    for (auto element : elements) {
         double c;
         try {
-            c = py::extract<double>(kwargs[*element]);
+            c = py::extract<double>(kwargs[element]);
         } catch (py::error_already_set) {
             c = nan("");
             PyErr_Clear();
@@ -243,7 +292,7 @@ py::list Material__completeComposition(py::object src, unsigned int pattern) {
     for (auto i = begin; i != end; ++i) in.push_back(*i);
     std::vector<double> out = Material::completeComposition(in, pattern);
     py::list dst;
-    for (auto i = out.begin(); i != out.end(); ++i) dst.append(*i);
+    for (auto o : out) dst.append(o);
     return dst;
 }
 
@@ -271,8 +320,55 @@ void initMaterial() {
         .def("_completeComposition", &Material__completeComposition, "Fix incomplete material composition basing on patten")
         .staticmethod("_completeComposition")
         .add_property("name", &Material::name)
-        .def("VBO", &Material::VBO)
-    ;
+
+        .def("lattC", &Material::lattC, "Get lattice constant [A]")
+        .def("Eg", &Material::Eg, "Get energy gap Eg [eV]")
+        .def("CBO", &Material::CBO, "Get conduction band offset CBO [eV]")
+        .def("VBO", &Material::VBO, "Get valance band offset VBO[eV]")
+        .def("Dso", &Material::Dso, "Get split-off energy Dso [eV]")
+        .def("Mso", &Material::Mso, "Get split-off mass Mso [m0]")
+        .def("Me", &Material::Me, "Get split-off mass Mso [m0]")
+        .def("Me_v", &Material::Me_v, "Get electron effective mass Me in vertical direction [m0]")
+        .def("Me_l", &Material::Me_l, "Get electron effective mass Me in lateral direction [m0]")
+        .def("Mhh", &Material::Mhh, "Get heavy hole effective mass Mhh [m0]")
+        .def("Mhh_v", &Material::Mhh_v, "Get heavy hole effective mass Mhh [m0]")
+        .def("Mhh_l", &Material::Mhh_l, "Get heavy hole effective mass Me in lateral direction [m0]")
+        .def("Mlh", &Material::Mlh, "Get light hole effective mass Mlh [m0]")
+        .def("Mlh_v", &Material::Mlh_v, "Get light hole effective mass Me in vertical direction [m0]")
+        .def("Mlh_l", &Material::Mlh_l, "Get light hole effective mass Me in lateral direction [m0]")
+        .def("Mh", &Material::Mh, "Get hole effective mass Mh [m0]")
+        .def("Mh_v", &Material::Mh_v, "Get hole effective mass Me in vertical direction [m0]")
+        .def("Mh_l", &Material::Mh_l, "Get hole effective mass Me in lateral direction [m0]")
+        .def("eps", &Material::eps, "Get dielectric constant EpsR")
+        .def("chi", (double (Material::*)(double, char) const)&Material::chi, "Get electron affinity Chi [eV]")
+        .def("chi", (double (Material::*)(char) const)&Material::chi, "Get electron affinity Chi [eV]")
+        .def("Nc", (double (Material::*)(double, char) const)&Material::Nc, "Get effective density of states in the conduction band Nc [m**(-3)]")
+        .def("Nc", (double (Material::*)(double) const)&Material::Nc, "Get effective density of states in the valance band Nv [m**(-3)]")
+        .def("Ni", &Material::Ni, "Get intrinsic carrier concentration Ni [m**(-3)]")
+        .def("Nf", &Material::Nf, "Get free carrier concentration N [m**(-3)]")
+        .def("EactD", &Material::EactD, "Get donor ionisation energy EactD [eV]")
+        .def("EactA", &Material::EactA, "Get acceptor ionisation energy EactA [eV]")
+        .def("mob", &Material::mob, "Get mobility [m**2/(V*s)]")
+        .def("cond", &Material::cond, "Get electrical conductivity Sigma [S/m]")
+        .def("cond_v", &Material::cond_v, "Get electrical conductivity in vertical direction Sigma [S/m]")
+        .def("cond_l", &Material::cond_l, "Get electrical conductivity in lateral direction Sigma [S/m]")
+        .def("res", &Material::res, "Get electrical resistivity [Ohm*m]")
+        .def("res_v", &Material::res_v, "Get electrical resistivity in vertical direction [Ohm*m]")
+        .def("res_l", &Material::res_l, "Get electrical resistivity in vertical direction [Ohm*m]")
+        .def("A", &Material::A, "Get monomolecular recombination coefficient A [1/s]")
+        .def("B", &Material::B, "Get radiative recombination coefficient B[m**3/s]")
+        .def("C", &Material::C, "Get Auger recombination coefficient C [m**6/s]")
+        .def("D", &Material::D, "Get ambipolar diffusion coefficient D[m**2/s]")
+        .def("thermCond", &Material::thermCond, "Get ambipolar diffusion coefficient D[m**2/s]")
+        .def("thermCond_v", &Material::thermCond_v, "Get thermal conductivity in vertical direction k [W/(m*K)]")
+        .def("thermCond_l", &Material::thermCond_l, "Get thermal conductivity in lateral direction k [W/(m*K)]")
+        .def("dens", &Material::dens, "Get density [kg/m**3]")
+        .def("specHeat", &Material::specHeat, "Get specific heat at constant pressure [J/(kg*K)]")
+        .def("nr", &Material::nr, "Get refractive index nR")
+        .def("absp", &Material::absp, "Get absorption coefficient alpha")
+        .def("Nr", &Material::Nr, "Get refractive index nR")
+
+        ;
 
     py::def("registerMaterial", &registerMaterial);
 }
