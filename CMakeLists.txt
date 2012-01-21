@@ -93,6 +93,7 @@ if (BUILD_SHARED_LIBS)
 else()
     add_library(libplask STATIC ${plask_src} ${plask_extlib_src} ${plask_headers})
 endif()
+set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
 # ---------- Python --------------------------------------------
 
