@@ -125,7 +125,7 @@ if (BUILD_PYTHON)
     if (BUILD_PYTHON_EXECUTABLE)
         add_executable(plask python/exe_main.cpp ${python_plask_src})
 		if (WIN32)
-			# For some reason MinGW wants to create import library for executable, 
+			# For some reason MinGW wants to create import library for executable,
 			# which overwrites libplask.dll.a. With this hack we name this useless
 			# stuff libplask.exe.dll.a
 			set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
@@ -177,7 +177,6 @@ if(BUILD_TESTS)
     endif(Boost_UNIT_TEST_FRAMEWORK_FOUND)
 
     if(BUILD_PYTHON)
-
         file(GLOB_RECURSE python_tests_module_src FOLLOW_SYMLINKS tests/python/*.cpp)
 
         add_library(plasktest MODULE ${python_tests_module_src})
@@ -250,8 +249,8 @@ endif(BUILD_DOCUMENTATION)
 # ----------===== install =====--------------------------------------------
 if(BUILD_SHARED_LIBS)
     if(WIN32)
-        install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core
-								 RUNTIME DESTINATION bin COMPONENT core
+        install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
+                                 LIBRARY DESTINATION lib COMPONENT core
                                  ARCHIVE DESTINATION lib COMPONENT dev)
     else()
         install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
@@ -267,9 +266,11 @@ if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
             PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
 endif()
 
-install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
+if(BUILD_PYTHON_EXECUTABLE)
+    install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
+endif()
 
-# TODO: install python part
+# TODO: install python modules
 
 # ----------===== packaging =====--------------------------------------------
 
@@ -303,11 +304,14 @@ set(CPACK_SOURCE_IGNORE_FILES
 include(CPack)
 
 # ----------===== Debug helpers =====--------------------------------------------
-if(CMAKE_BUILD_TYPE STREQUAL Debug AND NOT WIN32)
+if(NOT WIN32)
     file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask
          "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib PYTHONDONTWRITEBYTECODE=YES ${CMAKE_BINARY_DIR}/bin/plask $@\n")
     file(COPY ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask DESTINATION ${CMAKE_BINARY_DIR}
          FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE OWNER_WRITE)
+else()
+    file(WRITE ${CMAKE_BINARY_DIR}/plask.bat
+         "set PYTHONPATH=${CMAKE_SOURCE_DIR}\\python\;${CMAKE_BINARY_DIR}\\lib\nset PYTHONDONTWRITEBYTECODE=YES\n${CMAKE_BINARY_DIR}\\bin\\plask.exe %*")
 endif()
 
 # ----------===== config.h =====--------------------------------------------

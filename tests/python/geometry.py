@@ -16,12 +16,12 @@ class SimpleGeometry(unittest.TestCase):
         r2a.lower = plask.vec(3., 2.)
         r2a.upper = plask.vec(1., 5.)
         r2a.fix()
-        self.assertEqual( r2a.lower, plask.vec(1,2) )
-        self.assertEqual( r2a.upper, plask.vec(3,5) )
+        self.assertAlmostEqual( r2a.lower, plask.vec(1,2) )
+        self.assertAlmostEqual( r2a.upper, plask.vec(3,5) )
         r2b = plask.geometry.Box2D(plask.vec(3., 2.), plask.vec(1., 5.))
         r2b.fix()
-        self.assertEqual( r2b.lower, plask.vec(1,2) )
-        self.assertEqual( r2b.upper, plask.vec(3,5) )
+        self.assertAlmostEqual( r2b.lower, plask.vec(1,2) )
+        self.assertAlmostEqual( r2b.upper, plask.vec(3,5) )
         r3a = plask.geometry.Box3D(3.,2.,1., 1.,5.,0.)
         r3b = plask.geometry.Box3D(plask.vec(1.,2.,0.), plask.vec(3.,5.,1.))
         self.assertEqual( r3a, r3b )
@@ -39,8 +39,8 @@ class GeometryObjects(unittest.TestCase):
 
     def testRectangle(self):
         '''Test rectangle'''
-        self.assertEqual( self.rectangle53.boundingBox.upper, plask.vec(5.0, 3.0) )
-        self.assertEqual( self.rectangle53.boundingBox.lower, plask.vec(0.0, 0.0) )
+        self.assertAlmostEqual( self.rectangle53.boundingBox.upper, plask.vec(5.0, 3.0) )
+        self.assertAlmostEqual( self.rectangle53.boundingBox.lower, plask.vec(0.0, 0.0) )
         self.assertEqual( self.rectangle53.getMaterial(plask.vec(4.0, 2.0)), self.mat)
         self.assertIsNone( self.rectangle53.getMaterial(plask.vec(6.0, 2.0)));
 
@@ -60,5 +60,7 @@ class GeometryObjects(unittest.TestCase):
         self.assertEqual(multistack.boundingBox, plask.geometry.Box2D(0.0, 10.0, 5.0, 40.0))
         self.assertEqual(multistack.getMaterial(4.0, 39.0), self.mat)
         self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
-        self.assertEqual( multistack[0], (self.rectangle53, plask.vec(0, 10.)) )
-        self.assertEqual( multistack[9], (self.rectangle53, plask.vec(0, 37.)) )
+        self.assertEqual( multistack[0][0], self.rectangle53 )
+        self.assertAlmostEqual( multistack[0][1], plask.vec(0, 10.) )
+        self.assertEqual( multistack[9][0], self.rectangle53 )
+        self.assertAlmostEqual( multistack[9][1], plask.vec(0, 37.) )

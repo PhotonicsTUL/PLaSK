@@ -249,6 +249,13 @@ struct PyVec
     PyVec(const py::list& comps) : components(comps) , dim(py::len(comps)) {}
 
     template <int vdim, typename T>
+    PyVec(const Vec<vdim,T>& v) : dim(vdim) {
+        for (int i = 0; i < vdim; i++) {
+            components.append(py::object(v[i]));
+        }
+    }
+
+    template <int vdim, typename T>
     operator Vec<vdim,T> () {
         if (dim != vdim) {
             std::stringstream out;
@@ -567,6 +574,11 @@ void register_vector()
     py::implicitly_convertible<PyVec,Vec<3,double>>();
     py::implicitly_convertible<PyVec,Vec<2,dcomplex>>();
     py::implicitly_convertible<PyVec,Vec<3,dcomplex>>();
+
+    py::implicitly_convertible<Vec<2,double>,PyVec>();
+    py::implicitly_convertible<Vec<3,double>,PyVec>();
+    py::implicitly_convertible<Vec<2,dcomplex>,PyVec>();
+    py::implicitly_convertible<Vec<3,dcomplex>,PyVec>();
 }
 
 }} // namespace plask::python
