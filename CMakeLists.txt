@@ -296,7 +296,7 @@ set(CPACK_SOURCE_IGNORE_FILES
 "^${PROJECT_SOURCE_DIR}.*\\\\.kdev4"
 "^${PROJECT_SOURCE_DIR}.*/\\\\..*"
 "^${PROJECT_SOURCE_DIR}/debian/"
-"^${PROJECT_SOURCE_DIR}/build/"
+"^${PROJECT_SOURCE_DIR}/build*/"
 "^${PROJECT_SOURCE_DIR}/debug/"
 "^${PROJECT_SOURCE_DIR}/release/"
 )
@@ -304,14 +304,16 @@ set(CPACK_SOURCE_IGNORE_FILES
 include(CPack)
 
 # ----------===== Debug helpers =====--------------------------------------------
-if(NOT WIN32)
-    file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask
-         "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib PYTHONDONTWRITEBYTECODE=YES ${CMAKE_BINARY_DIR}/bin/plask $@\n")
-    file(COPY ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask DESTINATION ${CMAKE_BINARY_DIR}
-         FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE OWNER_WRITE)
-else()
-    file(WRITE ${CMAKE_BINARY_DIR}/plask.bat
-         "set PYTHONPATH=${CMAKE_SOURCE_DIR}\\python\;${CMAKE_BINARY_DIR}\\lib\nset PYTHONDONTWRITEBYTECODE=YES\n${CMAKE_BINARY_DIR}\\bin\\plask.exe %*")
+if (BUILD_PYTHON_EXECUTABLE)
+    if(NOT WIN32)
+        file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask
+            "PYTHONPATH=${CMAKE_SOURCE_DIR}/python:${CMAKE_BINARY_DIR}/lib PYTHONDONTWRITEBYTECODE=YES ${CMAKE_BINARY_DIR}/bin/plask $@\n")
+        file(COPY ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask DESTINATION ${CMAKE_BINARY_DIR}
+            FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE OWNER_WRITE)
+    else()
+        file(WRITE ${CMAKE_BINARY_DIR}/plask.bat
+            "set PYTHONPATH=${CMAKE_SOURCE_DIR}\\python\;${CMAKE_BINARY_DIR}\\lib\nset PYTHONDONTWRITEBYTECODE=YES\n${CMAKE_BINARY_DIR}\\bin\\plask.exe %*")
+    endif()
 endif()
 
 # ----------===== config.h =====--------------------------------------------
