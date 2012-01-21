@@ -7,7 +7,6 @@ import plask
 class Vector(unittest.TestCase):
 
     def setUp(self):
-        pass
         self.a2 = plask.vec(1,2)
         self.b2 = plask.vec(10,20)
         self.c2 = plask.vec(100,200)

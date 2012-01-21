@@ -72,7 +72,7 @@ void register_geometry_primitive()
     void (Rect2d::*includeR2p)(const Vec<2,double>&) = &Rect2d::include;
     void (Rect2d::*includeR2R)(const Rect2d&)       = &Rect2d::include;
 
-    py::class_<Rect2d,shared_ptr<Rect2d>>("Box2D",
+    py::class_<Rect2d, shared_ptr<Rect2d>>("Box2D",
         "Rectangular two-dimensional box. Provides some basic operation on boxes.\n\n"
         "Box2D() -> create empty box\n"
         "Box2D(lower, upper) -> create box with opposite corners described by 2D vectors\n"
@@ -100,7 +100,7 @@ void register_geometry_primitive()
     void (Rect3d::*includeR3p)(const Vec<3,double>&) = &Rect3d::include;
     void (Rect3d::*includeR3R)(const Rect3d&)       = &Rect3d::include;
 
-    py::class_<Rect3d,shared_ptr<Rect3d>>("Box3D",
+    py::class_<Rect3d, shared_ptr<Rect3d>>("Box3D",
         "Cuboidal three-dimensional box. Provides some basic operation on boxes.\n\n"
         "Box3D() -> create empty box\n"
         "Box3D(lower, upper) -> create box with opposite corners described by 3D vectors\n"

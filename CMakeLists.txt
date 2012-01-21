@@ -93,7 +93,6 @@ if (BUILD_SHARED_LIBS)
 else()
     add_library(libplask STATIC ${plask_src} ${plask_extlib_src} ${plask_headers})
 endif()
-set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
 # ---------- Python --------------------------------------------
 
@@ -119,12 +118,18 @@ if (BUILD_PYTHON)
         if(WIN32)
             set_target_properties(modplask PROPERTIES SUFFIX ".pyd")
         endif()
-        target_link_libraries(modplask libplask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+        target_link_libraries(modplask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
     endif(BUILD_PYTHON_MODULE)
 
     if (BUILD_PYTHON_EXECUTABLE)
         add_executable(plask python/exe_main.cpp ${python_plask_src})
-        target_link_libraries(plask libplask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+		if (WIN32)
+			# For some reason MinGW wants to create import library for executable, 
+			# which overwrites libplask.dll.a. With this hack we name this useless
+			# stuff libplask.exe.dll.a
+			set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
+		endif()
+        target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
     endif(BUILD_PYTHON_EXECUTABLE)
 
 endif(BUILD_PYTHON)
@@ -245,6 +250,7 @@ endif(BUILD_DOCUMENTATION)
 if(BUILD_SHARED_LIBS)
     if(WIN32)
         install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core
+								 RUNTIME DESTINATION bin COMPONENT core
                                  ARCHIVE DESTINATION lib COMPONENT dev)
     else()
         install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
@@ -259,6 +265,8 @@ if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc DESTINATION share COMPONENT dev-doc
             PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
 endif()
+
+install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
 
 # TODO: install python part
 
