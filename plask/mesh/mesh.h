@@ -69,7 +69,7 @@ TODO: example (here or in adapters description)
 */
 
 #include "../space.h"
-#include <config.h>
+#include <plask/config.h>
 
 #include "../utils/iterators.h"
 

@@ -1,5 +1,5 @@
-#ifndef PLASK__PLASK_H
-#define PLASK__PLASK_H
+#ifndef PLASK__PLASK_HPP
+#define PLASK__PLASK_HPP
 
 /** @file
 This file allows for easy include all plask futures.
@@ -43,10 +43,38 @@ You should start reading from section \subpage modules "How to implement an own 
 - \subpage modules "How to implement an own module?"
     - \subpage providers "How to use providers and receivers for data exchange?"
 - \subpage providers_writing "How to implement new providers and receivers for new data types?"
-- \subpage meshes "How to use meshes and write an own one?"
+- \subpage meshes "How to use meshes and write an own ones?"
     - \subpage interpolation "All about interpolation."
 - \subpage geometry "All about geometry."
 */
 
+#include "config.h"
+#include "exceptions.h"
+#include "module.h"
+#include "space.h"
+#include "vec.h"
 
-#endif // PLASK__PLASK_H
+#include "geometry/geometry.h"
+#include "geometry/primitives.h"
+#include "geometry/element.h"
+#include "geometry/manager.h"
+#include "geometry/transform.h"
+#include "geometry/leaf.h"
+#include "geometry/calculation_space.h"
+#include "geometry/space_changer_cartesian.h"
+#include "geometry/space_changer_cylindric.h"
+#include "geometry/container.h"
+#include "geometry/reader.h"
+
+#include "material/material.h"
+
+#include "mesh/rectilinear.h"
+#include "mesh/mesh.h"
+#include "mesh/interpolation.h"
+
+#include "provider/provider.h"
+#include "provider/temperature.h"
+
+#include "module/constant_temperature.h"
+
+#endif // PLASK__PLASK_HPP

@@ -1,3 +1,5 @@
+#ifndef PLASK__TEMPERATURE_H
+#define PLASK__TEMPERATURE_H
 
 #include "provider.h"
 
@@ -19,3 +21,5 @@ typedef ProviderFor<Temperature> TemperatureProvider;
 typedef ReceiverFor<Temperature> TemperatureReceiver;
 
 } // namespace plask
+
+#endif // PLASK__TEMPERATURE_H

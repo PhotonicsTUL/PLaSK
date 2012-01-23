@@ -2,9 +2,7 @@
 #include <boost/python.hpp>
 namespace py = boost::python;
 
-#include <config.h>
-#include <plask/material/material.h>
-#include <plask/geometry/leaf.h>
+#include <plask/plask.hpp>
 
 //// Material /////////////////////////////////////////////////////////////////////////////////////////////////////////
 

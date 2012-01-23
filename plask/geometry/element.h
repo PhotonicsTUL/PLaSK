@@ -6,9 +6,9 @@ This file includes base classes for geometries elements.
 */
 
 
-#include <config.h>
 #include <vector>
 
+#include "../config.h"
 #include "../material/material.h"
 #include "primitives.h"
 
@@ -51,7 +51,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @throw Exception if element is not ready for calculation
      */
     virtual void validate() const {}
-    
+
     /**
      * Check if @a el is in subtree with @c this in root.
      * @param el element to search for
@@ -65,16 +65,16 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     virtual ~GeometryElement() {}
 
     //virtual GeometryTransform getTransform()
-    
+
 protected:
-    
+
     /**
-     * Throw CyclicReferenceException if potential_parent is in subtree with this in root. 
+     * Throw CyclicReferenceException if potential_parent is in subtree with this in root.
      */
     void ensureCanHasAsParent(GeometryElement& potential_parent);
-    
+
     /**
-     * Throw CyclicReferenceException if potential_child has this in subtree. 
+     * Throw CyclicReferenceException if potential_child has this in subtree.
      */
     void ensureCanHasAsChild(GeometryElement& potential_child) { potential_child.ensureCanHasAsParent(*this); }
 
@@ -200,7 +200,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      * @param child new child
      */
     void setChildUnsafe(const shared_ptr<ChildType>& child) { _child = child; }
-    
+
     /**
      * Set new child.
      * @param child new child
@@ -210,7 +210,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
         this->ensureCanHasAsChild(*child);
         setChildUnsafe(child);
     }
-    
+
     /**
      * @return @c true only if child is set (not null)
      */

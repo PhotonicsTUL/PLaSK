@@ -1,5 +1,5 @@
-#ifndef PLASK__METAPROG_H
-#define PLASK__METAPROG_H
+#ifndef PLASK__UTILS_METAPROG_H
+#define PLASK__UTILS_METAPROG_H
 
 /** @file
 This file includes meta-programing tools.
@@ -37,4 +37,4 @@ template <typename firstType, typename... restTypes> struct chooseType<0, firstT
 }   // namespace plask
 
 
-#endif // PLASK__METAPROG_H
+#endif // PLASK__UTILS_METAPROG_H

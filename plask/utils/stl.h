@@ -1,5 +1,5 @@
-#ifndef PLASK__STL_H
-#define PLASK__STL_H
+#ifndef PLASK__UTILS_STL_H
+#define PLASK__UTILS_STL_H
 
 /** @file
 This file includes tools which provide compability with STL containers, etc.

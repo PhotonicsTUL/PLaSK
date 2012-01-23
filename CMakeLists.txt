@@ -5,7 +5,7 @@ project (plask)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
 set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
-
+# set(VERSION_REVISION 1)       # REVISION number (leave undefined unless really needed)
 
 # ---------- common options --------------------------------------------
 
@@ -14,7 +14,7 @@ add_definitions(-std=c++0x)     # C++0x (C++11) standard
 
 include_directories(.)          # external modules can include plask using <plask/....h>
 include_directories(extlib)     # place for local external libraries
-include_directories(${CMAKE_BINARY_DIR}) # for include config.h
+include_directories(${CMAKE_BINARY_DIR}/include ${CMAKE_BINARY_DIR}/include/plask) # for include config.h
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
@@ -23,16 +23,16 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-execute_process(COMMAND svnversion -n WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE VERSION_REVISION)
-if(NOT ${VERSION_REVISION} STREQUAL "")
-    string(REGEX REPLACE "[0-9]+:|[A-Za-z]+" "" VERSION_REVISION ${VERSION_REVISION})
-    if(${VERSION_REVISION})
-        set(VERSION_REVISION "r${VERSION_REVISION}")
+if (NOT DEFINED VERSION_REVISION)
+    execute_process(COMMAND svnversion -n WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE SVN_REVISION)
+    if(DEFINED SVN_REVISION)
+        string(REGEX REPLACE "[0-9]+:|[A-Za-z]+" "" SVN_REVISION ${SVN_REVISION})
+    endif()
+    if(NOT ${SVN_REVISION} STREQUAL "")
+        set(VERSION_REVISION "r${SVN_REVISION}")
     else()
         set(VERSION_REVISION 0)
     endif()
-else()
-    set(VERSION_REVISION 0)
 endif()
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 message(STATUS "PLaSK version ${VERSION}")
@@ -76,7 +76,7 @@ find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
 # ----------===== Build =====--------------------------------------------
 
-file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h)
+file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp)
 
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp)
 
@@ -259,7 +259,8 @@ else()
     install(TARGETS libplask ARCHIVE DESTINATION lib COMPONENT dev)
 endif()
 
-install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN ".*" EXCLUDE)
+install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
+install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 
 if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc DESTINATION share COMPONENT dev-doc
@@ -317,4 +318,4 @@ if (BUILD_PYTHON_EXECUTABLE)
 endif()
 
 # ----------===== config.h =====--------------------------------------------
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/plask/config.h)

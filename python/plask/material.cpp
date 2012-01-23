@@ -2,7 +2,7 @@
 #include <boost/python/raw_function.hpp>
 #include <boost/python/stl_iterator.hpp>
 
-#include <config.h>
+#include <plask/config.h>
 #include <plask/utils/string.h>
 #include <plask/exceptions.h>
 #include <plask/material/material.h>

@@ -1,11 +1,11 @@
-#ifndef PLASK__MEMORY_H
-#define PLASK__MEMORY_H
+#ifndef PLASK__UTILS_MEMORY_H
+#define PLASK__UTILS_MEMORY_H
 
 /** @file
 This file includes utils to operate on memory, pointers, smart pointers, etc.
 */
 
-#include <config.h>
+#include <plask/config.h>
 
 namespace plask {
 
@@ -43,4 +43,4 @@ inline void makeUnique(shared_ptr<T>& ptr) {
 
 }       // namespace plask
 
-#endif
+#endif // PLASK__UTILS_MEMORY_H

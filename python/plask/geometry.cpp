@@ -2,7 +2,7 @@
 #include <boost/python.hpp>
 namespace py = boost::python;
 
-#include <config.h>
+#include <plask/config.h>
 #include <plask/geometry/manager.h>
 #include <plask/geometry/leaf.h>
 

@@ -1,5 +1,5 @@
-#ifndef PLASK__ITERATORS_H
-#define PLASK__ITERATORS_H
+#ifndef PLASK__UTILS_ITERATORS_H
+#define PLASK__UTILS_ITERATORS_H
 
 /** @file
 This file includes iterators utils.
@@ -21,26 +21,26 @@ In such case <code>const ValueT</code> can be a better choice.
 */
 template <typename ValueT, typename ReferenceT = ValueT&>
 struct PolymorphicForwardIteratorImpl {
-    
+
     //some typedefs compatibile with stl:
-    
+
     ///Type of elements pointed by the iterator.
     typedef ValueT value_type;
-    
+
     ///Type to represent a reference to an element pointed by the iterator.
     typedef ReferenceT reference;
-    
+
     ///@return current value
     virtual ReferenceT dereference() const = 0;
-        
+
     ///Iterate to next value.
     virtual void increment() = 0;
-    
+
     /**
      * @return true only if this is equal to @a other
      */
     virtual bool equal(const PolymorphicForwardIteratorImpl& other) const = 0;
-    
+
     /*
      * Move iterator @a distanse steps forward. By default call increment @a distanse times.
      * @param distanse how many steps
@@ -48,20 +48,20 @@ struct PolymorphicForwardIteratorImpl {
     /*virtual void advance(std::size_t distanse) {
         while (distanse) { increment(); --distanse; }
     }*/
-        
+
     /**
      * Clone this iterator.
      * @return clone of @c *this, reserved by @a new operator (clone caller must trust to delete it)
      */
     virtual PolymorphicForwardIteratorImpl<ValueT, ReferenceT>* clone() const = 0;
-        
+
     //Do nothing.
     virtual ~PolymorphicForwardIteratorImpl() {}
 };
-    
+
 /**
 Polymorphic, forward iterator.
-    
+
 Hold and delegate all calls to implementation object which is a specialization of PolymorficForwardIteratorImpl template.
 
 @tparam ImplT specialization of PolymorphicForwardIteratorImpl
@@ -74,34 +74,34 @@ struct PolymorphicForwardIterator:
         boost::forward_traversal_tag,
         typename ImplT::reference
     > {
-        
+
     ImplT* impl;
-        
+
     public:
-    
+
     /**
      * Construct iterator which hold given implementation object.
      * @param impl Implementation object. It will be delete by constructor of this.
-     *             If it is @c nullptr you should not call any methods of this before assign 
+     *             If it is @c nullptr you should not call any methods of this before assign
      */
     PolymorphicForwardIterator(ImplT* impl = nullptr): impl(impl) {}
-    
+
     ///Delete wrapped iterator object.
     ~PolymorphicForwardIterator() { delete impl; }
-        
+
     /**
      * Copy constructor. Clone implementation object.
      * @param src Iterator from which implementation object should be clone. It mustn't hold @c nullptr.
      */
     PolymorphicForwardIterator(const PolymorphicForwardIterator& src) { impl = src.impl->clone(); }
-        
+
     /**
      * Move constructor.
      * Move ownership of wrapped implementation object from @a src to this.
      * @param src iterator from which implementation object should be moved
      */
     PolymorphicForwardIterator(PolymorphicForwardIterator &&src): impl(src.impl) { src.impl = 0; }
-    
+
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
     template <class> friend class PolymorphicForwardIterator;
@@ -136,35 +136,35 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
 
     ///Current iterator position (index).
     std::size_t index;
-    
+
     ///Construct uninitialized iterator. Don't use it before initialization.
     IndexedIterator() {}
-    
+
     /**
      * Construct iterator which point to given @a index in given @a container.
      * @param container container to iterate over
      * @param index index in @a container
      */
     IndexedIterator(ContainerType* container, std::size_t index): container(container), index(index) {}
-    
+
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
     template <class, class, class> friend class IndexedIterator;
-    
+
     template <typename OtherT>
     bool equal(const OtherT& other) const {
         return index == other.index;
     }
-    
+
     void increment() { ++index; }
-    
+
     void decrement() { --index; }
-    
+
     void advance(std::ptrdiff_t to_add) { index += to_add; }
-    
+
     template <typename OtherT>
     std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
-    
+
     Reference dereference() const { return (*container)[index]; }
 
 };
@@ -197,32 +197,32 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
 
     ///Current iterator position (index).
     std::size_t index;
-    
+
     /**
      * Construct iterator which point to given in index in given container.
      * @param functor functor
      * @param index index for which this iterator should refere, argument for functor
      */
     FunctorIndexedIterator(FunctorType functor, std::size_t index): functor(functor), index(index) {}
-    
+
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
     template <class, class, class> friend class IndexedIterator;
-    
+
     template <typename OtherT>
     bool equal(const OtherT& other) const {
         return index == other.index;
     }
-    
+
     void increment() { ++index; }
-    
+
     void decrement() { --index; }
-    
+
     void advance(std::ptrdiff_t to_add) { index += to_add; }
-    
+
     template <typename OtherT>
     std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
-    
+
     Reference dereference() const { return functor(index); }
 
 };
@@ -240,5 +240,5 @@ inline FunctorIndexedIterator<Functor> makeFunctorIndexedIterator(Functor f, std
 }
 
 }       //namespace plask
-    
+
 #endif

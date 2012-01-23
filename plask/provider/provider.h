@@ -65,10 +65,10 @@ typedef ReceiverFor<Temperature> TemperatureReceiver;
 */
 
 #include <set>
-#include <config.h>
 #include <vector>
-#include <functional>	//std::function
+#include <functional>   // std::function
 
+#include "../config.h"
 #include "../exceptions.h"
 #include "../mesh/mesh.h"
 #include "../mesh/interpolation.h"
@@ -187,7 +187,7 @@ struct Receiver: public Provider::Listener {
     void setProvider(ProviderT &provider) {
         setProvider(&provider);
     }
-    
+
     /**
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, can be @c nullptr to only disconnect from current provider.
@@ -492,7 +492,7 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
 
 /**
  * Partial specialization which implement abstract provider class which provide one value, typically one double.
- * 
+ *
  * @tparam PropertyTag
  * @tparam ValueT type of provided value
  * @tparam SpaceType ignored
@@ -507,19 +507,19 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
      * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
      */
     struct WithValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
-        
+
         ///Type of provided value.
         typedef ValueT ProvidedValueType;
-        
+
         ///Provided value.
         ProvidedValueType value;
-        
+
         /**
          * Get provided value.
          * @return provided value
          */
         ProvidedValueType& operator()() { return value; }
-        
+
         /**
          * Get provided value.
          * @return provided value
@@ -531,7 +531,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
      * Implementation of one value provider class which delegates all operator() calls to external functor.
      */
     typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>, ProvidedValueType() > Delegate;
-    
+
 };
 
 /**
@@ -543,29 +543,29 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
 
     ///Type of provided value.
     typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
-    
+
     /*
      * Template for implementation of field provider class which holds vector of values and mesh inside.
      * @tparam MeshType type of mesh which is used for calculation and which describe places of data points
      */
     /*template <typename MeshType>
     struct WithValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
-        
+
         typedef ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
-        
+
         ProvidedValueType values;
-        
+
         MeshType mesh;
-        
+
         ProvidedValueType& operator()() { return values; }
-        
+
         const ProvidedValueType& operator()() const { return values; }
-        
+
         virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) {
             return interpolate(mesh, values, dst_mesh, method);
         }
     };*/
-    
+
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */
@@ -581,7 +581,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
 
     ///Type of provided value.
     typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
-    
+
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
      * operator() call plask::interpolate.
@@ -589,28 +589,28 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
      */
     template <typename MeshType>
     struct WithValue: public ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType> {
-        
+
         ///Type of provided value.
         typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
-        
+
         ///Provided value. Values in points describe by this->mesh.
         ProvidedValueType values;
-        
+
         ///Mesh which describe in which points are this->values.
         MeshType mesh;
-        
+
         /**
          * Get provided value in points describe by this->mesh.
          * @return provided value in points describe by this->mesh
          */
         ProvidedValueType& operator()() { return values; }
-        
+
         /**
          * Get provided value in points describe by this->mesh.
          * @return provided value in points describe by this->mesh
          */
         const ProvidedValueType& operator()() const { return values; }
-        
+
         /**
          * Calculate interpolated values using plask::interpolate.
          * @param dst_mesh set of requested points
@@ -621,7 +621,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
             return interpolate(mesh, values, dst_mesh, method);
         }
     };
-    
+
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */

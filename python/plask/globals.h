@@ -5,7 +5,7 @@
 #include <boost/python.hpp>
 namespace py = boost::python;
 
-#include <config.h>
+#include <plask/config.h>
 
 namespace plask { namespace python {
 

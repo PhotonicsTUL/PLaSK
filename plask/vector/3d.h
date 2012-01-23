@@ -2,7 +2,8 @@
 #define PLASK__VECTORCART3D_H
 
 #include <iostream>
-#include <config.h>
+
+#include "../config.h"
 
 namespace plask {
 

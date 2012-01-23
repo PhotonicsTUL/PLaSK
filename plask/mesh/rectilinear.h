@@ -133,7 +133,7 @@ public:
      * Remove all points from mesh.
      */
     void clear();
-        
+
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
@@ -152,7 +152,7 @@ auto RectilinearMesh1d::interpolateLinear(RandomAccessContainer& data, double po
     if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
     if (index == 0 || operator [](index) == point) return data[index]; //hit exactly
     //here: points[index-1] < point < points[index]
-    return interpolate::linear(points[index-1], data[index-1], points[index], data[index], point);
+    return interpolation::linear(points[index-1], data[index-1], points[index], data[index], point);
 }
 
 template <typename IteratorT>
@@ -256,7 +256,7 @@ struct RectilinearMesh2d {
 
     ///Second coordinate of points in this mesh.
     RectilinearMesh1d c1;
-    
+
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
@@ -409,7 +409,7 @@ struct RectilinearMesh2d {
         c0.clear();
         c1.clear();
     }
-    
+
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
@@ -425,37 +425,37 @@ template <typename RandomAccessContainer>
 auto RectilinearMesh2d::interpolateLinear(RandomAccessContainer& data, Vec<2, double> point) -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index0 = c0.findIndex(point.c0);
     std::size_t index1 = c1.findIndex(point.c1);
-    
+
     if (index0 == 0) {
         if (index1 == 0) return data[0];
         if (index1 == c1.size()) return data[index(0, index1-1)];
-        return interpolate::linear(c1.points[index1-1], data[index(0, index1-1)], c1.points[index1], data[index(0, index1)], point.c1);
+        return interpolation::linear(c1.points[index1-1], data[index(0, index1-1)], c1.points[index1], data[index(0, index1)], point.c1);
     }
-    
+
     if (index0 == c0.size()) {
         --index0;
         if (index1 == 0) return data[index(index0, 0)];
         if (index1 == c1.size()) return data[index(index0, index1-1)];
-        return interpolate::linear(c1.points[index1-1], data[index(index0, index1-1)], c1.points[index1], data[index(index0, index1)], point.c1);
+        return interpolation::linear(c1.points[index1-1], data[index(index0, index1-1)], c1.points[index1], data[index(index0, index1)], point.c1);
     }
-    
+
     if (index1 == 0)
-        return interpolate::linear(c0.points[index0-1], data[index(index0-1, 0)], c0.points[index0], data[index(index0, 0)], point.c0);
-    
+        return interpolation::linear(c0.points[index0-1], data[index(index0-1, 0)], c0.points[index0], data[index(index0, 0)], point.c0);
+
     if (index1 == c1.size()) {
         --index1;
-        return interpolate::linear(c0.points[index0-1], data[index(index0-1, index1)], c0.points[index0], data[index(index0, index1)], point.c0);
+        return interpolation::linear(c0.points[index0-1], data[index(index0-1, index1)], c0.points[index0], data[index(index0, index1)], point.c0);
     }
-    
-    return interpolate::bilinear(c0.points[index0-1], c0.points[index0],
-                                 c1.points[index1-1], c1.points[index1],
-                                 data[index(index0-1, index1-1)],
-                                 data[index(index0,   index1-1)],
-                                 data[index(index0,   index1  )],
-                                 data[index(index0-1, index1  )],
-                                 point.c0,
-                                 point.c1
-                                );
+
+    return interpolation::bilinear(c0.points[index0-1], c0.points[index0],
+                                   c1.points[index1-1], c1.points[index1],
+                                   data[index(index0-1, index1-1)],
+                                   data[index(index0,   index1-1)],
+                                   data[index(index0,   index1  )],
+                                   data[index(index0-1, index1  )],
+                                   point.c0,
+                                   point.c1
+                                  );
 }
 
 }	//namespace plask

@@ -74,7 +74,7 @@ TODO: write more explanations, and give some examples
 #include <typeinfo>  // for 'typeid'
 
 #include "mesh.h"
-#include "plask/exceptions.h"
+#include "../exceptions.h"
 
 namespace plask {
 

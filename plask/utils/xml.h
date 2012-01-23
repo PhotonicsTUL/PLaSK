@@ -1,5 +1,5 @@
-#ifndef PLASK__XML_H
-#define PLASK__XML_H
+#ifndef PLASK__UTILS_XML_H
+#define PLASK__UTILS_XML_H
 
 #include <irrxml/irrXML.h>
 
@@ -12,7 +12,7 @@ namespace plask {
 /**
  * XML pull parser.
  */
-typedef irr::io::IrrXMLReader XMLReader; 
+typedef irr::io::IrrXMLReader XMLReader;
 
 namespace XML {
 
@@ -66,26 +66,26 @@ bool skipComments(XMLReader& reader);
 
 ///Allow to read XML from standard C++ input stream (std::istream).
 struct StreamReaderCallback: public irr::io::IFileReadCallBack {
-    
+
     ///Stream to read from.
     std::istream& input;
-    
+
     ///Size of stream, number of bytes to read.
     int size;
-    
+
     /**
      * @param input stream to read from
      */
     StreamReaderCallback(std::istream& input);
-    
+
     virtual int read(void* buffer, int sizeToRead);
 
     virtual int getSize() { return size; }
-    
+
 };
 
 }
 
 }
 
-#endif // PLASK__XML_H
+#endif // PLASK__UTILS_XML_H

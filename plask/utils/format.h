@@ -1,5 +1,5 @@
-#ifndef PLASK__FORMAT_H
-#define PLASK__FORMAT_H
+#ifndef PLASK__UTILS_FORMAT_H
+#define PLASK__UTILS_FORMAT_H
 
 /** @file
 This file includes utils to format strings.
@@ -39,4 +39,4 @@ std::string format(const std::string& msg, const T&... args) {
 
 }   // namespace plask
 
-#endif // FORMAT_H
+#endif // PLASK__FORMAT_UTILS_H

@@ -1,7 +1,7 @@
 #include <sstream>
 
 #include <plask/vec.h>
-#include <config.h>
+#include <plask/config.h>
 
 #include "globals.h"
 #include "../util/raw_constructor.h"

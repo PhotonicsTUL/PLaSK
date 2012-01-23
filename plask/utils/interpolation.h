@@ -1,12 +1,12 @@
-#ifndef PLASK__INTERPOLATION_H
-#define PLASK__INTERPOLATION_H
+#ifndef PLASK__UTILS_INTERPOLATION_H
+#define PLASK__UTILS_INTERPOLATION_H
 
 /** @file
 This file includes interpolation utils.
 */
 
-namespace plask { namespace interpolate {
-    
+namespace plask { namespace interpolation {
+
     /**
      * Calculate linear interpolation (in 1d space).
      * @param p_lo, d_lo first point and value in it
@@ -19,7 +19,7 @@ namespace plask { namespace interpolate {
         //return ((p_hi - p) * d_lo + (p - p_lo) * d_hi) / (p_hi - p_lo);
         return d_lo + (p - p_lo) / (p_hi - p_lo) * (d_hi - d_lo);
     }
-    
+
     /**
      * Calculate blilinear interpolation (in 2d space).
      * @param p_l, p_r, p_b, p_t left, right, bottom, top postions, must fulfill: p_l < p_r, p_b < p_t
@@ -37,7 +37,7 @@ namespace plask { namespace interpolate {
                 (d_lt * delta_x_hi + d_rt * delta_x_lo) * (p_y - p_b))
                 / (p_t - p_b) / (p_r - p_l);
     }
-    
+
     /**
      * Calculate trililinear interpolation (in 3d space).
      * @param p_l, p_r, p_b, p_t left, right, bottom, top postions, must fulfill: p_l < p_r, p_b < p_t
@@ -56,7 +56,7 @@ namespace plask { namespace interpolate {
                       p_hi, bilinear(p_l, p_r, p_b, p_t, hi_d_lb, hi_d_rb, hi_d_rt, hi_d_lt, p_x, p_y),
                       p_lohi);
     }
-    
+
 } }
 
-#endif
+#endif // PLASK__UTILS_INTERPOLATION_H
