@@ -6,14 +6,14 @@
 
 #include "vec.h"
 
-namespace plask {
+namespace plask { namespace space {
 
 /**
  * Structure representing 2D Cartesian space.
  *
  * Provides means of converting coordinates and vector components between local and global coordinates
  */
-struct SpaceXY {
+struct Cartesian2d {
 
     enum  { DIMS = 2 };
 
@@ -76,7 +76,7 @@ struct SpaceXY {
  *
  * Provides means of converting coordinates and vector components between local and global coordinates
  */
-struct SpaceRZ {
+struct Cylindrical2d {
 
     enum { DIMS = 2 };
 
@@ -183,7 +183,7 @@ struct SpaceRZ {
  *
  * Provides means of converting coordinates and vector components between local and global coordinates
  */
-struct SpaceXYZ {
+struct Cartesian3d {
 
     enum { DIMS = 3 };
 
@@ -224,6 +224,6 @@ struct SpaceXYZ {
     // }
 };
 
-} // namespace plask
+} } // namespace plask::space
 
 #endif  //PLASK__SPACE_H

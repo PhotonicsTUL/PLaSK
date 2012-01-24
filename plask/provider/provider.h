@@ -40,8 +40,8 @@ tag class and use it to specialize plask::ProviderFor and plask::ReceiverFor tem
 
 Physical property tag class is an class which only has static fields and typedefs which describe
 physical property. It can be easy obtain by subclass specialization of one of templates:
-- plask::Property - allow to obtain all possible physical properties tags classes, but require many parameters
-- plask::SingleValueProperty - allow to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value
+- plask::Property - allow to obtain all possible physical properties tags classes, but require many parameters;
+- plask::SingleValueProperty - allow to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
 - plask::FieldProperty
 - plask::InterpolatedFieldProperty
 - plask::ScalarFieldProperty
@@ -51,11 +51,17 @@ Example:
 //Physical property tag class for temperature.
 struct Temperature: ScalarFieldProperty {};
 
-//Type for provider class:
-typedef ProviderFor<Temperature> TemperatureProvider;
+//Base type for provider class in 3d space.
+typedef ProviderFor<Temperature, space::Cartesian3d> TemperatureProvider3d;
 
-//Type for receiver class:
-typedef ReceiverFor<Temperature> TemperatureReceiver;
+//Type for receiver class in 3d space.
+typedef ReceiverFor<Temperature, space::Cartesian3d> TemperatureReceiver3d;
+
+//...
+//Use example:
+TemperatureProvider3d::WithValue provider;
+TemperatureReceiver3d reciver;
+reciver = provider;     //connect
 @endcode
 
 @subsection providers_writing_easy Flexible (manual) way
@@ -67,6 +73,7 @@ typedef ReceiverFor<Temperature> TemperatureReceiver;
 #include <set>
 #include <vector>
 #include <functional>   // std::function
+#include <type_traits>  // std::is_same
 
 #include "../config.h"
 #include "../exceptions.h"
@@ -415,14 +422,12 @@ enum PropertyType {
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-template <PropertyType _propertyType, typename _ValueType, typename _spaceType = void>
+template <PropertyType _propertyType, typename _ValueType>
 struct Property {
     ///Type of property.
     static const PropertyType propertyType = _propertyType;
     ///Type of provided value.
     typedef _ValueType ValueType;
-    ///Type of space.
-    typedef _spaceType SpaceType;
 };
 
 /**
@@ -470,9 +475,11 @@ struct ProviderImpl {};
 
 /**
  * Specializations of this class are implementations of providers for given property tag.
+ * @tparam PropertyTag property tag class (describe physical property)
+ * @tparam SpaceType type of space, required (and allowed) only for fields properties
  */
-template <typename PropertyTag>
-struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, typename PropertyTag::SpaceType> {
+template <typename PropertyTag, typename SpaceType = void>
+struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType> {
 
     /// Delegate all constructors to parent class.
     template<typename ...Args>
@@ -485,9 +492,16 @@ struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::Value
 
 /**
  * Specializations of this class are implementations of Receiver for given property tag.
+ * @tparam PropertyTag property tag class (describe physical property)
+ * @tparam SpaceType type of space, required (and allowed) only for fields properties
  */
-template <typename PropertyTag>
-struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, typename PropertyTag::SpaceType> > {};
+template <typename PropertyTag, typename SpaceType = void>
+struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType> > {
+    static_assert(!(std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == FIELD_PROPERTY || PropertyTag::propertyType == INTERPOLATED_FIELD_PROPERTY)),
+                  "Receivers for fields properties require SpaceType. Use ReceiverFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
+    static_assert(!(!std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == SINGLE_VALUE_PROPERTY)),
+                  "Receivers for single value properties doesn't need SpaceType. Use ReceiverFor<propertyTag> (without second template parameter).");  
+};
 //struct ReceiverFor: public Receiver< ProviderFor<PropertyTag> > {};
 
 /**
@@ -499,6 +513,9 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
 struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: public SingleValueProvider<ValueT> {
+    
+    static_assert(std::is_same<SpaceType, void>::value,
+                  "Providers for single value properties doesn't need SpaceType. Use ProviderFor<propertyTag> (without second template parameter).");  
 
     ///Type of provided value.
     typedef typename  SingleValueProvider<ValueT>::ProvidedValueType ProvidedValueType;
@@ -541,6 +558,9 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
 template <typename PropertyTag, typename ValueT, typename SpaceType>
 struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMeshProvider<ValueT, SpaceType> {
 
+    static_assert(!std::is_same<SpaceType, void>::value,
+                  "Providers for fields properties require SpaceType. Use ProviderFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
+    
     ///Type of provided value.
     typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
 
@@ -578,6 +598,9 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
 struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>: public OnMeshProviderWithInterpolation<ValueT, SpaceType> {
+    
+    static_assert(!std::is_same<SpaceType, void>::value,
+                  "Providers for fields properties require SpaceType. Use ProviderFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
 
     ///Type of provided value.
     typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;

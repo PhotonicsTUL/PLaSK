@@ -6,10 +6,10 @@
 #include<fstream>
 
 namespace plask {
-    struct DummyMesh: public plask::Mesh<SpaceXY> {
+    struct DummyMesh: public plask::Mesh<space::Cartesian2d> {
         virtual std::size_t size() const { return 1; }
-        virtual plask::Mesh<SpaceXY>::Iterator begin() { plask::Mesh<SpaceXY>::Iterator i; return i; }
-        virtual plask::Mesh<SpaceXY>::Iterator end() {  plask::Mesh<SpaceXY>::Iterator i; return i; }
+        virtual plask::Mesh<space::Cartesian2d>::Iterator begin() { plask::Mesh<space::Cartesian2d>::Iterator i; return i; }
+        virtual plask::Mesh<space::Cartesian2d>::Iterator end() {  plask::Mesh<space::Cartesian2d>::Iterator i; return i; }
     };
 
     template <typename DataT>    //for any data type

@@ -10,15 +10,17 @@ namespace plask {
  */
 struct Temperature: ScalarFieldProperty {};
 
-/**
+//TODO in gcc 4.7 can be done by new typedefs:
+
+/*
  * Provides temperature fields (temperature in points describe by given mesh).
  */
-typedef ProviderFor<Temperature> TemperatureProvider;
+//typedef ProviderFor<Temperature> TemperatureProvider;
 
-/**
+/*
  * Receive temperature fields (temperature in points describe by given mesh).
  */
-typedef ReceiverFor<Temperature> TemperatureReceiver;
+//typedef ReceiverFor<Temperature> TemperatureReceiver;
 
 } // namespace plask
 
