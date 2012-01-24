@@ -141,16 +141,16 @@ public:
      * @return interpolated value in point @a point
      */
     template <typename RandomAccessContainer>
-    auto interpolateLinear(RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type;
+    auto interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type;
 
 };
 
 //RectilinearMesh1d method templates implementation
 template <typename RandomAccessContainer>
-auto RectilinearMesh1d::interpolateLinear(RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
+auto RectilinearMesh1d::interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
     if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
-    if (index == 0 || operator [](index) == point) return data[index]; //hit exactly
+    if (index == 0 || points[index] == point) return data[index]; //hit exactly
     //here: points[index-1] < point < points[index]
     return interpolation::linear(points[index-1], data[index-1], points[index], data[index], point);
 }
@@ -389,7 +389,7 @@ struct RectilinearMesh2d {
      */
     Vec<2,double> operator[](std::size_t index) const {
         const std::size_t c0_size = c0.size();
-        return Vec<2,double>(c0[index % c0_size], c1[index / c0_size]);
+        return Vec<2, double>(c0[index % c0_size], c1[index / c0_size]);
     }
 
     /**
@@ -399,7 +399,7 @@ struct RectilinearMesh2d {
      * @return point with given c0 and c1 indexes
      */
     Vec<2,double> operator()(std::size_t c0_index, std::size_t c1_index) const {
-        return Vec<2,double>(c0[c0_index], c1[c1_index]);
+        return Vec<2, double>(c0[c0_index], c1[c1_index]);
     }
 
     /**
@@ -417,45 +417,60 @@ struct RectilinearMesh2d {
      * @return interpolated value in point @a point
      */
     template <typename RandomAccessContainer>
-    auto interpolateLinear(RandomAccessContainer& data, Vec<2, double> point) -> typename std::remove_reference<decltype(data[0])>::type;
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
 };
 
-//RectilinearMesh1d method templates implementation
-template <typename RandomAccessContainer>
-auto RectilinearMesh2d::interpolateLinear(RandomAccessContainer& data, Vec<2, double> point) -> typename std::remove_reference<decltype(data[0])>::type {
-    std::size_t index0 = c0.findIndex(point.c0);
-    std::size_t index1 = c1.findIndex(point.c1);
-
+/**
+ * Do linear 2d interpolation with checking bounds variants.
+ * @param data 2d data source, data(i0, i1) should return data in point (c0[i0], c1[i1])
+ * @param point_c0, point_c1 requested point
+ * @param c0 first coordinates of points 
+ * @param c1 second coordinates of points
+ * @param index0 should be equal to c0.findIndex(point_c0)
+ * @param index1 should be equal to c1.findIndex(point_c1)
+ * @return value in point point_c0, point_c1
+ * @tparam DataGetter2d functor
+ */
+template <typename DataGetter2d>
+auto interpolateLinear2d(DataGetter2d data, const double& point_c0, const double& point_c1, const RectilinearMesh1d& c0, const RectilinearMesh1d& c1, std::size_t index0, std::size_t index1) -> typename std::remove_reference<decltype(data(0, 0))>::type {
     if (index0 == 0) {
-        if (index1 == 0) return data[0];
-        if (index1 == c1.size()) return data[index(0, index1-1)];
-        return interpolation::linear(c1.points[index1-1], data[index(0, index1-1)], c1.points[index1], data[index(0, index1)], point.c1);
+        if (index1 == 0) return data(0, 0);
+        if (index1 == c1.size()) return data(0, index1-1);
+        return interpolation::linear(c1.points[index1-1], data(0, index1-1), c1.points[index1], data(0, index1), point_c1);
     }
 
     if (index0 == c0.size()) {
         --index0;
-        if (index1 == 0) return data[index(index0, 0)];
-        if (index1 == c1.size()) return data[index(index0, index1-1)];
-        return interpolation::linear(c1.points[index1-1], data[index(index0, index1-1)], c1.points[index1], data[index(index0, index1)], point.c1);
+        if (index1 == 0) return data(index0, 0);
+        if (index1 == c1.size()) return data(index0, index1-1);
+        return interpolation::linear(c1.points[index1-1], data(index0, index1-1), c1.points[index1], data(index0, index1), point_c1);
     }
 
     if (index1 == 0)
-        return interpolation::linear(c0.points[index0-1], data[index(index0-1, 0)], c0.points[index0], data[index(index0, 0)], point.c0);
+        return interpolation::linear(c0.points[index0-1], data(index0-1, 0), c0.points[index0], data(index0, 0), point_c0);
 
     if (index1 == c1.size()) {
         --index1;
-        return interpolation::linear(c0.points[index0-1], data[index(index0-1, index1)], c0.points[index0], data[index(index0, index1)], point.c0);
+        return interpolation::linear(c0.points[index0-1], data(index0-1, index1), c0.points[index0], data(index0, index1), point_c0);
     }
 
     return interpolation::bilinear(c0.points[index0-1], c0.points[index0],
                                    c1.points[index1-1], c1.points[index1],
-                                   data[index(index0-1, index1-1)],
-                                   data[index(index0,   index1-1)],
-                                   data[index(index0,   index1  )],
-                                   data[index(index0-1, index1  )],
-                                   point.c0,
-                                   point.c1
-                                  );
+                                   data(index0-1, index1-1),
+                                   data(index0,   index1-1),
+                                   data(index0,   index1  ),
+                                   data(index0-1, index1  ),
+                                   point_c0, point_c1);
+}
+
+
+//RectilinearMesh2d method templates implementation
+template <typename RandomAccessContainer>
+auto RectilinearMesh2d::interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type {    
+    return interpolateLinear2d(
+        [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1)]; },
+        point.c0, point.c1, c0, c1, c0.findIndex(point.c0), c1.findIndex(point.c1)
+    );
 }
 
 /**
@@ -687,8 +702,81 @@ struct RectilinearMesh3d {
      * @return interpolated value in point @a point
      */
     template <typename RandomAccessContainer>
-    auto interpolateLinear(RandomAccessContainer& data, Vec<3, double> point) -> typename std::remove_reference<decltype(data[0])>::type;
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
 };
+
+//RectilinearMesh3d method templates implementation
+template <typename RandomAccessContainer>
+auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type {
+    std::size_t index0 = c0.findIndex(point.c0);
+    std::size_t index1 = c1.findIndex(point.c1);
+    std::size_t index2 = c2.findIndex(point.c2);
+    
+    if (index2 == 0)
+        return interpolateLinear2d(
+            [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1, 0)]; },
+            point.c0, point.c1, c0, c1, index0, index1
+        );
+    
+    if (index2 == c0.size()) {
+        --index2;
+        return interpolateLinear2d(
+            [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1, index2)]; },
+            point.c0, point.c1, c0, c1, index0, index1
+        );
+    }
+    
+    if (index1 == 0)
+        return interpolateLinear2d(
+            [&] (std::size_t i0, std::size_t i2) { return data[index(i0, 0, i2)]; },
+            point.c0, point.c2, c0, c2, index0, index2
+        );
+    
+    if (index1 == c1.size()) {
+        --index1;
+        return interpolateLinear2d(
+            [&] (std::size_t i0, std::size_t i2) { return data[index(i0, index1, i2)]; },
+            point.c0, point.c2, c0, c2, index0, index2
+        );
+    }
+    
+    //index1 and index2 are in bounds here:
+    if (index0 == 0)
+       return interpolation::bilinear(c1.points[index1-1], c1.points[index1],
+                                      c2.points[index2-1], c2.points[index2],
+                                      data[index(0, index1-1, index2-1)],
+                                      data[index(0, index1,   index2-1)],
+                                      data[index(0, index1,   index2  )],
+                                      data[index(0, index1-1, index2  )],
+                                      point.c1, point.c2);
+    if (index0 == c0.size()) {
+        --index0;
+       return interpolation::bilinear(c1.points[index1-1], c1.points[index1],
+                                      c2.points[index2-1], c2.points[index2],
+                                      data[index(index0, index1-1, index2-1)],
+                                      data[index(index0, index1,   index2-1)],
+                                      data[index(index0, index1,   index2  )],
+                                      data[index(index0, index1-1, index2  )],
+                                      point.c1, point.c2);
+    }
+    
+    //all indexes are in bounds
+    return interpolation::trilinear(
+        c0.points[index0-1], c0.points[index0],
+        c1.points[index1-1], c1.points[index1],
+        c2.points[index2-1], c2.points[index2],
+        data[index(index0-1, index1-1, index2-1)],
+        data[index(index0,   index1-1, index2-1)],
+        data[index(index0,   index1  , index2-1)],
+        data[index(index0-1, index1  , index2-1)],
+        data[index(index0-1, index1-1, index2)],
+        data[index(index0,   index1-1, index2)],
+        data[index(index0,   index1  , index2)],
+        data[index(index0-1, index1  , index2)],
+        point.c0, point.c1, point.c2
+    );
+    
+}
 
 }	//namespace plask
 

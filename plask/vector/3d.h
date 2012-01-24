@@ -73,9 +73,9 @@ struct Vec<3, T> {
     template <typename InputIteratorType>
     static inline Vec<3,T> fromIterator(InputIteratorType inputIt) {
         Vec<3, T> result;
-        result.c0 = *inputIt++;
-        result.c1 = *inputIt++;
-        result.c2 = *inputIt;
+        result.c0 = *inputIt;
+        result.c1 = *++inputIt;
+        result.c2 = *++inputIt;
         return result;
     }
 
