@@ -22,7 +22,9 @@ struct Material {
 
     /**
      * Check if material composition is compatible with pattern and change NaN-s in composition to calculated amounts.
-     * @param composition ammounts of elements composition with NaN on position for which amounts has not been taken
+     * 
+     * Throw exception if composition is not compatible with pattern or it is impossible to complete it.
+     * @param composition amounts of elements composition with NaN on position for which amounts has not been taken
      * @param pattern sizes of elements groups, size of first group is represented by digit at highest position in decimal system, second by second highest position, and so on
      * @return version of @a composition complement with calculated amounts
      */
@@ -404,14 +406,14 @@ struct RotatedMaterial: public Material {
 /**
  * Materials database.
  *
- * Create materials with given name, composition and dopand.
+ * Create materials with given name, composition and dopant.
  *
  */
 struct MaterialsDB {
 
-    ///Amounts of dopands.
+    ///Amounts of dopant.
     enum DOPING_AMOUNT_TYPE {
-        NO_DOPING,              ///< no dopand
+        NO_DOPING,              ///< no dopant
         DOPANT_CONCENTRATION,   ///< doping concentration
         CARRIER_CONCENTRATION   ///< carrier concentration
     };
@@ -424,8 +426,8 @@ struct MaterialsDB {
         /**
          * Create material.
          * @param composition amounts of elements, with NaN for each element for composition was not written
-         * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
-         * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
+         * @param dopant_amount_type type of amount of dopant, needed to interpretation of @a dopant_amount
+         * @param dopant_amount amount of dopant, is ignored if @a dopant_amount_type is @c NO_DOPANT
          */
         virtual shared_ptr<Material> operator()(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const = 0;
 
@@ -434,8 +436,8 @@ struct MaterialsDB {
     /**
      * Type of function which construct material.
      * @param composition amounts of elements, with NaN for each element for composition was not written
-     * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
-     * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPANT
+     * @param dopant_amount_type type of amount of dopant, needed to interpretation of @a dopant_amount
+     * @param dopant_amount amount of dopant, is ignored if @a dopant_amount_type is @c NO_DOPANT
      */
     typedef Material* construct_material_f(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount);
 
@@ -455,10 +457,10 @@ struct MaterialsDB {
      * Template of function which construct material with given type.
      * @param composition amounts of elements, with NaN for each element for composition was not writen
      * @param dopant_amount_type type of amount of dopand, needed to interpretation of @a dopant_amount
-     * @param dopant_amount amount of dopand, is ignored if @a dopant_amount_type is @c NO_DOPING
+     * @param dopant_amount amount of dopant, is ignored if @a dopant_amount_type is @c NO_DOPING
      * @tparam MaterialType type of material to construct, must fill requirements:
      * - inherited from plask::Material
-     * - has public, static unsigned COMPOSITION_PATTERN field which determinates sizes of composition groups (for example: 21 means that there are two groups, first group has size 2 and second has size 1)
+     * - has public, static unsigned COMPOSITION_PATTERN field which determinate sizes of composition groups (for example: 21 means that there are two groups, first group has size 2 and second has size 1)
      * - must have constructor which takes parameters: std::vector<double> composition, DOPING_AMOUNT_TYPE dopant_amount_type, double dopant_amount
      * - this constructor can suppose that composition is complete (without NaN)
      */
@@ -473,10 +475,10 @@ struct MaterialsDB {
 
     /**
      * Create material object.
-     * @param parsed_name_with_dopant material name with dopand name in format material_name[:dopand_name], for example: "AlGaN" or "AlGaN:Mg"
-     * @param composition amounts of elements, with NaN for each element for composition was not writen
-     * @param doping_amount_type type of amount of dopand, needed to interpetation of @a dopant_amount
-     * @param doping_amount amount of dopand, is ignored if @a doping_amount_type is @c NO_DOPANT
+     * @param parsed_name_with_dopant material name with dopant name in format material_name[:dopant_name], for example: "AlGaN" or "AlGaN:Mg"
+     * @param composition amounts of elements, with NaN for each element for composition was not written
+     * @param doping_amount_type type of amount of dopant, needed to interpretation of @a dopant_amount
+     * @param doping_amount amount of dopant, is ignored if @a doping_amount_type is @c NO_DOPANT
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @a parsed_name_with_donor
      */

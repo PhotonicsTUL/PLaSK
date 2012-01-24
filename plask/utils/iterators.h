@@ -239,6 +239,46 @@ inline FunctorIndexedIterator<Functor> makeFunctorIndexedIterator(Functor f, std
     return FunctorIndexedIterator<Functor>(f, index);
 }
 
-}       //namespace plask
+/**
+ * ReindexedContainer specialization is class which objects have reference to oryginal container and operator[].
+ * All calls to operator[] are delegated to oryginal container, but argument of call is chenged (reindexed) using formula: firstIndex + given_index * delta
+ * where:
+ * - given_index is call parameter,
+ * - firstIndex and delta are paremeters stored in ReindexedContainer.
+ * 
+ * @tparam ContainerType type of oryginal container
+ */
+template <typename ContainerType>
+struct ReindexedContainer {
+  
+    ContainerType& oryginalContainer;
+    
+    int firstIndex, delta;
+    
+    ReindexedContainer(ContainerType& oryginalContainer, int firstIndex = 0, int delta = 1)
+    : oryginalContainer(oryginalContainer), firstIndex(firstIndex), delta(delta) {}
+    
+    auto operator[](const std::size_t& this_index) -> decltype(oryginalContainer[0]) {
+        return oryginalContainer[firstIndex + this_index * delta];
+    }
+    
+    auto operator[](const std::size_t& this_index) const -> decltype(const_cast<const ContainerType&>(oryginalContainer)[0])  {
+        return oryginalContainer[firstIndex + this_index * delta];
+    }
+    
+};
+
+/**
+ * Helper function to create ReindexedContainer specialization objects.
+ * @param oryginalContainer, firstIndex, delta ReindexedContainer constructor parameters
+ * @return ReindexedContainer<ContainerType>(oryginalContainer, firstIndex, delta)
+ * @tparam ContainerType type of oryginal container
+ */
+template <typename ContainerType>
+ReindexedContainer<ContainerType> reindexContainer(ContainerType& oryginalContainer, int firstIndex = 0, int delta = 1) {
+    return ReindexedContainer<ContainerType>(oryginalContainer, firstIndex, delta);
+}
+
+}       // namespace plask
 
 #endif
