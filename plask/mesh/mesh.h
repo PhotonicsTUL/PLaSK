@@ -8,7 +8,7 @@ This file includes base classes for meshes.
 
 /** @page meshes Meshes
 @section meshes_about About meshes
-The mesh represents (ordered) set of points in 3d space. All meshes in PLaSK implements (inherits from)
+The mesh represents (ordered) set of points in 2d or 3d space. All meshes in PLaSK implements (inherits from)
 plask::Mesh interface.
 
 Typically, there is some data associated with points in mesh.
@@ -119,37 +119,35 @@ struct Mesh {
 Template which specialization is class inherited from Mesh (is Mesh implementation).
 @tparam InternalMeshType Mesh type.
 It must:
-    - InternalMeshType::PointType must be a typename of points used by InternalMeshType
-    - allow for iterate (has begin and end methods) over InternalMeshType::PointType, and has defined InternalMeshType::const_iterator for constant iterator type
-    - has size method
-@tparam toPoint3d function which is used to convert points from InternalMeshType space to Vec<3,double> (used by plask::Mesh)
-* /
-template <typename InternalMeshType, Vec<3,double> (*toPoint3d)(typename InternalMeshType::PointType)>
-struct SimpleMeshAdapter: public Mesh {
+    - allow for iterate (has begin() and end() methods) over Space::CoordsType, and has defined InternalMeshType::const_iterator for constant iterator type
+    - has size() method which return number of points in mesh
+*/
+template <typename InternalMeshType, typename Space>
+struct SimpleMeshAdapter: public Mesh<Space> {
 
     /// Holded, internal, typically optimized mesh.
     InternalMeshType internal;
 
-    / **
+    /**
      * Implementation of Mesh::IteratorImpl.
      * Holds iterator of wrapped type (InternalMeshType::const_iterator) and delegate all calls to it.
-     * /
-    struct IteratorImpl: public Mesh::IteratorImpl {
+     */
+    struct IteratorImpl: public Mesh<Space>::IteratorImpl {
 
         typename InternalMeshType::const_iterator internal_iterator;
 
         IteratorImpl(typename InternalMeshType::const_iterator&& internal_iterator)
         : internal_iterator(std::forward(internal_iterator)) {}
 
-        virtual Vec<3,double> dereference() const {
-            return toPoint3d(*internal_iterator);
+        virtual typename Mesh<Space>::LocalCoords dereference() const {
+            return *internal_iterator;
         }
 
         virtual void increment() {
             ++internal_iterator;
         }
 
-        virtual bool equal(const Mesh::IteratorImpl& other) const {
+        virtual bool equal(const typename Mesh<Space>::IteratorImpl& other) const {
             return internal_iterator == static_cast<IteratorImpl&>(other).internal_iterator;
         }
 
@@ -159,12 +157,11 @@ struct SimpleMeshAdapter: public Mesh {
         return internal.size();
     }
 
-    virtual Mesh::Iterator begin() { return Mesh::Iterator(internal.begin()); }
+    virtual typename Mesh<Space>::Iterator begin() { return Mesh<Space>::Iterator(internal.begin()); }
 
-    virtual Mesh::Iterator end() { return Mesh::Iterator(internal.end()); }
+    virtual typename Mesh<Space>::Iterator end() { return Mesh<Space>::Iterator(internal.end()); }
 
 };
-*/
 
 } // namespace plask
 

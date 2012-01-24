@@ -436,26 +436,26 @@ auto interpolateLinear2d(DataGetter2d data, const double& point_c0, const double
     if (index0 == 0) {
         if (index1 == 0) return data(0, 0);
         if (index1 == c1.size()) return data(0, index1-1);
-        return interpolation::linear(c1.points[index1-1], data(0, index1-1), c1.points[index1], data(0, index1), point_c1);
+        return interpolation::linear(c1[index1-1], data(0, index1-1), c1[index1], data(0, index1), point_c1);
     }
 
     if (index0 == c0.size()) {
         --index0;
         if (index1 == 0) return data(index0, 0);
         if (index1 == c1.size()) return data(index0, index1-1);
-        return interpolation::linear(c1.points[index1-1], data(index0, index1-1), c1.points[index1], data(index0, index1), point_c1);
+        return interpolation::linear(c1[index1-1], data(index0, index1-1), c1[index1], data(index0, index1), point_c1);
     }
 
     if (index1 == 0)
-        return interpolation::linear(c0.points[index0-1], data(index0-1, 0), c0.points[index0], data(index0, 0), point_c0);
+        return interpolation::linear(c0[index0-1], data(index0-1, 0), c0[index0], data(index0, 0), point_c0);
 
     if (index1 == c1.size()) {
         --index1;
-        return interpolation::linear(c0.points[index0-1], data(index0-1, index1), c0.points[index0], data(index0, index1), point_c0);
+        return interpolation::linear(c0[index0-1], data(index0-1, index1), c0[index0], data(index0, index1), point_c0);
     }
 
-    return interpolation::bilinear(c0.points[index0-1], c0.points[index0],
-                                   c1.points[index1-1], c1.points[index1],
+    return interpolation::bilinear(c0[index0-1], c0[index0],
+                                   c1[index1-1], c1[index1],
                                    data(index0-1, index1-1),
                                    data(index0,   index1-1),
                                    data(index0,   index1  ),
@@ -742,8 +742,8 @@ auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, con
     
     //index1 and index2 are in bounds here:
     if (index0 == 0)
-       return interpolation::bilinear(c1.points[index1-1], c1.points[index1],
-                                      c2.points[index2-1], c2.points[index2],
+       return interpolation::bilinear(c1[index1-1], c1[index1],
+                                      c2[index2-1], c2[index2],
                                       data[index(0, index1-1, index2-1)],
                                       data[index(0, index1,   index2-1)],
                                       data[index(0, index1,   index2  )],
@@ -751,8 +751,8 @@ auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, con
                                       point.c1, point.c2);
     if (index0 == c0.size()) {
         --index0;
-       return interpolation::bilinear(c1.points[index1-1], c1.points[index1],
-                                      c2.points[index2-1], c2.points[index2],
+       return interpolation::bilinear(c1[index1-1], c1[index1],
+                                      c2[index2-1], c2[index2],
                                       data[index(index0, index1-1, index2-1)],
                                       data[index(index0, index1,   index2-1)],
                                       data[index(index0, index1,   index2  )],
@@ -762,9 +762,9 @@ auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, con
     
     //all indexes are in bounds
     return interpolation::trilinear(
-        c0.points[index0-1], c0.points[index0],
-        c1.points[index1-1], c1.points[index1],
-        c2.points[index2-1], c2.points[index2],
+        c0[index0-1], c0[index0],
+        c1[index1-1], c1[index1],
+        c2[index2-1], c2[index2],
         data[index(index0-1, index1-1, index2-1)],
         data[index(index0,   index1-1, index2-1)],
         data[index(index0,   index1  , index2-1)],
