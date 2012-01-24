@@ -57,7 +57,7 @@ struct Vec<2, T> {
      * Construct vector with given coordinates.
      * @param c0__tran, c1__up coordinates
      */
-    Vec(const T c0__tran, const T c1__up): c0(c0__tran), c1(c1__up) {}
+    Vec(const T& c0__tran, const T& c1__up): c0(c0__tran), c1(c1__up) {}
 
     /**
      * Construct vector with components read from input iterator (including C array).
@@ -65,8 +65,11 @@ struct Vec<2, T> {
      * @tparam InputIteratorType input iterator type, must allow for postincrementation and derefrence operation
      */
     template <typename InputIteratorType>
-    static inline Vec<2,T> fromIterator(InputIteratorType inputIt) {
-        return Vec<2,T>(*(inputIt++), *(inputIt++));
+    static inline Vec<2, T> fromIterator(InputIteratorType inputIt) {
+        Vec<2, T> result;
+        result.c0 = *inputIt++;
+        result.c1 = *inputIt;
+        return result;
     }
 
 

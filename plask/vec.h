@@ -32,7 +32,7 @@ inline double abs2<3,dcomplex>(const Vec<3,dcomplex>& v) { return dot(v,v).real(
  * @return vector multiplied by scalar
  */
 template <int dim, typename T, typename OtherT>
-inline auto operator*(const OtherT scale, const Vec<dim,T>& v) -> decltype(v*scale) {
+inline auto operator*(const OtherT& scale, const Vec<dim,T>& v) -> decltype(v*scale) {
     return v * scale;
 }
 

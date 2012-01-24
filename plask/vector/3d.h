@@ -63,7 +63,7 @@ struct Vec<3, T> {
      * Construct vector with given coordinates.
      * @param c0__lon, c1__tran, c2__up coordinates
      */
-    Vec(const T c0__lon, const T c1__tran, const T c2__up): c0(c0__lon), c1(c1__tran), c2(c2__up) {}
+    Vec(const T& c0__lon, const T& c1__tran, const T& c2__up): c0(c0__lon), c1(c1__tran), c2(c2__up) {}
 
     /**
      * Construct vector with components read from input iterator (including C array).
@@ -72,7 +72,11 @@ struct Vec<3, T> {
      */
     template <typename InputIteratorType>
     static inline Vec<3,T> fromIterator(InputIteratorType inputIt) {
-        return Vec<3,T>(*(inputIt++), *(inputIt++), *(inputIt++));
+        Vec<3, T> result;
+        result.c0 = *inputIt++;
+        result.c1 = *inputIt++;
+        result.c2 = *inputIt;
+        return result;
     }
 
     /**
