@@ -1,6 +1,10 @@
 #ifndef PLASK__SPACE_H
 #define PLASK__SPACE_H
 
+/** @file
+ * This file includes classes which represent and describe spaces.
+ */
+
 #include <cmath>
 // TODO: use configured math library
 

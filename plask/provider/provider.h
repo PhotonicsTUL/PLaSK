@@ -40,22 +40,26 @@ tag class and use it to specialize plask::ProviderFor and plask::ReceiverFor tem
 
 Physical property tag class is an class which only has static fields and typedefs which describe
 physical property. It can be easy obtain by subclass specialization of one of templates:
-- plask::Property - allow to obtain all possible physical properties tags classes, but require many parameters;
+- plask::Property - allow to obtain all possible physical properties tags classes, but require many parameters (not recommended);
 - plask::SingleValueProperty - allow to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
-- plask::FieldProperty
-- plask::InterpolatedFieldProperty
-- plask::ScalarFieldProperty
+- plask::FieldProperty - allow to obtain tags for properties described by values in points described by mesh (doesn't use interpolation), require only one parameter - type of provided value;
+- plask::InterpolatedFieldProperty - allow to obtain tags for properties described by values in points described by mesh and use interpolation, require only one parameter - type of provided value;
+- plask::ScalarFieldProperty - equal to plask::InterpolatedFieldProperty\<double\>, doesn't require any parameters.
+
+Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters:
+- first is physical property tag and it's required,
+- second is type of space (see space.h) and it's required (and allowed) only for fields properties.
 
 Example:
 @code
 //Physical property tag class for temperature.
-struct Temperature: ScalarFieldProperty {};
+struct Temperature: plask::ScalarFieldProperty {};
 
 //Base type for provider class in 3d space.
-typedef ProviderFor<Temperature, space::Cartesian3d> TemperatureProvider3d;
+typedef plask::ProviderFor<Temperature, plask::space::Cartesian3d> TemperatureProvider3d;
 
 //Type for receiver class in 3d space.
-typedef ReceiverFor<Temperature, space::Cartesian3d> TemperatureReceiver3d;
+typedef plask::ReceiverFor<Temperature, plask::space::Cartesian3d> TemperatureReceiver3d;
 
 //...
 //Use example:
@@ -65,9 +69,36 @@ reciver = provider;     //connect
 @endcode
 
 @subsection providers_writing_easy Flexible (manual) way
+Little harder, but more flexible than using plask::ProviderFor and plask::ReceiverFor templates (described @ref providers_writing_easy "above") is writing class which:
+- inherits from plask::Provider,
+- has operator(), which for some parameters (depends from your choice) return provided values.
 
+Receiver class for your provider class still may be very easy obtain by plask::Receiver template. This template require only one parameter: type of provider.
 
+Example:
+@code
+//Provider type which multiple its argument by value
+struct ScalerProvider: plask::Provider {
+    
+    double scale;
+    
+    ScalerProvider(double scale): scale(scale) {}
+    
+    double operator()(double param) const {
+        return scale * param;
+    }
+};
 
+//Receiver corresponding to ScalerProvider
+typedef Receiver<ScalerProvider> ScalerReceiver;
+
+//...
+//Use example:
+ScalerProvider sp;
+ScalerReceiver sr;
+sr = sp;        //connect
+assert(sr(2.0) == 4.0));
+@endcode
 */
 
 #include <set>
