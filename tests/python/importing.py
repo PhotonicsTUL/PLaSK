@@ -10,7 +10,7 @@ if sys.version < "2.7":
 class Importing(unittest.TestCase):
 
     def setUp(self):
-        self.builtin = 'modplask' in sys.builtin_module_names
+        self.builtin = 'plaskcore' in sys.builtin_module_names
 
     def testImporting(self):
         '''Check if plask is present'''
@@ -19,7 +19,7 @@ class Importing(unittest.TestCase):
         for p in sys.path:
             print >>sys.stderr, "    %s" % p
         import plask
-        self.assertIn('modplask', sys.modules)
+        self.assertIn('plaskcore', sys.modules)
 
         def use_modplask_directly(): print modplask.__file__
         self.assertRaises(NameError, use_modplask_directly)

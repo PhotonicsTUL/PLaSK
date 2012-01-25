@@ -13,13 +13,13 @@ namespace py = boost::python;
 #ifdef __cplusplus
 extern "C"
 #endif
-void initmodplask(void);
+void initplaskcore(void);
 
 // Initialize the binary modules and load the package from disc
 static void initPlaskModule(int argc, const char* argv[])
 {
     // Initialize the module plask
-    if (PyImport_AppendInittab("modplask", &initmodplask) != 0) throw plask::CriticalException("No modplask module");
+    if (PyImport_AppendInittab("plaskcore", &initplaskcore) != 0) throw plask::CriticalException("No plaskcore module");
 
     // Initialize Python
     Py_Initialize();
@@ -121,7 +121,7 @@ int main(int argc, const char *argv[])
 
     } else { // start the interactive console
 
-try {
+        try {
             py::object interactive = py::import("plask.interactive");
             interactive.attr("_import_all_") = from_import;
             py::list sys_argv;

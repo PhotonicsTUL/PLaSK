@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from modplask import *
+from plaskcore import *
 
 
 ## ## plask.material ## ##
