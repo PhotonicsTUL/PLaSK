@@ -33,6 +33,15 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK_EQUAL(translation->getMaterial(plask::vec(12.0, 22.0)), dumbMaterial);
         BOOST_CHECK(translation->getMaterial(plask::vec(4.0, 22.0)) == nullptr);
     }
+    
+    BOOST_FIXTURE_TEST_CASE(translationContainer2d, Leafs2d) {
+        plask::shared_ptr<plask::TranslationContainer<2>> container(new plask::TranslationContainer<2>);
+        container->add(block_5_3);
+        container->add(block_5_3, plask::vec(3.0, 3.0));
+        BOOST_CHECK_EQUAL(container->getBoundingBox(), plask::Rect2d(plask::vec(0.0, 0.0), plask::vec(8.0, 6.0)));
+        BOOST_CHECK_EQUAL(container->getMaterial(plask::vec(6.0, 6.0)), dumbMaterial);
+        BOOST_CHECK(container->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
+    }
 
     BOOST_FIXTURE_TEST_CASE(multistack2d, Leafs2d) {
         plask::shared_ptr<plask::MultiStackContainer<2>> multistack(new plask::MultiStackContainer<2>(5, 10.0));

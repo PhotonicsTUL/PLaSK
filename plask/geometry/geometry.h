@@ -24,6 +24,35 @@ Each geometry element (vertex) has local coordinate system (in 2d or 3d space).
 Systems of all geometries elements which use Cartesian systems have common direction of axis.
 All 2d elements lies in tran-up (or R-Z) plane.
 
+@section geometry_create How to create and use geometry graph? (examples)
+
+Geometry graph can be created:
+- manually (by construct its element), for example:
+@code
+//create 2d solid block (with size 5x3) filled with example material:
+plask::shared_ptr< plask::Block<2> > block_5_3(new plask::Block<2>(plask::vec(5.0, 3.0), exampleMaterial));
+//check some block_5_3 properties:
+assert(block_5_3->getBoundingBox().lower == plask::vec(0.0, 0.0));
+assert(block_5_3->getBoundingBox().upper == plask::vec(5.0, 3.0));
+assert(block_5_3->getMaterial(plask::vec(4.0, 2.0)) == exampleMaterial);
+assert(block_5_3->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
+//create 2d container and add two children (blocks) to it:
+plask::shared_ptr<plask::TranslationContainer<2>> container(new plask::TranslationContainer<2>);
+container->add(block_5_3);
+container->add(block_5_3, plask::vec(3.0, 3.0));
+//now our graphs has 3 vertexes: 1 container and 2 (identical) blocks in it
+//check some container properties:
+assert(container->getBoundingBox() == plask::Rect2d(plask::vec(0.0, 0.0), plask::vec(8.0, 6.0)));
+assert(container->getMaterial(plask::vec(6.0, 6.0)) == exampleMaterial);
+assert(container->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
+@endcode
+- from XML content (for example, read from file), by using plask::GeometryManager, for example:
+@code
+plask::GeometryManager geometry;
+geometry.loadFromFile("example_file_name.xml");
+TODO
+@endcode
+
 @section geometry_paths Paths
 You can add each geometry element object to graph more than one time.
 If you do this, you will sometimes need to use paths to point concrete appearance of element (which is more than once) in graph.
