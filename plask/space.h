@@ -21,7 +21,7 @@ struct Cartesian2d {
 
     enum  { DIMS = 2 };
 
-    typedef Vec<2,double> CoordsType;
+    typedef Vec<2, double> CoordsType;
 
     // /// Convert local to global coordinates
     // inline static Vec<3,double> ABC(const Vec<2,double>& xy, double z=0.) {
@@ -84,7 +84,7 @@ struct Cylindrical2d {
 
     enum { DIMS = 2 };
 
-    typedef Vec<2,double> CoordsType;
+    typedef Vec<2, double> CoordsType;
 
     // /// Convert local to global coordinates
     // inline static Vec<3,double> ABC(const Vec<2,double>& rz) {
@@ -191,7 +191,7 @@ struct Cartesian3d {
 
     enum { DIMS = 3 };
 
-    typedef Vec<2,double> CoordsType;
+    typedef Vec<3, double> CoordsType;
 
     // /// Convert local to global coordinates
     // inline static Vec<3,double> ABC(const Vec<3,double>& xyz) {
