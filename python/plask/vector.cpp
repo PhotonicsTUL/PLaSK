@@ -1,13 +1,15 @@
 #include <sstream>
 
 #include <plask/vec.h>
+#include <plask/exceptions.h>
 #include <plask/config.h>
 
 #include "globals.h"
 #include "../util/raw_constructor.h"
 
+#include <numpy/arrayobject.h>
 #include <boost/python/stl_iterator.hpp>
-
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 namespace plask { namespace python {
 
@@ -32,7 +34,7 @@ static T vec__setitem__(Vec<dim,T>& self, int i, T v) {
         PyErr_SetString(PyExc_IndexError, message);
         throw py::error_already_set();
     }
-    self.component[i] = v;
+    self[i] = v;
 }
 
 // len(v)
@@ -44,7 +46,7 @@ template <int dim, typename T>
 std::string vec__str__(const Vec<dim,T>& to_print) {
     std::stringstream out;
     out << "[";
-    for (int i = 0; i < dim; ++i) out << sc(to_print.components[i]) << (i!=dim-1 ? ", " : "]");
+    for (int i = 0; i < dim; ++i) out << sc(to_print[i]) << (i!=dim-1 ? ", " : "]");
     return out.str();
 }
 
@@ -53,7 +55,7 @@ template <int dim, typename T>
 std::string vec__repr__(const Vec<dim,T>& to_print) {
     std::stringstream out;
     out << "vector(";
-    for (int i = 0; i < dim; ++i) out << sc(to_print.components[i]) << (i!=dim-1 ? ", " : ")");
+    for (int i = 0; i < dim; ++i) out << sc(to_print[i]) << (i!=dim-1 ? ", " : ")");
     return out.str();
 }
 
@@ -97,6 +99,30 @@ template <> inline py::handle<> plain_vec_dtype<dcomplex>() {
 }
 template <int dim, typename T> py::handle<> vec_dtype(const Vec<dim,T>&) { return plain_vec_dtype<T>(); }
 
+// helpers for __array__
+template <typename T> inline static int get_typenum();
+template <> int get_typenum<double>() { return NPY_DOUBLE; }
+template <> int get_typenum<dcomplex>() { return NPY_CDOUBLE; }
+
+// vector.__array__
+template <int dim, typename T>  py::object vec__array__(py::object self) {
+    Vec<dim,T>* vec = py::extract<Vec<dim,T>*>(self);
+    npy_intp dims[] = { dim };
+    PyObject* arr = PyArray_SimpleNewFromData(1, dims, get_typenum<T>(), (void*)vec->components);
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array from vector");
+    py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure vector stays alive as long as the array
+    return py::object(py::handle<>(arr));
+}
+
+// vector_list.__array__
+template <int dim, typename T>  py::object vec_list__array__(py::object self) {
+    std::vector<Vec<dim,T>>* list = py::extract<std::vector<Vec<dim,T>>*>(self);
+    npy_intp dims[] = { list->size(), dim };
+    PyObject* arr = PyArray_SimpleNewFromData(2, dims, get_typenum<T>(), (void*)(&(*list)[0].components));
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array from vector list");
+    py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure vector stays alive as long as the array
+    return py::object(py::handle<>(arr));
+}
 
 
 // Access components by name
@@ -158,23 +184,6 @@ void set_vec_component(Vec<dim,T>& self, const T& val) {
 #define vec_component_property(name) &get_vec_component<dim,T,name>, &set_vec_component<dim,T,name>
 
 
-// Python doc
-const static char* __doc__ =
-        "General vector class in PLaSK. It can inteligently hold both 2D and 3D vectors.\n\n"
-        "vector(#, #[, #]) -> initialize with ordered components\n"
-        "vector(x=#, y=#, z=#) -> initialize with Cartesian components (z or x skipped for 2D)\n"
-        "vector(r=#, phi=#, z=#) -> initialize with cylindrical components (phi skipped for 2D)\n\n"
-        "The order of its components always corresponds to the structure orientation\n"
-        "(with the last component parallel to the epitaxial growth direction.\n\n"
-        "However, the component names depend on the config.axis_up configuration option.\n"
-        "Changing this option will change the order of component names accordingly:\n\n"
-        "For config.vertical_axis = 'z', the component name mapping is following:\n"
-        "in 2D vectors it is [y,z] (x-component skipped) or [r,z] (you can refer to\n"
-        "Cartesian or cylindrical cooridinates at your preference). In 3D vectors it is\n"
-        "[x,y,z] or [r,phi,z].\n\n"
-        "For config.vertical_axis = 'z' the order becomes: [x,y] and [z,x,y] for 2D and 3D vectors,\n"
-        "respectively. In this case, cylindrical component names are not allowed.";
-
 // Register vector class to python
 template <int dim, typename T>
 inline static py::class_<Vec<dim,T>> register_vector_class()
@@ -188,14 +197,19 @@ inline static py::class_<Vec<dim,T>> register_vector_class()
 
     V (*c)(const V&) = &plask::conj<T>;
 
-    py::class_<V> vec_class = py::class_<V>("vector", __doc__, py::no_init)
+    py::class_<V> vec_class = py::class_<V>("vector",
+        "PLaSK vector.\n\n"
+        "See Also\n"
+        "--------\n"
+        "vector\t:\tcreate a new vector.\n"
+        , py::no_init)
         .add_property("x", vec_component_property('x'))
         .add_property("y", vec_component_property('y'))
         .add_property("z", vec_component_property('z'))
         .add_property("r", vec_component_property('r'))
         .add_property("phi", vec_component_property('p'))
         .def("__getitem__", vec__getitem__<dim,T>)
-        .def("__setitem__", vec__getitem__<dim,T>)
+        .def("__setitem__", vec__setitem__<dim,T>)
         .def("__iter__", &Vec_iterator<dim,T>::new_iterator, py::with_custodian_and_ward_postcall<0,1>())
         .def("__len__", &vec__len__<dim>)
         .def("__str__", &vec__str__<dim,T>)
@@ -227,6 +241,12 @@ inline static py::class_<Vec<dim,T>> register_vector_class()
         .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>, "Vector magnitue")
         .def("copy", &copy_vec<dim,T>)
         .add_property("dtype", &vec_dtype<dim,T>)
+        .def("__array__", &vec__array__<dim,T>)
+    ;
+
+    py::class_< std::vector<Vec<dim,T>> >("vector_list")
+        .def(py::vector_indexing_suite< std::vector<Vec<dim,T>> >())
+        .def("__array__", &vec_list__array__<dim,T>)
     ;
 
     py::scope vec_scope = vec_class;
@@ -236,205 +256,31 @@ inline static py::class_<Vec<dim,T>> register_vector_class()
         .def("next", &Vec_iterator<dim,T>::next)
     ;
 
-
     return vec_class;
 }
 
 
-struct PyVec
-{
-    py::list components;
-    const int dim;
-
-    PyVec(const py::list& comps) : components(comps) , dim(py::len(comps)) {}
-
-    template <int vdim, typename T>
-    PyVec(const Vec<vdim,T>& v) : dim(vdim) {
-        for (int i = 0; i < vdim; i++) {
-            components.append(py::object(v[i]));
-        }
-    }
-
-    template <int vdim, typename T>
-    operator Vec<vdim,T> () {
-        if (dim != vdim) {
-            std::stringstream out;
-            out << "cannot convert " << py::len(components) << "D vector to " << dim << "D";
-            PyErr_SetString(PyExc_TypeError, out.str().c_str());
-        }
-        T c[vdim];
-        for (int i = 0; i < vdim; ++i)
-            c[i] = py::extract<T>(components[i]);
-        return VecReturner<vdim,T>::result(c);
-    }
-
-    py::object __getitem__(int i) {
-        if (i < 0) i = dim + i;
-        if (i >= dim || i < 0) {
-            const char message[] = "vector index out of range";
-            PyErr_SetString(PyExc_IndexError, message);
-            throw py::error_already_set();
-        }
-        return components[i];
-    }
-
-    // vector[i] = v
-    void __setitem__(int i, py::object v) {
-        if (i < 0) i = dim + i;
-        if (i >= dim || i < 0) {
-            const char message[] = "vector index out of range";
-            PyErr_SetString(PyExc_IndexError, message);
-            throw py::error_already_set();
-        }
-        components[i] = v;
-    }
-
-    // Getter and setter functions
-    template <char c>
-    py::object getComponent() {
-        if (Config::z_up) {
-            if (dim == 2)
-                return VecAccessor<py::object, PyVec, 2, c, true>::getComponent(*this);
-            else
-                return VecAccessor<py::object, PyVec, 3, c, true>::getComponent(*this);
-        } else {
-            if (dim == 2)
-                return VecAccessor<py::object, PyVec, 2, c, false>::getComponent(*this);
-            else
-                return VecAccessor<py::object, PyVec, 3, c, false>::getComponent(*this);
-        }
-        return py::object(); // make compiler happy
-    }
-
-    template <char c>
-    void setComponent(py::object val) {
-        if (Config::z_up) {
-            if (dim == 2)
-                VecAccessor<py::object, PyVec, 2, c, true>::setComponent(*this, val);
-            else
-                VecAccessor<py::object, PyVec, 3, c, true>::setComponent(*this, val);
-        } else {
-            if (dim == 2)
-                VecAccessor<py::object, PyVec, 2, c, false>::setComponent(*this, val);
-            else
-                VecAccessor<py::object, PyVec, 3, c, false>::setComponent(*this, val);
-        }
-    }
-
-    py::object __iter__() {
-        return components.attr("__iter__")();
-    }
-
-    int __len__() { return dim; }
-
-    std::string __str__() {
-        std::stringstream out;
-        out << "[";
-        for (int i = 0; i < dim; ++i) out << std::string(py::extract<std::string>(py::str(components[i]))) << (i!=dim-1 ? ", " : "]");
-        return out.str();
-    }
-
-    std::string __repr__() {
-        std::stringstream out;
-        out << "vector(";
-        for (int i = 0; i < dim; ++i) out << std::string(py::extract<std::string>(py::str(components[i]))) << (i!=dim-1 ? ", " : ")");
-        return out.str();
-    }
-
-    bool __eq__(const PyVec& v) {
-        if (dim != v.dim) return false;
-        for (int i = 0; i < v.dim; ++i)
-            if (components[i] != v.components[i]) return false;
-        return true;
-    }
-
-    bool __ne__(const PyVec& v) { return ! __eq__(v); }
-
-    PyVec __add__(const PyVec& v) {
-        if (v.dim != dim) {
-            PyErr_SetString(PyExc_TypeError, "incompatibile vector dimensions");
-            throw py::error_already_set();
-        }
-        py::list result;
-        for (int i = 0; i < dim; i++) result.append(components[i] + v.components[i]);
-        return PyVec(result);
-    }
-
-    PyVec __sub__(const PyVec& v) {
-        if (v.dim != dim) {
-            PyErr_SetString(PyExc_TypeError, "incompatibile vector dimensions");
-            throw py::error_already_set();
-        }
-        py::list result;
-        for (int i = 0; i < dim; i++) result.append(components[i] - v.components[i]);
-        return PyVec(result);
-    }
-
-    PyVec __neg__() {
-        py::list result;
-        py::object zero = py::object(0.);
-        for (int i = 0; i < dim; i++) result.append(zero - components[i]);
-        return PyVec(result);
-    }
-
-    PyVec __mul__(py::object c) {
-        py::list result;
-        for (int i = 0; i < dim; i++) result.append(components[i] * c);
-        return PyVec(result);
-    }
-
-    PyVec __rmul__(py::object c) {
-        py::list result;
-        for (int i = 0; i < dim; i++) result.append(c * components[i]);
-        return PyVec(result);
-    }
-
-    py::object dot(const PyVec& v) {
-        if (v.dim != dim) {
-            PyErr_SetString(PyExc_TypeError, "incompatibile vector dimensions");
-            throw py::error_already_set();
-        }
-        py::object result = py::object(0.);
-        for (int i = 0; i < dim; i++) result += components[i] * v.components[i];
-        return result;
-    }
-
-    PyVec conj() {
-        py::list result;
-        for (int i = 0; i < dim; i++) result.append(components[i].attr("conjugate")());
-        return PyVec(result);
-    }
-
-    py::object abs2() {
-        return this->dot(*this).attr("real");
-    }
-
-    double abs() {
-        return sqrt(py::extract<double>(abs2()));
-    }
-
-    PyVec copy() {
-        py::list result;
-        for (int i = 0; i < dim; i++) result.append(components[i].attr("conjugate")());
-        return PyVec(result);
-    }
-
-    py::object dtype() { return py::object(); }
-
-  private:
-      template <int dim, typename T> struct VecReturner { inline static Vec<dim,T> result(T* c) {} };
-      template <typename T> struct VecReturner<2,T> { inline static Vec<2,T> result(T c[]) { return Vec<2,T>(c[0],c[1]); } };
-      template <typename T> struct VecReturner<3,T> { inline static Vec<3,T> result(T c[]) { return Vec<3,T>(c[0],c[1],c[2]); } };
-
-};
-
-
 // Python constructor
-static shared_ptr<PyVec> pyvec__init__(py::tuple args, py::dict kwargs)
+static py::object new_vector(py::tuple args, py::dict kwargs)
 {
-    int n = py::len(args) - 1;
+    int n = py::len(args), nk = py::len(kwargs);
 
     py::list params;
+
+    bool force_double = false;
+    bool force_complex = false;
+
+    if (kwargs.has_key("dtype")) {
+        --nk;
+        py::object dtype;
+        dtype = kwargs["dtype"];
+        if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) force_double = true;
+        else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type)) force_complex = true;
+        else {
+            PyErr_SetString(PyExc_TypeError, "wrong dtype (can be only double or complex)");
+            throw py::error_already_set();
+        }
+    }
 
     if (n == 0) { // Extract components from kwargs
 
@@ -493,7 +339,7 @@ static shared_ptr<PyVec> pyvec__init__(py::tuple args, py::dict kwargs)
                 } else if (*key == "phi" || *key == "r") {
                     PyErr_SetString(PyExc_TypeError, "radial components not allowed if config.vertical_axis is 'z'");
                     throw py::error_already_set();
-                } else {
+                } else if (*key != "dtype") {
                     PyErr_SetString(PyExc_TypeError, ("unrecognized component name '" + *key + "'").c_str());
                     throw py::error_already_set();
                 }
@@ -508,11 +354,11 @@ static shared_ptr<PyVec> pyvec__init__(py::tuple args, py::dict kwargs)
         for (int i = 0; i < n; i++)
             params.append(comp[i]);
 
-    } else if (kwargs) {
+    } else if (nk > 0) {
         PyErr_SetString(PyExc_TypeError, "components must be provided entirely in a list or by names");
         throw py::error_already_set();
     } else {
-        params = py::list(args.slice(1, n+1));
+        params = py::list(args);
     }
 
     if (n != 2 && n != 3) {
@@ -520,14 +366,88 @@ static shared_ptr<PyVec> pyvec__init__(py::tuple args, py::dict kwargs)
         throw py::error_already_set();
     }
 
-    return shared_ptr<PyVec>(new PyVec(params));
+    // Now detect the dtype
+    py::object result;
+    try {
+        if (force_complex) { PyErr_SetNone(PyExc_TypeError); throw py::error_already_set(); }
+        double cmps[n];
+        for (int i = 0; i < n; i++) cmps[i] = py::extract<double>(params[i]);
+        if (n == 2) return py::object(Vec<2,double>::fromIterator(cmps));
+        return py::object(Vec<3,double>::fromIterator(cmps));
+    } catch (py::error_already_set) { PyErr_Clear(); try {
+        if (force_double) { PyErr_SetNone(PyExc_TypeError); throw py::error_already_set(); }
+        dcomplex cmps[n];
+        for (int i = 0; i < n; i++) cmps[i] = py::extract<dcomplex>(params[i]);
+        if (n == 2) return py::object(Vec<2,dcomplex>::fromIterator(cmps));
+        return py::object(Vec<3,dcomplex>::fromIterator(cmps));
+    } catch (py::error_already_set) {
+        PyErr_SetString(PyExc_TypeError, "wrong vector argument types");
+        throw py::error_already_set();
+    }}
+
+    return py::object();
 }
 
 
-#define pyvec_component_property(name) &PyVec::getComponent<name>, &PyVec::setComponent<name>
+// Python doc
+const static std::string __doc__ =
+
+    "    Create PLaSK vector.\n\n"
+
+    "    Parameters\n"
+    "    ----------\n"
+    "    vector(#, #[, #])\n"
+    "        initialize with ordered components\n"
+    "    vector(x=#, y=#, z=#)\n"
+    "        initialize with Cartesian components (z or x skipped for 2D)\n"
+    "    vector(r=#, phi=#, z=#)\n"
+    "        initialize with cylindrical components (phi skipped for 2D)\n\n"
+
+    "    Notes\n"
+    "    -----\n"
+    "    The order of its components always corresponds to the structure orientation\n"
+    "    (with the last component parallel to the epitaxial growth direction.\n\n"
+
+    "    However, the component names depend on the config.axis_up configuration option.\n"
+    "    Changing this option will change the order of component names accordingly:\n\n"
+
+    "    For config.vertical_axis = 'z', the component name mapping is following:\n"
+    "    in 2D vectors it is [y,z] (x-component skipped) or [r,z] (you can refer to\n"
+    "    Cartesian or cylindrical cooridinates at your preference). In 3D vectors it is\n"
+    "    [x,y,z] or [r,phi,z].\n\n"
+
+    "    For config.vertical_axis = 'z' the order becomes: [x,y] and [z,x,y] for 2D and 3D vectors,\n"
+    "    respectively. In this case, cylindrical component names are not allowed.\n\n"
+
+    "    Examples\n"
+    "    --------\n"
+    "    >>> vector(1,2)\n"
+    "    vector(1,2)\n\n"
+    "    Create two-dimensional vector.\n\n"
+
+    "    >>> config.vertical_axis = 'y'\n"
+    "    >>> vector(x=1, y=2, z=3)\n"
+    "    vector(3,2,1)\n\n"
+    "    Create 3D vector specifying components in rotated coordinate system.\n\n"
+
+    "    >>> config.vertical_axis = 'z'\n"
+    "    >>> vector(x=1, z=2, y=3)\n"
+    "    vector(1,3,2)\n\n"
+    "    Create 3D vector specifying components.\n\n"
+
+    "    >>> vector(r=2, z=0, dtype=complex)\n"
+    "    vector(2,0)\n\n"
+    "    Create 2D vector in cylindrical coordinates, specifying dtype.\n"
+
+
+
+    ;
 
 void register_vector()
 {
+    // Initialize numpy
+    import_array();
+
     register_vector_class<2,double>();
     register_vector_class<2,dcomplex>();
     register_vector_class<3,double>();
@@ -536,49 +456,10 @@ void register_vector()
     py::implicitly_convertible<Vec<2,double>,Vec<2,dcomplex>>();
     py::implicitly_convertible<Vec<3,double>,Vec<3,dcomplex>>();
 
-    py::class_<PyVec, shared_ptr<PyVec>> pyvec("vector", __doc__, py::no_init);
-    pyvec
-        .def("__init__", raw_constructor(&pyvec__init__, 0))
-        .def("__getitem__", &PyVec::__getitem__)
-        .def("__setitem__", &PyVec::__setitem__)
-        .add_property("x", pyvec_component_property('x'))
-        .add_property("y", pyvec_component_property('y'))
-        .add_property("z", pyvec_component_property('z'))
-        .add_property("r", pyvec_component_property('r'))
-        .add_property("phi", pyvec_component_property('p'))
-        .def("__iter__", &PyVec::__iter__)
-        .def("__len__", &PyVec::__len__)
-        .def("__str__", &PyVec::__str__)
-        .def("__repr__", &PyVec::__repr__)
-        .def("__eq__", &PyVec::__eq__)
-        .def("__ne__", &PyVec::__ne__)
-        .def("__add__", &PyVec::__add__)
-        .def("__sub__", &PyVec::__sub__)
-        .def("__neg__", &PyVec::__neg__)
-        .def("__mul__", &PyVec::__mul__)
-        .def("__rmul__", &PyVec::__rmul__)
-        .def("__mul__", &PyVec::dot)
-        .def("dot", &PyVec::dot)
-        .def("conjugate", &PyVec::conj)
-        .def("conj", &PyVec::conj)
-        .def("abs2", &PyVec::abs2)
-        .def("abs", &PyVec::abs)
-        .def("__abs__", &PyVec::abs)
-        .def("copy", &PyVec::copy)
-        .add_property("dtype", &PyVec::dtype)
-    ;
 
-    py::scope().attr("vec") = pyvec;
-
-    py::implicitly_convertible<PyVec,Vec<2,double>>();
-    py::implicitly_convertible<PyVec,Vec<3,double>>();
-    py::implicitly_convertible<PyVec,Vec<2,dcomplex>>();
-    py::implicitly_convertible<PyVec,Vec<3,dcomplex>>();
-
-    py::implicitly_convertible<Vec<2,double>,PyVec>();
-    py::implicitly_convertible<Vec<3,double>,PyVec>();
-    py::implicitly_convertible<Vec<2,dcomplex>,PyVec>();
-    py::implicitly_convertible<Vec<3,dcomplex>,PyVec>();
+    py::def("vector", py::raw_function(&new_vector));
+    py::scope().attr("vector").attr("__doc__") = __doc__.c_str();
+    py::scope().attr("vec") = py::scope().attr("vector");
 }
 
 }} // namespace plask::python

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from plaskcore import *
 
+from numpy import *
 
 ## ## plask.material ## ##
 
@@ -41,4 +42,4 @@ material.new = registerMaterial
 
 
 
-## ##  ## ##)
+## ##  ## ##

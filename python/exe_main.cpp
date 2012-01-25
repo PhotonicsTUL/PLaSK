@@ -18,11 +18,11 @@ void initplaskcore(void);
 // Initialize the binary modules and load the package from disc
 static void initPlaskModule(int argc, const char* argv[])
 {
-    // Initialize the module plask
-    if (PyImport_AppendInittab("plaskcore", &initplaskcore) != 0) throw plask::CriticalException("No plaskcore module");
-
     // Initialize Python
     Py_Initialize();
+
+    // Initialize the module plask
+    if (PyImport_AppendInittab("plaskcore", &initplaskcore) != 0) throw plask::CriticalException("No plaskcore module");
 
     py::object sys = py::import("sys");
 
@@ -98,8 +98,6 @@ int main(int argc, const char *argv[])
         if (from_import) { // from plask import *
             from_import_all("plask", globals);
         }
-        // Import numpy
-        from_import_all("numpy", globals);
 
         try {
             // We dont use python::exec_file, as we want to set "from __future__ import divisions" flag

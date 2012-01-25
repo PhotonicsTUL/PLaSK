@@ -22,18 +22,18 @@ In such case <code>const ValueT</code> can be a better choice.
 template <typename ValueT, typename ReferenceT = ValueT&>
 struct PolymorphicForwardIteratorImpl {
 
-    //some typedefs compatibile with stl:
+    // some typedefs compatibile with stl:
 
-    ///Type of elements pointed by the iterator.
+    /// Type of elements pointed by the iterator.
     typedef ValueT value_type;
 
-    ///Type to represent a reference to an element pointed by the iterator.
+    /// Type to represent a reference to an element pointed by the iterator.
     typedef ReferenceT reference;
 
     ///@return current value
     virtual ReferenceT dereference() const = 0;
 
-    ///Iterate to next value.
+    /// Iterate to next value.
     virtual void increment() = 0;
 
     /**
@@ -245,27 +245,27 @@ inline FunctorIndexedIterator<Functor> makeFunctorIndexedIterator(Functor f, std
  * where:
  * - given_index is call parameter,
  * - firstIndex and delta are paremeters stored in ReindexedContainer.
- * 
+ *
  * @tparam ContainerType type of oryginal container
  */
 template <typename ContainerType>
 struct ReindexedContainer {
-  
+
     ContainerType& oryginalContainer;
-    
+
     int firstIndex, delta;
-    
+
     ReindexedContainer(ContainerType& oryginalContainer, int firstIndex = 0, int delta = 1)
     : oryginalContainer(oryginalContainer), firstIndex(firstIndex), delta(delta) {}
-    
+
     auto operator[](const std::size_t& this_index) -> decltype(oryginalContainer[0]) {
         return oryginalContainer[firstIndex + this_index * delta];
     }
-    
+
     auto operator[](const std::size_t& this_index) const -> decltype(const_cast<const ContainerType&>(oryginalContainer)[0])  {
         return oryginalContainer[firstIndex + this_index * delta];
     }
-    
+
 };
 
 /**

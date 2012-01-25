@@ -124,11 +124,11 @@ void register_geometry_primitive()
         .def("__repr__", &Rect3d__repr__)
     ;
 
-    py::class_<std::vector<Rect2d>>("List_of_Box2D")
+    py::class_<std::vector<Rect2d>>("Box2D_list")
         .def(py::vector_indexing_suite<std::vector<Rect2d>>())
     ;
 
-    py::class_<std::vector<Rect3d>>("List_of_Box3D")
+    py::class_<std::vector<Rect3d>>("Box3D_list")
         .def(py::vector_indexing_suite<std::vector<Rect3d>>())
     ;
 

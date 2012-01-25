@@ -1,6 +1,7 @@
 #include <plask/space.h>
 
 #include "globals.h"
+#include <numpy/arrayobject.h>
 using namespace plask::python;
 
 // Declare some initialization functions
@@ -18,6 +19,9 @@ bool Config::z_up = true;
 
 BOOST_PYTHON_MODULE(plaskcore)
 {
+    // Initialize numpy
+    import_array();
+
     py::scope scope; // Default scope
 
     // Config
@@ -46,7 +50,6 @@ BOOST_PYTHON_MODULE(plaskcore)
     // Init subpackages
     initMaterial();
     initGeometry();
-
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

@@ -4,6 +4,27 @@ namespace py = boost::python;
 
 #include <plask/plask.hpp>
 
+//// Vector ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+typedef plask::Vec<2,double> MyVec;
+
+std::vector<MyVec> getVecs() {
+    std::vector<MyVec> result;
+    result.push_back(MyVec(1,2));
+    result.push_back(MyVec(3,4));
+    result.push_back(MyVec(5,6));
+    result.push_back(MyVec(7,8));
+    result.push_back(MyVec(9,10));
+
+    std::cerr << "Vector array: ";
+    for (auto p = (double*)&result[0]; p < (double*)&(*result.end()); ++p) std::cerr << *p << " ";
+    std::cerr << "\n";
+
+    return result;
+}
+
+
+
 //// Material /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct MyMaterial : public plask::Material {
@@ -43,10 +64,15 @@ void print_ptr(py::object o) {
     std::cerr << "ptr: " << o.ptr() << "\n";
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
 {
+    py::def("getVecs", &getVecs);
+
+
+
     py::def("addMyMaterial", &addMyMaterial);
 
     py::def("materialName", &materialName);
@@ -55,4 +81,5 @@ BOOST_PYTHON_MODULE(plasktest)
     py::def("call_chi", &call_chi);
 
     py::def("print_ptr", &print_ptr);
+
 }
