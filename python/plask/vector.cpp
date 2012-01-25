@@ -399,9 +399,9 @@ const static std::string __doc__ =
     "    vector(#, #[, #])\n"
     "        initialize with ordered components\n"
     "    vector(x=#, y=#, z=#)\n"
-    "        initialize with Cartesian components (z or x skipped for 2D)\n"
+    "        initialize with Cartesian components (z or x skipped in 2D)\n"
     "    vector(r=#, phi=#, z=#)\n"
-    "        initialize with cylindrical components (phi skipped for 2D)\n\n"
+    "        initialize with cylindrical components (phi skipped in 2D)\n\n"
 
     "    Notes\n"
     "    -----\n"

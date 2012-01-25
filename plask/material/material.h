@@ -22,7 +22,7 @@ struct Material {
 
     /**
      * Check if material composition is compatible with pattern and change NaN-s in composition to calculated amounts.
-     * 
+     *
      * Throw exception if composition is not compatible with pattern or it is impossible to complete it.
      * @param composition amounts of elements composition with NaN on position for which amounts has not been taken
      * @param pattern sizes of elements groups, size of first group is represented by digit at highest position in decimal system, second by second highest position, and so on
@@ -39,25 +39,25 @@ struct Material {
     /**
      * Get lattice constant [A].
      * @param T temperature [K]
-     * @param x lattice paramter [-]
+     * @param x lattice parameter [-]
      * @return lattice constant [A]
      */
     virtual double lattC(double T, char x) const;
 
     /**
      * @param T temperature [K]
-     * @param Point point in the Brillouin zone [-]
+     * @param point point in the Brillouin zone [-]
      * @return energy gap Eg [eV]
      */
-    virtual double Eg(double T, char Point) const;
+    virtual double Eg(double T, char point) const;
 
     /**
      * Get conduction band offset CBO [eV].
      * @param T temperature [K]
-     * @param Point point in the Brillouin zone [-]
+     * @param point point in the Brillouin zone [-]
      * @return conduction band offset CBO [eV]
      */
-    virtual double CBO(double T, char Point) const;
+    virtual double CBO(double T, char point) const;
 
     /**
      * Get valance band offset VBO[eV].
@@ -83,74 +83,74 @@ struct Material {
     /**
      * Get electron effective mass Me [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return split-off mass Mso [\f$m_0\f$]
      */
-    virtual double Me(double T, char Point) const;
+    virtual double Me(double T, char point) const;
 
     /**
      * Get electron effective mass Me in vertical direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return electron effective mass Me in vertical direction [\f$m_0\f$]
      */
-    virtual double Me_v(double T, char Point) const;
+    virtual double Me_v(double T, char point) const;
 
     /**
      * Get electron effective mass Me in lateral direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return electron effective mass Me in lateral direction [\f$m_0\f$]
      */
-    virtual double Me_l(double T, char Point) const;
+    virtual double Me_l(double T, char point) const;
 
     /**
      * Get heavy hole effective mass Mhh [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return heavy hole effective mass Mhh [\f$m_0\f$]
      */
-    virtual double Mhh(double T, char Point) const;
+    virtual double Mhh(double T, char point) const;
 
     /**
      * Get heavy hole effective mass Me in vertical direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return heavy hole effective mass Mhh [\f$m_0\f$]
      */
-    virtual double Mhh_v(double T, char Point) const;
+    virtual double Mhh_v(double T, char point) const;
 
     /**
      * Get heavy hole effective mass Me in lateral direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return heavy hole effective mass Me in lateral direction [\f$m_0\f$]
      */
-    virtual double Mhh_l(double T, char Point) const;
+    virtual double Mhh_l(double T, char point) const;
 
     /**
      * Get light hole effective mass Mlh [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return light hole effective mass Mlh [\f$m_0\f$]
      */
-    virtual double Mlh(double T, char Point) const;
+    virtual double Mlh(double T, char point) const;
 
     /**
      * Get light hole effective mass Me in vertical direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return light hole effective mass Me in vertical direction [\f$m_0\f$]
      */
-    virtual double Mlh_v(double T, char Point) const;
+    virtual double Mlh_v(double T, char point) const;
 
     /**
      * Get light hole effective mass Me in lateral direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return light hole effective mass Me in lateral direction [\f$m_0\f$]
      */
-    virtual double Mlh_l(double T, char Point) const;
+    virtual double Mlh_l(double T, char point) const;
 
     /**
      * Get hole effective mass Mh [\f$m_0\f$].
@@ -163,18 +163,18 @@ struct Material {
     /**
      * Get hole effective mass Me in vertical direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return hole effective mass Me in vertical direction [\f$m_0\f$]
      */
-    virtual double Mh_v(double T, char Point) const;
+    virtual double Mh_v(double T, char point) const;
 
     /**
      * Get hole effective mass Me in lateral direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return hole effective mass Me in lateral direction [\f$m_0\f$]
      */
-    virtual double Mh_l(double T, char Point) const;
+    virtual double Mh_l(double T, char point) const;
 
     /**
      * Get dielectric constant EpsR [-].
@@ -186,22 +186,22 @@ struct Material {
     /**
      * Get electron affinity Chi[eV].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return electron affinity Chi [eV]
      */
-    virtual double chi(double T, char Point) const;
+    virtual double chi(double T, char point) const;
 
-    virtual inline double chi(char Point) const {
-        return chi(300, Point);
+    virtual inline double chi(char point) const {
+        return chi(300., point);
     }
 
     /**
      * Get effective density of states in the conduction band Nc [\f$m^{-3}\f$].
      * @param T temperature [K]
-     * @param Point point in Brillouin zone [-]
+     * @param point point in Brillouin zone [-]
      * @return effective density of states in the conduction band Nc [\f$m^{-3}\f$]
      */
-    virtual double Nc(double T, char Point) const;
+    virtual double Nc(double T, char point) const;
 
     /**
      * Get effective density of states in the valance band Nv [\f$m^{-3}\f$].
@@ -321,7 +321,7 @@ struct Material {
      * @param Thickness thickness [m]
      * @return ambipolar diffusion coefficient D[m^2/s]
      */
-    virtual double thermCond(double T, double Thick) const;
+    virtual double thermCond(double T, double thickness) const;
 
     /**
      * Get thermal conductivity in vertical direction k [W/(m*K)].
@@ -329,7 +329,7 @@ struct Material {
      * @param Thickness thickness [m]
      * @return thermal conductivity in vertical direction k [W/(m*K)]
      */
-    virtual double thermCond_v(double T, double Thick) const;
+    virtual double thermCond_v(double T, double thickness) const;
 
     /**
      * Get thermal conductivity in lateral direction k [W/(m*K)].
@@ -337,7 +337,7 @@ struct Material {
      * @param Thickness thickness [m]
      * @return thermal conductivity in lateral direction k [W/(m*K)]
      */
-    virtual double thermCond_l(double T, double Thick) const;
+    virtual double thermCond_l(double T, double thickness) const;
 
     /**
      * Get density [kg/m^3].
@@ -355,29 +355,29 @@ struct Material {
 
     /**
      * Get refractive index nR [-].
-     * @param WaveLen Wavelength [nm]
+     * @param wl Wavelength [nm]
      * @param T temperature [K]
      * @return refractive index nR [-]
      */
-    virtual double nr(double WaveLen, double T) const;
+    virtual double nr(double wl, double T) const;
 
     /**
      * Get absorption coefficient alpha[-].
-     * @param WaveLen Wavelength [nm]
+     * @param wl Wavelength [nm]
      * @param T temperature [K]
      * @return absorption coefficient alpha[-]
      */
-    virtual double absp(double WaveLen, double T) const;
+    virtual double absp(double wl, double T) const;
 
     /**
      * Get refractive index nR[-].
-     * @param WaveLen Wavelength [nm]
+     * @param wl Wavelength [nm]
      * @param T temperature [K]
      * @return refractive index nR[-]
      */
-    virtual dcomplex Nr(double WaveLen, double T) const;
+    virtual dcomplex Nr(double wl, double T) const;
 
-    //virtual std::tuple<double, double, double, double, double> Nr(double WaveLen, double T..??..) const;// refractive index (tensor) nR[-]: Wavelength[nm], Temperature[K]
+    //virtual std::tuple<double, double, double, double, double> Nr(double wl, double T..??..) const;// refractive index (tensor) nR[-]: Wavelength[nm], Temperature[K]
 
 protected:
     void throwNotImplemented(const std::string& method_name) const;

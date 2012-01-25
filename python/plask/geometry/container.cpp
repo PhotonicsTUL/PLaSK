@@ -14,12 +14,6 @@ DECLARE_GEOMETRY_ELEMENT_23D(TranslationContainer, "TranslationContainer",
     ;
 }
 
-// Stack wrappers
-template <typename S>
-inline static PathHints::Hint Stack_add(S& self, const shared_ptr<typename S::ChildType>& el) {
-    return self.add(el);
-}
-
 template <int dim, typename S>
 inline static py::tuple Stack__getitem__(const S& self, int i) {
     if (i < 0) i = self.children.size() - i;
@@ -74,8 +68,7 @@ void register_geometry_container()
         "Container that organizes its childern in vertical stack (2D version)\n\n"
         "StackContainer2D(baseLevel = 0) -> Create the stack with the bottom side of the first element at the baseLevel (in container local coordinates)",
          py::init<double>())
-        .def("append", &StackContainer2d::add, "Add new element to the container")
-        .def("append", &Stack_add<StackContainer2d>, "Add new element to the container")
+        .def("append", &StackContainer2d::add, (py::arg("child"), py::arg("shift")=0.), "Add new element to the container")
         .def("__getitem__", &Stack__getitem__<2, StackContainer2d>)
         //.def("__iter__"
     ;
@@ -84,8 +77,8 @@ void register_geometry_container()
         "Stack container which repeats its contents (3D version)\n\n"
         "Stack3D(baseLevel = 0) -> Create the stack with the bottom side of the first element at the baseLevel (in container local coordinates)",
         py::init<double>())
-        .def("append", &StackContainer3d::add, "Add new element to the container")
-        .def("append", &Stack_add<StackContainer3d>, "Add new element to the container")
+        .def("append", &StackContainer3d::add, (py::arg("child"), py::arg("shift0")=0., py::arg("shift1")=0.),
+             "Add new element to the container")
         .def("__getitem__", &Stack__getitem__<3, StackContainer3d>)
         //.def("__iter__"
     ;

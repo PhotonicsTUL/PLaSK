@@ -9,15 +9,15 @@ namespace plask {
 
 double Material::A(double T) const { throwNotImplemented("A(double T)"); assert(0); }
 
-double Material::absp(double WaveLen, double T) const { throwNotImplemented("absp(double WaveLen, double T)"); assert(0); }
+double Material::absp(double wl, double T) const { throwNotImplemented("absp(double wl, double T)"); assert(0); }
 
 double Material::B(double T) const { throwNotImplemented("B(double T)"); assert(0); }
 
 double Material::C(double T) const { throwNotImplemented("C(double T)"); assert(0); }
 
-double Material::CBO(double T, char Point) const { throwNotImplemented("CBO(double T, char Point)"); assert(0); }
+double Material::CBO(double T, char point) const { throwNotImplemented("CBO(double T, char point)"); assert(0); }
 
-double Material::chi(double T, char Point) const { throwNotImplemented("chi(double T, char Point)"); assert(0); }
+double Material::chi(double T, char point) const { throwNotImplemented("chi(double T, char point)"); assert(0); }
 
 double Material::cond(double T) const { throwNotImplemented("cond(double T)"); assert(0); }
 double Material::cond_l(double T) const { throwNotImplemented("cond_l(double T)"); assert(0); }
@@ -32,42 +32,42 @@ double Material::Dso(double T) const { throwNotImplemented("Dso(double T)"); ass
 double Material::EactA(double T) const { throwNotImplemented("EactA(double T)"); assert(0); }
 double Material::EactD(double T) const { throwNotImplemented("EactD(double T)"); assert(0); }
 
-double Material::Eg(double T, char Point) const { throwNotImplemented("Eg(double T, char Point)"); assert(0); }
+double Material::Eg(double T, char point) const { throwNotImplemented("Eg(double T, char point)"); assert(0); }
 
 double Material::eps(double T) const { throwNotImplemented("eps(double T)"); assert(0); }
 
 double Material::lattC(double T, char x) const { throwNotImplemented("lattC(double T, char x)"); assert(0); }
 
-double Material::Me(double T, char Point) const { throwNotImplemented("Me(double T, char Point)"); assert(0); }
-double Material::Me_l(double T, char Point) const { throwNotImplemented("Me_l(double T, char Point)"); assert(0); }
-double Material::Me_v(double T, char Point) const { throwNotImplemented("Me_v(double T, char Point)"); assert(0); }
+double Material::Me(double T, char point) const { throwNotImplemented("Me(double T, char point)"); assert(0); }
+double Material::Me_l(double T, char point) const { throwNotImplemented("Me_l(double T, char point)"); assert(0); }
+double Material::Me_v(double T, char point) const { throwNotImplemented("Me_v(double T, char point)"); assert(0); }
 
 double Material::Mh(double T, char EqType) const { throwNotImplemented("Mh(double T, char EqType)"); assert(0); }
-double Material::Mh_l(double T, char Point) const { throwNotImplemented("Mh_l(double T, char Point)"); assert(0); }
-double Material::Mh_v(double T, char Point) const { throwNotImplemented("Mh_v(double T, char Point)"); assert(0); }
+double Material::Mh_l(double T, char point) const { throwNotImplemented("Mh_l(double T, char point)"); assert(0); }
+double Material::Mh_v(double T, char point) const { throwNotImplemented("Mh_v(double T, char point)"); assert(0); }
 
-double Material::Mhh(double T, char Point) const { throwNotImplemented("Mhh(double T, char Point)"); assert(0); }
-double Material::Mhh_l(double T, char Point) const { throwNotImplemented("Mhh_l(double T, char Point)"); assert(0); }
-double Material::Mhh_v(double T, char Point) const { throwNotImplemented("Mhh_v(double T, char Point)"); assert(0); }
+double Material::Mhh(double T, char point) const { throwNotImplemented("Mhh(double T, char point)"); assert(0); }
+double Material::Mhh_l(double T, char point) const { throwNotImplemented("Mhh_l(double T, char point)"); assert(0); }
+double Material::Mhh_v(double T, char point) const { throwNotImplemented("Mhh_v(double T, char point)"); assert(0); }
 
-double Material::Mlh(double T, char Point) const { throwNotImplemented("B(double T)"); assert(0); }
-double Material::Mlh_l(double T, char Point) const { throwNotImplemented("B(double T)"); assert(0); }
-double Material::Mlh_v(double T, char Point) const { throwNotImplemented("B(double T)"); assert(0); }
+double Material::Mlh(double T, char point) const { throwNotImplemented("B(double T)"); assert(0); }
+double Material::Mlh_l(double T, char point) const { throwNotImplemented("B(double T)"); assert(0); }
+double Material::Mlh_v(double T, char point) const { throwNotImplemented("B(double T)"); assert(0); }
 
 double Material::mob(double T) const { throwNotImplemented("mob(double T)"); assert(0); }
 
 double Material::Mso(double T) const { throwNotImplemented("Mso(double T)"); assert(0); }
 
-double Material::Nc(double T, char Point) const { throwNotImplemented("Nc(double T, char Point)"); assert(0); }
+double Material::Nc(double T, char point) const { throwNotImplemented("Nc(double T, char point)"); assert(0); }
 double Material::Nc(double T) const { throwNotImplemented("Nc(double T)"); assert(0); }
 
 double Material::Nf(double T) const { throwNotImplemented("Nf(double T)"); assert(0); }
 
 double Material::Ni(double T) const { throwNotImplemented("Ni(double T)"); assert(0); }
 
-double Material::nr(double WaveLen, double T) const { throwNotImplemented("nr(double WaveLen, double T)"); assert(0); }
+double Material::nr(double wl, double T) const { throwNotImplemented("nr(double wl, double T)"); assert(0); }
 
-dcomplex Material::Nr(double WaveLen, double T) const { throwNotImplemented("Nr(double WaveLen, double T)"); assert(0); }
+dcomplex Material::Nr(double wl, double T) const { throwNotImplemented("Nr(double wl, double T)"); assert(0); }
 
 double Material::res(double T) const { throwNotImplemented("res(double T)"); assert(0); }
 double Material::res_l(double T) const { throwNotImplemented("res_l(double T)"); assert(0); }
@@ -75,12 +75,12 @@ double Material::res_v(double T) const { throwNotImplemented("res_v(double T)");
 
 double Material::specHeat(double T) const { throwNotImplemented("specHeat(double T)"); assert(0); }
 
-double Material::thermCond(double T, double Thick) const { throwNotImplemented("thermCond(double T, double Thick)"); assert(0); }
-double Material::thermCond_l(double T, double Thick) const { throwNotImplemented("thermCond_l(double T, double Thick)"); assert(0); }
-double Material::thermCond_v(double T, double Thick) const { throwNotImplemented("thermCond_v(double T, double Thick)"); assert(0); }
+double Material::thermCond(double T, double thickness) const { throwNotImplemented("thermCond(double T, double thickness)"); assert(0); }
+double Material::thermCond_l(double T, double thickness) const { throwNotImplemented("thermCond_l(double T, double thickness)"); assert(0); }
+double Material::thermCond_v(double T, double thickness) const { throwNotImplemented("thermCond_v(double T, double thickness)"); assert(0); }
 
 double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); assert(0); }
-   
+
 void Material::throwNotImplemented(const std::string& method_name) const {
     throw MaterialMethodNotImplemented(name(), method_name);
 };

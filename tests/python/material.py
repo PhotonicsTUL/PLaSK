@@ -36,7 +36,7 @@ class Material(unittest.TestCase):
             def __del__(self):
                 print >>sys.stderr, "MyMat.__del__",
                 ptest.print_ptr(self)
-            def VBO(self, T):
+            def VBO(self, T=300.):
                 return 2.*T
 
         self.assertIn( "MyMat", self.DB )
@@ -52,7 +52,6 @@ class Material(unittest.TestCase):
         if sys.version >= 2.7:
             with self.assertRaises(RuntimeError): self.DB.get("MyMat:Si=1e14")
 
-
         @plask.material.new
         class MyMatDp(plask.material.Material):
             name = "MyMat:Dp"
@@ -65,7 +64,7 @@ class Material(unittest.TestCase):
             def __del__(self):
                 print >>sys.stderr, "MyMat:Dp.__del__",
                 ptest.print_ptr(self)
-            def VBO(self, T):
+            def VBO(self, T=300.):
                 return self.kwargs['dc'] * T
 
         m = self.DB.get("MyMat:Dp=3.0")
@@ -76,11 +75,10 @@ class Material(unittest.TestCase):
         MyMat = lambda **kwargs: self.DB.get("MyMat", **kwargs)
         m = MyMat(Mat=0.2, dope="Dp", dc=5.0)
         self.assertEqual( m.name, "MyMat:Dp" )
-        self.assertEqual( m.VBO(1.0), 5.0 )
+        self.assertEqual( m.VBO(), 1500.0 )
         del m
         self.assertEqual( ptest.materialName("MyMat:Dp=3.0", plask.material.database), "MyMat:Dp" )
         self.assertEqual( ptest.materialVBO("MyMat:Dp=3.0", plask.material.database, 1.0), 3.0 )
-
 
         @plask.material.new
         class WithChar(plask.material.Material):
@@ -105,7 +103,8 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.materialName("MyMaterial", self.DB), "MyMaterial" )
         self.assertEqual( ptest.materialVBO("MyMaterial", self.DB, 1.0), 0.5 )
         self.assertEqual( ptest.call_chi(m, 'B'), 1.0)
-        self.assertEqual( m.chi('C'), 1.0)
+        self.assertEqual( m.VBO(), 150.0)
+        self.assertEqual( m.chi(point='C'), 1.0)
 
 
     def testMaterialWithBase(self):

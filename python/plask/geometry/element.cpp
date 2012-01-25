@@ -31,14 +31,22 @@ template <> struct GeometryElementD_getMaterial<3> {
 /// Initialize class GeometryElementD for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementD, GeometryElement)
-        .def("inside", &GeometryElementD<dim>::inside, "Return True if the geometry element includes a point (in local coordinates)")
-        .def("inside", &GeometryElementD_inside<dim>::call, "Return True if the geometry element includes a point (in local coordinates)")
-        .def("intersect", &GeometryElementD<dim>::intersect, "Return True if the geometry element has common points (in local coordinates) with an area")
-        .def("getMaterial", &GeometryElementD<dim>::getMaterial, "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
-        .def("getMaterial", &GeometryElementD_getMaterial<dim>::call, "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
-        .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox, "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
-        .add_property("boundingBoxSize", &GeometryElementD<dim>::getBoundingBoxSize, "Size of the bounding box")
-        .add_property("leafsBoundigBoxes", &GeometryElementD<dim>::getLeafsBoundingBoxes, "Calculate bounding boxes of all leafs (in local coordinates)")
+        .def("inside", &GeometryElementD<dim>::inside,
+             "Return True if the geometry element includes a point (in local coordinates)")
+        .def("inside", &GeometryElementD_inside<dim>::call, py::args("point"),
+             "Return True if the geometry element includes a point (in local coordinates)")
+        .def("intersect", &GeometryElementD<dim>::intersect, py::args("area"),
+             "Return True if the geometry element has common points (in local coordinates) with an area")
+        .def("getMaterial", &GeometryElementD<dim>::getMaterial,
+             "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
+        .def("getMaterial", &GeometryElementD_getMaterial<dim>::call, py::args("point"),
+             "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
+        .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox,
+                      "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
+        .add_property("boundingBoxSize", &GeometryElementD<dim>::getBoundingBoxSize,
+                      "Size of the bounding box")
+        .add_property("leafsBoundigBoxes", &GeometryElementD<dim>::getLeafsBoundingBoxes,
+                      "Calculate bounding boxes of all leafs (in local coordinates)")
     ;
 }
 

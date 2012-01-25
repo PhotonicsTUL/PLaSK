@@ -52,17 +52,17 @@ Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters
 
 Example:
 @code
-//Physical property tag class for temperature.
+// Physical property tag class for temperature.
 struct Temperature: plask::ScalarFieldProperty {};
 
-//Base type for provider class in 3d space.
+// Base type for provider class in 3d space.
 typedef plask::ProviderFor<Temperature, plask::space::Cartesian3d> TemperatureProvider3d;
 
-//Type for receiver class in 3d space.
+// Type for receiver class in 3d space.
 typedef plask::ReceiverFor<Temperature, plask::space::Cartesian3d> TemperatureReceiver3d;
 
-//...
-//Use example:
+// ...
+// Usage example:
 TemperatureProvider3d::WithValue provider;
 TemperatureReceiver3d reciver;
 reciver = provider;     //connect
@@ -77,23 +77,23 @@ Receiver class for your provider class still may be very easy obtain by plask::R
 
 Example:
 @code
-//Provider type which multiple its argument by value
+// Provider type which multiple its argument by value
 struct ScalerProvider: public plask::Provider {
-    
+
     double scale;
-    
+
     ScalerProvider(double scale): scale(scale) {}
-    
+
     double operator()(double param) const {
         return scale * param;
     }
 };
 
-//Receiver corresponding to ScalerProvider
+// Receiver corresponding to ScalerProvider
 typedef Receiver<ScalerProvider> ScalerReceiver;
 
-//...
-//Usage example:
+// ...
+// Usage example:
 ScalerProvider sp(2.0);
 ScalerReceiver sr;
 sr = sp;        //connect
@@ -531,7 +531,7 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
     static_assert(!(std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == FIELD_PROPERTY || PropertyTag::propertyType == INTERPOLATED_FIELD_PROPERTY)),
                   "Receivers for fields properties require SpaceType. Use ReceiverFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
     static_assert(!(!std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == SINGLE_VALUE_PROPERTY)),
-                  "Receivers for single value properties doesn't need SpaceType. Use ReceiverFor<propertyTag> (without second template parameter).");  
+                  "Receivers for single value properties doesn't need SpaceType. Use ReceiverFor<propertyTag> (without second template parameter).");
 };
 //struct ReceiverFor: public Receiver< ProviderFor<PropertyTag> > {};
 
@@ -544,9 +544,9 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
 struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: public SingleValueProvider<ValueT> {
-    
+
     static_assert(std::is_same<SpaceType, void>::value,
-                  "Providers for single value properties doesn't need SpaceType. Use ProviderFor<propertyTag> (without second template parameter).");  
+                  "Providers for single value properties doesn't need SpaceType. Use ProviderFor<propertyTag> (without second template parameter).");
 
     ///Type of provided value.
     typedef typename  SingleValueProvider<ValueT>::ProvidedValueType ProvidedValueType;
@@ -591,7 +591,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
 
     static_assert(!std::is_same<SpaceType, void>::value,
                   "Providers for fields properties require SpaceType. Use ProviderFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
-    
+
     ///Type of provided value.
     typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
 
@@ -629,7 +629,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
 struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>: public OnMeshProviderWithInterpolation<ValueT, SpaceType> {
-    
+
     static_assert(!std::is_same<SpaceType, void>::value,
                   "Providers for fields properties require SpaceType. Use ProviderFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
 

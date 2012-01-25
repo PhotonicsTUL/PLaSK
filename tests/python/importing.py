@@ -21,8 +21,8 @@ class Importing(unittest.TestCase):
         import plask
         self.assertIn('plaskcore', sys.modules)
 
-        def use_modplask_directly(): print modplask.__file__
-        self.assertRaises(NameError, use_modplask_directly)
+        def use_plaskcore_directly(): print plaskcore.__file__
+        self.assertRaises(NameError, use_plaskcore_directly)
 
     def testAutoImported(self):
         '''Test if the plask is auto-imported to global namespace for plask binary'''

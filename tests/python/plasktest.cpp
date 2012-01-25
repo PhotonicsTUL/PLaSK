@@ -33,7 +33,7 @@ struct MyMaterial : public plask::Material {
 
     virtual double VBO(double T) const { return 0.5*T; }
 
-    virtual double chi(char P) const { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
+    virtual double chi(double T, char P) const { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
 
 };
 

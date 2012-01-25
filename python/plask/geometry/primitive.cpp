@@ -74,9 +74,9 @@ void register_geometry_primitive()
 
     py::class_<Rect2d, shared_ptr<Rect2d>>("Box2D",
         "Rectangular two-dimensional box. Provides some basic operation on boxes.\n\n"
-        "Box2D() -> create empty box\n"
-        "Box2D(lower, upper) -> create box with opposite corners described by 2D vectors\n"
-        "Box2D(l1, l2, u1, u2) -> create box with opposite corners described by two coordinates\n"
+        "Box2D() -> create empty box\n\n"
+        "Box2D(lower, upper) -> create box with opposite corners described by 2D vectors\n\n"
+        "Box2D(l1, l2, u1, u2) -> create box with opposite corners described by two coordinates\n\n"
         )
         .def("__init__", py::make_constructor(&Rect2d_constructor_default))
         .def("__init__", py::make_constructor(&Rect2d_constructor_2vec))
@@ -86,12 +86,12 @@ void register_geometry_primitive()
         .def("fix", &Rect2d::fix, "Ensure that lower[0] <= upper[0] and lower[1] <= upper[1]. Exchange components of lower and upper if necessary.")
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("inside", &Rect2d::inside, "Check if the point is inside the box.")
-        .def("intersect", &Rect2d::intersect, "Check if this and the other box have common points.")
-        .def("include", includeR2p, "Make this box, the minimal one which include this and given point")
-        .def("include", includeR2R, "Make this box, the minimal one which include this and the other box.")
-        .def("translated", &Rect2d::translated)
-        .def("translate", &Rect2d::translate)
+        .def("inside", &Rect2d::inside, py::args("point"), "Check if the point is inside the box.")
+        .def("intersect", &Rect2d::intersect, py::args("other"), "Check if this and the other box have common points.")
+        .def("include", includeR2p, py::args("point"), "Make this box, the minimal one which include this and given point")
+        .def("include", includeR2R, py::args("other"), "Make this box, the minimal one which include this and the other box.")
+        .def("translated", &Rect2d::translated, py::args("trans"), "Get translated copy of this box")
+        .def("translate", &Rect2d::translate, py::args("trans"), "Translate this box")
         .def("__str__", &Rect2d__str__)
         .def("__repr__", &Rect2d__repr__)
     ;
