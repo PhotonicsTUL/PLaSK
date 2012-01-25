@@ -13,6 +13,7 @@ namespace plask {
 Represent figure which, depends from @a dim is:
 - for dim = 2 - rectangle,
 - for dim = 3 - cuboid.
+
 Block is filled with one material.
 @tparam dim number of dimensions
 */
