@@ -47,16 +47,18 @@ Adapter templates currently available in PLaSK (see its description for more det
 - plask::SimpleMeshAdapter
 
 @subsection meshes_write_direct Direct implementation of plask::Mesh\<SPACE\>
-To implement a new mesh directly you have to write class inherited from the plask::Mesh\<SPACE\>, where space is a type of space your mesh is defined over.
+To implement a new mesh directly you have to write class inherited from the plask::Mesh\<SPACE\>, where SPACE is a type of space your mesh is defined over.
 It can be one of (see @a spaces_and_coordinates for more details):
 - plask::space::Cartesian2d - 2D Cartesian coordinates,
 - plask::space::Cylindrical2d - 2D cylindrical coordinates,
 - plask::space::Cartesian3d - 3D (Cartesian) coordinates.
+
 You are required to:
 - implement the @ref plask::Mesh::size size method;
 - implement the iterator over the mesh points, which required to:
   - writing class inherited from plask::Mesh::IteratorImpl (and implement all its abstract methods),
-  - writing @ref plask::Mesh::begin "begin()" and @ref plask::Mesh::end "end()" methods (typically this methods only returns <code>plask::Mesh::Iterator(new YourIteratorImpl(...))</code>).
+  - writing @ref plask::Mesh::begin "begin()" and @ref plask::Mesh::end "end()" methods, typically this methods only returns:
+    @code plask::Mesh::Iterator(new YourIteratorImpl(...)) @endcode
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3d space):
 @code
@@ -87,7 +89,7 @@ struct OnePoint3dMesh: public plask::Mesh<plask::space::Cartesian3d> {
         }
 
         virtual bool equal(const typename Mesh<plask::space::Cartesian3d>::IteratorImpl& other) const {
-            return mesh_ptr == static_cast<IteratorImpl&>(other).mesh_ptr;
+            return mesh_ptr == static_cast<const IteratorImpl&>(other).mesh_ptr;
         }
         
         virtual IteratorImpl* clone() const {
@@ -161,7 +163,7 @@ struct Mesh {
     /// @return iterator at first point
     virtual Iterator begin() = 0;
 
-    /// @return iterate just after last point
+    /// @return iterator just after last point
     virtual Iterator end() = 0;
 
 };

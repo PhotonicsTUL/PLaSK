@@ -107,7 +107,7 @@ struct PolymorphicForwardIterator:
     template <class> friend class PolymorphicForwardIterator;
 
     bool equal(const PolymorphicForwardIterator<ImplT>& other) const {
-        return impl->equal(other.impl);
+        return impl->equal(*other.impl);
     }
 
     void increment() {

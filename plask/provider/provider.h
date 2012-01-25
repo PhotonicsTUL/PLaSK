@@ -68,17 +68,17 @@ TemperatureReceiver3d reciver;
 reciver = provider;     //connect
 @endcode
 
-@subsection providers_writing_easy Flexible (manual) way
-Little harder, but more flexible than using plask::ProviderFor and plask::ReceiverFor templates (described @ref providers_writing_easy "above") is writing class which:
+@subsection providers_writing_manual Flexible (manual) way
+Little harder, but more flexible than using plask::ProviderFor and plask::ReceiverFor templates (described @ref providers_writing_easy "above") is writing provider class which:
 - inherits from plask::Provider,
-- has operator(), which for some parameters (depends from your choice) return provided values.
+- has operator(), which for some parameters (depends from your choice) return provided value.
 
 Receiver class for your provider class still may be very easy obtain by plask::Receiver template. This template require only one parameter: type of provider.
 
 Example:
 @code
 //Provider type which multiple its argument by value
-struct ScalerProvider: plask::Provider {
+struct ScalerProvider: public plask::Provider {
     
     double scale;
     
@@ -93,11 +93,11 @@ struct ScalerProvider: plask::Provider {
 typedef Receiver<ScalerProvider> ScalerReceiver;
 
 //...
-//Use example:
-ScalerProvider sp;
+//Usage example:
+ScalerProvider sp(2.0);
 ScalerReceiver sr;
 sr = sp;        //connect
-assert(sr(2.0) == 4.0));
+assert(sr(3.0) == 6.0);
 @endcode
 */
 

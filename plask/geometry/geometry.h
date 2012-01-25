@@ -6,8 +6,8 @@ This file includes all plask geometry headers.
 */
 
 /**
-@section geometry Geometry
-@subsection geometry_about About
+@page geometry Geometry
+@section geometry_about About
 Geometry in PLaSK is represented by directed, acyclic graph which have geometry elements in vertexes (see plask::GeometryElement).
 Very often this graph is tree, in which each element has pointers to his children.
 Terminology (names) from trees theory are used in PLaSK (element C is child of P only if there is arc from P to C, and then P is called parent of C).
@@ -24,7 +24,7 @@ Each geometry element (vertex) has local coordinate system (in 2d or 3d space).
 Systems of all geometries elements which use Cartesian systems have common direction of axis.
 All 2d elements lies in tran-up (or R-Z) plane.
 
-@subsection geometry_paths Paths
+@section geometry_paths Paths
 You can add each geometry element object to graph more than one time.
 If you do this, you will sometimes need to use paths to point concrete appearance of element (which is more than once) in graph.
 
