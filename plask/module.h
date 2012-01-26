@@ -8,7 +8,7 @@ This file includes base class for modules.
 
 /** @page modules Modules
 
-@section about About modules
+@section modules_about About modules
 Modules in PLaSK are calculations units. Each is represented by subclass of plask::Module.
 
 Each module has one or more input and one or more output realized by @ref providers "providers and receivers mechanism".
@@ -19,6 +19,11 @@ This @ref geometry "geometry element" defines (local) calculation space for modu
 
 Typically, each module also includes @ref meshes "mesh" which represent set of point (in calculation space) in which module calculate its result.
 If another module requests for data in points other than these includes in mesh, result can be @ref interpolation "interpolated".
+
+@section modules_use How modules are typically used?
+TODO
+
+Note that typically, modules are used from python scripts.
 
 @section modules_write How to write new a calculation module?
 To write module you should:
