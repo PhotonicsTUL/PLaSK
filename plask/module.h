@@ -9,6 +9,16 @@ This file includes base class for modules.
 /** @page modules Modules
 
 @section about About modules
+Modules in PLaSK are calculations units. Each is represented by subclass of plask::Module.
+
+Each module has one or more input and one or more output realized by @ref providers "providers and receivers mechanism".
+This allows for communication between modules.
+
+Typically, each module is connected with @ref geometry "geometry element" which describe physical property (mainly materials) of laser or its fragment.
+This @ref geometry "geometry element" defines (local) calculation space for module.
+
+Typically, each module also includes @ref meshes "mesh" which represent set of point (in calculation space) in which module calculate its result.
+If another module requests for data in points other than these includes in mesh, result can be @ref interpolation "interpolated".
 
 @section modules_write How to write new a calculation module?
 To write module you should:
@@ -48,7 +58,7 @@ struct MyModule: public plask::Module {
         //...here calculate c...
         //values of a and b can be get by a() and b()
         
-        //say receivers of c that it has changed:
+        //say receivers of c that it has been changed:
         c.fireChanged();
     }
     
