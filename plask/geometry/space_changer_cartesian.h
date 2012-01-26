@@ -40,14 +40,14 @@ private:
     /**
      * Convert vector from this space (3d) to child space (2d).
      * @param p vector in space of this (3d)
-     * @return @a p without lon coordinate, vector in space of child (2d)
+     * @return @p p without lon coordinate, vector in space of child (2d)
      */
     static ChildVec childVec(const DVec& p) { return ChildVec(p.tran, p.up); }
 
     /**
      * Convert rectangle from this space (3d) to child space (2d).
      * @param r rectangle in space of this (3d)
-     * @return @a r rectangle in space of child (2d)
+     * @return @p r rectangle in space of child (2d)
      */
     static ChildRect childRect(const Rect& r) { return ChildRect(childVec(r.lower), childVec(r.upper)); }
 
@@ -62,7 +62,7 @@ private:
     /**
      * Convert rectangle from child space (2d) to this space (3d).
      * @param r rectangle in space of child (2d)
-     * @return rectangle in space of this (3d), in lon direction: from 0.0 to @a length
+     * @return rectangle in space of this (3d), in lon direction: from 0.0 to @p length
      */
     Rect parentRect(const ChildRect& r) const { return Rect(parentVec(r.lower, 0.0), parentVec(r.upper, length)); }
 };

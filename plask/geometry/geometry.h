@@ -108,7 +108,7 @@ plask::PathHints consist of, zero or more, hints (objects of plask::PathHints::H
 Each hint is a pair which show arc (on path) from container to one child of this container.
 Hints are returned by methods which adds new elements to containers, and can be added to plask::PathHints by a += operator:
 @code
-PathHints mypath;
+plask::PathHints mypath;
 //...
 mypath += container_element.add(child_element);
 container_element.add(child_element);

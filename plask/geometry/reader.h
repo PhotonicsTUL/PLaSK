@@ -49,7 +49,7 @@ struct AxisNames {
         }
         
         /**
-         * Add axis names to register using as keys given @a name and c0_name + c1_name + c2_name.
+         * Add axis names to register using as keys given @p name and c0_name + c1_name + c2_name.
          * @param c0_name, c1_name, c2_name axis names
          * @param name name of axis names, register key
          * @tparam Param1 std::string or const char*
@@ -99,7 +99,7 @@ struct AxisNames {
     /**
      * Get axis index by name.
      * @param name axis name
-     * @return index (from 0 to 2) of axis with given @a name or 3 if no axis with given name
+     * @return index (from 0 to 2) of axis with given @p name or 3 if no axis with given name
      */
     std::size_t operator[](const std::string& name) const;
     
@@ -155,7 +155,7 @@ struct GeometryReader {
     /**
      * Get current axis name.
      * @param axis_index axis index
-     * @return name of axis which have an @a axis_index
+     * @return name of axis which have an @p axis_index
      */
     std::string getAxisName(std::size_t axis_index) { return axisNames->operator [](axis_index); }
 
@@ -201,7 +201,7 @@ struct GeometryReader {
     GeometryReader(GeometryManager& manager, XMLReader& source);
 
     /**
-     * Read geometry element from @a source and add it GeometryManager structures.
+     * Read geometry element from @p source and add it GeometryManager structures.
      *
      * Typically it creates new geometry element using elementReaders,
      * but it also support references and can return existing elements.

@@ -46,16 +46,16 @@ struct Rect2d {
     Rect2d(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
 
     /**
-     * Compare two rectangles, this and @a r.
+     * Compare two rectangles, @c this and @p r.
      * @param r rectangle to compare
-     * @return true only if this rectangle and @a p have equals coordinates
+     * @return true only if @c this rectangle and @p p have equals coordinates
      */
     bool operator==(const Rect2d& r) const;
 
     /**
-     * Compare two rectangles, this and @a r.
+     * Compare two rectangles, @c this and @p r.
      * @param r rectangle to compare
-     * @return true only if this rectangle and @a p don't have equals coordinates
+     * @return @c true only if @c this rectangle and @p p don't have equals coordinates
      */
     bool operator!=(const Rect2d& r) const;
 
@@ -80,13 +80,13 @@ struct Rect2d {
     bool intersect(const Rect2d& other) const;
 
     /**
-     * Make this rectangle, the minimal one which include this and given point @a p.
+     * Make this rectangle, the minimal one which include @c this and given point @p p.
      * @param p point which should be inside rectangle
      */
     void include(const Vec<2,double>& p);
 
     /**
-     * Make this rectangle, the minimal one which include this and @a other rectangle.
+     * Make this rectangle, the minimal one which include @c this and @p other rectangle.
      * @param other point which should be inside rectangle
      */
     void include(const Rect2d& other);
@@ -94,25 +94,25 @@ struct Rect2d {
     /**
      * Get translated copy of this.
      * @param translation_vec translation vector
-     * @return this translated by @a translation_vec
+     * @return this translated by @p translation_vec
      */
     Rect2d translated(const Vec<2,double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
     
     /**
      * Get translated copy of this.
      * @param trasnalation_in_up_dir translation in up direction
-     * @return this translated up by @a trasnalation_in_up_dir
+     * @return this translated up by @p trasnalation_in_up_dir
      */
     Rect2d translatedUp(const double trasnalation_in_up_dir) const { return translated(vec(0.0, trasnalation_in_up_dir)); }
     
     /**
-     * Translate this by @a translation_vec.
+     * Translate this by @p translation_vec.
      * @param translation_vec translation vector
      */
     void translate(const Vec<2,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
     
     /**
-     * Translate this up by @a trasnalation_in_up_dir.
+     * Translate this up by @p trasnalation_in_up_dir.
      * @param trasnalation_in_up_dir translation in up direction
      */
     void translateUp(const double trasnalation_in_up_dir) { lower.up += trasnalation_in_up_dir; upper.up += trasnalation_in_up_dir; }
@@ -166,16 +166,16 @@ struct Rect3d {
     Rect3d(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
 
     /**
-     * Compare two rectangles, this and @a r.
+     * Compare two rectangles, @c this and @p r.
      * @param r rectangle to compare
-     * @return true only if this rectangle and @a p have equals coordinates
+     * @return true only if @c this rectangle and @p p have equals coordinates
      */
     bool operator==(const Rect3d& r) const;
 
     /**
-     * Compare two rectangles, this and @a r.
+     * Compare two rectangles, @c this and @p r.
      * @param r rectangle to compare
-     * @return true only if this rectangle and @a p don't have equals coordinates
+     * @return true only if @c this rectangle and @p p don't have equals coordinates
      */
     bool operator!=(const Rect3d& r) const;
 
@@ -200,13 +200,13 @@ struct Rect3d {
     bool intersect(const Rect3d& other) const;
 
     /**
-     * Make this rectangle, the minimal one which include this and given point @a p.
+     * Make this rectangle, the minimal one which include @c this and given point @p p.
      * @param p point which should be inside rectangle
      */
     void include(const Vec<3,double>& p);
 
     /**
-     * Make this rectangle, the minimal one which include this and @a other rectangle.
+     * Make this rectangle, the minimal one which include @c this and @p other rectangle.
      * @param other point which should be inside rectangle
      */
     void include(const Rect3d& other);
@@ -216,14 +216,14 @@ struct Rect3d {
     /**
      * Get translated copy of this.
      * @param trasnalation_in_up_dir translation in up direction
-     * @return this translated up by @a trasnalation_in_up_dir
+     * @return @c this translated up by @p trasnalation_in_up_dir
      */
     Rect3d translatedUp(const double trasnalation_in_up_dir) const { Rect3d r = *this; r.translateUp(trasnalation_in_up_dir); return r; }
     
     void translate(const Vec<3,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
     
     /**
-     * Translate this up by @a trasnalation_in_up_dir.
+     * Translate this up by @p trasnalation_in_up_dir.
      * @param trasnalation_in_up_dir translation in up direction
      */
     void translateUp(const double trasnalation_in_up_dir) { lower.up += trasnalation_in_up_dir; upper.up += trasnalation_in_up_dir; }
