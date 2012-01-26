@@ -7,19 +7,54 @@ This file includes base class for modules.
 */
 
 /** @page modules Modules
- * @section about About modules
- * @section modules_write How to write new a calculation module?
- * To write module you should:
- * -# Write new class which inherit from plask::Module.
- * -# Implement plask::Module::getName method. This method should just return name of your module.
- * -# Place in your class public providers and receivers fields:
- *    - providers fields allows your module to provide results to another modules or to reports,
- *    - receivers field are used to getting data which are required for calculations from another modules (precisely, from its providers),
- *    - you don't have to care about connection between providers and corresponding receivers (this is done externally),
- *    - more details can be found in @ref providers.
- * -# Typically, implement plask::Module::calculate method. This method is a place for your calculation code. You don't have to implement it if you don't need to do any calculations.
- * -# Optionally implement plask::Module::getDescription method. This method should just return description of your module.
- */
+
+@section about About modules
+
+@section modules_write How to write new a calculation module?
+To write module you should:
+-# Write new class which inherit from plask::Module.
+-# Implement plask::Module::getName method. This method should just return name of your module.
+-# Place in your class public providers and receivers fields:
+    - providers fields allows your module to provide results to another modules or to reports,
+    - receivers field are used to getting data which are required for calculations from another modules (precisely, from its providers),
+    - you don't have to care about connection between providers and corresponding receivers (this is done externally),
+    - more details can be found in @ref providers.
+-# Typically, implement calculate method. This method is a place for your calculation code. You don't have to implement it if you don't need to do any calculations.
+-# Optionally implement plask::Module::getDescription method. This method should just return description of your module.
+
+Example:
+@code
+#include <plask/plask.hpp>
+
+struct MyModule: public plask::Module {
+    
+    ReceiverAType a;
+    
+    ReceiverBType b;
+    
+    ProviderCType c;
+    
+    virtual std::string getName() const {
+        return "My module name";
+    }
+    
+    virtual std::string getDescription() const {
+        return "Calculate c using a and b.";
+    }
+    
+    void calculateC() {
+        if (!a.changed && !b.changed)   //if input doesn't changed after last calculation
+            return;                     //we don't have to update c
+        //...here calculate c...
+        //values of a and b can be get by a() and b()
+        
+        //say receivers of c that it has changed:
+        c.fireChanged();
+    }
+    
+};
+@endcode
+*/
 
 #include <string>
 
@@ -27,6 +62,8 @@ namespace plask {
 
 /**
  * Base class for all modules.
+ * 
+ * @see @ref modules
  */
 struct Module {
 
@@ -45,14 +82,14 @@ struct Module {
      */
     virtual std::string getDescription() const { return ""; }
 
-    /**
+    /*
      * Make calculations. Place for calculation code in inherited classes.
      *
      * Can throw exception in case of errors.
      *
      * By default do nothing.
      */
-    virtual void calculate() {}
+    //virtual void calculate() {}
 
 };
 

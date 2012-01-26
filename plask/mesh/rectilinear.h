@@ -38,20 +38,20 @@ public:
     const_iterator end() const { return points.end(); }
 
     /**
-     * Find position where @a to_find point could be insert.
+     * Find position where @p to_find point could be insert.
      * @param to_find point to find
      * @return First position where to_find could be insert.
-     *         Refer to value equal to @a to_find only if @a to_find is already in mesh.
+     *         Refer to value equal to @p to_find only if @p to_find is already in mesh.
      *         Can be equal to end() if to_find is higher than all points in mesh
      *         (in such case returned iterator can't be dereferenced).
      */
     const_iterator find(double to_find) const;
 
     /**
-     * Find index where @a to_find point could be insert.
+     * Find index where @p to_find point could be insert.
      * @param to_find point to find
      * @return First index where to_find could be insert.
-     *         Refer to value equal to @a to_find only if @a to_find is already in mesh.
+     *         Refer to value equal to @p to_find only if @p to_find is already in mesh.
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
     std::size_t findIndex(double to_find) const { return find(to_find) - begin(); }
@@ -75,7 +75,7 @@ public:
      * Compares meshes.
      * It use algorithm which has linear time complexity.
      * @param to_compare mesh to compare
-     * @return @c true only if this mesh and @a to_compare represents the same set of points
+     * @return @c true only if this mesh and @p to_compare represents the same set of points
      */
     bool operator==(const RectilinearMesh1d& to_compare) const;
 
@@ -125,7 +125,7 @@ public:
     /**
      * Get point by index.
      * @param index index of point, from 0 to size()-1
-     * @return point with given @a index
+     * @return point with given @p index
      */
     const double& operator[](std::size_t index) const { return points[index]; }
 
@@ -138,7 +138,7 @@ public:
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate
-     * @return interpolated value in point @a point
+     * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type;
@@ -204,7 +204,7 @@ struct RectilinearMesh2d {
         * - if its set: (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
         * - if its not set: (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
         * @param index index of point, from 0 to size()-1
-        * @return point with given @a index
+        * @return point with given @p index
         */
         Vec<2,double> operator[](std::size_t index) const {
             if (changed) {
@@ -385,7 +385,7 @@ struct RectilinearMesh2d {
      * Get point with given mesh index.
      * Points are in order: (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
      * @param index index of point, from 0 to size()-1
-     * @return point with given @a index
+     * @return point with given @p index
      */
     Vec<2,double> operator[](std::size_t index) const {
         const std::size_t c0_size = c0.size();
@@ -414,7 +414,7 @@ struct RectilinearMesh2d {
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate
-     * @return interpolated value in point @a point
+     * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
@@ -667,7 +667,7 @@ struct RectilinearMesh3d {
      * Get point with given mesh index.
      * Points are in order: (c0[0], c1[0], c2[0]), (c0[1], c1[0], c2[0]), ..., (c0[c0.size-1], c1[0], c2[0]), (c0[0], c1[1], c2[0]), ..., (c0[c0.size()-1], c1[c1.size()-1], c2[c2.size()-1])
      * @param index index of point, from 0 to size()-1
-     * @return point with given @a index
+     * @return point with given @p index
      */
     Vec<3, double> operator[](std::size_t index) const {
         const std::size_t i0 = index0(index);
@@ -699,7 +699,7 @@ struct RectilinearMesh3d {
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate
-     * @return interpolated value in point @a point
+     * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;

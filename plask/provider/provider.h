@@ -27,10 +27,7 @@ Each module should have one provider class field for each physical property whic
 available for other modules and reports and it also should have one receiver field for each physical
 property which value it wants to know (needs for calculations).
 
-Example:
-@code
-TODO
-@endcode
+See @ref modules_write for more details and examples.
 
 @section providers_writing Writing new providers and receivers types
 
