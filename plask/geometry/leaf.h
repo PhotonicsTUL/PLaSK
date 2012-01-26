@@ -10,7 +10,7 @@ This file includes geometry elements leafs classes.
 namespace plask {
 
 /**
-Represent figure which, depends from @a dim is:
+Represent figure which, depends from @p dim is:
 - for dim = 2 - rectangle,
 - for dim = 3 - cuboid.
 

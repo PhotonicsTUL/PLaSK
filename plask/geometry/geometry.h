@@ -123,6 +123,18 @@ container_element.remove(mypath);
 container_element.remove(child_element);
 @endcode
 
+@section geometry_newelements Writing new geometry elements
+
+To write new geometry element you should:
+-# write a class which directly or indirectly inherit from plask::GeometryElement and implement all its abstract methods,
+-# write a reader function which allow to read your element from XML (see plask::GeometryReader and plask::GeometryReader::element_read_f for details),
+-# register your reader in global registry, creating global instance of plask::GeometryReader::RegisterElementReader class.
+
+Good base classes for geometries elements are, for example:
+- plask::GeometryElementLeaf instantiations - for leaf elements,
+- plask::GeometryElementTransform or plask::GeometryElementChangeSpace instantiations - for transformation elements,
+- plask::GeometryElementContainer instantiations - for containers,
+- plask::GeometryElementD instantiations - generic.
 */
 
 #include "leaf.h"
