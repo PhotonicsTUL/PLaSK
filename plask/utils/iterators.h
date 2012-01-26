@@ -62,9 +62,9 @@ struct PolymorphicForwardIteratorImpl {
 /**
 Polymorphic, forward iterator.
 
-Hold and delegate all calls to implementation object which is a specialization of PolymorficForwardIteratorImpl template.
+Hold and delegate all calls to implementation object which is a instantiation of PolymorficForwardIteratorImpl template.
 
-@tparam ImplT specialization of PolymorphicForwardIteratorImpl
+@tparam ImplT instantiation of PolymorphicForwardIteratorImpl
 */
 template <typename ImplT>
 struct PolymorphicForwardIterator:
@@ -240,7 +240,7 @@ inline FunctorIndexedIterator<Functor> makeFunctorIndexedIterator(Functor f, std
 }
 
 /**
- * ReindexedContainer specialization is class which objects have reference to oryginal container and operator[].
+ * ReindexedContainer instantiation is class which objects have reference to oryginal container and operator[].
  * All calls to operator[] are delegated to oryginal container, but argument of call is chenged (reindexed) using formula: firstIndex + given_index * delta
  * where:
  * - given_index is call parameter,
@@ -269,7 +269,7 @@ struct ReindexedContainer {
 };
 
 /**
- * Helper function to create ReindexedContainer specialization objects.
+ * Helper function to create ReindexedContainer instantiation objects.
  * @param oryginalContainer, firstIndex, delta ReindexedContainer constructor parameters
  * @return ReindexedContainer<ContainerType>(oryginalContainer, firstIndex, delta)
  * @tparam ContainerType type of oryginal container

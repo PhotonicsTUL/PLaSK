@@ -39,7 +39,7 @@ The easiest way to create new provider and corresponding receiver types is to wr
 tag class and use it to specialize plask::ProviderFor and plask::ReceiverFor templates.
 
 Physical property tag class is an class which only has static fields and typedefs which describe
-physical property. It can be easy obtain by subclass specialization of one of templates:
+physical property. It can be easy obtain by subclass instantiation of one of templates:
 - plask::Property - allow to obtain all possible physical properties tags classes, but require many parameters (not recommended);
 - plask::SingleValueProperty - allow to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
 - plask::FieldProperty - allow to obtain tags for properties described by values in points described by mesh (doesn't use interpolation), require only one parameter - type of provided value;
@@ -302,7 +302,7 @@ protected:
 };
 
 /**
- * Specialization of this template is abstract base class for provider which provide one value (for example one double).
+ * Instantiation of this template is abstract base class for provider which provide one value (for example one double).
  * @tparam ValueT type of provided value
  */
 template <typename ValueT>
@@ -322,7 +322,7 @@ struct SingleValueProvider: public Provider {
 //TODO typedef for SingleValueReceiver (GCC 4.7 needed)
 
 /**
- * Specialization of this template is abstract base class for provider which provide values in points describe by mesh
+ * Instantiation of this template is abstract base class for provider which provide values in points describe by mesh
  * and don't use interpolation.
  */
 template <typename ValueT, typename SpaceType>
@@ -342,7 +342,7 @@ struct OnMeshProvider: public Provider {
 //TODO typedef for OnMeshReceiver (GCC 4.7 needed)
 
 /**
- * Specialization of this template is abstract base class for provider class which provide values in points describe by mesh
+ * Instantiation of this template is abstract base class for provider class which provide values in points describe by mesh
  * and use interpolation.
  */
 template <typename ValueT, typename SpaceType>
@@ -448,7 +448,7 @@ enum PropertyType {
 /**
  * Helper class which makes easiest to define property tags class.
  *
- * Property tags class are used for Provider and Receiver templates specializations.,
+ * Property tags class are used for ProviderFor and ReceiverFor templates instantiations.,
  *
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).

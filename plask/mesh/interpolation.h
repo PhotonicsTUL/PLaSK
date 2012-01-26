@@ -66,9 +66,7 @@ In such case, when linear interpolation from the source mesh MyMeshType is reque
 the compiler will use the second implementation to interpolate vectors of doubles
 and the first one in all other cases.
 
-The code of the function should iterate over all the points of the @a dst_mesh and fill the @a dst_vec with the interpolated values in the respective points.
-
-TODO: write more explanations, and give some examples
+Typically, the code of the function should iterate over all the points of the @a dst_mesh and fill the @a dst_vec with the interpolated values in the respective points.
 */
 
 #include <typeinfo>  // for 'typeid'

@@ -14,11 +14,12 @@ GeometryManager::~GeometryManager() {
     //for (GeometryElement* e: elements) delete e;
 }
 
-shared_ptr<GeometryElement> GeometryManager::getElement(const std::string &name) {
-    return map_find(namedElements, name, shared_ptr<GeometryElement>());
+shared_ptr<GeometryElement> GeometryManager::getElement(const std::string &name) const {
+    auto result_it = namedElements.find(name);
+    return result_it != namedElements.end() ? result_it->second : shared_ptr<GeometryElement>();
 }
 
-shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &name) {
+shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &name) const {
     shared_ptr<GeometryElement> result = getElement(name);
     if (result == nullptr) throw NoSuchGeometryElement(name);
     return result;

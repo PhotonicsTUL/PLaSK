@@ -98,17 +98,17 @@ struct Vec<2, T> {
     const_iterator end() const { return components + 2; }
 
     /**
-     * Compare two vectors, this and @a p.
+     * Compare two vectors, this and @p p.
      * @param p vector to compare
-     * @return true only if this vector and @a p have equals coordinates
+     * @return true only if this vector and @p p have equals coordinates
      */
     template <typename OtherT>
     bool operator==(const Vec<2,OtherT>& p) const { return p.c0 == c0 && p.c1 == c1; }
 
     /**
-     * Compare two vectors, this and @a p.
+     * Compare two vectors, this and @p p.
      * @param p vector to compare
-     * @return true only if this vector and @a p don't have equals coordinates
+     * @return true only if this vector and @p p don't have equals coordinates
      */
     template <typename OtherT>
     bool operator!=(const Vec<2,OtherT>& p) const { return p.c0 != c0 || p.c1 != c1; }
@@ -134,7 +134,7 @@ struct Vec<2, T> {
     }
 
     /**
-     * Calculate sum of two vectors, @a this and @a to_add.
+     * Calculate sum of two vectors, @c this and @p to_add.
      * @param to_add vector to add, can have different data type (than result type will be found using C++ types promotions rules)
      * @return vectors sum
      */
@@ -144,7 +144,7 @@ struct Vec<2, T> {
     }
 
     /**
-     * Increase coordinates of this vector by coordinates of other vector @a to_add.
+     * Increase coordinates of this vector by coordinates of other vector @p to_add.
      * @param to_add vector to add
      * @return *this (after increase)
      */
@@ -155,7 +155,7 @@ struct Vec<2, T> {
     }
 
     /**
-     * Calculate difference of two vectors, @a this and @a to_sub.
+     * Calculate difference of two vectors, @c this and @p to_sub.
      * @param to_sub vector to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
      * @return vectors difference
      */
@@ -165,7 +165,7 @@ struct Vec<2, T> {
     }
 
     /**
-     * Decrease coordinates of this vector by coordinates of other vector @a to_sub.
+     * Decrease coordinates of this vector by coordinates of other vector @p to_sub.
      * @param to_sub vector to subtract
      * @return *this (after decrease)
      */
@@ -176,7 +176,7 @@ struct Vec<2, T> {
     }
 
     /**
-     * Calculate this vector multiplied by scalar @a scale.
+     * Calculate this vector multiplied by scalar @p scale.
      * @param scale scalar
      * @return this vector multiplied by scalar
      */
@@ -186,7 +186,7 @@ struct Vec<2, T> {
     }
 
     /**
-     * Multiple coordinates of this vector by @a scalar.
+     * Multiple coordinates of this vector by @p scalar.
      * @param scalar scalar
      * @return *this (after scale)
      */
@@ -197,14 +197,14 @@ struct Vec<2, T> {
     }
 
     /**
-     * Calculate this vector divided by scalar @a scale.
+     * Calculate this vector divided by scalar @p scale.
      * @param scale scalar
      * @return this vector divided by scalar
      */
     Vec<2,T> operator/(const T scale) const { return Vec<2,T>(c0 / scale, c1 / scale); }
 
     /**
-     * Divide coordinates of this vector by @a scalar.
+     * Divide coordinates of this vector by @p scalar.
      * @param scalar scalar
      * @return *this (after divide)
      */
@@ -240,38 +240,38 @@ struct Vec<2, T> {
  * @return conjugate vector
  */
 template <typename T>
-inline Vec<2,T> conj(const Vec<2,T>& v) { return Vec<2,T> {conj(v.c0), conj(v.c1)}; }
+inline Vec<2, T> conj(const Vec<2, T>& v) { return Vec<2, T> {conj(v.c0), conj(v.c1)}; }
 
 /**
- * Compute dot product of two vectors @a v1 and @a v2
+ * Compute dot product of two vectors @p v1 and @p v2
  * @param v1 first vector
  * @param v2 second vector
  * @return dot product v1·v2
  */
 template <typename T1, typename T2>
-inline auto dot(const Vec<2,T1>& v1, const Vec<2,T2>& v2) -> decltype(v1.c0*v2.c0) {
+inline auto dot(const Vec<2, T1>& v1, const Vec<2, T2>& v2) -> decltype(v1.c0*v2.c0) {
     return v1.c0 * v2.c0 + v1.c1 * v2.c1;
 }
 
 /**
- * Compute dot product of two vectors @a v1 and @a v2
+ * Compute dot product of two vectors @p v1 and @p v2
  * @param v1 first vector
  * @param v2 second vector
  * @return dot product v1·v2
  */
 template <>
-inline auto dot(const Vec<2,double>& v1, const Vec<2,complex<double>>& v2) -> decltype(v1.c0*v2.c0) {
+inline auto dot(const Vec<2, double>& v1, const Vec<2, complex<double>>& v2) -> decltype(v1.c0*v2.c0) {
     return v1.c0 * conj(v2.c0) + v1.c1 * conj(v2.c1);
 }
 
 /**
- * Compute dot product of two vectors @a v1 and @a v2
+ * Compute dot product of two vectors @p v1 and @p v2
  * @param v1 first vector
  * @param v2 second vector
  * @return dot product v1·v2
  */
 template <>
-inline auto dot(const Vec<2,complex<double>>& v1, const Vec<2,complex<double>>& v2) -> decltype(v1.c0*v2.c0) {
+inline auto dot(const Vec<2, complex<double>>& v1, const Vec<2,complex<double>>& v2) -> decltype(v1.c0*v2.c0) {
     return v1.c0 * conj(v2.c0) + v1.c1 * conj(v2.c1);
 }
 
@@ -280,8 +280,8 @@ inline auto dot(const Vec<2,complex<double>>& v1, const Vec<2,complex<double>>& 
  * @param c0, c1 vector coordinates.
  */
 template <typename T>
-inline Vec<2,T> vec(const T c0__tran, const T c1__up) {
-    return Vec<2,T>(c0__tran, c1__up);
+inline Vec<2, T> vec(const T c0__tran, const T c1__up) {
+    return Vec<2, T>(c0__tran, c1__up);
 }
 
 } //namespace plask

@@ -26,10 +26,10 @@ inline double abs2<3,dcomplex>(const Vec<3,dcomplex>& v) { return dot(v,v).real(
 #endif // DOXYGEN
 
 /**
- * Multiple vector @a v by scalar @a scale.
+ * Multiple vector @p v by scalar @p scale.
  * @param scale scalar
  * @param v vector
- * @return vector multiplied by scalar
+ * @return vector @p v multiplied by @p scalar
  */
 template <int dim, typename T, typename OtherT>
 inline auto operator*(const OtherT& scale, const Vec<dim,T>& v) -> decltype(v*scale) {

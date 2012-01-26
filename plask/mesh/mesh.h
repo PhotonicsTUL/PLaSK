@@ -9,7 +9,7 @@ This file includes base classes for meshes.
 /** @page meshes Meshes
 @section meshes_about About meshes
 The mesh represents (ordered) set of points in 2d or 3d space. All meshes in PLaSK implements (inherits from)
-specialization of plask::Mesh template interface.
+instantiation of plask::Mesh template interface.
 
 Typically, there is some data associated with points in mesh.
 In PLaSK, all this data is not stored in the mesh class, hence they must be stored separately.
@@ -37,7 +37,7 @@ There are two typical approaches to implementing new types of meshes:
 @see @ref interpolation_write
 
 @subsection meshes_write_adapters Using adapters to generate plask::Mesh implementation
-You can specialize adapter template to generate class which inheriting from plask::Mesh specialization.
+You can specialize adapter template to generate class which inheriting from plask::Mesh instantiation.
 
 To do this, you have to implement internal mesh representation class (see @ref meshes_internal) first.
 Your class must fulfill adapter templates requirements (it is one of adapter template parameters),
@@ -170,7 +170,7 @@ struct Mesh {
 
 
 /**
-Template which specialization is class inherited from plask::Mesh (is Mesh implementation).
+Template which instantiation is class inherited from plask::Mesh (is Mesh implementation).
 
 It held @a internal mesh (of type InternalMeshType) and use it to implement plask::Mesh methods.
 All constructor and -> calls are delegated to the @a internal mesh.

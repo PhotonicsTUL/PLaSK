@@ -20,9 +20,10 @@ namespace plask {
 
 /**
  * Geometry manager features:
- * - read/write geometries
- * - reserve and free memory needed by geometry structure
- * - allow access to geometry elements (also by names)
+ * - read/write geometries,
+ * - allow for access to geometry elements (also by names).
+ * 
+ * @see @ref geometry
  */
 struct GeometryManager {
 
@@ -49,9 +50,18 @@ struct GeometryManager {
     /**
      * Get element with given name.
      * @param name name of element
-     * @return element with given name or nullptr if there is no element with given name
+     * @return element with given @p name or @c nullptr if there is no element with given name
      */
-    shared_ptr<GeometryElement> getElement(const std::string& name);
+    shared_ptr<GeometryElement> getElement(const std::string& name) const;
+    
+    /**
+     * Call getElement(name) and try dynamic cast it to @a RequiredElementType.
+     * @param name name of element
+     * @return element (casted to RequiredElementType) with given @p name or @c nullptr if there is no element with given name or element with given name is not of type @a RequiredElementType
+     * @tparam RequiredElementType required type of element
+     */
+    template <typename RequiredElementType>
+    shared_ptr<RequiredElementType> getElement(const std::string& name) const;
     
     /**
      * Get element with given name or throw exception if element with given name does not exist.
@@ -59,7 +69,18 @@ struct GeometryManager {
      * @return element with given name
      * @throw NoSuchGeometryElement if there is no element with given name
      */
-    shared_ptr<GeometryElement> requireElement(const std::string& name);
+    shared_ptr<GeometryElement> requireElement(const std::string& name) const;
+    
+    /**
+     * Call requireElement(name) and try dynamic cast it to @a RequiredElementType.
+     * @param name name of element
+     * @return element (casted to RequiredElementType) with given @p name
+     * @tparam RequiredElementType required type of element
+     * @throw UnexpectedGeometryElementTypeException if requested element is not of type RequiredElementType
+     * @throw NoSuchGeometryElement if there is no element with given name
+     */
+    template <typename RequiredElementType>
+    shared_ptr<RequiredElementType> requireElement(const std::string& name) const;
     
     /**
      * Load geometry using XML reader.
@@ -95,6 +116,32 @@ struct GeometryManager {
      */
     void loadFromFile(const std::string& fileName);
 };
+
+//specialization for most types
+template <typename RequiredElementType>
+inline shared_ptr<RequiredElementType> GeometryManager::getElement(const std::string& name) const {
+    return dynamic_pointer_cast<RequiredElementType>(getElement(name));
+}
+
+//specialization for GeometryElement which doesn't required dynamic_cast
+template <>
+inline shared_ptr<GeometryElement> GeometryManager::getElement<GeometryElement>(const std::string& name) const {
+    return getElement(name);
+}
+
+//specialization for most types
+template <typename RequiredElementType>
+inline shared_ptr<RequiredElementType> GeometryManager::requireElement(const std::string& name) const {
+    shared_ptr<RequiredElementType> result = dynamic_pointer_cast<RequiredElementType>(requireElement(name));
+    if (!result) throw UnexpectedGeometryElementTypeException();
+    return result;
+}
+
+//specialization for GeometryElement which doesn't required dynamic_cast
+template <>
+inline shared_ptr<GeometryElement> GeometryManager::requireElement<GeometryElement>(const std::string& name) const {
+    return requireElement(name);
+}
 
 }	// namespace plask
 
