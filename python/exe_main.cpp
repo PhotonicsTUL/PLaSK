@@ -16,7 +16,7 @@ extern "C"
 void initplaskcore(void);
 
 // Initialize the binary modules and load the package from disc
-static void initPlaskModule(int argc, const char* argv[])
+static py::object initPlaskModule(int argc, const char* argv[])
 {
     // Initialize Python
     Py_Initialize();
@@ -24,7 +24,10 @@ static void initPlaskModule(int argc, const char* argv[])
     // Initialize the module plask
     if (PyImport_AppendInittab("plaskcore", &initplaskcore) != 0) throw plask::CriticalException("No plaskcore module");
 
+    py::object plaskcore = py::import("plaskcore");
+
     py::object sys = py::import("sys");
+    sys.attr("modules")["plask.plaskcore"] = plaskcore;
 
     // Add "." to the search path
     py::list path = py::list(sys.attr("path"));
@@ -39,6 +42,8 @@ static void initPlaskModule(int argc, const char* argv[])
         }
         sys.attr("argv") = sys_argv;
     }
+
+    return plaskcore;
 }
 
 //******************************************************************************

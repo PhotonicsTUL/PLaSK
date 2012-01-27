@@ -3,11 +3,11 @@
 
 #include <cmath>
 #include <boost/python.hpp>
-namespace py = boost::python;
-
 #include <plask/config.h>
 
 namespace plask { namespace python {
+
+namespace py = boost::python;
 
 // Some config variables
 struct Config

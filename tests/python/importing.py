@@ -19,7 +19,7 @@ class Importing(unittest.TestCase):
         for p in sys.path:
             print >>sys.stderr, "    %s" % p
         import plask
-        self.assertIn('plaskcore', sys.modules)
+        self.assertIn('plask.plaskcore', sys.modules)
 
         def use_plaskcore_directly(): print plaskcore.__file__
         self.assertRaises(NameError, use_plaskcore_directly)

@@ -55,9 +55,7 @@ def _init_ipython_session(argv=[]):
     import IPython
     if IPython.__version__ >= '0.11':
         from IPython.frontend.terminal import ipapp
-        # use an app to parse the command line, and init config
         app = ipapp.TerminalIPythonApp()
-        # don't draw IPython banner during initialization:
         app.display_banner = False
         app.initialize(argv)
         return app.shell
@@ -86,7 +84,7 @@ def _init_python_session():
                 readline.parse_and_bind('tab: complete')
 
                 if hasattr(readline, 'read_history_file'):
-                    history = os.path.expanduser('~/.sympy-history')
+                    history = os.path.expanduser('~/.plask-history')
 
                     try:
                         readline.read_history_file(history)

@@ -103,7 +103,7 @@ assert(sr(3.0) == 6.0);
 #include <functional>   // std::function
 #include <type_traits>  // std::is_same
 
-#include "../config.h"
+
 #include "../exceptions.h"
 #include "../mesh/mesh.h"
 #include "../mesh/interpolation.h"

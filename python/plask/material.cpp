@@ -9,7 +9,6 @@
 
 #include "../util/raw_constructor.h"
 
-
 namespace plask { namespace python {
 
 /**

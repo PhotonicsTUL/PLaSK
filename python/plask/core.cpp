@@ -1,4 +1,5 @@
 #include <plask/space.h>
+#include <plask/module.h>
 
 #include "globals.h"
 #include <numpy/arrayobject.h>
@@ -50,6 +51,13 @@ BOOST_PYTHON_MODULE(plaskcore)
     // Init subpackages
     initMaterial();
     initGeometry();
+
+    // Modules
+    py::class_<plask::Module, plask::shared_ptr<plask::Module>, boost::noncopyable>("Module", "Base class for all modules", py::no_init)
+        .add_property("name", &plask::Module::getName, "Full name of the module")
+        .add_property("description", &plask::Module::getDescription, "Short description of the module")
+    ;
+
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

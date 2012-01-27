@@ -8,7 +8,7 @@ This file includes base classes for geometries elements.
 
 #include <vector>
 
-#include "../config.h"
+
 #include "../material/material.h"
 #include "primitives.h"
 

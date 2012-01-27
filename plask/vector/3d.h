@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "../config.h"
+
 
 namespace plask {
 

@@ -5,8 +5,7 @@
 This file includes module which provide constant temperature.
 */
 
-#include "../module.h"
-#include "../provider/provider.h"
+#include <plask/plask.hpp>
 
 namespace plask {
 
@@ -20,7 +19,7 @@ struct ConstantTemperatureModule: public Module {
     }
 
     virtual std::string getDescription() const {
-        return "Return a constant temperature in all space";
+        return "Return a constant temperature in all spaces";
     }
 
 };

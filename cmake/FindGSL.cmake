@@ -10,7 +10,7 @@
 #  GSL_FOUND - system has GSL lib
 #  GSL_INCLUDE_DIRS - where to find headers
 #  GSL_LIBRARIES - full path to the libraries
-#  GSL_LIBRARY_DIRS, the directory where the GSL library is found.
+#  GSL_LIBRARY_DIRS - the directory where the GSL library is found.
 
 #  CMAKE_GSL_CXX_FLAGS  = Unix compiler flags for GSL, essentially "`gsl-config --cxxflags`"
 #  GSL_LINK_DIRECTORIES = link directories, useful for rpath on Unix

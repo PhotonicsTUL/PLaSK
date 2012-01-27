@@ -1,12 +1,13 @@
 #include <cmath>
 #include <boost/python.hpp>
-namespace py = boost::python;
 
 #include <plask/config.h>
 #include <plask/geometry/manager.h>
 #include <plask/geometry/leaf.h>
 
 namespace plask { namespace python {
+
+namespace py = boost::python;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

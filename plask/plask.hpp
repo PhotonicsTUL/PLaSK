@@ -48,7 +48,7 @@ You should start reading from section \subpage modules "How to implement an own 
 - \subpage geometry "All about geometry."
 */
 
-#include "config.h"
+#include <plask/config.h>
 #include "exceptions.h"
 #include "module.h"
 #include "space.h"
@@ -74,7 +74,5 @@ You should start reading from section \subpage modules "How to implement an own 
 
 #include "provider/provider.h"
 #include "provider/temperature.h"
-
-#include "module/constant_temperature.h"
 
 #endif // PLASK__PLASK_HPP
