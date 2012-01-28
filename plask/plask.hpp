@@ -2,7 +2,7 @@
 #define PLASK__PLASK_HPP
 
 /** @file
-This file allows for easy include all plask futures.
+This file allows for easy include all plask features.
 
 It also includes manual main page in doxygen format.
 

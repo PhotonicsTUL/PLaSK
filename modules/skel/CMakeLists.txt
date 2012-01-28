@@ -1,6 +1,7 @@
-#
-# This is a default module CMake file.
-# In most cases you should be able to use it without modifications.
+#/// \file
+#///  This is a default module CMake file.
+#///
+#/// In most cases you should be able to use it without modifications.
 #
 
 # Setup everything necessary

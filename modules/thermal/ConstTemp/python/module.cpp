@@ -3,7 +3,7 @@ namespace py = boost::python;
 
 #include "../constant_temperature.h"
 
-BOOST_PYTHON_MODULE(constant_temperature)
+BOOST_PYTHON_MODULE(ConstTemp)
 {
     py::class_<plask::ConstantTemperatureModule, plask::shared_ptr<plask::ConstantTemperatureModule>, py::bases<plask::Module>>("ConstantTemperature",
         "Module providing constant temperature");

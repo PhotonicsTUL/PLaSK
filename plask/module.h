@@ -27,46 +27,62 @@ Note that typically, modules are used from python scripts.
 
 @section modules_write How to write new a calculation module?
 To write module you should:
+-# If you write an official module for PLaSK, create a subdirectory streucture in directory modules. The subdirectories
+   in modules should have a form \b modules/category/your_module, e.g. \b modules/optical/FDTD.
+   It is also possible to write fully external modules by PLaSK users, using the descpription below (TODO).
+-# Copy modules/skel/CMakeLists.txt from to your subdirectory. You may edit the copied file to suit your needs.
+-# By default all the sources should be placed flat in your module subdirectory and the Python interface in the subdirectory
+   \b your_module/python.
+
+Once you have your source tree set up, do the following:
 -# Write new class which inherit from plask::Module.
 -# Implement plask::Module::getName method. This method should just return name of your module.
 -# Place in your class public providers and receivers fields:
     - providers fields allows your module to provide results to another modules or to reports,
-    - receivers field are used to getting data which are required for calculations from another modules (precisely, from its providers),
+    - receivers field are used to getting data which are required for calculations from another modules
+      (precisely, from its providers),
     - you don't have to care about connection between providers and corresponding receivers (this is done externally),
     - more details can be found in @ref providers.
--# Typically, implement calculate method. This method is a place for your calculation code. You don't have to implement it if you don't need to do any calculations.
+-# Typically, implement calculate method. This method is a place for your calculation code.
+   You don't have to implement it if you don't need to do any calculations. You can also write more methods performing
+   different calculations, however, you need to clearly document them.
 -# Optionally implement plask::Module::getDescription method. This method should just return description of your module.
+-# Finally write the Python interface to your class using Boost Python. See the Boos Python documentation or take a look into
+   modules/skel/python/module.cpp (for your convenience we have provided some macros that will faciliate creation
+   of Python interface).
+-# (TODO: in future do something to make the module available in GUI)
+
 
 Example:
 @code
 #include <plask/plask.hpp>
 
 struct MyModule: public plask::Module {
-    
+
     ReceiverAType a;
-    
+
     ReceiverBType b;
-    
+
     ProviderCType c;
-    
+
     virtual std::string getName() const {
         return "My module name";
     }
-    
+
     virtual std::string getDescription() const {
         return "Calculate c using a and b.";
     }
-    
+
     void calculateC() {
-        if (!a.changed && !b.changed)   //if input doesn't changed after last calculation
-            return;                     //we don't have to update c
-        //...here calculate c...
-        //values of a and b can be get by a() and b()
-        
-        //say receivers of c that it has been changed:
+        if (!a.changed && !b.changed)   // if input doesn't changed after last calculation
+            return;                     // we don't have to update c
+        // ...here calculate c...
+        // values of a and b can be get by a() and b()
+
+        // say receivers of c that it has been changed:
         c.fireChanged();
     }
-    
+
 };
 @endcode
 */
@@ -77,7 +93,7 @@ namespace plask {
 
 /**
  * Base class for all modules.
- * 
+ *
  * @see @ref modules
  */
 struct Module {

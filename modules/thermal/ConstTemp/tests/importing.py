@@ -11,6 +11,6 @@ class ConstTempImporting(unittest.TestCase):
 
     def testImporting(self):
         '''Check if module can be imported is present'''
-        from plask.thermal.constant_temperature import ConstantTemperature
+        from plask.thermal.ConstTemp import ConstantTemperature
         mod = ConstantTemperature()
         self.assertEqual(mod.name, "Constant Temperature")
