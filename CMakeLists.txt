@@ -40,7 +40,8 @@ message(STATUS "PLaSK version ${VERSION}")
 # ---------- Configurable options --------------------------------------------
 include(CMakeDependentOption)
 
-option(BUILD_SHARED_LIBS "Build shared library." OFF)
+option(BUILD_SHARED_LIBS "Build shared library." ON)
+option(BUILD_SHARED_MODULE_LIBS "Build shared libraries for modules." OFF)
 
 option(BUILD_DOCUMENTATION "Build doxygen documentation." OFF)
 
@@ -141,6 +142,31 @@ if (BUILD_PYTHON)
 
 endif(BUILD_PYTHON)
 
+# ---------- macro for testing --------------------------------------------
+macro(add_python_test test test_file)
+    if(BUILD_PYTHON_EXECUTABLE)
+        add_test(NAME python-builtin/${test}
+                 COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
+        if(WIN32)
+            set_tests_properties(python-builtin/${test} PROPERTIES
+                                    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}\\lib.python;PATH=${PATH}\;${CMAKE_BINARY_DIR}\\bin")
+        else()
+            set_tests_properties(python-builtin/${test} PROPERTIES
+                                    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib.python")
+        endif()
+    endif()
+    if(BUILD_PYTHON_MODULE)
+        add_test(NAME python-module/${test}
+                 COMMAND "${PYTHON_EXECUTABLE}" -B ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
+        if(WIN32)
+            set_tests_properties(python-module/${test} PROPERTIES
+                                    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}\\lib.python;PATH=${PATH}\;${CMAKE_BINARY_DIR}\\bin")
+        else()
+            set_tests_properties(python-module/${test} PROPERTIES
+                                    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib.python")
+        endif()
+    endif()
+endmacro()
 
 # ----------===== modules =====--------------------------------------------
 
@@ -170,15 +196,14 @@ foreach(mod ${modules})
 endforeach()
 
 # Build modules
-set(built_module_targets "")
+set(modules_test_targets "")
 foreach(mod ${modules})
     mod_option(${mod} opt)
     option(${opt} "Build module '${mod}'" ON)
     if (${opt})
-        string(REPLACE "/" "" modtarget ${mod})
-        list(APPEND built_module_targets "module-${modtarget}")
-        if(BUILD_PYTHON)
-            list(APPEND built_module_targets "module-${modtarget}-python")
+        if(BUILD_TESTS)
+            string(REGEX REPLACE "/|_" "" modtarget ${mod})
+            list(APPEND modules_test_targets "module-${modtarget}-test")
         endif()
         add_subdirectory(modules/${mod})
     endif()
@@ -191,11 +216,11 @@ if(BUILD_TESTS)
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
         include_directories(${Boost_INCLUDE_DIRS})
-        file(GLOB_RECURSE test-plask_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
-        add_executable(test-plask ${test-plask_src})
-        set_target_properties(test-plask PROPERTIES OUTPUT_NAME test_plask)
-        target_link_libraries(test-plask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
-        set(plask_test_depends test-plask)
+        file(GLOB_RECURSE plask-test_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
+        add_executable(plask-test ${plask-test_src})
+        set_target_properties(plask-test PROPERTIES OUTPUT_NAME test_plask)
+        target_link_libraries(plask-test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
+        set(plask_test_depends plask-test)
         file(GLOB_RECURSE plask_tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/plask FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
         list(REMOVE_ITEM plask_tests main.cpp)
         foreach(test_file ${plask_tests})
@@ -209,16 +234,18 @@ if(BUILD_TESTS)
     if(BUILD_PYTHON)
         file(GLOB_RECURSE python_tests_module_src FOLLOW_SYMLINKS tests/python/*.cpp)
 
-        add_library(plasktest MODULE ${python_tests_module_src})
-        set_target_properties(plasktest PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY "lib.python")
+        add_library(plask-test-python MODULE ${python_tests_module_src})
+        set_target_properties(plask-test-python PROPERTIES OUTPUT_NAME plasktest PREFIX ""
+                              LIBRARY_OUTPUT_DIRECTORY "lib.python")
         if (BUILD_PYTHON_MODULE OR WIN32)
-            target_link_libraries(plasktest ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
+            target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
             if(WIN32)
-                set_target_properties(plasktest PROPERTIES SUFFIX ".pyd")
+                set_target_properties(plask-test-python PROPERTIES SUFFIX ".pyd")
             endif()
         else()
-            target_link_libraries(plasktest ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+            target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
         endif()
+        set(plask_test_depends ${plask_test_depends} plask-test-python)
 
         if(WIN32)
             set(PATH $ENV{PATH})
@@ -228,35 +255,14 @@ if(BUILD_TESTS)
         file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python/*.py)
         foreach(test_file ${python_tests})
             get_filename_component(test ${test_file} NAME_WE)
-            if(BUILD_PYTHON_EXECUTABLE)
-                add_test(NAME python-builtin/${test}
-                         COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
-                if(WIN32)
-                    set_tests_properties(python-builtin/${test} PROPERTIES
-                                         ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}\\lib.python;PATH=${PATH}\;${CMAKE_BINARY_DIR}\\bin")
-                else()
-                    set_tests_properties(python-builtin/${test} PROPERTIES
-                                         ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib.python")
-                endif()
-            endif()
-            if(BUILD_PYTHON_MODULE)
-                add_test(NAME python-module/${test}
-                         COMMAND "${PYTHON_EXECUTABLE}" -B ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
-                if(WIN32)
-                    set_tests_properties(python-module/${test} PROPERTIES
-                                         ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}\\lib.python;PATH=${PATH}\;${CMAKE_BINARY_DIR}\\bin")
-                else()
-                    set_tests_properties(python-module/${test} PROPERTIES
-                                         ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib.python")
-                endif()
-            endif()
+            add_python_test(${test} ${test_file})
         endforeach()
     endif(BUILD_PYTHON)
 
     if (RUN_TESTS)
-        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${built_module_targets})
+        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${modules_test_targets})
     else()
-        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${built_module_targets})
+        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${modules_test_targets})
     endif()
 
 endif(BUILD_TESTS)
