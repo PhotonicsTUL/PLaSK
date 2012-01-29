@@ -83,7 +83,7 @@ double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); ass
 
 void Material::throwNotImplemented(const std::string& method_name) const {
     throw MaterialMethodNotImplemented(name(), method_name);
-};
+}
 
 inline void fillGroupMaterialCompositionAmounts(std::vector<double>::iterator begin, std::vector<double>::iterator end) {
     auto no_info = end;
