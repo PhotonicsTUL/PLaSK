@@ -186,7 +186,7 @@ void set_vec_component(Vec<dim,T>& self, const T& val) {
 
 // Register vector class to python
 template <int dim, typename T>
-inline static py::class_<Vec<dim,T>> register_vector_class()
+inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vector")
 {
     typedef Vec<dim,T> V;
     typedef Vec<dim,double> VR;
@@ -197,7 +197,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class()
 
     V (*c)(const V&) = &plask::conj<T>;
 
-    py::class_<V> vec_class = py::class_<V>("vector",
+    py::class_<V> vec_class = py::class_<V>(name.c_str(),
         "PLaSK vector.\n\n"
         "See Also\n"
         "--------\n"
@@ -244,7 +244,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class()
         .def("__array__", &vec__array__<dim,T>)
     ;
 
-    py::class_< std::vector<Vec<dim,T>> >("vector_list")
+    py::class_< std::vector<Vec<dim,T>>, shared_ptr<std::vector<Vec<dim,T>>> >((name+"_list").c_str())
         .def(py::vector_indexing_suite< std::vector<Vec<dim,T>> >())
         .def("__array__", &vec_list__array__<dim,T>)
     ;

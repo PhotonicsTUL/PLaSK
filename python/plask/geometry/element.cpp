@@ -85,7 +85,7 @@ void register_geometry_element()
         .value("CONTAINER", GE_TYPE_CONTAINER)
     ;
 
-    py::class_<GeometryElement, boost::noncopyable>("GeometryElement",
+    py::class_<GeometryElement, shared_ptr<GeometryElement>, boost::noncopyable>("GeometryElement",
         "Base class for all geometry elements.", py::no_init)
         .add_property("type", &GeometryElement::getType)
         .def("validate", &GeometryElement::validate)

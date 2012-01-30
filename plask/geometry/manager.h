@@ -22,7 +22,7 @@ namespace plask {
  * Geometry manager features:
  * - read/write geometries,
  * - allow for access to geometry elements (also by names).
- * 
+ *
  * @see @ref geometry
  */
 struct GeometryManager {
@@ -35,14 +35,14 @@ struct GeometryManager {
 
     /// Allow to access elements by name.
     std::map<std::string, shared_ptr<GeometryElement> > namedElements;
-    
+
     /**
      * Get element with given name.
      * @param name name of element
      * @return element with given @p name or @c nullptr if there is no element with given name
      */
     shared_ptr<GeometryElement> getElement(const std::string& name) const;
-    
+
     /**
      * Call getElement(name) and try dynamic cast it to @a RequiredElementType.
      * @param name name of element
@@ -51,7 +51,7 @@ struct GeometryManager {
      */
     template <typename RequiredElementType>
     shared_ptr<RequiredElementType> getElement(const std::string& name) const;
-    
+
     /**
      * Get element with given name or throw exception if element with given name does not exist.
      * @param name name of element
@@ -59,7 +59,7 @@ struct GeometryManager {
      * @throw NoSuchGeometryElement if there is no element with given name
      */
     shared_ptr<GeometryElement> requireElement(const std::string& name) const;
-    
+
     /**
      * Call requireElement(name) and try dynamic cast it to @a RequiredElementType.
      * @param name name of element
@@ -70,25 +70,25 @@ struct GeometryManager {
      */
     template <typename RequiredElementType>
     shared_ptr<RequiredElementType> requireElement(const std::string& name) const;
-    
+
     /**
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
      */
     void loadFromReader(XMLReader& XMLreader, const MaterialsDB& materialsDB);
-    
+
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content
      */
     void loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB);
-    
+
     /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
      */
     void loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB);
-    
+
     /*
      * Read all elements up to end of XML tag and call functor(element) for each element which was read.
      * @param source
@@ -98,7 +98,7 @@ struct GeometryManager {
      */
     /*template <typename FunctorType, typename RequiredElementType = GeometryElement>
     void readAllElements(XMLReader& source, FunctorType functor);*/
-    
+
     /**
      * Load geometry from XML file.
      * @param fileName name of XML file

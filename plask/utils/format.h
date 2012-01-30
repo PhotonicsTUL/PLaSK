@@ -32,7 +32,7 @@ inline void format_add_args(boost::format& format, const firstT& first_arg, cons
  */
 template <typename... T>
 std::string format(const std::string& msg, const T&... args) {
-    boost::format format;
+    boost::format format(msg);
     format_add_args(format, args...);
     return format.str();
 }

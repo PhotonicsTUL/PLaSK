@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK_EQUAL(translation->getMaterial(plask::vec(12.0, 22.0)), dumbMaterial);
         BOOST_CHECK(translation->getMaterial(plask::vec(4.0, 22.0)) == nullptr);
     }
-    
+
     BOOST_FIXTURE_TEST_CASE(translationContainer2d, Leafs2d) {
         plask::shared_ptr<plask::TranslationContainer<2>> container(new plask::TranslationContainer<2>);
         container->add(block_5_3);
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         plask::MaterialsDB materialsDB;
         initDumbMaterialDb(materialsDB);
         plask::GeometryManager manager;
-        manager.loadFromXMLString("<geometry axis=\"xy\"><stack2d repeat=\"2\"><child><block2d name=\"block\" x=\"4\" y=\"2\" material=\"Dumb\" /></child><ref name=\"block\" /></stack2d></geometry>", materialsDB);
+        manager.loadFromXMLString("<geometry axis=\"xy\"><stack2d repeat=\"2\"><child><rectangle name=\"block\" x=\"4\" y=\"2\" material=\"Dumb\" /></child><ref name=\"block\" /></stack2d></geometry>", materialsDB);
         //BOOST_CHECK_EQUAL(manager.elements.size(), 3);
         BOOST_CHECK(manager.getElement("block") != nullptr);
         BOOST_CHECK(manager.getElement("notexist") == nullptr);

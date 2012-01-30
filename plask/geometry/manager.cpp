@@ -12,7 +12,7 @@ shared_ptr<GeometryElement> GeometryManager::getElement(const std::string &name)
 
 shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &name) const {
     shared_ptr<GeometryElement> result = getElement(name);
-    if (result == nullptr) throw NoSuchGeometryElement(name);
+    if (!result) throw NoSuchGeometryElement(name);
     return result;
 }
 
@@ -34,7 +34,7 @@ void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& ma
             case irr::io::EXN_COMMENT:
                 break;   //just ignore
             default:
-                throw XMLUnexpectedElementException("begin of geometry element tag or </geometry>");  
+                throw XMLUnexpectedElementException("begin of geometry element tag or </geometry>");
         }
     }
     throw XMLUnexpectedEndException();
@@ -55,7 +55,7 @@ void GeometryManager::loadFromXMLString(const std::string &input_XML_str, const 
 //TODO skip geometry elements ends
 void GeometryManager::loadFromFile(const std::string &fileName, const MaterialsDB& materialsDB) {
     std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(fileName.c_str()));
-    if (reader == nullptr) throw Exception("Can't read from file \"$1$\".", fileName);
+    if (reader == nullptr) throw Exception("Can't read from file \"%1%\".", fileName);
     XML::requireNext(*reader);
     loadFromReader(*reader, materialsDB);
 }

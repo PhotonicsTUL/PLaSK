@@ -10,6 +10,9 @@ import plask, plask.material, plask.geometry
 
 class SimpleGeometry(unittest.TestCase):
 
+    @plask.material.new
+    class Dumb(plask.material.Material): pass
+
     def testPrimitives(self):
         '''Test the properties of primitives'''
         r2a = plask.geometry.Box2D()
@@ -26,7 +29,20 @@ class SimpleGeometry(unittest.TestCase):
         r3b = plask.geometry.Box3D(plask.vec(1.,2.,0.), plask.vec(3.,5.,1.))
         self.assertEqual( r3a, r3b )
 
-
+    def testManager(self):
+        '''test geometry manager'''
+        geometry = plask.geometry.Geometry()
+        geometry.read('''
+            <geometry axis="xy">
+                <stack2d repeat="2" name="stack">
+                    <child><rectangle name="block" x="4" y="2" material="Dumb" /></child>
+                    <ref name="block" />
+                </stack2d>
+            </geometry>
+        ''')
+        self.assertEqual( type(geometry["block"]), plask.geometry.Rectangle )
+        if sys.version >= "2.7":
+            with self.assertRaises(KeyError): geometry["nonexistent"]
 
 class GeometryObjects(unittest.TestCase):
 
