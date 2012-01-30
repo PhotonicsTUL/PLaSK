@@ -64,6 +64,7 @@ void GeometryManager::loadFromXMLString(const std::string &input_XML_str) {
 //TODO skip geometry elements ends
 void GeometryManager::loadFromFile(const std::string &fileName) {
     std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(fileName.c_str()));
+    if (reader == nullptr) throw Exception("Can't read from file \"$1$\".", fileName);
     XML::requireNext(*reader);
     loadFromReader(*reader);
 }
