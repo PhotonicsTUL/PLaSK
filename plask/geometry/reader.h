@@ -152,8 +152,8 @@ struct GeometryReader {
     ///Current names of axis.
     const AxisNames* axisNames;
     
-    /// Material database used by geometry (leafs).
-    MaterialsDB& materialsDB;
+    ///Material database used by geometry (leafs).
+    const MaterialsDB& materialsDB;
     
     /**
      * Get current axis name.
@@ -200,8 +200,9 @@ struct GeometryReader {
     /**
      * @param manager
      * @param source xml data source from which element data should be read
+     * @param materialsDB materials database used to set leafs materials
      */
-    GeometryReader(GeometryManager& manager, XMLReader& source, MaterialsDB& materialsDB);
+    GeometryReader(GeometryManager& manager, XMLReader& source, const MaterialsDB& materialsDB);
 
     /**
      * Read geometry element from @p source and add it GeometryManager structures.

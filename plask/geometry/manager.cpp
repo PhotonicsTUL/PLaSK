@@ -17,7 +17,7 @@ shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &n
 }
 
 //TODO move to reader (?)
-void GeometryManager::loadFromReader(XMLReader &XMLreader, MaterialsDB& materialsDB) {
+void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& materialsDB) {
     GeometryReader reader(*this, XMLreader, materialsDB);
     if (XMLreader.getNodeType() != irr::io::EXN_ELEMENT || XMLreader.getNodeName() != std::string("geometry"))
         throw XMLUnexpectedElementException("<geometry> tag");
@@ -40,20 +40,20 @@ void GeometryManager::loadFromReader(XMLReader &XMLreader, MaterialsDB& material
     throw XMLUnexpectedEndException();
 }
 
-void GeometryManager::loadFromXMLStream(std::istream &input, MaterialsDB& materialsDB) {
+void GeometryManager::loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB) {
     XML::StreamReaderCallback cb(input);
     std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(&cb));
     XML::requireNext(*reader);
     loadFromReader(*reader, materialsDB);
 }
 
-void GeometryManager::loadFromXMLString(const std::string &input_XML_str, MaterialsDB& materialsDB) {
+void GeometryManager::loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB) {
     std::istringstream stream(input_XML_str);
     loadFromXMLStream(stream, materialsDB);
 }
 
 //TODO skip geometry elements ends
-void GeometryManager::loadFromFile(const std::string &fileName, MaterialsDB& materialsDB) {
+void GeometryManager::loadFromFile(const std::string &fileName, const MaterialsDB& materialsDB) {
     std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(fileName.c_str()));
     if (reader == nullptr) throw Exception("Can't read from file \"$1$\".", fileName);
     XML::requireNext(*reader);

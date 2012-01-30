@@ -75,19 +75,19 @@ struct GeometryManager {
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
      */
-    void loadFromReader(XMLReader& XMLreader, MaterialsDB& materialsDB);
+    void loadFromReader(XMLReader& XMLreader, const MaterialsDB& materialsDB);
     
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content
      */
-    void loadFromXMLStream(std::istream &input, MaterialsDB& materialsDB);
+    void loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB);
     
     /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
      */
-    void loadFromXMLString(const std::string &input_XML_str, MaterialsDB& materialsDB);
+    void loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB);
     
     /*
      * Read all elements up to end of XML tag and call functor(element) for each element which was read.
@@ -103,7 +103,7 @@ struct GeometryManager {
      * Load geometry from XML file.
      * @param fileName name of XML file
      */
-    void loadFromFile(const std::string& fileName, MaterialsDB& materialsDB);
+    void loadFromFile(const std::string& fileName, const MaterialsDB& materialsDB);
 };
 
 //specialization for most types
