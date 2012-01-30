@@ -1,7 +1,13 @@
 #ifndef PLASK__RECTILINEAR2D_H
 #define PLASK__RECTILINEAR2D_H
 
+/** @file
+This file includes rectilinear mesh for 2d space.
+*/
+
 #include "rectilinear1d.h"
+#include "mesh.h"
+#include "interpolation.h"
 
 namespace plask {
 
@@ -14,6 +20,9 @@ namespace plask {
  * Represent all points (x, y) such that x is in c0 and y is in c1.
  */
 struct RectilinearMesh2d {
+
+    typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cartesian2d> ExternalCartesian;
+    typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cylindrical2d> ExternalCylindrical;
 
     /**
      * Class which allow to access and iterate over RectilinearMesh2d points in choosen order:
@@ -313,6 +322,22 @@ auto RectilinearMesh2d::interpolateLinear(const RandomAccessContainer& data, con
         point.c0, point.c1, c0, c1, c0.findIndex(point.c0), c1.findIndex(point.c1)
     );
 }
+
+template <typename DataT>    //for any data type
+struct InterpolationAlgorithm<RectilinearMesh2d::ExternalCartesian, DataT, LINEAR> {
+    static void interpolate(RectilinearMesh2d::ExternalCartesian& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename RectilinearMesh2d::ExternalCartesian::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
+        for (auto p: dst_mesh)
+            dst_vec.push_back(src_mesh.internal.interpolateLinear(dst_vec, p));
+    }
+};
+
+template <typename DataT>    //for any data type
+struct InterpolationAlgorithm<RectilinearMesh2d::ExternalCylindrical, DataT, LINEAR> {
+    static void interpolate(RectilinearMesh2d::ExternalCylindrical& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename RectilinearMesh2d::ExternalCylindrical::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
+        for (auto p: dst_mesh)
+            dst_vec.push_back(src_mesh.internal.interpolateLinear(dst_vec, p));
+    }
+};
 
 }   // namespace plask
 

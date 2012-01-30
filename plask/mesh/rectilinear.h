@@ -9,8 +9,4 @@ This file includes rectilinear meshes for 1d, 2d, and 3d spaces.
 #include "rectilinear2d.h"
 #include "rectilinear3d.h"
 
-namespace plask {
-
-}	//namespace plask
-
 #endif // PLASK__RECTILINEAR_H

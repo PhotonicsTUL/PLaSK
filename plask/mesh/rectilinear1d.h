@@ -1,6 +1,10 @@
 #ifndef PLASK__RECTILINEAR1D_H
 #define PLASK__RECTILINEAR1D_H
 
+/** @file
+This file includes rectilinear mesh for 1d space.
+*/
+
 #include <vector>
 #include <algorithm>
 #include <initializer_list>

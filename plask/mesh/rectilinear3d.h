@@ -1,7 +1,11 @@
 #ifndef PLASK__RECTILINEAR3D_H
 #define PLASK__RECTILINEAR3D_H
 
-#include "rectilinear1d.h"
+/** @file
+This file includes rectilinear mesh for 3d space.
+*/
+
+#include "rectilinear2d.h"
 
 namespace plask {
 
@@ -15,6 +19,8 @@ namespace plask {
  * Represent all points (x, y, z) such that x is in c0, y is in c1, z is in c2.
  */
 struct RectilinearMesh3d {
+
+    typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cartesian3d> External;
 
     ///First coordinate of points in this mesh.
     RectilinearMesh1d c0;
@@ -309,6 +315,14 @@ auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, con
     );
 
 }
+
+template <typename DataT>    //for any data type
+struct InterpolationAlgorithm<RectilinearMesh3d::External, DataT, LINEAR> {
+    static void interpolate(RectilinearMesh3d::External& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename RectilinearMesh3d::External::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
+        for (auto p: dst_mesh)
+            dst_vec.push_back(src_mesh.internal.interpolateLinear(dst_vec, p));
+    }
+};
 
 }   // namespace plask
 
