@@ -36,17 +36,6 @@ struct GeometryManager {
     /// Allow to access elements by name.
     std::map<std::string, shared_ptr<GeometryElement> > namedElements;
     
-    /// Material database used by geometry (leafs).
-    MaterialsDB& materialsDB;
-
-    /**
-     * @param materialsDB material database used by geometry (leafs)
-     */
-    GeometryManager(MaterialsDB& materialsDB);
-
-    ///Delete all elements.
-    ~GeometryManager();
-    
     /**
      * Get element with given name.
      * @param name name of element
@@ -86,19 +75,19 @@ struct GeometryManager {
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
      */
-    void loadFromReader(XMLReader& XMLreader);
+    void loadFromReader(XMLReader& XMLreader, MaterialsDB& materialsDB);
     
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content
      */
-    void loadFromXMLStream(std::istream &input);
+    void loadFromXMLStream(std::istream &input, MaterialsDB& materialsDB);
     
     /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
      */
-    void loadFromXMLString(const std::string &input_XML_str);
+    void loadFromXMLString(const std::string &input_XML_str, MaterialsDB& materialsDB);
     
     /*
      * Read all elements up to end of XML tag and call functor(element) for each element which was read.
@@ -114,7 +103,7 @@ struct GeometryManager {
      * Load geometry from XML file.
      * @param fileName name of XML file
      */
-    void loadFromFile(const std::string& fileName);
+    void loadFromFile(const std::string& fileName, MaterialsDB& materialsDB);
 };
 
 //specialization for most types

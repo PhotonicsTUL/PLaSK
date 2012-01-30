@@ -7,7 +7,7 @@ namespace plask {
 //initialization common for all leafs
 template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
-    leaf.material = reader.manager.materialsDB.get(XML::requireAttr(reader.source, "material"));
+    leaf.material = reader.materialsDB.get(XML::requireAttr(reader.source, "material"));
     XML::requireTagEndOrEmptyTag(reader.source, reader.source.getNodeName());
 }
 

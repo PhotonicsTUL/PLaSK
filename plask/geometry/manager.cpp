@@ -5,15 +5,6 @@
 
 namespace plask {
 
-
-
-GeometryManager::GeometryManager(MaterialsDB& materialsDB): materialsDB(materialsDB) {
-}
-
-GeometryManager::~GeometryManager() {
-    //for (GeometryElement* e: elements) delete e;
-}
-
 shared_ptr<GeometryElement> GeometryManager::getElement(const std::string &name) const {
     auto result_it = namedElements.find(name);
     return result_it != namedElements.end() ? result_it->second : shared_ptr<GeometryElement>();
@@ -26,8 +17,8 @@ shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &n
 }
 
 //TODO move to reader (?)
-void GeometryManager::loadFromReader(XMLReader &XMLreader) {
-    GeometryReader reader(*this, XMLreader);
+void GeometryManager::loadFromReader(XMLReader &XMLreader, MaterialsDB& materialsDB) {
+    GeometryReader reader(*this, XMLreader, materialsDB);
     if (XMLreader.getNodeType() != irr::io::EXN_ELEMENT || XMLreader.getNodeName() != std::string("geometry"))
         throw XMLUnexpectedElementException("<geometry> tag");
     GeometryReader::ReadAxisNames read_axis_tag(reader);
@@ -49,24 +40,24 @@ void GeometryManager::loadFromReader(XMLReader &XMLreader) {
     throw XMLUnexpectedEndException();
 }
 
-void GeometryManager::loadFromXMLStream(std::istream &input) {
+void GeometryManager::loadFromXMLStream(std::istream &input, MaterialsDB& materialsDB) {
     XML::StreamReaderCallback cb(input);
     std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(&cb));
     XML::requireNext(*reader);
-    loadFromReader(*reader);
+    loadFromReader(*reader, materialsDB);
 }
 
-void GeometryManager::loadFromXMLString(const std::string &input_XML_str) {
+void GeometryManager::loadFromXMLString(const std::string &input_XML_str, MaterialsDB& materialsDB) {
     std::istringstream stream(input_XML_str);
-    loadFromXMLStream(stream);
+    loadFromXMLStream(stream, materialsDB);
 }
 
 //TODO skip geometry elements ends
-void GeometryManager::loadFromFile(const std::string &fileName) {
+void GeometryManager::loadFromFile(const std::string &fileName, MaterialsDB& materialsDB) {
     std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(fileName.c_str()));
     if (reader == nullptr) throw Exception("Can't read from file \"$1$\".", fileName);
     XML::requireNext(*reader);
-    loadFromReader(*reader);
+    loadFromReader(*reader, materialsDB);
 }
 
 }	// namespace plask

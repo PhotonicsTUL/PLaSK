@@ -46,8 +46,8 @@ GeometryReader::ReadAxisNames::ReadAxisNames(GeometryReader &reader)
     if (axis) reader.axisNames = &axisNamesRegister.get(axis);
 }
 
-plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XMLReader &source)
-    : manager(manager), source(source)
+plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XMLReader &source, MaterialsDB& materialsDB)
+    : manager(manager), source(source), materialsDB(materialsDB)
 {
     axisNames = &axisNamesRegister.get("lon, tran, up");
 }
