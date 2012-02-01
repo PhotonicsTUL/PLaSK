@@ -26,6 +26,7 @@ and only provider and receiver witch corresponding types can be connected.
 Each module should have one provider class field for each physical property which it want to make
 available for other modules and reports and it also should have one receiver field for each physical
 property which value it wants to know (needs for calculations).
+Most providers are classes obtain by using plask::ProviderFor template.
 
 See @ref modules_write for more details and examples.
 
@@ -502,9 +503,13 @@ template <typename PropertyTag, typename ValueType, PropertyType propertyType, t
 struct ProviderImpl {};
 
 /**
- * Specializations of this class are implementations of providers for given property tag.
+ * Specializations of this class define implementations of providers for given property tag:
+ * - ProviderFor<PropertyTag, SpaceType> is abstract, base class which inharited from Provider;
+ * - ProviderFor<PropertyTag, SpaceType>::Delegate is class inharited from ProviderFor<PropertyTag, SpaceType> which delegate all request to functor given as constructor parameter;
+ * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field).
  * @tparam PropertyTag property tag class (describe physical property)
  * @tparam SpaceType type of space, required (and allowed) only for fields properties
+ * @see plask::Temperature (include example); @ref providers
  */
 template <typename PropertyTag, typename SpaceType = void>
 struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType> {

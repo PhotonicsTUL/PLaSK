@@ -42,6 +42,7 @@ Once you have your source tree set up, do the following:
     - receivers field are used to getting data which are required for calculations from another modules
       (precisely, from its providers),
     - you don't have to care about connection between providers and corresponding receivers (this is done externally),
+    - note that most providers are classes obtain by using plask::ProviderFor template,
     - more details can be found in @ref providers.
 -# Typically, implement calculate method. This method is a place for your calculation code.
    You don't have to implement it if you don't need to do any calculations. You can also write more methods performing
@@ -85,6 +86,7 @@ struct MyModule: public plask::Module {
 
 };
 @endcode
+See also example in plask::Temperature description.
 */
 
 #include <string>
