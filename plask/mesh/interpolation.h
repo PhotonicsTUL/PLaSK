@@ -84,6 +84,8 @@ enum InterpolationMethod {
     DEFAULT = 0,        ///< default interpolation (depends on source mesh)
     LINEAR = 1,         ///< linear interpolation
     SPLINE = 2,         ///< spline interpolation
+    COSINE = 3,         ///< cosine interpolation
+    FOURIER = 4,        ///< Fourier transform interpolation
     //...add new interpolation algoritms here...
 #   ifndef DOXYGEN
     __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop
@@ -153,7 +155,6 @@ inline shared_ptr<const std::vector<DataT>>
 interpolate(SrcMeshT& src_mesh, shared_ptr<const std::vector<DataT>> src_vec_ptr,
             Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT)
 {
-
     if (&src_mesh == &dst_mesh) return src_vec_ptr; // meshes are identical, so just return src_vec
 
     shared_ptr<std::vector<DataT>> result {new std::vector<DataT>};

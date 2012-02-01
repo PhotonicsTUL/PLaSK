@@ -140,8 +140,6 @@ void initGeometry() {
          .def("__getitem__", &Geometry__getitem__)
          .def("load", &Geometry_loadFromFile, "Load geometry from file", (py::arg("filename"), py::arg("materialsdb")=shared_ptr<MaterialsDB>()))
          .def("read", &Geometry_loadFromXMLString, "Read geometry from string", (py::arg("data"), py::arg("materialsdb")=shared_ptr<MaterialsDB>()))
-
-
     ;
 
 

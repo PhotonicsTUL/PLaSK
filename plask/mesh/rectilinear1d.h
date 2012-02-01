@@ -50,7 +50,7 @@ public:
     /**
      * Find index where @p to_find point could be insert.
      * @param to_find point to find
-     * @return First index where to_find could be insert.
+     * @return First index where to_find could be inserted.
      *         Refer to value equal to @p to_find only if @p to_find is already in mesh.
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
@@ -151,7 +151,7 @@ auto RectilinearMesh1d::interpolateLinear(const RandomAccessContainer& data, dou
     std::size_t index = findIndex(point);
     if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
     if (index == 0 || points[index] == point) return data[index]; //hit exactly
-    //here: points[index-1] < point < points[index]
+    // here: points[index-1] < point < points[index]
     return interpolation::linear(points[index-1], data[index-1], points[index], data[index], point);
 }
 

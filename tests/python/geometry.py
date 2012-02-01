@@ -10,8 +10,9 @@ import plask, plask.material, plask.geometry
 
 class SimpleGeometry(unittest.TestCase):
 
-    @plask.material.new
-    class Dumb(plask.material.Material): pass
+    def setUp(self):
+        @plask.material.new
+        class Dumb(plask.material.Material): pass
 
     def testPrimitives(self):
         '''Test the properties of primitives'''
