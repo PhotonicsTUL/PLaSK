@@ -5,6 +5,7 @@ import unittest
 import sys
 if sys.version < "2.7":
     unittest.TestCase.assertIsNone = lambda self, value: self.assertTrue(item is None)
+    unittest.TestCase.assertIn = lambda self, item, container: self.assertTrue(item in container)
 
 import plask, plask.material, plask.geometry
 
@@ -36,14 +37,14 @@ class SimpleGeometry(unittest.TestCase):
         geometry.read('''
             <geometry axis="xy">
                 <stack2d repeat="2" name="stack">
-                    <child><rectangle name="block" x="4" y="2" material="Dumb" /></child>
+                    <child><block2d name="block" x="4" y="2" material="Dumb" /></child>
                     <ref name="block" />
                 </stack2d>
             </geometry>
         ''')
-        self.assertEqual( type(geometry["block"]), plask.geometry.Rectangle )
+        self.assertEqual( type(geometry.element("block")), plask.geometry.Block2D )
         if sys.version >= "2.7":
-            with self.assertRaises(KeyError): geometry["nonexistent"]
+            with self.assertRaises(KeyError): geometry.element("nonexistent")
 
 class GeometryObjects(unittest.TestCase):
 
@@ -52,32 +53,33 @@ class GeometryObjects(unittest.TestCase):
         class Mat(plask.material.Material): pass
 
         self.mat = Mat()
-        self.rectangle53 = plask.geometry.Rectangle(5,3, self.mat)
+        self.block53 = plask.geometry.Block2D(5,3, self.mat)
 
     def testRectangle(self):
         '''Test rectangle'''
-        self.assertAlmostEqual( self.rectangle53.boundingBox.upper, plask.vec(5.0, 3.0) )
-        self.assertAlmostEqual( self.rectangle53.boundingBox.lower, plask.vec(0.0, 0.0) )
-        self.assertEqual( self.rectangle53.getMaterial(plask.vec(4.0, 2.0)), self.mat)
-        self.assertIsNone( self.rectangle53.getMaterial(plask.vec(6.0, 2.0)));
+        self.assertAlmostEqual( self.block53.boundingBox.upper, plask.vec(5.0, 3.0) )
+        self.assertAlmostEqual( self.block53.boundingBox.lower, plask.vec(0.0, 0.0) )
+        self.assertEqual( self.block53.getMaterial(plask.vec(4.0, 2.0)), self.mat)
+        self.assertIsNone( self.block53.getMaterial(plask.vec(6.0, 2.0)));
 
 
     def testTranslation(self):
         '''Test translations of the objects'''
-        translation = plask.geometry.Translation2D(self.rectangle53, plask.vec(10.0, 20.0))    # should be in [10, 20] - [15, 23]
+        translation = plask.geometry.Translation2D(self.block53, plask.vec(10.0, 20.0))    # should be in [10, 20] - [15, 23]
         self.assertEqual( translation.boundingBox, plask.geometry.Box2D(plask.vec(10, 20), plask.vec(15, 23)) )
         self.assertEqual( translation.getMaterial(12.0, 22.0), self.mat);
         self.assertIsNone( translation.getMaterial(4.0, 22.0));
 
     def testMultiStack(self):
         multistack = plask.geometry.MultiStack2D(5, 10.0)
-        multistack.append(self.rectangle53)
-        multistack.append(self.rectangle53)
+        multistack.append(self.block53)
+        multistack.append(self.block53)
+        self.assertIn( self.block53, multistack )
         # 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
         self.assertEqual(multistack.boundingBox, plask.geometry.Box2D(0.0, 10.0, 5.0, 40.0))
         self.assertEqual(multistack.getMaterial(4.0, 39.0), self.mat)
         self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
-        self.assertEqual( multistack[0][0], self.rectangle53 )
-        self.assertAlmostEqual( multistack[0][1], plask.vec(0, 10.) )
-        self.assertEqual( multistack[9][0], self.rectangle53 )
-        self.assertAlmostEqual( multistack[9][1], plask.vec(0, 37.) )
+        self.assertEqual( multistack[0].element, self.block53 )
+        self.assertAlmostEqual( multistack[0].translation, plask.vec(0, 10.) )
+        self.assertEqual( multistack[9].element, self.block53 )
+        self.assertAlmostEqual( multistack[9].translation, plask.vec(0, 37.) )

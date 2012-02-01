@@ -18,7 +18,7 @@ namespace plask {
 Represent hints for path finder.
 
 Hints are used to to find unique path for all GeometryElement pairs,
-even if one of the pair element is inserted to geometry graph in more than one place.
+even if one of the pair element is inserted to the geometry graph in more than one place.
 
 Each hint allow to choose one child for geometry element container and it is a pair:
 geometry element container -> element in container.
@@ -67,13 +67,13 @@ struct PathHints {
      * @return child for given container or @c nullptr if there is no hint for given container
      */
     shared_ptr<GeometryElement> getChild(shared_ptr<GeometryElement> container);
-    
+
     /**
      * Get child for given container.
      * @return child for given container or @c nullptr if there is no hint for given container
      */
     shared_ptr<GeometryElement> getChild(shared_ptr<GeometryElement> container) const;
-    
+
     /**
      * Remove all hints which refer to deleted objects.
      */
@@ -97,7 +97,7 @@ struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
 
 protected:
     container_type children;
-    
+
     /**
      * Remove all children which fulfil predicate.
      * @param predicate return true only if child passed as argument should be deleted
@@ -207,7 +207,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
         this->ensureCanHasAsChild(*el);
         return addUnsafe(el, translation);
     }
-    
+
     /**
      * Remove all children which fulfil predicate.
      * @param predicate return true only if child passed as argument should be deleted
@@ -217,7 +217,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
     void remove(PredicateT predicate) {
         removeAll(predicate);
     }
-    
+
     /**
      * Remove all children exactly equal to @a el.
      * @param el child(ren) to remove
@@ -225,7 +225,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
     void remove(const ChildType* el) {
         removeAll([&el](ChildType* c) { return c->child == el; });
     }
-    
+
     /**
      * Remove child pointed, for this container, in @a hints.
      * @param hints path hints, see @ref geometry_paths
@@ -283,7 +283,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
         const TranslationT* c = getChildForHeight(p.c1);
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
-    
+
     /**
      * Remove all children which fulfil predicate.
      * @param predicate return true only if child passed as argument should be deleted
@@ -294,7 +294,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
         removeAll(predicate);
         updateAllHeights();
     }
-    
+
     /**
      * Remove all children exactly equal to @a el.
      * @param el child(ren) to remove
@@ -303,7 +303,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
         removeAll([&el](ChildType* c) { return c->child == el; });
         updateAllHeights();
     }
-    
+
     /**
      * Remove child pointed, for this container, in @a hints.
      * @param hints path hints, see @ref geometry_paths
@@ -333,7 +333,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
         el_translation = prev_height - bb.lower.up;
         next_height = bb.upper.up + el_translation;
     }
-    
+
     /**
      * Update stack height (fragment with pointed child on top) and pointed child up translation.
      * @param child_index index of child
@@ -341,7 +341,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
     void updateHeight(std::size_t child_index) {
         calcHeight(children[child_index]->child, stackHeights[child_index], children[child_index]->translation.up, children[child_index+1]);
     }
-    
+
     /**
      * Update stack heights and up translation of all children, with indexes from @a first_child_index.
      * @param first_child_index index of first child to update

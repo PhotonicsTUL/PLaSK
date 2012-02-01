@@ -94,7 +94,7 @@ void Geometry_loadFromFile(GeometryManager& self, const std::string &filename, c
     self.loadFromFile(filename, *DB);
 }
 
-shared_ptr<GeometryElement> Geometry__getitem__(GeometryManager& self, const char* key) {
+shared_ptr<GeometryElement> Geometry_element(GeometryManager& self, const char* key) {
     shared_ptr<GeometryElement> result = self.getElement(key);
     if (!result) {
         PyErr_SetString(PyExc_KeyError, format("no geometry element with name '%s'", key).c_str());
@@ -137,7 +137,7 @@ void initGeometry() {
         "        Material database. If not specified, set to default database.\n"
         , py::no_init)
          .def("__init__", raw_constructor(&Geometry__init__))
-         .def("__getitem__", &Geometry__getitem__)
+         .def("element", &Geometry_element)
          .def("load", &Geometry_loadFromFile, "Load geometry from file", (py::arg("filename"), py::arg("materialsdb")=shared_ptr<MaterialsDB>()))
          .def("read", &Geometry_loadFromXMLString, "Read geometry from string", (py::arg("data"), py::arg("materialsdb")=shared_ptr<MaterialsDB>()))
     ;
