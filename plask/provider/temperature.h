@@ -15,26 +15,37 @@ namespace plask {
  * Example:
  * @code
  * //calculate temperature in Cartesian 2d space:
- * struct Module1 {
+ * struct PModule1 {
+ *      plask::ProviderFor<Temperature, plask::Cartesian2d>::WithValue<SomeMeshType> outTemperature;
+ *      //outTemperature.value store temperature values in points pointed by outTemperature.mesh
+ *      //outTemperature.value has type plask::shared_ptr< std::vector<double> >
+ *      //outTemperature.mesh has type SomeMeshType (which should inharit from plask::Mest<plask::Cartesian2d>)
+ *      //...
+ * };
+ *
+ * //another module which calculate temperature in Cartesian 2d space:
+ * struct PModule2 {
  *      plask::ProviderFor<Temperature, plask::Cartesian2d>::Delegate outTemperature;
  *
  *      plask::shared_ptr< const std::vector<double> > getTemperature(const plask::Mesh<plask::Cartesian2d>& dst_mesh, plask::InterpolationMethod method) {
  *              //calculate and return temperature code
  *      }
  *      //...
- *      Module1(): outTemperature(this, &Module1::getTemperature) {}
+ *      PModule1(): outTemperature(this, &Module1::getTemperature) {}
  * };
  *
  * //needs temperature in Cartesian 2d space:
- * struct Module2 {
+ * struct RModule {
  *      plask::ReceiverFor<Temperature, plask::Cartesian2d> inTemperature;
  *      //...
  * };
  *
  * //... in program:
- * Module1 m1;
- * Module1 m2;
- * m1.inTemperature = m2.outTemperature;
+ * PModule1 m1;
+ * PModule2 m2;
+ * RModule r;
+ * r.inTemperature << m1.outTemperature;   //connect
+ * r.inTemperature << m2.outTemperature;   //change data source of r from m1 to m2
  * @endcode
  *
  * @see @ref modules_write; @ref providers; plask::ProviderFor
