@@ -571,6 +571,10 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
 
         ///Provided value.
         ProvidedValueType value;
+        
+        /// Delegate all constructors to value.
+        template<typename ...Args>
+        WithValue(Args&&... params): value(std::forward<Args>(params)...) {}
 
         /**
          * Get provided value.
@@ -662,6 +666,10 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
 
         ///Mesh which describe in which points are this->values.
         MeshType mesh;
+        
+        /// Delegate all constructors to mesh.
+        template<typename ...Args>
+        WithValue(Args&&... params): mesh(std::forward<Args>(params)...) {}
 
         /**
          * Get provided value in points describe by this->mesh.
