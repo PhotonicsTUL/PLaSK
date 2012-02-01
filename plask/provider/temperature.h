@@ -22,7 +22,7 @@ namespace plask {
  *              //calculate and return temperature code
  *      }
  *      //...
- *      Module1(): outTemperature(&Module1::getTemperature) {}
+ *      Module1(): outTemperature(this, &Module1::getTemperature) {}
  * };
  *
  * //needs temperature in Cartesian 2d space:
@@ -39,7 +39,7 @@ namespace plask {
  *
  * @see @ref modules_write; @ref providers; plask::ProviderFor
  */
-struct Temperature: ScalarFieldProperty {};
+struct Temperature: public ScalarFieldProperty {};
 
 //TODO in gcc 4.7 can be done by new typedefs:
 

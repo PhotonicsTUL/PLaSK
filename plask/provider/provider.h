@@ -50,19 +50,19 @@ Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters
 
 Example:
 @code
-// Physical property tag class for temperature.
-struct Temperature: plask::ScalarFieldProperty {};
+// Physical property tag class for something.
+struct MyProperty: public plask::SingleValueProperty<double> {};
 
-// Base type for provider class in 3d space.
-typedef plask::ProviderFor<Temperature, plask::space::Cartesian3d> TemperatureProvider3d;
+// Base type for MyProperty provider.
+typedef plask::ProviderFor<MyProperty> MyPropertyProvider;
 
-// Type for receiver class in 3d space.
-typedef plask::ReceiverFor<Temperature, plask::space::Cartesian3d> TemperatureReceiver3d;
+// Type for MyProperty receiver class.
+typedef plask::ReceiverFor<MyProperty> MyPropertyReceiver;
 
 // ...
 // Usage example:
-TemperatureProvider3d::WithValue provider;
-TemperatureReceiver3d reciver;
+MyPropertyProvider::WithValue provider;
+MyPropertyProvider reciver;
 reciver = provider;     //connect
 @endcode
 
@@ -237,7 +237,7 @@ struct Receiver: public Provider::Listener {
      * @param provider new provider
      */
     void operator=(ProviderT &provider) {
-        setProvider(&provider);
+        setProvider(provider);
     }
 
     /**
@@ -413,6 +413,14 @@ struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _Base
 
     /// Hold external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
+
+    template<typename ClassType, typename MemberType>
+    PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>(ClassType* object, MemberType member)
+        : valueGetter(
+          [object, member](_ArgTypes&&... params) {
+              return (object->*member)(std::forward<_ArgTypes>(params)...);
+          })
+    {}
 
     /**
      * Initialize valueGetter using given parameters.
