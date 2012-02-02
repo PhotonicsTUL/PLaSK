@@ -6,34 +6,36 @@
 
 namespace plask { namespace python {
 
-/**
- * Class returned by containers __getitem__ methods
- */
-template <int dim>
-struct ContainerElement {
-    const shared_ptr<GeometryElementContainer<dim>> container;
-    const shared_ptr<Translation<dim>> trans_geom;
-    const Vec<dim,double> translation;
+struct PersistentHint {
+    const shared_ptr<GeometryElement> first;
+    const shared_ptr<GeometryElement> second;
 
-    ContainerElement(const shared_ptr<GeometryElementContainer<dim>>& container,
-                     const shared_ptr<Translation<dim>>& child,
-                     const Vec<dim,double> trans) :
-        container(container), trans_geom(child), translation(trans) {}
+    PersistentHint(const shared_ptr<GeometryElement>& container, const shared_ptr<GeometryElement>& child) :
+        first(container), second(child) {}
 
-    shared_ptr<GeometryElementD<dim>> child() { return trans_geom->getChild(); }
+    PersistentHint(const PathHints::Hint& hint) :
+        first(hint.first.lock()), second(hint.second.lock()) {}
 
-    operator PathHints::Hint() { return PathHints::Hint(container, trans_geom); }
+    shared_ptr<GeometryElement> getChild() {
+        shared_ptr<Translation<2>> T2 = dynamic_pointer_cast<Translation<2>>(second);
+        if (T2) return T2->getChild();
+        shared_ptr<Translation<3>> T3 = dynamic_pointer_cast<Translation<3>>(second);
+        if (T3) return T3->getChild();
+        return second;
+    }
+
+    py::object translation() {
+        shared_ptr<Translation<2>> T2 = dynamic_pointer_cast<Translation<2>>(second);
+        if (T2) { return py::object(T2->translation); }
+        shared_ptr<Translation<3>> T3 = dynamic_pointer_cast<Translation<3>>(second);
+        if (T3) return py::object(T3->translation);
+        PyErr_SetString(PyExc_TypeError, "child object does not have a translation");
+        throw py::error_already_set();
+        assert(0);
+    }
+
+    operator PathHints::Hint() { return PathHints::Hint(first, second); }
 };
-
-DECLARE_GEOMETRY_ELEMENT_23D(ContainerElement, "ContainerElement",
-                             "Object holding cointainer element, its translation and hint ("," version)")
-{
-    py::class_<ContainerElement<dim>> (ContainerElement_pyname<dim>(), ContainerElement_pydoc<dim>(), py::no_init)
-        .add_property("element", &ContainerElement<dim>::child, "Hold element")
-        .def_readonly("translation", &ContainerElement<dim>::translation, "Translation vector of the element in the container")
-    ;
-}
-
 
 
 DECLARE_GEOMETRY_ELEMENT_23D(TranslationContainer, "TranslationContainer",
@@ -52,21 +54,21 @@ DECLARE_GEOMETRY_ELEMENT_23D(TranslationContainer, "TranslationContainer",
 }
 
 template <int dim, typename S>
-inline static ContainerElement<dim> Stack__getitem__(shared_ptr<S>& self, int i) {
+inline static PersistentHint Stack__getitem__(shared_ptr<S> self, int i) {
     if (i < 0) i = self->children.size() - i;
     if (i < 0 || i >= self->children.size()) {
         PyErr_SetString(PyExc_IndexError, "index out of range");
         throw py::error_already_set();
     }
-    shared_ptr<Translation<dim>> t = self->children[i];
-    return ContainerElement<dim>( self, t, t->translation );
+    shared_ptr<Translation<dim>> tchild = self->children[i];
+    return PersistentHint(self, tchild);
 }
 
 template <int dim> inline static Vec<dim,double> vvec(double v);
 template <> inline Vec<2,double> vvec<2>(double v) { return Vec<2,double>(0,v); }
 template <> inline Vec<3,double> vvec<3>(double v) { return Vec<3,double>(0,0,v); }
 template <int dim>
-inline static ContainerElement<dim> MultiStack__getitem__(shared_ptr<MultiStackContainer<dim>>& self, int i) {
+inline static PersistentHint MultiStack_repeatedItem(shared_ptr<MultiStackContainer<dim>> self, int i) {
     int n = self->children.size();
     int s = self->repeat_count * n;
     if (i < 0) i =  s - i;
@@ -75,29 +77,62 @@ inline static ContainerElement<dim> MultiStack__getitem__(shared_ptr<MultiStackC
         throw py::error_already_set();
     }
     int j = i % n, I = i / n;
-    shared_ptr<Translation<dim>> t = self->children[j];
-    return ContainerElement<dim>( self, t, t->translation + vvec<dim>(I * (self->stackHeights.back()-self->stackHeights.front())) );
+    Vec<dim,double> shift = vvec<dim>(I * (self->stackHeights.back()-self->stackHeights.front()));
+    shared_ptr<Translation<dim>> tchild = self->children[j];
+    shared_ptr<Translation<dim>> trans { new Translation<dim>(tchild->getChild(), tchild->translation + shift) };
+    return PersistentHint(self, trans);
 }
 
+static shared_ptr<GeometryElement> Hint_child(const PathHints::Hint& hint) {
+    shared_ptr<Translation<2>> T2 = PathHints::getTranslationChild<2>(hint);
+    if (T2) return T2->getChild();
+    shared_ptr<Translation<3>> T3 = PathHints::getTranslationChild<3>(hint);
+    if (T3) return T3->getChild();
+    return PathHints::getChild(hint);
+}
 
+static py::object Hint_translation(const PathHints::Hint& hint) {
+    shared_ptr<Translation<2>> T2 = PathHints::getTranslationChild<2>(hint);
+    if (T2) return py::object(T2->translation);
+    shared_ptr<Translation<3>> T3 = PathHints::getTranslationChild<3>(hint);
+    if (T3) return py::object(T3->translation);
+    PyErr_SetString(PyExc_TypeError, "child object does not have a translation");
+    throw py::error_already_set();
+    assert(0);
+}
 
 void register_geometry_container()
 {
-    py::class_<PathHints::Hint>("Hint",
-                                "Hints are returned by methods which add new elements to containers and can be added"
-                                "to the geometry.Path to specify unique instance of any object in the geometry tree.",
-                                py::no_init);
+    py::class_<PersistentHint>("ContainerChild",
+                               "ContainerChild stores references to containers and their children with translations.\n\n"
+                               "It should be used as an intermediate object to either add it to ContainerPath or\n"
+                               "to retrieve the container, child, or translations elements.",
+                               py::no_init)
+        .def_readonly("container", &PersistentHint::first)
+        .add_property("child", &PersistentHint::getChild)
+        .add_property("translation", &PersistentHint::translation)
+    ;
 
-    py::class_<PathHints>("Path", "Path is used to specify unique instance of every element in the geometry tree, "
-                                  "even if this element is inserted to the geometry graph in more than one place.")
+    py::class_<PathHints::Hint>("ContainerChildWeak",
+                                "ContainerChildWeak stores weak references to containers and their children with translations.\n\n"
+                                "It may only be used as an intermediate object to either add it to ContainerPath or\n"
+                                "to retrieve the container, child, or translations elements.",
+                                py::no_init)
+        .add_property("container", &PathHints::getContainer)
+        .add_property("child", &Hint_child)
+        .add_property("translation", &Hint_translation)
+    ;
+
+    py::implicitly_convertible<PersistentHint, PathHints::Hint>();
+
+    py::class_<PathHints>("ContainerPath",
+                          "ContainerPath is used to specify unique instance of every element in the geometry,\n"
+                          "even if this element is inserted to the geometry tree in more than one place.\n\n"
+                          "It contains a set of ContainerChild objects holding weak references to containers"
+                          "and their childred.")
         .def("add", (void (PathHints::*)(const PathHints::Hint&)) &PathHints::addHint, "Add hint to the path.")
         .def(py::self += py::other<PathHints::Hint>())
     ;
-
-    init_ContainerElement<2>();
-    init_ContainerElement<3>();
-    py::implicitly_convertible<ContainerElement<2>, PathHints::Hint>();
-    py::implicitly_convertible<ContainerElement<3>, PathHints::Hint>();
 
     // Translation container
     init_TranslationContainer<2>();
@@ -136,7 +171,8 @@ void register_geometry_container()
         "MultiStack2D(repeatCount = 1, baseLevel = 0) -> Create new multi-stack with repeatCount repetitions",
          py::init<int, double>())
         .def_readwrite("repeats", &MultiStackContainer<2>::repeat_count, "Number of repeats of the stack content")
-        .def("__getitem__", &MultiStack__getitem__<2>)
+        .def("repeatedItem", &MultiStack_repeatedItem<2>,
+             "Return new hint for a repeated item in te stack as if all repetitions were added separately")
     ;
 
     py::class_<MultiStackContainer<3>, shared_ptr<MultiStackContainer<3>>, py::bases<StackContainer3d>>("MultiStack3D",
@@ -144,9 +180,9 @@ void register_geometry_container()
         "MultiStack3D(repeatCount = 1, baseLevel = 0) -> Create new multi-stack with repeatCount repetitions",
         py::init<int, double>())
         .def_readwrite("repeats", &MultiStackContainer<3>::repeat_count, "Number of repeats of the stack content")
-        .def("__getitem__", &MultiStack__getitem__<3>)
+        .def("repeatedItem", &MultiStack_repeatedItem<3>,
+             "Return new hint for a repeated item in te stack as if all repetitions were added separately")
     ;
-
 }
 
 

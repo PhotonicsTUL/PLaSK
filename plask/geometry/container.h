@@ -75,6 +75,42 @@ struct PathHints {
     shared_ptr<GeometryElement> getChild(shared_ptr<GeometryElement> container) const;
 
     /**
+     * Get child for given hint.
+     * @return child for given hint or @c nullptr if there is no hint for given container
+     */
+    static shared_ptr<GeometryElement> getChild(const Hint& hint);
+
+    /**
+     * Get container for given hint.
+     * @return container for given hint or @c nullptr if there is no hint for given container
+     */
+    static shared_ptr<GeometryElement> getContainer(const Hint& hint);
+
+    /**
+     * Get child for given container casted to Translation object.
+     * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
+     **/
+    template <int dim> shared_ptr<Translation<dim>> getTranslationChild(shared_ptr<GeometryElement> container) {
+        return dynamic_pointer_cast<Translation<dim>>(getChild(container));
+    }
+
+    /**
+     * Get child for given container casted to Translation object.
+     * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
+     **/
+    template <int dim> shared_ptr<Translation<dim>> getTranslationChild(shared_ptr<GeometryElement> container) const {
+        return dynamic_pointer_cast<Translation<dim>>(getChild(container));
+    }
+
+    /**
+     * Get child for given hint casted to Translation object.
+     * @return casted child for given hint or @c nullptr if there is no hint or it cannot be casted
+     **/
+    template <int dim> static shared_ptr<Translation<dim>> getTranslationChild(const Hint& hint) {
+        return dynamic_pointer_cast<Translation<dim>>(getChild(hint));
+    }
+
+    /**
      * Remove all hints which refer to deleted objects.
      */
     void cleanDeleted();

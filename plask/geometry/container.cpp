@@ -29,6 +29,15 @@ shared_ptr<GeometryElement> PathHints::getChild(shared_ptr<GeometryElement> cont
     return (e == hintFor.end() || e->first.expired()) ? shared_ptr<GeometryElement>() : e->second.lock();
 }
 
+shared_ptr<GeometryElement> PathHints::getChild(const Hint& hint) {
+    return (hint.first.expired()) ? shared_ptr<GeometryElement>() : hint.second.lock();
+}
+
+shared_ptr<GeometryElement> PathHints::getContainer(const Hint& hint) {
+    return (hint.first.expired()) ? shared_ptr<GeometryElement>() : hint.first.lock();
+}
+
+
 void PathHints::cleanDeleted() {
     for(auto i = hintFor.begin(); i != hintFor.end(); ) {
         if (i->first.expired() || i->second.expired())
