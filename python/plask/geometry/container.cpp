@@ -104,19 +104,19 @@ static py::object Hint_translation(const PathHints::Hint& hint) {
 void register_geometry_container()
 {
     py::class_<PersistentHint>("ContainerChild",
-                               "ContainerChild stores references to containers and their children with translations.\n\n"
+                               "ContainerChild stores references to container and its child with translation.\n\n"
                                "It should be used as an intermediate object to either add it to ContainerPath or\n"
-                               "to retrieve the container, child, or translations elements.",
+                               "to retrieve the container, child, or translation elements.",
                                py::no_init)
         .def_readonly("container", &PersistentHint::first)
         .add_property("child", &PersistentHint::getChild)
         .add_property("translation", &PersistentHint::translation)
     ;
 
-    py::class_<PathHints::Hint>("ContainerChildWeak",
-                                "ContainerChildWeak stores weak references to containers and their children with translations.\n\n"
+    py::class_<PathHints::Hint>("WeakContainerChild",
+                                "WeakContainerChild stores weak references to container and its child with translation.\n\n"
                                 "It may only be used as an intermediate object to either add it to ContainerPath or\n"
-                                "to retrieve the container, child, or translations elements.",
+                                "to retrieve the container, child, or translation elements.",
                                 py::no_init)
         .add_property("container", &PathHints::getContainer)
         .add_property("child", &Hint_child)
