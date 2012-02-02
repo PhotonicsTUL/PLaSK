@@ -2,7 +2,6 @@
 #define PLASK__SPACE_CHANGER_CARTESIAN_H
 
 #include "element.h"
-#include "calculation_space.h"
 
 namespace plask {
 

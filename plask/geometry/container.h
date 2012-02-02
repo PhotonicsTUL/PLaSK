@@ -14,6 +14,8 @@ This file includes containers of geometries elements.
 
 namespace plask {
 
+//TODO pełne ścieżki
+    
 /**
 Represent hints for path finder.
 
