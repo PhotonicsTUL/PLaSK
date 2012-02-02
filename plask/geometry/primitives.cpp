@@ -107,4 +107,7 @@ const Primitive<1>::DVec Primitive<1>::ZERO_VEC = 0.0;
 const Primitive<2>::DVec Primitive<2>::ZERO_VEC = Vec<2>(0.0, 0.0);
 const Primitive<3>::DVec Primitive<3>::ZERO_VEC = Vec<3>(0.0, 0.0, 0.0);
 
+const Primitive<2>::DVec Primitive<2>::NAN_VEC = Vec<2>(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+const Primitive<3>::DVec Primitive<3>::NAN_VEC = Vec<3>(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+
 }

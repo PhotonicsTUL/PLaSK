@@ -28,6 +28,8 @@ struct CartesianExtend: public GeometryElementChangeSpace<3, 2>/*, public Calcul
     virtual shared_ptr<Material> getMaterial(const DVec& p) const;
 
     virtual std::vector<Rect> getLeafsBoundingBoxes() const;
+    
+    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const;
 
 private:
     ///@return true only if p can be inside this, false if for sure its not inside

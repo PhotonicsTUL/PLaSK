@@ -7,6 +7,7 @@ This file includes base classes for geometries elements.
 
 
 #include <vector>
+#include <tuple>
 
 
 #include "../material/material.h"
@@ -65,6 +66,12 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Virtual destructor. Do nothing.
      */
     virtual ~GeometryElement() {}
+    
+    /**
+     * Get all leafs in subtree with this in root.
+     * @return all leafs in subtree with this in root
+     */
+    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const = 0;
 
     //virtual GeometryTransform getTransform()
 
@@ -135,6 +142,15 @@ struct GeometryElementD: public GeometryElement {
      * @return bounding boxes of all leafs
      */
     virtual std::vector<Rect> getLeafsBoundingBoxes() const = 0;
+    
+    /**
+     * Get all leafs and its translations in subtree with this in root.
+     * @return all leafs and its translations in subtree with this in root.
+     *
+     * Some leafs can have all vector of NaNs as trasnalations.
+     * This mean that translation is not well defined (some space changer on path).
+     */
+    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const = 0;
 
 };
 
@@ -148,6 +164,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     typedef typename GeometryElementD<dim>::DVec DVec;
     typedef typename GeometryElementD<dim>::Rect Rect;
     using GeometryElementD<dim>::getBoundingBox;
+    using GeometryElementD<dim>::shared_from_this;
 
     shared_ptr<Material> material;
 
@@ -161,6 +178,14 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 
     virtual std::vector<Rect> getLeafsBoundingBoxes() const {
         return { this->getBoundingBox() };
+    }
+    
+    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+        return { this->shared_from_this() };
+    }
+    
+    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+        return { std::make_pair(shared_from_this(), Primitive<dim>::ZERO_VEC) };
     }
 
     virtual bool isInSubtree(GeometryElement& el) const {
@@ -183,6 +208,10 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     explicit GeometryElementTransform(shared_ptr<ChildType> child = nullptr): _child(child) {}
 
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
+    
+    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+        return getChild()->getLeafs();
+    }
 
     /**
      * Get child.
@@ -246,11 +275,22 @@ struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, Chi
 
     typedef typename ChildType::Rect ChildRect;
     typedef typename ChildType::DVec ChildVec;
+    typedef typename GeometryElementTransform<this_dim, ChildType>::DVec DVec;
+    using GeometryElementTransform<this_dim, ChildType>::getChild;
 
     explicit GeometryElementChangeSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransform<this_dim, ChildType>(child) {}
 
     ///@return GE_TYPE_SPACE_CHANGER
     virtual GeometryElementType getType() const { return GE_TYPE_SPACE_CHANGER; }
+
+    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+        std::vector< shared_ptr<const GeometryElement> > v = getChild()->getLeafs();
+        std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result(v.size());
+        std::transform(v.begin(), v.end(), result.begin(), [](shared_ptr<const GeometryElement> e) {
+            return std::make_pair(e, Primitive<this_dim>::NAN_VEC);
+        });
+        return result;
+    }
 
 };
 

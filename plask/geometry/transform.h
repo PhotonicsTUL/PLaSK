@@ -53,6 +53,12 @@ struct Translation: public GeometryElementTransform<dim> {
         for (Rect& r: result) r.translate(inv_tr);
         return result;
     }
+    
+    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+        std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = getChild()->getLeafsWithTranslations();
+        for (std::tuple<shared_ptr<const GeometryElement>, DVec>& r: result) std::get<1>(r) -= translation;
+        return result;
+    }
 
 };
 

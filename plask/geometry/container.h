@@ -189,6 +189,24 @@ public:
         }
         return result;
     }
+    
+    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+        std::vector< shared_ptr<const GeometryElement> > result;
+        for (auto child: children) {
+            std::vector< shared_ptr<const GeometryElement> > child_leafs = child->getLeafs();
+            result.insert(result.end(), child_leafs.begin(), child_leafs.end());
+        }
+        return result;
+    }
+    
+    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+        std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result;
+        for (auto child: children) {
+            std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > child_leafs_tran = child->getLeafsWithTranslations();
+            result.insert(result.end(), child_leafs_tran.begin(), child_leafs_tran.end());
+        }
+        return result;
+    }
 
     virtual bool isInSubtree(GeometryElement& el) const {
         if (&el == this) return true;
@@ -566,9 +584,28 @@ public:
         const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
         for (unsigned r = 1; r < repeat_count; ++r) {
             result.insert(result.end(), result.begin(), result.begin() + size);
-            const double delta = minusZeroBasedStackHeight * r;
             for (auto i = result.end() - size; i != result.end(); ++i)
-                i->translateUp(delta);
+                i->translateUp(minusZeroBasedStackHeight * r);
+        }
+        return result;
+    }
+    
+    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+        std::vector< shared_ptr<const GeometryElement> > result = UpperClass::getLeafs();
+        std::size_t size = result.size();   //oryginal size
+        for (unsigned r = 1; r < repeat_count; ++r)
+            result.insert(result.end(), result.begin(), result.begin() + size);
+        return result;
+    }
+    
+    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+        std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = UpperClass::getLeafsWithTranslations();
+        std::size_t size = result.size();   //oryginal size
+        const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
+        for (unsigned r = 1; r < repeat_count; ++r) {
+            result.insert(result.end(), result.begin(), result.begin() + size);
+            for (auto i = result.end() - size; i != result.end(); ++i)
+                std::get<1>(*i).up += minusZeroBasedStackHeight * r;
         }
         return result;
     }

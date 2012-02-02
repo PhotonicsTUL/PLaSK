@@ -280,6 +280,9 @@ struct Primitive<2> {
 
     /// Zeroed 2d vector.
     static const DVec ZERO_VEC;
+    
+    /// NaNed 2d vector.
+    static const DVec NAN_VEC;
 };
 
 /**
@@ -299,6 +302,9 @@ struct Primitive<3> {
 
     /// Zeroed 3d vector.
     static const DVec ZERO_VEC;
+    
+    /// NaNed 3d vector.
+    static const DVec NAN_VEC;
 };
 
 } // namespace plask

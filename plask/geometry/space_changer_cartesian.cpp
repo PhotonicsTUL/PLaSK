@@ -28,6 +28,10 @@ std::vector<CartesianExtend::Rect> CartesianExtend::getLeafsBoundingBoxes() cons
     return result;
 }
 
+std::vector< boost::shared_ptr< const plask::GeometryElement > > CartesianExtend::getLeafs() const {
+    return getChild()->getLeafs();
+}
+
 shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {
     double length = XML::requireAttr<double>(reader.source, "length");
     //TODO read space size
