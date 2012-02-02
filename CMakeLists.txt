@@ -65,6 +65,7 @@ endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
+include_directories(${Boost_INCLUDE_DIRS})
 
 ## ---------- Fortran name mangling --------------------------------------------
 #enable_language(Fortran OPTIONAL)
@@ -215,7 +216,6 @@ if(BUILD_TESTS)
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
-        include_directories(${Boost_INCLUDE_DIRS})
         file(GLOB_RECURSE plask-test_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
         add_executable(plask-test ${plask-test_src})
         set_target_properties(plask-test PROPERTIES OUTPUT_NAME test_plask)
