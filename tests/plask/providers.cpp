@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(delegate_to_member) {
     struct OneDouble: public plask::SingleValueProperty<double> {};
     plask::ProviderFor<OneDouble>::Delegate provider(&obj, &Obj::member);
     plask::ReceiverFor<OneDouble> receiver;
-    receiver << provider;
+    receiver <<= provider;
     BOOST_CHECK_EQUAL(receiver(), 1.0);
 }
 

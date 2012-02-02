@@ -44,8 +44,8 @@ namespace plask {
  * PModule1 m1;
  * PModule2 m2;
  * RModule r;
- * r.inTemperature << m1.outTemperature;   //connect
- * r.inTemperature << m2.outTemperature;   //change data source of r from m1 to m2
+ * r.inTemperature <<= m1.outTemperature;   //connect
+ * r.inTemperature <<= m2.outTemperature;   //change data source of r from m1 to m2
  * @endcode
  *
  * @see @ref modules_write; @ref providers; plask::ProviderFor

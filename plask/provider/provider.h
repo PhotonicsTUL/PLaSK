@@ -63,7 +63,7 @@ typedef plask::ReceiverFor<MyProperty> MyPropertyReceiver;
 // Usage example:
 MyPropertyProvider::WithValue provider;
 MyPropertyReceiver receiver;
-reciver << provider;     //connect
+reciver <<= provider;     //connect
 @endcode
 
 @subsection providers_writing_manual Flexible (manual) way
@@ -228,7 +228,7 @@ struct Receiver: public Provider::Listener {
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, can be @c nullptr to only disconnect from current provider.
      */
-    void operator<<(ProviderT *provider) {
+    void operator<<=(ProviderT *provider) {
         setProvider(provider);
     }
 
@@ -236,7 +236,7 @@ struct Receiver: public Provider::Listener {
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider
      */
-    void operator<<(ProviderT &provider) {
+    void operator<<=(ProviderT &provider) {
         setProvider(&provider);
     }
 
