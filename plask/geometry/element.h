@@ -34,8 +34,6 @@ struct GeometryTransform {
     //GeometryTransform compose(GeometryTransform)
 };
 
-//TODO getLeafs zwracające liście z trasnlacjami
-
 /**
  * Base class for all geometries.
  */
