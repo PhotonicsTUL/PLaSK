@@ -58,7 +58,11 @@ macro(make_default)
             file(WRITE "${curr_path}/__init__.py" "")
         endforeach()
         # Build Python interface
-        add_library(${PYTHON_TARGET_NAME} MODULE ${interface_src})
+        if(WIN32)
+            add_library(${PYTHON_TARGET_NAME} SHARED ${interface_src})
+        else()
+            add_library(${PYTHON_TARGET_NAME} MODULE ${interface_src})
+        endif()
         target_link_libraries(${PYTHON_TARGET_NAME} ${TARGET_NAME} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES OUTPUT_NAME ${MODULE_NAME}
                               PREFIX "" LIBRARY_OUTPUT_DIRECTORY ${MODULE_PATH})
