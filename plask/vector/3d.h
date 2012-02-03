@@ -57,13 +57,17 @@ struct Vec<3, T> {
      * @param p vector to copy from
      */
     template <typename OtherT>
-    Vec(const Vec<3,OtherT>& p): c0(p.c0), c1(p.c1), c2(p.c2) {}
+    Vec(const Vec<3,OtherT>& p) {
+        c0 = p.c0; c1 = p.c1; c2 = p.c2;
+    }
 
     /**
-     * Construct vector with given coordinates.
-     * @param c0__lon, c1__tran, c2__up coordinates
+     * Construct vector with given components.
+     * @param c0__lon, c1__tran, c2__up components
      */
-    Vec(const T& c0__lon, const T& c1__tran, const T& c2__up): c0(c0__lon), c1(c1__tran), c2(c2__up) {}
+    Vec(const T& c0__lon, const T& c1__tran, const T& c2__up) {
+        c0 = c0__lon; c1 = c1__tran; c2 = c2__up;
+    }
 
     /**
      * Construct vector with components read from input iterator (including C array).
@@ -260,7 +264,7 @@ inline Vec<3, T> operator*(const T scale, const Vec<3, T>& v) { return v*scale; 
  * @return conjugate vector
  */
 template <typename T>
-inline Vec<3, T> conj(const Vec<3, T>& v) { return Vec<3, T> {conj(v.c0), conj(v.c1), conj(v.c2)}; }
+inline Vec<3, T> conj(const Vec<3, T>& v) { return Vec<3, T>(conj(v.c0), conj(v.c1), conj(v.c2)); }
 
 /**
  * Compute dot product of two vectors @p v1 and @p v2

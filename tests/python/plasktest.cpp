@@ -16,9 +16,9 @@ std::vector<MyVec> getVecs() {
     result.push_back(MyVec(7,8));
     result.push_back(MyVec(9,10));
 
-    std::cerr << "Vector array: ";
-    for (auto p = (double*)&result[0]; p < (double*)&(*result.end()); ++p) std::cerr << *p << " ";
-    std::cerr << "\n";
+    // std::cerr << "Vector array: ";
+    // for (auto p = (double*)&result[0]; p < (double*)&(*result.end()); ++p) std::cerr << *p << " ";
+    // std::cerr << "\n";
 
     return result;
 }

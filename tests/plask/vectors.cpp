@@ -18,6 +18,10 @@ BOOST_AUTO_TEST_CASE(Vector3d) {
     //plask::Vector2d<float> v_f(1.0, 2.0);
 }
 
+BOOST_AUTO_TEST_CASE(VectorOperations) {
+    plask::Vec<2,double> a(1., 2.), b(10., 20.);
+    BOOST_CHECK_EQUAL(plask::dot(a, b), 50.);
+}
 
 // BOOST_AUTO_TEST_CASE(space_conversion) {
 //     plask::Vec<2,double> v2 = plask::SpaceXY::local(0., 1., 2.);

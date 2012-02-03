@@ -67,6 +67,10 @@ find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
 include_directories(${Boost_INCLUDE_DIRS})
 
+if(MINGW)
+    add_definitions(-Wno-attributes) # get rid of annoying warning in Boost
+endif()
+
 ## ---------- Fortran name mangling --------------------------------------------
 #enable_language(Fortran OPTIONAL)
 #if (CMAKE_Fortran_COMPILER_WORKS)
@@ -104,6 +108,8 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 # ---------- Python --------------------------------------------
 
 if (BUILD_PYTHON)
+    set(plask_PYTHONPATH "${CMAKE_BINARY_DIR}/lib.python")
+
     # Find Python
     find_package(PythonInterp REQUIRED)
     find_package(PythonLibs REQUIRED)
@@ -122,11 +128,11 @@ if (BUILD_PYTHON)
     if (BUILD_PYTHON_MODULE)
         if(WIN32)
             add_library(plaskcore SHARED ${python_plask_src})
-            set_target_properties(plaskcore PROPERTIES SUFFIX ".pyd")
+            set_target_properties(plaskcore PROPERTIES SUFFIX ".pyd" RUNTIME_OUTPUT_DIRECTORY "${plask_PYTHONPATH}/plask")
         else()
             add_library(plaskcore MODULE ${python_plask_src})
         endif()
-        set_target_properties(plaskcore PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY "lib.python/plask")
+        set_target_properties(plaskcore PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY "${plask_PYTHONPATH}/plask")
         target_link_libraries(plaskcore ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
     endif(BUILD_PYTHON_MODULE)
 
@@ -141,33 +147,30 @@ if (BUILD_PYTHON)
         target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
     endif(BUILD_PYTHON_EXECUTABLE)
 
-    file(COPY ${python_plask_py} DESTINATION ${CMAKE_BINARY_DIR}/lib.python/plask)
+    file(COPY ${python_plask_py} DESTINATION ${plask_PYTHONPATH}/plask)
 
 endif(BUILD_PYTHON)
 
 # ---------- macro for testing --------------------------------------------
+if(WIN32)
+    set(ENV_PATH $ENV{PATH})
+    string(REPLACE ";" "\;" ENV_PATH "${ENV_PATH}")
+    string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/bin")
+    set(plask_test_env "PYTHONPATH=${plask_PYTHONPATH};PATH=${ENV_PATH}\;${plask_bin_path}")
+else()
+    set(plask_test_env "PYTHONPATH=${plask_PYTHONPATH}")
+endif()
+
 macro(add_python_test test test_file)
     if(BUILD_PYTHON_EXECUTABLE)
         add_test(NAME python-builtin/${test}
                  COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
-        if(WIN32)
-            set_tests_properties(python-builtin/${test} PROPERTIES
-                                    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}\\lib.python;PATH=${PATH}\;${CMAKE_BINARY_DIR}\\bin")
-        else()
-            set_tests_properties(python-builtin/${test} PROPERTIES
-                                    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib.python")
-        endif()
+        set_tests_properties(python-builtin/${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
     endif()
     if(BUILD_PYTHON_MODULE)
         add_test(NAME python-module/${test}
                  COMMAND "${PYTHON_EXECUTABLE}" -B ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
-        if(WIN32)
-            set_tests_properties(python-module/${test} PROPERTIES
-                                    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}\\lib.python;PATH=${PATH}\;${CMAKE_BINARY_DIR}\\bin")
-        else()
-            set_tests_properties(python-module/${test} PROPERTIES
-                                    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib.python")
-        endif()
+        set_tests_properties(python-module/${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
     endif()
 endmacro()
 
@@ -238,25 +241,17 @@ if(BUILD_TESTS)
 
         if(WIN32)
             add_library(plask-test-python SHARED ${python_tests_module_src})
+            set_target_properties(plask-test-python PROPERTIES SUFFIX ".pyd" RUNTIME_OUTPUT_DIRECTORY "${plask_PYTHONPATH}")
         else()
             add_library(plask-test-python MODULE ${python_tests_module_src})
         endif()
-        set_target_properties(plask-test-python PROPERTIES OUTPUT_NAME plasktest PREFIX ""
-                              LIBRARY_OUTPUT_DIRECTORY "lib.python")
+        set_target_properties(plask-test-python PROPERTIES OUTPUT_NAME plasktest PREFIX "" LIBRARY_OUTPUT_DIRECTORY "${plask_PYTHONPATH}")
         if (BUILD_PYTHON_MODULE OR WIN32)
             target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
-            if(WIN32)
-                set_target_properties(plask-test-python PROPERTIES SUFFIX ".pyd")
-            endif()
         else()
             target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
         endif()
         set(plask_test_depends ${plask_test_depends} plask-test-python)
-
-        if(WIN32)
-            set(PATH $ENV{PATH})
-            string(REPLACE ";" "\;" PATH "${PATH}")
-        endif()
 
         file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python/*.py)
         foreach(test_file ${python_tests})
@@ -319,12 +314,13 @@ endif()
 if (BUILD_PYTHON_EXECUTABLE)
     if(NOT WIN32)
         file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask
-            "PYTHONPATH=${CMAKE_BINARY_DIR}/lib.python ${CMAKE_BINARY_DIR}/bin/plask $@\n")
+            "PYTHONPATH=${plask_PYTHONPATH} ${CMAKE_BINARY_DIR}/bin/plask $@\n")
         file(COPY ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask DESTINATION ${CMAKE_BINARY_DIR}
             FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE OWNER_WRITE)
     else()
+        string(REPLACE "/" "\\" plask_exe "${CMAKE_BINARY_DIR}/bin/plask.exe")
         file(WRITE ${CMAKE_BINARY_DIR}/plask.bat
-            "set PYTHONPATH=${CMAKE_BINARY_DIR}\\lib.python\n${CMAKE_BINARY_DIR}\\bin\\plask.exe %*")
+            "set PYTHONPATH=${plask_PYTHONPATH}\n${plask_exe} %*")
     endif()
 endif()
 

@@ -30,17 +30,17 @@ class Vector(unittest.TestCase):
         va = plask.config.vertical_axis
 
         plask.config.vertical_axis = 'z'
-        self.assertAlmostEqual( plask.vec(y=1, z=2), plask.vec(1,2) )
-        self.assertAlmostEqual( plask.vec(r=1, z=2), plask.vec(1,2) )
-        self.assertAlmostEqual( plask.vec(z=3, x=1, y=2), plask.vec(1,2,3) )
-        self.assertAlmostEqual( plask.vec(r=1, z=3, phi=2), plask.vec(1,2,3) )
+        self.assertEqual( plask.vec(y=1, z=2), plask.vec(1,2) )
+        self.assertEqual( plask.vec(r=1, z=2), plask.vec(1,2) )
+        self.assertEqual( plask.vec(z=3, x=1, y=2), plask.vec(1,2,3) )
+        self.assertEqual( plask.vec(r=1, z=3, phi=2), plask.vec(1,2,3) )
         self.assertRaises( TypeError, lambda: plask.vec(x=1, y=2) ) # for vertical_axis = 'z' x component is not allowed in 2D
         self.assertRaises( TypeError, lambda: plask.vec(bad_x=1, z=2, y=1) )
         self.assertRaises( TypeError, lambda: plask.vec(r=1, y=2, z=3) )
 
         plask.config.vertical_axis = 'y'
-        self.assertAlmostEqual( plask.vec(x=1, y=2), plask.vec(1,2) )
-        self.assertAlmostEqual( plask.vec(y=3, x=2, z=1), plask.vec(1,2,3) )
+        self.assertEqual( plask.vec(x=1, y=2), plask.vec(1,2) )
+        self.assertEqual( plask.vec(y=3, x=2, z=1), plask.vec(1,2,3) )
         self.assertRaises( TypeError, lambda: plask.vec(y=1, z=2) ) # for vertical_axis = 'y' z component is not allowed in 2D
         self.assertRaises( TypeError, lambda: plask.vec(r=1, z=2) )
         self.assertRaises( TypeError, lambda: plask.vec(phi=1, y=2, z=3) )
@@ -50,19 +50,19 @@ class Vector(unittest.TestCase):
 
     def testItemAccess(self):
         '''Test if the items can be accessed corretly using all possible ways'''
-        self.assertAlmostEqual( [self.a2[0], self.a2[1]], [1,2] )
-        self.assertAlmostEqual( [self.a3[-3], self.a3[-2], self.a3[-1]], [1,2,3] )
+        self.assertEqual( [self.a2[0], self.a2[1]], [1,2] )
+        self.assertEqual( [self.a3[-3], self.a3[-2], self.a3[-1]], [1,2,3] )
 
         self.c3[0] = 1j
-        self.assertAlmostEqual( self.c3, plask.vec(1j,200,300) )
+        self.assertEqual( self.c3, plask.vec(1j,200,300) )
         self.c3[0] = 100.
 
         a = plask.vec(1,2, dtype=complex)
         a[1] = 2j
-        self.assertAlmostEqual( a, plask.vec(1,2j) )
+        self.assertEqual( a, plask.vec(1,2j) )
         a = plask.vec(1,2,3, dtype=complex)
         a[1] = 2j
-        self.assertAlmostEqual( a, plask.vec(1,2j,3) )
+        self.assertEqual( a, plask.vec(1,2j,3) )
 
         va = plask.config.vertical_axis
 
@@ -105,33 +105,33 @@ class Vector(unittest.TestCase):
 
     def testOperations(self):
         '''Test vector mathematical operations'''
-        self.assertAlmostEqual( self.c2, plask.vec(100, 200) )
-        self.assertAlmostEqual( plask.vec(100, 200, 300), self.c3 )
-        self.assertAlmostEqual( self.a2.abs2(), 5 )
-        self.assertAlmostEqual( abs(self.a3)**2, 14 )
+        self.assertEqual( self.c2, plask.vec(100, 200) )
+        self.assertEqual( plask.vec(100, 200, 300), self.c3 )
+        self.assertEqual( self.a2.abs2(), 5 )
+        self.assertEqual( abs(self.a3)**2, 14 )
         self.assertTrue ( self.a2 != self.c2)
-        #self.assertTrue ( self.a2 == plask.vec(1,2) )
-        self.assertAlmostEqual( self.a2 + self.c2, plask.vec(101,202) )
-        self.assertAlmostEqual( self.a2.dot(self.b2), 50)
-        self.assertAlmostEqual( self.a2.dot(self.c2), 500)
-        self.assertAlmostEqual( self.c2.dot(self.a2), 500)
-        self.assertAlmostEqual( self.a2 * self.b2, 50)
-        self.assertAlmostEqual( self.a2 * self.c2, 500)
-        self.assertAlmostEqual( self.c2 * self.a2, 500)
-        self.assertAlmostEqual( -self.a2, plask.vec(-1,-2) )
-        self.assertAlmostEqual( 2 * self.a2, plask.vec(2, 4) )
-        self.assertAlmostEqual( 10 * self.b3, self.c3 )
-        self.assertAlmostEqual( self.b3 * 10, self.c3 )
-        self.assertAlmostEqual( self.c3, 10 * self.b3 )
+        self.assertTrue ( self.a2 == plask.vec(1.,2.) )
+        self.assertEqual( self.a2 + self.c2, plask.vec(101,202) )
+        self.assertEqual( self.c2 + self.a2, plask.vec(101,202) )
+        self.assertEqual( self.a2.dot(self.b2), 50)
+        self.assertEqual( self.a2.dot(self.c2), 500)
+        self.assertEqual( self.c2.dot(self.a2), 500)
+        self.assertEqual( self.a2 * self.b2, 50)
+        self.assertEqual( self.a2 * self.c2, 500)
+        self.assertEqual( self.c2 * self.a2, 500)
+        self.assertEqual( -self.a2, plask.vec(-1,-2) )
+        self.assertEqual( 2 * self.a2, plask.vec(2, 4) )
+        self.assertEqual( 10 * self.b3, self.c3 )
+        self.assertEqual( self.b3 * 10, self.c3 )
+        self.assertEqual( self.c3, 10 * self.b3 )
         self.a2 *= 2
         self.a2 += self.b2
-        self.assertAlmostEqual( self.a2, plask.vec(12,24) )
+        self.assertEqual( self.a2, plask.vec(12,24) )
         self.a2 -= self.b2
         self.a2 *= 0.5
-        self.assertAlmostEqual( self.a2, plask.vec(1,2) )
-        self.assertAlmostEqual( self.b3 * 0.5, plask.vec(5, 10, 15) )
-        self.assertAlmostEqual( self.a2.conj(), self.a2 )
-        self.assertAlmostEqual( self.d2.conj(), plask.vec(1-2j, 0) )
-        self.assertAlmostEqual( self.d3.conj(), plask.vec(1-2j, 0, 0) )
-        self.assertAlmostEqual( list(self.a3), [1,2,3] )
-        pass
+        self.assertEqual( self.a2, plask.vec(1,2) )
+        self.assertEqual( self.b3 * 0.5, plask.vec(5, 10, 15) )
+        self.assertEqual( self.a2.conj(), self.a2 )
+        self.assertEqual( self.d2.conj(), plask.vec(1-2j, 0) )
+        self.assertEqual( self.d3.conj(), plask.vec(1-2j, 0, 0) )
+        self.assertEqual( list(self.a3), [1,2,3] )

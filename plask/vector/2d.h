@@ -51,13 +51,19 @@ struct Vec<2, T> {
      * @param p vector to copy from
      */
     template <typename OtherT>
-    Vec(const Vec<2,OtherT>& p): c0(p.c0), c1(p.c1) {}
+    Vec(const Vec<2,OtherT>& p) {
+        // In MinGW initnializer lists don't work for complex type :(
+        // probably because of the union
+        c0 = p.c0; c1 = p.c1;
+    }
 
     /**
-     * Construct vector with given coordinates.
-     * @param c0__tran, c1__up coordinates
+     * Construct vector with given components.
+     * @param c0__tran, c1__up components
      */
-    Vec(const T& c0__tran, const T& c1__up): c0(c0__tran), c1(c1__up) {}
+    Vec(const T& c0__tran, const T& c1__up) {
+        c0 = c0__tran; c1 = c1__up;
+    }
 
     /**
      * Construct vector with components read from input iterator (including C array).
@@ -240,7 +246,7 @@ struct Vec<2, T> {
  * @return conjugate vector
  */
 template <typename T>
-inline Vec<2, T> conj(const Vec<2, T>& v) { return Vec<2, T> {conj(v.c0), conj(v.c1)}; }
+inline Vec<2, T> conj(const Vec<2, T>& v) { return Vec<2, T>(conj(v.c0), conj(v.c1)); }
 
 /**
  * Compute dot product of two vectors @p v1 and @p v2

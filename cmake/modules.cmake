@@ -20,7 +20,7 @@ get_filename_component(MODULE_PATH ${MODULE_DIR} PATH)
 if(NOT MODULE_PATH STREQUAL "")
     string(REPLACE "/" ";" MODULE_DIRECTORIES ${MODULE_PATH})
 endif()
-set(MODULE_PATH "${CMAKE_BINARY_DIR}/lib.python/plask/${MODULE_PATH}")
+set(MODULE_PATH "${plask_PYTHONPATH}/plask/${MODULE_PATH}")
 
 # Automatically set sources from the current directory
 file(GLOB module_src *.cpp *.hpp *.h)
@@ -51,7 +51,7 @@ macro(make_default)
     if(BUILD_PYTHON)
         set(PYTHON_TARGET_NAME ${TARGET_NAME}-python)
         # Make package hierarchy
-        set(curr_path "${CMAKE_BINARY_DIR}/lib.python/plask")
+        set(curr_path "${plask_PYTHONPATH}/plask")
         foreach(dir ${MODULE_DIRECTORIES})
             set(curr_path "${curr_path}/${dir}")
             file(MAKE_DIRECTORY ${curr_path})
@@ -64,10 +64,14 @@ macro(make_default)
             add_library(${PYTHON_TARGET_NAME} MODULE ${interface_src})
         endif()
         target_link_libraries(${PYTHON_TARGET_NAME} ${TARGET_NAME} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES OUTPUT_NAME ${MODULE_NAME}
-                              PREFIX "" LIBRARY_OUTPUT_DIRECTORY ${MODULE_PATH})
+        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
+                              LIBRARY_OUTPUT_DIRECTORY ${MODULE_PATH}
+                              OUTPUT_NAME ${MODULE_NAME}
+                              PREFIX "")
         if(WIN32)
-            set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES SUFFIX ".pyd")
+            set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
+                                  RUNTIME_OUTPUT_DIRECTORY "${MODULE_PATH}"
+                                  SUFFIX ".pyd")
         endif()
     endif()
 
