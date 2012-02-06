@@ -16,20 +16,73 @@ This file includes base classes for materials and material database class.
 namespace plask {
 
 /**
+ * Get group in periodic table of given @p element.
+ * @param elementName name of element
+ * @return group of element with given name @p elementName
+ */
+int elementGroup(const std::string& elementName);
+
+/**
  * Represent material, its physical properties.
  */
 struct Material {
 
+    ///Amounts of dopant.
+    enum DOPING_AMOUNT_TYPE {
+        NO_DOPING,              ///< no dopant
+        DOPANT_CONCENTRATION,   ///< doping concentration
+        CARRIER_CONCENTRATION   ///< carrier concentration
+    };
+    
     /**
-     * Check if material composition is compatible with pattern and change NaN-s in composition to calculated amounts.
+     * Type for material composition.
+     */ 
+    typedef std::map<std::string, double> Composition;
+    
+    /**
+     * Change NaN-s in material composition to calculated amounts.
      *
-     * Throw exception if composition is not compatible with pattern or it is impossible to complete it.
-     * @param composition amounts of elements composition with NaN on position for which amounts has not been taken
-     * @param pattern sizes of elements groups, size of first group is represented by digit at highest position in decimal system, second by second highest position, and so on
-     * @return version of @p composition complement with calculated amounts
+     * Throw exception if it is impossible to complete given composition.
+     * @param composition amounts of elements composition with NaN on position for which amounts has not been taken.
      */
-    static std::vector<double> completeComposition(std::vector<double> composition, unsigned pattern);
-
+    static Composition completeComposition(const Composition& composition);
+    
+    /**
+     * Parse composition from string, or string fragment.
+     *
+     * Throws exception in case of parsing errors.
+     * @param begin, end [begin, end) string or range in string
+     * @return parsed, complate composition
+     */
+    static Composition parseComposition(const char* begin, const char* end);
+    
+    /**
+     * Parse composition from string.
+     *
+     * Throws exception in case of parsing errors.
+     * @param composition_str composition string, elements and amounts
+     * @return parsed, complate composition
+     */
+    static Composition parseComposition(const std::string& composition_str);
+    
+    /**
+     * Parse information about dopant from string.
+     *
+     * Throws exception in case of parsing errors.
+     * @param begin, end [begin, end) string or range in string
+     * @param dopant_elem_name[out], doping_amount_type[out], doping_amount[out] parsed values
+     */
+    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, DOPING_AMOUNT_TYPE& doping_amount_type, double& doping_amount);
+    
+    /**
+     * Parse information about dopant from string.
+     *
+     * Throws exception in case of parsing errors.
+     * @param dopant string to parse
+     * @param dopant_elem_name[out], doping_amount_type[out], doping_amount[out] parsed values
+     */
+    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DOPING_AMOUNT_TYPE& doping_amount_type, double& doping_amount);
+    
     /// Do nothing.
     virtual ~Material() {}
 
@@ -411,13 +464,6 @@ struct RotatedMaterial: public Material {
  */
 struct MaterialsDB {
 
-    ///Amounts of dopant.
-    enum DOPING_AMOUNT_TYPE {
-        NO_DOPING,              ///< no dopant
-        DOPANT_CONCENTRATION,   ///< doping concentration
-        CARRIER_CONCENTRATION   ///< carrier concentration
-    };
-
     /**
      * Object of this class (inharited from it) construct material instance.
      */
@@ -425,21 +471,21 @@ struct MaterialsDB {
 
         /**
          * Create material.
-         * @param composition amounts of elements, with NaN for each element for composition was not written
+         * @param composition amounts of elements (completed)
          * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
          * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPANT
          */
-        virtual shared_ptr<Material> operator()(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const = 0;
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const = 0;
 
     };
 
     /**
      * Type of function which construct material.
-     * @param composition amounts of elements, with NaN for each element for composition was not written
+     * @param composition amounts of elements (completed)
      * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
      * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPANT
      */
-    typedef Material* construct_material_f(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount);
+    typedef Material* construct_material_f(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount);
 
     /**
      * Construct material instance using construct_f function.
@@ -447,7 +493,7 @@ struct MaterialsDB {
     struct FunctionBasedMaterialConstructor: public MaterialConstructor {
         construct_material_f* constructFunction;
         FunctionBasedMaterialConstructor(construct_material_f* constructFunction): constructFunction(constructFunction) {}
-        virtual shared_ptr<Material> operator()(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const {
             return shared_ptr<Material>(constructFunction(composition, doping_amount_type, dopant_amount));
         }
     };
@@ -455,24 +501,35 @@ struct MaterialsDB {
 
     /**
      * Template of function which construct material with given type.
-     * @param composition amounts of elements, with NaN for each element for composition was not writen
+     * @param composition amounts of elements (completed)
      * @param dopant_amount_type type of amount of dopand, needed to interpretation of @p dopant_amount
      * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPING
      * @tparam MaterialType type of material to construct, must fill requirements:
      * - inherited from plask::Material
-     * - has public, static unsigned COMPOSITION_PATTERN field which determinate sizes of composition groups (for example: 21 means that there are two groups, first group has size 2 and second has size 1)
-     * - must have constructor which takes parameters: std::vector<double> composition, DOPING_AMOUNT_TYPE dopant_amount_type, double dopant_amount
+     * - must have constructor which takes parameters: const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount
      * - this constructor can suppose that composition is complete (without NaN)
      */
     //TODO set some by methods? what with materials without dopands?
-    template <typename MaterialType> Material* construct(const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
-        return new MaterialType(Material::completeComposition(composition, MaterialType::COMPOSITION_PATTERN), doping_amount_type, doping_amount);
+    template <typename MaterialType> Material* construct(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
+        return new MaterialType(composition, doping_amount_type, doping_amount);
     }
 
     /// Map: material name -> materials constructors functions
     //  (it needs to be public to enable access from Python interface)
     std::map<std::string, std::unique_ptr<const MaterialConstructor> > constructors;
 
+    /**
+     * Create material object.
+     * @param composition complete elements composition
+     * @param dopant_name name of dopant (if any)
+     * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
+     * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
+     * @return constructed material
+     * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
+     * @see @ref Material::completeComposition
+     */
+    shared_ptr<Material> get(const Material::Composition& composition, const std::string& dopant_name = "", Material::DOPING_AMOUNT_TYPE doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+    
     /**
      * Create material object.
      * @param parsed_name_with_dopant material name with dopant name in format material_name[:dopant_name], for example: "AlGaN" or "AlGaN:Mg"
@@ -482,7 +539,7 @@ struct MaterialsDB {
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      */
-    shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type = NO_DOPING, double doping_amount = 0.0) const;
+    //shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type = NO_DOPING, double doping_amount = 0.0) const;
 
     /**
      * Create material object.
@@ -528,6 +585,7 @@ struct MaterialsDB {
      */
     //TODO materials will be created
     //void init();
+    
 };
 
 } // namespace plask

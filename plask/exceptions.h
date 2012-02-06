@@ -32,7 +32,10 @@ struct Exception: public std::runtime_error {
 struct CriticalException: public Exception {
     
     ///@param msg error message
-    CriticalException(const std::string& msg): Exception(msg) {}
+    CriticalException(const std::string& msg): Exception("Critical exception: " + msg) {}
+    
+    template <typename... T>
+    CriticalException(const std::string& msg, const T&... args): Exception("Critical exception: " + msg, args...) {}
 };
 
 /**
@@ -93,12 +96,25 @@ struct NoProvider: public Exception {
 /**
  * This exception is thrown when material (typically with given name) is not found.
  */
-struct NoSuchMaterial: public Exception {
-    //std::string materialName;
-
+class NoSuchMaterial: public Exception {
+    
+    template <typename ComponentMap>
+    std::string constructMsg(const ComponentMap& comp, const std::string dopant_name) {
+        std::string result = "No such material with composition consists of:";
+        for (auto c: comp) (result += ' ') += c.first;
+        if (!dopant_name.empty()) (result += ". And dopant: ") += dopant_name;
+        return result;
+    }
+    
+public:
     ///@param material_name name of material which not exists
     NoSuchMaterial(const std::string& material_name)
-        : Exception("No such material \"" + material_name + "\"")/*, materialName(material_name)*/ {}
+        : Exception("No such material: %1%", material_name)/*, materialName(material_name)*/ {}
+
+    template <typename ComponentMap>
+    NoSuchMaterial(const ComponentMap& comp, const std::string dopant_name)
+        : Exception(constructMsg(comp, dopant_name)) {}
+    
 };
 
 /**

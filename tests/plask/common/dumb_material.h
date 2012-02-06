@@ -6,10 +6,10 @@ struct DumbMaterial: public plask::Material {
     virtual std::string name() const { return "Dumb"; }
 };
 
-inline plask::Material* construct_dumb_material(const std::vector<double>& composition, plask::MaterialsDB::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
+inline plask::Material* construct_dumb_material(const plask::Material::Composition& composition, plask::Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
     return new DumbMaterial();
 }
 
 inline void initDumbMaterialDb(plask::MaterialsDB& db) {
-    db.add("Dumb", &construct_dumb_material);
+    db.add("Al", &construct_dumb_material);
 }

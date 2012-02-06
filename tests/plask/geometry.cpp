@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         plask::MaterialsDB materialsDB;
         initDumbMaterialDb(materialsDB);
         plask::GeometryManager manager;
-        manager.loadFromXMLString("<geometry axis=\"xy\"><stack2d repeat=\"2\"><child><block2d name=\"block\" x=\"4\" y=\"2\" material=\"Dumb\" /></child><ref name=\"block\" /></stack2d></geometry>", materialsDB);
+        manager.loadFromXMLString("<geometry axis=\"xy\"><stack2d repeat=\"2\"><child><block2d name=\"block\" x=\"4\" y=\"2\" material=\"Al\" /></child><ref name=\"block\" /></stack2d></geometry>", materialsDB);
         //BOOST_CHECK_EQUAL(manager.elements.size(), 3);
         BOOST_CHECK(manager.getElement("block") != nullptr);
         BOOST_CHECK(manager.getElement("notexist") == nullptr);

@@ -142,26 +142,21 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
   public:
     PythonMaterialConstructor(py::object material_class, std::string dope="") : material_class(material_class), dopant(dope) {}
 
-    inline shared_ptr<Material> operator()(const std::vector<double>& composition, MaterialsDB::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
+    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
     {
 
         // We pass composition parameters as *args to constructor
+        //TODO changed by Piotr, to check if fine
         py::list args;
-        bool all_nan = true;
-        for (auto c : composition) {
-            if (!std::isnan(c)) { all_nan = false; break; }
-        }
-        if (!all_nan) {
-            for (auto c : composition) {
-                args.append(c);
-            }
-        }
-
+        py::dict comp;
+        for (auto c : composition) comp[c.first] = c.second;
+        args.append(comp);
+        
         // We pass doping information in **kwargs
         py::dict kwargs;
-        if (doping_amount_type !=  MaterialsDB::NO_DOPING) {
+        if (doping_amount_type !=  Material::NO_DOPING) {
             kwargs["dope"] = dopant;
-            kwargs[ doping_amount_type == MaterialsDB::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
+            kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
         }
 
         py::object material = material_class(*py::tuple(args), **kwargs);
@@ -252,7 +247,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     } catch (py::error_already_set) {
         PyErr_Clear();
     }
-    MaterialsDB::DOPING_AMOUNT_TYPE doping_type = MaterialsDB::NO_DOPING;
+    Material::DOPING_AMOUNT_TYPE doping_type = Material::NO_DOPING;
     double concentation = 0;
 
     if (doping) {
@@ -260,21 +255,21 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
         bool has_dc = false;
         try {
             cobj = kwargs["dc"];
-            doping_type = MaterialsDB::DOPANT_CONCENTRATION;
+            doping_type = Material::DOPANT_CONCENTRATION;
             has_dc = true;
         } catch (py::error_already_set) {
             PyErr_Clear();
         }
         try {
             cobj = kwargs["cc"];
-            doping_type = MaterialsDB::CARRIER_CONCENTRATION;
+            doping_type = Material::CARRIER_CONCENTRATION;
         } catch (py::error_already_set) {
             PyErr_Clear();
         }
-        if (doping_type == MaterialsDB::NO_DOPING) {
+        if (doping_type == Material::NO_DOPING) {
             PyErr_SetString(PyExc_ValueError, "neither dopant nor carrier concentrations specified");
             throw py::error_already_set();
-        } else if (doping_type == MaterialsDB::CARRIER_CONCENTRATION && has_dc) {
+        } else if (doping_type == Material::CARRIER_CONCENTRATION && has_dc) {
             PyErr_SetString(PyExc_ValueError, "dopant and carrier concentrations specified simultanously");
             throw py::error_already_set();
         }
@@ -282,17 +277,29 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
         concentation = py::extract<double>(cobj);
     }
 
-    return DB->get(name, composition, doping_type, concentation);
+    //TODO disabled by Piotr, to fix
+    //return DB->get(name, composition, doping_type, concentation);
 }
 
-py::list Material__completeComposition(py::object src, unsigned int pattern) {
-    std::vector<double> in;
+//TODO reimplemented by Piotr, to check if fine
+py::dict Material__completeComposition(py::dict src) {
+    /*std::vector<double> in;
     py::stl_input_iterator<double> begin(src), end;
     for (auto i = begin; i != end; ++i) in.push_back(*i);
     std::vector<double> out = Material::completeComposition(in, pattern);
     py::list dst;
     for (auto o : out) dst.append(o);
-    return dst;
+    return dst;*/
+    
+    py::list keys = src.keys();
+    Material::Composition comp;
+    for(int i = 0; i < py::len(keys); ++i)    
+        comp[py::extract<std::string>(keys[i])] = py::extract<double>(src[keys[i]]);
+    comp = Material::completeComposition(comp);
+    
+    py::dict result;
+    for (auto c: comp) result[c.first] = c.second;
+    return result;
 }
 
 void initMaterial() {
