@@ -28,7 +28,7 @@ struct Material {
      * @param pattern sizes of elements groups, size of first group is represented by digit at highest position in decimal system, second by second highest position, and so on
      * @return version of @p composition complement with calculated amounts
      */
-    static std::vector<double> completeComposition(const std::vector<double>& composition, unsigned pattern);
+    static std::vector<double> completeComposition(std::vector<double> composition, unsigned pattern);
 
     /// Do nothing.
     virtual ~Material() {}
