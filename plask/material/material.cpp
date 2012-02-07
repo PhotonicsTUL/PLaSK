@@ -14,7 +14,7 @@ int elementGroup(const std::string& elementName) {
     static const std::map<std::string, int> elementGroups =
         { el_g("Al", 13), el_g("Ga", 13), el_g("In", 13),
           el_g("N", 15), el_g("P", 15), el_g("As", 15) };
-    return map_find(elementGroups, elementName, -1);
+    return map_find(elementGroups, elementName, 0);
 }
 
 
@@ -126,7 +126,7 @@ Material::Composition Material::completeComposition(const Composition &compositi
     std::map<int, std::vector< std::pair<std::string, double> > > by_group;
     for (auto c: composition) {
         int group = elementGroup(c.first);
-        if (group == -1) throw plask::MaterialParseException("Wrong element name \"%1%\".", c.first);
+        if (group == 0) throw plask::MaterialParseException("Wrong element name \"%1%\".", c.first);
         by_group[group].push_back(c);
     }
     Material::Composition result;

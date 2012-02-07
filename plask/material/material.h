@@ -18,7 +18,7 @@ namespace plask {
 /**
  * Get group in periodic table of given @p element.
  * @param elementName name of element
- * @return group of element with given name @p elementName
+ * @return group of element with given name @p elementName or 0 if given element is not known
  */
 int elementGroup(const std::string& elementName);
 
