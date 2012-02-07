@@ -212,6 +212,23 @@ void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_n
     parseDopant(c, c + dopant.size(), dopant_elem_name, doping_amount_type, doping_amount);
 }
 
+std::vector<std::string> Material::parseElementsNames(const char *begin, const char *end) {
+    const char* full_name = begin;  //store for error msg. only
+    std::vector<std::string> elemenNames;
+    do {
+        const char* new_begin = getElementEnd(begin, end);
+        if (new_begin == begin) throw MaterialParseException("Ill-formated name \"%1%\".", std::string(full_name, end));
+        elemenNames.push_back(std::string(begin, new_begin));
+        begin = new_begin;
+    } while (begin != end);
+    return elemenNames;
+}
+
+std::vector<std::string> Material::parseElementsNames(const std::string &allNames) {
+    const char* c = allNames.c_str();
+    return parseElementsNames(c, c + allNames.size());
+}
+
 /*void parseNameWithComposition(const char* begin, const char* end, std::vector<std::string>& components, std::vector<double>& components_amounts) {
     while (begin != end) {
         const char* comp_end = getElementEnd(begin, end);
@@ -247,20 +264,18 @@ shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, 
     return (*it->second)(composition, doping_amount_type, doping_amount);
 }
 
-/*shared_ptr<Material> plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector< double >& composition,
-                                               DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
-{
-    std::vector<std::string> components;
-    std::vector<double> dump;
-    parseNameWithComposition(parsed_name_with_donor.c_str(), parsed_name_with_donor.c_str() + parsed_name_with_donor.size(), components, dump);
-    Material::Composition c;
-    for (auto)
-    
-    
-    auto it = constructors.find(parsed_name_with_donor);
-    if (it == constructors.end()) throw NoSuchMaterial(parsed_name_with_donor);
-    return (*it->second)(composition, doping_amount_type, doping_amount);
-}*/
+shared_ptr<Material> plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector<double>& composition,
+                                               Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+    std::string name, dopant;
+    std::tie(name, dopant) = splitString2(parsed_name_with_donor, ':');
+    std::vector<std::string> elements = Material::parseElementsNames(name);
+    if (composition.size() > elements.size())
+        throw plask::Exception("To long composition vector (longer than number of elements in \"%1%\").", parsed_name_with_donor);
+    Material::Composition comp;
+    for (std::size_t i = 0; i < composition.size(); ++i) comp[elements[i]] = composition[i];
+    for (std::size_t i = composition.size(); i < elements.size(); ++i) comp[elements[i]] = std::numeric_limits<double>::quiet_NaN();
+    return get(Material::completeComposition(comp), dopant, doping_amount_type, doping_amount);
+}
 
 shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components, const std::string& doping_descr) const {
     Material::Composition composition = Material::parseComposition(name_with_components);
@@ -277,27 +292,21 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     return get(std::get<0>(pair), std::get<1>(pair));
 }
 
+void MaterialsDB::add(std::vector<std::string> elemenNames, const std::string &dopant, const MaterialsDB::MaterialConstructor *constructor) {
+    std::sort(elemenNames.begin(), elemenNames.end());
+    std::string dbKey;
+    for (auto n: elemenNames) dbKey += n;
+    if (!dopant.empty()) {
+        dbKey += ':';
+        dbKey += dopant;
+    }
+    constructors[dbKey] = std::unique_ptr<const MaterialConstructor>(constructor);   
+}
+
 void MaterialsDB::add(const std::string& full_name, const MaterialConstructor* constructor) {
     std::string name, dopant;
     std::tie(name, dopant) = splitString2(full_name, ':');
-    
-    std::vector<std::string> elemenNames;
-    const char* begin = name.c_str();
-    const char* end = begin + name.size();
-    do {
-        const char* new_begin = getElementEnd(begin, end);
-        if (new_begin == begin) throw plask::Exception("Wrong material name \"%1%\".", full_name);
-        elemenNames.push_back(std::string(begin, new_begin));
-        begin = new_begin;
-    } while (begin != end);
-    std::sort(elemenNames.begin(), elemenNames.end());
-    name.clear();
-    for (auto n: elemenNames) name += n;
-    if (!dopant.empty()) {
-        name += ':';
-        name += dopant;
-    }
-    constructors[name] = std::unique_ptr<const MaterialConstructor>(constructor);
+    add(Material::parseElementsNames(name), dopant, constructor);
 }
 
 void MaterialsDB::add(const std::string& name, plask::MaterialsDB::construct_material_f* constructor) {

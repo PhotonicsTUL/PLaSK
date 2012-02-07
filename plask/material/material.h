@@ -83,6 +83,22 @@ struct Material {
      */
     static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DOPING_AMOUNT_TYPE& doping_amount_type, double& doping_amount);
     
+    /**
+     * Split element name to elements.
+     * @param begin, end [begin, end) string or range in string, for example "AlGaN"
+     * @return vector of parsed elements (for "AlGaN" result is ["Al", "Ga", "N"])
+     * @throw MaterialParseException when name is ill-formated
+     */ 
+    static std::vector<std::string> parseElementsNames(const char* begin, const char* end);
+    
+    /**
+     * Split element name to elements.
+     * @param allNames all elements names, for example "AlGaN"
+     * @return vector of parsed elements (for "AlGaN" result is ["Al", "Ga", "N"])
+     * @throw MaterialParseException when name is ill-formated
+     */ 
+    static std::vector<std::string> parseElementsNames(const std::string& allNames);
+    
     /// Do nothing.
     virtual ~Material() {}
 
@@ -539,7 +555,7 @@ struct MaterialsDB {
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      */
-    //shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, DOPING_AMOUNT_TYPE doping_amount_type = NO_DOPING, double doping_amount = 0.0) const;
+    shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
     /**
      * Create material object.
@@ -562,14 +578,22 @@ struct MaterialsDB {
 
     /**
      * Add material to DB. Replace existing material if there is one already in DB.
-     * @param name material name (with donor after ':')
+     * @param elemenNames names of elements in material composition
+     * @param dopant dopant name (empty if no dopant)
+     * @param constructor object which can create material instance; must be created by new operator and material DB will call delete for it
+     */
+    void add(std::vector<std::string> elemenNames, const std::string& dopant, const MaterialConstructor* constructor);
+    
+    /**
+     * Add material to DB. Replace existing material if there is one already in DB.
+     * @param name material name (with dopant after ':')
      * @param constructor object which can create material instance; must be created by new operator and material DB will call delete for it
      */
     void add(const std::string& name, const MaterialConstructor* constructor);
 
     /**
      * Add material to DB. Replace existing material if there is one already in DB.
-     * @param name material name (with donor after ':')
+     * @param name material name (with dopant after ':')
      * @param constructor function which can create material instance
      */
     void add(const std::string& name, construct_material_f* constructor);

@@ -277,8 +277,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
         concentation = py::extract<double>(cobj);
     }
 
-    //TODO disabled by Piotr, to fix
-    //return DB->get(name, composition, doping_type, concentation);
+    return DB->get(name, composition, doping_type, concentation);
 }
 
 //TODO reimplemented by Piotr, to check if fine
@@ -293,8 +292,10 @@ py::dict Material__completeComposition(py::dict src) {
     
     py::list keys = src.keys();
     Material::Composition comp;
-    for(int i = 0; i < py::len(keys); ++i)    
-        comp[py::extract<std::string>(keys[i])] = py::extract<double>(src[keys[i]]);
+    for(int i = 0; i < py::len(keys); ++i) {
+        auto s = src[keys[i]];
+        comp[py::extract<std::string>(keys[i])] = s ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
+    }
     comp = Material::completeComposition(comp);
     
     py::dict result;
