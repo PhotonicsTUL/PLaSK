@@ -51,8 +51,8 @@ struct Material {
      * Parse composition from string, or string fragment.
      *
      * Throws exception in case of parsing errors.
-     * @param begin, end [begin, end) string or range in string
-     * @return parsed, complate composition
+     * @param begin, end [begin, end) string or range in string, for example "Al(0.7)GaN"
+     * @return parsed, complate composition, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
      */
     static Composition parseComposition(const char* begin, const char* end);
     
@@ -60,8 +60,8 @@ struct Material {
      * Parse composition from string.
      *
      * Throws exception in case of parsing errors.
-     * @param composition_str composition string, elements and amounts
-     * @return parsed, complate composition
+     * @param composition_str composition string, elements and amounts, for example "Al(0.7)GaN"
+     * @return parsed, complate composition, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
      */
     static Composition parseComposition(const std::string& composition_str);
     
