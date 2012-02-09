@@ -387,26 +387,26 @@ struct Material {
     /**
      * Get thermal conductivity k[W/(m*K)].
      * @param T temperature [K]
-     * @param Thickness thickness [m]
+     * @param t thickness [m]
      * @return ambipolar diffusion coefficient D[m^2/s]
      */
-    virtual double thermCond(double T, double thickness) const;
+    virtual double condT(double T, double t) const;
 
     /**
      * Get thermal conductivity in vertical direction k [W/(m*K)].
      * @param T temperature [K]
-     * @param Thickness thickness [m]
+     * @param t thickness [m]
      * @return thermal conductivity in vertical direction k [W/(m*K)]
      */
-    virtual double thermCond_v(double T, double thickness) const;
+    virtual double condT_v(double T, double t) const;
 
     /**
      * Get thermal conductivity in lateral direction k [W/(m*K)].
      * @param T temperature [K]
-     * @param Thickness thickness [m]
+     * @param t thickness [m]
      * @return thermal conductivity in lateral direction k [W/(m*K)]
      */
-    virtual double thermCond_l(double T, double thickness) const;
+    virtual double condT_l(double T, double t) const;
 
     /**
      * Get density [kg/m^3].
@@ -431,10 +431,10 @@ struct Material {
     virtual double nr(double wl, double T) const;
 
     /**
-     * Get absorption coefficient alpha[-].
+     * Get absorption coefficient alpha[\f$cm^{-1}\f$].
      * @param wl Wavelength [nm]
      * @param T temperature [K]
-     * @return absorption coefficient alpha[-]
+     * @return absorption coefficient alpha[\f$cm^{-1}\f$]
      */
     virtual double absp(double wl, double T) const;
 

@@ -86,9 +86,9 @@ double Material::res_v(double T) const { throwNotImplemented("res_v(double T)");
 
 double Material::specHeat(double T) const { throwNotImplemented("specHeat(double T)"); assert(0); }
 
-double Material::thermCond(double T, double thickness) const { throwNotImplemented("thermCond(double T, double thickness)"); assert(0); }
-double Material::thermCond_l(double T, double thickness) const { throwNotImplemented("thermCond_l(double T, double thickness)"); assert(0); }
-double Material::thermCond_v(double T, double thickness) const { throwNotImplemented("thermCond_v(double T, double thickness)"); assert(0); }
+double Material::condT(double T, double t) const { throwNotImplemented("condT(double T, double t)"); assert(0); }
+double Material::condT_l(double T, double t) const { throwNotImplemented("condT_l(double T, double t)"); assert(0); }
+double Material::condT_v(double T, double t) const { throwNotImplemented("condT_v(double T, double t)"); assert(0); }
 
 double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); assert(0); }
 
