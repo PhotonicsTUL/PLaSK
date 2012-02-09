@@ -516,18 +516,61 @@ struct MaterialsDB {
 
 
     /**
-     * Template of function which construct material with given type.
+     * Template of function which construct material (which require information about composition and dopant) with given type.
      * @param composition amounts of elements (completed)
-     * @param dopant_amount_type type of amount of dopand, needed to interpretation of @p dopant_amount
+     * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
      * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPING
      * @tparam MaterialType type of material to construct, must fill requirements:
      * - inherited from plask::Material
-     * - must have constructor which takes parameters: const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount
-     * - this constructor can suppose that composition is complete (without NaN)
+     * - must have constructor which takes parameters: Material::Composition composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount
+     * - this constructor can suppose that composition is complete (defined for all element which material includes and without NaN)
+     * @see construct_comp, construct_dop, construct
      */
-    //TODO set some by methods? what with materials without dopands?
-    template <typename MaterialType> Material* construct(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
+    template <typename MaterialType> Material* construct_comp_dop(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
         return new MaterialType(composition, doping_amount_type, doping_amount);
+    }
+    
+    /**
+     * Template of function which construct material (which require information about composition) with given type.
+     * @param composition amounts of elements (completed)
+     * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
+     * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPING
+     * @tparam MaterialType type of material to construct, must fill requirements:
+     * - inherited from plask::Material
+     * - must have constructor which takes parameters: Material::Composition composition
+     * - this constructor can suppose that composition is complete (defined for all element which material includes and without NaN)
+     * @see construct_comp_dop, construct_dop, construct
+     */
+    template <typename MaterialType> Material* construct_comp(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
+        return new MaterialType(composition);
+    }
+    
+    /**
+     * Template of function which construct material (which require information about dopant) with given type.
+     * @param composition amounts of elements (completed)
+     * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
+     * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPING
+     * @tparam MaterialType type of material to construct, must fill requirements:
+     * - inherited from plask::Material
+     * - must have constructor which takes parameters: Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount
+     * @see construct_comp_dop, construct_comp, construct
+     */
+    template <typename MaterialType> Material* construct_dop(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
+        return new MaterialType(doping_amount_type, doping_amount);
+    }
+    
+    /**
+     * Template of function which construct material with given type.
+     * @param composition amounts of elements (completed)
+     * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
+     * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPING
+     * @tparam MaterialType type of material to construct, must fill requirements:
+     * - inherited from plask::Material
+     * - must have constructor which takes no parameters
+     * @see construct_comp_dop, construct_comp, construct_dop
+     */
+    template <typename MaterialType> Material* construct(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) {
+        return new MaterialType();
     }
 
     /// Map: material name -> materials constructors functions
