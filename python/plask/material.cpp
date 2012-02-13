@@ -5,7 +5,7 @@
 #include <plask/config.h>
 #include <plask/utils/string.h>
 #include <plask/exceptions.h>
-#include <plask/material/material.h>
+#include <plask/material/db.h>
 
 #include "../util/raw_constructor.h"
 
@@ -151,7 +151,7 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
         py::dict comp;
         for (auto c : composition) comp[c.first] = c.second;
         args.append(comp);
-        
+
         // We pass doping information in **kwargs
         py::dict kwargs;
         if (doping_amount_type !=  Material::NO_DOPING) {
@@ -289,7 +289,7 @@ py::dict Material__completeComposition(py::dict src) {
     py::list dst;
     for (auto o : out) dst.append(o);
     return dst;*/
-    
+
     py::list keys = src.keys();
     Material::Composition comp;
     for(int i = 0; i < py::len(keys); ++i) {
@@ -297,7 +297,7 @@ py::dict Material__completeComposition(py::dict src) {
         comp[py::extract<std::string>(keys[i])] = s ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
     }
     comp = Material::completeComposition(comp);
-    
+
     py::dict result;
     for (auto c: comp) result[c.first] = c.second;
     return result;

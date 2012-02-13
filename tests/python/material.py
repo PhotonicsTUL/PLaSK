@@ -81,7 +81,7 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.materialVBO("MyMat:Dp=3.0", plask.material.database, 1.0), 3.0 )
 
         @plask.material.new
-        class WithChar(plask.material.Material):
+        class WithChar(plask.material.Material):MyMaterial
             def chi(self, T, p):
                 print >>sys.stderr, "WithChar:", p
                 return 1.5

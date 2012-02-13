@@ -40,7 +40,6 @@ message(STATUS "PLaSK version ${VERSION}")
 # ---------- Configurable options --------------------------------------------
 include(CMakeDependentOption)
 
-option(BUILD_SHARED_LIBS "Build shared library." ON)
 option(BUILD_SHARED_MODULE_LIBS "Build shared libraries for modules." OFF)
 
 option(BUILD_DOCUMENTATION "Build doxygen documentation." OFF)
@@ -83,10 +82,6 @@ endif()
 
 # ----------===== Build =====--------------------------------------------
 
-if (NOT BUILD_SHARED_LIBS)
-    add_definitions(-fpic)      # we want to avoid problems with modules linked with shared libraries
-endif()
-
 file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp)
 
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp)
@@ -101,7 +96,7 @@ file(GLOB_RECURSE python_plask_py python/plask/*.py)
 
 # ---------- plask library --------------------------------------------
 
-add_library(libplask ${plask_src} ${plask_extlib_src} ${plask_headers})
+add_library(libplask SHARED ${plask_src} ${plask_extlib_src} ${plask_headers})
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
 
@@ -192,10 +187,10 @@ macro(mod_option mod opt)
 endmacro()
 
 # Set options to turn on/off building particular modules
+message("-- Building the following modules:")
 foreach(mod ${modules})
     mod_option(${mod} opt)
     option(${opt} "Build module '${mod}'" ON)
-    message("-- Building following modules:")
     if (${opt})
         message("--   ${mod}")
     endif()
@@ -284,16 +279,12 @@ else(BUILD_DOCUMENTATION)
 endif(BUILD_DOCUMENTATION)
 
 # ----------===== install =====--------------------------------------------
-if(BUILD_SHARED_LIBS)
-    if(WIN32)
-        install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
-                                 LIBRARY DESTINATION lib COMPONENT core
-                                 ARCHIVE DESTINATION lib COMPONENT dev)
-    else()
-        install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
-    endif()
+if(WIN32)
+    install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
+                                LIBRARY DESTINATION lib COMPONENT core
+                                ARCHIVE DESTINATION lib COMPONENT dev)
 else()
-    install(TARGETS libplask ARCHIVE DESTINATION lib COMPONENT dev)
+    install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
 endif()
 
 install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
