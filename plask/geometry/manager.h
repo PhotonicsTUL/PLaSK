@@ -14,7 +14,7 @@ This file includes:
 
 #include "../utils/xml.h"
 
-#include "../material/material.h"
+#include "../material/db.h"
 
 namespace plask {
 

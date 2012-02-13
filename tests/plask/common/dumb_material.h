@@ -1,6 +1,6 @@
 //dump material to use in tests
 
-#include <plask/material/material.h>
+#include <plask/material/db.h>
 
 struct DumbMaterial: public plask::Material {
     virtual std::string name() const { return "Dumb"; }
