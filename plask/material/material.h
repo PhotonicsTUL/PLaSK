@@ -40,6 +40,14 @@ struct Material {
     typedef std::map<std::string, double> Composition;
     
     /**
+     * Parse composition element from [begin, end) string.
+     * @param begin begin of string, will be increased to point to potential next composition element or end (if parsed composition element was last one)
+     * @param end points just after last charcter of string, must be: begin < end
+     * @return parsed element name and ammount (NaN if there was no information about ammount)
+     */
+    static std::pair<std::string, double> getFirstCompositionElement(const char*& begin, const char* end);
+    
+    /**
      * Change NaN-s in material composition to calculated amounts.
      *
      * Throw exception if it is impossible to complete given composition.

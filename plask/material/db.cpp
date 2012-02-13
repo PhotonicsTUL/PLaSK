@@ -4,14 +4,40 @@
 
 namespace plask {
 
+//Append to name dopant, if it is not empty
+void appendDopant(std::string& name, const std::string& dopant_name) {
+    if (!dopant_name.empty()) {
+        name += ':';
+        name += dopant_name;
+    }
+}
+
+//TODO remove?
 std::string dbKey(const Material::Composition &composition, const std::string& dopant_name) {
     std::string db_key;
     for (auto c: composition) db_key += c.first;
-    if (!dopant_name.empty()) {
-        db_key += ':';
-        db_key += dopant_name;
-    }
+    appendDopant(db_key, dopant_name);
     return db_key;
+}
+
+std::string dbKey(std::vector<std::string> elemenNames, const std::string& dopant_name = "") {
+    std::string result;
+    std::vector<std::string>::iterator grBegin = elemenNames.begin(); 
+    if (grBegin == elemenNames.end()) return "";    //exception??
+    int grNr = elementGroup(*grBegin);
+    for (std::vector<std::string>::iterator grEnd = grBegin + 1; grEnd != elemenNames.end(); ++grEnd) {
+        int endNr = elementGroup(*grEnd);
+        if (grNr != endNr) {
+            std::sort(grBegin, grEnd);
+            for (auto s_iter = grBegin; s_iter != grEnd; ++s_iter) result += *s_iter;
+            grNr = endNr;
+            grBegin = grEnd;
+        }
+    }
+    std::sort(grBegin, elemenNames.end());
+    for (auto s_iter = grBegin; s_iter != elemenNames.end(); ++s_iter) result += *s_iter;
+    appendDopant(result, dopant_name);
+    return result;
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
@@ -49,14 +75,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
 }
 
 void MaterialsDB::add(std::vector<std::string> elemenNames, const std::string &dopant, const MaterialsDB::MaterialConstructor *constructor) {
-    std::sort(elemenNames.begin(), elemenNames.end());
-    std::string dbKey;
-    for (auto n: elemenNames) dbKey += n;
-    if (!dopant.empty()) {
-        dbKey += ':';
-        dbKey += dopant;
-    }
-    constructors[dbKey] = std::unique_ptr<const MaterialConstructor>(constructor);   
+    constructors[dbKey(elemenNames, dopant)] = std::unique_ptr<const MaterialConstructor>(constructor);   
 }
 
 void MaterialsDB::add(const std::string& full_name, const MaterialConstructor* constructor) {

@@ -157,24 +157,29 @@ double toDouble(const std::string& s) {
     }
 }
 
+std::pair<std::string, double> Material::getFirstCompositionElement(const char*& begin, const char* end) {
+    std::pair<std::string, double> result;
+    const char* comp_end = getElementEnd(begin, end);
+    if (comp_end == begin)
+        throw MaterialParseException(std::string("Expected element but found character: ") + *begin);
+    result.first = std::string(begin, comp_end);
+    const char* amount_end = getAmountEnd(comp_end, end);
+    if (amount_end == comp_end) {       //no amount info for this element
+        result.second = std::numeric_limits<double>::quiet_NaN();
+        begin = amount_end;
+    } else {
+        if (amount_end == end)
+            throw MaterialParseException("Unexpected end of input while reading amount of element. Couldn't find ')'");
+        result.second = toDouble(std::string(comp_end+1, amount_end));
+        begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
+    }
+    return result;
+}
+
+
 Material::Composition Material::parseComposition(const char* begin, const char* end) {
     Material::Composition result;
-    while (begin != end) {
-        const char* comp_end = getElementEnd(begin, end);
-        if (comp_end == begin)
-            throw MaterialParseException(std::string("Expected element but found character: ") + *begin);
-        double& ammount = result[std::string(begin, comp_end)];
-        const char* amount_end = getAmountEnd(comp_end, end);
-        if (amount_end == comp_end) {       //no amount info for this element
-            ammount = std::numeric_limits<double>::quiet_NaN();
-            begin = amount_end;
-        } else {
-            if (amount_end == end)
-                throw MaterialParseException("Unexpected end of input while reading amount of element. Couldn't find ')'");
-            ammount = toDouble(std::string(comp_end+1, amount_end));
-            begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
-        }
-    }
+    while (begin != end) result.insert(getFirstCompositionElement(begin, end));
     return completeComposition(result);
 }
 
