@@ -13,8 +13,8 @@ inline std::pair<std::string, int> el_g(const std::string& g, int p) { return st
 
 int elementGroup(const std::string& elementName) {
     static const std::map<std::string, int> elementGroups =
-        { el_g("Al", 13), el_g("Ga", 13), el_g("In", 13),
-          el_g("N", 15), el_g("P", 15), el_g("As", 15) };
+        { el_g("Al", 3), el_g("Ga", 3), el_g("In", 3),
+          el_g("N", 5), el_g("P", 5), el_g("As", 5) };
     return map_find(elementGroups, elementName, 0);
 }
 

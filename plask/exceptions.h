@@ -112,7 +112,7 @@ public:
         : Exception("No such material: %1%", material_name)/*, materialName(material_name)*/ {}
 
     NoSuchMaterial(const std::string& material_name, const std::string& dopant_name)
-        : Exception("No such material: %1%:%2%", material_name, dopant_name)/*, materialName(material_name)*/ {}
+        : Exception("No such material: %1%%2%%3%", material_name, dopant_name.empty() ? "" : ":", dopant_name)/*, materialName(material_name)*/ {}
 
     template <typename ComponentMap>
     NoSuchMaterial(const ComponentMap& comp, const std::string dopant_name)
