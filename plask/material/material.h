@@ -51,7 +51,8 @@ struct Material {
      * Change NaN-s in material composition to calculated amounts.
      *
      * Throw exception if it is impossible to complete given composition.
-     * @param composition amounts of elements composition with NaN on position for which amounts has not been taken.
+     * @param composition amounts of elements composition with NaN on position for which amounts has not been taken
+     * @return complate composition, for example for ("Al", 0.7), ("Ga", NaN), ("N", NaN) result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
      */
     static Composition completeComposition(const Composition& composition);
     
@@ -60,7 +61,8 @@ struct Material {
      *
      * Throws exception in case of parsing errors.
      * @param begin, end [begin, end) string or range in string, for example "Al(0.7)GaN"
-     * @return parsed, complate composition, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
+     * @return parsed composition, can be not complate, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", NaN), ("N", NaN)
+     * @see @ref completeComposition
      */
     static Composition parseComposition(const char* begin, const char* end);
     
@@ -69,7 +71,8 @@ struct Material {
      *
      * Throws exception in case of parsing errors.
      * @param composition_str composition string, elements and amounts, for example "Al(0.7)GaN"
-     * @return parsed, complate composition, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
+     * @return parsed composition, can be not complate, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", NaN), ("N", NaN)
+     * @see @ref completeComposition
      */
     static Composition parseComposition(const std::string& composition_str);
     

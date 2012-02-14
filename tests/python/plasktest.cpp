@@ -37,12 +37,8 @@ struct MyMaterial : public plask::Material {
 
 };
 
-plask::Material* construct_my_material(const plask::Material::Composition&, plask::Material::DOPING_AMOUNT_TYPE, double) {
-    return new MyMaterial();
-}
-
 void addMyMaterial(plask::MaterialsDB& DB) {
-    DB.add("MyMaterial", construct_my_material);
+    DB.add<MyMaterial, false, false>("MyMaterial");
 }
 
 

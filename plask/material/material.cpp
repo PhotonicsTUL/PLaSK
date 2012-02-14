@@ -5,6 +5,7 @@
 #include "../utils/string.h"
 
 #include <cmath>
+#include <set>
 
 namespace plask {
 
@@ -178,13 +179,25 @@ std::pair<std::string, double> Material::getFirstCompositionElement(const char*&
 
 
 Material::Composition Material::parseComposition(const char* begin, const char* end) {
+    const char* fullname = begin;   //for excpetions only
     Material::Composition result;
-    while (begin != end) result.insert(getFirstCompositionElement(begin, end));
-    return completeComposition(result);
+    std::set<int> groups;
+    int prev_g = -1;
+    while (begin != end) {
+        auto c = getFirstCompositionElement(begin, end);
+        int g = elementGroup(c.first);
+        if (g != prev_g) {
+            if (!groups.insert(g).second)
+                throw MaterialParseException("Incorrect elements order in \"%1%\".", fullname);
+            prev_g = g;
+        }
+        result.insert(c);
+    }
+    return result;
 }
 
 Material::Composition Material::parseComposition(const std::string& str) {
-    const char* c = str.c_str();
+    const char* c = str.data();
     return parseComposition(c, c + str.size());
 }
 
@@ -213,7 +226,7 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
 }
 
 void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, Material::DOPING_AMOUNT_TYPE &doping_amount_type, double &doping_amount) {
-    const char* c = dopant.c_str();
+    const char* c = dopant.data();
     parseDopant(c, c + dopant.size(), dopant_elem_name, doping_amount_type, doping_amount);
 }
 
