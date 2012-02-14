@@ -70,9 +70,7 @@ shared_ptr<Material> MaterialsDB::get(const std::string& dbKey, const Material::
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
-    auto it = constructors.find(dbKey(composition, dopant_name));
-    if (it == constructors.end()) throw NoSuchMaterial(composition, dopant_name);
-    return (*it->second)(composition, doping_amount_type, doping_amount);
+    return get(dbKey(composition, dopant_name), composition, dopant_name, doping_amount_type, doping_amount);
 }
 
 shared_ptr<Material> plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector<double>& composition,
