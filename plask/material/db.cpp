@@ -83,6 +83,8 @@ shared_ptr<Material> plask::MaterialsDB::get(const std::string& parsed_name_with
                                                Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
     std::string name, dopant;
     std::tie(name, dopant) = splitString2(parsed_name_with_donor, ':');
+    if (composition.empty())
+        return get(parsed_name_with_donor, Material::Composition(), dopant, doping_amount_type, doping_amount);
     std::vector<std::string> elements = Material::parseElementsNames(name);
     if (composition.size() > elements.size())
         throw plask::Exception("To long composition vector (longer than number of elements in \"%1%\").", parsed_name_with_donor);
