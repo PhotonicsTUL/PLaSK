@@ -184,8 +184,7 @@ void registerMaterial(const std::string& name, py::object material_class, shared
  */
 py::list MaterialsDB_list(const MaterialsDB& DB) {
     py::list materials;
-    for (auto material = DB.constructors.begin(); material != DB.constructors.end(); ++material)
-        materials.append(material->first);
+    for (auto material: DB) materials.append(material->materialName);
     return materials;
 }
 
@@ -316,7 +315,7 @@ void initMaterial() {
         "as the current state of the art. However, you can derive an abstract class plask.material.Material\n"
         "to create your own materials.\n"; //TODO maybe more extensive description
 
-    py::class_<MaterialsDB, shared_ptr<MaterialsDB>, boost::noncopyable> materialsDB("MaterialsDB", "Material database class"); materialsDB
+    py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB", "Material database class"); materialsDB
         .def("get", py::raw_function(&MaterialsDB_get), "Get material of given name and doping")
         .add_property("materials", &MaterialsDB_list, "Return the list of all materials in database")
         .def("__iter__", &MaterialsDB_iter)

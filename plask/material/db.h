@@ -3,6 +3,8 @@
 
 #include "material.h"
 
+#include <boost/iterator/transform_iterator.hpp>
+
 namespace plask {
 
 /**
@@ -36,6 +38,26 @@ struct MaterialsDB {
          */
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const = 0;
     };
+
+private:
+
+    typedef std::map<std::string, shared_ptr<const MaterialConstructor> > constructors_map_t;
+
+    /// Map: material db key -> materials constructors object
+    //  (it needs to be public to enable access from Python interface)
+    constructors_map_t constructors;
+
+    struct iter_val: public std::unary_function<const constructors_map_t::value_type&, const constructors_map_t::mapped_type&> {
+        const constructors_map_t::mapped_type& operator()(const constructors_map_t::value_type &pair) const { return pair.second; }
+    };
+
+public:
+
+    typedef boost::transform_iterator<iter_val, constructors_map_t::const_iterator> iterator;
+    typedef iterator const_iterator;
+
+    const_iterator begin() const { return iterator(constructors.begin()); }
+    const_iterator end() const { return iterator(constructors.end()); }
 
     /**
      * Throw excpetion if given composition is empty.
@@ -87,10 +109,6 @@ struct MaterialsDB {
             return shared_ptr<Material>(new MaterialType());
         }
     };
-
-    /// Map: material db key -> materials constructors object
-    //  (it needs to be public to enable access from Python interface)
-    std::map<std::string, std::unique_ptr<const MaterialConstructor> > constructors;
 
     /**
      * Create material object.
@@ -173,6 +191,7 @@ struct MaterialsDB {
     //void init();
 
 private:
+
     /**
      * Create material object.
      * @param dbKey key in database
