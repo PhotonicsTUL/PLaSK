@@ -241,10 +241,44 @@ public:
     void add() { add<MaterialType>(MaterialType::static_name); }
 
     /**
-     * Fill database with default materials creators.
+     * Remove simple material (which not require composition parsing) from DB.
+     * @param name material name, in format name[:dopant]
      */
-    //TODO materials will be created
-    //void init();
+    void removeSimple(const std::string& name);
+
+    /**
+     * Remove complex material (which require composition parsing) from DB.
+     * @param name material name, in format name[:dopant]
+     */
+    void removeComplex(const std::string& name);
+
+    /**
+     * Remove material from DB.
+     * @param name material name, in format name[:dopant]
+     * @tparam @c true only if material is complex, @c false if it's simple
+     */
+    template <bool isComplex>
+    void remove(const std::string& name) {
+        if (isComplex) removeComplex(name); else removeSimple(name);
+    }
+
+    /**
+     * Remove material from DB.
+     *
+     * Deduce from constructors if material is either complex or simple.
+     * @param name material name (with dopant after ':')
+     */
+    template <typename MaterialType>
+    void remove(const std::string& name) { remove<Material::is_with_composition<MaterialType>::value>(name); }
+
+    /**
+     * Remove material from DB.
+     *
+     * Deduce from constructors if material is either complex or simple.
+     * Material name is read from static field MaterialType::static_name.
+     */
+    template <typename MaterialType>
+    void remove() { remove<Material>(MaterialType::static_name); }
 
 private:
 

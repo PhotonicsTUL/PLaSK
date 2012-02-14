@@ -31,6 +31,12 @@ std::string dbKey(const std::string& name, const std::string& dopant_name) {
     return dbKey(Material::parseElementsNames(name), dopant_name);
 }
 
+std::string dbKey(const std::string& fullComplexName) {
+    std::string name, dopant;
+    std::tie(name, dopant) = splitString2(fullComplexName, ':');
+    return dbKey(name, dopant);
+}
+
 /*std::string dbKey(std::vector<std::string> elemenNames, const std::string& dopant_name = "") {
     std::string result;
     std::vector<std::string>::iterator grBegin = elemenNames.begin(); 
@@ -110,9 +116,15 @@ void MaterialsDB::addSimple(const MaterialConstructor* constructor) {
 }
 
 void MaterialsDB::addComplex(const MaterialConstructor* constructor) {
-    std::string name, dopant;
-    std::tie(name, dopant) = splitString2(constructor->materialName, ':');
-    constructors[dbKey(name, dopant)] = shared_ptr<const MaterialConstructor>(constructor);
+    constructors[dbKey(constructor->materialName)] = shared_ptr<const MaterialConstructor>(constructor);
+}
+
+void MaterialsDB::removeSimple(const std::string& name) {
+    constructors.erase(name);
+}
+
+void MaterialsDB::removeComplex(const std::string& name) {
+    constructors.erase(dbKey(name));
 }
 
 }   // namespace plask

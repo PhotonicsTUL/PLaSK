@@ -8,7 +8,11 @@ BOOST_AUTO_TEST_SUITE(material) // MUST be the same as the file name
         plask::MaterialsDB db;
         BOOST_CHECK_THROW(db.get("Al"), plask::NoSuchMaterial);
 
-        DumbMaterial material;
+        db.add<DumbMaterial>("Al");
+        BOOST_CHECK_NO_THROW(db.get("Al"));
+
+        db.remove<DumbMaterial>("Al");
+        BOOST_CHECK_THROW(db.get("Al"), plask::NoSuchMaterial);
     }
 
 BOOST_AUTO_TEST_SUITE_END()

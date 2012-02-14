@@ -11,5 +11,5 @@ inline plask::Material* construct_dumb_material(const plask::Material::Compositi
 }
 
 inline void initDumbMaterialDb(plask::MaterialsDB& db) {
-    db.add<DumbMaterial, false, false>("Al");
+    db.add<DumbMaterial>("Al");
 }
