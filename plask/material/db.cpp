@@ -95,7 +95,9 @@ shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components,
     if (!doping_descr.empty())
         Material::parseDopant(doping_descr, dopant_name, doping_amount_type, doping_amount);
     if (name_with_components.find('(') == std::string::npos) {  //simple case, without parsing composition
-        return get(name_with_components, Material::Composition(), dopant_name, doping_amount_type, doping_amount);
+        std::string dbKey = name_with_components;
+        appendDopant(dbKey, dopant_name);
+        return get(dbKey, Material::Composition(), dopant_name, doping_amount_type, doping_amount);
     } else  //parse composition:
         return get(Material::parseComposition(name_with_components), dopant_name, doping_amount_type, doping_amount);
 }

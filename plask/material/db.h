@@ -43,13 +43,13 @@ struct MaterialsDB {
     struct MaterialConstructor {
 
         /**
-         * Name of material which this constructor can create.
+         * Full name (with eventualy dopant name) of material which this constructor can create.
          */
         std::string materialName;
 
         /**
          * MaterialConstructor constructor.
-         * @param materialName name of material which this constructor can create
+         * @param materialName full name (with eventualy dopant name) of material which this constructor can create
          */
         MaterialConstructor(const std::string& materialName): materialName(materialName) {}
 
@@ -83,7 +83,16 @@ public:
     ///Iterator over material constructors (shared_ptr<shared_ptr<const MaterialConstructor>>).
     typedef iterator const_iterator;
 
+    /**
+     * Get iterator which refer to first record in database.
+     * @return iterator which refer to first record in database
+     */
     const_iterator begin() const { return iterator(constructors.begin()); }
+
+    /**
+     * Get iterator which refer one step after last record in database.
+     * @return iterator which refer just after last record in database
+     */
     const_iterator end() const { return iterator(constructors.end()); }
 
     /**
@@ -94,13 +103,16 @@ public:
 
     /**
      * Specialization of this implements MaterialConstructor.
+     *
      * operator() delegates call to Material constructor, eventualy ignoring (depending from requireComposition and requireDopant) some arguments.
      * @tparam MaterialType type of material
      * @tparam requireComposition if @c true ensure if comosition is not empty, material composition will be completed and passed to constructor,
      *                              if @c false composition will be ignored
      * @tparam requireDopant if @c true dopant information will be passed to constructor, if @c false dopant information will be ignored
      */
-    template <typename MaterialType, bool requireComposition, bool requireDopant>
+    template <typename MaterialType,
+              bool requireComposition = Material::is_with_composition<MaterialType>::value,
+              bool requireDopant = Material::is_with_dopant<MaterialType>::value >
     struct DelegateMaterialConstructor;
 
     template <typename MaterialType>
