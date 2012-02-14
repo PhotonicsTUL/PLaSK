@@ -13,6 +13,8 @@ This file includes base classes for materials and material database class.
 #include <plask/config.h>
 #include "../exceptions.h"
 
+#include <type_traits>
+
 namespace plask {
 
 /**
@@ -38,7 +40,23 @@ struct Material {
      * Type for material composition.
      */ 
     typedef std::map<std::string, double> Composition;
-    
+
+    /// Check if material can be construct with composition.
+    template <typename MaterialType>
+    struct is_with_composition {
+        static const bool value =
+            std::is_constructible<MaterialType, Composition>::value ||
+            std::is_constructible<MaterialType, Composition, DOPING_AMOUNT_TYPE, double>::value;
+    };
+
+    /// Check if material can be construct with dopant.
+    template <typename MaterialType>
+    struct is_with_dopant {
+        static const bool value =
+            std::is_constructible<MaterialType, DOPING_AMOUNT_TYPE, double>::value ||
+            std::is_constructible<MaterialType, Composition, DOPING_AMOUNT_TYPE, double>::value;
+    };
+
     /**
      * Parse composition element from [begin, end) string.
      * @param begin begin of string, will be increased to point to potential next composition element or end (if parsed composition element was last one)

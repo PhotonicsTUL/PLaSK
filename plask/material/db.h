@@ -21,27 +21,20 @@ struct MaterialsDB {
     static MaterialsDB& getDefault();
 
     /**
-     * Helper which call getDefault().add<MaterialType, requireComposition, requireDopant>(name) in constructor.
-     *
-     * Creating global objects of this type allow to fill default database.
-     */
-    template <typename MaterialType, bool requireComposition, bool requireDopant>
-    struct Register {
-        Register(const std::string& name) {
-            getDefault().add<MaterialType, requireComposition, requireDopant>(name);
-        }
-    };
-
-    /**
-     * Helper which call getDefault().add<MaterialType>(name) in constructor.
+     * Helper which call getDefault().add<MaterialType>([name]) in constructor.
      *
      * Creating global objects of this type allow to fill default database.
      */
     template <typename MaterialType>
-    struct RegisterD {
-        RegisterD(const std::string& name) {
-            getDefault().add<MaterialType>(name);
-        }
+    struct Register {
+        Register(const std::string& name) { getDefault().add<MaterialType>(name); }
+        Register() { getDefault().add<MaterialType>(); }
+    };
+
+    ///Same as Register but for materials without static field static_name.
+    template <typename MaterialType>
+    struct RegisterN {
+        RegisterN(const std::string& name) { getDefault().add<MaterialType>(name); }
     };
 
     /**
@@ -71,9 +64,10 @@ struct MaterialsDB {
 
 private:
 
+    /// Type for map: material db key -> materials constructors object (with name)
     typedef std::map<std::string, shared_ptr<const MaterialConstructor> > constructors_map_t;
 
-    /// Map: material db key -> materials constructors object
+    /// Map: material db key -> materials constructors object (with name)
     constructors_map_t constructors;
 
     //static const constructors_map_t::mapped_type& iter_val(const constructors_map_t::value_type &pair) { return pair.second; }
@@ -83,7 +77,10 @@ private:
 
 public:
 
+    ///Iterator over material constructors (shared_ptr<shared_ptr<const MaterialConstructor>>).
     typedef boost::transform_iterator<iter_val, constructors_map_t::const_iterator> iterator;
+
+    ///Iterator over material constructors (shared_ptr<shared_ptr<const MaterialConstructor>>).
     typedef iterator const_iterator;
 
     const_iterator begin() const { return iterator(constructors.begin()); }
@@ -209,10 +206,27 @@ public:
             addSimple(new DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant>(name));
     }
 
+    /**
+     * Add material to DB. Replace existing material if there is one already in DB.
+     *
+     * Use DelegateMaterialConstructor as material construction object.
+     * Deduce from constructors if material needs either composition or dopant information.
+     * @param name material name (with dopant after ':')
+     */
     template <typename MaterialType>
     void add(const std::string& name) {
-        add<MaterialType, MaterialType::USE_COMPOSITION, MaterialType::HAS_DOPANT>(name);
+        add<MaterialType, Material::is_with_composition<MaterialType>::value, Material::is_with_dopant<MaterialType>::value>(name);
     }
+
+    /**
+     * Add material to DB. Replace existing material if there is one already in DB.
+     *
+     * Use DelegateMaterialConstructor as material construction object.
+     * Deduce from constructors if material needs either composition or dopant information.
+     * Material name is read from static field MaterialType::static_name.
+     */
+    template <typename MaterialType>
+    void add() { add<MaterialType>(MaterialType::static_name); }
 
     /**
      * Fill database with default materials creators.
