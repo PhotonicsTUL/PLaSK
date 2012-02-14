@@ -140,7 +140,8 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
     std::string dopant;
 
   public:
-    PythonMaterialConstructor(py::object material_class, std::string dope="") : material_class(material_class), dopant(dope) {}
+    PythonMaterialConstructor(const std::string& name, py::object material_class, std::string dope="") :
+        MaterialsDB::MaterialConstructor(name), material_class(material_class), dopant(dope) {}
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
     {
@@ -175,7 +176,7 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
 void registerMaterial(const std::string& name, py::object material_class, shared_ptr<MaterialsDB> db)
 {
     std::string dopant = std::get<1>(splitString2(name, ':'));
-    db->add(name, new PythonMaterialConstructor(material_class, dopant));
+    db->addComplex(new PythonMaterialConstructor(name, material_class, dopant));
 }
 
 /**

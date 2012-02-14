@@ -100,18 +100,14 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     return get(std::get<0>(pair), std::get<1>(pair));
 }
 
-void MaterialsDB::add(const std::string& elemenNames, const std::string &dopant, const MaterialsDB::MaterialConstructor *constructor) {
-    constructors[dbKey(elemenNames, dopant)] = std::unique_ptr<const MaterialConstructor>(constructor);
-}
-
 void MaterialsDB::addSimple(const MaterialConstructor* constructor) {
     constructors[constructor->materialName] = std::unique_ptr<const MaterialConstructor>(constructor);
 }
 
-void MaterialsDB::add(const MaterialConstructor* constructor) {
+void MaterialsDB::addComplex(const MaterialConstructor* constructor) {
     std::string name, dopant;
     std::tie(name, dopant) = splitString2(constructor->materialName, ':');
-    add(name, dopant, constructor);
+    constructors[dbKey(name, dopant)] = std::unique_ptr<const MaterialConstructor>(constructor);
 }
 
 }   // namespace plask

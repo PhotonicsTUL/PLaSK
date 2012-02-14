@@ -9,7 +9,6 @@ namespace plask {
  * Materials database.
  *
  * Create materials with given name, composition and dopant.
- *
  */
 struct MaterialsDB {
 
@@ -19,20 +18,23 @@ struct MaterialsDB {
     struct MaterialConstructor {
 
         /**
+         * Name of material which this constructor can create.
+         */
+        std::string materialName;
+
+        /**
+         * MaterialConstructor constructor.
+         * @param materialName name of material which this constructor can create
+         */
+        MaterialConstructor(const std::string& materialName): materialName(materialName) {}
+
+        /**
          * Create material.
          * @param composition parsed amounts of elements, can be not completed (see Material::completeComposition), empty composition in case of simple materials
          * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
          * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPANT
          */
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const = 0;
-        
-        /**
-         * name of material which this constructor can create
-         */
-        std::string materialName;
-
-        MaterialConstructor(const std::string& material_name): materialName(materialName) {}
-
     };
 
     /**
@@ -47,7 +49,7 @@ struct MaterialsDB {
      * @tparam MaterialType type of material
      * @tparam requireComposition if @c true ensure if comosition is not empty, material composition will be completed and passed to constructor,
      *                              if @c false composition will be ignored
-     * @tparam requireDopant if @c true dopant information will be passed to constructor, if @c false opant information will be ignored
+     * @tparam requireDopant if @c true dopant information will be passed to constructor, if @c false dopant information will be ignored
      */
     template <typename MaterialType, bool requireComposition, bool requireDopant>
     struct DelegateMaterialConstructor;
@@ -132,14 +134,6 @@ struct MaterialsDB {
      */
     shared_ptr<Material> get(const std::string& full_name) const;
 
-    /*
-     * Add material to DB. Replace existing material if there is one already in DB.
-     * @param elemenNames names of elements in material composition
-     * @param dopant dopant name (empty if no dopant)
-     * @param constructor object which can create material instance; must be created by new operator and material DB will call delete for it
-     */
-    void add(const std::string& elemenNames, const std::string& dopant, const MaterialConstructor* constructor);
-
     /**
      * Add simple material (which not require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance; must be created by new operator and material DB will call delete for it
@@ -147,20 +141,22 @@ struct MaterialsDB {
     void addSimple(const MaterialConstructor* constructor);
     
     /**
-     * Add material to DB. Replace existing material if there is one already in DB.
+     * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance; must be created by new operator and material DB will call delete for it
      */
-    void add(const MaterialConstructor* constructor);
+    void addComplex(const MaterialConstructor* constructor);
 
     /**
      * Add material to DB. Replace existing material if there is one already in DB.
+     *
+     * Use DelegateMaterialConstructor as material construction object.
      * @param name material name (with dopant after ':')
-     * @param constructor function which can create material instance
+     * @tparam MaterialType, requireComposition, requireDopant see DelegateMaterialConstructor
      */
     template <typename MaterialType, bool requireComposition, bool requireDopant>
     void add(const std::string& name) {
         if (requireComposition)
-            add(new DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant>(name));
+            addComplex(new DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant>(name));
         else
             addSimple(new DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant>(name));
     }
