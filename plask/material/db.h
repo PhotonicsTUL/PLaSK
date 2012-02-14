@@ -15,6 +15,36 @@ namespace plask {
 struct MaterialsDB {
 
     /**
+     * Get default material database.
+     * @return default material database
+     */
+    static MaterialsDB& getDefault();
+
+    /**
+     * Helper which call getDefault().add<MaterialType, requireComposition, requireDopant>(name) in constructor.
+     *
+     * Creating global objects of this type allow to fill default database.
+     */
+    template <typename MaterialType, bool requireComposition, bool requireDopant>
+    struct Register {
+        Register(const std::string& name) {
+            getDefault().add<MaterialType, requireComposition, requireDopant>(name);
+        }
+    };
+
+    /**
+     * Helper which call getDefault().add<MaterialType>(name) in constructor.
+     *
+     * Creating global objects of this type allow to fill default database.
+     */
+    template <typename MaterialType>
+    struct RegisterD {
+        RegisterD(const std::string& name) {
+            getDefault().add<MaterialType>(name);
+        }
+    };
+
+    /**
      * Object of this class (inharited from it) construct material instance.
      */
     struct MaterialConstructor {
@@ -44,9 +74,9 @@ private:
     typedef std::map<std::string, shared_ptr<const MaterialConstructor> > constructors_map_t;
 
     /// Map: material db key -> materials constructors object
-    //  (it needs to be public to enable access from Python interface)
     constructors_map_t constructors;
 
+    //static const constructors_map_t::mapped_type& iter_val(const constructors_map_t::value_type &pair) { return pair.second; }
     struct iter_val: public std::unary_function<const constructors_map_t::value_type&, const constructors_map_t::mapped_type&> {
         const constructors_map_t::mapped_type& operator()(const constructors_map_t::value_type &pair) const { return pair.second; }
     };

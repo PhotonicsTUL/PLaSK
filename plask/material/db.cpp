@@ -51,6 +51,11 @@ std::string dbKey(const std::string& name, const std::string& dopant_name) {
     return result;
 }*/
 
+MaterialsDB& MaterialsDB::getDefault() {
+    static MaterialsDB defaultDb;
+    return defaultDb;
+}
+
 void MaterialsDB::ensureCompositionIsNotEmpty(const Material::Composition &composition) {
     if (composition.empty()) throw MaterialParseException("Unknown composition.");
 }

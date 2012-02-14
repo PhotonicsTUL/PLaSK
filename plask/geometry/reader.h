@@ -202,7 +202,7 @@ struct GeometryReader {
      * @param source xml data source from which element data should be read
      * @param materialsDB materials database used to set leafs materials
      */
-    GeometryReader(GeometryManager& manager, XMLReader& source, const MaterialsDB& materialsDB);
+    GeometryReader(GeometryManager& manager, XMLReader& source, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Read geometry element from @p source and add it GeometryManager structures.
