@@ -142,7 +142,14 @@ if (BUILD_PYTHON)
         target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
     endif(BUILD_PYTHON_EXECUTABLE)
 
-    file(COPY ${python_plask_py} DESTINATION ${plask_PYTHONPATH}/plask)
+    foreach(py_file ${python_plask_py})
+        get_filename_component(py_file_base ${py_file} NAME)
+        list(APPEND python_plask_py_copied ${plask_PYTHONPATH}/plask/${py_file_base})
+        add_custom_command(OUTPUT ${plask_PYTHONPATH}/plask/${py_file_base}
+                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${plask_PYTHONPATH}/plask/${py_file_base}
+                           DEPENDS ${py_file})
+    endforeach()
+    add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
 
 endif(BUILD_PYTHON)
 

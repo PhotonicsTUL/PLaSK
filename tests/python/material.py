@@ -61,20 +61,24 @@ class Material(unittest.TestCase):
                 self.args = args,
                 print kwargs
                 self.kwargs = kwargs
-                self. composition = self._completeComposition(kwargs);
-                print self.kwargs
+                self.composition = self._completeComposition(kwargs, self.name);
+                print self.composition
             def __del__(self):
                 ptest.print_ptr(self)
             def VBO(self, T=300.):
                 return self.kwargs['dc'] * T
             def CBO(self, T=300.):
-                return self.kwargs['Al'] * T
+                return self.composition['Ga'] * T
 
         print plask.materials.all
         m = plask.materials.get("Al(0.2)GaAs:Dp=3.0")
         self.assertEqual( m.__class__, AlGaAsDp )
         self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VBO(1.0), 3.0 )
+        self.assertAlmostEqual( m.CBO(1.0), 0.8 )
+
+        if sys.version > "2.7":
+            with(self.assertRaisesRegexp(KeyError, 'N not allowed in material AlGaAs:Dp')): m = AlGaAsDp(Al=0.2, N=0.9)
 
         AlGaAs = lambda **kwargs: plask.materials.get("AlGaAs", **kwargs)
         m = AlGaAs(Al=0.2, dopant="Dp", dc=5.0)

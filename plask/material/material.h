@@ -35,10 +35,10 @@ struct Material {
         DOPANT_CONCENTRATION,   ///< doping concentration
         CARRIER_CONCENTRATION   ///< carrier concentration
     };
-    
+
     /**
      * Type for material composition.
-     */ 
+     */
     typedef std::map<std::string, double> Composition;
 
     /// Check if material can be construct with composition.
@@ -64,7 +64,7 @@ struct Material {
      * @return parsed element name and ammount (NaN if there was no information about ammount)
      */
     static std::pair<std::string, double> getFirstCompositionElement(const char*& begin, const char* end);
-    
+
     /**
      * Change NaN-s in material composition to calculated amounts.
      *
@@ -73,7 +73,7 @@ struct Material {
      * @return complate composition, for example for ("Al", 0.7), ("Ga", NaN), ("N", NaN) result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
      */
     static Composition completeComposition(const Composition& composition);
-    
+
     /**
      * Parse composition from string, or string fragment.
      *
@@ -83,7 +83,7 @@ struct Material {
      * @see @ref completeComposition
      */
     static Composition parseComposition(const char* begin, const char* end);
-    
+
     /**
      * Parse composition from string.
      *
@@ -93,7 +93,7 @@ struct Material {
      * @see @ref completeComposition
      */
     static Composition parseComposition(const std::string& composition_str);
-    
+
     /**
      * Parse information about dopant from string.
      *
@@ -102,7 +102,7 @@ struct Material {
      * @param dopant_elem_name[out], doping_amount_type[out], doping_amount[out] parsed values
      */
     static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, DOPING_AMOUNT_TYPE& doping_amount_type, double& doping_amount);
-    
+
     /**
      * Parse information about dopant from string.
      *
@@ -111,23 +111,23 @@ struct Material {
      * @param dopant_elem_name[out], doping_amount_type[out], doping_amount[out] parsed values
      */
     static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DOPING_AMOUNT_TYPE& doping_amount_type, double& doping_amount);
-    
+
     /**
      * Split element name to elements.
      * @param begin, end [begin, end) string or range in string, for example "AlGaN"
      * @return vector of parsed elements (for "AlGaN" result is ["Al", "Ga", "N"])
      * @throw MaterialParseException when name is ill-formated
-     */ 
+     */
     static std::vector<std::string> parseElementsNames(const char* begin, const char* end);
-    
+
     /**
      * Split element name to elements.
      * @param allNames all elements names, for example "AlGaN"
      * @return vector of parsed elements (for "AlGaN" result is ["Al", "Ga", "N"])
      * @throw MaterialParseException when name is ill-formated
-     */ 
+     */
     static std::vector<std::string> parseElementsNames(const std::string& allNames);
-    
+
     /// Do nothing.
     virtual ~Material() {}
 

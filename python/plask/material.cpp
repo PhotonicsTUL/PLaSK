@@ -342,7 +342,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     return DB->get(composition, dopant, doping_type, concentation);
 }
 
-py::dict Material__completeComposition(py::dict src) {
+py::dict Material__completeComposition(py::dict src, std::string name) {
     py::list keys = src.keys();
     Material::Composition comp;
     py::object none;
@@ -353,6 +353,17 @@ py::dict Material__completeComposition(py::dict src) {
             comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
         }
     }
+    if (name != "") {
+        std::string basename = std::get<0>(splitString2(name, ':'));
+        std::vector<std::string> elements = Material::parseElementsNames(basename);
+        for (auto c: comp) {
+            if (std::find(elements.begin(), elements.end(), c.first) == elements.end()) {
+                PyErr_SetString(PyExc_KeyError, format("%s not allowed in material %s", c.first, name).c_str());
+                throw py::error_already_set();
+            }
+        }
+    }
+
     comp = Material::completeComposition(comp);
 
     py::dict result;
@@ -383,7 +394,8 @@ void initMaterial() {
     // Common material interface
     py::class_<Material, shared_ptr<Material>, boost::noncopyable>("Material", "Base class for all materials.", py::no_init)
         .def("__init__", raw_constructor(&MaterialWrap::__init__))
-        .def("_completeComposition", &Material__completeComposition, "Fix incomplete material composition basing on patten")
+        .def("_completeComposition", &Material__completeComposition, (py::arg("composition"), py::arg("name")=""),
+             "Fix incomplete material composition basing on patten")
         .staticmethod("_completeComposition")
         .add_property("name", &Material::name)
 
