@@ -46,7 +46,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(TranslationContainer, "TranslationContainer",
              "Add new element to the container")
 //         .def("remove", (void(TranslationContainer<dim>::*)(const PathHints&))&TranslationContainer<dim>::remove,
 //              "Remove element from container")
-        .def("__contains__", &GeometryElementContainerImpl<dim>::isInSubtree)
+        .def("__contains__", &GeometryElementContainerImpl<dim>::isInSubtree, (py::arg("item")))
         //.def("__getitem__" TODO
         //.def("__deltiem__" TODO
         //.def("__iter__" TODO
@@ -130,7 +130,7 @@ void register_geometry_container()
                           "even if this element is inserted to the geometry tree in more than one place.\n\n"
                           "It contains a set of ContainerChild objects holding weak references to containers"
                           "and their childred.")
-        .def("add", (void (PathHints::*)(const PathHints::Hint&)) &PathHints::addHint, "Add hint to the path.")
+        .def("add", (void (PathHints::*)(const PathHints::Hint&)) &PathHints::addHint, "Add hint to the path.", (py::arg("container_child")))
         .def(py::self += py::other<PathHints::Hint>())
     ;
 
@@ -142,24 +142,24 @@ void register_geometry_container()
 
     py::class_<StackContainer2d, shared_ptr<StackContainer2d>, py::bases<GeometryElementContainer<2>>>("Stack2D",
         "Container that organizes its childern in vertical stack (2D version)\n\n"
-        "StackContainer2D(baseLevel = 0) -> Create the stack with the bottom side of the first element at the baseLevel (in container local coordinates)",
-         py::init<double>())
+        "StackContainer2D(base_level=0) -> Create the stack with the bottom side of the first element at the base_level (in container local coordinates)",
+         py::init<double>((py::arg("base_level")=0.)))
         .def("add", &StackContainer2d::add, (py::arg("child"), py::arg("shift")=0.), "Add new element to the container")
         .def("append", &StackContainer2d::add, (py::arg("child"), py::arg("shift")=0.), "Add new element to the container")
-        .def("__contains__", &GeometryElementContainerImpl<2>::isInSubtree)
-        .def("__getitem__", &Stack__getitem__<2, StackContainer2d>)
+        .def("__contains__", &GeometryElementContainerImpl<2>::isInSubtree, (py::arg("item")))
+        .def("__getitem__", &Stack__getitem__<2, StackContainer2d>, (py::arg("item")))
         //.def("__iter__" TODO
         //.def("__deltiem__" TODO
     ;
 
     py::class_<StackContainer3d, shared_ptr<StackContainer3d>, py::bases<GeometryElementContainer<3>>>("Stack3D",
         "Stack container which repeats its contents (3D version)\n\n"
-        "Stack3D(baseLevel = 0) -> Create the stack with the bottom side of the first element at the baseLevel (in container local coordinates)",
-        py::init<double>())
+        "Stack3D(base_level=0) -> Create the stack with the bottom side of the first element at the base_level (in container local coordinates)",
+        py::init<double>((py::arg("base_level")=0.)))
         .def("append", &StackContainer3d::add, (py::arg("child"), py::arg("shift0")=0., py::arg("shift1")=0.),
              "Add new element to the container")
-        .def("__contains__", &GeometryElementContainerImpl<3>::isInSubtree)
-        .def("__getitem__", &Stack__getitem__<3, StackContainer3d>)
+        .def("__contains__", &GeometryElementContainerImpl<3>::isInSubtree, (py::arg("item")))
+        .def("__getitem__", &Stack__getitem__<3, StackContainer3d>, (py::arg("item")))
         //.def("__iter__" TODO
         //.def("__deltiem__" TODO
     ;
@@ -168,19 +168,19 @@ void register_geometry_container()
 
     py::class_<MultiStackContainer<2>, shared_ptr<MultiStackContainer<2>>, py::bases<StackContainer2d>>("MultiStack2D",
         "Stack container which repeats its contents (2D version)\n\n"
-        "MultiStack2D(repeatCount = 1, baseLevel = 0) -> Create new multi-stack with repeatCount repetitions",
-         py::init<int, double>())
+        "MultiStack2D(repeat_count=1, base_level=0) -> Create new multi-stack with repeatCount repetitions",
+         py::init<int, double>((py::arg("repeat_count")=1, py::arg("base_level")=0.)))
         .def_readwrite("repeats", &MultiStackContainer<2>::repeat_count, "Number of repeats of the stack content")
-        .def("repeatedItem", &MultiStack_repeatedItem<2>,
+        .def("repeatedItem", &MultiStack_repeatedItem<2>, (py::arg("index")),
              "Return new hint for a repeated item in te stack as if all repetitions were added separately")
     ;
 
     py::class_<MultiStackContainer<3>, shared_ptr<MultiStackContainer<3>>, py::bases<StackContainer3d>>("MultiStack3D",
         "Container that organizes its childern in vertical stack (3D version)\n\n"
-        "MultiStack3D(repeatCount = 1, baseLevel = 0) -> Create new multi-stack with repeatCount repetitions",
-        py::init<int, double>())
+        "MultiStack3D(repeat_count=1, base_level=0) -> Create new multi-stack with repeatCount repetitions",
+        py::init<int, double>((py::arg("repeat_count")=1, py::arg("base_level")=0.)))
         .def_readwrite("repeats", &MultiStackContainer<3>::repeat_count, "Number of repeats of the stack content")
-        .def("repeatedItem", &MultiStack_repeatedItem<3>,
+        .def("repeatedItem", &MultiStack_repeatedItem<3>, (py::arg("index")),
              "Return new hint for a repeated item in te stack as if all repetitions were added separately")
     ;
 }

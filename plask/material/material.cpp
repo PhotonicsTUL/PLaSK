@@ -79,7 +79,7 @@ double Material::Ni(double T) const { throwNotImplemented("Ni(double T)"); asser
 
 double Material::nr(double wl, double T) const { throwNotImplemented("nr(double wl, double T)"); assert(0); }
 
-dcomplex Material::Nr(double wl, double T) const { throwNotImplemented("Nr(double wl, double T)"); assert(0); }
+dcomplex Material::Nr(double wl, double T) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
 
 double Material::res(double T) const { throwNotImplemented("res(double T)"); assert(0); }
 double Material::res_l(double T) const { throwNotImplemented("res_l(double T)"); assert(0); }

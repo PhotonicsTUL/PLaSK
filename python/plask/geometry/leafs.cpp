@@ -30,19 +30,21 @@ void register_geometry_leafs()
     py::class_<Block<2>, shared_ptr<Block<2>>, py::bases<GeometryElementLeaf<2>>>("Block2D",
         "Geometry object (2D): a rectangular block filled with one material\n\n"
         "Block2D(size) -> initialize block with size given in two-dimensional vector\n\n"
-        "Block2D(width, height) -> initialize block with given width and height\n"
+        "Block2D(width, height) -> initialize block with given width and height\n",
+        py::no_init
         )
-        .def("__init__", py::make_constructor(&Block2D_constructor_wh))
-        .def("__init__", py::make_constructor(&Block2D_constructor_vec))
+        .def("__init__", py::make_constructor(&Block2D_constructor_wh, py::default_call_policies(), (py::arg("width"), py::arg("height"), py::arg("material"))))
+        .def("__init__", py::make_constructor(&Block2D_constructor_vec, py::default_call_policies(), (py::arg("dimensions"), py::arg("material"))))
     ;
 
     py::class_<Block<3>, shared_ptr<Block<3>>, py::bases<GeometryElementLeaf<3>>>("Block3D",
         "Geometry object (3D): a cuboidal block filled with one material\n\n"
         "Block3D(size) -> initialize block with size given in three-dimensional vector\n\n"
-        "Block3D(depth, width, height) -> initialize block with given depth, width, and heigh\n"
+        "Block3D(depth, width, height) -> initialize block with given depth, width, and heigh\n",
+        py::no_init
         )
-        .def("__init__", py::make_constructor(&Block3D_constructor_dwh))
-        .def("__init__", py::make_constructor(&Block3D_constructor_vec))
+        .def("__init__", py::make_constructor(&Block3D_constructor_dwh, py::default_call_policies(), (py::arg("depth"), py::arg("width"), py::arg("height"), py::arg("material"))))
+        .def("__init__", py::make_constructor(&Block3D_constructor_vec, py::default_call_policies(), (py::arg("dimensions"), py::arg("material"))))
     ;
 
 

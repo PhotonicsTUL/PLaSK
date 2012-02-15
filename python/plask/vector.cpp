@@ -448,10 +448,10 @@ void register_vector()
     // Initialize numpy
     import_array();
 
-    register_vector_class<2,double>();
-    register_vector_class<2,dcomplex>();
-    register_vector_class<3,double>();
-    register_vector_class<3,dcomplex>();
+    register_vector_class<2,double>("vector2f");
+    register_vector_class<2,dcomplex>("vector2fc");
+    register_vector_class<3,double>("vector3f");
+    register_vector_class<3,dcomplex>("vector2c");
 
     py::implicitly_convertible<Vec<2,double>,Vec<2,dcomplex>>();
     py::implicitly_convertible<Vec<3,double>,Vec<3,dcomplex>>();

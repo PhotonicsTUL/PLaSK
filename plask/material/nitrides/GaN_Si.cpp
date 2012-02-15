@@ -17,8 +17,8 @@ GaN_Si::GaN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
 
 std::string GaN_Si::name() const { return ("GaN:Si"); }
 
-double GaN_Si::mob(double T) const { 
-	//M. Kuc 8.02.2012	
+double GaN_Si::mob(double T) const {
+	//M. Kuc 8.02.2012
 	//mob(T), T: 270 - 400 K; Kusakabe K, Physica B 376-377 (2006) 520
 	//mob(n,T) = mobRT(Nf_RT)*fun(T)
     return ( mob_RT*(1.486-T*0.00162) );
@@ -34,7 +34,7 @@ double GaN_Si::Nf(double T) const {
 double GaN_Si::cond(double T) const {
 	//M. Kuc 8.02.2012
 	//100*e*Nf(T)*mob(T) [S/m]
-	return ( 1.602E-17*Nf(T)*mob(T) ); 
+	return ( 1.602E-17*Nf(T)*mob(T) );
 }
 
 double GaN_Si::condT(double T, double t) const {
@@ -44,9 +44,9 @@ double GaN_Si::condT(double T, double t) const {
 	//condT_max_RT*fun(t)*fun(T)
     return( 230*pow((tanh(0.001529*pow(t,0.984))),0.12) * pow((T/300.),-1.43) );
  }
- 
-double GaN_Si::absp(double wl, double T) const { 
-	//NO absp(T) DEPENDENCE !!!	
+
+double GaN_Si::absp(double wl, double T) const {
+	//NO absp(T) DEPENDENCE !!!
 	//M. Kuc 8.02.2012
 	//abs(Nf), Nf: 1e18 - 5e19 cm-3; Perlin Unipress 11.2011 no published
 	//abs(wl), wl: 380 - 450 nm; Perlin Unipress 11.2011 no published
@@ -55,26 +55,18 @@ double GaN_Si::absp(double wl, double T) const {
            C = -1.89394E13*pow(wl,3.) + 2.54426E16*pow(wl,2.) - 1.14497E19*wl + 1.73122E21,
            D = -4.46970E-4*pow(wl,3.) + 5.70108E-1*pow(wl,2.) - 2.43599E2*wl + 3.49746E4;
 	//A*exp(B(wl)+Nf(T)/C(wl))+D(wl)
-    return (A*exp(B+Nf(T)/C)+D);	
+    return (A*exp(B+Nf(T)/C)+D);
 }
 
-double GaN_Si::nr(double wl, double T) const { 
+double GaN_Si::nr(double wl, double T) const {
 	//NO nr(T) DEPENDENCE !!!
 	//M. Kuc 8.02.2012
 	//nr(wl), wl: 355 - 1240 nm; www.rpi.edu Educational Resources (E.F. Schubert 2004)
 	//nr(Nf, wl = 410nm), Nf: 1e18 - 5e19 cm-3; Perlin Unipress 11.2011 no published
 	//nr(wl)*f(Nf)
-	double A = 1./wl;	
+	double A = 1./wl;
 	double nr_wl = 4.94507E7*pow(A,3.) - 1.56053E5*pow(A,2.) + 2.25051E2*A + 2.15670;
 	return ( nr_wl * (1.0001-Nf(T)/1e18*1.05003e-4 ) );
-}
-
-dcomplex GaN_Si::Nr(double wl, double T) const { 
-	//NO absp(T) DEPENDENCE !!!
-	//NO nr(T) DEPENDENCE !!!
-	//M. Kuc 8.02.2012
-	//(nr, extinction coefficient)
-	return ( (nr(wl,T),7.95775E-9*wl*absp(wl,T)) );
 }
 
 }       // namespace plask

@@ -29,17 +29,20 @@ template <> struct GeometryElementD_getMaterial<3> {
 };
 
 /// Initialize class GeometryElementD for Python
+template <int dim> struct GeometryElementD_vector_args { static const py::detail::keywords<dim> args; };
+template<> const py::detail::keywords<2> GeometryElementD_vector_args<2>::args = (py::arg("c0"), py::arg("c1"));
+template<> const py::detail::keywords<3> GeometryElementD_vector_args<3>::args = (py::arg("c0"), py::arg("c1"), py::arg("c2"));
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementD, GeometryElement)
-        .def("inside", &GeometryElementD<dim>::inside,
+        .def("inside", &GeometryElementD<dim>::inside, (py::arg("point")),
              "Return True if the geometry element includes a point (in local coordinates)")
-        .def("inside", &GeometryElementD_inside<dim>::call, py::args("point"),
+        .def("inside", &GeometryElementD_inside<dim>::call, GeometryElementD_vector_args<dim>::args,
              "Return True if the geometry element includes a point (in local coordinates)")
-        .def("intersect", &GeometryElementD<dim>::intersect, py::args("area"),
+        .def("intersect", &GeometryElementD<dim>::intersect, (py::arg("area")),
              "Return True if the geometry element has common points (in local coordinates) with an area")
-        .def("getMaterial", &GeometryElementD<dim>::getMaterial, py::args("point"),
+        .def("getMaterial", &GeometryElementD<dim>::getMaterial, (py::arg("point")),
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
-        .def("getMaterial", &GeometryElementD_getMaterial<dim>::call,
+        .def("getMaterial", &GeometryElementD_getMaterial<dim>::call, GeometryElementD_vector_args<dim>::args,
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
         .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox,
                       "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
@@ -64,8 +67,8 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementTransform, "GeometryElementTransform
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementTransform, GeometryElementD<dim>)
         .add_property("child",
                       (shared_ptr<typename GeometryElementTransform<dim>::ChildType> (GeometryElementTransform<dim>::*)()) &GeometryElementTransform<dim>::getChild,
-                      &GeometryElementTransform<dim>::setChild)
-        .def("hasChild", &GeometryElementTransform<dim>::hasChild)
+                      &GeometryElementTransform<dim>::setChild, "Child of the transform object")
+        .def("hasChild", &GeometryElementTransform<dim>::hasChild, "Return true if the transform object has a set child")
     ;
 }
 

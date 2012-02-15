@@ -137,7 +137,7 @@ void initGeometry() {
         "        Material database. If not specified, set to default database.\n"
         , py::no_init)
          .def("__init__", raw_constructor(&Geometry__init__))
-         .def("element", &Geometry_element)
+         .def("element", &Geometry_element, "Get geometry element with given name", (py::arg("name")))
          .def("load", &Geometry_loadFromFile, "Load geometry from file", (py::arg("filename"), py::arg("materialsdb")=shared_ptr<MaterialsDB>()))
          .def("read", &Geometry_loadFromXMLString, "Read geometry from string", (py::arg("data"), py::arg("materialsdb")=shared_ptr<MaterialsDB>()))
     ;

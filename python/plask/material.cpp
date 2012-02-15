@@ -1,6 +1,7 @@
 #include "globals.h"
 #include <boost/python/raw_function.hpp>
 #include <boost/python/stl_iterator.hpp>
+#include <algorithm>
 
 #include <plask/config.h>
 #include <plask/utils/string.h>
@@ -128,39 +129,62 @@ class MaterialWrap : public Material
 
 
 /**
- * Object constructing custom Python material where read from XML file
+ * Object constructing custom simple Python material when read from XML file
  *
  * \param name plain material name
  *
  * Other parameters are ignored
  */
-class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
+class PythonSimpleMaterialConstructor : public MaterialsDB::MaterialConstructor
 {
     py::object material_class;
     std::string dopant;
 
   public:
-    PythonMaterialConstructor(const std::string& name, py::object material_class, std::string dope="") :
+    PythonSimpleMaterialConstructor(const std::string& name, py::object material_class, std::string dope="") :
         MaterialsDB::MaterialConstructor(name), material_class(material_class), dopant(dope) {}
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
     {
-
-        // We pass composition parameters as *args to constructor
-        //TODO changed by Piotr, to check if fine
-        py::list args;
-        py::dict comp;
-        for (auto c : composition) comp[c.first] = c.second;
-        args.append(comp);
-
-        // We pass doping information in **kwargs
+        py::tuple args;
         py::dict kwargs;
+        // Doping information
         if (doping_amount_type !=  Material::NO_DOPING) {
-            kwargs["dope"] = dopant;
+            kwargs["dopant"] = dopant;
+            kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
+        }
+        return py::extract<shared_ptr<Material>>(material_class(*args, **kwargs));
+    }
+};
+
+/**
+ * Object constructing custom complex Python material whene read from XML file
+ *
+ * \param name plain material name
+ *
+ * Other parameters are ignored
+ */
+class PythonComplexMaterialConstructor : public MaterialsDB::MaterialConstructor
+{
+    py::object material_class;
+    std::string dopant;
+
+  public:
+    PythonComplexMaterialConstructor(const std::string& name, py::object material_class, std::string dope="") :
+        MaterialsDB::MaterialConstructor(name), material_class(material_class), dopant(dope) {}
+
+    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
+    {
+        py::dict kwargs;
+        // Composition
+        for (auto c : composition) kwargs[c.first] = c.second;
+        // Doping information
+        if (doping_amount_type !=  Material::NO_DOPING) {
+            kwargs["dopant"] = dopant;
             kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
         }
 
-        py::object material = material_class(*py::tuple(args), **kwargs);
+        py::object material = material_class(**kwargs);
 
         return py::extract<shared_ptr<Material>>(material);
     }
@@ -169,14 +193,25 @@ class PythonMaterialConstructor : public MaterialsDB::MaterialConstructor
 
 
 /**
- * Function registering custom material class to plask
+ * Function registering custom simple material class to plask
  * \param name name of the material
  * \param material_class Python class object of the custom material
  */
-void registerMaterial(const std::string& name, py::object material_class, shared_ptr<MaterialsDB> db)
+void registerSimpleMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
 {
     std::string dopant = std::get<1>(splitString2(name, ':'));
-    db->addComplex(new PythonMaterialConstructor(name, material_class, dopant));
+    db.addSimple(new PythonSimpleMaterialConstructor(name, material_class, dopant));
+}
+
+/**
+ * Function registering custom complex material class to plask
+ * \param name name of the material
+ * \param material_class Python class object of the custom material
+ */
+void registerComplexMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
+{
+    std::string dopant = std::get<1>(splitString2(name, ':'));
+    db.addComplex(new PythonComplexMaterialConstructor(name, material_class, dopant));
 }
 
 /**
@@ -213,88 +248,106 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 
     // Otherwise parse other args
 
-    // Get element names and check for compositions in kwargs
-    std::vector<std::string> elements;
-    std::string element;
-    int l = name.length();
-    for (int i = 0; i < l; ++i) {
-        char c = name[i];
-        if (c < 'a' || c > 'z') {
-            if (element != "") elements.push_back(element);
-            element = "";
-        }
-        element += c;
-    }
-    elements.push_back(element);
-    std::vector<double> composition;
-    for (auto element : elements) {
-        double c;
-        try {
-            c = py::extract<double>(kwargs[element]);
-        } catch (py::error_already_set) {
-            c = nan("");
-            PyErr_Clear();
-        }
-        composition.push_back(c);
-    }
-
     // Get doping
     bool doping = false;
+    std::string dopant = "";
+    int doping_keys = 0;
     try {
-        std::string dopant = py::extract<std::string>(kwargs["dope"]);
-        name = name + ":" + dopant;
+        dopant = py::extract<std::string>(kwargs["dopant"]);
         doping = true;
+        ++doping_keys;
     } catch (py::error_already_set) {
         PyErr_Clear();
     }
     Material::DOPING_AMOUNT_TYPE doping_type = Material::NO_DOPING;
     double concentation = 0;
-
+    py::object cobj;
+    bool has_dc = false;
+    try {
+        cobj = kwargs["dc"];
+        doping_type = Material::DOPANT_CONCENTRATION;
+        has_dc = true;
+        ++doping_keys;
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+    try {
+        cobj = kwargs["cc"];
+        doping_type = Material::CARRIER_CONCENTRATION;
+        ++doping_keys;
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+    if (doping_type == Material::CARRIER_CONCENTRATION && has_dc) {
+        PyErr_SetString(PyExc_ValueError, "doping and carrier concentrations specified simultanously");
+        throw py::error_already_set();
+    }
     if (doping) {
-        py::object cobj;
-        bool has_dc = false;
-        try {
-            cobj = kwargs["dc"];
-            doping_type = Material::DOPANT_CONCENTRATION;
-            has_dc = true;
-        } catch (py::error_already_set) {
-            PyErr_Clear();
-        }
-        try {
-            cobj = kwargs["cc"];
-            doping_type = Material::CARRIER_CONCENTRATION;
-        } catch (py::error_already_set) {
-            PyErr_Clear();
-        }
         if (doping_type == Material::NO_DOPING) {
-            PyErr_SetString(PyExc_ValueError, "neither dopant nor carrier concentrations specified");
-            throw py::error_already_set();
-        } else if (doping_type == Material::CARRIER_CONCENTRATION && has_dc) {
-            PyErr_SetString(PyExc_ValueError, "dopant and carrier concentrations specified simultanously");
+            PyErr_SetString(PyExc_ValueError, "dopant specified, but neither doping nor carrier concentrations given correctly");
             throw py::error_already_set();
         }
+    } else {
+        if (doping_type != Material::NO_DOPING) {
+            PyErr_SetString(PyExc_ValueError, format("%s concentation given, but no dopant specified", has_dc?"doping":"carrier").c_str());
+            throw py::error_already_set();
+        }
+    }
+    concentation = py::extract<double>(cobj);
 
-        concentation = py::extract<double>(cobj);
+    std::size_t sep = name.find(':');
+    if (sep != std::string::npos) {
+        if (doping) {
+            PyErr_SetString(PyExc_ValueError, "doping specified in **kwargs, but name contains ':'");
+            throw py::error_already_set();
+        } else {
+           Material::parseDopant(name.substr(sep+1), dopant, doping_type, concentation);
+        }
     }
 
-    return DB->get(name, composition, doping_type, concentation);
+    py::list keys = kwargs.keys();
+
+     // Test if kwargs contains only doping information
+    if (py::len(keys) == doping_keys) {
+        std::string full_name;
+        if (doping_type == Material::DOPANT_CONCENTRATION) full_name = format("%s:%s=%g", name, dopant, concentation);
+        else full_name = format("%s:%s n=%g", name, dopant, concentation);;
+        return  DB->get(full_name);
+    }
+
+    // So, kwargs contains compostion
+    std::vector<std::string> elements = Material::parseElementsNames(name);
+    py::object none;
+    // test if only correct elements are given
+    for (int i = 0; i < py::len(keys); ++i) {
+        std::string k = py::extract<std::string>(keys[i]);
+        if (k != "dopant" && k != "dc" && k != "cc" && std::find(elements.begin(), elements.end(), k) == elements.end()) {
+            PyErr_SetString(PyExc_KeyError, format("%s not allowed in material %s", k, name).c_str());
+            throw py::error_already_set();
+        }
+    }
+    // make composition map
+    Material::Composition composition;
+    for (auto e: elements) {
+        py::object v;
+        try {
+            v = kwargs[e];
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+        composition[e] = (v != none) ? py::extract<double>(v): std::numeric_limits<double>::quiet_NaN();
+    }
+
+    return DB->get(composition, dopant, doping_type, concentation);
 }
 
-//TODO reimplemented by Piotr, to check if fine
 py::dict Material__completeComposition(py::dict src) {
-    /*std::vector<double> in;
-    py::stl_input_iterator<double> begin(src), end;
-    for (auto i = begin; i != end; ++i) in.push_back(*i);
-    std::vector<double> out = Material::completeComposition(in, pattern);
-    py::list dst;
-    for (auto o : out) dst.append(o);
-    return dst;*/
-
     py::list keys = src.keys();
     Material::Composition comp;
+    py::object none;
     for(int i = 0; i < py::len(keys); ++i) {
-        auto s = src[keys[i]];
-        comp[py::extract<std::string>(keys[i])] = s ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
+        py::object s = src[keys[i]];
+        comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
     }
     comp = Material::completeComposition(comp);
 
@@ -309,15 +362,17 @@ void initMaterial() {
     py::scope().attr("material") = materials_module;
     py::scope scope = materials_module;
 
-    scope.attr("__doc__") =
-        "The material database. Many semiconductor materials used in photonics are defined here.\n"
-        "We have made a significant effort to ensure their physical properties to be the most precise\n"
-        "as the current state of the art. However, you can derive an abstract class plask.material.Material\n"
-        "to create your own materials.\n"; //TODO maybe more extensive description
-
-    py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB", "Material database class"); materialsDB
+    py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB",
+        "Material database class\n\n"
+        "    The material database. Many semiconductor materials used in photonics are defined here.\n"
+        "    We have made a significant effort to ensure their physical properties to be the most precise\n"
+        "    as the current state of the art. However, you can derive an abstract class plask.Material\n"
+        "    to create your own materials.\n" //TODO maybe more extensive description
+        ); materialsDB
+        .def("getDefault", &MaterialsDB::getDefault, "Get default database", py::return_value_policy<py::reference_existing_object>())
+        .staticmethod("getDefault")
         .def("get", py::raw_function(&MaterialsDB_get), "Get material of given name and doping")
-        .add_property("materials", &MaterialsDB_list, "Return the list of all materials in database")
+        .add_property("all", &MaterialsDB_list, "List of all materials in database")
         .def("__iter__", &MaterialsDB_iter)
     ;
 
@@ -375,8 +430,13 @@ void initMaterial() {
 
         ;
 
-    py::def("registerMaterial", &registerMaterial, py::args("name", "material", "database"),
-            "Register new material class to the database");
+    py::def("_register_material_simple", &registerSimpleMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
+            "Register new simple material class to the database");
+
+    py::def("_register_material_complex", &registerComplexMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
+            "Register new complex material class to the database");
+
+    scope.attr("database") = MaterialsDB::getDefault();
 }
 
 }} // namespace plask::python

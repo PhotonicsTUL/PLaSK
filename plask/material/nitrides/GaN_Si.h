@@ -22,12 +22,11 @@ struct GaN_Si: public Material {
     virtual double condT(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
-    virtual dcomplex Nr(double wl, double T) const;
 
 protected:
 	double Nf_RT,
 		   mob_RT;
-	
+
 };
 
 

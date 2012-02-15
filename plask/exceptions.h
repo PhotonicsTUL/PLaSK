@@ -14,10 +14,10 @@ namespace plask {
  * Base class for all exceptions thrown by plask library.
  */
 struct Exception: public std::runtime_error {
-    
+
     ///@param msg error message
     Exception(const std::string& msg): std::runtime_error(msg) {}
-    
+
     /**
      * Format error message using boost::format.
      */
@@ -30,10 +30,10 @@ struct Exception: public std::runtime_error {
  * Exceptions of this class are throw in cases of critical and very unexpected errors (possible plask bugs).
  */
 struct CriticalException: public Exception {
-    
+
     ///@param msg error message
     CriticalException(const std::string& msg): Exception("Critical exception: " + msg) {}
-    
+
     template <typename... T>
     CriticalException(const std::string& msg, const T&... args): Exception("Critical exception: " + msg, args...) {}
 };
@@ -60,11 +60,11 @@ struct NotImplemented: public Exception {
  * This exception is thrown when some value (function argument) out of bound.
  */
 struct OutOfBoundException: public Exception {
-    
+
     ///@param msg error message
     OutOfBoundException(const std::string& where, const std::string& argname)
         : Exception("%1%: argument %2% out of bound", where, argname) {}
-    
+
     template <typename BoundType>
     OutOfBoundException(const std::string& where, const std::string& argname, const BoundType& was, const BoundType& lo, const BoundType& hi)
         : Exception("%1%: argument %2% out of bound, should be between %3% and %4%, but was %5%.", where, argname, lo, hi, was) {}
@@ -97,15 +97,15 @@ struct NoProvider: public Exception {
  * This exception is thrown when material (typically with given name) is not found.
  */
 class NoSuchMaterial: public Exception {
-    
+
     template <typename ComponentMap>
     std::string constructMsg(const ComponentMap& comp, const std::string dopant_name) {
-        std::string result = "No such material with composition consists of:";
+        std::string result = "No material with composition consisting of:";
         for (auto c: comp) (result += ' ') += c.first;
-        if (!dopant_name.empty()) (result += ". And dopant: ") += dopant_name;
+        if (!dopant_name.empty()) (result += ", doped with: ") += dopant_name;
         return result;
     }
-    
+
 public:
     ///@param material_name name of material which not exists
     NoSuchMaterial(const std::string& material_name)
@@ -117,7 +117,7 @@ public:
     template <typename ComponentMap>
     NoSuchMaterial(const ComponentMap& comp, const std::string dopant_name)
         : Exception(constructMsg(comp, dopant_name)) {}
-    
+
 };
 
 /**
@@ -210,7 +210,7 @@ struct NoSuchGeometryElementType: public Exception {
  * Exceptions of this class are throw by some geometry element classes when there is no required child.
  */
 struct GeometryElementNamesConflictException: public Exception {
-    
+
     /**
      * @param element_name name of element which is already exists
      */
