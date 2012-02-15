@@ -39,7 +39,7 @@ std::string dbKey(const std::string& fullComplexName) {
 
 /*std::string dbKey(std::vector<std::string> elemenNames, const std::string& dopant_name = "") {
     std::string result;
-    std::vector<std::string>::iterator grBegin = elemenNames.begin(); 
+    std::vector<std::string>::iterator grBegin = elemenNames.begin();
     if (grBegin == elemenNames.end()) return "";    //exception??
     int grNr = elementGroup(*grBegin);
     for (std::vector<std::string>::iterator grEnd = grBegin + 1; grEnd != elemenNames.end(); ++grEnd) {
@@ -74,7 +74,7 @@ shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material:
             std::string complexDbKey;
             try { complexDbKey = dbKey(db_Key); } catch (std::exception& e) {}
             if (constructors.find(complexDbKey) != constructors.end())  //material is complex
-                throw MaterialParseException("Composition is required to get \"%1%\" material.");
+                throw MaterialParseException(format("Composition is required to get \"%1%\" material.", db_Key));
             throw NoSuchMaterial(db_Key);
         }
         throw NoSuchMaterial(composition, dopant_name);

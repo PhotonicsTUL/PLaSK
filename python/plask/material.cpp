@@ -308,7 +308,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 
     py::list keys = kwargs.keys();
 
-     // Test if kwargs contains only doping information
+    // Test if kwargs contains only doping information
     if (py::len(keys) == doping_keys) {
         std::string full_name;
         if (doping_type == Material::DOPANT_CONCENTRATION) full_name = format("%s:%s=%g", name, dopant, concentation);
