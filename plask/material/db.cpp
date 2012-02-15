@@ -66,10 +66,17 @@ void MaterialsDB::ensureCompositionIsNotEmpty(const Material::Composition &compo
     if (composition.empty()) throw MaterialParseException("Unknown composition.");
 }
 
-shared_ptr<Material> MaterialsDB::get(const std::string& dbKey, const Material::Composition& composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
-    auto it = constructors.find(dbKey);
+shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+    auto it = constructors.find(db_Key);
     if (it == constructors.end()) {
-        if (composition.empty()) throw NoSuchMaterial(dbKey, dopant_name);
+        if (composition.empty()) {
+            //check if material is complex, but user forget to provide composition:
+            std::string complexDbKey;
+            try { complexDbKey = dbKey(db_Key); } catch (std::exception& e) {}
+            if (constructors.find(complexDbKey) != constructors.end())  //material is complex
+                throw MaterialParseException("Composition is required to get \"%1%\" material.");
+            throw NoSuchMaterial(db_Key);
+        }
         throw NoSuchMaterial(composition, dopant_name);
     }
     return (*it->second)(composition, doping_amount_type, doping_amount);
