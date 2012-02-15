@@ -30,58 +30,62 @@ class Material(unittest.TestCase):
         '''Test creation of custom materials'''
 
         @plask.material.simple
-        class AlAs(plask.material.Material):
+        class AlGaAs(plask.material.Material):
             def __init__(self):
-                super(AlAs, self).__init__()
-                print >>sys.stderr, "AlAs.__init__",
+                super(AlGaAs, self).__init__()
                 ptest.print_ptr(self)
             def __del__(self):
-                print >>sys.stderr, "AlAs.__del__",
                 ptest.print_ptr(self)
             def VBO(self, T=300.):
                 return 2.*T
 
-        self.assertIn( "AlAs", plask.materials )
+        self.assertIn( "AlGaAs", plask.materials )
 
-        m = AlAs()
-        self.assertEqual(m.name, "AlAs")
+        m = AlGaAs()
+        self.assertEqual(m.name, "AlGaAs")
         self.assertEqual( m.VBO(1.0), 2.0 )
         del m
 
-        self.assertEqual( ptest.materialName("AlAs", plask.materials), "AlAs" )
-        self.assertEqual( ptest.materialVBO("AlAs", plask.materials, 1.0), 2.0 )
+        self.assertEqual( ptest.materialName("AlGaAs", plask.materials), "AlGaAs" )
+        self.assertEqual( ptest.materialVBO("AlGaAs", plask.materials, 1.0), 2.0 )
 
         print >>sys.stderr, plask.materials.all
         if sys.version >= 2.7:
-            with self.assertRaises(RuntimeError): plask.materials.get("AlAs:Si=1e14")
+            with self.assertRaises(RuntimeError): plask.materials.get("AlGaAs:Si=1e14")
 
-        @plask.material.simple
-        class AlAsDp(plask.material.Material):
-            name = "AlAs:Dp"
+        @plask.material.complex
+        class AlGaAsDp(plask.material.Material):
+            name = "AlGaAs:Dp"
             def __init__(self, *args, **kwargs):
-                super(AlAsDp, self).__init__()
+                super(AlGaAsDp, self).__init__()
                 self.args = args,
-                self.kwargs = kwargs;
-                print >>sys.stderr, "AlAs:Dp.__init__",
-                ptest.print_ptr(self)
+                print kwargs
+                self.kwargs = kwargs
+                self. composition = self._completeComposition(kwargs);
+                print self.kwargs
             def __del__(self):
-                print >>sys.stderr, "AlAs:Dp.__del__",
                 ptest.print_ptr(self)
             def VBO(self, T=300.):
                 return self.kwargs['dc'] * T
+            def CBO(self, T=300.):
+                return self.kwargs['Al'] * T
 
-        m = plask.materials.get("AlAs:Dp=3.0")
-        self.assertEqual( m.__class__, AlAsDp )
-        self.assertEqual( m.name, "AlAs:Dp" )
+        print plask.materials.all
+        m = plask.materials.get("Al(0.2)GaAs:Dp=3.0")
+        self.assertEqual( m.__class__, AlGaAsDp )
+        self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VBO(1.0), 3.0 )
 
-        AlAs = lambda **kwargs: plask.materials.get("AlAs", **kwargs)
-        m = AlAs(Al=0.2, dopant="Dp", dc=5.0)
-        self.assertEqual( m.name, "AlAs:Dp" )
+        AlGaAs = lambda **kwargs: plask.materials.get("AlGaAs", **kwargs)
+        m = AlGaAs(Al=0.2, dopant="Dp", dc=5.0)
+        self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VBO(), 1500.0 )
+        correct = dict(Al=0.2, Ga=0.8, As=1.0)
+        for k in correct:
+            self.assertAlmostEqual( m.composition[k], correct[k] )
         del m
-        self.assertEqual( ptest.materialName("AlAs:Dp=3.0", plask.materials), "AlAs:Dp" )
-        self.assertEqual( ptest.materialVBO("AlAs:Dp=3.0", plask.materials, 1.0), 3.0 )
+        self.assertEqual( ptest.materialName("Al(0.2)GaAs:Dp=3.0", plask.materials), "AlGaAs:Dp" )
+        self.assertEqual( ptest.materialVBO("Al(0.2)GaAs:Dp=3.0", plask.materials, 1.0), 3.0 )
 
         @plask.material.simple
         class WithChar(plask.material.Material):

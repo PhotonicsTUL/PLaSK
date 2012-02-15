@@ -184,7 +184,8 @@ class PythonComplexMaterialConstructor : public MaterialsDB::MaterialConstructor
             kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
         }
 
-        py::object material = material_class(**kwargs);
+        py::tuple args;
+        py::object material = material_class(*args, **kwargs);
 
         return py::extract<shared_ptr<Material>>(material);
     }
@@ -346,8 +347,11 @@ py::dict Material__completeComposition(py::dict src) {
     Material::Composition comp;
     py::object none;
     for(int i = 0; i < py::len(keys); ++i) {
-        py::object s = src[keys[i]];
-        comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
+        std::string k = py::extract<std::string>(keys[i]);
+        if (k != "dopant" && k != "dc" && k != "cc") {
+            py::object s = src[keys[i]];
+            comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
+        }
     }
     comp = Material::completeComposition(comp);
 
