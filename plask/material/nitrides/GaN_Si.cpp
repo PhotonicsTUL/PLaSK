@@ -8,9 +8,10 @@
 namespace plask {
 
 GaN_Si::GaN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
-	//M. Kuc 8.02.2012
+	//M. Kuc 8.02.2012	
+	if (DOPING_AMOUNT_TYPE == CARRIER_CONCENTRATION) Nf_RT = Si;
+	else Nf_RT = 0.158*pow(Si,1.039);
 	//Nf_RT(Si), Si: 6e17 - 7e18 cm-3; Oshima Y, Phys. Status Solidi C 4 (2007) 2215
-	Nf_RT = 0.158*pow(Si,1.039);
 	//mobRT(Nf_RT), Nf_RT: 1e16 - 2e19 cm-3; based on 7 papers (1996-2007): undoped/Si-doped GaN/c-sapphire
     mob_RT = 4.164e6*pow(Nf_RT,-0.228);
 }
@@ -20,7 +21,7 @@ std::string GaN_Si::name() const { return ("GaN:Si"); }
 double GaN_Si::mob(double T) const {
 	//M. Kuc 8.02.2012
 	//mob(T), T: 270 - 400 K; Kusakabe K, Physica B 376-377 (2006) 520
-	//mob(n,T) = mobRT(Nf_RT)*fun(T)
+	//mob(Nf_RT,T) = mobRT(Nf_RT)*fun(T)
     return ( mob_RT*(1.486-T*0.00162) );
 }
 
@@ -39,10 +40,10 @@ double GaN_Si::cond(double T) const {
 
 double GaN_Si::condT(double T, double t) const {
 	//M. Kuc 8.02.2012
-	//condT(T), T: 300 - 450 K; Mion C, App. Phys. Lett. 89 (2006) 092123
-	//condT(t), t: 1 - 1000 um; Mion C, App. Phys. Lett. 89 (2006) 092123
-	//condT_max_RT*fun(t)*fun(T)
-    return( 230*pow((tanh(0.001529*pow(t,0.984))),0.12) * pow((T/300.),-1.43) );
+	//condT(Nf), Nf: 1e18 - 1e19 cm-3; Oshima Y, Phys. Status Solidi C 4 (2007) 2215
+	double fun_Nf = 2.18*pow(Nf_RT,-0.022);	
+	//condT_GaN(t,T)*fun(Nf)
+    return( GaN::cond(T,t)*fun_Nf );
  }
 
 double GaN_Si::absp(double wl, double T) const {
@@ -55,18 +56,15 @@ double GaN_Si::absp(double wl, double T) const {
            C = -1.89394E13*pow(wl,3.) + 2.54426E16*pow(wl,2.) - 1.14497E19*wl + 1.73122E21,
            D = -4.46970E-4*pow(wl,3.) + 5.70108E-1*pow(wl,2.) - 2.43599E2*wl + 3.49746E4;
 	//A*exp(B(wl)+Nf(T)/C(wl))+D(wl)
-    return (A*exp(B+Nf(T)/C)+D);
+    return (A*exp(B+Nf_RT/C)+D);	
 }
 
 double GaN_Si::nr(double wl, double T) const {
 	//NO nr(T) DEPENDENCE !!!
 	//M. Kuc 8.02.2012
-	//nr(wl), wl: 355 - 1240 nm; www.rpi.edu Educational Resources (E.F. Schubert 2004)
-	//nr(Nf, wl = 410nm), Nf: 1e18 - 5e19 cm-3; Perlin Unipress 11.2011 no published
-	//nr(wl)*f(Nf)
-	double A = 1./wl;
-	double nr_wl = 4.94507E7*pow(A,3.) - 1.56053E5*pow(A,2.) + 2.25051E2*A + 2.15670;
-	return ( nr_wl * (1.0001-Nf(T)/1e18*1.05003e-4 ) );
+	//nr(Nf, wl = 410nm), Nf: 1e18 - 5e19 cm-3; Perlin Unipress 11.2011 no published: n-type GaN:doped
+	//nr_GaN(wl,T)*f(Nf)
+	return ( GaN::nr(wl,T) * (1.0001-Nf_RT/1e18*1.05003e-4 ) );
 }
 
 }       // namespace plask
