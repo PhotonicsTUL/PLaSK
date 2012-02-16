@@ -114,7 +114,8 @@ class MaterialWrap : public Material
     virtual double B(double T) const { return override<double>("B", &Material::B, T); }
     virtual double C(double T) const { return override<double>("C", &Material::C, T); }
     virtual double D(double T) const { return override<double>("D", &Material::D, T); }
-    virtual double condT(double T, double t) const { return override<double>("condT", &Material::condT, T, t); }
+    virtual double condT(double T) const { return override<double>("condT", (double (Material::*)(double) const) &Material::condT, T); }
+    virtual double condT(double T, double t) const { return override<double>("condT", (double (Material::*)(double, double) const) &Material::condT, T, t); }
     virtual double condT_v(double T, double t) const { return override<double>("condT_v", &Material::condT_v, T, t); }
     virtual double condT_l(double T, double t) const { return override<double>("condT_l", &Material::condT_l, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
@@ -435,7 +436,8 @@ void initMaterial() {
         .def("B", &Material::B, (py::arg("T")=300.), "Get radiative recombination coefficient B [m**3/s]")
         .def("C", &Material::C, (py::arg("T")=300.), "Get Auger recombination coefficient C [m**6/s]")
         .def("D", &Material::D, (py::arg("T")=300.), "Get ambipolar diffusion coefficient D [m**2/s]")
-        .def("condT", &Material::condT, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity [W/(m*K)]")
+        .def("condT", (double (Material::*)(double) const)&Material::condT, (py::arg("T")=300.), "Get thermal conductivity [W/(m*K)]")
+        .def("condT", (double (Material::*)(double, double) const)&Material::condT, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity [W/(m*K)]")
         .def("condT_v", &Material::condT_v, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity in vertical direction k [W/(m*K)]")
         .def("condT_l", &Material::condT_l, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity in lateral direction k [W/(m*K)]")
         .def("dens", &Material::dens, (py::arg("T")=300.), "Get density [kg/m**3]")

@@ -9,7 +9,8 @@ materials = material.database
 
 # Create factories for default materials
 for mat in material.database:
-    material.__dict__[mat] = lambda **kwargs: material.database.get(mat.split(":")[0], **kwargs)
+    name = mat.split(":")[0]
+    material.__dict__[name] = lambda **kwargs: material.database.get(name, **kwargs)
 
 def register_material(Material=None, name=None, complex=False, DB=None):
     '''Function to register a new material'''

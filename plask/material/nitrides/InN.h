@@ -17,12 +17,11 @@ struct InN: public Material {
 
     static constexpr const char* NAME = "InN";
 
-	InN();
-	virtual std::string name() const;
+    InN();
+    virtual std::string name() const;
     virtual double condT(double T) const; //NO Temperature dependence
 private:
-	double condTmax_RT;
-	
+    double condTmax_RT;
 };
 
 

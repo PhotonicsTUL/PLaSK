@@ -416,26 +416,33 @@ struct Material {
     /**
      * Get thermal conductivity k[W/(m*K)].
      * @param T temperature [K]
-     * @param t thickness [m]
      * @return ambipolar diffusion coefficient D[m^2/s]
      */
-    virtual double condT(double T, double t) const;
+    virtual double condT(double T) const;
+
+    /**
+     * Get thermal conductivity k[W/(m*K)].
+     * @param T temperature [K]
+     * @param thickness thickness [m]
+     * @return ambipolar diffusion coefficient D[m^2/s]
+     */
+    virtual double condT(double T, double thickness) const;
 
     /**
      * Get thermal conductivity in vertical direction k [W/(m*K)].
      * @param T temperature [K]
-     * @param t thickness [m]
+     * @param thickness thickness [m]
      * @return thermal conductivity in vertical direction k [W/(m*K)]
      */
-    virtual double condT_v(double T, double t) const;
+    virtual double condT_v(double T, double thickness) const;
 
     /**
      * Get thermal conductivity in lateral direction k [W/(m*K)].
      * @param T temperature [K]
-     * @param t thickness [m]
+     * @param thickness thickness [m]
      * @return thermal conductivity in lateral direction k [W/(m*K)]
      */
-    virtual double condT_l(double T, double t) const;
+    virtual double condT_l(double T, double thickness) const;
 
     /**
      * Get density [kg/m^3].

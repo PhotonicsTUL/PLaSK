@@ -23,7 +23,7 @@ struct MaterialsDB {
     /**
      * Helper which call getDefault().add<MaterialType>([name]) in constructor.
      *
-     * Creating global objects of this type allow to fill default database.
+     * Creating global objects of this type allow to fill the default database.
      */
     template <typename MaterialType>
     struct Register {
@@ -160,7 +160,7 @@ public:
      * @see @ref Material::completeComposition
      */
     shared_ptr<Material> get(const Material::Composition& composition, const std::string& dopant_name = "", Material::DOPING_AMOUNT_TYPE doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
-    
+
     /**
      * Create material object.
      * @param parsed_name_with_dopant material name with dopant name in format material_name[:dopant_name], for example: "AlGaN" or "AlGaN:Mg"
@@ -196,7 +196,7 @@ public:
      * @param constructor object which can create material instance; must be created by new operator and material DB will call delete for it
      */
     void addSimple(const MaterialConstructor* constructor);
-    
+
     /**
      * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance; must be created by new operator and material DB will call delete for it
@@ -296,7 +296,7 @@ private:
     shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition,
                              const std::string& dopant_name = "", Material::DOPING_AMOUNT_TYPE doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
-    
+
 };
 
 }   // namespace plask
