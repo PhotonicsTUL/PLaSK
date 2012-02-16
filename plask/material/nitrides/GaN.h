@@ -13,15 +13,14 @@ namespace plask {
  * Represent undoped GaN, its physical properties.
  */
 struct GaN: public Material {
-
+    GaN();
 	virtual std::string name() const;
     virtual double cond(double T) const;
     virtual double condT(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
-    virtual dcomplex Nr(double wl, double T) const;
 
-protected:
+private:
 	double Nf_RT,
 		   mob_RT,
 		   cond_RT,

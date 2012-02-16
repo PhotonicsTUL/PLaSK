@@ -11,7 +11,7 @@ GaN::GaN() {
 	//M. Kuc 12.02.2012	
 	//Nf_RT, mob_RT, Koblmüller G, Appl. Phys. Lett. 91 (2007) 221905
 	Nf_RT = 2e16;
-	mobRT = 800;
+    mob_RT = 800;
     cond_RT = 255;
 	//Mion C, App. Phys. Lett. 89 (2006) 092123
 	condTmax_RT = 230;
@@ -52,14 +52,6 @@ double GaN::nr(double wl, double T) const {
 	double A = 1./wl;	
 	double nr_wl = 4.94507E7*pow(A,3.) - 1.56053E5*pow(A,2.) + 2.25051E2*A + 2.15670;
 	return ( nr_wl );
-}
-
-dcomplex GaN::Nr(double wl, double T) const { 
-	//NO absp(T) DEPENDENCE !!!
-	//NO nr(T) DEPENDENCE !!!
-	//M. Kuc 12.02.2012
-	//(nr, extinction coefficient)
-	return ( uGaN.Nr(wl,T) );
 }
 
 }       // namespace plask
