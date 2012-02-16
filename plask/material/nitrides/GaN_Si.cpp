@@ -1,7 +1,6 @@
 #include "GaN_Si.h"
 
-#include "../../utils/string.h"
-#include <boost/lexical_cast.hpp>
+#include "../db.h"  //MaterialsDB::Register
 
 #include <cmath>
 
@@ -16,7 +15,7 @@ GaN_Si::GaN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
     mob_RT = 4.164e6*pow(Nf_RT,-0.228);
 }
 
-std::string GaN_Si::name() const { return ("GaN:Si"); }
+std::string GaN_Si::name() const { return NAME; }
 
 double GaN_Si::mob(double T) const {
 	//M. Kuc 8.02.2012
@@ -66,5 +65,7 @@ double GaN_Si::nr(double wl, double T) const {
 	//nr_GaN(wl,T)*f(Nf)
 	return ( GaN::nr(wl,T) * (1.0001-Nf_RT/1e18*1.05003e-4 ) );
 }
+
+MaterialsDB::Register<GaN_Si> materialDB_register_GaN_Si;
 
 }       // namespace plask

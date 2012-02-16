@@ -205,10 +205,10 @@ shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
     }
 }
 
-GeometryReader::RegisterElementReader container2d_reader("container2d", read_TranslationContainer2d);
-GeometryReader::RegisterElementReader container3d_reader("container3d", read_TranslationContainer3d);
-GeometryReader::RegisterElementReader stack2d_reader("stack2d", read_StackContainer2d);
-GeometryReader::RegisterElementReader stack3d_reader("stack3d", read_StackContainer3d);
+static GeometryReader::RegisterElementReader container2d_reader("container2d", read_TranslationContainer2d);
+static GeometryReader::RegisterElementReader container3d_reader("container3d", read_TranslationContainer3d);
+static GeometryReader::RegisterElementReader stack2d_reader("stack2d", read_StackContainer2d);
+static GeometryReader::RegisterElementReader stack3d_reader("stack3d", read_StackContainer3d);
 
 
 } // namespace plask

@@ -15,4 +15,9 @@ BOOST_AUTO_TEST_SUITE(material) // MUST be the same as the file name
         BOOST_CHECK_THROW(db.get("Al"), plask::NoSuchMaterial);
     }
 
+    BOOST_AUTO_TEST_CASE(defaultMaterialDB) {
+        plask::MaterialsDB& db = plask::MaterialsDB::getDefault();
+        BOOST_CHECK_EQUAL(db.get("GaN")->name(), "GaN");
+    }
+
 BOOST_AUTO_TEST_SUITE_END()

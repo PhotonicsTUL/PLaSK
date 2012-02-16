@@ -1,8 +1,6 @@
 #include "InN_Si.h"
 
-#include "../../utils/string.h"
-#include <boost/lexical_cast.hpp>
-
+#include "../db.h"  //MaterialsDB::Register
 #include <cmath>
 
 namespace plask {
@@ -14,7 +12,7 @@ InN_Si::InN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
     mob_RT = 2.753e13*pow(Nf_RT,-0.559);
 }
 
-std::string InN_Si::name() const { return ("InN:Si"); }
+std::string InN_Si::name() const { return NAME; }
 
 double InN_Si::mob(double T) const { 
 	//M. Kuc 12.02.2012	
@@ -38,5 +36,7 @@ double InN_Si::cond(double T) const {
  
 //double InN_Si::absp(double wl, double T) const { }
 //double InN_Si::nr(double wl, double T) const { }
+
+MaterialsDB::Register<InN_Si> materialDB_register_InN_Si;
 
 }       // namespace plask

@@ -15,6 +15,8 @@ namespace plask {
  */
 struct InN: public Material {
 
+    static constexpr const char* NAME = "InN";
+
 	InN();
 	virtual std::string name() const;
     virtual double condT(double T) const; //NO Temperature dependence

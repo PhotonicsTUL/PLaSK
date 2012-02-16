@@ -1,8 +1,6 @@
 #include "AlN.h"
 
-#include "../../utils/string.h"
-#include <boost/lexical_cast.hpp>
-
+#include "../db.h"  //MaterialsDB::Register
 #include <cmath>
 
 namespace plask {
@@ -13,7 +11,7 @@ AlN::AlN() {
 	condTmax_RT = 285;
 }
 
-std::string AlN::name() const { return ("AlN:undoped"); }
+std::string AlN::name() const { NAME; }
 
 double AlN::condT(double T, double t) const {
 	//M. Kuc 12.02.2012
@@ -23,5 +21,6 @@ double AlN::condT(double T, double t) const {
     return( condTmax_RT*fun_t*pow((T/300.),-1.25) );
  }
  
+static MaterialsDB::Register<AlN> materialDB_register_AlN;
 
 }       // namespace plask

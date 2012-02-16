@@ -25,7 +25,7 @@ shared_ptr<GeometryElement> read_translation3d(GeometryReader& reader) {
     return translation;
 }
 
-GeometryReader::RegisterElementReader translation2d_reader("translation2d", read_translation2d);
-GeometryReader::RegisterElementReader translation3d_reader("translation3d", read_translation3d);
+static GeometryReader::RegisterElementReader translation2d_reader("translation2d", read_translation2d);
+static GeometryReader::RegisterElementReader translation3d_reader("translation3d", read_translation3d);
 
 }   // namespace plask

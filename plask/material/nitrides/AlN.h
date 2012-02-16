@@ -14,6 +14,8 @@ namespace plask {
  */
 struct AlN: public Material {
 
+    static constexpr const char* NAME = "AlN";
+
 	AlN();
 	virtual std::string name() const;
     virtual double condT(double T, double t) const;

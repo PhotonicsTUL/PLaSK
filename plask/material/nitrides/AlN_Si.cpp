@@ -1,9 +1,7 @@
 #include "AlN_Si.h"
 
-#include "../../utils/string.h"
-#include <boost/lexical_cast.hpp>
-
 #include <cmath>
+#include "../db.h"  //MaterialsDB::Register
 
 namespace plask {
 
@@ -16,7 +14,7 @@ AlN_Si::AlN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
     mob_RT = 29.410*exp(-1.838E-17*Nf_RT);
 }
 
-std::string AlN_Si::name() const { return ("AlN:Si"); }
+std::string AlN_Si::name() const { return NAME; }
 
 double AlN_Si::mob(double T) const { 
 	//M. Kuc 12.02.2012	
@@ -40,5 +38,7 @@ double AlN_Si::cond(double T) const {
 
 //double AlN_Si::absp(double wl, double T) const { }
 //double AlN_Si::nr(double wl, double T) const { }
+
+static MaterialsDB::Register<AlN_Si> materialDB_register_AlN_Si;
 
 }       // namespace plask

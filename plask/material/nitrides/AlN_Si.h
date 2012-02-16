@@ -15,6 +15,8 @@ namespace plask {
  */
 struct AlN_Si: public AlN {
 
+    static constexpr const char* NAME = "AlN:Si";
+
 	AlN_Si(DOPING_AMOUNT_TYPE Type, double Si);
 	virtual std::string name() const;
     virtual double mob(double T) const;

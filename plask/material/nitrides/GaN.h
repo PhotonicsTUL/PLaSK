@@ -13,6 +13,9 @@ namespace plask {
  * Represent undoped GaN, its physical properties.
  */
 struct GaN: public Material {
+
+    static constexpr const char* NAME = "GaN";
+
     GaN();
 	virtual std::string name() const;
     virtual double cond(double T) const;

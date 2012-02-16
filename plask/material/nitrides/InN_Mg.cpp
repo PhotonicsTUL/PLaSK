@@ -1,8 +1,6 @@
 #include "InN_Mg.h"
 
-#include "../../utils/string.h"
-#include <boost/lexical_cast.hpp>
-
+#include "../db.h"  //MaterialsDB::Register
 #include <cmath>
 
 namespace plask {
@@ -17,7 +15,7 @@ InN_Mg::InN_Mg(DOPING_AMOUNT_TYPE Type, double Mg) {
 	cond_RT = 1.602E-17*Nf_RT*mob_RT;
 }
 
-std::string InN_Mg::name() const { return ("InN:Mg"); }
+std::string InN_Mg::name() const { return NAME; }
 
 double InN_Mg::mob(double T) const { 
 	//M. Kuc 12.02.2012
@@ -38,5 +36,7 @@ double InN_Mg::cond(double T) const {
 
 //double InN_Mg::absp(double wl, double T) const { }
 //double InN_Mg::nr(double wl, double T) const { }
+
+MaterialsDB::Register<InN_Mg> materialDB_register_InN_Mg;
 
 }       // namespace plask

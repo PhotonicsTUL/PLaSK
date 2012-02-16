@@ -31,7 +31,7 @@ struct MaterialsDB {
         Register() { getDefault().add<MaterialType>(); }
     };
 
-    ///Same as Register but for materials without static field static_name.
+    ///Same as Register but for materials without static field NAME.
     template <typename MaterialType>
     struct RegisterN {
         RegisterN(const std::string& name) { getDefault().add<MaterialType>(name); }
@@ -235,10 +235,10 @@ public:
      *
      * Use DelegateMaterialConstructor as material construction object.
      * Deduce from constructors if material needs either composition or dopant information.
-     * Material name is read from static field MaterialType::static_name.
+     * Material name is read from static field MaterialType::NAME.
      */
     template <typename MaterialType>
-    void add() { add<MaterialType>(MaterialType::static_name); }
+    void add() { add<MaterialType>(MaterialType::NAME); }
 
     /**
      * Remove simple material (which not require composition parsing) from DB.

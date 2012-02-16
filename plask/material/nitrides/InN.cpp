@@ -1,7 +1,6 @@
 #include "InN.h"
 
-#include "../../utils/string.h"
-#include <boost/lexical_cast.hpp>
+#include "../db.h"  //MaterialsDB::Register
 
 #include <cmath>
 
@@ -13,11 +12,13 @@ InN::InN() {
 	condTmax_RT = 126;
 }
 
-std::string InN::name() const { return ("InN:undoped"); }
+std::string InN::name() const { return NAME; }
 
 double InN::condT(double T) const {
 	//M. Kuc 12.02.2012
     return( condTmax_RT );
  }
  
+MaterialsDB::Register<InN> materialDB_register_InN;
+
 }       // namespace plask

@@ -15,6 +15,8 @@ namespace plask {
  */
 struct GaN_Mg: public GaN {
 
+    static constexpr const char* NAME = "GaN:Mg";
+
 	GaN_Mg(DOPING_AMOUNT_TYPE Type, double Mg);
 	virtual std::string name() const;
     virtual double mob(double T) const;

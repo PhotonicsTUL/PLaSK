@@ -1,9 +1,7 @@
 #include "GaN.h"
 
-#include "../../utils/string.h"
-#include <boost/lexical_cast.hpp>
-
 #include <cmath>
+#include "../db.h"  //MaterialsDB::Register
 
 namespace plask {
 
@@ -17,7 +15,7 @@ GaN::GaN() {
 	condTmax_RT = 230;
 }
 
-std::string GaN::name() const { return ("GaN:undoped"); }
+std::string GaN::name() const { return NAME; }
 
 double GaN::cond(double T) const {
 	//M. Kuc 12.02.2012
@@ -53,5 +51,7 @@ double GaN::nr(double wl, double T) const {
 	double nr_wl = 4.94507E7*pow(A,3.) - 1.56053E5*pow(A,2.) + 2.25051E2*A + 2.15670;
 	return ( nr_wl );
 }
+
+static MaterialsDB::Register<GaN> materialDB_register_GaN;
 
 }       // namespace plask

@@ -1,7 +1,6 @@
 #include "GaN_Mg.h"
 
-#include "../../utils/string.h"
-#include <boost/lexical_cast.hpp>
+#include "../db.h"  //MaterialsDB::Register
 
 #include <cmath>
 
@@ -17,7 +16,7 @@ GaN_Mg::GaN_Mg(DOPING_AMOUNT_TYPE Type, double Mg) {
 	cond_RT = 1.602E-17*Nf_RT*mob_RT;
 }
 
-std::string GaN_Mg::name() const { return ("GaN:Mg"); }
+std::string GaN_Mg::name() const { return NAME; }
 
 double GaN_Mg::mob(double T) const { 
 	//M. Kuc 12.02.2012	
@@ -52,5 +51,6 @@ double GaN_Mg::nr(double wl, double T) const {
     return ( GaN::nr(wl,T) );
 }
 
+static MaterialsDB::Register<GaN_Mg> materialDB_register_Mg;
 
 }       // namespace plask
