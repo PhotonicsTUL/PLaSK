@@ -9,7 +9,7 @@ namespace plask {
 
 GaN_Si::GaN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
 	//M. Kuc 8.02.2012	
-	if (DOPING_AMOUNT_TYPE == CARRIER_CONCENTRATION) Nf_RT = Si;
+    if (Type == CARRIER_CONCENTRATION) Nf_RT = Si;
 	else Nf_RT = 0.158*pow(Si,1.039);
 	//Nf_RT(Si), Si: 6e17 - 7e18 cm-3; Oshima Y, Phys. Status Solidi C 4 (2007) 2215
 	//mobRT(Nf_RT), Nf_RT: 1e16 - 2e19 cm-3; based on 7 papers (1996-2007): undoped/Si-doped GaN/c-sapphire
@@ -43,7 +43,7 @@ double GaN_Si::condT(double T, double t) const {
 	//condT(Nf), Nf: 1e18 - 1e19 cm-3; Oshima Y, Phys. Status Solidi C 4 (2007) 2215
 	double fun_Nf = 2.18*pow(Nf_RT,-0.022);	
 	//condT_GaN(t,T)*fun(Nf)
-    return( GaN::cond(T,t)*fun_Nf );
+    return( GaN::condT(T,t)*fun_Nf );
  }
 
 double GaN_Si::absp(double wl, double T) const {

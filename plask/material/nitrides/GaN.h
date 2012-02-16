@@ -14,7 +14,6 @@ namespace plask {
  */
 struct GaN: public Material {
 
-	GaN();
 	virtual std::string name() const;
     virtual double cond(double T) const;
     virtual double condT(double T, double t) const;
