@@ -8,6 +8,7 @@ This file includes containers of geometries elements.
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <cmath>    //fmod
 #include "element.h"
 #include "transform.h"
 #include "../utils/metaprog.h"
@@ -499,13 +500,13 @@ class MultiStackContainer: public chooseType<dim-2, StackContainer2d, StackConta
     ///Type of parent class of this.
     typedef typename chooseType<dim-2, StackContainer2d, StackContainer3d>::type UpperClass;
 
-    /**
+    /*
      * @param a, divider
      * @return \f$a - \floor{a / divider} * divider\f$
      */
-    static double modulo(double a, double divider) {
+    /*static double modulo(double a, double divider) {
         return a - static_cast<double>( static_cast<int>( a / divider ) ) * divider;
-    }
+    }*/
 
 public:
     using UpperClass::getChildForHeight;
@@ -543,7 +544,7 @@ protected:
         const double zeroBasedRequestHeight = height - stackHeights.front();
         if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)
             return false;
-        height = modulo(zeroBasedRequestHeight, zeroBasedStackHeight) + stackHeights.front();
+        height = std::fmod(zeroBasedRequestHeight, zeroBasedStackHeight) + stackHeights.front();
         return true;
     }
 
