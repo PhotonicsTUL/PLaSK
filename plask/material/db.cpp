@@ -4,6 +4,36 @@
 
 namespace plask {
 
+void checkCompositionSimilarity(const Material::Composition& material1composition, const Material::Composition& material2composition) {
+    for (auto& p1: material1composition) {
+        auto p2 = material2composition.find(p1.first);
+        if (p2 == material2composition.end())
+            throw MaterialParseException("Materials compositions are different: in first there is \"%1%\" element which is missing in second.", p1.first);
+        if (std::isnan(p1.second) != std::isnan(p2->second))
+            throw MaterialParseException("Amounts must be defined for the same elements, which is not true in case of \"%1%\" element.", p1.first);
+    }
+}
+
+MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition)
+    : constructor(constructor), material1composition(material1composition), material2composition(material2composition) {
+    //check if compositions are fine and simillar:
+    checkCompositionSimilarity(material1composition, material2composition);
+    checkCompositionSimilarity(material2composition, material1composition);
+    Material::completeComposition(material1composition);
+    Material::completeComposition(material2composition);
+}
+
+Material::Composition plask::MaterialsDB::MixedCompositionFactory::mixedComposition(double m1_weight) const {
+    Material::Composition result = material1composition;
+    for (auto& p1: result) {
+        if (!std::isnan(p1.second)) {
+            auto p2 = material2composition.find(p1.first);
+            p1.second = p1.second * m1_weight + p2->second * (1.0 - m1_weight);
+        }
+    }
+    return result;
+}
+
 //Append to name dopant, if it is not empty
 void appendDopant(std::string& name, const std::string& dopant_name) {
     if (!dopant_name.empty()) {
@@ -66,7 +96,7 @@ void MaterialsDB::ensureCompositionIsNotEmpty(const Material::Composition &compo
     if (composition.empty()) throw MaterialParseException("Unknown composition.");
 }
 
-shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name) const {
     auto it = constructors.find(db_Key);
     if (it == constructors.end()) {
         if (composition.empty()) {
@@ -79,7 +109,15 @@ shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material:
         }
         throw NoSuchMaterial(composition, dopant_name);
     }
-    return (*it->second)(composition, doping_amount_type, doping_amount);
+    return it->second;
+}
+
+shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+    return (*getConstructor(db_Key, composition, dopant_name))(composition, doping_amount_type, doping_amount);
+}
+
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Composition& composition, const std::string& dopant_name) const {
+    return getConstructor(dbKey(composition, dopant_name), composition, dopant_name);
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
@@ -120,6 +158,20 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     return get(std::get<0>(pair), std::get<1>(pair));
 }
 
+MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) {
+    return new MixedCompositionFactory(getConstructor(material1composition), material1composition, material2composition);
+}
+
+MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition,
+                                 const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount)
+{
+    if (dopAmountType == Material::NO_DOPING)
+        getFactory(material1composition, material2composition);
+    return new MixedCompositionAndDopantFactory(getConstructor(material1composition, dopant_name),
+                                                material1composition, material2composition,
+                                                dopAmountType, m1DopAmount, m2DopAmount);
+}
+
 void MaterialsDB::addSimple(const MaterialConstructor* constructor) {
     constructors[constructor->materialName] = shared_ptr<const MaterialConstructor>(constructor);
 }
@@ -136,4 +188,4 @@ void MaterialsDB::removeComplex(const std::string& name) {
     constructors.erase(dbKey(name));
 }
 
-}   // namespace plask
+}  // namespace plask
