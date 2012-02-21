@@ -492,10 +492,42 @@ protected:
 /**
  * Material which consist of several real materials.
  * It calculate averages for all properties.
+ *
+ * Example:
+ * @code
+ * MixedMaterial m;
+ * //mat1, mat2, mat3 are materials, 2.0, 5.0, 3.0 weights for it:
+ * m.add(mat1, 2.0).add(mat2, 5.0).add(mat3, 3.0).normalizeWeights();
+ * double avg_VBO = m.VBO(300);
+ * @endcode
  */
 struct MixedMaterial: public Material {
 
-    //std::map<shared_ptr<Material>, double> materials;
+    /** Vector of materials and its weights. */
+    std::vector < std::tuple <shared_ptr<Material>, double> > materials;
+
+    /**
+      Delegate all constructor to materials vector.
+      */
+    template<typename ...Args>
+    MixedMaterial(Args&&... params)
+    : materials(std::forward<Args>(params)...) {
+    }
+
+    /**
+     * Scale weights in materials vector, making sum of this weights equal to 1.
+     */
+    void normalizeWeights();
+
+    /**
+     * Add material with weight to materials vector.
+     * @param material material to add
+     * @param weight weight
+     */
+    MixedMaterial& add(const shared_ptr<Material>& material, double weight);
+
+    //Material methods implementation:
+    virtual std::string name() const;
 
 };
 

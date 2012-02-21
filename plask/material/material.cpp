@@ -248,23 +248,30 @@ std::vector<std::string> Material::parseElementsNames(const std::string &allName
     return parseElementsNames(c, c + allNames.size());
 }
 
-/*void parseNameWithComposition(const char* begin, const char* end, std::vector<std::string>& components, std::vector<double>& components_amounts) {
-    while (begin != end) {
-        const char* comp_end = getElementEnd(begin, end);
-        if (comp_end == begin)
-            throw MaterialParseException(std::string("Expected element but found character: ") + *begin);
-        components.push_back(std::string(begin, comp_end));
-        const char* amount_end = getAmountEnd(comp_end, end);
-        if (amount_end == comp_end) {       //no amount info for this element
-            components_amounts.push_back(std::numeric_limits<double>::quiet_NaN());
-            begin = amount_end;
-        } else {
-            if (amount_end == end)
-                throw MaterialParseException("Unexpected end of input while reading amount of element. Couldn't find ')'");
-            components_amounts.push_back(toDouble(std::string(comp_end+1, amount_end)));
-            begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
-        }
-    }
-}*/
 
-}       // namespace plask
+//------------ MixedMaterial -------------------------
+
+void MixedMaterial::normalizeWeights() {
+    double sum = 0;
+    for (auto& p: materials) sum += std::get<1>(p);
+    for (auto& p: materials) std::get<1>(p) /= sum;
+}
+
+MixedMaterial & MixedMaterial::add(const shared_ptr<plask::Material> &material, double weight) {
+    materials.push_back(std::tuple <shared_ptr<Material>, double>(material, weight));
+    return *this;
+}
+
+std::string MixedMaterial::name() const {
+    std::string result = "[mixed material consists of: ";
+    for (auto i = materials.begin(); i != materials.end(); ++i) {
+        if (i != materials.begin()) result += " + ";
+        result += boost::lexical_cast<std::string>(std::get<1>(*i));
+        result += '*';
+        result += std::get<0>(*i)->name();
+    }
+    result += ']';
+    return result;
+}
+
+}   // namespace plask
