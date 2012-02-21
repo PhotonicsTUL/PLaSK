@@ -63,14 +63,40 @@ struct MaterialsDB {
     };
 
     /**
-     * Factory of complex material which construct it version with mixed version of two compositions.
+     * Factory of complex material which construct it version with mixed version of two compositions and/or doping amounts.
      */
-    //TODO cache: double -> constructed material
     struct MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double
 
     protected:
 
         shared_ptr<const MaterialConstructor> constructor;
+
+    public:
+        /**
+         * Construct MixedCompositionFactory for given material constructor and two compositions for this constructor.
+         * @param constructor material constructor
+         * @param material1composition incomplate composition of first material
+         * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
+         */
+        MixedCompositionFactory(const shared_ptr<const MaterialConstructor>& constructor): constructor(constructor) {}
+
+        /**
+         * Construct material.
+         * @param m1_weight weight of first composition or doping amount
+         * @return constructed material
+         */
+        virtual shared_ptr<Material> operator()(double m1_weight) const = 0;
+
+    };
+
+
+    /**
+     * Factory of complex material which construct it version with mixed version of two compositions.
+     */
+    //TODO cache: double -> constructed material
+    struct MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double
+
+    protected:
 
         Material::Composition material1composition, material2composition;
 
@@ -88,7 +114,7 @@ struct MaterialsDB {
          * @param material1composition incomplate composition of first material
          * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
          */
-        MixedCompositionFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition);
+        MixedCompositionOnlyFactory(const shared_ptr<const MaterialConstructor>& constructor, const Material::Composition& material1composition, const Material::Composition& material2composition);
 
         /**
          * Construct material.
@@ -104,7 +130,7 @@ struct MaterialsDB {
     /**
      * Factory of complex material which construct it version with mixed version of two compositions and dopants.
      */
-    struct MixedCompositionAndDopantFactory: public MixedCompositionFactory {
+    struct MixedCompositionAndDopantFactory: public MixedCompositionOnlyFactory {
     protected:
         Material::DOPING_AMOUNT_TYPE dopAmountType;
 
@@ -112,16 +138,16 @@ struct MaterialsDB {
 
     public:
         /**
-         * Construct MixedCompositionAndDopantFactory for given material constructor, two compositions amd doping amount for this constructor.
+         * Construct MixedCompositionAndDopantFactory for given material constructor, two compositions and dopings amounts for this constructor.
          * @param constructor material constructor
          * @param material1composition incomplate composition of first material
          * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
          * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
          */
-        MixedCompositionAndDopantFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition,
+        MixedCompositionAndDopantFactory(const shared_ptr<const MaterialConstructor>& constructor, const Material::Composition& material1composition, const Material::Composition& material2composition,
                                          Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount)
-            : MixedCompositionFactory(constructor, material1composition, material2composition), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
+            : MixedCompositionOnlyFactory(constructor, material1composition, material2composition), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
 
         /**
          * Construct material.
@@ -131,6 +157,32 @@ struct MaterialsDB {
         shared_ptr<Material> operator()(double m1_weight) const {
             return (*constructor)(mixedComposition(m1_weight), Material::NO_DOPING,
                                   m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
+        }
+    };
+
+    struct MixedDopantFactory: public MixedCompositionFactory {
+    protected:
+        Material::DOPING_AMOUNT_TYPE dopAmountType;
+
+        double m1DopAmount, m2DopAmount;
+
+    public:
+        /**
+         * Construct MixedDopantFactory for given material constructor of simple material, and doping amounts for this constructor.
+         * @param constructor material constructor
+         * @param dopAmountType type of doping amounts, common for both materials
+         * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
+         */
+        MixedDopantFactory(const shared_ptr<const MaterialConstructor>& constructor, Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount)
+            : MixedCompositionFactory(constructor), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
+
+        /**
+         * Construct material.
+         * @param m1_weight weight of first composition and dopant
+         * @return constructed material
+         */
+        shared_ptr<Material> operator()(double m1_weight) const {
+            return (*constructor)(Material::Composition(), Material::NO_DOPING, m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
         }
     };
 
@@ -284,6 +336,26 @@ public:
      */
     MixedCompositionFactory* getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
                                         Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount);
+
+    /**
+     * Construct mixed material factory.
+     * @param material1_name_with_components composition of first material
+     * @param material2_name_with_components composition of second material, must be defined for the same elements as @p material1composition
+     * @param dopant_name name of dopant, common for both materials, empty if there is no dopant
+     * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
+     * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
+     * @return constructed factory created using new operator, should by delete by caller
+     */
+    MixedCompositionFactory* getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
+                                        const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount);
+
+    /**
+     * Construct mixed material factory.
+     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see @ref get(const std::string& name_with_components, const std::string& dopant_descr),
+     *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
+     * @return constructed factory created using new operator, should by delete by caller
+     */
+    MixedCompositionFactory* getFactory(const std::string& material1_fullname, const std::string& material2_fullname);
 
     /**
      * Add simple material (which not require composition parsing) to DB. Replace existing material if there is one already in DB.

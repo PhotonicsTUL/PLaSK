@@ -14,8 +14,8 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
     }
 }
 
-MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition)
-    : constructor(constructor), material1composition(material1composition), material2composition(material2composition) {
+MaterialsDB::MixedCompositionOnlyFactory::MixedCompositionOnlyFactory(const shared_ptr<const MaterialConstructor>& constructor, const Material::Composition& material1composition, const Material::Composition& material2composition)
+    : MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(constructor), material1composition(material1composition), material2composition(material2composition) {
     //check if compositions are fine and simillar:
     checkCompositionSimilarity(material1composition, material2composition);
     checkCompositionSimilarity(material2composition, material1composition);
@@ -23,7 +23,7 @@ MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(shared_ptr<const M
     Material::completeComposition(material2composition);
 }
 
-Material::Composition plask::MaterialsDB::MixedCompositionFactory::mixedComposition(double m1_weight) const {
+Material::Composition plask::MaterialsDB::MixedCompositionOnlyFactory::mixedComposition(double m1_weight) const {
     Material::Composition result = material1composition;
     for (auto& p1: result) {
         if (!std::isnan(p1.second)) {
@@ -124,7 +124,7 @@ shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, 
     return get(dbKey(composition, dopant_name), composition, dopant_name, doping_amount_type, doping_amount);
 }
 
-shared_ptr<Material> plask::MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector<double>& composition,
+shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector<double>& composition,
                                                Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
     std::string name, dopant;
     std::tie(name, dopant) = splitString2(parsed_name_with_donor, ':');
@@ -158,8 +158,28 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     return get(std::get<0>(pair), std::get<1>(pair));
 }
 
+MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
+                                                 const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount)
+{
+    if (material1name_with_components.find('(') == std::string::npos) {  //simple material, without parsing composition, stil dopants can be mixed
+        if (material1name_with_components != material2name_with_components)
+            throw MaterialCantBeMixedException(material1name_with_components, material2name_with_components, dopant_name);
+        if (dopAmountType == Material::NO_DOPING || m1DopAmount == m2DopAmount)
+            throw MaterialParseException("%1%: only complex or doping materials with different amount of dopant can be mixed.", material1name_with_components);
+        std::string dbKey = material1name_with_components;
+        appendDopant(dbKey, dopant_name);
+        return new MixedDopantFactory(getConstructor(dbKey, Material::Composition(), dopant_name), dopAmountType, m1DopAmount, m2DopAmount);
+    }
+    //complex materials:
+    if (material2name_with_components.find('(') == std::string::npos)   //mix complex with simple?
+        throw MaterialCantBeMixedException(material1name_with_components, material2name_with_components, dopant_name);
+    getFactory(Material::parseComposition(material1name_with_components),
+               Material::parseComposition(material2name_with_components),
+               dopant_name, dopAmountType, m1DopAmount, m2DopAmount);
+}
+
 MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) {
-    return new MixedCompositionFactory(getConstructor(material1composition), material1composition, material2composition);
+    return new MixedCompositionOnlyFactory(getConstructor(material1composition), material1composition, material2composition);
 }
 
 MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition,
@@ -170,6 +190,22 @@ MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Co
     return new MixedCompositionAndDopantFactory(getConstructor(material1composition, dopant_name),
                                                 material1composition, material2composition,
                                                 dopAmountType, m1DopAmount, m2DopAmount);
+}
+
+MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname) {
+    std::string m1comp, m1dop, m2comp, m2dop;
+    std::tie(m1comp, m1dop) = splitString2(material1_fullname, ':');
+    std::tie(m2comp, m2dop) = splitString2(material2_fullname, ':');
+    std::string m1_dop_name, m2_dop_name;
+    Material::DOPING_AMOUNT_TYPE m1_dop_type = Material::NO_DOPING, m2_dop_type = Material::NO_DOPING;
+    double m1_dop_am = 0.0, m2_dop_am = 0.0;
+    Material::parseDopant(m1dop, m1_dop_name, m1_dop_type, m1_dop_am);
+    Material::parseDopant(m2dop, m2_dop_name, m2_dop_type, m2_dop_am);
+    if (m1_dop_name != m2_dop_name)
+        throw MaterialParseException("Can't mix materials with different doping: \"%1%\" and \"%2%\".", material1_fullname, material2_fullname);
+    if (m1_dop_type != m2_dop_type)
+        throw MaterialParseException("Can't mix materials for which amounts of dopings are given in different format: \"%1%\" and \"%2%\".", material1_fullname, material2_fullname);
+    return getFactory(m1comp, m2comp, m1_dop_name, m1_dop_type, m1_dop_am, m2_dop_am);
 }
 
 void MaterialsDB::addSimple(const MaterialConstructor* constructor) {

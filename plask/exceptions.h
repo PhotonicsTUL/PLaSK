@@ -148,6 +148,25 @@ struct MaterialParseException: public Exception {
     }
 };
 
+class MaterialCantBeMixedException: public Exception {
+
+    /*template <typename ComponentMap>
+    std::string constructMsg(const ComponentMap& comp, const std::string dopant_name) {
+        std::string result = "material with composition consisting of:";
+        for (auto c: comp) (result += ' ') += c.first;
+        if (!dopant_name.empty()) (result += ", doped with: ") += dopant_name;
+        return result;
+    }*/
+
+public:
+    ///@param material_name name of material which not exists
+    MaterialCantBeMixedException(const std::string& material1name_with_components, const std::string& material2name_with_components, const std::string& common_dopant = "")
+        : Exception("Material \"%1%%3%\" can not be mixed with material \"%2%%3%\".",
+              material1name_with_components, material2name_with_components, common_dopant.empty() ? "" : ':' + common_dopant)
+              {}
+
+};
+
 //-------------- Connected with XML: -----------------------
 /**
  * Exceptions of this class are throw when required attribute is not found in XML tag.
