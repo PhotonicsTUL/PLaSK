@@ -623,8 +623,8 @@ struct MixedMaterial: public Material {
 
 private:
     template <typename Functor>
-    auto avg(Functor f) const -> decltype(f(*((const Material*)0))) {
-        decltype(f(*((const Material*)0))) w_sum;
+    auto avg(Functor f) const -> typename std::remove_cv<decltype(f(*((const Material*)0)))>::type {
+        typename std::remove_cv<decltype(f(*((const Material*)0)))>::type w_sum;
         for (auto& p: materials) {
             w_sum += std::get<1>(p) * f(*std::get<0>(p));
         }
