@@ -31,6 +31,8 @@ double Material::CBO(double T, char point) const { throwNotImplemented("CBO(doub
 
 double Material::chi(double T, char point) const { throwNotImplemented("chi(double T, char point)"); assert(0); }
 
+double Material::chi(char point) const { return chi(300., point); }
+
 double Material::cond(double T) const { throwNotImplemented("cond(double T)"); assert(0); }
 double Material::cond_l(double T) const { throwNotImplemented("cond_l(double T)"); assert(0); }
 double Material::cond_v(double T) const { throwNotImplemented("cond_v(double T)"); assert(0); }
@@ -249,7 +251,7 @@ std::vector<std::string> Material::parseElementsNames(const std::string &allName
 }
 
 
-//------------ MixedMaterial -------------------------
+//------------ MixedMaterial: -------------------------
 
 void MixedMaterial::normalizeWeights() {
     double sum = 0;
@@ -263,15 +265,185 @@ MixedMaterial & MixedMaterial::add(const shared_ptr<plask::Material> &material, 
 }
 
 std::string MixedMaterial::name() const {
-    std::string result = "[mixed material consists of: ";
+    std::string result = "[";
     for (auto i = materials.begin(); i != materials.end(); ++i) {
-        if (i != materials.begin()) result += " + ";
+        if (i != materials.begin()) result += '+';
         result += boost::lexical_cast<std::string>(std::get<1>(*i));
         result += '*';
         result += std::get<0>(*i)->name();
     }
     result += ']';
     return result;
+}
+
+double MixedMaterial::A(double T) const {
+    return avg([&](const Material& m) { return m.A(T); });
+}
+
+double MixedMaterial::absp(double wl, double T) const {
+    return avg([&](const Material& m) { return m.absp(wl, T); });
+}
+
+double MixedMaterial::B(double T) const {
+    return avg([&](const Material& m) { return m.B(T); });
+}
+
+double MixedMaterial::C(double T) const {
+    return avg([&](const Material& m) { return m.C(T); });
+}
+
+double MixedMaterial::CBO(double T, char point) const {
+    return avg([&](const Material& m) { return m.CBO(T, point); });
+}
+
+double MixedMaterial::chi(double T, char point) const {
+    return avg([&](const Material& m) { return m.chi(T, point); });
+}
+
+double MixedMaterial::chi(char point) const {
+    return avg([&](const Material& m) { return m.chi(point); });
+}
+
+double MixedMaterial::cond(double T) const {
+    return avg([&](const Material& m) { return m.cond(T); });
+}
+double MixedMaterial::cond_l(double T) const {
+    return avg([&](const Material& m) { return m.cond_l(T); });
+}
+double MixedMaterial::cond_v(double T) const {
+    return avg([&](const Material& m) { return m.cond_v(T); });
+}
+
+double MixedMaterial::D(double T) const {
+    return avg([&](const Material& m) { return m.D(T); });
+}
+
+double MixedMaterial::dens(double T) const {
+    return avg([&](const Material& m) { return m.dens(T); });
+}
+
+double MixedMaterial::Dso(double T) const {
+    return avg([&](const Material& m) { return m.Dso(T); });
+}
+
+double MixedMaterial::EactA(double T) const {
+    return avg([&](const Material& m) { return m.EactA(T); });
+}
+double MixedMaterial::EactD(double T) const {
+    return avg([&](const Material& m) { return m.EactD(T); });
+}
+
+double MixedMaterial::Eg(double T, char point) const {
+    return avg([&](const Material& m) { return m.Eg(T, point); });
+}
+
+double MixedMaterial::eps(double T) const {
+    return avg([&](const Material& m) { return m.eps(T); });
+}
+
+double MixedMaterial::lattC(double T, char x) const {
+    return avg([&](const Material& m) { return m.lattC(T, x); });
+}
+
+double MixedMaterial::Me(double T, char point) const {
+    return avg([&](const Material& m) { return m.Me(T, point); });
+}
+double MixedMaterial::Me_l(double T, char point) const {
+    return avg([&](const Material& m) { return m.Me_l(T, point); });
+}
+double MixedMaterial::Me_v(double T, char point) const {
+    return avg([&](const Material& m) { return m.Me_v(T, point); });
+}
+
+double MixedMaterial::Mh(double T, char EqType) const {
+    return avg([&](const Material& m) { return m.Mh(T, EqType); });
+}
+double MixedMaterial::Mh_l(double T, char point) const {
+    return avg([&](const Material& m) { return m.Mh_l(T, point); });
+}
+double MixedMaterial::Mh_v(double T, char point) const {
+    return avg([&](const Material& m) { return m.Mh_v(T, point); });
+}
+double MixedMaterial::Mhh(double T, char point) const {
+    return avg([&](const Material& m) { return m.Mhh(T, point); });
+}
+double MixedMaterial::Mhh_l(double T, char point) const  {
+    return avg([&](const Material& m) { return m.Mhh_l(T, point); });
+}
+double MixedMaterial::Mhh_v(double T, char point) const  {
+    return avg([&](const Material& m) { return m.Mhh_v(T, point); });
+}
+
+double MixedMaterial::Mlh(double T, char point) const  {
+    return avg([&](const Material& m) { return m.Mlh(T, point); });
+}
+double MixedMaterial::Mlh_l(double T, char point) const {
+    return avg([&](const Material& m) { return m.Mlh_l(T, point); });
+}
+double MixedMaterial::Mlh_v(double T, char point) const {
+    return avg([&](const Material& m) { return m.Mlh_v(T, point); });
+}
+
+double MixedMaterial::mob(double T) const {
+    return avg([&](const Material& m) { return m.mob(T); });
+}
+
+double MixedMaterial::Mso(double T) const {
+    return avg([&](const Material& m) { return m.Mso(T); });
+}
+
+double MixedMaterial::Nc(double T, char point) const {
+    return avg([&](const Material& m) { return m.Nc(T, point); });
+}
+double MixedMaterial::Nc(double T) const {
+    return avg([&](const Material& m) { return m.Nc(T); });
+}
+
+double MixedMaterial::Nf(double T) const {
+    return avg([&](const Material& m) { return m.Nf(T); });
+}
+
+double MixedMaterial::Ni(double T) const {
+    return avg([&](const Material& m) { return m.Ni(T); });
+}
+
+double MixedMaterial::nr(double wl, double T) const {
+    return avg([&](const Material& m) { return m.nr(wl, T); });
+}
+
+dcomplex MixedMaterial::Nr(double wl, double T) const {
+    return avg([&](const Material& m) { return m.Nr(wl, T); });
+}
+
+double MixedMaterial::res(double T) const {
+    return avg([&](const Material& m) { return m.res(T); });
+}
+double MixedMaterial::res_l(double T) const {
+    return avg([&](const Material& m) { return m.res_l(T); });
+}
+double MixedMaterial::res_v(double T) const {
+    return avg([&](const Material& m) { return m.res_v(T); });
+}
+
+double MixedMaterial::specHeat(double T) const {
+    return avg([&](const Material& m) { return m.specHeat(T); });
+}
+
+double MixedMaterial::condT(double T) const {
+    return avg([&](const Material& m) { return m.condT(T); });
+}
+double MixedMaterial::condT(double T, double thickness) const {
+    return avg([&](const Material& m) { return m.condT(T, thickness); });
+}
+double MixedMaterial::condT_l(double T, double thickness) const  {
+    return avg([&](const Material& m) { return m.condT_l(T, thickness); });
+}
+double MixedMaterial::condT_v(double T, double thickness) const  {
+    return avg([&](const Material& m) { return m.condT_v(T, thickness); });
+}
+
+double MixedMaterial::VBO(double T) const  {
+    return avg([&](const Material& m) { return m.VBO(T); });
 }
 
 }   // namespace plask

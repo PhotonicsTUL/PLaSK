@@ -289,9 +289,7 @@ struct Material {
      */
     virtual double chi(double T, char point) const;
 
-    virtual inline double chi(char point) const {
-        return chi(300., point);
-    }
+    virtual double chi(char point) const;
 
     /**
      * Get effective density of states in the conduction band Nc [\f$m^{-3}\f$].
@@ -528,6 +526,110 @@ struct MixedMaterial: public Material {
 
     //Material methods implementation:
     virtual std::string name() const;
+
+    virtual double lattC(double T, char x) const;
+
+    virtual double Eg(double T, char point) const;
+
+    virtual double CBO(double T, char point) const;
+
+    virtual double VBO(double T) const;
+
+    virtual double Dso(double T) const;
+
+    virtual double Mso(double T) const;
+
+    virtual double Me(double T, char point) const;
+
+    virtual double Me_v(double T, char point) const;
+
+    virtual double Me_l(double T, char point) const;
+
+    virtual double Mhh(double T, char point) const;
+
+    virtual double Mhh_v(double T, char point) const;
+
+    virtual double Mhh_l(double T, char point) const;
+
+    virtual double Mlh(double T, char point) const;
+
+    virtual double Mlh_v(double T, char point) const;
+
+    virtual double Mlh_l(double T, char point) const;
+
+    virtual double Mh(double T, char EqType) const;
+
+    virtual double Mh_v(double T, char point) const;
+
+    virtual double Mh_l(double T, char point) const;
+
+    virtual double eps(double T) const;
+
+    virtual double chi(double T, char point) const;
+
+    virtual double chi(char point) const;
+
+    virtual double Nc(double T, char point) const;
+
+    virtual double Nc(double T) const;
+
+    virtual double Ni(double T) const;
+
+    virtual double Nf(double T) const;
+
+    virtual double EactD(double T) const;
+
+    virtual double EactA(double T) const;
+
+    virtual double mob(double T) const;
+
+    virtual double cond(double T) const;
+
+    virtual double cond_v(double T) const;
+
+    virtual double cond_l(double T) const;
+
+    virtual double res(double T) const;
+
+    virtual double res_v(double T) const;
+
+    virtual double res_l(double T) const;
+
+    virtual double A(double T) const;
+
+    virtual double B(double T) const;
+
+    virtual double C(double T) const;
+
+    virtual double D(double T) const;
+
+    virtual double condT(double T) const;
+
+    virtual double condT(double T, double thickness) const;
+
+    virtual double condT_v(double T, double thickness) const;
+
+    virtual double condT_l(double T, double thickness) const;
+
+    virtual double dens(double T) const;
+
+    virtual double specHeat(double T) const;
+
+    virtual double nr(double wl, double T) const;
+
+    virtual double absp(double wl, double T) const;
+
+    virtual dcomplex Nr(double wl, double T) const;
+
+private:
+    template <typename Functor>
+    auto avg(Functor f) const -> decltype(f(*((const Material*)0))) {
+        decltype(f(*((const Material*)0))) w_sum;
+        for (auto& p: materials) {
+            w_sum += std::get<1>(p) * f(*std::get<0>(p));
+        }
+        return w_sum;
+    }
 
 };
 
