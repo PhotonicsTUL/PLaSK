@@ -53,17 +53,37 @@ static shared_ptr<Box3d> Box3d_constructor_4numbers(double x1, double y1, double
     return R;
 }
 // __str__(v)
-static std::string Box3d__str__(const Box3d& to_print) {
+static std::string Box3d__str__(const Box3d& self) {
     std::stringstream out;
-    out << to_print;
+    out << self;
     return out.str();
 }
 // __repr__(v)
-static std::string Box3d__repr__(const Box3d& to_print) {
+static std::string Box3d__repr__(const Box3d& self) {
     std::stringstream out;
-    out << "Box3D(" << to_print.lower.c0 << ", " << to_print.lower.c1 << ", " << to_print.lower.c2 << ", "
-                    << to_print.upper.c0 << ", " << to_print.upper.c1 << ", " << to_print.upper.c2 << ")";
+    out << "Box3D(" << self.lower.c0 << ", " << self.lower.c1 << ", " << self.lower.c2 << ", "
+                    << self.upper.c0 << ", " << self.upper.c1 << ", " << self.upper.c2 << ")";
     return out.str();
+}
+
+static std::string Box2d_list_str(const std::vector<Box2d>& self) {
+    std::string result = "[";
+    int i = self.size()-1;
+    for (auto v: self) {
+        result += Box2d__repr__(v) + ((i)?", ":"");
+        --i;
+    }
+    return result + "]";
+}
+
+static std::string Box3d_list_str(const std::vector<Box3d>& self) {
+    std::string result = "[";
+    int i = self.size()-1;
+    for (auto v: self) {
+        result += Box3d__repr__(v) + ((i)?", ":"");
+        --i;
+    }
+    return result + "]";
 }
 
 /// Register primitives to Python
@@ -126,10 +146,14 @@ void register_geometry_primitive()
 
     py::class_< std::vector<Box2d>, shared_ptr<std::vector<Box2d>> >("Box2D_list")
         .def(py::vector_indexing_suite<std::vector<Box2d>>())
+        .def("__str__", &Box2d_list_str)
+        .def("__repr__", &Box2d_list_str)
     ;
 
     py::class_< std::vector<Box3d>, shared_ptr<std::vector<Box3d>> >("Box3D_list")
         .def(py::vector_indexing_suite<std::vector<Box3d>>())
+        .def("__str__", &Box3d_list_str)
+        .def("__repr__", &Box3d_list_str)
     ;
 }
 

@@ -43,6 +43,8 @@ class SimpleGeometry(unittest.TestCase):
             </geometry>
         ''')
         self.assertEqual( type(geometry.element("block")), plask.geometry.Block2D )
+#        for l,r in zip( geometry.element("stack").leafsBoundigBoxes(), [plask.geometry.Box2D(0,0,4,2), plask.geometry.Box2D(0,2,4,4)]):
+#            self.assertEqual(l, r)
         if sys.version >= "2.7":
             with self.assertRaises(KeyError): geometry.element("nonexistent")
 
