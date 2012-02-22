@@ -21,11 +21,10 @@ shared_ptr<Material> CartesianExtend::getMaterial(const DVec& p) const {
     return canBeInside(p) ? getChild()->getMaterial(childVec(p)) : shared_ptr<Material>();
 }
 
-std::vector<CartesianExtend::Rect> CartesianExtend::getLeafsBoundingBoxes() const {
-    std::vector<ChildRect> c = getChild()->getLeafsBoundingBoxes();
-    std::vector<Rect> result(c.size());
-    std::transform(c.begin(), c.end(), result.begin(), [&](const ChildRect& r) { return parentRect(r); });
-    return result;
+void CartesianExtend::getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path) const {
+    std::vector<ChildRect> c = getChild()->getLeafsBoundingBoxes(path);
+    std::transform(c.begin(), c.end(), std::back_inserter(dest),
+                   [&](const ChildRect& r) { return parentRect(r); });
 }
 
 std::vector< boost::shared_ptr< const plask::GeometryElement > > CartesianExtend::getLeafs() const {

@@ -27,7 +27,7 @@ struct CartesianExtend: public GeometryElementChangeSpace<3, 2>/*, public Calcul
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const;
 
-    virtual std::vector<Rect> getLeafsBoundingBoxes() const;
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const;
     
     virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const;
 

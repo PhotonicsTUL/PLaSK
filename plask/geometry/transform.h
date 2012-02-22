@@ -47,11 +47,11 @@ struct Translation: public GeometryElementTransform<dim> {
         return getChild()->intersect(area.translated(-translation));
     }
 
-    virtual std::vector<Rect> getLeafsBoundingBoxes() const {
-        std::vector<Rect> result = getChild()->getLeafsBoundingBoxes();
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
+        std::vector<Rect> result = getChild()->getLeafsBoundingBoxes(path);
+        dest.reserve(dest.size() + result.size());
         DVec inv_tr = - translation;
-        for (Rect& r: result) r.translate(inv_tr);
-        return result;
+        for (Rect& r: result) dest.push_back(r.translated(inv_tr));
     }
     
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {

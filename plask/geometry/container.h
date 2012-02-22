@@ -5,120 +5,14 @@
 This file includes containers of geometries elements.
 */
 
-#include <map>
 #include <vector>
 #include <algorithm>
 #include <cmath>    //fmod
-#include "element.h"
-#include "transform.h"
 #include "../utils/metaprog.h"
 
+#include "path.h"
+
 namespace plask {
-
-//TODO pełne ścieżki
-    
-/**
-Represent hints for path finder.
-
-Hints are used to to find unique path for all GeometryElement pairs,
-even if one of the pair element is inserted to the geometry graph in more than one place.
-
-Each hint allow to choose one child for geometry element container and it is a pair:
-geometry element container -> element in container.
-
-Typically, hints are returned by methods which adds new elements to containers.
-
-@see @ref geometry_paths
-*/
-struct PathHints {
-
-    ///Type for map: geometry element container -> element in container
-    typedef std::map< weak_ptr<GeometryElement>, weak_ptr<GeometryElement> > HintMap;
-
-    /**
-     * Type for arc in graph. Pair: container of geometry elements -> element in container.
-     * @see @ref geometry_paths
-     */
-    typedef HintMap::value_type Hint;
-
-    ///Hints map.
-    HintMap hintFor;
-
-    /**
-     * Add hint to hints map. Overwrite if hint for given container already exists.
-     * @param hint hint to add
-     */
-    void addHint(const Hint& hint);
-
-    /**
-     * Add hint to hints map. Overwrite if hint for given container already exists.
-     * @param hint hint to add
-     */
-    PathHints& operator+=(const Hint& hint) {
-        addHint(hint);
-        return *this;
-    }
-
-    /**
-     * Add hint to hints map. Overwrite if hint for given container already exists.
-     * @param container, child hint to add
-     */
-    void addHint(weak_ptr<GeometryElement> container, weak_ptr<GeometryElement> child);
-
-    /**
-     * Get child for given container.
-     * @return child for given container or @c nullptr if there is no hint for given container
-     */
-    shared_ptr<GeometryElement> getChild(shared_ptr<GeometryElement> container);
-
-    /**
-     * Get child for given container.
-     * @return child for given container or @c nullptr if there is no hint for given container
-     */
-    shared_ptr<GeometryElement> getChild(shared_ptr<GeometryElement> container) const;
-
-    /**
-     * Get child for given hint.
-     * @return child for given hint or @c nullptr if there is no hint for given container
-     */
-    static shared_ptr<GeometryElement> getChild(const Hint& hint);
-
-    /**
-     * Get container for given hint.
-     * @return container for given hint or @c nullptr if there is no hint for given container
-     */
-    static shared_ptr<GeometryElement> getContainer(const Hint& hint);
-
-    /**
-     * Get child for given container casted to Translation object.
-     * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
-     **/
-    template <int dim> shared_ptr<Translation<dim>> getTranslationChild(shared_ptr<GeometryElement> container) {
-        return dynamic_pointer_cast<Translation<dim>>(getChild(container));
-    }
-
-    /**
-     * Get child for given container casted to Translation object.
-     * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
-     **/
-    template <int dim> shared_ptr<Translation<dim>> getTranslationChild(shared_ptr<GeometryElement> container) const {
-        return dynamic_pointer_cast<Translation<dim>>(getChild(container));
-    }
-
-    /**
-     * Get child for given hint casted to Translation object.
-     * @return casted child for given hint or @c nullptr if there is no hint or it cannot be casted
-     **/
-    template <int dim> static shared_ptr<Translation<dim>> getTranslationChild(const Hint& hint) {
-        return dynamic_pointer_cast<Translation<dim>>(getChild(hint));
-    }
-
-    /**
-     * Remove all hints which refer to deleted objects.
-     */
-    void cleanDeleted();
-
-};
 
 /**
  * Template which implement container using stl container of pointers to some geometry elements objects (Translation by default).
@@ -182,22 +76,19 @@ public:
         return shared_ptr<Material>();
     }
 
-    virtual std::vector<Rect> getLeafsBoundingBoxes() const {
-        std::vector<Rect> result;
-        for (auto child: children) {
-            std::vector<Rect> child_leafs_boxes = child->getLeafsBoundingBoxes();
-            result.insert(result.end(), child_leafs_boxes.begin(), child_leafs_boxes.end());
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
+        if (path) {
+            auto c = path->getTranslationChild<dim>(*this);
+            if (c) {
+                c->getLeafsBoundingBoxesToVec(dest, path);
+                return;
+            }
         }
-        return result;
+        for (auto child: children) child->getLeafsBoundingBoxesToVec(dest, path);
     }
-    
-    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
-        std::vector< shared_ptr<const GeometryElement> > result;
-        for (auto child: children) {
-            std::vector< shared_ptr<const GeometryElement> > child_leafs = child->getLeafs();
-            result.insert(result.end(), child_leafs.begin(), child_leafs.end());
-        }
-        return result;
+
+    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+        for (auto child: children) child->getLeafsToVec(dest);
     }
     
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
@@ -579,24 +470,24 @@ public:
         return result;
     }
 
-    virtual std::vector<Rect> getLeafsBoundingBoxes() const {
-        std::vector<Rect> result = UpperClass::getLeafsBoundingBoxes();
-        std::size_t size = result.size();   //oryginal size
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
+        std::size_t old_size = dest.size();
+        UpperClass::getLeafsBoundingBoxesToVec(dest, path);
+        std::size_t new_size = dest.size();
         const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
         for (unsigned r = 1; r < repeat_count; ++r) {
-            result.insert(result.end(), result.begin(), result.begin() + size);
-            for (auto i = result.end() - size; i != result.end(); ++i)
+            dest.insert(dest.end(), dest.begin() + old_size, dest.begin() + new_size);
+            for (auto i = dest.end() - (new_size-old_size); i != dest.end(); ++i)
                 i->translateUp(minusZeroBasedStackHeight * r);
         }
-        return result;
     }
-    
-    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
-        std::vector< shared_ptr<const GeometryElement> > result = UpperClass::getLeafs();
-        std::size_t size = result.size();   //oryginal size
+
+    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+        std::size_t old_size = dest.size();
+        UpperClass::getLeafsToVec(dest);
+        std::size_t new_size = dest.size();
         for (unsigned r = 1; r < repeat_count; ++r)
-            result.insert(result.end(), result.begin(), result.begin() + size);
-        return result;
+            dest.insert(dest.end(), dest.begin() + old_size, dest.begin() + new_size);
     }
     
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {

@@ -622,6 +622,13 @@ struct MixedMaterial: public Material {
     virtual dcomplex Nr(double wl, double T) const;
 
 private:
+
+    /**
+     * Calulate weighted sums of materials (from materials vector) properties.
+     * @param f functore which calculate property value for given material
+     * @return calculated sum, with the same type which return functor
+     * @tparam Functor type of functor wchich can take const Material& argument, and return something which can be multiple by scallar, added, and assigned
+     */
     template <typename Functor>
     auto avg(Functor f) const -> typename std::remove_cv<decltype(f(*((const Material*)0)))>::type {
         typename std::remove_cv<decltype(f(*((const Material*)0)))>::type w_sum;

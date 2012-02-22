@@ -66,10 +66,20 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     virtual ~GeometryElement() {}
     
     /**
+     * Append all leafs in subtree with this in root to vector @p dest.
+     * @param dest leafs destination vector
+     */
+    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const = 0;
+
+    /**
      * Get all leafs in subtree with this in root.
      * @return all leafs in subtree with this in root
      */
-    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const = 0;
+    std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+        std::vector< shared_ptr<const GeometryElement> > result;
+        getLeafsToVec(result);
+        return result;
+    }
 
     //virtual GeometryTransform getTransform()
 
@@ -86,6 +96,8 @@ protected:
     void ensureCanHasAsChild(GeometryElement& potential_child) { potential_child.ensureCanHasAsParent(*this); }
 
 };
+
+struct PathHints;
 
 /**
  * Template of base classes for geometry elements in space with given number of dimensions (2 or 3).
@@ -136,10 +148,22 @@ struct GeometryElementD: public GeometryElement {
     //virtual std::vector<Material*> getMaterials(Mesh);        ??
 
     /**
-     * Calculate bounding boxes of all leafs.
+     * Calculate and append to vector bounding boxes of all leafs, optionaly showed by path.
+     * @param dest place to add result
+     * @param path path fragments, optional
+     */
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const = 0;
+
+    /**
+     * Calculate bounding boxes of all leafs, optionaly showed by path.
+     * @param path path fragments, optional
      * @return bounding boxes of all leafs
      */
-    virtual std::vector<Rect> getLeafsBoundingBoxes() const = 0;
+    std::vector<Rect> getLeafsBoundingBoxes(const PathHints* path = 0) const {
+        std::vector<Rect> result;
+        getLeafsBoundingBoxesToVec(result, path);
+        return result;
+    }
     
     /**
      * Get all leafs and its translations in subtree with this in root.
@@ -174,11 +198,19 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return this->inside(p) ? material : shared_ptr<Material>();
     }
 
-    virtual std::vector<Rect> getLeafsBoundingBoxes() const {
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
+        dest.push_back(this->getBoundingBox());
+    }
+
+    inline std::vector<Rect> getLeafsBoundingBoxes() const {
         return { this->getBoundingBox() };
     }
+
+    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+        dest.push_back(this->shared_from_this());
+    }
     
-    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+    inline std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
         return { this->shared_from_this() };
     }
     
@@ -206,9 +238,9 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     explicit GeometryElementTransform(shared_ptr<ChildType> child = nullptr): _child(child) {}
 
     virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
-    
-    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
-        return getChild()->getLeafs();
+
+    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+        getChild()->getLeafsToVec(dest);
     }
 
     /**
