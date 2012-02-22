@@ -164,6 +164,17 @@ struct GeometryElementD: public GeometryElement {
         getLeafsBoundingBoxesToVec(result, path);
         return result;
     }
+
+    /**
+     * Calculate bounding boxes of all leafs, optionaly showed by path.
+     * @param path path fragments
+     * @return bounding boxes of all leafs
+     */
+    std::vector<Rect> getLeafsBoundingBoxes(const PathHints& path) const {
+        std::vector<Rect> result;
+        getLeafsBoundingBoxesToVec(result, &path);
+        return result;
+    }
     
     /**
      * Get all leafs and its translations in subtree with this in root.
@@ -203,6 +214,10 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     }
 
     inline std::vector<Rect> getLeafsBoundingBoxes() const {
+        return { this->getBoundingBox() };
+    }
+
+    inline std::vector<Rect> getLeafsBoundingBoxes(const PathHints&) const {
         return { this->getBoundingBox() };
     }
 
