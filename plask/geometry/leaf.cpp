@@ -32,6 +32,8 @@ shared_ptr<GeometryElement> read_block3d(GeometryReader& reader) {
 }
 
 static GeometryReader::RegisterElementReader block2d_reader("block2d", read_block2d);
+static GeometryReader::RegisterElementReader rectangle_reader("rectangle", read_block2d);
 static GeometryReader::RegisterElementReader block3d_reader("block3d", read_block3d);
+static GeometryReader::RegisterElementReader cuboid_reader("cuboid", read_block3d);
 
 }   // namespace plask

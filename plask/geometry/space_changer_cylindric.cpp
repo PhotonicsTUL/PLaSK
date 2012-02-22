@@ -25,14 +25,14 @@ std::vector<SpaceChangerCylindric::Rect> SpaceChangerCylindric::getLeafsBounding
     return result;
 }
 
-Rect2d SpaceChangerCylindric::childRect(const plask::Rect3d& r) {
-    Rect2d result(childVec(r.lower), childVec(r.upper));
+Box2d SpaceChangerCylindric::childRect(const plask::Box3d& r) {
+    Box2d result(childVec(r.lower), childVec(r.upper));
     result.fix();
     return result;
 }
 
-Rect3d SpaceChangerCylindric::parentRect(const ChildRect& r) {
-    return Rect3d(
+Box3d SpaceChangerCylindric::parentRect(const ChildRect& r) {
+    return Box3d(
             vec(-r.upper.tran, -r.upper.tran, r.lower.up),
             vec(r.upper.tran,  r.upper.tran,  r.upper.up)
            );

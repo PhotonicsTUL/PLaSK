@@ -13,9 +13,9 @@ namespace plask {
  * Rectangle class.
  *
  * Allows for some basic operation on rectangles.
- * Has almost identical interface as Rect3d.
+ * Has almost identical interface as .
  */
-struct Rect2d {
+struct Box2d {
 
     ///Lower corner of rectangle (with minimal all coordinates).
     Vec<2,double> lower;
@@ -28,36 +28,36 @@ struct Rect2d {
      * @return size of rectangle (its width and height)
      */
     Vec<2,double> size() const { return upper - lower; }
-    
+
     /**
      * Calculate size of this in up direction.
      * @return upper.up - lower.up
      */
     double sizeUp() const { return upper.up - lower.up; }
 
-    ///Construct uninitialized Rect2d.
-    Rect2d() {}
+    ///Construct uninitialized .
+    Box2d() {}
 
     /**
      * Construct rectangle.
      * @param lower lower corner of rectangle (with minimal all coordinates)
      * @param upper upper corner of rectangle (with maximal all coordinates)
      */
-    Rect2d(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
+    Box2d(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
 
     /**
      * Compare two rectangles, @c this and @p r.
      * @param r rectangle to compare
      * @return true only if @c this rectangle and @p p have equals coordinates
      */
-    bool operator==(const Rect2d& r) const;
+    bool operator==(const Box2d& r) const;
 
     /**
      * Compare two rectangles, @c this and @p r.
      * @param r rectangle to compare
      * @return @c true only if @c this rectangle and @p p don't have equals coordinates
      */
-    bool operator!=(const Rect2d& r) const;
+    bool operator!=(const Box2d& r) const;
 
     /**
      * Ensure that lower[0] <= upper[0] and lower[1] <= upper[1].
@@ -77,7 +77,7 @@ struct Rect2d {
      * @param other rectangle
      * @return true only if this and other have common points
      */
-    bool intersect(const Rect2d& other) const;
+    bool intersect(const Box2d& other) const;
 
     /**
      * Make this rectangle, the minimal one which include @c this and given point @p p.
@@ -89,28 +89,28 @@ struct Rect2d {
      * Make this rectangle, the minimal one which include @c this and @p other rectangle.
      * @param other point which should be inside rectangle
      */
-    void include(const Rect2d& other);
+    void include(const Box2d& other);
 
     /**
      * Get translated copy of this.
      * @param translation_vec translation vector
      * @return this translated by @p translation_vec
      */
-    Rect2d translated(const Vec<2,double>& translation_vec) const { return Rect2d(lower + translation_vec, upper + translation_vec); }
-    
+    Box2d translated(const Vec<2,double>& translation_vec) const { return Box2d(lower + translation_vec, upper + translation_vec); }
+
     /**
      * Get translated copy of this.
      * @param trasnalation_in_up_dir translation in up direction
      * @return this translated up by @p trasnalation_in_up_dir
      */
-    Rect2d translatedUp(const double trasnalation_in_up_dir) const { return translated(vec(0.0, trasnalation_in_up_dir)); }
-    
+    Box2d translatedUp(const double trasnalation_in_up_dir) const { return translated(vec(0.0, trasnalation_in_up_dir)); }
+
     /**
      * Translate this by @p translation_vec.
      * @param translation_vec translation vector
      */
     void translate(const Vec<2,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
-    
+
     /**
      * Translate this up by @p trasnalation_in_up_dir.
      * @param trasnalation_in_up_dir translation in up direction
@@ -123,7 +123,7 @@ struct Rect2d {
      * @param to_print rectangle to print
      * @return out stream
      */
-    friend inline std::ostream& operator<<(std::ostream& out, const Rect2d& to_print) {
+    friend inline std::ostream& operator<<(std::ostream& out, const Box2d& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
 
@@ -133,9 +133,9 @@ struct Rect2d {
  * Cuboid class.
  *
  * Allow for some basic operation on cuboid.
- * Has almost identical interface as Rect2d.
+ * Has almost identical interface as .
  */
-struct Rect3d {
+struct Box3d {
 
     ///Position of lower corner of cuboid (with minimal all coordinates).
     Vec<3,double> lower;
@@ -148,36 +148,36 @@ struct Rect3d {
      * @return upper - lower
      */
     Vec<3,double> size() const { return upper - lower; }
-    
+
     /**
      * Calculate size of this in up direction.
      * @return upper.up - lower.up
      */
     double sizeUp() const { return upper.up - lower.up; }
 
-    ///Construct uninitialized Rect3d.
-    Rect3d() {}
+    ///Construct uninitialized .
+    Box3d() {}
 
     /**
-     * Construct Rect3d with given lower and upper corner positions.
+     * Construct  with given lower and upper corner positions.
      * @param lower position of lower corner of cuboid (with minimal all coordinates)
      * @param upper position of upper corner of cuboid (with maximal all coordinates)
      */
-    Rect3d(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
+    Box3d(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
 
     /**
      * Compare two rectangles, @c this and @p r.
      * @param r rectangle to compare
      * @return true only if @c this rectangle and @p p have equals coordinates
      */
-    bool operator==(const Rect3d& r) const;
+    bool operator==(const Box3d& r) const;
 
     /**
      * Compare two rectangles, @c this and @p r.
      * @param r rectangle to compare
      * @return true only if @c this rectangle and @p p don't have equals coordinates
      */
-    bool operator!=(const Rect3d& r) const;
+    bool operator!=(const Box3d& r) const;
 
     /**
      * Ensure that lower[0] <= upper.c0, lower[1] <= upper[1], and lower[2] <= upper[3].
@@ -197,7 +197,7 @@ struct Rect3d {
      * @param other rectangle
      * @return true only if this and other have common points
      */
-    bool intersect(const Rect3d& other) const;
+    bool intersect(const Box3d& other) const;
 
     /**
      * Make this rectangle, the minimal one which include @c this and given point @p p.
@@ -209,19 +209,20 @@ struct Rect3d {
      * Make this rectangle, the minimal one which include @c this and @p other rectangle.
      * @param other point which should be inside rectangle
      */
-    void include(const Rect3d& other);
+    void include(const Box3d& other);
 
-    Rect3d translated(const Vec<3,double>& translation_vec) const { return Rect3d(lower + translation_vec, upper + translation_vec); }
+    Box3d translated(const Vec<3,double>& translation_vec) const { return Box3d(lower + translation_vec, upper + translation_vec); }
 
     /**
      * Get translated copy of this.
      * @param trasnalation_in_up_dir translation in up direction
      * @return @c this translated up by @p trasnalation_in_up_dir
      */
-    Rect3d translatedUp(const double trasnalation_in_up_dir) const { Rect3d r = *this; r.translateUp(trasnalation_in_up_dir); return r; }
-    
+    Box3d translatedUp(const double trasnalation_in_up_dir) const {
+        Box3d r = *this; r.translateUp(trasnalation_in_up_dir); return r; }
+
     void translate(const Vec<3,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
-    
+
     /**
      * Translate this up by @p trasnalation_in_up_dir.
      * @param trasnalation_in_up_dir translation in up direction
@@ -234,7 +235,7 @@ struct Rect3d {
      * @param to_print rectangle to print
      * @return out stream
      */
-    friend inline std::ostream& operator<<(std::ostream& out, const Rect3d& to_print) {
+    friend inline std::ostream& operator<<(std::ostream& out, const Box3d& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
 
@@ -270,7 +271,7 @@ template <>
 struct Primitive<2> {
 
     /// Rectangle type in 2d space.
-    typedef Rect2d Rect;
+    typedef Box2d Rect;
 
     /// Real (double) vector type in 2d space.
     typedef Vec<2,double> DVec;
@@ -280,7 +281,7 @@ struct Primitive<2> {
 
     /// Zeroed 2d vector.
     static const DVec ZERO_VEC;
-    
+
     /// NaNed 2d vector.
     static const DVec NAN_VEC;
 };
@@ -292,7 +293,7 @@ template <>
 struct Primitive<3> {
 
     /// Rectangle type (cuboid) in 3d space.
-    typedef Rect3d Rect;
+    typedef Box3d Rect;
 
     /// Real (double) vector type in 3d space.
     typedef Vec<3,double> DVec;
@@ -302,7 +303,7 @@ struct Primitive<3> {
 
     /// Zeroed 3d vector.
     static const DVec ZERO_VEC;
-    
+
     /// NaNed 3d vector.
     static const DVec NAN_VEC;
 };

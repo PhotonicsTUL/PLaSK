@@ -13,11 +13,11 @@ struct CartesianExtend: public GeometryElementChangeSpace<3, 2>/*, public Calcul
     double length;
 
     //Size of calculation space.
-    //Rect2d spaceSize;
+    // spaceSize;
 
     explicit CartesianExtend(shared_ptr<ChildType> child, double length): GeometryElementChangeSpace<3, 2>(child), length(length) {}
 
-    explicit CartesianExtend(double length/*, Rect2d spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
+    explicit CartesianExtend(double length/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
     virtual bool inside(const DVec& p) const;
 

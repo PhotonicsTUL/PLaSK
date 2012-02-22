@@ -32,7 +32,7 @@ Example of XML which describes geometry:
 @verbatim
 <geometry axis="x,y">
     <container2d name="trans_cont">
-        <block2d x="5" y="3" name="block_5_3" material="exampleMaterial"/>
+        <rectangle x="5" y="3" name="block_5_3" material="exampleMaterial"/>
         <child x="3" y="3">
             <ref name="block_5_3"/>
         </child>
@@ -42,7 +42,7 @@ Example of XML which describes geometry:
         <child x="-5">
             <ref name="c1"/>
         </child>
-        <block2d x="8" y="12" material="exampleMaterial"/>
+        <rectangle x="8" y="12" material="exampleMaterial"/>
     </stack2d>
 </geometry>
 @endverbatim
@@ -50,7 +50,7 @@ Example of XML which describes geometry:
 Above XML describes geometry in 2D space, which includes two containers.
 
 First container (described by the \c container2d tag), has name "trans_cont" (see \c name attribute) and has 2 (identical) children.
-They are actually the same rectangular block (\c block2d tag) with name "block_5_3" and size 5x3 (see \c x and \c y attributes).
+They are actually the same rectangular block (\c rectangle tag) with name "block_5_3" and size 5x3 (see \c x and \c y attributes).
 Its first instance is locates at point (0, 0) (which is a default), and the second one is located at point (3, 3) (which is given in the \c child tag attributes).
 Second appearance of the block in container is given by the \c ref tag.
 This tag represents reference to an ealier defined element and it requires only one attribute,
@@ -71,7 +71,7 @@ Geometry graph can be created:
 \verbatim
 # create 2D solid block (with size 5x3) filled with example material
 # (which is an object of class plask.material.Material or its subclass):
-block_5_3 = plask.geometry.Block2D(5.0, 3.0, exampleMaterial)
+block_5_3 = plask.geometry.Rectangle(5.0, 3.0, exampleMaterial)
 # check some block_5_3 properties:
 assert block_5_3.boundingBox.lower == plask.vec(0.0, 0.0)
 assert block_5_3.boundingBox.upper == plask.vec(5.0, 3.0)
@@ -90,7 +90,7 @@ assert container.getMaterial(6.0, 2.0) == None
 - manually from C++. The same example as the Python code above:
 @code
 // create 2D solid block (with size 5x3) filled with example material:
-plask::shared_ptr< plask::Block<2> > block_5_3(new plask::Block<2>(plask::vec(5.0, 3.0), exampleMaterial));
+plask::shared_ptr< plask::Rectangle > block_5_3(new plask::Rectangle(plask::vec(5.0, 3.0), exampleMaterial));
 // check some block_5_3 properties:
 assert(block_5_3->getBoundingBox().lower == plask::vec(0.0, 0.0));
 assert(block_5_3->getBoundingBox().upper == plask::vec(5.0, 3.0));
@@ -102,7 +102,7 @@ container->add(block_5_3);
 container->add(block_5_3, plask::vec(3.0, 3.0));
 // now our graphs has 3 vertexes: 1 container and 2 (identical) blocks in it
 // check some container properties:
-assert(container->getBoundingBox() == plask::Rect2d(plask::vec(0.0, 0.0), plask::vec(8.0, 6.0)));
+assert(container->getBoundingBox() == plask::(plask::vec(0.0, 0.0), plask::vec(8.0, 6.0)));
 assert(container->getMaterial(plask::vec(6.0, 6.0)) == exampleMaterial);
 assert(container->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
 @endcode
@@ -126,13 +126,13 @@ plask::GeometryManager geometry;
 // read XML content from file:
 geometry.loadFromFile("example_file_name.xml");
 // use:
-plask::shared_ptr< plask::Block<2> > block_5_3 = geometry.requireElement< plask::Block<2> >("block_5_3");
+plask::shared_ptr< plask::Rectangle > block_5_3 = geometry.requireElement< plask::Rectangle >("block_5_3");
 assert(block_5_3->getBoundingBox().lower == plask::vec(0.0, 0.0));
 assert(block_5_3->getBoundingBox().upper == plask::vec(5.0, 3.0));
 assert(block_5_3->getMaterial(plask::vec(4.0, 2.0)) == exampleMaterial);
 assert(block_5_3->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
 plask::shared_ptr< plask::TranslationContainer<2> > container = geometry.requireElement< plask::TranslationContainer<2> >("trans_cont");
-assert(container->getBoundingBox() == plask::Rect2d(plask::vec(0.0, 0.0), plask::vec(8.0, 6.0)));
+assert(container->getBoundingBox() == plask::(plask::vec(0.0, 0.0), plask::vec(8.0, 6.0)));
 assert(container->getMaterial(plask::vec(6.0, 6.0)) == exampleMaterial);
 assert(container->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
 @endcode

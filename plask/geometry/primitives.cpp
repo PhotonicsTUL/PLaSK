@@ -12,28 +12,28 @@ inline void ensureHi(double& to_be_hi, double how_hi) {
     if (how_hi > to_be_hi) to_be_hi = how_hi;
 }
 
-//------------- Rect2d ---------------------
+//-------------  ---------------------
 
-bool Rect2d::operator ==(const Rect2d &r) const {
+bool Box2d::operator ==(const Box2d &r) const {
     return lower == r.lower && upper == r.upper;
 }
 
-bool Rect2d::operator !=(const Rect2d &r) const {
+bool Box2d::operator !=(const Box2d &r) const {
     return lower != r.lower || upper != r.upper;
 }
 
-void Rect2d::fix() {
+void Box2d::fix() {
     if (lower.c0 > upper.c0) std::swap(lower.c0, upper.c0);
     if (lower.c1 > upper.c1) std::swap(lower.c1, upper.c1);
 }
 
 
-bool Rect2d::inside(const Vec<2, double >& p) const {
+bool Box2d::inside(const Vec<2, double >& p) const {
     return lower.c0/**/ <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1;
 }
 
-bool Rect2d::intersect(const plask::Rect2d& other) const {
+bool Box2d::intersect(const plask::Box2d& other) const {
     return !(
         lower.c0 > other.upper.c0 ||
         lower.c1 > other.upper.c1 ||
@@ -42,42 +42,42 @@ bool Rect2d::intersect(const plask::Rect2d& other) const {
     );
 }
 
-void Rect2d::include(const Vec<2, double >& p) {
+void Box2d::include(const Vec<2, double >& p) {
     if (p.c0 < lower.c0) lower.c0 = p.c0; else ensureHi(upper.c0, p.c0);
     if (p.c1 < lower.c1) lower.c1 = p.c1; else ensureHi(upper.c1, p.c1);
 }
 
-void Rect2d::include(const plask::Rect2d& other) {
+void Box2d::include(const plask::Box2d& other) {
     ensureLo(lower.c0, other.lower.c0);
     ensureLo(lower.c1, other.lower.c1);
     ensureHi(upper.c0, other.upper.c0);
     ensureHi(upper.c1, other.upper.c1);
 }
 
-//------------- Rect3d ---------------------
+//-------------  ---------------------
 
-bool Rect3d::operator ==(const Rect3d &r) const {
+bool Box3d::operator ==(const Box3d &r) const {
     return lower == r.lower && upper == r.upper;
 }
 
-bool Rect3d::operator !=(const Rect3d &r) const {
+bool Box3d::operator !=(const Box3d &r) const {
     return lower != r.lower || upper != r.upper;
 }
 
-void Rect3d::fix() {
+void Box3d::fix() {
     if (lower.c0 > upper.c0) std::swap(lower.c0, upper.c0);
     if (lower.c1 > upper.c1) std::swap(lower.c1, upper.c1);
     if (lower.c2 > upper.c2) std::swap(lower.c2, upper.c2);
 }
 
 
-bool Rect3d::inside(const Vec<3, double >& p) const {
+bool Box3d::inside(const Vec<3, double >& p) const {
     return lower.c0 <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1 &&
            lower.c2 <= p.c2 && p.c2 <= upper.c2;
 }
 
-bool Rect3d::intersect(const plask::Rect3d& other) const {
+bool Box3d::intersect(const plask::Box3d& other) const {
     return !(
         lower.c0 > other.upper.c0 ||
         lower.c1 > other.upper.c1 ||
@@ -88,13 +88,13 @@ bool Rect3d::intersect(const plask::Rect3d& other) const {
     );
 }
 
-void Rect3d::include(const Vec<3, double >& p) {
+void Box3d::include(const Vec<3, double >& p) {
     if (p.c0 < lower.c0) lower.c0 = p.c0; else ensureHi(upper.c0, p.c0);
     if (p.c1 < lower.c1) lower.c1 = p.c1; else ensureHi(upper.c1, p.c1);
     if (p.c2 < lower.c2) lower.c2 = p.c2; else ensureHi(upper.c2, p.c2);
 }
 
-void Rect3d::include(const plask::Rect3d& other) {
+void Box3d::include(const plask::Box3d& other) {
     ensureLo(lower.c0, other.lower.c0);
     ensureLo(lower.c1, other.lower.c1);
     ensureLo(lower.c2, other.lower.c2);
