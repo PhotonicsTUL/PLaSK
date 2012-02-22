@@ -79,9 +79,9 @@ class GeometryObjects(unittest.TestCase):
         self.assertEqual(multistack.boundingBox, plask.geometry.Box2D(0.0, 10.0, 5.0, 40.0))
         self.assertEqual(multistack.getMaterial(4.0, 39.0), self.mat)
         self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
-        self.assertEqual( multistack[0].child, self.block53 )
-        self.assertEqual( multistack[0].translation, plask.vec(0, 10.) )
-        self.assertEqual( multistack.repeatedItem(9).child, self.block53 )
-        self.assertEqual( multistack.repeatedItem(9).translation, plask.vec(0, 37.) )
-        if sys.version >= 2.7:
-            with self.assertRaises(IndexError): multistack[9]
+        #self.assertEqual( multistack[0].child, self.block53 )
+        #self.assertEqual( multistack[0].translation, plask.vec(0, 10.) )
+        #self.assertEqual( multistack.repeatedItem(9).child, self.block53 )
+        #self.assertEqual( multistack.repeatedItem(9).translation, plask.vec(0, 37.) )
+        #if sys.version >= 2.7:
+            #with self.assertRaises(IndexError): multistack[9]
