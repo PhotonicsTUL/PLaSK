@@ -344,8 +344,22 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
 
+    /**
+     * Add children to stack bottom, move all other children higher.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to add
+     * @param tran_translation horizontal translation of element
+     * @return path hint, see @ref geometry_paths
+     */
     PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
 
+    /**
+     * Add child to stack bottom, move all other children higher.
+     * @param el element to add
+     * @param tran_translation horizontal translation of element
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
 
 };
