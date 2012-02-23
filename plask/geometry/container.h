@@ -266,7 +266,10 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
 
     protected:
 
-    ///stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements)
+    /**
+     * stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements),
+     * stackHeights.size() = children.size() + 1
+     */
     std::vector<double> stackHeights;
 
     /**
@@ -341,6 +344,10 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
 
+    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
+
+    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
+
 };
 
 /**
@@ -383,6 +390,10 @@ struct StackContainer3d: public StackContainerBaseImpl<3> {
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
+
+    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
+
+    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
 };
 
 template <int dim>
