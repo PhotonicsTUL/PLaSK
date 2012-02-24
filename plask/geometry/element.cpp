@@ -3,7 +3,7 @@
 namespace plask {
 
 GeometryElement::~GeometryElement() {
-    changed(Event(this, Event::DELETE));
+    changed(Event(this->shared_from_this(), Event::DELETE));
 }
 
 void GeometryElement::ensureCanHasAsParent(GeometryElement& potential_parent) {

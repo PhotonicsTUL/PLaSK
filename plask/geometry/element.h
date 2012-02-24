@@ -45,14 +45,14 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         enum Type { SHAPE = 1, MATERIAL = 1<<1, DELETE = 1<<2 };
         
     private:
-        GeometryElement* _source;
+        shared_ptr<GeometryElement> _source;
         Type _type;
         
     public:
-        const GeometryElement* source() { return _source; }
+        const shared_ptr<GeometryElement> source() { return _source; }
         const Type type() { return _type; }
         
-        Event(GeometryElement* source, Type type): _source(source), _type(type) {}
+        Event(shared_ptr<GeometryElement> source, Type type): _source(source), _type(type) {}
         
     };
     
