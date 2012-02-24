@@ -112,10 +112,10 @@ struct TranslationAligner3d: public Aligner3d<direction1, direction2> {
     }
 };
 
-/**
+/*
  * Aligner 3d which compose and use two 2d aligners. 
  */
-template <DIRECTION_3D direction1, DIRECTION_3D direction2>
+/*template <DIRECTION_3D direction1, DIRECTION_3D direction2>
 class ComposeAligner3d: public Aligner3d<direction1, direction2> {
     
     Aligner2d<direction1>* dir1aligner;
@@ -160,7 +160,7 @@ public:
 template <DIRECTION_3D direction1, DIRECTION_3D direction2>
 inline ComposeAligner3d<direction1, direction2> operator&(const Aligner2d<direction1>& dir1aligner, const Aligner2d<direction2>& dir2aligner) {
     return ComposeAligner3d<direction1, direction2>(dir1aligner, dir2aligner);
-}
+}*/
 
 namespace details {
 
@@ -213,7 +213,7 @@ typedef details::Aligner3dImpl<DIR3D_LON, details::centerToZero, DIR3D_TRAN, det
 typedef details::Aligner3dImpl<DIR3D_LON, details::centerToZero, DIR3D_TRAN, details::hiToZero> NFCenerRight;
 typedef details::Aligner3dImpl<DIR3D_LON, details::centerToZero, DIR3D_TRAN, details::centerToZero> NFCenerLRCenter;
 typedef TranslationAligner3d<DIR3D_LON, DIR3D_TRAN> LonTran;
-typedef ComposeAligner3d<DIR3D_LON, DIR3D_TRAN> NFLR;
+//typedef ComposeAligner3d<DIR3D_LON, DIR3D_TRAN> NFLR;
 //TODO mixed variants
 
 }   // namespace align
