@@ -42,7 +42,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     
     struct Event {
         
-        enum Type { RESIZE, DELETE };
+        enum Type { SHAPE = 1, MATERIAL = 1<<1, DELETE = 1<<2 };
         
     private:
         GeometryElement* _source;
