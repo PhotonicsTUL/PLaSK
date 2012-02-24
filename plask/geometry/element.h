@@ -9,9 +9,10 @@ This file includes base classes for geometries elements.
 #include <vector>
 #include <tuple>
 
-
 #include "../material/material.h"
 #include "primitives.h"
+
+#include <boost/signals2.hpp>
 
 namespace plask {
 
@@ -38,6 +39,13 @@ struct GeometryTransform {
  * Base class for all geometries.
  */
 struct GeometryElement: public enable_shared_from_this<GeometryElement> {
+    
+    struct Event {
+        GeometryElement* source;
+        Event(GeometryElement* source): source(source) {}
+    };
+    
+    boost::signals2::signal<void(const Event&)> changed;
 
     /**
      * Check if geometry is: leaf, transform or container type element.

@@ -19,11 +19,11 @@
 
 
 #define GEOMETRY_ELEMENT_23D_DEFAULT(cls, base) \
-    py::class_<cls<dim>, shared_ptr<cls<dim>>, py::bases<base>> cls##_registrant (cls##_pyname<dim>(), cls##_pydoc<dim>()); \
+    py::class_<cls<dim>, shared_ptr<cls<dim>>, py::bases<base>, boost::noncopyable> cls##_registrant (cls##_pyname<dim>(), cls##_pydoc<dim>()); \
      cls##_registrant
 
 #define GEOMETRY_ELEMENT_23D(cls, base, init) \
-    py::class_<cls<dim>, shared_ptr<cls<dim>>, py::bases<base>> cls##_registrant (cls##_pyname<dim>(), cls##_pydoc<dim>(), init); \
+    py::class_<cls<dim>, shared_ptr<cls<dim>>, py::bases<base>, boost::noncopyable> cls##_registrant (cls##_pyname<dim>(), cls##_pydoc<dim>(), init); \
     cls##_registrant
 
 namespace plask { namespace python {
