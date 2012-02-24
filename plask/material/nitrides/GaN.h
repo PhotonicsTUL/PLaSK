@@ -12,22 +12,22 @@ namespace plask {
 /**
  * Represent undoped GaN, its physical properties.
  */
-struct GaN: public Material {
+struct GaN: public Semiconductor {
 
     static constexpr const char* NAME = "GaN";
 
     GaN();
-	virtual std::string name() const;
+    virtual std::string name() const;
     virtual double cond(double T) const;
     virtual double condT(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
 
 private:
-	double Nf_RT,
-		   mob_RT,
-		   cond_RT,
-		   condTmax_RT;	
+    double Nf_RT,
+           mob_RT,
+           cond_RT,
+           condTmax_RT;
 };
 
 

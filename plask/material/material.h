@@ -29,11 +29,21 @@ int elementGroup(const std::string& elementName);
  */
 struct Material {
 
-    ///Amounts of dopant.
-    enum DOPING_AMOUNT_TYPE {
+    /// Dopting specification type
+    enum DopingAmountType {
         NO_DOPING,              ///< no dopant
         DOPANT_CONCENTRATION,   ///< doping concentration
         CARRIER_CONCENTRATION   ///< carrier concentration
+    };
+
+    /// Material kind
+    enum Kind {
+        NONE,           ///< no material or air
+        SEMICONDUCTOR,  ///< semiconductor
+        OXIDE,          ///< oxide
+        METAL,          ///< metal
+        LIQUID_CRYSTAL, ///< liquid crystal
+        MIXED           ///< artificial mix of several materials with averaged properties
     };
 
     /**
@@ -46,15 +56,15 @@ struct Material {
     struct is_with_composition {
         static const bool value =
             std::is_constructible<MaterialType, Composition>::value ||
-            std::is_constructible<MaterialType, Composition, DOPING_AMOUNT_TYPE, double>::value;
+            std::is_constructible<MaterialType, Composition, DopingAmountType, double>::value;
     };
 
     /// Check if material can be construct with dopant.
     template <typename MaterialType>
     struct is_with_dopant {
         static const bool value =
-            std::is_constructible<MaterialType, DOPING_AMOUNT_TYPE, double>::value ||
-            std::is_constructible<MaterialType, Composition, DOPING_AMOUNT_TYPE, double>::value;
+            std::is_constructible<MaterialType, DopingAmountType, double>::value ||
+            std::is_constructible<MaterialType, Composition, DopingAmountType, double>::value;
     };
 
     /**
@@ -101,7 +111,7 @@ struct Material {
      * @param begin, end [begin, end) string or range in string
      * @param dopant_elem_name[out], doping_amount_type[out], doping_amount[out] parsed values
      */
-    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, DOPING_AMOUNT_TYPE& doping_amount_type, double& doping_amount);
+    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount);
 
     /**
      * Parse information about dopant from string.
@@ -110,7 +120,7 @@ struct Material {
      * @param dopant string to parse
      * @param dopant_elem_name[out], doping_amount_type[out], doping_amount[out] parsed values
      */
-    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DOPING_AMOUNT_TYPE& doping_amount_type, double& doping_amount);
+    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount);
 
     /**
      * Split element name to elements.
@@ -133,6 +143,9 @@ struct Material {
 
     /// @return material name
     virtual std::string name() const = 0;
+
+    /// @return material kind
+    virtual Kind kind() const = 0;
 
     /**
      * Get lattice constant [A].
@@ -487,6 +500,37 @@ protected:
 
 };
 
+
+/**
+ * Base maerial class for all semiconductors and similar materials
+ */
+struct Semiconductor: public Material {
+    virtual Kind kind() const;
+};
+
+/**
+ * Base maerial class for all metals
+ */
+struct Metal: public Material {
+    virtual Kind kind() const;
+};
+
+/**
+ * Base maerial class for all oxides
+ */
+struct Oxide: public Material {
+    virtual Kind kind() const;
+};
+
+/**
+ * Base maerial class for all liquid crystals
+ */
+struct LiquidCrystal: public Material {
+    virtual Kind kind() const;
+};
+
+
+
 /**
  * Material which consist of several real materials.
  * It calculate averages for all properties.
@@ -494,7 +538,7 @@ protected:
  * Example:
  * @code
  * MixedMaterial m;
- * //mat1, mat2, mat3 are materials, 2.0, 5.0, 3.0 weights for it:
+ * // mat1, mat2, mat3 are materials, 2.0, 5.0, 3.0 weights for it:
  * m.add(mat1, 2.0).add(mat2, 5.0).add(mat3, 3.0).normalizeWeights();
  * double avg_VBO = m.VBO(300);
  * @endcode
@@ -526,6 +570,8 @@ struct MixedMaterial: public Material {
 
     //Material methods implementation:
     virtual std::string name() const;
+
+    virtual Kind kind() const;
 
     virtual double lattC(double T, char x) const;
 

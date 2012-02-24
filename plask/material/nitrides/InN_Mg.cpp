@@ -5,7 +5,7 @@
 
 namespace plask {
 
-InN_Mg::InN_Mg(DOPING_AMOUNT_TYPE Type, double Mg) {
+InN_Mg::InN_Mg(DopingAmountType Type, double Mg) {
 	//M. Kuc 12.02.2012	
     if (Type == CARRIER_CONCENTRATION) Nf_RT = Mg;
 	else Nf_RT = 7.392E9*pow(Mg,0.439);

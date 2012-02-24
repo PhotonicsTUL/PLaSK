@@ -50,6 +50,7 @@ class MaterialWrap : public Material
 
     struct EmptyBase : public Material {
         virtual std::string name() const { return ""; }
+        virtual Material::Kind kind() const { return Material::NONE; }
     };
 
   public:
@@ -78,6 +79,7 @@ class MaterialWrap : public Material
 
     /// @return material name
     virtual std::string name() const { return attr<std::string>("name"); }
+    virtual Material::Kind kind() const { return attr<Material::Kind>("kind"); }
     virtual double lattC(double T, char x) const { return override<double>("lattC", &Material::lattC, T, x); }
     virtual double Eg(double T, const char Point) const { return override<double>("Eg", &Material::Eg, T, Point); }
     virtual double CBO(double T, const char Point) const { return override<double>("CBO", &Material::CBO, T, Point); }
@@ -145,7 +147,7 @@ class PythonSimpleMaterialConstructor : public MaterialsDB::MaterialConstructor
     PythonSimpleMaterialConstructor(const std::string& name, py::object material_class, std::string dope="") :
         MaterialsDB::MaterialConstructor(name), material_class(material_class), dopant(dope) {}
 
-    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
+    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const
     {
         py::tuple args;
         py::dict kwargs;
@@ -174,7 +176,7 @@ class PythonComplexMaterialConstructor : public MaterialsDB::MaterialConstructor
     PythonComplexMaterialConstructor(const std::string& name, py::object material_class, std::string dope="") :
         MaterialsDB::MaterialConstructor(name), material_class(material_class), dopant(dope) {}
 
-    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const
+    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const
     {
         py::dict kwargs;
         // Composition
@@ -261,7 +263,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     } catch (py::error_already_set) {
         PyErr_Clear();
     }
-    Material::DOPING_AMOUNT_TYPE doping_type = Material::NO_DOPING;
+    Material::DopingAmountType doping_type = Material::NO_DOPING;
     double concentation = 0;
     py::object cobj;
     bool has_dc = false;
@@ -393,12 +395,14 @@ void initMaterial() {
     ;
 
     // Common material interface
-    py::class_<Material, shared_ptr<Material>, boost::noncopyable>("Material", "Base class for all materials.", py::no_init)
+    py::class_<Material, shared_ptr<Material>, boost::noncopyable> MaterialClass("Material", "Base class for all materials.", py::no_init);
+    MaterialClass
         .def("__init__", raw_constructor(&MaterialWrap::__init__))
         .def("_completeComposition", &Material__completeComposition, (py::arg("composition"), py::arg("name")=""),
              "Fix incomplete material composition basing on patten")
         .staticmethod("_completeComposition")
         .add_property("name", &Material::name)
+        .add_property("kind", &Material::kind)
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")), "Get lattice constant [A]")
         .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("point")='G'), "Get energy gap Eg [eV]")
@@ -446,7 +450,16 @@ void initMaterial() {
         .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.), "Get absorption coefficient alpha")
         .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nR")
 
-        ;
+    ;
+
+    py::enum_<Material::Kind> MaterialKind("Kind"); MaterialKind
+        .value("NONE", Material::NONE)
+        .value("SEMICONDUCTOR", Material::SEMICONDUCTOR)
+        .value("OXIDE", Material::OXIDE)
+        .value("METAL", Material::METAL)
+        .value("LIQUID_CRYSTAL", Material::LIQUID_CRYSTAL)
+        .value("MIXED", Material::MIXED)
+    ;
 
     py::def("_register_material_simple", &registerSimpleMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
             "Register new simple material class to the database");

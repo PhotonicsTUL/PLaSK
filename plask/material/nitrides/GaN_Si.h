@@ -17,7 +17,7 @@ struct GaN_Si: public GaN {
 
     static constexpr const char* NAME = "GaN:Si";
 
-	GaN_Si(DOPING_AMOUNT_TYPE Type, double Si);
+	GaN_Si(DopingAmountType Type, double Si);
 	virtual std::string name() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;

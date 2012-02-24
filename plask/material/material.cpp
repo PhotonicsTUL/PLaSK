@@ -204,7 +204,7 @@ Material::Composition Material::parseComposition(const std::string& str) {
     return parseComposition(c, c + str.size());
 }
 
-void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, Material::DOPING_AMOUNT_TYPE& doping_amount_type, double& doping_amount) {
+void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, Material::DopingAmountType& doping_amount_type, double& doping_amount) {
     const char* name_end = getElementEnd(begin, end);
     if (name_end == begin)
          throw MaterialParseException("No dopant name");
@@ -228,7 +228,7 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
     doping_amount = toDouble(std::get<1>(p));
 }
 
-void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, Material::DOPING_AMOUNT_TYPE &doping_amount_type, double &doping_amount) {
+void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, Material::DopingAmountType &doping_amount_type, double &doping_amount) {
     const char* c = dopant.data();
     parseDopant(c, c + dopant.size(), dopant_elem_name, doping_amount_type, doping_amount);
 }
@@ -250,8 +250,21 @@ std::vector<std::string> Material::parseElementsNames(const std::string &allName
     return parseElementsNames(c, c + allNames.size());
 }
 
+//------------ Different material kinds -------------------------
 
-//------------ MixedMaterial: -------------------------
+Material::Kind Semiconductor::kind() const { return Material::SEMICONDUCTOR; }
+
+Material::Kind Metal::kind() const { return Material::METAL; }
+
+Material::Kind Oxide::kind() const { return Material::OXIDE; }
+
+Material::Kind LiquidCrystal::kind() const { return Material::LIQUID_CRYSTAL; }
+
+
+
+//------------ MixedMaterial -------------------------
+
+Material::Kind MixedMaterial::kind() const { return Material::MIXED; }
 
 void MixedMaterial::normalizeWeights() {
     double sum = 0;

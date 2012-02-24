@@ -6,7 +6,7 @@
 
 namespace plask {
 
-GaN_Si::GaN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
+GaN_Si::GaN_Si(DopingAmountType Type, double Si) {
 	//M. Kuc 8.02.2012	
     if (Type == CARRIER_CONCENTRATION) Nf_RT = Si;
 	else Nf_RT = 0.158*pow(Si,1.039);

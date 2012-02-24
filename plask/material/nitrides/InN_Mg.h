@@ -17,7 +17,7 @@ struct InN_Mg: public InN {
 
     static constexpr const char* NAME = "InN:Mg";
 
-	InN_Mg(DOPING_AMOUNT_TYPE Type, double Mg);
+	InN_Mg(DopingAmountType Type, double Mg);
 	virtual std::string name() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;

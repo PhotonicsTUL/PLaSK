@@ -5,7 +5,7 @@
 
 namespace plask {
 
-AlN_Si::AlN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
+AlN_Si::AlN_Si(DopingAmountType Type, double Si) {
 	//M. Kuc 12.02.2012	
     if (Type == CARRIER_CONCENTRATION) Nf_RT = Si;
 	else Nf_RT = 6.197E-19*pow(Si,1.805);

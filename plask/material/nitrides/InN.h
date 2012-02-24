@@ -13,7 +13,7 @@ namespace plask {
 /**
  * Represent undoped InN, its physical properties.
  */
-struct InN: public Material {
+struct InN: public Semiconductor {
 
     static constexpr const char* NAME = "InN";
 

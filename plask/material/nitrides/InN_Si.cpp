@@ -5,7 +5,7 @@
 
 namespace plask {
 
-InN_Si::InN_Si(DOPING_AMOUNT_TYPE Type, double Si) {
+InN_Si::InN_Si(DopingAmountType Type, double Si) {
 	//M. Kuc 12.02.2012	
 	Nf_RT = Si;
 	//mobRT(Nf_RT), Nf_RT: 2e18 - 7e20 cm-3; based on 6 papers (2005-2010): undoped/Si-doped InN/c-sapphire

@@ -31,6 +31,8 @@ struct MyMaterial : public plask::Material {
 
     virtual std::string name() const { return "MyMaterial"; }
 
+    virtual Material::Kind kind() const { return Material::NONE; }
+
     virtual double VBO(double T) const { return 0.5*T; }
 
     virtual double chi(double T, char P) const { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }

@@ -12,7 +12,7 @@ namespace plask {
 /**
  * Represent undoped AlN, its physical properties.
  */
-struct AlN: public Material {
+struct AlN: public Semiconductor {
 
     static constexpr const char* NAME = "AlN";
 
@@ -23,7 +23,7 @@ struct AlN: public Material {
     //virtual double absp(double wl, double T) const;
 
 private:
-	double condTmax_RT;	
+	double condTmax_RT;
 };
 
 

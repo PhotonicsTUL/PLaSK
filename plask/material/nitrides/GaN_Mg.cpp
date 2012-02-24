@@ -6,7 +6,7 @@
 
 namespace plask {
 
-GaN_Mg::GaN_Mg(DOPING_AMOUNT_TYPE Type, double Mg) {
+GaN_Mg::GaN_Mg(DopingAmountType Type, double Mg) {
 	//M. Kuc 12.02.2012
     if (Type == CARRIER_CONCENTRATION) Nf_RT = Mg;
 	else Nf_RT = 1.676E2*pow(Mg,0.7925);

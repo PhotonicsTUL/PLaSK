@@ -112,7 +112,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     return it->second;
 }
 
-shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     return (*getConstructor(db_Key, composition, dopant_name))(composition, doping_amount_type, doping_amount);
 }
 
@@ -120,12 +120,12 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     return getConstructor(dbKey(composition, dopant_name), composition, dopant_name);
 }
 
-shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& dopant_name, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     return get(dbKey(composition, dopant_name), composition, dopant_name, doping_amount_type, doping_amount);
 }
 
 shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector<double>& composition,
-                                               Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+                                               Material::DopingAmountType doping_amount_type, double doping_amount) const {
     std::string name, dopant;
     std::tie(name, dopant) = splitString2(parsed_name_with_donor, ':');
     if (composition.empty())
@@ -142,7 +142,7 @@ shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_donor,
 shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components, const std::string& doping_descr) const {
     std::string dopant_name;
     double doping_amount = 0.0;
-    Material::DOPING_AMOUNT_TYPE doping_amount_type = Material::NO_DOPING;
+    Material::DopingAmountType doping_amount_type = Material::NO_DOPING;
     if (!doping_descr.empty())
         Material::parseDopant(doping_descr, dopant_name, doping_amount_type, doping_amount);
     if (name_with_components.find('(') == std::string::npos) {  //simple case, without parsing composition
@@ -159,7 +159,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
 }
 
 MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
-                                                 const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount)
+                                                 const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
 {
     if (material1name_with_components.find('(') == std::string::npos) {  //simple material, without parsing composition, stil dopants can be mixed
         if (material1name_with_components != material2name_with_components)
@@ -183,7 +183,7 @@ MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Co
 }
 
 MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition,
-                                 const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount)
+                                 const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
 {
     if (dopAmountType == Material::NO_DOPING)
         getFactory(material1composition, material2composition);
@@ -197,7 +197,7 @@ MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string&
     std::tie(m1comp, m1dop) = splitString2(material1_fullname, ':');
     std::tie(m2comp, m2dop) = splitString2(material2_fullname, ':');
     std::string m1_dop_name, m2_dop_name;
-    Material::DOPING_AMOUNT_TYPE m1_dop_type = Material::NO_DOPING, m2_dop_type = Material::NO_DOPING;
+    Material::DopingAmountType m1_dop_type = Material::NO_DOPING, m2_dop_type = Material::NO_DOPING;
     double m1_dop_am = 0.0, m2_dop_am = 0.0;
     Material::parseDopant(m1dop, m1_dop_name, m1_dop_type, m1_dop_am);
     Material::parseDopant(m2dop, m2_dop_name, m2_dop_type, m2_dop_am);

@@ -59,7 +59,7 @@ struct MaterialsDB {
          * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
          * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPANT
          */
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double dopant_amount) const = 0;
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double dopant_amount) const = 0;
     };
 
     /**
@@ -132,7 +132,7 @@ struct MaterialsDB {
      */
     struct MixedCompositionAndDopantFactory: public MixedCompositionOnlyFactory {
     protected:
-        Material::DOPING_AMOUNT_TYPE dopAmountType;
+        Material::DopingAmountType dopAmountType;
 
         double m1DopAmount, m2DopAmount;
 
@@ -146,7 +146,7 @@ struct MaterialsDB {
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
          */
         MixedCompositionAndDopantFactory(const shared_ptr<const MaterialConstructor>& constructor, const Material::Composition& material1composition, const Material::Composition& material2composition,
-                                         Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount)
+                                         Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
             : MixedCompositionOnlyFactory(constructor, material1composition, material2composition), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
 
         /**
@@ -162,7 +162,7 @@ struct MaterialsDB {
 
     struct MixedDopantFactory: public MixedCompositionFactory {
     protected:
-        Material::DOPING_AMOUNT_TYPE dopAmountType;
+        Material::DopingAmountType dopAmountType;
 
         double m1DopAmount, m2DopAmount;
 
@@ -173,7 +173,7 @@ struct MaterialsDB {
          * @param dopAmountType type of doping amounts, common for both materials
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
          */
-        MixedDopantFactory(const shared_ptr<const MaterialConstructor>& constructor, Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount)
+        MixedDopantFactory(const shared_ptr<const MaterialConstructor>& constructor, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
             : MixedCompositionFactory(constructor), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
 
         /**
@@ -244,7 +244,7 @@ public:
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, true, true>: public MaterialConstructor {
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<MaterialType> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+        virtual shared_ptr<MaterialType> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
             ensureCompositionIsNotEmpty(composition);
             return shared_ptr<Material>(new MaterialType(Material::completeComposition(composition), doping_amount_type, doping_amount));
         }
@@ -253,7 +253,7 @@ public:
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, true, false>: public MaterialConstructor {
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DOPING_AMOUNT_TYPE, double) const {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType, double) const {
             ensureCompositionIsNotEmpty(composition);
             return shared_ptr<Material>(new MaterialType(Material::completeComposition(composition)));
         }
@@ -262,7 +262,7 @@ public:
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, false, true>: public MaterialConstructor {
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DOPING_AMOUNT_TYPE doping_amount_type, double doping_amount) const {
+        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType doping_amount_type, double doping_amount) const {
             return shared_ptr<Material>(new MaterialType(doping_amount_type, doping_amount));
         }
     };
@@ -270,7 +270,7 @@ public:
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, false, false>: public MaterialConstructor {
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DOPING_AMOUNT_TYPE, double) const {
+        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType, double) const {
             return shared_ptr<Material>(new MaterialType());
         }
     };
@@ -285,7 +285,7 @@ public:
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      * @see @ref Material::completeComposition
      */
-    shared_ptr<Material> get(const Material::Composition& composition, const std::string& dopant_name = "", Material::DOPING_AMOUNT_TYPE doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+    shared_ptr<Material> get(const Material::Composition& composition, const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
     /**
      * Create material object.
@@ -296,7 +296,7 @@ public:
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      */
-    shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, Material::DOPING_AMOUNT_TYPE doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+    shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
     /**
      * Create material object.
@@ -335,7 +335,7 @@ public:
      * @return constructed factory created using new operator, should by delete by caller
      */
     MixedCompositionFactory* getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
-                                        Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount);
+                                        Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount);
 
     /**
      * Construct mixed material factory.
@@ -347,7 +347,7 @@ public:
      * @return constructed factory created using new operator, should by delete by caller
      */
     MixedCompositionFactory* getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
-                                        const std::string& dopant_name, Material::DOPING_AMOUNT_TYPE dopAmountType, double m1DopAmount, double m2DopAmount);
+                                        const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount);
 
     /**
      * Construct mixed material factory.
@@ -475,7 +475,7 @@ private:
      * @see @ref Material::completeComposition
      */
     shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition,
-                             const std::string& dopant_name = "", Material::DOPING_AMOUNT_TYPE doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+                             const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
 
 };
