@@ -41,8 +41,19 @@ struct GeometryTransform {
 struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     
     struct Event {
-        GeometryElement* source;
-        Event(GeometryElement* source): source(source) {}
+        
+        enum Type { RESIZE, DELETE };
+        
+    private:
+        GeometryElement* _source;
+        Type _type;
+        
+    public:
+        const GeometryElement* source() { return _source; }
+        const Type type() { return _type; }
+        
+        Event(GeometryElement* source, Type type): _source(source), _type(type) {}
+        
     };
     
     boost::signals2::signal<void(const Event&)> changed;
@@ -69,9 +80,9 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     virtual bool isInSubtree(GeometryElement& el) const = 0;
 
     /**
-     * Virtual destructor. Do nothing.
+     * Virtual destructor. Inform all change listeners.
      */
-    virtual ~GeometryElement() {}
+    virtual ~GeometryElement();
     
     /**
      * Append all leafs in subtree with this in root to vector @p dest.
