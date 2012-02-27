@@ -30,9 +30,9 @@ void register_geometry_leafs()
     py::scope scope;
 
     py::class_<Rectangle, shared_ptr<Rectangle>, py::bases<GeometryElementLeaf<2>>, boost::noncopyable> block2d("Rectangle",
-        "Geometry object (2D): a rectangular block filled with one material\n\n"
-        "Rectangle(size) -> initialize block with size given in two-dimensional vector\n\n"
-        "Rectangle(width, height) -> initialize block with given width and height\n",
+        "Geometry object (2D) : a rectangular block filled with one material\n\n"
+        "Rectangle(size)\n    initialize block with size given in two-dimensional vector\n\n"
+        "Rectangle(width, height)\n    initialize block with given width and height\n",
         py::no_init
         ); block2d
         .def("__init__", py::make_constructor(&Rectangle_constructor_wh, py::default_call_policies(), (py::arg("width"), py::arg("height"), py::arg("material"))))
@@ -41,9 +41,9 @@ void register_geometry_leafs()
     scope.attr("Block2D") = block2d;
 
     py::class_<Cuboid, shared_ptr<Cuboid>, py::bases<GeometryElementLeaf<3>>, boost::noncopyable> block3d("Cuboid",
-        "Geometry object (3D): a cuboidal block filled with one material\n\n"
-        "Cuboid(size) -> initialize block with size given in three-dimensional vector\n\n"
-        "Cuboid(depth, width, height) -> initialize block with given depth, width, and heigh\n",
+        "Geometry object (3D) : a cuboidal block filled with one material\n\n"
+        "Cuboid(size)\n    initialize block with size given in three-dimensional vector\n\n"
+        "Cuboid(depth, width, height)\n    initialize block with given depth, width, and heigh\n",
         py::no_init
         ); block3d
         .def("__init__", py::make_constructor(&Cuboid_constructor_dwh, py::default_call_policies(), (py::arg("depth"), py::arg("width"), py::arg("height"), py::arg("material"))))

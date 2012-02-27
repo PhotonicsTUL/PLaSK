@@ -94,9 +94,9 @@ void register_geometry_primitive()
 
     py::class_<Box2d, shared_ptr<Box2d>>("Box2D",
         "Rectangular two-dimensional box. Provides some basic operation on boxes.\n\n"
-        "Box2D() -> create empty box\n\n"
-        "Box2D(lower, upper) -> create box with opposite corners described by 2D vectors\n\n"
-        "Box2D(l1, l2, u1, u2) -> create box with opposite corners described by two coordinates\n\n"
+        "Box2D()\n    create empty box\n\n"
+        "Box2D(lower, upper)\n    create box with opposite corners described by 2D vectors\n\n"
+        "Box2D(l1, l2, u1, u2)\n    create box with opposite corners described by two coordinates\n"
         )
         .def("__init__", py::make_constructor(&Box2d_constructor_default))
         .def("__init__", py::make_constructor(&Box2d_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))
@@ -122,9 +122,9 @@ void register_geometry_primitive()
 
     py::class_<Box3d, shared_ptr<Box3d>>("Box3D",
         "Cuboidal three-dimensional box. Provides some basic operation on boxes.\n\n"
-        "Box3D() -> create empty box\n"
-        "Box3D(lower, upper) -> create box with opposite corners described by 3D vectors\n"
-        "Box3D(l1, l2, l3, u1, u2, u3) -> create box with opposite corners described by three coordinates"
+        "Box3D()\n    create empty box\n\n"
+        "Box3D(lower, upper)\n    create box with opposite corners described by 3D vectors\n\n"
+        "Box3D(l1, l2, l3, u1, u2, u3)\n    create box with opposite corners described by three coordinates\n"
         )
         .def("__init__", py::make_constructor(&Box3d_constructor_default))
         .def("__init__", py::make_constructor(&Box3d_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))

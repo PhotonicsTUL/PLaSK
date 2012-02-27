@@ -79,8 +79,8 @@ assert block_5_3.getMaterial(4.0, 2.0) == exampleMaterial
 assert block_5_3.getMaterial(6.0, 2.0) == None
 # create 2D container and add two children (blocks) to it:
 container = plask.geometry.TranslationContainer2D();
-container.add(block_5_3)
-container.add(block_5_3, plask.vec(3.0, 3.0))
+container.append(block_5_3)
+container.append(block_5_3, plask.vec(3.0, 3.0))
 # now our graphs has 3 vertexes: 1 container and 2 (identical) blocks in it
 # check some container properties:
 assert container.boundingBox == plask.geometry.Box2D(0.0, 0.0, 8.0, 6.0)
@@ -150,9 +150,9 @@ Hints are returned by methods which adds new elements to containers, and can be 
 @code
 plask::PathHints mypath;
 // ...
-mypath += container_element.add(child_element);
-container_element.add(child_element);
-container_element.add(child_element);
+mypath += container_element.append(child_element);
+container_element.append(child_element);
+container_element.append(child_element);
 // Now child_element is three times in container_element.
 // In mypath is arc from container_element to first appearance of child_element.
 // ...

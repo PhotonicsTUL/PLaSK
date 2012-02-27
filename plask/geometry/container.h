@@ -91,7 +91,7 @@ public:
     virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
         for (auto child: children) child->getLeafsToVec(dest);
     }
-    
+
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result;
         for (auto child: children) {
@@ -335,7 +335,7 @@ template <int dim>
 struct StackContainer: public StackContainerBaseImpl<dim> {
 
     typedef typename chooseType<dim-2, align::Aligner2d<align::DIRECTION_TRAN>, align::Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN> >::type Aligner;
-    typedef typename chooseType<dim-2, align::LRCenter, align::NFCenerLRCenter>::type CenterAligner;
+    typedef typename chooseType<dim-2, align::TranCenter, align::CenterCenter>::type CenterAligner;
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
     typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;
@@ -542,7 +542,7 @@ public:
         for (unsigned r = 1; r < repeat_count; ++r)
             dest.insert(dest.end(), dest.begin() + old_size, dest.begin() + new_size);
     }
-    
+
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = UpperClass::getLeafsWithTranslations();
         std::size_t size = result.size();   //oryginal size

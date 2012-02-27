@@ -15,10 +15,12 @@ namespace py = boost::python;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void register_geometry_aligners();
 void register_geometry_element();
 void register_geometry_primitive();
 void register_geometry_leafs();
 void register_geometry_transform();
+void register_geometry_aligners();
 void register_geometry_container();
 
 
@@ -119,6 +121,7 @@ void initGeometry() {
     register_geometry_primitive();
     register_geometry_leafs();
     register_geometry_transform();
+    register_geometry_aligners();
     register_geometry_container();
 
     // manager.h
