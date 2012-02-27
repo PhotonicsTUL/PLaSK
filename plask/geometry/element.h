@@ -16,14 +16,6 @@ This file includes base classes for geometries elements.
 
 namespace plask {
 
-///Type of geometry element.
-enum GeometryElementType {
-    GE_TYPE_LEAF = 0,         ///< leaf element (has no child)
-    GE_TYPE_TRANSFORM = 1,    ///< transform element (has one child)
-    GE_TYPE_SPACE_CHANGER = 2,///< transform element which changing its space, typically changing number of dimensions (has one child)
-    GE_TYPE_CONTAINER = 3     ///< container (more than one child)
-};
-
 /**
  * Transform coordinates of points between two geometries.
  *
@@ -39,6 +31,14 @@ struct GeometryTransform {
  * Base class for all geometries.
  */
 struct GeometryElement: public enable_shared_from_this<GeometryElement> {
+
+    ///Type of geometry element.
+    enum Type {
+        TYPE_LEAF = 0,         ///< leaf element (has no child)
+        TYPE_TRANSFORM = 1,    ///< transform element (has one child)
+        TYPE_SPACE_CHANGER = 2,///< transform element which changing its space, typically changing number of dimensions (has one child)
+        TYPE_CONTAINER = 3     ///< container (more than one child)
+    };
     
     struct Event {
         
@@ -62,7 +62,13 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Check if geometry is: leaf, transform or container type element.
      * @return type of this element
      */
-    virtual GeometryElementType getType() const = 0;
+    virtual Type getType() const = 0;
+
+    /**
+     * Get number of dimentions.
+     * @return number of dimentions
+     */
+    virtual int getDimensionsCount() const = 0;
 
     /**
      * Check if element is ready for calculation.
@@ -128,6 +134,8 @@ struct GeometryElementD: public GeometryElement {
     static const int dim = dimensions;
     typedef typename Primitive<dim>::Rect Rect;
     typedef typename Primitive<dim>::DVec DVec;
+
+    int getDimensionsCount() const { return dimensions; }
 
     //virtual Rect getBoundingBox() const;
 
@@ -222,7 +230,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 
     GeometryElementLeaf<dim>(shared_ptr<Material> material): material(material) {}
 
-    virtual GeometryElementType getType() const { return GE_TYPE_LEAF; }
+    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_LEAF; }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         return this->inside(p) ? material : shared_ptr<Material>();
@@ -271,7 +279,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 
     explicit GeometryElementTransform(shared_ptr<ChildType> child = nullptr): _child(child) {}
 
-    virtual GeometryElementType getType() const { return GE_TYPE_TRANSFORM; }
+    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_TRANSFORM; }
 
     virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
         getChild()->getLeafsToVec(dest);
@@ -345,7 +353,7 @@ struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, Chi
     explicit GeometryElementChangeSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransform<this_dim, ChildType>(child) {}
 
     ///@return GE_TYPE_SPACE_CHANGER
-    virtual GeometryElementType getType() const { return GE_TYPE_SPACE_CHANGER; }
+    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_SPACE_CHANGER; }
 
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< shared_ptr<const GeometryElement> > v = getChild()->getLeafs();
@@ -366,7 +374,7 @@ template < int dim >
 struct GeometryElementContainer: public GeometryElementD<dim> {
 
     ///@return GE_TYPE_CONTAINER
-    virtual GeometryElementType getType() const { return GE_TYPE_CONTAINER; }
+    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_CONTAINER; }
 
 };
 

@@ -243,7 +243,7 @@ typedef details::Aligner2dImpl<DIRECTION_TRAN, details::centerToZero> NFCenter;
 typedef TranslationAligner2d<DIRECTION_TRAN> Lon;
 
 //3d lon/tran aligners:
-typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::lowToZero> NearLeft;
+/*typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::lowToZero> NearLeft;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::hiToZero> NearRight;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::centerToZero> NearLRCenter;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, DIRECTION_TRAN, details::lowToZero> FarLeft;
@@ -252,7 +252,7 @@ typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, DIRECTION_TRAN,
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::lowToZero> NFCenerLeft;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::hiToZero> NFCenerRight;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::centerToZero> NFCenerLRCenter;
-typedef TranslationAligner3d<DIRECTION_LON, DIRECTION_TRAN> LonTran;
+typedef TranslationAligner3d<DIRECTION_LON, DIRECTION_TRAN> LonTran;*/
 //typedef ComposeAligner3d<DIR3D_LON, DIR3D_TRAN> NFLR;
 //TODO mixed variants
 

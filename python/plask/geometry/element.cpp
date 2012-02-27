@@ -82,11 +82,11 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementContainer, "GeometryElementContainer
 
 void register_geometry_element()
 {
-    py::enum_<GeometryElementType>("ElementType")
-        .value("LEAF", GE_TYPE_LEAF)
-        .value("TRANSFORM", GE_TYPE_TRANSFORM)
-        .value("SPACE_CHANGER", GE_TYPE_SPACE_CHANGER)
-        .value("CONTAINER", GE_TYPE_CONTAINER)
+    py::enum_<GeometryElement::Type>("ElementType")
+        .value("LEAF", GeometryElement::TYPE_LEAF)
+        .value("TRANSFORM", GeometryElement::TYPE_TRANSFORM)
+        .value("SPACE_CHANGER", GeometryElement::TYPE_SPACE_CHANGER)
+        .value("CONTAINER", GeometryElement::TYPE_CONTAINER)
     ;
 
     py::class_<GeometryElement, shared_ptr<GeometryElement>, boost::noncopyable>("GeometryElement",
