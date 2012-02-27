@@ -44,7 +44,7 @@ struct Aligner2dBase {
 
     /**
      * Clone this aligner.
-     * @return copy of this aligner
+     * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
      */
     virtual Aligner2d<direction>* clone() const = 0;
 
@@ -60,14 +60,30 @@ struct Aligner2dBase {
 template <DIRECTION direction>
 struct Aligner2d: public Aligner2dBase<direction> {};
 
+/**
+ * Base class for one direction aligner in 2d space, in tran. direction.
+ */
 template <>
 struct Aligner2d<DIRECTION_TRAN>: public Aligner2dBase<DIRECTION_TRAN> {
 
-    //This version is called if caller knows bounding box.
+    /**
+     * Set object translation in direction of aligner activity.
+     *
+     * This version is called if caller knows child bounding box.
+     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param childBoundingBox bounding box of object to align
+     */
     inline double align(Translation<2>& toAlign, const Box2d& childBoundingBox) const {
         toAlign.translation.tran = getAlign(childBoundingBox.lower.tran, childBoundingBox.upper.tran);
     }
 
+    /**
+     * Set object translation in direction of aligner activity.
+     *
+     * This version is called if caller doesn't know child bounding box.
+     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param childBoundingBox bounding box of object to align
+     */
     virtual double align(Translation<2>& toAlign) const {
         if (useBounds())
             align(toAlign, toAlign.getChild()->getBoundingBox());
@@ -77,10 +93,13 @@ struct Aligner2d<DIRECTION_TRAN>: public Aligner2dBase<DIRECTION_TRAN> {
 
 };
 
+/**
+ * Alginer which place object in constant place.
+ */
 template <DIRECTION direction>
 struct TranslationAligner2d: public Aligner2d<direction> {
     
-    ///Translation in aligner activity direction
+    ///Translation of aligned object in aligner activity direction.
     double translation;
     
     TranslationAligner2d(double translation): translation(translation) {}
@@ -106,13 +125,30 @@ struct Aligner3d {
     
     static const DIRECTION direction1 = _direction1, direction2 = _direction2;
     
-    //This version is called if caller knows bounding box.
+    /**
+     * Set object translation in directions of aligner activity.
+     *
+     * This version is called if caller knows child bounding box.
+     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param childBoundingBox bounding box of object to align
+     */
     virtual void align(Translation<3>& toAlign, const Box3d& childBoundingBox) const = 0;
     
+    /**
+     * Set object translation in directions of aligner activity.
+     *
+     * This version is called if caller doesn't know child bounding box.
+     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param childBoundingBox bounding box of object to align
+     */
     virtual void align(Translation<3>& toAlign) const {
         align(toAlign, toAlign.getChild()->getBoundingBox());
     }
     
+    /**
+     * Clone this aligner.
+     * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
+     */
     virtual Aligner3d<direction1, direction2>* clone() const = 0;
 
 };
@@ -139,7 +175,7 @@ struct TranslationAligner3d: public Aligner3d<direction1, direction2> {
     }
 };
 
-/*
+/**
  * Aligner 3d which compose and use two 2d aligners. 
  */
 template <DIRECTION direction1, DIRECTION direction2>

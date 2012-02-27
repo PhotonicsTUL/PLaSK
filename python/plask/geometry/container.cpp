@@ -171,6 +171,7 @@ void register_geometry_container()
 
     // Multi-stack constainer
 
+    //TODO aligners
     py::class_<MultiStackContainer<2>, shared_ptr<MultiStackContainer<2>>, py::bases<StackContainer<2>>, boost::noncopyable>("MultiStack2D",
         "Stack container which repeats its contents (2D version)\n\n"
         "MultiStack2D(repeat_count=1, base_level=0) -> Create new multi-stack with repeatCount repetitions",
@@ -180,6 +181,7 @@ void register_geometry_container()
 //              "Return new hint for a repeated item in te stack as if all repetitions were added separately")
     ;
 
+    //TODO aligners
     py::class_<MultiStackContainer<3>, shared_ptr<MultiStackContainer<3>>, py::bases<StackContainer<3>>, boost::noncopyable>("MultiStack3D",
         "Container that organizes its childern in vertical stack (3D version)\n\n"
         "MultiStack3D(repeat_count=1, base_level=0) -> Create new multi-stack with repeatCount repetitions",
