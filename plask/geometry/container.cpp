@@ -5,77 +5,6 @@
 
 namespace plask {
 
-StackContainer2d::StackContainer2d(const double baseHeight): StackContainerBaseImpl<2>(baseHeight) {}
-
-PathHints::Hint StackContainer2d::add(const shared_ptr<StackContainerBaseImpl::ChildType> &el, const double tran_translation) {
-    ensureCanHasAsChild(*el);
-    return addUnsafe(el, tran_translation);
-}
-
-PathHints::Hint StackContainer2d::addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation) {
-    double el_translation, next_height;
-    calcHeight(el, stackHeights.back(), el_translation, next_height);
-    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(tran_translation, el_translation)));
-    children.push_back(trans_geom);
-    stackHeights.push_back(next_height);
-    return PathHints::Hint(shared_from_this(), trans_geom);
-}
-
-PathHints::Hint StackContainer2d::push_front_Unsafe(const shared_ptr<ChildType>& el, const double tran_translation) {
-    const auto bb = el->getBoundingBox();
-    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(tran_translation, stackHeights[0] - bb.lower.up)));
-    children.insert(children.begin(), trans_geom);
-    stackHeights.insert(stackHeights.begin(), stackHeights[0]);
-    const double delta = bb.upper.up - bb.lower.up;
-    for (int i = 1; i < children.size(); ++i) {
-        stackHeights[i] += delta;
-        children[i]->translation.up += delta;
-    }
-    stackHeights.back() += delta;
-    return PathHints::Hint(shared_from_this(), trans_geom);
-}
-
-PathHints::Hint StackContainer2d::push_front(const shared_ptr<ChildType>& el, const double tran_translation) {
-    ensureCanHasAsChild(*el);
-    return push_front_Unsafe(el, tran_translation);
-}
-
-StackContainer3d::StackContainer3d(const double baseHeight): StackContainerBaseImpl<3>(baseHeight) {}
-
-PathHints::Hint StackContainer3d::add(const shared_ptr<ChildType>& el, const double lon_translation, const double tran_translation) {
-    ensureCanHasAsChild(*el);
-    return addUnsafe(el, lon_translation, tran_translation);
-}
-
-PathHints::Hint StackContainer3d::addUnsafe(const shared_ptr<ChildType>& el, const double lon_translation, const double tran_translation) {
-    double el_translation, next_height;
-    calcHeight(el, stackHeights.back(), el_translation, next_height);
-    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(lon_translation, tran_translation, el_translation)));
-    children.push_back(trans_geom);
-    stackHeights.push_back(next_height);
-    return PathHints::Hint(shared_from_this(), trans_geom);
-}
-
-PathHints::Hint StackContainer3d::push_front_Unsafe(const shared_ptr<ChildType>& el, const double lon_translation, const double tran_translation) {
-    const auto bb = el->getBoundingBox();
-    shared_ptr<TranslationT> trans_geom(new TranslationT(el, vec(lon_translation, tran_translation, stackHeights[0] - bb.lower.up)));
-    children.insert(children.begin(), trans_geom);
-    stackHeights.insert(stackHeights.begin(), stackHeights[0]);
-    const double delta = bb.upper.up - bb.lower.up;
-    for (int i = 1; i < children.size(); ++i) {
-        stackHeights[i] += delta;
-        children[i]->translation.up += delta;
-    }
-    stackHeights.back() += delta;
-    return PathHints::Hint(shared_from_this(), trans_geom);
-}
-
-PathHints::Hint StackContainer3d::push_front(const shared_ptr<ChildType>& el, const double lon_translation, const double tran_translation) {
-    ensureCanHasAsChild(*el);
-    return push_front_Unsafe(el, lon_translation, tran_translation);
-}
-
-
 // ---- containers readers: ----
 
 /**
@@ -162,13 +91,13 @@ shared_ptr<GeometryElement> read_TranslationContainer3d(GeometryReader& reader) 
 shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
     double baseH = XML::getAttribute(reader.source, baseH_attr, 0.0);
     if (reader.source.getAttributeValue(repeat_attr) == nullptr) {
-        shared_ptr< StackContainer2d > result(new StackContainer2d(baseH));
+        shared_ptr< StackContainer<2> > result(new StackContainer<2>(baseH));
         read_children(*result, reader,
             [&]() {
-                return result->push_front(reader.readExactlyOneChild< typename StackContainer2d::ChildType >(),
-                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
+                return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >());
+//TODO                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
             },
-            [&](const shared_ptr<typename StackContainer2d::ChildType>& child) {
+            [&](const shared_ptr<typename StackContainer<2>::ChildType>& child) {
                 result->push_front(child);
             }
         );
@@ -178,8 +107,8 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
         shared_ptr< MultiStackContainer<2> > result(new MultiStackContainer<2>(baseH, repeat));
         read_children(*result, reader,
             [&]() {
-                return result->push_front(reader.readExactlyOneChild< typename StackContainer2d::ChildType >(),
-                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
+                return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >());
+//TODO                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
             },
             [&](const shared_ptr<typename MultiStackContainer<2>::ChildType>& child) {
                 result->push_front(child);
@@ -192,14 +121,14 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
 shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
     double baseH = XML::getAttribute(reader.source, baseH_attr, 0.0);
     if (reader.source.getAttributeValue(repeat_attr) == nullptr) {
-        shared_ptr< StackContainer3d > result(new StackContainer3d(baseH));
+        shared_ptr< StackContainer<3> > result(new StackContainer<3>(baseH));
         read_children(*result, reader,
            [&]() {
-                return result->push_front(reader.readExactlyOneChild< typename StackContainer3d::ChildType >(),
-                                   XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0),
-                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
+                return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >());
+//TODO                                   XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0),
+//TODO                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
             },
-            [&](const shared_ptr<typename StackContainer3d::ChildType>& child) {
+            [&](const shared_ptr<typename StackContainer<3>::ChildType>& child) {
                 result->push_front(child);
             }
         );
@@ -209,9 +138,9 @@ shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
         shared_ptr< MultiStackContainer<3> > result(new MultiStackContainer<3>(baseH, repeat));
         read_children(*result, reader,
             [&]() {
-                return result->push_front(reader.readExactlyOneChild< typename StackContainer3d::ChildType >(),
-                                   XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0),
-                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
+                return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >());
+//TODO                                   XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0),
+//TODO                                   XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0));
             },
             [&](const shared_ptr<typename MultiStackContainer<3>::ChildType>& child) {
                 result->push_front(child);

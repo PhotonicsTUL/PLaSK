@@ -90,6 +90,8 @@ struct TranslationAligner2d: public Aligner2d<direction> {
     }
     
     bool useBounds() const { return false; }
+
+    TranslationAligner2d* clone() const { return new TranslationAligner2d(translation); }
 };
 
 /**
@@ -98,16 +100,16 @@ struct TranslationAligner2d: public Aligner2d<direction> {
 template <DIRECTION _direction1, DIRECTION _direction2>
 struct Aligner3d {
     
-    static_assert(_direction1 == _direction2, "Wrong Aligner3d template parameters, two different directions are required.");
+    static_assert(_direction1 != _direction2, "Wrong Aligner3d template parameters, two different directions are required.");
     
     virtual ~Aligner3d() {}
     
     static const DIRECTION direction1 = _direction1, direction2 = _direction2;
     
     //This version is called if caller knows bounding box.
-    virtual double align(const Translation<3>& toAlign, const Box3d& childBoundingBox) const = 0;
+    virtual void align(Translation<3>& toAlign, const Box3d& childBoundingBox) const = 0;
     
-    virtual double align(const Translation<3>& toAlign) const {
+    virtual void align(Translation<3>& toAlign) const {
         align(toAlign, toAlign.getChild()->getBoundingBox());
     }
     
@@ -123,11 +125,11 @@ struct TranslationAligner3d: public Aligner3d<direction1, direction2> {
     
     TranslationAligner3d(double dir1translation, double dir2translation): dir1translation(dir1translation), dir2translation(dir2translation) {}
     
-    virtual double align(Translation<2>& toAlign, const Box3d&) const {
+    virtual void align(Translation<3>& toAlign, const Box3d&) const {
         align(toAlign);
     }
     
-    virtual double align(Translation<2>& toAlign) const {
+    virtual void align(Translation<3>& toAlign) const {
         toAlign.translation.components[direction1] = dir1translation;
         toAlign.translation.components[direction2] = dir2translation;
     }
@@ -169,14 +171,14 @@ public:
     
     ~ComposeAligner3d() { delete dir1aligner; delete dir2aligner; }
     
-    virtual double align(Translation<3>& toAlign, const Box3d& childBoundingBox) const {
+    virtual void align(Translation<3>& toAlign, const Box3d& childBoundingBox) const {
          toAlign.translation.components[direction1] =
                  dir1aligner->getAlign(childBoundingBox.lower.components[direction1], childBoundingBox.upper.components[direction1]);
          toAlign.translation.components[direction2] =
                  dir2aligner->getAlign(childBoundingBox.lower.components[direction2], childBoundingBox.upper.components[direction2]);
     }
 
-    virtual double align(const Translation<3>& toAlign) const {
+    virtual void align(Translation<3>& toAlign) const {
         if (dir1aligner->useBounds() || dir2aligner->useBounds())
             align(toAlign, toAlign.getChild()->getBoundingBox());
         else {
@@ -218,7 +220,7 @@ struct Aligner2dImpl: public Aligner2d<direction> {
 template <DIRECTION direction1, alignStrategy strategy1, DIRECTION direction2, alignStrategy strategy2>
 struct Aligner3dImpl: public Aligner3d<direction1, direction2> {
     
-    virtual double align(const Translation<3>& toAlign, const Box3d& childBoundingBox) const {
+    virtual void align(Translation<3>& toAlign, const Box3d& childBoundingBox) const {
         toAlign.translation.components[direction1] = strategy1(childBoundingBox.lower.components[direction1], childBoundingBox.upper.components[direction1]);
         toAlign.translation.components[direction2] = strategy2(childBoundingBox.lower.components[direction2], childBoundingBox.upper.components[direction2]);
     }
@@ -243,7 +245,7 @@ typedef details::Aligner2dImpl<DIRECTION_TRAN, details::centerToZero> NFCenter;
 typedef TranslationAligner2d<DIRECTION_TRAN> Lon;
 
 //3d lon/tran aligners:
-/*typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::lowToZero> NearLeft;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::lowToZero> NearLeft;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::hiToZero> NearRight;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::centerToZero> NearLRCenter;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, DIRECTION_TRAN, details::lowToZero> FarLeft;
@@ -252,7 +254,7 @@ typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, DIRECTION_TRAN,
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::lowToZero> NFCenerLeft;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::hiToZero> NFCenerRight;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::centerToZero> NFCenerLRCenter;
-typedef TranslationAligner3d<DIRECTION_LON, DIRECTION_TRAN> LonTran;*/
+typedef TranslationAligner3d<DIRECTION_LON, DIRECTION_TRAN> LonTran;
 //typedef ComposeAligner3d<DIR3D_LON, DIR3D_TRAN> NFLR;
 //TODO mixed variants
 

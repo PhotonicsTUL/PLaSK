@@ -145,23 +145,23 @@ void register_geometry_container()
 
     // Stack container
 
-    py::class_<StackContainer2d, shared_ptr<StackContainer2d>, py::bases<GeometryElementContainer<2>>, boost::noncopyable>("Stack2D",
+    py::class_<StackContainer<2>, shared_ptr<StackContainer<2>>, py::bases<GeometryElementContainer<2>>, boost::noncopyable>("Stack2D",
         "Container that organizes its childern in vertical stack (2D version)\n\n"
         "StackContainer2D(base_level=0) -> Create the stack with the bottom side of the first element at the base_level (in container local coordinates)",
          py::init<double>((py::arg("base_level")=0.)))
-        .def("add", &StackContainer2d::add, (py::arg("child"), py::arg("shift")=0.), "Add new element to the container")
-        .def("append", &StackContainer2d::add, (py::arg("child"), py::arg("shift")=0.), "Add new element to the container")
+        .def("add", &StackContainer<2>::add, (py::arg("child"), py::arg("shift")=0.), "Add new element to the container")
+        .def("append", &StackContainer<2>::add, (py::arg("child"), py::arg("shift")=0.), "Add new element to the container")
         .def("__contains__", &GeometryElementContainerImpl<2>::isInSubtree, (py::arg("item")))
 //         .def("__getitem__", &Stack__getitem__<2, StackContainer2d>, (py::arg("item")))
         //.def("__iter__" TODO
         //.def("__deltiem__" TODO
     ;
 
-    py::class_<StackContainer3d, shared_ptr<StackContainer3d>, py::bases<GeometryElementContainer<3>>, boost::noncopyable>("Stack3D",
+    py::class_<StackContainer<3>, shared_ptr<StackContainer<3>>, py::bases<GeometryElementContainer<3>>, boost::noncopyable>("Stack3D",
         "Stack container which repeats its contents (3D version)\n\n"
         "Stack3D(base_level=0) -> Create the stack with the bottom side of the first element at the base_level (in container local coordinates)",
         py::init<double>((py::arg("base_level")=0.)))
-        .def("append", &StackContainer3d::add, (py::arg("child"), py::arg("shift0")=0., py::arg("shift1")=0.),
+        .def("append", &StackContainer<3>::add, (py::arg("child"), py::arg("shift0")=0., py::arg("shift1")=0.),
              "Add new element to the container")
         .def("__contains__", &GeometryElementContainerImpl<3>::isInSubtree, (py::arg("item")))
 //         .def("__getitem__", &Stack__getitem__<3, StackContainer3d>, (py::arg("item")))
@@ -171,7 +171,7 @@ void register_geometry_container()
 
     // Multi-stack constainer
 
-    py::class_<MultiStackContainer<2>, shared_ptr<MultiStackContainer<2>>, py::bases<StackContainer2d>, boost::noncopyable>("MultiStack2D",
+    py::class_<MultiStackContainer<2>, shared_ptr<MultiStackContainer<2>>, py::bases<StackContainer<2>>, boost::noncopyable>("MultiStack2D",
         "Stack container which repeats its contents (2D version)\n\n"
         "MultiStack2D(repeat_count=1, base_level=0) -> Create new multi-stack with repeatCount repetitions",
          py::init<int, double>((py::arg("repeat_count")=1, py::arg("base_level")=0.)))
@@ -180,7 +180,7 @@ void register_geometry_container()
 //              "Return new hint for a repeated item in te stack as if all repetitions were added separately")
     ;
 
-    py::class_<MultiStackContainer<3>, shared_ptr<MultiStackContainer<3>>, py::bases<StackContainer3d>, boost::noncopyable>("MultiStack3D",
+    py::class_<MultiStackContainer<3>, shared_ptr<MultiStackContainer<3>>, py::bases<StackContainer<3>>, boost::noncopyable>("MultiStack3D",
         "Container that organizes its childern in vertical stack (3D version)\n\n"
         "MultiStack3D(repeat_count=1, base_level=0) -> Create new multi-stack with repeatCount repetitions",
         py::init<int, double>((py::arg("repeat_count")=1, py::arg("base_level")=0.)))

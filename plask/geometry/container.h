@@ -11,6 +11,7 @@ This file includes containers of geometries elements.
 #include "../utils/metaprog.h"
 
 #include "path.h"
+#include "align.h"
 
 namespace plask {
 
@@ -308,41 +309,77 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
 /**
  * 2d container which have children in stack/layers.
  */
-struct StackContainer2d: public StackContainerBaseImpl<2> {
+//TODO copy constructor
+template <int dim>
+struct StackContainer: public StackContainerBaseImpl<dim> {
 
-    using StackContainerBaseImpl<2>::children;
+    typedef typename chooseType<dim-2, align::Aligner2d<align::DIRECTION_TRAN>, align::Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN> >::type Aligner;
+    typedef typename chooseType<dim-2, align::LRCenter, align::NFCenerLRCenter>::type CenterAligner;
+
+    typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
+    typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;
+
+    using StackContainerBaseImpl<dim>::shared_from_this;
+    using StackContainerBaseImpl<dim>::children;
+    using StackContainerBaseImpl<dim>::stackHeights;
+
+private:
+    std::vector<Aligner*> aligners;
+
+    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans) const {
+        shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
+        result->translation.up = up_trans;
+        aligner.align(*result);
+        return result;
+    }
+
+public:
 
     /**
      * @param baseHeight height where the first element should start
      */
-    explicit StackContainer2d(const double baseHeight = 0.0);
+    explicit StackContainer(const double baseHeight): StackContainerBaseImpl<dim>(baseHeight) {}
+
+    ~StackContainer() { for (auto a: aligners) delete a; }
+
 
     /**
      * Add children to stack top.
      * @param el element to add
-     * @param tran_translation horizontal translation of element
+     * @param aligner aligner for horizontal translation of element
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
+    PathHints::Hint add(const shared_ptr<ChildType> &el, const Aligner& aligner = CenterAligner()) {
+        ensureCanHasAsChild(*el);
+        return addUnsafe(el, aligner);
+    }
 
     /**
      * Add child to stack top.
      * @param el element to add
-     * @param tran_translation horizontal translation of element
+     * @param aligner aligner for horizontal translation of element
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_back(shared_ptr<ChildType> el, const double tran_translation = 0.0) { return add(el, tran_translation); }
+    PathHints::Hint push_back(shared_ptr<ChildType> el, const Aligner& aligner = CenterAligner()) { return add(el, aligner); }
 
     /**
      * Add children to stack top.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
-     * @param tran_translation horizontal translation of element
+     * @param aligner aligner for horizontal translation of element
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
+        double el_translation, next_height;
+        calcHeight(el, stackHeights.back(), el_translation, next_height);
+        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation);
+        children.push_back(trans_geom);
+        stackHeights.push_back(next_height);
+        aligners.push_back(aligner.clone());
+        return PathHints::Hint(shared_from_this(), trans_geom);
+    }
 
     /**
      * Add children to stack bottom, move all other children higher.
@@ -351,7 +388,20 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * @param tran_translation horizontal translation of element
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
+    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
+        const auto bb = el->getBoundingBox();
+        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[0] - bb.lower.up);
+        children.insert(children.begin(), trans_geom);
+        aligners.insert(aligners.begin(), aligner.clone());
+        stackHeights.insert(stackHeights.begin(), stackHeights[0]);
+        const double delta = bb.upper.up - bb.lower.up;
+        for (int i = 1; i < children.size(); ++i) {
+            stackHeights[i] += delta;
+            children[i]->translation.up += delta;
+        }
+        stackHeights.back() += delta;
+        return PathHints::Hint(shared_from_this(), trans_geom);
+    }
 
     /**
      * Add child to stack bottom, move all other children higher.
@@ -360,61 +410,18 @@ struct StackContainer2d: public StackContainerBaseImpl<2> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const double tran_translation = 0.0);
-
-};
-
-/**
- * 3d container which have children in stack/layers.
- */
-struct StackContainer3d: public StackContainerBaseImpl<3> {
-
-    using StackContainerBaseImpl<3>::children;
-
-    /**
-     * @param baseHeight height where the first element should start
-     */
-    explicit StackContainer3d(const double baseHeight = 0.0);
-
-    /**
-     * Add children to stack top.
-     * @param el element to add
-     * @param tran_translation horizontal translation of element
-     * @return path hint, see @ref geometry_paths
-     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
-     */
-    PathHints::Hint add(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
-
-    /**
-     * Add children to stack top.
-     * @param el element to add
-     * @param lon_translation, tran_translation horizontal translation of element
-     * @return path hint, see @ref geometry_paths
-     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
-     */
-    PathHints::Hint push_back(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0) {
-        return add(el, lon_translation, tran_translation);
+    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
+        ensureCanHasAsChild(*el);
+        return push_front_Unsafe(el, aligner);
     }
 
-    /**
-     * Add children to stack top.
-     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to add
-     * @param lon_translation, tran_translation horizontal translation of element
-     * @return path hint, see @ref geometry_paths
-     */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
-
-    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
-
-    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const double lon_translation = 0.0, const double tran_translation = 0.0);
 };
 
 template <int dim>
-class MultiStackContainer: public chooseType<dim-2, StackContainer2d, StackContainer3d>::type {
+class MultiStackContainer: public StackContainer<dim> {
 
     ///Type of parent class of this.
-    typedef typename chooseType<dim-2, StackContainer2d, StackContainer3d>::type UpperClass;
+    typedef StackContainer<dim> UpperClass;
 
     /*
      * @param a, divider
