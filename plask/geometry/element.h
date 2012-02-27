@@ -16,6 +16,8 @@ This file includes base classes for geometries elements.
 
 namespace plask {
 
+struct PathHints;
+
 /**
  * Transform coordinates of points between two geometries.
  *
@@ -55,6 +57,25 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         Event(GeometryElement& source, Type type): _source(source), _type(type) {}
         
     };
+
+    struct Subtree {
+
+        std::shared_ptr<GeometryElement> element;
+
+        std::vector<Subtree> children;
+
+        Subtree(std::shared_ptr<GeometryElement> element = nullptr): element(element) {}
+
+       /* Subtree(std::shared_ptr<GeometryElement> element, std::shared_ptr<GeometryElement> toFind, const shared_ptr<GeometryElement>& child, PathHints* path = 0) {
+            if (!child) { element = nullptr; return; }
+            GeometryElement::Subtree e = child->findPathsTo(toFind, path);
+            if (e.empty()) return { element = nullptr; return; }
+            this->element = element;
+            children.push_back(std::move(e));
+        }*/
+
+        bool empty() const { !element; }
+    };
     
     boost::signals2::signal<void(const Event&)> changed;
 
@@ -83,7 +104,14 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @param el element to search for
      * @return @c true only if @a el is in subtree with @c this in root
      */
-    virtual bool isInSubtree(GeometryElement& el) const = 0;
+    virtual bool isInSubtree(const GeometryElement& el) const = 0;
+
+    /**
+     * Find paths to @a el.
+     * @param el element to search for
+     * @return sub-tree with paths to given element (@p el in all leafs), empty sub-tree if @p el is not in subtree
+     */
+    //virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const = 0;
 
     /**
      * Virtual destructor. Inform all change listeners.
@@ -121,8 +149,6 @@ protected:
     void ensureCanHasAsChild(GeometryElement& potential_child) { potential_child.ensureCanHasAsParent(*this); }
 
 };
-
-struct PathHints;
 
 /**
  * Template of base classes for geometry elements in space with given number of dimensions (2 or 3).
@@ -260,9 +286,13 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return { std::make_pair(shared_from_this(), Primitive<dim>::ZERO_VEC) };
     }
 
-    virtual bool isInSubtree(GeometryElement& el) const {
+    virtual bool isInSubtree(const GeometryElement& el) const {
         return &el == this;
     }
+
+    /*virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+        return Subtree( &el == this ? this->shared_from_this() : nullptr );
+    }*/
 
 };
 
@@ -326,9 +356,19 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
         if (!hasChild()) throw NoChildException();
     }
 
-    virtual bool isInSubtree(GeometryElement& el) const {
+    virtual bool isInSubtree(const GeometryElement& el) const {
         return &el == this || (hasChild() && _child->isInSubtree(el));
     }
+
+    /*virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+        if (this == &el) return this->shared_from_this();
+        if (!_child) GeometryElement::Subtree();
+        GeometryElement::Subtree e = _child->findPathsTo(el, path);
+        if (e.empty()) return GeometryElement::Subtree();
+        GeometryElement::Subtree result(this->shared_from_this());
+        result.children.push_back(std::move(e));
+        return result;
+    }*/
 
     protected:
     shared_ptr<ChildType> _child;

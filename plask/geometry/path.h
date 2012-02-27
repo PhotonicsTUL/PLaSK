@@ -8,8 +8,6 @@
 
 namespace plask {
 
-//TODO pełne ścieżki
-
 /**
 Represent hints for path finder.
 
@@ -148,6 +146,21 @@ struct PathHints {
      * Remove all hints which refer to deleted objects.
      */
     void cleanDeleted();
+
+};
+
+/**
+ * Path in geometry graph.
+ */
+struct Path {
+
+    std::vector< shared_ptr<GeometryElement> > elements;
+
+    Path& operator+=(const PathHints::Hint& hint);
+
+    Path& operator+=(const GeometryElement& last);
+
+    Path& append(const GeometryElement& last, const PathHints& hints);
 
 };
 

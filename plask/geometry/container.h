@@ -101,13 +101,34 @@ public:
         return result;
     }
 
-    virtual bool isInSubtree(GeometryElement& el) const {
+    virtual bool isInSubtree(const GeometryElement& el) const {
         if (&el == this) return true;
         for (auto child: children)
             if (child->isInSubtree(el))
                 return true;
         return false;
     }
+
+   /* virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+        if (this == &el) return this->shared_from_this();
+        if (path) {
+            auto c = path->getTranslationChild<dim>(*this);
+            if (c) {
+                GeometryElement::Subtree e = _child->findPathsTo(*c, path);
+                if (e.empty()) return GeometryElement::Subtree();
+
+                return;
+            }
+        }
+
+        if (!_child) GeometryElement::Subtree();
+        GeometryElement::Subtree e = _child->findPathsTo(el, path);
+        if (e.empty()) return GeometryElement::Subtree();
+        GeometryElement::Subtree result(this->shared_from_this());
+        result.children.push_back(std::move(e));
+        return result;
+    }*/
+
 };
 
 /**
