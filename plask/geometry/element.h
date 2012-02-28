@@ -39,7 +39,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         TYPE_LEAF = 0,         ///< leaf element (has no child)
         TYPE_TRANSFORM = 1,    ///< transform element (has one child)
         TYPE_SPACE_CHANGER = 2,///< transform element which changing its space, typically changing number of dimensions (has one child)
-        TYPE_CONTAINER = 3     ///< container (more than one child)
+        TYPE_CONTAINER = 3     ///< container (can have more than one child)
     };
     
     struct Event {
@@ -60,19 +60,15 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     struct Subtree {
 
-        std::shared_ptr<GeometryElement> element;
+        shared_ptr<const GeometryElement> element;
 
         std::vector<Subtree> children;
 
-        Subtree(std::shared_ptr<GeometryElement> element = nullptr): element(element) {}
+        Subtree(shared_ptr<const GeometryElement> element = shared_ptr<const GeometryElement>()): element(element) {}
 
-       /* Subtree(std::shared_ptr<GeometryElement> element, std::shared_ptr<GeometryElement> toFind, const shared_ptr<GeometryElement>& child, PathHints* path = 0) {
-            if (!child) { element = nullptr; return; }
-            GeometryElement::Subtree e = child->findPathsTo(toFind, path);
-            if (e.empty()) return { element = nullptr; return; }
-            this->element = element;
-            children.push_back(std::move(e));
-        }*/
+        Subtree(shared_ptr<const GeometryElement> element, const std::vector<Subtree>& children): element(element), children(children) {}
+
+        bool isWithBranches() const;
 
         bool empty() const { !element; }
     };
@@ -111,7 +107,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @param el element to search for
      * @return sub-tree with paths to given element (@p el in all leafs), empty sub-tree if @p el is not in subtree
      */
-    //virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const = 0;
+    virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const = 0;
 
     /**
      * Virtual destructor. Inform all change listeners.
@@ -290,9 +286,9 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return &el == this;
     }
 
-    /*virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
-        return Subtree( &el == this ? this->shared_from_this() : nullptr );
-    }*/
+    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+        return GeometryElement::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
+    }
 
 };
 
@@ -308,6 +304,8 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     typedef Child_Type ChildType;
 
     explicit GeometryElementTransform(shared_ptr<ChildType> child = nullptr): _child(child) {}
+
+    explicit GeometryElementTransform(ChildType& child): _child(static_pointer_cast<ChildType>(child.shared_from_this())) {}
 
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_TRANSFORM; }
 
@@ -360,15 +358,15 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
         return &el == this || (hasChild() && _child->isInSubtree(el));
     }
 
-    /*virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
-        if (this == &el) return this->shared_from_this();
+    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+        if (this == &el) return GeometryElement::Subtree(this->shared_from_this());
         if (!_child) GeometryElement::Subtree();
         GeometryElement::Subtree e = _child->findPathsTo(el, path);
         if (e.empty()) return GeometryElement::Subtree();
         GeometryElement::Subtree result(this->shared_from_this());
         result.children.push_back(std::move(e));
         return result;
-    }*/
+    }
 
     protected:
     shared_ptr<ChildType> _child;

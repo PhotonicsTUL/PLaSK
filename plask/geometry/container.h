@@ -79,9 +79,9 @@ public:
 
     virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
         if (path) {
-            auto c = path->getTranslationChild<dim>(*this);
-            if (c) {
-                c->getLeafsBoundingBoxesToVec(dest, path);
+            auto c = path->getTranslationChildren<dim>(*this);
+            if (!c.empty()) {
+                for (auto child: c) child->getLeafsBoundingBoxesToVec(dest, path);
                 return;
             }
         }
@@ -109,25 +109,28 @@ public:
         return false;
     }
 
-   /* virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+    template <typename ChildIter>
+    GeometryElement::Subtree findPathsFromChildTo(ChildIter childBegin, ChildIter childEnd, const GeometryElement& el, const PathHints* path = 0) const {
+        GeometryElement::Subtree result;
+        for (auto child_iter = childBegin; child_iter != childEnd; ++child_iter) {
+            GeometryElement::Subtree child_path = (*child_iter)->findPathsTo(el, path);
+            if (!child_path.empty())
+                result.children.push_back(std::move(child_path));
+        }
+        if (!result.children.empty())
+            result.element = this->shared_from_this();
+        return result;
+    }
+
+    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
         if (this == &el) return this->shared_from_this();
         if (path) {
-            auto c = path->getTranslationChild<dim>(*this);
-            if (c) {
-                GeometryElement::Subtree e = _child->findPathsTo(*c, path);
-                if (e.empty()) return GeometryElement::Subtree();
-
-                return;
-            }
+            auto hintChildren = path->getTranslationChildren<dim>(*this);
+            if (!hintChildren.empty())
+                return findPathsFromChildTo(hintChildren.begin(), hintChildren.end(), el, path);
         }
-
-        if (!_child) GeometryElement::Subtree();
-        GeometryElement::Subtree e = _child->findPathsTo(el, path);
-        if (e.empty()) return GeometryElement::Subtree();
-        GeometryElement::Subtree result(this->shared_from_this());
-        result.children.push_back(std::move(e));
-        return result;
-    }*/
+        return findPathsFromChildTo(children.begin(), children.end(), el, path);
+    }
 
 };
 
@@ -201,8 +204,8 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
      * @param hints path hints, see @ref geometry_paths
      */
     void remove(const PathHints& hints) {
-        auto c = hints.getChild(this);
-        if (c) children.erase(std::find(children.begin(), children.end(), c));
+        auto cset = hints.getChildren(this);
+        for (auto& c: cset) children.erase(std::find(children.begin(), children.end(), c));
     }
 
 };
@@ -279,11 +282,10 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
      * @param hints path hints, see @ref geometry_paths
      */
     void remove(const PathHints& hints) {
-        auto c = hints.getChild(this);
-        if (c) {
+        auto cset = hints.getChildren(this);
+        for (auto& c: cset)
             children.erase(std::find(children.begin(), children.end(), c));
-            updateAllHeights();
-        }
+        updateAllHeights();
     }
 
     protected:
@@ -551,6 +553,22 @@ public:
             result.insert(result.end(), result.begin(), result.begin() + size);
             for (auto i = result.end() - size; i != result.end(); ++i)
                 std::get<1>(*i).up += minusZeroBasedStackHeight * r;
+        }
+        return result;
+    }
+
+    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+        GeometryElement::Subtree result = UpperClass::findPathsTo(el, path);
+        if (!result.empty()) {
+            const std::size_t size = result.children.size();   //oryginal size
+            const double stackHeight = stackHeights.back() - stackHeights.front();
+            for (unsigned r = 1; r < repeat_count; ++r)
+                for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
+                    auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].element)));
+                    shared_ptr<Translation<dim>> new_child(new Translation<dim>(*org_child.getChild(), org_child.translation));
+                    new_child->translation.up += stackHeight;
+                    result.children.push_back(GeometryElement::Subtree(new_child, result.children[org_child_nr].children));
+                }
         }
         return result;
     }

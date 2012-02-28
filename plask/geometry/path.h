@@ -2,11 +2,15 @@
 #define PLASK__GEOMETRY_PATH_H
 
 #include <map>
+#include <set>
 #include <plask/config.h>
 #include "element.h"
 #include "transform.h"
 
 namespace plask {
+
+//TODO redefine to structure which alow to cast to container and translation
+typedef std::pair< shared_ptr<GeometryElement>, shared_ptr<GeometryElement> > Edge;
 
 /**
 Represent hints for path finder.
@@ -24,13 +28,13 @@ Typically, hints are returned by methods which adds new elements to containers.
 struct PathHints {
 
     ///Type for map: geometry element container -> element in container
-    typedef std::map< weak_ptr<GeometryElement>, weak_ptr<GeometryElement> > HintMap;
+    typedef std::map< weak_ptr<GeometryElement>, std::set< weak_ptr<GeometryElement> > > HintMap;
 
     /**
      * Type for arc in graph. Pair: container of geometry elements -> element in container.
      * @see @ref geometry_paths
      */
-    typedef HintMap::value_type Hint;
+    typedef Edge Hint;
 
     ///Hints map.
     HintMap hintFor;
@@ -57,53 +61,38 @@ struct PathHints {
     void addHint(weak_ptr<GeometryElement> container, weak_ptr<GeometryElement> child);
 
     /**
-     * Get child for given container.
-     * @return child for given container or @c nullptr if there is no hint for given container
+     * Get children for given container.
+     * @return children for given container or empty set if there is no hints for given container
      */
-    shared_ptr<GeometryElement> getChild(shared_ptr<const GeometryElement> container);
+    std::set<shared_ptr<GeometryElement>> getChildren(shared_ptr<const GeometryElement> container);
 
     /**
-     * Get child for given container.
-     * @return child for given container or @c nullptr if there is no hint for given container
+     * Get children for given container.
+     * @return children for given container or empty set if there is no hints for given container
      */
-    shared_ptr<GeometryElement> getChild(const GeometryElement& container) {
-        return getChild(container.shared_from_this());
+    std::set<shared_ptr<GeometryElement>> getChildren(const GeometryElement& container) {
+        return getChildren(container.shared_from_this());
     }
 
     /**
      * Get child for given container.
      * @return child for given container or @c nullptr if there is no hint for given container
      */
-    shared_ptr<GeometryElement> getChild(shared_ptr<const GeometryElement> container) const;
+    std::set<shared_ptr<GeometryElement>> getChildren(shared_ptr<const GeometryElement> container) const;
 
     /**
      * Get child for given container.
      * @return child for given container or @c nullptr if there is no hint for given container
      */
-    shared_ptr<GeometryElement> getChild(const GeometryElement& container) const {
-        return getChild(container.shared_from_this());
+    std::set<shared_ptr<GeometryElement>> getChildren(const GeometryElement& container) const {
+        return getChildren(container.shared_from_this());
     }
 
-    /**
-     * Get child for given hint.
-     * @return child for given hint or @c nullptr if there is no hint for given container
-     */
-    static shared_ptr<GeometryElement> getChild(const Hint& hint);
-
-    /**
-     * Get container for given hint.
-     * @param hint hint
-     * @return container for given hint or @c nullptr if there is no hint for given container
-     */
-    static shared_ptr<GeometryElement> getContainer(const Hint& hint);
-
-    /**
-     * Get child for given container casted to Translation object.
-     * @param container container
-     * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
-     */
-    template <int dim> shared_ptr<Translation<dim>> getTranslationChild(shared_ptr<const GeometryElement> container) {
-        return dynamic_pointer_cast<Translation<dim>>(getChild(container));
+    template <int dim> static
+    std::set<shared_ptr<Translation<dim>>> castToTranslation(std::set<shared_ptr<GeometryElement>> src) {
+        std::set<shared_ptr<Translation<dim>>> result;
+        for (auto& e: src) result.insert(dynamic_pointer_cast<Translation<dim>>(e));
+        return result;
     }
 
     /**
@@ -111,8 +100,8 @@ struct PathHints {
      * @param container container
      * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
      */
-    template <int dim> shared_ptr<Translation<dim>> getTranslationChild(const GeometryElement& container) {
-        return getTranslationChild<dim>(container.shared_from_this());
+    template <int dim> std::set<shared_ptr<Translation<dim>>> getTranslationChildren(shared_ptr<const GeometryElement> container) {
+        return castToTranslation<dim>(getChildren(container));
     }
 
     /**
@@ -120,8 +109,8 @@ struct PathHints {
      * @param container container
      * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
      */
-    template <int dim> shared_ptr<Translation<dim>> getTranslationChild(shared_ptr<const GeometryElement> container) const {
-        return dynamic_pointer_cast<Translation<dim>>(getChild(container));
+    template <int dim> std::set<shared_ptr<Translation<dim>>> getTranslationChildren(const GeometryElement& container) {
+        return getTranslationChildren<dim>(container.shared_from_this());
     }
 
     /**
@@ -129,17 +118,17 @@ struct PathHints {
      * @param container container
      * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
      */
-    template <int dim> shared_ptr<Translation<dim>> getTranslationChild(const GeometryElement& container) const {
-        return getTranslationChild<dim>(container.shared_from_this());
+    template <int dim> std::set<shared_ptr<Translation<dim>>> getTranslationChildren(shared_ptr<const GeometryElement> container) const {
+        return castToTranslation<dim>(getChildren(container));
     }
 
     /**
-     * Get child for given hint casted to Translation object.
+     * Get child for given container casted to Translation object.
      * @param container container
-     * @return casted child for given hint or @c nullptr if there is no hint or it cannot be casted
+     * @return casted child for given container or @c nullptr if there is no hint or it cannot be casted
      */
-    template <int dim> static shared_ptr<Translation<dim>> getTranslationChild(const Hint& hint) {
-        return dynamic_pointer_cast<Translation<dim>>(getChild(hint));
+    template <int dim> std::set<shared_ptr<Translation<dim>>> getTranslationChildren(const GeometryElement& container) const {
+        return getTranslationChildren<dim>(container.shared_from_this());
     }
 
     /**
@@ -152,9 +141,19 @@ struct PathHints {
 /**
  * Path in geometry graph.
  */
-struct Path {
+class Path {
 
-    std::vector< shared_ptr<GeometryElement> > elements;
+    void addElements(const GeometryElement::Subtree* path_nodes);
+
+    void addElements(const GeometryElement::Subtree& paths);
+
+public:
+
+    std::vector< shared_ptr<const GeometryElement> > elements;
+
+    Path& operator+=(const GeometryElement::Subtree& paths);
+
+    Path& operator+=(const Path& path);
 
     Path& operator+=(const PathHints::Hint& hint);
 

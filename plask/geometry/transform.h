@@ -24,11 +24,16 @@ struct Translation: public GeometryElementTransform<dim> {
      */
     DVec translation;
 
+    //Translation(const Translation<dim>& translation) = default;
+
     /**
      * @param child child geometry element, element to translate
      * @param translation translation
      */
     explicit Translation(shared_ptr< GeometryElementD<dim> > child = shared_ptr< GeometryElementD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC)
+        : GeometryElementTransform<dim>(child), translation(translation) {}
+
+    explicit Translation(GeometryElementD<dim>& child, const DVec& translation = Primitive<dim>::ZERO_VEC)
         : GeometryElementTransform<dim>(child), translation(translation) {}
 
     virtual Rect getBoundingBox() const {
