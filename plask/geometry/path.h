@@ -190,7 +190,7 @@ public:
     /**
      * Append @p path content to this path.
      *
-     * Try complate missing path fragment if necessary, and throw excpeption it its impossible or ambiguous.
+     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
      * @param path elements to add
      * @param hints optional path hints which are use to non-ambiguous complatation of paths
      */
@@ -199,7 +199,7 @@ public:
     /**
      * Append @p paths content to this path.
      *
-     * Try complate missing path fragment if necessary, and throw excpeption it its impossible or ambiguous.
+     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
      * @param path elements to add, exception will be throwed if it have branches
      * @param hints optional path hints which are use to non-ambiguous complatation of paths
      */
@@ -208,14 +208,28 @@ public:
     /**
      * Append @p path content to this path.
      *
-     * Try complate missing path fragment if necessary, and throw excpeption it its impossible or ambiguous.
+     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
      * @param path elements to add
      * @param hints optional path hints which are use to non-ambiguous complatation of paths
      */
     Path& append(const Path& path, const PathHints* hints = nullptr);
 
+    /**
+     * Append @p hint to this path.
+     *
+     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
+     * @param hint elements to add
+     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     */
     Path& append(const PathHints::Hint& hint, const PathHints* hints = nullptr);
 
+    /**
+     * Append @p element to this path.
+     *
+     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
+     * @param hint elements to add
+     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     */
     Path& append(const GeometryElement& element, const PathHints* hints = nullptr);
 
     Path& operator+=(const std::vector< shared_ptr<const GeometryElement> >& path) { return append(path); }
