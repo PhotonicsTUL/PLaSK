@@ -405,7 +405,7 @@ public:
     }
 
     /**
-     * Add children to stack bottom, move all other children higher.
+     * Add children to stack bottom, move all other children up.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
      * @param tran_translation horizontal translation of element
@@ -427,7 +427,7 @@ public:
     }
 
     /**
-     * Add child to stack bottom, move all other children higher.
+     * Add child to stack bottom, move all other children up.
      * @param el element to add
      * @param tran_translation horizontal translation of element
      * @return path hint, see @ref geometry_paths

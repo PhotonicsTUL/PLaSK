@@ -36,15 +36,15 @@ class SimpleGeometry(unittest.TestCase):
         geometry = plask.geometry.Geometry()
         geometry.read('''
             <geometry axis="xy">
-                <stack2d repeat="2" name="stack">
-                    <child><block2d name="block" x="4" y="2" material="Dumb" /></child>
+                <!-- <stack2d repeat="2" name="stack"> -->
+                <stack2d name="stack">
+                    <child><rectangle name="block" x="4" y="2" material="Dumb" /></child>
                     <ref name="block" />
                 </stack2d>
             </geometry>
         ''')
         self.assertEqual( type(geometry.element("block")), plask.geometry.Block2D )
-#        for l,r in zip( geometry.element("stack").leafsBoundigBoxes(), [plask.geometry.Box2D(0,0,4,2), plask.geometry.Box2D(0,2,4,4)]):
-#            self.assertEqual(l, r)
+        self.assertEqual( list(geometry.element("stack").leafsBoundigBoxes()), [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4)])
         if sys.version >= "2.7":
             with self.assertRaises(KeyError): geometry.element("nonexistent")
 
@@ -78,8 +78,8 @@ class GeometryObjects(unittest.TestCase):
         multistack.append(self.block53)
         self.assertIn( self.block53, multistack )
         # 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
-        self.assertEqual(multistack.boundingBox, plask.geometry.Box2D(0.0, 10.0, 5.0, 40.0))
-        self.assertEqual(multistack.getMaterial(4.0, 39.0), self.mat)
+        self.assertEqual( multistack.boundingBox, plask.geometry.Box2D(-2.5, 10.0, 2.5, 40.0) )
+        self.assertEqual( multistack.getMaterial(1.0, 39.0), self.mat )
         self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
         #self.assertEqual( multistack[0].child, self.block53 )
         #self.assertEqual( multistack[0].translation, plask.vec(0, 10.) )
@@ -87,3 +87,17 @@ class GeometryObjects(unittest.TestCase):
         #self.assertEqual( multistack.repeatedItem(9).translation, plask.vec(0, 37.) )
         #if sys.version >= 2.7:
             #with self.assertRaises(IndexError): multistack[9]
+
+    def testAligners(self):
+        stack = plask.geometry.Stack2D()
+        stack.append(self.block53, "C")
+        stack.append(self.block53, "L")
+        stack.append(self.block53, "R")
+        self.assertEqual( stack.getMaterial(-1.0, 1.0), self.mat )
+        self.assertEqual( stack.getMaterial(2.6, 1.0), None )
+        self.assertEqual( stack.getMaterial(4.9, 4.0), self.mat )
+        self.assertEqual( stack.getMaterial(-0.1, 4.0), None )
+        self.assertEqual( stack.getMaterial(5.1, 4.0), None )
+        self.assertEqual( stack.getMaterial(-4.9, 7.0), self.mat )
+        self.assertEqual( stack.getMaterial(-5.1, 7.0), None )
+        self.assertEqual( stack.getMaterial(0.1, 7.0), None )
