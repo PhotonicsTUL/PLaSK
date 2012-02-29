@@ -529,11 +529,11 @@ public:
         std::size_t old_size = dest.size();
         UpperClass::getLeafsBoundingBoxesToVec(dest, path);
         std::size_t new_size = dest.size();
-        const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
+        const double stackHeight = stackHeights.back() - stackHeights.front();
         for (unsigned r = 1; r < repeat_count; ++r) {
             dest.insert(dest.end(), dest.begin() + old_size, dest.begin() + new_size);
             for (auto i = dest.end() - (new_size-old_size); i != dest.end(); ++i)
-                i->translateUp(minusZeroBasedStackHeight * r);
+                i->translateUp(stackHeight * r);
         }
     }
 

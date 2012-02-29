@@ -107,9 +107,10 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     /**
      * Find paths to @a el.
      * @param el element to search for
+     * @param pathHints (optional) path hints which limits search space
      * @return sub-tree with paths to given element (@p el in all leafs), empty sub-tree if @p el is not in subtree
      */
-    virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const = 0;
+    virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const = 0;
 
     /**
      * Virtual destructor. Inform all change listeners.

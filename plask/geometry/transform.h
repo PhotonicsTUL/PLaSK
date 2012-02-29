@@ -55,13 +55,12 @@ struct Translation: public GeometryElementTransform<dim> {
     virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
         std::vector<Rect> result = getChild()->getLeafsBoundingBoxes(path);
         dest.reserve(dest.size() + result.size());
-        DVec inv_tr = - translation;
-        for (Rect& r: result) dest.push_back(r.translated(inv_tr));
+        for (Rect& r: result) dest.push_back(r.translated(translation));
     }
     
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = getChild()->getLeafsWithTranslations();
-        for (std::tuple<shared_ptr<const GeometryElement>, DVec>& r: result) std::get<1>(r) -= translation;
+        for (std::tuple<shared_ptr<const GeometryElement>, DVec>& r: result) std::get<1>(r) += translation;
         return result;
     }
 
