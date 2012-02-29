@@ -36,15 +36,18 @@ class SimpleGeometry(unittest.TestCase):
         geometry = plask.geometry.Geometry()
         geometry.read('''
             <geometry axis="xy">
-                <!--<stack2d repeat="2" name="stack">-->
-                <stack2d name="stack">
+                <stack2d repeat="2" name="stack">
+                <!--<stack2d name="stack">-->
                     <child><rectangle name="block" x="4" y="2" material="Dumb" /></child>
                     <ref name="block" />
                 </stack2d>
             </geometry>
         ''')
         self.assertEqual( type(geometry.element("block")), plask.geometry.Block2D )
-        self.assertEqual( list(geometry.element("stack").leafsBoundigBoxes()), [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4)])
+        print list(geometry.element("stack").leafsBoundigBoxes())
+        #self.assertEqual( list(geometry.element("stack").leafsBoundigBoxes()), [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4)])
+        self.assertEqual( list(geometry.element("stack").leafsBoundigBoxes()),
+            [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4), plask.geometry.Box2D(-2,4,2,6), plask.geometry.Box2D(-2,6,2,8)])
         if sys.version >= "2.7":
             with self.assertRaises(KeyError): geometry.element("nonexistent")
 
