@@ -10,11 +10,10 @@ This file includes:
 #include <map>
 #include <set>
 
-#include "container.h"
-
 #include "../utils/xml.h"
 
 #include "../material/db.h"
+#include "path.h"
 
 namespace plask {
 

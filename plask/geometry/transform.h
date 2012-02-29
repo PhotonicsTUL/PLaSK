@@ -52,6 +52,15 @@ struct Translation: public GeometryElementTransform<dim> {
         return getChild()->intersect(area.translated(-translation));
     }
 
+    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Rect, DVec> >& dest, const PathHints* path = 0) const {
+        const std::size_t old_size = dest.size();
+        getChild()->getLeafsInfoToVec(dest, path);
+        for (auto i = dest.begin() + old_size; i != dest.end(); ++i) {
+            std::get<1>(*i).translate(translation);
+            std::get<2>(*i) += translation;
+        }
+    }*/
+
     virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
         std::vector<Rect> result = getChild()->getLeafsBoundingBoxes(path);
         dest.reserve(dest.size() + result.size());

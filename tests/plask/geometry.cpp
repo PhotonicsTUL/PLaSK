@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <plask/geometry/geometry.h>
+#include <plask/geometry/stack.h>
 
 #include "common/dumb_material.h"
 

@@ -32,6 +32,7 @@ struct GeometryTransform {
 /**
  * Base class for all geometries.
  */
+//TODO child number, child by index (?), child iterator
 struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     ///Type of geometry element.
@@ -42,6 +43,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         TYPE_CONTAINER = 3     ///< container (can have more than one child)
     };
     
+    ///Store information about event connected with geometry element.
     struct Event {
         
         enum Type { SHAPE = 1, MATERIAL = 1<<1, DELETE = 1<<2 };
@@ -58,20 +60,47 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         
     };
 
+    /**
+     * This structure can refer to part of geometry tree.
+     */
     struct Subtree {
 
+        ///Geometry element.
         shared_ptr<const GeometryElement> element;
 
+        ///Some (but not necessary all) children of element.
         std::vector<Subtree> children;
 
+        /**
+         * Construct subtree witch is empty or has only one node.
+         * @param element geometry element, or null pointer to construct empty Subtree
+         */
         Subtree(shared_ptr<const GeometryElement> element = shared_ptr<const GeometryElement>()): element(element) {}
 
+        /**
+         * Construct subtree.
+         * @param element geometry element
+         * @param children some (but not necessary all) children of @p element
+         */
         Subtree(shared_ptr<const GeometryElement> element, const std::vector<Subtree>& children): element(element), children(children) {}
 
+        /**
+         * Check if this subtree inludes more than one branch (has more than one children or has one child which has more than one branch).
+         * @return @c true only if this subtree inludes branches, @c false if it is linear path
+         */
         bool isWithBranches() const;
 
+        /**
+         * Convert this subtree to linear path: element, child[0].element, child[0].child[0].element, ...
+         *
+         * Throw excpetion if this subtree is not linear path (inludes more than one branch).
+         */
         std::vector<shared_ptr<const GeometryElement>> toLinearPath() const;
 
+        /**
+         * Check if this subtree is empty (its element points to null).
+         * @return @c true only if this subtree is empty.
+         */
         bool empty() const { !element; }
     };
     
@@ -108,7 +137,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Find paths to @a el.
      * @param el element to search for
      * @param pathHints (optional) path hints which limits search space
-     * @return sub-tree with paths to given element (@p el in all leafs), empty sub-tree if @p el is not in subtree
+     * @return sub-tree with paths to given element (@p el is in all leafs), empty sub-tree if @p el is not in subtree with @c this in root
      */
     virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const = 0;
 
@@ -186,10 +215,6 @@ struct GeometryElementD: public GeometryElement {
 
     virtual DVec getBoundingBoxSize() const { return getBoundingBox().size(); }
 
-    //virtual GeometryElementD<dim>* getLeaf(const Vec& p) const; //shared_ptr?
-
-    //virtual std::vector<GeometryElementD<dim>*> getLeafs() const;     //shared_ptr?
-
     /**
      * Return material in a given point inside the geometry element
      * @param p point
@@ -198,6 +223,8 @@ struct GeometryElementD: public GeometryElement {
     virtual shared_ptr<Material> getMaterial(const DVec& p) const = 0;
 
     //virtual std::vector<Material*> getMaterials(Mesh);        ??
+
+    //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Rect, DVec>>& dest, const PathHints* path = 0) const = 0;
 
     /**
      * Calculate and append to vector bounding boxes of all leafs, optionaly showed by path.
@@ -237,6 +264,8 @@ struct GeometryElementD: public GeometryElement {
      */
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const = 0;
 
+
+
 };
 
 /**
@@ -259,6 +288,10 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         return this->inside(p) ? material : shared_ptr<Material>();
+    }
+
+    virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Rect, DVec>>& dest, const PathHints* path = 0) const {
+        dest.push_back( std::tuple<shared_ptr<const GeometryElement>, Rect, DVec>(this->shared_from_this(), this->getBoundingBox(), Primitive<dim>::ZERO_VEC) );
     }
 
     virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {

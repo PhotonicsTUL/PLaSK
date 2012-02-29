@@ -3,6 +3,7 @@
 
 #include "../utils/xml.h"
 #include "manager.h"
+#include "../material/db.h"
 
 namespace plask {
 

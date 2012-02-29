@@ -2,6 +2,7 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <plask/geometry/container.h>
+#include <plask/geometry/stack.h>
 
 
 namespace plask { namespace python {
