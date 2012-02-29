@@ -70,6 +70,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
         bool isWithBranches() const;
 
+        std::vector<shared_ptr<const GeometryElement>> toLinearPath() const;
+
         bool empty() const { !element; }
     };
     

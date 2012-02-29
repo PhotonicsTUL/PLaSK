@@ -143,23 +143,90 @@ struct PathHints {
  */
 class Path {
 
-    void addElements(const GeometryElement::Subtree* path_nodes);
+    bool complateToFirst(const GeometryElement& newFirst, const PathHints* hints = nullptr);
 
-    void addElements(const GeometryElement::Subtree& paths);
+    bool complateFromLast(const GeometryElement& newLast, const PathHints* hints = nullptr);
 
 public:
 
+    Path(const std::vector< shared_ptr<const GeometryElement> >& path)
+        : elements(path) {}
+
+    Path(std::vector< shared_ptr<const GeometryElement> >&& path)
+        : elements(path) {}
+
+    Path(const GeometryElement::Subtree& paths)
+        : elements(paths.toLinearPath()) {}
+
+    //This are the same as default constructors, so can be skiped:
+    //Path(const Path& path): elements(path.elements) {}
+    //Path(Path&& path): elements(path.elements) {}
+
+    Path(const PathHints::Hint& hint) { append(hint); }
+
+    Path(const GeometryElement& element) { append(element); }
+
+    ///Path content.
     std::vector< shared_ptr<const GeometryElement> > elements;
 
-    Path& operator+=(const GeometryElement::Subtree& paths);
+    /**
+     * Push front content of @a toAdd vector to elements.
+     *
+     * Skip last element from @p toAdd if it is first in elements, but neither check path integrity nor complate path.
+     * @param toAdd elements to push on front of elements
+     * @see operator+=(const std::vector< shared_ptr<const GeometryElement> >& path)
+     */
+    void push_front(const std::vector< shared_ptr<const GeometryElement> >& toAdd);
 
-    Path& operator+=(const Path& path);
+    /**
+     * Push back content of @a toAdd vector to elements.
+     *
+     * Skip first element from @p toAdd if it is last in elements, but neither check path integrity nor complate path.
+     * @param toAdd elements to push on back of elements
+     * @see operator+=(const std::vector< shared_ptr<const GeometryElement> >& path)
+     */
+    void push_back(const std::vector< shared_ptr<const GeometryElement> >& toAdd);
 
-    Path& operator+=(const PathHints::Hint& hint);
+    /**
+     * Append @p path content to this path.
+     *
+     * Try complate missing path fragment if necessary, and throw excpeption it its impossible or ambiguous.
+     * @param path elements to add
+     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     */
+    Path& append(const std::vector< shared_ptr<const GeometryElement> >& path, const PathHints* hints = nullptr);
 
-    Path& operator+=(const GeometryElement& last);
+    /**
+     * Append @p paths content to this path.
+     *
+     * Try complate missing path fragment if necessary, and throw excpeption it its impossible or ambiguous.
+     * @param path elements to add, exception will be throwed if it have branches
+     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     */
+    Path& append(const GeometryElement::Subtree& paths, const PathHints* hints = nullptr);
 
-    Path& append(const GeometryElement& last, const PathHints& hints);
+    /**
+     * Append @p path content to this path.
+     *
+     * Try complate missing path fragment if necessary, and throw excpeption it its impossible or ambiguous.
+     * @param path elements to add
+     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     */
+    Path& append(const Path& path, const PathHints* hints = nullptr);
+
+    Path& append(const PathHints::Hint& hint, const PathHints* hints = nullptr);
+
+    Path& append(const GeometryElement& element, const PathHints* hints = nullptr);
+
+    Path& operator+=(const std::vector< shared_ptr<const GeometryElement> >& path) { return append(path); }
+
+    Path& operator+=(const GeometryElement::Subtree& paths) { return append(paths); }
+
+    Path& operator+=(const Path& path) { return append(path); }
+
+    Path& operator+=(const PathHints::Hint& hint) { return append(hint); }
+
+    Path& operator+=(const GeometryElement& element) { return append(element); }
 
 };
 

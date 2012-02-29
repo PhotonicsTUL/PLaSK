@@ -64,40 +64,74 @@ void PathHints::cleanDeleted() {
 
 //----------------- Path ------------------------------------------
 
-void Path::addElements(const GeometryElement::Subtree* path_nodes) {
-    if (!elements.empty() && elements.back() == path_nodes->element) {
-        if (path_nodes->children.empty()) return;
-        path_nodes = &(path_nodes->children[0]);
+bool Path::complateToFirst(const GeometryElement& newFirst, const PathHints* hints) {
+    GeometryElement::Subtree path = newFirst.findPathsTo(*elements.front(), hints);
+    if (path.empty()) return false;
+    push_front(path.toLinearPath());
+    return true;
+}
+
+bool Path::complateFromLast(const GeometryElement& newLast, const PathHints* hints) {
+    GeometryElement::Subtree path = elements.back()->findPathsTo(newLast, hints);
+    if (path.empty()) return false;
+    push_back(path.toLinearPath());
+    return true;
+}
+
+void Path::push_front(const std::vector< shared_ptr<const GeometryElement> >& toAdd) {
+    if (toAdd.empty()) return;
+    if (elements.empty()) {
+        elements = toAdd;
+    } else {
+        if (toAdd.back() == elements.front())   //last to add is already first on list?
+            elements.insert(elements.begin(), toAdd.begin(), toAdd.end()-1);
+        else
+            elements.insert(elements.begin(), toAdd.begin(), toAdd.end());
     }
-    while (true) {
-        elements.push_back(path_nodes->element);
-        if (path_nodes->children.empty()) return;
-        path_nodes = &(path_nodes->children[0]);
+}
+
+void Path::push_back(const std::vector< shared_ptr<const GeometryElement> >& toAdd) {
+    if (toAdd.empty()) return;
+    if (elements.empty()) {
+        elements = toAdd;
+    } else {
+        if (toAdd.front() == elements.back())   //first to add is already as last on list?
+            elements.insert(elements.end(), toAdd.begin()+1, toAdd.end());
+        else
+            elements.insert(elements.end(), toAdd.begin(), toAdd.end());
     }
 }
 
-void Path::addElements(const GeometryElement::Subtree& paths) {
-    if (paths.isWithBranches())
-        throw Exception("There are more than one path.");
-    addElements(&paths);
-}
-
-/*Path& Path::operator+=(const GeometryElement::Subtree& paths) {
-    if (paths.empty()) return;
-    addElements(paths);
-}
-
-Path& Path::operator+=(const PathHints::Hint& hint);
-
-Path& Path::operator+=(const GeometryElement& last) {
+Path& Path::append(const std::vector< shared_ptr<const GeometryElement> >& path, const PathHints* hints) {
+    if (path.empty()) return *this;
     if (elements.empty())
-        elements.push_back(last);
+        elements = path;
     else {
-        GeometryElement::Subtree path = elements.back()->findPathsTo(last);
-
-
-        addElements();
+        if (complateToFirst(*path.back(), hints)) {
+            push_front(path);
+        } else
+        if (complateFromLast(*path.front(), hints)) {
+            push_back(path);
+        } else
+            throw Exception("Can't connect paths.");
     }
-}*/
+    return *this;
+}
+
+Path& Path::append(const GeometryElement::Subtree& paths, const PathHints* hints) {
+    return append(paths.toLinearPath(), hints);
+}
+
+Path& Path::append(const Path& path, const PathHints* hints) {
+    return append(path.elements, hints);
+}
+
+Path& Path::append(const PathHints::Hint& hint, const PathHints* hints) {
+    return append(std::vector< shared_ptr<const GeometryElement> > { hint.first, hint.second }, hints);
+}
+
+Path& Path::append(const GeometryElement& element, const PathHints* hints) {
+    return append( std::vector< shared_ptr<const GeometryElement> > { element.shared_from_this() }, hints);
+}
 
 }   //namespace plask
