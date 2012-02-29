@@ -36,7 +36,7 @@ class SimpleGeometry(unittest.TestCase):
         geometry = plask.geometry.Geometry()
         geometry.read('''
             <geometry axis="xy">
-                <!-- <stack2d repeat="2" name="stack"> -->
+                <!--<stack2d repeat="2" name="stack">-->
                 <stack2d name="stack">
                     <child><rectangle name="block" x="4" y="2" material="Dumb" /></child>
                     <ref name="block" />
@@ -101,3 +101,4 @@ class GeometryObjects(unittest.TestCase):
         self.assertEqual( stack.getMaterial(-4.9, 7.0), self.mat )
         self.assertEqual( stack.getMaterial(-5.1, 7.0), None )
         self.assertEqual( stack.getMaterial(0.1, 7.0), None )
+        self.assertEqual( list(stack.leafsBoundigBoxes()), [plask.geometry.Box2D(-2.5,0,2.5,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(-5.0,6,0.0,9)])
