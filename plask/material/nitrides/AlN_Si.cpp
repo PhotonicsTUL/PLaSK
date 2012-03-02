@@ -2,8 +2,11 @@
 
 #include <cmath>
 #include "../db.h"  //MaterialsDB::Register
+#include "../info.h"
 
 namespace plask {
+
+MI_PARENT(AlN_Si, AlN)
 
 AlN_Si::AlN_Si(DopingAmountType Type, double Si) {
 	//M. Kuc 12.02.2012	
@@ -16,6 +19,10 @@ AlN_Si::AlN_Si(DopingAmountType Type, double Si) {
 
 std::string AlN_Si::name() const { return NAME; }
 
+MI_PROPERTY(AlN_Si, mob,
+			MISource("M. Kuc 12.02.2012"),
+			MISource("mob(T), T: 270 - 400 K; Kusakabe K, Physica B 376-377 (2006) 520")
+			)
 double AlN_Si::mob(double T) const { 
 	//M. Kuc 12.02.2012	
 	//mob(T), T: 270 - 400 K; Kusakabe K, Physica B 376-377 (2006) 520

@@ -14,6 +14,10 @@ AlN::AlN() {
 
 std::string AlN::name() const { NAME; }
 
+MI_PROPERTY(AlN, condT,
+			MISource("M. Kuc 12.02.2012"),
+			MISource("condT(T), T: Bondokov R T, J. Crystal Growth 310 (2008) 4020"),
+			MIComment("estimation based on Si-doped GaN and AlN data"))
 double AlN::condT(double T, double t) const {
 	//M. Kuc 12.02.2012
 	//estimation based on Si-doped GaN and AlN data

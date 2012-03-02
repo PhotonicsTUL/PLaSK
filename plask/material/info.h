@@ -237,21 +237,25 @@ struct MaterialInfo {
 struct MISource {
     std::string value;
     MISource(const std::string& value): value(value) {}
-    void set(MaterialInfo::PropertyInfo& p) { p.addSource(value); }
+    void set(MaterialInfo::PropertyInfo& p) const { p.addSource(value); }
 };
 
 struct MIComment {
     std::string value;
     MIComment(const std::string& value): value(value) {}
-    void set(MaterialInfo::PropertyInfo& p) { p.addComment(value); }
+    void set(MaterialInfo::PropertyInfo& p) const { p.addComment(value); }
 };
 
 struct MIArgumentRange {
     MaterialInfo::ARGUMENT_NAME arg; double from, to;
     MIArgumentRange(MaterialInfo::ARGUMENT_NAME arg, double from, double to): arg(arg), from(from), to(to) {}
-    void set(MaterialInfo::PropertyInfo& p) { p.setArgumentRange(arg, from, to); }
+    void set(MaterialInfo::PropertyInfo& p) const { p.setArgumentRange(arg, from, to); }
 };
 
 }
+
+#define MI_PARENT(material, parent) static plask::MaterialInfo::Register __materialinfo__parent__  ## material(material::NAME, parent::NAME);
+#define MI_PROPERTY(material, property, ...) static plask::MaterialInfo::Register __materialinfo__property__ ## material ## property(material::NAME, plask::MaterialInfo::property, ##__VA_ARGS__);
+#define MI_PARENT_PROPERTY(material, parent, property, ...) static plask::MaterialInfo::Register __materialinfo__parent__property__ ## material ## property(material::NAME, parent::NAME, plask::MaterialInfo::property, ##__VA_ARGS__);
 
 #endif // PLASK__MATERIAL_INFO_H
