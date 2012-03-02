@@ -165,26 +165,34 @@ struct MaterialInfo {
      */
     class Register {
         
-        void set(MaterialInfo&) {}
+        void set(PropertyInfo&) {}
         
         template <typename Setter1, typename ...Setters>
-        void set(MaterialInfo& i, const Setter1& setter1, const Setters&... setters) {
+        void set(PropertyInfo& i, const Setter1& setter1, const Setters&... setters) {
             setter1.set(i);
             set(i, setters...);
         }
 
     public:
+        Register(const std::string& materialName, const std::string& parentMaterial) {
+            MaterialInfo::DB::getDefault().add(materialName, parentMaterial);
+        }
+        
         template <typename ...PropertySetters>
-        Register(const std::string& materialName, const std::string& parentMaterial, const PropertySetters&... propertySetters) {
-            set(MaterialInfo::DB::getDefault().add(materialName, parentMaterial), propertySetters...);
+        Register(const std::string& materialName, const std::string& parentMaterial, PROPERTY_NAME property, const PropertySetters&... propertySetters) {
+            set(MaterialInfo::DB::getDefault().add(materialName, parentMaterial)(property), propertySetters...);
         }
 
+        Register(const std::string& materialName) {
+            MaterialInfo::DB::getDefault().add(materialName);
+        }
+        
         template <typename ...PropertySetters>
-        Register(const std::string& materialName, const PropertySetters&... propertySetters) {
-            set(MaterialInfo::DB::getDefault().add(materialName), propertySetters...);
+        Register(const std::string& materialName, PROPERTY_NAME property, const PropertySetters&... propertySetters) {
+            set(MaterialInfo::DB::getDefault().add(materialName)(property), propertySetters...);
         }
 
-        template <typename MaterialType, typename ParentType, typename ...PropertySetters>
+        /*template <typename MaterialType, typename ParentType, typename ...PropertySetters>
         Register(const PropertySetters&... propertySetters) {
             set(MaterialInfo::DB::getDefault().add(MaterialType::NAME, ParentType::NAME), propertySetters...);
         }
@@ -192,7 +200,7 @@ struct MaterialInfo {
         template <typename MaterialType, typename ...PropertySetters>
         Register(const PropertySetters&... propertySetters) {
             set(MaterialInfo::DB::getDefault().add(MaterialType::NAME), propertySetters...);
-        }
+        }*/
 
     };
 
