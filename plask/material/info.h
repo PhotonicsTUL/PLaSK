@@ -164,26 +164,34 @@ struct MaterialInfo {
      * Helper which allow to add (do this in constructor) information about material to default material meta-info database.
      */
     class Register {
-
-        MaterialInfo& materialInfo;
+        
+        void set(MaterialInfo&) {}
+        
+        template <typename Setter1, typename ...Setters>
+        void set(MaterialInfo& i, const Setter1& setter1, const Setters&... setters) {
+            setter1.set(i);
+            set(i, setters...);
+        }
 
     public:
-        Register(const std::string& materialName, const std::string& parentMaterial)
-            : materialInfo(MaterialInfo::DB::getDefault().add(materialName, parentMaterial)) {}
+        template <typename ...PropertySetters>
+        Register(const std::string& materialName, const std::string& parentMaterial, const PropertySetters&... propertySetters) {
+            set(MaterialInfo::DB::getDefault().add(materialName, parentMaterial), propertySetters...);
+        }
 
-        Register(const std::string& materialName)
-            : materialInfo(MaterialInfo::DB::getDefault().add(materialName)) {}
+        template <typename ...PropertySetters>
+        Register(const std::string& materialName, const PropertySetters&... propertySetters) {
+            set(MaterialInfo::DB::getDefault().add(materialName), propertySetters...);
+        }
 
-        template <typename MaterialType, typename ParentType>
-        Register()
-            : materialInfo(MaterialInfo::DB::getDefault().add(MaterialType::NAME, ParentType::NAME)) {}
+        template <typename MaterialType, typename ParentType, typename ...PropertySetters>
+        Register(const PropertySetters&... propertySetters) {
+            set(MaterialInfo::DB::getDefault().add(MaterialType::NAME, ParentType::NAME), propertySetters...);
+        }
 
-        template <typename MaterialType>
-        Register()
-            : materialInfo(MaterialInfo::DB::getDefault().add(MaterialType::NAME)) {}
-
-        PropertyInfo& operator()(PROPERTY_NAME property) {
-            return materialInfo(property);
+        template <typename MaterialType, typename ...PropertySetters>
+        Register(const PropertySetters&... propertySetters) {
+            set(MaterialInfo::DB::getDefault().add(MaterialType::NAME), propertySetters...);
         }
 
     };
@@ -216,6 +224,24 @@ struct MaterialInfo {
 
     };*/
 
+};
+
+struct MISource {
+    std::string value;
+    MISource(const std::string& value): value(value) {}
+    void set(MaterialInfo::PropertyInfo& p) { p.addSource(value); }
+};
+
+struct MIComment {
+    std::string value;
+    MIComment(const std::string& value): value(value) {}
+    void set(MaterialInfo::PropertyInfo& p) { p.addComment(value); }
+};
+
+struct MIArgumentRange {
+    MaterialInfo::ARGUMENT_NAME arg; double from, to;
+    MIArgumentRange(MaterialInfo::ARGUMENT_NAME arg, double from, double to): arg(arg), from(from), to(to) {}
+    void set(MaterialInfo::PropertyInfo& p) { p.setArgumentRange(arg, from, to); }
 };
 
 }
