@@ -21,7 +21,8 @@ std::string AlN_Si::name() const { return NAME; }
 
 MI_PROPERTY(AlN_Si, mob,
 			MISource("M. Kuc 12.02.2012"),
-			MISource("mob(T), T: 270 - 400 K; Kusakabe K, Physica B 376-377 (2006) 520")
+			MISource("mob(T), T: 270 - 400 K; Kusakabe K, Physica B 376-377 (2006) 520"),
+			MIArgumentRange(MaterialInfo::T, 270, 400)
 			)
 double AlN_Si::mob(double T) const { 
 	//M. Kuc 12.02.2012	
