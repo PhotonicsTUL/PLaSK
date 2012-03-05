@@ -20,7 +20,7 @@ Aligner2d<DIRECTION_LON>* lonAlignerFromString(std::string str) {
     boost::algorithm::to_lower(str);
     if (str == "front" || str == "f") return new Front();
     if (str == "back" || str == "b") return new Back();
-    if (str == "center" || str == "c" || str == "LonCenter" || str == "m" || str == "middle") return new LonCenter();
+    if (str == "center" || str == "c" || str == "loncenter" || str == "m" || str == "middle") return new LonCenter();
     return new Lon(boost::lexical_cast<double>(str));
 }
 
