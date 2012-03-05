@@ -2,6 +2,7 @@
 #define PLASK__GEOMETRY_ALIGN_H
 
 #include "transform.h"
+#include <memory>   //unique_ptr
 
 namespace plask {
 
@@ -294,6 +295,32 @@ typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_T
 typedef TranslationAligner3d<DIRECTION_LON, DIRECTION_TRAN> LonTran;
 //typedef ComposeAligner3d<DIR3D_LON, DIR3D_TRAN> NFLR;
 //TODO mixed variants
+
+namespace details {
+    Aligner2d<DIRECTION_TRAN>* transAlignerFromString(std::string str);
+    Aligner2d<DIRECTION_LON>* lonAlignerFromString(std::string str);
+}
+
+/**
+ * Construct 2d aligner in given direction from string.
+ * @param str string which describe 2d aligner
+ * @tpatam direction direction
+ */
+template <DIRECTION direction>
+Aligner2d<direction>* fromStr(const std::string& str);
+
+template <>
+inline Aligner2d<DIRECTION_TRAN>* fromStr(const std::string& str) { return details::transAlignerFromString(str); }
+
+template <>
+inline Aligner2d<DIRECTION_LON>* fromStr(const std::string& str) { return details::lonAlignerFromString(str); }
+
+template <DIRECTION direction1, DIRECTION direction2>
+inline ComposeAligner3d<direction1, direction2> fromStr(const std::string& str1, const std::string& str2) {
+    std::unique_ptr<Aligner2d<direction1>> a1(fromStr<direction1>(str1));
+    std::unique_ptr<Aligner2d<direction2>> a2(fromStr<direction2>(str2));
+    return ComposeAligner3d<direction1, direction2>(*a1, *a2);
+}
 
 }   // namespace align
 }   // namespace plask
