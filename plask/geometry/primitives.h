@@ -284,6 +284,11 @@ struct Primitive<2> {
 
     /// NaNed 2d vector.
     static const DVec NAN_VEC;
+
+    enum DIRECTION {
+        DIRECTION_TRAN = 0,
+        DIRECTION_UP = 1
+    };
 };
 
 /**
@@ -306,6 +311,12 @@ struct Primitive<3> {
 
     /// NaNed 3d vector.
     static const DVec NAN_VEC;
+
+    enum DIRECTION {
+        DIRECTION_LON = 0,
+        DIRECTION_TRAN = 1,
+        DIRECTION_UP = 2
+    };
 };
 
 } // namespace plask

@@ -144,6 +144,14 @@ public:
         return findPathsFromChildTo(children.begin(), children.end(), el, path);
     }
 
+
+    virtual std::size_t getChildCount() const { return children.size(); }
+
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+        if (child_nr >= children.size()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, children.size()-1);
+        return children[child_nr];
+    }
+
 };
 
 /**
@@ -217,7 +225,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
      */
     void remove(const PathHints& hints) {
         auto cset = hints.getChildren(this);
-        for (auto& c: cset) children.erase(std::find(children.begin(), children.end(), c));
+        removeAll([&](TranslationT t) { return cset.find(t) != cset.end; });
     }
 
 };
@@ -226,11 +234,11 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
  * Read children, construct ConstructedType::ChildType for each, call child_param_read if children is in \<child\> tag.
  * Read "path" parameter from each \<child\> tag.
  * @param reader reader
- * @param source XML data source
- * @param child_param_read call for each \<child\> tag, should create child, add it to container and return PathHints::Hint
+ * @param child_param_read functor called for each \<child\> tag, without parameters, should create child, add it to container and return PathHints::Hint
+ * @param without_child_param_add functor called for each children (when there was no \<child\> tag), as paremter it take one geometry element (child) of type ConstructedType::ChildType
  */
 template <typename ConstructedType, typename ChildParamF, typename WithoutChildParamF>
-void read_children(ConstructedType& result, GeometryReader& reader, ChildParamF child_param_read, WithoutChildParamF without_child_param_add) {
+inline void read_children(GeometryReader& reader, ChildParamF child_param_read, WithoutChildParamF without_child_param_add) {
 
     std::string container_tag_name = reader.source.getNodeName();
 
@@ -250,11 +258,6 @@ void read_children(ConstructedType& result, GeometryReader& reader, ChildParamF 
                         reader.manager.pathHints[*path].addHint(hint);  //this call readExactlyOneChild
                 } else {
                     without_child_param_add(reader.readElement< typename ConstructedType::ChildType >());
-
-                    //std::string element_tag_name = reader.source.getNodeName();
-                    //result.add(reader.readElement< typename ConstructedType::ChildType >());
-                    //XML::requireTagEndOrEmptyTag(reader.source, element_tag_name);
-                    //result.add(&manager.readExactlyOneChild< typename ConstructedType::ChildType >(source));
                 }
 
             case irr::io::EXN_COMMENT:

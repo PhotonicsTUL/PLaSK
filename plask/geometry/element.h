@@ -43,10 +43,14 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         TYPE_CONTAINER = 3     ///< container (can have more than one child)
     };
     
-    ///Store information about event connected with geometry element.
+    /**
+     * Store information about event connected with geometry element.
+     *
+     * Subclasses of this can includes additional informations about specific type of event.
+     */
     struct Event {
         
-        enum Type { SHAPE = 1, MATERIAL = 1<<1, DELETE = 1<<2 };
+        enum Type { SHAPE = 1, MATERIAL = 1<<1, DELETE = 1<<2 };    //??
         
     private:
         GeometryElement& _source;
@@ -57,7 +61,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         const Type type() { return _type; }
         
         Event(GeometryElement& source, Type type): _source(source), _type(type) {}
-        
+        virtual ~Event() {} //for eventual subclassing
     };
 
     /**
@@ -107,10 +111,20 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     boost::signals2::signal<void(const Event&)> changed;
 
     /**
+     * Virtual destructor. Inform all change listeners.
+     */
+    virtual ~GeometryElement();
+
+    /**
      * Check if geometry is: leaf, transform or container type element.
      * @return type of this element
      */
     virtual Type getType() const = 0;
+
+    bool isLeaf() const { return getType() == TYPE_LEAF; }
+    bool isTransform() const { return getType() == TYPE_TRANSFORM || getType() == TYPE_SPACE_CHANGER; }
+    bool isSpaceChanger() const { return getType() == TYPE_SPACE_CHANGER; }
+    bool isContainer() const { return getType() == TYPE_CONTAINER; }
 
     /**
      * Get number of dimentions.
@@ -140,11 +154,6 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @return sub-tree with paths to given element (@p el is in all leafs), empty sub-tree if @p el is not in subtree with @c this in root
      */
     virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const = 0;
-
-    /**
-     * Virtual destructor. Inform all change listeners.
-     */
-    virtual ~GeometryElement();
     
     /**
      * Append all leafs in subtree with this in root to vector @p dest.
@@ -161,6 +170,10 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         getLeafsToVec(result);
         return result;
     }
+
+    virtual std::size_t getChildCount() const = 0;
+
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const = 0;
 
     //virtual GeometryTransform getTransform()
 
@@ -264,7 +277,7 @@ struct GeometryElementD: public GeometryElement {
      */
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const = 0;
 
-
+    //virtual getChildInfo  //translation, bounding box
 
 };
 
@@ -326,6 +339,12 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return GeometryElement::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
     }
 
+    virtual std::size_t getChildCount() const { return 0; }
+
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+        throw OutOfBoundException("GeometryElementLeaf::getChildAt", "child_nr");
+    }
+
 };
 
 /**
@@ -353,13 +372,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      * Get child.
      * @return child
      */
-    shared_ptr<ChildType> getChild() { return _child; }
-
-    /**
-     * Get child.
-     * @return child
-     */
-    shared_ptr<const ChildType> getChild() const { return _child; }
+    shared_ptr<ChildType> getChild() const { return _child; }
 
     /**
      * Set new child.
@@ -402,6 +415,13 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
         GeometryElement::Subtree result(this->shared_from_this());
         result.children.push_back(std::move(e));
         return result;
+    }
+
+    virtual std::size_t getChildCount() const { return hasChild() ? 1 : 0; }
+
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+        if (!hasChild() || child_nr > 0) throw OutOfBoundException("GeometryElementTransform::getChildAt", "child_nr");
+        return _child;
     }
 
     protected:

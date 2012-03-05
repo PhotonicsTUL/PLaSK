@@ -12,7 +12,7 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
                     new StackContainer<2>(baseH) :
                     new MultiStackContainer<2>(baseH, XML::getAttribute(reader.source, repeat_attr, 1))
                 );
-    read_children(*result, reader,
+    read_children<StackContainer<2>>(reader,
             [&]() {
                 std::unique_ptr<align::Aligner2d<align::DIRECTION_TRAN>> aligner(
                       align::fromStr<align::DIRECTION_TRAN>(XML::getAttribute<std::string>(reader.source, reader.getAxisTranName(), "c")));
@@ -32,7 +32,7 @@ shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
                     new StackContainer<3>(baseH) :
                     new MultiStackContainer<3>(baseH, XML::getAttribute(reader.source, repeat_attr, 1))
                 );
-    read_children(*result, reader,
+    read_children<StackContainer<3>>(reader,
             [&]() {
                 return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
                                           align::fromStr<align::DIRECTION_LON, align::DIRECTION_TRAN>(

@@ -9,7 +9,7 @@ namespace plask {
 
 shared_ptr<GeometryElement> read_TranslationContainer2d(GeometryReader& reader) {
     shared_ptr< TranslationContainer<2> > result(new TranslationContainer<2>());
-    read_children(*result, reader,
+    read_children<TranslationContainer<2>>(reader,
         [&]() {
             TranslationContainer<2>::DVec translation;
             translation.tran = XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0);
@@ -25,7 +25,7 @@ shared_ptr<GeometryElement> read_TranslationContainer2d(GeometryReader& reader) 
 
 shared_ptr<GeometryElement> read_TranslationContainer3d(GeometryReader& reader) {
     shared_ptr< TranslationContainer<3> > result(new TranslationContainer<3>());
-    read_children(*result, reader,
+    read_children<TranslationContainer<3>>(reader,
         [&]() {
             TranslationContainer<3>::DVec translation;
             translation.c0 = XML::getAttribute(reader.source, reader.getAxisName(0), 0.0);

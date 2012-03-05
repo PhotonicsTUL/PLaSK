@@ -73,6 +73,22 @@ struct Translation: public GeometryElementTransform<dim> {
         return result;
     }
 
+    /**
+     * Get shallow copy of this.
+     * @return shallow copy of this
+     */
+    shared_ptr<Translation<dim>> copyShallow() const {
+         return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), translation));
+    }
+
+    /**
+     * Get shallow, moved copy of this.
+     * @param new_translation translation vector of copy
+     */
+    shared_ptr<Translation<dim>> copyShallow(const DVec& new_translation) const {
+        return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), new_translation));
+    }
+
 };
 
 }       // namespace plask

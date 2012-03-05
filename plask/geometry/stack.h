@@ -8,7 +8,7 @@ namespace plask {
 /**
  * Common code for stack containers (which have children in stack/layers).
  */
-template <int dim>
+template <int dim, int growingDirection = Primitive<dim>::DIRECTION_UP>
 struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
@@ -36,19 +36,19 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
      * @param height
      * @return child which are on given @a height or @c nullptr
      */
-    const TranslationT* getChildForHeight(double height) const {
+    const shared_ptr<TranslationT> getChildForHeight(double height) const {
         auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
-        if (it == stackHeights.end() || it == stackHeights.begin()) return nullptr;
-        return children[it-stackHeights.begin()-1].get();
+        if (it == stackHeights.end() || it == stackHeights.begin()) return shared_ptr<TranslationT>();
+        return children[it-stackHeights.begin()-1];
     }
 
     virtual bool inside(const DVec& p) const {
-        const TranslationT* c = getChildForHeight(p.c1);
+        const shared_ptr<TranslationT> c = getChildForHeight(p.c1);
         return c ? c->inside(p) : false;
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        const TranslationT* c = getChildForHeight(p.c1);
+        const shared_ptr<TranslationT> c = getChildForHeight(p.c1);
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
 
@@ -78,8 +78,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
      */
     void remove(const PathHints& hints) {
         auto cset = hints.getChildren(this);
-        for (auto& c: cset)
-            children.erase(std::find(children.begin(), children.end(), c));
+        removeAll([&](TranslationT t) { return cset.find(t) != cset.end; });
         updateAllHeights();
     }
 
@@ -100,8 +99,8 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
      */
     void calcHeight(const shared_ptr<ChildType>& el, double prev_height, double& el_translation, double& next_height) {
         auto bb = el->getBoundingBox();
-        el_translation = prev_height - bb.lower.up;
-        next_height = bb.upper.up + el_translation;
+        el_translation = prev_height - bb.lower.components[growingDirection];
+        next_height = bb.upper.components[growingDirection] + el_translation;
     }
 
     /**
@@ -109,7 +108,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
      * @param child_index index of child
      */
     void updateHeight(std::size_t child_index) {
-        calcHeight(children[child_index]->child, stackHeights[child_index], children[child_index]->translation.up, children[child_index+1]);
+        calcHeight(children[child_index]->child, stackHeights[child_index], children[child_index]->translation.components[growingDirection], children[child_index+1]);
     }
 
     /**
@@ -120,6 +119,17 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
         for ( ; first_child_index < children.size(); ++first_child_index)
             updateHeight(first_child_index);
     }
+
+};
+
+/**
+ * Horizontal stack.
+ */
+struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
+
+    bool allChildrenHaveSameHeights() const;
+
+    void ensureAllChildrenHaveSameHeights() const;
 
 };
 
@@ -156,7 +166,7 @@ public:
     /**
      * @param baseHeight height where the first element should start
      */
-    explicit StackContainer(const double baseHeight): StackContainerBaseImpl<dim>(baseHeight) {}
+    explicit StackContainer(const double baseHeight = 0.0): StackContainerBaseImpl<dim>(baseHeight) {}
 
     ~StackContainer() { for (auto a: aligners) delete a; }
 
@@ -360,7 +370,7 @@ public:
             for (unsigned r = 1; r < repeat_count; ++r)
                 for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
                     auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].element)));
-                    shared_ptr<Translation<dim>> new_child(new Translation<dim>(*org_child.getChild(), org_child.translation));
+                    shared_ptr<Translation<dim>> new_child = org_child.copyShallow();
                     new_child->translation.up += stackHeight;
                     result.children.push_back(GeometryElement::Subtree(new_child, result.children[org_child_nr].children));
                 }
@@ -378,6 +388,16 @@ public:
         DVec p_reduced = p;
         if (!reduceHeight(p_reduced.up)) return shared_ptr<Material>();
         return UpperClass::getMaterial(p_reduced);
+    }
+
+    virtual std::size_t getChildCount() const { return children.size() * repeat_count; }
+
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+        if (child_nr >= getChildCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildCount()-1);
+        if (child_nr < children.size()) return children[child_nr];
+        auto result = children[child_nr % children.size()]->copyShallow();
+        result->translation.up += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
+        return result;
     }
 
 };

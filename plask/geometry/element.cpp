@@ -2,6 +2,10 @@
 
 namespace plask {
 
+GeometryElement::~GeometryElement() {
+    changed(Event(*this, Event::DELETE));
+}
+
 bool GeometryElement::Subtree::isWithBranches() const {
     const std::vector<Subtree>* c = &children;
     while (!c->empty()) {
@@ -22,10 +26,6 @@ std::vector< shared_ptr<const GeometryElement> > GeometryElement::Subtree::toLin
         path_nodes = &(path_nodes->children[0]);
     }
     return result;
-}
-
-GeometryElement::~GeometryElement() {
-    changed(Event(*this, Event::DELETE));
 }
 
 void GeometryElement::ensureCanHasAsParent(GeometryElement& potential_parent) {
