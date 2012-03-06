@@ -23,6 +23,7 @@ bool GeometryElement::CompositeChanger::apply(shared_ptr<const GeometryElement>&
 }
 
 bool GeometryElement::ChangeToBlock::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
+    //if (this->toChange == to_change)
     //changeToBlock
 }
 
