@@ -36,4 +36,18 @@ static GeometryReader::RegisterElementReader rectangle_reader("rectangle", read_
 static GeometryReader::RegisterElementReader block3d_reader("block3d", read_block3d);
 static GeometryReader::RegisterElementReader cuboid_reader("cuboid", read_block3d);
 
+shared_ptr<GeometryElement> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryElement>& to_change, Vec<3, double>& translation) {
+    if (to_change->getDimensionsCount() == 3) {
+        shared_ptr<const GeometryElementD<3>> el = static_pointer_cast<const GeometryElementD<3>>(to_change);
+        Box3d bb = el->getBoundingBox();
+        translation = bb.lower;
+        return shared_ptr<GeometryElement>(new Block<3>(bb.size(), material));
+    } else {    //to_change->getDimensionsCount() == 3
+        shared_ptr<const GeometryElementD<2>> el = static_pointer_cast<const GeometryElementD<2>>(to_change);
+        Box2d bb = el->getBoundingBox();
+        translation = vec<3, double>(bb.lower);
+        return shared_ptr<GeometryElement>(new Block<2>(bb.size(), material));
+    }
+}
+
 }   // namespace plask

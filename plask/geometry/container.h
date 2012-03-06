@@ -152,6 +152,12 @@ public:
         return children[child_nr];
     }
 
+    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
+        shared_ptr<const GeometryElement> result(this->shared_from_this());
+        if (changer.apply(result, translation) || children.empty()) return result;
+
+    }
+
 };
 
 /**

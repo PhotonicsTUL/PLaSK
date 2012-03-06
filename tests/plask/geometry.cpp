@@ -52,9 +52,13 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK_EQUAL(multistack->getBoundingBox(), plask::Box2d(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
         BOOST_CHECK_EQUAL(multistack->getMaterial(plask::vec(4.0, 39.0)), dumbMaterial);
         BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 41.0)) == nullptr);
-        BOOST_CHECK_EQUAL(multistack->getLeafs().size(), 10);
-        BOOST_CHECK_EQUAL(multistack->getLeafsBoundingBoxes().size(), 10);
         BOOST_CHECK_EQUAL(multistack->getLeafsBoundingBoxes(p).size(), 5);
+        BOOST_CHECK_EQUAL(multistack->getLeafs().size(), 10);
+        {
+            std::vector<plask::Box2d> bb = multistack->getLeafsBoundingBoxes();
+            BOOST_REQUIRE_EQUAL(bb.size(), 10);
+            for (int i = 0; i < 10; ++i) BOOST_CHECK_EQUAL(bb[i], plask::Box2d(plask::vec(0.0, 10.0 + i*3), plask::vec(5.0, 10.0 + 3.0 + i*3)));
+        }
     }
 
     BOOST_AUTO_TEST_CASE(manager_loading) {

@@ -107,6 +107,43 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         bool empty() const { !element; }
     };
+
+    struct Changer {
+
+        /**
+         * Try to apply changes.
+         * @param to_change[in,out] pointer to element which eventualy will be changed (in such case pointer after call can point to other geometry element)
+         * @param translation[out] optional, extra translation for element after change (in case of 2d object caller read only tran and up components of vector)
+         * @return @c true only if something was changed, @c false if nothing was changed (in such case changer doesn't change arguments)
+         */
+        virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const = 0;
+
+    };
+
+    struct CompositeChanger: public Changer {
+
+        std::vector<const Changer*> changers;
+
+        CompositeChanger(const Changer* changer);
+
+        CompositeChanger& operator()(const Changer* changer);
+
+        ///Delete all holded changers
+        ~CompositeChanger();
+
+        virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
+
+    };
+
+    struct ChangeToBlock {
+
+        shared_ptr<const GeometryElement> toChange;
+
+        ChangeToBlock(shared_ptr<const GeometryElement> toChange): toChange(toChange) {}
+
+        virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
+
+    };
     
     boost::signals2::signal<void(const Event&)> changed;
 
@@ -177,17 +214,27 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     //virtual GeometryTransform getTransform()
 
+    /**
+     * Get this or copy of this with some changes in subtree.
+     * @param changer[in] changer which will be aplied to subtree with this in root
+     * @param translation[out] recommended translation of this after change
+     * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
+     */
+    virtual shared_ptr<const GeometryElement> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const = 0;
+
 protected:
 
     /**
-     * Throw CyclicReferenceException if potential_parent is in subtree with this in root.
+     * Throw CyclicReferenceException if @p potential_parent is in subtree with this in root.
+     * @param potential_parent[in] potential, new parent of this
      */
-    void ensureCanHasAsParent(GeometryElement& potential_parent);
+    void ensureCanHasAsParent(const GeometryElement& potential_parent) const;
 
     /**
-     * Throw CyclicReferenceException if potential_child has this in subtree.
+     * Throw CyclicReferenceException if @p potential_child has this in subtree.
+     * @param potential_child[in] potential, new child of this
      */
-    void ensureCanHasAsChild(GeometryElement& potential_child) { potential_child.ensureCanHasAsParent(*this); }
+    void ensureCanHasAsChild(const GeometryElement& potential_child) const { potential_child.ensureCanHasAsParent(*this); }
 
 };
 
@@ -345,6 +392,12 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         throw OutOfBoundException("GeometryElementLeaf::getChildAt", "child_nr");
     }
 
+    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
+        shared_ptr<const GeometryElement> result(this->shared_from_this());
+        changer.apply(result, translation);
+        return result;
+    }
+
 };
 
 /**
@@ -422,6 +475,25 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
         if (!hasChild() || child_nr > 0) throw OutOfBoundException("GeometryElementTransform::getChildAt", "child_nr");
         return _child;
+    }
+
+    /**
+     * Get shallow copy of this.
+     * @return shallow copy of this
+     */
+    virtual shared_ptr<GeometryElementTransform<dim, Child_Type>> shallowCopy() const = 0;
+
+    shared_ptr<GeometryElementTransform<dim, Child_Type>> shallowCopy(const shared_ptr<ChildType>& child) const {
+        shared_ptr<GeometryElementTransform<dim, Child_Type>> result = shallowCopy();
+        result->setChild(child);
+        return result;
+    }
+
+    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
+        shared_ptr<const GeometryElement> result(this->shared_from_this());
+        if (changer.apply(result, translation) || !hasChild()) return result;
+        shared_ptr<const GeometryElement> new_child = _child->changedVersion(changer, translation);
+        return new_child == _child ? result : shallowCopy(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)));
     }
 
     protected:

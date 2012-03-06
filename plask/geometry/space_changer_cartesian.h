@@ -10,6 +10,8 @@ namespace plask {
  */
 struct CartesianExtend: public GeometryElementChangeSpace<3, 2>/*, public CalculationSpace*/ {
 
+    typedef GeometryElementChangeSpace<3, 2>::ChildType ChildType;
+
     double length;
 
     //Size of calculation space.
@@ -32,6 +34,8 @@ struct CartesianExtend: public GeometryElementChangeSpace<3, 2>/*, public Calcul
     virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const;
     
     virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const;
+
+    virtual shared_ptr<GeometryElementTransform<3, ChildType>> shallowCopy() const;
 
 private:
     ///@return true only if p can be inside this, false if for sure its not inside

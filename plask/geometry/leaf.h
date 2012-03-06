@@ -36,7 +36,7 @@ struct Block: public GeometryElementLeaf<dim> {
      * @param size size/upper corner of block
      * @param material block material
      */
-    explicit Block(const DVec& size = Primitive<dim>::ZERO_VEC, shared_ptr<Material> material = shared_ptr<Material>())
+    explicit Block(const DVec& size = Primitive<dim>::ZERO_VEC, const shared_ptr<Material>& material = shared_ptr<Material>())
         : GeometryElementLeaf<dim>(material), size(size) {}
 
     virtual Rect getBoundingBox() const {
@@ -52,6 +52,8 @@ struct Block: public GeometryElementLeaf<dim> {
     }
 
 };
+
+shared_ptr<GeometryElement> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryElement>& to_change, Vec<3, double>& translation);
 
 typedef Block<2> Rectangle;
 typedef Block<3> Cuboid;

@@ -45,6 +45,36 @@ inline auto operator*(const OtherT& scale, const Vec<dim,T>& v) -> decltype(v*sc
 template <int dim, typename T>
 inline double abs(const Vec<dim,T>& v) { return sqrt(abs2<dim,T>(v)); }
 
+namespace details {
+
+    //construct vector in dim space
+    template <int dim, typename T>
+    struct VecDimConverter {};
+
+    template <typename T>
+    struct VecDimConverter<2, T> {
+        static Vec<2, T>& get(const Vec<2, T>& src) { return src; }
+        static Vec<2, T> get(const Vec<3, T>& src) { return Vec<2, T>(src.tran, src.up); }
+    };
+
+    template <typename T>
+    struct VecDimConverter<3, T> {
+        static Vec<3, T> get(const Vec<2, T>& src) { return Vec<3, T>(T(0.0), src.tran, src.up); }
+        static Vec<3, T> get(const Vec<3, T>& src) { return src; }
+    };
+}
+
+
+/**
+ * Convert vector between space.
+ */
+template <int dst_dim, typename T, int src_dim>
+inline Vec<dst_dim, T> vec(const Vec<src_dim, T>& src) {
+    return details::VecDimConverter<dst_dim, T>::get(src);
+}
+
+
+
 }
 
 #endif // PLASK__VEC_H

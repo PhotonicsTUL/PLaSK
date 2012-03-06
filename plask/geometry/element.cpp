@@ -1,6 +1,30 @@
 #include "element.h"
 
+#include "leaf.h"
+
 namespace plask {
+
+GeometryElement::CompositeChanger::CompositeChanger(const Changer* changer) {
+    changers.push_back(changer);
+}
+
+GeometryElement::CompositeChanger& GeometryElement::CompositeChanger::operator()(const Changer* changer) {
+    changers.push_back(changer);
+    return *this;
+}
+
+GeometryElement::CompositeChanger::~CompositeChanger() {
+    for (auto c: changers) delete c;
+}
+
+bool GeometryElement::CompositeChanger::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
+    for (auto c: changers) if (c->apply(to_change, translation)) return true;
+    return false;
+}
+
+bool GeometryElement::ChangeToBlock::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
+    //changeToBlock
+}
 
 GeometryElement::~GeometryElement() {
     changed(Event(*this, Event::DELETE));
@@ -28,9 +52,11 @@ std::vector< shared_ptr<const GeometryElement> > GeometryElement::Subtree::toLin
     return result;
 }
 
-void GeometryElement::ensureCanHasAsParent(GeometryElement& potential_parent) {
+void GeometryElement::ensureCanHasAsParent(const GeometryElement& potential_parent) const {
     if (isInSubtree(potential_parent))
         throw CyclicReferenceException();
 }
+
+
 
 }   // namespace plask
