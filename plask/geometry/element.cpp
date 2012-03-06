@@ -22,9 +22,16 @@ bool GeometryElement::CompositeChanger::apply(shared_ptr<const GeometryElement>&
     return false;
 }
 
-bool GeometryElement::ChangeToBlock::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
-    //if (this->toChange == to_change)
-    //changeToBlock
+bool GeometryElement::ReplaceChanger::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
+    if (to_change != from) return false;
+    to_change = to;
+    if (translation) *translation = this->translation;
+    return true;
+}
+
+GeometryElement::ToBlockChanger::ToBlockChanger(const shared_ptr<const GeometryElement>& toChange, const shared_ptr<Material> &material) {
+    from = toChange;
+    to = changeToBlock(material, from, translation);
 }
 
 GeometryElement::~GeometryElement() {

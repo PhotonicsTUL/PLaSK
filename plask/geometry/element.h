@@ -57,8 +57,9 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         Type _type;
         
     public:
-        const GeometryElement& source() { return _source; }
-        const Type type() { return _type; }
+
+        const GeometryElement& source() const { return _source; }
+        const Type type() const { return _type; }
         
         Event(GeometryElement& source, Type type): _source(source), _type(type) {}
         virtual ~Event() {} //for eventual subclassing
@@ -134,14 +135,29 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
 
     };
-
-    struct ChangeToBlock {
-
-        shared_ptr<const GeometryElement> toChange;
-
-        ChangeToBlock(shared_ptr<const GeometryElement> toChange): toChange(toChange) {}
-
+    
+    struct ReplaceChanger: public Changer {
+        
+        shared_ptr<const GeometryElement> from, to;
+        Vec<3, double> translation;
+        
+        ReplaceChanger() {}
+        
+        ReplaceChanger(const shared_ptr<const GeometryElement>& from, const shared_ptr<const GeometryElement>& to, Vec<3, double> translation)
+            : from(from), to(to), translation(translation) {}
+        
+        template <typename F>
+        ReplaceChanger(const shared_ptr<const GeometryElement>&, F calc_replace): from(from) {
+            this->to = calc_replace(this->from, &this->translation);
+        }
+        
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
+        
+    };
+
+    struct ToBlockChanger: ReplaceChanger {
+
+        ToBlockChanger(const shared_ptr<const GeometryElement>& toChange, const shared_ptr<Material>& material);
 
     };
     
