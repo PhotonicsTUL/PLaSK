@@ -8,7 +8,7 @@ using namespace plask::python;
 // Declare some initialization functions
 namespace plask { namespace python {
 
-void initMaterial();
+void initMaterials();
 void initGeometry();
 void register_vector();
 
@@ -49,7 +49,7 @@ BOOST_PYTHON_MODULE(plaskcore)
 
 
     // Init subpackages
-    initMaterial();
+    initMaterials();
     initGeometry();
 
     // Modules

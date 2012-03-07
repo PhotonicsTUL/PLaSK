@@ -7,13 +7,13 @@ if sys.version < "2.7":
     unittest.TestCase.assertIsNone = lambda self, value: self.assertTrue(item is None)
     unittest.TestCase.assertIn = lambda self, item, container: self.assertTrue(item in container)
 
-import plask, plask.material, plask.geometry
+import plask, plask.materials, plask.geometry
 
 class SimpleGeometry(unittest.TestCase):
 
     def setUp(self):
-        @plask.material.simple
-        class Dumb(plask.material.Material): pass
+        @plask.materials.simple
+        class Dumb(plask.materials.Material): pass
 
     def testPrimitives(self):
         '''Test the properties of primitives'''
@@ -54,8 +54,8 @@ class SimpleGeometry(unittest.TestCase):
 class GeometryObjects(unittest.TestCase):
 
     def setUp(self):
-        @plask.material.simple
-        class Mat(plask.material.Material): pass
+        @plask.materials.simple
+        class Mat(plask.materials.Material): pass
 
         self.mat = Mat()
         self.block53 = plask.geometry.Block2D(5,3, self.mat)

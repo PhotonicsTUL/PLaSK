@@ -3,47 +3,54 @@ from plaskcore import *
 
 from numpy import *
 
-## ## plask.material ## ##
+## ## plask.materials ## ##
 
-materials = material.database
+materialsdb = materials.database = materials.MaterialsDB.getDefault()
 
-# Create factories for default materials
-for mat in material.database:
-    name = mat.split(":")[0]
-    material.__dict__[name] = lambda **kwargs: material.database.get(name, **kwargs)
+def updateFactories():
+    '''For each material in default database make factory in plask.materials'''
+    def factory(name):
+        return lambda **kwargs: materialsdb.get(name, **kwargs)
+    for mat in materials.database:
+        name = mat.split(":")[0]
+        if name not in materials.__dict__:
+            materials.__dict__[name] = factory(name)
+materials.updateFactories = updateFactories
+del updateFactories
+materials.updateFactories()
 
-def register_material(Material=None, name=None, complex=False, DB=None):
-    '''Function to register a new material'''
+def register_material(cls=None, name=None, complex=False, DB=None):
+    '''Register a custom Python material'''
 
     # A trick allowing passing arguments to decorator
-    if Material is None:
+    if cls is None:
         return lambda M: register_material(M, name=name, DB=DB)
-    elif not issubclass(Material, material.Material):
-        raise TypeError("Wrong decorated class (must be a subclass of plask.material.Material")
+    elif not issubclass(cls, materials.Material):
+        raise TypeError("Wrong decorated class (must be a subclass of plask.materials.Material")
 
-    if 'name' in Material.__dict__:
+    if 'name' in cls.__dict__:
         if name is not None:
             raise ValueError("Name specified both in decorator parameter and class body")
     elif name is not None:
-        Material.name = name
+        cls.name = name
     else:
-        Material.name = Material.__name__
+        cls.name = cls.__name__
 
     if DB is None:
-        DB = material.database
+        DB = materials.database
 
     if complex:
-        material._register_material_complex(Material.name, Material, DB)
+        materials._register_material_complex(cls.name, cls, DB)
     else:
-        material._register_material_simple(Material.name, Material, DB)
+        materials._register_material_simple(cls.name, cls, DB)
 
-    return Material
+    return cls
 
-material.register_material = register_material
+materials.register_material = register_material
 del register_material
 
-material.simple = lambda mat, **kwargs: material.register_material(mat, complex=False, **kwargs)
-material.complex = lambda mat, **kwargs: material.register_material(mat, complex=True, **kwargs)
+materials.simple = lambda mat, **kwargs: materials.register_material(mat, complex=False, **kwargs)
+materials.complex = lambda mat, **kwargs: materials.register_material(mat, complex=True, **kwargs)
 
 
 ## ## plask.geometry ## ##

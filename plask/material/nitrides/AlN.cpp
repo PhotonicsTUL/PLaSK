@@ -12,7 +12,7 @@ AlN::AlN() {
 	condTmax_RT = 285;
 }
 
-std::string AlN::name() const { NAME; }
+std::string AlN::name() const { return NAME; }
 
 MI_PROPERTY(AlN, condT,
 			MISource("M. Kuc 12.02.2012"),

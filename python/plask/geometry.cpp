@@ -77,7 +77,7 @@ shared_ptr<GeometryManager> Geometry__init__(py::tuple args, py::dict kwargs) {
 
     if (!has_materialsdb) {
         py::object plask_module = py::import("plask");
-        materialsDB = py::extract<MaterialsDB*>(plask_module.attr("material").attr("database"));
+        materialsDB = &MaterialsDB::getDefault();
     }
     shared_ptr<GeometryManager> geometry(new GeometryManager());
     if (filename != "") geometry->loadFromFile(filename, *materialsDB);
@@ -86,13 +86,13 @@ shared_ptr<GeometryManager> Geometry__init__(py::tuple args, py::dict kwargs) {
 
 void Geometry_loadFromXMLString(GeometryManager& self, const std::string &inputXMLstr, const shared_ptr<MaterialsDB>& DB) {
     py::object plask_module = py::import("plask");
-    MaterialsDB* db = DB? DB.get() : py::extract<MaterialsDB*>(plask_module.attr("material").attr("database"));
+    MaterialsDB* db = DB? DB.get() : &MaterialsDB::getDefault();
     self.loadFromXMLString(inputXMLstr, *db);
 }
 
 void Geometry_loadFromFile(GeometryManager& self, const std::string &filename, const shared_ptr<MaterialsDB>& DB) {
     py::object plask_module = py::import("plask");
-    MaterialsDB* db = DB? DB.get() : py::extract<MaterialsDB*>(plask_module.attr("material").attr("database"));
+    MaterialsDB* db = DB? DB.get() : &MaterialsDB::getDefault();
     self.loadFromFile(filename, *DB);
 }
 

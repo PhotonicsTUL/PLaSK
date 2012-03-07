@@ -374,10 +374,10 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
     return result;
 }
 
-void initMaterial() {
+void initMaterials() {
 
-    py::object materials_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.material"))) };
-    py::scope().attr("material") = materials_module;
+    py::object materials_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.materials"))) };
+    py::scope().attr("materials") = materials_module;
     py::scope scope = materials_module;
 
     py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB",
@@ -452,7 +452,7 @@ void initMaterial() {
 
     ;
 
-    py::enum_<Material::Kind> MaterialKind("Kind"); MaterialKind
+    py::enum_<Material::Kind> MaterialKind("kind"); MaterialKind
         .value("NONE", Material::NONE)
         .value("SEMICONDUCTOR", Material::SEMICONDUCTOR)
         .value("OXIDE", Material::OXIDE)
@@ -466,8 +466,6 @@ void initMaterial() {
 
     py::def("_register_material_complex", &registerComplexMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
             "Register new complex material class to the database");
-
-    scope.attr("database") = MaterialsDB::getDefault();
 }
 
 }} // namespace plask::python
