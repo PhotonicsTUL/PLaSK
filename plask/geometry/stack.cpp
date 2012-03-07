@@ -10,7 +10,7 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
     shared_ptr< StackContainer<2> > result(
                     reader.source.getAttributeValue(repeat_attr) == nullptr ?
                     new StackContainer<2>(baseH) :
-                    new MultiStackContainer<2>(baseH, XML::getAttribute(reader.source, repeat_attr, 1))
+                    new MultiStackContainer<2>(XML::getAttribute(reader.source, repeat_attr, 1), baseH)
                 );
     read_children<StackContainer<2>>(reader,
             [&]() {
@@ -30,7 +30,7 @@ shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
     shared_ptr< StackContainer<3> > result(
                     reader.source.getAttributeValue(repeat_attr) == nullptr ?
                     new StackContainer<3>(baseH) :
-                    new MultiStackContainer<3>(baseH, XML::getAttribute(reader.source, repeat_attr, 1))
+                    new MultiStackContainer<3>(XML::getAttribute(reader.source, repeat_attr, 1), baseH)
                 );
     read_children<StackContainer<3>>(reader,
             [&]() {

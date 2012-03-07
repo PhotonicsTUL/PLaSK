@@ -11,6 +11,20 @@ struct Leafs2d {
     Leafs2d(): dumbMaterial(new DumbMaterial()), block_5_3(new plask::Block<2>(plask::vec(5.0, 3.0), dumbMaterial)) {}
 };
 
+void test_multi_stack(plask::shared_ptr<plask::MultiStackContainer<2>> multistack, plask::PathHints& p) {
+    // 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
+    BOOST_CHECK_EQUAL(multistack->getBoundingBox(), plask::Box2d(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
+    BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 39.0)) != nullptr);
+    BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 41.0)) == nullptr);
+    BOOST_CHECK_EQUAL(multistack->getLeafsBoundingBoxes(p).size(), 5);
+    BOOST_CHECK_EQUAL(multistack->getLeafs().size(), 10);
+    {
+        std::vector<plask::Box2d> bb = multistack->getLeafsBoundingBoxes();
+        BOOST_REQUIRE_EQUAL(bb.size(), 10);
+        for (int i = 0; i < 10; ++i) BOOST_CHECK_EQUAL(bb[i], plask::Box2d(plask::vec(0.0, 10.0 + i*3), plask::vec(5.0, 10.0 + 3.0 + i*3)));
+    }
+}
+
 BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
 
     BOOST_AUTO_TEST_CASE(primitives) {
@@ -48,27 +62,23 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         plask::shared_ptr<plask::MultiStackContainer<2>> multistack(new plask::MultiStackContainer<2>(5, 10.0));
         multistack->add(block_5_3, plask::align::Tran(0.0));
         plask::PathHints p; p += multistack->add(block_5_3, plask::align::Tran(0.0));
-        // 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
-        BOOST_CHECK_EQUAL(multistack->getBoundingBox(), plask::Box2d(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
+        test_multi_stack(multistack, p);
         BOOST_CHECK_EQUAL(multistack->getMaterial(plask::vec(4.0, 39.0)), dumbMaterial);
-        BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 41.0)) == nullptr);
-        BOOST_CHECK_EQUAL(multistack->getLeafsBoundingBoxes(p).size(), 5);
-        BOOST_CHECK_EQUAL(multistack->getLeafs().size(), 10);
-        {
-            std::vector<plask::Box2d> bb = multistack->getLeafsBoundingBoxes();
-            BOOST_REQUIRE_EQUAL(bb.size(), 10);
-            for (int i = 0; i < 10; ++i) BOOST_CHECK_EQUAL(bb[i], plask::Box2d(plask::vec(0.0, 10.0 + i*3), plask::vec(5.0, 10.0 + 3.0 + i*3)));
-        }
     }
 
     BOOST_AUTO_TEST_CASE(manager_loading) {
         plask::MaterialsDB materialsDB;
         initDumbMaterialDb(materialsDB);
         plask::GeometryManager manager;
-        manager.loadFromXMLString("<geometry axis=\"xy\"><stack2d repeat=\"2\"><child><block2d name=\"block1\" x=\"4\" y=\"2\" material=\"Al\" /></child><child><rectangle name=\"block2\" x=\"4\" y=\"2\" material=\"Al\" /></child><ref name=\"block1\" /></stack2d></geometry>", materialsDB);
+        manager.loadFromXMLString(
+                    "<geometry axis=\"xy\"><stack2d repeat=\"5\" from=\"10\" name=\"multistack\">"
+                    "<child x=\"0\"><block2d name=\"block_5_3\" x=\"5\" y=\"3\" material=\"Al\" /></child>"
+                    "<child x=\"0\" path=\"p\"><ref name=\"block_5_3\" /></child>"
+                    "</stack2d></geometry>", materialsDB);
         //BOOST_CHECK_EQUAL(manager.elements.size(), 3);
-        BOOST_CHECK(manager.getElement("block1") != nullptr);
+        BOOST_CHECK(manager.getElement("block_5_3") != nullptr);
         BOOST_CHECK(manager.getElement("notexist") == nullptr);
+        test_multi_stack(manager.getElement<plask::MultiStackContainer<2>>("multistack"), manager.requirePathHints("p"));
     }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -35,6 +35,10 @@ struct GeometryManager {
     /// Allow to access elements by name.
     std::map<std::string, shared_ptr<GeometryElement> > namedElements;
 
+    PathHints& requirePathHints(const std::string& path_hints_name);
+
+    const PathHints& requirePathHints(const std::string& path_hints_name) const;
+
     /**
      * Get element with given name.
      * @param name name of element

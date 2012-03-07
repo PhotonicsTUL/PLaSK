@@ -5,6 +5,18 @@
 
 namespace plask {
 
+PathHints& GeometryManager::requirePathHints(const std::string& path_hints_name) {
+    auto result_it = pathHints.find(path_hints_name);
+    if (result_it == pathHints.end()) throw Exception("No such path hints: %1%", path_hints_name);
+    return result_it->second;
+}
+
+const PathHints& GeometryManager::requirePathHints(const std::string& path_hints_name) const {
+    auto result_it = pathHints.find(path_hints_name);
+    if (result_it == pathHints.end()) throw Exception("No such path hints: %1%", path_hints_name);
+    return result_it->second;
+}
+
 shared_ptr<GeometryElement> GeometryManager::getElement(const std::string &name) const {
     auto result_it = namedElements.find(name);
     return result_it != namedElements.end() ? result_it->second : shared_ptr<GeometryElement>();
