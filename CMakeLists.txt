@@ -42,6 +42,8 @@ include(CMakeDependentOption)
 
 option(BUILD_SHARED_MODULE_LIBS "Build shared libraries for modules." OFF)
 
+option(BUILD_GUI "Build GUI program (require QT)" ON)
+
 option(BUILD_DOCUMENTATION "Build doxygen documentation." OFF)
 
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
@@ -93,12 +95,13 @@ file(GLOB_RECURSE plask_extlib_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
 
+# GUI sources
+file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 
 # ---------- plask library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_extlib_src} ${plask_headers})
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
-
 
 # ---------- Python --------------------------------------------
 
@@ -152,6 +155,14 @@ if (BUILD_PYTHON)
     add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
 
 endif(BUILD_PYTHON)
+
+# ---------- GUI program --------------------------------------------
+if(BUILD_GUI)
+    find_package(Qt4 4.4.3 REQUIRED QtCore QtGui)
+    include(${QT_USE_FILE})
+    add_executable(plaskgui ${plaskgui_src})
+    target_link_libraries(plaskgui libplask ${QT_LIBRARIES})
+endif(BUILD_GUI)
 
 # ---------- macro for testing --------------------------------------------
 if(WIN32)
