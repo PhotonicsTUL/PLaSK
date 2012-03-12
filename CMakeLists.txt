@@ -1,7 +1,7 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required (VERSION 2.8)
-project (plask CXX)
+project (plask)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
 set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
@@ -158,9 +158,16 @@ endif(BUILD_PYTHON)
 
 # ---------- GUI program --------------------------------------------
 if(BUILD_GUI)
+    SET(PLASK_GUI_MOC_HDRS gui/mainwindow.h)
+    #SET(PLASK_GUI_UIS ./src/ui/Dialog1.ui)
+    SET(PLASK_GUI_RCS gui/plaskgui.qrc)
+
     find_package(Qt4 4.4.3 REQUIRED QtCore QtGui)
     include(${QT_USE_FILE})
-    add_executable(plaskgui ${plaskgui_src})
+    QT4_ADD_RESOURCES(PLASK_GUI_RC_SRCS ${PLASK_GUI_RCS})
+    #QT4_WRAP_UI(PLASK_GUI_UI_HDRS ${PLASK_GUI_UIS})
+    QT4_WRAP_CPP(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS} )
+    add_executable(plaskgui ${plaskgui_src} ${PLASK_GUI_MOC_SRCS} ${PLASK_GUI_RC_SRCS}) # ${PLASK_GUI_UI_HDRS}
     target_link_libraries(plaskgui libplask ${QT_LIBRARIES})
 endif(BUILD_GUI)
 
