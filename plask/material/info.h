@@ -7,6 +7,7 @@ This file includes classes which stores meta-informations about materials.
 
 #include <string>
 #include <map>
+#include <vector>
 #include <utility>
 
 namespace plask {
@@ -73,6 +74,21 @@ struct MaterialInfo {
         wl          ///<Wavelength [nm]
     };
 
+    /**
+     * Represent link ("see also") to property in class.
+     */
+    struct Link {
+        ///Class name.
+        std::string className;
+        ///Property.
+        PROPERTY_NAME property;
+        ///Link comment.
+        std::string comment;
+
+        Link(std::string className, PROPERTY_NAME property, std::string comment = std::string())
+            : className(className), property(property), comment(comment) {}
+    };
+
     ///Name of parent class
     std::string parent;
 
@@ -85,6 +101,9 @@ struct MaterialInfo {
 
         ///Property arguments constraints (ranges)
         std::map<ARGUMENT_NAME, ArgumentRange> _argumentRange;
+
+        ///See also links to properties in another class.
+        std::vector<Link> _links;
 
         ///Information about source of property calclulation algorithm
         std::string _source;
@@ -117,6 +136,8 @@ struct MaterialInfo {
 
         const ArgumentRange& getArgumentRange(ARGUMENT_NAME argument);
 
+        const std::vector<Link>& getLinks() const { return _links; }
+
         PropertyInfo& addSource(const std::string& sourceToAdd) { addToString(this->_source, sourceToAdd); return *this; }
 
         PropertyInfo& addComment(const std::string& commentToAdd) { addToString(this->_comment, commentToAdd); return *this; }
@@ -127,6 +148,9 @@ struct MaterialInfo {
             return setArgumentRange(argument, ArgumentRange(from, to));
         }
 
+        PropertyInfo& addLink(const Link& link) { _links.push_back(link); return *this; }
+
+        PropertyInfo& addLink(Link&& link) { _links.push_back(link); return *this; }
     };
 
     std::map<PROPERTY_NAME, PropertyInfo> propertyInfo;
@@ -250,6 +274,19 @@ struct MIArgumentRange {
     MaterialInfo::ARGUMENT_NAME arg; double from, to;
     MIArgumentRange(MaterialInfo::ARGUMENT_NAME arg, double from, double to): arg(arg), from(from), to(to) {}
     void set(MaterialInfo::PropertyInfo& p) const { p.setArgumentRange(arg, from, to); }
+};
+
+struct MISee {
+    MaterialInfo::Link value;
+    template<typename ...Args> MISee(Args&&... params): value(std::forward<Args>(params)...) {}
+    void set(MaterialInfo::PropertyInfo& p) const { p.addLink(value); }
+};
+
+template <typename materialClass>
+struct MISeeClass {
+    MaterialInfo::Link value;
+    template<typename ...Args> MISeeClass(Args&&... params): value(materialClass::NAME, std::forward<Args>(params)...) {}
+    void set(MaterialInfo::PropertyInfo& p) const { p.addLink(value); }
 };
 
 }
