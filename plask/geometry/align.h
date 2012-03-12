@@ -1,6 +1,10 @@
 #ifndef PLASK__GEOMETRY_ALIGN_H
 #define PLASK__GEOMETRY_ALIGN_H
 
+/** @file
+This file includes aligners.
+*/
+
 #include "transform.h"
 #include <memory>   //unique_ptr
 
