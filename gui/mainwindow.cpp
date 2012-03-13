@@ -86,6 +86,7 @@ void MainWindow::open() {
     QString loadName = QFileDialog::getOpenFileName(this, tr("Choose name of experiment file to open"), ".", tr("XPML (*.xpml *.xpl)"));
     if (loadName.isEmpty()) return;
     document.open(loadName);
+    view->setTransform(QTransform(1.0, 0.0, 0.0, -1.0, 0.0, 0.0));  //flip vertical
     view->scale(10.0, 10.0);
     scene->addItem(new GeometryElementItem(document.manager.getRootElement<plask::GeometryElementD<2>>(0)));
 }
