@@ -73,6 +73,7 @@ Typically, the code of the function should iterate over all the points of the @a
 
 #include "mesh.h"
 #include "../exceptions.h"
+#include "../memory.h"
 
 namespace plask {
 

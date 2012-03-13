@@ -10,7 +10,8 @@ This file includes base classes for materials and material database class.
 #include <vector>
 #include <functional>
 
-#include <plask/config.h>
+#include "../memory.h"
+#include <plask/config.h>   //dcomplex
 #include "../exceptions.h"
 
 #include <type_traits>

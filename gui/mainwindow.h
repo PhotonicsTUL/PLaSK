@@ -42,6 +42,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QGraphicsScene>
+#include "document.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -50,7 +52,6 @@ class QMenu;
 class QTextEdit;
 QT_END_NAMESPACE
 
-//! [0]
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -60,21 +61,24 @@ public:
 
 private slots:
     void newLetter();
+    void open();
     void save();
     void print();
     void undo();
     void about();
-    void insertCustomer(const QString &customer);
-    void addParagraph(const QString &paragraph);
 
 private:
+    Document document;
+
     void createActions();
     void createMenus();
     void createToolBars();
     void createStatusBar();
     void createDockWindows();
 
-    QTextEdit *textEdit;
+    QGraphicsView *view;
+    QGraphicsScene *scene;
+
     QListWidget *customerList;
     QListWidget *paragraphsList;
 
@@ -85,6 +89,7 @@ private:
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
     QAction *newLetterAct;
+    QAction *openAct;
     QAction *saveAct;
     QAction *printAct;
     QAction *undoAct;
@@ -92,6 +97,5 @@ private:
     QAction *aboutQtAct;
     QAction *quitAct;
 };
-//! [0]
 
 #endif

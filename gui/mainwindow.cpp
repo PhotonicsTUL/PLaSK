@@ -38,17 +38,17 @@
 **
 ****************************************************************************/
 
-//! [0]
 #include <QtGui>
+#include "modelext/draw.h"
 
 #include "mainwindow.h"
-//! [0]
 
-//! [1]
 MainWindow::MainWindow()
 {
-    textEdit = new QTextEdit;
-    setCentralWidget(textEdit);
+    scene = new QGraphicsScene;
+    view = new QGraphicsView;
+    view->setScene(scene);
+    setCentralWidget(view);
 
     createActions();
     createMenus();
@@ -56,66 +56,20 @@ MainWindow::MainWindow()
     createStatusBar();
     createDockWindows();
 
-    setWindowTitle(tr("Dock Widgets"));
+    setWindowTitle(tr("PLaSK GUI"));
 
     newLetter();
     setUnifiedTitleAndToolBarOnMac(true);
 }
-//! [1]
 
-//! [2]
 void MainWindow::newLetter()
 {
-    textEdit->clear();
-
-    QTextCursor cursor(textEdit->textCursor());
-    cursor.movePosition(QTextCursor::Start);
-    QTextFrame *topFrame = cursor.currentFrame();
-    QTextFrameFormat topFrameFormat = topFrame->frameFormat();
-    topFrameFormat.setPadding(16);
-    topFrame->setFrameFormat(topFrameFormat);
-
-    QTextCharFormat textFormat;
-    QTextCharFormat boldFormat;
-    boldFormat.setFontWeight(QFont::Bold);
-    QTextCharFormat italicFormat;
-    italicFormat.setFontItalic(true);
-
-    QTextTableFormat tableFormat;
-    tableFormat.setBorder(1);
-    tableFormat.setCellPadding(16);
-    tableFormat.setAlignment(Qt::AlignRight);
-    cursor.insertTable(1, 1, tableFormat);
-    cursor.insertText("The Firm", boldFormat);
-    cursor.insertBlock();
-    cursor.insertText("321 City Street", textFormat);
-    cursor.insertBlock();
-    cursor.insertText("Industry Park");
-    cursor.insertBlock();
-    cursor.insertText("Some Country");
-    cursor.setPosition(topFrame->lastPosition());
-    cursor.insertText(QDate::currentDate().toString("d MMMM yyyy"), textFormat);
-    cursor.insertBlock();
-    cursor.insertBlock();
-    cursor.insertText("Dear ", textFormat);
-    cursor.insertText("NAME", italicFormat);
-    cursor.insertText(",", textFormat);
-    for (int i = 0; i < 3; ++i)
-        cursor.insertBlock();
-    cursor.insertText(tr("Yours sincerely,"), textFormat);
-    for (int i = 0; i < 3; ++i)
-        cursor.insertBlock();
-    cursor.insertText("The Boss", textFormat);
-    cursor.insertBlock();
-    cursor.insertText("ADDRESS", italicFormat);
 }
-//! [2]
 
-//! [3]
 void MainWindow::print()
 {
 #ifndef QT_NO_PRINTDIALOG
-    QTextDocument *document = textEdit->document();
+    /*QTextDocument *document = textEdit->document();
     QPrinter printer;
 
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
@@ -124,15 +78,22 @@ void MainWindow::print()
 
     document->print(&printer);
 
-    statusBar()->showMessage(tr("Ready"), 2000);
+    statusBar()->showMessage(tr("Ready"), 2000);*/
 #endif
 }
-//! [3]
 
-//! [4]
+void MainWindow::open() {
+    QString loadName = QFileDialog::getOpenFileName(this, tr("Choose name of experiment file to open"), ".", tr("XPML (*.xpml *.xpl)"));
+    if (loadName.isEmpty()) return;
+    document.open(loadName);
+    view->scale(10.0, 10.0);
+    scene->addItem(new GeometryElementItem(document.manager.getRootElement<plask::GeometryElementD<2>>(0)));
+}
+
+
 void MainWindow::save()
 {
-    QString fileName = QFileDialog::getSaveFileName(this,
+    /*QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Choose a file name"), ".",
                         tr("HTML (*.html *.htm)"));
     if (fileName.isEmpty())
@@ -151,66 +112,18 @@ void MainWindow::save()
     out << textEdit->toHtml();
     QApplication::restoreOverrideCursor();
 
-    statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);
+    statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);*/
 }
-//! [4]
 
-//! [5]
 void MainWindow::undo()
 {
-    QTextDocument *document = textEdit->document();
-    document->undo();
+    /*QTextDocument *document = textEdit->document();
+    document->undo();*/
 }
-//! [5]
-
-//! [6]
-void MainWindow::insertCustomer(const QString &customer)
-{
-    if (customer.isEmpty())
-        return;
-    QStringList customerList = customer.split(", ");
-    QTextDocument *document = textEdit->document();
-    QTextCursor cursor = document->find("NAME");
-    if (!cursor.isNull()) {
-        cursor.beginEditBlock();
-        cursor.insertText(customerList.at(0));
-        QTextCursor oldcursor = cursor;
-        cursor = document->find("ADDRESS");
-        if (!cursor.isNull()) {
-            for (int i = 1; i < customerList.size(); ++i) {
-                cursor.insertBlock();
-                cursor.insertText(customerList.at(i));
-            }
-            cursor.endEditBlock();
-        }
-        else
-            oldcursor.endEditBlock();
-    }
-}
-//! [6]
-
-//! [7]
-void MainWindow::addParagraph(const QString &paragraph)
-{
-    if (paragraph.isEmpty())
-        return;
-    QTextDocument *document = textEdit->document();
-    QTextCursor cursor = document->find(tr("Yours sincerely,"));
-    if (cursor.isNull())
-        return;
-    cursor.beginEditBlock();
-    cursor.movePosition(QTextCursor::PreviousBlock, QTextCursor::MoveAnchor, 2);
-    cursor.insertBlock();
-    cursor.insertText(paragraph);
-    cursor.insertBlock();
-    cursor.endEditBlock();
-
-}
-//! [7]
 
 void MainWindow::about()
 {
-   QMessageBox::about(this, tr("About Dock Widgets"),
+   QMessageBox::about(this, tr("About PLaSK GUI"),
             tr("The <b>Dock Widgets</b> example demonstrates how to "
                "use Qt's dock widgets. You can enter your own text, "
                "click a customer to add a customer name and "
@@ -224,6 +137,11 @@ void MainWindow::createActions()
     newLetterAct->setShortcuts(QKeySequence::New);
     newLetterAct->setStatusTip(tr("Create a new form letter"));
     connect(newLetterAct, SIGNAL(triggered()), this, SLOT(newLetter()));
+
+    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
+    openAct->setShortcuts(QKeySequence::Open);
+    openAct->setStatusTip(tr("Open experiment file"));
+    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save..."), this);
     saveAct->setShortcuts(QKeySequence::Save);
@@ -258,6 +176,7 @@ void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newLetterAct);
+    fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(printAct);
     fileMenu->addSeparator();
@@ -279,6 +198,7 @@ void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
     fileToolBar->addAction(newLetterAct);
+    fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
     fileToolBar->addAction(printAct);
 
@@ -286,14 +206,11 @@ void MainWindow::createToolBars()
     editToolBar->addAction(undoAct);
 }
 
-//! [8]
 void MainWindow::createStatusBar()
 {
     statusBar()->showMessage(tr("Ready"));
 }
-//! [8]
 
-//! [9]
 void MainWindow::createDockWindows()
 {
     QDockWidget *dock = new QDockWidget(tr("Customers"), this);
@@ -339,4 +256,4 @@ void MainWindow::createDockWindows()
     connect(paragraphsList, SIGNAL(currentTextChanged(QString)),
             this, SLOT(addParagraph(QString)));
 }
-//! [9]
+

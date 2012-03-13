@@ -2,6 +2,7 @@
 #define PLASK_GUI_DOCUMENT_H
 
 #include <plask/geometry/manager.h>
+#include <QString>
 
 /**
  * Represent document with experiment description.
@@ -10,9 +11,12 @@
 class Document
 {
 
+public:
+
     plask::GeometryManager manager;
 
-public:
+    void open(const QString& fileName);
+
     Document();
 };
 

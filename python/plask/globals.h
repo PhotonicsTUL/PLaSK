@@ -4,6 +4,7 @@
 #include <cmath>
 #include <boost/python.hpp>
 #include <plask/config.h>
+#include <plask/memory.h>
 
 namespace plask { namespace python {
 

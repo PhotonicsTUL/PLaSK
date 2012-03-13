@@ -70,6 +70,11 @@ struct GeometryManager {
     template <typename RequiredElementType>
     shared_ptr<RequiredElementType> getElement(const std::string& name) const;
 
+    shared_ptr<GeometryElement> getRootElement(const std::size_t index) const { return roots[index]; }
+
+    template <typename RequiredElementType>
+    shared_ptr<RequiredElementType> getRootElement(const std::size_t index) const;
+
     /**
      * Get element with given name or throw exception if element with given name does not exist.
      * @param name name of element
@@ -134,6 +139,18 @@ inline shared_ptr<RequiredElementType> GeometryManager::getElement(const std::st
 template <>
 inline shared_ptr<GeometryElement> GeometryManager::getElement<GeometryElement>(const std::string& name) const {
     return getElement(name);
+}
+
+//specialization for most types
+template <typename RequiredElementType>
+inline shared_ptr<RequiredElementType> GeometryManager::getRootElement(const std::size_t index) const {
+    return dynamic_pointer_cast<RequiredElementType>(getRootElement(index));
+}
+
+//specialization for GeometryElement which doesn't required dynamic_cast
+template <>
+inline shared_ptr<GeometryElement> GeometryManager::getRootElement<GeometryElement>(const std::size_t index) const {
+    return getRootElement(index);
 }
 
 //specialization for most types
