@@ -35,12 +35,27 @@ struct GeometryManager {
     /// Allow to access elements by name.
     std::map<std::string, shared_ptr<GeometryElement> > namedElements;
 
+    /// Roots elements.
+    std::vector< shared_ptr<GeometryElement> > roots;
+
+    /**
+     * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
+     * @param path_hints_name name of path hints to get
+     * @return path hints with given name
+     * @throw plask::Exception if there is no path hints with name @p path_hints_name
+     */
     PathHints& requirePathHints(const std::string& path_hints_name);
 
+    /**
+     * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
+     * @param path_hints_name name of path hints to get
+     * @return path hints with given name
+     * @throw plask::Exception if there is no path hints with name @p path_hints_name
+     */
     const PathHints& requirePathHints(const std::string& path_hints_name) const;
 
     /**
-     * Get element with given name.
+     * Get element with given @p name.
      * @param name name of element
      * @return element with given @p name or @c nullptr if there is no element with given name
      */

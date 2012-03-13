@@ -41,7 +41,7 @@ void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& ma
                     throw XMLUnexpectedElementException("end of \"geometry\" tag");
                 return;  //end of geometry
             case irr::io::EXN_ELEMENT:
-                reader.readElement();
+                roots.push_back(reader.readElement());
                 break;
             case irr::io::EXN_COMMENT:
                 break;   //just ignore
