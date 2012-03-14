@@ -1,6 +1,7 @@
 #include "tree.h"
 
 #include "document.h"
+#include "modelext/text.h"
 
 
 void GeometryTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
@@ -52,7 +53,7 @@ std::size_t GeometryTreeItem::indexInParent() const {
 QVariant GeometryTreeItem::data(int column) const {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
         //some representation of e
-        return "item";
+        return toStr(e);
     } else  //should never happen
         QVariant();
 }
