@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef PLASK_GUI_MAINWINDOW_H
+#define PLASK_GUI_MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QGraphicsScene>
@@ -98,4 +98,4 @@ private:
     QAction *quitAct;
 };
 
-#endif
+#endif  // PLASK_GUI_MAINWINDOW_H

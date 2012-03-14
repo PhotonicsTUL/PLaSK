@@ -11,6 +11,7 @@ This file includes base classes for geometries elements.
 
 #include "../material/material.h"
 #include "primitives.h"
+#include "../utils/iterators.h"
 
 #include <boost/signals2.hpp>
 
@@ -227,6 +228,23 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     virtual std::size_t getChildCount() const = 0;
 
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const = 0;
+
+private:
+    struct ChildGetter {    //used by begin(), end()
+        shared_ptr<const GeometryElement> el;
+        ChildGetter(const shared_ptr<const GeometryElement>& el): el(el) {}
+        shared_ptr<GeometryElement> operator()(std::size_t index) const { return el->getChildAt(index); }
+    };
+
+public:
+
+    FunctorIndexedIterator<ChildGetter> begin() const {
+        return FunctorIndexedIterator<ChildGetter>(ChildGetter(this->shared_from_this()), 0);
+    }
+
+    FunctorIndexedIterator<ChildGetter> end() const {
+        return FunctorIndexedIterator<ChildGetter>(ChildGetter(this->shared_from_this()), getChildCount());
+    }
 
     //virtual GeometryTransform getTransform()
 

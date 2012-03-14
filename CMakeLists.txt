@@ -158,7 +158,7 @@ endif(BUILD_PYTHON)
 
 # ---------- GUI program --------------------------------------------
 if(BUILD_GUI)
-    SET(PLASK_GUI_MOC_HDRS gui/mainwindow.h)
+    SET(PLASK_GUI_MOC_HDRS gui/mainwindow.h gui/tree.h)
     #SET(PLASK_GUI_UIS ./src/ui/Dialog1.ui)
     SET(PLASK_GUI_RCS gui/plaskgui.qrc)
 
