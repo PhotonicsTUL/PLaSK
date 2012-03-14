@@ -43,6 +43,7 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include <QTreeView>
 #include "document.h"
 
 QT_BEGIN_NAMESPACE
@@ -50,6 +51,7 @@ class QAction;
 class QListWidget;
 class QMenu;
 class QTextEdit;
+class QTreeView;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -79,8 +81,7 @@ private:
     QGraphicsView *view;
     QGraphicsScene *scene;
 
-    QListWidget *customerList;
-    QListWidget *paragraphsList;
+    QTreeView *treeView;
 
     QMenu *fileMenu;
     QMenu *editMenu;

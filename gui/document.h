@@ -3,6 +3,7 @@
 
 #include <plask/geometry/manager.h>
 #include <QString>
+#include "tree.h"
 
 /**
  * Represent document with experiment description.
@@ -14,6 +15,8 @@ class Document
 public:
 
     plask::GeometryManager manager;
+
+    GeometryTreeModel treeModel;
 
     void open(const QString& fileName);
 

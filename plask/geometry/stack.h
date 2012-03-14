@@ -400,6 +400,14 @@ public:
         return result;
     }
 
+    virtual std::size_t getRealChildCount() const {
+        return StackContainer<dim>::getChildCount();
+    }
+
+    virtual shared_ptr<GeometryElement> getRealChildAt(std::size_t child_nr) const {
+        return StackContainer<dim>::getChildAt(child_nr);
+    }
+
 };
 
 

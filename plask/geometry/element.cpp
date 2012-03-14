@@ -65,6 +65,12 @@ void GeometryElement::ensureCanHasAsParent(const GeometryElement& potential_pare
         throw CyclicReferenceException();
 }
 
+std::size_t GeometryElement::getRealChildCount() const {
+    return getChildCount();
+}
 
+shared_ptr<GeometryElement> GeometryElement::getRealChildAt(std::size_t child_nr) const {
+    return getChildAt(child_nr);
+}
 
 }   // namespace plask

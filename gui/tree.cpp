@@ -1,9 +1,12 @@
 #include "tree.h"
 
+#include "document.h"
+
+
 void GeometryTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
-    std::size_t chCount = elem->getChildCount();
+    std::size_t chCount = elem->getRealChildCount();
     for (int i = 0; i < chCount; ++i)
-        childItems.push_back(new GeometryTreeItem(this, i));
+        childItems.append(new GeometryTreeItem(this, i));
 }
 
 plask::shared_ptr<plask::GeometryElement> GeometryTreeItem::parent() {
@@ -15,10 +18,21 @@ plask::shared_ptr<plask::GeometryElement> GeometryTreeItem::parent() {
 GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, std::size_t index)
 : parentItem(parentItem) {
     if (auto parent_ptr = parent()) {
-        auto child = parent_ptr->getChildAt(index);
+        auto child = parent_ptr->getRealChildAt(index);
         element = child;
         constructChildrenItems(child);
     }
+}
+
+GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element)
+    : parentItem(parentItem), element(element) {
+    constructChildrenItems(element);
+}
+
+GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements)
+: parentItem(0) {
+    for (auto e: rootElements)
+        childItems.append(new GeometryTreeItem(this, e));
 }
 
 GeometryTreeItem::~GeometryTreeItem() {
@@ -46,8 +60,15 @@ QVariant GeometryTreeItem::data(int column) const {
 
 // ----------- GeometryTreeModel ------------
 
-GeometryTreeModel::GeometryTreeModel(QObject *parent)
-    : QAbstractItemModel(parent) {
+GeometryTreeModel::GeometryTreeModel(Document& document, QObject *parent)
+    : QAbstractItemModel(parent), rootItem(0) {
+    refresh(document);
+}
+
+void GeometryTreeModel::refresh(Document& document) {
+    delete rootItem;
+    rootItem = new GeometryTreeItem(document.manager.roots);
+    reset();
 }
 
 QModelIndex GeometryTreeModel::index(int row, int column, const QModelIndex &parent) const {

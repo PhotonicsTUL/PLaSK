@@ -32,8 +32,10 @@ public:
 
     GeometryTreeItem(GeometryTreeItem* parentItem, std::size_t index);
 
+    GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element);
+
     //create root with parentItem = nullptr
-    //GeometryTreeItem(std::vector<plask::shared_ptr<plask::GeometryElement>>)
+    GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements);
 
     ~GeometryTreeItem();
 
@@ -48,7 +50,7 @@ public:
     QVariant data(int column) const;
 };
 
-
+class Document;
 
 class GeometryTreeModel : public QAbstractItemModel {
 
@@ -58,7 +60,9 @@ class GeometryTreeModel : public QAbstractItemModel {
 
 public:
 
-    GeometryTreeModel(QObject *parent);
+    void refresh(Document& document);
+
+    GeometryTreeModel(Document& document, QObject *parent = 0);
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
 

@@ -225,9 +225,35 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         return result;
     }
 
+    /**
+     * Get number of element children in geometry graph.
+     * @return number of children
+     */
     virtual std::size_t getChildCount() const = 0;
 
+    /**
+     * Get child with given index.
+     * @param child_nr index of child to get
+     * @return child with index @p child_nr
+     */
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const = 0;
+
+    /**
+     * Get number of real (phisicaly stored) children in geometry graph.
+     *
+     * By default call getChildCount(), but elements of some types (like multi-stack) redefine this.
+     * @return number of real children
+     */
+    virtual std::size_t getRealChildCount() const;
+
+    /**
+     * Get real (phisicaly stored) child with given index.
+     *
+     * By default call getChildAt(child_nr), but elements of some types (like multi-stack) redefine this.
+     * @param child_nr index of real child to get
+     * @return child with index @p child_nr
+     */
+    virtual shared_ptr<GeometryElement> getRealChildAt(std::size_t child_nr) const;
 
 private:
     struct ChildGetter {    //used by begin(), end()
@@ -238,10 +264,12 @@ private:
 
 public:
 
+    ///@return begin begin iterator over children
     FunctorIndexedIterator<ChildGetter> begin() const {
         return FunctorIndexedIterator<ChildGetter>(ChildGetter(this->shared_from_this()), 0);
     }
 
+    ///@return end end iterator over children
     FunctorIndexedIterator<ChildGetter> end() const {
         return FunctorIndexedIterator<ChildGetter>(ChildGetter(this->shared_from_this()), getChildCount());
     }
