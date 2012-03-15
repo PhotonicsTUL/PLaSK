@@ -64,6 +64,8 @@ public:
 
     GeometryTreeModel(Document& document, QObject *parent = 0);
 
+    ~GeometryTreeModel();
+
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
 
     QModelIndex parent(const QModelIndex &index) const;
@@ -76,7 +78,7 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
-    //TODO QVariant headerData(int section, Qt::Orientation orientation, int role) const
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
  };
 
 #endif // PLASK_GUI_TREE_H

@@ -53,7 +53,7 @@ std::size_t GeometryTreeItem::indexInParent() const {
 QVariant GeometryTreeItem::data(int column) const {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
         //some representation of e
-        return toStr(e);
+        return toStr(*e);
     } else  //should never happen
         QVariant();
 }
@@ -64,6 +64,10 @@ QVariant GeometryTreeItem::data(int column) const {
 GeometryTreeModel::GeometryTreeModel(Document& document, QObject *parent)
     : QAbstractItemModel(parent), rootItem(0) {
     refresh(document);
+}
+
+GeometryTreeModel::~GeometryTreeModel() {
+    delete rootItem;
 }
 
 void GeometryTreeModel::refresh(Document& document) {
@@ -135,3 +139,6 @@ Qt::ItemFlags GeometryTreeModel::flags(const QModelIndex &index) const
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
+QVariant GeometryTreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    return "Description";
+}

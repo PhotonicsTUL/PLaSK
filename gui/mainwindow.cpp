@@ -59,11 +59,11 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("PLaSK GUI"));
 
-    newLetter();
+    newDocument();
     setUnifiedTitleAndToolBarOnMac(true);
 }
 
-void MainWindow::newLetter()
+void MainWindow::newDocument()
 {
 }
 
@@ -134,11 +134,10 @@ void MainWindow::about()
 
 void MainWindow::createActions()
 {
-    newLetterAct = new QAction(QIcon(":/images/new.png"), tr("&New Letter"),
-                               this);
-    newLetterAct->setShortcuts(QKeySequence::New);
-    newLetterAct->setStatusTip(tr("Create a new form letter"));
-    connect(newLetterAct, SIGNAL(triggered()), this, SLOT(newLetter()));
+    newDocumentAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
+    newDocumentAct->setShortcuts(QKeySequence::New);
+    newDocumentAct->setStatusTip(tr("Create a new document"));
+    connect(newDocumentAct, SIGNAL(triggered()), this, SLOT(newDocument()));
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
@@ -177,7 +176,7 @@ void MainWindow::createActions()
 void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(newLetterAct);
+    fileMenu->addAction(newDocumentAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(printAct);
@@ -199,7 +198,7 @@ void MainWindow::createMenus()
 void MainWindow::createToolBars()
 {
     fileToolBar = addToolBar(tr("File"));
-    fileToolBar->addAction(newLetterAct);
+    fileToolBar->addAction(newDocumentAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
     fileToolBar->addAction(printAct);

@@ -14,6 +14,8 @@ QT_END_NAMESPACE
 
 void drawElement(const plask::GeometryElement& toDraw, QPainter& painter);
 
+//QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h);
+
 void initElementsDrawers();
 
 /**
@@ -21,6 +23,7 @@ void initElementsDrawers();
  */
 class GeometryElementItem: public QGraphicsItem {
 
+    //TODO weak_ptr
     plask::shared_ptr< const plask::GeometryElementD<2> > element;
 
     //cache:

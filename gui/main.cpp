@@ -40,12 +40,14 @@
 
 #include <QApplication>
 #include "modelext/draw.h"
+#include "modelext/text.h"
 
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
     initElementsDrawers();
+    initElementsPrinters();
 
     QApplication app(argc, argv);
     Q_INIT_RESOURCE(plaskgui);

@@ -62,7 +62,7 @@ public:
     MainWindow();
 
 private slots:
-    void newLetter();
+    void newDocument();
     void open();
     void save();
     void print();
@@ -89,7 +89,7 @@ private:
     QMenu *helpMenu;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
-    QAction *newLetterAct;
+    QAction *newDocumentAct;
     QAction *openAct;
     QAction *saveAct;
     QAction *printAct;

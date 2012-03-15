@@ -32,6 +32,12 @@ void drawElement(const plask::GeometryElement& toDraw, QPainter& painter) {
         universalDrawer(toDraw, painter);
 }
 
+/*QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {
+    if (toDraw.getDimensionsCount() != 2)
+        return; //we draw 2d only at this moment
+    auto bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
+}*/
+
 void drawTranslation(const plask::GeometryElement& toDraw, QPainter& painter) {
     QTransform transformBackup = painter.transform();
     const plask::Translation<2>& t = static_cast< const plask::Translation<2>& >(toDraw);

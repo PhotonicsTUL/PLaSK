@@ -19,7 +19,13 @@ const PathHints& GeometryManager::requirePathHints(const std::string& path_hints
 
 shared_ptr<GeometryElement> GeometryManager::getElement(const std::string &name) const {
     auto result_it = namedElements.find(name);
-    return result_it != namedElements.end() ? result_it->second : shared_ptr<GeometryElement>();
+    if (result_it == namedElements.end()) return shared_ptr<GeometryElement>();
+    auto result = result_it->second.lock();
+    if (!result) const_cast<GeometryManager*>(this)->namedElements.erase(name);
+    return result;
+
+    /*auto result_it = namedElements.find(name);
+    return result_it != namedElements.end() ? result_it->second.lock() : shared_ptr<GeometryElement>();*/
 }
 
 shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &name) const {
