@@ -7,6 +7,9 @@ namespace plask {
 
 shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
     const double baseH = XML::getAttribute(reader.source, baseH_attr, 0.0);
+    std::unique_ptr<align::Aligner2d<align::DIRECTION_TRAN>> default_aligner(
+          align::fromStr<align::DIRECTION_TRAN>(XML::getAttribute<std::string>(reader.source, reader.getAxisTranName(), "c")));
+
     shared_ptr< StackContainer<2> > result(
                     reader.source.getAttributeValue(repeat_attr) == nullptr ?
                     new StackContainer<2>(baseH) :
@@ -14,9 +17,13 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
                 );
     read_children<StackContainer<2>>(reader,
             [&]() {
-                std::unique_ptr<align::Aligner2d<align::DIRECTION_TRAN>> aligner(
-                      align::fromStr<align::DIRECTION_TRAN>(XML::getAttribute<std::string>(reader.source, reader.getAxisTranName(), "c")));
-                return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), *aligner);
+                boost::optional<std::string> aligner_str = XML::getAttribute(reader.source, reader.getAxisTranName());
+                if (aligner_str) {
+                   std::unique_ptr<align::Aligner2d<align::DIRECTION_TRAN>> aligner(align::fromStr<align::DIRECTION_TRAN>(*aligner_str));
+                   return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), *aligner);
+                } else {
+                   return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), *default_aligner);
+                }
             },
             [&](const shared_ptr<typename StackContainer<2>::ChildType>& child) {
                 result->push_front(child);
@@ -27,6 +34,7 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
 
 shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
     const double baseH = XML::getAttribute(reader.source, baseH_attr, 0.0);
+    //TODO default aligner (see above)
     shared_ptr< StackContainer<3> > result(
                     reader.source.getAttributeValue(repeat_attr) == nullptr ?
                     new StackContainer<3>(baseH) :
