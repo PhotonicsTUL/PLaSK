@@ -17,18 +17,17 @@ struct AlN_Si: public AlN {
 
     static constexpr const char* NAME = "AlN:Si";
 
-	AlN_Si(DopingAmountType Type, double Si);
+    AlN_Si(DopingAmountType Type, double Val);
 	virtual std::string name() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;
     virtual double cond(double T) const;
-    //virtual double nr(double wl, double T) const;
-    //virtual double absp(double wl, double T) const;
 
 private:
-	double Nf_RT,
+    double ND,
+           Nf_RT,
 		   mob_RT;
-	
+
 };
 
 

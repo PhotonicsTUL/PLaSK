@@ -16,14 +16,9 @@ struct AlN: public Semiconductor {
 
     static constexpr const char* NAME = "AlN";
 
-	AlN();
 	virtual std::string name() const;
     virtual double condT(double T, double t) const;
-    //virtual double nr(double wl, double T) const;
-    //virtual double absp(double wl, double T) const;
 
-private:
-	double condTmax_RT;
 };
 
 
