@@ -64,14 +64,14 @@ void PathHints::cleanDeleted() {
 
 //----------------- Path ------------------------------------------
 
-bool Path::complateToFirst(const GeometryElement& newFirst, const PathHints* hints) {
+bool Path::completeToFirst(const GeometryElement& newFirst, const PathHints* hints) {
     GeometryElement::Subtree path = newFirst.findPathsTo(*elements.front(), hints);
     if (path.empty()) return false;
     push_front(path.toLinearPath());
     return true;
 }
 
-bool Path::complateFromLast(const GeometryElement& newLast, const PathHints* hints) {
+bool Path::completeFromLast(const GeometryElement& newLast, const PathHints* hints) {
     GeometryElement::Subtree path = elements.back()->findPathsTo(newLast, hints);
     if (path.empty()) return false;
     push_back(path.toLinearPath());
@@ -107,10 +107,10 @@ Path& Path::append(const std::vector< shared_ptr<const GeometryElement> >& path,
     if (elements.empty())
         elements = path;
     else {
-        if (complateToFirst(*path.back(), hints)) {
+        if (completeToFirst(*path.back(), hints)) {
             push_front(path);
         } else
-        if (complateFromLast(*path.front(), hints)) {
+        if (completeFromLast(*path.front(), hints)) {
             push_back(path);
         } else
             throw Exception("Can't connect paths.");

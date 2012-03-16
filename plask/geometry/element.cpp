@@ -38,7 +38,7 @@ GeometryElement::~GeometryElement() {
     changed(Event(*this, Event::DELETE));
 }
 
-bool GeometryElement::Subtree::isWithBranches() const {
+bool GeometryElement::Subtree::hasBranches() const {
     const std::vector<Subtree>* c = &children;
     while (!c->empty()) {
         if (c->size() > 1) return true;

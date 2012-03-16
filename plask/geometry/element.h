@@ -43,25 +43,25 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         TYPE_SPACE_CHANGER = 2,///< transform element which changing its space, typically changing number of dimensions (has one child)
         TYPE_CONTAINER = 3     ///< container (can have more than one child)
     };
-    
+
     /**
      * Store information about event connected with geometry element.
      *
      * Subclasses of this can includes additional informations about specific type of event.
      */
     struct Event {
-        
+
         enum Type { SHAPE = 1, MATERIAL = 1<<1, DELETE = 1<<2 };    //??
-        
+
     private:
         GeometryElement& _source;
         Type _type;
-        
+
     public:
 
         const GeometryElement& source() const { return _source; }
         const Type type() const { return _type; }
-        
+
         Event(GeometryElement& source, Type type): _source(source), _type(type) {}
         virtual ~Event() {} //for eventual subclassing
     };
@@ -94,7 +94,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * Check if this subtree inludes more than one branch (has more than one children or has one child which has more than one branch).
          * @return @c true only if this subtree inludes branches, @c false if it is linear path
          */
-        bool isWithBranches() const;
+        bool hasBranches() const;
 
         /**
          * Convert this subtree to linear path: element, child[0].element, child[0].child[0].element, ...
@@ -136,24 +136,24 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
 
     };
-    
+
     struct ReplaceChanger: public Changer {
-        
+
         shared_ptr<const GeometryElement> from, to;
         Vec<3, double> translation;
-        
+
         ReplaceChanger() {}
-        
+
         ReplaceChanger(const shared_ptr<const GeometryElement>& from, const shared_ptr<const GeometryElement>& to, Vec<3, double> translation)
             : from(from), to(to), translation(translation) {}
-        
+
         template <typename F>
         ReplaceChanger(const shared_ptr<const GeometryElement>&, F calc_replace): from(from) {
             this->to = calc_replace(this->from, &this->translation);
         }
-        
+
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
-        
+
     };
 
     struct ToBlockChanger: ReplaceChanger {
@@ -161,7 +161,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         ToBlockChanger(const shared_ptr<const GeometryElement>& toChange, const shared_ptr<Material>& material);
 
     };
-    
+
     boost::signals2::signal<void(const Event&)> changed;
 
     /**
@@ -208,7 +208,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @return sub-tree with paths to given element (@p el is in all leafs), empty sub-tree if @p el is not in subtree with @c this in root
      */
     virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const = 0;
-    
+
     /**
      * Append all leafs in subtree with this in root to vector @p dest.
      * @param dest leafs destination vector
@@ -376,7 +376,7 @@ struct GeometryElementD: public GeometryElement {
         getLeafsBoundingBoxesToVec(result, &path);
         return result;
     }
-    
+
     /**
      * Get all leafs and its translations in subtree with this in root.
      * @return all leafs and its translations in subtree with this in root.
@@ -431,11 +431,11 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
         dest.push_back(this->shared_from_this());
     }
-    
+
     inline std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
         return { this->shared_from_this() };
     }
-    
+
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         return { std::make_pair(shared_from_this(), Primitive<dim>::ZERO_VEC) };
     }

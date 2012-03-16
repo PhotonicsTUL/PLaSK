@@ -49,6 +49,9 @@ You should start reading from section \subpage modules "How to implement an own 
 */
 
 #include <plask/config.h>
+
+#include "memory.h"
+#include "math.h"
 #include "exceptions.h"
 #include "module.h"
 #include "space.h"

@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include <plask/config.h>
+#include "../math.h"
 
 namespace plask {
 

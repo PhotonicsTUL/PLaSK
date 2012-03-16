@@ -19,44 +19,38 @@ template<class KeyType> class py_set : public std::set<KeyType>,
       // constructors
       py_set<KeyType> () {};
       py_set<KeyType> (const source_type& s )
-          { insert(s.begin(), s.end()); }
+          { this->insert(s.begin(), s.end()); }
 
       // element access
-      bool contains(const KeyType key)
-          { return count(key)>0; }
+      bool contains(const KeyType key) { return this->count(key)>0; }
       // we must define add() for it gets explicit argument types
-      void add(const KeyType key)
-          { insert(key); }
-      void remove(const KeyType key)
-          // improve error handling here
-          { if (!contains(key)) throw "element not in set"; erase(key);  }
+      void add(const KeyType key) { this->insert(key); }
+      void remove(const KeyType key) { // improve error handling here
+          if (!contains(key)) throw "element not in set"; erase(key);
+    }
 
       // set operations
       source_type set_union(wrap_type &other) {
               source_type result;
-              std::set_union(this->begin(), this->end(), other.begin(), other.end(),
-                    inserter(result, result.begin()));
+              std::set_union(this->begin(), this->end(), other.begin(), other.end(), inserter(result, result.begin()));
               return result;
       }
 
       source_type set_intersection(wrap_type &other) {
               source_type result;
-              std::set_intersection(this->begin(), this->end(), other.begin(), other.end(),
-                    inserter(result, result.begin()));
+              std::set_intersection(this->begin(), this->end(), other.begin(), other.end(), inserter(result, result.begin()));
               return result;
       }
 
       source_type set_difference(wrap_type &other) {
               source_type result;
-              std::set_difference(this->begin(), this->end(), other.begin(), other.end(),
-                    inserter(result, result.begin()));
+              std::set_difference(this->begin(), this->end(), other.begin(), other.end(), inserter(result, result.begin()));
               return result;
       }
 
       source_type set_symmetric_difference(wrap_type &other) {
               source_type result;
-              std::set_symmetric_difference(this->begin(), this->end(), other.begin(), other.end(),
-                        inserter(result, result.begin()));
+              std::set_symmetric_difference(this->begin(), this->end(), other.begin(), other.end(), inserter(result, result.begin()));
               return result;
       }
 

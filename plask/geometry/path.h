@@ -143,9 +143,9 @@ struct PathHints {
  */
 class Path {
 
-    bool complateToFirst(const GeometryElement& newFirst, const PathHints* hints = nullptr);
+    bool completeToFirst(const GeometryElement& newFirst, const PathHints* hints = nullptr);
 
-    bool complateFromLast(const GeometryElement& newLast, const PathHints* hints = nullptr);
+    bool completeFromLast(const GeometryElement& newLast, const PathHints* hints = nullptr);
 
 public:
 
@@ -172,7 +172,7 @@ public:
     /**
      * Push front content of @a toAdd vector to elements.
      *
-     * Skip last element from @p toAdd if it is first in elements, but neither check path integrity nor complate path.
+     * Skip last element from @p toAdd if it is first in elements, but neither check path integrity nor complete path.
      * @param toAdd elements to push on front of elements
      * @see operator+=(const std::vector< shared_ptr<const GeometryElement> >& path)
      */
@@ -181,7 +181,7 @@ public:
     /**
      * Push back content of @a toAdd vector to elements.
      *
-     * Skip first element from @p toAdd if it is last in elements, but neither check path integrity nor complate path.
+     * Skip first element from @p toAdd if it is last in elements, but neither check path integrity nor complete path.
      * @param toAdd elements to push on back of elements
      * @see operator+=(const std::vector< shared_ptr<const GeometryElement> >& path)
      */
@@ -190,45 +190,45 @@ public:
     /**
      * Append @p path content to this path.
      *
-     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
+     * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
      * @param path elements to add
-     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     * @param hints optional path hints which are use to non-ambiguous completion of paths
      */
     Path& append(const std::vector< shared_ptr<const GeometryElement> >& path, const PathHints* hints = nullptr);
 
     /**
      * Append @p paths content to this path.
      *
-     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
+     * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
      * @param path elements to add, exception will be throwed if it have branches
-     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     * @param hints optional path hints which are use to non-ambiguous completion of paths
      */
     Path& append(const GeometryElement::Subtree& paths, const PathHints* hints = nullptr);
 
     /**
      * Append @p path content to this path.
      *
-     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
+     * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
      * @param path elements to add
-     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     * @param hints optional path hints which are use to non-ambiguous completion of paths
      */
     Path& append(const Path& path, const PathHints* hints = nullptr);
 
     /**
      * Append @p hint to this path.
      *
-     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
+     * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
      * @param hint elements to add
-     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     * @param hints optional path hints which are use to non-ambiguous completion of paths
      */
     Path& append(const PathHints::Hint& hint, const PathHints* hints = nullptr);
 
     /**
      * Append @p element to this path.
      *
-     * Try complate missing path fragment if necessary, and throw excpeption it is impossible or ambiguous.
+     * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
      * @param hint elements to add
-     * @param hints optional path hints which are use to non-ambiguous complatation of paths
+     * @param hints optional path hints which are use to non-ambiguous completion of paths
      */
     Path& append(const GeometryElement& element, const PathHints* hints = nullptr);
 
@@ -247,3 +247,4 @@ public:
 }
 
 #endif // PLASK__GEOMETRY_PATH_H
+
