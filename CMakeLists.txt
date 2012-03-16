@@ -50,8 +50,8 @@ option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)."
 cmake_dependent_option(BUILD_PYTHON_MODULE "Build importable python module." OFF "BUILD_PYTHON" OFF)
 cmake_dependent_option(BUILD_PYTHON_EXECUTABLE "Build executable with embedded Python interpreter." ON "BUILD_PYTHON" OFF)
 
-option(BUILD_TESTS "Build unit tests." ON)
-cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTS" OFF)
+option(BUILD_TESTING "Build unit tests." ON)
+cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 
 #option (PACK_EXE "Self-pack and strip executables." OFF)  # compress exe
 
@@ -120,6 +120,15 @@ if (BUILD_PYTHON)
     if (NOT PYTHON_SUFFICIENT_VERSION)
         message(FATAL_ERROR "Python 2.6 or newer required.")
     endif()
+
+    # Determine directory to install *.py files to
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py "from distutils import sysconfig\nprint sysconfig.get_python_lib(False, prefix='${CMAKE_INSTALL_PREFIX}')")
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py" OUTPUT_VARIABLE PYTHON_INSTALL_DIR)
+    string(STRIP ${PYTHON_INSTALL_DIR} PYTHON_INSTALL_DIR)
+    # Determine directory to install binary Python modules to
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py "from distutils import sysconfig\nprint sysconfig.get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}')")
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py" OUTPUT_VARIABLE PYTHON_MODULE_INSTALL_DIR)
+
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
@@ -212,12 +221,12 @@ macro(mod_option mod opt)
 endmacro()
 
 # Set options to turn on/off building particular modules
-message("-- Building the following modules:")
+message(STATUS "Building the following modules:")
 foreach(mod ${modules})
     mod_option(${mod} opt)
     option(${opt} "Build module '${mod}'" ON)
     if (${opt})
-        message("--   ${mod}")
+        message(STATUS "  ${mod}")
     endif()
 endforeach()
 
@@ -227,7 +236,7 @@ foreach(mod ${modules})
     mod_option(${mod} opt)
     option(${opt} "Build module '${mod}'" ON)
     if (${opt})
-        if(BUILD_TESTS)
+        if(BUILD_TESTING)
             string(REGEX REPLACE "/|_" "" modtarget ${mod})
             list(APPEND modules_test_targets "module-${modtarget}-test")
         endif()
@@ -237,7 +246,7 @@ endforeach()
 
 
 # ----------===== unit tests =====--------------------------------------------
-if(BUILD_TESTS)
+if(BUILD_TESTING)
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
@@ -286,7 +295,7 @@ if(BUILD_TESTS)
         add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${modules_test_targets})
     endif()
 
-endif(BUILD_TESTS)
+endif(BUILD_TESTING)
 
 # ----------===== documentation (api) =====--------------------------------------------
 find_package(Doxygen)

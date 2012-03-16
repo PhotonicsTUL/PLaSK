@@ -44,9 +44,8 @@ class SimpleGeometry(unittest.TestCase):
             </geometry>
         ''')
         self.assertEqual( type(geometry.element("block")), plask.geometry.Block2D )
-        print list(geometry.element("stack").leafsBoundigBoxes())
-        #self.assertEqual( list(geometry.element("stack").leafsBoundigBoxes()), [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4)])
-        self.assertEqual( list(geometry.element("stack").leafsBoundigBoxes()),
+        print list(geometry.element("stack").getLeafsBoundigBoxes())
+        self.assertEqual( list(geometry.element("stack").getLeafsBoundigBoxes()),
             [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4), plask.geometry.Box2D(-2,4,2,6), plask.geometry.Box2D(-2,6,2,8)])
         if sys.version >= "2.7":
             with self.assertRaises(KeyError): geometry.element("nonexistent")
@@ -104,4 +103,4 @@ class GeometryObjects(unittest.TestCase):
         self.assertEqual( stack.getMaterial(-4.9, 7.0), self.mat )
         self.assertEqual( stack.getMaterial(-5.1, 7.0), None )
         self.assertEqual( stack.getMaterial(0.1, 7.0), None )
-        self.assertEqual( list(stack.leafsBoundigBoxes()), [plask.geometry.Box2D(-2.5,0,2.5,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(-5.0,6,0.0,9)])
+        self.assertEqual( list(stack.getLeafsBoundigBoxes()), [plask.geometry.Box2D(-2.5,0,2.5,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(-5.0,6,0.0,9)])
