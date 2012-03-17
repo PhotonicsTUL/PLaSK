@@ -6,6 +6,8 @@
 
 namespace plask {
 
+std::string AlN_Si::name() const { return NAME; }
+
 //MI_PARENT(AlN_Si, AlN)
 
 AlN_Si::AlN_Si(DopingAmountType Type, double Val) {
@@ -43,7 +45,7 @@ MI_PROPERTY(AlN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
 double AlN_Si::cond(double T) const {
-	return ( 1.602E-17*Nf(T)*mob(T) ); 
+	return ( 1.602E-17*Nf(T)*mob(T) );
 }
 
 static MaterialsDB::Register<AlN_Si> materialDB_register_AlN_Si;

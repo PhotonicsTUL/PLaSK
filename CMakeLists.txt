@@ -167,15 +167,15 @@ endif(BUILD_PYTHON)
 
 # ---------- GUI program --------------------------------------------
 if(BUILD_GUI)
-    SET(PLASK_GUI_MOC_HDRS gui/mainwindow.h gui/tree.h)
-    #SET(PLASK_GUI_UIS ./src/ui/Dialog1.ui)
-    SET(PLASK_GUI_RCS gui/plaskgui.qrc)
+    set(PLASK_GUI_MOC_HDRS gui/mainwindow.h gui/tree.h)
+    #set(PLASK_GUI_UIS ./src/ui/Dialog1.ui)
+    set(PLASK_GUI_RCS gui/plaskgui.qrc)
 
     find_package(Qt4 4.4.3 REQUIRED QtCore QtGui)
     include(${QT_USE_FILE})
-    QT4_ADD_RESOURCES(PLASK_GUI_RC_SRCS ${PLASK_GUI_RCS})
-    #QT4_WRAP_UI(PLASK_GUI_UI_HDRS ${PLASK_GUI_UIS})
-    QT4_WRAP_CPP(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS} )
+    qt4_add_resources(PLASK_GUI_RC_SRCS ${PLASK_GUI_RCS})
+    #qt4_wrap_ui(PLASK_GUI_UI_HDRS ${PLASK_GUI_UIS})
+    qt4_wrap_cpp(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS} )
     add_executable(plaskgui ${plaskgui_src} ${PLASK_GUI_MOC_SRCS} ${PLASK_GUI_RC_SRCS}) # ${PLASK_GUI_UI_HDRS}
     target_link_libraries(plaskgui libplask ${QT_LIBRARIES})
 endif(BUILD_GUI)

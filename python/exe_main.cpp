@@ -18,11 +18,11 @@ void initplaskcore(void);
 // Initialize the binary modules and load the package from disc
 static py::object initPlaskModule(int argc, const char* argv[])
 {
-    // Initialize Python
-    Py_Initialize();
-
     // Initialize the module plask
     if (PyImport_AppendInittab("plaskcore", &initplaskcore) != 0) throw plask::CriticalException("No plaskcore module");
+
+    // Initialize Python
+    Py_Initialize();
 
     py::object plaskcore = py::import("plaskcore");
 
