@@ -42,7 +42,7 @@ include(CMakeDependentOption)
 
 option(BUILD_SHARED_MODULE_LIBS "Build shared libraries for modules." OFF)
 
-option(BUILD_GUI "Build GUI program (require QT)" ON)
+option(BUILD_GUI "Build GUI program (require QT)" OFF) # FIXME: install QT for windows users
 
 option(BUILD_DOCUMENTATION "Build doxygen documentation." OFF)
 
@@ -111,7 +111,7 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 # ---------- default materials --------------------------------------------
 
 add_library(default_materials SHARED ${materials_src})
-set_target_properties(default_materials PROPERTIES OUTPUT_NAME plask_materials_default)
+set_target_properties(default_materials PROPERTIES OUTPUT_NAME plask_materialsdefault)
 target_link_libraries(default_materials libplask)
 
 
@@ -134,12 +134,13 @@ if (BUILD_PYTHON)
     endif()
 
     # Determine directory to install *.py files to
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py "from distutils import sysconfig\nprint sysconfig.get_python_lib(False, prefix='${CMAKE_INSTALL_PREFIX}')")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py "from distutils import sysconfig\nprint sysconfig.get_python_lib(False, prefix='${CMAKE_INSTALL_PREFIX}')+'/plask'")
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py" OUTPUT_VARIABLE PYTHON_INSTALL_DIR)
     string(STRIP ${PYTHON_INSTALL_DIR} PYTHON_INSTALL_DIR)
     # Determine directory to install binary Python modules to
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py "from distutils import sysconfig\nprint sysconfig.get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}')")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py "from distutils import sysconfig\nprint sysconfig.get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}')+'/plask'")
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py" OUTPUT_VARIABLE PYTHON_MODULE_INSTALL_DIR)
+    string(STRIP ${PYTHON_MODULE_INSTALL_DIR} PYTHON_MODULE_INSTALL_DIR)
 
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
@@ -331,10 +332,12 @@ endif(BUILD_DOCUMENTATION)
 # ----------===== install =====--------------------------------------------
 if(WIN32)
     install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
-                                LIBRARY DESTINATION lib COMPONENT core
-                                ARCHIVE DESTINATION lib COMPONENT dev)
+                             ARCHIVE DESTINATION lib COMPONENT dev)
+    install(TARGETS default_materials RUNTIME DESTINATION bin COMPONENT core
+                                      ARCHIVE DESTINATION lib COMPONENT dev)
 else()
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
+    install(TARGETS default_materials LIBRARY DESTINATION lib COMPONENT core)
 endif()
 
 install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
@@ -345,11 +348,23 @@ if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
             PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
 endif()
 
-if(BUILD_PYTHON_EXECUTABLE)
-    install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
+if(BUILD_PYTHON)
+    install(FILES ${python_plask_py_copied} DESTINATION ${PYTHON_INSTALL_DIR} COMPONENT core)
+    if(BUILD_PYTHON_EXECUTABLE)
+        install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
+    endif()
+    if(BUILD_PYTHON_MODULE)
+        if(WIN32)
+            install(TARGETS plaskcore RUNTIME DESTINATION ${PYTHON_MODULE_INSTALL_DIR} COMPONENT core)
+        else()
+            install(TARGETS plaskcore LIBRARY DESTINATION ${PYTHON_MODULE_INSTALL_DIR} COMPONENT core)
+        endif()
+    endif()
 endif()
 
-# TODO: install python modules
+if(BUILD_GUI)
+    install(TARGETS plaskgui RUNTIME DESTINATION bin COMPONENT GUI)
+endif()
 
 # ----------===== Debug helpers =====--------------------------------------------
 if (BUILD_PYTHON_EXECUTABLE)

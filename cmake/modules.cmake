@@ -20,7 +20,7 @@ get_filename_component(MODULE_PATH ${MODULE_DIR} PATH)
 if(NOT MODULE_PATH STREQUAL "")
     string(REPLACE "/" ";" MODULE_DIRECTORIES ${MODULE_PATH})
 endif()
-set(MODULE_PATH "${plask_PYTHONPATH}/plask/${MODULE_PATH}")
+set(PYTHON_MODULE_PATH "${plask_PYTHONPATH}/plask/${MODULE_PATH}")
 
 # Automatically set sources from the current directory
 file(GLOB module_src *.cpp *.hpp *.h)
@@ -48,6 +48,17 @@ macro(make_default)
         set_target_properties(${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${MODULE_COMPILE_FLAGS})
     endif()
 
+    if(BUILD_SHARED_MODULE_LIBS)
+        if(WIN32)
+            install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION bin COMPONENT modules
+                                           ARCHIVE DESTINATION lib COMPONENT modules-dev)
+        else()
+            install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION lib COMPONENT modules)
+        endif()
+    else()
+        install(TARGETS ${TARGET_NAME} ARCHIVE DESTINATION lib COMPONENT modules-dev)
+    endif()
+
     if(BUILD_PYTHON)
         set(PYTHON_TARGET_NAME ${TARGET_NAME}-python)
         # Make package hierarchy
@@ -65,13 +76,16 @@ macro(make_default)
         endif()
         target_link_libraries(${PYTHON_TARGET_NAME} ${TARGET_NAME} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
-                              LIBRARY_OUTPUT_DIRECTORY ${MODULE_PATH}
+                              LIBRARY_OUTPUT_DIRECTORY ${PYTHON_MODULE_PATH}
                               OUTPUT_NAME ${MODULE_NAME}
                               PREFIX "")
         if(WIN32)
             set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
-                                  RUNTIME_OUTPUT_DIRECTORY "${MODULE_PATH}"
+                                  RUNTIME_OUTPUT_DIRECTORY "${PYTHON_MODULE_PATH}"
                                   SUFFIX ".pyd")
+            install(TARGETS ${PYTHON_TARGET_NAME} RUNTIME DESTINATION ${PYTHON_MODULE_INSTALL_DIR}/${MODULE_PATH} COMPONENT modules)
+        else()
+            install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION ${PYTHON_MODULE_INSTALL_DIR}/${MODULE_PATH} COMPONENT modules)
         endif()
     endif()
 

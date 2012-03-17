@@ -18,7 +18,7 @@ def updateFactories():
 materials.updateFactories = updateFactories
 del updateFactories
 
-def readLibrary(name):
+def importLibrary(name):
     from ctypes import cdll
     for lib in ["lib"+name+".so", "lib"+name, name+".so", name]:
         try:
@@ -26,12 +26,13 @@ def readLibrary(name):
         except OSError:
             pass
         else:
-            break
-    materials.updateFactories()
-materials.readLibrary = readLibrary
-del readLibrary
+            materials.updateFactories()
+            return
+    raise OSError("Cannot import library '%s'" % name)
+materials.importLibrary = importLibrary
+del importLibrary
 
-materials.readLibrary("plask_materials_default")
+materials.importLibrary("plask_materialsdefault")
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''
