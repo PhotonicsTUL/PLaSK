@@ -5,7 +5,7 @@
 This file includes Mg-doped GaN
 */
 
-#include "../material.h"
+#include <plask/material/material.h>
 #include "GaN.h"
 
 namespace plask {
@@ -29,7 +29,7 @@ private:
            Nf_RT,
 		   mob_RT,
 		   cond_RT;
-	
+
 };
 
 

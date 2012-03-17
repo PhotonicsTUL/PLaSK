@@ -1,8 +1,8 @@
 #include "GaN_Mg.h"
 
 #include <cmath>
-#include "../db.h"  //MaterialsDB::Register
-#include "../info.h"    //MaterialInfo::DB::Register
+#include <plask/material/db.h>  //MaterialsDB::Register
+#include <plask/material/info.h>    //MaterialInfo::DB::Register
 
 
 namespace plask {
@@ -30,7 +30,7 @@ MI_PROPERTY(GaN_Mg, mob,
             MIComment("based on 9 papers (2000-2009): MBE-grown Mg-doped GaN"),
             MIComment("Nf: 2e17 - 6e18 cm^-3")
             )
-double GaN_Mg::mob(double T) const { 
+double GaN_Mg::mob(double T) const {
     return ( mob_RT * (T*T*2.495E-5 -T*2.268E-2 +5.557) );
 }
 
@@ -48,14 +48,14 @@ MI_PROPERTY(GaN_Mg, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
 double GaN_Mg::cond(double T) const {
-	return ( 1.602E-17*Nf(T)*mob(T) );  
+	return ( 1.602E-17*Nf(T)*mob(T) );
 }
 
 MI_PROPERTY(GaN_Mg, absp,
             MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
             MIComment("no temperature dependence")
             )
-double GaN_Mg::absp(double wl, double T) const { 
+double GaN_Mg::absp(double wl, double T) const {
     double a = 1239.84190820754/wl - 3.42;
     return ( (19000+200*NA)*exp(a/(0.019+0.0001*NA)) + (330+30*NA)*exp(a/(0.07+0.000*NA)) );
 }

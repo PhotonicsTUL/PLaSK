@@ -5,7 +5,7 @@
 This file includes Si-doped GaN
 */
 
-#include "../material.h"
+#include <plask/material/material.h>
 #include "GaN.h"
 
 namespace plask {

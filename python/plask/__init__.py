@@ -17,7 +17,21 @@ def updateFactories():
             materials.__dict__[name] = factory(name)
 materials.updateFactories = updateFactories
 del updateFactories
-materials.updateFactories()
+
+def readLibrary(name):
+    from ctypes import cdll
+    for lib in ["lib"+name+".so", "lib"+name, name+".so", name]:
+        try:
+            cdll.LoadLibrary(lib)
+        except OSError:
+            pass
+        else:
+            break
+    materials.updateFactories()
+materials.readLibrary = readLibrary
+del readLibrary
+
+materials.readLibrary("plask_materials_default")
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''

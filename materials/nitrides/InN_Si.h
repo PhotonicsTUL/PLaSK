@@ -1,23 +1,23 @@
-#ifndef PLASK__InN_Mg_H
-#define PLASK__InN_Mg_H
+#ifndef PLASK__InN_Si_H
+#define PLASK__InN_Si_H
 
 /** @file
-This file includes Mg-doped InN
+This file includes Si-doped InN
 */
 
-#include "../material.h"
+#include <plask/material/material.h>
 #include "InN.h"
 
 namespace plask {
 
 /**
- * Represent Mg-doped InN, its physical properties.
+ * Represent Si-doped InN, its physical properties.
  */
-struct InN_Mg: public InN {
+struct InN_Si: public InN {
 
-    static constexpr const char* NAME = "InN:Mg";
+    static constexpr const char* NAME = "InN:Si";
 
-	InN_Mg(DopingAmountType Type, double Mg);
+	InN_Si(DopingAmountType Type, double Si);
 	virtual std::string name() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;
@@ -27,12 +27,11 @@ struct InN_Mg: public InN {
 private:
 	double Nf_RT,
 		   mob_RT,
-		   cond_RT,
 		   condTmax_RT;
-	
+
 };
 
 
 } // namespace plask
 
-#endif	//PLASK__InN_Mg_H
+#endif	//PLASK__InN_Si_H

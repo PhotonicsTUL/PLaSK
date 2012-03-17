@@ -25,7 +25,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 if (NOT DEFINED VERSION_REVISION)
     execute_process(COMMAND svnversion -n WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE SVN_REVISION)
-    if(DEFINED SVN_REVISION)
+    if(NOT ${SVN_REVISION} STREQUAL "")
         string(REGEX REPLACE "[0-9]+:|[A-Za-z]+" "" SVN_REVISION ${SVN_REVISION})
     endif()
     if(NOT ${SVN_REVISION} STREQUAL "")
@@ -88,6 +88,9 @@ file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp)
 
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp)
 
+# default material database
+file(GLOB_RECURSE materials_src FOLLOW_SYMLINKS materials/*.cpp materials/*.h)
+
 # external libs which are compiled by us
 file(GLOB_RECURSE plask_extlib_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 
@@ -98,10 +101,19 @@ file(GLOB_RECURSE python_plask_py python/plask/*.py)
 # GUI sources
 file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 
+
 # ---------- plask library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_extlib_src} ${plask_headers})
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
+
+
+# ---------- default materials --------------------------------------------
+
+add_library(default_materials SHARED ${materials_src})
+set_target_properties(default_materials PROPERTIES OUTPUT_NAME plask_materials_default)
+target_link_libraries(default_materials libplask)
+
 
 # ---------- Python --------------------------------------------
 
@@ -165,6 +177,7 @@ if (BUILD_PYTHON)
 
 endif(BUILD_PYTHON)
 
+
 # ---------- GUI program --------------------------------------------
 if(BUILD_GUI)
     set(PLASK_GUI_MOC_HDRS gui/mainwindow.h gui/tree.h)
@@ -180,6 +193,7 @@ if(BUILD_GUI)
     target_link_libraries(plaskgui libplask ${QT_LIBRARIES})
 endif(BUILD_GUI)
 
+
 # ---------- macro for testing --------------------------------------------
 if(WIN32)
     set(ENV_PATH $ENV{PATH})
@@ -187,7 +201,7 @@ if(WIN32)
     string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/bin")
     set(plask_test_env "PYTHONPATH=${plask_PYTHONPATH};PATH=${ENV_PATH}\;${plask_bin_path}")
 else()
-    set(plask_test_env "PYTHONPATH=${plask_PYTHONPATH}")
+    set(plask_test_env "PYTHONPATH=${plask_PYTHONPATH};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
 endif()
 
 macro(add_python_test test test_file)
@@ -248,13 +262,15 @@ endforeach()
 # ----------===== unit tests =====--------------------------------------------
 if(BUILD_TESTING)
 
+    set(plask_test_depends default_materials) # we need materials for testing
+
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
         file(GLOB_RECURSE plask-test_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
         add_executable(plask-test ${plask-test_src})
         set_target_properties(plask-test PROPERTIES OUTPUT_NAME test_plask)
-        target_link_libraries(plask-test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
-        set(plask_test_depends plask-test)
+        target_link_libraries(plask-test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask default_materials)
+        set(plask_test_depends ${plask_test_depends} plask-test)
         file(GLOB_RECURSE plask_tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/plask FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
         list(REMOVE_ITEM plask_tests main.cpp)
         foreach(test_file ${plask_tests})

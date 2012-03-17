@@ -203,10 +203,10 @@ private:
 
 public:
 
-    ///Iterator over material constructors (shared_ptr<shared_ptr<const MaterialConstructor>>).
+    /// Iterator over material constructors (shared_ptr<shared_ptr<const MaterialConstructor>>).
     typedef boost::transform_iterator<iter_val, constructors_map_t::const_iterator> iterator;
 
-    ///Iterator over material constructors (shared_ptr<shared_ptr<const MaterialConstructor>>).
+    /// Iterator over material constructors (shared_ptr<shared_ptr<const MaterialConstructor>>).
     typedef iterator const_iterator;
 
     /**
@@ -478,6 +478,14 @@ private:
                              const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
 
+};
+
+/**
+ * Class used to initialize external material library.
+ * Its constructor must be defined in the materials librry to make sure that this libarary is linked.
+ */
+struct MaterialsLibraryInit {
+    MaterialsLibraryInit();
 };
 
 }   // namespace plask

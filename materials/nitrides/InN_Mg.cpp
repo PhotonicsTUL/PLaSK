@@ -1,12 +1,12 @@
 #include "InN_Mg.h"
 
-#include "../db.h"  //MaterialsDB::Register
+#include <plask/material/db.h>  //MaterialsDB::Register
 #include <cmath>
 
 namespace plask {
 
 InN_Mg::InN_Mg(DopingAmountType Type, double Mg) {
-	//M. Kuc 12.02.2012	
+	//M. Kuc 12.02.2012
     if (Type == CARRIER_CONCENTRATION) Nf_RT = Mg;
 	else Nf_RT = 7.392E9*pow(Mg,0.439);
 	//Nf_RT(Mg), Mg: 3e18 - 8e20 cm-3; based on 2 papers (2008-2009): Mg-doped InN
@@ -17,7 +17,7 @@ InN_Mg::InN_Mg(DopingAmountType Type, double Mg) {
 
 std::string InN_Mg::name() const { return NAME; }
 
-double InN_Mg::mob(double T) const { 
+double InN_Mg::mob(double T) const {
 	//M. Kuc 12.02.2012
 	//No T Dependence based on Kumakura K, J. Appl. Phys. 93 (2003) 3370
     return ( mob_RT );
@@ -31,7 +31,7 @@ double InN_Mg::Nf(double T) const {
 
 double InN_Mg::cond(double T) const {
 	//M. Kuc 12.02.2012
-	return ( cond_RT ); 
+	return ( cond_RT );
 }
 
 //double InN_Mg::absp(double wl, double T) const { }

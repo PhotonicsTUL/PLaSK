@@ -27,11 +27,11 @@ class Material(unittest.TestCase):
 
 
     def testCustomMaterial(self):
-        '''Test creation of custom materialss'''
+        '''Test creation of custom materials'''
 
-        @plask.materials.simple
+        @plask.materials.complex
         class AlGaAs(plask.materials.Material):
-            def __init__(self):
+            def __init__(self, **kwargs):
                 super(AlGaAs, self).__init__()
                 ptest.print_ptr(self)
             def __del__(self):
@@ -46,12 +46,12 @@ class Material(unittest.TestCase):
         self.assertEqual( m.VBO(1.0), 2.0 )
         del m
 
-        self.assertEqual( ptest.materialName("AlGaAs", plask.materialsdb), "AlGaAs" )
-        self.assertEqual( ptest.materialVBO("AlGaAs", plask.materialsdb, 1.0), 2.0 )
+        self.assertEqual( ptest.materialName("Al(0.2)GaAs", plask.materialsdb), "AlGaAs" )
+        self.assertEqual( ptest.materialVBO("Al(0.2)GaAs", plask.materialsdb, 1.0), 2.0 )
 
         print >>sys.stderr, plask.materialsdb.all
         if sys.version >= 2.7:
-            with self.assertRaises(RuntimeError): plask.materialsdb.get("AlGaAs:Si=1e14")
+            with self.assertRaises(RuntimeError): plask.materialsdb.get("Al(0.2)GaAs:Si=1e14")
 
         @plask.materials.complex
         class AlGaAsDp(plask.materials.Material):
@@ -103,8 +103,9 @@ class Material(unittest.TestCase):
             with self.assertRaisesRegexp(RuntimeError, "Method not implemented"): c.VBO(1.0)
         self.assertEqual( ptest.call_chi(c, 'A'), 1.5)
 
-        #self.assertTrue(False)
 
+    def testDefaultMaterials(self):
+        self.assertIn( "GaN", plask.materialsdb )
 
     def testExistingMaterial(self):
         '''Test if existing materials works correctly'''

@@ -75,7 +75,7 @@ macro(make_default)
         endif()
     endif()
 
-    if(BUILD_TESTS)
+    if(BUILD_TESTING)
         add_custom_target(${TARGET_NAME}-test DEPENDS ${TARGET_NAME} ${PYTHON_TARGET_NAME} ${MODULE_TEST_DEPENDS})
     endif()
 

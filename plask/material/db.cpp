@@ -224,4 +224,5 @@ void MaterialsDB::removeComplex(const std::string& name) {
     constructors.erase(dbKey(name));
 }
 
+
 }  // namespace plask

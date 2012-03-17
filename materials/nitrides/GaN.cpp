@@ -1,8 +1,8 @@
 #include "GaN.h"
 
 #include <cmath>
-#include "../db.h"  //MaterialsDB::Register
-#include "../info.h"    //MaterialInfo::DB::Register
+#include <plask/material/db.h>  //MaterialsDB::Register
+#include <plask/material/info.h>    //MaterialInfo::DB::Register
 
 namespace plask {
 
@@ -10,7 +10,7 @@ std::string GaN::name() const { return NAME; }
 
 MI_PROPERTY(GaN, cond,
             MISource("K. Kusakabe et al., Physica B 376-377 (2006) 520"),
-            MISource("G. Koblmüller et al., Appl. Phys. Lett. 91 (2007) 221905"),
+            MISource("G. Koblmï¿½ller et al., Appl. Phys. Lett. 91 (2007) 221905"),
             MIArgumentRange(MaterialInfo::T, 270, 400)
             )
 double GaN::cond(double T) const {

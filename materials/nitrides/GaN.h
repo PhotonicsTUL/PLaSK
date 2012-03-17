@@ -5,7 +5,7 @@
 This file includes undoped GaN
 */
 
-#include "../material.h"
+#include <plask/material/material.h>
 
 namespace plask {
 

@@ -5,7 +5,7 @@
 This file includes Si-doped AlN
 */
 
-#include "../material.h"
+#include <plask/material/material.h>
 #include "AlN.h"
 
 namespace plask {

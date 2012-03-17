@@ -1,8 +1,8 @@
 #include "AlN.h"
 
 #include <cmath>
-#include "../db.h"  //MaterialsDB::Register
-#include "../info.h"    //MaterialInfo::DB::Register
+#include <plask/material/db.h>  //MaterialsDB::Register
+#include <plask/material/info.h>    //MaterialInfo::DB::Register
 
 namespace plask {
 

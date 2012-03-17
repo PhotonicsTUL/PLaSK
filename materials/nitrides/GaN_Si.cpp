@@ -1,8 +1,8 @@
 #include "GaN_Si.h"
 
 #include <cmath>
-#include "../db.h"  //MaterialsDB::Register
-#include "../info.h"    //MaterialInfo::DB::Register
+#include <plask/material/db.h>  //MaterialsDB::Register
+#include <plask/material/info.h>    //MaterialInfo::DB::Register
 
 
 namespace plask {
@@ -55,7 +55,7 @@ MI_PROPERTY(GaN_Si, condT,
             MIComment("Nf: 1e18 - 1e19 cm^-3")
             )
 double GaN_Si::condT(double T, double t) const {
-	double fun_Nf = 2.18*pow(Nf_RT,-0.022);	
+	double fun_Nf = 2.18*pow(Nf_RT,-0.022);
     return( GaN::condT(T,t)*fun_Nf );
  }
 

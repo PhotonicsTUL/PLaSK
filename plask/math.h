@@ -9,11 +9,14 @@
 #include <cmath>
 
 // Complex numbers library
-#include <complex>
-namespace plask {
-    using std::complex; using std::conj;
-    typedef complex<double> dcomplex;
-}
+#ifdef PLASK_MATH_STD
+#   include <complex>
+    namespace plask {
+        using std::complex; using std::conj;
+        using std::abs; using std::real; using std::imag;
+        typedef complex<double> dcomplex;
+    }
+#endif // PLASK_MATH_STD
 
 // Limist for comparing approximate numbers with zero
 #include <limits>

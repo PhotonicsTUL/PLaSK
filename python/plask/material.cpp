@@ -235,6 +235,15 @@ py::object MaterialsDB_iter(const MaterialsDB& DB) {
 }
 
 /**
+ * \return true is the material with given name is in the database
+ */
+bool MaterialsDB_contains(const MaterialsDB& DB, const std::string& name) {
+    for (auto material: DB) if (material->materialName == name) return true;
+    return false;
+}
+
+
+/**
  * Create material basing on its name and additional parameters
  **/
 shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
@@ -392,6 +401,7 @@ void initMaterials() {
         .def("get", py::raw_function(&MaterialsDB_get), "Get material of given name and doping")
         .add_property("all", &MaterialsDB_list, "List of all materials in database")
         .def("__iter__", &MaterialsDB_iter)
+        .def("__contains__", &MaterialsDB_contains)
     ;
 
     // Common material interface
