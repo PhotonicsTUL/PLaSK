@@ -37,8 +37,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include <QApplication>
+
+#include <plask/material/db.h>
+
 #include "modelext/draw.h"
 #include "modelext/text.h"
 
@@ -46,6 +48,8 @@
 
 int main(int argc, char *argv[])
 {
+    plask::MaterialsLibraryInit materials_init;
+
     initElementsDrawers();
     initElementsPrinters();
 
