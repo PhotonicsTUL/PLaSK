@@ -362,7 +362,7 @@ struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceType>
      * @return values in points describe by mesh @a dst_mesh
      */
     virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const {
-        return this->operator()(dst_mesh, DEFAULT);
+        return this->operator()(dst_mesh, DEFAULT_INTERPOLATION);
     }
 
 };
@@ -571,7 +571,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
 
         ///Provided value.
         ProvidedValueType value;
-        
+
         /// Delegate all constructors to value.
         template<typename ...Args>
         WithValue(Args&&... params): value(std::forward<Args>(params)...) {}
@@ -666,7 +666,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
 
         ///Mesh which describe in which points are this->values.
         MeshType mesh;
-        
+
         /// Delegate all constructors to mesh.
         template<typename ...Args>
         WithValue(Args&&... params): mesh(std::forward<Args>(params)...) {}

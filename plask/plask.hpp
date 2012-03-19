@@ -77,5 +77,6 @@ You should start reading from section \ref modules "How to implement an own modu
 
 #include "provider/provider.h"
 #include "provider/temperature.h"
+#include "provider/optical.h"
 
 #endif // PLASK__PLASK_HPP

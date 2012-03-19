@@ -5,9 +5,6 @@
  * This file includes classes which represent and describe spaces.
  */
 
-#include <cmath>
-// TODO: use configured math library
-
 #include "vec.h"
 
 namespace plask { namespace space {

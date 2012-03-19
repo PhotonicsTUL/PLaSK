@@ -3,9 +3,9 @@
  */
 #include <boost/python.hpp>
 
-// #include "../your_module_class_header.hpp"
+#include "../eim.hpp"
 
-using namespace plask::your_module;
+using namespace plask::eim;
 
 /**
  * Initialization of your module to Python
@@ -13,8 +13,9 @@ using namespace plask::your_module;
  * The \a module_name should be changed to match the name of the directory with our module
  * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
  */
-BOOST_PYTHON_MODULE(module_name)
+BOOST_PYTHON_MODULE(eim)
 {
+    ;
     //boost::python::class_<plask::YourModule, plask::shared_ptr<plask::YourModule>, py::bases<plask::Module>>("YourModule",
     //    "Short module description and constructor documentation.")
     //    .def("method", &YourModule::method, "Short documentation")
@@ -23,4 +24,3 @@ BOOST_PYTHON_MODULE(module_name)
     //    .add_attribute("attribute", &YourModule::getAttributeMethod, &YourModule::setAttributeMethod, "Shord documentation")
     // ;
 }
-

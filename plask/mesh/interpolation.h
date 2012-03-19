@@ -82,18 +82,18 @@ namespace plask {
  * @see @ref meshes_interpolation
  */
 enum InterpolationMethod {
-    DEFAULT = 0,        ///< default interpolation (depends on source mesh)
-    LINEAR = 1,         ///< linear interpolation
-    SPLINE = 2,         ///< spline interpolation
-    COSINE = 3,         ///< cosine interpolation
-    FOURIER = 4,        ///< Fourier transform interpolation
+    DEFAULT_INTERPOLATION = 0,  ///< default interpolation (depends on source mesh)
+    LINEAR = 1,                 ///< linear interpolation
+    SPLINE = 2,                 ///< spline interpolation
+    COSINE = 3,                 ///< cosine interpolation
+    FOURIER = 4,                ///< Fourier transform interpolation
     //...add new interpolation algoritms here...
 #   ifndef DOXYGEN
     __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop
 #   endif // DOXYGEN
 };
 
-static const char* InterpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE" /*attach new interpolation algoritm names here*/};
+static const char* InterpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE", "COSINE", "FOURIER" /*attach new interpolation algoritm names here*/};
 
 /**
  * Specialization of this class are used for interpolation and can depend on source mesh type,
@@ -154,7 +154,7 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
 template <typename SrcMeshT, typename DataT>
 inline shared_ptr<const std::vector<DataT>>
 interpolate(SrcMeshT& src_mesh, shared_ptr<const std::vector<DataT>> src_vec_ptr,
-            Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT)
+            Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
 {
     if (&src_mesh == &dst_mesh) return src_vec_ptr; // meshes are identical, so just return src_vec
 
@@ -170,7 +170,7 @@ interpolate(SrcMeshT& src_mesh, shared_ptr<const std::vector<DataT>> src_vec_ptr
 template <typename SrcMeshT, typename DataT>
 inline shared_ptr<const std::vector<DataT>>
 interpolate(SrcMeshT& src_mesh, shared_ptr<std::vector<DataT>> src_vec_ptr,
-            Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT) {
+            Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION) {
 //     shared_ptr<const std::vector<DataT>> src_const_vec_ptr = src_vec_ptr;
     return interpolate(src_mesh, (shared_ptr<const std::vector<DataT>>&&)src_vec_ptr, dst_mesh, method);
 }
