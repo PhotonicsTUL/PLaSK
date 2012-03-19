@@ -290,13 +290,13 @@ protected:
      * Throw CyclicReferenceException if @p potential_parent is in subtree with this in root.
      * @param potential_parent[in] potential, new parent of this
      */
-    void ensureCanHasAsParent(const GeometryElement& potential_parent) const;
+    void ensureCanHaveAsParent(const GeometryElement& potential_parent) const;
 
     /**
      * Throw CyclicReferenceException if @p potential_child has this in subtree.
      * @param potential_child[in] potential, new child of this
      */
-    void ensureCanHasAsChild(const GeometryElement& potential_child) const { potential_child.ensureCanHasAsParent(*this); }
+    void ensureCanHaveAsChild(const GeometryElement& potential_child) const { potential_child.ensureCanHaveAsParent(*this); }
 
 };
 
@@ -502,7 +502,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
      */
     void setChild(const shared_ptr<ChildType>& child) {
-        this->ensureCanHasAsChild(*child);
+        this->ensureCanHaveAsChild(*child);
         setChildUnsafe(child);
     }
 

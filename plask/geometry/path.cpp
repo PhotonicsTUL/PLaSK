@@ -134,4 +134,8 @@ Path& Path::append(const GeometryElement& element, const PathHints* hints) {
     return append( std::vector< shared_ptr<const GeometryElement> > { element.shared_from_this() }, hints);
 }
 
+Path& Path::append(shared_ptr<const GeometryElement> element, const PathHints* hints) {
+    return append( std::vector< shared_ptr<const GeometryElement> > { element }, hints);
+}
+
 }   //namespace plask

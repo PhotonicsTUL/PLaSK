@@ -7,7 +7,7 @@
 
 struct Leafs2d {
     plask::shared_ptr<plask::Material> dumbMaterial;
-    plask::shared_ptr< plask::Block<2> > block_5_3;
+    plask::shared_ptr<plask::Block<2>> block_5_3;
     Leafs2d(): dumbMaterial(new DumbMaterial()), block_5_3(new plask::Block<2>(plask::vec(5.0, 3.0), dumbMaterial)) {}
 };
 
@@ -79,6 +79,24 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK(manager.getElement("block_5_3") != nullptr);
         BOOST_CHECK(manager.getElement("notexist") == nullptr);
         test_multi_stack(manager.getElement<plask::MultiStackContainer<2>>("multistack"), manager.requirePathHints("p"));
+    }
+
+    BOOST_AUTO_TEST_CASE(path_from_vector) {
+        plask::shared_ptr<plask::StackContainer<2>> stack1( new plask::StackContainer<2> );
+        plask::shared_ptr<plask::StackContainer<2>> stack2( new plask::StackContainer<2> );
+        plask::shared_ptr<plask::Rectangle> element( new plask::Rectangle(plask::vec(1,2), plask::MaterialsDB::getDefault().get("GaN")) );
+        stack2->add(element);
+        stack1->add(stack2);
+
+        std::vector<plask::shared_ptr<const plask::GeometryElement>> list = {stack2, stack1};
+        plask::Path path(list);
+        path += element;
+    }
+
+    BOOST_AUTO_TEST_CASE(empty_containters) {
+        plask::shared_ptr<plask::StackContainer<2>> stack1(new plask::StackContainer<2>);
+        plask::shared_ptr<plask::StackContainer<2>> stack2(new plask::StackContainer<2>);
+        stack1->add(stack2);
     }
 
 BOOST_AUTO_TEST_SUITE_END()

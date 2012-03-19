@@ -9,6 +9,7 @@ if sys.version < "2.7":
 
 import plask, plask.materials, plask.geometry
 
+
 class SimpleGeometry(unittest.TestCase):
 
     def setUp(self):
@@ -104,3 +105,17 @@ class GeometryObjects(unittest.TestCase):
         self.assertEqual( stack.getMaterial(-5.1, 7.0), None )
         self.assertEqual( stack.getMaterial(0.1, 7.0), None )
         self.assertEqual( list(stack.getLeafsBoundigBoxes()), [plask.geometry.Box2D(-2.5,0,2.5,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(-5.0,6,0.0,9)])
+
+
+class GeometryPath(unittest.TestCase):
+
+    def setUp(self):
+        self.stack1 = plask.geometry.Stack2D()
+        self.stack2 = plask.geometry.Stack2D()
+        self.element = plask.geometry.Rectangle(1,2, plask.materials.GaN())
+        self.stack1.append(self.stack2)
+        self.stack2.append(self.element)
+
+    def testPath(self):
+        p = plask.geometry.Path([self.stack1, self.stack2])
+        p += self.element

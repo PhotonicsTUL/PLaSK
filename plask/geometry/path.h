@@ -166,6 +166,8 @@ public:
 
     Path(const GeometryElement& element) { append(element); }
 
+    Path(shared_ptr<const GeometryElement> element) { append(*element); }
+
     ///Path content.
     std::vector< shared_ptr<const GeometryElement> > elements;
 
@@ -232,6 +234,15 @@ public:
      */
     Path& append(const GeometryElement& element, const PathHints* hints = nullptr);
 
+    /**
+     * Append @p element to this path.
+     *
+     * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
+     * @param hint elements to add
+     * @param hints optional path hints which are use to non-ambiguous completion of paths
+     */
+    Path& append(shared_ptr<const GeometryElement> element, const PathHints* hints = nullptr);
+
     Path& operator+=(const std::vector< shared_ptr<const GeometryElement> >& path) { return append(path); }
 
     Path& operator+=(const GeometryElement::Subtree& paths) { return append(paths); }
@@ -241,6 +252,8 @@ public:
     Path& operator+=(const PathHints::Hint& hint) { return append(hint); }
 
     Path& operator+=(const GeometryElement& element) { return append(element); }
+
+    Path& operator+=(shared_ptr<const GeometryElement> element) { return append(element); }
 
 };
 

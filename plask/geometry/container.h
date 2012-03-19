@@ -204,7 +204,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
-        this->ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, translation);
     }
 

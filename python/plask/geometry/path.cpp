@@ -13,36 +13,40 @@ shared_ptr<Path> Path__init__(Args... args) {
     return shared_ptr<Path>(new Path(args...));
 }
 
+struct Element_List_from_Python {
 
-void* Element_List_Python_convertible(PyObject* obj_ptr) {
-    if (!PySequence_Check(obj_ptr)) return nullptr;
-    int n = PySequence_Size(obj_ptr);
-    try {
-        for(int i = 0; i < n; i++) py::extract<shared_ptr<GeometryElement>>(PySequence_GetItem(obj_ptr, i));
-    } catch (py::error_already_set) {
-        PyErr_Clear();
-        return nullptr;
-    }
-    return obj_ptr;
-}
+    Element_List_from_Python();
 
-void Element_List_Python_construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-    int n = PySequence_Size(obj_ptr);
-
-    // Grab pointer to memory into which to construct the new QString
-    void* storage = ((boost::python::converter::rvalue_from_python_storage<std::vector<shared_ptr<const GeometryElement>>>*)data)->storage.bytes;
-
-    auto vec = new(storage) std::vector<shared_ptr<const GeometryElement>>(n);
-
-    for(int i = 0; i < n; i++) {
-        shared_ptr<GeometryElement> p = py::extract<shared_ptr<GeometryElement>>(PySequence_GetItem(obj_ptr, i));
-        vec->push_back(const_pointer_cast<const GeometryElement>(p));
+    static void* convertible(PyObject* obj_ptr) {
+        if (!PySequence_Check(obj_ptr)) return nullptr;
+        int n = PySequence_Size(obj_ptr);
+        try {
+            for(int i = 0; i < n; i++) py::extract<shared_ptr<GeometryElement>>(PySequence_GetItem(obj_ptr, i));
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            return nullptr;
+        }
+        return obj_ptr;
     }
 
-    // Stash the memory chunk pointer for later use by boost.python
-    data->convertible = storage;
-}
+    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        int n = PySequence_Size(obj_ptr);
 
+        // Grab pointer to memory into which to construct the new QString
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<std::vector<shared_ptr<const GeometryElement>>>*)data)->storage.bytes;
+
+        std::vector<shared_ptr<const GeometryElement>>* vec = new(storage) std::vector<shared_ptr<const GeometryElement>>;
+        vec->reserve(n);
+
+        for(int i = 0; i < n; i++) {
+            shared_ptr<GeometryElement> p = py::extract<shared_ptr<GeometryElement>>(PySequence_GetItem(obj_ptr, i));
+            vec->push_back(const_pointer_cast<const GeometryElement>(p));
+        }
+
+        // Stash the memory chunk pointer for later use by boost.python
+        data->convertible = vec;
+    }
+};
 
 void register_geometry_path()
 {
@@ -101,7 +105,7 @@ void register_geometry_path()
         .def(py::self += py::other<std::vector<shared_ptr<const GeometryElement>>>())
     ;
 
-    boost::python::converter::registry::push_back(&Element_List_Python_convertible, &Element_List_Python_construct,
+    boost::python::converter::registry::push_back(&Element_List_from_Python::convertible, &Element_List_from_Python::construct,
                                                   boost::python::type_id<std::vector<shared_ptr<const GeometryElement>>>());
 }
 

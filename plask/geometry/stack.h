@@ -179,7 +179,7 @@ public:
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType> &el, const Aligner& aligner = CenterAligner()) {
-        ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, aligner);
     }
 
@@ -239,7 +239,7 @@ public:
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
-        ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return push_front_Unsafe(el, aligner);
     }
 

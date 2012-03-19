@@ -110,9 +110,9 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
 # ---------- default materials --------------------------------------------
 
-add_library(default_materials SHARED ${materials_src})
-set_target_properties(default_materials PROPERTIES OUTPUT_NAME plask_materialsdefault)
-target_link_libraries(default_materials libplask)
+add_library(materials_default SHARED ${materials_src})
+set_target_properties(materials_default PROPERTIES OUTPUT_NAME plask_materialsdefault)
+target_link_libraries(materials_default libplask)
 
 
 # ---------- Python --------------------------------------------
@@ -191,7 +191,7 @@ if(BUILD_GUI)
     #qt4_wrap_ui(PLASK_GUI_UI_HDRS ${PLASK_GUI_UIS})
     qt4_wrap_cpp(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS} )
     add_executable(plaskgui ${plaskgui_src} ${PLASK_GUI_MOC_SRCS} ${PLASK_GUI_RC_SRCS}) # ${PLASK_GUI_UI_HDRS}
-    target_link_libraries(plaskgui libplask default_materials ${QT_LIBRARIES})
+    target_link_libraries(plaskgui libplask materials_default ${QT_LIBRARIES})
 endif(BUILD_GUI)
 
 
@@ -263,14 +263,14 @@ endforeach()
 # ----------===== unit tests =====--------------------------------------------
 if(BUILD_TESTING)
 
-    set(plask_test_depends default_materials) # we need materials for testing
+    set(plask_test_depends materials_default) # we need materials for testing
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
         file(GLOB_RECURSE plask-test_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
         add_executable(plask-test ${plask-test_src})
         set_target_properties(plask-test PROPERTIES OUTPUT_NAME test_plask)
-        target_link_libraries(plask-test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask default_materials)
+        target_link_libraries(plask-test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask materials_default)
         set(plask_test_depends ${plask_test_depends} plask-test)
         file(GLOB_RECURSE plask_tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/plask FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
         list(REMOVE_ITEM plask_tests main.cpp)
@@ -333,11 +333,11 @@ endif(BUILD_DOCUMENTATION)
 if(WIN32)
     install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
                              ARCHIVE DESTINATION lib COMPONENT dev)
-    install(TARGETS default_materials RUNTIME DESTINATION bin COMPONENT core
+    install(TARGETS materials_default RUNTIME DESTINATION bin COMPONENT core
                                       ARCHIVE DESTINATION lib COMPONENT dev)
 else()
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
-    install(TARGETS default_materials LIBRARY DESTINATION lib COMPONENT core)
+    install(TARGETS materials_default LIBRARY DESTINATION lib COMPONENT core)
 endif()
 
 install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
