@@ -12,17 +12,29 @@ class QModelIndex;
 QT_END_NAMESPACE
 
 /**
- * Geometry tree item.
+ * Geometry tree item. Holds (weak) geometry element.
  */
 class GeometryTreeItem {
+
+protected:
 
     QList<GeometryTreeItem*> childItems;
 
     //here can cache miniature
 
-    void constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem);
+    bool initialized;
+
+    void ensureInitialized();
+
+    /**
+     * Construct and add to childItems children items for an given element.
+     * @param elem element for which children should be constructed, typically (but not always) same as element
+     */
+    virtual void constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem);
 
 public:
+
+    std::size_t inParentIndex;
 
     GeometryTreeItem* parentItem;
 
@@ -32,7 +44,7 @@ public:
 
     GeometryTreeItem(GeometryTreeItem* parentItem, std::size_t index);
 
-    GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element);
+    GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element, std::size_t index);
 
     //create root with parentItem = nullptr
     GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements);
@@ -41,14 +53,28 @@ public:
 
     GeometryTreeItem* child(std::size_t index);
 
-    std::size_t childCount() const { return childItems.size(); }
+    std::size_t childCount() { ensureInitialized(); return childItems.size(); }
 
     std::size_t columnCount() const { return 1; }
 
     std::size_t indexInParent() const;
 
+    virtual QString elementText(plask::GeometryElement& element) const;
+
     QVariant data(int column) const;
 };
+
+
+struct InContainerTreeItem: public GeometryTreeItem {
+
+    InContainerTreeItem(GeometryTreeItem* parentItem, std::size_t index)
+        : GeometryTreeItem(parentItem, index) {}
+
+    virtual void constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem);
+
+    virtual QString elementText(plask::GeometryElement& element) const;
+};
+
 
 class Document;
 

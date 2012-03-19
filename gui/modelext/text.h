@@ -1,13 +1,23 @@
 #ifndef PLASK_GUI_MODEL_EXT_TEXT_H
 #define PLASK_GUI_MODEL_EXT_TEXT_H
 
+/** @file
+ * This file includes set of functions to convert plask objects to QString text representation.
+ */
+
 #include <plask/geometry/element.h>
 #include <QString>
+#include <boost/lexical_cast.hpp>
 
 void initElementsPrinters();
 
 QString toStr(plask::GeometryElement::Type type);
 
 QString toStr(const plask::GeometryElement& el);
+
+template <int dim, typename T>
+QString toStr(const plask::Vec<dim, T>& v) {
+    return QString(boost::lexical_cast<std::string>(v).c_str());
+}
 
 #endif // PLASK_GUI_MODEL_EXT_TEXT_H

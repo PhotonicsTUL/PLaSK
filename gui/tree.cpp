@@ -3,37 +3,47 @@
 #include "document.h"
 #include "modelext/text.h"
 
+void GeometryTreeItem::ensureInitialized() {
+    if (initialized) return;
+    if (auto e = element.lock()) constructChildrenItems(e);
+    initialized = true;
+}
 
 void GeometryTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
     std::size_t chCount = elem->getRealChildCount();
-    for (int i = 0; i < chCount; ++i)
-        childItems.append(new GeometryTreeItem(this, i));
+    if (elem->isContainer()) {
+        for (int i = 0; i < chCount; ++i)
+            childItems.append(new InContainerTreeItem(this, i));
+    } else {
+        for (int i = 0; i < chCount; ++i)
+            childItems.append(new GeometryTreeItem(this, i));
+    }
 }
 
 plask::shared_ptr<plask::GeometryElement> GeometryTreeItem::parent() {
     return parentItem ?
-                parentItem->element.lock() :
-                plask::shared_ptr<plask::GeometryElement>();
+        parentItem->element.lock() :
+        plask::shared_ptr<plask::GeometryElement>();
 }
 
 GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, std::size_t index)
-: parentItem(parentItem) {
+: initialized(false), parentItem(parentItem), inParentIndex(index) {
     if (auto parent_ptr = parent()) {
         auto child = parent_ptr->getRealChildAt(index);
         element = child;
-        constructChildrenItems(child);
+        //constructChildrenItems(child);
     }
 }
 
-GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element)
-    : parentItem(parentItem), element(element) {
-    constructChildrenItems(element);
+GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element, std::size_t index)
+: initialized(false), parentItem(parentItem), element(element), inParentIndex(index) {
+    //constructChildrenItems(element);
 }
 
 GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements)
-: parentItem(0) {
-    for (auto e: rootElements)
-        childItems.append(new GeometryTreeItem(this, e));
+: initialized(false), parentItem(0), inParentIndex(0) {
+    for (int i = 0; i < rootElements.size(); ++i)
+        childItems.append(new GeometryTreeItem(this, rootElements[i], i));
 }
 
 GeometryTreeItem::~GeometryTreeItem() {
@@ -41,21 +51,46 @@ GeometryTreeItem::~GeometryTreeItem() {
 }
 
 GeometryTreeItem * GeometryTreeItem::child(std::size_t index) {
+    ensureInitialized();
     if (index > childItems.size()) return nullptr;
     return childItems[index];
 }
 
 std::size_t GeometryTreeItem::indexInParent() const {
-    if (!parentItem) return 0;
-    return parentItem->childItems.indexOf(const_cast<GeometryTreeItem*>(this));
+   // if (!parentItem) return 0;
+   // return parentItem->childItems.indexOf(const_cast<GeometryTreeItem*>(this));
+    return inParentIndex;
+}
+
+QString GeometryTreeItem::elementText(plask::GeometryElement& element) const {
+    return toStr(element);
 }
 
 QVariant GeometryTreeItem::data(int column) const {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
-        //some representation of e
-        return toStr(*e);
+        return elementText(*e);
     } else  //should never happen
         QVariant();
+}
+
+
+// ---------- InContainerTreeItem -----------
+
+void InContainerTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
+    std::size_t chCount = elem->getRealChildCount();
+    if (chCount == 0) return;
+    GeometryTreeItem::constructChildrenItems(elem->getRealChildAt(0));
+}
+
+QString InContainerTreeItem::elementText(plask::GeometryElement &element) const {
+    if (element.getRealChildCount() == 0) return toStr(element);
+    QString result = toStr(*element.getRealChildAt(0));
+    result += "\nat ";
+    if (element.getDimensionsCount() == 2) {
+        result += toStr(static_cast<plask::Translation<2>&>(element).translation);
+    } else
+        result += toStr(static_cast<plask::Translation<3>&>(element).translation);
+    return result;
 }
 
 
@@ -142,3 +177,4 @@ Qt::ItemFlags GeometryTreeModel::flags(const QModelIndex &index) const
 QVariant GeometryTreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
     return "Description";
 }
+

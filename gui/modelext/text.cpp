@@ -9,7 +9,6 @@
 #include <plask/geometry/transform.h>
 #include <plask/geometry/stack.h>
 #include <plask/geometry/leaf.h>
-#include <boost/lexical_cast.hpp>
 
 typedef QString print_element_f(const plask::GeometryElement& toPrint);
 
@@ -19,7 +18,7 @@ template <int dim>
 QString printTranslation(const plask::GeometryElement& toPrint) {
     const plask::Translation<dim>& t = static_cast< const plask::Translation<dim>& >(toPrint);
     return QString(QObject::tr("translation%1d %2"))
-            .arg(dim).arg(QString(boost::lexical_cast<std::string>(t.translation).c_str()));
+            .arg(dim).arg(toStr(t.translation));
 }
 
 template <int dim>
