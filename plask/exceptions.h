@@ -57,7 +57,7 @@ struct NotImplemented: public Exception {
 };
 
 /**
- * This exception is thrown when some value (function argument) out of bound.
+ * This exception is thrown when some value (function argument) is out of bound.
  */
 struct OutOfBoundException: public Exception {
 

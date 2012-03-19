@@ -38,7 +38,7 @@ structure analyzed. Such approach is also hardly documented and not tested.
 \section plask_tutorials Tutorials
 
 Here you can find the tutorials expalinig how you can extend PLaSK by writing new module, creating providers and receivers for data exchange between modules or implement a new mesh.
-You should start reading from section \subpage modules "How to implement an own module" as it explains the most basic particulars of the internal PLaSK architecture.
+You should start reading from section \ref modules "How to implement an own module" as it explains the most basic particulars of the internal PLaSK architecture.
 
 - \subpage modules "How to implement an own module?"
     - \subpage providers "How to use providers and receivers for data exchange?"
