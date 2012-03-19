@@ -482,7 +482,7 @@ private:
 
 /**
  * Class used to initialize external material library.
- * Its constructor must be defined in the materials librry to make sure that this libarary is linked.
+ * Its constructor must be defined in the materials library to make sure that this libarary is linked.
  */
 struct MaterialsLibraryInit {
     MaterialsLibraryInit();
