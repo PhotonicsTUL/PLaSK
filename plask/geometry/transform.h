@@ -6,6 +6,138 @@
 namespace plask {
 
 /**
+ * Template of base class for all transform nodes.
+ * Transform node has exactly one child node and represent element which is equal to child after transform.
+ * @tparam dim number of dimensions of this element
+ * @tparam Child_Type type of child, can be in space with different number of dimensions than this is (in such case see @ref GeometryElementChangeSpace).
+ */
+template < int dim, typename Child_Type = GeometryElementD<dim> >
+struct GeometryElementTransform: public GeometryElementD<dim> {
+
+    typedef Child_Type ChildType;
+
+    explicit GeometryElementTransform(shared_ptr<ChildType> child = nullptr): _child(child) {}
+
+    explicit GeometryElementTransform(ChildType& child): _child(static_pointer_cast<ChildType>(child.shared_from_this())) {}
+
+    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_TRANSFORM; }
+
+    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+        getChild()->getLeafsToVec(dest);
+    }
+
+    /**
+     * Get child.
+     * @return child
+     */
+    shared_ptr<ChildType> getChild() const { return _child; }
+
+    /**
+     * Set new child.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after setting the new child.
+     * @param child new child
+     */
+    void setChildUnsafe(const shared_ptr<ChildType>& child) { _child = child; }
+
+    /**
+     * Set new child.
+     * @param child new child
+     * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
+     */
+    void setChild(const shared_ptr<ChildType>& child) {
+        this->ensureCanHasAsChild(*child);
+        setChildUnsafe(child);
+    }
+
+    /**
+     * @return @c true only if child is set (not null)
+     */
+    bool hasChild() const { return _child != nullptr; }
+
+    /**
+     * Throw NoChildException if child is not set.
+     */
+    virtual void validate() const {
+        if (!hasChild()) throw NoChildException();
+    }
+
+    virtual bool isInSubtree(const GeometryElement& el) const {
+        return &el == this || (hasChild() && _child->isInSubtree(el));
+    }
+
+    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+        if (this == &el) return GeometryElement::Subtree(this->shared_from_this());
+        if (!_child) GeometryElement::Subtree();
+        GeometryElement::Subtree e = _child->findPathsTo(el, path);
+        if (e.empty()) return GeometryElement::Subtree();
+        GeometryElement::Subtree result(this->shared_from_this());
+        result.children.push_back(std::move(e));
+        return result;
+    }
+
+    virtual std::size_t getChildCount() const { return hasChild() ? 1 : 0; }
+
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+        if (!hasChild() || child_nr > 0) throw OutOfBoundException("GeometryElementTransform::getChildAt", "child_nr");
+        return _child;
+    }
+
+    /**
+     * Get shallow copy of this.
+     * @return shallow copy of this
+     */
+    virtual shared_ptr<GeometryElementTransform<dim, Child_Type>> shallowCopy() const = 0;
+
+    shared_ptr<GeometryElementTransform<dim, Child_Type>> shallowCopy(const shared_ptr<ChildType>& child) const {
+        shared_ptr<GeometryElementTransform<dim, Child_Type>> result = shallowCopy();
+        result->setChild(child);
+        return result;
+    }
+
+    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
+        shared_ptr<const GeometryElement> result(this->shared_from_this());
+        if (changer.apply(result, translation) || !hasChild()) return result;
+        shared_ptr<const GeometryElement> new_child = _child->changedVersion(changer, translation);
+        return new_child == _child ? result : shallowCopy(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)));
+    }
+
+    protected:
+    shared_ptr<ChildType> _child;
+
+};
+
+/**
+ * Template of base class for all space changer nodes.
+ * Space changer if transform node which is in space with different number of dimensions than its child.
+ * @tparam this_dim number of dimensions of this element
+ * @tparam child_dim number of dimensions of child element
+ * @tparam ChildType type of child, should be in space with @a child_dim number of dimensions
+ */
+template < int this_dim, int child_dim = 5 - this_dim, typename ChildType = GeometryElementD<child_dim> >
+struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, ChildType> {
+
+    typedef typename ChildType::Rect ChildRect;
+    typedef typename ChildType::DVec ChildVec;
+    typedef typename GeometryElementTransform<this_dim, ChildType>::DVec DVec;
+    using GeometryElementTransform<this_dim, ChildType>::getChild;
+
+    explicit GeometryElementChangeSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransform<this_dim, ChildType>(child) {}
+
+    ///@return GE_TYPE_SPACE_CHANGER
+    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_SPACE_CHANGER; }
+
+    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+        std::vector< shared_ptr<const GeometryElement> > v = getChild()->getLeafs();
+        std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result(v.size());
+        std::transform(v.begin(), v.end(), result.begin(), [](shared_ptr<const GeometryElement> e) {
+            return std::make_pair(e, Primitive<this_dim>::NAN_VEC);
+        });
+        return result;
+    }
+
+};
+
+/**
  * Represent geometry element equal to its child translated by vector.
  */
 template <int dim>

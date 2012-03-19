@@ -1,7 +1,7 @@
 #ifndef PLASK__SPACE_CHANGER_CARTESIAN_H
 #define PLASK__SPACE_CHANGER_CARTESIAN_H
 
-#include "element.h"
+#include "transform.h"
 
 namespace plask {
 

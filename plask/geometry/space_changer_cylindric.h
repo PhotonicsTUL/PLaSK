@@ -1,7 +1,7 @@
 #ifndef PLASK__SPACE_CHANGER_CYLINDRIC_H
 #define PLASK__SPACE_CHANGER_CYLINDRIC_H
 
-#include "element.h"
+#include "transform.h"
 
 namespace plask {
 

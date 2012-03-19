@@ -60,7 +60,7 @@ std::vector< shared_ptr<const GeometryElement> > GeometryElement::Subtree::toLin
     return result;
 }
 
-void GeometryElement::ensureCanHaveAsParent(const GeometryElement& potential_parent) const {
+void GeometryElement::ensureCanHasAsParent(const GeometryElement& potential_parent) const {
     if (isInSubtree(potential_parent))
         throw CyclicReferenceException();
 }

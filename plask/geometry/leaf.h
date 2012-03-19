@@ -10,6 +10,78 @@ This file includes geometry elements leafs classes.
 namespace plask {
 
 /**
+ * Template of base classes for all leaf nodes.
+ * @tparam dim number of dimensions
+ */
+template < int dim >
+struct GeometryElementLeaf: public GeometryElementD<dim> {
+
+    typedef typename GeometryElementD<dim>::DVec DVec;
+    typedef typename GeometryElementD<dim>::Rect Rect;
+    using GeometryElementD<dim>::getBoundingBox;
+    using GeometryElementD<dim>::shared_from_this;
+
+    shared_ptr<Material> material;
+
+    GeometryElementLeaf<dim>(shared_ptr<Material> material): material(material) {}
+
+    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_LEAF; }
+
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
+        return this->inside(p) ? material : shared_ptr<Material>();
+    }
+
+    virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Rect, DVec>>& dest, const PathHints* path = 0) const {
+        dest.push_back( std::tuple<shared_ptr<const GeometryElement>, Rect, DVec>(this->shared_from_this(), this->getBoundingBox(), Primitive<dim>::ZERO_VEC) );
+    }
+
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
+        dest.push_back(this->getBoundingBox());
+    }
+
+    inline std::vector<Rect> getLeafsBoundingBoxes() const {
+        return { this->getBoundingBox() };
+    }
+
+    inline std::vector<Rect> getLeafsBoundingBoxes(const PathHints&) const {
+        return { this->getBoundingBox() };
+    }
+
+    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+        dest.push_back(this->shared_from_this());
+    }
+
+    inline std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+        return { this->shared_from_this() };
+    }
+
+    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+        return { std::make_pair(shared_from_this(), Primitive<dim>::ZERO_VEC) };
+    }
+
+    virtual bool isInSubtree(const GeometryElement& el) const {
+        return &el == this;
+    }
+
+    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+        return GeometryElement::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
+    }
+
+    virtual std::size_t getChildCount() const { return 0; }
+
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+        throw OutOfBoundException("GeometryElementLeaf::getChildAt", "child_nr");
+    }
+
+    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
+        shared_ptr<const GeometryElement> result(this->shared_from_this());
+        changer.apply(result, translation);
+        return result;
+    }
+
+};
+
+/**
 Represent figure which, depends from @p dim is:
 - for dim = 2 - rectangle,
 - for dim = 3 - cuboid.

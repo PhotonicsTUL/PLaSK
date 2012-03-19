@@ -1,5 +1,7 @@
 #include "geometry.h"
-#include <plask/geometry/element.h>
+#include <plask/geometry/transform.h>
+#include <plask/geometry/leaf.h>
+#include <plask/geometry/container.h>
 #include <plask/geometry/path.h>
 
 namespace plask { namespace python {

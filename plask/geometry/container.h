@@ -17,12 +17,15 @@ This file includes containers of geometries elements.
 namespace plask {
 
 /**
- * Template which implement container using stl container of pointers to some geometry elements objects (Translation by default).
+ * Template of base class for all container nodes.
+ * Container nodes can include one or more child nodes with translations.
+ *
  * @tparam dim GeometryElementContainer dimension
- * @tparam container_type container of pointers to children
  */
-template <int dim, typename container_type = std::vector< shared_ptr< Translation<dim> > > >
-struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
+template <int dim>
+struct GeometryElementContainer: public GeometryElementD<dim> {
+
+    typedef std::vector< shared_ptr< Translation<dim> > > TranslationVector;
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
@@ -31,7 +34,7 @@ struct GeometryElementContainerImpl: public GeometryElementContainer<dim> {
     typedef typename GeometryElementContainer<dim>::Rect Rect;
 
 protected:
-    container_type children;
+    TranslationVector children;
 
     /**
      * Remove all children which fulfil predicate.
@@ -41,12 +44,22 @@ protected:
     template <typename PredicateT>
     void removeAll(PredicateT predicate) {
         children.erease(
-            std::remove_if(children.begin(), children.end(), predicate),
-            children.end()
+            std::remove_if(children.begin(), children.end(), predicate), children.end()
         );
     }
 
 public:
+
+    /**
+     * Get phisicaly stored children (with translations).
+     * @return vector of translations object, each include children
+     */
+    const TranslationVector& getChildrenVector() const {
+        return children;
+    }
+
+    ///@return GE_TYPE_CONTAINER
+    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_CONTAINER; }
 
     virtual bool inside(const DVec& p) const {
         for (auto child: children) if (child->inside(p)) return true;
@@ -59,7 +72,7 @@ public:
     }
 
     virtual Rect getBoundingBox() const {
-        //if (childs.empty()) throw?
+        if (children.empty()) return Rect(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
         Rect result = children[0]->getBoundingBox();
         for (std::size_t i = 1; i < children.size(); ++i)
             result.include(children[i]->getBoundingBox());
@@ -166,7 +179,7 @@ public:
  */
 //TODO some implementation are naive, and can be done faster with some caches
 template < int dim >
-struct TranslationContainer: public GeometryElementContainerImpl<dim> {
+struct TranslationContainer: public GeometryElementContainer<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
@@ -180,8 +193,8 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
     ///Type of translation geometry elment in space of this.
     typedef Translation<dim> TranslationT;
 
-    using GeometryElementContainerImpl<dim>::children;
-    using GeometryElementContainerImpl<dim>::shared_from_this;
+    using GeometryElementContainer<dim>::children;
+    using GeometryElementContainer<dim>::shared_from_this;
 
     /**
      * Add new child (translated) to end of children vector.
@@ -204,7 +217,7 @@ struct TranslationContainer: public GeometryElementContainerImpl<dim> {
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
-        this->ensureCanHaveAsChild(*el);
+        this->ensureCanHasAsChild(*el);
         return addUnsafe(el, translation);
     }
 

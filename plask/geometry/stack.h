@@ -9,7 +9,7 @@ namespace plask {
  * Common code for stack containers (which have children in stack/layers).
  */
 template <int dim, int growingDirection = Primitive<dim>::DIRECTION_UP>
-struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
+struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
@@ -23,7 +23,7 @@ struct StackContainerBaseImpl: public GeometryElementContainerImpl<dim> {
     ///Type of translation geometry elment in space of this.
     typedef Translation<dim> TranslationT;
 
-    using GeometryElementContainerImpl<dim>::children;
+    using GeometryElementContainer<dim>::children;
 
     /**
      * @param baseHeight height where should start first element
@@ -135,7 +135,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
 
 
 /**
- * 2d container which have children in stack/layers.
+ * Container which have children in stack/layers.
  */
 //TODO copy constructor
 template <int dim>
@@ -179,7 +179,7 @@ public:
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType> &el, const Aligner& aligner = CenterAligner()) {
-        this->ensureCanHaveAsChild(*el);
+        this->ensureCanHasAsChild(*el);
         return addUnsafe(el, aligner);
     }
 
@@ -239,7 +239,7 @@ public:
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
-        this->ensureCanHaveAsChild(*el);
+        this->ensureCanHasAsChild(*el);
         return push_front_Unsafe(el, aligner);
     }
 
