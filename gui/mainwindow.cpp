@@ -225,8 +225,9 @@ void MainWindow::createDockWindows() {
     dock = new QDockWidget(tr("Properties"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
-    QGroupBox* group = new QGroupBox(this);
-    group->setTitle("Group title");
+    //QGroupBox* group = new QGroupBox(this);
+    //group->setTitle("Group title");
+    QWidget* group = new QWidget(this);
     QFormLayout* l = new QFormLayout(group);
     group->setLayout(l);
     l->addRow("ExampleLabel1", new QSpinBox);
