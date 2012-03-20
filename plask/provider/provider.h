@@ -6,7 +6,7 @@ This file includes base classes and templates which allow to generate providers 
 @see @ref providers
 
 
-@page providers Provider and receivers
+@page providers Providers and receivers
 
 @section providers_about About provider-receiver mechanism
 This page describe providers and receivers mechanism, which allow for data exchange between modules.
@@ -190,16 +190,16 @@ struct Provider {
 template <typename ProviderT>
 struct Receiver: public Provider::Listener {
 
-    ///Pointer to connected provider. Can be nullptr if no provider is connected.
+    /// Pointer to connected provider. Can be nullptr if no provider is connected.
     ProviderT* provider;
 
-    ///Is @c true only if data provides by provider was changed after recent value getting.
+    /// Is @c true only if data provides by provider was changed after recent value getting.
     bool changed;
 
-    ///Construct Receiver without connected provider and with set changed flag.
+    /// Construct Receiver without connected provider and with set changed flag.
     Receiver(): provider(0), changed(true) {}
 
-    ///Destructor. Disconnect from provider.
+    /// Destructor. Disconnect from provider.
     ~Receiver() {
         setProvider(0);
     }
@@ -252,7 +252,7 @@ struct Receiver: public Provider::Listener {
      */
     const ProviderT* getProvider() const { return provider; }
 
-    ///React on provider value changes. Set changed flag to true.
+    /// React on provider value changes. Set changed flag to true.
     void onChange() {
         changed = true;
         //TODO callback?
@@ -306,7 +306,7 @@ protected:
 template <typename ValueT>
 struct SingleValueProvider: public Provider {
 
-    ///Type of provided value.
+    /// Type of provided value.
     typedef ValueT ProvidedValueType;
 
     /**
@@ -320,7 +320,7 @@ struct SingleValueProvider: public Provider {
 //TODO typedef for SingleValueReceiver (GCC 4.7 needed)
 
 /**
- * Instantiation of this template is abstract base class for provider which provide values in points describe by mesh
+ * Instantiation of this template is abstract base class for provider which provide values in points described by mesh
  * and don't use interpolation.
  */
 template <typename ValueT, typename SpaceType>
@@ -346,7 +346,7 @@ struct OnMeshProvider: public Provider {
 template <typename ValueT, typename SpaceType>
 struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceType> {
 
-    ///Type of value provided by this (returned by operator()).
+    /// Type of value provided by this (returned by operator()).
     typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
 
     /**
@@ -512,12 +512,12 @@ struct ProviderImpl {};
 
 /**
  * Specializations of this class define implementations of providers for given property tag:
- * - ProviderFor<PropertyTag, SpaceType> is abstract, base class which inharited from Provider;
+ * - ProviderFor<PropertyTag, SpaceType> is abstract, base class which inherited from Provider;
  * - ProviderFor<PropertyTag, SpaceType>::Delegate is class inharited from ProviderFor<PropertyTag, SpaceType> which delegate all request to functor given as constructor parameter;
  * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field).
  * @tparam PropertyTag property tag class (describe physical property)
  * @tparam SpaceType type of space, required (and allowed) only for fields properties
- * @see plask::Temperature (include example); @ref providers
+ * @see plask::Temperature (includes example); @ref providers
  */
 template <typename PropertyTag, typename SpaceType = void>
 struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType> {

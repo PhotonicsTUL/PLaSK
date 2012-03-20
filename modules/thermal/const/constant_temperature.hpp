@@ -1,5 +1,5 @@
-#ifndef PLASK__CONSTANT_TEMPERATURE_H
-#define PLASK__CONSTANT_TEMPERATURE_H
+#ifndef PLASK__CONSTANT_TEMPERATURE_HPP
+#define PLASK__CONSTANT_TEMPERATURE_HPP
 
 /** @file
 This file includes module which provide constant temperature.
@@ -26,4 +26,4 @@ struct ConstantTemperatureModule: public Module {
 
 }       //namespace plask
 
-#endif // PLASK__CONSTANT_TEMPERATURE_H
+#endif // PLASK__CONSTANT_TEMPERATURE_HPP

@@ -20,21 +20,21 @@ namespace plask {
  */
 class RectilinearMesh1d {
 
-    ///Points coordinates in ascending order.
+    /// Points coordinates in ascending order.
     std::vector<double> points;
 
 public:
 
-    ///Type of points in this mesh.
+    /// Type of points in this mesh.
     typedef double PointType;
 
-    ///Random access iterator type which allow iterate over all points in this mesh, in ascending order.
+    /// Random access iterator type which allow iterate over all points in this mesh, in ascending order.
     typedef std::vector<double>::const_iterator const_iterator;
 
-    ///@return iterator referring to the first point in this mesh
+    /// @return iterator referring to the first point in this mesh
     const_iterator begin() const { return points.begin(); }
 
-    ///@return iterator referring to the past-the-end point in this mesh
+    /// @return iterator referring to the past-the-end point in this mesh
     const_iterator end() const { return points.end(); }
 
     /**
@@ -61,7 +61,7 @@ public:
     iterator begin() { return points.begin(); }
     iterator end() { return points.end(); }*/
 
-    ///Construct empty mesh.
+    /// Construct an empty mesh.
     RectilinearMesh1d() {}
 
     /**
@@ -72,22 +72,34 @@ public:
     RectilinearMesh1d(std::initializer_list<PointType> points);
 
     /**
-     * Compares meshes.
+     * Compares meshes
      * It use algorithm which has linear time complexity.
      * @param to_compare mesh to compare
      * @return @c true only if this mesh and @p to_compare represents the same set of points
      */
     bool operator==(const RectilinearMesh1d& to_compare) const;
 
-    ///@return number of points in mesh
+    /**
+     * Print mesh to stream
+     * @param out stream to print
+     */
+    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearMesh1d& self) {
+        out << "{";
+        for (auto p: self.points) {
+            out << p << ((p != self.points.back())? ", " : "}");
+        }
+        return out;
+    }
+
+    /// @return number of points in mesh
     std::size_t size() const { return points.size(); }
 
-    ///@return true only if there are no points in mesh
+    /// @return true only if there are no points in mesh
     bool empty() const { return points.empty(); }
 
     /**
      * Add (1d) point to this mesh.
-     * Point is add to mesh only if it is not already included in mesh.
+     * Point is added to mesh only if it is not already included in it.
      * It use algorithm which has O(size()) time complexity.
      * @param new_node_cord coordinate of point to add
      */

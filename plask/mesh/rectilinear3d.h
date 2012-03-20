@@ -22,14 +22,49 @@ struct RectilinearMesh3d {
 
     typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cartesian3d> External;
 
-    ///First coordinate of points in this mesh.
+    /// First coordinate of points in this mesh.
     RectilinearMesh1d c0;
 
-    ///Second coordinate of points in this mesh.
+    /// Second coordinate of points in this mesh.
     RectilinearMesh1d c1;
 
-    ///Third coordinate of points in this mesh.
+    /// Third coordinate of points in this mesh.
     RectilinearMesh1d c2;
+
+    /// Construct an empty mesh
+    RectilinearMesh3d() {}
+
+    /**
+     * Construct mesh with given points.
+     * It uses algorithm which has quadric time complexity.
+     *
+     * @param points0 points along the first coordinate (in any order)
+     * @param points1 points along the second coordinate (in any order)
+     * @param points1 points along the third coordinate (in any order)
+     */
+    RectilinearMesh3d(std::initializer_list<RectilinearMesh1d::PointType> points0,
+                      std::initializer_list<RectilinearMesh1d::PointType> points1,
+                      std::initializer_list<RectilinearMesh1d::PointType> points2) :
+        c0(points0), c1(points1), c2(points2) {}
+
+    /**
+     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+     *
+     * @param geometry geometry in which bounding boxes are searched
+     */
+    RectilinearMesh3d(const GeometryElementD<3>& geometry) {
+        buildFromGeometry(geometry);
+    }
+
+    /**
+     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+     *
+     * @param geometry geometry in which bounding boxes are searched
+     */
+    RectilinearMesh3d(shared_ptr<const GeometryElementD<3>> geometry) {
+        buildFromGeometry(*geometry);
+    }
+
 
     /**
      * Get first coordinate of points in this mesh.
@@ -241,6 +276,12 @@ struct RectilinearMesh3d {
      */
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
+
+
+  private:
+
+    void buildFromGeometry(const GeometryElementD<3>& geometry);
+
 };
 
 //RectilinearMesh3d method templates implementation

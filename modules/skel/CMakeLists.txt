@@ -46,7 +46,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/modules.cmake)
 
 
 # To add unit tests to your project create appropriate targets (binary executables
-# of Python scripts) and register them using CMake command add_test for binaries
+# or Python scripts) and register them using CMake command add_test for binaries
 # and macro add_python_test(name file.py) for Python scripts. You should name
 # the test as 'modules/your_module/test_name'. Then uncomment and edit the line
 # below.

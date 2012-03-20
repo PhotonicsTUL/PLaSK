@@ -32,7 +32,7 @@ namespace plask {
  *              // calculate and return temperature code
  *      }
  *      // ...
- *      PModule1(): outTemperature(this, &Module1::getTemperature) {}
+ *      PModule1(): outTemperature(this, &PModule2::getTemperature) {}
  * };
  *
  * // needs temperature in Cartesian 2d space:

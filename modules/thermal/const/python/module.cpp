@@ -2,7 +2,7 @@
 #include <boost/python.hpp>
 namespace py = boost::python;
 
-#include "../constant_temperature.h"
+#include "../constant_temperature.hpp"
 
 BOOST_PYTHON_MODULE(const)
 {

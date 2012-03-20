@@ -5,9 +5,10 @@
 This file includes rectilinear mesh for 2d space.
 */
 
-#include "rectilinear1d.h"
 #include "mesh.h"
+#include "rectilinear1d.h"
 #include "interpolation.h"
+#include "../geometry/element.h"
 
 namespace plask {
 
@@ -23,6 +24,7 @@ struct RectilinearMesh2d {
 
     typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cartesian2d> ExternalCartesian;
     typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cylindrical2d> ExternalCylindrical;
+
 
     /**
      * Class which allow to access and iterate over RectilinearMesh2d points in choosen order:
@@ -107,6 +109,39 @@ struct RectilinearMesh2d {
 
     ///Second coordinate of points in this mesh.
     RectilinearMesh1d c1;
+
+
+    /// Construct an empty mesh
+    RectilinearMesh2d() {}
+
+    /**
+     * Construct mesh with given points.
+     * It uses algorithm which has quadric time complexity.
+     *
+     * @param points0 points along the first coordinate (in any order)
+     * @param points1 points along the second coordinate (in any order)
+     */
+    RectilinearMesh2d(std::initializer_list<RectilinearMesh1d::PointType> points0,
+                      std::initializer_list<RectilinearMesh1d::PointType> points1) :
+        c0(points0), c1(points1) {}
+
+    /**
+     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+     *
+     * @param geometry geometry in which bounding boxes are searched
+     */
+    RectilinearMesh2d(const GeometryElementD<2>& geometry) {
+        buildFromGeometry(geometry);
+    }
+
+    /**
+     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+     *
+     * @param geometry geometry in which bounding boxes are searched
+     */
+    RectilinearMesh2d(shared_ptr<const GeometryElementD<2>> geometry) {
+        buildFromGeometry(*geometry);
+    }
 
     /**
      * Get first coordinate of points in this mesh.
@@ -269,6 +304,12 @@ struct RectilinearMesh2d {
      */
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
+
+
+  private:
+
+    void buildFromGeometry(const GeometryElementD<2>& geometry);
+
 };
 
 /**
@@ -314,7 +355,7 @@ auto interpolateLinear2d(DataGetter2d data, const double& point_c0, const double
                                    point_c0, point_c1);
 }
 
-//RectilinearMesh2d method templates implementation
+// RectilinearMesh2d method templates implementation
 template <typename RandomAccessContainer>
 auto RectilinearMesh2d::interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type {
     return interpolateLinear2d(
