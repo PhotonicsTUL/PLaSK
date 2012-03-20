@@ -6,6 +6,6 @@ namespace py = boost::python;
 
 BOOST_PYTHON_MODULE(const)
 {
-    py::class_<plask::ConstantTemperatureModule, plask::shared_ptr<plask::ConstantTemperatureModule>, py::bases<plask::Module>>("ConstantTemperature",
+    py::class_<plask::const_temp::ConstantTemperatureModule, plask::shared_ptr<plask::const_temp::ConstantTemperatureModule>, py::bases<plask::Module>>("ConstantTemperature",
         "Module providing constant temperature");
 }

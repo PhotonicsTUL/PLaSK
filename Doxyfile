@@ -170,7 +170,7 @@ JAVADOC_AUTOBRIEF      = YES
 # will behave just like regular Qt-style comments (thus requiring
 # an explicit \brief command for a brief description.)
 
-QT_AUTOBRIEF           = NO
+QT_AUTOBRIEF           = YES
 
 # The MULTILINE_CPP_IS_BRIEF tag can be set to YES to make Doxygen
 # treat a multi-line C++ special comment block (i.e. a block of //! or ///
@@ -1095,7 +1095,7 @@ GENERATE_TREEVIEW      = NO
 # By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories,
 # and Class Hierarchy pages using a tree view instead of an ordered list.
 
-USE_INLINE_TREES       = NO
+USE_INLINE_TREES       = YES
 
 # If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be
 # used to set the initial width (in pixels) of the frame in which the tree

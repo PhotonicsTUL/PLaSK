@@ -115,6 +115,15 @@ struct RectilinearMesh2d {
     RectilinearMesh2d() {}
 
     /**
+     * Construct mesh with based on gived 1D meshes
+     *
+     * @param mesh0 mesh for the first coordinate
+     * @param mesh1 mesh for the second coordinate
+     */
+    RectilinearMesh2d(const RectilinearMesh1d& mesh0, const RectilinearMesh1d& mesh1) :
+        c0(mesh0), c1(mesh1) {}
+
+    /**
      * Construct mesh with given points.
      * It uses algorithm which has quadric time complexity.
      *

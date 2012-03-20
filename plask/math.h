@@ -15,24 +15,29 @@
         using std::complex; using std::conj;
         using std::abs; using std::real; using std::imag;
         typedef complex<double> dcomplex;
+        const dcomplex I(0.,1.);
     }
 #endif // PLASK_MATH_STD
 
-// Limist for comparing approximate numbers with zero
+
 #include <limits>
 namespace plask {
-    const double SMALL = std::numeric_limits<double>::epsilon();
-    const double SMALL2 = SMALL*SMALL;
+    // Limits for comparing approximate numbers with zero
+    const double SMALL = std::numeric_limits<double>::epsilon(); ///< The numeric precision limit
+    const double SMALL2 = SMALL*SMALL; ///< Squared numeric precision limit
 
-    /// Check if an approximate number is zero
+    /// Check if the real number is almost zero
+    /// \param v number to verify
     inline bool is_zero(double v) {
         return abs(v) < SMALL;
     }
 
-    /// Check if an approximate number is zero
+    /// Check if the complex number is almost zero
+    /// \param v number to verify
     inline bool is_zero(dcomplex v) {
         return real(v)*real(v) + imag(v)*imag(v) < SMALL2;
     }
+
 }
 
 

@@ -35,6 +35,16 @@ struct RectilinearMesh3d {
     RectilinearMesh3d() {}
 
     /**
+     * Construct mesh with based on gived 1D meshes
+     *
+     * @param mesh0 mesh for the first coordinate
+     * @param mesh1 mesh for the second coordinate
+     * @param mesh2 mesh for the third coordinate
+     */
+    RectilinearMesh3d(const RectilinearMesh1d& mesh0, const RectilinearMesh1d& mesh1, const RectilinearMesh1d& mesh2) :
+        c0(mesh0), c1(mesh1), c2(mesh2) {}
+
+    /**
      * Construct mesh with given points.
      * It uses algorithm which has quadric time complexity.
      *
