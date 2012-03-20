@@ -12,6 +12,17 @@ void PathHints::addHint(weak_ptr<GeometryElement> container, weak_ptr<GeometryEl
     hintFor[container].insert(child);
 }
 
+void PathHints::addAllHintsFromPath(std::vector< shared_ptr<const GeometryElement> > pathElements) {
+    int possibleContainers_size = pathElements.size() - 1;
+    for (int i = 0; i < possibleContainers_size; ++i)
+        if (pathElements[i]->isContainer())
+            addHint(const_pointer_cast<GeometryElement>(pathElements[i]), const_pointer_cast<GeometryElement>(pathElements[i+1]));
+}
+
+void PathHints::addAllHintsFromPath(const Path& path) {
+    addAllHintsFromPath(path.elements);
+}
+
 std::set<shared_ptr<GeometryElement>> PathHints::getChildren(shared_ptr<const GeometryElement> container) {
     std::set<shared_ptr<GeometryElement>> result;
     auto e = hintFor.find(const_pointer_cast<GeometryElement>(container));
@@ -136,6 +147,12 @@ Path& Path::append(const GeometryElement& element, const PathHints* hints) {
 
 Path& Path::append(shared_ptr<const GeometryElement> element, const PathHints* hints) {
     return append( std::vector< shared_ptr<const GeometryElement> > { element }, hints);
+}
+
+PathHints Path::getPathHints() const {
+    PathHints result;
+    result.addAllHintsFromPath(*this);
+    return result;
 }
 
 }   //namespace plask

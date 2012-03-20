@@ -12,6 +12,8 @@ namespace plask {
 //TODO redefine to structure which alow to cast to container and translation
 typedef std::pair< shared_ptr<GeometryElement>, shared_ptr<GeometryElement> > Edge;
 
+struct Path;
+
 /**
 Represent hints for path finder.
 
@@ -59,6 +61,18 @@ struct PathHints {
      * @param container, child hint to add
      */
     void addHint(weak_ptr<GeometryElement> container, weak_ptr<GeometryElement> child);
+
+    /**
+     * Add all hinst included in path elements.
+     * @param pathElements geometry elements which are on path
+     */
+    void addAllHintsFromPath(std::vector< shared_ptr<const GeometryElement> > pathElements);
+
+    /**
+     * Add all hinst included in @p path.
+     * @param path path
+     */
+    void addAllHintsFromPath(const Path& path);
 
     /**
      * Get children for given container.
@@ -255,6 +269,17 @@ public:
 
     Path& operator+=(shared_ptr<const GeometryElement> element) { return append(element); }
 
+    /**
+     * Get path hinst implicted by this.
+     * @return path hints which includes all hints implicted by this path
+     */
+    PathHints getPathHints() const;
+
+    /**
+     * Get path hinst implicted by this.
+     * @return path hints which includes all hints implicted by this path
+     */
+    operator PathHints() const { return getPathHints(); }
 };
 
 }
