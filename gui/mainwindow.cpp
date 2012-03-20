@@ -220,5 +220,20 @@ void MainWindow::createDockWindows() {
     dock->setWidget(treeView);
     addDockWidget(Qt::LeftDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
+
+
+    dock = new QDockWidget(tr("Properties"), this);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    QGroupBox* group = new QGroupBox(this);
+    group->setTitle("Group title");
+    QFormLayout* l = new QFormLayout(group);
+    group->setLayout(l);
+    l->addRow("ExampleLabel1", new QSpinBox);
+    l->addRow("ExampleLabel2", new QSpinBox);
+    dock->setWidget(group);
+
+    addDockWidget(Qt::LeftDockWidgetArea, dock);
+    viewMenu->addAction(dock->toggleViewAction());
 }
 
