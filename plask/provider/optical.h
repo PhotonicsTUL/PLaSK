@@ -2,18 +2,32 @@
 #define PLASK__OPTICAL_H
 
 #include "../math.h"
+#include "provider.h"
 
 namespace plask {
 
 /**
- * \brief Intensity of optical E field.
- *
- * Intensity of optical electric (E) field. It is calculated as abs(E), providing that E is electric field vector.
+ * Intensity of optical E field. It is calculated as abs(E), providing that E is electric field vector.
  *
  * This property should be provided by every optical module as it has a nice advantage that does not depend on
  * the internal representation of field (whether it is scalar or vectorial one).
  */
 struct OpticalIntensity : public ScalarFieldProperty {};
+
+/**
+ * Wavelength. It can be either computed by some optical modules or set by the user.
+ *
+ * It is a complex number, co it can contain information about both the wavelength and losses.
+ * Its imaginary part is defined as |f$\Im(\lambda)=-\frac{\Re(\lambda)^2}{2\pi c}\Im(\omega)\f$.
+ */
+struct Wavelength : public SingleValueProperty<dcomplex> {};
+
+/**
+ * Propagation constant. It can be either computed by some optical modules or set by the user.
+ *
+ * It is a complex number, co it can contain information about both the wavelength and losses.
+ */
+struct PropagationConstant : public SingleValueProperty<dcomplex> {};
 
 } // namespace plask
 

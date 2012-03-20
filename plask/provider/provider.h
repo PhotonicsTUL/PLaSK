@@ -131,8 +131,8 @@ struct Provider {
         virtual void onChange() = 0;
 
         /**
-         * Called just before disconnect. By default do nothing.
-         * @param from_where provider from which listener is disconnected
+         * Called just before disconnecting. By default does nothing.
+         * @param from_where provider from which listener is being disconnected
          */
         virtual void onDisconnect(Provider* from_where) {}
     };
