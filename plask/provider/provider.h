@@ -72,6 +72,7 @@ Little harder, but more flexible than using plask::ProviderFor and plask::Receiv
 - has operator(), which for some parameters (depends from your choice) return provided value.
 
 Receiver class for your provider class still may be very easy obtain by plask::Receiver template. This template require only one parameter: type of provider.
+You can use it directly or as a base class for your receiver.
 
 Example:
 @code
@@ -89,6 +90,7 @@ struct ScalerProvider: public plask::Provider {
 
 // Receiver corresponding to ScalerProvider
 typedef Receiver<ScalerProvider> ScalerReceiver;
+// or class ScalerReceiver: public Receiver<ScalerProvider> { ... };
 
 // ...
 // Usage example:
@@ -122,6 +124,10 @@ namespace plask {
  * @see @ref providers
  */
 struct Provider {
+
+    Provider & operator=(const Provider&) = delete;
+    Provider(const Provider&) = delete;
+    Provider() = default;
 
     /**
      * Provider listener (observer). Can react to Provider changes.
@@ -183,12 +189,15 @@ struct Provider {
  * For most providers types, Receiver type can be defined as: <code>Receiver<ProviderClass>;</code>
  * (where <code>ProviderClass</code> is type of provider class)
  *
- * @tparam ProviderT type of provider
+ * @tparam ProviderT type of provider, can has defined ProviderT::ConstProviderT to reciver setConst method work.
  *
  * @see @ref providers
  */
 template <typename ProviderT>
 struct Receiver: public Provider::Listener {
+
+    Receiver & operator=(const Receiver&) = delete;
+    Receiver(const Receiver&) = delete;
 
     /// Pointer to connected provider. Can be nullptr if no provider is connected.
     ProviderT* provider;
@@ -196,8 +205,11 @@ struct Receiver: public Provider::Listener {
     /// Is @c true only if data provides by provider was changed after recent value getting.
     bool changed;
 
+    ///Is @true only if provider is private and will be delete by this receiver.
+    bool hasPrivateProvider;
+
     /// Construct Receiver without connected provider and with set changed flag.
-    Receiver(): provider(0), changed(true) {}
+    Receiver(): provider(0), changed(true), hasPrivateProvider(false) {}
 
     /// Destructor. Disconnect from provider.
     ~Receiver() {
@@ -207,12 +219,15 @@ struct Receiver: public Provider::Listener {
     /**
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, can be @c nullptr to only disconnect from current provider.
+     * @param newProviderIsPrivate @true only if @p provider is private for this and will be delete by this receiver
      */
-    void setProvider(ProviderT* provider) {
+    void setProvider(ProviderT* provider, bool newProviderIsPrivate = false) {
         if (this->provider == provider) return;
         if (this->provider) this->provider->listeners.erase(this);
         if (provider) provider->add(this);
+        if (hasPrivateProvider) delete this->provider;
         this->provider = provider;
+        this->hasPrivateProvider = newProviderIsPrivate;
         onChange();
     }
 
@@ -280,6 +295,17 @@ struct Receiver: public Provider::Listener {
     operator()(Args&&... params) -> decltype((*provider)(std::forward<Args>(params)...)) {
         beforeGetValue();
         return (*provider)(std::forward<Args>(params)...);
+    }
+
+    /**
+     * Set provider for this to provider of constant.
+     *
+     * Use ProviderT::ConstProviderT as provider of const type.
+     * @param constProviderConstructorArgs parameters passed to ProviderT::ConstProviderT constructor
+     */
+    template <typename ...ConstProviderConstructorArgs>
+    void setValue(ConstProviderConstructorArgs&&... constProviderConstructorArgs) {
+        setProvider(new typename ProviderT::ConstProviderT(std::forward<ConstProviderConstructorArgs>(constProviderConstructorArgs)...), true);
     }
 
 protected:
@@ -538,6 +564,22 @@ struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::Value
  */
 template <typename PropertyTag, typename SpaceType = void>
 struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType> > {
+    ReceiverFor & operator=(const ReceiverFor&) = delete;
+    ReceiverFor(const ReceiverFor&) = delete;
+    ReceiverFor() = default;
+
+    /**
+     * Set provider for this to provider of constant.
+     *
+     * Use ProviderT::ConstProviderT as provider of const type.
+     * @param v value which should be provided for this receiver
+     * @return *this
+     */
+    ReceiverFor<PropertyTag, SpaceType>& operator=(const typename PropertyTag::ValueType& v) {
+        setValue(v);
+        return *this;
+    }
+
     static_assert(!(std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == FIELD_PROPERTY || PropertyTag::propertyType == INTERPOLATED_FIELD_PROPERTY)),
                   "Receivers for fields properties require SpaceType. Use ReceiverFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
     static_assert(!(!std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == SINGLE_VALUE_PROPERTY)),
@@ -559,7 +601,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
                   "Providers for single value properties doesn't need SpaceType. Use ProviderFor<propertyTag> (without second template parameter).");
 
     ///Type of provided value.
-    typedef typename  SingleValueProvider<ValueT>::ProvidedValueType ProvidedValueType;
+    typedef typename SingleValueProvider<ValueT>::ProvidedValueType ProvidedValueType;
 
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
@@ -594,6 +636,9 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
      */
     typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>, ProvidedValueType() > Delegate;
 
+    ///Used by receivers as const value provider, see Receiver::setConst
+    typedef WithValue ConstProviderT;
+
 };
 
 /**
@@ -609,32 +654,32 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
     ///Type of provided value.
     typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
 
-    /*
-     * Template for implementation of field provider class which holds vector of values and mesh inside.
-     * @tparam MeshType type of mesh which is used for calculation and which describe places of data points
-     */
-    /*template <typename MeshType>
-    struct WithValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
-
-        typedef ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
-
-        ProvidedValueType values;
-
-        MeshType mesh;
-
-        ProvidedValueType& operator()() { return values; }
-
-        const ProvidedValueType& operator()() const { return values; }
-
-        virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) {
-            return interpolate(mesh, values, dst_mesh, method);
-        }
-    };*/
-
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */
     typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>, ProvidedValueType(const Mesh<SpaceType>& dst_mesh) > Delegate;
+
+    /**
+     * Return same value in all points.
+     *
+     * Used by receivers as const value provider, see Receiver::setConst
+     */
+    struct ConstProviderT: public ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType> {
+
+        typedef ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
+
+        ValueT value;
+
+        //ConstProviderT(const ValueT& value): value(value) {}
+
+        template<typename ...Args>
+        ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
+
+        virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const {
+            //return copy of value for each point in dst_mesh
+            return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
+        }
+    };
 
 };
 
@@ -689,7 +734,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
          * @param method method which should be use to do interpolation
          * @return values in points describe by mesh @a dst_mesh
          */
-        virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) {
+        virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) const {
             return interpolate(mesh, values, dst_mesh, method);
         }
     };
@@ -698,6 +743,28 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */
     typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>, ProvidedValueType(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) > Delegate;
+
+    /**
+     * Return same value in all points.
+     *
+     * Used by receivers as const value provider, see Receiver::setConst
+     */
+    struct ConstProviderT: public ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType> {
+
+        typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
+
+        ValueT value;
+
+        //ConstProviderT(const ValueT& value): value(value) {}
+
+        template<typename ...Args>
+        ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
+
+        virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod) const {
+            //return copy of value for each point in dst_mesh, ignore interpolation method
+            return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
+        }
+    };
 
 };
 
