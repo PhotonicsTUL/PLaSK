@@ -15,10 +15,7 @@ class EffectiveIndex2dModule: public Module {
     shared_ptr<const CartesianExtend> geometry;
 
     /// The mesh used for cutting the structure into one-dimentional stripes
-    RectilinearMesh2d mesh;
-
-    /// Normalized frequency for which all computations are performed
-    dcomplex k0;
+    RectilinearMesh2d::ExternalCartesian mesh;
 
   public:
 
@@ -28,7 +25,8 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      */
     EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry) :
-        geometry(geometry), k0(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+        geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+        inTemperature = 300.;
         setSimpleMesh();
     }
 
@@ -39,7 +37,8 @@ class EffectiveIndex2dModule: public Module {
      * \param mesh horizontal mesh for dividing geometry
      */
     EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh1d& mesh) :
-        geometry(geometry), k0(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+        geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+        inTemperature = 300.;
         setMesh(mesh);
     }
 
@@ -49,15 +48,16 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      * \param mesh mesh for dividing geometry
      */
-    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh2d& mesh) :
-        geometry(geometry), mesh(mesh), k0(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh2d::ExternalCartesian& mesh) :
+        geometry(geometry), mesh(mesh), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+        inTemperature = 300.;
     }
 
     /**
      * Set the simple mesh based on the geometry bounding boxes.
      **/
     void setSimpleMesh() {
-        mesh = RectilinearMesh2d(geometry->getChild());
+        mesh = RectilinearMesh2d::ExternalCartesian(geometry->getChild());
     }
 
 
@@ -68,7 +68,7 @@ class EffectiveIndex2dModule: public Module {
      **/
     void setMesh(const RectilinearMesh1d& meshx) {
         RectilinearMesh2d meshxy(geometry->getChild());
-        mesh = RectilinearMesh2d(meshx, meshxy.c1);
+        mesh = RectilinearMesh2d::ExternalCartesian(meshx, meshxy.c1);
     }
 
 
@@ -77,7 +77,7 @@ class EffectiveIndex2dModule: public Module {
      *
      * @param meshxy The mesh
      **/
-    void setMesh(const RectilinearMesh2d& meshxy) {
+    void setMesh(const RectilinearMesh2d::ExternalCartesian& meshxy) {
         mesh = meshxy;
     }
 
@@ -90,15 +90,6 @@ class EffectiveIndex2dModule: public Module {
     }
 
     /**
-     * Set the wavelenght for further computations
-     *
-     * @param wavelenght The wavelenght to use
-     **/
-    void setWavelength(double wavelength) {
-        this->k0 = 2*M_PI / wavelength;
-    }
-
-    /**
      * Find the mode around the specified propagation constant.
      *
      * This method remembers the determined mode, for rietrieval of the field profiles.
@@ -106,7 +97,7 @@ class EffectiveIndex2dModule: public Module {
      * @param beta initial propagation constant to search the mode around
      * @return determined propagation constant
      **/
-    dcomplex findMode(dcomplex beta);
+    dcomplex computeMode(dcomplex beta);
 
 
     /**
@@ -130,14 +121,23 @@ class EffectiveIndex2dModule: public Module {
      * @param steps number of steps for range browsing
      * @return vector of determined potential propagation constants
      **/
-    std::vector<dcomplex> findMap(dcomplex beta1, dcomplex beta2, int steps=100);
+    std::vector<dcomplex> findModesMap(dcomplex beta1, dcomplex beta2, int steps=100);
 
+
+    /// Receiver of the wavelength
+    ReceiverFor<Wavelength> inWavelength;
+
+    /// Receiver for temperature
+    ReceiverFor<Temperature, space::Cartesian2d> inTemperature;
+
+    /// Provider for computed propagation constant
+    ProviderFor<PropagationConstant>::WithValue outBeta;
 
     /// Provider of optical field
     ProviderFor<OpticalIntensity, space::Cartesian2d>::Delegate outIntensity;
 
-    /// Receiver for temperature
-    plask::ReceiverFor<Temperature, space::Cartesian2d> inTemperature;
+
+  private:
 
     /// Method computing the distribution of light intensity
     shared_ptr<const std::vector<double>> getLightIntenisty(const Mesh<space::Cartesian2d>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);

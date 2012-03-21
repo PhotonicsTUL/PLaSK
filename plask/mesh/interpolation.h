@@ -89,11 +89,11 @@ enum InterpolationMethod {
     FOURIER = 4,                ///< Fourier transform interpolation
     //...add new interpolation algoritms here...
 #   ifndef DOXYGEN
-    __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop
+    __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop and automatic Python enums
 #   endif // DOXYGEN
 };
 
-static const char* InterpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE", "COSINE", "FOURIER" /*attach new interpolation algoritm names here*/};
+static const char* interpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE", "COSINE", "FOURIER" /*attach new interpolation algoritm names here*/};
 
 /**
  * Specialization of this class are used for interpolation and can depend on source mesh type,
@@ -107,7 +107,7 @@ struct InterpolationAlgorithm
         std::string msg = "interpolate (source mesh type: ";
         msg += typeid(src_mesh).name();
         msg += ", interpolation method: ";
-        msg += InterpolationMethodNames[method];
+        msg += interpolationMethodNames[method];
         msg += ")";
         throw NotImplemented(msg);
         //TODO iterate over dst_mesh and call InterpolationAlgorithmForPoint
@@ -171,7 +171,6 @@ template <typename SrcMeshT, typename DataT>
 inline shared_ptr<const std::vector<DataT>>
 interpolate(SrcMeshT& src_mesh, shared_ptr<std::vector<DataT>> src_vec_ptr,
             Mesh<typename SrcMeshT::Space>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION) {
-//     shared_ptr<const std::vector<DataT>> src_const_vec_ptr = src_vec_ptr;
     return interpolate(src_mesh, (shared_ptr<const std::vector<DataT>>&&)src_vec_ptr, dst_mesh, method);
 }
 #endif // DOXYGEN

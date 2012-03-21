@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
 }
 
 BOOST_AUTO_TEST_CASE(SimpleMeshAdapter) {
-    //Create 3d mesh which use std::vector of 3d points as internal representation:
+    // Create 3d mesh which uses the std::vector of 3d points as internal representation:
     plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, plask::space::Cartesian3d > mesh;
     mesh.internal.push_back(plask::vec(1.0, 1.2, 3.0));
     mesh->push_back(plask::vec(3.0, 4.0, 0.0));

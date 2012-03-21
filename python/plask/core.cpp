@@ -10,13 +10,35 @@ namespace plask { namespace python {
 
 void initMaterials();
 void initGeometry();
+
 void register_vector();
+void register_mesh();
+void register_providers();
 
 // Config
 Config config;
 bool Config::z_up = true;
 
 }}
+
+void register_space() {
+    py::object space_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.space"))) };
+    py::scope().attr("space") = space_module;
+    py::scope scope = space_module;
+
+    py::class_<plask::space::Cartesian2d> spacexy("Cartesian2D",
+        "Cartesian two-dimensional space. The structure is assumed to be uniform in the third direction.");
+    spacexy.attr("DIMS") = int(plask::space::Cartesian2d::DIMS);
+
+    py::class_<plask::space::Cylindrical2d> spacerz("Cylindrical2D",
+        "Cyllindrical two-dimensional space. The structure is assumed to have cyllindrical symmetry.");
+    spacerz.attr("DIMS") = int(plask::space::Cylindrical2d::DIMS);
+
+    py::class_<plask::space::Cartesian3d> spacexyz("Cartesian3D",
+        "Cartesian three-dimensional space.");
+    spacexyz.attr("DIMS") = int(plask::space::Cartesian3d::DIMS);
+
+}
 
 BOOST_PYTHON_MODULE(plaskcore)
 {
@@ -32,21 +54,11 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_vector();
 
 
-//     // Space
-//     py::class_<plask::SpaceXY> spacexy("SpaceXY",
-//         "Cartesian two-dimensional space. The structure is assumed to be uniform in z-direction. "
-//         "The y-axis is perpendicular to epitaxial layers.");
-//     spacexy.attr("DIMS") = int(plask::SpaceXY::DIMS);
-//
-//     py::class_<plask::SpaceRZ> spacerz("SpaceRZ",
-//         "Cyllindrical two-dimensional space. The structure is assumed to have cyllindrical symmetery. "
-//         "The axis of the cylinder (z-axis) is perpendicular to epitaxial layers.");
-//     spacerz.attr("DIMS") = int(plask::SpaceRZ::DIMS);
-//
-//     py::class_<plask::SpaceXYZ> spacexyz("SpaceXYZ",
-//         "Cartesian three-dimensional space. Its z-axis is perpendicular to epitaxial layers.");
-//     spacexyz.attr("DIMS") = int(plask::SpaceXYZ::DIMS);
+    // Space
+    register_space();
 
+    // Meshes
+    register_mesh();
 
     // Init subpackages
     initMaterials();

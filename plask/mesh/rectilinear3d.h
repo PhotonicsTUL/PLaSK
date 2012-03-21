@@ -20,7 +20,7 @@ namespace plask {
  */
 struct RectilinearMesh3d {
 
-    typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cartesian3d> External;
+    typedef SimpleMeshAdapter<RectilinearMesh3d, space::Cartesian3d> External;
 
     /// First coordinate of points in this mesh.
     RectilinearMesh1d c0;

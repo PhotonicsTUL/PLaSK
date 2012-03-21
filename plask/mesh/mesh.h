@@ -63,10 +63,10 @@ You are required to:
 Example implementation of singleton mesh (mesh which represent set with only one point in 3d space):
 @code
 struct OnePoint3dMesh: public plask::Mesh<plask::space::Cartesian3d> {
-    
+
     //Held point:
     plask::Vec<3, double> point;
-    
+
     OnePoint3dMesh(const plask::Vec<3, double>& point)
     : point(point) {}
 
@@ -75,7 +75,7 @@ struct OnePoint3dMesh: public plask::Mesh<plask::space::Cartesian3d> {
 
         //point to mesh or is equal to nullptr for end iterator
         const OnePoint3dMesh* mesh_ptr;
-        
+
         //mesh == nullptr for end iterator
         IteratorImpl(const OnePoint3dMesh* mesh)
         : mesh_ptr(mesh) {}
@@ -91,15 +91,15 @@ struct OnePoint3dMesh: public plask::Mesh<plask::space::Cartesian3d> {
         virtual bool equal(const typename Mesh<plask::space::Cartesian3d>::IteratorImpl& other) const {
             return mesh_ptr == static_cast<const IteratorImpl&>(other).mesh_ptr;
         }
-        
+
         virtual IteratorImpl* clone() const {
             return new IteratorImpl(mesh_ptr);
         }
 
-    }; 
-    
+    };
+
     //plask::Mesh<plask::space::Cartesian3d> methods implementation:
-    
+
     virtual std::size_t size() const {
         return 1;
     }
@@ -111,7 +111,7 @@ struct OnePoint3dMesh: public plask::Mesh<plask::space::Cartesian3d> {
     virtual typename Mesh<plask::space::Cartesian3d>::Iterator end() {
         return Mesh<plask::space::Cartesian3d>::Iterator(new IteratorImpl(nullptr));
     }
-    
+
 };
 @endcode
 You should also implement interpolation algorithms for your mesh, see @ref interpolation_write for more details.
@@ -170,19 +170,19 @@ struct Mesh {
 
 
 /**
-Template which instantiation is class inherited from plask::Mesh (is Mesh implementation).
+Template which instantiation is a class inherited from plask::Mesh (it is a Mesh implementation).
 
-It held @a internal mesh (of type InternalMeshType) and use it to implement plask::Mesh methods.
-All constructor and -> calls are delegated to the @a internal mesh.
+It helds an @a internal mesh (of type InternalMeshType) and uses it to implement plask::Mesh methods.
+All constructors and -> calls are delegated to the @a internal mesh.
 
 Example usage:
 @code
-//Create 3d mesh which use std::vector of 3d points as internal representation:
+// Create 3D mesh which uses std::vector of 3d points as internal representation:
 plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, plask::space::Cartesian3d > mesh;
-//Append two point to vector:
+// Append two points to vector:
 mesh.internal.push_back(plask::vec(1.0, 1.2, 3.0));
-mesh->push_back(plask::vec(3.0, 4.0, 0.0)); //mesh-> is shortcut to mesh.internal.
-//Now, mesh consist of two points:
+mesh->push_back(plask::vec(3.0, 4.0, 0.0)); // mesh-> is a shortcut to mesh.internal.
+// Now, mesh contains two points:
 assert(mesh.size() == 2);
 @endcode
 
@@ -194,18 +194,17 @@ It must:
 template <typename InternalMeshType, typename Space>
 struct SimpleMeshAdapter: public Mesh<Space> {
 
-    /// Held, internal, typically optimized mesh.
+    /// Held internal, usually optimized, mesh.
     InternalMeshType internal;
-    
+
     /**
      * Delegate constructor to @a internal representation.
      * @param params parameters for InternalMeshType constructor
      */
     template<typename ...Args>
-    SimpleMeshAdapter<InternalMeshType, Space>(Args&&... params)
-    : internal(std::forward<Args>(params)...) {
+    SimpleMeshAdapter<InternalMeshType, Space>(Args&&... params) : internal(std::forward<Args>(params)...) {
     }
-    
+
     /**
      * Delegate call to @a internal.
      * @return <code>&internal</code>
@@ -213,7 +212,7 @@ struct SimpleMeshAdapter: public Mesh<Space> {
     InternalMeshType* operator->() {
         return &internal;
     }
-    
+
     /**
      * Delegate call to @a internal.
      * @return <code>&internal</code>
@@ -244,7 +243,7 @@ struct SimpleMeshAdapter: public Mesh<Space> {
         virtual bool equal(const typename Mesh<Space>::IteratorImpl& other) const {
             return internal_iterator == static_cast<const IteratorImpl&>(other).internal_iterator;
         }
-        
+
         virtual IteratorImpl* clone() const {
             return new IteratorImpl(internal_iterator);
         }

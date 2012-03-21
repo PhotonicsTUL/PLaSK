@@ -84,10 +84,11 @@ public:
      * @param out stream to print
      */
     friend inline std::ostream& operator<<(std::ostream& out, const RectilinearMesh1d& self) {
-        out << "{";
+        out << "[";
         for (auto p: self.points) {
-            out << p << ((p != self.points.back())? ", " : "}");
+            out << p << ((p != self.points.back())? ", " : "");
         }
+        out << "]";
         return out;
     }
 
@@ -107,7 +108,7 @@ public:
 
     /**
      * Add points from ordered range.
-     * It use algorithm which has linear time complexity.
+     * It uses algorithm which has linear time complexity.
      * @param begin, end ordered range of points in ascending order
      * @param points_count_hint number of points in range (can be approximate, or 0)
      * @tparam IteratorT input iterator
@@ -157,7 +158,7 @@ public:
 
 };
 
-//RectilinearMesh1d method templates implementation
+// RectilinearMesh1d method templates implementation
 template <typename RandomAccessContainer>
 auto RectilinearMesh1d::interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);

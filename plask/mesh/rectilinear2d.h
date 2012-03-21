@@ -33,10 +33,10 @@ struct RectilinearMesh2d {
      */
     struct Accessor {
 
-        ///Mesh for which we want to have access.
+        /// Mesh for which we want to have access.
         const RectilinearMesh2d& mesh;
 
-        ///Is order changed?
+        /// Is order changed?
         bool changed;
 
         typedef Vec<2,double> PointType;
@@ -45,10 +45,10 @@ struct RectilinearMesh2d {
 
         Accessor(const RectilinearMesh2d& mesh, bool changed): mesh(mesh), changed(changed) {}
 
-        ///@return iterator referring to the first point in this mesh
+        /// @return iterator referring to the first point in this mesh
         const_iterator begin() const { return const_iterator(this, 0); }
 
-        ///@return iterator referring to the past-the-end point in this mesh
+        /// @return iterator referring to the past-the-end point in this mesh
         const_iterator end() const { return const_iterator(this, size()); }
 
         /**
@@ -373,7 +373,7 @@ auto RectilinearMesh2d::interpolateLinear(const RandomAccessContainer& data, con
     );
 }
 
-template <typename DataT>    //for any data type
+template <typename DataT>    // for any data type
 struct InterpolationAlgorithm<RectilinearMesh2d::ExternalCartesian, DataT, LINEAR> {
     static void interpolate(RectilinearMesh2d::ExternalCartesian& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename RectilinearMesh2d::ExternalCartesian::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
         for (auto p: dst_mesh)
@@ -381,7 +381,7 @@ struct InterpolationAlgorithm<RectilinearMesh2d::ExternalCartesian, DataT, LINEA
     }
 };
 
-template <typename DataT>    //for any data type
+template <typename DataT>    // for any data type
 struct InterpolationAlgorithm<RectilinearMesh2d::ExternalCylindrical, DataT, LINEAR> {
     static void interpolate(RectilinearMesh2d::ExternalCylindrical& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename RectilinearMesh2d::ExternalCylindrical::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
         for (auto p: dst_mesh)
