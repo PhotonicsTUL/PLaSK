@@ -191,9 +191,9 @@ if(BUILD_GUI)
     # this directory contains prop. brow. src + our CMakeLists.txt based on https://github.com/commontk/QtPropertyBrowser/blob/master/src/CMakeLists.txt
     add_subdirectory(extlib/qtpropertybrowser)  #this build qtpropertybrowser
 
-    qt4_add_resources(PLASK_GUI_RC_SRCS ${PLASK_GUI_RCS} ${property_browser_rcs})
+    qt4_add_resources(PLASK_GUI_RC_SRCS ${PLASK_GUI_RCS})
     #qt4_wrap_ui(PLASK_GUI_UI_HDRS ${PLASK_GUI_UIS})
-    qt4_wrap_cpp(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS} ${property_browser_hdrs})
+    qt4_wrap_cpp(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS})
     add_executable(plaskgui ${plaskgui_src} ${property_browser_src} ${PLASK_GUI_MOC_SRCS} ${PLASK_GUI_RC_SRCS} ) # ${PLASK_GUI_UI_HDRS}
     target_link_libraries(plaskgui libplask materials_default ${QT_LIBRARIES} ${qtpropertybrowser})
 endif(BUILD_GUI)

@@ -33,7 +33,8 @@ struct GeometryTransform {
 /**
  * Base class for all geometries.
  */
-//TODO child number, child by index (?), child iterator
+//TODO generalized methods which are for leafs now, to use polimorphic predicate and allow to work not only for leafs
+//getLeafsBoundingBoxes(...) -> getBoundingBoxes(..., IsLeaf/IsEqual/...)
 struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     ///Type of geometry element.
