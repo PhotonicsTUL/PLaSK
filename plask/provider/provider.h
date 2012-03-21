@@ -619,8 +619,9 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
         WithValue(Args&&... params): value(std::forward<Args>(params)...) {}
 
         /**
+         * Set new value.
          * @param v new value
-         * @return this
+         * @return *this
          */
         WithValue& operator=(const ValueT& v) {
             value = v;
