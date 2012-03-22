@@ -43,19 +43,6 @@ struct RectilinearMesh3d: public Mesh<3> {
         c0(mesh0), c1(mesh1), c2(mesh2) {}
 
     /**
-     * Construct mesh with given points.
-     * It uses algorithm which has quadric time complexity.
-     *
-     * @param points0 points along the first coordinate (in any order)
-     * @param points1 points along the second coordinate (in any order)
-     * @param points1 points along the third coordinate (in any order)
-     */
-    RectilinearMesh3d(std::initializer_list<RectilinearMesh1d::PointType> points0,
-                      std::initializer_list<RectilinearMesh1d::PointType> points1,
-                      std::initializer_list<RectilinearMesh1d::PointType> points2) :
-        c0(points0), c1(points1), c2(points2) {}
-
-    /**
      * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
      *
      * @param geometry geometry in which bounding boxes are searched

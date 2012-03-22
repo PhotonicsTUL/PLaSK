@@ -7,18 +7,18 @@ namespace plask { namespace python {
 
 // Rectangle constructor wraps
 static shared_ptr<Rectangle> Rectangle_constructor_wh(double w, double h, shared_ptr<Material> material) {
-    return shared_ptr<Rectangle> ( new Rectangle(Vec<2,double>(w,h), material) );
+    return make_shared<Rectangle>(Vec<2,double>(w,h), material);
 }
 static shared_ptr<Rectangle> Rectangle_constructor_vec(const Vec<2,double>& size, shared_ptr<Material> material) {
-    return shared_ptr<Rectangle> ( new Rectangle(size, material) );
+    return make_shared<Rectangle>(size, material);
 }
 
 // Cuboid constructor wraps
 static shared_ptr<Cuboid> Cuboid_constructor_dwh(double d, double w, double h, shared_ptr<Material> material) {
-    return shared_ptr<Cuboid> ( new Block<3>(Vec<3,double>(d,w,h), material) );
+    return make_shared<Cuboid>(Vec<3,double>(d,w,h), material);
 }
 static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, shared_ptr<Material> material) {
-    return shared_ptr<Cuboid> ( new Block<3>(size, material) );
+    return make_shared<Cuboid>(size, material);
 }
 
 

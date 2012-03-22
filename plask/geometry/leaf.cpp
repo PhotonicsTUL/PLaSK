@@ -41,12 +41,12 @@ shared_ptr<GeometryElement> changeToBlock(const shared_ptr<Material>& material, 
         shared_ptr<const GeometryElementD<3>> el = static_pointer_cast<const GeometryElementD<3>>(to_change);
         Box3d bb = el->getBoundingBox();
         translation = bb.lower;
-        return shared_ptr<GeometryElement>(new Block<3>(bb.size(), material));
+        return make_shared<Block<3>>(bb.size(), material);
     } else {    //to_change->getDimensionsCount() == 3
         shared_ptr<const GeometryElementD<2>> el = static_pointer_cast<const GeometryElementD<2>>(to_change);
         Box2d bb = el->getBoundingBox();
         translation = vec<3, double>(bb.lower);
-        return shared_ptr<GeometryElement>(new Block<2>(bb.size(), material));
+        return make_shared<Block<2>>(bb.size(), material);
     }
 }
 

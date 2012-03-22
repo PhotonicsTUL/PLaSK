@@ -15,7 +15,7 @@ class EffectiveIndex2dModule: public Module {
     shared_ptr<const CartesianExtend> geometry;
 
     /// The mesh used for cutting the structure into one-dimentional stripes
-    RectilinearMesh2d mesh;
+    shared_ptr<RectilinearMesh2d> mesh;
 
   public:
 
@@ -48,7 +48,7 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      * \param mesh mesh for dividing geometry
      */
-    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh2d& mesh) :
+    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, shared_ptr<RectilinearMesh2d> mesh) :
         geometry(geometry), mesh(mesh), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
         inTemperature = 300.;
     }
@@ -59,7 +59,7 @@ class EffectiveIndex2dModule: public Module {
     void setSimpleMesh() {
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
-        mesh = RectilinearMesh2d(child);
+        mesh = make_shared<RectilinearMesh2d>(child);
     }
 
 
@@ -72,7 +72,7 @@ class EffectiveIndex2dModule: public Module {
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
         RectilinearMesh2d meshxy(child);
-        mesh = RectilinearMesh2d(meshx, meshxy.c1);
+        mesh = make_shared<RectilinearMesh2d>(meshx, meshxy.c1);
     }
 
 
@@ -81,7 +81,7 @@ class EffectiveIndex2dModule: public Module {
      *
      * @param meshxy The mesh
      **/
-    void setMesh(const RectilinearMesh2d& meshxy) {
+    void setMesh(shared_ptr<RectilinearMesh2d> meshxy) {
         mesh = meshxy;
     }
 

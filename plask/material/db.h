@@ -246,7 +246,7 @@ public:
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
         virtual shared_ptr<MaterialType> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
             ensureCompositionIsNotEmpty(composition);
-            return shared_ptr<Material>(new MaterialType(Material::completeComposition(composition), doping_amount_type, doping_amount));
+            return make_shared<MaterialType>(Material::completeComposition(composition), doping_amount_type, doping_amount);
         }
     };
 
@@ -255,7 +255,7 @@ public:
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType, double) const {
             ensureCompositionIsNotEmpty(composition);
-            return shared_ptr<Material>(new MaterialType(Material::completeComposition(composition)));
+            return make_shared<MaterialType>(Material::completeComposition(composition));
         }
     };
 
@@ -263,7 +263,7 @@ public:
     struct DelegateMaterialConstructor<MaterialType, false, true>: public MaterialConstructor {
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
         virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-            return shared_ptr<Material>(new MaterialType(doping_amount_type, doping_amount));
+            return make_shared<MaterialType>(doping_amount_type, doping_amount);
         }
     };
 
@@ -271,7 +271,7 @@ public:
     struct DelegateMaterialConstructor<MaterialType, false, false>: public MaterialConstructor {
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
         virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType, double) const {
-            return shared_ptr<Material>(new MaterialType());
+            return make_shared<MaterialType>();
         }
     };
 

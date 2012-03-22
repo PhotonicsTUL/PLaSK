@@ -45,15 +45,15 @@ std::string RectilinearMesh1d__repr__(const RectilinearMesh1d& self) {
 
 
 shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__empty() {
-    return shared_ptr<RectilinearMesh2d>(new RectilinearMesh2d);
+    return make_shared<RectilinearMesh2d>();
 }
 
 shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__axes(const RectilinearMesh1d& axis0, const RectilinearMesh1d& axis1) {
-    return shared_ptr<RectilinearMesh2d> (new RectilinearMesh2d(axis0, axis1));
+    return make_shared<RectilinearMesh2d>(axis0, axis1);
 }
 
 shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__geometry(const GeometryElementD<2>& geometry) {
-    return shared_ptr<RectilinearMesh2d>(new RectilinearMesh2d(geometry));
+    return make_shared<RectilinearMesh2d>(geometry);
 }
 
 Vec<2,double> RectilinearMesh2d__getitem__(const RectilinearMesh2d& self, py::object index) {
@@ -89,15 +89,15 @@ void RectilinearMesh2d_setaxis1(RectilinearMesh2d& self, py::object points) {
 
 
 shared_ptr<RectilinearMesh3d> RectilinearMesh3d__init__empty() {
-    return shared_ptr<RectilinearMesh3d>(new RectilinearMesh3d);
+    return make_shared<RectilinearMesh3d>();
 }
 
 shared_ptr<RectilinearMesh3d> RectilinearMesh3d__init__axes(const RectilinearMesh1d& axis0, const RectilinearMesh1d& axis1, const RectilinearMesh1d& axis2) {
-    return shared_ptr<RectilinearMesh3d> (new RectilinearMesh3d(axis0, axis1, axis2));
+    return make_shared<RectilinearMesh3d>(axis0, axis1, axis2);
 }
 
 shared_ptr<RectilinearMesh3d> RectilinearMesh3d__init__geometry(const GeometryElementD<3>& geometry) {
-    return shared_ptr<RectilinearMesh3d>(new RectilinearMesh3d(geometry));
+    return make_shared<RectilinearMesh3d>(geometry);
 }
 
 Vec<3,double> RectilinearMesh3d__getitem__(const RectilinearMesh3d& self, py::object index) {

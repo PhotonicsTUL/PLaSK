@@ -121,17 +121,6 @@ struct RectilinearMesh2d: public Mesh<2> {
         c0(mesh0), c1(mesh1) {}
 
     /**
-     * Construct mesh with given points.
-     * It uses algorithm which has quadric time complexity.
-     *
-     * @param points0 points along the first coordinate (in any order)
-     * @param points1 points along the second coordinate (in any order)
-     */
-    RectilinearMesh2d(std::initializer_list<RectilinearMesh1d::PointType> points0,
-                      std::initializer_list<RectilinearMesh1d::PointType> points1) :
-        c0(points0), c1(points1) {}
-
-    /**
      * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
      *
      * @param geometry geometry in which bounding boxes are searched
