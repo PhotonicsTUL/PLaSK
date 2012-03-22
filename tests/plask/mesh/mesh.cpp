@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(mesh) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(Mesh) {
 
-    struct OnePoint3dMesh: public plask::Mesh<plask::space::Cartesian3d> {
+    struct OnePoint3dMesh: public plask::Mesh<3> {
 
         //Held point:
         plask::Vec<3, double> point;
@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
         : point(point) {}
 
         //Iterator:
-        struct IteratorImpl: public Mesh<plask::space::Cartesian3d>::IteratorImpl {
+        struct IteratorImpl: public Mesh<3>::IteratorImpl {
 
             //point to mesh or is equal to nullptr for end iterator
             const OnePoint3dMesh* mesh_ptr;
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
                 mesh_ptr = nullptr; //we iterate only over one point, so next state is end
             }
 
-            virtual bool equal(const typename Mesh<plask::space::Cartesian3d>::IteratorImpl& other) const {
+            virtual bool equal(const typename Mesh<3>::IteratorImpl& other) const {
                 return mesh_ptr == static_cast<const IteratorImpl&>(other).mesh_ptr;
             }
 
@@ -48,12 +48,12 @@ BOOST_AUTO_TEST_CASE(Mesh) {
             return 1;
         }
 
-        virtual typename Mesh<plask::space::Cartesian3d>::Iterator begin() {
-            return Mesh<plask::space::Cartesian3d>::Iterator(new IteratorImpl(this));
+        virtual typename Mesh<3>::Iterator begin() {
+            return Mesh<3>::Iterator(new IteratorImpl(this));
         }
 
-        virtual typename Mesh<plask::space::Cartesian3d>::Iterator end() {
-            return Mesh<plask::space::Cartesian3d>::Iterator(new IteratorImpl(nullptr));
+        virtual typename Mesh<3>::Iterator end() {
+            return Mesh<3>::Iterator(new IteratorImpl(nullptr));
         }
 
     };
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
 
 BOOST_AUTO_TEST_CASE(SimpleMeshAdapter) {
     // Create 3d mesh which uses the std::vector of 3d points as internal representation:
-    plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, plask::space::Cartesian3d > mesh;
+    plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, 3 > mesh;
     mesh.internal.push_back(plask::vec(1.0, 1.2, 3.0));
     mesh->push_back(plask::vec(3.0, 4.0, 0.0));
     BOOST_CHECK_EQUAL(mesh.size(), 2);

@@ -6,16 +6,16 @@
 #include<fstream>
 
 namespace plask {
-    struct DummyMesh: public plask::Mesh<space::Cartesian2d> {
+    struct DummyMesh: public plask::Mesh<2> {
         virtual std::size_t size() const { return 1; }
-        virtual plask::Mesh<space::Cartesian2d>::Iterator begin() { plask::Mesh<space::Cartesian2d>::Iterator i; return i; }
-        virtual plask::Mesh<space::Cartesian2d>::Iterator end() {  plask::Mesh<space::Cartesian2d>::Iterator i; return i; }
+        virtual plask::Mesh<2>::Iterator begin() { plask::Mesh<2>::Iterator i; return i; }
+        virtual plask::Mesh<2>::Iterator end() {  plask::Mesh<2>::Iterator i; return i; }
     };
 
     template <typename DataT>    //for any data type
     struct InterpolationAlgorithm<DummyMesh, DataT, plask::LINEAR> {
         static void interpolate(DummyMesh& src_mesh, const std::vector<DataT>& src_vec,
-                                const plask::Mesh<typename DummyMesh::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
+                                const plask::Mesh<DummyMesh::dim>& dst_mesh, std::vector<DataT>& dst_vec) {
             dst_vec[0] = src_vec[0] + 10;
         }
     };

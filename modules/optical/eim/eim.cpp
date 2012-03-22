@@ -22,7 +22,7 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex beta1, dcomp
 }
 
 
-shared_ptr<const std::vector<double>> EffectiveIndex2dModule::getLightIntenisty(const Mesh<space::Cartesian2d>& dst_mesh, InterpolationMethod method)
+shared_ptr<const std::vector<double>> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method)
 {
 }
 

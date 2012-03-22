@@ -359,7 +359,7 @@ struct OnMeshProvider: public Provider {
      * @param dst_mesh set of requested points
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const = 0;
+    virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh) const = 0;
 
 };
 
@@ -380,14 +380,14 @@ struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceType>
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) const = 0;
+    virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method) const = 0;
 
     /**
      * Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
      * @param dst_mesh set of requested points
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const {
+    virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh) const {
         return this->operator()(dst_mesh, DEFAULT_INTERPOLATION);
     }
 
@@ -667,7 +667,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>, ProvidedValueType(const Mesh<SpaceType>& dst_mesh) > Delegate;
+    typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>, ProvidedValueType(const Mesh<SpaceType::DIMS>& dst_mesh) > Delegate;
 
     /**
      * Return same value in all points.
@@ -685,7 +685,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
         template<typename ...Args>
         ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
 
-        virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh) const {
+        virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh) const {
             //return copy of value for each point in dst_mesh
             return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
         }
@@ -744,7 +744,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
          * @param method method which should be use to do interpolation
          * @return values in points describe by mesh @a dst_mesh
          */
-        virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) const {
+        virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method) const {
             return interpolate(mesh, values, dst_mesh, method);
         }
     };
@@ -752,7 +752,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>, ProvidedValueType(const Mesh<SpaceType>& dst_mesh, InterpolationMethod method) > Delegate;
+    typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>, ProvidedValueType(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method) > Delegate;
 
     /**
      * Return same value in all points.
@@ -770,7 +770,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
         template<typename ...Args>
         ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
 
-        virtual ProvidedValueType operator()(const Mesh<SpaceType>& dst_mesh, InterpolationMethod) const {
+        virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod) const {
             //return copy of value for each point in dst_mesh, ignore interpolation method
             return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
         }
