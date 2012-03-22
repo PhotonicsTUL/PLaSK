@@ -23,84 +23,6 @@ namespace plask {
  */
 struct RectilinearMesh2d: public Mesh<2> {
 
-    /**
-     * Class which allow to access and iterate over RectilinearMesh2d points in choosen order:
-     * - natural one: (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
-     * - or changed: (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
-     */
-    struct Accessor {
-
-        /// Mesh for which we want to have access.
-        const RectilinearMesh2d& mesh;
-
-        /// Is order changed?
-        bool changed;
-
-        typedef Vec<2,double> PointType;
-
-        typedef IndexedIterator< const Accessor, PointType > const_iterator;
-
-        Accessor(const RectilinearMesh2d& mesh, bool changed): mesh(mesh), changed(changed) {}
-
-        /// @return iterator referring to the first point in this mesh
-        const_iterator begin() const { return const_iterator(this, 0); }
-
-        /// @return iterator referring to the past-the-end point in this mesh
-        const_iterator end() const { return const_iterator(this, size()); }
-
-        /**
-        * Get point with given mesh index.
-        * Points are in order depends from changed flag:
-        * - if its set: (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
-        * - if its not set: (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
-        * @param index index of point, from 0 to size()-1
-        * @return point with given @p index
-        */
-        Vec<2,double> operator[](std::size_t index) const {
-            if (changed) {
-                const std::size_t y_size = mesh.c1.size();
-                return Vec<2,double>(mesh.c0[index / y_size], mesh.c1[index % y_size]);
-            } else {
-                return mesh[index];
-            }
-        }
-
-        /**
-         * Get number of points in mesh.
-         * @return number of points in mesh
-         */
-        std::size_t size() const { return mesh.size(); }
-
-        /**
-         * Calculate mesh index using indexes of c0 and c1.
-         * @param c0_index index of c0, from 0 to c0.size()-1
-         * @param c1_index index of c1, from 0 to c1.size()-1
-         * @return this mesh index, from 0 to size()-1
-         */
-        std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
-            return changed ? mesh.c1.size() * c0_index + c1_index : mesh.index(c0_index, c1_index);
-        }
-
-        /**
-        * Calculate index of c0 using mesh index.
-        * @param mesh_index this mesh index, from 0 to size()-1
-        * @return index of c0, from 0 to c0.size()-1
-        */
-        std::size_t index0(std::size_t mesh_index) const {
-            return changed ? mesh_index / mesh.c1.size() : index0(mesh_index);
-        }
-
-        /**
-        * Calculate index of c1 using mesh index.
-        * @param mesh_index this mesh index, from 0 to size()-1
-        * @return index of c1, from 0 to c1.size()-1
-        */
-        std::size_t index1(std::size_t mesh_index) const {
-            return changed ? mesh_index % mesh.c1.size() : index1(mesh_index);
-        }
-
-    };
-
     ///First coordinate of points in this mesh.
     RectilinearMesh1d c0;
 
@@ -244,7 +166,7 @@ struct RectilinearMesh2d: public Mesh<2> {
      * @param c1_index index of c1, from 0 to c1.size()-1
      * @return this mesh index, from 0 to size()-1
      */
-    std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
+    virtual std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
         return c0_index + c0.size() * c1_index;
     }
 
@@ -253,7 +175,7 @@ struct RectilinearMesh2d: public Mesh<2> {
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c0, from 0 to c0.size()-1
      */
-    std::size_t index0(std::size_t mesh_index) const {
+    virtual std::size_t index0(std::size_t mesh_index) const {
         return mesh_index % c0.size();
     }
 
@@ -262,7 +184,7 @@ struct RectilinearMesh2d: public Mesh<2> {
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c1, from 0 to c1.size()-1
      */
-    std::size_t index1(std::size_t mesh_index) const {
+    virtual std::size_t index1(std::size_t mesh_index) const {
         return mesh_index / c0.size();
     }
 
@@ -273,8 +195,7 @@ struct RectilinearMesh2d: public Mesh<2> {
      * @return point with given @p index
      */
     Vec<2,double> operator[](std::size_t index) const {
-        const std::size_t c0_size = c0.size();
-        return Vec<2, double>(c0[index % c0_size], c1[index / c0_size]);
+        return Vec<2, double>(c0[index0(index)], c1[index1(index)]);
     }
 
     /**
@@ -308,6 +229,46 @@ struct RectilinearMesh2d: public Mesh<2> {
   private:
 
     void buildFromGeometry(const GeometryElementD<2>& geometry);
+
+};
+
+/**
+ * Class simillar to RectilinearMesh2d, which allow to access and iterate over RectilinearMesh2d points in order:
+ * (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
+ */
+struct RectilinearMesh2dSwapped: public RectilinearMesh2d {
+
+    /// Delegate all construct to RectilinearMesh2d
+    template <typename ...Args>
+    RectilinearMesh2dSwapped(Args&&... args): RectilinearMesh2d(std::forward<Args>(args)...) {}
+
+    /**
+     * Calculate mesh index using indexes of c0 and c1.
+     * @param c0_index index of c0, from 0 to c0.size()-1
+     * @param c1_index index of c1, from 0 to c1.size()-1
+     * @return this mesh index, from 0 to size()-1
+     */
+    std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
+        return c1.size() * c0_index + c1_index;
+    }
+
+    /**
+    * Calculate index of c0 using mesh index.
+    * @param mesh_index this mesh index, from 0 to size()-1
+    * @return index of c0, from 0 to c0.size()-1
+    */
+    std::size_t index0(std::size_t mesh_index) const {
+        return mesh_index / c1.size();
+    }
+
+    /**
+    * Calculate index of c1 using mesh index.
+    * @param mesh_index this mesh index, from 0 to size()-1
+    * @return index of c1, from 0 to c1.size()-1
+    */
+    std::size_t index1(std::size_t mesh_index) const {
+        return mesh_index % c1.size();
+    }
 
 };
 
