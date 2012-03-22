@@ -41,8 +41,8 @@ MI_PROPERTY(GaN, nr,
             MIComment("no temperature dependence")
             )
 double GaN::nr(double wl, double T) const {
-    double a = 1./wl;
-    return ( 4.94507E7*pow(a,3.) - 1.56053E5*pow(a,2.) + 2.25051E2*a + 2.15670 );
+    double a = 1239.84190820754/wl;
+    return ( 0.0259462*pow(a,3) - 0.101517*pow(a,2) + 0.181516*a + 2.1567 );
 }
 
 static MaterialsDB::Register<GaN> materialDB_register_GaN;

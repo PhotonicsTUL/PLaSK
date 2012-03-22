@@ -17,11 +17,9 @@ struct InN: public Semiconductor {
 
     static constexpr const char* NAME = "InN";
 
-    InN();
     virtual std::string name() const;
-    virtual double condT(double T) const; //NO Temperature dependence
-private:
-    double condTmax_RT;
+    virtual double condT(double T) const;
+
 };
 
 

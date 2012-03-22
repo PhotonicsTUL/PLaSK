@@ -18,6 +18,8 @@ struct AlN: public Semiconductor {
 
 	virtual std::string name() const;
     virtual double condT(double T, double t) const;
+    virtual double nr(double wl, double T) const;
+    virtual double absp(double wl, double T) const;
 
 };
 

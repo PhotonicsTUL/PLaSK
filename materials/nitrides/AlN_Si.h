@@ -22,6 +22,7 @@ struct AlN_Si: public AlN {
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;
     virtual double cond(double T) const;
+    virtual double absp(double wl, double T) const;
 
 private:
     double ND,

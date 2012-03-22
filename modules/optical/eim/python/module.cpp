@@ -1,6 +1,7 @@
 /** \file
  * Sample Python wrapper for your module.
  */
+#include <cmath>
 #include <boost/python.hpp>
 
 #include "../eim.hpp"

@@ -1,22 +1,21 @@
 #include "InN.h"
 
+#include <cmath>
 #include <plask/material/db.h>  //MaterialsDB::Register
+#include <plask/material/info.h>    //MaterialInfo::DB::Register
 
 #include <cmath>
 
 namespace plask {
 
-InN::InN() {
-	//M. Kuc 12.02.2012
-	//condT(max,RT); Tong H, Proc. SPIE 7602 (2010) 76020U
-	condTmax_RT = 126;
-}
-
 std::string InN::name() const { return NAME; }
 
+MI_PROPERTY(InN, condT,
+            MISource("H. Tong et al., Proc. SPIE 7602 (2010) 76020U")
+            )
 double InN::condT(double T) const {
 	//M. Kuc 12.02.2012
-    return( condTmax_RT );
+    return( 126. );
  }
 
 MaterialsDB::Register<InN> materialDB_register_InN;
