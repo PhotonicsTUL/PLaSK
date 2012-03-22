@@ -143,7 +143,6 @@ void register_mesh_rectilinear()
         .def("__getitem__", &RectilinearMesh3d__getitem__)
         .def("__iter__", py::range(&RectilinearMesh3d::begin, &RectilinearMesh3d::end))
     ;
-    py::implicitly_convertible<RectilinearMesh3d, RectilinearMesh3d::External>();
 }
 
 }} // namespace plask::python

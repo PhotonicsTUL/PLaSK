@@ -18,9 +18,7 @@ namespace plask {
  * - c2 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y, z) such that x is in c0, y is in c1, z is in c2.
  */
-struct RectilinearMesh3d {
-
-    typedef SimpleMeshAdapter<RectilinearMesh3d, 3> External;
+struct RectilinearMesh3d: public Mesh<3> {
 
     /// First coordinate of points in this mesh.
     RectilinearMesh1d c0;
@@ -194,10 +192,14 @@ struct RectilinearMesh3d {
     typedef IndexedIterator< const RectilinearMesh3d, PointType > const_iterator;
 
     ///@return iterator referring to the first point in this mesh
-    const_iterator begin() const { return const_iterator(this, 0); }
+    const_iterator begin_fast() const { return const_iterator(this, 0); }
 
     ///@return iterator referring to the past-the-end point in this mesh
-    const_iterator end() const { return const_iterator(this, size()); }
+    const_iterator end_fast() const { return const_iterator(this, size()); }
+
+    virtual typename Mesh<3>::Iterator begin() { return makeMeshIterator(begin_fast()); }
+
+    virtual typename Mesh<3>::Iterator end() { return makeMeshIterator(end_fast()); }
 
     /**
      * Get number of points in mesh.
@@ -368,13 +370,25 @@ auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, con
 }
 
 template <typename DataT>    //for any data type
-struct InterpolationAlgorithm<RectilinearMesh3d::External, DataT, LINEAR> {
-    static void interpolate(RectilinearMesh3d::External& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<3>& dst_mesh, std::vector<DataT>& dst_vec) {
+struct InterpolationAlgorithm<RectilinearMesh3d, DataT, LINEAR> {
+    static void interpolate(RectilinearMesh3d& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<3>& dst_mesh, std::vector<DataT>& dst_vec) {
         for (auto p: dst_mesh)
-            dst_vec.push_back(src_mesh.internal.interpolateLinear(dst_vec, p));
+            dst_vec.push_back(src_mesh.interpolateLinear(dst_vec, p));
     }
 };
 
 }   // namespace plask
+
+namespace std { //use fast iterator if know mesh type at compile time:
+
+    inline auto begin(const plask::RectilinearMesh3d& m) -> decltype(m.begin_fast()) {
+      return m.begin_fast();
+    }
+
+    inline auto end(const plask::RectilinearMesh3d& m) -> decltype(m.end_fast()) {
+      return m.begin_fast();
+    }
+
+}   // namespace std
 
 #endif // PLASK__RECTILINEAR3D_H

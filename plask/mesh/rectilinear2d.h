@@ -9,6 +9,7 @@ This file includes rectilinear mesh for 2d space.
 #include "rectilinear1d.h"
 #include "interpolation.h"
 #include "../geometry/element.h"
+#include <iterator>
 
 namespace plask {
 
@@ -235,9 +236,9 @@ struct RectilinearMesh2d: public Mesh<2> {
     ///@return iterator referring to the past-the-end point in this mesh
     const_iterator end_fast() const { return const_iterator(this, size()); }
 
-    virtual typename Mesh<2>::Iterator begin() { return typename Mesh<2>::Iterator(new MeshIteratorWrapper<2, const_iterator>(begin_fast())); }
+    virtual typename Mesh<2>::Iterator begin() { return makeMeshIterator(begin_fast()); }
 
-    virtual typename Mesh<2>::Iterator end() { return typename Mesh<2>::Iterator(new MeshIteratorWrapper<2, const_iterator>(end_fast())); }
+    virtual typename Mesh<2>::Iterator end() { return makeMeshIterator(end_fast()); }
 
     /**
      * Get number of points in mesh.
@@ -382,5 +383,17 @@ struct InterpolationAlgorithm<RectilinearMesh2d, DataT, LINEAR> {
 };
 
 }   // namespace plask
+
+namespace std { //use fast iterator if know mesh type at compile time:
+
+    inline auto begin(const plask::RectilinearMesh2d& m) -> decltype(m.begin_fast()) {
+      return m.begin_fast();
+    }
+
+    inline auto end(const plask::RectilinearMesh2d& m) -> decltype(m.end_fast()) {
+      return m.begin_fast();
+    }
+
+}   // namespace std
 
 #endif // PLASK__RECTILINEAR2D_H

@@ -168,19 +168,16 @@ struct Mesh {
 
 };
 
-
 /**
  * Implementation of Mesh::IteratorImpl.
- * Holds iterator of wrapped type (InternalMeshType::const_iterator) and delegate all calls to it.
+ * Holds iterator of wrapped type (const_internal_iterator_t) and delegate all calls to it.
  */
-template <int dim, typename const_internal_iterator>
-struct MeshIteratorWrapper: public Mesh<dim>::IteratorImpl {
+template <typename const_internal_iterator_t, int dim = std::iterator_traits<const_internal_iterator_t>::value_type::DIMS>
+struct MeshIteratorWrapperImpl: public Mesh<dim>::IteratorImpl {
 
-    //typedef typename Mesh<dim>::const_iterator const_internal_iterator;
+    const_internal_iterator_t internal_iterator;
 
-    const_internal_iterator internal_iterator;
-
-    MeshIteratorWrapper(const const_internal_iterator& internal_iterator)
+    MeshIteratorWrapperImpl(const const_internal_iterator_t& internal_iterator)
     : internal_iterator(internal_iterator) {}
 
     virtual const typename Mesh<dim>::LocalCoords dereference() const {
@@ -192,14 +189,19 @@ struct MeshIteratorWrapper: public Mesh<dim>::IteratorImpl {
     }
 
     virtual bool equal(const typename Mesh<dim>::IteratorImpl& other) const {
-        return internal_iterator == static_cast<const MeshIteratorWrapper<dim, const_internal_iterator>&>(other).internal_iterator;
+        return internal_iterator == static_cast<const MeshIteratorWrapperImpl<const_internal_iterator_t, dim>&>(other).internal_iterator;
     }
 
-    virtual MeshIteratorWrapper<dim, const_internal_iterator>* clone() const {
-        return new MeshIteratorWrapper<dim, const_internal_iterator>(internal_iterator);
+    virtual MeshIteratorWrapperImpl<const_internal_iterator_t, dim>* clone() const {
+        return new MeshIteratorWrapperImpl<const_internal_iterator_t, dim>(internal_iterator);
     }
 
 };
+
+template <typename IteratorType, int dim = std::iterator_traits<IteratorType>::value_type::DIMS>
+inline typename Mesh<dim>::Iterator makeMeshIterator(IteratorType iter) {
+    return typename Mesh<dim>::Iterator(new MeshIteratorWrapperImpl<IteratorType, dim>(iter));
+}
 
 
 /**
@@ -227,7 +229,7 @@ It must:
 template <typename InternalMeshType, int dim>
 struct SimpleMeshAdapter: public Mesh<dim> {
 
-    typedef MeshIteratorWrapper<dim, typename InternalMeshType::const_iterator> IteratorImpl;
+    typedef MeshIteratorWrapperImpl<typename InternalMeshType::const_iterator, dim> IteratorImpl;
 
     /// Held internal, usually optimized, mesh.
     InternalMeshType internal;
@@ -256,8 +258,6 @@ struct SimpleMeshAdapter: public Mesh<dim> {
     const InternalMeshType* operator->() const {
         return &internal;
     }
-
-
 
     virtual std::size_t size() const {
         return internal.size();

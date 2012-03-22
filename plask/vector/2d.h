@@ -11,16 +11,18 @@ namespace plask {
 #define VEC_TEMPLATE_DEFINED
     /// Generic template for 2D and 3D vectors
     template <int dim, typename T=double>
-    union Vec {};
+    struct Vec {};
 #endif // VEC_TEMPLATE_DEFINED
 
 /**
  * Vector in 2d space.
  */
 template <typename T>
-union Vec<2, T> {
+struct Vec<2, T> {
 
-    //union {
+    static const int DIMS = 2;
+
+    union {
         /// Allow to access to vector coordinates by index.
         T components[2];
         /// Allow to access to vector coordinates by names.
@@ -31,7 +33,7 @@ union Vec<2, T> {
         struct { T y, z; } z_up;    // for surface-emitting lasers (z-axis up)
         struct { T x, y; } ee;      // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
         struct { T x, y; } y_up;    // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
-    //};
+    };
 
     /**
      * Type of iterator over components.
