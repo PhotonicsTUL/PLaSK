@@ -328,9 +328,18 @@ template <typename DataT>    // for any data type
 struct InterpolationAlgorithm<RectilinearMesh2d, DataT, LINEAR> {
     static void interpolate(RectilinearMesh2d& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<2>& dst_mesh, std::vector<DataT>& dst_vec) {
         for (auto p: dst_mesh)
-            dst_vec.push_back(src_mesh.interpolateLinear(dst_vec, p));
+            dst_vec.push_back(src_mesh.interpolateLinear(src_vec, p));
     }
 };
+
+template <typename DataT>    // for any data type
+struct InterpolationAlgorithm<RectilinearMesh2dSwapped, DataT, LINEAR> {
+    static void interpolate(RectilinearMesh2dSwapped& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<2>& dst_mesh, std::vector<DataT>& dst_vec) {
+        for (auto p: dst_mesh)
+            dst_vec.push_back(src_mesh.interpolateLinear(src_vec, p));
+    }
+};
+
 
 }   // namespace plask
 
@@ -341,7 +350,7 @@ namespace std { //use fast iterator if know mesh type at compile time:
     }
 
     inline auto end(const plask::RectilinearMesh2d& m) -> decltype(m.end_fast()) {
-      return m.begin_fast();
+      return m.end_fast();
     }
 
 }   // namespace std
