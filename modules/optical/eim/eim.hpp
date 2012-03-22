@@ -57,7 +57,9 @@ class EffectiveIndex2dModule: public Module {
      * Set the simple mesh based on the geometry bounding boxes.
      **/
     void setSimpleMesh() {
-        mesh = RectilinearMesh2d(geometry->getChild());
+        auto child = geometry->getChild();
+        if (!child) throw NoChildException();
+        mesh = RectilinearMesh2d(child);
     }
 
 
@@ -67,7 +69,9 @@ class EffectiveIndex2dModule: public Module {
      * @param meshx Horizontal mesh
      **/
     void setMesh(const RectilinearMesh1d& meshx) {
-        RectilinearMesh2d meshxy(geometry->getChild());
+        auto child = geometry->getChild();
+        if (!child) throw NoChildException();
+        RectilinearMesh2d meshxy(child);
         mesh = RectilinearMesh2d(meshx, meshxy.c1);
     }
 

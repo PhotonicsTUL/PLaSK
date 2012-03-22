@@ -91,9 +91,6 @@ file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp)
 # default material database
 file(GLOB_RECURSE materials_src FOLLOW_SYMLINKS materials/*.cpp materials/*.h)
 
-# external libs which are compiled by us
-file(GLOB_RECURSE plask_extlib_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
-
 # Python sources and files
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
@@ -101,10 +98,16 @@ file(GLOB_RECURSE python_plask_py python/plask/*.py)
 # GUI sources
 file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 
+# external libs which are compiled by us:
+#   irrXML
+file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
+
+
+
 
 # ---------- plask library --------------------------------------------
 
-add_library(libplask SHARED ${plask_src} ${plask_extlib_src} ${plask_headers})
+add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
 
@@ -318,7 +321,7 @@ if(BUILD_TESTING)
     endif(BUILD_PYTHON)
 
     if(BUILD_GUI)
-        set(plask_test_depends ${plask_test_depends} plaskgui)
+        set(plask_test_depends ${plask_test_depends} plaskgui qtpropertybrowser)
     endif()
 
     if (RUN_TESTS)

@@ -2,8 +2,6 @@
 
 namespace plask {
 
-//TODO I think that this method should split space-changers
-//(does getLeafsBoundingBoxes already do it?)
 void RectilinearMesh3d::buildFromGeometry(const GeometryElementD<3>& geometry) {
     std::vector<Box3d> boxes = geometry.getLeafsBoundingBoxes();
 
