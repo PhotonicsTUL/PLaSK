@@ -20,7 +20,7 @@ namespace plask {
  */
 struct RectilinearMesh3d {
 
-    typedef SimpleMeshAdapter<RectilinearMesh3d, space::Cartesian3d> External;
+    typedef SimpleMeshAdapter<RectilinearMesh3d, 3> External;
 
     /// First coordinate of points in this mesh.
     RectilinearMesh1d c0;
@@ -369,7 +369,7 @@ auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, con
 
 template <typename DataT>    //for any data type
 struct InterpolationAlgorithm<RectilinearMesh3d::External, DataT, LINEAR> {
-    static void interpolate(RectilinearMesh3d::External& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename RectilinearMesh3d::External::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
+    static void interpolate(RectilinearMesh3d::External& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<3>& dst_mesh, std::vector<DataT>& dst_vec) {
         for (auto p: dst_mesh)
             dst_vec.push_back(src_mesh.internal.interpolateLinear(dst_vec, p));
     }

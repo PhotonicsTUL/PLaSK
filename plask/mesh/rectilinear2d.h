@@ -20,11 +20,7 @@ namespace plask {
  * - c1 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y) such that x is in c0 and y is in c1.
  */
-struct RectilinearMesh2d {
-
-    typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cartesian2d> ExternalCartesian;
-    typedef SimpleMeshAdapter<RectilinearMesh2d, space::Cylindrical2d> ExternalCylindrical;
-
+struct RectilinearMesh2d: public Mesh<2> {
 
     /**
      * Class which allow to access and iterate over RectilinearMesh2d points in choosen order:
@@ -234,10 +230,14 @@ struct RectilinearMesh2d {
     typedef IndexedIterator< const RectilinearMesh2d, PointType > const_iterator;
 
     ///@return iterator referring to the first point in this mesh
-    const_iterator begin() const { return const_iterator(this, 0); }
+    const_iterator begin_fast() const { return const_iterator(this, 0); }
 
     ///@return iterator referring to the past-the-end point in this mesh
-    const_iterator end() const { return const_iterator(this, size()); }
+    const_iterator end_fast() const { return const_iterator(this, size()); }
+
+    virtual typename Mesh<2>::Iterator begin() { return typename Mesh<2>::Iterator(new MeshIteratorWrapper<2, const_iterator>(begin_fast())); }
+
+    virtual typename Mesh<2>::Iterator end() { return typename Mesh<2>::Iterator(new MeshIteratorWrapper<2, const_iterator>(end_fast())); }
 
     /**
      * Get number of points in mesh.
@@ -374,18 +374,10 @@ auto RectilinearMesh2d::interpolateLinear(const RandomAccessContainer& data, con
 }
 
 template <typename DataT>    // for any data type
-struct InterpolationAlgorithm<RectilinearMesh2d::ExternalCartesian, DataT, LINEAR> {
-    static void interpolate(RectilinearMesh2d::ExternalCartesian& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename RectilinearMesh2d::ExternalCartesian::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
+struct InterpolationAlgorithm<RectilinearMesh2d, DataT, LINEAR> {
+    static void interpolate(RectilinearMesh2d& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<2>& dst_mesh, std::vector<DataT>& dst_vec) {
         for (auto p: dst_mesh)
-            dst_vec.push_back(src_mesh.internal.interpolateLinear(dst_vec, p));
-    }
-};
-
-template <typename DataT>    // for any data type
-struct InterpolationAlgorithm<RectilinearMesh2d::ExternalCylindrical, DataT, LINEAR> {
-    static void interpolate(RectilinearMesh2d::ExternalCylindrical& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename RectilinearMesh2d::ExternalCylindrical::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
-        for (auto p: dst_mesh)
-            dst_vec.push_back(src_mesh.internal.interpolateLinear(dst_vec, p));
+            dst_vec.push_back(src_mesh.interpolateLinear(dst_vec, p));
     }
 };
 

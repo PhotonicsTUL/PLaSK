@@ -124,7 +124,6 @@ void register_mesh_rectilinear()
         .def("__getitem__", &RectilinearMesh2d__getitem__)
         .def("__iter__", py::range(&RectilinearMesh2d::begin, &RectilinearMesh2d::end))
     ;
-    py::implicitly_convertible<RectilinearMesh2d, RectilinearMesh2d::External>();
 
 
     py::class_<RectilinearMesh3d, shared_ptr<RectilinearMesh3d>>("Rectilinear3D",

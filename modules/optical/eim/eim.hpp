@@ -15,7 +15,7 @@ class EffectiveIndex2dModule: public Module {
     shared_ptr<const CartesianExtend> geometry;
 
     /// The mesh used for cutting the structure into one-dimentional stripes
-    RectilinearMesh2d::External mesh;
+    RectilinearMesh2d mesh;
 
   public:
 
@@ -48,7 +48,7 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      * \param mesh mesh for dividing geometry
      */
-    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh2d::External& mesh) :
+    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh2d& mesh) :
         geometry(geometry), mesh(mesh), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
         inTemperature = 300.;
     }
@@ -57,7 +57,7 @@ class EffectiveIndex2dModule: public Module {
      * Set the simple mesh based on the geometry bounding boxes.
      **/
     void setSimpleMesh() {
-        mesh = RectilinearMesh2d::External(geometry->getChild());
+        mesh = RectilinearMesh2d(geometry->getChild());
     }
 
 
@@ -68,7 +68,7 @@ class EffectiveIndex2dModule: public Module {
      **/
     void setMesh(const RectilinearMesh1d& meshx) {
         RectilinearMesh2d meshxy(geometry->getChild());
-        mesh = RectilinearMesh2d::External(meshx, meshxy.c1);
+        mesh = RectilinearMesh2d(meshx, meshxy.c1);
     }
 
 
@@ -77,7 +77,7 @@ class EffectiveIndex2dModule: public Module {
      *
      * @param meshxy The mesh
      **/
-    void setMesh(const RectilinearMesh2d::External& meshxy) {
+    void setMesh(const RectilinearMesh2d& meshxy) {
         mesh = meshxy;
     }
 

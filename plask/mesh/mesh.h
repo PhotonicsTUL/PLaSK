@@ -138,17 +138,17 @@ namespace plask {
  *
  * @see @ref meshes
  */
-template <typename S>
+template <int dimension>
 struct Mesh {
+
+    /// Number of dimensions
+    static const int dim = dimension;
 
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
 
-    /// Type of the space over which the mesh is defined
-    typedef S Space;
-
     /// Type of vector representing coordinates in local space
-    typedef typename S::CoordsType LocalCoords;
+    typedef Vec<dim, double> LocalCoords;
 
     /// Base class for mesh iterator implementation.
     typedef PolymorphicForwardIteratorImpl<LocalCoords, const LocalCoords> IteratorImpl;
@@ -165,6 +165,39 @@ struct Mesh {
 
     /// @return iterator just after last point
     virtual Iterator end() = 0;
+
+};
+
+
+/**
+ * Implementation of Mesh::IteratorImpl.
+ * Holds iterator of wrapped type (InternalMeshType::const_iterator) and delegate all calls to it.
+ */
+template <int dim, typename const_internal_iterator>
+struct MeshIteratorWrapper: public Mesh<dim>::IteratorImpl {
+
+    //typedef typename Mesh<dim>::const_iterator const_internal_iterator;
+
+    const_internal_iterator internal_iterator;
+
+    MeshIteratorWrapper(const const_internal_iterator& internal_iterator)
+    : internal_iterator(internal_iterator) {}
+
+    virtual const typename Mesh<dim>::LocalCoords dereference() const {
+        return *internal_iterator;
+    }
+
+    virtual void increment() {
+        ++internal_iterator;
+    }
+
+    virtual bool equal(const typename Mesh<dim>::IteratorImpl& other) const {
+        return internal_iterator == static_cast<const MeshIteratorWrapper<dim, const_internal_iterator>&>(other).internal_iterator;
+    }
+
+    virtual MeshIteratorWrapper<dim, const_internal_iterator>* clone() const {
+        return new MeshIteratorWrapper<dim, const_internal_iterator>(internal_iterator);
+    }
 
 };
 
@@ -191,8 +224,10 @@ It must:
 - allow for iterate (has begin() and end() methods) over Space::CoordsType, and has defined InternalMeshType::const_iterator for constant iterator type,
 - has size() method which return number of points in mesh.
 */
-template <typename InternalMeshType, typename Space>
-struct SimpleMeshAdapter: public Mesh<Space> {
+template <typename InternalMeshType, int dim>
+struct SimpleMeshAdapter: public Mesh<dim> {
+
+    typedef MeshIteratorWrapper<dim, typename InternalMeshType::const_iterator> IteratorImpl;
 
     /// Held internal, usually optimized, mesh.
     InternalMeshType internal;
@@ -202,7 +237,8 @@ struct SimpleMeshAdapter: public Mesh<Space> {
      * @param params parameters for InternalMeshType constructor
      */
     template<typename ...Args>
-    SimpleMeshAdapter<InternalMeshType, Space>(Args&&... params) : internal(std::forward<Args>(params)...) {
+    SimpleMeshAdapter<InternalMeshType, dim>(Args&&... params)
+    : internal(std::forward<Args>(params)...) {
     }
 
     /**
@@ -221,42 +257,15 @@ struct SimpleMeshAdapter: public Mesh<Space> {
         return &internal;
     }
 
-    /**
-     * Implementation of Mesh::IteratorImpl.
-     * Holds iterator of wrapped type (InternalMeshType::const_iterator) and delegate all calls to it.
-     */
-    struct IteratorImpl: public Mesh<Space>::IteratorImpl {
 
-        typename InternalMeshType::const_iterator internal_iterator;
-
-        IteratorImpl(const typename InternalMeshType::const_iterator& internal_iterator)
-        : internal_iterator(internal_iterator) {}
-
-        virtual const typename Mesh<Space>::LocalCoords dereference() const {
-            return *internal_iterator;
-        }
-
-        virtual void increment() {
-            ++internal_iterator;
-        }
-
-        virtual bool equal(const typename Mesh<Space>::IteratorImpl& other) const {
-            return internal_iterator == static_cast<const IteratorImpl&>(other).internal_iterator;
-        }
-
-        virtual IteratorImpl* clone() const {
-            return new IteratorImpl(internal_iterator);
-        }
-
-    };
 
     virtual std::size_t size() const {
         return internal.size();
     }
 
-    virtual typename Mesh<Space>::Iterator begin() { return typename Mesh<Space>::Iterator(new IteratorImpl(internal.begin())); }
+    virtual typename Mesh<dim>::Iterator begin() { return typename Mesh<dim>::Iterator(new IteratorImpl(internal.begin())); }
 
-    virtual typename Mesh<Space>::Iterator end() { return typename Mesh<Space>::Iterator(new IteratorImpl(internal.end())); }
+    virtual typename Mesh<dim>::Iterator end() { return typename Mesh<dim>::Iterator(new IteratorImpl(internal.end())); }
 
 };
 

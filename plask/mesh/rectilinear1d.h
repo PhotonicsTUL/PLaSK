@@ -37,6 +37,9 @@ public:
     /// @return iterator referring to the past-the-end point in this mesh
     const_iterator end() const { return points.end(); }
 
+    /// @return vector of points (reference to internal vector)
+    const std::vector<double>& getPointsVector() const { return points; }
+
     /**
      * Find position where @p to_find point could be insert.
      * @param to_find point to find
