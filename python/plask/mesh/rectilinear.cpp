@@ -87,7 +87,6 @@ void RectilinearMesh2d_setaxis1(RectilinearMesh2d& self, py::object points) {
 }
 
 
-
 shared_ptr<RectilinearMesh3d> RectilinearMesh3d__init__empty() {
     return make_shared<RectilinearMesh3d>();
 }
@@ -187,8 +186,8 @@ void register_mesh_rectilinear()
         .def("clear", &RectilinearMesh2d::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectilinearMesh2d__getitem__)
         .def("__iter__", py::range(&RectilinearMesh2d::begin_fast, &RectilinearMesh2d::end_fast))
+        .def("makeOptimized", &RectilinearMesh2d::makeOptimized, py::return_value_policy<py::manage_new_object>(), "Return copy of this mesh with optimal ordering points")
     ;
-
 
     py::class_<RectilinearMesh3d, shared_ptr<RectilinearMesh3d>, py::bases<Mesh<3>>>("Rectilinear3D",
         "Two-dimensional mesh\n\n"

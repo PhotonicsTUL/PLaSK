@@ -62,6 +62,13 @@ void print_ptr(py::object o) {
     std::cerr << "ptr: " << o.ptr() << "\n";
 }
 
+plask::shared_ptr<plask::RectilinearMesh2d> SwapMesh(plask::shared_ptr<plask::RectilinearMesh2d> mesh) {
+    if (plask::dynamic_pointer_cast<plask::RectilinearMesh2dSwapped>(mesh)) {
+        return plask::make_shared<plask::RectilinearMesh2d>(*mesh);
+    } else {
+        return plask::make_shared<plask::RectilinearMesh2dSwapped>(*mesh);
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,5 +86,7 @@ BOOST_PYTHON_MODULE(plasktest)
     py::def("call_chi", &call_chi);
 
     py::def("print_ptr", &print_ptr);
+
+    py::def("swapMesh", SwapMesh);
 
 }

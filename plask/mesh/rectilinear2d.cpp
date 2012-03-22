@@ -2,6 +2,15 @@
 
 namespace plask {
 
+RectilinearMesh2d* RectilinearMesh2d::makeOptimized()
+{
+    if (c0.size() > c1.size()) {
+        return new RectilinearMesh2dSwapped(*this);
+    }
+    return new RectilinearMesh2d(*this);
+}
+
+
 void RectilinearMesh2d::buildFromGeometry(const GeometryElementD<2>& geometry) {
     std::vector<Box2d> boxes = geometry.getLeafsBoundingBoxes();
 

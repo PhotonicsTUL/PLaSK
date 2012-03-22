@@ -217,6 +217,13 @@ struct RectilinearMesh2d: public Mesh<2> {
     }
 
     /**
+     * Make and optimized mesh.
+     * It creates the new mesh of the type RectilinearMesh2d or RectilinearMesh2dSwapped so the shortest axis changes fastest.
+     * @return pointer to the new optimized mesh
+     */
+    RectilinearMesh2d* makeOptimized();
+
+    /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate
@@ -224,7 +231,6 @@ struct RectilinearMesh2d: public Mesh<2> {
      */
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
-
 
   private:
 

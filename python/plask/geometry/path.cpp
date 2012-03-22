@@ -10,7 +10,7 @@ namespace plask { namespace python {
 
 template <typename... Args>
 shared_ptr<Path> Path__init__(Args... args) {
-    return make_shared<Path>(args...);
+    return make_shared<Path>(std::forward<Args>(args)...);
 }
 
 struct Element_List_from_Python {
