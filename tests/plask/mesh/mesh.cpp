@@ -48,11 +48,11 @@ BOOST_AUTO_TEST_CASE(Mesh) {
             return 1;
         }
 
-        virtual typename Mesh<3>::Iterator begin() {
+        virtual typename Mesh<3>::Iterator begin() const {
             return Mesh<3>::Iterator(new IteratorImpl(this));
         }
 
-        virtual typename Mesh<3>::Iterator end() {
+        virtual typename Mesh<3>::Iterator end() const {
             return Mesh<3>::Iterator(new IteratorImpl(nullptr));
         }
 

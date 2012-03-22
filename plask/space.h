@@ -3,6 +3,14 @@
 
 /** @file
  * This file includes classes which represent and describe spaces.
+ *
+ * There are 3 spaces class:
+ * - plask::space::Cartesian2d - 2D Cartesian coordinates,
+ * - plask::space::Cylindrical2d - 2D cylindrical coordinates,
+ * - plask::space::Cartesian3d - 3D (Cartesian) coordinates.
+ *
+ * Types: plask::space::Cartesian2d (2D Cartesian coordinates), plask::space::Cylindrical2d (2D cylindrical coordinates) and plask::space::Cartesian3d (3D cooridinates)
+ * described spaces. Each of this type includes static const and typedefs connected with space. You shouldn't construct object of this types.
  */
 
 #include "vec.h"

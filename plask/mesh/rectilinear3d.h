@@ -197,9 +197,9 @@ struct RectilinearMesh3d: public Mesh<3> {
     ///@return iterator referring to the past-the-end point in this mesh
     const_iterator end_fast() const { return const_iterator(this, size()); }
 
-    virtual typename Mesh<3>::Iterator begin() { return makeMeshIterator(begin_fast()); }
-
-    virtual typename Mesh<3>::Iterator end() { return makeMeshIterator(end_fast()); }
+    //implement Mesh<3> polimorphic iterators:
+    virtual typename Mesh<3>::Iterator begin() const { return makeMeshIterator(begin_fast()); }
+    virtual typename Mesh<3>::Iterator end() const { return makeMeshIterator(end_fast()); }
 
     /**
      * Get number of points in mesh.

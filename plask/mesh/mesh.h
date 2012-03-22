@@ -20,15 +20,6 @@ storing the data value for the i-th point in the mesh under the i-th index.
 
 @see @ref interpolation
 
-@section meshes_internal Internal representation
-Most of mesh classes in PLaSK have @c internal field which is internal mesh interface.
-Typically this interface:
-- represents set of point in the same space as parent mesh;
-- allow for faster calculation than generic mesh interface, and often has more futures (methods);
-- can have different types (there are no common base class for internal interfaces).
-
-In most cases, mesh use @c internal field methods to implement itself methods (especially, abstract methods of plask::Mesh).
-
 @section meshes_write How to implement a new mesh?
 There are two typical approaches to implementing new types of meshes:
 - @ref meshes_write_adapters "using adapters" (this approach is recommended),
@@ -39,19 +30,23 @@ There are two typical approaches to implementing new types of meshes:
 @subsection meshes_write_adapters Using adapters to generate plask::Mesh implementation
 You can specialize adapter template to generate class which inheriting from plask::Mesh instantiation.
 
-To do this, you have to implement internal mesh representation class (see @ref meshes_internal) first.
+To do this, you have to implement internal mesh representation class first.
+
+Typically internal mesh interface:
+- represents set of point in the same space as parent mesh;
+- allow for faster calculation than generic mesh interface, and often has more futures (methods);
+- can have different types (there are no common base class for internal interfaces).
+
+In most cases, mesh adapter has @c internal field which is internal mesh interface and use @c internal field methods to implement itself methods (especially, abstract methods of plask::Mesh).
+
 Your class must fulfill adapter templates requirements (it is one of adapter template parameters),
 and also can have extra methods for your internal use (for calculation).
 
 Adapter templates currently available in PLaSK (see its description for more details and examples):
 - plask::SimpleMeshAdapter
 
-@subsection meshes_write_direct Direct implementation of plask::Mesh\<SPACE\>
-To implement a new mesh directly you have to write class inherited from the plask::Mesh\<SPACE\>, where SPACE is a type of space your mesh is defined over.
-It can be one of (see @a spaces_and_coordinates for more details):
-- plask::space::Cartesian2d - 2D Cartesian coordinates,
-- plask::space::Cylindrical2d - 2D cylindrical coordinates,
-- plask::space::Cartesian3d - 3D (Cartesian) coordinates.
+@subsection meshes_write_direct Direct implementation of plask::Mesh\<DIM\>
+To implement a new mesh directly you have to write class inherited from the plask::Mesh\<DIM\>, where DIM (is equal 2 or 3) is a number of dimension of space your mesh is defined over.
 
 You are required to:
 - implement the @ref plask::Mesh::size size method;
@@ -59,10 +54,11 @@ You are required to:
   - writing class inherited from plask::Mesh::IteratorImpl (and implement all its abstract methods),
   - writing @ref plask::Mesh::begin "begin()" and @ref plask::Mesh::end "end()" methods, typically this methods only returns:
     @code plask::Mesh::Iterator(new YourIteratorImpl(...)) @endcode
+  - see also: MeshIteratorWrapperImpl and makeMeshIterator
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3d space):
 @code
-struct OnePoint3dMesh: public plask::Mesh<plask::space::Cartesian3d> {
+struct OnePoint3dMesh: public plask::Mesh<3> {
 
     //Held point:
     plask::Vec<3, double> point;
@@ -98,28 +94,23 @@ struct OnePoint3dMesh: public plask::Mesh<plask::space::Cartesian3d> {
 
     };
 
-    //plask::Mesh<plask::space::Cartesian3d> methods implementation:
+    //plask::Mesh<3> methods implementation:
 
     virtual std::size_t size() const {
         return 1;
     }
 
-    virtual typename Mesh<plask::space::Cartesian3d>::Iterator begin() {
-        return Mesh<plask::space::Cartesian3d>::Iterator(new IteratorImpl(this));
+    virtual typename Mesh<plask::space::Cartesian3d>::Iterator begin() const {
+        return Mesh<3>::Iterator(new IteratorImpl(this));
     }
 
-    virtual typename Mesh<plask::space::Cartesian3d>::Iterator end() {
-        return Mesh<plask::space::Cartesian3d>::Iterator(new IteratorImpl(nullptr));
+    virtual typename Mesh<plask::space::Cartesian3d>::Iterator end() const {
+        return Mesh<3>::Iterator(new IteratorImpl(nullptr));
     }
 
 };
 @endcode
 You should also implement interpolation algorithms for your mesh, see @ref interpolation_write for more details.
-
-@subsection spaces_and_coordinates A note about spaces and coordinates
-
-Types: plask::space::Cartesian2d (2D Cartesian coordinates), plask::space::Cylindrical2d (2D cylindrical coordinates) and plask::space::Cartesian3d (3D cooridinates) (all defined in space.h)
-described spaces. Each of this type includes static const and typedefs connected with space. You shouldn't construct object of this types.
 */
 
 #include "../space.h"
@@ -161,10 +152,10 @@ struct Mesh {
     typedef const Iterator const_iterator;
 
     /// @return iterator at first point
-    virtual Iterator begin() = 0;
+    virtual Iterator begin() const = 0;
 
     /// @return iterator just after last point
-    virtual Iterator end() = 0;
+    virtual Iterator end() const = 0;
 
 };
 
@@ -198,6 +189,13 @@ struct MeshIteratorWrapperImpl: public Mesh<dim>::IteratorImpl {
 
 };
 
+/**
+ * Construct Mesh<dim>::Iterator which wraps non-polimorphic iterator, using MeshIteratorWrapperImpl.
+ * @param iter iterator to wrap
+ * @return wrapper over @p iter
+ * @tparam IteratorType type of iterator to wrap
+ * @tparam dim number of dimensions of IteratorType and resulted iterator (can be auto-detected in most situations)
+ */
 template <typename IteratorType, int dim = std::iterator_traits<IteratorType>::value_type::DIMS>
 inline typename Mesh<dim>::Iterator makeMeshIterator(IteratorType iter) {
     return typename Mesh<dim>::Iterator(new MeshIteratorWrapperImpl<IteratorType, dim>(iter));
@@ -213,7 +211,7 @@ All constructors and -> calls are delegated to the @a internal mesh.
 Example usage:
 @code
 // Create 3D mesh which uses std::vector of 3d points as internal representation:
-plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, plask::space::Cartesian3d > mesh;
+plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, 3 > mesh;
 // Append two points to vector:
 mesh.internal.push_back(plask::vec(1.0, 1.2, 3.0));
 mesh->push_back(plask::vec(3.0, 4.0, 0.0)); // mesh-> is a shortcut to mesh.internal.
@@ -223,13 +221,13 @@ assert(mesh.size() == 2);
 
 @tparam InternalMeshType Internal mesh type.
 It must:
-- allow for iterate (has begin() and end() methods) over Space::CoordsType, and has defined InternalMeshType::const_iterator for constant iterator type,
+- allow for iterate (has begin() and end() methods) over Vec<dim, double>,
 - has size() method which return number of points in mesh.
 */
 template <typename InternalMeshType, int dim>
 struct SimpleMeshAdapter: public Mesh<dim> {
 
-    typedef MeshIteratorWrapperImpl<typename InternalMeshType::const_iterator, dim> IteratorImpl;
+    //typedef MeshIteratorWrapperImpl<typename InternalMeshType::const_iterator, dim> IteratorImpl;
 
     /// Held internal, usually optimized, mesh.
     InternalMeshType internal;
@@ -259,13 +257,10 @@ struct SimpleMeshAdapter: public Mesh<dim> {
         return &internal;
     }
 
-    virtual std::size_t size() const {
-        return internal.size();
-    }
-
-    virtual typename Mesh<dim>::Iterator begin() { return typename Mesh<dim>::Iterator(new IteratorImpl(internal.begin())); }
-
-    virtual typename Mesh<dim>::Iterator end() { return typename Mesh<dim>::Iterator(new IteratorImpl(internal.end())); }
+    // Mesh<dim> methods implementation:
+    virtual std::size_t size() const { return internal.size(); }
+    virtual typename Mesh<dim>::Iterator begin() const { return makeMeshIterator(internal.begin()); }
+    virtual typename Mesh<dim>::Iterator end() const { return makeMeshIterator(internal.end()); }
 
 };
 

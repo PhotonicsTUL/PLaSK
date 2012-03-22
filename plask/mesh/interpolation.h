@@ -42,7 +42,7 @@ For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshTyp
 @code
 template <typename DataT>    //for any data type
 struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<typename MyMeshType::Space>& dst_mesh, std::vector<DataT>& dst_vec) {
+    static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, std::vector<DataT>& dst_vec) {
 
         // here comes your interpolation code
     }
@@ -55,7 +55,7 @@ To implement the interpolation version for the 'double' type, you should write:
 @code
 template <>
 struct plask::InterpolationAlgorithm<MyMeshType, double, plask::LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh<typename MyMeshType::Space>& dst_mesh, std::vector<double>& dst_vec) {
+    static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, std::vector<double>& dst_vec) {
 
         // interpolation code for vectors of doubles
     }

@@ -236,9 +236,9 @@ struct RectilinearMesh2d: public Mesh<2> {
     ///@return iterator referring to the past-the-end point in this mesh
     const_iterator end_fast() const { return const_iterator(this, size()); }
 
-    virtual typename Mesh<2>::Iterator begin() { return makeMeshIterator(begin_fast()); }
-
-    virtual typename Mesh<2>::Iterator end() { return makeMeshIterator(end_fast()); }
+    //implement Mesh<2> polimorphic iterators:
+    virtual typename Mesh<2>::Iterator begin() const { return makeMeshIterator(begin_fast()); }
+    virtual typename Mesh<2>::Iterator end() const { return makeMeshIterator(end_fast()); }
 
     /**
      * Get number of points in mesh.
