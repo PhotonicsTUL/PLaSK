@@ -26,7 +26,7 @@ class RectilinearMesh2d: public Mesh<2> {
     typedef std::size_t index_ft(const RectilinearMesh2d* mesh, std::size_t c0_index, std::size_t c1_index);
     typedef std::size_t index01_ft(const RectilinearMesh2d* mesh, std::size_t mesh_index);
 
-    // our own virtual table, changable in run-time:
+    // our own virtual table, changeable in run-time:
     index_ft* index_f;
     index01_ft* index0_f;
     index01_ft* index1_f;

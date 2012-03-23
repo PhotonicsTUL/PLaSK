@@ -44,16 +44,31 @@ std::string RectilinearMesh1d__repr__(const RectilinearMesh1d& self) {
 
 
 
-shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__empty() {
-    return make_shared<RectilinearMesh2d>();
+void RectilinearMesh2d__setOrdering(RectilinearMesh2d& self, std::string order) {
+    if (order == "01") self.setIterationOrder(RectilinearMesh2d::NORMAL_ORDER);
+    else if (order == "10") self.setIterationOrder(RectilinearMesh2d::TRANSPOSED_ORDER);
+    else {
+        PyErr_SetString(PyExc_ValueError, "order must be either '01' or '10'");
+        throw py::error_already_set();
+    }
 }
 
-shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__axes(const RectilinearMesh1d& axis0, const RectilinearMesh1d& axis1) {
-    return make_shared<RectilinearMesh2d>(axis0, axis1);
+shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__empty(std::string order) {
+    auto mesh = make_shared<RectilinearMesh2d>();
+    RectilinearMesh2d__setOrdering(*mesh, order);
+    return mesh;
 }
 
-shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__geometry(const GeometryElementD<2>& geometry) {
-    return make_shared<RectilinearMesh2d>(geometry);
+shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__axes(const RectilinearMesh1d& axis0, const RectilinearMesh1d& axis1, std::string order) {
+    auto mesh = make_shared<RectilinearMesh2d>(axis0, axis1);
+    RectilinearMesh2d__setOrdering(*mesh, order);
+    return mesh;
+}
+
+shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__geometry(const GeometryElementD<2>& geometry, std::string order) {
+    auto mesh = make_shared<RectilinearMesh2d>(geometry);
+    RectilinearMesh2d__setOrdering(*mesh, order);
+    return mesh;
 }
 
 Vec<2,double> RectilinearMesh2d__getitem__(const RectilinearMesh2d& self, py::object index) {
@@ -84,15 +99,6 @@ void RectilinearMesh2d_setaxis1(RectilinearMesh2d& self, py::object points) {
     std::vector<double> data(begin, end);
     std::sort(data.begin(), data.end());
     self.c1.addOrderedPoints(data.begin(), data.end(), data.size());
-}
-
-void RectilinearMesh2d__setOrdering(RectilinearMesh2d& self, std::string order) {
-    if (order == "01") self.setIterationOrder(RectilinearMesh2d::NORMAL_ORDER);
-    else if (order == "10") self.setIterationOrder(RectilinearMesh2d::TRANSPOSED_ORDER);
-    else {
-        PyErr_SetString(PyExc_ValueError, "order must be either '01' or '10'");
-        throw py::error_already_set();
-    }
 }
 
 
@@ -187,14 +193,15 @@ void register_mesh_rectilinear()
 
     py::class_<RectilinearMesh2d, shared_ptr<RectilinearMesh2d>, py::bases<Mesh<2>>>("Rectilinear2D",
         "Two-dimensional mesh\n\n"
-        "Rectilinear2D()\n    create empty mesh\n\n"
-        "Rectilinear2D(axis0,axis1)\n    create mesh with axes supplied as meshes.Rectilinear1D\n\n"
-        "Rectilinear2D(geometry)\n    create coarse mesh based on bounding boxes of geometry elements\n\n",
+        "Rectilinear2D(ordering='01')\n    create empty mesh\n\n"
+        "Rectilinear2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as meshes.Rectilinear1D\n\n"
+        "Rectilinear2D(geometry, ordering='01')\n    create coarse mesh based on bounding boxes of geometry elements\n\n"
+        "ordering can be either '01', '10' and specifies initial ordering of the mesh points",
         py::no_init
         )
-        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__empty))
-        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__axes, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"))))
-        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__geometry, py::default_call_policies(), (py::arg("geometry"))))
+        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__empty, py::default_call_policies(), (py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__axes, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="01")))
         .add_property("axis0", py::make_getter(&RectilinearMesh2d::c0), &RectilinearMesh2d_setaxis0,
                       "Rectilinear1D mesh containing first (transverse) axis of the mesh")
         .add_property("axis1", py::make_getter(&RectilinearMesh2d::c1), &RectilinearMesh2d_setaxis1,
@@ -207,7 +214,7 @@ void register_mesh_rectilinear()
         .def("index0", &RectilinearMesh2d::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RectilinearMesh2d::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
         .def("setOptimalOrdering", &RectilinearMesh2d::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
-        .def("setOrdering", &RectilinearMesh2d__setOrdering, "Set desired ordering of the points in this mesh", (py::arg("order")))
+        .def("setOrdering", &RectilinearMesh2d__setOrdering, "Set desired ordering of the points in this mesh", (py::arg("ordering")))
     ;
 
     py::class_<RectilinearMesh3d, shared_ptr<RectilinearMesh3d>, py::bases<Mesh<3>>>("Rectilinear3D",
