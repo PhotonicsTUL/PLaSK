@@ -21,7 +21,17 @@ namespace plask {
  * - c1 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y) such that x is in c0 and y is in c1.
  */
-struct RectilinearMesh2d: public Mesh<2> {
+class RectilinearMesh2d: public Mesh<2> {
+    
+    typedef std::size_t index_ft(const RectilinearMesh2d* mesh, std::size_t c0_index, std::size_t c1_index);
+    typedef std::size_t index01_ft(const RectilinearMesh2d* mesh, std::size_t mesh_index);
+    
+    //our own virtual table, changable in run-time:
+    index_ft* index_f;
+    index01_ft* index0_f;
+    index01_ft* index1_f;
+    
+public:
 
     ///First coordinate of points in this mesh.
     RectilinearMesh1d c0;
@@ -29,9 +39,37 @@ struct RectilinearMesh2d: public Mesh<2> {
     ///Second coordinate of points in this mesh.
     RectilinearMesh1d c1;
 
+    /**
+     * Iteration orders:
+     * - normal iteration order (NORMAL_ORDER) is:
+     * (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
+     * - swapped iteration order (SWAPPED_ORDER) is:
+     * (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
+     * @see setIterationOrder, getIterationOrder, setOptimumIterationOrder
+     */
+    enum IterationOrder { NORMAL_ORDER, SWAPPED_ORDER };
+    
+    /**
+     * Choose iteration order.
+     * @param order iteration order to use
+     * @see IterationOrder
+     */
+    void setIterationOrder(IterationOrder order);
+    
+    /**
+     * Get iteration order.
+     * @return iteration order used by this mesh
+     * @see IterationOrder
+     */
+    IterationOrder getIterationOrder() const;
+    
+    /**
+     * Set iteration order to the shortest axis changes fastest.
+     */
+    void setOptimumIterationOrder();
 
     /// Construct an empty mesh
-    RectilinearMesh2d() {}
+    RectilinearMesh2d(IterationOrder iterationOrder = NORMAL_ORDER) { setIterationOrder(iterationOrder); }
 
     /**
      * Construct mesh with based on gived 1D meshes
@@ -39,16 +77,17 @@ struct RectilinearMesh2d: public Mesh<2> {
      * @param mesh0 mesh for the first coordinate
      * @param mesh1 mesh for the second coordinate
      */
-    RectilinearMesh2d(const RectilinearMesh1d& mesh0, const RectilinearMesh1d& mesh1) :
-        c0(mesh0), c1(mesh1) {}
+    RectilinearMesh2d(const RectilinearMesh1d& mesh0, const RectilinearMesh1d& mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
+        c0(mesh0), c1(mesh1) { setIterationOrder(iterationOrder); }
 
     /**
      * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
      *
      * @param geometry geometry in which bounding boxes are searched
      */
-    RectilinearMesh2d(const GeometryElementD<2>& geometry) {
+    RectilinearMesh2d(const GeometryElementD<2>& geometry, IterationOrder iterationOrder = NORMAL_ORDER) {
         buildFromGeometry(geometry);
+        setIterationOrder(iterationOrder);
     }
 
     /**
@@ -56,8 +95,9 @@ struct RectilinearMesh2d: public Mesh<2> {
      *
      * @param geometry geometry in which bounding boxes are searched
      */
-    RectilinearMesh2d(shared_ptr<const GeometryElementD<2>> geometry) {
+    RectilinearMesh2d(shared_ptr<const GeometryElementD<2>> geometry, IterationOrder iterationOrder = NORMAL_ORDER) {
         buildFromGeometry(*geometry);
+        setIterationOrder(iterationOrder);
     }
 
     /**
@@ -166,8 +206,8 @@ struct RectilinearMesh2d: public Mesh<2> {
      * @param c1_index index of c1, from 0 to c1.size()-1
      * @return this mesh index, from 0 to size()-1
      */
-    virtual std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
-        return c0_index + c0.size() * c1_index;
+    std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
+        return index_f(this, c0_index, c1_index);
     }
 
     /**
@@ -175,8 +215,8 @@ struct RectilinearMesh2d: public Mesh<2> {
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c0, from 0 to c0.size()-1
      */
-    virtual std::size_t index0(std::size_t mesh_index) const {
-        return mesh_index % c0.size();
+    std::size_t index0(std::size_t mesh_index) const {
+        return index0_f(this, mesh_index);
     }
 
     /**
@@ -184,15 +224,15 @@ struct RectilinearMesh2d: public Mesh<2> {
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c1, from 0 to c1.size()-1
      */
-    virtual std::size_t index1(std::size_t mesh_index) const {
-        return mesh_index / c0.size();
+    std::size_t index1(std::size_t mesh_index) const {
+        return index1_f(this, mesh_index);
     }
 
     /**
      * Get point with given mesh index.
-     * Points are in order: (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
+     * @see IterationOrder
      */
     Vec<2,double> operator[](std::size_t index) const {
         return Vec<2, double>(c0[index0(index)], c1[index1(index)]);
@@ -217,13 +257,6 @@ struct RectilinearMesh2d: public Mesh<2> {
     }
 
     /**
-     * Make and optimized mesh.
-     * It creates the new mesh of the type RectilinearMesh2d or RectilinearMesh2dSwapped so the shortest axis changes fastest.
-     * @return pointer to the new optimized mesh
-     */
-    RectilinearMesh2d* makeOptimized();
-
-    /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate
@@ -235,46 +268,6 @@ struct RectilinearMesh2d: public Mesh<2> {
   private:
 
     void buildFromGeometry(const GeometryElementD<2>& geometry);
-
-};
-
-/**
- * Class simillar to RectilinearMesh2d, which allow to access and iterate over RectilinearMesh2d points in order:
- * (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
- */
-struct RectilinearMesh2dSwapped: public RectilinearMesh2d {
-
-    /// Delegate all construct to RectilinearMesh2d
-    template <typename ...Args>
-    RectilinearMesh2dSwapped(Args&&... args): RectilinearMesh2d(std::forward<Args>(args)...) {}
-
-    /**
-     * Calculate mesh index using indexes of c0 and c1.
-     * @param c0_index index of c0, from 0 to c0.size()-1
-     * @param c1_index index of c1, from 0 to c1.size()-1
-     * @return this mesh index, from 0 to size()-1
-     */
-    std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
-        return c1.size() * c0_index + c1_index;
-    }
-
-    /**
-    * Calculate index of c0 using mesh index.
-    * @param mesh_index this mesh index, from 0 to size()-1
-    * @return index of c0, from 0 to c0.size()-1
-    */
-    std::size_t index0(std::size_t mesh_index) const {
-        return mesh_index / c1.size();
-    }
-
-    /**
-    * Calculate index of c1 using mesh index.
-    * @param mesh_index this mesh index, from 0 to size()-1
-    * @return index of c1, from 0 to c1.size()-1
-    */
-    std::size_t index1(std::size_t mesh_index) const {
-        return mesh_index % c1.size();
-    }
 
 };
 
@@ -337,15 +330,6 @@ struct InterpolationAlgorithm<RectilinearMesh2d, DataT, LINEAR> {
             dst_vec.push_back(src_mesh.interpolateLinear(src_vec, p));
     }
 };
-
-template <typename DataT>    // for any data type
-struct InterpolationAlgorithm<RectilinearMesh2dSwapped, DataT, LINEAR> {
-    static void interpolate(RectilinearMesh2dSwapped& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<2>& dst_mesh, std::vector<DataT>& dst_vec) {
-        for (auto p: dst_mesh)
-            dst_vec.push_back(src_mesh.interpolateLinear(src_vec, p));
-    }
-};
-
 
 }   // namespace plask
 
