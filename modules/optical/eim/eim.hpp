@@ -27,7 +27,9 @@ class EffectiveIndex2dModule: public Module {
     EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry) :
         geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
         inTemperature = 300.;
-        setSimpleMesh();
+        auto child = geometry->getChild();
+        if (!child) throw NoChildException();
+        mesh = make_shared<RectilinearMesh2d>(child);
     }
 
     /**
@@ -36,10 +38,13 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      * \param mesh horizontal mesh for dividing geometry
      */
-    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh1d& mesh) :
+    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh1d& meshx) :
         geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
         inTemperature = 300.;
-        setMesh(mesh);
+        auto child = geometry->getChild();
+        if (!child) throw NoChildException();
+        RectilinearMesh2d meshxy(child);
+        mesh = make_shared<RectilinearMesh2d>(meshx, meshxy.c1);
     }
 
     /**
@@ -52,39 +57,6 @@ class EffectiveIndex2dModule: public Module {
         geometry(geometry), mesh(mesh), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
         inTemperature = 300.;
     }
-
-    /**
-     * Set the simple mesh based on the geometry bounding boxes.
-     **/
-    void setSimpleMesh() {
-        auto child = geometry->getChild();
-        if (!child) throw NoChildException();
-        mesh = make_shared<RectilinearMesh2d>(child);
-    }
-
-
-    /**
-     * Set up the mesh. Horizontal division is provided while vertical one is created basing on the geometry bounding boxes.
-     *
-     * @param meshx Horizontal mesh
-     **/
-    void setMesh(const RectilinearMesh1d& meshx) {
-        auto child = geometry->getChild();
-        if (!child) throw NoChildException();
-        RectilinearMesh2d meshxy(child);
-        mesh = make_shared<RectilinearMesh2d>(meshx, meshxy.c1);
-    }
-
-
-    /**
-     * Set up the mesh. Both horizontal and vertical divisions are provided.
-     *
-     * @param meshxy The mesh
-     **/
-    void setMesh(shared_ptr<RectilinearMesh2d> meshxy) {
-        mesh = meshxy;
-    }
-
 
     virtual std::string getName() const { return "Optical: Effective Index Method 2D"; }
 

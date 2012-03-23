@@ -138,6 +138,9 @@ struct Mesh {
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
 
+    ///@return true only if there are no points in mesh
+    bool empty() const { return size() == 0; }
+
     /// Type of vector representing coordinates in local space
     typedef Vec<dim, double> LocalCoords;
 

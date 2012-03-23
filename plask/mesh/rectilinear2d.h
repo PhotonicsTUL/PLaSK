@@ -22,51 +22,51 @@ namespace plask {
  * Represent all points (x, y) such that x is in c0 and y is in c1.
  */
 class RectilinearMesh2d: public Mesh<2> {
-    
+
     typedef std::size_t index_ft(const RectilinearMesh2d* mesh, std::size_t c0_index, std::size_t c1_index);
     typedef std::size_t index01_ft(const RectilinearMesh2d* mesh, std::size_t mesh_index);
-    
-    //our own virtual table, changable in run-time:
+
+    // our own virtual table, changable in run-time:
     index_ft* index_f;
     index01_ft* index0_f;
     index01_ft* index1_f;
-    
+
 public:
 
-    ///First coordinate of points in this mesh.
+    /// First coordinate of points in this mesh.
     RectilinearMesh1d c0;
 
-    ///Second coordinate of points in this mesh.
+    /// Second coordinate of points in this mesh.
     RectilinearMesh1d c1;
 
     /**
      * Iteration orders:
      * - normal iteration order (NORMAL_ORDER) is:
      * (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
-     * - swapped iteration order (SWAPPED_ORDER) is:
+     * - transposeped iteration order (TRANSPOSED_ORDER) is:
      * (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
-     * @see setIterationOrder, getIterationOrder, setOptimumIterationOrder
+     * @see setIterationOrder, getIterationOrder, setOptimalIterationOrder
      */
-    enum IterationOrder { NORMAL_ORDER, SWAPPED_ORDER };
-    
+    enum IterationOrder { NORMAL_ORDER, TRANSPOSED_ORDER };
+
     /**
      * Choose iteration order.
      * @param order iteration order to use
      * @see IterationOrder
      */
     void setIterationOrder(IterationOrder order);
-    
+
     /**
      * Get iteration order.
      * @return iteration order used by this mesh
      * @see IterationOrder
      */
     IterationOrder getIterationOrder() const;
-    
+
     /**
      * Set iteration order to the shortest axis changes fastest.
      */
-    void setOptimumIterationOrder();
+    void setOptimalIterationOrder();
 
     /// Construct an empty mesh
     RectilinearMesh2d(IterationOrder iterationOrder = NORMAL_ORDER) { setIterationOrder(iterationOrder); }
@@ -172,7 +172,7 @@ public:
      */
     const RectilinearMesh1d& rad_z() const { return c1; }
 
-    ///Type of points in this mesh.
+    /// Type of points in this mesh.
     typedef Vec<2,double> PointType;
 
     /**
@@ -181,13 +181,13 @@ public:
      */
     typedef IndexedIterator< const RectilinearMesh2d, PointType > const_iterator;
 
-    ///@return iterator referring to the first point in this mesh
+    /// @return iterator referring to the first point in this mesh
     const_iterator begin_fast() const { return const_iterator(this, 0); }
 
-    ///@return iterator referring to the past-the-end point in this mesh
+    /// @return iterator referring to the past-the-end point in this mesh
     const_iterator end_fast() const { return const_iterator(this, size()); }
 
-    //implement Mesh<2> polimorphic iterators:
+    // implement Mesh<2> polymorphic iterators:
     virtual typename Mesh<2>::Iterator begin() const { return makeMeshIterator(begin_fast()); }
     virtual typename Mesh<2>::Iterator end() const { return makeMeshIterator(end_fast()); }
 
@@ -197,7 +197,7 @@ public:
      */
     std::size_t size() const { return c0.size() * c1.size(); }
 
-    ///@return true only if there are no points in mesh
+    /// @return true only if there are no points in mesh
     bool empty() const { return c0.empty() || c1.empty(); }
 
     /**

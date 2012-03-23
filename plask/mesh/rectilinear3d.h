@@ -192,7 +192,7 @@ struct RectilinearMesh3d: public Mesh<3> {
      * Get number of points in mesh.
      * @return number of points in mesh
      */
-    std::size_t size() const { return c0.size() * c1.size() * c2.size(); }
+    virtual std::size_t size() const { return c0.size() * c1.size() * c2.size(); }
 
     ///@return true only if there are no points in mesh
     bool empty() const { return c0.empty() || c1.empty() || c2.empty(); }
