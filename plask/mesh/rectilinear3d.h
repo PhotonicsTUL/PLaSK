@@ -184,7 +184,7 @@ struct RectilinearMesh3d: public Mesh<3> {
     ///@return iterator referring to the past-the-end point in this mesh
     const_iterator end_fast() const { return const_iterator(this, size()); }
 
-    //implement Mesh<3> polimorphic iterators:
+    // implement Mesh<3> polymorphic iterators:
     virtual typename Mesh<3>::Iterator begin() const { return makeMeshIterator(begin_fast()); }
     virtual typename Mesh<3>::Iterator end() const { return makeMeshIterator(end_fast()); }
 
@@ -194,7 +194,7 @@ struct RectilinearMesh3d: public Mesh<3> {
      */
     virtual std::size_t size() const { return c0.size() * c1.size() * c2.size(); }
 
-    ///@return true only if there are no points in mesh
+    /// @return true only if there are no points in mesh
     bool empty() const { return c0.empty() || c1.empty() || c2.empty(); }
 
     /**
@@ -283,7 +283,7 @@ struct RectilinearMesh3d: public Mesh<3> {
 
 };
 
-//RectilinearMesh3d method templates implementation
+// RectilinearMesh3d method templates implementation
 template <typename RandomAccessContainer>
 auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index0 = c0.findIndex(point.c0);

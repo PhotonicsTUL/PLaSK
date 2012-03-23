@@ -43,7 +43,7 @@ public:
      * Iteration orders:
      * - normal iteration order (NORMAL_ORDER) is:
      * (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
-     * - transposeped iteration order (TRANSPOSED_ORDER) is:
+     * - transposed iteration order (TRANSPOSED_ORDER) is:
      * (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
      * @see setIterationOrder, getIterationOrder, setOptimalIterationOrder
      */
@@ -72,7 +72,7 @@ public:
     RectilinearMesh2d(IterationOrder iterationOrder = NORMAL_ORDER) { setIterationOrder(iterationOrder); }
 
     /**
-     * Construct mesh with based on gived 1D meshes
+     * Construct mesh with is based on given 1D meshes
      *
      * @param mesh0 mesh for the first coordinate
      * @param mesh1 mesh for the second coordinate

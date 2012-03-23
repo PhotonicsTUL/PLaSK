@@ -15,23 +15,23 @@ std::size_t normal_index1(const RectilinearMesh2d* mesh, std::size_t mesh_index)
 }
 
 
-std::size_t transposeped_index(const RectilinearMesh2d* mesh, std::size_t c0_index, std::size_t c1_index) {
+std::size_t transposed_index(const RectilinearMesh2d* mesh, std::size_t c0_index, std::size_t c1_index) {
     return mesh->c1.size() * c0_index + c1_index;
 }
 
-std::size_t transposeped_index0(const RectilinearMesh2d* mesh, std::size_t mesh_index) {
+std::size_t transposed_index0(const RectilinearMesh2d* mesh, std::size_t mesh_index) {
     return mesh_index / mesh->c1.size();
 }
 
-std::size_t transposeped_index1(const RectilinearMesh2d* mesh, std::size_t mesh_index) {
+std::size_t transposed_index1(const RectilinearMesh2d* mesh, std::size_t mesh_index) {
     return mesh_index % mesh->c1.size();
 }
 
 void RectilinearMesh2d::setIterationOrder(IterationOrder iterationOrder) {
     if (iterationOrder == TRANSPOSED_ORDER) {
-        index_f = transposeped_index;
-        index0_f = transposeped_index0;
-        index1_f = transposeped_index1;
+        index_f = transposed_index;
+        index0_f = transposed_index0;
+        index1_f = transposed_index1;
     } else {
         index_f = normal_index;
         index0_f = normal_index0;
@@ -40,7 +40,7 @@ void RectilinearMesh2d::setIterationOrder(IterationOrder iterationOrder) {
 }
 
 RectilinearMesh2d::IterationOrder RectilinearMesh2d::getIterationOrder() const {
-    return index_f == transposeped_index ? TRANSPOSED_ORDER : NORMAL_ORDER;
+    return index_f == transposed_index ? TRANSPOSED_ORDER : NORMAL_ORDER;
 }
 
 void RectilinearMesh2d::setOptimalIterationOrder() {

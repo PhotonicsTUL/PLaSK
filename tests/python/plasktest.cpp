@@ -62,13 +62,6 @@ void print_ptr(py::object o) {
     std::cerr << "ptr: " << o.ptr() << "\n";
 }
 
-plask::shared_ptr<plask::RectilinearMesh2d> SwapMesh(plask::shared_ptr<plask::RectilinearMesh2d> mesh) {
-    mesh->setIterationOrder(mesh->getIterationOrder()==plask::RectilinearMesh2d::TRANSPOSED_ORDER?
-                            plask::RectilinearMesh2d::NORMAL_ORDER :
-                            plask::RectilinearMesh2d::TRANSPOSED_ORDER);
-    return mesh;
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
@@ -85,7 +78,5 @@ BOOST_PYTHON_MODULE(plasktest)
     py::def("call_chi", &call_chi);
 
     py::def("print_ptr", &print_ptr);
-
-    py::def("swapMesh", SwapMesh);
 
 }

@@ -86,6 +86,15 @@ void RectilinearMesh2d_setaxis1(RectilinearMesh2d& self, py::object points) {
     self.c1.addOrderedPoints(data.begin(), data.end(), data.size());
 }
 
+void RectilinearMesh2d__setOrdering(RectilinearMesh2d& self, std::string order) {
+    if (order == "01") self.setIterationOrder(RectilinearMesh2d::NORMAL_ORDER);
+    else if (order == "10") self.setIterationOrder(RectilinearMesh2d::TRANSPOSED_ORDER);
+    else {
+        PyErr_SetString(PyExc_ValueError, "order must be either '01' or '10'");
+        throw py::error_already_set();
+    }
+}
+
 
 shared_ptr<RectilinearMesh3d> RectilinearMesh3d__init__empty() {
     return make_shared<RectilinearMesh3d>();
@@ -142,6 +151,14 @@ void RectilinearMesh3d_setaxis2(RectilinearMesh3d& self, py::object points) {
     self.c2.addOrderedPoints(data.begin(), data.end(), data.size());
 }
 
+void RectilinearMesh3d__setOrdering(RectilinearMesh2d& self, std::string order) {
+//     else {
+//         PyErr_SetString(PyExc_ValueError, "order must be any permutation of '012'");
+//         throw py::error_already_set();
+//     }
+}
+
+
 
 
 void register_mesh_rectilinear()
@@ -189,8 +206,8 @@ void register_mesh_rectilinear()
         .def("index", &RectilinearMesh2d::index, "Return single index of the point indexed with index0 and index1", (py::arg("index0"), py::arg("index1")))
         .def("index0", &RectilinearMesh2d::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RectilinearMesh2d::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
-        .def("setOptimalOrder", &RectilinearMesh2d::setOptimalIterationOrder, "Set the optimal ordering points in this mesh")
-        //TODO setOrdering
+        .def("setOptimalOrdering", &RectilinearMesh2d::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
+        .def("setOrdering", &RectilinearMesh2d__setOrdering, "Set desired ordering of the points in this mesh", (py::arg("order")))
     ;
 
     py::class_<RectilinearMesh3d, shared_ptr<RectilinearMesh3d>, py::bases<Mesh<3>>>("Rectilinear3D",
@@ -213,6 +230,13 @@ void register_mesh_rectilinear()
         .def("clear", &RectilinearMesh3d::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectilinearMesh3d__getitem__)
         .def("__iter__", py::range(&RectilinearMesh3d::begin, &RectilinearMesh3d::end))
+        .def("index", &RectilinearMesh3d::index, (py::arg("index0"), py::arg("index1"), py::arg("index2")),
+             "Return single index of the point indexed with index0, index1, and index2")
+        .def("index0", &RectilinearMesh3d::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
+        .def("index1", &RectilinearMesh3d::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
+        .def("index2", &RectilinearMesh3d::index2, "Return index in the third axis of the point with given index", (py::arg("index")))
+//         .def("setOptimalOrdering", &RectilinearMesh3d::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
+        .def("setOrdering", &RectilinearMesh3d__setOrdering, "Set desired ordering of the points in this mesh", (py::arg("order")))
     ;
 }
 

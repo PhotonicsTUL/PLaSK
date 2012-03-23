@@ -21,12 +21,12 @@ class Meshes(unittest.TestCase):
     def testSwapped(self):
         self.assertEqual( list(self.mesh2), [plask.vec(1,10), plask.vec(2,10), plask.vec(3,10), plask.vec(1,20), plask.vec(2,20), plask.vec(3,20)] )
 
-        swapped = ptest.swapMesh(self.mesh2)
-        self.assertEqual( list(swapped), [plask.vec(1,10), plask.vec(1,20), plask.vec(2,10), plask.vec(2,20), plask.vec(3,10), plask.vec(3,20)] )
+        self.mesh2.setOrdering("10")
+        self.assertEqual( list(self.mesh2), [plask.vec(1,10), plask.vec(1,20), plask.vec(2,10), plask.vec(2,20), plask.vec(3,10), plask.vec(3,20)] )
 
-        reswapped = ptest.swapMesh(swapped)
-        self.assertEqual( list(reswapped), [plask.vec(1,10), plask.vec(2,10), plask.vec(3,10), plask.vec(1,20), plask.vec(2,20), plask.vec(3,20)] )
+        self.mesh2.setOrdering("01")
+        self.assertEqual( list(self.mesh2), [plask.vec(1,10), plask.vec(2,10), plask.vec(3,10), plask.vec(1,20), plask.vec(2,20), plask.vec(3,20)] )
 
-        self.mesh2.setOptimalOrder()
+        self.mesh2.setOptimalOrdering()
         self.assertEqual( list(self.mesh2), [plask.vec(1,10), plask.vec(1,20), plask.vec(2,10), plask.vec(2,20), plask.vec(3,10), plask.vec(3,20)] )
 
