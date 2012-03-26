@@ -13,5 +13,18 @@ QString printBlock(const plask::Block<dim>& toPrint) {
             .arg(dim).arg(QString(boost::lexical_cast<std::string>(toPrint.size).c_str()));
 }
 
+template <>
+struct ExtImplFor< plask::Block<2> >: public ElementExtensionImplBaseFor< plask::Block<2> > {
+
+    QString toStr(const plask::GeometryElement& el) const { return printBlock(c(el)); }
+
+};
+
+template <>
+struct ExtImplFor< plask::Block<3> >: public ElementExtensionImplBaseFor< plask::Block<3> > {
+
+    QString toStr(const plask::GeometryElement& el) const { return printBlock(c(el)); }
+
+};
 
 #endif // PLASK_GUI_MODEL_EXT_MAP_IMPL_LEAF_H
