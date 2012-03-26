@@ -1,6 +1,7 @@
 #include "tree.h"
 
 #include "document.h"
+#include "modelext/map.h"
 #include "modelext/text.h"
 
 void GeometryTreeItem::ensureInitialized() {
@@ -63,7 +64,7 @@ std::size_t GeometryTreeItem::indexInParent() const {
 }
 
 QString GeometryTreeItem::elementText(plask::GeometryElement& element) const {
-    return toStr(element);
+    return ext(element).toStr();
 }
 
 QVariant GeometryTreeItem::data(int column) const {
@@ -83,8 +84,8 @@ void InContainerTreeItem::constructChildrenItems(const plask::shared_ptr<plask::
 }
 
 QString InContainerTreeItem::elementText(plask::GeometryElement &element) const {
-    if (element.getRealChildCount() == 0) return toStr(element);
-    QString result = toStr(*element.getRealChildAt(0));
+    if (element.getRealChildCount() == 0) return ext(element).toStr();
+    QString result = ext(*element.getRealChildAt(0)).toStr();
     result += "\nat ";
     if (element.getDimensionsCount() == 2) {
         result += toStr(static_cast<plask::Translation<2>&>(element).translation);

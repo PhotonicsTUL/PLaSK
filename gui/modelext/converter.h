@@ -4,6 +4,10 @@
 #include <QRectF>
 #include <plask/geometry/primitives.h>
 
+QT_BEGIN_NAMESPACE
+class QRectF;
+QT_END_NAMESPACE
+
 /** @file
 This file includes convneters between qt and plask primitives.
 */

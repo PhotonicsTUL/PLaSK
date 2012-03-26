@@ -1,22 +1,13 @@
 #ifndef PLASK_GUI_MODEL_EXT_DRAW_H
 #define PLASK_GUI_MODEL_EXT_DRAW_H
 
-#include <QPainter>
-#include <QGraphicsItem>
-
 #include <plask/geometry/element.h>
+#include <QGraphicsItem>
 
 QT_BEGIN_NAMESPACE
 class QPainter;
 class QGraphicsItem;
-class QRectF;
 QT_END_NAMESPACE
-
-void drawElement(const plask::GeometryElement& toDraw, QPainter& painter);
-
-//QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h);
-
-void initElementsDrawers();
 
 /**
  * Wrapper over plask::GeometryElementD<2> which implement QGraphicsItem interface.

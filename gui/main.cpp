@@ -41,8 +41,7 @@
 
 #include <plask/material/db.h>
 
-#include "modelext/draw.h"
-#include "modelext/text.h"
+#include "modelext/map.h"
 
 #include "mainwindow.h"
 
@@ -50,8 +49,7 @@ int main(int argc, char *argv[])
 {
     plask::MaterialsLibraryInit materials_init;
 
-    initElementsDrawers();
-    initElementsPrinters();
+    initModelExtensions();
 
     QApplication app(argc, argv);
     Q_INIT_RESOURCE(plaskgui);
