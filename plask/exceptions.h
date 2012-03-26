@@ -15,7 +15,7 @@ namespace plask {
  */
 struct Exception: public std::runtime_error {
 
-    ///@param msg error message
+    /// @param msg error message
     Exception(const std::string& msg): std::runtime_error(msg) {}
 
     /**
@@ -27,11 +27,11 @@ struct Exception: public std::runtime_error {
 };
 
 /**
- * Exceptions of this class are throw in cases of critical and very unexpected errors (possible plask bugs).
+ * Exceptions of this class are thrownin cases of critical and very unexpected errors (possible plask bugs).
  */
 struct CriticalException: public Exception {
 
-    ///@param msg error message
+    /// @param msg error message
     CriticalException(const std::string& msg): Exception("Critical exception: " + msg) {}
 
     template <typename... T>
@@ -44,7 +44,7 @@ struct CriticalException: public Exception {
 struct NotImplemented: public Exception {
     //std::string methodName;
 
-    ///@param method_name name of not implemented method
+    /// @param method_name name of not implemented method
     NotImplemented(const std::string& method_name)
     : Exception("Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
 
@@ -61,13 +61,24 @@ struct NotImplemented: public Exception {
  */
 struct OutOfBoundException: public Exception {
 
-    ///@param msg error message
+    /// @param msg error message
     OutOfBoundException(const std::string& where, const std::string& argname)
         : Exception("%1%: argument %2% out of bound", where, argname) {}
 
     template <typename BoundTypeWas, typename BoundTypeLo, typename BoundTypeHi>
     OutOfBoundException(const std::string& where, const std::string& argname, const BoundTypeWas& was, const BoundTypeLo& lo, const BoundTypeHi& hi)
         : Exception("%1%: argument %2% out of bound, should be between %3% and %4%, but was %5%.", where, argname, lo, hi, was) {}
+};
+
+/**
+ * This exception shoulb be thrown by modules in case of error in computations.
+ */
+struct ComputationError: public Exception {
+
+    /// @param where name of class/function/operation doing the computations
+    /// @param msg error message
+    ComputationError(const std::string& where, const std::string& msg)
+        : Exception("%1%: %2%", where, msg) {};
 };
 
 //-------------- Connected with providers/receivers: -----------------------
@@ -84,7 +95,7 @@ struct NoProvider: public Exception {
 
 
 /*
- * Exceptions of this class are throw when some string parser find errors.
+ * Exceptions of this class are thrownwhen some string parser find errors.
  */
 /*struct ParseException: public Exception {
     ParseException(): Exception("Parse error.") {}
@@ -107,7 +118,7 @@ class NoSuchMaterial: public Exception {
     }
 
 public:
-    ///@param material_name name of material which not exists
+    /// @param material_name name of material which not exists
     NoSuchMaterial(const std::string& material_name)
         : Exception("No such material: %1%", material_name)/*, materialName(material_name)*/ {}
 
@@ -136,11 +147,11 @@ struct MaterialMethodNotImplemented: public NotImplemented {
 };
 
 /**
- * Exceptions of this class are throw when material string parser find errors.
+ * Exceptions of this class are thrownwhen material string parser find errors.
  */
 struct MaterialParseException: public Exception {
     MaterialParseException(): Exception("Material parse error.") {}
-    ///@param msg error message
+    /// @param msg error message
     MaterialParseException(const std::string& msg): Exception("Material parse error: " + msg) {}
 
     template <typename... T>
@@ -159,7 +170,7 @@ class MaterialCantBeMixedException: public Exception {
     }*/
 
 public:
-    ///@param material_name name of material which not exists
+    /// @param material_name name of material which not exists
     MaterialCantBeMixedException(const std::string& material1name_with_components, const std::string& material2name_with_components, const std::string& common_dopant = "")
         : Exception("Material \"%1%%3%\" can not be mixed with material \"%2%%3%\".",
               material1name_with_components, material2name_with_components, common_dopant.empty() ? "" : ':' + common_dopant)
@@ -169,7 +180,7 @@ public:
 
 //-------------- Connected with XML: -----------------------
 /**
- * Exceptions of this class are throw when required attribute is not found in XML tag.
+ * Exceptions of this class are thrownwhen required attribute is not found in XML tag.
  */
 struct XMLNoAttrException: public Exception {
     /**
@@ -180,14 +191,14 @@ struct XMLNoAttrException: public Exception {
 };
 
 /**
- * Exceptions of this class are throw when XML file/data stream unexpected end.
+ * Exceptions of this class are thrownwhen XML file/data stream unexpected end.
  */
 struct XMLUnexpectedEndException: public Exception {
     XMLUnexpectedEndException(): Exception("Unexpected end of XML data.") {}
 };
 
 /**
- * Exceptions of this class are throw when type of XML element is other than expectation.
+ * Exceptions of this class are thrownwhen type of XML element is other than expectation.
  */
 struct XMLUnexpectedElementException: public Exception {
     /**
@@ -199,14 +210,14 @@ struct XMLUnexpectedElementException: public Exception {
 //-------------- Connected with geometry: -----------------------
 
 /**
- * Exceptions of this class are throw by some geometry element classes when there is no required child.
+ * Exceptions of this class are thrown by some geometry element classes when there is no required child.
  */
 struct NoChildException: public Exception {
     NoChildException(): Exception("No child.") {}
 };
 
 /**
- * Exceptions of this class are throw when called operation on geometry graph will cause cyclic reference.
+ * Exceptions of this class are thrown when called operation on geometry graph will cause cyclic reference.
  */
 struct CyclicReferenceException: public Exception {
     CyclicReferenceException(): Exception("Detected cycle in geometry graph.") {}
@@ -226,7 +237,7 @@ struct NoSuchGeometryElementType: public Exception {
 };
 
 /**
- * Exceptions of this class are throw by some geometry element classes when there is no required child.
+ * Exceptions of this class are thrownby some geometry element classes when there is no required child.
  */
 struct GeometryElementNamesConflictException: public Exception {
 
@@ -262,7 +273,7 @@ struct UnexpectedGeometryElementTypeException: public Exception {
 struct NoSuchAxisNames: public Exception {
     //std::string materialName;
 
-    ///@param axis_names name of axis which not exists
+    /// @param axis_names name of axis which not exists
     NoSuchAxisNames(const std::string& axis_names)
         : Exception("No such axis names \"%1%\".", axis_names) {}
 };
