@@ -161,6 +161,9 @@ QVariant GeometryTreeModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid())
         return QVariant();
 
+    //if (role == Qt::BackgroundRole)
+    //    return index.row() & 1 ? QVariant() : QVariant(QColor(220, 210, 200));
+
     if (role != Qt::DisplayRole)
         return QVariant();
 
@@ -176,6 +179,10 @@ Qt::ItemFlags GeometryTreeModel::flags(const QModelIndex &index) const
 }
 
 QVariant GeometryTreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
+
+    if (role != Qt::DisplayRole)
+        return QVariant();
+
     return "Description";
 }
 

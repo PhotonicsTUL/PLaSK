@@ -7,6 +7,18 @@
 #include "converter.h"
 #include "text.h"
 
+/**
+ * Helper class used in impl_*.h files. Base for ElementExtensionImplBase implementations with some casting methods.
+ */
+template <typename ElementType>
+struct ElementExtensionImplBaseFor: public ElementExtensionImplBase {
+
+    static const ElementType& c(const plask::GeometryElement& el) { return static_cast<const ElementType&>(el); }
+
+    static ElementType& c(plask::GeometryElement& el) { return static_cast<ElementType&>(el); }
+
+};
+
 template <typename plaskGeomElemType>
 struct ExtImplFor: public ElementExtensionImplBase {};
 
