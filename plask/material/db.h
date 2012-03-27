@@ -480,14 +480,6 @@ private:
 
 };
 
-/**
- * Class used to initialize external material library.
- * Its constructor must be defined in the materials library to make sure that this libarary is linked.
- */
-struct MaterialsLibraryInit {
-    MaterialsLibraryInit();
-};
-
 }   // namespace plask
 
 #endif // PLASK__MATERIAL_DB_H

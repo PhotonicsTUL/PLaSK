@@ -1,8 +1,9 @@
 #include <plask/material/db.h>
+#include "init.h"
 
 namespace plask {
 
-MaterialsLibraryInit::MaterialsLibraryInit() {
+void initDefaultMaterials() {
 }
 
 } // namespace plask

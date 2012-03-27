@@ -32,7 +32,7 @@ struct Chart2dLog: public Chart2d<ArgT, ValT> {
 
     Chart2dLog(const std::string& global_prefix, const std::string& axis_arg_name, const std::string& axis_val_name)
     {
-        //chart_name = getUniqueString()
+        //chart_name = axis_arg_name(axis_arg_name)_getUniqueString()
     }
 
     Chart2dLog& operator()(const ArgT& arg, const ValT& val)

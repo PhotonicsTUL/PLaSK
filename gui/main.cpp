@@ -47,7 +47,7 @@
 
 int main(int argc, char *argv[])
 {
-    plask::MaterialsLibraryInit materials_init;
+    //plask::MaterialsLibraryInit materials_init;
 
     initModelExtensions();
 

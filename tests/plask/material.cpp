@@ -1,8 +1,7 @@
 #include <boost/test/unit_test.hpp>
 #include <plask/material/db.h>
 #include "common/dumb_material.h"
-
-plask::MaterialsLibraryInit default_materials; // To import default materials from linked library
+#include "../../materials/init.h"
 
 BOOST_AUTO_TEST_SUITE(material) // MUST be the same as the file name
 
@@ -18,6 +17,7 @@ BOOST_AUTO_TEST_SUITE(material) // MUST be the same as the file name
     }
 
     BOOST_AUTO_TEST_CASE(defaultMaterialDB) {
+        plask::initDefaultMaterials();
         plask::MaterialsDB& db = plask::MaterialsDB::getDefault();
         BOOST_CHECK_EQUAL(db.get("GaN")->name(), "GaN");
     }
