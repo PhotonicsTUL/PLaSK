@@ -23,16 +23,18 @@ DECLARE_ITERATION_ORDER(1,2,0)
 DECLARE_ITERATION_ORDER(2,0,1)
 DECLARE_ITERATION_ORDER(2,1,0)
 
+
 void RectilinearMesh3d::setIterationOrder(IterationOrder iterationOrder) {
 #   define CASE_ITERATION_ORDER(order) \
         case ORDER_##order: index_f = index_##order; index0_f = index0_##order;  index1_f = index1_##order; index2_f = index2_##order; return;
     switch (iterationOrder) {
-        CASE_ITERATION_ORDER(012)
         CASE_ITERATION_ORDER(021)
         CASE_ITERATION_ORDER(102)
         CASE_ITERATION_ORDER(120)
         CASE_ITERATION_ORDER(201)
         CASE_ITERATION_ORDER(210)
+        default:
+            index_f = index_012; index0_f = index0_012;  index1_f = index1_012; index2_f = index2_012; return;
     }
 }
 
@@ -45,7 +47,6 @@ RectilinearMesh3d::IterationOrder RectilinearMesh3d::getIterationOrder() const {
            index_f == index_201 ? ORDER_201 :
                                   ORDER_210;
 }
-
 
 
 void RectilinearMesh3d::setOptimalIterationOrder() {
