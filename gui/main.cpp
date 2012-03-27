@@ -38,6 +38,7 @@
 **
 ****************************************************************************/
 #include <QApplication>
+#include <QLibrary>
 
 #include <plask/material/db.h>
 
@@ -48,6 +49,9 @@
 int main(int argc, char *argv[])
 {
     //plask::MaterialsLibraryInit materials_init;
+
+    QLibrary luad_material_library("plask_materialsdefault");
+    luad_material_library.load();
 
     initModelExtensions();
 
