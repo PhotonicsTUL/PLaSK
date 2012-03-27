@@ -22,13 +22,11 @@ void register_mesh()
     }
 
     py::class_<Mesh<2>, shared_ptr<Mesh<2>>, boost::noncopyable>("Mesh2D", "Base class for every two-dimensional mesh", py::no_init)
-        .def("size", &Mesh<2>::size, "Return the size of the mesh")
-        .def("empty", &Mesh<2>::empty, "Return True if the mesh is empty")
+        .def("__len__", &Mesh<2>::size)
     ;
 
     py::class_<Mesh<3>, shared_ptr<Mesh<3>>, boost::noncopyable>("Mesh3D", "Base class for every two-dimensional mesh", py::no_init)
-        .def("size", &Mesh<3>::size, "Return the size of the mesh")
-        .def("empty", &Mesh<3>::empty, "Return True if the mesh is empty")
+        .def("__len__", &Mesh<3>::size)
     ;
 
     register_mesh_rectilinear();

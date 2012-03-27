@@ -1,6 +1,8 @@
 #include "rootdigger.h"
 using namespace std;
-/*
+
+namespace plask { namespace eim {
+
 vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> impoints) const
 {
 
@@ -8,7 +10,7 @@ vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> im
     int NR = repoints.size();
     int NI = impoints.size();
 
-    logger(LOG_ROOTDIGGER) << "  searching for the root map from " << NR*NI << " points...\n";
+//     logger(LOG_ROOTDIGGER) << "  searching for the root map from " << NR*NI << " points...\n";
 
     // Handle situation with unconvenient number of points in some direction
     // (this is not perfect but we must handle it somehow)
@@ -27,9 +29,9 @@ vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> im
     for (int r = 0; r < NR; r++)
         for (int i = 0; i < NI; i++) {
         try {
-        values[r][i] = abs(solver.char_val(repoints[r] + impoints[i]*I));
+             values[r][i] = abs(value(repoints[r] + impoints[i]*I));
         } catch(...) {
-        values[r][i] = nan("");
+            values[r][i] = NAN;
         // TODO: print warning on screen and handle it in minima search
         }
     }
@@ -60,14 +62,14 @@ vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> im
     delete[] values;
 
     // Log found results
-    if (current_loglevel & LOG_ROOTDIGGER) {
-        logger(LOG_ROOTDIGGER) << "  found map values at: [";
-        for (vector<dcomplex>::iterator map = results.begin(); map != results.end(); map++) {
-            if (map != results.begin()) logger(LOG_ROOTDIGGER) << ", ";
-            logger(LOG_ROOTDIGGER) << str(*map);
-        }
-        logger(LOG_ROOTDIGGER) << "]\n\n";
-    }
+//     if (current_loglevel & LOG_ROOTDIGGER) {
+//         logger(LOG_ROOTDIGGER) << "  found map values at: [";
+//         for (vector<dcomplex>::iterator map = results.begin(); map != results.end(); map++) {
+//             if (map != results.begin()) logger(LOG_ROOTDIGGER) << ", ";
+//             logger(LOG_ROOTDIGGER) << str(*map);
+//         }
+//         logger(LOG_ROOTDIGGER) << "]\n\n";
+//     }
 
     return results;
 }
@@ -108,7 +110,7 @@ vector<dcomplex> RootDigger::searchModes(dcomplex start, dcomplex end, int replo
             dcomplex mode = getMode(map[i]);
             modes.push_back(mode);
         } catch (...) {
-            logger(LOG_ROOTDIGGER) << "  failed to get mode around " <<  str(map[i]) << "\n\n";
+//             logger(LOG_ROOTDIGGER) << "  failed to get mode around " <<  str(map[i]) << "\n\n";
         };
     }
 
@@ -119,10 +121,10 @@ vector<dcomplex> RootDigger::searchModes(dcomplex start, dcomplex end, int replo
 /// Search for a single mode starting from the given point: point
 dcomplex RootDigger::getMode(dcomplex point) const
 {
-    logger(LOG_ROOTDIGGER) << "  searching for the mode with Broyden method starting from "
-                           << str(point) << "...\n";
+//     logger(LOG_ROOTDIGGER) << "  searching for the mode with Broyden method starting from "
+//                            << str(point) << "...\n";
     dcomplex x = Broyden(point);
-    logger(LOG_ROOTDIGGER) << "  found mode at " << str(x) << "\n\n";
+//     logger(LOG_ROOTDIGGER) << "  found mode at " << str(x) << "\n\n";
     return x;
 }
 
@@ -131,7 +133,7 @@ dcomplex RootDigger::getMode(dcomplex point) const
 
 //**************************************************************************
 //**************************************************************************
-//******** The Broyden globaly convergent method for root finding **********
+//******** The Broyden globally convergent method for root finding *********
 //**************************************************************************
 
 //**************************************************************************
@@ -145,18 +147,18 @@ void RootDigger::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
     double xr1 = xr0 + hr, xi1 = xi0 + hi;
     hr = xr1 - xr0; hi = xi1 - xi0;             // trick to reduce finite precission error
 
-    dcomplex Fr = solver.char_val(dcomplex(xr1, xi0)),
-             Fi = solver.char_val(dcomplex(xr0, xi1));
+    dcomplex Fr = value(dcomplex(xr1, xi0)),
+             Fi = value(dcomplex(xr0, xi1));
 
     Jr = (Fr - F) / hr;
     Ji = (Fi - F) / hi;
 }
 
 //**************************************************************************
-// Search for the new point x alond direction p for which
+// Search for the new point x along direction p for which
 // functional f decreased sufficiently
 // g - (approximate) gradient of 1/2(F*F), stpmax - maximum allowed step
-// return true if perfromed step or false if could not find sufficient funtion decrease
+// return true if performed step or false if could not find sufficient function decrease
 bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, double stpmax) const
 {
     if (double absp=abs(p) > stpmax) p *= stpmax/absp; // Ensure step <= stpmax
@@ -180,7 +182,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
         }
 
         x = x0 + lambda*p;
-        F = solver.char_val(x);
+        F = value(x);
         f = 0.5 * (real(F)*real(F) + imag(F)*imag(F));
 
         if (f < f0 + alpha*lambda*slope)        // sufficient function decrease
@@ -210,8 +212,8 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
 
         lambda = max(lambda, 0.1*lambda1);      // guard against too fast decrease of lambda
 
-        logger(LOG_BROYDEN) << "    Broyden step decreased to the fraction "
-                            << str(lambda) << " of original step\n";
+//         logger(LOG_BROYDEN) << "    Broyden step decreased to the fraction "
+//                             << str(lambda) << " of original step\n";
     }
 
 }
@@ -222,7 +224,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
 dcomplex RootDigger::Broyden(dcomplex x) const
 {
     // Compute the initial guess of the function (and check for the root)
-    dcomplex F = solver.char_val(x);
+    dcomplex F = value(x);
     if (abs(F) < tolf_min) return x;
 
     bool restart = true;                    // do we have to recompute Jacobian?
@@ -267,7 +269,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
             if (abs(F) < tolf_max)              // convergence!
                 return x;
             else if (!trueJacobian) {           // first try reinitializing the Jacobian
-                logger(LOG_BROYDEN) << "    reinitializing Jacobian\n";
+//                 logger(LOG_BROYDEN) << "    reinitializing Jacobian\n";
                 restart = true;
             } else {                            // either spurious convergence (local minimum) or failure
                 throw "RootDigger::Broyden: failed to converge";
@@ -277,5 +279,5 @@ dcomplex RootDigger::Broyden(dcomplex x) const
 
     throw "RootDigger::Broyden: maximum number of iterations reached";
 }
-*/
-//**************************************************************************
+
+}} // namespace plask::eim

@@ -1,46 +1,13 @@
-/***************************************************************************
- *  File:   rootdigger.h
- *  Descr:  Class searching roots of char_val
- *  Author: Maciej Dems <maciej.dems@p.lodz.pl>
- *  Id:     $Id: rootdigger.h 405 2012-03-08 10:44:14Z maciek $
- ***************************************************************************/
-
-/***************************************************************************
- *   pslab - A photonic slab simulation tool                               *
- *   Copyright (C) 2005-2011 by Maciej Dems <maciej.dems@p.lodz.pl>        *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
-
-//**************************************************************************
 #ifndef ROOTDIGGER_H
 #define ROOTDIGGER_H
 
-//**************************************************************************
-#include <vector>
-#include <limits>
-#include <string>
-/*
-//**************************************************************************
+#include <plask/plask.hpp>
+
+namespace plask { namespace eim {
+
+
 class RootDigger {
   protected:
-    // The solver providing char_val
-    RootSolverBase& solver;
-    friend class RootSolverBase;
-
     // Parameters for Broyden algorithm
     const double alpha, lambda_min, EPS;
 
@@ -56,6 +23,8 @@ class RootDigger {
     // Look for map browsing through given points
     std::vector<dcomplex> find_map(std::vector<double> repoints, std::vector<double> impoints) const;
 
+    dcomplex value(dcomplex x) const { return 0.; } //TODO
+
   public:
     // Parameters for Broyden algorithm
     double tolx, tolf_min, tolf_max, maxstep;
@@ -64,20 +33,19 @@ class RootDigger {
     int maxiterations;
 
     // Constructors
-    RootDigger(RootSolverBase& solv) : solver(solv),
+//     RootDigger(RootSolverBase& solv) : solver(solv),
+    RootDigger() :
         maxiterations(500),                              // maximum number of iterations
-        tolx(1.0e-11),                              // absolute tolerance on the argument
-        tolf_min(1.0e-15),                          // sufficient tolerance on the function value
-        tolf_max(1.0e-12),                          // required tolerance on the function value
+        tolx(1.0e-07),                              // absolute tolerance on the argument
+        tolf_min(1.0e-12),                          // sufficient tolerance on the function value
+        tolf_max(1.0e-10),                          // required tolerance on the function value
         maxstep(0.1),                              // maximum step in one iteration
         alpha(1.0e-4),                              // ensures sufficient decrease of charval in each step
-        lambda_min(1.0e-7),                         // minimum decresed ratio of the step (lambda)
+        lambda_min(1.0e-7),                         // minimum decreased ratio of the step (lambda)
         EPS(sqrt(std::numeric_limits<double>::epsilon()))// square root of machine precission
     {};
 
-    RootDigger(RootDigger& d) : solver(d.solver), maxiterations(d.maxiterations), tolx(d.tolx),
-                                tolf_min(d.tolf_min), tolf_max(d.tolf_max), alpha(d.alpha),
-                                maxstep(d.maxstep), lambda_min(d.lambda_min), EPS(d.EPS) {};
+    RootDigger(const RootDigger& d) = default;
 
     /// Search for single mode within the region real(start) - real(end),
     // imag(start) - imag(end), divided on: replot for real direction
@@ -105,7 +73,8 @@ class RootDigger {
     // return complex coordinate of the mode
     // return 0 if the mode has not been found
     dcomplex getMode(dcomplex point) const;
+    void solver(std::complex< double > complex);
 };
-*/
-//**************************************************************************
+
+}} // namespace plask::eim
 #endif // ROTDIGGER_H

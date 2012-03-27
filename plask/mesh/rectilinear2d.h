@@ -31,7 +31,7 @@ class RectilinearMesh2d: public Mesh<2> {
     index01_ft* index0_f;
     index01_ft* index1_f;
 
-public:
+  public:
 
     /// First coordinate of points in this mesh.
     RectilinearMesh1d c0;
@@ -206,7 +206,7 @@ public:
      * @param c1_index index of c1, from 0 to c1.size()-1
      * @return this mesh index, from 0 to size()-1
      */
-    std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
+    inline std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
         return index_f(this, c0_index, c1_index);
     }
 
@@ -215,7 +215,7 @@ public:
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c0, from 0 to c0.size()-1
      */
-    std::size_t index0(std::size_t mesh_index) const {
+    inline std::size_t index0(std::size_t mesh_index) const {
         return index0_f(this, mesh_index);
     }
 
@@ -224,7 +224,7 @@ public:
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c1, from 0 to c1.size()-1
      */
-    std::size_t index1(std::size_t mesh_index) const {
+    inline std::size_t index1(std::size_t mesh_index) const {
         return index1_f(this, mesh_index);
     }
 
@@ -234,7 +234,7 @@ public:
      * @return point with given @p index
      * @see IterationOrder
      */
-    Vec<2,double> operator[](std::size_t index) const {
+    inline Vec<2,double> operator[](std::size_t index) const {
         return Vec<2, double>(c0[index0(index)], c1[index1(index)]);
     }
 
@@ -244,7 +244,7 @@ public:
      * @param c1_index index of c1, from 0 to c1.size()-1
      * @return point with given c0 and c1 indexes
      */
-    Vec<2,double> operator()(std::size_t c0_index, std::size_t c1_index) const {
+    inline Vec<2,double> operator()(std::size_t c0_index, std::size_t c1_index) const {
         return Vec<2, double>(c0[c0_index], c1[c1_index]);
     }
 

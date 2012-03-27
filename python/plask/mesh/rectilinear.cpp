@@ -72,6 +72,12 @@ shared_ptr<RectilinearMesh2d> RectilinearMesh2d__init__geometry(const GeometryEl
 }
 
 Vec<2,double> RectilinearMesh2d__getitem__(const RectilinearMesh2d& self, py::object index) {
+    try {
+        int indx = py::extract<int>(index);
+        return self[indx];
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
     int index0 = py::extract<int>(index[0]);
     if (index0 < 0) index0 = self.c0.size() - index0;
     if (index0 < 0 || index0 >= self.c0.size()) {
@@ -115,6 +121,12 @@ shared_ptr<RectilinearMesh3d> RectilinearMesh3d__init__geometry(const GeometryEl
 }
 
 Vec<3,double> RectilinearMesh3d__getitem__(const RectilinearMesh3d& self, py::object index) {
+    try {
+        int indx = py::extract<int>(index);
+        return self[indx];
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
     int index0 = py::extract<int>(index[0]);
     if (index0 < 0) index0 = self.c0.size() - index0;
     if (index0 < 0 || index0 >= self.c0.size()) {
@@ -157,11 +169,17 @@ void RectilinearMesh3d_setaxis2(RectilinearMesh3d& self, py::object points) {
     self.c2.addOrderedPoints(data.begin(), data.end(), data.size());
 }
 
-void RectilinearMesh3d__setOrdering(RectilinearMesh2d& self, std::string order) {
-//     else {
-//         PyErr_SetString(PyExc_ValueError, "order must be any permutation of '012'");
-//         throw py::error_already_set();
-//     }
+void RectilinearMesh3d__setOrdering(RectilinearMesh3d& self, std::string order) {
+    if (order == "012") self.setIterationOrder(RectilinearMesh3d::ORDER_012);
+    else if (order == "021") self.setIterationOrder(RectilinearMesh3d::ORDER_021);
+    else if (order == "102") self.setIterationOrder(RectilinearMesh3d::ORDER_102);
+    else if (order == "120") self.setIterationOrder(RectilinearMesh3d::ORDER_120);
+    else if (order == "201") self.setIterationOrder(RectilinearMesh3d::ORDER_201);
+    else if (order == "210") self.setIterationOrder(RectilinearMesh3d::ORDER_210);
+    else {
+        PyErr_SetString(PyExc_ValueError, "order must be any permutation of '012'");
+        throw py::error_already_set();
+    }
 }
 
 
@@ -177,13 +195,12 @@ void register_mesh_rectilinear()
         .def("__init__", py::make_constructor(&RectilinearMesh1d__init__, py::default_call_policies(), (py::arg("points")=py::object())))
         .def("index", &RectilinearMesh1d::findIndex, "Find index of the point with specified value", (py::arg("value")))
         .def(py::self == py::other<RectilinearMesh1d>())
-        .def("size", &RectilinearMesh1d::size, "Return the size of the mesh")
-        .def("empty", &RectilinearMesh1d::empty, "Return True if the mesh is empty")
         .def("addPoint", &RectilinearMesh1d::addPoint, "Add point to the mesh", (py::arg("value")))
         .def("addPoints", &RectilinearMesh1d_addPoints, "Add sequence of the points to the mesh", (py::arg("points")))
         .def("addPointLinear", &RectilinearMesh1d::addPointsLinear, "Add equally distributed points",
              (py::arg("first"), py::arg("last"), py::arg("count")))
         .def("clear", &RectilinearMesh1d::clear, "Remove all points from the mesh")
+        .def("__len__", &RectilinearMesh1d::size)
         .def("__getitem__", &RectilinearMesh1d__getitem__)
         .def("__str__", &RectilinearMesh1d__str__)
         .def("__repr__", &RectilinearMesh1d__repr__)
@@ -242,7 +259,7 @@ void register_mesh_rectilinear()
         .def("index0", &RectilinearMesh3d::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RectilinearMesh3d::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
         .def("index2", &RectilinearMesh3d::index2, "Return index in the third axis of the point with given index", (py::arg("index")))
-//         .def("setOptimalOrdering", &RectilinearMesh3d::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
+        .def("setOptimalOrdering", &RectilinearMesh3d::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .def("setOrdering", &RectilinearMesh3d__setOrdering, "Set desired ordering of the points in this mesh", (py::arg("order")))
     ;
 }

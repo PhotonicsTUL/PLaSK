@@ -18,7 +18,18 @@ namespace plask {
  * - c2 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y, z) such that x is in c0, y is in c1, z is in c2.
  */
-struct RectilinearMesh3d: public Mesh<3> {
+class RectilinearMesh3d: public Mesh<3> {
+
+    typedef std::size_t index_ft(const RectilinearMesh3d* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index);
+    typedef std::size_t index012_ft(const RectilinearMesh3d* mesh, std::size_t mesh_index);
+
+    // our own virtual table, changeable in run-time:
+    index_ft* index_f;
+    index012_ft* index0_f;
+    index012_ft* index1_f;
+    index012_ft* index2_f;
+
+  public:
 
     /// First coordinate of points in this mesh.
     RectilinearMesh1d c0;
@@ -29,8 +40,38 @@ struct RectilinearMesh3d: public Mesh<3> {
     /// Third coordinate of points in this mesh.
     RectilinearMesh1d c2;
 
+    /**
+     * Iteration orders:
+     * - normal iteration order (ORDER_012) is:
+     *   (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
+     * Every other order is proper permutation of indices
+     * @see setIterationOrder, getIterationOrder, setOptimalIterationOrder
+     */
+    enum IterationOrder { ORDER_012, ORDER_021, ORDER_102, ORDER_120, ORDER_201, ORDER_210 };
+
     /// Construct an empty mesh
-    RectilinearMesh3d() {}
+    RectilinearMesh3d(IterationOrder iterationOrder=ORDER_012) {
+        setIterationOrder(iterationOrder);
+    }
+
+    /**
+     * Choose iteration order.
+     * @param order iteration order to use
+     * @see IterationOrder
+     */
+    void setIterationOrder(IterationOrder order);
+
+    /**
+     * Get iteration order.
+     * @return iteration order used by this mesh
+     * @see IterationOrder
+     */
+    IterationOrder getIterationOrder() const;
+
+    /**
+     * Set iteration order to the shortest axis changes fastest.
+     */
+    void setOptimalIterationOrder();
 
     /**
      * Construct mesh with based on gived 1D meshes
@@ -39,16 +80,9 @@ struct RectilinearMesh3d: public Mesh<3> {
      * @param mesh1 mesh for the second coordinate
      * @param mesh2 mesh for the third coordinate
      */
-    RectilinearMesh3d(const RectilinearMesh1d& mesh0, const RectilinearMesh1d& mesh1, const RectilinearMesh1d& mesh2) :
-        c0(mesh0), c1(mesh1), c2(mesh2) {}
-
-    /**
-     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
-     *
-     * @param geometry geometry in which bounding boxes are searched
-     */
-    RectilinearMesh3d(const GeometryElementD<3>& geometry) {
-        buildFromGeometry(geometry);
+    RectilinearMesh3d(const RectilinearMesh1d& mesh0, const RectilinearMesh1d& mesh1, const RectilinearMesh1d& mesh2, IterationOrder iterationOrder=ORDER_012)
+        : c0(mesh0), c1(mesh1), c2(mesh2) {
+            setIterationOrder(iterationOrder);
     }
 
     /**
@@ -56,8 +90,19 @@ struct RectilinearMesh3d: public Mesh<3> {
      *
      * @param geometry geometry in which bounding boxes are searched
      */
-    RectilinearMesh3d(shared_ptr<const GeometryElementD<3>> geometry) {
+    RectilinearMesh3d(const GeometryElementD<3>& geometry, IterationOrder iterationOrder=ORDER_012) {
+        buildFromGeometry(geometry);
+        setIterationOrder(iterationOrder);
+    }
+
+    /**
+     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+     *
+     * @param geometry geometry in which bounding boxes are searched
+     */
+    RectilinearMesh3d(shared_ptr<const GeometryElementD<3>> geometry, IterationOrder iterationOrder=ORDER_012) {
         buildFromGeometry(*geometry);
+        setIterationOrder(iterationOrder);
     }
 
 
@@ -189,8 +234,8 @@ struct RectilinearMesh3d: public Mesh<3> {
     virtual typename Mesh<3>::Iterator end() const { return makeMeshIterator(end_fast()); }
 
     /**
-     * Get number of points in mesh.
-     * @return number of points in mesh
+     * Get number of points in the mesh.
+     * @return number of points in the mesh
      */
     virtual std::size_t size() const { return c0.size() * c1.size() * c2.size(); }
 
@@ -205,7 +250,7 @@ struct RectilinearMesh3d: public Mesh<3> {
      * @return this mesh index, from 0 to size()-1
      */
     std::size_t index(std::size_t c0_index, std::size_t c1_index, std::size_t c2_index) const {
-        return c0_index + c0.size() * (c1_index + c1.size() * c2_index);
+        return index_f(this, c0_index, c1_index, c2_index);
     }
 
     /**
@@ -213,8 +258,8 @@ struct RectilinearMesh3d: public Mesh<3> {
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c0, from 0 to c0.size()-1
      */
-    std::size_t index0(std::size_t mesh_index) const {
-        return mesh_index % c0.size();
+    inline std::size_t index0(std::size_t mesh_index) const {
+       return index0_f(this, mesh_index);
     }
 
     /**
@@ -222,8 +267,8 @@ struct RectilinearMesh3d: public Mesh<3> {
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c1, from 0 to c1.size()-1
      */
-    std::size_t index1(std::size_t mesh_index) const {
-        return (mesh_index / c0.size()) % c1.size();
+    inline std::size_t index1(std::size_t mesh_index) const {
+        return index1_f(this, mesh_index);
     }
 
     /**
@@ -231,8 +276,8 @@ struct RectilinearMesh3d: public Mesh<3> {
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c2, from 0 to c2.size()-1
      */
-    std::size_t index2(std::size_t mesh_index) const {
-        return mesh_index / c0.size() / c1.size();
+    inline std::size_t index2(std::size_t mesh_index) const {
+        return index2_f(this, mesh_index);
     }
 
     /**
@@ -241,10 +286,8 @@ struct RectilinearMesh3d: public Mesh<3> {
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    Vec<3, double> operator[](std::size_t index) const {
-        const std::size_t i0 = index0(index);
-        index /= c0.size();
-        return operator() (i0, index % c1.size(), index / c1.size());
+    inline Vec<3, double> operator[](std::size_t index) const {
+        return operator() (index0(index), index1(index), index2(index));
     }
 
     /**
@@ -254,7 +297,7 @@ struct RectilinearMesh3d: public Mesh<3> {
      * @param c2_index index of c2, from 0 to c2.size()-1
      * @return point with given c0, c1 and c2 indexes
      */
-    Vec<3, double> operator()(std::size_t c0_index, std::size_t c1_index, std::size_t c2_index) const {
+    inline Vec<3, double> operator()(std::size_t c0_index, std::size_t c1_index, std::size_t c2_index) const {
         return Vec<3, double>(c0[c0_index], c1[c1_index], c2[c2_index]);
     }
 
