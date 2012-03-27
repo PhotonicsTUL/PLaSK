@@ -90,6 +90,7 @@ See also example in plask::Temperature description.
 */
 
 #include <string>
+#include "log/chart.h"
 
 namespace plask {
 
@@ -106,9 +107,18 @@ struct Module {
     virtual ~Module() {}
 
     /**
+     * Get name of module.
      * @return name of this module
      */
     virtual std::string getName() const = 0;
+
+    /**
+     * Get module id (short name without white characters).
+     *
+     * Default implementation return the same as getName() but with all white characters replaced by '_'.
+     * @return id of this module
+     */
+    virtual std::string getId() const;
 
     /**
      * @return description of this module (empty string by default)
@@ -123,6 +133,16 @@ struct Module {
      * By default do nothing.
      */
     //virtual void calculate() {}
+
+    template<typename ArgT = double, typename ValT = double>
+    Chart2dLog<ArgT, ValT> log_chart2d(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
+        return Chart2dLog<ArgT, ValT>(getId(), chart_name, axis_arg_name, axis_val_name);
+    }
+
+    template<typename ArgT = double, typename ValT = double>
+    Chart2dLog<ArgT, ValT> log_chart2d(const std::string& axis_arg_name, const std::string& axis_val_name) {
+        return Chart2dLog<ArgT, ValT>(getId(), axis_arg_name, axis_val_name);
+    }
 
 };
 

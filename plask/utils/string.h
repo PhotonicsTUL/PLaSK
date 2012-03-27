@@ -20,8 +20,9 @@ namespace plask {
 std::tuple<std::string, std::string> splitString2(const std::string& to_split, char splitter);
 
 /**
- * @param pred predictad which return @c true for chars which should stay, and @c false for char which should be removed 
+ * Calculate copy of string @p str without some characters.
  * @param str string to filter
+ * @param pred predictad which return @c true for chars which should stay, and @c false for char which should be removed
  * @return copy of @a str wich includes only chars for which Pred is @c true
  * @tparam Pred functor which take one argument (char) and return bool
  */
@@ -29,6 +30,21 @@ template <typename Pred>
 std::string filterChars(const std::string& str, Pred pred) {
     std::string result;
     for (auto c: str) if (pred(c)) result += c;
+    return result;
+}
+
+/**
+ * Calculate copy of string @p str with some characters replaced by other.
+ * @param str string
+ * @param repl functor which return new character or string for each inpu character
+ * @return copy of @a str witch replaced all characters by results of @p repl
+ * @tparam CharReplacer functor which take one argument (char) and return char or string
+ */
+template <typename CharReplacer>
+std::string replaceChars(const std::string& str, CharReplacer repl) {
+    std::string result;
+    result.reserve(str.size());
+    for (auto c: str) result += repl(c);
     return result;
 }
 
