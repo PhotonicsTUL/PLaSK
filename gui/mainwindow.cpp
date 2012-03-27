@@ -216,7 +216,7 @@ void MainWindow::createDockWindows() {
     QDockWidget *dock = new QDockWidget(tr("Geometry elements tree"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     treeView = new QTreeView(dock);
-    //treeView->setStyleSheet("QTreeView { alternate-background-color: yellow; }");
+    treeView->setAlternatingRowColors(true);    //2 colors for even/odd
     treeView->setModel(&document.treeModel);
     dock->setWidget(treeView);
     addDockWidget(Qt::LeftDockWidgetArea, dock);
