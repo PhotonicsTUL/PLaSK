@@ -5,6 +5,8 @@
 #include <QString>
 #include "tree.h"
 
+#include "utils/propbrowser.h"
+
 /**
  * Represent document with experiment description.
  * Includes geometry.
@@ -18,9 +20,13 @@ public:
 
     GeometryTreeModel treeModel;
 
+    BrowserWithManagers propertiesBrowser;
+
     void open(const QString& fileName);
 
-    Document();
+    Document(QtAbstractPropertyBrowser& browser);
+
+    void selectElement(GeometryTreeItem* treeItem);
 };
 
 #endif // PLASK_GUI_DOCUMENT_H

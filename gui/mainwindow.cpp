@@ -46,6 +46,7 @@
 #include "utils/draw.h"
 
 MainWindow::MainWindow()
+    : propertyTree(new QtTreePropertyBrowser(this)), document(*propertyTree)
 {
     scene = new QGraphicsScene;
     view = new QGraphicsView;
@@ -136,6 +137,13 @@ void MainWindow::about()
                "address, and click standard paragraphs to add them."));
 }
 
+void MainWindow::treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected) {
+    document.propertiesBrowser.browser.clear();
+    if (selected.indexes().empty())
+        return; //deselect
+     ((GeometryTreeItem*) selected.indexes().first().internalPointer())->fillPropertyBrowser(document.propertiesBrowser);
+}
+
 void MainWindow::createActions()
 {
     newDocumentAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
@@ -222,23 +230,25 @@ void MainWindow::createDockWindows() {
     treeView = new QTreeView(dock);
     treeView->setAlternatingRowColors(true);    //2 colors for even/odd
     treeView->setModel(&document.treeModel);
+    //treeView->selectionModel()->
+    QObject::connect(treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+                     this, SLOT(treeSelectionChanged(const QItemSelection &, const QItemSelection &)));
     dock->setWidget(treeView);
     addDockWidget(Qt::LeftDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
 
-
     dock = new QDockWidget(tr("Properties"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+   // propertyTree = new QtTreePropertyBrowser(dock);
 
-    //QGroupBox* group = new QGroupBox(this);
-    //group->setTitle("Group title");
-    QWidget* group = new QWidget(this);
+    /*QWidget* group = new QWidget(this);
     QFormLayout* l = new QFormLayout(group);
     group->setLayout(l);
     l->addRow("ExampleLabel1", new QSpinBox);
     l->addRow("ExampleLabel2", new QSpinBox);
-    dock->setWidget(group);
+    dock->setWidget(group);*/
 
+    dock->setWidget(propertyTree);
     addDockWidget(Qt::LeftDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
 }

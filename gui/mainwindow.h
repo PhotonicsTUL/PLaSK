@@ -44,6 +44,8 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QTreeView>
+#include <QtTreePropertyBrowser>
+#include <QItemSelection>
 #include "document.h"
 
 QT_BEGIN_NAMESPACE
@@ -53,6 +55,7 @@ class QMenu;
 class QTextEdit;
 class QTreeView;
 class QtTreePropertyBrowser;
+class QItemSelection;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -69,9 +72,9 @@ private slots:
     void print();
     void undo();
     void about();
+    void treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 
 private:
-    Document document;
 
     void createActions();
     void createMenus();
@@ -84,6 +87,8 @@ private:
 
     QTreeView *treeView;
     QtTreePropertyBrowser *propertyTree;
+
+    Document document;
 
     QMenu *fileMenu;
     QMenu *editMenu;

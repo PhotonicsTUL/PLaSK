@@ -1,6 +1,6 @@
 #include "document.h"
 
-Document::Document(): treeModel(*this) {
+Document::Document(QtAbstractPropertyBrowser& browser): treeModel(*this), propertiesBrowser(browser) {
 }
 
 void Document::open(const QString &fileName) {

@@ -1,5 +1,9 @@
-#ifndef PLASK_GUI_DRAW_H
-#define PLASK_GUI_DRAW_H
+#ifndef PLASK_GUI_UTILS_DRAW_H
+#define PLASK_GUI_UTILS_DRAW_H
+
+/** @file
+ * This file includes utils functions and classes connected with drawing in QT.
+ */
 
 #include <QTransform>
 
@@ -10,4 +14,4 @@ QT_END_NAMESPACE
 /// Flip vertical matrix
 extern const QTransform flipVertical;
 
-#endif // PLASK_GUI_DRAW_H
+#endif // PLASK_GUI_UTILS_DRAW_H

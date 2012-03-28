@@ -6,6 +6,8 @@
 #include <plask/geometry/element.h>
 #include <plask/memory.h>
 
+#include "utils/propbrowser.h"
+
 QT_BEGIN_NAMESPACE
 class QAbstractItemModel;
 class QObject;
@@ -120,9 +122,16 @@ public:
     /**
      * @return string returned by elementText or empty QVariant if this wraps non-existing element
      */
-    QVariant data(int column) const;
+    QVariant data(int column);
 
+    /// @return icon
     const QPixmap& icon() { ensureInitialized(); return miniature; }
+
+    /**
+     * Add properties of this item to browser.
+     */
+    virtual void fillPropertyBrowser(BrowserWithManagers& browser);
+
 };
 
 /**
@@ -141,6 +150,8 @@ struct InContainerTreeItem: public GeometryTreeItem {
     virtual void constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem);
 
     virtual QString elementText(plask::GeometryElement& element) const;
+
+    virtual void fillPropertyBrowser(BrowserWithManagers& browser);
 };
 
 

@@ -97,6 +97,10 @@ QString ElementExtensionImplBase::toStr(const plask::GeometryElement& el) const 
         .arg(el.getChildCount());
 }
 
+void ElementExtensionImplBase::setupPropertiesBrowser(plask::GeometryElement& el, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+
+}
+
 /*QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment

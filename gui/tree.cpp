@@ -70,11 +70,17 @@ QString GeometryTreeItem::elementText(plask::GeometryElement& element) const {
     return ext(element).toStr();
 }
 
-QVariant GeometryTreeItem::data(int column) const {
+QVariant GeometryTreeItem::data(int column) {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
         return elementText(*e);
     } else  //should never happen
         QVariant();
+}
+
+void GeometryTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
+    if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
+        ext(*e).setupPropertiesBrowser(browser);
+    }
 }
 
 // ---------- InContainerTreeItem -----------
@@ -94,6 +100,15 @@ QString InContainerTreeItem::elementText(plask::GeometryElement &element) const 
     } else
         result += toStr(static_cast<plask::Translation<3>&>(element).translation);
     return result;
+}
+
+void InContainerTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
+    if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
+        //auto p = parent();  //should be a container
+        //if (p) //fill properties depents from parents, translation, etc.
+        if (e->getRealChildCount() == 0) return;
+        ext(*e->getRealChildAt(0)).setupPropertiesBrowser(browser);
+    }
 }
 
 
