@@ -138,10 +138,10 @@ void MainWindow::about()
 }
 
 void MainWindow::treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected) {
-    document.propertiesBrowser.browser.clear();
-    if (selected.indexes().empty())
-        return; //deselect
-     ((GeometryTreeItem*) selected.indexes().first().internalPointer())->fillPropertyBrowser(document.propertiesBrowser);
+    if (selected.indexes().empty()) {
+        document.selectElement(0);  //deselect
+    } else
+        document.selectElement((GeometryTreeItem*) selected.indexes().first().internalPointer());
 }
 
 void MainWindow::createActions()
