@@ -6,7 +6,10 @@
 
 void GeometryTreeItem::ensureInitialized() {
     if (initialized) return;
-    if (auto e = element.lock()) constructChildrenItems(e);
+    if (auto e = element.lock()) {
+        constructChildrenItems(e);
+        miniature = ext(*e).getMiniature(50, 50);
+    }
     initialized = true;
 }
 
@@ -73,7 +76,6 @@ QVariant GeometryTreeItem::data(int column) const {
     } else  //should never happen
         QVariant();
 }
-
 
 // ---------- InContainerTreeItem -----------
 
@@ -161,16 +163,15 @@ QVariant GeometryTreeModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid())
         return QVariant();
 
-    //if (role == Qt::BackgroundRole)
-    //    return index.row() & 1 ? QVariant() : QVariant(QColor(220, 210, 200));
+    GeometryTreeItem* item = static_cast<GeometryTreeItem*>(index.internalPointer());
 
-    //if (role == Qt::DecorationRole)
-    //
+    if (role == Qt::DecorationRole)
+        return item->icon();
 
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    return static_cast<GeometryTreeItem*>(index.internalPointer())->data(index.column());
+    return item->data(index.column());
 }
 
 Qt::ItemFlags GeometryTreeModel::flags(const QModelIndex &index) const

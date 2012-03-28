@@ -47,22 +47,47 @@ void ElementExtensionImplBase::draw(const plask::GeometryElement& toDraw, QPaint
     }
 }
 
-void ElementExtensionImplBase::drawMiniature(const plask::GeometryElement& toDraw, QPainter& painter, qreal w, qreal h) {
+void ElementExtensionImplBase::drawMiniature(const plask::GeometryElement& toDraw, QPainter& painter, qreal w, qreal h) const {
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
+
     QTransform transformBackup = painter.transform();
+
     painter.setTransform(flipVertical);
+    painter.translate(0.0, -h);
+
     plask::Box2d bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
-    painter.translate(bb.lower.tran, bb.lower.up);
+
     plask::Vec<2, double> s = bb.size();
     double scale = std::min(w / s.tran, h / s.up);
     painter.scale(scale, scale);
+
+    painter.translate(-bb.lower.tran, -bb.lower.up);
+
     draw(toDraw, painter);
+
     painter.setTransform(transformBackup);
 }
 
-QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {
+QPixmap ElementExtensionImplBase::getMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) const {
+    if (toDraw.getDimensionsCount() != 2)
+        return QPixmap(); //we draw 2d only at this moment
 
+    //TODO do not calc. bb. two times
+    plask::Vec<2, double> s = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox().size();
+    double obj_prop = s.tran / s.up;
+    if (obj_prop > w / h) { //obj. to wide
+        h = w / obj_prop;
+    } else  //obj to high
+        w = h * obj_prop;
+
+    QPixmap result(w+1, h+1);
+    result.fill(QColor(255, 255, 255, 0));
+    if (w < 1.0 || h < 1.0) return result;  //to small miniature
+    QPainter painter;
+    painter.begin(&result);           // paint in picture
+    drawMiniature(toDraw, painter, w-1.0, h-1.0);   //-1.0 for typical pen size
+    return result;
 }
 
 QString ElementExtensionImplBase::toStr(const plask::GeometryElement& el) const {

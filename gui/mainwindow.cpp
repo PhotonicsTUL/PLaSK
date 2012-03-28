@@ -92,6 +92,8 @@ void MainWindow::open() {
     view->setTransform(flipVertical);
     view->scale(10.0, 10.0);
     scene->addItem(new GeometryElementItem(document.manager.getRootElement<plask::GeometryElementD<2>>(0)));
+    scene->addLine(-10.0, 0.0, 10.0, 0.0, QPen(Qt::red));
+    scene->addLine(0.0, -10.0, 0.0, 10.0, QPen(Qt::red));
 }
 
 

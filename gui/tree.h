@@ -2,6 +2,7 @@
 #define PLASK_GUI_TREE_H
 
 #include <QAbstractItemModel>
+#include <QPixmap>
 #include <plask/geometry/element.h>
 #include <plask/memory.h>
 
@@ -9,6 +10,7 @@ QT_BEGIN_NAMESPACE
 class QAbstractItemModel;
 class QObject;
 class QModelIndex;
+class QPixmap;
 QT_END_NAMESPACE
 
 /**
@@ -19,6 +21,9 @@ class GeometryTreeItem {
 protected:
 
     QList<GeometryTreeItem*> childItems;
+
+    /// Cache for miniature
+    QPixmap miniature;
 
     //here can cache miniature
 
@@ -116,6 +121,8 @@ public:
      * @return string returned by elementText or empty QVariant if this wraps non-existing element
      */
     QVariant data(int column) const;
+
+    const QPixmap& icon() { ensureInitialized(); return miniature; }
 };
 
 /**
