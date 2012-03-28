@@ -33,7 +33,9 @@ struct ElementExtensionImplBase {
      */
     virtual void draw(const plask::GeometryElement& toDraw, QPainter& painter) const;
 
-    //QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h);
+    virtual void drawMiniature(const plask::GeometryElement& toDraw, QPainter& painter, qreal w, qreal h);
+
+    QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h);
 
     /**
      * Get string representation of given element.

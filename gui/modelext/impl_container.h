@@ -38,14 +38,14 @@ QString printMultiStack(const plask::MultiStackContainer<dim>& toPrint) {
 template <>
 struct ExtImplFor< plask::MultiStackContainer<2> >: public ElementExtensionImplBaseFor< plask::MultiStackContainer<2> > {
 
-    QString toStr(const plask::GeometryElement& el) const { return printStack(c(el)); }
+    QString toStr(const plask::GeometryElement& el) const { return printMultiStack(c(el)); }
 
 };
 
 template <>
 struct ExtImplFor< plask::MultiStackContainer<3> >: public ElementExtensionImplBaseFor< plask::MultiStackContainer<3> > {
 
-    QString toStr(const plask::GeometryElement& el) const { return printStack(c(el)); }
+    QString toStr(const plask::GeometryElement& el) const { return printMultiStack(c(el)); }
 
 };
 

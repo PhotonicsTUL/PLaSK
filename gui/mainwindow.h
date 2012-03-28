@@ -52,6 +52,7 @@ class QListWidget;
 class QMenu;
 class QTextEdit;
 class QTreeView;
+class QtTreePropertyBrowser;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -82,6 +83,7 @@ private:
     QGraphicsScene *scene;
 
     QTreeView *treeView;
+    QtTreePropertyBrowser *propertyTree;
 
     QMenu *fileMenu;
     QMenu *editMenu;

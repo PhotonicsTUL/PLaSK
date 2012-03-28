@@ -164,6 +164,9 @@ QVariant GeometryTreeModel::data(const QModelIndex &index, int role) const {
     //if (role == Qt::BackgroundRole)
     //    return index.row() & 1 ? QVariant() : QVariant(QColor(220, 210, 200));
 
+    //if (role == Qt::DecorationRole)
+    //
+
     if (role != Qt::DisplayRole)
         return QVariant();
 

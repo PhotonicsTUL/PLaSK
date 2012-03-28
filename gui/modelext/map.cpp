@@ -3,9 +3,12 @@
 #include <unordered_map>
 #include <typeinfo>
 #include <typeindex>
+#include <algorithm>
+
 
 #include "converter.h"
 #include "text.h"
+#include "../utils/draw.h"
 
 /**
  * Helper class used in impl_*.h files. Base for ElementExtensionImplBase implementations with some casting methods.
@@ -35,12 +38,31 @@ void ElementExtensionImplBase::draw(const plask::GeometryElement& toDraw, QPaint
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
     if (toDraw.isLeaf()) {
-        painter.fillRect(toQt(static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox()), QColor(150, 100, 100));
-        painter.drawRect(toQt(static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox()));
+        auto bb = toQt(static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox());
+        painter.fillRect(bb, QColor(150, 100, 100));
+        painter.drawRect(bb);
     } else {
         for (std::size_t i = 0; i < toDraw.getChildCount(); ++i)
             ext(*toDraw.getChildAt(i)).draw(painter);
     }
+}
+
+void ElementExtensionImplBase::drawMiniature(const plask::GeometryElement& toDraw, QPainter& painter, qreal w, qreal h) {
+    if (toDraw.getDimensionsCount() != 2)
+        return; //we draw 2d only at this moment
+    QTransform transformBackup = painter.transform();
+    painter.setTransform(flipVertical);
+    plask::Box2d bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
+    painter.translate(bb.lower.tran, bb.lower.up);
+    plask::Vec<2, double> s = bb.size();
+    double scale = std::min(w / s.tran, h / s.up);
+    painter.scale(scale, scale);
+    draw(toDraw, painter);
+    painter.setTransform(transformBackup);
+}
+
+QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {
+
 }
 
 QString ElementExtensionImplBase::toStr(const plask::GeometryElement& el) const {
