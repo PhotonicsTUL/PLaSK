@@ -8,8 +8,9 @@ enum LogLevel {
 };
 
 template<typename ...Args>
-void log(LogLevel level, Args&&... params);
+inline void log(LogLevel level, Args&&... params) {
     // format(std::forward<Args>(params)...);
+}
 
 }   // namespace plask
 

@@ -90,6 +90,7 @@ See also example in plask::Temperature description.
 */
 
 #include <string>
+#include "log/log.h"
 #include "log/chart.h"
 
 namespace plask {
@@ -143,6 +144,9 @@ struct Module {
     Chart2dLog<ArgT, ValT> log_chart2d(const std::string& axis_arg_name, const std::string& axis_val_name) {
         return Chart2dLog<ArgT, ValT>(getId(), axis_arg_name, axis_val_name);
     }
+
+    template<typename ...Args>
+    void log(LogLevel level, Args&&... params) {}
 
 };
 
