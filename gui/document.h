@@ -27,7 +27,7 @@ public:
     Document(QtAbstractPropertyBrowser& browser);
 
     void selectElement(GeometryTreeItem* treeItem) {
-        propertiesBrowser.browser.clear();
+        propertiesBrowser.clear();
         if (treeItem == 0) return;
         treeItem->fillPropertyBrowser(propertiesBrowser);
     }

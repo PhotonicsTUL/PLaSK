@@ -35,7 +35,7 @@ GeometryElement::ToBlockChanger::ToBlockChanger(const shared_ptr<const GeometryE
 }
 
 GeometryElement::~GeometryElement() {
-    changed(Event(*this, Event::DELETE));
+    fireChanged(Event::DELETE);
 }
 
 bool GeometryElement::Subtree::hasBranches() const {

@@ -24,6 +24,11 @@ struct ExtImplFor< plask::Block<2> >: public ElementExtensionImplBaseFor< plask:
         QtProperty *size = managers.sizeF.addProperty("size");
         managers.sizeF.setValue(size, toQtSize(c(el).size));
         dst.addProperty(size);
+        managers.connect<FunctorSlot::PropertyQSizeF>(
+                    &managers.sizeF,
+                    SIGNAL(valueChanged(QtProperty*, const QSizeF &)),
+                    [&](QtProperty*, const QSizeF &v) { c(el).setSize(v.width(), v.height()); }
+        );
     }
 
 };

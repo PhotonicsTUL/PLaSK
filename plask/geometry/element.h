@@ -52,18 +52,33 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     struct Event {
 
-        enum Type { SHAPE = 1, MATERIAL = 1<<1, DELETE = 1<<2 };    //??
+        enum Flags {
+            DELETE = 1,     ///< is deleted
+            RESIZE = 1<<1     ///< size could changed
+        };
 
     private:
         GeometryElement& _source;
-        Type _type;
+        unsigned char _flags;
 
     public:
 
+        /**
+         * Get event source.
+         * @return event source
+         */
         const GeometryElement& source() const { return _source; }
-        const Type type() const { return _type; }
 
-        Event(GeometryElement& source, Type type): _source(source), _type(type) {}
+        /// Event flags
+        unsigned char flags() const { return _flags; }
+        unsigned char flagsWithout(unsigned char flagsToRemove) const { return _flags & ~flagsToRemove; }
+        unsigned char flagsForParent() const { return flagsWithout(GeometryElement::Event::DELETE); }
+
+        bool hasFlag(Flags flag) const { return _flags & flag; }
+        bool isDelete() const { return hasFlag(DELETE); }
+        bool isResize() const { return hasFlag(RESIZE); }
+
+        Event(GeometryElement& source, unsigned char falgs): _source(source), _flags(falgs) {}
         virtual ~Event() {} //for eventual subclassing
     };
 
@@ -163,7 +178,13 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     };
 
+    /// Changed signal, fired when element was changed.
     boost::signals2::signal<void(const Event&)> changed;
+
+    template<typename EventT = Event, typename ...Args>
+    void fireChanged(Args&&... params) {
+        changed(EventT(*this, std::forward<Args>(params)...));
+    }
 
     /**
      * Virtual destructor. Inform all change listeners.

@@ -2,6 +2,8 @@
 #define PLASK__GEOMETRY_TRANSFORM_H
 
 #include "element.h"
+#include <boost/bind.hpp>
+//#include <functional>
 
 namespace plask {
 
@@ -16,14 +18,37 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 
     typedef Child_Type ChildType;
 
-    explicit GeometryElementTransform(shared_ptr<ChildType> child = nullptr): _child(child) {}
+    explicit GeometryElementTransform(shared_ptr<ChildType> child = nullptr): _child(child) { connectOnChildChanged(); }
 
-    explicit GeometryElementTransform(ChildType& child): _child(static_pointer_cast<ChildType>(child.shared_from_this())) {}
+    explicit GeometryElementTransform(ChildType& child): _child(static_pointer_cast<ChildType>(child.shared_from_this())) { connectOnChildChanged(); }
+
+    ~GeometryElementTransform() { disconnectOnChildChanged(); }
 
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_TRANSFORM; }
 
     virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
         getChild()->getLeafsToVec(dest);
+    }
+
+    /// Called by child.change signal, call this change
+    virtual void onChildChanged(const GeometryElement::Event& evt) {
+        this->fireChanged(evt.flagsForParent());
+    }
+
+    /// Connect onChildChanged to current child change signal
+    void connectOnChildChanged() {
+        if (_child)
+            _child->changed.connect(
+                boost::bind(&GeometryElementTransform<dim, Child_Type>::onChildChanged, this, _1)
+            );
+    }
+
+    /// Disconnect onChildChanged from current child change signal
+    void disconnectOnChildChanged() {
+        if (_child)
+            _child->changed.disconnect(
+                boost::bind(&GeometryElementTransform<dim, Child_Type>::onChildChanged, this, _1)
+            );
     }
 
     /**
@@ -37,7 +62,12 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after setting the new child.
      * @param child new child
      */
-    void setChildUnsafe(const shared_ptr<ChildType>& child) { _child = child; }
+    void setChildUnsafe(const shared_ptr<ChildType>& child) {
+        if (child == _child) return;
+        disconnectOnChildChanged();
+        _child = child;
+        connectOnChildChanged();
+    }
 
     /**
      * Set new child.

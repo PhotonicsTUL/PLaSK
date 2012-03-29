@@ -43,12 +43,33 @@ protected:
      */
     template <typename PredicateT>
     void removeAll(PredicateT predicate) {
-        children.erease(
-            std::remove_if(children.begin(), children.end(), predicate), children.end()
-        );
+        auto new_end = std::remove_if(children.begin(), children.end(), predicate);
+        for (auto i = new_end; i != children.end(); ++i) disconnectOnChildChanged(**i);
+        children.erease(new_end, children.end());
     }
 
 public:
+
+    //TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
+
+    /// Called by child.change signal, call this change
+    virtual void onChildChanged(const GeometryElement::Event& evt) {
+        this->fireChanged(evt.flagsForParent());
+    }
+
+    /// Connect onChildChanged to current child change signal
+    void connectOnChildChanged(Translation<dim>& child) {
+        child.changed.connect(
+            boost::bind(&GeometryElementContainer::onChildChanged, this, _1)
+        );
+    }
+
+    /// Disconnect onChildChanged from current child change signal
+    void disconnectOnChildChanged(Translation<dim>& child) {
+        child.changed.disconnect(
+            boost::bind(&GeometryElementContainer::onChildChanged, this, _1)
+        );
+    }
 
     /**
      * Get phisicaly stored children (with translations).
@@ -205,6 +226,7 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         shared_ptr<TranslationT> trans_geom(new TranslationT(el, translation));
+        connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
         return PathHints::Hint(shared_from_this(), trans_geom);
     }

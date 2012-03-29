@@ -59,7 +59,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      */
     template <typename PredicateT>
     void remove(PredicateT predicate) {
-        removeAll(predicate);
+        removeAll(predicate);   //TODO this call onChange, but its to early, should be called after updateAllHeights()
         updateAllHeights();
     }
 
@@ -68,7 +68,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      * @param el child(ren) to remove
      */
     void remove(const ChildType* el) {
-        removeAll([&el](ChildType* c) { return c->child == el; });
+        removeAll([&el](ChildType* c) { return c->child == el; });  //TODO this call onChange, but its to early, should be called after updateAllHeights()
         updateAllHeights();
     }
 
@@ -78,8 +78,14 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      */
     void remove(const PathHints& hints) {
         auto cset = hints.getChildren(this);
-        removeAll([&](TranslationT t) { return cset.find(t) != cset.end; });
+        removeAll([&](TranslationT t) { return cset.find(t) != cset.end; });    //TODO this call onChange, but its to early, should be called after updateAllHeights()
         updateAllHeights();
+    }
+
+    /// Called by child.change signal, update heights call this change
+    void onChildChanged(const GeometryElement::Event& evt) {
+        if (evt.isResize()) updateAllHeights(); //TODO find evt source index
+        this->fireChanged(evt.flagsForParent());
     }
 
     protected:
@@ -108,7 +114,10 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      * @param child_index index of child
      */
     void updateHeight(std::size_t child_index) {
-        calcHeight(children[child_index]->child, stackHeights[child_index], children[child_index]->translation.components[growingDirection], children[child_index+1]);
+        calcHeight(children[child_index]->getChild(),
+                   stackHeights[child_index],
+                   children[child_index]->translation.components[growingDirection],
+                   stackHeights[child_index+1]);
     }
 
     /**
@@ -203,6 +212,7 @@ public:
         double el_translation, next_height;
         calcHeight(el, stackHeights.back(), el_translation, next_height);
         shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation);
+        connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
         stackHeights.push_back(next_height);
         aligners.push_back(aligner.clone());
@@ -219,6 +229,7 @@ public:
     PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
         const auto bb = el->getBoundingBox();
         shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[0] - bb.lower.up);
+        connectOnChildChanged(*trans_geom);
         children.insert(children.begin(), trans_geom);
         aligners.insert(aligners.begin(), aligner.clone());
         stackHeights.insert(stackHeights.begin(), stackHeights[0]);

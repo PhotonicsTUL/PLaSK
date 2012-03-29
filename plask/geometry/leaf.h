@@ -103,6 +103,12 @@ struct Block: public GeometryElementLeaf<dim> {
      */
     DVec size;
 
+    void setSize(double tran, double up) {
+        size.tran = tran;
+        size.up = up;
+        this->fireChanged(GeometryElement::Event::RESIZE);
+    }
+
     /**
      * Create block.
      * @param size size/upper corner of block
