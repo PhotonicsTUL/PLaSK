@@ -46,13 +46,13 @@ GeometryReader::ReadAxisNames::ReadAxisNames(GeometryReader &reader)
     if (axis) reader.axisNames = &axisNamesRegister.get(axis);
 }
 
-GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, const std::string& new_expected_suffix)
+GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, const char* new_expected_suffix)
     : reader(reader), old(reader.expectedSuffix) {
     reader.expectedSuffix = new_expected_suffix;
 }
 
 plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
-    : manager(manager), source(source), materialsDB(materialsDB)
+    : manager(manager), source(source), expectedSuffix(0), materialsDB(materialsDB)
 {
     axisNames = &axisNamesRegister.get("lon, tran, up");
 }
@@ -64,7 +64,7 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     auto reader_it = elementReaders().find(nodeName);
     if (reader_it == elementReaders().end()) {
-        if (expectedSuffix.empty())
+        if (expectedSuffix == 0)
             throw NoSuchGeometryElementType(nodeName);
         reader_it = elementReaders().find(nodeName + expectedSuffix);
         if (reader_it == elementReaders().end())

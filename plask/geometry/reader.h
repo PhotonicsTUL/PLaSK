@@ -159,8 +159,13 @@ struct GeometryReader {
     /// Current names of axis.
     const AxisNames* axisNames;
 
-    /// Currently expected suffix for names of geometry elements types.
-    std::string expectedSuffix;
+    /**
+     * Currently expected suffix for names of geometry elements types, can have one of the following values:
+     * - 0 dimensions of children space can't be deduced (initial value),
+     * - PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D if 2d children are expected,
+     * - PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D if 3d children are expected.
+     */
+    const char* expectedSuffix;
     
     /// Material database used by geometry (leafs).
     const MaterialsDB& materialsDB;
@@ -206,8 +211,8 @@ struct GeometryReader {
      */
     struct SetExpectedSuffix {
         GeometryReader& reader;
-        const std::string old;
-        SetExpectedSuffix(GeometryReader& reader, const std::string& new_expected_suffix);
+        const char* old;
+        SetExpectedSuffix(GeometryReader& reader, const char* new_expected_suffix);
         ~SetExpectedSuffix() { reader.expectedSuffix = old; }
     };
 
