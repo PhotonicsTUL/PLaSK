@@ -5,6 +5,7 @@ namespace plask { namespace eim {
 dcomplex EffectiveIndex2dModule::computeMode(dcomplex beta)
 {
     outBeta = beta;
+    auto logger = logData<dcomplex,double>("wavelength", "char_val");
 }
 
 
