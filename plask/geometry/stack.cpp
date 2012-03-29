@@ -15,6 +15,7 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
                     new StackContainer<2>(baseH) :
                     new MultiStackContainer<2>(XML::getAttribute(reader.source, repeat_attr, 1), baseH)
                 );
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children<StackContainer<2>>(reader,
             [&]() {
                 boost::optional<std::string> aligner_str = XML::getAttribute(reader.source, reader.getAxisTranName());
@@ -40,6 +41,7 @@ shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
                     new StackContainer<3>(baseH) :
                     new MultiStackContainer<3>(XML::getAttribute(reader.source, repeat_attr, 1), baseH)
                 );
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children<StackContainer<3>>(reader,
             [&]() {
                 return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
@@ -55,7 +57,7 @@ shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
     return result;
 }
 
-static GeometryReader::RegisterElementReader stack2d_reader("stack2d", read_StackContainer2d);
-static GeometryReader::RegisterElementReader stack3d_reader("stack3d", read_StackContainer3d);
+static GeometryReader::RegisterElementReader stack2d_reader("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_StackContainer2d);
+static GeometryReader::RegisterElementReader stack3d_reader("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_StackContainer3d);
 
 }   // namespace plask

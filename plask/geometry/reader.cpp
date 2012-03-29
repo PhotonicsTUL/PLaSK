@@ -46,6 +46,11 @@ GeometryReader::ReadAxisNames::ReadAxisNames(GeometryReader &reader)
     if (axis) reader.axisNames = &axisNamesRegister.get(axis);
 }
 
+GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, const std::string& new_expected_suffix)
+    : reader(reader), old(reader.expectedSuffix) {
+    reader.expectedSuffix = new_expected_suffix;
+}
+
 plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
     : manager(manager), source(source), materialsDB(materialsDB)
 {

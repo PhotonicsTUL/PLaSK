@@ -31,9 +31,9 @@ shared_ptr<GeometryElement> read_block3d(GeometryReader& reader) {
     return block;
 }
 
-static GeometryReader::RegisterElementReader block2d_reader("block2d", read_block2d);
+static GeometryReader::RegisterElementReader block2d_reader("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_block2d);
 static GeometryReader::RegisterElementReader rectangle_reader("rectangle", read_block2d);
-static GeometryReader::RegisterElementReader block3d_reader("block3d", read_block3d);
+static GeometryReader::RegisterElementReader block3d_reader("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_block3d);
 static GeometryReader::RegisterElementReader cuboid_reader("cuboid", read_block3d);
 
 shared_ptr<GeometryElement> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryElement>& to_change, Vec<3, double>& translation) {

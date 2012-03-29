@@ -106,6 +106,12 @@ struct AxisNames {
     
 };
 
+/// Value for expected suffix for names of 2d elements types, see GeometryReader::expectedSuffix.
+#define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D "2d"
+
+/// Value for expected suffix for names of 3d elements types, see GeometryReader::expectedSuffix.
+#define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D "3d"
+
 /**
  * Allow to read geometry from XML.
  *
@@ -153,7 +159,7 @@ struct GeometryReader {
     /// Current names of axis.
     const AxisNames* axisNames;
 
-    /// Currently expected suffix.
+    /// Currently expected suffix for names of geometry elements types.
     std::string expectedSuffix;
     
     /// Material database used by geometry (leafs).
@@ -193,6 +199,16 @@ struct GeometryReader {
         const AxisNames* old;
         ReadAxisNames(GeometryReader& reader);
         ~ReadAxisNames() { reader.axisNames = old; }
+    };
+
+    /**
+     * Store current expectedSuffix, set new one, and restore old when out of the scope (in destructor).
+     */
+    struct SetExpectedSuffix {
+        GeometryReader& reader;
+        const std::string old;
+        SetExpectedSuffix(GeometryReader& reader, const std::string& new_expected_suffix);
+        ~SetExpectedSuffix() { reader.expectedSuffix = old; }
     };
 
     ///Geometry manager which store reading results.

@@ -38,6 +38,7 @@ shared_ptr<GeometryElementTransform<3, CartesianExtend::ChildType>> CartesianExt
 shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {
     double length = XML::requireAttr<double>(reader.source, "length");
     //TODO read space size
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     return make_shared<CartesianExtend>(reader.readExactlyOneChild<typename CartesianExtend::ChildType>(), length);
 }
 
