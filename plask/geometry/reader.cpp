@@ -58,8 +58,13 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
         return manager.requireElement(XML::requireAttr(source, "name"));
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     auto reader_it = elementReaders().find(nodeName);
-    if (reader_it == elementReaders().end())
-        throw NoSuchGeometryElementType(nodeName);
+    if (reader_it == elementReaders().end()) {
+        if (expectedSuffix.empty())
+            throw NoSuchGeometryElementType(nodeName);
+        reader_it = elementReaders().find(nodeName + expectedSuffix);
+        if (reader_it == elementReaders().end())
+            throw NoSuchGeometryElementType(nodeName + "[" + expectedSuffix + "]");
+    }
     boost::optional<std::string> name = XML::getAttribute(source, "name");
     shared_ptr<GeometryElement> new_element = reader_it->second(*this);
     //manager.elements.insert(new_element);   //first this, to ensure that memory will be freed

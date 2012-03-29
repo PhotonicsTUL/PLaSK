@@ -147,13 +147,16 @@ struct GeometryReader {
         }
     };
     
-    ///Register of standard axis names.
+    /// Register of standard axis names.
     static AxisNames::Register axisNamesRegister;
     
-    ///Current names of axis.
+    /// Current names of axis.
     const AxisNames* axisNames;
+
+    /// Currently expected suffix.
+    std::string expectedSuffix;
     
-    ///Material database used by geometry (leafs).
+    /// Material database used by geometry (leafs).
     const MaterialsDB& materialsDB;
     
     /**
