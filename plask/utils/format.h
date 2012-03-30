@@ -7,6 +7,8 @@ This file includes utils to format strings.
 
 #include <boost/format.hpp> //TODO maybe better to take simple code from http://en.wikipedia.org/wiki/Variadic_templates
 
+#include "../math.h"
+
 namespace plask {
 
 ///Recursion end of format_add_args. Do nothing.
@@ -35,6 +37,14 @@ std::string format(const std::string& msg, const T&... args) {
     boost::format format(msg);
     format_add_args(format, args...);
     return format.str();
+}
+
+/**
+ * Convert complex number to a prettier string
+ * @param x value to convert
+ */
+inline std::string str(dcomplex x) {
+    return format("%.9g%+-0.9gj", real(x), imag(x));
 }
 
 }   // namespace plask

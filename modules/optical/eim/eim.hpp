@@ -5,17 +5,22 @@
 
 namespace plask { namespace eim {
 
+class RootDigger;
 
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
  */
 class EffectiveIndex2dModule: public Module {
 
+    friend class RootDigger;
+
     /// Geometry in which the calculations are performed
     shared_ptr<const CartesianExtend> geometry;
 
     /// The mesh used for cutting the structure into one-dimentional stripes
     shared_ptr<RectilinearMesh2d> mesh;
+
+    Data2dLog<dcomplex,double> log_value;
 
   public:
 
@@ -25,7 +30,8 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      */
     EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry) :
-        geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+        geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+        log_value(dataLog<dcomplex, double>("beta", "char_val")) {
         inTemperature = 300.;
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
@@ -39,7 +45,8 @@ class EffectiveIndex2dModule: public Module {
      * \param mesh horizontal mesh for dividing geometry
      */
     EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh1d& meshx) :
-        geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+        geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+        log_value(dataLog<dcomplex, double>("beta", "char_val")) {
         inTemperature = 300.;
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
@@ -54,7 +61,8 @@ class EffectiveIndex2dModule: public Module {
      * \param mesh mesh for dividing geometry
      */
     EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, shared_ptr<RectilinearMesh2d> mesh) :
-        geometry(geometry), mesh(mesh), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+        geometry(geometry), mesh(mesh), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+        log_value(dataLog<dcomplex, double>("beta", "char_val")) {
         inTemperature = 300.;
     }
 
@@ -114,6 +122,9 @@ class EffectiveIndex2dModule: public Module {
 
 
   private:
+
+    /// Return function value for root digger
+    dcomplex char_val(dcomplex x) { return 0.; /* TODO */ }
 
     /// Method computing the distribution of light intensity
     shared_ptr<const std::vector<double>> getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);

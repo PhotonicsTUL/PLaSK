@@ -10,11 +10,11 @@ vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> im
     int NR = repoints.size();
     int NI = impoints.size();
 
-//     logger(LOG_ROOTDIGGER) << "  searching for the root map from " << NR*NI << " points...\n";
+    module.log(LOG_INFO, "Searching for the root map from %1% points", NR*NI);
 
     // Handle situation with unconvenient number of points in some direction
     // (this is not perfect but we must handle it somehow)
-    if (NR == 0) throw "RootDigger:find_map: Must have at least one point in real domain to browse for map";
+    if (NR == 0) throw BadInput(module.getId(), "Must have at least one point in real domain to browse for a map");
     if (NI == 0) { impoints = vector<double>(1, 0.0); NI = 1; }
     else if (NI  == 2) { impoints = vector<double>(1, 0.5*(impoints[0]+impoints[1])); NI = 1; }
     if (NR  == 2) { repoints = vector<double>(1, 0.5*(repoints[0]+repoints[1])); NR = 1; }
@@ -29,7 +29,7 @@ vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> im
     for (int r = 0; r < NR; r++)
         for (int i = 0; i < NI; i++) {
         try {
-             values[r][i] = abs(value(repoints[r] + impoints[i]*I));
+             values[r][i] = abs(value(dcomplex(repoints[r], impoints[i]), false));
         } catch(...) {
             values[r][i] = NAN;
         // TODO: print warning on screen and handle it in minima search
@@ -62,14 +62,13 @@ vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> im
     delete[] values;
 
     // Log found results
-//     if (current_loglevel & LOG_ROOTDIGGER) {
-//         logger(LOG_ROOTDIGGER) << "  found map values at: [";
-//         for (vector<dcomplex>::iterator map = results.begin(); map != results.end(); map++) {
-//             if (map != results.begin()) logger(LOG_ROOTDIGGER) << ", ";
-//             logger(LOG_ROOTDIGGER) << str(*map);
-//         }
-//         logger(LOG_ROOTDIGGER) << "]\n\n";
-//     }
+    std::stringstream resultsrt;
+    resultsrt << "Found map values: ";
+    for (auto map = results.begin(); map != results.end(); map++) {
+        if (map != results.begin()) resultsrt << ", ";
+        resultsrt << str(*map);
+    }
+    module.log(LOG_RESULT, resultsrt.str());
 
     return results;
 }
@@ -109,8 +108,8 @@ vector<dcomplex> RootDigger::searchModes(dcomplex start, dcomplex end, int replo
         try {
             dcomplex mode = getMode(map[i]);
             modes.push_back(mode);
-        } catch (...) {
-//             logger(LOG_ROOTDIGGER) << "  failed to get mode around " <<  str(map[i]) << "\n\n";
+        } catch (runtime_error err) {
+            module.log(LOG_ERROR, "Failed to get mode around " + str(map[i]) + " (" + err.what() + ")");
         };
     }
 
@@ -121,10 +120,9 @@ vector<dcomplex> RootDigger::searchModes(dcomplex start, dcomplex end, int replo
 /// Search for a single mode starting from the given point: point
 dcomplex RootDigger::getMode(dcomplex point) const
 {
-//     logger(LOG_ROOTDIGGER) << "  searching for the mode with Broyden method starting from "
-//                            << str(point) << "...\n";
+    module.log(LOG_INFO, "Searching for the mode with Broyden method starting from " + str(point));
     dcomplex x = Broyden(point);
-//     logger(LOG_ROOTDIGGER) << "  found mode at " << str(x) << "\n\n";
+    module.log(LOG_RESULT, "Found mode at " + str(x));
     return x;
 }
 
@@ -147,8 +145,8 @@ void RootDigger::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
     double xr1 = xr0 + hr, xi1 = xi0 + hi;
     hr = xr1 - xr0; hi = xi1 - xi0;             // trick to reduce finite precission error
 
-    dcomplex Fr = value(dcomplex(xr1, xi0)),
-             Fi = value(dcomplex(xr0, xi1));
+    dcomplex Fr = value(dcomplex(xr1, xi0), false),
+             Fi = value(dcomplex(xr0, xi1), false);
 
     Jr = (Fr - F) / hr;
     Ji = (Fi - F) / hi;
@@ -203,7 +201,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
                 lambda = -slope/(2.*b);
             else {
                 double delta = b*b - 3.*a*slope;
-                if (delta < 0.0) throw "RootDigger::lnsearch: roundoff problem";
+                if (delta < 0.0) throw ComputationError(module.getId(), "Broyden lnsearch: roundoff problem");
                 lambda = (-b + sqrt(delta)) / (3.0*a);
             }
         }
@@ -212,8 +210,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
 
         lambda = max(lambda, 0.1*lambda1);      // guard against too fast decrease of lambda
 
-//         logger(LOG_BROYDEN) << "    Broyden step decreased to the fraction "
-//                             << str(lambda) << " of original step\n";
+        module.log(LOG_DETAIL, "Broyden step decreased to the fraction " + str(lambda) + " of the original step");
     }
 
 }
@@ -256,7 +253,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
 
         // compute p = - B**(-1) * F
         double M = real(Br)*imag(Bi) - imag(Br)*real(Bi);
-        if (M == 0) throw "RootDigger::Broyden: Broyden matrix singular";
+        if (M == 0) throw ComputationError(module.getId(), "Broyden matrix singular");
         dcomplex p = - dcomplex(real(F)*imag(Bi)-imag(F)*real(Bi), real(Br)*imag(F)-imag(Br)*real(F)) / M;
 
         // find the right step
@@ -269,15 +266,15 @@ dcomplex RootDigger::Broyden(dcomplex x) const
             if (abs(F) < tolf_max)              // convergence!
                 return x;
             else if (!trueJacobian) {           // first try reinitializing the Jacobian
-//                 logger(LOG_BROYDEN) << "    reinitializing Jacobian\n";
+                 module.log(LOG_DETAIL, "Reinitializing Jacobian");
                 restart = true;
             } else {                            // either spurious convergence (local minimum) or failure
-                throw "RootDigger::Broyden: failed to converge";
+                throw ComputationError(module.getId(), "Broyden method failed to converge");
             }
         }
     }
 
-    throw "RootDigger::Broyden: maximum number of iterations reached";
+    throw ComputationError(module.getId(), "Broyden: maximum number of iterations reached");
 }
 
 }} // namespace plask::eim

@@ -53,7 +53,7 @@ struct NotImplemented: public Exception {
      * @param method_name name of not implemented method
      */
     NotImplemented(const std::string& where, const std::string& method_name)
-    : Exception("In " + where + ": Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
+    : Exception(where + ": Method not implemented: " + method_name)/*, methodName(method_name)*/ {}
 };
 
 /**
@@ -68,6 +68,17 @@ struct OutOfBoundException: public Exception {
     template <typename BoundTypeWas, typename BoundTypeLo, typename BoundTypeHi>
     OutOfBoundException(const std::string& where, const std::string& argname, const BoundTypeWas& was, const BoundTypeLo& lo, const BoundTypeHi& hi)
         : Exception("%1%: argument %2% out of bound, should be between %3% and %4%, but was %5%.", where, argname, lo, hi, was) {}
+};
+
+/**
+ * This exception is thrown when value specified by the user is bad
+ */
+struct BadInput: public Exception {
+
+    /// @param where name of class/function/operation doing the computations
+    /// @param msg error message
+    BadInput(const std::string& where, const std::string& msg)
+        : Exception("%1%: %2%", where, msg) {};
 };
 
 /**

@@ -136,12 +136,12 @@ struct Module {
     //virtual void calculate() {}
 
     template<typename ArgT = double, typename ValT = double>
-    Data2dLog<ArgT, ValT> logData(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
+    Data2dLog<ArgT, ValT> dataLog(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
         return Data2dLog<ArgT, ValT>(getId(), chart_name, axis_arg_name, axis_val_name);
     }
 
     template<typename ArgT = double, typename ValT = double>
-    Data2dLog<ArgT, ValT> logData(const std::string& axis_arg_name, const std::string& axis_val_name) {
+    Data2dLog<ArgT, ValT> dataLog(const std::string& axis_arg_name, const std::string& axis_val_name) {
         return Data2dLog<ArgT, ValT>(getId(), axis_arg_name, axis_val_name);
     }
 

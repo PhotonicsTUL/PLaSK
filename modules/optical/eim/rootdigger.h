@@ -2,11 +2,14 @@
 #define ROOTDIGGER_H
 
 #include <plask/plask.hpp>
+#include "eim.hpp"
 
 namespace plask { namespace eim {
 
-
 class RootDigger {
+
+    EffectiveIndex2dModule& module;
+
   protected:
     // Parameters for Broyden algorithm
     const double alpha, lambda_min, EPS;
@@ -23,18 +26,24 @@ class RootDigger {
     // Look for map browsing through given points
     std::vector<dcomplex> find_map(std::vector<double> repoints, std::vector<double> impoints) const;
 
-    dcomplex value(dcomplex x) const { return 0.; } //TODO
+    // Compute the function value
+    dcomplex value(dcomplex x, bool count=true) const {
+        dcomplex y = module.char_val(x);
+        double ay = abs(y);
+        if (count) module.log_value.count(x, ay);
+        else module.log_value(x, ay);
+        return y;
+    }
 
   public:
-    // Parameters for Broyden algorithm
+    /// Parameters for Broyden algorithm
     double tolx, tolf_min, tolf_max, maxstep;
 
-    // Maximum number of iterations
+    /// Maximum number of iterations
     int maxiterations;
 
     // Constructors
-//     RootDigger(RootSolverBase& solv) : solver(solv),
-    RootDigger() :
+    RootDigger(EffectiveIndex2dModule& module) : module(module),
         maxiterations(500),                              // maximum number of iterations
         tolx(1.0e-07),                              // absolute tolerance on the argument
         tolf_min(1.0e-12),                          // sufficient tolerance on the function value
@@ -46,20 +55,6 @@ class RootDigger {
     {};
 
     RootDigger(const RootDigger& d) = default;
-
-    /// Search for single mode within the region real(start) - real(end),
-    // imag(start) - imag(end), divided on: replot for real direction
-    // implot - for imaginary one
-    // return complex coordinate of the mode
-    // return 0 if the mode shas not been found
-    inline dcomplex searchMode(dcomplex start,dcomplex end, int replot,int implot) {
-        std::vector<dcomplex> vec;
-        vec = searchModes(start, end, replot, implot, 1);
-        if (vec.size() == 0)
-            throw "RootDigger::SearchMode: did not find any mode";
-        else
-            return vec[0];
-    };
 
     /// Search for modes within the region real(start) - real(end),
     //   imag(start) - imag(end), divided on: replot for real direction and implot for imaginary one
@@ -73,7 +68,6 @@ class RootDigger {
     // return complex coordinate of the mode
     // return 0 if the mode has not been found
     dcomplex getMode(dcomplex point) const;
-    void solver(std::complex< double > complex);
 };
 
 }} // namespace plask::eim
