@@ -50,7 +50,7 @@ protected:
 
 public:
 
-    //TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
+    // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
 
     /// Called by child.change signal, call this change
     virtual void onChildChanged(const GeometryElement::Event& evt) {
@@ -79,7 +79,7 @@ public:
         return children;
     }
 
-    ///@return GE_TYPE_CONTAINER
+    /// @return GE_TYPE_CONTAINER
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_CONTAINER; }
 
     virtual bool inside(const DVec& p) const {
@@ -189,7 +189,7 @@ public:
     virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
         shared_ptr<const GeometryElement> result(this->shared_from_this());
         if (changer.apply(result, translation) || children.empty()) return result;
-        //if (translation) *translation = vec(0.0, 0.0, 0.0); //we can't recommend nothing special
+        //if (translation) *translation = vec(0.0, 0.0, 0.0); // we can't recommend nothing special
         //TODO code... what with paths? add paths to changedVersion method
     }
 
@@ -202,16 +202,16 @@ public:
 template < int dim >
 struct TranslationContainer: public GeometryElementContainer<dim> {
 
-    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
 
-    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Rect Rect;
 
-    ///Type of this child.
+    /// Type of this child.
     typedef GeometryElementD<dim> ChildType;
 
-    ///Type of translation geometry elment in space of this.
+    /// Type of translation geometry elment in space of this.
     typedef Translation<dim> TranslationT;
 
     using GeometryElementContainer<dim>::children;

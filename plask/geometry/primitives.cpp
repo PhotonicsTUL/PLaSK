@@ -4,11 +4,11 @@
 
 namespace plask {
 
-inline void ensureLo(double& to_be_lo, double how_lo) {
+static inline void ensureLo(double& to_be_lo, double how_lo) {
     if (how_lo < to_be_lo) to_be_lo = how_lo;
 }
 
-inline void ensureHi(double& to_be_hi, double how_hi) {
+static inline void ensureHi(double& to_be_hi, double how_hi) {
     if (how_hi > to_be_hi) to_be_hi = how_hi;
 }
 
@@ -53,6 +53,13 @@ void Box2d::include(const plask::Box2d& other) {
     ensureHi(upper.c0, other.upper.c0);
     ensureHi(upper.c1, other.upper.c1);
 }
+
+Vec<2,double> Box2d::moveInside(Vec<2,double> p) const {
+    if (p.c0 < lower.c0) p.c0 = lower.c0; else ensureLo(p.c0, upper.c0);
+    if (p.c1 < lower.c1) p.c1 = lower.c1; else ensureLo(p.c1, upper.c1);
+    return p;
+}
+
 
 //-------------  ---------------------
 
@@ -101,6 +108,13 @@ void Box3d::include(const plask::Box3d& other) {
     ensureHi(upper.c0, other.upper.c0);
     ensureHi(upper.c1, other.upper.c1);
     ensureHi(upper.c2, other.upper.c2);
+}
+
+Vec<3,double> Box3d::moveInside(Vec<3,double> p) const {
+    if (p.c0 < lower.c0) p.c0 = lower.c0; else ensureLo(p.c0, upper.c0);
+    if (p.c1 < lower.c1) p.c1 = lower.c1; else ensureLo(p.c1, upper.c1);
+    if (p.c2 < lower.c2) p.c2 = lower.c2; else ensureLo(p.c2, upper.c2);
+    return p;
 }
 
 const Primitive<1>::DVec Primitive<1>::ZERO_VEC = 0.0;

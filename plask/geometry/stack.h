@@ -11,16 +11,16 @@ namespace plask {
 template <int dim, int growingDirection = Primitive<dim>::DIRECTION_UP>
 struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
-    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
 
-    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Rect Rect;
 
-    ///Type of this child.
+    /// Type of this child.
     typedef GeometryElementD<dim> ChildType;
 
-    ///Type of translation geometry elment in space of this.
+    /// Type of translation geometry elment in space of this.
     typedef Translation<dim> TranslationT;
 
     using GeometryElementContainer<dim>::children;
@@ -43,12 +43,12 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     }
 
     virtual bool inside(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p.c1);
+        const shared_ptr<TranslationT> c = getChildForHeight(p.components[growingDirection]);
         return c ? c->inside(p) : false;
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p.c1);
+        const shared_ptr<TranslationT> c = getChildForHeight(p.components[growingDirection]);
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
 
@@ -150,6 +150,12 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
 template <int dim>
 struct StackContainer: public StackContainerBaseImpl<dim> {
 
+    /// Type of parent class of this.
+    typedef StackContainerBaseImpl<dim> UpperClass;
+
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    typedef typename UpperClass::DVec DVec;
+
     typedef typename chooseType<dim-2, align::Aligner2d<align::DIRECTION_TRAN>, align::Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN> >::type Aligner;
     typedef typename chooseType<dim-2, align::TranCenter, align::CenterCenter>::type CenterAligner;
 
@@ -159,6 +165,14 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     using StackContainerBaseImpl<dim>::shared_from_this;
     using StackContainerBaseImpl<dim>::children;
     using StackContainerBaseImpl<dim>::stackHeights;
+
+    /// Type of extensions for infinite stacks
+    enum StackExtension {
+        EXTEND_NONE = 0,            ///< normal stack
+        EXTEND_VERTICALLY = 1,      ///< vertical dimensions of the first and last layers are infinite
+        EXTEND_HORIZONTALLY = 2,    ///< horizontal (tran and lon in 3d) dimensions of all layers are infinite
+        EXTEND_ALL = 3              ///< all dimensions of the layers are infinite
+    };
 
 private:
     std::vector<Aligner*> aligners;
@@ -170,14 +184,44 @@ private:
         return result;
     }
 
+    StackExtension extended;
+
 public:
 
     /**
      * @param baseHeight height where the first element should start
+     * @param extend indicates whether the layers should be infinitely extended for \ref getMaterial method
+     *
+     * Note that \a extend should be different than EXTEND_NONE only for the root container!
      */
-    explicit StackContainer(const double baseHeight = 0.0): StackContainerBaseImpl<dim>(baseHeight) {}
+    explicit StackContainer(const double baseHeight = 0.0, StackExtension extend=EXTEND_NONE)
+        : StackContainerBaseImpl<dim>(baseHeight), extended(extend) {}
 
     ~StackContainer() { for (auto a: aligners) delete a; }
+
+
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
+        DVec r = p;
+        shared_ptr<TranslationT> c = getChildForHeight(r.up);
+        auto bbox = UpperClass::getBoundingBox();
+        if (!c) {
+            if (extended & EXTEND_VERTICALLY) {
+                if (r.up < bbox.lower.up) {
+                    r.up = bbox.lower.up;
+                    c = children.front();
+                } else if (p.up > bbox.upper.up) {
+                    r.up = bbox.upper.up;
+                    c = children.back();
+                }
+            } else {
+                return shared_ptr<Material>();
+            }
+        }
+        if (extended & EXTEND_HORIZONTALLY) {
+            r = bbox.moveInside(r);
+        }
+        return c->getMaterial(r);
+    }
 
 
     /**
@@ -259,7 +303,7 @@ public:
 template <int dim>
 class MultiStackContainer: public StackContainer<dim> {
 
-    ///Type of parent class of this.
+    /// Type of parent class of this.
     typedef StackContainer<dim> UpperClass;
 
     /*

@@ -76,12 +76,6 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementTransform, "GeometryElementTransform
 }
 
 
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementContainer, "GeometryElementContainer", "Base class for all "," containers") {
-    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementContainer, GeometryElementD<dim>)
-    ;
-}
-
-
 void register_geometry_element()
 {
     py::enum_<GeometryElement::Type>("ElementType")
@@ -105,9 +99,6 @@ void register_geometry_element()
 
     init_GeometryElementTransform<2>();
     init_GeometryElementTransform<3>();
-
-    init_GeometryElementContainer<2>();
-    init_GeometryElementContainer<3>();
 
     // Space changer
     py::class_<GeometryElementChangeSpace<3,2>, shared_ptr<GeometryElementChangeSpace<3,2>>, py::bases<GeometryElementTransform<3>>, boost::noncopyable>

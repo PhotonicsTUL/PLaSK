@@ -209,14 +209,41 @@ struct XMLUnexpectedEndException: public Exception {
 };
 
 /**
- * Exceptions of this class are thrownwhen type of XML element is other than expectation.
+ * Exceptions of this class are thrownwhen the type of XML element is different than expected.
  */
 struct XMLUnexpectedElementException: public Exception {
     /**
      * @param what_is_expected what is expected (typically tag with name, etc.)
      */
-    XMLUnexpectedElementException(const std::string& what_is_expected): Exception("There is no expected " + what_is_expected + " in XML.") {}
+    XMLUnexpectedElementException(const std::string& what_is_expected): Exception("There is no expected " + what_is_expected + " in XML") {}
 };
+
+/**
+ * Exceptions of this class are thrown when the value of an XML attribute is different than expected.
+ */
+struct XMLUnexpectedAttributeValueException: public Exception {
+    /**
+     * @param element element name
+     * @param attr attribute name
+     * @param value unexpected value
+     */
+    XMLUnexpectedAttributeValueException(const std::string& element, const std::string& attr, const std::string& value)
+    : Exception("Attribute '%2%' for element '%1%' has unexpected value '%3%'", element, attr, value) {}
+};
+
+/**
+ * Exceptions of this class are thown if two optional attributes in XML conflict with each other.
+ */
+struct XMLConflictingAttributesException: public Exception {
+    /**
+     * @param element element name
+     * @param attr1 first attribute name
+     * @param attr2 second attribute name
+     */
+    XMLConflictingAttributesException(const std::string& element, const std::string& attr1, const std::string& attr2)
+    : Exception("Conflicting attributes '%2%' and '%3%' in element %1%", element, attr1, attr2) {}
+};
+
 
 //-------------- Connected with geometry: -----------------------
 

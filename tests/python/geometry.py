@@ -75,6 +75,14 @@ class GeometryObjects(unittest.TestCase):
         self.assertEqual( translation.getMaterial(12.0, 22.0), self.mat);
         self.assertIsNone( translation.getMaterial(4.0, 22.0));
 
+    def testStack(self):
+        stack = plask.geometry.Stack2D(extend='all')
+        stack.append(self.block53)
+        self.assertEqual( stack.getMaterial(-3.,1.), self.mat )
+        self.assertEqual( stack.getMaterial(3.,1.), self.mat )
+        self.assertEqual( stack.getMaterial(0.,-1.), self.mat )
+        self.assertEqual( stack.getMaterial(0.,4.), self.mat )
+
     def testMultiStack(self):
         multistack = plask.geometry.MultiStack2D(5, 10.0)
         multistack.append(self.block53)

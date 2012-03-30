@@ -60,8 +60,6 @@ void register_geometry_path()
 //         .add_property("translation", &Hint_translation)
     ;
 
-//     py::implicitly_convertible<PersistentHint, PathHints::Hint>();
-
     export_frozenset<shared_ptr<GeometryElement>>("GeometryElement_set");
 
     py::class_<PathHints>("PathHints",

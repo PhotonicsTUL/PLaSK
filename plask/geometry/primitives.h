@@ -2,7 +2,7 @@
 #define PLASK__PRIMITIVES_H
 
 /** @file
-This file includes useful geometry primitives, like rectangles, etc.
+This file includes useful geometry primitives, like boxes, etc.
 */
 
 #include "../vec.h"
@@ -12,20 +12,20 @@ namespace plask {
 /**
  * Rectangle class.
  *
- * Allows for some basic operation on rectangles.
+ * Allows for some basic operation on boxes.
  * Has almost identical interface as .
  */
 struct Box2d {
 
-    ///Lower corner of rectangle (with minimal all coordinates).
+    ///Lower corner of box (with minimal all coordinates).
     Vec<2,double> lower;
 
-    ///Upper corner of rectangle (with maximal all coordinates).
+    ///Upper corner of box (with maximal all coordinates).
     Vec<2,double> upper;
 
     /**
-     * Get size of rectangle.
-     * @return size of rectangle (its width and height)
+     * Get size of box.
+     * @return size of box (its width and height)
      */
     Vec<2,double> size() const { return upper - lower; }
 
@@ -39,23 +39,23 @@ struct Box2d {
     Box2d() {}
 
     /**
-     * Construct rectangle.
-     * @param lower lower corner of rectangle (with minimal all coordinates)
-     * @param upper upper corner of rectangle (with maximal all coordinates)
+     * Construct box.
+     * @param lower lower corner of box (with minimal all coordinates)
+     * @param upper upper corner of box (with maximal all coordinates)
      */
     Box2d(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
 
     /**
-     * Compare two rectangles, @c this and @p r.
-     * @param r rectangle to compare
-     * @return true only if @c this rectangle and @p p have equals coordinates
+     * Compare two boxes, @c this and @p r.
+     * @param r box to compare
+     * @return true only if @c this box and @p p have equals coordinates
      */
     bool operator==(const Box2d& r) const;
 
     /**
-     * Compare two rectangles, @c this and @p r.
-     * @param r rectangle to compare
-     * @return @c true only if @c this rectangle and @p p don't have equals coordinates
+     * Compare two boxes, @c this and @p r.
+     * @param r box to compare
+     * @return @c true only if @c this box and @p p don't have equals coordinates
      */
     bool operator!=(const Box2d& r) const;
 
@@ -66,28 +66,28 @@ struct Box2d {
     void fix();
 
     /**
-     * Check if the point is inside rectangle.
+     * Check if the point is inside box.
      * @param p point
-     * @return true only if point is inside this rectangle
+     * @return true only if point is inside this box
      */
     bool inside(const Vec<2,double>& p) const;
 
     /**
-     * Check if this and other rectangles have common points.
-     * @param other rectangle
+     * Check if this and other boxes have common points.
+     * @param other box
      * @return true only if this and other have common points
      */
     bool intersect(const Box2d& other) const;
 
     /**
-     * Make this rectangle, the minimal one which include @c this and given point @p p.
-     * @param p point which should be inside rectangle
+     * Make this box, the minimal one which include @c this and given point @p p.
+     * @param p point which should be inside box
      */
     void include(const Vec<2,double>& p);
 
     /**
-     * Make this rectangle, the minimal one which include @c this and @p other rectangle.
-     * @param other point which should be inside rectangle
+     * Make this box, the minimal one which include @c this and @p other box.
+     * @param other point which should be inside box
      */
     void include(const Box2d& other);
 
@@ -118,15 +118,22 @@ struct Box2d {
     void translateUp(const double trasnalation_in_up_dir) { lower.up += trasnalation_in_up_dir; upper.up += trasnalation_in_up_dir; }
 
     /**
-     * Print rectangle to stream.
+     * Translate a point to be inside the box by shifting to the closest edge.
+     * This method assumes that the box is fixed.
+     * @param p given point
+     * @return point shifted to the boxes
+     */
+    Vec<2,double> moveInside(Vec<2,double> p) const;
+
+    /**
+     * Print box to stream.
      * @param out print destination, output stream
-     * @param to_print rectangle to print
+     * @param to_print box to print
      * @return out stream
      */
     friend inline std::ostream& operator<<(std::ostream& out, const Box2d& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
-
 };
 
 /**
@@ -137,10 +144,10 @@ struct Box2d {
  */
 struct Box3d {
 
-    ///Position of lower corner of cuboid (with minimal all coordinates).
+    /// Position of lower corner of cuboid (with minimal all coordinates).
     Vec<3,double> lower;
 
-    ///Position of upper corner of cuboid (with maximal all coordinates).
+    /// Position of upper corner of cuboid (with maximal all coordinates).
     Vec<3,double> upper;
 
     /**
@@ -155,7 +162,7 @@ struct Box3d {
      */
     double sizeUp() const { return upper.up - lower.up; }
 
-    ///Construct uninitialized .
+    /// Construct uninitialized .
     Box3d() {}
 
     /**
@@ -166,16 +173,16 @@ struct Box3d {
     Box3d(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
 
     /**
-     * Compare two rectangles, @c this and @p r.
-     * @param r rectangle to compare
-     * @return true only if @c this rectangle and @p p have equals coordinates
+     * Compare two boxes, @c this and @p r.
+     * @param r box to compare
+     * @return true only if @c this box and @p p have equals coordinates
      */
     bool operator==(const Box3d& r) const;
 
     /**
-     * Compare two rectangles, @c this and @p r.
-     * @param r rectangle to compare
-     * @return true only if @c this rectangle and @p p don't have equals coordinates
+     * Compare two boxes, @c this and @p r.
+     * @param r box to compare
+     * @return true only if @c this box and @p p don't have equals coordinates
      */
     bool operator!=(const Box3d& r) const;
 
@@ -186,28 +193,28 @@ struct Box3d {
     void fix();
 
     /**
-     * Check if point is inside rectangle.
+     * Check if point is inside box.
      * @param p point
-     * @return true only if point is inside this rectangle
+     * @return true only if point is inside this box
      */
     bool inside(const Vec<3,double>& p) const;
 
     /**
-     * Check if this and other rectangles have common points.
-     * @param other rectangle
+     * Check if this and other boxes have common points.
+     * @param other box
      * @return true only if this and other have common points
      */
     bool intersect(const Box3d& other) const;
 
     /**
-     * Make this rectangle, the minimal one which include @c this and given point @p p.
-     * @param p point which should be inside rectangle
+     * Make this box, the minimal one which include @c this and given point @p p.
+     * @param p point which should be inside box
      */
     void include(const Vec<3,double>& p);
 
     /**
-     * Make this rectangle, the minimal one which include @c this and @p other rectangle.
-     * @param other point which should be inside rectangle
+     * Make this box, the minimal one which include @c this and @p other box.
+     * @param other point which should be inside box
      */
     void include(const Box3d& other);
 
@@ -230,9 +237,17 @@ struct Box3d {
     void translateUp(const double trasnalation_in_up_dir) { lower.up += trasnalation_in_up_dir; upper.up += trasnalation_in_up_dir; }
 
     /**
-     * Print rectangle to stream.
+     * Translate a point to be inside the box by shifting to the closest edge.
+     * This method assumes that the box is fixed.
+     * @param p given point
+     * @return point shifted to the boxes
+     */
+    Vec<3,double> moveInside(Vec<3,double> p) const;
+
+    /**
+     * Print box to stream.
      * @param out print destination, output stream
-     * @param to_print rectangle to print
+     * @param to_print box to print
      * @return out stream
      */
     friend inline std::ostream& operator<<(std::ostream& out, const Box3d& to_print) {

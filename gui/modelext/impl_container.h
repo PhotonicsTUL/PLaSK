@@ -49,5 +49,4 @@ struct ExtImplFor< plask::MultiStackContainer<3> >: public ElementExtensionImplB
 
 };
 
-
 #endif // PLASK_GUI_MODEL_EXT_MAP_IMPL_CONTAINER_H
