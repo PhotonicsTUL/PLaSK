@@ -38,7 +38,11 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      */
     const shared_ptr<TranslationT> getChildForHeight(double height) const {
         auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
-        if (it == stackHeights.end() || it == stackHeights.begin()) return shared_ptr<TranslationT>();
+        if (it == stackHeights.end()) return shared_ptr<TranslationT>();
+        if (it == stackHeights.begin()) {
+            if (height == stackHeights.front()) return children[0];
+            else return shared_ptr<TranslationT>();
+        }
         return children[it-stackHeights.begin()-1];
     }
 

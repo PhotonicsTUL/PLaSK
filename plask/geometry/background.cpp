@@ -39,23 +39,20 @@ shared_ptr<Material> Background<3>::getMaterial(const DVec& p) const {
 }
 
 
-#define extend_attr "axes"
+#define extend_attr "along"
 
 static shared_ptr<GeometryElement> read_background2d(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     int extend = Background<2>::EXTEND_NONE;
-    boost::optional<std::string> extend_str = XML::getAttribute(reader.source, extend_attr);
-    if (extend_str) {
-        if (*extend_str == "all") {
-            Background<2>::EXTEND_ALL;
-        } else {
-            for (auto c: *extend_str) {
-                if (c == reader.getAxisTranName()[0]) extend |= Background<2>::EXTEND_TRAN;
-                if (c == reader.getAxisUpName()[0]) extend |= Background<2>::EXTEND_VERTICAL;
-            }
-        }
-    } else {
+    std::string extend_str = XML::getAttribute<std::string>(reader.source, extend_attr, "all");
+    if (extend_str == "all") {
         extend = Background<2>::EXTEND_ALL;
+    } else {
+        for (auto c: extend_str) {
+            if (c == reader.getAxisTranName()[0]) extend |= Background<2>::EXTEND_TRAN;
+            else if (c == reader.getAxisUpName()[0]) extend |= Background<2>::EXTEND_VERTICAL;
+            else throw BadInput("<background" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D ">", "Wrong value in '" extend_attr "' attribute");
+        }
     }
     shared_ptr<Background<2>> background(new Background<2>(Background<2>::ExtendType(extend)));
     background->setChild(reader.readExactlyOneChild<typename Background<2>::ChildType>());
@@ -65,19 +62,16 @@ static shared_ptr<GeometryElement> read_background2d(GeometryReader& reader) {
 static shared_ptr<GeometryElement> read_background3d(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     int extend = Background<3>::EXTEND_NONE;
-    boost::optional<std::string> extend_str = XML::getAttribute(reader.source, extend_attr);
-    if (extend_str) {
-        if (*extend_str == "all") {
-            Background<3>::EXTEND_ALL;
-        } else {
-            for (auto c: *extend_str) {
-                if (c == reader.getAxisLonName()[0]) extend |= Background<3>::EXTEND_LON;
-                if (c == reader.getAxisTranName()[0]) extend |= Background<3>::EXTEND_TRAN;
-                if (c == reader.getAxisUpName()[0]) extend |= Background<3>::EXTEND_VERTICAL;
-            }
-        }
-    } else {
+    std::string extend_str = XML::getAttribute<std::string>(reader.source, extend_attr, "all");
+    if (extend_str == "all") {
         extend = Background<3>::EXTEND_ALL;
+    } else {
+        for (auto c: extend_str) {
+            if (c == reader.getAxisLonName()[0]) extend |= Background<3>::EXTEND_LON;
+            else if (c == reader.getAxisTranName()[0]) extend |= Background<3>::EXTEND_TRAN;
+            else if (c == reader.getAxisUpName()[0]) extend |= Background<3>::EXTEND_VERTICAL;
+            else throw BadInput("<background" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D ">", "Wrong value in '" extend_attr "' attribute");
+        }
     }
     shared_ptr<Background<3>> background(new Background<3>(Background<3>::ExtendType(extend)));
     background->setChild(reader.readExactlyOneChild<typename Background<3>::ChildType>());

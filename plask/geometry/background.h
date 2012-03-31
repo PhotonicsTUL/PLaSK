@@ -68,7 +68,7 @@ struct Background: public GeometryElementTransform<dim>{
     }
 
     /// \return direction of the extension
-    inline ExtendType getExtend() { return _extend; }
+    inline ExtendType getExtend() const { return _extend; }
 
     /** Set the extend
      * \param extend new extend
