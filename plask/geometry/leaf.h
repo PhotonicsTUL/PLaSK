@@ -17,7 +17,7 @@ template < int dim >
 struct GeometryElementLeaf: public GeometryElementD<dim> {
 
     typedef typename GeometryElementD<dim>::DVec DVec;
-    typedef typename GeometryElementD<dim>::Rect Rect;
+    typedef typename GeometryElementD<dim>::Box Box;
     using GeometryElementD<dim>::getBoundingBox;
     using GeometryElementD<dim>::shared_from_this;
 
@@ -31,19 +31,19 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return this->inside(p) ? material : shared_ptr<Material>();
     }
 
-    virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Rect, DVec>>& dest, const PathHints* path = 0) const {
-        dest.push_back( std::tuple<shared_ptr<const GeometryElement>, Rect, DVec>(this->shared_from_this(), this->getBoundingBox(), Primitive<dim>::ZERO_VEC) );
+    virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const {
+        dest.push_back( std::tuple<shared_ptr<const GeometryElement>, Box, DVec>(this->shared_from_this(), this->getBoundingBox(), Primitive<dim>::ZERO_VEC) );
     }
 
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
         dest.push_back(this->getBoundingBox());
     }
 
-    inline std::vector<Rect> getLeafsBoundingBoxes() const {
+    inline std::vector<Box> getLeafsBoundingBoxes() const {
         return { this->getBoundingBox() };
     }
 
-    inline std::vector<Rect> getLeafsBoundingBoxes(const PathHints&) const {
+    inline std::vector<Box> getLeafsBoundingBoxes(const PathHints&) const {
         return { this->getBoundingBox() };
     }
 
@@ -96,7 +96,7 @@ struct Block: public GeometryElementLeaf<dim> {
     typedef typename GeometryElementLeaf<dim>::DVec DVec;
 
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryElementLeaf<dim>::Rect Rect;
+    typedef typename GeometryElementLeaf<dim>::Box Box;
 
     /**
      * Size and upper corner of block. Lower corner is zeroed vector.
@@ -129,15 +129,15 @@ struct Block: public GeometryElementLeaf<dim> {
     explicit Block(const DVec& size = Primitive<dim>::ZERO_VEC, const shared_ptr<Material>& material = shared_ptr<Material>())
         : GeometryElementLeaf<dim>(material), size(size) {}
 
-    virtual Rect getBoundingBox() const {
-        return Rect(Primitive<dim>::ZERO_VEC, size);
+    virtual Box getBoundingBox() const {
+        return Box(Primitive<dim>::ZERO_VEC, size);
     }
 
     virtual bool inside(const DVec& p) const {
         return getBoundingBox().inside(p);
     }
 
-    virtual bool intersect(const Rect& area) const {
+    virtual bool intersect(const Box& area) const {
         return getBoundingBox().intersect(area);
     }
 

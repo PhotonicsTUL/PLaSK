@@ -4,6 +4,14 @@
 
 namespace plask { namespace python {
 
+/// Initialize class GeometryElementLeaf for Python
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, "GeometryElementLeaf", "Base class for all "," leaves") {
+    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, GeometryElementD<dim>)
+        .def_readwrite("material", &GeometryElementLeaf<dim>::material, "material of the geometry object")
+    ;
+}
+
+
 
 // Rectangle constructor wraps
 static shared_ptr<Rectangle> Rectangle_constructor_wh(double w, double h, shared_ptr<Material> material) {
@@ -28,6 +36,9 @@ static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, shar
 void register_geometry_leafs()
 {
     py::scope scope;
+
+    init_GeometryElementLeaf<2>();
+    init_GeometryElementLeaf<3>();
 
     py::class_<Rectangle, shared_ptr<Rectangle>, py::bases<GeometryElementLeaf<2>>, boost::noncopyable> block2d("Rectangle",
         "Geometry object (2D) : a rectangular block filled with one material\n\n"

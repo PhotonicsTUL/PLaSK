@@ -51,27 +51,8 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
                       "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
         .add_property("boundingBoxSize", &GeometryElementD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
-        .def("getLeafsBoundigBoxes", (std::vector<typename GeometryElementD<dim>::Rect> (GeometryElementD<dim>::*)(const PathHints*) const) &GeometryElementD<dim>::getLeafsBoundingBoxes,
+        .def("getLeafsBoundigBoxes", (std::vector<typename GeometryElementD<dim>::Box> (GeometryElementD<dim>::*)(const PathHints*) const) &GeometryElementD<dim>::getLeafsBoundingBoxes,
                      (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
-    ;
-}
-
-
-/// Initialize class GeometryElementLeaf for Python
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, "GeometryElementLeaf", "Base class for all "," leaves") {
-    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, GeometryElementD<dim>)
-        .def_readwrite("material", &GeometryElementLeaf<dim>::material, "material of the geometry object")
-    ;
-}
-
-
-/// Initialize class GeometryElementTransform for Python
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementTransform, "GeometryElementTransform", "Base class for all "," transform nodes") {
-    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementTransform, GeometryElementD<dim>)
-        .add_property("child",
-                      (shared_ptr<typename GeometryElementTransform<dim>::ChildType> (GeometryElementTransform<dim>::*)()) &GeometryElementTransform<dim>::getChild,
-                      &GeometryElementTransform<dim>::setChild, "Child of the transform object")
-        .def("hasChild", &GeometryElementTransform<dim>::hasChild, "Return true if the transform object has a set child")
     ;
 }
 
@@ -93,19 +74,6 @@ void register_geometry_element()
 
     init_GeometryElementD<2>();
     init_GeometryElementD<3>();
-
-    init_GeometryElementLeaf<2>();
-    init_GeometryElementLeaf<3>();
-
-    init_GeometryElementTransform<2>();
-    init_GeometryElementTransform<3>();
-
-    // Space changer
-    py::class_<GeometryElementChangeSpace<3,2>, shared_ptr<GeometryElementChangeSpace<3,2>>, py::bases<GeometryElementTransform<3>>, boost::noncopyable>
-    ("GeometryElementChangeSpace2Dto3D", "Base class for elements changing space 2D to 3D", py::no_init);
-
-    py::class_<GeometryElementChangeSpace<2,3>, shared_ptr<GeometryElementChangeSpace<2,3>>, py::bases<GeometryElementTransform<2>>, boost::noncopyable>
-    ("GeometryElementChangeSpace3Dto2D", "Base class for elements changing space 3D to 2D using some averaging or cross-section", py::no_init);
 
 }
 

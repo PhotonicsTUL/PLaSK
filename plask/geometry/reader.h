@@ -11,26 +11,26 @@ namespace plask {
 
 /**
  * Hold names of axises.
- * 
+ *
  * Can change: axis number (from 0 to 2) <-> axis name (string)
  */
 struct AxisNames {
-    
+
     /**
      * Register of axis names.
      */
     struct Register {
         ///Name of system of axis names -> AxisNames
         std::map<std::string, AxisNames> axisNames;
-        
+
         ///Construct empty register.
         Register() {}
-        
+
         template<typename... Params>
         Register(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name, const Params&... names) {
             this->operator()(c0_name, c1_name, c2_name, names...);
         }
-        
+
         /**
          * Add axis names to register.
          * @param c0_name, c1_name, c2_name axis names
@@ -39,7 +39,7 @@ struct AxisNames {
         void addname(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name, const std::string& name) {
             axisNames[name] = AxisNames(c0_name, c1_name, c2_name);
         }
-        
+
         /**
          * Add axis names using as key: c0_name + c1_name + c2_name
          * @param c0_name, c1_name, c2_name axis names
@@ -48,13 +48,13 @@ struct AxisNames {
             addname(c0_name, c1_name, c2_name, c0_name + c1_name + c2_name);
             return *this;
         }
-        
+
         /**
          * Add axis names to register using as keys given @p name and c0_name + c1_name + c2_name.
          * @param c0_name, c1_name, c2_name axis names
          * @param name name of axis names, register key
          * @tparam Param1 std::string or const char*
-         */   
+         */
         template<typename Param1>
         Register& operator()(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name, const Param1& name) {
             addname(c0_name, c1_name, c2_name, name);
@@ -72,7 +72,7 @@ struct AxisNames {
             addname(c0_name, c1_name, c2_name, firstName);
             return this->operator()(c0_name, c1_name, c2_name, names...);
         }
-        
+
         /**
          * Get axis names with given name (key).
          * @param name register keys
@@ -81,29 +81,29 @@ struct AxisNames {
          */
         const AxisNames& get(const std::string& name) const;
     };
-    
+
     ///Name of axises (by index).
     std::string byIndex[3];
-    
+
     ///Construct uninitialized object. Do nothing.
     AxisNames() {}
-    
+
     AxisNames(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name);
-    
+
     /**
      * Get axis name by index.
      * @param i index of axis name, from 0 to 2
      * @return name of i-th axis
      */
     const std::string& operator[](const std::size_t i) const { return byIndex[i]; }
-    
+
     /**
      * Get axis index by name.
      * @param name axis name
      * @return index (from 0 to 2) of axis with given @p name or 3 if no axis with given name
      */
     std::size_t operator[](const std::string& name) const;
-    
+
 };
 
 /// Value for expected suffix for names of 2d elements types, see GeometryReader::expectedSuffix.
@@ -152,10 +152,10 @@ struct GeometryReader {
             GeometryReader::registerElementReader(tag_name, reader);
         }
     };
-    
+
     /// Register of standard axis names.
     static AxisNames::Register axisNamesRegister;
-    
+
     /// Current names of axis.
     const AxisNames* axisNames;
 
@@ -166,10 +166,10 @@ struct GeometryReader {
      * - PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D if 3d children are expected.
      */
     const char* expectedSuffix;
-    
+
     /// Material database used by geometry (leafs).
     const MaterialsDB& materialsDB;
-    
+
     /**
      * Get current axis name.
      * @param axis_index axis index
@@ -194,7 +194,7 @@ struct GeometryReader {
      * @return name of up axis
      */
     std::string getAxisUpName() { return getAxisName(axis::up_index); }
-    
+
     /**
      * Read axis name from current reader tag, set it in reader as current,
      * and restore old axisNames value when out of the scope.

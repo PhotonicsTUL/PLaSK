@@ -22,7 +22,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 
     explicit GeometryElementTransform(ChildType& child): _child(static_pointer_cast<ChildType>(child.shared_from_this())) { connectOnChildChanged(); }
 
-    ~GeometryElementTransform() { disconnectOnChildChanged(); }
+    virtual ~GeometryElementTransform() { disconnectOnChildChanged(); }
 
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_TRANSFORM; }
 
@@ -55,7 +55,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      * Get child.
      * @return child
      */
-    shared_ptr<ChildType> getChild() const { return _child; }
+    inline shared_ptr<ChildType> getChild() const { return _child; }
 
     /**
      * Set new child.
@@ -146,7 +146,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 template < int this_dim, int child_dim = 5 - this_dim, typename ChildType = GeometryElementD<child_dim> >
 struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, ChildType> {
 
-    typedef typename ChildType::Rect ChildRect;
+    typedef typename ChildType::Box ChildBox;
     typedef typename ChildType::DVec ChildVec;
     typedef typename GeometryElementTransform<this_dim, ChildType>::DVec DVec;
     using GeometryElementTransform<this_dim, ChildType>::getChild;
@@ -175,12 +175,12 @@ struct Translation: public GeometryElementTransform<dim> {
 
     typedef typename GeometryElementTransform<dim>::ChildType ChildType;
 
-    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementTransform<dim>::DVec DVec;
-    
-    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryElementTransform<dim>::Rect Rect;
-    
+
+    /// Box type in space on this, rectangle in space with dim number of dimensions.
+    typedef typename GeometryElementTransform<dim>::Box Box;
+
     using GeometryElementTransform<dim>::getChild;
 
     /**
@@ -200,7 +200,7 @@ struct Translation: public GeometryElementTransform<dim> {
     explicit Translation(GeometryElementD<dim>& child, const DVec& translation = Primitive<dim>::ZERO_VEC)
         : GeometryElementTransform<dim>(child), translation(translation) {}
 
-    virtual Rect getBoundingBox() const {
+    virtual Box getBoundingBox() const {
         return getChild()->getBoundingBox().translated(translation);
     }
 
@@ -212,11 +212,11 @@ struct Translation: public GeometryElementTransform<dim> {
         return getChild()->inside(p-translation);
     }
 
-    virtual bool intersect(const Rect& area) const {
+    virtual bool intersect(const Box& area) const {
         return getChild()->intersect(area.translated(-translation));
     }
 
-    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Rect, DVec> >& dest, const PathHints* path = 0) const {
+    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Box, DVec> >& dest, const PathHints* path = 0) const {
         const std::size_t old_size = dest.size();
         getChild()->getLeafsInfoToVec(dest, path);
         for (auto i = dest.begin() + old_size; i != dest.end(); ++i) {
@@ -225,12 +225,12 @@ struct Translation: public GeometryElementTransform<dim> {
         }
     }*/
 
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
-        std::vector<Rect> result = getChild()->getLeafsBoundingBoxes(path);
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
+        std::vector<Box> result = getChild()->getLeafsBoundingBoxes(path);
         dest.reserve(dest.size() + result.size());
-        for (Rect& r: result) dest.push_back(r.translated(translation));
+        for (Box& r: result) dest.push_back(r.translated(translation));
     }
-    
+
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = getChild()->getLeafsWithTranslations();
         for (std::tuple<shared_ptr<const GeometryElement>, DVec>& r: result) std::get<1>(r) += translation;

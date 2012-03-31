@@ -286,7 +286,6 @@ template <>
 struct Primitive<2> {
 
     /// Rectangle type in 2d space.
-    typedef Box2d Rect;
     typedef Box2d Box;
 
     /// Real (double) vector type in 2d space.
@@ -314,7 +313,6 @@ template <>
 struct Primitive<3> {
 
     /// Rectangle type (cuboid) in 3d space.
-    typedef Box3d Rect;
     typedef Box3d Box;
 
     /// Real (double) vector type in 3d space.

@@ -15,7 +15,7 @@ class EffectiveIndex2dModule: public Module {
     friend class RootDigger;
 
     /// Geometry in which the calculations are performed
-    shared_ptr<const CartesianExtend> geometry;
+    shared_ptr<const Extrusion> geometry;
 
     /// The mesh used for cutting the structure into one-dimentional stripes
     shared_ptr<RectilinearMesh2d> mesh;
@@ -29,7 +29,7 @@ class EffectiveIndex2dModule: public Module {
      *
      * \param geometry geometry in which the calculations are done
      */
-    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry) :
+    EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry) :
         geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
         log_value(dataLog<dcomplex, double>("beta", "char_val")) {
         inTemperature = 300.;
@@ -44,7 +44,7 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      * \param mesh horizontal mesh for dividing geometry
      */
-    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, const RectilinearMesh1d& meshx) :
+    EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry, const RectilinearMesh1d& meshx) :
         geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
         log_value(dataLog<dcomplex, double>("beta", "char_val")) {
         inTemperature = 300.;
@@ -60,7 +60,7 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      * \param mesh mesh for dividing geometry
      */
-    EffectiveIndex2dModule(shared_ptr<const CartesianExtend> geometry, shared_ptr<RectilinearMesh2d> mesh) :
+    EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry, shared_ptr<RectilinearMesh2d> mesh) :
         geometry(geometry), mesh(mesh), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
         log_value(dataLog<dcomplex, double>("beta", "char_val")) {
         inTemperature = 300.;

@@ -330,12 +330,12 @@ template < int dimensions >
 struct GeometryElementD: public GeometryElement {
 
     static const int dim = dimensions;
-    typedef typename Primitive<dim>::Rect Rect;
+    typedef typename Primitive<dim>::Box Box;
     typedef typename Primitive<dim>::DVec DVec;
 
     int getDimensionsCount() const { return dimensions; }
 
-    //virtual Rect getBoundingBox() const;
+    //virtual Box getBoundingBox() const;
 
     /**
      * Check if geometry includes point.
@@ -349,13 +349,13 @@ struct GeometryElementD: public GeometryElement {
      * @param area rectangular area
      * @return true only if this geometry includes some points from @a area
      */
-    virtual bool intersect(const Rect& area) const = 0;
+    virtual bool intersect(const Box& area) const = 0;
 
     /**
      * Calculate minimal rectangle which includes all points of geometry element.
      * @return calculated rectangle
      */
-    virtual Rect getBoundingBox() const = 0;
+    virtual Box getBoundingBox() const = 0;
 
     virtual DVec getBoundingBoxSize() const { return getBoundingBox().size(); }
 
@@ -368,22 +368,22 @@ struct GeometryElementD: public GeometryElement {
 
     //virtual std::vector<Material*> getMaterials(Mesh);        ??
 
-    //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Rect, DVec>>& dest, const PathHints* path = 0) const = 0;
+    //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const = 0;
 
     /**
      * Calculate and append to vector bounding boxes of all leafs, optionaly showed by path.
      * @param dest place to add result
      * @param path path fragments, optional
      */
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const = 0;
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const = 0;
 
     /**
      * Calculate bounding boxes of all leafs, optionaly showed by path.
      * @param path path fragments, optional
      * @return bounding boxes of all leafs
      */
-    std::vector<Rect> getLeafsBoundingBoxes(const PathHints* path = 0) const {
-        std::vector<Rect> result;
+    std::vector<Box> getLeafsBoundingBoxes(const PathHints* path = 0) const {
+        std::vector<Box> result;
         getLeafsBoundingBoxesToVec(result, path);
         return result;
     }
@@ -393,8 +393,8 @@ struct GeometryElementD: public GeometryElement {
      * @param path path fragments
      * @return bounding boxes of all leafs
      */
-    std::vector<Rect> getLeafsBoundingBoxes(const PathHints& path) const {
-        std::vector<Rect> result;
+    std::vector<Box> getLeafsBoundingBoxes(const PathHints& path) const {
+        std::vector<Box> result;
         getLeafsBoundingBoxesToVec(result, &path);
         return result;
     }

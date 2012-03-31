@@ -31,7 +31,7 @@ struct GeometryElementContainer: public GeometryElementD<dim> {
     typedef typename GeometryElementContainer<dim>::DVec DVec;
 
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryElementContainer<dim>::Rect Rect;
+    typedef typename GeometryElementContainer<dim>::Box Box;
 
 protected:
     TranslationVector children;
@@ -87,14 +87,14 @@ public:
         return false;
     }
 
-    virtual bool intersect(const Rect& area) const {
+    virtual bool intersect(const Box& area) const {
         for (auto child: children) if (child->intersect(area)) return true;
         return false;
     }
 
-    virtual Rect getBoundingBox() const {
-        if (children.empty()) return Rect(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
-        Rect result = children[0]->getBoundingBox();
+    virtual Box getBoundingBox() const {
+        if (children.empty()) return Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
+        Box result = children[0]->getBoundingBox();
         for (std::size_t i = 1; i < children.size(); ++i)
             result.include(children[i]->getBoundingBox());
         return result;
@@ -112,7 +112,7 @@ public:
         return shared_ptr<Material>();
     }
 
-    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Rect, DVec> >& dest, const PathHints* path = 0) const {
+    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Box, DVec> >& dest, const PathHints* path = 0) const {
         if (path) {
             auto c = path->getTranslationChildren<dim>(*this);
             if (!c.empty()) {
@@ -123,7 +123,7 @@ public:
         for (auto child: children) child->getLeafsInfoToVec(dest, path);
     }*/
 
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Rect>& dest, const PathHints* path = 0) const {
+    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
         if (path) {
             auto c = path->getTranslationChildren<dim>(*this);
             if (!c.empty()) {
@@ -206,7 +206,7 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
     typedef typename GeometryElementContainer<dim>::DVec DVec;
 
     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryElementContainer<dim>::Rect Rect;
+    typedef typename GeometryElementContainer<dim>::Box Box;
 
     /// Type of this child.
     typedef GeometryElementD<dim> ChildType;

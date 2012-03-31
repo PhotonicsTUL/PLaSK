@@ -4,38 +4,15 @@ namespace plask {
 
 #define baseH_attr "from"
 #define repeat_attr "repeat"
-#define extend_attr "extend"
-
-template <int dim>
-inline static typename StackContainer<dim>::StackExtension readStackExtension(GeometryReader& reader) {
-    boost::optional<std::string> extend_opt = XML::getAttribute(reader.source, extend_attr);
-    if (extend_opt) {
-        std::string extend_str = *extend_opt;
-        for (auto s: extend_str) s = std::tolower(s);
-        if (extend_str == "vert" || extend_str == "vertical" || extend_str == "vertically")
-            return StackContainer<dim>::EXTEND_VERTICALLY;
-        else if (extend_str == "hor" || extend_str == "horizontal" || extend_str == "horizontally")
-            return StackContainer<dim>::EXTEND_HORIZONTALLY;
-        else if (extend_str == "all" || extend_str == "both")
-            return StackContainer<dim>::EXTEND_ALL;
-        else throw XMLUnexpectedAttributeValueException("stack", extend_attr, extend_str);
-    }
-    return StackContainer<dim>::EXTEND_NONE;
-}
 
 shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
     const double baseH = XML::getAttribute(reader.source, baseH_attr, 0.0);
     std::unique_ptr<align::Aligner2d<align::DIRECTION_TRAN>> default_aligner(
           align::fromStr<align::DIRECTION_TRAN>(XML::getAttribute<std::string>(reader.source, reader.getAxisTranName(), "c")));
 
-    auto extend = readStackExtension<2>(reader);
-    auto repeat = reader.source.getAttributeValue(repeat_attr);
-    if (repeat != nullptr && extend != StackContainer<2>::EXTEND_NONE)
-        throw XMLConflictingAttributesException("stack", "repeat", "extend");
-
     shared_ptr< StackContainer<2> > result(
-                    repeat == nullptr ?
-                    new StackContainer<2>(baseH, extend) :
+                    reader.source.getAttributeValue(repeat_attr) == nullptr ?
+                    new StackContainer<2>(baseH) :
                     new MultiStackContainer<2>(XML::getAttribute(reader.source, repeat_attr, 1), baseH)
                 );
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
@@ -59,18 +36,11 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
 shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
     const double baseH = XML::getAttribute(reader.source, baseH_attr, 0.0);
     //TODO default aligner (see above)
-
-    auto extend = readStackExtension<3>(reader);
-    auto repeat = reader.source.getAttributeValue(repeat_attr);
-    if (repeat != nullptr && extend != StackContainer<3>::EXTEND_NONE)
-        throw XMLConflictingAttributesException("stack", "repeat", "extend");
-
     shared_ptr< StackContainer<3> > result(
-                    repeat == nullptr ?
-                    new StackContainer<3>(baseH, extend) :
+                    reader.source.getAttributeValue(repeat_attr) == nullptr ?
+                    new StackContainer<3>(baseH) :
                     new MultiStackContainer<3>(XML::getAttribute(reader.source, repeat_attr, 1), baseH)
                 );
-
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children<StackContainer<3>>(reader,
             [&]() {
