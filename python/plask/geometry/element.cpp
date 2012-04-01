@@ -31,6 +31,18 @@ template <> struct GeometryElementD_getMaterial<3> {
     }
 };
 
+template <int dim>
+static py::list GeometryElementD_leafs(const GeometryElementD<dim>& self) {
+    py::list result;
+    auto leafs = self.getLeafsWithTranslations();
+    for (auto i: leafs) {
+        auto leaf = static_pointer_cast<const GeometryElementD<dim>>(std::get<0>(i));
+        result.append(make_shared<Translation<dim>>(const_pointer_cast<GeometryElementD<dim>>(leaf), std::get<1>(i)));
+    }
+    return result;
+}
+
+
 /// Initialize class GeometryElementD for Python
 template <int dim> struct GeometryElementD_vector_args { static const py::detail::keywords<dim> args; };
 template<> const py::detail::keywords<2> GeometryElementD_vector_args<2>::args = (py::arg("c0"), py::arg("c1"));
@@ -47,13 +59,29 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
         .def("getMaterial", &GeometryElementD_getMaterial<dim>::call, GeometryElementD_vector_args<dim>::args,
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
-        .add_property("boundingBox", &GeometryElementD<dim>::getBoundingBox,
+        .add_property("bbox", &GeometryElementD<dim>::getBoundingBox,
                       "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
-        .add_property("boundingBoxSize", &GeometryElementD<dim>::getBoundingBoxSize,
+        .add_property("bbox_size", &GeometryElementD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
+        .add_property("leafs", &GeometryElementD_leafs<dim>, "List of Translation objects holding all leafs in the subtree originating from this element")
         .def("getLeafsBoundigBoxes", (std::vector<typename GeometryElementD<dim>::Box> (GeometryElementD<dim>::*)(const PathHints*) const) &GeometryElementD<dim>::getLeafsBoundingBoxes,
                      (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
     ;
+}
+
+std::string GeometryElement__repr__(shared_ptr<GeometryElement> self) {
+    std::stringstream out;
+    try {
+        py::object obj(self);
+        py::object cls = obj.attr("__class__");
+        std::string module = py::extract<std::string>(cls.attr("__module__"));
+        std::string name = py::extract<std::string>(cls.attr("__name__"));
+        out << "<" << module << "." << name << " object at (" << self << ")>";
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        out << "<Unrecognized plask.geometry.GeometryElement subclass object at (" << self << ")>";
+    }
+    return out.str();
 }
 
 
@@ -70,6 +98,7 @@ void register_geometry_element()
         "Base class for all geometry elements.", py::no_init)
         .add_property("type", &GeometryElement::getType)
         .def("validate", &GeometryElement::validate)
+        .def("__repr__", &GeometryElement__repr__)
     ;
 
     init_GeometryElementD<2>();

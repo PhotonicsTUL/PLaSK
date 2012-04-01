@@ -12,14 +12,14 @@ std::size_t AxisNames::operator [](const std::string &name) const {
     if (byIndex[0] == name) return 0;
     if (byIndex[1] == name) return 1;
     if (byIndex[2] == name) return 2;
-    return 3;  
+    return 3;
 }
 
 const AxisNames& AxisNames::Register::get(const std::string &name) const {
     auto i = axisNames.find(removedChars(name, ",._ \t"));
     if (i == axisNames.end())
         throw NoSuchAxisNames(name);
-    return i->second;    
+    return i->second;
 }
 
 std::map<std::string, GeometryReader::element_read_f*>& GeometryReader::elementReaders() {
@@ -42,7 +42,7 @@ AxisNames::Register GeometryReader::axisNamesRegister(
 
 GeometryReader::ReadAxisNames::ReadAxisNames(GeometryReader &reader)
     : reader(reader), old(reader.axisNames) {
-    const char* axis = reader.source.getAttributeValue("axis");
+    const char* axis = reader.source.getAttributeValue("axes");
     if (axis) reader.axisNames = &axisNamesRegister.get(axis);
 }
 

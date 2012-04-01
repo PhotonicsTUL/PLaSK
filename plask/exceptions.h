@@ -191,7 +191,7 @@ public:
 
 //-------------- Connected with XML: -----------------------
 /**
- * Exceptions of this class are thrownwhen required attribute is not found in XML tag.
+ * Exceptions of this class are thrown when the required attribute is not found in XML tag.
  */
 struct XMLNoAttrException: public Exception {
     /**
@@ -199,6 +199,18 @@ struct XMLNoAttrException: public Exception {
      * @param attr_name name of required attribiute
      */
     XMLNoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribute \"" + attr_name + "\"") {}
+};
+
+/**
+ * Exceptions of this class are thrown when the attribute value has wrong value.
+ */
+struct XMLBadAttrException: public Exception {
+    /**
+     * @param where where (typically in which tag) there are no required attribiute
+     * @param attr_name name of required attribiute
+     */
+    XMLBadAttrException(const std::string& where, const std::string& attr_name, const std::string& attr_value):
+        Exception(where + ": XML tag attribute \"" + attr_name + "\" has bad value \"" + attr_value + "\"") {}
 };
 
 /**

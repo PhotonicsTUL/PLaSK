@@ -16,7 +16,6 @@ void register_geometry_container_stack()
         py::init<double>((py::arg("base_level")=0.)))
         .def("append", &StackContainer<2>::add, (py::arg("child"), py::arg("align")=StackContainer<2>::CenterAligner()), "Append new element to the container")
         .def("__contains__", &GeometryElementContainer<2>::isInSubtree, (py::arg("item")))
-//         .def("__getitem__", &Stack__getitem__<2, StackContainer2d>, (py::arg("item")))
         //.def("__deltiem__" TODO
     ;
 
@@ -27,7 +26,6 @@ void register_geometry_container_stack()
         py::init<double>((py::arg("base_level")=0.)))
         .def("append", &StackContainer<3>::add, (py::arg("child"), py::arg("align")=StackContainer<3>::CenterAligner()), "Append new element to the container")
         .def("__contains__", &GeometryElementContainer<3>::isInSubtree, (py::arg("item")))
-//         .def("__getitem__", &Stack__getitem__<3, StackContainer3d>, (py::arg("item")))
         //.def("__deltiem__" TODO
     ;
 

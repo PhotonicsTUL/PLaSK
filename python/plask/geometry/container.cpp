@@ -3,18 +3,25 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <plask/geometry/container.h>
-#include <plask/geometry/stack.h>
 
 
 namespace plask { namespace python {
 
+template <int dim>
+static bool Container__contains__(const GeometryElementContainer<dim>& self, shared_ptr<typename GeometryElementContainer<dim>::ChildType> child) {
+    for (auto trans: self.getChildrenVector()) {
+        if (trans->getChild() == child) return true;
+    }
+    return false;
+}
+
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementContainer, "GeometryElementContainer", "Base class for all "," containers") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementContainer, GeometryElementD<dim>)
+        .def("__contains__", &Container__contains__<dim>)
+        .def("__len__", &GeometryElementD<dim>::getChildCount)
         //.def("__getitem__" TODO
-        //.def("__len__" TODO
         //.def("__iter__" TODO
-        //.add_property("leafs" TODO getLeafsWithTranslations
-        //.add_property("leafsBoundingBoxes" TODO
+        //.def("__delitem__" TODO
     ;
 }
 
@@ -27,8 +34,6 @@ DECLARE_GEOMETRY_ELEMENT_23D(TranslationContainer, "TranslationContainer",
     GEOMETRY_ELEMENT_23D_DEFAULT(TranslationContainer, GeometryElementContainer<dim>)
         .def("append", &TranslationContainer<dim>::add, (py::arg("child"), py::arg("trans")=Vec<2,double>(0.,0.)),
              "Add new element to the container")
-        .def("__contains__", &GeometryElementContainer<dim>::isInSubtree, (py::arg("item")))
-        //.def("__deltiem__" TODO
     ;
 }
 

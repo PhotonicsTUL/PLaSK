@@ -270,16 +270,16 @@ public:
     Path& operator+=(shared_ptr<const GeometryElement> element) { return append(element); }
 
     /**
-     * Get path hinst implicted by this.
+     * Get path hints implicted by this.
      * @return path hints which includes all hints implicted by this path
      */
     PathHints getPathHints() const;
 
-    /**
-     * Get path hinst implicted by this.
-     * @return path hints which includes all hints implicted by this path
-     */
-    operator PathHints() const { return getPathHints(); }
+//     /**
+//      * Get path hinst implicted by this.
+//      * @return path hints which includes all hints implicted by this path
+//      */
+//     operator PathHints() const { return getPathHints(); }
 };
 
 }

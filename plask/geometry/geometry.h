@@ -30,7 +30,7 @@ Geometry can be read from an XML content (for details about reading XML see @ref
 
 Example of XML which describes geometry:
 @verbatim
-<geometry axis="x,y">
+<geometry axes="xy">
     <container2d name="trans_cont">
         <rectangle x="5" y="3" name="block_5_3" material="exampleMaterial"/>
         <child x="3" y="3">
@@ -61,8 +61,8 @@ represented by an object of class plask::MultiStackContainer. This container has
 earlier defined elements with names "block_5_3" and "c1" (the second one is translated inside "mystack" in x direction by -5),
 and a block with size 8x12.
 
-Geometry tag has an \c axis attribute which defines names of the axes. Each other tag inside geometry also can have
-an \c axis attribute. In such cases this attribute defines local names of axes (i.e. valid up to end of this tag).
+Geometry tag has an \c axes attribute which defines names of the axes. Each other tag inside geometry also can have
+an \c axes attribute. In such cases this attribute defines local names of axes (i.e. valid up to end of this tag).
 
 @section geometry_create How to create and use geometry graph? (examples)
 

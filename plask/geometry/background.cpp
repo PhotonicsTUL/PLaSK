@@ -51,7 +51,7 @@ static shared_ptr<GeometryElement> read_background2d(GeometryReader& reader) {
         for (auto c: extend_str) {
             if (c == reader.getAxisTranName()[0]) extend |= Background<2>::EXTEND_TRAN;
             else if (c == reader.getAxisUpName()[0]) extend |= Background<2>::EXTEND_VERTICAL;
-            else throw BadInput("<background" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D ">", "Wrong value in '" extend_attr "' attribute");
+            else throw XMLBadAttrException(reader.source.getNodeName(), extend_attr, extend_str);
         }
     }
     shared_ptr<Background<2>> background(new Background<2>(Background<2>::ExtendType(extend)));
@@ -70,7 +70,7 @@ static shared_ptr<GeometryElement> read_background3d(GeometryReader& reader) {
             if (c == reader.getAxisLonName()[0]) extend |= Background<3>::EXTEND_LON;
             else if (c == reader.getAxisTranName()[0]) extend |= Background<3>::EXTEND_TRAN;
             else if (c == reader.getAxisUpName()[0]) extend |= Background<3>::EXTEND_VERTICAL;
-            else throw BadInput("<background" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D ">", "Wrong value in '" extend_attr "' attribute");
+            else throw XMLBadAttrException(reader.source.getNodeName(), extend_attr, extend_str);
         }
     }
     shared_ptr<Background<3>> background(new Background<3>(Background<3>::ExtendType(extend)));

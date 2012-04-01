@@ -25,28 +25,23 @@ namespace plask {
 template <int dim>
 struct GeometryElementContainer: public GeometryElementD<dim> {
 
-    typedef std::vector< shared_ptr< Translation<dim> > > TranslationVector;
-
-    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
 
-    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Box Box;
+
+    /// Type of the container children.
+    typedef GeometryElementD<dim> ChildType;
+
+    /// Type of translation geometry element in space of this.
+    typedef Translation<dim> TranslationT;
+
+    /// Type of the vector holiding container children
+    typedef std::vector<shared_ptr<TranslationT>> TranslationVector;
 
 protected:
     TranslationVector children;
-
-    /**
-     * Remove all children which fulfil predicate.
-     * @param predicate return true only if child passed as argument should be deleted
-     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
-     */
-    template <typename PredicateT>
-    void removeAll(PredicateT predicate) {
-        auto new_end = std::remove_if(children.begin(), children.end(), predicate);
-        for (auto i = new_end; i != children.end(); ++i) disconnectOnChildChanged(**i);
-        children.erease(new_end, children.end());
-    }
 
 public:
 
@@ -193,6 +188,36 @@ public:
         //TODO code... what with paths? add paths to changedVersion method
     }
 
+    /**
+     * Remove all children which fulfil predicate.
+     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
+     * @param predicate returns true only if the child passed as an argument should be deleted
+     */
+    template <typename PredicateT>
+    void remove(PredicateT predicate) {
+        auto dst = children.begin();
+        for (auto i = children.begin(); i != children.end(); ++i)
+            if (predicate(*i)) disconnectOnChildChanged(**i);
+            else *dst++ = *i;
+        children.erease(dst, children.end());
+    }
+
+    /**
+     * Remove all children exactly equal to @a el.
+     * @param el child(ren) to remove
+     */
+    void remove(const ChildType* el) {
+        remove([&el](ChildType* c) { return c->child == el; });
+    }
+
+    /**
+     * Remove child pointed, for this container, in @a hints.
+     * @param hints path hints, see @ref geometry_paths
+     */
+    void remove(const PathHints& hints) {
+        auto cset = hints.getChildren(this);
+        remove([&](TranslationT t) { return cset.find(t) != cset.end; });
+    }
 };
 
 /**
@@ -209,10 +234,10 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
     typedef typename GeometryElementContainer<dim>::Box Box;
 
     /// Type of this child.
-    typedef GeometryElementD<dim> ChildType;
+    typedef typename GeometryElementContainer<dim>::ChildType ChildType;
 
-    /// Type of translation geometry elment in space of this.
-    typedef Translation<dim> TranslationT;
+    /// Type of translation geometry element in space of this.
+    typedef typename GeometryElementContainer<dim>::TranslationT TranslationT;
 
     using GeometryElementContainer<dim>::children;
     using GeometryElementContainer<dim>::shared_from_this;
@@ -241,33 +266,6 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
     PathHints::Hint add(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         this->ensureCanHasAsChild(*el);
         return addUnsafe(el, translation);
-    }
-
-    /**
-     * Remove all children which fulfil predicate.
-     * @param predicate return true only if child passed as argument should be deleted
-     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
-     */
-    template <typename PredicateT>
-    void remove(PredicateT predicate) {
-        removeAll(predicate);
-    }
-
-    /**
-     * Remove all children exactly equal to @a el.
-     * @param el child(ren) to remove
-     */
-    void remove(const ChildType* el) {
-        removeAll([&el](ChildType* c) { return c->child == el; });
-    }
-
-    /**
-     * Remove child pointed, for this container, in @a hints.
-     * @param hints path hints, see @ref geometry_paths
-     */
-    void remove(const PathHints& hints) {
-        auto cset = hints.getChildren(this);
-        removeAll([&](TranslationT t) { return cset.find(t) != cset.end; });
     }
 
 };

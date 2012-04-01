@@ -238,8 +238,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const = 0;
 
     /**
-     * Get all leafs in subtree with this in root.
-     * @return all leafs in subtree with this in root
+     * Get all leafs in subtree with this object as root.
+     * @return all leafs in subtree with this object as root
      */
     std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
         std::vector< shared_ptr<const GeometryElement> > result;

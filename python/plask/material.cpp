@@ -383,6 +383,18 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
     return result;
 }
 
+
+std::string Material__str__(const Material& self) {
+    return self.name(); // TODO: get fully qualified name with composition and doping amount
+}
+
+std::string Material__repr__(shared_ptr<Material> self) {
+    return format("<'" + Material__str__(*self) +"' plask.materials.Material object at (%1%)>", self);
+}
+
+
+
+
 void initMaterials() {
 
     py::object materials_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.materials"))) };
@@ -413,6 +425,8 @@ void initMaterials() {
         .staticmethod("_completeComposition")
         .add_property("name", &Material::name)
         .add_property("kind", &Material::kind)
+        .def("__str__", &Material__str__)
+        .def("__repr__", &Material__repr__)
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")), "Get lattice constant [A]")
         .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("point")='G'), "Get energy gap Eg [eV]")
@@ -476,6 +490,7 @@ void initMaterials() {
 
     py::def("_register_material_complex", &registerComplexMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
             "Register new complex material class to the database");
+
 }
 
 }} // namespace plask::python

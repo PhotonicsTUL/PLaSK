@@ -36,7 +36,7 @@ class SimpleGeometry(unittest.TestCase):
         '''test geometry manager'''
         geometry = plask.geometry.Geometry()
         geometry.read('''
-            <geometry axis="xy">
+            <geometry axes="xy">
                 <stack2d repeat="2" name="stack">
                 <!--<stack2d name="stack">-->
                     <child><rectangle name="block" x="4" y="2" material="Dumb" /></child>
@@ -62,8 +62,8 @@ class GeometryObjects(unittest.TestCase):
 
     def testRectangle(self):
         '''Test rectangle'''
-        self.assertEqual( self.block53.boundingBox.upper, plask.vec(5.0, 3.0) )
-        self.assertEqual( self.block53.boundingBox.lower, plask.vec(0.0, 0.0) )
+        self.assertEqual( self.block53.bbox.upper, plask.vec(5.0, 3.0) )
+        self.assertEqual( self.block53.bbox.lower, plask.vec(0.0, 0.0) )
         self.assertEqual( self.block53.getMaterial(plask.vec(4.0, 2.0)), self.mat)
         self.assertIsNone( self.block53.getMaterial(plask.vec(6.0, 2.0)));
 
@@ -71,7 +71,7 @@ class GeometryObjects(unittest.TestCase):
     def testTranslation(self):
         '''Test translations of the objects'''
         translation = plask.geometry.Translation2D(self.block53, plask.vec(10.0, 20.0))    # should be in [10, 20] - [15, 23]
-        self.assertEqual( translation.boundingBox, plask.geometry.Box2D(plask.vec(10, 20), plask.vec(15, 23)) )
+        self.assertEqual( translation.bbox, plask.geometry.Box2D(plask.vec(10, 20), plask.vec(15, 23)) )
         self.assertEqual( translation.getMaterial(12.0, 22.0), self.mat);
         self.assertIsNone( translation.getMaterial(4.0, 22.0));
 
@@ -93,19 +93,19 @@ class GeometryObjects(unittest.TestCase):
 
         geometry = plask.geometry.Geometry()
         geometry.read('''
-            <geometry axis="xy">
+            <geometry axes="xy">
                 <background2d name="back" along="y">
-                    <stack2d name="stack">
+                    <stack2d name="stack" repeat="2">
                         <child><rectangle name="rect" x="4" y="2" material="GaN"/></child>
                     </stack2d>
                 </background2d>
             </geometry>
         ''')
         background = geometry.element("back")
-        self.assertEqual( background.getMaterial(-3.,1.), None )
-        self.assertEqual( background.getMaterial(3.,1.), None )
-        self.assertEqual( background.getMaterial(0.,-1.).name, "GaN" )
-        self.assertEqual( background.getMaterial(0.,3.).name, "GaN" )
+        self.assertEqual( background.getMaterial(-30.,  1.), None )
+        self.assertEqual( background.getMaterial( 30.,  1.), None )
+        self.assertEqual( background.getMaterial(  0.,-10.).name, "GaN" )
+        self.assertEqual( background.getMaterial(  0., 50.).name, "GaN" )
 
 
     def testMultiStack(self):
@@ -114,7 +114,7 @@ class GeometryObjects(unittest.TestCase):
         multistack.append(self.block53)
         self.assertIn( self.block53, multistack )
         # 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
-        self.assertEqual( multistack.boundingBox, plask.geometry.Box2D(-2.5, 10.0, 2.5, 40.0) )
+        self.assertEqual( multistack.bbox, plask.geometry.Box2D(-2.5, 10.0, 2.5, 40.0) )
         self.assertEqual( multistack.getMaterial(1.0, 39.0), self.mat )
         self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
         #self.assertEqual( multistack[0].child, self.block53 )

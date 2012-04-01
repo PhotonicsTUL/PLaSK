@@ -1,7 +1,9 @@
 #ifndef PLASK__GEOMETRY_STACK_H
 #define PLASK__GEOMETRY_STACK_H
 
+#include "primitives.h"
 #include "container.h"
+#include <deque>
 
 namespace plask {
 
@@ -11,17 +13,20 @@ namespace plask {
 template <int dim, int growingDirection = Primitive<dim>::DIRECTION_UP>
 struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
-    ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::DVec DVec;
 
-    ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementContainer<dim>::Box Box;
 
-    ///Type of this child.
-    typedef GeometryElementD<dim> ChildType;
+    /// Type of this child.
+    typedef typename GeometryElementContainer<dim>::ChildType ChildType;
 
-    ///Type of translation geometry elment in space of this.
-    typedef Translation<dim> TranslationT;
+    /// Type of translation geometry elment in space of this.
+    typedef typename GeometryElementContainer<dim>::TranslationT TranslationT;
+
+    /// Type of the vector holiding container children
+    typedef typename GeometryElementContainer<dim>::TranslationVector TranslationVector;
 
     using GeometryElementContainer<dim>::children;
 
@@ -58,13 +63,20 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     /**
      * Remove all children which fulfil predicate.
-     * @param predicate return true only if child passed as argument should be deleted
      * @tparam PredicateT functor which can take child as argument and return something convertable to bool
+     * @param predicate returns true only if the child passed as an argument should be deleted
      */
     template <typename PredicateT>
     void remove(PredicateT predicate) {
-        removeAll(predicate);   //TODO this call onChange, but its to early, should be called after updateAllHeights()
+        std::deque<shared_ptr<TranslationT>> deleted;
+        auto dst = children.begin();
+        for (auto i = children.begin(); i != children.end(); ++i)
+            if (predicate(*i)) deleted.push_back(*i);
+            else *dst++ = *i;
+        children.erease(dst, children.end());
         updateAllHeights();
+        for (auto i: deleted)
+            disconnectOnChildChanged(**i);
     }
 
     /**
@@ -72,8 +84,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      * @param el child(ren) to remove
      */
     void remove(const ChildType* el) {
-        removeAll([&el](ChildType* c) { return c->child == el; });  //TODO this call onChange, but its to early, should be called after updateAllHeights()
-        updateAllHeights();
+        remove([&el](ChildType* c) { return c->child == el; });
     }
 
     /**
@@ -82,8 +93,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      */
     void remove(const PathHints& hints) {
         auto cset = hints.getChildren(this);
-        removeAll([&](TranslationT t) { return cset.find(t) != cset.end; });    //TODO this call onChange, but its to early, should be called after updateAllHeights()
-        updateAllHeights();
+        remove([&](TranslationT t) { return cset.find(t) != cset.end; });
     }
 
     /// Called by child.change signal, update heights call this change
@@ -92,7 +102,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         this->fireChanged(evt.flagsForParent());
     }
 
-    protected:
+  protected:
 
     /**
      * stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements),
