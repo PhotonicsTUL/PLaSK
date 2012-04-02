@@ -67,7 +67,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return GeometryElement::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
     }
 
-    virtual std::size_t getChildCount() const { return 0; }
+    virtual std::size_t getChildrenCount() const { return 0; }
 
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
         throw OutOfBoundException("GeometryElementLeaf::getChildAt", "child_nr");

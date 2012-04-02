@@ -52,7 +52,7 @@ static std::string Translation__str__(const Translation<dim>& self) {
     std::stringstream out;
     out << "(";
     try {
-        std::string str = py::extract<std::string>(py::str(self.getChild()));
+        std::string str = py::extract<std::string>(py::object(self.getChild()).attr("__repr__")());
         out << str;
     } catch (py::error_already_set) {
         PyErr_Clear();

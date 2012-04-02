@@ -63,7 +63,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
                       "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
         .add_property("bbox_size", &GeometryElementD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
-        .add_property("leafs", &GeometryElementD_leafs<dim>, "List of Translation objects holding all leafs in the subtree originating from this element")
+        .def("getLeafs", &GeometryElementD_leafs<dim>, "Return list of Translation objects holding all leafs in the subtree originating from this element")
         .def("getLeafsBoundigBoxes", (std::vector<typename GeometryElementD<dim>::Box> (GeometryElementD<dim>::*)(const PathHints*) const) &GeometryElementD<dim>::getLeafsBoundingBoxes,
                      (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
     ;

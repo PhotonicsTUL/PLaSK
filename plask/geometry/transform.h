@@ -105,7 +105,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
         return result;
     }
 
-    virtual std::size_t getChildCount() const { return hasChild() ? 1 : 0; }
+    virtual std::size_t getChildrenCount() const { return hasChild() ? 1 : 0; }
 
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
         if (!hasChild() || child_nr > 0) throw OutOfBoundException("GeometryElementTransform::getChildAt", "child_nr");

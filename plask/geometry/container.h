@@ -174,7 +174,7 @@ public:
     }
 
 
-    virtual std::size_t getChildCount() const { return children.size(); }
+    virtual std::size_t getChildrenCount() const { return children.size(); }
 
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
         if (child_nr >= children.size()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, children.size()-1);

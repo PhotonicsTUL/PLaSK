@@ -55,23 +55,23 @@ void register_geometry_path()
                                 "It may only be used as an intermediate object to either add it to Path, PathHints, or\n"
                                 "to retrieve the container, child, or translation elements.",
                                 py::no_init)
-//         .add_property("container", &PathHints::getContainer)
-//         .add_property("child", &Hint_child)
-//         .add_property("translation", &Hint_translation)
     ;
 
-    export_frozenset<shared_ptr<GeometryElement>>("GeometryElement_set");
+    set_to_python_list_conventer<shared_ptr<GeometryElement>>();
+    // export_frozenset<shared_ptr<GeometryElement>>("GeometryElement_set");
 
     py::class_<PathHints>("PathHints",
                           "PathHints is used to resolve ambiguities if any element is present in the geometry\n"
                           "tree more than once. It contains a set of ElementHint objects holding weak references\n"
                           "to containers and their childred.")
-        .def("addHint", (void (PathHints::*)(const PathHints::Hint&))&PathHints::addHint, "Append hint to the path.", (py::arg("hint")))
+        .def("add", (void (PathHints::*)(const PathHints::Hint&))&PathHints::addHint, "Append hint to the path.", (py::arg("hint")))
         .def(py::self += py::other<PathHints::Hint>())
         .def("getChildren", (std::set<shared_ptr<GeometryElement>> (PathHints::*)(const GeometryElement& container) const)&PathHints::getChildren,
-             "Get all children of container present in the Hints", (py::arg("container")))
+             "Get all children of a container present in the Hints", (py::arg("container")))
         .def("cleanDeleted",  &PathHints::cleanDeleted, "Remove all hints which refer to deleted objects")
     ;
+
+    py::implicitly_convertible<PathHints::Hint,PathHints>();
 
     py::class_<Path>("Path",
                      "Path is used to specify unique instance of every element in the geometry,\n"

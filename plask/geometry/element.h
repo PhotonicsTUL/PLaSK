@@ -48,7 +48,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     /**
      * Store information about event connected with geometry element.
      *
-     * Subclasses of this can includes additional informations about specific type of event.
+     * Subclasses of this can includes additional information about specific type of event.
      */
     struct Event {
 
@@ -132,8 +132,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
         /**
          * Try to apply changes.
-         * @param to_change[in,out] pointer to element which eventualy will be changed (in such case pointer after call can point to other geometry element)
-         * @param translation[out] optional, extra translation for element after change (in case of 2d object caller read only tran and up components of vector)
+         * @param to_change[in,out] pointer to element which eventualy will be changed (in such case pointer after call can point to another geometry element)
+         * @param translation[out] optional, extra translation for element after change (in case of 2d object caller reads only \a tran and \a up components of this vector)
          * @return @c true only if something was changed, @c false if nothing was changed (in such case changer doesn't change arguments)
          */
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const = 0;
@@ -253,7 +253,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Get number of element children in geometry graph.
      * @return number of children
      */
-    virtual std::size_t getChildCount() const = 0;
+    virtual std::size_t getChildrenCount() const = 0;
 
     /**
      * Get child with given index.
@@ -263,15 +263,15 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const = 0;
 
     /**
-     * Get number of real (phisicaly stored) children in geometry graph.
+     * Get number of real (physicaly stored) children in geometry graph.
      *
-     * By default call getChildCount(), but elements of some types (like multi-stack) redefine this.
+     * By default call getChildrenCount(), but elements of some types (like multi-stack) redefine this.
      * @return number of real children
      */
     virtual std::size_t getRealChildCount() const;
 
     /**
-     * Get real (phisicaly stored) child with given index.
+     * Get real (physicaly stored) child with given index.
      *
      * By default call getChildAt(child_nr), but elements of some types (like multi-stack) redefine this.
      * @param child_nr index of real child to get
@@ -295,7 +295,7 @@ public:
 
     ///@return end end iterator over children
     FunctorIndexedIterator<ChildGetter> end() const {
-        return FunctorIndexedIterator<ChildGetter>(ChildGetter(this->shared_from_this()), getChildCount());
+        return FunctorIndexedIterator<ChildGetter>(ChildGetter(this->shared_from_this()), getChildrenCount());
     }
 
     //virtual GeometryTransform getTransform()

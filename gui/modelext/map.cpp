@@ -42,7 +42,7 @@ void ElementExtensionImplBase::draw(const plask::GeometryElement& toDraw, QPaint
         painter.fillRect(bb, QColor(150, 100, 100));
         painter.drawRect(bb);
     } else {
-        for (std::size_t i = 0; i < toDraw.getChildCount(); ++i)
+        for (std::size_t i = 0; i < toDraw.getChildrenCount(); ++i)
             ext(*toDraw.getChildAt(i)).draw(painter);
     }
 }
@@ -94,7 +94,7 @@ QString ElementExtensionImplBase::toStr(const plask::GeometryElement& el) const 
     return QString(QObject::tr("%1%2d\n%3 children")
         .arg(::toStr(el.getType())))
         .arg(el.getDimensionsCount())
-        .arg(el.getChildCount());
+        .arg(el.getChildrenCount());
 }
 
 void ElementExtensionImplBase::setupPropertiesBrowser(plask::GeometryElement& el, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {

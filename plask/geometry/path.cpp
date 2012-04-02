@@ -27,20 +27,20 @@ std::set<shared_ptr<GeometryElement>> PathHints::getChildren(shared_ptr<const Ge
     std::set<shared_ptr<GeometryElement>> result;
     auto e = hintFor.find(const_pointer_cast<GeometryElement>(container));
     if (e == hintFor.end()) return result;
-    if (e->first.expired()) {   //container was deleted, new container is under same address as was old one
+    if (e->first.expired()) {   // container was deleted, new container is under same address as was old one
         hintFor.erase(e);
         return result;
     }
     for (auto weak_child_iter = e->second.begin(); weak_child_iter != e->second.end(); ) {
         shared_ptr<GeometryElement> child = weak_child_iter->lock();
-        if (!child)        //child was deleted
+        if (!child)        // child was deleted
             e->second.erase(weak_child_iter++);
         else {
             result.insert(child);
             ++weak_child_iter;
         }
     }
-    if (e->second.empty()) hintFor.erase(e);    //we remove all constraints
+    if (e->second.empty()) hintFor.erase(e);    // we remove all constraints
     return result;
 }
 

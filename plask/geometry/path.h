@@ -42,6 +42,15 @@ struct PathHints {
     HintMap hintFor;
 
     /**
+     * \param hint initial hint in the path hints
+     */
+    explicit PathHints(const Hint& hint) {
+        addHint(hint);
+    }
+
+    PathHints() = default;
+
+    /**
      * Add hint to hints map. Overwrite if hint for given container already exists.
      * @param hint hint to add
      */

@@ -62,8 +62,8 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     }
 
     /**
-     * Remove all children which fulfil predicate.
-     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
+     * Remove all children which fulfill predicate.
+     * @tparam PredicateT functor which can take child as argument and return something convertible to bool
      * @param predicate returns true only if the child passed as an argument should be deleted
      */
     template <typename PredicateT>
@@ -418,10 +418,10 @@ class MultiStackContainer: public StackContainer<dim> {
         return UpperClass::getMaterial(p_reduced);
     }
 
-    virtual std::size_t getChildCount() const { return children.size() * repeat_count; }
+    virtual std::size_t getChildrenCount() const { return children.size() * repeat_count; }
 
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
-        if (child_nr >= getChildCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildCount()-1);
+        if (child_nr >= getChildrenCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildrenCount()-1);
         if (child_nr < children.size()) return children[child_nr];
         auto result = children[child_nr % children.size()]->copyShallow();
         result->translation.up += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
@@ -429,7 +429,7 @@ class MultiStackContainer: public StackContainer<dim> {
     }
 
     virtual std::size_t getRealChildCount() const {
-        return StackContainer<dim>::getChildCount();
+        return StackContainer<dim>::getChildrenCount();
     }
 
     virtual shared_ptr<GeometryElement> getRealChildAt(std::size_t child_nr) const {
