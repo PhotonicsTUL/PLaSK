@@ -54,7 +54,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
         enum Flags {
             DELETE = 1,     ///< is deleted
-            RESIZE = 1<<1     ///< size could changed
+            RESIZE = 1<<1,     ///< size could changed
+            CHILD = 1<<2    ///< delegated from child
         };
 
     private:
@@ -72,11 +73,12 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         /// Event flags
         unsigned char flags() const { return _flags; }
         unsigned char flagsWithout(unsigned char flagsToRemove) const { return _flags & ~flagsToRemove; }
-        unsigned char flagsForParent() const { return flagsWithout(GeometryElement::Event::DELETE); }
+        unsigned char flagsForParent() const { return flagsWithout(GeometryElement::Event::DELETE) | CHILD; }
 
         bool hasFlag(Flags flag) const { return _flags & flag; }
         bool isDelete() const { return hasFlag(DELETE); }
         bool isResize() const { return hasFlag(RESIZE); }
+        bool isDelgatedFromChild() const { return hasFlag(CHILD); }
 
         Event(GeometryElement& source, unsigned char falgs): _source(source), _flags(falgs) {}
         virtual ~Event() {} //for eventual subclassing

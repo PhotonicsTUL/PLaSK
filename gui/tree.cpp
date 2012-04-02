@@ -5,12 +5,13 @@
 #include "modelext/text.h"
 
 void GeometryTreeItem::ensureInitialized() {
-    if (initialized) return;
+    if (childrenInitialized && miniatureInitialized) return;
     if (auto e = element.lock()) {
-        constructChildrenItems(e);
+        if (!childrenInitialized) constructChildrenItems(e);
         miniature = ext(*e).getMiniature(50, 50);
     }
-    initialized = true;
+    childrenInitialized = true;
+    miniatureInitialized = true;
 }
 
 void GeometryTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
@@ -31,26 +32,29 @@ plask::shared_ptr<plask::GeometryElement> GeometryTreeItem::parent() {
 }
 
 GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, std::size_t index)
-: initialized(false), parentItem(parentItem), inParentIndex(index) {
+: model(parentItem->model), childrenInitialized(false), miniatureInitialized(false), parentItem(parentItem), inParentIndex(index) {
     if (auto parent_ptr = parent()) {
         auto child = parent_ptr->getRealChildAt(index);
         element = child;
+        connectOnChanged(child);
         //constructChildrenItems(child);
     }
 }
 
 GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element, std::size_t index)
-: initialized(false), parentItem(parentItem), element(element), inParentIndex(index) {
+: model(parentItem->model), childrenInitialized(false), miniatureInitialized(false), parentItem(parentItem), element(element), inParentIndex(index) {
+    connectOnChanged(element);
     //constructChildrenItems(element);
 }
 
-GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements)
-: initialized(false), parentItem(0), inParentIndex(0) {
+GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model)
+: model(model), childrenInitialized(false), miniatureInitialized(false), parentItem(0), inParentIndex(0) {
     for (int i = 0; i < rootElements.size(); ++i)
         childItems.append(new GeometryTreeItem(this, rootElements[i], i));
 }
 
 GeometryTreeItem::~GeometryTreeItem() {
+    disconnectOnChanged(element.lock());
     qDeleteAll(childItems);
 }
 
@@ -83,6 +87,26 @@ void GeometryTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
     }
 }
 
+QModelIndex GeometryTreeItem::getIndex() {
+    return model->createIndex(inParentIndex, 0, this);
+}
+
+void GeometryTreeItem::onChanged(const plask::GeometryElement::Event& evt) {
+    auto index = getIndex();
+    miniatureInitialized = false;
+    //TODO if container is change, its children list could changed... is code below is enaught? what with ...rows() model methods?
+    if (!evt.isDelgatedFromChild()) childrenInitialized = false;
+    emit model->dataChanged(index, index);
+}
+
+void GeometryTreeItem::connectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el) {
+    if (el) el->changed.connect(boost::bind(&GeometryTreeItem::onChanged, this, _1));
+}
+
+void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el) {
+    if (el) el->changed.disconnect(boost::bind(&GeometryTreeItem::onChanged, this, _1));
+}
+
 // ---------- InContainerTreeItem -----------
 
 void InContainerTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
@@ -111,7 +135,6 @@ void InContainerTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
     }
 }
 
-
 // ----------- GeometryTreeModel ------------
 
 GeometryTreeModel::GeometryTreeModel(Document& document, QObject *parent)
@@ -125,7 +148,7 @@ GeometryTreeModel::~GeometryTreeModel() {
 
 void GeometryTreeModel::refresh(Document& document) {
     delete rootItem;
-    rootItem = new GeometryTreeItem(document.manager.roots);
+    rootItem = new GeometryTreeItem(document.manager.roots, this);
     reset();
 }
 

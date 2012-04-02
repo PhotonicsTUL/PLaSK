@@ -107,7 +107,7 @@ struct Block: public GeometryElementLeaf<dim> {
      * Set size and inform observers about changes.
      * @param new_size new size to set
      */
-    void setSize(const DVec& new_size) {
+    void setSize(DVec&& new_size) {
         size = new_size;
         this->fireChanged(GeometryElement::Event::RESIZE);
     }
@@ -118,7 +118,7 @@ struct Block: public GeometryElementLeaf<dim> {
      */
     template <typename ...VecCtrArg>
     void setSize(VecCtrArg&&... vecCtrArg) {
-        setSize(DVec(std::forward<VecCtrArg>(vecCtrArg)...));
+        this->setSize(DVec(std::forward<VecCtrArg>(vecCtrArg)...));
     }
 
     /**

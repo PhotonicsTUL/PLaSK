@@ -14,25 +14,30 @@ QT_END_NAMESPACE
  */
 class GeometryElementItem: public QGraphicsItem {
 
-    //TODO weak_ptr
-    plask::shared_ptr< const plask::GeometryElementD<2> > element;
+    plask::weak_ptr< plask::GeometryElementD<2> > element;
 
     //cache:
     QRectF boundingBox;
 
-    void doUpdate();
+    void doUpdate(plask::shared_ptr< const plask::GeometryElementD<2> > e, bool resized = true);
 
-    void onElementUpdate(plask::GeometryElement::Event& evt);
+    void doUpdate(bool resized = true) { doUpdate(element.lock(), resized); }
+
+    void onElementUpdate(const plask::GeometryElement::Event& evt);
+
+    void disconnectOnChanged();
 
 public:
 
-    void setElement(const plask::shared_ptr< const plask::GeometryElementD<2> >& element);
+    ~GeometryElementItem();
 
-    const plask::shared_ptr< const plask::GeometryElementD<2> >& getElement() const {
-        return element;
+    void setElement(const plask::shared_ptr< plask::GeometryElementD<2> >& element);
+
+    const plask::weak_ptr< plask::GeometryElementD<2> >& getElement() const {
+        return this->element;
     }
 
-    GeometryElementItem(const plask::shared_ptr< const plask::GeometryElementD<2> >& element) {
+    GeometryElementItem(const plask::shared_ptr< plask::GeometryElementD<2> >& element) {
         setElement(element);
     }
 

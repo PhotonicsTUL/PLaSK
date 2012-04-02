@@ -15,12 +15,17 @@ class QModelIndex;
 class QPixmap;
 QT_END_NAMESPACE
 
+struct GeometryTreeModel;
+
 /**
  * Geometry tree item. Holds (weak) geometry element.
  */
 class GeometryTreeItem {
 
 protected:
+
+    /// Pointer to tree model, used to call update.
+    GeometryTreeModel *model;
 
     QList<GeometryTreeItem*> childItems;
 
@@ -32,7 +37,9 @@ protected:
     /**
      * True only if this item was initialized (its children are on childItems list, etc.).
      */
-    bool initialized;
+    bool childrenInitialized;
+
+    bool miniatureInitialized;
 
     /**
      * Ensure that this item is initialized (initialize it if its not).
@@ -88,7 +95,7 @@ public:
      * Construct root item (with parentItem = nullptr).
      * @param rootElements children of roots element (showing in tree as roots)
      */
-    GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements);
+    GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model);
 
     ///Delete children items.
     ~GeometryTreeItem();
@@ -132,6 +139,14 @@ public:
      */
     virtual void fillPropertyBrowser(BrowserWithManagers& browser);
 
+    QModelIndex getIndex();
+
+    void onChanged(const plask::GeometryElement::Event& evt);
+
+    void connectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el);
+
+    void disconnectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el);
+
 };
 
 /**
@@ -169,6 +184,8 @@ class GeometryTreeModel : public QAbstractItemModel {
 
 public:
 
+    friend class GeometryTreeItem;
+
     /**
      * Refresh all tree content.
      * @param document document from which new content will be read
@@ -199,6 +216,9 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
- };
+
+    //QModelIndex constructIndex(int row, int column, void* data) const { return createIndex(row, column, data); }
+
+};
 
 #endif // PLASK_GUI_TREE_H
