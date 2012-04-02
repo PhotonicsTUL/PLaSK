@@ -12,16 +12,29 @@ struct Leafs2d {
 };
 
 void test_multi_stack(plask::shared_ptr<plask::MultiStackContainer<2>> multistack, plask::PathHints& p) {
-    // 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
+    // 5 * 2 children = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
     BOOST_CHECK_EQUAL(multistack->getBoundingBox(), plask::Box2d(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
     BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 39.0)) != nullptr);
     BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 41.0)) == nullptr);
     BOOST_CHECK_EQUAL(multistack->getLeafsBoundingBoxes(p).size(), 5);
     BOOST_CHECK_EQUAL(multistack->getLeafs().size(), 10);
     {
+        auto leafs = multistack->getLeafs();
+        BOOST_REQUIRE_EQUAL(leafs.size(), 10);
+        for (int i = 0; i < 10; ++i) BOOST_CHECK_MESSAGE(leafs[i] != nullptr, i << "-th leaf (from getLeafs) is nullptr");
+    }
+    {
         std::vector<plask::Box2d> bb = multistack->getLeafsBoundingBoxes();
         BOOST_REQUIRE_EQUAL(bb.size(), 10);
         for (int i = 0; i < 10; ++i) BOOST_CHECK_EQUAL(bb[i], plask::Box2d(plask::vec(0.0, 10.0 + i*3), plask::vec(5.0, 10.0 + 3.0 + i*3)));
+    }
+    {
+        std::vector< std::tuple<plask::shared_ptr<const plask::GeometryElement>, plask::Vec<2, double>> > leafsWithTran = multistack->getLeafsWithTranslations();
+        BOOST_REQUIRE_EQUAL(leafsWithTran.size(), 10);
+        for (int i = 0; i < 10; ++i) {
+            BOOST_CHECK_MESSAGE(std::get<0>(leafsWithTran[i]) != nullptr, i << "-th leaf (from getLeafsWithTranslations) is nullptr");
+            BOOST_CHECK_EQUAL(std::get<1>(leafsWithTran[i]), plask::vec(0.0, 10.0 + i*3));
+        }
     }
 }
 

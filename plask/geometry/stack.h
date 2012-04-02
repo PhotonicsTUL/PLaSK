@@ -372,17 +372,20 @@ class MultiStackContainer: public StackContainer<dim> {
         UpperClass::getLeafsToVec(dest);
         std::size_t new_size = dest.size();
         for (unsigned r = 1; r < repeat_count; ++r)
-            dest.insert(dest.end(), dest.begin() + old_size, dest.begin() + new_size);
+            //dest.insert(dest.end(), dest.begin() + old_size, dest.begin() + new_size); //why this not work?
+            for (std::size_t i = old_size; i < new_size; ++i)
+                dest.push_back(dest[i]);
     }
 
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = UpperClass::getLeafsWithTranslations();
         std::size_t size = result.size();   //oryginal size
-        const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
+        const double stackHeight = stackHeights.back() - stackHeights.front();
         for (unsigned r = 1; r < repeat_count; ++r) {
-            result.insert(result.end(), result.begin(), result.begin() + size);
-            for (auto i = result.end() - size; i != result.end(); ++i)
-                std::get<1>(*i).up += minusZeroBasedStackHeight * r;
+            for (std::size_t i = 0; i < size; ++i) {
+                result.push_back(result[i]);
+                std::get<1>(result.back()).up += stackHeight * r;
+            }
         }
         return result;
     }
