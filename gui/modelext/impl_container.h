@@ -32,7 +32,7 @@ struct ExtImplFor< plask::StackContainer<3> >: public ElementExtensionImplBaseFo
 template <int dim>
 QString printMultiStack(const plask::MultiStackContainer<dim>& toPrint) {
     return QString(QObject::tr("multi-stack%1d\n%2 children (%3 repeated %4 times)"))
-            .arg(dim).arg(toPrint.getChildrenCount()).arg(toPrint.getRealChildCount()).arg(toPrint.repeat_count);
+            .arg(dim).arg(toPrint.getChildrenCount()).arg(toPrint.getRealChildrenCount()).arg(toPrint.repeat_count);
 };
 
 template <>

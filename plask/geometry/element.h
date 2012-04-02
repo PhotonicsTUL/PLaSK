@@ -268,7 +268,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * By default call getChildrenCount(), but elements of some types (like multi-stack) redefine this.
      * @return number of real children
      */
-    virtual std::size_t getRealChildCount() const;
+    virtual std::size_t getRealChildrenCount() const;
 
     /**
      * Get real (physicaly stored) child with given index.

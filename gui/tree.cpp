@@ -15,7 +15,7 @@ void GeometryTreeItem::ensureInitialized() {
 }
 
 void GeometryTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
-    std::size_t chCount = elem->getRealChildCount();
+    std::size_t chCount = elem->getRealChildrenCount();
     if (elem->isContainer()) {
         for (int i = 0; i < chCount; ++i)
             childItems.append(new InContainerTreeItem(this, i));
@@ -110,13 +110,13 @@ void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<plask::Geomet
 // ---------- InContainerTreeItem -----------
 
 void InContainerTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
-    std::size_t chCount = elem->getRealChildCount();
+    std::size_t chCount = elem->getRealChildrenCount();
     if (chCount == 0) return;
     GeometryTreeItem::constructChildrenItems(elem->getRealChildAt(0));
 }
 
 QString InContainerTreeItem::elementText(plask::GeometryElement &element) const {
-    if (element.getRealChildCount() == 0) return ext(element).toStr();
+    if (element.getRealChildrenCount() == 0) return ext(element).toStr();
     QString result = ext(*element.getRealChildAt(0)).toStr();
     result += "\nat ";
     if (element.getDimensionsCount() == 2) {
@@ -130,7 +130,7 @@ void InContainerTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
         //auto p = parent();  //should be a container
         //if (p) //fill properties depents from parents, translation, etc.
-        if (e->getRealChildCount() == 0) return;
+        if (e->getRealChildrenCount() == 0) return;
         ext(*e->getRealChildAt(0)).setupPropertiesBrowser(browser);
     }
 }

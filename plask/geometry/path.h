@@ -48,6 +48,13 @@ struct PathHints {
         addHint(hint);
     }
 
+    /**
+     * \param path path which is split to the path hints
+     */
+    explicit PathHints(const Path& path) {
+        addAllHintsFromPath(path);
+    }
+
     PathHints() = default;
 
     /**

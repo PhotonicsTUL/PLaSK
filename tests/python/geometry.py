@@ -10,6 +10,7 @@ if sys.version < "2.7":
 import plask, plask.materials, plask.geometry
 
 
+
 class SimpleGeometry(unittest.TestCase):
 
     def setUp(self):
@@ -45,11 +46,12 @@ class SimpleGeometry(unittest.TestCase):
             </geometry>
         ''')
         self.assertEqual( type(geometry.element("block")), plask.geometry.Block2D )
-        print list(geometry.element("stack").getLeafsBoundigBoxes())
         self.assertEqual( list(geometry.element("stack").getLeafsBoundigBoxes()),
             [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4), plask.geometry.Box2D(-2,4,2,6), plask.geometry.Box2D(-2,6,2,8)])
         if sys.version >= "2.7":
             with self.assertRaises(KeyError): geometry.element("nonexistent")
+
+
 
 class GeometryObjects(unittest.TestCase):
 
@@ -67,6 +69,13 @@ class GeometryObjects(unittest.TestCase):
         self.assertEqual( self.block53.getMaterial(plask.vec(4.0, 2.0)), self.mat)
         self.assertIsNone( self.block53.getMaterial(plask.vec(6.0, 2.0)));
 
+
+
+class Transforms(unittest.TestCase):
+
+    def setUp(self):
+        self.mat = plask.materials.GaN()
+        self.block53 = plask.geometry.Block2D(5,3, self.mat)
 
     def testTranslation(self):
         '''Test translations of the objects'''
@@ -108,37 +117,6 @@ class GeometryObjects(unittest.TestCase):
         self.assertEqual( background.getMaterial(  0., 50.).name, "GaN" )
 
 
-    def testMultiStack(self):
-        multistack = plask.geometry.MultiStack2D(5, 10.0)
-        multistack.append(self.block53)
-        multistack.append(self.block53)
-        self.assertIn( self.block53, multistack )
-        # 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
-        self.assertEqual( multistack.bbox, plask.geometry.Box2D(-2.5, 10.0, 2.5, 40.0) )
-        self.assertEqual( multistack.getMaterial(1.0, 39.0), self.mat )
-        self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
-        #self.assertEqual( multistack[0].child, self.block53 )
-        #self.assertEqual( multistack[0].translation, plask.vec(0, 10.) )
-        #self.assertEqual( multistack.repeatedItem(9).child, self.block53 )
-        #self.assertEqual( multistack.repeatedItem(9).translation, plask.vec(0, 37.) )
-        #if sys.version >= 2.7:
-            #with self.assertRaises(IndexError): multistack[9]
-
-    def testAligners(self):
-        stack = plask.geometry.Stack2D()
-        stack.append(self.block53, "C")
-        stack.append(self.block53, "L")
-        stack.append(self.block53, "R")
-        self.assertEqual( stack.getMaterial(-1.0, 1.0), self.mat )
-        self.assertEqual( stack.getMaterial(2.6, 1.0), None )
-        self.assertEqual( stack.getMaterial(4.9, 4.0), self.mat )
-        self.assertEqual( stack.getMaterial(-0.1, 4.0), None )
-        self.assertEqual( stack.getMaterial(5.1, 4.0), None )
-        self.assertEqual( stack.getMaterial(-4.9, 7.0), self.mat )
-        self.assertEqual( stack.getMaterial(-5.1, 7.0), None )
-        self.assertEqual( stack.getMaterial(0.1, 7.0), None )
-        self.assertEqual( list(stack.getLeafsBoundigBoxes()), [plask.geometry.Box2D(-2.5,0,2.5,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(-5.0,6,0.0,9)])
-
 
 class GeometryPath(unittest.TestCase):
 
@@ -152,3 +130,92 @@ class GeometryPath(unittest.TestCase):
     def testPath(self):
         p = plask.geometry.Path([self.stack1, self.stack2])
         p += self.element
+
+
+
+class Containers(unittest.TestCase):
+
+    def setUp(self):
+        self.gan = plask.materials.GaN()
+        self.aln = plask.materials.AlN()
+        self.block1 = plask.geometry.Block2D(5,3, self.gan)
+        self.block2 = plask.geometry.Block2D(5,3, self.aln)
+        self.cube1 = plask.geometry.Block3D(4,4,2, self.gan)
+        self.cube2 = plask.geometry.Block3D(4,4,2, self.aln)
+
+    def testAligners(self):
+        stack = plask.geometry.Stack2D()
+        stack.append(self.block1, "C")
+        stack.append(self.block1, "L")
+        stack.append(self.block1, "R")
+        self.assertEqual( stack.getMaterial(-1.0, 1.0), self.gan )
+        self.assertEqual( stack.getMaterial(2.6, 1.0), None )
+        self.assertEqual( stack.getMaterial(4.9, 4.0), self.gan )
+        self.assertEqual( stack.getMaterial(-0.1, 4.0), None )
+        self.assertEqual( stack.getMaterial(5.1, 4.0), None )
+        self.assertEqual( stack.getMaterial(-4.9, 7.0), self.gan )
+        self.assertEqual( stack.getMaterial(-5.1, 7.0), None )
+        self.assertEqual( stack.getMaterial(0.1, 7.0), None )
+        self.assertEqual( list(stack.getLeafsBoundigBoxes()), [plask.geometry.Box2D(-2.5,0,2.5,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(-5.0,6,0.0,9)])
+
+    def testMultiStack(self):
+        multistack = plask.geometry.MultiStack2D(5, 10.0)
+        hint1 = multistack.append(self.block1)
+        hint2 = multistack.append(self.block2)
+        self.assertIn( self.block1, multistack )
+        # 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
+        self.assertEqual( multistack.bbox, plask.geometry.Box2D(-2.5, 10.0, 2.5, 40.0) )
+        self.assertEqual( multistack.getMaterial(1.0, 39.0), self.aln )
+        self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
+        self.assertEqual( multistack[0].child, self.block1 )
+        self.assertEqual( multistack[0].translation, plask.vec(-2.5, 10.) )
+        self.assertEqual( multistack[9].child, self.block2 )
+        self.assertEqual( multistack[9].translation, plask.vec(-2.5, 37.) )
+        hints1 = plask.geometry.PathHints()
+        hints1 += hint1
+        self.assertEqual( len(multistack[hints1]), 1 )
+        self.assertEqual( multistack[hints1][0].child, self.block1 )
+        self.assertEqual( multistack[hint2][0].child, self.block2 )
+
+    def testRemoval(self):
+        '''Test if removing elements from container works. In addition test prepending elements'''
+        container = plask.geometry.TranslationContainer2D()
+        h = container.append(self.block1, 0,0) # be removed by hint
+        container.append(self.block2, 10,0)
+        container.append(self.block1, 10,0) # to be removed by index
+        container.append(self.block2, 5,0) # to be removed by object
+        self.assertEqual( container[0].child, self.block1 )
+        self.assertEqual( container.getMaterial(12,1), self.gan)
+        del container[2]
+        self.assertEqual( len(container), 3 )
+        self.assertEqual( container.getMaterial(12,1), self.aln)
+        del container[h]
+        self.assertEqual( len(container), 2 )
+        self.assertEqual( container.getMaterial(1,1), None )
+        del container[container[-1]]
+        self.assertEqual( len(container), 1 )
+        self.assertEqual( container.getMaterial(6,1), None )
+
+
+        stack = plask.geometry.Stack3D()
+        stack.append(self.cube1) # to be removed by object
+        stack.append(self.cube2) # to be removed by index
+        h = stack.append(self.cube2) # to be removed by hint
+        stack.append(self.cube1)
+        self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,8) )
+        self.assertEqual( stack.getMaterial(0,0,5), self.aln)
+        del stack[1]
+        self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,6) )
+        self.assertEqual( stack.getMaterial(0,0,5), self.gan)
+        self.assertEqual( stack.getMaterial(0,0,3), self.aln)
+        del stack[h]
+        self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,4) )
+        self.assertEqual( stack.getMaterial(0,0,3), self.gan)
+        del stack[stack[0]]
+        self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,2) )
+
+        self.assertEqual( stack.getMaterial(0,0,1), self.gan)
+        stack.prepend(self.cube2)
+        self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,4) )
+        self.assertEqual( stack.getMaterial(0,0,1), self.aln)
+        self.assertEqual( stack.getMaterial(0,0,3), self.gan)

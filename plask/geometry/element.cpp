@@ -65,7 +65,7 @@ void GeometryElement::ensureCanHasAsParent(const GeometryElement& potential_pare
         throw CyclicReferenceException();
 }
 
-std::size_t GeometryElement::getRealChildCount() const {
+std::size_t GeometryElement::getRealChildrenCount() const {
     return getChildrenCount();
 }
 

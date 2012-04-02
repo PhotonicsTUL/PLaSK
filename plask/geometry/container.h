@@ -192,31 +192,36 @@ public:
      * Remove all children which fulfil predicate.
      * @tparam PredicateT functor which can take child as argument and return something convertable to bool
      * @param predicate returns true only if the child passed as an argument should be deleted
+     * @return true if anything has been removed
      */
     template <typename PredicateT>
-    void remove(PredicateT predicate) {
+    bool remove_if(PredicateT predicate) {
+        bool removed = false;
         auto dst = children.begin();
-        for (auto i = children.begin(); i != children.end(); ++i)
-            if (predicate(*i)) disconnectOnChildChanged(**i);
-            else *dst++ = *i;
-        children.erease(dst, children.end());
+        for (auto i: children)
+            if (predicate(i)) { disconnectOnChildChanged(*i); removed = true; }
+            else *dst++ = i;
+        children.erase(dst, children.end());
+        return removed;
     }
 
     /**
      * Remove all children exactly equal to @a el.
      * @param el child(ren) to remove
+     * @return true if anything has been removed
      */
-    void remove(const ChildType* el) {
-        remove([&el](ChildType* c) { return c->child == el; });
+    bool remove(shared_ptr<const ChildType> el) {
+        return remove_if([&el](const shared_ptr<const ChildType>& c) { return c == el; });
     }
 
     /**
      * Remove child pointed, for this container, in @a hints.
      * @param hints path hints, see @ref geometry_paths
+     * @return true if anything has been removed
      */
-    void remove(const PathHints& hints) {
-        auto cset = hints.getChildren(this);
-        remove([&](TranslationT t) { return cset.find(t) != cset.end; });
+    bool remove(const PathHints& hints) {
+        auto cset = hints.getChildren(*this);
+        return remove_if([&](shared_ptr<TranslationT> t) { return cset.find(static_pointer_cast<GeometryElement>(t)) != cset.end(); });
     }
 };
 

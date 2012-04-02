@@ -52,12 +52,12 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     }
 
     virtual bool inside(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p.c1);
+        const shared_ptr<TranslationT> c = getChildForHeight(p.up);
         return c ? c->inside(p) : false;
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p.c1);
+        const shared_ptr<TranslationT> c = getChildForHeight(p.up);
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
 
@@ -65,35 +65,39 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      * Remove all children which fulfill predicate.
      * @tparam PredicateT functor which can take child as argument and return something convertible to bool
      * @param predicate returns true only if the child passed as an argument should be deleted
+     * @return true if anything has been removed
      */
     template <typename PredicateT>
-    void remove(PredicateT predicate) {
+    bool remove_if(PredicateT predicate) {
         std::deque<shared_ptr<TranslationT>> deleted;
         auto dst = children.begin();
-        for (auto i = children.begin(); i != children.end(); ++i)
-            if (predicate(*i)) deleted.push_back(*i);
-            else *dst++ = *i;
-        children.erease(dst, children.end());
+        for (auto i: children)
+            if (predicate(i)) deleted.push_back(i);
+            else *dst++ = i;
+        children.erase(dst, children.end());
         updateAllHeights();
         for (auto i: deleted)
-            disconnectOnChildChanged(**i);
+            disconnectOnChildChanged(*i);
+        return deleted.size() != 0;
     }
 
     /**
      * Remove all children exactly equal to @a el.
      * @param el child(ren) to remove
+     * @return true if anything has been removed
      */
-    void remove(const ChildType* el) {
-        remove([&el](ChildType* c) { return c->child == el; });
+    bool remove(shared_ptr<const ChildType> el) {
+        return remove_if([&el](const shared_ptr<const ChildType>& c) { return c == el; });
     }
 
     /**
      * Remove child pointed, for this container, in @a hints.
      * @param hints path hints, see @ref geometry_paths
+     * @return true if anything has been removed
      */
-    void remove(const PathHints& hints) {
-        auto cset = hints.getChildren(this);
-        remove([&](TranslationT t) { return cset.find(t) != cset.end; });
+    bool remove(const PathHints& hints) {
+        auto cset = hints.getChildren(*this);
+        return remove_if([&](shared_ptr<TranslationT> t) { return cset.find(static_pointer_cast<GeometryElement>(t)) != cset.end(); });
     }
 
     /// Called by child.change signal, update heights call this change
@@ -428,7 +432,7 @@ class MultiStackContainer: public StackContainer<dim> {
         return result;
     }
 
-    virtual std::size_t getRealChildCount() const {
+    virtual std::size_t getRealChildrenCount() const {
         return StackContainer<dim>::getChildrenCount();
     }
 
