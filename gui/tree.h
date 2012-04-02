@@ -27,6 +27,7 @@ protected:
     /// Pointer to tree model, used to call update.
     GeometryTreeModel *model;
 
+    /// Children of this item.
     QList<GeometryTreeItem*> childItems;
 
     /// Cache for miniature
@@ -35,10 +36,13 @@ protected:
     //here can cache miniature
 
     /**
-     * True only if this item was initialized (its children are on childItems list, etc.).
+     * True only if this item was initialized. Its children are on childItems list, etc.
      */
     bool childrenInitialized;
 
+    /**
+     * True only if this item miniature was initialized.
+     */
     bool miniatureInitialized;
 
     /**
@@ -97,7 +101,7 @@ public:
      */
     GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model);
 
-    ///Delete children items.
+    /// Delete children items and disconnect onChanged.
     ~GeometryTreeItem();
 
     /**
@@ -113,10 +117,10 @@ public:
      */
     std::size_t childCount() { ensureInitialized(); return childItems.size(); }
 
-    ///@return 1
+    /// @return 1
     std::size_t columnCount() const { return 1; }
 
-    ///@return inParentIndex
+    /// @return inParentIndex
     std::size_t indexInParent() const;
 
     /**
@@ -139,12 +143,27 @@ public:
      */
     virtual void fillPropertyBrowser(BrowserWithManagers& browser);
 
+    /**
+     * @return index of this item
+     */
     QModelIndex getIndex();
 
+    /**
+     * Called when wrapped geometry element was changed.
+     * @param evt information about event from model
+     */
     void onChanged(const plask::GeometryElement::Event& evt);
 
+    /**
+     * Connect onChanged method to el->changed.
+     * @param el element, typically this->element.lock()
+     */
     void connectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el);
 
+    /**
+     * Disconnect onChanged method from el->changed.
+     * @param el element, typically this->element.lock()
+     */
     void disconnectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el);
 
 };
@@ -198,7 +217,7 @@ public:
      */
     GeometryTreeModel(Document& document, QObject *parent = 0);
 
-    ///Delete rootItem.
+    /// Delete rootItem.
     ~GeometryTreeModel();
 
     // ---------- implementation of QAbstractItemModel methods: --------
@@ -216,8 +235,6 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-
-    //QModelIndex constructIndex(int row, int column, void* data) const { return createIndex(row, column, data); }
 
 };
 
