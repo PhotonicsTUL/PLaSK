@@ -1,3 +1,4 @@
+#include <plask/exceptions.h>
 #include <plask/space.h>
 #include <plask/module.h>
 
@@ -19,8 +20,6 @@ void register_providers();
 Config config;
 bool Config::z_up = true;
 
-}}
-
 void register_space() {
     py::object space_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.space"))) };
     py::scope().attr("space") = space_module;
@@ -39,6 +38,10 @@ void register_space() {
     spacexyz.attr("DIMS") = int(plask::space::Cartesian3d::DIMS);
 
 }
+
+}}
+
+
 
 BOOST_PYTHON_MODULE(plaskcore)
 {
@@ -70,6 +73,8 @@ BOOST_PYTHON_MODULE(plaskcore)
         .add_property("description", &plask::Module::getDescription, "Short description of the module")
     ;
 
+    // Exceptions
+    register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

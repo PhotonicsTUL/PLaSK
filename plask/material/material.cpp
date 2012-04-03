@@ -100,6 +100,10 @@ void Material::throwNotImplemented(const std::string& method_name) const {
     throw MaterialMethodNotImplemented(name(), method_name);
 }
 
+void Material::throwNotApplicable(const std::string& method_name) const {
+    throw MaterialMethodNotApplicable(name(), method_name);
+}
+
 template <typename NameValuePairIter>
 inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameValuePairIter end, int group_nr) {
     auto no_info = end;

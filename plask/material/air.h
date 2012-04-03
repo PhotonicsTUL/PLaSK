@@ -1,0 +1,71 @@
+#ifndef PLASK__AIR_H
+#define PLASK__AIR_H
+
+/** @file
+This file includes undoped AlN
+*/
+
+#include <plask/material/material.h>
+
+namespace plask {
+
+/**
+ * Represent undoped AlN, its physical properties.
+ */
+struct Air: public Material {
+
+    static constexpr const char* NAME = "air";
+
+    virtual std::string name() const;
+    virtual Kind kind() const;
+    virtual double lattC(double T, char x) const;
+    virtual double Eg(double T, char point) const;
+    virtual double CBO(double T, char point) const;
+    virtual double VBO(double T) const;
+    virtual double Dso(double T) const;
+    virtual double Mso(double T) const;
+    virtual double Me(double T, char point) const;
+    virtual double Me_v(double T, char point) const;
+    virtual double Me_l(double T, char point) const;
+    virtual double Mhh(double T, char point) const;
+    virtual double Mhh_v(double T, char point) const;
+    virtual double Mhh_l(double T, char point) const;
+    virtual double Mlh(double T, char point) const;
+    virtual double Mlh_v(double T, char point) const;
+    virtual double Mlh_l(double T, char point) const;
+    virtual double Mh(double T, char EqType) const;
+    virtual double Mh_v(double T, char point) const;
+    virtual double Mh_l(double T, char point) const;
+    virtual double eps(double T) const;
+    virtual double chi(double T, char point) const;
+    virtual double Nc(double T, char point) const;
+    virtual double Nc(double T) const;
+    virtual double Ni(double T) const;
+    virtual double Nf(double T) const;
+    virtual double EactD(double T) const;
+    virtual double EactA(double T) const;
+    virtual double mob(double T) const;
+    virtual double cond(double T) const;
+    virtual double cond_v(double T) const;
+    virtual double cond_l(double T) const;
+    virtual double res(double T) const;
+    virtual double res_v(double T) const;
+    virtual double res_l(double T) const;
+    virtual double A(double T) const;
+    virtual double B(double T) const;
+    virtual double C(double T) const;
+    virtual double D(double T) const;
+    virtual double condT(double T) const;
+    virtual double condT(double T, double thickness) const;
+    virtual double condT_v(double T, double thickness) const;
+    virtual double condT_l(double T, double thickness) const;
+    virtual double dens(double T) const;
+    virtual double specHeat(double T) const;
+    virtual double nr(double wl, double T) const;
+    virtual double absp(double wl, double T) const;
+};
+
+
+} // namespace plask
+
+#endif	//PLASK__AIR_H

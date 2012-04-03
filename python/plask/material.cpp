@@ -354,6 +354,38 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     return DB->get(composition, dopant, doping_type, concentation);
 }
 
+/**
+ * Converter for Python string to material using default database.
+ * Allows to create geometry elements as \c rectange(2,1,"GaAs")
+ */
+struct Material_from_Python_string
+{
+    Material_from_Python_string() {
+        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<shared_ptr<Material>>());
+    }
+
+
+    // Determine if obj_ptr can be converted into Material
+    static void* convertible(PyObject* obj_ptr) {
+        if (!PyString_Check(obj_ptr)) return 0;
+        return obj_ptr;
+    }
+
+    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        const char* value = PyString_AsString(obj_ptr);
+        assert(value);
+
+        // Grab pointer to memory into which to construct the new Material
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<Material>>*)data)->storage.bytes;
+
+        new(storage) shared_ptr<Material>(MaterialsDB::getDefault().get(value));
+
+        // Stash the memory chunk pointer for later use by boost.python
+        data->convertible = storage;
+    }
+};
+
+
 py::dict Material__completeComposition(py::dict src, std::string name) {
     py::list keys = src.keys();
     Material::Composition comp;
@@ -392,8 +424,7 @@ std::string Material__repr__(shared_ptr<Material> self) {
     return format("<'" + Material__str__(*self) +"' plask.materials.Material object at (%1%)>", self);
 }
 
-
-
+// Exception translators
 
 void initMaterials() {
 
@@ -476,6 +507,10 @@ void initMaterials() {
 
     ;
 
+    Material_from_Python_string();
+    register_exception<NoSuchMaterial>(PyExc_ValueError);
+    register_exception<MaterialMethodNotApplicable>(PyExc_TypeError);
+
     py::enum_<Material::Kind> MaterialKind("kind"); MaterialKind
         .value("NONE", Material::NONE)
         .value("SEMICONDUCTOR", Material::SEMICONDUCTOR)
@@ -490,7 +525,6 @@ void initMaterials() {
 
     py::def("_register_material_complex", &registerComplexMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
             "Register new complex material class to the database");
-
 }
 
 }} // namespace plask::python

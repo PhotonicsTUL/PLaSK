@@ -499,6 +499,7 @@ struct Material {
 
 protected:
     void throwNotImplemented(const std::string& method_name) const;
+    void throwNotApplicable(const std::string& method_name) const;
 
 };
 

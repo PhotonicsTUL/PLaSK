@@ -14,6 +14,39 @@ import plask.materials
 
 class Material(unittest.TestCase):
 
+    @plask.materials.complex
+    class AlGaAs(plask.materials.Material):
+        def __init__(self, **kwargs):
+            super(Material.AlGaAs, self).__init__()
+            ptest.print_ptr(self)
+        def __del__(self):
+            ptest.print_ptr(self)
+        def VBO(self, T=300.):
+            return 2.*T
+
+    @plask.materials.complex
+    class AlGaAsDp(plask.materials.Material):
+        name = "AlGaAs:Dp"
+        def __init__(self, *args, **kwargs):
+            super(Material.AlGaAsDp, self).__init__()
+            self.args = args,
+            print kwargs
+            self.kwargs = kwargs
+            self.composition = self._completeComposition(kwargs, self.name);
+            print self.composition
+        def __del__(self):
+            ptest.print_ptr(self)
+        def VBO(self, T=300.):
+            return self.kwargs['dc'] * T
+        def CBO(self, T=300.):
+            return self.composition['Ga'] * T
+
+    @plask.materials.simple
+    class WithChar(plask.materials.Material):
+        def chi(self, T, p):
+            print >>sys.stderr, "WithChar:", p
+            return 1.5
+
     def setUp(self):
         ptest.addMyMaterial(plask.materialsdb)
 
@@ -29,19 +62,9 @@ class Material(unittest.TestCase):
     def testCustomMaterial(self):
         '''Test creation of custom materials'''
 
-        @plask.materials.complex
-        class AlGaAs(plask.materials.Material):
-            def __init__(self, **kwargs):
-                super(AlGaAs, self).__init__()
-                ptest.print_ptr(self)
-            def __del__(self):
-                ptest.print_ptr(self)
-            def VBO(self, T=300.):
-                return 2.*T
-
         self.assertIn( "AlGaAs", plask.materialsdb )
 
-        m = AlGaAs()
+        m = Material.AlGaAs()
         self.assertEqual(m.name, "AlGaAs")
         self.assertEqual( m.VBO(1.0), 2.0 )
         del m
@@ -51,34 +74,17 @@ class Material(unittest.TestCase):
 
         print >>sys.stderr, plask.materialsdb.all
         if sys.version >= 2.7:
-            with self.assertRaises(RuntimeError): plask.materialsdb.get("Al(0.2)GaAs:Si=1e14")
-
-        @plask.materials.complex
-        class AlGaAsDp(plask.materials.Material):
-            name = "AlGaAs:Dp"
-            def __init__(self, *args, **kwargs):
-                super(AlGaAsDp, self).__init__()
-                self.args = args,
-                print kwargs
-                self.kwargs = kwargs
-                self.composition = self._completeComposition(kwargs, self.name);
-                print self.composition
-            def __del__(self):
-                ptest.print_ptr(self)
-            def VBO(self, T=300.):
-                return self.kwargs['dc'] * T
-            def CBO(self, T=300.):
-                return self.composition['Ga'] * T
+            with self.assertRaises(ValueError): plask.materialsdb.get("Al(0.2)GaAs:Si=1e14")
 
         print plask.materialsdb.all
         m = plask.materialsdb.get("Al(0.2)GaAs:Dp=3.0")
-        self.assertEqual( m.__class__, AlGaAsDp )
+        self.assertEqual( m.__class__, Material.AlGaAsDp )
         self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VBO(1.0), 3.0 )
         self.assertAlmostEqual( m.CBO(1.0), 0.8 )
 
         if sys.version > "2.7":
-            with(self.assertRaisesRegexp(KeyError, 'N not allowed in material AlGaAs:Dp')): m = AlGaAsDp(Al=0.2, N=0.9)
+            with(self.assertRaisesRegexp(KeyError, 'N not allowed in material AlGaAs:Dp')): m = Material.AlGaAsDp(Al=0.2, N=0.9)
 
         AlGaAs = lambda **kwargs: plask.materialsdb.get("AlGaAs", **kwargs)
         m = AlGaAs(Al=0.2, dopant="Dp", dc=5.0)
@@ -91,16 +97,10 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.materialName("Al(0.2)GaAs:Dp=3.0", plask.materialsdb), "AlGaAs:Dp" )
         self.assertEqual( ptest.materialVBO("Al(0.2)GaAs:Dp=3.0", plask.materialsdb, 1.0), 3.0 )
 
-        @plask.materials.simple
-        class WithChar(plask.materials.Material):
-            def chi(self, T, p):
-                print >>sys.stderr, "WithChar:", p
-                return 1.5
-
-        c = WithChar()
+        c = Material.WithChar()
         self.assertEqual( c.name, "WithChar" )
         if sys.version >= 2.7:
-            with self.assertRaisesRegexp(RuntimeError, "Method not implemented"): c.VBO(1.0)
+            with self.assertRaisesRegexp(NotImplementedError, "Method not implemented"): c.VBO(1.0)
         self.assertEqual( ptest.call_chi(c, 'A'), 1.5)
 
 
@@ -137,3 +137,12 @@ class Material(unittest.TestCase):
 
         self.assertEqual( ptest.materialName("WithBase", plask.materialsdb), "WithBase" )
         self.assertEqual( ptest.materialVBO("WithBase", plask.materialsdb, 1.0), 0.5 )
+
+    def testPassingMaterialsByName(self):
+        mat = plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Dp=3.0").getMaterial(0,0)
+        self.assertEqual( mat.name, "AlGaAs:Dp" )
+        self.assertEqual( mat.VBO(1.0), 3.0 )
+
+        if sys.version >= 2.7:
+            with(self.assertRaises(ValueError)):
+                plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Ja=3.0").getMaterial(0,0)

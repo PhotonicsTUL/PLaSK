@@ -162,6 +162,8 @@ class Containers(unittest.TestCase):
         multistack = plask.geometry.MultiStack2D(5, 10.0)
         hint1 = multistack.append(self.block1)
         hint2 = multistack.append(self.block2)
+        self.assertEqual( multistack.getMaterial(0.,10.), self.block1.getMaterial(0.,0.) )
+
         self.assertIn( self.block1, multistack )
         # 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
         self.assertEqual( multistack.bbox, plask.geometry.Box2D(-2.5, 10.0, 2.5, 40.0) )

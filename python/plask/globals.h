@@ -4,6 +4,7 @@
 #include <cmath>
 #include <boost/python.hpp>
 #include <plask/config.h>
+#include <plask/exceptions.h>
 #include <plask/math.h>
 #include <plask/memory.h>
 
@@ -54,6 +55,13 @@ inline static void register_config()
     ;
     py::scope().attr("config") = config;
 }
+
+
+template <typename ExcType>
+void register_exception(PyObject* py_exc) {
+    py::register_exception_translator<ExcType>([=](const ExcType& err){ PyErr_SetString(py_exc, err.what()); });
+}
+
 
 // ----------------------------------------------------------------------------------------------------------------------
 
