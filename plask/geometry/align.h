@@ -104,7 +104,7 @@ struct Aligner2d<DIRECTION_TRAN>: public Aligner2dBase<DIRECTION_TRAN> {
 template <DIRECTION direction>
 struct TranslationAligner2d: public Aligner2d<direction> {
 
-    ///Translation of aligned object in aligner activity direction.
+    /// Translation of aligned object in aligner activity direction.
     double translation;
 
     TranslationAligner2d(double translation): translation(translation) {}

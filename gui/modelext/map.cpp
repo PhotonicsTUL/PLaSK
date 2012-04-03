@@ -98,7 +98,9 @@ QString ElementExtensionImplBase::toStr(const plask::GeometryElement& el) const 
 }
 
 void ElementExtensionImplBase::setupPropertiesBrowser(plask::GeometryElement& el, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+}
 
+void ElementExtensionImplBase::setupPropertiesBrowser(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
 }
 
 /*QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {

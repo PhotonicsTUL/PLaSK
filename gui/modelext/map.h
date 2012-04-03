@@ -63,6 +63,7 @@ struct ElementExtensionImplBase {
         setupPropertiesBrowser(el, managers, managers.browser);
     }
 
+    virtual void setupPropertiesBrowser(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
 };
 
 /**

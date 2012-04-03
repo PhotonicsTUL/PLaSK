@@ -43,6 +43,16 @@ struct GeometryElementContainer: public GeometryElementD<dim> {
 protected:
     TranslationVector children;
 
+    void ensureIsValidChildNr(std::size_t child_nr, const char* method_name = "getChildAt", const char* arg_name = "child_nr") const {
+        if (child_nr >= children.size())
+            throw OutOfBoundException(method_name, arg_name, child_nr, 0, children.size()-1);
+    }
+
+    /// Inform observers that children list was changed (also that this is resized)
+    void fireChildrenChanged() {
+        this->fireChanged(GeometryElement::Event::RESIZE | GeometryElement::Event::CHILD_LIST);
+    }
+
 public:
 
     // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
@@ -177,7 +187,7 @@ public:
     virtual std::size_t getChildrenCount() const { return children.size(); }
 
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
-        if (child_nr >= children.size()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, children.size()-1);
+        ensureIsValidChildNr(child_nr);
         return children[child_nr];
     }
 
@@ -258,6 +268,7 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
         shared_ptr<TranslationT> trans_geom(new TranslationT(el, translation));
         connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
+        this->fireChildrenChanged();
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
 

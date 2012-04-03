@@ -14,19 +14,19 @@ QString printStack(const plask::StackContainer<dim>& toPrint) {
             .arg(dim).arg(toPrint.getChildrenCount());
 }
 
-template <>
-struct ExtImplFor< plask::StackContainer<2> >: public ElementExtensionImplBaseFor< plask::StackContainer<2> > {
+template <int dim>
+struct ExtImplFor< plask::StackContainer<dim> >: public ElementExtensionImplBaseFor< plask::StackContainer<dim> > {
 
-    QString toStr(const plask::GeometryElement& el) const { return printStack(c(el)); }
+    QString toStr(const plask::GeometryElement& el) const { return printStack(this->c(el)); }
 
 };
 
-template <>
+/*template <>
 struct ExtImplFor< plask::StackContainer<3> >: public ElementExtensionImplBaseFor< plask::StackContainer<3> > {
 
     QString toStr(const plask::GeometryElement& el) const { return printStack(c(el)); }
 
-};
+};*/
 
 
 template <int dim>
@@ -35,18 +35,18 @@ QString printMultiStack(const plask::MultiStackContainer<dim>& toPrint) {
             .arg(dim).arg(toPrint.getChildrenCount()).arg(toPrint.getRealChildrenCount()).arg(toPrint.repeat_count);
 };
 
-template <>
-struct ExtImplFor< plask::MultiStackContainer<2> >: public ElementExtensionImplBaseFor< plask::MultiStackContainer<2> > {
+template <int dim>
+struct ExtImplFor< plask::MultiStackContainer<dim> >: public ElementExtensionImplBaseFor< plask::MultiStackContainer<dim> > {
 
-    QString toStr(const plask::GeometryElement& el) const { return printMultiStack(c(el)); }
+    QString toStr(const plask::GeometryElement& el) const { return printMultiStack(this->c(el)); }
 
 };
 
-template <>
+/*template <>
 struct ExtImplFor< plask::MultiStackContainer<3> >: public ElementExtensionImplBaseFor< plask::MultiStackContainer<3> > {
 
     QString toStr(const plask::GeometryElement& el) const { return printMultiStack(c(el)); }
 
-};
+};*/
 
 #endif // PLASK_GUI_MODEL_EXT_MAP_IMPL_CONTAINER_H

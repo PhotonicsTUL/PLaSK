@@ -78,7 +78,11 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         updateAllHeights();
         for (auto i: deleted)
             disconnectOnChildChanged(*i);
-        return deleted.size() != 0;
+        if (deleted.size() != 0) {
+            this->fireChildrenChanged();
+            return true;
+        } else
+            return false;
     }
 
     /**
@@ -234,6 +238,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         children.push_back(trans_geom);
         stackHeights.push_back(next_height);
         aligners.push_back(aligner.clone());
+        this->fireChildrenChanged();
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
 
@@ -257,6 +262,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
             children[i]->translation.up += delta;
         }
         stackHeights.back() += delta;
+        this->fireChildrenChanged();
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
 
@@ -270,6 +276,20 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
         this->ensureCanHasAsChild(*el);
         return push_front_Unsafe(el, aligner);
+    }
+
+    Aligner& getAlignerAt(std::size_t child_nr) {
+        this->ensureIsValidChildNr(child_nr, "getAlignerAt");
+        return *aligners[child_nr];
+    }
+
+    void setAlignerAt(std::size_t child_nr, const Aligner& aligner) {
+        this->ensureIsValidChildNr(child_nr, "setAlignerAt");
+        if (aligners[child_nr] == &aligner) return; //protected for self assign
+        delete aligners[child_nr];
+        aligners[child_nr] = aligner.clone();
+        aligners[child_nr].align(children[child_nr]);
+        this->fireChanged(GeometryElement::Event::RESIZE);
     }
 
 };
