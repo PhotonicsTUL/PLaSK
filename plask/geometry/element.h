@@ -10,6 +10,7 @@ This file includes base classes for geometries elements.
 #include <tuple>
 
 #include "../material/material.h"
+#include "../material/air.h"
 #include "primitives.h"
 #include "../utils/iterators.h"
 
@@ -369,6 +370,16 @@ struct GeometryElementD: public GeometryElement {
      * @return material in given point, or @c nullptr if this GeometryElement not includes point @a p
      */
     virtual shared_ptr<Material> getMaterial(const DVec& p) const = 0;
+
+    /**
+     * Return material in a given point inside the geometry element
+     * @param p point
+     * @return material in given point, or Air if this GeometryElement not includes point @a p
+     */
+    shared_ptr<Material> getMaterialOrAir(const DVec& p) const {
+        auto real_mat = getMaterial(p);
+        return real_mat ? real_mat : make_shared<Air>();
+    }
 
     //virtual std::vector<Material*> getMaterials(Mesh);        ??
 

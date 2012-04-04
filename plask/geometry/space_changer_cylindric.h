@@ -15,7 +15,7 @@ struct Revolution: public GeometryElementChangeSpace<3, 2> {
     /**
      * @param child element to revolve, must have getBoundingBox().lower.tran >= 0
      */
-    explicit Revolution(shared_ptr<ChildType> child): GeometryElementChangeSpace<3, 2>(child) {}
+    Revolution(shared_ptr<ChildType> child): GeometryElementChangeSpace<3, 2>(child) {}
 
     virtual bool inside(const DVec& p) const;
 
