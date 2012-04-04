@@ -62,6 +62,7 @@ You should start reading from section \ref modules "How to implement an own modu
 #include "geometry/element.h"
 #include "geometry/manager.h"
 #include "geometry/transform.h"
+#include "geometry/background.h"
 #include "geometry/leaf.h"
 #include "geometry/calculation_space.h"
 #include "geometry/space_changer_cartesian.h"
@@ -70,10 +71,18 @@ You should start reading from section \ref modules "How to implement an own modu
 #include "geometry/reader.h"
 
 #include "material/material.h"
+#include "material/db.h"
+#include "material/info.h"
+#include "material/air.h"
 
-#include "mesh/rectilinear.h"
+#include "log/log.h"
+#include "log/data.h"
+#include "log/id.h"
+
+
 #include "mesh/mesh.h"
 #include "mesh/interpolation.h"
+#include "mesh/rectilinear.h"
 
 #include "provider/provider.h"
 #include "provider/temperature.h"

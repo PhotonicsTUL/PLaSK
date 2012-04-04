@@ -62,6 +62,14 @@ void print_ptr(py::object o) {
     std::cerr << "ptr: " << o.ptr() << "\n";
 }
 
+plask::shared_ptr<plask::GeometryElement> getExtrusion(plask::shared_ptr<plask::GeometryElementD<2>>c, double l) {
+    return plask::make_shared<plask::Extrusion>(c,l);
+}
+
+bool isEmpy(plask::shared_ptr<plask::GeometryElement> p) {
+    return !p;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
@@ -79,4 +87,7 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("print_ptr", &print_ptr);
 
+    py::def("getExtrusion", &getExtrusion);
+
+    py::def("isEmpty", &isEmpy);
 }

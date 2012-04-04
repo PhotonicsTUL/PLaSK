@@ -17,7 +17,7 @@ struct OpticalIntensity : public ScalarFieldProperty {};
 /**
  * Wavelength. It can be either computed by some optical modules or set by the user.
  *
- * It is a complex number, co it can contain information about both the wavelength and losses.
+ * It is a complex number, so it can contain information about both the wavelength and losses.
  * Its imaginary part is defined as |f$\Im(\lambda)=-\frac{\Re(\lambda)^2}{2\pi c}\Im(\omega)\f$.
  */
 struct Wavelength : public SingleValueProperty<dcomplex> {};
@@ -25,9 +25,16 @@ struct Wavelength : public SingleValueProperty<dcomplex> {};
 /**
  * Propagation constant. It can be either computed by some optical modules or set by the user.
  *
- * It is a complex number, co it can contain information about both the wavelength and losses.
+ * It is a complex number, so it can contain information about both the propagation and losses.
  */
 struct PropagationConstant : public SingleValueProperty<dcomplex> {};
+
+/**
+ * Effective index. It can be either computed by some optical modules or set by the user.
+ *
+ * It is a complex number, so it can contain information about both the propagation and losses.
+ */
+struct EffectiveIndex : public SingleValueProperty<dcomplex> {};
 
 } // namespace plask
 

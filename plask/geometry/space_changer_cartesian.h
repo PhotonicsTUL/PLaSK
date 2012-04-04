@@ -17,7 +17,7 @@ struct Extrusion: public GeometryElementChangeSpace<3, 2>/*, public CalculationS
     // Size of the calculation space.
     // spaceSize;
 
-    explicit Extrusion(shared_ptr<ChildType> child, double length): GeometryElementChangeSpace<3, 2>(child), length(length) {}
+    explicit Extrusion(shared_ptr<ChildType> child, double length): GeometryElementChangeSpace<3,2>(child), length(length) {}
 
     explicit Extrusion(double length/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 

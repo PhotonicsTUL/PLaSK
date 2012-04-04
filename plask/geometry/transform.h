@@ -143,7 +143,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
  * @tparam child_dim number of dimensions of child element
  * @tparam ChildType type of child, should be in space with @a child_dim number of dimensions
  */
-template < int this_dim, int child_dim = 5 - this_dim, typename ChildType = GeometryElementD<child_dim> >
+template < int this_dim, int child_dim = 5-this_dim, typename ChildType = GeometryElementD<child_dim> >
 struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, ChildType> {
 
     typedef typename ChildType::Box ChildBox;
@@ -153,7 +153,7 @@ struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, Chi
 
     explicit GeometryElementChangeSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransform<this_dim, ChildType>(child) {}
 
-    ///@return GE_TYPE_SPACE_CHANGER
+    /// @return GE_TYPE_SPACE_CHANGER
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_SPACE_CHANGER; }
 
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {

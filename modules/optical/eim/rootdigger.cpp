@@ -3,7 +3,7 @@ using namespace std;
 
 namespace plask { namespace eim {
 
-vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> impoints) const
+vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> impoints) const
 {
 
     // The number of points in each direction
@@ -75,7 +75,7 @@ vector<dcomplex> RootDigger::find_map(vector<double> repoints, vector<double> im
 
 //**************************************************************************
 /// Search for modes within the region real(start) - real(end),
-vector<dcomplex> RootDigger::searchModes(dcomplex start, dcomplex end, int replot,
+vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int replot,
                                          int implot, int num_modes)
 {
     vector<double> repoints(replot+1), impoints(implot+1);
@@ -100,13 +100,13 @@ vector<dcomplex> RootDigger::searchModes(dcomplex start, dcomplex end, int replo
     vector<dcomplex> modes;
 
     // Determine map
-    vector<dcomplex> map = find_map(repoints, impoints);
+    vector<dcomplex> map = findMap(repoints, impoints);
 
     // Find modes starting from the map points
     int iend = min(int(map.size()), num_modes);
     for (int i = 0; i < iend; i++) {
         try {
-            dcomplex mode = getMode(map[i]);
+            dcomplex mode = getSolution(map[i]);
             modes.push_back(mode);
         } catch (runtime_error err) {
             module.log(LOG_ERROR, "Failed to get mode around " + str(map[i]) + " (" + err.what() + ")");
@@ -118,7 +118,7 @@ vector<dcomplex> RootDigger::searchModes(dcomplex start, dcomplex end, int replo
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
-dcomplex RootDigger::getMode(dcomplex point) const
+dcomplex RootDigger::getSolution(dcomplex point) const
 {
     module.log(LOG_INFO, "Searching for the mode with Broyden method starting from " + str(point));
     dcomplex x = Broyden(point);

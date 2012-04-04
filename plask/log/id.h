@@ -9,7 +9,7 @@ namespace plask {
 /**
  * Get unique number.
  *
- * This function is threads-safty.
+ * This function is threads-safe.
  * @return unique number
  */
 std::uint64_t getUniqueNumber();
@@ -17,7 +17,7 @@ std::uint64_t getUniqueNumber();
 /**
  * Get unique string.
  *
- * This function is threads-safty.
+ * This function is threads-safe.
  * @return lexical_cast<std::string>(getUniqueNumber())
  */
 std::string getUniqueString();

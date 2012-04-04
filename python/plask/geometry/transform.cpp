@@ -79,6 +79,8 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transfer holds a trans
     ;
 }
 
+void register_geometry_changespace();
+
 void register_geometry_transform_background();
 
 void register_geometry_transform()
@@ -86,12 +88,7 @@ void register_geometry_transform()
     init_GeometryElementTransform<2>();
     init_GeometryElementTransform<3>();
 
-    // Space changer
-    py::class_<GeometryElementChangeSpace<3,2>, shared_ptr<GeometryElementChangeSpace<3,2>>, py::bases<GeometryElementTransform<3>>, boost::noncopyable>
-    ("GeometryElementChangeSpace2Dto3D", "Base class for elements changing space 2D to 3D", py::no_init);
-
-    py::class_<GeometryElementChangeSpace<2,3>, shared_ptr<GeometryElementChangeSpace<2,3>>, py::bases<GeometryElementTransform<2>>, boost::noncopyable>
-    ("GeometryElementChangeSpace3Dto2D", "Base class for elements changing space 3D to 2D using some averaging or cross-section", py::no_init);
+    register_geometry_changespace();
 
     init_Translation<2>();
     init_Translation<3>();

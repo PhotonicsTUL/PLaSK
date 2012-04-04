@@ -30,8 +30,8 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      */
     EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry) :
-        geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
-        log_value(dataLog<dcomplex, double>("beta", "char_val")) {
+        geometry(geometry), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+        log_value(dataLog<dcomplex, double>("neff", "char_val")) {
         inTemperature = 300.;
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
@@ -45,8 +45,8 @@ class EffectiveIndex2dModule: public Module {
      * \param mesh horizontal mesh for dividing geometry
      */
     EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry, const RectilinearMesh1d& meshx) :
-        geometry(geometry), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
-        log_value(dataLog<dcomplex, double>("beta", "char_val")) {
+        geometry(geometry), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+        log_value(dataLog<dcomplex, double>("neff", "char_val")) {
         inTemperature = 300.;
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
@@ -61,8 +61,8 @@ class EffectiveIndex2dModule: public Module {
      * \param mesh mesh for dividing geometry
      */
     EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry, shared_ptr<RectilinearMesh2d> mesh) :
-        geometry(geometry), mesh(mesh), outBeta(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
-        log_value(dataLog<dcomplex, double>("beta", "char_val")) {
+        geometry(geometry), mesh(mesh), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+        log_value(dataLog<dcomplex, double>("neff", "char_val")) {
         inTemperature = 300.;
     }
 
@@ -78,10 +78,10 @@ class EffectiveIndex2dModule: public Module {
      *
      * This method remembers the determined mode, for rietrieval of the field profiles.
      *
-     * @param beta initial propagation constant to search the mode around
+     * @param neff initial effective index to search the mode around
      * @return determined propagation constant
      **/
-    dcomplex computeMode(dcomplex beta);
+    dcomplex computeMode(dcomplex neff);
 
 
     /**
@@ -89,23 +89,23 @@ class EffectiveIndex2dModule: public Module {
      *
      * This method \b does \b not remember the determined modes!
      *
-     * @param beta1 one end of the range to browse
-     * @param beta2 another end of the range to browse
+     * @param neff1 one end of the range to browse
+     * @param neff2 another end of the range to browse
      * @param steps number of steps for range browsing
      * @return vector of determined propagation constants
      **/
-    std::vector<dcomplex> findModes(dcomplex beta1, dcomplex beta2, int steps=100);
+    std::vector<dcomplex> findModes(dcomplex neff1, dcomplex neff2, int steps=100);
 
 
     /**
      * Find approximate modes by scanning the desired range
      *
-     * @param beta1 one end of the range to browse
-     * @param beta2 another end of the range to browse
+     * @param neff1 one end of the range to browse
+     * @param neff2 another end of the range to browse
      * @param steps number of steps for range browsing
      * @return vector of determined potential propagation constants
      **/
-    std::vector<dcomplex> findModesMap(dcomplex beta1, dcomplex beta2, int steps=100);
+    std::vector<dcomplex> findModesMap(dcomplex neff1, dcomplex neff2, int steps=100);
 
 
     /// Receiver of the wavelength
@@ -114,8 +114,8 @@ class EffectiveIndex2dModule: public Module {
     /// Receiver for temperature
     ReceiverFor<Temperature, space::Cartesian2d> inTemperature;
 
-    /// Provider for computed propagation constant
-    ProviderFor<PropagationConstant>::WithValue outBeta;
+    /// Provider for computed effective index
+    ProviderFor<PropagationConstant>::WithValue outNeff;
 
     /// Provider of optical field
     ProviderFor<OpticalIntensity, space::Cartesian2d>::Delegate outIntensity;
