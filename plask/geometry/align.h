@@ -7,6 +7,7 @@ This file includes aligners.
 
 #include "transform.h"
 #include <memory>   //unique_ptr
+#include <boost/lexical_cast.hpp>
 
 namespace plask {
 
@@ -53,7 +54,13 @@ struct Aligner2dBase {
      */
     virtual Aligner2d<direction>* clone() const = 0;
 
-    ///Virtual destructor. Do nothing.
+    /**
+     * Get string representation of this aligner.
+     * @return string representation of this aligner
+     */
+    virtual std::string str() const = 0;
+
+    /// Virtual destructor. Do nothing.
     virtual ~Aligner2dBase() {}
 
 };
@@ -116,6 +123,8 @@ struct TranslationAligner2d: public Aligner2d<direction> {
     bool useBounds() const { return false; }
 
     TranslationAligner2d* clone() const { return new TranslationAligner2d(translation); }
+
+    virtual std::string str() const { return boost::lexical_cast<std::string>(translation); }
 };
 
 /**
@@ -156,6 +165,9 @@ struct Aligner3d {
      */
     virtual Aligner3d<direction1, direction2>* clone() const = 0;
 
+    virtual std::string strFirstDirection() const = 0;
+    virtual std::string strSecondDirection() const = 0;
+
 };
 
 template <DIRECTION direction1, DIRECTION direction2>
@@ -178,6 +190,9 @@ struct TranslationAligner3d: public Aligner3d<direction1, direction2> {
     virtual TranslationAligner3d<direction1, direction2>* clone() const {
         return new TranslationAligner3d<direction1, direction2>(dir1translation, dir2translation);
     }
+
+    virtual std::string strFirstDirection() const { return boost::lexical_cast<std::string>(dir1translation); }
+    virtual std::string strSecondDirection() const { return boost::lexical_cast<std::string>(dir2translation); }
 };
 
 /**
@@ -232,6 +247,9 @@ public:
         return new ComposeAligner3d<direction1, direction2>(*this);
     }
 
+    virtual std::string strFirstDirection() const { return dir1aligner->str(); }
+    virtual std::string strSecondDirection() const { return dir2aligner->str(); }
+
 };
 
 template <DIRECTION direction1, DIRECTION direction2>
@@ -246,19 +264,27 @@ inline double lowToZero(double lo, double hi) { return -lo; }
 inline double hiToZero(double lo, double hi) { return -hi; }
 inline double centerToZero(double lo, double hi) { return -(lo+hi)/2.0; }
 
-template <DIRECTION direction, alignStrategy strategy>
+struct LEFT { static constexpr const char* value = "left"; };
+struct RIGHT { static constexpr const char* value = "right"; };
+struct FRONT { static constexpr const char* value = "front"; };
+struct BACK { static constexpr const char* value = "back"; };
+struct CENTER { static constexpr const char* value = "center"; };
+
+template <DIRECTION direction, alignStrategy strategy, typename name_tag>
 struct Aligner2dImpl: public Aligner2d<direction> {
 
     virtual double getAlign(double low, double hi) const {
         return strategy(low, hi);
     }
 
-    virtual Aligner2dImpl<direction, strategy>* clone() const {
-        return new Aligner2dImpl<direction, strategy>();
+    virtual Aligner2dImpl<direction, strategy, name_tag>* clone() const {
+        return new Aligner2dImpl<direction, strategy, name_tag>();
     }
+
+    virtual std::string str() const { return name_tag::value; }
 };
 
-template <DIRECTION direction1, alignStrategy strategy1, DIRECTION direction2, alignStrategy strategy2>
+template <DIRECTION direction1, alignStrategy strategy1, typename str_tag1, DIRECTION direction2, alignStrategy strategy2, typename str_tag2>
 struct Aligner3dImpl: public Aligner3d<direction1, direction2> {
 
     virtual void align(Translation<3>& toAlign, const Box3d& childBoundingBox) const {
@@ -266,36 +292,39 @@ struct Aligner3dImpl: public Aligner3d<direction1, direction2> {
         toAlign.translation.components[direction2] = strategy2(childBoundingBox.lower.components[direction2], childBoundingBox.upper.components[direction2]);
     }
 
-    virtual Aligner3dImpl<direction1, strategy1, direction2, strategy2>* clone() const {
-        return new Aligner3dImpl<direction1, strategy1, direction2, strategy2>();
+    virtual Aligner3dImpl<direction1, strategy1, str_tag1, direction2, strategy2, str_tag2>* clone() const {
+        return new Aligner3dImpl<direction1, strategy1, str_tag1, direction2, strategy2, str_tag2>();
     }
+
+    virtual std::string strFirstDirection() const { return str_tag1::value; }
+    virtual std::string strSecondDirection() const { return str_tag2::value; }
 };
 
 }   // namespace details
 
 //2d trans. aligners:
-typedef details::Aligner2dImpl<DIRECTION_TRAN, details::lowToZero> Left;
-typedef details::Aligner2dImpl<DIRECTION_TRAN, details::hiToZero> Right;
-typedef details::Aligner2dImpl<DIRECTION_TRAN, details::centerToZero> TranCenter;
-typedef details::Aligner2dImpl<DIRECTION_TRAN, details::centerToZero> Center;
+typedef details::Aligner2dImpl<DIRECTION_TRAN, details::lowToZero, details::LEFT> Left;
+typedef details::Aligner2dImpl<DIRECTION_TRAN, details::hiToZero, details::RIGHT> Right;
+typedef details::Aligner2dImpl<DIRECTION_TRAN, details::centerToZero, details::CENTER> TranCenter;
+typedef details::Aligner2dImpl<DIRECTION_TRAN, details::centerToZero, details::CENTER> Center;
 typedef TranslationAligner2d<DIRECTION_TRAN> Tran;
 
 //2d lon. aligners:
-typedef details::Aligner2dImpl<DIRECTION_LON, details::lowToZero> Front;
-typedef details::Aligner2dImpl<DIRECTION_LON, details::hiToZero> Back;
-typedef details::Aligner2dImpl<DIRECTION_LON, details::centerToZero> LonCenter;
+typedef details::Aligner2dImpl<DIRECTION_LON, details::lowToZero, details::FRONT> Front;
+typedef details::Aligner2dImpl<DIRECTION_LON, details::hiToZero, details::BACK> Back;
+typedef details::Aligner2dImpl<DIRECTION_LON, details::centerToZero, details::CENTER> LonCenter;
 typedef TranslationAligner2d<DIRECTION_LON> Lon;
 
 //3d lon/tran aligners:
-typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::lowToZero> FrontLeft;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::hiToZero> FrontRight;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, DIRECTION_TRAN, details::centerToZero> FrontCenter;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, DIRECTION_TRAN, details::lowToZero> BackLeft;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, DIRECTION_TRAN, details::hiToZero> BackRight;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, DIRECTION_TRAN, details::centerToZero> BackCenter;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::lowToZero> CenterLeft;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::hiToZero> CenterRight;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, DIRECTION_TRAN, details::centerToZero> CenterCenter;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::FRONT, DIRECTION_TRAN, details::lowToZero, details::LEFT> FrontLeft;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::FRONT, DIRECTION_TRAN, details::hiToZero, details::RIGHT> FrontRight;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::FRONT, DIRECTION_TRAN, details::centerToZero, details::CENTER> FrontCenter;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::BACK, DIRECTION_TRAN, details::lowToZero, details::LEFT> BackLeft;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::BACK, DIRECTION_TRAN, details::hiToZero, details::RIGHT> BackRight;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::BACK, DIRECTION_TRAN, details::centerToZero, details::CENTER> BackCenter;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::lowToZero, details::LEFT> CenterLeft;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::hiToZero, details::RIGHT> CenterRight;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::centerToZero, details::CENTER> CenterCenter;
 typedef TranslationAligner3d<DIRECTION_LON, DIRECTION_TRAN> LonTran;
 //typedef ComposeAligner3d<DIR3D_LON, DIR3D_TRAN> NFLR;
 //TODO mixed variants

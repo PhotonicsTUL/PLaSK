@@ -385,7 +385,8 @@ class MultiStackContainer: public StackContainer<dim> {
         std::size_t new_size = dest.size();
         const double stackHeight = stackHeights.back() - stackHeights.front();
         for (unsigned r = 1; r < repeat_count; ++r) {
-            dest.insert(dest.end(), dest.begin() + old_size, dest.begin() + new_size);
+            for (std::size_t i = old_size; i < new_size; ++i)
+                dest.push_back(dest[i]);
             for (auto i = dest.end() - (new_size-old_size); i != dest.end(); ++i)
                 i->translateUp(stackHeight * r);
         }
@@ -396,7 +397,6 @@ class MultiStackContainer: public StackContainer<dim> {
         UpperClass::getLeafsToVec(dest);
         std::size_t new_size = dest.size();
         for (unsigned r = 1; r < repeat_count; ++r)
-            //dest.insert(dest.end(), dest.begin() + old_size, dest.begin() + new_size); //why this not work?
             for (std::size_t i = old_size; i < new_size; ++i)
                 dest.push_back(dest[i]);
     }
