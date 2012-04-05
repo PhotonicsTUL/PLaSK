@@ -2,8 +2,8 @@
 
 namespace plask {
 
-shared_ptr<Material> Space2DCartesian::getMaterial(const Vec<2, double>& p) const {
-    extrusion->getChild()->getMaterialOrAir(p);
+shared_ptr< GeometryElementD<2> > Space2DCartesian::getChild() const {
+    return extrusion->getChild();
 }
 
 }   // namespace plask

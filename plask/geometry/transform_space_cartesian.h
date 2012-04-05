@@ -31,7 +31,7 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Calculati
 
     //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const;
 
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
     virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const;
 

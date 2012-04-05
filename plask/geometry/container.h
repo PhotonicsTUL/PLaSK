@@ -128,15 +128,19 @@ public:
         for (auto child: children) child->getLeafsInfoToVec(dest, path);
     }*/
 
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(getBoundingBox());
+            return;
+        }
         if (path) {
             auto c = path->getTranslationChildren<dim>(*this);
             if (!c.empty()) {
-                for (auto child: c) child->getLeafsBoundingBoxesToVec(dest, path);
+                for (auto child: c) child->getBoundingBoxesToVec(predicate, dest, path);
                 return;
             }
         }
-        for (auto child: children) child->getLeafsBoundingBoxesToVec(dest, path);
+        for (auto child: children) child->getBoundingBoxesToVec(predicate, dest, path);
     }
 
     virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {

@@ -379,9 +379,13 @@ class MultiStackContainer: public StackContainer<dim> {
         return result;
     }
 
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(getBoundingBox());
+            return;
+        }
         std::size_t old_size = dest.size();
-        UpperClass::getLeafsBoundingBoxesToVec(dest, path);
+        UpperClass::getBoundingBoxesToVec(predicate, dest, path);
         std::size_t new_size = dest.size();
         const double stackHeight = stackHeights.back() - stackHeights.front();
         for (unsigned r = 1; r < repeat_count; ++r) {

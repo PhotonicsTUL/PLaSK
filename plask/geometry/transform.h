@@ -224,8 +224,12 @@ struct Translation: public GeometryElementTransform<dim> {
         }
     }*/
 
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
-        std::vector<Box> result = getChild()->getLeafsBoundingBoxes(path);
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(getBoundingBox());
+            return;
+        }
+        std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);
         dest.reserve(dest.size() + result.size());
         for (Box& r: result) dest.push_back(r.translated(translation));
     }

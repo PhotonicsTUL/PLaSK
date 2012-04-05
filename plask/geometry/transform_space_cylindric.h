@@ -25,7 +25,7 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const;
 
-    virtual std::vector<Box> getLeafsBoundingBoxes() const;
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
 private:
 

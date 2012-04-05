@@ -1,4 +1,4 @@
-#include "geometry.h"
+/*#include "geometry.h"
 
 #include <plask/geometry/background.h>
 
@@ -124,3 +124,4 @@ void register_geometry_transform_background()
 }
 
 }} // namespace plask::python
+*/

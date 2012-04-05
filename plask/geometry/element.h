@@ -8,6 +8,7 @@ This file includes base classes for geometries elements.
 
 #include <vector>
 #include <tuple>
+#include <functional>
 
 #include "../material/material.h"
 #include "../material/air.h"
@@ -131,6 +132,11 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         bool empty() const { !element; }
     };
 
+    /**
+     * Base class for geometry changers.
+     *
+     * Geometry changer can change GeometryElement to another one.
+     */
     struct Changer {
 
         /**
@@ -143,21 +149,40 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     };
 
+    /**
+     * Geometry changer which hold vector of changers and try to apply this changers sequently.
+     *
+     * Its apply method call: changers[0].apply(to_change, translation), changers[1].apply(to_change, translation), ...
+     * up to time when one of this call returns @c true (and then it returns @c true) or
+     * there are no mora changers in changes vector (and then it returns @c false).
+     */
     struct CompositeChanger: public Changer {
 
         std::vector<const Changer*> changers;
 
+        /**
+         * Construct CompositeChanger and append @p changer to its changers list.
+         * @param changer changer to append
+         */
         CompositeChanger(const Changer* changer);
 
+        /**
+         * Append @p changer to changers list.
+         * @param changer changer to append
+         * @return @c *this
+         */
         CompositeChanger& operator()(const Changer* changer);
 
-        ///Delete all holded changers
+        /// Delete all holded changers (using delete operator).
         ~CompositeChanger();
 
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
 
     };
 
+    /**
+     * Changer which replace given geometry element @a from to given geometry element @a to.
+     */
     struct ReplaceChanger: public Changer {
 
         shared_ptr<const GeometryElement> from, to;
@@ -177,10 +202,27 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     };
 
-    struct ToBlockChanger: ReplaceChanger {
+    /**
+     * Changer which replace given geometry element @a toChange to block (2d or 3d, depents from @a toChange)
+     * with size equals to @a toChange bounding box, and with given material.
+     */
+    struct ToBlockChanger: public ReplaceChanger {
 
         ToBlockChanger(const shared_ptr<const GeometryElement>& toChange, const shared_ptr<Material>& material);
 
+    };
+
+    /// Predicate on GeometryElement
+    typedef std::function<bool(const GeometryElement&)> Predicate;
+
+    static bool PredicateIsLeaf(const GeometryElement& el) { return el.isLeaf(); }
+
+    struct PredicateIsIdenticalTo {
+        const GeometryElement& elementToBeEqual;
+        PredicateIsIdenticalTo(const GeometryElement& elementToBeEqual): elementToBeEqual(elementToBeEqual) {}
+        PredicateIsIdenticalTo(const shared_ptr<GeometryElement>& elementToBeEqual): elementToBeEqual(*elementToBeEqual) {}
+        PredicateIsIdenticalTo(const shared_ptr<const GeometryElement>& elementToBeEqual): elementToBeEqual(*elementToBeEqual) {}
+        bool operator()(const GeometryElement& el) const { return &el == &elementToBeEqual; }
     };
 
     /// Changed signal, fired when element was changed.
@@ -386,11 +428,27 @@ struct GeometryElementD: public GeometryElement {
     //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const = 0;
 
     /**
+     * Calculate and append to vector bounding boxes of all nodes which fullfill given @p predicate, optionaly showed by path.
+     * @param predicate
+     * @param dest place to add result
+     * @param path path fragments, optional
+     */
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const = 0;
+
+    std::vector<Box> getBoundingBoxes(const GeometryElement::Predicate& predicate, const PathHints* path = 0) const {
+        std::vector<Box> result;
+        getBoundingBoxesToVec(predicate, result, path);
+        return result;
+    }
+
+    /**
      * Calculate and append to vector bounding boxes of all leafs, optionaly showed by path.
      * @param dest place to add result
      * @param path path fragments, optional
      */
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const = 0;
+    void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
+        getBoundingBoxesToVec(&GeometryElement::PredicateIsLeaf, dest, path);
+    }
 
     /**
      * Calculate bounding boxes of all leafs, optionaly showed by path.

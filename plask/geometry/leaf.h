@@ -35,8 +35,9 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         dest.push_back( std::tuple<shared_ptr<const GeometryElement>, Box, DVec>(this->shared_from_this(), this->getBoundingBox(), Primitive<dim>::ZERO_VEC) );
     }
 
-    virtual void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
-        dest.push_back(this->getBoundingBox());
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
+        if (predicate(*this))
+            dest.push_back(this->getBoundingBox());
     }
 
     inline std::vector<Box> getLeafsBoundingBoxes() const {

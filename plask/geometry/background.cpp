@@ -38,7 +38,7 @@ shared_ptr<Material> Background<3>::getMaterial(const DVec& p) const {
     return getChild()->getMaterial(r);
 }
 
-
+/*
 #define extend_attr "along"
 
 static shared_ptr<GeometryElement> read_background2d(GeometryReader& reader) {
@@ -80,7 +80,7 @@ static shared_ptr<GeometryElement> read_background3d(GeometryReader& reader) {
 
 static GeometryReader::RegisterElementReader background2d_reader("background" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_background2d);
 static GeometryReader::RegisterElementReader background3d_reader("background" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_background3d);
-
+*/
 
 
 } // namespace plask

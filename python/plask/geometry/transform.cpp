@@ -93,7 +93,7 @@ void register_geometry_transform()
     init_Translation<2>();
     init_Translation<3>();
 
-    register_geometry_transform_background();
+    //register_geometry_transform_background();
 }
 
 }} // namespace plask::python
