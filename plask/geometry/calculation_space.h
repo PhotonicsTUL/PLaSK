@@ -1,7 +1,8 @@
 #ifndef PLASK__CALCULATION_SPACE_H
 #define PLASK__CALCULATION_SPACE_H
 
-#include "space_changer_cartesian.h"
+#include "transform_space_cartesian.h"
+#include "transform_space_cylindric.h"
 
 namespace plask {
 
@@ -12,15 +13,15 @@ namespace plask {
  */
 class CalculationSpace {};  //TODO needed?
 
-class CalculationSpaceOverExtrusion: public CalculationSpace {
+class Space2DCartesian: public CalculationSpace {
 
     shared_ptr<Extrusion> extrusion;
 
 public:
 
-    CalculationSpaceOverExtrusion(const shared_ptr<Extrusion>& extrusion): extrusion(extrusion) {}
+    Space2DCartesian(const shared_ptr<Extrusion>& extrusion): extrusion(extrusion) {}
 
-    CalculationSpaceOverExtrusion(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
+    Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
         : extrusion(make_shared<Extrusion>(childGeometry, length)) {}
 
     /**

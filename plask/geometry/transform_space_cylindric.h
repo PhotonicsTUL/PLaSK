@@ -1,5 +1,5 @@
-#ifndef PLASK__SPACE_CHANGER_CYLINDRIC_H
-#define PLASK__SPACE_CHANGER_CYLINDRIC_H
+#ifndef PLASK__TRANSFORM_SPACE_CYLINDRIC_H
+#define PLASK__TRANSFORM_SPACE_CYLINDRIC_H
 
 #include "transform.h"
 
@@ -10,12 +10,12 @@ namespace plask {
  *
  * Child must have getBoundingBox().lower.tran >= 0.
  */
-struct Revolution: public GeometryElementChangeSpace<3, 2> {
+struct Revolution: public GeometryElementTransformSpace<3, 2> {
 
     /**
      * @param child element to revolve, must have getBoundingBox().lower.tran >= 0
      */
-    Revolution(shared_ptr<ChildType> child): GeometryElementChangeSpace<3, 2>(child) {}
+    Revolution(shared_ptr<ChildType> child): GeometryElementTransformSpace<3, 2>(child) {}
 
     virtual bool inside(const DVec& p) const;
 
@@ -55,4 +55,4 @@ private:
 
 }   // namespace plask
 
-#endif // PLASK__SPACE_CHANGER_CYLINDRIC_H
+#endif // PLASK__TRANSFORM_SPACE_CYLINDRIC_H

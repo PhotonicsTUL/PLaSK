@@ -65,8 +65,8 @@ You should start reading from section \ref modules "How to implement an own modu
 #include "geometry/background.h"
 #include "geometry/leaf.h"
 #include "geometry/calculation_space.h"
-#include "geometry/space_changer_cartesian.h"
-#include "geometry/space_changer_cylindric.h"
+#include "geometry/transform_space_cartesian.h"
+#include "geometry/transform_space_cylindric.h"
 #include "geometry/container.h"
 #include "geometry/reader.h"
 

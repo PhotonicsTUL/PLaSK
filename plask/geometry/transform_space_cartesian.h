@@ -1,5 +1,5 @@
-#ifndef PLASK__SPACE_CHANGER_CARTESIAN_H
-#define PLASK__SPACE_CHANGER_CARTESIAN_H
+#ifndef PLASK__TRANSFORM_SPACE_CARTESIAN_H
+#define PLASK__TRANSFORM_SPACE_CARTESIAN_H
 
 #include "transform.h"
 
@@ -8,16 +8,16 @@ namespace plask {
 /**
  * Represent 3d geometry element which are extend of 2d element (child) in lon direction.
  */
-struct Extrusion: public GeometryElementChangeSpace<3, 2>/*, public CalculationSpace*/ {
+struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public CalculationSpace*/ {
 
-    typedef GeometryElementChangeSpace<3, 2>::ChildType ChildType;
+    typedef GeometryElementTransformSpace<3, 2>::ChildType ChildType;
 
     double length;
 
     // Size of the calculation space.
     // spaceSize;
 
-    explicit Extrusion(shared_ptr<ChildType> child, double length): GeometryElementChangeSpace<3,2>(child), length(length) {}
+    explicit Extrusion(shared_ptr<ChildType> child, double length): GeometryElementTransformSpace<3,2>(child), length(length) {}
 
     explicit Extrusion(double length/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
@@ -76,4 +76,4 @@ private:
 
 }   // namespace plask
 
-#endif // SPACE_CHANGER_CARTESIAN_H
+#endif // TRANSFORM_SPACE_CARTESIAN_H

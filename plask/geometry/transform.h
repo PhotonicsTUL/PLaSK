@@ -11,7 +11,7 @@ namespace plask {
  * Template of base class for all transform nodes.
  * Transform node has exactly one child node and represent element which is equal to child after transform.
  * @tparam dim number of dimensions of this element
- * @tparam Child_Type type of child, can be in space with different number of dimensions than this is (in such case see @ref GeometryElementChangeSpace).
+ * @tparam Child_Type type of child, can be in space with different number of dimensions than this is (in such case see @ref GeometryElementTransformSpace).
  */
 template < int dim, typename Child_Type = GeometryElementD<dim> >
 struct GeometryElementTransform: public GeometryElementD<dim> {
@@ -137,21 +137,20 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 };
 
 /**
- * Template of base class for all space changer nodes.
- * Space changer if transform node which is in space with different number of dimensions than its child.
+ * Template of base class for all transformations which change the space between its parent and child.
  * @tparam this_dim number of dimensions of this element
  * @tparam child_dim number of dimensions of child element
  * @tparam ChildType type of child, should be in space with @a child_dim number of dimensions
  */
 template < int this_dim, int child_dim = 5-this_dim, typename ChildType = GeometryElementD<child_dim> >
-struct GeometryElementChangeSpace: public GeometryElementTransform<this_dim, ChildType> {
+struct GeometryElementTransformSpace: public GeometryElementTransform<this_dim, ChildType> {
 
     typedef typename ChildType::Box ChildBox;
     typedef typename ChildType::DVec ChildVec;
     typedef typename GeometryElementTransform<this_dim, ChildType>::DVec DVec;
     using GeometryElementTransform<this_dim, ChildType>::getChild;
 
-    explicit GeometryElementChangeSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransform<this_dim, ChildType>(child) {}
+    explicit GeometryElementTransformSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransform<this_dim, ChildType>(child) {}
 
     /// @return GE_TYPE_SPACE_CHANGER
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_SPACE_CHANGER; }

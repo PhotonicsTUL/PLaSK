@@ -177,7 +177,7 @@ To write new geometry element you should:
 
 Good base classes for geometries elements are, for example:
 - plask::GeometryElementLeaf instantiations - for leaf elements,
-- plask::GeometryElementTransform or plask::GeometryElementChangeSpace instantiations - for transformation elements,
+- plask::GeometryElementTransform or plask::GeometryElementTransformSpace instantiations - for transformation elements,
 - plask::GeometryElementContainer instantiations - for containers,
 - plask::GeometryElementD instantiations - generic.
 */
