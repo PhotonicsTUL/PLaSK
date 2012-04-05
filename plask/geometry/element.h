@@ -282,6 +282,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Append all leafs in subtree with this in root to vector @p dest.
      * @param dest leafs destination vector
      */
+    //TODO predicate, path
     virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const = 0;
 
     /**
@@ -479,6 +480,7 @@ struct GeometryElementD: public GeometryElement {
      * Some leafs can have all vector of NaNs as trasnalations.
      * This mean that translation is not well defined (some space changer on path).
      */
+    //TODO getLeafsWithTranslations -> getTranslations (without elements but with same order), predicate, path, toVec
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const = 0;
 
     //virtual getChildInfo  //translation, bounding box
