@@ -83,6 +83,42 @@ public:
 
 };
 
+struct Space2DCartesianDragToEdge: public Space2DCartesian {
+    
+    /// Type of extensions for infinite stacks
+    enum ExtendType {
+        EXTEND_NONE = 0,
+        EXTEND_VERTICAL = 1,
+        EXTEND_TRAN = 2,
+        EXTEND_LON = 4,
+        EXTEND_HORIZONTAL = 6,
+        EXTEND_ALL = 7
+    };
+    
+private:
+
+    ExtendType _extend;
+    
+    Box2d cachedBoundingBox;
+    
+    void onChildChanged(const GeometryElement::Event& evt);
+
+public:
+    
+    Space2DCartesianDragToEdge(const shared_ptr<Extrusion>& extrusion, ExtendType extendType);
+    
+    /** Set the extend
+     * @param extend new extend
+     */
+    inline void setExtend(ExtendType extend) {
+        if (extend == EXTEND_LON) throw BadInput("Background<2>", "EXTEND_LON not allowed for 2D background.");
+        _extend = extend;
+    }
+    
+    virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
+    
+};
+
 }   // namespace plask
 
 #endif // PLASK__CALCULATION_SPACE_H

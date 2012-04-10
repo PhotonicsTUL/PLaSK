@@ -227,6 +227,16 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     /// Changed signal, fired when element was changed.
     boost::signals2::signal<void(const Event&)> changed;
+    
+    template <typename ClassT, typename methodT>
+    void changedConnectMethod(ClassT* obj, methodT method) {
+        changed.connect(boost::bind(method, obj, _1));
+    }
+    
+    template <typename ClassT, typename methodT>
+    void changedDisconnectMethod(ClassT* obj, methodT method) {
+        changed.disconnect(boost::bind(method, obj, _1));
+    }
 
     template<typename EventT = Event, typename ...Args>
     void fireChanged(Args&&... params) {

@@ -64,16 +64,12 @@ public:
 
     /// Connect onChildChanged to current child change signal
     void connectOnChildChanged(Translation<dim>& child) {
-        child.changed.connect(
-            boost::bind(&GeometryElementContainer::onChildChanged, this, _1)
-        );
+        child.changedConnectMethod(this, &GeometryElementContainer::onChildChanged);
     }
 
     /// Disconnect onChildChanged from current child change signal
     void disconnectOnChildChanged(Translation<dim>& child) {
-        child.changed.disconnect(
-            boost::bind(&GeometryElementContainer::onChildChanged, this, _1)
-        );
+        child.changedDisconnectMethod(this, &GeometryElementContainer::onChildChanged);
     }
 
     /**
