@@ -57,12 +57,6 @@ inline static void register_config()
 }
 
 
-template <typename ExcType>
-void register_exception(PyObject* py_exc) {
-    py::register_exception_translator<ExcType>([=](const ExcType& err){ PyErr_SetString(py_exc, err.what()); });
-}
-
-
 // ----------------------------------------------------------------------------------------------------------------------
 
 // Format complex numbers in Python way
@@ -92,6 +86,40 @@ struct Sc<dcomplex> {
 
 template <typename T>
 inline detail::Sc<T> sc(const T& v) { return detail::Sc<T>(v); }
+
+
+// ----------------------------------------------------------------------------------------------------------------------
+// Exceptions
+
+template <typename ExcType>
+void register_exception(PyObject* py_exc) {
+    py::register_exception_translator<ExcType>([=](const ExcType& err){ PyErr_SetString(py_exc, err.what()); });
+}
+
+struct ValueError: public Exception {
+    ValueError(const std::string& msg) : Exception(msg) {}
+};
+
+struct TypeError: public Exception {
+    TypeError(const std::string& msg) : Exception(msg) {}
+};
+
+struct IndexError: public Exception {
+    IndexError(const std::string& msg) : Exception(msg) {}
+};
+
+struct KeyError: public Exception {
+    KeyError(const std::string& msg) : Exception(msg) {}
+};
+
+struct AttributeError: public Exception {
+    AttributeError(const std::string& msg) : Exception(msg) {}
+};
+
+struct StopIteration: public Exception {
+    StopIteration(const std::string& msg) : Exception(msg) {}
+};
+
 
 
 }} // namespace plask::python

@@ -81,8 +81,6 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transfer holds a trans
 
 void register_geometry_changespace();
 
-void register_geometry_transform_background();
-
 void register_geometry_transform()
 {
     init_GeometryElementTransform<2>();
@@ -92,8 +90,6 @@ void register_geometry_transform()
 
     init_Translation<2>();
     init_Translation<3>();
-
-    //register_geometry_transform_background();
 }
 
 }} // namespace plask::python

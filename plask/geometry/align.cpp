@@ -26,5 +26,21 @@ Aligner2d<DIRECTION_LON>* lonAlignerFromString(std::string str) {
 
 }   // namespace details
 
+Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN>* aligner3dFromString(std::string str) {
+         if (str == "front left" || str == "fl" || str == "left front" || str == "lf") return new FrontLeft();
+    else if (str == "center left" || str == "cl" || str == "left center" || str == "lc") return new CenterLeft();
+    else if (str == "back left" || str == "bl" || str == "left back" || str == "lb") return new BackLeft();
+    else if (str == "front center" || str == "fc" || str == "center front" || str == "lf") return new FrontCenter();
+    else if (str == "center center" || str == "cc" || str == "center" || str == "c") return new CenterCenter();
+    else if (str == "back center" || str == "bl" || str == "center back" || str == "lb") return new BackCenter();
+    else if (str == "front right" || str == "fr" || str == "right front" || str == "rf") return new FrontRight();
+    else if (str == "center right" || str == "cr" || str == "right center" || str == "rc") return new CenterRight();
+    else if (str == "back right" || str == "br" || str == "right back" || str == "rb") return new BackRight();
+    throw BadInput("alignerFromString", "Wrong aligner specification");
+    return nullptr;
+}
+
+
+
 }   // namespace align
 }   // namespace plask

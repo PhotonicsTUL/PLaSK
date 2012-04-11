@@ -34,7 +34,7 @@ struct UniversalStrategy: public Strategy {
 };
 
 /**
- * Strategy which do nothing.
+ * Strategy which does nothing.
  */
 struct Null: public UniversalStrategy {
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
@@ -42,9 +42,9 @@ struct Null: public UniversalStrategy {
 };
 
 /**
- * Strategy which assign constant material.
+ * Strategy which assigns constant material.
  */
-struct ConstMaterial: public UniversalStrategy {
+struct SimpleMaterial: public UniversalStrategy {
 
     /**
      * Material which will be assigned to result_material by apply method.
@@ -52,19 +52,19 @@ struct ConstMaterial: public UniversalStrategy {
     shared_ptr<Material> material;
 
     /**
-     * Construct ConstMaterial strategy wich use given material.
+     * Construct SimpleMaterial strategy wich use given material.
      * @param material material which will be assigned to result_material by apply method
      */
-    ConstMaterial(const shared_ptr<Material>& material): material(material) {}
+    SimpleMaterial(const shared_ptr<Material>& material): material(material) {}
 
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
-    virtual ConstMaterial* clone() const;
+    virtual SimpleMaterial* clone() const;
 
 };
 
 /**
- * Strategy which move point p to nearest border.
+ * Strategy which moves point p to nearest border.
  */
 struct Extend: public UniversalStrategy {
 
@@ -75,7 +75,7 @@ struct Extend: public UniversalStrategy {
 };
 
 /**
- * Strategy which move point p by multiple of (bbox_hi - bbox_lo) to be in range [bbox_lo, bbox_hi].
+ * Strategy which moves point p by multiple of (bbox_hi - bbox_lo) to be in range [bbox_lo, bbox_hi].
  */
 struct Periodic: public Strategy {
 
@@ -118,24 +118,24 @@ public:
         return *this;
     }
 
-    void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const {
+    inline void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const {
         strategy->apply(bbox_lo, bbox_hi, p, result_material);
     }
 
     template <int dims>
-    void apply(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+    inline void apply(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
         apply(bbox.lower.components[direction], bbox.upper.components[direction],
               p.components[direction], result_material);
     }
 
     template <int dims>
-    void applyIfLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+    inline void applyIfLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
         if (p.components[direction] < bbox.lower.components[direction])
             apply(bbox, p, result_material);
     }
 
     template <int dims>
-    void applyIfHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+    inline void applyIfHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
         if (p.components[direction] > bbox.upper.components[direction])
             apply(bbox, p, result_material);
     }

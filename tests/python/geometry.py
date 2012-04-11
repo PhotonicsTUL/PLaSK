@@ -84,37 +84,37 @@ class Transforms(unittest.TestCase):
         self.assertEqual( translation.getMaterial(12.0, 22.0), self.mat);
         self.assertIsNone( translation.getMaterial(4.0, 22.0));
 
-    def testBackround(self):
-        stack = plask.geometry.Stack2D()
-        stack.append(self.block53)
+    #def testBackround(self):
+        #stack = plask.geometry.Stack2D()
+        #stack.append(self.block53)
 
-        background = plask.geometry.Background2D(child=stack)
-        self.assertEqual( background.getMaterial(-3.,1.), self.mat )
-        self.assertEqual( background.getMaterial(3.,1.), self.mat )
-        self.assertEqual( background.getMaterial(0.,-1.), self.mat )
-        self.assertEqual( background.getMaterial(0.,4.), self.mat )
+        #background = plask.geometry.Background2D(child=stack)
+        #self.assertEqual( background.getMaterial(-3.,1.), self.mat )
+        #self.assertEqual( background.getMaterial(3.,1.), self.mat )
+        #self.assertEqual( background.getMaterial(0.,-1.), self.mat )
+        #self.assertEqual( background.getMaterial(0.,4.), self.mat )
 
-        background = plask.geometry.Background2D(child=stack, along='z')
-        self.assertEqual( background.getMaterial(-3.,1.), None )
-        self.assertEqual( background.getMaterial(3.,1.), None )
-        self.assertEqual( background.getMaterial(0.,-1.), self.mat )
-        self.assertEqual( background.getMaterial(0.,4.), self.mat )
+        #background = plask.geometry.Background2D(child=stack, along='z')
+        #self.assertEqual( background.getMaterial(-3.,1.), None )
+        #self.assertEqual( background.getMaterial(3.,1.), None )
+        #self.assertEqual( background.getMaterial(0.,-1.), self.mat )
+        #self.assertEqual( background.getMaterial(0.,4.), self.mat )
 
-        geometry = plask.geometry.Geometry()
-        geometry.read('''
-            <geometry axes="xy">
-                <background2d name="back" along="y">
-                    <stack2d name="stack" repeat="2">
-                        <child><rectangle name="rect" x="4" y="2" material="GaN"/></child>
-                    </stack2d>
-                </background2d>
-            </geometry>
-        ''')
-        background = geometry.element("back")
-        self.assertEqual( background.getMaterial(-30.,  1.), None )
-        self.assertEqual( background.getMaterial( 30.,  1.), None )
-        self.assertEqual( background.getMaterial(  0.,-10.).name, "GaN" )
-        self.assertEqual( background.getMaterial(  0., 50.).name, "GaN" )
+        #geometry = plask.geometry.Geometry()
+        #geometry.read('''
+            #<geometry axes="xy">
+                #<background2d name="back" along="y">
+                    #<stack2d name="stack" repeat="2">
+                        #<child><rectangle name="rect" x="4" y="2" material="GaN"/></child>
+                    #</stack2d>
+                #</background2d>
+            #</geometry>
+        #''')
+        #background = geometry.element("back")
+        #self.assertEqual( background.getMaterial(-30.,  1.), None )
+        #self.assertEqual( background.getMaterial( 30.,  1.), None )
+        #self.assertEqual( background.getMaterial(  0.,-10.).name, "GaN" )
+        #self.assertEqual( background.getMaterial(  0., 50.).name, "GaN" )
 
 
 

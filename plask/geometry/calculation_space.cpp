@@ -2,23 +2,23 @@
 
 namespace plask {
 
-Space2DCartesian::Space2DCartesian(const shared_ptr<Extrusion>& extrusion)
+Space2dCartesian::Space2dCartesian(const shared_ptr<Extrusion>& extrusion)
     : extrusion(extrusion)
 {
     init();
 }
 
-Space2DCartesian::Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
+Space2dCartesian::Space2dCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
     : extrusion(make_shared<Extrusion>(childGeometry, length))
 {
    init();
 }
 
-shared_ptr< GeometryElementD<2> > Space2DCartesian::getChild() const {
+shared_ptr< GeometryElementD<2> > Space2dCartesian::getChild() const {
     return extrusion->getChild();
 }
 
-shared_ptr<Material> Space2DCartesian::getMaterial(const Vec<2, double> &p) const {
+shared_ptr<Material> Space2dCartesian::getMaterial(const Vec<2, double> &p) const {
     Vec<2, double> r = p;
     shared_ptr<Material> material;
 
@@ -36,23 +36,23 @@ shared_ptr<Material> Space2DCartesian::getMaterial(const Vec<2, double> &p) cons
 }
 
 
-Space2DCylindrical::Space2DCylindrical(const shared_ptr<Revolution>& revolution)
+Space2dCylindrical::Space2dCylindrical(const shared_ptr<Revolution>& revolution)
     : revolution(revolution)
 {
     init();
 }
 
-Space2DCylindrical::Space2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry)
+Space2dCylindrical::Space2dCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry)
     : revolution(make_shared<Revolution>(childGeometry))
 {
    init();
 }
 
-shared_ptr< GeometryElementD<2> > Space2DCylindrical::getChild() const {
+shared_ptr< GeometryElementD<2> > Space2dCylindrical::getChild() const {
     return revolution->getChild();
 }
 
-shared_ptr<Material> Space2DCylindrical::getMaterial(const Vec<2, double> &p) const {
+shared_ptr<Material> Space2dCylindrical::getMaterial(const Vec<2, double> &p) const {
     Vec<2, double> r = p;
     shared_ptr<Material> material;
 
@@ -61,7 +61,7 @@ shared_ptr<Material> Space2DCylindrical::getMaterial(const Vec<2, double> &p) co
     up.applyIfHi(cachedBoundingBox, r, material);
     if (material) return material;
 
-    right.applyIfHi(cachedBoundingBox, r, material);
+    outer.applyIfHi(cachedBoundingBox, r, material);
     if (material) return material;
 
     return getMaterialOrDefault(r);

@@ -336,7 +336,7 @@ namespace details {
 
 /**
  * Construct 2d aligner in given direction from string.
- * @param str string which describe 2d aligner
+ * @param str string which describes 2d aligner
  * @tpatam direction direction
  */
 template <DIRECTION direction>
@@ -348,6 +348,22 @@ inline Aligner2d<DIRECTION_TRAN>* fromStr(const std::string& str) { return detai
 template <>
 inline Aligner2d<DIRECTION_LON>* fromStr(const std::string& str) { return details::lonAlignerFromString(str); }
 
+
+/**
+ * Construct 3d aligner from single string
+ *
+ * @param str string which describes 3d aligner
+ * @return pointer to the constructed aligner
+ **/
+Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN>* alignerFromString(std::string str);
+
+/**
+ * Construct 3d aligner from two strings describing alignment in two directions
+ *
+ * @param str1 string which describes 2d aligner in the first direction
+ * @param str2 string which describes 2d aligner in the second direction
+ * @return pointer to the constructed 3d aligner
+ **/
 template <DIRECTION direction1, DIRECTION direction2>
 inline ComposeAligner3d<direction1, direction2> fromStr(const std::string& str1, const std::string& str2) {
     std::unique_ptr<Aligner2d<direction1>> a1(fromStr<direction1>(str1));

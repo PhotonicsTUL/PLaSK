@@ -27,7 +27,11 @@ struct CalculationSpace {
  * @tparam dim number of speace dimensions
  */
 template <int dim>
-class CalculationSpaceD: public CalculationSpace {
+struct CalculationSpaceD: public CalculationSpace {
+
+    enum  { DIMS = dim };
+
+    typedef Vec<dim, double> CoordsType;
 
 protected:
 
@@ -44,7 +48,7 @@ protected:
     typename Primitive<dim>::Box cachedBoundingBox;
 
     /**
-     * Refresh bounding box cache. Called by children changed signal.
+     * Refresh bounding box cache. Called by childrenChanged signal.
      * @param evt
      */
     void onChildChanged(const GeometryElement::Event& evt) {
@@ -98,10 +102,10 @@ public:
 };
 
 /**
- * 2d calculation space over extrusion geometry.
+ * 2D calculation space over extrusion geometry.
  * @see plask::Extrusion
  */
-class Space2DCartesian: public CalculationSpaceD<2> {
+class Space2dCartesian: public CalculationSpaceD<2> {
 
     shared_ptr<Extrusion> extrusion;
 
@@ -110,9 +114,9 @@ public:
     border::StrategyHolder<Primitive<2>::DIRECTION_TRAN> left, right;
     border::StrategyHolder<Primitive<2>::DIRECTION_UP> up, bottom;
 
-    Space2DCartesian(const shared_ptr<Extrusion>& extrusion);
+    Space2dCartesian(const shared_ptr<Extrusion>& extrusion);
 
-    Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
+    Space2dCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
@@ -121,27 +125,34 @@ public:
 };
 
 /**
- * 2d calculation space over revolution geometry.
+ * 2D calculation space over revolution geometry.
  * @see plask::Revolution
  */
-class Space2DCylindrical: public CalculationSpaceD<2> {
+class Space2dCylindrical: public CalculationSpaceD<2> {
 
     shared_ptr<Revolution> revolution;
 
 public:
 
-    border::StrategyHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> right;
+    border::StrategyHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> outer;
     border::StrategyHolder<Primitive<2>::DIRECTION_UP> up, bottom;
 
-    Space2DCylindrical(const shared_ptr<Revolution>& revolution);
+    Space2dCylindrical(const shared_ptr<Revolution>& revolution);
 
-    Space2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
+    Space2dCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
 };
+
+/**
+ * 3D calculation space over revolution geometry.
+ */
+class Space3d: public CalculationSpaceD<3> {
+};
+
 
 }   // namespace plask
 

@@ -113,9 +113,9 @@ struct OnePoint3dMesh: public plask::Mesh<3> {
 You should also implement interpolation algorithms for your mesh, see @ref interpolation_write for more details.
 */
 
-#include "../space.h"
 #include <plask/config.h>
 
+#include "../vec.h"
 #include "../utils/iterators.h"
 
 namespace plask {

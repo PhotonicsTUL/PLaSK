@@ -10,12 +10,9 @@ class RootDigger;
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
  */
-class EffectiveIndex2dModule: public Module {
+class EffectiveIndex2dModule: public ModuleCartesian2d {
 
     friend class RootDigger;
-
-    /// Geometry in which the calculations are performed
-    shared_ptr<const Extrusion> geometry;
 
     /// The mesh used for cutting the structure into one-dimentional stripes
     shared_ptr<RectilinearMesh2d> mesh;
@@ -29,13 +26,24 @@ class EffectiveIndex2dModule: public Module {
      *
      * \param geometry geometry in which the calculations are done
      */
-    EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry) :
-        geometry(geometry), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+    EffectiveIndex2dModule(const shared_ptr<Space2dCartesian>& geometry) :
+        ModuleCartesian2d(geometry), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
         log_value(dataLog<dcomplex, double>("neff", "char_val")) {
         inTemperature = 300.;
-        auto child = geometry->getChild();
-        if (!child) throw NoChildException();
-        mesh = make_shared<RectilinearMesh2d>(child);
+        setSimpleMesh();
+    }
+
+    /**
+     * Constructor with mesh provided
+     *
+     * \param geometry geometry in which the calculations are done
+     * \param mesh horizontal mesh for dividing the geometry
+     */
+    EffectiveIndex2dModule(const shared_ptr<Space2dCartesian>& geometry, const RectilinearMesh1d& meshx) :
+        ModuleCartesian2d(geometry), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+        log_value(dataLog<dcomplex, double>("neff", "char_val")) {
+        inTemperature = 300.;
+        setMesh(meshx);
     }
 
     /**
@@ -44,14 +52,11 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      * \param mesh horizontal mesh for dividing geometry
      */
-    EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry, const RectilinearMesh1d& meshx) :
-        geometry(geometry), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+    EffectiveIndex2dModule(const shared_ptr<Space2dCartesian>& geometry, const shared_ptr<RectilinearMesh1d>& meshx) :
+        ModuleCartesian2d(geometry), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
         log_value(dataLog<dcomplex, double>("neff", "char_val")) {
         inTemperature = 300.;
-        auto child = geometry->getChild();
-        if (!child) throw NoChildException();
-        RectilinearMesh2d meshxy(child);
-        mesh = make_shared<RectilinearMesh2d>(meshx, meshxy.c1);
+        setMesh(meshx);
     }
 
     /**
@@ -60,8 +65,8 @@ class EffectiveIndex2dModule: public Module {
      * \param geometry geometry in which the calculations are done
      * \param mesh mesh for dividing geometry
      */
-    EffectiveIndex2dModule(shared_ptr<const Extrusion> geometry, shared_ptr<RectilinearMesh2d> mesh) :
-        geometry(geometry), mesh(mesh), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
+    EffectiveIndex2dModule(const shared_ptr<Space2dCartesian>& geometry, const shared_ptr<RectilinearMesh2d>& meshxy) :
+        ModuleCartesian2d(geometry), mesh(meshxy), outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty),
         log_value(dataLog<dcomplex, double>("neff", "char_val")) {
         inTemperature = 300.;
     }
@@ -73,13 +78,55 @@ class EffectiveIndex2dModule: public Module {
                "in Cartesian two-dimentional space.";
     }
 
+
+    /**
+     * Set the simple mesh based on the geometry bounding boxes.
+     **/
+    void setSimpleMesh() {
+        auto child = geometry->getChild();
+        if (!child) throw NoChildException();
+        mesh = make_shared<RectilinearMesh2d>(child);
+    }
+
+    /**
+     * Set up the mesh. Horizontal division is provided while vertical one is created basing on the geometry bounding boxes.
+     *
+     * \param meshx horizontal mesh
+     **/
+    void setMesh(const RectilinearMesh1d& meshx) {
+        auto child = geometry->getChild();
+        if (!child) throw NoChildException();
+        RectilinearMesh2d meshxy(child);
+        mesh = make_shared<RectilinearMesh2d>(meshx, meshxy.c1);
+    }
+
+    /**
+     * Set up the mesh. Horizontal division is provided while vertical one is created basing on the geometry bounding boxes.
+     *
+     * \param meshx horizontal mesh
+     **/
+    void setMesh(const shared_ptr<RectilinearMesh1d>& meshx) {
+        setMesh(*meshx);
+    }
+
+    /**
+     * Set up the mesh. Both horizontal and vertical divisions are provided
+     *
+     * \param meshxy the new mesh
+     **/
+    void setMesh(const shared_ptr<RectilinearMesh2d>& meshxy) {
+        mesh = meshxy;
+    }
+
+
+
     /**
      * Find the mode around the specified propagation constant.
      *
      * This method remembers the determined mode, for rietrieval of the field profiles.
      *
-     * @param neff initial effective index to search the mode around
-     * @return determined propagation constant
+     * \param neff initial effective index to search the mode around
+     * \return determined propagation constant
      **/
     dcomplex computeMode(dcomplex neff);
 
@@ -89,10 +136,10 @@ class EffectiveIndex2dModule: public Module {
      *
      * This method \b does \b not remember the determined modes!
      *
-     * @param neff1 one end of the range to browse
-     * @param neff2 another end of the range to browse
-     * @param steps number of steps for range browsing
-     * @return vector of determined propagation constants
+     * \param neff1 one end of the range to browse
+     * \param neff2 another end of the range to browse
+     * \param steps number of steps for range browsing
+     * \return vector of determined propagation constants
      **/
     std::vector<dcomplex> findModes(dcomplex neff1, dcomplex neff2, int steps=100);
 
@@ -100,10 +147,10 @@ class EffectiveIndex2dModule: public Module {
     /**
      * Find approximate modes by scanning the desired range
      *
-     * @param neff1 one end of the range to browse
-     * @param neff2 another end of the range to browse
-     * @param steps number of steps for range browsing
-     * @return vector of determined potential propagation constants
+     * \param neff1 one end of the range to browse
+     * \param neff2 another end of the range to browse
+     * \param steps number of steps for range browsing
+     * \return vector of determined potential propagation constants
      **/
     std::vector<dcomplex> findModesMap(dcomplex neff1, dcomplex neff2, int steps=100);
 
@@ -112,13 +159,13 @@ class EffectiveIndex2dModule: public Module {
     ReceiverFor<Wavelength> inWavelength;
 
     /// Receiver for temperature
-    ReceiverFor<Temperature, space::Cartesian2d> inTemperature;
+    ReceiverFor<Temperature, Space2dCartesian> inTemperature;
 
     /// Provider for computed effective index
     ProviderFor<PropagationConstant>::WithValue outNeff;
 
     /// Provider of optical field
-    ProviderFor<OpticalIntensity, space::Cartesian2d>::Delegate outIntensity;
+    ProviderFor<OpticalIntensity, Space2dCartesian>::Delegate outIntensity;
 
 
   private:

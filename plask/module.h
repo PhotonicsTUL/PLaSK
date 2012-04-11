@@ -90,8 +90,10 @@ See also example in plask::Temperature description.
 */
 
 #include <string>
+
 #include "log/log.h"
 #include "log/data.h"
+#include "geometry/calculation_space.h"
 
 namespace plask {
 
@@ -126,15 +128,6 @@ struct Module {
      */
     virtual std::string getDescription() const { return ""; }
 
-    /*
-     * Make calculations. Place for calculation code in inherited classes.
-     *
-     * Can throw exception in case of errors.
-     *
-     * By default do nothing.
-     */
-    //virtual void calculate() {}
-
     template<typename ArgT = double, typename ValT = double>
     Data2dLog<ArgT, ValT> dataLog(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
         return Data2dLog<ArgT, ValT>(getId(), chart_name, axis_arg_name, axis_val_name);
@@ -148,6 +141,36 @@ struct Module {
     template<typename ...Args>
     void log(LogLevel level, Args&&... params) {}
 
+};
+
+/**
+ * Base class for all modules operating on two-dimensional Cartesian space
+ */
+class ModuleCartesian2d: public Module {
+
+  protected:
+
+    /// Space in which the calculations are performed
+    shared_ptr<Space2dCartesian> geometry;
+
+  public:
+
+    ModuleCartesian2d(const shared_ptr<Space2dCartesian>& geometry) : geometry(geometry) {}
+
+    ModuleCartesian2d() = default;
+
+    /**
+     * Set new geometry for the module
+     *
+     * @param new_geometry new geometry space
+     **/
+    void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
+        log(LOG_INFO, "Attaching new geometry to the module.");
+        geometry = new_geometry;
+    }
+
+    // Get current module geometry space
+    inline shared_ptr<Space2dCartesian> getGeometry() const { return geometry; }
 };
 
 }       //namespace plask

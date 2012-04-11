@@ -1,5 +1,4 @@
 #include <plask/exceptions.h>
-#include <plask/space.h>
 #include <plask/module.h>
 
 #include "globals.h"
@@ -20,25 +19,6 @@ void register_providers();
 Config config;
 bool Config::z_up = true;
 
-void register_space() {
-    py::object space_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.space"))) };
-    py::scope().attr("space") = space_module;
-    py::scope scope = space_module;
-
-    py::class_<plask::space::Cartesian2d> spacexy("Cartesian2D",
-        "Cartesian two-dimensional space. The structure is assumed to be uniform in the third direction.");
-    spacexy.attr("DIMS") = int(plask::space::Cartesian2d::DIMS);
-
-    py::class_<plask::space::Cylindrical2d> spacerz("Cylindrical2D",
-        "Cyllindrical two-dimensional space. The structure is assumed to have cyllindrical symmetry.");
-    spacerz.attr("DIMS") = int(plask::space::Cylindrical2d::DIMS);
-
-    py::class_<plask::space::Cartesian3d> spacexyz("Cartesian3D",
-        "Cartesian three-dimensional space.");
-    spacexyz.attr("DIMS") = int(plask::space::Cartesian3d::DIMS);
-
-}
-
 }}
 
 
@@ -57,9 +37,6 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_vector();
 
 
-    // Space
-    register_space();
-
     // Meshes
     register_mesh();
 
@@ -74,7 +51,15 @@ BOOST_PYTHON_MODULE(plaskcore)
     ;
 
     // Exceptions
+    register_exception<plask::python::ValueError>(PyExc_ValueError);
+    register_exception<plask::python::TypeError>(PyExc_TypeError);
+    register_exception<plask::python::IndexError>(PyExc_IndexError);
+    register_exception<plask::python::KeyError>(PyExc_KeyError);
+    register_exception<plask::python::AttributeError>(PyExc_AttributeError);
+    register_exception<plask::python::StopIteration>(PyExc_StopIteration);
+
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
+
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

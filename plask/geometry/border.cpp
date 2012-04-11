@@ -6,12 +6,12 @@ namespace plask {
 namespace border {
 
 
-void ConstMaterial::apply(double, double, double&, shared_ptr<plask::Material> &result_material) const {
+void SimpleMaterial::apply(double, double, double&, shared_ptr<plask::Material> &result_material) const {
     result_material = material;
 }
 
-ConstMaterial* ConstMaterial::clone() const {
-    return new ConstMaterial(this->material);
+SimpleMaterial* SimpleMaterial::clone() const {
+    return new SimpleMaterial(this->material);
 }
 
 

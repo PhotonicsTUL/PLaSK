@@ -1,6 +1,7 @@
 #include <cmath>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
+#include "globals.h"
 #include "../util/raw_constructor.h"
 
 #include <plask/config.h>
@@ -24,12 +25,6 @@ void register_geometry_aligners();
 void register_geometry_path();
 void register_geometry_container();
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void Exc_NoSuchGeometryElement(const NoSuchGeometryElement& exc) {
-    PyErr_SetString(PyExc_IndexError, exc.what());
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -128,7 +123,7 @@ void initGeometry() {
 
     // manager.h
 
-    py::register_exception_translator<NoSuchGeometryElement>(&Exc_NoSuchGeometryElement);
+    register_exception<NoSuchGeometryElement>(PyExc_IndexError);
 
     py::class_<GeometryManager, boost::noncopyable>("Geometry",
         "    Main geometry manager. It provides methods to read it from XML file and fetch geometry elements by name.\n\n"
