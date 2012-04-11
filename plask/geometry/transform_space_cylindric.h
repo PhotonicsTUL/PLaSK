@@ -27,6 +27,8 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
 
     virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
+    virtual shared_ptr<GeometryElementTransform<3, GeometryElementD<2> > > shallowCopy() const;
+
 private:
 
     /**

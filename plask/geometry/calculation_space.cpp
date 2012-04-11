@@ -3,24 +3,19 @@
 namespace plask {
 
 Space2DCartesian::Space2DCartesian(const shared_ptr<Extrusion>& extrusion)
-    : extrusion(extrusion), cachedBoundingBox(extrusion->getChild()->getBoundingBox())
+    : extrusion(extrusion)
 {
-    extrusion->getChild()->changedConnectMethod(this, &Space2DCartesian::onChildChanged);
+    init();
 }
 
 Space2DCartesian::Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
-    : extrusion(make_shared<Extrusion>(childGeometry, length)), cachedBoundingBox(childGeometry->getBoundingBox())
+    : extrusion(make_shared<Extrusion>(childGeometry, length))
 {
-   childGeometry->changedConnectMethod(this, &Space2DCartesian::onChildChanged);
+   init();
 }
 
 shared_ptr< GeometryElementD<2> > Space2DCartesian::getChild() const {
     return extrusion->getChild();
-}
-
-void Space2DCartesian::onChildChanged(const GeometryElement::Event &evt) {
-    if (evt.isResize())
-        cachedBoundingBox = getChild()->getBoundingBox();
 }
 
 shared_ptr<Material> Space2DCartesian::getMaterial(const Vec<2, double> &p) const {
@@ -34,6 +29,38 @@ shared_ptr<Material> Space2DCartesian::getMaterial(const Vec<2, double> &p) cons
 
     left.applyIfLo(cachedBoundingBox, r, material);
     if (material) return material;
+    right.applyIfHi(cachedBoundingBox, r, material);
+    if (material) return material;
+
+    return getMaterialOrDefault(r);
+}
+
+
+Space2DCylindrical::Space2DCylindrical(const shared_ptr<Revolution>& revolution)
+    : revolution(revolution)
+{
+    init();
+}
+
+Space2DCylindrical::Space2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry)
+    : revolution(make_shared<Revolution>(childGeometry))
+{
+   init();
+}
+
+shared_ptr< GeometryElementD<2> > Space2DCylindrical::getChild() const {
+    return revolution->getChild();
+}
+
+shared_ptr<Material> Space2DCylindrical::getMaterial(const Vec<2, double> &p) const {
+    Vec<2, double> r = p;
+    shared_ptr<Material> material;
+
+    bottom.applyIfLo(cachedBoundingBox, r, material);
+    if (material) return material;
+    up.applyIfHi(cachedBoundingBox, r, material);
+    if (material) return material;
+
     right.applyIfHi(cachedBoundingBox, r, material);
     if (material) return material;
 

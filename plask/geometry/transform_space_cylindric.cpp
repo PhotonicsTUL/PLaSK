@@ -28,6 +28,10 @@ void Revolution::getBoundingBoxesToVec(const GeometryElement::Predicate& predica
                    [&](const ChildBox& r) { return parentBox(r); });
 }
 
+shared_ptr<GeometryElementTransform< 3, GeometryElementD<2> > > Revolution::shallowCopy() const {
+    return make_shared<Revolution>(this->getChild());
+}
+
 Box2d Revolution::childBox(const plask::Box3d& r) {
     Box2d result(childVec(r.lower), childVec(r.upper));
     result.fix();

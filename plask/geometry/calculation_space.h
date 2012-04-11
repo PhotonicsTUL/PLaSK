@@ -40,6 +40,17 @@ protected:
         return real_mat ? real_mat : defaultMaterial;
     }
 
+    typename Primitive<dim>::Box cachedBoundingBox;
+
+    void onChildChanged(const GeometryElement::Event& evt) {
+        if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
+    }
+
+    void init() {
+        getChild()->changedConnectMethod(this, &CalculationSpaceD<dim>::onChildChanged);
+        cachedBoundingBox = getChild()->getBoundingBox();
+    }
+
 public:
 
     /**
@@ -63,6 +74,10 @@ public:
      */
     virtual shared_ptr< GeometryElementD<dim> > getChild() const = 0;
 
+    std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+        return getChild()->getLeafs();
+    }
+
 };
 
 /**
@@ -73,18 +88,37 @@ class Space2DCartesian: public CalculationSpaceD<2> {
 
     shared_ptr<Extrusion> extrusion;
 
-    Box2d cachedBoundingBox;
-
-    void onChildChanged(const GeometryElement::Event& evt);
-
 public:
 
-    border::StrategyHolder<0> left, right;
-    border::StrategyHolder<1> up, bottom;
+    border::StrategyHolder<Primitive<2>::DIRECTION_TRAN> left, right;
+    border::StrategyHolder<Primitive<2>::DIRECTION_UP> up, bottom;
 
     Space2DCartesian(const shared_ptr<Extrusion>& extrusion);
 
     Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
+
+    virtual shared_ptr< GeometryElementD<2> > getChild() const;
+
+    virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
+
+};
+
+/**
+ * 2d calculation space over revolution geometry.
+ * @see plask::Revolution
+ */
+class Space2DCylindrical: public CalculationSpaceD<2> {
+
+    shared_ptr<Revolution> revolution;
+
+public:
+
+    border::StrategyHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> right;
+    border::StrategyHolder<Primitive<2>::DIRECTION_UP> up, bottom;
+
+    Space2DCylindrical(const shared_ptr<Revolution>& revolution);
+
+    Space2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 

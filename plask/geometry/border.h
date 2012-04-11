@@ -29,7 +29,9 @@ struct Strategy {
  *
  * Universal strategies form subset of strategies, and could be required in some context.
  */
-struct UniversalStrategy: public Strategy {};
+struct UniversalStrategy: public Strategy {
+    virtual UniversalStrategy* clone() const = 0;
+};
 
 /**
  * Strategy which do nothing.
