@@ -2,6 +2,7 @@
 #define PLASK__GEOMETRY_BORDER_H
 
 #include "../material/material.h"
+#include "primitives.h"
 
 namespace plask {
 
@@ -29,6 +30,14 @@ struct Strategy {
  * Universal strategies form subset of strategies, and could be required in some context.
  */
 struct UniversalStrategy: public Strategy {};
+
+/**
+ * Strategy which do nothing.
+ */
+struct Null: public UniversalStrategy {
+    virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual Null* clone() const;
+};
 
 /**
  * Strategy which assign constant material.
@@ -71,6 +80,58 @@ struct Periodic: public Strategy {
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual Periodic* clone() const;
+};
+
+/**
+ * Hold border strategy with given type.
+ */
+template <int direction, typename StrategyType = Strategy>
+class StrategyHolder {
+
+    StrategyType* strategy;
+
+public:
+    StrategyHolder(const StrategyType& strategy = Null()): strategy(strategy.clone()) {}
+
+    template <int adirection>
+    StrategyHolder(const StrategyHolder<adirection, StrategyType>& strategyHolder): strategy(strategyHolder.strategy->clone()) {}
+
+    ~StrategyHolder() { delete strategy; }
+
+    const StrategyType& getStrategy() const { return *strategy; }
+
+    void setStrategy(const Strategy& strategy) { delete this->strategy; this->strategy = strategy.clone(); }
+
+    StrategyHolder<direction, StrategyType>& operator=(const Strategy& strategy) { setStrategy(strategy); return *this; }
+
+    template <int adirection>
+    StrategyHolder<direction, StrategyType>& operator=(const StrategyHolder<adirection, StrategyType>& strategyHolder) {
+        setStrategy(strategyHolder.getStrategy());
+        return *this;
+    }
+
+    void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const {
+        strategy->apply(bbox_lo, bbox_hi, p, result_material);
+    }
+
+    template <int dims>
+    void apply(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+        apply(bbox.lower.components[direction], bbox.upper.components[direction],
+              p.components[direction], result_material);
+    }
+
+    template <int dims>
+    void applyIfLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+        if (p.components[direction] < bbox.lower.components[direction])
+            apply(bbox, p, result_material);
+    }
+
+    template <int dims>
+    void applyIfHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+        if (p.components[direction] > bbox.upper.components[direction])
+            apply(bbox, p, result_material);
+    }
+
 };
 
 }   // namespace border

@@ -15,6 +15,14 @@ ConstMaterial* ConstMaterial::clone() const {
 }
 
 
+void Null::apply(double, double, double&, shared_ptr<plask::Material> &) const {
+}
+
+Null* Null::clone() const {
+    return new Null();
+}
+
+
 void Extend::apply(double bbox_lo, double bbox_hi, double &p, shared_ptr<plask::Material>&) const {
     if (p < bbox_lo) p = bbox_lo;
     if (p > bbox_hi) p = bbox_hi;

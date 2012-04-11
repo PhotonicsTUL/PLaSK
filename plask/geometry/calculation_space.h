@@ -3,6 +3,7 @@
 
 #include "transform_space_cartesian.h"
 #include "transform_space_cylindric.h"
+#include "border.h"
 
 namespace plask {
 
@@ -72,51 +73,23 @@ class Space2DCartesian: public CalculationSpaceD<2> {
 
     shared_ptr<Extrusion> extrusion;
 
-public:
-
-    Space2DCartesian(const shared_ptr<Extrusion>& extrusion): extrusion(extrusion) {}
-
-    Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
-        : extrusion(make_shared<Extrusion>(childGeometry, length)) {}
-
-    virtual shared_ptr< GeometryElementD<2> > getChild() const;
-
-};
-
-struct Space2DCartesianDragToEdge: public Space2DCartesian {
-    
-    /// Type of extensions for infinite stacks
-    enum ExtendType {
-        EXTEND_NONE = 0,
-        EXTEND_VERTICAL = 1,
-        EXTEND_TRAN = 2,
-        EXTEND_LON = 4,
-        EXTEND_HORIZONTAL = 6,
-        EXTEND_ALL = 7
-    };
-    
-private:
-
-    ExtendType _extend;
-    
     Box2d cachedBoundingBox;
-    
+
     void onChildChanged(const GeometryElement::Event& evt);
 
 public:
-    
-    Space2DCartesianDragToEdge(const shared_ptr<Extrusion>& extrusion, ExtendType extendType);
-    
-    /** Set the extend
-     * @param extend new extend
-     */
-    inline void setExtend(ExtendType extend) {
-        if (extend == EXTEND_LON) throw BadInput("Background<2>", "EXTEND_LON not allowed for 2D background.");
-        _extend = extend;
-    }
-    
+
+    border::StrategyHolder<0> left, right;
+    border::StrategyHolder<1> up, bottom;
+
+    Space2DCartesian(const shared_ptr<Extrusion>& extrusion);
+
+    Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
+
+    virtual shared_ptr< GeometryElementD<2> > getChild() const;
+
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
-    
+
 };
 
 }   // namespace plask
