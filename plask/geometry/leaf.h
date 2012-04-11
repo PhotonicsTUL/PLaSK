@@ -48,7 +48,11 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return { this->getBoundingBox() };
     }
 
-    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) dest.push_back(this->shared_from_this());
+    }
+
+    inline void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
         dest.push_back(this->shared_from_this());
     }
 

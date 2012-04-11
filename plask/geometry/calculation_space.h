@@ -40,12 +40,21 @@ protected:
         return real_mat ? real_mat : defaultMaterial;
     }
 
+    /// Childs bounding box
     typename Primitive<dim>::Box cachedBoundingBox;
 
+    /**
+     * Refresh bounding box cache. Called by children changed signal.
+     * @param evt
+     */
     void onChildChanged(const GeometryElement::Event& evt) {
         if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
     }
 
+    /**
+     * Initialize bounding box cache.
+     * Subclasses should call this from it's constructors (can't be moved to constructor because use virtual method getChild).
+     */
     void init() {
         getChild()->changedConnectMethod(this, &CalculationSpaceD<dim>::onChildChanged);
         cachedBoundingBox = getChild()->getBoundingBox();
@@ -73,6 +82,14 @@ public:
      * @return child geometry
      */
     virtual shared_ptr< GeometryElementD<dim> > getChild() const = 0;
+
+    /**
+     * Get bounding box of child geometry.
+     * @return bounding box of child geometry
+     */
+    const typename Primitive<dim>::Box & getChildBoundingBox() const {
+        return cachedBoundingBox;
+    }
 
     std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
         return getChild()->getLeafs();

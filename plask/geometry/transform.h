@@ -26,8 +26,15 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
 
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_TRANSFORM; }
 
-    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+    /*virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
         getChild()->getLeafsToVec(dest);
+    }*/
+
+    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(this->shared_from_this());
+        } else
+            getChild()->getElementsToVec(predicate, dest, path);
     }
 
     /// Called by child.change signal, call this change

@@ -84,8 +84,14 @@ struct Periodic: public Strategy {
     virtual Periodic* clone() const;
 };
 
+
+
 /**
- * Hold border strategy with given type.
+ * Hold border strategy with given type and:
+ * - delegate apply methods to holded strategy,
+ * - allow to assing strategy to self (using operator=).
+ * @tparam direction holded strategy working direction (coordinate of vector component)
+ * @tpatam StrategyType (base) type of holded strategy, typically Strategy or UniversalStrategy
  */
 template <int direction, typename StrategyType = Strategy>
 class StrategyHolder {

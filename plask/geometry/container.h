@@ -139,9 +139,24 @@ public:
         for (auto child: children) child->getBoundingBoxesToVec(predicate, dest, path);
     }
 
-    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
-        for (auto child: children) child->getLeafsToVec(dest);
+    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(this->shared_from_this());
+            return;
+        }
+        if (path) {
+            auto c = path->getTranslationChildren<dim>(*this);
+            if (!c.empty()) {
+                for (auto child: c) child->getElementsToVec(predicate, dest, path);
+                return;
+            }
+        }
+        for (auto child: children) child->getElementsToVec(predicate, dest, path);
     }
+
+    /*virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+        for (auto child: children) child->getLeafsToVec(dest);
+    }*/
 
     virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result;

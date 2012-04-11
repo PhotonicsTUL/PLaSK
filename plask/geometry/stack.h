@@ -396,9 +396,13 @@ class MultiStackContainer: public StackContainer<dim> {
         }
     }
 
-    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(this->shared_from_this());
+            return;
+        }
         std::size_t old_size = dest.size();
-        UpperClass::getLeafsToVec(dest);
+        UpperClass::getElementsToVec(predicate, dest, path);
         std::size_t new_size = dest.size();
         for (unsigned r = 1; r < repeat_count; ++r)
             for (std::size_t i = old_size; i < new_size; ++i)

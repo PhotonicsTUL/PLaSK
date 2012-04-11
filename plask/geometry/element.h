@@ -278,6 +278,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @param el element to search for
      * @return @c true only if @a el is in subtree with @c this in root
      */
+    //TODO predicate, path
     virtual bool isInSubtree(const GeometryElement& el) const = 0;
 
     /**
@@ -286,14 +287,19 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @param pathHints (optional) path hints which limits search space
      * @return sub-tree with paths to given element (@p el is in all leafs), empty sub-tree if @p el is not in subtree with @c this in root
      */
+    //TODO predicate, path
     virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const = 0;
+
+    virtual void getElementsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const = 0;
 
     /**
      * Append all leafs in subtree with this in root to vector @p dest.
      * @param dest leafs destination vector
+     * @param path (optional) path hints which limits search space
      */
-    //TODO predicate, path
-    virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const = 0;
+    void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
+        getElementsToVec(&GeometryElement::PredicateIsLeaf, dest, path);
+    }
 
     /**
      * Get all leafs in subtree with this object as root.
@@ -446,6 +452,11 @@ struct GeometryElementD: public GeometryElement {
      */
     virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const = 0;
 
+    /**
+     * Calculate and append to vector bounding boxes of all nodes which fullfill given @p predicate, optionaly showed by path.
+     * @param predicate
+     * @param path path fragments, optional
+     */
     std::vector<Box> getBoundingBoxes(const GeometryElement::Predicate& predicate, const PathHints* path = 0) const {
         std::vector<Box> result;
         getBoundingBoxesToVec(predicate, result, path);
