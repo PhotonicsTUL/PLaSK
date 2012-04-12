@@ -21,6 +21,7 @@ struct GaN_Mg: public GaN {
 	virtual std::string name() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;
+    virtual double Dop() const;
     virtual double cond(double T) const;
     virtual double absp(double wl, double T) const;
 

@@ -9,6 +9,8 @@ namespace plask {
 
 MI_PARENT(GaN_Si, GaN)
 
+std::string GaN_Si::name() const { return NAME; }
+
 GaN_Si::GaN_Si(DopingAmountType Type, double Val) {
     if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;
@@ -20,8 +22,6 @@ GaN_Si::GaN_Si(DopingAmountType Type, double Val) {
     }
     mob_RT = 4.164e6*pow(Nf_RT,-0.228);
 }
-
-std::string GaN_Si::name() const { return NAME; }
 
 MI_PROPERTY(GaN_Si, mob,
             MISource("K. Kusakabe et al., Physica B 376-377 (2006) 520"),
@@ -40,6 +40,10 @@ MI_PROPERTY(GaN_Si, Nf,
             )
 double GaN_Si::Nf(double T) const {
 	return ( Nf_RT*(-T*T*3.405e-6 + T*3.553e-3 + 0.241) );
+}
+
+double GaN_Si::Dop() const {
+    return ND;
 }
 
 MI_PROPERTY(GaN_Si, cond,

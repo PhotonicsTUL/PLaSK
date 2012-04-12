@@ -41,6 +41,10 @@ double AlN_Si::Nf(double T) const {
 	return ( Nf_RT * 3.502E-27*pow(T,10.680) );
 }
 
+double AlN_Si::Dop() const {
+    return ND;
+}
+
 MI_PROPERTY(AlN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )

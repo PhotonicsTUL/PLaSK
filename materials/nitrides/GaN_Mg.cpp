@@ -44,6 +44,10 @@ double GaN_Mg::Nf(double T) const {
 	return ( Nf_RT * (T*T*2.884E-4 -T*0.147 + 19.080) );
 }
 
+double GaN_Mg::Dop() const {
+    return NA;
+}
+
 MI_PROPERTY(GaN_Mg, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )

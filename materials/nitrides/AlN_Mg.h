@@ -1,8 +1,8 @@
-#ifndef PLASK__AlN_Si_H
-#define PLASK__ALN_Si_H
+#ifndef PLASK__AlN_Mg_H
+#define PLASK__ALN_Mg_H
 
 /** @file
-This file includes Si-doped AlN
+This file includes Mg-doped AlN
 */
 
 #include <plask/material/material.h>
@@ -11,13 +11,13 @@ This file includes Si-doped AlN
 namespace plask {
 
 /**
- * Represent Si-doped AlN, its physical properties.
+ * Represent Mg-doped AlN, its physical properties.
  */
-struct AlN_Si: public AlN {
+struct AlN_Mg: public AlN {
 
-    static constexpr const char* NAME = "AlN:Si";
+    static constexpr const char* NAME = "AlN:Mg";
 
-    AlN_Si(DopingAmountType Type, double Val);
+    AlN_Mg(DopingAmountType Type, double Val);
 	virtual std::string name() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;
@@ -26,7 +26,7 @@ struct AlN_Si: public AlN {
     virtual double absp(double wl, double T) const;
 
 private:
-    double ND,
+    double NA,
            Nf_RT,
 		   mob_RT;
 
@@ -35,4 +35,4 @@ private:
 
 } // namespace plask
 
-#endif	//PLASK__AlN_Si_H
+#endif	//PLASK__AlN_Mg_H

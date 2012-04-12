@@ -17,18 +17,17 @@ struct InN_Mg: public InN {
 
     static constexpr const char* NAME = "InN:Mg";
 
-	InN_Mg(DopingAmountType Type, double Mg);
+    InN_Mg(DopingAmountType Type, double Val);
 	virtual std::string name() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;
+    virtual double Dop() const;
     virtual double cond(double T) const;
-    //virtual double nr(double wl, double T) const;
-    //virtual double absp(double wl, double T) const;
 private:
-	double Nf_RT,
-		   mob_RT,
-		   cond_RT,
-		   condTmax_RT;
+    double NA,
+           Nf_RT,
+           mob_RT,
+           cond_RT;
 
 };
 

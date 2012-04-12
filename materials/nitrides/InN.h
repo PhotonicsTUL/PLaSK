@@ -19,7 +19,6 @@ struct InN: public Semiconductor {
 
     virtual std::string name() const;
     virtual double condT(double T) const;
-
 };
 
 

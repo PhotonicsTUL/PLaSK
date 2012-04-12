@@ -14,7 +14,6 @@ MI_PROPERTY(InN, condT,
             MISource("H. Tong et al., Proc. SPIE 7602 (2010) 76020U")
             )
 double InN::condT(double T) const {
-	//M. Kuc 12.02.2012
     return( 126. );
  }
 

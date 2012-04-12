@@ -17,17 +17,16 @@ struct InN_Si: public InN {
 
     static constexpr const char* NAME = "InN:Si";
 
-	InN_Si(DopingAmountType Type, double Si);
+    InN_Si(DopingAmountType Type, double Val);
 	virtual std::string name() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;
+    virtual double Dop() const;
     virtual double cond(double T) const;
-    //virtual double nr(double wl, double T) const;
-    //virtual double absp(double wl, double T) const;
 private:
-	double Nf_RT,
-		   mob_RT,
-		   condTmax_RT;
+    double ND,
+           Nf_RT,
+           mob_RT;
 
 };
 

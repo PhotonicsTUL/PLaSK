@@ -1,0 +1,55 @@
+#include "AlGaN.h"
+
+#include <cmath>
+#include <plask/material/db.h>  //MaterialsDB::Register
+#include <plask/material/info.h>    //MaterialInfo::DB::Register
+
+namespace plask {
+
+std::string AlGaN::name() const { return NAME; }
+
+
+AlGaN::AlGaN(const Material::Composition& Comp)
+{
+    mGaN = new GaN();
+    mAlN = new AlN();
+
+    Al = Comp.find("Al")->second;
+    Ga = Comp.find("Ga")->second;
+}
+
+MI_PROPERTY(AlGaN, condT,
+            MISource("B. C. Daly et al., Journal of Applied Physics 92 (2002) 3820"),
+            MIComment("based on data for Al = 0.2, 0.45")
+            )
+double AlGaN::condT(double T, double t) const {
+    return( 1/(Al/mAlN->condT(T,t) + Ga/mGaN->condT(T,t) + Al*Ga*0.4) );
+ }
+
+MI_PROPERTY(AlGaN, absp,
+            MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
+            MIComment("no temperature dependence")
+            )
+double AlGaN::absp(double wl, double T) const {
+    double Eg = 6.28*Al + 3.42*Ga - 0.7*Al*Ga;
+    double a = 1239.84190820754/wl - Eg;
+    return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
+}
+
+MI_PROPERTY(AlGaN, nr,
+            MISource("www.rpi.edu Educational Resources (E.F. Schubert 2004)"),
+            MIArgumentRange(MaterialInfo::wl, 355, 1240),
+            MIComment("based on data for Al = 0, 0.3, 1.0"),
+            MIComment("no temperature dependence")
+            )
+double AlGaN::nr(double wl, double T) const {
+    double E = 1239.84190820754/wl,
+           a =  0.073-Al*0.042-Al*Al*0.014,
+           b = -0.179-Al*0.032+Al*Al*0.174,
+           c =  2.378-Al*0.354-Al*Al*0.017;
+    return ( a*E*E + b*E + c );
+}
+
+static MaterialsDB::Register<AlGaN> materialDB_register_AlGaN;
+
+}       // namespace plask

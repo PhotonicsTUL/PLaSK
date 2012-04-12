@@ -1,41 +1,54 @@
 #include "InN_Mg.h"
 
-#include <plask/material/db.h>  //MaterialsDB::Register
 #include <cmath>
+#include <plask/material/db.h>  //MaterialsDB::Register
+#include <plask/material/info.h>    //MaterialInfo::DB::Register
 
 namespace plask {
 
-InN_Mg::InN_Mg(DopingAmountType Type, double Mg) {
-	//M. Kuc 12.02.2012
-    if (Type == CARRIER_CONCENTRATION) Nf_RT = Mg;
-	else Nf_RT = 7.392E9*pow(Mg,0.439);
-	//Nf_RT(Mg), Mg: 3e18 - 8e20 cm-3; based on 2 papers (2008-2009): Mg-doped InN
-	//mobRT(Nf_RT), Nf_RT: 1e18 - 1e19 cm-3; based on 4 papers (2006-2010): MBE-grown Mg-doped InN
-    mob_RT = 5.739E13*pow(Nf_RT,-0.663);
-	cond_RT = 1.602E-17*Nf_RT*mob_RT;
-}
+MI_PARENT(InN_Mg, InN)
 
 std::string InN_Mg::name() const { return NAME; }
 
+InN_Mg::InN_Mg(DopingAmountType Type, double Val) {
+    if (Type == CARRIER_CONCENTRATION) {
+        Nf_RT = Val;
+        NA = 7.392E9*pow(Val,0.439);
+    }
+    else {
+        Nf_RT = 3.311E-23*pow(Val,2.278);
+        NA = Val;
+    }
+    mob_RT = 5.739E13*pow(Nf_RT,-0.663);
+    cond_RT = 1.602E-17*Nf_RT*mob_RT;
+}
+
+MI_PROPERTY(InN_Mg, mob,
+            MISource("based on 4 papers (2006-2010): MBE-grown Mg-doped InN"),
+            MIComment("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
+            )
 double InN_Mg::mob(double T) const {
-	//M. Kuc 12.02.2012
-	//No T Dependence based on Kumakura K, J. Appl. Phys. 93 (2003) 3370
     return ( mob_RT );
 }
 
+MI_PROPERTY(InN_Mg, Nf,
+            MISource("based on 2 papers (2008-2009): Mg-doped InN"),
+            MIComment("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
+            )
 double InN_Mg::Nf(double T) const {
-	//M. Kuc 12.02.2012
-	//No T Dependence based on Kumakura K, J. Appl. Phys. 93 (2003) 3370
-	return ( Nf_RT );
+    return ( Nf_RT );
 }
 
+double InN_Mg::Dop() const {
+    return NA;
+}
+
+MI_PROPERTY(InN_Mg, cond,
+            MIComment("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
+            )
 double InN_Mg::cond(double T) const {
-	//M. Kuc 12.02.2012
 	return ( cond_RT );
 }
-
-//double InN_Mg::absp(double wl, double T) const { }
-//double InN_Mg::nr(double wl, double T) const { }
 
 MaterialsDB::Register<InN_Mg> materialDB_register_InN_Mg;
 
