@@ -31,9 +31,8 @@ static shared_ptr<GeometryElement> Container__getitem__int(py::object oself, int
     int n = self->getChildrenCount();
     if (i < 0) i = n + i;
     if (i < 0 || i >= n) {
-        PyErr_SetString(PyExc_IndexError, format("%1% index %2% out of range (0 <= index < %3%)",
-            std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n).c_str());
-        throw py::error_already_set();
+        throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
+            std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
     }
     return self->getChildAt(i);
 }
@@ -50,9 +49,8 @@ static void Container__delitem__int(py::object oself, int i) {
     int n = self->getRealChildrenCount();
     if (i < 0) i = n + i;
     if (i < 0 || i >= n) {
-        PyErr_SetString(PyExc_IndexError, format("%1% index %2% out of range (0 <= index < %3%)",
-            std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n).c_str());
-        throw py::error_already_set();
+        throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
+            std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
     }
     self->remove_if([&](const shared_ptr<Translation<dim>>& c){ return c == self->getRealChildAt(i); });
 }
@@ -66,8 +64,7 @@ template <int dim>
 static void Container__delitem__object(py::object oself, shared_ptr<typename GeometryElementContainer<dim>::ChildType> elem) {
     GeometryElementContainer<dim>* self = py::extract<GeometryElementContainer<dim>*>(oself);
     if (!self->remove(elem)) {
-        PyErr_SetString(PyExc_KeyError, "no such child");
-        throw py::error_already_set();
+        throw KeyError("no such child");
     }
 }
 

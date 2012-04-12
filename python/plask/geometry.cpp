@@ -16,6 +16,7 @@ namespace py = boost::python;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void register_calculation_spaces();
 void register_geometry_aligners();
 void register_geometry_element();
 void register_geometry_primitive();
@@ -35,8 +36,7 @@ shared_ptr<GeometryManager> Geometry__init__(py::tuple args, py::dict kwargs) {
     bool has_filename = false, has_materialsdb = false;
 
     if (py::len(args) > 3) {
-        PyErr_SetString(PyExc_TypeError, format("__init__ takes at most 3 arguments (%d given)", py::len(args)).c_str());
-        throw py::error_already_set();
+        throw TypeError("__init__ takes at most 3 arguments (%d given)", py::len(args));
     }
     if (py::len(args) > 1) {
         has_filename = true;
@@ -50,23 +50,20 @@ shared_ptr<GeometryManager> Geometry__init__(py::tuple args, py::dict kwargs) {
     for (auto i = begin; i != end; ++i) {
         if (*i == "filename") {
             if (has_filename) {
-                PyErr_SetString(PyExc_TypeError, "__init__() got multiple values for keyword argument 'filename'");
-                throw py::error_already_set();
+                throw TypeError("__init__() got multiple values for keyword argument 'filename'");
             } else {
                 has_filename = true;
                 filename = py::extract<std::string>(kwargs["filename"]);
             }
         } else if (*i == "materialsdb") {
             if (has_materialsdb) {
-                PyErr_SetString(PyExc_TypeError, "__init__() got multiple values for keyword argument 'materialsdb'");
-                throw py::error_already_set();
+                throw TypeError("__init__() got multiple values for keyword argument 'materialsdb'");
             } else {
                 materialsDB = py::extract<MaterialsDB*>(kwargs["materialsdb"]);
                 has_materialsdb = true;
             }
         } else {
-            PyErr_SetString(PyExc_TypeError, format("__init__() got unexpected keyword argument '%s'", *i).c_str());
-            throw py::error_already_set();
+            throw TypeError("__init__() got unexpected keyword argument '%s'", *i);
         }
 
     }
@@ -94,10 +91,7 @@ void Geometry_loadFromFile(GeometryManager& self, const std::string &filename, c
 
 shared_ptr<GeometryElement> Geometry_element(GeometryManager& self, const char* key) {
     shared_ptr<GeometryElement> result = self.getElement(key);
-    if (!result) {
-        PyErr_SetString(PyExc_KeyError, format("no geometry element with name '%s'", key).c_str());
-        throw py::error_already_set();
-    }
+    if (!result) throw KeyError("no geometry element with name '%s'", key);
     return result;
 }
 
@@ -121,7 +115,10 @@ void initGeometry() {
     register_geometry_path();
     register_geometry_container();
 
-    // manager.h
+
+
+
+    register_calculation_spaces();
 
     register_exception<NoSuchGeometryElement>(PyExc_IndexError);
 

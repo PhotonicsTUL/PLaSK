@@ -40,8 +40,7 @@ struct Aligners_from_Python
         else if (str == "right" || str == "r") new(storage) align::Right();
         else if (str == "center" || str == "c") new(storage) align::Center();
         else {
-            PyErr_SetString(PyExc_ValueError, "wrong alignment specification");
-            throw py::error_already_set();
+            throw ValueError("wrong alignment specification");
         }
 
         // Stash the memory chunk pointer for later use by boost.python
@@ -68,8 +67,7 @@ struct Aligners_from_Python
         else if (str == "center right" || str == "cr" || str == "right center" || str == "rc") new(storage) align::CenterRight();
         else if (str == "back right" || str == "br" || str == "right back" || str == "rb") new(storage) align::BackRight();
         else {
-            PyErr_SetString(PyExc_ValueError, "wrong alignment specification");
-            throw py::error_already_set();
+            throw ValueError("wrong alignment specification");
         }
 
         // Stash the memory chunk pointer for later use by boost.python

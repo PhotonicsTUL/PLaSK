@@ -17,11 +17,7 @@ namespace plask { namespace python {
 template <int dim, typename T>
 static T vec__getitem__(Vec<dim,T>& self, int i) {
     if (i < 0) i = dim + i;
-    if (i >= dim || i < 0) {
-        const char message[] = "vector index out of range";
-        PyErr_SetString(PyExc_IndexError, message);
-        throw py::error_already_set();
-    }
+    if (i >= dim || i < 0) throw IndexError("vector index out of range");
     return self[i];
 }
 
@@ -29,11 +25,7 @@ static T vec__getitem__(Vec<dim,T>& self, int i) {
 template <int dim, typename T>
 static T vec__setitem__(Vec<dim,T>& self, int i, T v) {
     if (i < 0) i = dim + i;
-    if (i >= dim || i < 0) {
-        const char message[] = "vector index out of range";
-        PyErr_SetString(PyExc_IndexError, message);
-        throw py::error_already_set();
-    }
+    if (i >= dim || i < 0) throw IndexError("vector index out of range");
     self[i] = v;
 }
 
@@ -131,15 +123,13 @@ struct VecAccessor {
     inline static T getComponent(const V& self) {
         std::stringstream out;
         out << "component " << c << " does not make sense for this vector if config.vertical_axis = '" << (z_up?'z':'y') << "'";
-        PyErr_SetString(PyExc_AttributeError, out.str().c_str());
-        throw py::error_already_set();
+        throw AttributeError(out.str());
         return T(); // Make compiler happy, never reached anyway
     }
     inline static void setComponent(V& self, T val) {
         std::stringstream out;
         out << "component " << c << " does not make sense for this vector if config.vertical_axis = '" << (z_up?'z':'y') << "'";
-        PyErr_SetString(PyExc_AttributeError, out.str().c_str());
-        throw py::error_already_set();
+        throw AttributeError(out.str());
     }
 };
 
@@ -277,8 +267,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
         if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) force_double = true;
         else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type)) force_complex = true;
         else {
-            PyErr_SetString(PyExc_TypeError, "wrong dtype (can be only double or complex)");
-            throw py::error_already_set();
+            throw TypeError("wrong dtype (can be only double or complex)");
         }
     }
 
@@ -297,9 +286,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
                     if (n == 3) {
                         comp[0] = val;
                     } else {
-                        PyErr_SetString(PyExc_TypeError,
-                            "x component not allowed for 2D vectors if config.vertical_axis is 'z'");
-                        throw py::error_already_set();
+                        throw TypeError("x component not allowed for 2D vectors if config.vertical_axis is 'z'");
                     }
                     cart = true;
                 } else if (*key == "y") {
@@ -311,59 +298,49 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
                     if (n == 3) {
                         comp[1] = val;
                     } else {
-                        PyErr_SetString(PyExc_TypeError,
-                            "phi component not allowed for 2D vectors");
-                        throw py::error_already_set();
+                        throw TypeError("phi component not allowed for 2D vectors");
                     }
                     cylind = true;
                 } else if (*key == "r") {
                     comp[0] = val;
                     cylind = true;
                 } else {
-                    PyErr_SetString(PyExc_TypeError, ("unrecognized component name '" + *key + "'").c_str());
-                    throw py::error_already_set();
+                    throw TypeError(("unrecognized component name '" + *key + "'").c_str());
                 }
             } else {
                 if (*key == "z") {
                     if (n == 3) {
                         comp[0] = val;
                     } else {
-                        PyErr_SetString(PyExc_TypeError,
-                            "z component not allowed for 2D vectors if config.vertical_axis is 'y'");
-                        throw py::error_already_set();
+                        throw TypeError("z component not allowed for 2D vectors if config.vertical_axis is 'y'");
                     }
                 } else if (*key == "x") {
                     comp[n==2?0:1] = val;
                 } else if (*key == "y") {
                     comp[n==2?1:2] = val;
                 } else if (*key == "phi" || *key == "r") {
-                    PyErr_SetString(PyExc_TypeError, "radial components not allowed if config.vertical_axis is 'z'");
-                    throw py::error_already_set();
+                    throw TypeError("radial components not allowed if config.vertical_axis is 'z'");
                 } else if (*key != "dtype") {
-                    PyErr_SetString(PyExc_TypeError, ("unrecognized component name '" + *key + "'").c_str());
-                    throw py::error_already_set();
+                    throw TypeError(("unrecognized component name '" + *key + "'").c_str());
                 }
             }
         }
 
         if (cart && cylind) {
-            PyErr_SetString(PyExc_TypeError, "mixed cylindrical and Cartesian component names");
-            throw py::error_already_set();
+            throw TypeError("mixed cylindrical and Cartesian component names");
         }
 
         for (int i = 0; i < n; i++)
             params.append(comp[i]);
 
     } else if (nk > 0) {
-        PyErr_SetString(PyExc_TypeError, "components must be provided entirely in a list or by names");
-        throw py::error_already_set();
+        throw TypeError("components must be provided entirely in a list or by names");
     } else {
         params = py::list(args);
     }
 
     if (n != 2 && n != 3) {
-        PyErr_SetString(PyExc_TypeError, "wrong number of arguments");
-        throw py::error_already_set();
+        throw TypeError("wrong number of arguments");
     }
 
     // Now detect the dtype
@@ -381,8 +358,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
         if (n == 2) return py::object(Vec<2,dcomplex>::fromIterator(cmps));
         return py::object(Vec<3,dcomplex>::fromIterator(cmps));
     } catch (py::error_already_set) {
-        PyErr_SetString(PyExc_TypeError, "wrong vector argument types");
-        throw py::error_already_set();
+        throw TypeError("wrong vector argument types");
     }}
 
     return py::object();

@@ -59,8 +59,7 @@ class MaterialWrap : public Material
 
     static shared_ptr<Material> __init__(py::tuple args, py::dict kwargs) {
         if (py::len(args) > 2 || py::len(kwargs) != 0) {
-            PyErr_SetString(PyExc_TypeError, "wrong number of arguments");
-            throw py::error_already_set();
+            throw TypeError("wrong number of arguments");
         }
         MaterialWrap* ptr;
         if (py::len(args) == 2) {
@@ -249,8 +248,7 @@ bool MaterialsDB_contains(const MaterialsDB& DB, const std::string& name) {
 shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 
     if (py::len(args) != 2) {
-        PyErr_SetString(PyExc_ValueError, "MaterialsDB.get(self, name, **kwargs) takes exactly two non-keyword arguments");
-        throw py::error_already_set();
+        throw ValueError("MaterialsDB.get(self, name, **kwargs) takes exactly two non-keyword arguments");
     }
 
     const MaterialsDB* DB = py::extract<MaterialsDB*>(args[0]);
@@ -292,18 +290,15 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
         PyErr_Clear();
     }
     if (doping_type == Material::CARRIER_CONCENTRATION && has_dc) {
-        PyErr_SetString(PyExc_ValueError, "doping and carrier concentrations specified simultanously");
-        throw py::error_already_set();
+        throw ValueError("doping and carrier concentrations specified simultanously");
     }
     if (doping) {
         if (doping_type == Material::NO_DOPING) {
-            PyErr_SetString(PyExc_ValueError, "dopant specified, but neither doping nor carrier concentrations given correctly");
-            throw py::error_already_set();
+            throw ValueError("dopant specified, but neither doping nor carrier concentrations given correctly");
         }
     } else {
         if (doping_type != Material::NO_DOPING) {
-            PyErr_SetString(PyExc_ValueError, format("%s concentation given, but no dopant specified", has_dc?"doping":"carrier").c_str());
-            throw py::error_already_set();
+            throw ValueError("%s concentation given, but no dopant specified", has_dc?"doping":"carrier");
         }
     }
     concentation = py::extract<double>(cobj);
@@ -311,8 +306,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     std::size_t sep = name.find(':');
     if (sep != std::string::npos) {
         if (doping) {
-            PyErr_SetString(PyExc_ValueError, "doping specified in **kwargs, but name contains ':'");
-            throw py::error_already_set();
+            throw ValueError("doping specified in **kwargs, but name contains ':'");
         } else {
            Material::parseDopant(name.substr(sep+1), dopant, doping_type, concentation);
         }
@@ -335,8 +329,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     for (int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
         if (k != "dopant" && k != "dc" && k != "cc" && std::find(elements.begin(), elements.end(), k) == elements.end()) {
-            PyErr_SetString(PyExc_KeyError, format("%s not allowed in material %s", k, name).c_str());
-            throw py::error_already_set();
+            throw KeyError("%s not allowed in material %s", k, name);
         }
     }
     // make composition map
@@ -402,8 +395,7 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
         std::vector<std::string> elements = Material::parseElementsNames(basename);
         for (auto c: comp) {
             if (std::find(elements.begin(), elements.end(), c.first) == elements.end()) {
-                PyErr_SetString(PyExc_KeyError, format("%s not allowed in material %s", c.first, name).c_str());
-                throw py::error_already_set();
+                throw KeyError("%s not allowed in material %s", c.first, name);
             }
         }
     }

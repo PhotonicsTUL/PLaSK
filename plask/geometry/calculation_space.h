@@ -69,7 +69,7 @@ public:
     /**
      * Get material in point @p p of child space.
      *
-     * Material is getted from geometry (if geometry define material in given point) or enviroment (in another cases).
+     * Material is getted from geometry (if geometry define material in given point) or environment (in another cases).
      * Result is defined, and is not nullptr, for each point @p p.
      *
      * Default implementaion just call getMaterialOrDefault which returns default material in each point for which geometry return nullptr.
@@ -91,14 +91,21 @@ public:
      * Get bounding box of child geometry.
      * @return bounding box of child geometry
      */
-    const typename Primitive<dim>::Box & getChildBoundingBox() const {
+    const typename Primitive<dim>::Box& getChildBoundingBox() const {
         return cachedBoundingBox;
     }
 
-    std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
-        return getChild()->getLeafs();
+    std::vector<shared_ptr<const GeometryElement>> getLeafs(const PathHints* path=nullptr) const {
+        return getChild()->getLeafs(path);
     }
 
+    std::vector<std::tuple<shared_ptr<const GeometryElement>, CoordsType>> getLeafsWithTranslations(const PathHints* path=nullptr) const {
+        return getChild()->getLeafsWithTranslations(); // TODO
+    }
+
+    std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints* path=nullptr) const {
+        return getChild()->getLeafsBoundingBoxes(path);
+    }
 };
 
 /**
@@ -122,6 +129,8 @@ public:
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
+    shared_ptr<Extrusion> getExtrusion() const { return extrusion; }
+
 };
 
 /**
@@ -144,6 +153,8 @@ public:
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
+
+    shared_ptr<Revolution> getRevolution() const { return revolution; }
 
 };
 

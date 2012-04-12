@@ -12,7 +12,47 @@ namespace plask { namespace python {
 
 namespace py = boost::python;
 
-// Some config variables
+// ----------------------------------------------------------------------------------------------------------------------
+// Exceptions
+
+template <typename ExcType>
+void register_exception(PyObject* py_exc) {
+    py::register_exception_translator<ExcType>([=](const ExcType& err){ PyErr_SetString(py_exc, err.what()); });
+}
+
+struct ValueError: public Exception {
+    template <typename... T>
+    ValueError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
+};
+
+struct TypeError: public Exception {
+    template <typename... T>
+    TypeError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
+};
+
+struct IndexError: public Exception {
+    template <typename... T>
+    IndexError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
+};
+
+struct KeyError: public Exception {
+    template <typename... T>
+    KeyError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
+};
+
+struct AttributeError: public Exception {
+    template <typename... T>
+    AttributeError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
+};
+
+struct StopIteration: public Exception {
+    template <typename... T>
+    StopIteration(const std::string& msg, const T&... args) : Exception(msg, args...) {}
+};
+
+// ----------------------------------------------------------------------------------------------------------------------
+// Config
+
 struct Config
 {
     // Which axis is up (z or y)
@@ -23,8 +63,7 @@ struct Config
     }
     void set_vaxis(std::string axis) {
         if (axis != "z" and axis != "y") {
-            PyErr_SetString(PyExc_ValueError, "Only z or y allowed for vertical_axis");
-            throw py::error_already_set();
+            throw ValueError("Only z or y allowed for vertical_axis");
         }
         z_up = axis == "z";
     }
@@ -42,7 +81,6 @@ struct Config
     }
 
 };
-
 extern Config config;
 
 inline static void register_config()
@@ -58,7 +96,6 @@ inline static void register_config()
 
 
 // ----------------------------------------------------------------------------------------------------------------------
-
 // Format complex numbers in Python way
 namespace detail {
 
@@ -86,40 +123,6 @@ struct Sc<dcomplex> {
 
 template <typename T>
 inline detail::Sc<T> sc(const T& v) { return detail::Sc<T>(v); }
-
-
-// ----------------------------------------------------------------------------------------------------------------------
-// Exceptions
-
-template <typename ExcType>
-void register_exception(PyObject* py_exc) {
-    py::register_exception_translator<ExcType>([=](const ExcType& err){ PyErr_SetString(py_exc, err.what()); });
-}
-
-struct ValueError: public Exception {
-    ValueError(const std::string& msg) : Exception(msg) {}
-};
-
-struct TypeError: public Exception {
-    TypeError(const std::string& msg) : Exception(msg) {}
-};
-
-struct IndexError: public Exception {
-    IndexError(const std::string& msg) : Exception(msg) {}
-};
-
-struct KeyError: public Exception {
-    KeyError(const std::string& msg) : Exception(msg) {}
-};
-
-struct AttributeError: public Exception {
-    AttributeError(const std::string& msg) : Exception(msg) {}
-};
-
-struct StopIteration: public Exception {
-    StopIteration(const std::string& msg) : Exception(msg) {}
-};
-
 
 
 }} // namespace plask::python

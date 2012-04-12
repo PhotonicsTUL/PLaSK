@@ -26,8 +26,7 @@ shared_ptr<RectilinearMesh1d> RectilinearMesh1d__init__(py::object points) {
 double RectilinearMesh1d__getitem__(const RectilinearMesh1d& self, int index) {
     if (index < 0) index = self.size() - index;
     if (index < 0 || index >= self.size()) {
-        PyErr_SetString(PyExc_IndexError, format("mesh index (%1%) out of range (0<=index<%2%)", index, self.size()).c_str());
-        throw py::error_already_set();
+        throw IndexError("mesh index (%1%) out of range (0<=index<%2%)", index, self.size());
     }
     return self[index];
 }
@@ -48,8 +47,7 @@ void RectilinearMesh2d__setOrdering(RectilinearMesh2d& self, std::string order) 
     if (order == "01") self.setIterationOrder(RectilinearMesh2d::NORMAL_ORDER);
     else if (order == "10") self.setIterationOrder(RectilinearMesh2d::TRANSPOSED_ORDER);
     else {
-        PyErr_SetString(PyExc_ValueError, "order must be either '01' or '10'");
-        throw py::error_already_set();
+        throw ValueError("order must be either '01' or '10'");
     }
 }
 
@@ -81,14 +79,12 @@ Vec<2,double> RectilinearMesh2d__getitem__(const RectilinearMesh2d& self, py::ob
     int index0 = py::extract<int>(index[0]);
     if (index0 < 0) index0 = self.c0.size() - index0;
     if (index0 < 0 || index0 >= self.c0.size()) {
-        PyErr_SetString(PyExc_IndexError, format("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.c0.size()).c_str());
-        throw py::error_already_set();
+        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.c0.size());
     }
     int index1 = py::extract<int>(index[1]);
     if (index1 < 0) index1 = self.c1.size() - index1;
     if (index1 < 0 || index1 >= self.c1.size()) {
-        PyErr_SetString(PyExc_IndexError, format("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.c1.size()).c_str());
-        throw py::error_already_set();
+        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.c1.size());
     }
     return self(index0, index1);
 }
@@ -130,20 +126,17 @@ Vec<3,double> RectilinearMesh3d__getitem__(const RectilinearMesh3d& self, py::ob
     int index0 = py::extract<int>(index[0]);
     if (index0 < 0) index0 = self.c0.size() - index0;
     if (index0 < 0 || index0 >= self.c0.size()) {
-        PyErr_SetString(PyExc_IndexError, format("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.c0.size()).c_str());
-        throw py::error_already_set();
+        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.c0.size());
     }
     int index1 = py::extract<int>(index[1]);
     if (index1 < 0) index1 = self.c1.size() - index1;
     if (index1 < 0 || index1 >= self.c1.size()) {
-        PyErr_SetString(PyExc_IndexError, format("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.c1.size()).c_str());
-        throw py::error_already_set();
+        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.c1.size());
     }
     int index2 = py::extract<int>(index[2]);
     if (index2 < 0) index2 = self.c2.size() - index2;
     if (index2 < 0 || index2 >= self.c2.size()) {
-        PyErr_SetString(PyExc_IndexError, format("third mesh index (%1%) out of range (0<=index<%2%)", index2, self.c2.size()).c_str());
-        throw py::error_already_set();
+        throw IndexError("third mesh index (%1%) out of range (0<=index<%2%)", index2, self.c2.size());
     }
     return self(index0, index1, index2);
 }
@@ -177,8 +170,7 @@ void RectilinearMesh3d__setOrdering(RectilinearMesh3d& self, std::string order) 
     else if (order == "201") self.setIterationOrder(RectilinearMesh3d::ORDER_201);
     else if (order == "210") self.setIterationOrder(RectilinearMesh3d::ORDER_210);
     else {
-        PyErr_SetString(PyExc_ValueError, "order must be any permutation of '012'");
-        throw py::error_already_set();
+        throw ValueError("order must be any permutation of '012'");
     }
 }
 

@@ -227,12 +227,12 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     /// Changed signal, fired when element was changed.
     boost::signals2::signal<void(const Event&)> changed;
-    
+
     template <typename ClassT, typename methodT>
     void changedConnectMethod(ClassT* obj, methodT method) {
         changed.connect(boost::bind(method, obj, _1));
     }
-    
+
     template <typename ClassT, typename methodT>
     void changedDisconnectMethod(ClassT* obj, methodT method) {
         changed.disconnect(boost::bind(method, obj, _1));
@@ -303,11 +303,12 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     /**
      * Get all leafs in subtree with this object as root.
+     * @param path (optional) path hints which limits search space
      * @return all leafs in subtree with this object as root
      */
-    std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+    std::vector< shared_ptr<const GeometryElement> > getLeafs(const PathHints* path = 0) const {
         std::vector< shared_ptr<const GeometryElement> > result;
-        getLeafsToVec(result);
+        getLeafsToVec(result, path);
         return result;
     }
 
@@ -485,7 +486,7 @@ struct GeometryElementD: public GeometryElement {
 
     /**
      * Calculate bounding boxes of all leafs, optionaly showed by path.
-     * @param path path fragments
+     * @param path path fragments, optional
      * @return bounding boxes of all leafs
      */
     std::vector<Box> getLeafsBoundingBoxes(const PathHints& path) const {
