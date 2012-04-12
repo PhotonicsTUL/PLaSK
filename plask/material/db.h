@@ -244,7 +244,7 @@ public:
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, true, true>: public MaterialConstructor {
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<MaterialType> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
             ensureCompositionIsNotEmpty(composition);
             return make_shared<MaterialType>(Material::completeComposition(composition), doping_amount_type, doping_amount);
         }
