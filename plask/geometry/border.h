@@ -1,7 +1,7 @@
 #ifndef PLASK__GEOMETRY_BORDER_H
 #define PLASK__GEOMETRY_BORDER_H
 
-#include "../material/material.h"
+#include "../material/db.h"
 #include "primitives.h"
 
 namespace plask {
@@ -17,11 +17,32 @@ struct Strategy {
      * Apply strategy to given point @p p.
      * @param bbox_lo[in], bbox_hi[in] coordinates of geometry element bounding box in startegy working direction
      * @param p[in,out] coordinate of point in startegy working direction, it's lower than @p bbox_lo or higher than @p bbox_hi, this method can move this point
-     * @param result_material optionaly, this method can assign to it material which should be used
+     * @param result_material[out] optionaly, this method can assign to it material which should be used
      */
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
 
+    /**
+     * Check if this strategy can move point p to place outside bounding box.
+     *
+     * Default implementation return @c false.
+     * @return @c true if this strategy can move point p to place outside bounding box,
+     *         @c false if this strategy always move point p to bounding box or doesn't move p at all
+     */
+    virtual bool canMoveOutsideBoundingBox() const;
+
+    /**
+     * Clone this strategy.
+     * @return strategy identical to this one, constructed using operator new
+     */
     virtual Strategy* clone() const = 0;
+
+    /**
+     * Create new strategy (using operator new) described by string @p str.
+     * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
+     * @param materialsDB material database used to get material
+     * @return created strategy
+     */
+    static Strategy* fromStr(const std::string& str, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 };
 
 /**
@@ -84,6 +105,15 @@ struct Periodic: public Strategy {
     virtual Periodic* clone() const;
 };
 
+struct Mirror: public Strategy {
+
+    virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+
+    virtual bool canMoveOutsideBoundingBox() const;
+
+    virtual Mirror* clone() const;
+
+};
 
 
 /**

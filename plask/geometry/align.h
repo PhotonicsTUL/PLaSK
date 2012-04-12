@@ -343,10 +343,10 @@ template <DIRECTION direction>
 Aligner2d<direction>* fromStr(const std::string& str);
 
 template <>
-inline Aligner2d<DIRECTION_TRAN>* fromStr(const std::string& str) { return details::transAlignerFromString(str); }
+inline Aligner2d<DIRECTION_TRAN>* fromStr<DIRECTION_TRAN>(const std::string& str) { return details::transAlignerFromString(str); }
 
 template <>
-inline Aligner2d<DIRECTION_LON>* fromStr(const std::string& str) { return details::lonAlignerFromString(str); }
+inline Aligner2d<DIRECTION_LON>* fromStr<DIRECTION_LON>(const std::string& str) { return details::lonAlignerFromString(str); }
 
 
 /**

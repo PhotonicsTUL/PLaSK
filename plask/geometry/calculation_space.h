@@ -159,7 +159,7 @@ public:
 };
 
 /**
- * 3D calculation space over revolution geometry.
+ * 3D calculation space over 3d geometry.
  */
 class Space3d: public CalculationSpaceD<3> {
 };

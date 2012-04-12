@@ -27,6 +27,7 @@ Aligner2d<DIRECTION_LON>* lonAlignerFromString(std::string str) {
 }   // namespace details
 
 Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN>* aligner3dFromString(std::string str) {
+    boost::algorithm::to_lower(str);
          if (str == "front left" || str == "fl" || str == "left front" || str == "lf") return new FrontLeft();
     else if (str == "center left" || str == "cl" || str == "left center" || str == "lc") return new CenterLeft();
     else if (str == "back left" || str == "bl" || str == "left back" || str == "lb") return new BackLeft();
