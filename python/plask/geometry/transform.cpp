@@ -45,7 +45,7 @@ template <> struct Translation_constructor2<3> {
 const py::detail::keywords<4> Translation_constructor2<3>::args = (py::arg("child"), py::arg("c0"), py::arg("c1"), py::arg("c2"));
 
 
-std::string GeometryElement__repr__(shared_ptr<GeometryElement> self);
+std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self);
 
 template <int dim>
 static std::string Translation__str__(const Translation<dim>& self) {

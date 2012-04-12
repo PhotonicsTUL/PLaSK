@@ -32,10 +32,16 @@ static py::list Space_leafsAsTranslations(const S& self, const PathHints* path=0
     return result;
 }
 
-template <typename S>
-typename Primitive<S::DIMS>::Box Space_getChildBoundingBox(const S& self) {
-    return self.getChildBoundingBox();
+template <int dim>
+static std::vector<shared_ptr<GeometryElement>> Space_getLeafs(const CalculationSpaceD<dim>& self, const PathHints* path=0) {
+    std::vector<shared_ptr<const GeometryElement>> leafs = self.getLeafs();
+    std::vector<shared_ptr<GeometryElement>> result;
+    result.reserve(leafs.size());
+    for (auto i: leafs) result.push_back(const_pointer_cast<GeometryElement>(i));
+    return result;
 }
+
+
 
 
 shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py::dict kwargs) {
@@ -113,10 +119,11 @@ void register_calculation_spaces() {
         .def("__init__", raw_constructor(Space2dCartesian__init__, 1))
         .add_property("child", &Space2dCartesian::getChild, "GeometryElement2D at the root of the tree")
         .add_property("extrusion", &Space2dCartesian::getExtrusion, "Extrusion object at the very root of the tree")
-        .add_property("child_bbox", &Space_getChildBoundingBox<Space2dCartesian>, "Minimal rectangle which includes all points of the geometry element")
+        .add_property("child_bbox", py::make_function(&Space2dCartesian::getChildBoundingBox, py::return_value_policy<py::return_by_value>()),
+                      "Minimal rectangle which includes all points of the geometry element")
         .def("getMaterial", &Space2dCartesian::getMaterial, "Return material at given point", (py::arg("point")))
         .def("getMaterial", &Space_getMaterial<Space2dCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("getLeafs", &Space2dCartesian::getLeafs, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this element")
+        .def("getLeafs", &Space_getLeafs<2>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this element")
         .def("getLeafsPositions", &Space2dCartesian::getLeafsPositions, (py::arg("path")=py::object()), "Calculate positions of all leafs (in local coordinates)")
         .def("getLeafsBBoxes", &Space2dCartesian::getLeafsBoundingBoxes, (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
         .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Space2dCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")

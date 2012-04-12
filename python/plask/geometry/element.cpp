@@ -44,7 +44,6 @@ static py::list GeometryElementD_leafsAsTranslations(const GeometryElementD<dim>
     return result;
 }
 
-
 /// Initialize class GeometryElementD for Python
 template <int dim> struct GeometryElementD_vector_args { static const py::detail::keywords<dim> args; };
 template<> const py::detail::keywords<2> GeometryElementD_vector_args<2>::args = (py::arg("c0"), py::arg("c1"));
@@ -65,8 +64,6 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
                       "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
         .add_property("bbox_size", &GeometryElementD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
-        .def("getLeafs", &GeometryElementD<dim>::getLeafs, (py::arg("path")=py::object()),
-             "Return list of all leafs in the subtree originating from this element")
         .def("getLeafsPositions", &GeometryElementD<dim>::getLeafsPositions, (py::arg("path")=py::object()),
              "Calculate positions of all leafs (in local coordinates)")
         .def("getLeafsBBoxes", (std::vector<typename GeometryElementD<dim>::Box> (GeometryElementD<dim>::*)(const PathHints*) const) &GeometryElementD<dim>::getLeafsBoundingBoxes,
@@ -76,7 +73,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
     ;
 }
 
-std::string GeometryElement__repr__(shared_ptr<GeometryElement> self) {
+std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self) {
     std::stringstream out;
     try {
         py::object obj(self);
@@ -91,6 +88,13 @@ std::string GeometryElement__repr__(shared_ptr<GeometryElement> self) {
     return out.str();
 }
 
+static std::vector<shared_ptr<GeometryElement>> GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints* path=0) {
+    std::vector<shared_ptr<const GeometryElement>> leafs = self->getLeafs();
+    std::vector<shared_ptr<GeometryElement>> result;
+    result.reserve(leafs.size());
+    for (auto i: leafs) result.push_back(const_pointer_cast<GeometryElement>(i));
+    return result;
+}
 
 void register_geometry_element()
 {
@@ -105,8 +109,12 @@ void register_geometry_element()
         "Base class for all geometry elements.", py::no_init)
         .add_property("type", &GeometryElement::getType)
         .def("validate", &GeometryElement::validate)
+        .def("getLeafs", &GeometryElement_getLeafs, (py::arg("path")=py::object()),
+             "Return list of all leafs in the subtree originating from this element")
         .def("__repr__", &GeometryElement__repr__)
     ;
+
+    register_vector_of<shared_ptr<GeometryElement>>("GeometryElement");
 
     init_GeometryElementD<2>();
     init_GeometryElementD<3>();

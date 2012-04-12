@@ -1,5 +1,4 @@
 #include "geometry.h"
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <plask/geometry/primitives.h>
 
@@ -66,26 +65,6 @@ static std::string Box3d__repr__(const Box3d& self) {
     return out.str();
 }
 
-static std::string Box2d_list_str(const std::vector<Box2d>& self) {
-    std::string result = "[";
-    int i = self.size()-1;
-    for (auto v: self) {
-        result += Box2d__repr__(v) + ((i)?", ":"");
-        --i;
-    }
-    return result + "]";
-}
-
-static std::string Box3d_list_str(const std::vector<Box3d>& self) {
-    std::string result = "[";
-    int i = self.size()-1;
-    for (auto v: self) {
-        result += Box3d__repr__(v) + ((i)?", ":"");
-        --i;
-    }
-    return result + "]";
-}
-
 /// Register primitives to Python
 void register_geometry_primitive()
 {
@@ -116,6 +95,8 @@ void register_geometry_primitive()
         .def("__repr__", &Box2d__repr__)
     ;
 
+    register_vector_of<Box2d>("Box2D");
+
 
     void (Box3d::*includeR3p)(const Vec<3,double>&) = &Box3d::include;
     void (Box3d::*includeR3R)(const Box3d&)       = &Box3d::include;
@@ -144,17 +125,7 @@ void register_geometry_primitive()
         .def("__repr__", &Box3d__repr__)
     ;
 
-    py::class_< std::vector<Box2d>, shared_ptr<std::vector<Box2d>> >("Box2D_list")
-        .def(py::vector_indexing_suite<std::vector<Box2d>>())
-        .def("__str__", &Box2d_list_str)
-        .def("__repr__", &Box2d_list_str)
-    ;
-
-    py::class_< std::vector<Box3d>, shared_ptr<std::vector<Box3d>> >("Box3D_list")
-        .def(py::vector_indexing_suite<std::vector<Box3d>>())
-        .def("__str__", &Box3d_list_str)
-        .def("__repr__", &Box3d_list_str)
-    ;
+    register_vector_of<Box3d>("Box3D");
 }
 
 }} // namespace plask::python

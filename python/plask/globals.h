@@ -2,7 +2,10 @@
 #define PLASK__PYTHON_GLOBALS_H
 
 #include <cmath>
+
 #include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
 #include <plask/config.h>
 #include <plask/exceptions.h>
 #include <plask/math.h>
@@ -124,6 +127,28 @@ struct Sc<dcomplex> {
 template <typename T>
 inline detail::Sc<T> sc(const T& v) { return detail::Sc<T>(v); }
 
+
+// ----------------------------------------------------------------------------------------------------------------------
+// Register vectors of something
+template <typename T>
+static std::string str__vector_of(const std::vector<T>& self) {
+    std::string result = "[";
+    int i = self.size()-1;
+    for (auto v: self) {
+        result += py::extract<std::string>(py::object(v).attr("__repr__")());
+        result += (i)? ", " : "";
+        --i;
+    }
+    return result + "]";
+}
+template <typename T>
+static inline py::class_< std::vector<T>, shared_ptr<std::vector<T>> > register_vector_of(const std::string& name) {
+    return py::class_< std::vector<T>, shared_ptr<std::vector<T>> >((name+"_list").c_str(), py::no_init)
+        .def(py::vector_indexing_suite<std::vector<T>>())
+        .def("__repr__", &str__vector_of<T>)
+        .def("__str__", &str__vector_of<T>)
+    ;
+}
 
 }} // namespace plask::python
 

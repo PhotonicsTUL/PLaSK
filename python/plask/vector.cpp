@@ -234,8 +234,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def("__array__", &vec__array__<dim,T>)
     ;
 
-    py::class_< std::vector<Vec<dim,T>>, shared_ptr<std::vector<Vec<dim,T>>> >((name+"_list").c_str())
-        .def(py::vector_indexing_suite< std::vector<Vec<dim,T>> >())
+    register_vector_of<Vec<dim,T>>(name)
         .def("__array__", &vec_list__array__<dim,T>)
     ;
 
@@ -410,8 +409,6 @@ const static std::string __doc__ =
     ">>> vector(r=2, z=0, dtype=complex)\n"
     "vector(2,0)\n    \n"
     "Create 2D vector in cylindrical coordinates, specifying dtype.\n"
-
-
 
     ;
 
