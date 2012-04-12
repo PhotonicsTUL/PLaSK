@@ -158,14 +158,29 @@ public:
         for (auto child: children) child->getLeafsToVec(dest);
     }*/
 
-    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(Primitive<dim>::ZERO_VEC);
+            return;
+        }
+        if (path) {
+            auto c = path->getTranslationChildren<dim>(*this);
+            if (!c.empty()) {
+                for (auto child: c) child->getTranslationsToVec(predicate, dest, path);
+                return;
+            }
+        }
+        for (auto child: children) child->getTranslationsToVec(predicate, dest, path);
+    }
+
+    /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result;
         for (auto child: children) {
             std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > child_leafs_tran = child->getLeafsWithTranslations();
             result.insert(result.end(), child_leafs_tran.begin(), child_leafs_tran.end());
         }
         return result;
-    }
+    }*/
 
     virtual bool isInSubtree(const GeometryElement& el) const {
         if (&el == this) return true;

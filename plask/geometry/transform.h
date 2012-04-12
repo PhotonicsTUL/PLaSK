@@ -162,15 +162,23 @@ struct GeometryElementTransformSpace: public GeometryElementTransform<this_dim, 
     /// @return GE_TYPE_SPACE_CHANGER
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_SPACE_CHANGER; }
 
-    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+    /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< shared_ptr<const GeometryElement> > v = getChild()->getLeafs();
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result(v.size());
         std::transform(v.begin(), v.end(), result.begin(), [](shared_ptr<const GeometryElement> e) {
             return std::make_pair(e, Primitive<this_dim>::NAN_VEC);
         });
         return result;
-    }
+    }*/
 
+    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(Primitive<this_dim>::ZERO_VEC);
+            return;
+        }
+        const std::size_t s = getChild()->getTranslations(predicate, path).size();
+        for (std::size_t i = 0; i < s; ++i) dest.push_back(Primitive<this_dim>::NAN_VEC);
+   }
 };
 
 /**
@@ -241,10 +249,21 @@ struct Translation: public GeometryElementTransform<dim> {
         for (Box& r: result) dest.push_back(r.translated(translation));
     }
 
-    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+    /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = getChild()->getLeafsWithTranslations();
         for (std::tuple<shared_ptr<const GeometryElement>, DVec>& r: result) std::get<1>(r) += translation;
         return result;
+    }*/
+
+    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(Primitive<dim>::ZERO_VEC);
+            return;
+        }
+        const std::size_t old_size = dest.size();
+        getChild()->getTranslationsToVec(predicate, dest, path);
+        for (std::size_t i = old_size; i < dest.size(); ++i)
+            dest[i] += translation;
     }
 
     /**

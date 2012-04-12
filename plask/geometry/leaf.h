@@ -52,6 +52,10 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         if (predicate(*this)) dest.push_back(this->shared_from_this());
     }
 
+    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const {
+        if (predicate(*this)) dest.push_back(Primitive<dim>::ZERO_VEC);
+    }
+
     inline void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
         dest.push_back(this->shared_from_this());
     }
@@ -60,9 +64,9 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return { this->shared_from_this() };
     }
 
-    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+    /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         return { std::make_pair(shared_from_this(), Primitive<dim>::ZERO_VEC) };
-    }
+    }*/
 
     virtual bool isInSubtree(const GeometryElement& el) const {
         return &el == this;

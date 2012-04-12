@@ -99,8 +99,8 @@ public:
         return getChild()->getLeafs(path);
     }
 
-    std::vector<std::tuple<shared_ptr<const GeometryElement>, CoordsType>> getLeafsWithTranslations(const PathHints* path=nullptr) const {
-        return getChild()->getLeafsWithTranslations(); // TODO
+    std::vector<CoordsType> getLeafsTranslations(const PathHints* path=nullptr) const {
+        return getChild()->getLeafsTranslations(path);
     }
 
     std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints* path=nullptr) const {

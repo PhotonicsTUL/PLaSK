@@ -409,7 +409,23 @@ class MultiStackContainer: public StackContainer<dim> {
                 dest.push_back(dest[i]);
     }
 
-    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
+        if (predicate(*this)) {
+            dest.push_back(Primitive<dim>::ZERO_VEC);
+            return;
+        }
+        std::size_t old_size = dest.size();
+        UpperClass::getTranslationsToVec(predicate, dest, path);
+        std::size_t new_size = dest.size();
+        const double stackHeight = stackHeights.back() - stackHeights.front();
+        for (unsigned r = 1; r < repeat_count; ++r)
+            for (std::size_t i = old_size; i < new_size; ++i) {
+                dest.push_back(dest[i]);
+                dest.back().up += stackHeight * r;
+            }
+    }
+
+    /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = UpperClass::getLeafsWithTranslations();
         std::size_t size = result.size();   //oryginal size
         const double stackHeight = stackHeights.back() - stackHeights.front();
@@ -420,7 +436,7 @@ class MultiStackContainer: public StackContainer<dim> {
             }
         }
         return result;
-    }
+    }*/
 
     virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
         GeometryElement::Subtree result = UpperClass::findPathsTo(el, path);

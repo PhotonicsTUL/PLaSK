@@ -485,14 +485,12 @@ struct GeometryElementD: public GeometryElement {
     }
 
     /**
-     * Calculate bounding boxes of all leafs, optionaly showed by path.
-     * @param path path fragments, optional
+     * Calculate bounding boxes of all leafs, showed by path.
+     * @param path path fragments
      * @return bounding boxes of all leafs
      */
     std::vector<Box> getLeafsBoundingBoxes(const PathHints& path) const {
-        std::vector<Box> result;
-        getLeafsBoundingBoxesToVec(result, &path);
-        return result;
+        return getLeafsBoundingBoxes(&path);
     }
 
     /**
@@ -503,7 +501,26 @@ struct GeometryElementD: public GeometryElement {
      * This mean that translation is not well defined (some space changer on path).
      */
     //TODO getLeafsWithTranslations -> getTranslations (without elements but with same order), predicate, path, toVec
-    virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const = 0;
+    //virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const = 0;
+
+    virtual void getTranslationsToVec(const Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const = 0;
+
+    std::vector<DVec> getTranslations(const Predicate& predicate, const PathHints* path = 0) const {
+        std::vector<DVec> result;
+        getTranslationsToVec(predicate, result, path);
+        return result;
+    }
+
+    void getLeafsTranslationsToVec(std::vector<DVec>& dest, const PathHints* path = 0) const {
+        getTranslationsToVec(&PredicateIsLeaf, dest, path);
+    }
+
+    std::vector<DVec> getLeafsTranslations(const PathHints* path = 0) const {
+        std::vector<DVec> result;
+        getLeafsTranslationsToVec(result, path);
+        return result;
+    }
+
 
     //virtual getChildInfo  //translation, bounding box
 
