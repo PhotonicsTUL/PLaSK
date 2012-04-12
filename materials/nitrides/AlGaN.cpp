@@ -31,8 +31,7 @@ MI_PROPERTY(AlGaN, absp,
             MIComment("no temperature dependence")
             )
 double AlGaN::absp(double wl, double T) const {
-    double Eg = 6.28*Al + 3.42*Ga - 0.7*Al*Ga;
-    double a = 1239.84190820754/wl - Eg;
+    double a = 1239.84190820754/wl - Eg(T,'G');
     return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
 }
 
@@ -48,6 +47,27 @@ double AlGaN::nr(double wl, double T) const {
            b = -0.179-Al*0.032+Al*Al*0.174,
            c =  2.378-Al*0.354-Al*Al*0.017;
     return ( a*E*E + b*E + c );
+}
+
+MI_PROPERTY(AlGaN, Eg,
+            MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
+            MIComment("only for Gamma point"),
+            MIComment("no temperature dependence")
+            )
+double AlGaN::Eg(double T, char point) const {
+    double tEg(0.);
+    if (point == 'G') tEg = 6.28*Al + 3.42*Ga - 0.7*Al*Ga;
+    return (tEg);
+}
+
+MI_PROPERTY(AlGaN, lattC,
+            MISource("linear interpolation: GaN, AlN")
+            )
+double AlGaN::lattC(double T, char x) const {
+    double tLattC(0.);
+    if (x == 'a') tLattC = mAlN->lattC(T,'a')*Al + mGaN->lattC(T,'a')*Ga;
+    else if (x == 'c') tLattC = mAlN->lattC(T,'c')*Al + mGaN->lattC(T,'c')*Ga;
+    return (tLattC);
 }
 
 static MaterialsDB::Register<AlGaN> materialDB_register_AlGaN;
