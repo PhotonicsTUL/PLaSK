@@ -441,12 +441,8 @@ struct GeometryElementD: public GeometryElement {
         return real_mat ? real_mat : make_shared<Air>();
     }
 
-    //virtual std::vector<Material*> getMaterials(Mesh);        ??
-
-    //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const = 0;
-
     /**
-     * Calculate and append to vector bounding boxes of all nodes which fullfill given @p predicate, optionaly showed by path.
+     * Calculate and append to vector bounding boxes of all nodes which fulfill given @p predicate, optionally marked by path.
      * @param predicate
      * @param dest place to add result
      * @param path path fragments, optional
@@ -454,7 +450,7 @@ struct GeometryElementD: public GeometryElement {
     virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const = 0;
 
     /**
-     * Calculate and append to vector bounding boxes of all nodes which fullfill given @p predicate, optionaly showed by path.
+     * Calculate and append to vector bounding boxes of all nodes which fulfill given @p predicate, optionally marked by path.
      * @param predicate
      * @param path path fragments, optional
      */
@@ -465,7 +461,7 @@ struct GeometryElementD: public GeometryElement {
     }
 
     /**
-     * Calculate and append to vector bounding boxes of all leafs, optionaly showed by path.
+     * Calculate and append to vector bounding boxes of all leafs, optionally marked by path.
      * @param dest place to add result
      * @param path path fragments, optional
      */
@@ -474,7 +470,7 @@ struct GeometryElementD: public GeometryElement {
     }
 
     /**
-     * Calculate bounding boxes of all leafs, optionaly showed by path.
+     * Calculate bounding boxes of all leafs, optionally marked by path.
      * @param path path fragments, optional
      * @return bounding boxes of all leafs
      */
@@ -486,7 +482,7 @@ struct GeometryElementD: public GeometryElement {
 
     /**
      * Calculate bounding boxes of all leafs, showed by path.
-     * @param path path fragments
+     * @param path path fragments, optional
      * @return bounding boxes of all leafs
      */
     std::vector<Box> getLeafsBoundingBoxes(const PathHints& path) const {
@@ -494,30 +490,28 @@ struct GeometryElementD: public GeometryElement {
     }
 
     /**
-     * Get all leafs and its translations in subtree with this in root.
-     * @return all leafs and its translations in subtree with this in root.
+     * Calculate and append to vector positions of all nodes which fulfill given @p predicate, optionally marked by path.
+     * @param path path fragments, optional
+     * @return positions of the leafs in the sub-tree with this element in the root.
      *
-     * Some leafs can have all vector of NaNs as trasnalations.
+     * Some leafs can have all vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
      */
-    //TODO getLeafsWithTranslations -> getTranslations (without elements but with same order), predicate, path, toVec
-    //virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const = 0;
+    virtual void getPositionsToVec(const Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const = 0;
 
-    virtual void getTranslationsToVec(const Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const = 0;
-
-    std::vector<DVec> getTranslations(const Predicate& predicate, const PathHints* path = 0) const {
+    std::vector<DVec> getPositions(const Predicate& predicate, const PathHints* path = 0) const {
         std::vector<DVec> result;
-        getTranslationsToVec(predicate, result, path);
+        getPositionsToVec(predicate, result, path);
         return result;
     }
 
-    void getLeafsTranslationsToVec(std::vector<DVec>& dest, const PathHints* path = 0) const {
-        getTranslationsToVec(&PredicateIsLeaf, dest, path);
+    void getLeafsPositionsToVec(std::vector<DVec>& dest, const PathHints* path = 0) const {
+        getPositionsToVec(&PredicateIsLeaf, dest, path);
     }
 
-    std::vector<DVec> getLeafsTranslations(const PathHints* path = 0) const {
+    std::vector<DVec> getLeafsPositions(const PathHints* path = 0) const {
         std::vector<DVec> result;
-        getLeafsTranslationsToVec(result, path);
+        getLeafsPositionsToVec(result, path);
         return result;
     }
 
@@ -526,6 +520,6 @@ struct GeometryElementD: public GeometryElement {
 
 };
 
-}       // namespace plask
+} // namespace plask
 
-#endif	// PLASK__GEOMETRY_ELEMENT_H
+#endif // PLASK__GEOMETRY_ELEMENT_H

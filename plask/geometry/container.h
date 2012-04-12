@@ -158,7 +158,7 @@ public:
         for (auto child: children) child->getLeafsToVec(dest);
     }*/
 
-    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
+    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
         if (predicate(*this)) {
             dest.push_back(Primitive<dim>::ZERO_VEC);
             return;
@@ -166,11 +166,11 @@ public:
         if (path) {
             auto c = path->getTranslationChildren<dim>(*this);
             if (!c.empty()) {
-                for (auto child: c) child->getTranslationsToVec(predicate, dest, path);
+                for (auto child: c) child->getPositionsToVec(predicate, dest, path);
                 return;
             }
         }
-        for (auto child: children) child->getTranslationsToVec(predicate, dest, path);
+        for (auto child: children) child->getPositionsToVec(predicate, dest, path);
     }
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {

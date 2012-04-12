@@ -52,7 +52,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         if (predicate(*this)) dest.push_back(this->shared_from_this());
     }
 
-    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const {
+    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const {
         if (predicate(*this)) dest.push_back(Primitive<dim>::ZERO_VEC);
     }
 
@@ -120,7 +120,7 @@ struct Block: public GeometryElementLeaf<dim> {
         size = new_size;
         this->fireChanged(GeometryElement::Event::RESIZE);
     }
-    
+
     /**
      * Set size and inform observers about changes.
      * @param vecCtrArg new size to set (parameters to vector constructor)

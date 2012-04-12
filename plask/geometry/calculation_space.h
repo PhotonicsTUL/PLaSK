@@ -69,11 +69,11 @@ public:
     /**
      * Get material in point @p p of child space.
      *
-     * Material is getted from geometry (if geometry define material in given point) or environment (in another cases).
+     * Material is got from geometry (if geometry define material in given point) or environment (in another cases).
      * Result is defined, and is not nullptr, for each point @p p.
      *
-     * Default implementaion just call getMaterialOrDefault which returns default material in each point for which geometry return nullptr.
-     * For other stategies see subclasses of this class.
+     * Default implementation just call getMaterialOrDefault which returns default material in each point for which geometry return nullptr.
+     * For other strategies see subclasses of this class.
      * @param p point
      * @return material, which is not nullptr
      */
@@ -99,8 +99,8 @@ public:
         return getChild()->getLeafs(path);
     }
 
-    std::vector<CoordsType> getLeafsTranslations(const PathHints* path=nullptr) const {
-        return getChild()->getLeafsTranslations(path);
+    std::vector<CoordsType> getLeafsPositions(const PathHints* path=nullptr) const {
+        return getChild()->getLeafsPositions(path);
     }
 
     std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints* path=nullptr) const {

@@ -171,12 +171,12 @@ struct GeometryElementTransformSpace: public GeometryElementTransform<this_dim, 
         return result;
     }*/
 
-    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
+    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
         if (predicate(*this)) {
             dest.push_back(Primitive<this_dim>::ZERO_VEC);
             return;
         }
-        const std::size_t s = getChild()->getTranslations(predicate, path).size();
+        const std::size_t s = getChild()->getPositions(predicate, path).size();
         for (std::size_t i = 0; i < s; ++i) dest.push_back(Primitive<this_dim>::NAN_VEC);
    }
 };
@@ -255,13 +255,13 @@ struct Translation: public GeometryElementTransform<dim> {
         return result;
     }*/
 
-    virtual void getTranslationsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
+    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
         if (predicate(*this)) {
             dest.push_back(Primitive<dim>::ZERO_VEC);
             return;
         }
         const std::size_t old_size = dest.size();
-        getChild()->getTranslationsToVec(predicate, dest, path);
+        getChild()->getPositionsToVec(predicate, dest, path);
         for (std::size_t i = old_size; i < dest.size(); ++i)
             dest[i] += translation;
     }

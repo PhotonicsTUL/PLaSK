@@ -29,7 +29,7 @@ void test_multi_stack(plask::shared_ptr<plask::MultiStackContainer<2>> multistac
         for (int i = 0; i < 10; ++i) BOOST_CHECK_EQUAL(bb[i], plask::Box2d(plask::vec(0.0, 10.0 + i*3), plask::vec(5.0, 10.0 + 3.0 + i*3)));
     }
     {
-        std::vector< plask::Vec<2, double> > leafsTran = multistack->getLeafsTranslations();
+        std::vector< plask::Vec<2, double> > leafsTran = multistack->getLeafsPositions();
         BOOST_REQUIRE_EQUAL(leafsTran.size(), 10);
         for (int i = 0; i < 10; ++i) {
             BOOST_CHECK_EQUAL(leafsTran[i], plask::vec(0.0, 10.0 + i*3));
