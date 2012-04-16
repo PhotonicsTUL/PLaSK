@@ -15,6 +15,8 @@ void GeometryTreeItem::ensureInitialized() {
 }
 
 void GeometryTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
+    qDeleteAll(childItems);
+    childItems.clear();
     std::size_t chCount = elem->getRealChildrenCount();
     if (elem->isContainer()) {
         for (int i = 0; i < chCount; ++i)

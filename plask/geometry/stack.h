@@ -37,6 +37,19 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         stackHeights.push_back(baseHeight);
     }
 
+    double getBaseHeight() const { return stackHeights.front(); }
+
+    void setBaseHeight(double newBaseHeight) {
+        if (getBaseHeight() == newBaseHeight) return;
+        double diff = newBaseHeight - getBaseHeight();
+        stackHeights.front() = newBaseHeight;
+        for (std::size_t i = 1; i < stackHeights.size(); ++i) {
+            stackHeights[i] += diff;
+            children[i-1]->translation.up += diff;
+        }
+        this->fireChanged(GeometryElement::Event::RESIZE|GeometryElement::Event::CHILD_LIST);
+    }
+
     /**
      * @param height
      * @return child which are on given @a height or @c nullptr
@@ -114,7 +127,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     /**
      * stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements),
-     * stackHeights.size() = children.size() + 1
+     * stackHeights.size() = children.size() + 1 and stackHeights[0] is a base height
      */
     std::vector<double> stackHeights;
 

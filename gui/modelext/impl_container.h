@@ -7,6 +7,7 @@
 
 #include <plask/geometry/container.h>
 #include <plask/geometry/stack.h>
+#include "../utils/propbrowser.h"
 
 template <int dim>
 QString printStack(const plask::StackContainer<dim>& toPrint) {
@@ -18,6 +19,17 @@ template <int dim>
 struct ExtImplFor< plask::StackContainer<dim> >: public ElementExtensionImplBaseFor< plask::StackContainer<dim> > {
 
     QString toStr(const plask::GeometryElement& el) const { return printStack(this->c(el)); }
+
+    void setupPropertiesBrowser(plask::GeometryElement& el, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+        QtProperty *from = managers.doubl.addProperty("from");
+        managers.doubl.setValue(from, this->c(el).getBaseHeight());
+        dst.addProperty(from);
+        managers.connect<FunctorSlot::PropertyDouble>(
+                    &managers.doubl,
+                    SIGNAL(valueChanged(QtProperty*, double)),
+                    [&](QtProperty*, double v) { this->c(el).setBaseHeight(v); }
+        );
+    }
 
 };
 
@@ -39,6 +51,13 @@ template <int dim>
 struct ExtImplFor< plask::MultiStackContainer<dim> >: public ElementExtensionImplBaseFor< plask::MultiStackContainer<dim> > {
 
     QString toStr(const plask::GeometryElement& el) const { return printMultiStack(this->c(el)); }
+
+    void setupPropertiesBrowser(plask::GeometryElement& el, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+        // all stack properties:
+        ExtImplFor< plask::StackContainer<dim> >().setupPropertiesBrowser(el, managers, dst);
+        // multiple stack extras:
+        //TODO
+    }
 
 };
 

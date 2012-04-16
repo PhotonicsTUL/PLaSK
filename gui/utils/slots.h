@@ -39,6 +39,15 @@ class PropertyQSizeF: public QObject {
     private: std::function<void(QtProperty*, const QSizeF&)> function_;
 };
 
+class PropertyDouble: public QObject {
+    Q_OBJECT
+    public:
+        PropertyDouble(QObject *parent, const std::function<void(QtProperty*, double)> &f) : QObject(parent), function_(f) {}
+        const char* slotName() { return SLOT(signaled(QtProperty*, double)); }
+    public Q_SLOTS: void signaled(QtProperty* p, double s) { function_(p, s); }
+    private: std::function<void(QtProperty*, double)> function_;
+};
+
 template <class FunctorSlotType, class ReceiverT>
 FunctorSlotType* connect(QObject *sender, const char *signal, const ReceiverT &reciever, Qt::ConnectionType type = Qt::AutoConnection) {
     FunctorSlotType* s = new FunctorSlotType(sender, reciever);
