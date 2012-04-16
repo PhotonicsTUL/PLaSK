@@ -70,6 +70,81 @@ struct Material {
     };
 
     /**
+     * Helper class for constructing string representations of complex materials.
+     *
+     * Typically used to implement str() method.
+     *
+     * Example:
+     * @code
+     * double Al = 0.6;
+     * double Mg = 0.1;
+     * std::string str = NameBuilder("Al", Al)("Ga")("N").doppant("Mg", Mg);
+     * //str is "Al(0.6)GaN:Mg=0.1"
+     * @endcode
+     */
+    struct NameBuilder {
+
+        /// Part of name which has been already built
+        std::string str;
+
+        /**
+         * Cast to string operator.
+         * @return part of name which has been already built
+         */
+        operator const std::string&() const { return str; }
+
+        /**
+         * Append name of element (without ammount) to built string.
+         * @param elementName name of element to add
+         * @return *this
+         */
+        NameBuilder& operator()(const std::string& elementName) { str += elementName; return *this; }
+
+        /**
+         * Construct builder and append name of element (without ammount) to built string.
+         * @param elementName name of element to add
+         */
+        NameBuilder(const std::string& elementName) {
+            this->operator ()(elementName);
+        }
+
+        /**
+         * Append name of element (with ammount) to built string.
+         * @param elementName name of element to add
+         * @param ammount ammount of added element
+         * @return *this
+         */
+        NameBuilder& operator()(const std::string& elementName, double ammount);
+
+        /**
+         * Construct builder and append name of element (with ammount) to built string.
+         * @param elementName name of element to add
+         * @param ammount ammount of added element
+         */
+        NameBuilder(const std::string& elementName, double ammount) {
+            this->operator ()(elementName, ammount);
+        }
+
+        /**
+         * Append information about doping to built string.
+         * @param dopantName name of dopant
+         * @param dopantConcentration dopant concentration
+         * @return built material name
+         */
+        const std::string& dopant(const std::string& dopantName, double dopantConcentration);
+
+        /**
+         * Append information about doping to built string.
+         * @param dopantName name of dopant
+         * @param n_or_p 'n' or 'p'
+         * @param carrierConcentration carrier concentration
+         * @return built material name
+         */
+        const std::string& dopant(const std::string& dopantName, char n_or_p, double carrierConcentration);
+
+    };
+
+    /**
      * Parse composition element from [begin, end) string.
      * @param begin begin of string, will be increased to point to potential next composition element or end (if parsed composition element was last one)
      * @param end points just after last charcter of string, must be: begin < end
@@ -143,8 +218,20 @@ struct Material {
     /// Do nothing.
     virtual ~Material() {}
 
-    /// @return material name
+    /**
+     * Get short (without composition and dopping amounts) name of material.
+     * @return material name
+     */
     virtual std::string name() const = 0;
+
+    /**
+     * Get full (with composition and dopping amounts) name of material.
+     *
+     * Default implementation returns name, which is fine only for simple materials.
+     * @return material name with informations about composition and dopping
+     * @see NameBuilder
+     */
+    virtual std::string str() const;
 
     /// @return material kind
     virtual Kind kind() const = 0;
