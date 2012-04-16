@@ -28,12 +28,21 @@ SimpleMaterial* SimpleMaterial::clone() const {
     return new SimpleMaterial(this->material);
 }
 
+std::string SimpleMaterial::str() const {
+    return this->material->str();
+}
+
+
 
 void Null::apply(double, double, double&, shared_ptr<plask::Material> &) const {
 }
 
 Null* Null::clone() const {
     return new Null();
+}
+
+std::string Null::str() const {
+    return "null";
 }
 
 
@@ -46,6 +55,10 @@ Extend* Extend::clone() const {
     return new Extend();
 }
 
+std::string Extend::str() const {
+    return "extend";
+}
+
 
 void Periodic::apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>&) const {
     p = std::fmod(p-bbox_lo, bbox_hi-bbox_lo) + bbox_lo;
@@ -53,6 +66,10 @@ void Periodic::apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Mater
 
 Periodic* Periodic::clone() const {
     return new Periodic();
+}
+
+std::string Periodic::str() const {
+    return "periodic";
 }
 
 
@@ -67,6 +84,10 @@ bool Mirror::canMoveOutsideBoundingBox() const {
 
 Mirror* Mirror::clone() const {
     return new Mirror();
+}
+
+std::string Mirror::str() const {
+    return "mirror";
 }
 
 

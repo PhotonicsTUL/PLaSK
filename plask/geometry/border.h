@@ -37,6 +37,12 @@ struct Strategy {
     virtual Strategy* clone() const = 0;
 
     /**
+     * Get string representation of this strategy.
+     * @return string representation of this strategy
+     */
+    virtual std::string str() const = 0;
+
+    /**
      * Create new strategy (using operator new) described by string @p str.
      * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
      * @param materialsDB material database used to get material
@@ -60,6 +66,7 @@ struct UniversalStrategy: public Strategy {
 struct Null: public UniversalStrategy {
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
     virtual Null* clone() const;
+    virtual std::string str() const;
 };
 
 /**
@@ -82,6 +89,8 @@ struct SimpleMaterial: public UniversalStrategy {
 
     virtual SimpleMaterial* clone() const;
 
+    virtual std::string str() const;
+
 };
 
 /**
@@ -93,6 +102,8 @@ struct Extend: public UniversalStrategy {
 
     virtual Extend* clone() const;
 
+    virtual std::string str() const;
+
 };
 
 /**
@@ -103,6 +114,8 @@ struct Periodic: public Strategy {
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual Periodic* clone() const;
+
+    virtual std::string str() const;
 };
 
 struct Mirror: public Strategy {
@@ -112,6 +125,8 @@ struct Mirror: public Strategy {
     virtual bool canMoveOutsideBoundingBox() const;
 
     virtual Mirror* clone() const;
+
+    virtual std::string str() const;
 
 };
 

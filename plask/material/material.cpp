@@ -18,7 +18,7 @@ int elementGroup(const std::string& elementName) {
     return map_find(elementGroups, elementName, 0);
 }
 
-Material::NameBuilder& Material::NameBuilder::operator()(const std::string& elementName, double ammount) {
+Material::StringBuilder& Material::StringBuilder::operator()(const std::string& elementName, double ammount) {
     str += elementName;
     str += '(';
     str += boost::lexical_cast<std::string>(ammount);
@@ -26,7 +26,7 @@ Material::NameBuilder& Material::NameBuilder::operator()(const std::string& elem
     return *this;
 }
 
-const std::string& Material::NameBuilder::dopant(const std::string& dopantName, double dopantConcentration) {
+const std::string& Material::StringBuilder::dopant(const std::string& dopantName, double dopantConcentration) {
     str += ':';
     str += dopantName;
     str += '=';
@@ -34,7 +34,7 @@ const std::string& Material::NameBuilder::dopant(const std::string& dopantName, 
     return str;
 }
 
-const std::string& Material::NameBuilder::dopant(const std::string& dopantName, char n_or_p, double carrierConcentration) {
+const std::string& Material::StringBuilder::dopant(const std::string& dopantName, char n_or_p, double carrierConcentration) {
     str += ':';
     str += dopantName;
     str += ' ';

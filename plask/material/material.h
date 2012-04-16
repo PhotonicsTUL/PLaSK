@@ -70,19 +70,19 @@ struct Material {
     };
 
     /**
-     * Helper class for constructing string representations of complex materials.
+     * Helper class for easy constructing string representations of complex materials.
      *
-     * Typically used to implement str() method.
+     * Typically this is used to implement str() method.
      *
      * Example:
      * @code
      * double Al = 0.6;
      * double Mg = 0.1;
-     * std::string str = NameBuilder("Al", Al)("Ga")("N").doppant("Mg", Mg);
+     * std::string str = StringBuilder("Al", Al)("Ga")("N").doppant("Mg", Mg);
      * //str is "Al(0.6)GaN:Mg=0.1"
      * @endcode
      */
-    struct NameBuilder {
+    struct StringBuilder {
 
         /// Part of name which has been already built
         std::string str;
@@ -98,13 +98,13 @@ struct Material {
          * @param elementName name of element to add
          * @return *this
          */
-        NameBuilder& operator()(const std::string& elementName) { str += elementName; return *this; }
+        StringBuilder& operator()(const std::string& elementName) { str += elementName; return *this; }
 
         /**
          * Construct builder and append name of element (without ammount) to built string.
          * @param elementName name of element to add
          */
-        NameBuilder(const std::string& elementName) {
+        StringBuilder(const std::string& elementName) {
             this->operator ()(elementName);
         }
 
@@ -114,14 +114,14 @@ struct Material {
          * @param ammount ammount of added element
          * @return *this
          */
-        NameBuilder& operator()(const std::string& elementName, double ammount);
+        StringBuilder& operator()(const std::string& elementName, double ammount);
 
         /**
          * Construct builder and append name of element (with ammount) to built string.
          * @param elementName name of element to add
          * @param ammount ammount of added element
          */
-        NameBuilder(const std::string& elementName, double ammount) {
+        StringBuilder(const std::string& elementName, double ammount) {
             this->operator ()(elementName, ammount);
         }
 
