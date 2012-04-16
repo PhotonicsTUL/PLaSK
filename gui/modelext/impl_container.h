@@ -56,7 +56,15 @@ struct ExtImplFor< plask::MultiStackContainer<dim> >: public ElementExtensionImp
         // all stack properties:
         ExtImplFor< plask::StackContainer<dim> >().setupPropertiesBrowser(el, managers, dst);
         // multiple stack extras:
-        //TODO
+        QtProperty *repeat = managers.integer.addProperty("repeat count");
+        managers.integer.setValue(repeat, this->c(el).repeat_count);
+        managers.integer.setMinimum(repeat, 1);
+        dst.addProperty(repeat);
+        managers.connect<FunctorSlot::PropertyInteger>(
+                    &managers.integer,
+                    SIGNAL(valueChanged(QtProperty*, int)),
+                    [&](QtProperty*, int v) { this->c(el).setRepeatCount(v); }
+        );
     }
 
 };

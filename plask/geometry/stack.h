@@ -46,6 +46,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         for (std::size_t i = 1; i < stackHeights.size(); ++i) {
             stackHeights[i] += diff;
             children[i-1]->translation.up += diff;
+            //children[i-1]->fireChanged(GeometryElement::Event::RESIZE);
         }
         this->fireChanged(GeometryElement::Event::RESIZE|GeometryElement::Event::CHILD_LIST);
     }
@@ -495,6 +496,12 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual shared_ptr<GeometryElement> getRealChildAt(std::size_t child_nr) const {
         return StackContainer<dim>::getChildAt(child_nr);
+    }
+
+    void setRepeatCount(unsigned new_repeat_count) {
+        if (repeat_count == new_repeat_count) return;
+        repeat_count = new_repeat_count;
+        this->fireChildrenChanged();
     }
 
 };

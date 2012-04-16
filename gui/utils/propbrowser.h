@@ -10,9 +10,11 @@
 //managers
 #include <QtDoublePropertyManager>
 #include <QtSizeFPropertyManager>
+#include <QtIntPropertyManager>
 
 //factories
 #include <QtDoubleSpinBoxFactory>
+#include <QtSpinBoxFactory>
 
 #include "slots.h"
 
@@ -26,6 +28,7 @@ struct BrowserWithManagers {
 
     // managers:
     //TODO read-only versions (without editor), if needed
+    QtIntPropertyManager integer;
     QtDoublePropertyManager doubl;
     QtSizeFPropertyManager sizeF;
 
@@ -52,6 +55,7 @@ struct BrowserWithManagers {
 
 private:    // factories:
 
+    QtSpinBoxFactory integerFact;
     QtDoubleSpinBoxFactory doublFact;
 
 };
