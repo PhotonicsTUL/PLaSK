@@ -11,6 +11,8 @@ MI_PARENT(GaN_Si, GaN)
 
 std::string GaN_Si::name() const { return NAME; }
 
+std::string GaN_Si::str() const { return StringBuilder("GaN").dopant("Si", ND); }
+
 GaN_Si::GaN_Si(DopingAmountType Type, double Val) {
     if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;

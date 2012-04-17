@@ -10,6 +10,8 @@ MI_PARENT(InN_Mg, InN)
 
 std::string InN_Mg::name() const { return NAME; }
 
+std::string InN_Mg::str() const { return StringBuilder("InN").dopant("Mg", NA); }
+
 InN_Mg::InN_Mg(DopingAmountType Type, double Val) {
     if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;

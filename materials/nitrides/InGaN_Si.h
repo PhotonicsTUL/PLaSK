@@ -20,9 +20,8 @@ struct InGaN_Si: public InGaN {
     static constexpr const char* NAME = "InGaN:Si";
 
     InGaN_Si(const Material::Composition& Comp, DopingAmountType Type, double Val);
-    ~InGaN_Si();
-
     virtual std::string name() const;
+    virtual std::string str() const;
     virtual double mob(double T) const;
     virtual double Nf(double T) const;
     virtual double Dop() const;
@@ -34,8 +33,8 @@ protected:
     double ND,
            Nf_RT;
 
-    GaN_Si *mGaN_Si;
-    InN_Si *mInN_Si;
+    GaN_Si mGaN_Si;
+    InN_Si mInN_Si;
 
 };
 

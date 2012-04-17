@@ -8,6 +8,8 @@ namespace plask {
 
 std::string AlN_Si::name() const { return NAME; }
 
+std::string AlN_Si::str() const { return StringBuilder("AlN").dopant("Si", ND); }
+
 MI_PARENT(AlN_Si, AlN)
 
 AlN_Si::AlN_Si(DopingAmountType Type, double Val) {

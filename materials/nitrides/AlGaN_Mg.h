@@ -20,9 +20,8 @@ struct AlGaN_Mg: public AlGaN {
     static constexpr const char* NAME = "AlGaN:Mg";
 
     AlGaN_Mg(const Material::Composition& Comp, DopingAmountType Type, double Val);
-    ~AlGaN_Mg();
-
     virtual std::string name() const;    
+    virtual std::string str() const;
     virtual double mob(double T) const;
     virtual double Nf(double T) const;
     virtual double Dop() const;
@@ -33,8 +32,8 @@ private:
     double NA,
            Nf_RT;
 
-    GaN_Mg *mGaN_Mg;
-    AlN_Mg *mAlN_Mg;
+    GaN_Mg mGaN_Mg;
+    AlN_Mg mAlN_Mg;
 };
 
 } // namespace plask

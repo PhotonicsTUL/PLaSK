@@ -19,6 +19,7 @@ struct GaN_Si: public GaN {
 
     GaN_Si(DopingAmountType Type, double Val);
 	virtual std::string name() const;
+    virtual std::string str() const;
     virtual double mob(double T) const;
 	virtual double Nf(double T) const;
     virtual double Dop() const;

@@ -19,8 +19,8 @@ struct InGaN: public Semiconductor {
     static constexpr const char* NAME = "InGaN";
 
     InGaN(const Material::Composition& Comp);
-
     virtual std::string name() const;
+    virtual std::string str() const;
     virtual double condT(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
@@ -31,8 +31,8 @@ protected:
     double In,
            Ga;
 
-    GaN *mGaN;
-    InN *mInN;
+    GaN mGaN;
+    InN mInN;
 
 };
 

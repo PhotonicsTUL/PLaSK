@@ -20,9 +20,8 @@ struct AlGaN_Si: public AlGaN {
     static constexpr const char* NAME = "AlGaN:Si";
 
     AlGaN_Si(const Material::Composition& Comp, DopingAmountType Type, double Val);
-    ~AlGaN_Si();
-
     virtual std::string name() const;    
+    virtual std::string str() const;
     virtual double mob(double T) const;
     virtual double Nf(double T) const;
     virtual double Dop() const;
@@ -34,8 +33,8 @@ private:
     double ND,
            Nf_RT;
 
-    GaN_Si *mGaN_Si;
-    AlN_Si *mAlN_Si;
+    GaN_Si mGaN_Si;
+    AlN_Si mAlN_Si;
 };
 
 } // namespace plask

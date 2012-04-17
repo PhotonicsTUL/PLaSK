@@ -9,6 +9,10 @@ namespace plask {
 
 MI_PARENT(GaN_Mg, GaN)
 
+std::string GaN_Mg::name() const { return NAME; }
+
+std::string GaN_Mg::str() const { return StringBuilder("GaN").dopant("Mg", NA); }
+
 GaN_Mg::GaN_Mg(DopingAmountType Type, double Val) {
     if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;
@@ -20,9 +24,6 @@ GaN_Mg::GaN_Mg(DopingAmountType Type, double Val) {
     }
     mob_RT = 25.747*exp(-9.034E-19*Nf_RT);
 }
-
-std::string GaN_Mg::name() const { return NAME; }
-
 
 MI_PROPERTY(GaN_Mg, mob,
             MISource("P. Kozodoy et al., J. Appl. Phys. 87 (2000) 1832"),

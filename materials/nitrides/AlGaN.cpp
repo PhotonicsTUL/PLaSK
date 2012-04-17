@@ -8,11 +8,9 @@ namespace plask {
 
 std::string AlGaN::name() const { return NAME; }
 
+std::string AlGaN::str() const { return StringBuilder("Al", Al)("Ga")("N"); }
 
-AlGaN::AlGaN(const Material::Composition& Comp)
-{
-    mGaN = new GaN();
-    mAlN = new AlN();
+AlGaN::AlGaN(const Material::Composition& Comp) {
 
     Al = Comp.find("Al")->second;
     Ga = Comp.find("Ga")->second;
@@ -23,7 +21,7 @@ MI_PROPERTY(AlGaN, condT,
             MIComment("based on data for Al = 0.2, 0.45")
             )
 double AlGaN::condT(double T, double t) const {
-    return( 1/(Al/mAlN->condT(T,t) + Ga/mGaN->condT(T,t) + Al*Ga*0.4) );
+    return( 1/(Al/mAlN.condT(T,t) + Ga/mGaN.condT(T,t) + Al*Ga*0.4) );
  }
 
 MI_PROPERTY(AlGaN, absp,
@@ -65,8 +63,8 @@ MI_PROPERTY(AlGaN, lattC,
             )
 double AlGaN::lattC(double T, char x) const {
     double tLattC(0.);
-    if (x == 'a') tLattC = mAlN->lattC(T,'a')*Al + mGaN->lattC(T,'a')*Ga;
-    else if (x == 'c') tLattC = mAlN->lattC(T,'c')*Al + mGaN->lattC(T,'c')*Ga;
+    if (x == 'a') tLattC = mAlN.lattC(T,'a')*Al + mGaN.lattC(T,'a')*Ga;
+    else if (x == 'c') tLattC = mAlN.lattC(T,'c')*Al + mGaN.lattC(T,'c')*Ga;
     return (tLattC);
 }
 

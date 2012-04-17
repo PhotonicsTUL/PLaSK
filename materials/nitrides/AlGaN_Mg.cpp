@@ -8,23 +8,16 @@ namespace plask {
 
 std::string AlGaN_Mg::name() const { return NAME; }
 
+std::string AlGaN_Mg::str() const { return StringBuilder("Al", Al)("Ga")("N").dopant("Mg", NA); }
+
 MI_PARENT(AlGaN_Mg, AlGaN)
 
-AlGaN_Mg::AlGaN_Mg(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaN(Comp)
+AlGaN_Mg::AlGaN_Mg(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaN(Comp), mGaN_Mg(Type,Val), mAlN_Mg(Type,Val)
 {
-    mGaN_Mg = new GaN_Mg(Type, Val);
-    mAlN_Mg = new AlN_Mg(Type, Val);
-
     if (Type == CARRIER_CONCENTRATION)
-        NA = mAlN_Mg->Dop()*Al + mGaN_Mg->Dop()*Ga;
+        NA = mAlN_Mg.Dop()*Al + mGaN_Mg.Dop()*Ga;
     else
         NA = Val;
-}
-
-AlGaN_Mg::~AlGaN_Mg()
-{
-    delete mGaN_Mg;
-    delete mAlN_Mg;
 }
 
 MI_PROPERTY(AlGaN_Mg, mob,
@@ -32,14 +25,14 @@ MI_PROPERTY(AlGaN_Mg, mob,
             MISource("based on Mg-doped GaN and AlN")
             )
 double AlGaN_Mg::mob(double T) const {
-    return ( pow(Ga,28.856-16.793*(1-exp(-Al/0.056))-9.259*(1-exp(-Al/0.199)))*mGaN_Mg->mob(T) );
+    return ( pow(Ga,28.856-16.793*(1-exp(-Al/0.056))-9.259*(1-exp(-Al/0.199)))*mGaN_Mg.mob(T) );
 }
 
 MI_PROPERTY(AlGaN_Mg, Nf,
             MISource("linear interpolation: Mg-doped GaN, AlN")
             )
 double AlGaN_Mg::Nf(double T) const {
-    return ( mAlN_Mg->Nf(T)*Al + mGaN_Mg->Nf(T)*Ga );
+    return ( mAlN_Mg.Nf(T)*Al + mGaN_Mg.Nf(T)*Ga );
 }
 
 double AlGaN_Mg::Dop() const {

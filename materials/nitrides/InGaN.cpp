@@ -8,12 +8,10 @@ namespace plask {
 
 std::string InGaN::name() const { return NAME; }
 
+std::string InGaN::str() const { return StringBuilder("In", In)("Ga")("N"); }
 
 InGaN::InGaN(const Material::Composition& Comp)
 {
-    mGaN = new GaN();
-    mInN = new InN();
-
     In = Comp.find("In")->second;
     Ga = Comp.find("Ga")->second;
 }
@@ -23,7 +21,7 @@ MI_PROPERTY(InGaN, condT,
             MIComment("based on data for In: 16% - 36%")
             )
 double InGaN::condT(double T, double t) const {
-    return( 1/(In/mInN->condT(T) + Ga/mGaN->condT(T,t) + In*Ga*0.215*exp(7.913*In)) );
+    return( 1/(In/mInN.condT(T) + Ga/mGaN.condT(T,t) + In*Ga*0.215*exp(7.913*In)) );
  }
 
 MI_PROPERTY(InGaN, absp,
@@ -63,8 +61,8 @@ MI_PROPERTY(InGaN, lattC,
             )
 double InGaN::lattC(double T, char x) const {
     double tLattC(0.);
-    if (x == 'a') tLattC = mInN->lattC(T,'a')*In + mGaN->lattC(T,'a')*Ga;
-    else if (x == 'c') tLattC = mInN->lattC(T,'c')*In + mGaN->lattC(T,'c')*Ga;
+    if (x == 'a') tLattC = mInN.lattC(T,'a')*In + mGaN.lattC(T,'a')*Ga;
+    else if (x == 'c') tLattC = mInN.lattC(T,'c')*In + mGaN.lattC(T,'c')*Ga;
     return (tLattC);
 }
 

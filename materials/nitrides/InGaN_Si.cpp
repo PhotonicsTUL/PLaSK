@@ -6,25 +6,18 @@
 
 namespace plask {
 
-std::string InGaN_Si::name() const { return NAME; }
-
 MI_PARENT(InGaN_Si, InGaN)
 
-InGaN_Si::InGaN_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): InGaN(Comp)
-{
-    mGaN_Si = new GaN_Si(Type, Val);
-    mInN_Si = new InN_Si(Type, Val);
+std::string InGaN_Si::name() const { return NAME; }
 
+std::string InGaN_Si::str() const { return StringBuilder("In", In)("Ga")("N").dopant("Si", ND); }
+
+InGaN_Si::InGaN_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): InGaN(Comp), mGaN_Si(Type,Val), mInN_Si(Type,Val)
+{
     if (Type == CARRIER_CONCENTRATION)
-        ND = mInN_Si->Dop()*In + mGaN_Si->Dop()*Ga;
+        ND = mInN_Si.Dop()*In + mGaN_Si.Dop()*Ga;
     else
         ND = Val;
-}
-
-InGaN_Si::~InGaN_Si()
-{
-    delete mGaN_Si;
-    delete mInN_Si;
 }
 
 MI_PROPERTY(InGaN_Si, mob,
@@ -32,14 +25,14 @@ MI_PROPERTY(InGaN_Si, mob,
             MISource("based on Si-doped GaN and InN")
             )
 double InGaN_Si::mob(double T) const {
-    return ( 1/(In/mInN_Si->mob(T) + Ga/mGaN_Si->mob(T) + In*Ga*(-4.615E-21*Nf(T)+0.549)) );
+    return ( 1/(In/mInN_Si.mob(T) + Ga/mGaN_Si.mob(T) + In*Ga*(-4.615E-21*Nf(T)+0.549)) );
 }
 
 MI_PROPERTY(InGaN_Si, Nf,
             MISource("linear interpolation: Si-doped GaN, InN")
             )
 double InGaN_Si::Nf(double T) const {
-    return ( mInN_Si->Nf(T)*In + mGaN_Si->Nf(T)*Ga );
+    return ( mInN_Si.Nf(T)*In + mGaN_Si.Nf(T)*Ga );
 }
 
 double InGaN_Si::Dop() const {
@@ -55,7 +48,7 @@ MI_PROPERTY(InGaN_Si, condT,
             MIComment("Si doping dependence for GaN")
             )
 double InGaN_Si::condT(double T, double t) const {
-    return( 1/(In/mInN_Si->condT(T) + Ga/mGaN_Si->condT(T,t) + In*Ga*0.215*exp(7.913*In)) );
+    return( 1/(In/mInN_Si.condT(T) + Ga/mGaN_Si.condT(T,t) + In*Ga*0.215*exp(7.913*In)) );
  }
 
 MI_PROPERTY(InGaN_Si, absp,
