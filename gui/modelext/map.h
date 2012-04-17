@@ -57,12 +57,23 @@ struct ElementExtensionImplBase {
      */
     virtual QString toStr(const plask::GeometryElement& el) const;
 
+    /**
+     * Fill property browser with properties of @p el.
+     */
     virtual void setupPropertiesBrowser(plask::GeometryElement& el, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
 
     void setupPropertiesBrowser(plask::GeometryElement& el, BrowserWithManagers& managers) const {
         setupPropertiesBrowser(el, managers, managers.browser);
     }
 
+    /**
+     * Fill property browser with properties of @p container child.
+     *
+     * This is called only for containers and default implementation call setupPropertiesBrowser for pointed child.
+     * Typically, you can call ElementExtensionImplBase::setupPropertiesBrowserForChild in subclasses.
+     * @param container geometry element
+     * @param index real child index
+     */
     virtual void setupPropertiesBrowserForChild(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
 
     void setupPropertiesBrowserForChild(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers) const {
