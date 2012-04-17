@@ -11,10 +11,12 @@
 #include <QtDoublePropertyManager>
 #include <QtSizeFPropertyManager>
 #include <QtIntPropertyManager>
+#include <QtStringPropertyManager>
 
 //factories
 #include <QtDoubleSpinBoxFactory>
 #include <QtSpinBoxFactory>
+#include <QtLineEditFactory>
 
 #include "slots.h"
 
@@ -31,6 +33,7 @@ struct BrowserWithManagers {
     QtIntPropertyManager integer;
     QtDoublePropertyManager doubl;
     QtSizeFPropertyManager sizeF;
+    QtStringPropertyManager string;
 
     BrowserWithManagers(QtAbstractPropertyBrowser& browser);
 
@@ -71,10 +74,17 @@ struct BrowserWithManagers {
                        [=](QtProperty* p, const QSizeF &v) { if (p == property) receiver(v); }, type);
     }
 
+    template <class ReceiverT>
+    bool connectString(QtProperty* property, const ReceiverT &receiver, Qt::ConnectionType type = Qt::AutoConnection) {
+        return connect<FunctorSlot::PropertyQSizeF>(property->propertyManager(), SIGNAL(valueChanged(QtProperty*, const QString &)),
+                       [=](QtProperty* p, const QString &v) { if (p == property) receiver(v); }, type);
+    }
+
 private:    // factories:
 
     QtSpinBoxFactory integerFact;
     QtDoubleSpinBoxFactory doublFact;
+    QtLineEditFactory stringFact;
 
 };
 

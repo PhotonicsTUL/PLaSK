@@ -100,7 +100,10 @@ QString ElementExtensionImplBase::toStr(const plask::GeometryElement& el) const 
 void ElementExtensionImplBase::setupPropertiesBrowser(plask::GeometryElement& el, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
 }
 
-void ElementExtensionImplBase::setupPropertiesBrowser(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+void ElementExtensionImplBase::setupPropertiesBrowserForChild(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+    plask::shared_ptr<plask::GeometryElement> e = container.getRealChildAt(index);
+    if (e->getRealChildrenCount() == 0) return;
+    ext(*e->getRealChildAt(0)).setupPropertiesBrowser(managers, dst);
 }
 
 /*QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {

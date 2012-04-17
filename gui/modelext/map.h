@@ -63,7 +63,12 @@ struct ElementExtensionImplBase {
         setupPropertiesBrowser(el, managers, managers.browser);
     }
 
-    virtual void setupPropertiesBrowser(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
+    virtual void setupPropertiesBrowserForChild(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
+
+    void setupPropertiesBrowserForChild(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers) const {
+        setupPropertiesBrowserForChild(container, index, managers, managers.browser);
+    }
+
 };
 
 /**
@@ -93,6 +98,10 @@ struct ElementExtension {
     void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const { impl.setupPropertiesBrowser(element, managers, dst); }
 
     void setupPropertiesBrowser(BrowserWithManagers& managers) const { impl.setupPropertiesBrowser(element, managers); }
+
+    void setupPropertiesBrowserForChild(std::size_t childIndex, BrowserWithManagers &managers, QtAbstractPropertyBrowser& dst) const { impl.setupPropertiesBrowserForChild(element, childIndex, managers, dst); }
+
+    void setupPropertiesBrowserForChild(std::size_t childIndex, BrowserWithManagers &managers) const { impl.setupPropertiesBrowserForChild(element, childIndex, managers); }
 
 };
 

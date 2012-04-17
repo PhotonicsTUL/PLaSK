@@ -130,10 +130,13 @@ QString InContainerTreeItem::elementText(plask::GeometryElement &element) const 
 
 void InContainerTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
-        //auto p = parent();  //should be a container
-        //if (p) //fill properties depents from parents, translation, etc.
-        if (e->getRealChildrenCount() == 0) return;
-        ext(*e->getRealChildAt(0)).setupPropertiesBrowser(browser);
+        auto p = parent();  //should be a container
+        if (p) {
+            ext(*p).setupPropertiesBrowserForChild(indexInParent(), browser);
+        } else {
+            if (e->getRealChildrenCount() == 0) return;
+            ext(*e->getRealChildAt(0)).setupPropertiesBrowser(browser);
+        }
     }
 }
 
