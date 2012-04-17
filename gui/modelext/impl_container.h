@@ -24,11 +24,7 @@ struct ExtImplFor< plask::StackContainer<dim> >: public ElementExtensionImplBase
         QtProperty *from = managers.doubl.addProperty("from");
         managers.doubl.setValue(from, this->c(el).getBaseHeight());
         dst.addProperty(from);
-        managers.connect<FunctorSlot::PropertyDouble>(
-                    &managers.doubl,
-                    SIGNAL(valueChanged(QtProperty*, double)),
-                    [&](QtProperty*, double v) { this->c(el).setBaseHeight(v); }
-        );
+        managers.connectDouble(from, [&](double v) { this->c(el).setBaseHeight(v); });
     }
 
 };
@@ -60,11 +56,7 @@ struct ExtImplFor< plask::MultiStackContainer<dim> >: public ElementExtensionImp
         managers.integer.setValue(repeat, this->c(el).repeat_count);
         managers.integer.setMinimum(repeat, 1);
         dst.addProperty(repeat);
-        managers.connect<FunctorSlot::PropertyInteger>(
-                    &managers.integer,
-                    SIGNAL(valueChanged(QtProperty*, int)),
-                    [&](QtProperty*, int v) { this->c(el).setRepeatCount(v); }
-        );
+        managers.connectInt(repeat, [&](int v) { this->c(el).setRepeatCount(v); });
     }
 
 };

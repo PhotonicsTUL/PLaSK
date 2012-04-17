@@ -44,13 +44,31 @@ struct BrowserWithManagers {
     QObjectList objectsToClear;
 
     template <class FunctorSlotType, class ReceiverT>
-    bool connect(QObject *sender, const char *signal, const ReceiverT &reciever, Qt::ConnectionType type = Qt::AutoConnection) {
-        QObject* conn = FunctorSlot::connect<FunctorSlotType, ReceiverT>(sender, signal, reciever, type);
+    bool connect(QObject *sender, const char *signal, const ReceiverT &receiver, Qt::ConnectionType type = Qt::AutoConnection) {
+        QObject* conn = FunctorSlot::connect<FunctorSlotType, ReceiverT>(sender, signal, receiver, type);
         if (conn) {
             objectsToClear.append(conn);
             return true;
         } else
             return false;
+    }
+
+    template <class ReceiverT>
+    bool connectInt(QtProperty* property, const ReceiverT &receiver, Qt::ConnectionType type = Qt::AutoConnection) {
+        return connect<FunctorSlot::PropertyInteger>(property->propertyManager(), SIGNAL(valueChanged(QtProperty*, int)),
+                       [=](QtProperty* p, int v) { if (p == property) receiver(v); }, type);
+    }
+
+    template <class ReceiverT>
+    bool connectDouble(QtProperty* property, const ReceiverT &receiver, Qt::ConnectionType type = Qt::AutoConnection) {
+        return connect<FunctorSlot::PropertyDouble>(property->propertyManager(), SIGNAL(valueChanged(QtProperty*, double)),
+                       [=](QtProperty* p, double v) { if (p == property) receiver(v); }, type);
+    }
+
+    template <class ReceiverT>
+    bool connectSizeF(QtProperty* property, const ReceiverT &receiver, Qt::ConnectionType type = Qt::AutoConnection) {
+        return connect<FunctorSlot::PropertyQSizeF>(property->propertyManager(), SIGNAL(valueChanged(QtProperty*, const QSizeF &)),
+                       [=](QtProperty* p, const QSizeF &v) { if (p == property) receiver(v); }, type);
     }
 
 private:    // factories:
