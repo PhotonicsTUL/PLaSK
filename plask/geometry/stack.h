@@ -296,14 +296,32 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         return *aligners[child_nr];
     }
 
+    /**
+     * Set new aligner.
+     * @param child_nr (real) child number for which aligner will be set
+     * @param aligner new aligner for given child, it will be clone
+     */
     void setAlignerAt(std::size_t child_nr, const Aligner& aligner) {
         this->ensureIsValidChildNr(child_nr, "setAlignerAt");
         if (aligners[child_nr] == &aligner) return; //protected for self assign
         delete aligners[child_nr];
         aligners[child_nr] = aligner.clone();
-        aligners[child_nr].align(children[child_nr]);
+        aligners[child_nr]->align(*children[child_nr]);
         this->fireChanged(GeometryElement::Event::RESIZE);
     }
+
+    /*
+     * Set new aligner.
+     * @param child_nr (real) child number for which aligner will be set
+     * @param aligner new aligner for given child, this pointer will be delete by this stack and it can be used only in one stack, for one child
+     */
+    /*void setAlignerAtMove(std::size_t child_nr, Aligner* aligner) {
+        this->ensureIsValidChildNr(child_nr, "setAlignerAtMove");
+        if (aligners[child_nr] == aligner) return; //protected for self assign
+        aligners[child_nr] = aligner;
+        aligners[child_nr]->align(*children[child_nr]);
+        this->fireChanged(GeometryElement::Event::RESIZE);
+    }*/
 
 };
 

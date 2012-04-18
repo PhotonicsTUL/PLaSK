@@ -57,11 +57,11 @@ class PropertyInteger: public QObject {
     private: std::function<void(QtProperty*, int)> function_;
 };
 
-class PropertyString: public QObject {
+class PropertyQString: public QObject {
     Q_OBJECT
     public:
-        PropertyString(QObject *parent, const std::function<void(QtProperty*, const QString &)> &f) : QObject(parent), function_(f) {}
-        const char* slotName() { return SLOT(signaled(QtProperty*, int)); }
+        PropertyQString(QObject *parent, const std::function<void(QtProperty*, const QString &)> &f) : QObject(parent), function_(f) {}
+        const char* slotName() { return SLOT(signaled(QtProperty*, const QString &)); }
     public Q_SLOTS: void signaled(QtProperty* p, const QString & s) { function_(p, s); }
     private: std::function<void(QtProperty*, const QString &)> function_;
 };

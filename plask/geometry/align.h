@@ -348,6 +348,11 @@ inline Aligner2d<DIRECTION_TRAN>* fromStr<DIRECTION_TRAN>(const std::string& str
 template <>
 inline Aligner2d<DIRECTION_LON>* fromStr<DIRECTION_LON>(const std::string& str) { return details::lonAlignerFromString(str); }
 
+template <DIRECTION direction>
+inline std::unique_ptr<Aligner2d<direction>> fromStrUnique(const std::string& str) {
+     return std::unique_ptr<Aligner2d<direction>>(fromStr<direction>(str));
+}
+
 
 /**
  * Construct 3d aligner from single string

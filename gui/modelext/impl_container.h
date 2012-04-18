@@ -9,19 +9,28 @@
 #include <plask/geometry/stack.h>
 #include "../utils/propbrowser.h"
 
+#include <QMessageBox>
+
 template <int dim>
 QString printStack(const plask::StackContainer<dim>& toPrint) {
     return QString(QObject::tr("stack%1d\n%2 children"))
             .arg(dim).arg(toPrint.getChildrenCount());
 }
 
-void setupAlignerEditor(const plask::StackContainer<2>& s, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
+void setupAlignerEditor(plask::StackContainer<2>& s, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
     QtProperty *align = managers.aligner.addProperty("align");
     managers.aligner.setValue(align, QString(s.getAlignerAt(index).str().c_str()));
     dst.addProperty(align);
+    managers.connectString(align, [index, &s](const QString& v) {
+        try {
+           s.setAlignerAt(index, *plask::align::fromStrUnique<plask::align::DIRECTION_TRAN>(v.toStdString()));
+        } catch (std::exception& e) {
+           //QMessageBox::critical();
+        }
+    });
 }
 
-void setupAlignerEditor(const plask::StackContainer<3>& s, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
+void setupAlignerEditor(plask::StackContainer<3>& s, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
 }
 
 template <int dim>

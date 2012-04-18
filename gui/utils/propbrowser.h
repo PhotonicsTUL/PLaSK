@@ -79,7 +79,7 @@ struct BrowserWithManagers {
 
     template <class ReceiverT>
     bool connectString(QtProperty* property, const ReceiverT &receiver, Qt::ConnectionType type = Qt::AutoConnection) {
-        return connect<FunctorSlot::PropertyQSizeF>(property->propertyManager(), SIGNAL(valueChanged(QtProperty*, const QString &)),
+        return connect<FunctorSlot::PropertyQString>(property->propertyManager(), SIGNAL(valueChanged(QtProperty*, const QString &)),
                        [=](QtProperty* p, const QString &v) { if (p == property) receiver(v); }, type);
     }
 
