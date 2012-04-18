@@ -215,7 +215,6 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
     virtual ~StackContainer() { for (auto a: aligners) delete a; }
 
-
     /**
      * Add children to stack top.
      * @param el element to add
@@ -292,7 +291,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         return push_front_Unsafe(el, aligner);
     }
 
-    Aligner& getAlignerAt(std::size_t child_nr) {
+    const Aligner& getAlignerAt(std::size_t child_nr) const {
         this->ensureIsValidChildNr(child_nr, "getAlignerAt");
         return *aligners[child_nr];
     }

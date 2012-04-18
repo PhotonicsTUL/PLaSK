@@ -18,6 +18,8 @@
 #include <QtSpinBoxFactory>
 #include <QtLineEditFactory>
 
+#include "propbrowser_ext.h"
+
 #include "slots.h"
 
 /**
@@ -34,6 +36,7 @@ struct BrowserWithManagers {
     QtDoublePropertyManager doubl;
     QtSizeFPropertyManager sizeF;
     QtStringPropertyManager string;
+    QtStringPropertyManager aligner;
 
     BrowserWithManagers(QtAbstractPropertyBrowser& browser);
 
@@ -85,6 +88,8 @@ private:    // factories:
     QtSpinBoxFactory integerFact;
     QtDoubleSpinBoxFactory doublFact;
     QtLineEditFactory stringFact;
+
+    QtLineEditWithCompleterFactory alignerFact;
 
 };
 

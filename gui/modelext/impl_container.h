@@ -15,6 +15,15 @@ QString printStack(const plask::StackContainer<dim>& toPrint) {
             .arg(dim).arg(toPrint.getChildrenCount());
 }
 
+void setupAlignerEditor(const plask::StackContainer<2>& s, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
+    QtProperty *align = managers.aligner.addProperty("align");
+    managers.aligner.setValue(align, QString(s.getAlignerAt(index).str().c_str()));
+    dst.addProperty(align);
+}
+
+void setupAlignerEditor(const plask::StackContainer<3>& s, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
+}
+
 template <int dim>
 struct ExtImplFor< plask::StackContainer<dim> >: public ElementExtensionImplBaseFor< plask::StackContainer<dim> > {
 
@@ -25,6 +34,11 @@ struct ExtImplFor< plask::StackContainer<dim> >: public ElementExtensionImplBase
         managers.doubl.setValue(from, this->c(el).getBaseHeight());
         dst.addProperty(from);
         managers.connectDouble(from, [&](double v) { this->c(el).setBaseHeight(v); });
+    }
+
+    void setupPropertiesBrowserForChild(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+        setupAlignerEditor(this->c(container), index, managers, dst);
+        ElementExtensionImplBase::setupPropertiesBrowserForChild(container, index, managers, dst);
     }
 
 };
@@ -57,6 +71,10 @@ struct ExtImplFor< plask::MultiStackContainer<dim> >: public ElementExtensionImp
         managers.integer.setMinimum(repeat, 1);
         dst.addProperty(repeat);
         managers.connectInt(repeat, [&](int v) { this->c(el).setRepeatCount(v); });
+    }
+
+    void setupPropertiesBrowserForChild(plask::GeometryElement& container, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+        ExtImplFor< plask::StackContainer<dim> >().setupPropertiesBrowserForChild(container, index, managers, dst);
     }
 
 };
