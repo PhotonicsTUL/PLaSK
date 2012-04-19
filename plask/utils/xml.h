@@ -19,7 +19,7 @@ namespace XML {
 template <typename T>
 inline T getAttribute(XMLReader& reader, const char* name, T&& default_value) {
     const char* attr_str = reader.getAttributeValue(name);
-    if (attr_str == nullptr) return default_value;
+    if (attr_str == nullptr) return std::forward<T>(default_value);
     return boost::lexical_cast<T>(attr_str);
 }
 
