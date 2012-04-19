@@ -2,6 +2,27 @@
 
 namespace plask {
 
+bool HorizontalStack::allChildrenHaveSameHeights() const {
+    if (children.size() < 2) return true;
+    double height = children.front()->getBoundingBoxSize().up;
+    for (std::size_t i = 1; i < children.size(); ++i)
+        if (height != children[i]->getBoundingBoxSize().up)
+            return false;
+    return true;
+}
+
+PathHints::Hint HorizontalStack::addUnsafe(const shared_ptr<ChildType>& el) {
+    double el_translation, next_height;
+    auto elBB = el->getBoundingBox();
+    calcHeight(elBB, stackHeights.back(), el_translation, next_height);
+    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(el_translation, -elBB.lower.up));
+    connectOnChildChanged(*trans_geom);
+    children.push_back(trans_geom);
+    stackHeights.push_back(next_height);
+    this->fireChildrenChanged();
+    return PathHints::Hint(shared_from_this(), trans_geom);
+}
+
 #define baseH_attr "from"
 #define repeat_attr "repeat"
 

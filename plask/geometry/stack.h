@@ -134,15 +134,25 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     /**
      * Calculate element up translation and height of stack with element @a el.
+     * @param el[in] bounding box of geometry element (typically: for element which is or will be in stack)
+     * @param prev_height[in] height of stack under an @a el
+     * @param el_translation[out] up translation which should element @a el have
+     * @param next_height[out] height of stack with an @a el on top (up to @a el)
+     */
+    void calcHeight(const Box& elBoudingBox, double prev_height, double& el_translation, double& next_height) {
+        el_translation = prev_height - elBoudingBox.lower.components[growingDirection];
+        next_height = elBoudingBox.upper.components[growingDirection] + el_translation;
+    }
+
+    /**
+     * Calculate element up translation and height of stack with element @a el.
      * @param el[in] geometry element (typically: which is or will be in stack)
      * @param prev_height[in] height of stack under an @a el
      * @param el_translation[out] up translation which should element @a el have
      * @param next_height[out] height of stack with an @a el on top (up to @a el)
      */
     void calcHeight(const shared_ptr<ChildType>& el, double prev_height, double& el_translation, double& next_height) {
-        auto bb = el->getBoundingBox();
-        el_translation = prev_height - bb.lower.components[growingDirection];
-        next_height = bb.upper.components[growingDirection] + el_translation;
+        calcHeight(el->getBoundingBox(), prev_height, el_translation, next_height);
     }
 
     /**
@@ -172,9 +182,44 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
  */
 struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
+    /**
+     * Check if all children have the same heights.
+     * @return @c true only if all children have the same heights
+     */
     bool allChildrenHaveSameHeights() const;
 
+    /**
+     * Check if all children have the same heights and throw exception it's not true.
+     */
     void ensureAllChildrenHaveSameHeights() const;
+
+    /**
+     * Add children to stack top.
+     * @param el element to add
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint add(const shared_ptr<ChildType> &el) {
+        this->ensureCanHasAsChild(*el);
+        return addUnsafe(el);
+    }
+
+    /**
+     * Add child to stack top.
+     * @param el element to add
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint push_back(const shared_ptr<ChildType> &el) { return add(el); }
+
+    /**
+     * Add children to stack top.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to add
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el);
+
 
 };
 
@@ -192,6 +237,9 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
     typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;
 
+    /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    typedef typename StackContainerBaseImpl<dim>::Box Box;
+
     using StackContainerBaseImpl<dim>::shared_from_this;
     using StackContainerBaseImpl<dim>::children;
     using StackContainerBaseImpl<dim>::stackHeights;
@@ -199,6 +247,28 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
   private:
     std::vector<Aligner*> aligners;
 
+    /**
+     * Get translation element over given element @p el.
+     * @param el element to wrap
+     * @param aligner aligner for element
+     * @param up_trans translation in growing direction
+     * @param elBB bouding box of @p el
+     * @return translation over @p el
+     */
+    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans, const Box& elBB) const {
+        shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
+        result->translation.up = up_trans;
+        aligner.align(*result, elBB);
+        return result;
+    }
+
+    /**
+     * Get translation element over given element @p el.
+     * @param el element to wrap
+     * @param aligner aligner for element
+     * @param up_trans translation in growing direction
+     * @return translation over @p el
+     */
     shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans) const {
         shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
         result->translation.up = up_trans;
@@ -234,7 +304,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_back(shared_ptr<ChildType> el, const Aligner& aligner = CenterAligner()) { return add(el, aligner); }
+    PathHints::Hint push_back(const shared_ptr<ChildType> &el, const Aligner& aligner = CenterAligner()) { return add(el, aligner); }
 
     /**
      * Add children to stack top.
@@ -245,8 +315,9 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
         double el_translation, next_height;
-        calcHeight(el, stackHeights.back(), el_translation, next_height);
-        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation);
+        auto elBB = el->getBoundingBox();
+        calcHeight(elBB, stackHeights.back(), el_translation, next_height);
+        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation, elBB);
         connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
         stackHeights.push_back(next_height);
@@ -264,7 +335,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
         const auto bb = el->getBoundingBox();
-        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[0] - bb.lower.up);
+        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[0] - bb.lower.up, bb);
         connectOnChildChanged(*trans_geom);
         children.insert(children.begin(), trans_geom);
         aligners.insert(aligners.begin(), aligner.clone());
