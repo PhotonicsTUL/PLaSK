@@ -9,6 +9,8 @@ namespace plask {
 
 /**
  * Common code for stack containers (which have children in stack/layers).
+ * @tparam dim number of space dimentions
+ * @tparam growingDirection direction in which stack growing
  */
 template <int dim, int growingDirection = Primitive<dim>::DIRECTION_UP>
 struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
@@ -37,15 +39,22 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         stackHeights.push_back(baseHeight);
     }
 
+    /**
+     * Get component of position in growing direction where stack starts.
+     * @return component of position in growing direction where stack starts
+     */
     double getBaseHeight() const { return stackHeights.front(); }
 
+    /**
+     * Set height where should start first element. Call changed.
+     */
     void setBaseHeight(double newBaseHeight) {
         if (getBaseHeight() == newBaseHeight) return;
         double diff = newBaseHeight - getBaseHeight();
         stackHeights.front() = newBaseHeight;
         for (std::size_t i = 1; i < stackHeights.size(); ++i) {
             stackHeights[i] += diff;
-            children[i-1]->translation.up += diff;
+            children[i-1]->translation.components[growingDirection] += diff;
             //children[i-1]->fireChanged(GeometryElement::Event::RESIZE);
         }
         this->fireChanged(GeometryElement::Event::RESIZE|GeometryElement::Event::CHILD_LIST);
@@ -66,12 +75,12 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     }
 
     virtual bool inside(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p.up);
+        const shared_ptr<TranslationT> c = getChildForHeight(p.components[growingDirection]);
         return c ? c->inside(p) : false;
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p.up);
+        const shared_ptr<TranslationT> c = getChildForHeight(p.components[growingDirection]);
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
 
@@ -190,8 +199,11 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
 
     /**
      * Check if all children have the same heights and throw exception it's not true.
+     * @throw Exception if not all children have the same heights
      */
-    void ensureAllChildrenHaveSameHeights() const;
+    void ensureAllChildrenHaveSameHeights() const {
+        if (!allChildrenHaveSameHeights()) throw Exception("Not all children in horizontal stack have the same height.");
+    }
 
     /**
      * Add children to stack top.
