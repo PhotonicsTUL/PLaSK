@@ -44,7 +44,7 @@ class MaterialWrap : public Material
 
     template <typename R, typename F, typename... Args>
     inline R override(const char* name, F f, Args... args) const {
-        if (overriden(name)) return py::call_method<double>(self, name, args...);
+        if (overriden(name)) return py::call_method<R>(self, name, args...);
         return ((*base).*f)(args...);
     }
 
@@ -74,9 +74,14 @@ class MaterialWrap : public Material
     }
 
 
-    // Here there are overrided methods from Material clas
+    // Here there are overrided methods from Material class
+    virtual std::string str() const {
+        if (overriden("__str__"))
+            return py::call_method<std::string>(self, "__str__");
+        else
+            return name();
+    }
 
-    /// @return material name
     virtual std::string name() const { return attr<std::string>("name"); }
     virtual Material::Kind kind() const { return attr<Material::Kind>("kind"); }
     virtual double lattC(double T, char x) const { return override<double>("lattC", &Material::lattC, T, x); }
@@ -271,7 +276,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
         PyErr_Clear();
     }
     Material::DopingAmountType doping_type = Material::NO_DOPING;
-    double concentation = 0;
+    double concentration = 0;
     py::object cobj;
     bool has_dc = false;
     try {
@@ -295,20 +300,21 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     if (doping) {
         if (doping_type == Material::NO_DOPING) {
             throw ValueError("dopant specified, but neither doping nor carrier concentrations given correctly");
+        } else {
+            concentration = py::extract<double>(cobj);
         }
     } else {
         if (doping_type != Material::NO_DOPING) {
-            throw ValueError("%s concentation given, but no dopant specified", has_dc?"doping":"carrier");
+            throw ValueError("%s concentration given, but no dopant specified", has_dc?"doping":"carrier");
         }
     }
-    concentation = py::extract<double>(cobj);
 
     std::size_t sep = name.find(':');
     if (sep != std::string::npos) {
         if (doping) {
             throw ValueError("doping specified in **kwargs, but name contains ':'");
         } else {
-           Material::parseDopant(name.substr(sep+1), dopant, doping_type, concentation);
+           Material::parseDopant(name.substr(sep+1), dopant, doping_type, concentration);
         }
     }
 
@@ -317,8 +323,8 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     // Test if kwargs contains only doping information
     if (py::len(keys) == doping_keys) {
         std::string full_name;
-        if (doping_type == Material::DOPANT_CONCENTRATION) full_name = format("%s:%s=%g", name, dopant, concentation);
-        else full_name = format("%s:%s n=%g", name, dopant, concentation);;
+        if (doping_type == Material::DOPANT_CONCENTRATION) full_name = format("%s:%s=%g", name, dopant, concentration);
+        else full_name = format("%s:%s n=%g", name, dopant, concentration);;
         return  DB->get(full_name);
     }
 
@@ -344,7 +350,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
         composition[e] = (v != none) ? py::extract<double>(v): std::numeric_limits<double>::quiet_NaN();
     }
 
-    return DB->get(composition, dopant, doping_type, concentation);
+    return DB->get(composition, dopant, doping_type, concentration);
 }
 
 /**
@@ -409,7 +415,7 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
 
 
 std::string Material__str__(const Material& self) {
-    return self.name(); // TODO: get fully qualified name with composition and doping amount
+    return self.str();
 }
 
 std::string Material__repr__(shared_ptr<Material> self) {

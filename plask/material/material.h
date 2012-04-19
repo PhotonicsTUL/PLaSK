@@ -85,20 +85,20 @@ struct Material {
     struct StringBuilder {
 
         /// Part of name which has been already built
-        std::string str;
+        std::stringstream str;
 
         /**
          * Cast to string operator.
          * @return part of name which has been already built
          */
-        operator const std::string&() const { return str; }
+        operator std::string() const { return str.str(); }
 
         /**
          * Append name of element (without ammount) to built string.
          * @param elementName name of element to add
          * @return *this
          */
-        StringBuilder& operator()(const std::string& elementName) { str += elementName; return *this; }
+        StringBuilder& operator()(const std::string& elementName) { str << elementName; return *this; }
 
         /**
          * Construct builder and append name of element (without ammount) to built string.
@@ -131,7 +131,7 @@ struct Material {
          * @param dopantConcentration dopant concentration
          * @return built material name
          */
-        const std::string& dopant(const std::string& dopantName, double dopantConcentration);
+        std::string dopant(const std::string& dopantName, double dopantConcentration);
 
         /**
          * Append information about doping to built string.
@@ -140,7 +140,7 @@ struct Material {
          * @param carrierConcentration carrier concentration
          * @return built material name
          */
-        const std::string& dopant(const std::string& dopantName, char n_or_p, double carrierConcentration);
+        std::string dopant(const std::string& dopantName, char n_or_p, double carrierConcentration);
 
     };
 

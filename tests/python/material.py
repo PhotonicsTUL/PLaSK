@@ -106,6 +106,8 @@ class Material(unittest.TestCase):
 
     def testDefaultMaterials(self):
         self.assertIn( "GaN", plask.materialsdb )
+        self.assertEqual( str(plask.materials.AlGaN(Al=0.2)), "Al(0.2)GaN" )
+        self.assertEqual( str(plask.materials.AlGaN(Ga=0.8, dopant="Si", dc=1e17)), "Al(0.2)GaN:Si=1e+17" )
 
     def testExistingMaterial(self):
         '''Test if existing materials works correctly'''

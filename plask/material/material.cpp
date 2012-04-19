@@ -19,29 +19,29 @@ int elementGroup(const std::string& elementName) {
 }
 
 Material::StringBuilder& Material::StringBuilder::operator()(const std::string& elementName, double ammount) {
-    str += elementName;
-    str += '(';
-    str += boost::lexical_cast<std::string>(ammount);
-    str += ')';
+    str << elementName;
+    str << '(';
+    str << ammount;
+    str << ')';
     return *this;
 }
 
-const std::string& Material::StringBuilder::dopant(const std::string& dopantName, double dopantConcentration) {
-    str += ':';
-    str += dopantName;
-    str += '=';
-    str += boost::lexical_cast<std::string>(dopantConcentration);
-    return str;
+std::string Material::StringBuilder::dopant(const std::string& dopantName, double dopantConcentration) {
+    str << ':';
+    str << dopantName;
+    str << '=';
+    str << dopantConcentration;
+    return str.str();
 }
 
-const std::string& Material::StringBuilder::dopant(const std::string& dopantName, char n_or_p, double carrierConcentration) {
-    str += ':';
-    str += dopantName;
-    str += ' ';
-    str += n_or_p;
-    str += '=';
-    str += boost::lexical_cast<std::string>(carrierConcentration);
-    return str;
+std::string Material::StringBuilder::dopant(const std::string& dopantName, char n_or_p, double carrierConcentration) {
+    str << ':';
+    str << dopantName;
+    str << ' ';
+    str << n_or_p;
+    str << '=';
+    str << carrierConcentration;
+    return str.str();
 }
 
 std::string Material::str() const {
