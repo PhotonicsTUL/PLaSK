@@ -108,6 +108,7 @@ class Material(unittest.TestCase):
         self.assertIn( "GaN", plask.materialsdb )
         self.assertEqual( str(plask.materials.AlGaN(Al=0.2)), "Al(0.2)GaN" )
         self.assertEqual( str(plask.materials.AlGaN(Ga=0.8, dopant="Si", dc=1e17)), "Al(0.2)GaN:Si=1e+17" )
+        self.assertEqual( ptest.materialTypeId(plask.materials.Material("GaN")), ptest.materialTypeId(plask.materialsdb.get("GaN")) )
 
     def testExistingMaterial(self):
         '''Test if existing materials works correctly'''
@@ -139,6 +140,7 @@ class Material(unittest.TestCase):
 
         self.assertEqual( ptest.materialName("WithBase", plask.materialsdb), "WithBase" )
         self.assertEqual( ptest.materialVBO("WithBase", plask.materialsdb, 1.0), 0.5 )
+
 
     def testPassingMaterialsByName(self):
         mat = plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Dp=3.0").getMaterial(0,0)

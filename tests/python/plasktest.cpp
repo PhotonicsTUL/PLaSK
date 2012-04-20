@@ -70,13 +70,15 @@ bool isEmpy(plask::shared_ptr<plask::GeometryElement> p) {
     return !p;
 }
 
+std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
+    return typeid(*material).name();
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
 {
     py::def("getVecs", &getVecs);
-
-
 
     py::def("addMyMaterial", &addMyMaterial);
 
@@ -90,4 +92,6 @@ BOOST_PYTHON_MODULE(plasktest)
     py::def("getExtrusion", &getExtrusion);
 
     py::def("isEmpty", &isEmpy);
+
+    py::def("materialTypeId", &materialTypeId);
 }

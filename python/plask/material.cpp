@@ -97,10 +97,8 @@ class MaterialWrap : public Material
     }
 
     virtual std::string str() const {
-        if (overriden("__str__"))
-            return py::call_method<std::string>(self, "__str__");
-        else
-            return name();
+        if (overriden("__str__")) return py::call_method<std::string>(self, "__str__");
+        else return name();
     }
 
     virtual Material::Kind kind() const { return attr<Material::Kind>("kind"); }
@@ -146,9 +144,14 @@ class MaterialWrap : public Material
     virtual double condT_l(double T, double t) const { return override<double>("condT_l", &Material::condT_l, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
     virtual double specHeat(double T) const { return override<double>("specHeat", &Material::specHeat, T); }
-    virtual double nr(double WaveLen, double T) const { return override<double>("nr", &Material::nr, WaveLen, T); }
-    virtual double absp(double WaveLen, double T) const { return override<double>("absp", &Material::absp, WaveLen, T); }
-    virtual dcomplex Nr(double WaveLen, double T) const { return override<dcomplex>("Nr", &Material::Nr, WaveLen, T); }
+    virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
+    virtual double absp(double wl, double T) const { return override<double>("absp", &Material::absp, wl, T); }
+    virtual dcomplex Nr(double wl, double T) const {
+        if (overriden("Nr")) return py::call_method<dcomplex>(self, "Nr", wl, T);
+        else return dcomplex(override<double>("nr", &Material::nr, wl, T),
+                             -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+    }
+
 
     // End of overriden methods
 
