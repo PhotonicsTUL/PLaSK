@@ -29,8 +29,8 @@ static std::string Box2d__str__(const Box2d& to_print) {
 // __repr__(v)
 static std::string Box2d__repr__(const Box2d& to_print) {
     std::stringstream out;
-    out << "Box2D(" << to_print.lower.c0 << ", " << to_print.lower.c1 << ", "
-                    << to_print.upper.c0 << ", " << to_print.upper.c1 << ")";
+    out << "plask.geometry.Box2D(" << to_print.lower.c0 << ", " << to_print.lower.c1 << ", "
+                                   << to_print.upper.c0 << ", " << to_print.upper.c1 << ")";
     return out.str();
 }
 
@@ -60,8 +60,8 @@ static std::string Box3d__str__(const Box3d& self) {
 // __repr__(v)
 static std::string Box3d__repr__(const Box3d& self) {
     std::stringstream out;
-    out << "Box3D(" << self.lower.c0 << ", " << self.lower.c1 << ", " << self.lower.c2 << ", "
-                    << self.upper.c0 << ", " << self.upper.c1 << ", " << self.upper.c2 << ")";
+    out << "plask.geometry.Box3D(" << self.lower.c0 << ", " << self.lower.c1 << ", " << self.lower.c2 << ", "
+                                   << self.upper.c0 << ", " << self.upper.c1 << ", " << self.upper.c2 << ")";
     return out.str();
 }
 

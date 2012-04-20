@@ -38,7 +38,7 @@ std::string RectilinearMesh1d__str__(const RectilinearMesh1d& self) {
 }
 
 std::string RectilinearMesh1d__repr__(const RectilinearMesh1d& self) {
-    return "meshes.Rectilinear1D(" + RectilinearMesh1d__str__(self) + ")";
+    return "plask.meshes.Rectilinear1D(" + RectilinearMesh1d__str__(self) + ")";
 }
 
 

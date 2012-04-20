@@ -62,11 +62,19 @@ class MaterialWrap : public Material
             throw TypeError("wrong number of arguments");
         }
         MaterialWrap* ptr;
-        if (py::len(args) == 2) {
+        int len = py::len(args);
+        if (len == 2) {
+            if (args[0].attr("__class__").attr("__name__") == "Material" &&
+                args[0].attr("__module__") == "plask.materials") {
+                //TODO maybe there is a better way to compare class objects
+                return MaterialsDB::getDefault().get(py::extract<std::string>(args[1]));
+            }
             shared_ptr<Material> base = py::extract<shared_ptr<Material>>(args[1]);
             ptr = new MaterialWrap(base);
-        } else {
+        } else if (len == 1) {
             ptr = new MaterialWrap();
+        } else {
+            throw TypeError("__init__ takes at most 2 arguments (%d given)", len);
         }
         auto sptr = shared_ptr<Material>(ptr);
         ptr->self = py::object(args[0]).ptr();  // key line !!!
@@ -74,7 +82,20 @@ class MaterialWrap : public Material
     }
 
 
-    // Here there are overrided methods from Material class
+    // Here there are overriden methods from Material class
+
+    virtual std::string name() const {
+        py::object cls = py::object(py::detail::borrowed_reference(self)).attr("__class__");
+        py::object oname;
+        try {
+            oname = cls.attr("__dict__")["name"];
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            oname = cls.attr("__name__");
+        }
+        return py::extract<std::string>(oname);
+    }
+
     virtual std::string str() const {
         if (overriden("__str__"))
             return py::call_method<std::string>(self, "__str__");
@@ -82,7 +103,6 @@ class MaterialWrap : public Material
             return name();
     }
 
-    virtual std::string name() const { return attr<std::string>("name"); }
     virtual Material::Kind kind() const { return attr<Material::Kind>("kind"); }
     virtual double lattC(double T, char x) const { return override<double>("lattC", &Material::lattC, T, x); }
     virtual double Eg(double T, const char Point) const { return override<double>("Eg", &Material::Eg, T, Point); }
@@ -419,7 +439,7 @@ std::string Material__str__(const Material& self) {
 }
 
 std::string Material__repr__(shared_ptr<Material> self) {
-    return format("<'" + Material__str__(*self) +"' plask.materials.Material object at (%1%)>", self);
+    return format("plask.materials.Material('%1%')", Material__str__(*self));
 }
 
 // Exception translators

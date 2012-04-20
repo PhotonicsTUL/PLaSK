@@ -46,7 +46,7 @@ std::string vec__str__(const Vec<dim,T>& to_print) {
 template <int dim, typename T>
 std::string vec__repr__(const Vec<dim,T>& to_print) {
     std::stringstream out;
-    out << "vec(";
+    out << "plask.vec(";
     for (int i = 0; i < dim; ++i) out << sc(to_print[i]) << (i!=dim-1 ? ", " : ")");
     return out.str();
 }

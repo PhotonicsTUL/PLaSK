@@ -58,14 +58,14 @@ static std::string Translation__str__(const Translation<dim>& self) {
         PyErr_Clear();
         out << GeometryElement__repr__(self.getChild());
     }
-    out << ", vec("; for (int i = 0; i < dim; ++i) out << sc(self.translation[i]) << (i!=dim-1 ? "," : ")");
+    out << ", plask.vec("; for (int i = 0; i < dim; ++i) out << sc(self.translation[i]) << (i!=dim-1 ? "," : ")");
     out << ")";
     return out.str();
 }
 
 template <int dim>
 static std::string Translation__repr__(const Translation<dim>& self) {
-    return format("Translation%1%D%2%", dim, Translation__str__<dim>(self));
+    return format("plask.geometry.Translation%1%D%2%", dim, Translation__str__<dim>(self));
 }
 
 DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transfer holds a translated geometry element together with translation vector ("," version)")
