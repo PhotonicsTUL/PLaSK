@@ -59,8 +59,9 @@ MI_PROPERTY(AlN_Si, absp,
             MIComment("no temperature dependence")
             )
 double AlN_Si::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - 6.28;
-    return ( (19000+400*ND)*exp(a/(0.019+0.001*ND)) + (330+200*ND)*exp(a/(0.07+0.016*ND)) );
+    double a = 1239.84190820754/wl - 6.28,
+           b = ND/1e18;
+    return ( (19000+400*b)*exp(a/(0.019+0.001*b)) + (330+200*b)*exp(a/(0.07+0.016*b)) );
 }
 
 static MaterialsDB::Register<AlN_Si> materialDB_register_AlN_Si;

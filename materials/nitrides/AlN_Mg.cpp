@@ -57,8 +57,9 @@ MI_PROPERTY(AlN_Mg, absp,
             MIComment("no temperature dependence")
             )
 double AlN_Mg::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - 6.28;
-    return ( (19000+200*NA)*exp(a/(0.019+0.0001*NA)) + (330+30*NA)*exp(a/(0.07+0.0008*NA)) );
+    double a = 1239.84190820754/wl - 6.28,
+           b = NA/1e18;
+    return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.0008*b)) );
 }
 
 static MaterialsDB::Register<AlN_Mg> materialDB_register_AlN_Mg;

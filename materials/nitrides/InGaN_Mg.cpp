@@ -48,8 +48,9 @@ MI_PROPERTY(InGaN_Mg, absp,
             )
 double InGaN_Mg::absp(double wl, double T) const {
     double Eg = 0.77*In + 3.42*Ga - 1.43*In*Ga;
-    double a = 1239.84190820754/wl - Eg;
-    return ( (19000+200*NA)*exp(a/(0.019+0.0001*NA)) + (330+30*NA)*exp(a/(0.07+0.0008*NA)) );
+    double a = 1239.84190820754/wl - Eg,
+           b = NA/1e18;
+    return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.0008*b)) );
 }
 
 static MaterialsDB::Register<InGaN_Mg> materialDB_register_InGaN_Mg;

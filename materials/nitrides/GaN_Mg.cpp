@@ -61,8 +61,9 @@ MI_PROPERTY(GaN_Mg, absp,
             MIComment("no temperature dependence")
             )
 double GaN_Mg::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - 3.42;
-    return ( (19000+200*NA)*exp(a/(0.019+0.0001*NA)) + (330+30*NA)*exp(a/(0.07+0.000*NA)) );
+    double a = 1239.84190820754/wl - 3.42,
+           b = NA/1e18;
+    return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.000*b)) );
 }
 
 static MaterialsDB::Register<GaN_Mg> materialDB_register_Mg;

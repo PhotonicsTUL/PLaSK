@@ -48,8 +48,9 @@ MI_PROPERTY(AlGaN_Mg, absp,
             )
 double AlGaN_Mg::absp(double wl, double T) const {
     double Eg = 6.28*Al + 3.42*(1-Al) - 0.7*Al*(1-Al);
-    double a = 1239.84190820754/wl - Eg;
-    return ( (19000+200*NA)*exp(a/(0.019+0.0001*NA)) + (330+30*NA)*exp(a/(0.07+0.0008*NA)) );
+    double a = 1239.84190820754/wl - Eg,
+           b = NA/1e18;
+    return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.0008*b)) );
 }
 
 static MaterialsDB::Register<AlGaN_Mg> materialDB_register_AlGaN_Mg;
