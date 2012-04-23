@@ -19,6 +19,7 @@ double AlN::condT(double T, double t) const {
 
 MI_PROPERTY(AlN, absp,
             MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
+            MIComment("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
             MIComment("no temperature dependence")
             )
 double AlN::absp(double wl, double T) const {

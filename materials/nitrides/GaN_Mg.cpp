@@ -57,8 +57,7 @@ double GaN_Mg::cond(double T) const {
 }
 
 MI_PROPERTY(GaN_Mg, absp,
-            MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("no temperature dependence")
+            MISeeClass<GaN>(MaterialInfo::absp)
             )
 double GaN_Mg::absp(double wl, double T) const {
     double a = 1239.84190820754/wl - 3.42,

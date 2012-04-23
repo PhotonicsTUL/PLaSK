@@ -55,8 +55,7 @@ double AlN_Si::cond(double T) const {
 }
 
 MI_PROPERTY(AlN_Si, absp,
-            MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("no temperature dependence")
+            MISeeClass<AlN>(MaterialInfo::absp)
             )
 double AlN_Si::absp(double wl, double T) const {
     double a = 1239.84190820754/wl - 6.28,
