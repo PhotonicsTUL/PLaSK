@@ -39,16 +39,14 @@ shared_ptr<CalculationSpace> GeometryManager::getCalculationSpace(const std::str
     return result_it == calculationSpaces.end() ? shared_ptr<CalculationSpace>() : result_it->second;
 }
 
-//TODO move to reader (?)
-void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& materialsDB) {
-    GeometryReader reader(*this, XMLreader, materialsDB);
-    if (XMLreader.getNodeType() != irr::io::EXN_ELEMENT || XMLreader.getNodeName() != std::string("geometry"))
+void GeometryManager::loadGeometryFromReader(GeometryReader& reader, const MaterialsDB& materialsDB) {
+    if (reader.source.getNodeType() != irr::io::EXN_ELEMENT || reader.source.getNodeName() != std::string("geometry"))
         throw XMLUnexpectedElementException("<geometry> tag");
     GeometryReader::ReadAxisNames read_axis_tag(reader);
-    while(XMLreader.read()) {
-        switch (XMLreader.getNodeType()) {
+    while(reader.source.read()) {
+        switch (reader.source.getNodeType()) {
             case irr::io::EXN_ELEMENT_END:
-                if (XMLreader.getNodeName() != std::string("geometry"))
+                if (reader.source.getNodeName() != std::string("geometry"))
                     throw XMLUnexpectedElementException("end of \"geometry\" tag");
                 return;  //end of geometry
             case irr::io::EXN_ELEMENT:
@@ -61,6 +59,33 @@ void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& ma
         }
     }
     throw XMLUnexpectedEndException();
+}
+
+void GeometryManager::loadSpacesFromReader(GeometryReader& reader) {
+    if (reader.source.getNodeType() != irr::io::EXN_ELEMENT || reader.source.getNodeName() != std::string("spaces"))
+        return; //space are optional
+    GeometryReader::ReadAxisNames read_axis_tag(reader);
+    while(reader.source.read()) {
+        switch (reader.source.getNodeType()) {
+            case irr::io::EXN_ELEMENT_END:
+                if (reader.source.getNodeName() != std::string("spaces"))
+                    throw XMLUnexpectedElementException("end of \"spaces\" tag");
+                return;  //end of spaces
+            case irr::io::EXN_ELEMENT:
+                //roots.push_back(reader.readSpace());
+                break;
+            case irr::io::EXN_COMMENT:
+                break;   //just ignore
+            default:
+                throw XMLUnexpectedElementException("begin of space element tag or </spaces>");
+        }
+    }
+    throw XMLUnexpectedEndException();
+}
+
+void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& materialsDB) {
+    GeometryReader reader(*this, XMLreader, materialsDB);
+    loadGeometryFromReader(reader, materialsDB);
 }
 
 void GeometryManager::loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB) {

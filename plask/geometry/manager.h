@@ -19,6 +19,8 @@ This file includes:
 
 namespace plask {
 
+class GeometryReader;
+
 /**
  * Geometry manager features:
  * - read/write geometries,
@@ -110,6 +112,18 @@ struct GeometryManager {
      */
     template <typename RequiredCalcSpaceType>
     shared_ptr<RequiredCalcSpaceType> getCalculationSpace(const std::string& name) const;
+
+    /**
+     * Load geometry using geometry reader.
+     * @param reader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
+     */
+    void loadGeometryFromReader(GeometryReader& reader, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
+    /**
+     * Load geometry using geometry reader.
+     * @param reader reader to read from, should point to <space> tag, after read it will be point to </space> tag
+     */
+    void loadSpacesFromReader(GeometryReader& reader);
 
     /**
      * Load geometry using XML reader.
