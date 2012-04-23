@@ -106,6 +106,8 @@ public:
     std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints* path=nullptr) const {
         return getChild()->getLeafsBoundingBoxes(path);
     }
+    
+    virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr< GeometryElementD<dim> >& element, const PathHints* path = 0, bool copyBorders = false) const = 0;
 };
 
 /**
@@ -178,6 +180,8 @@ public:
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
     shared_ptr<Extrusion> getExtrusion() const { return extrusion; }
+    
+    virtual Space2dCartesian* getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path = 0, bool copyBorders = false) const;
 
 };
 
@@ -239,6 +243,8 @@ public:
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
     shared_ptr<Revolution> getRevolution() const { return revolution; }
+    
+    virtual Space2dCylindrical* getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path = 0, bool copyBorders = false) const;
 
 };
 
