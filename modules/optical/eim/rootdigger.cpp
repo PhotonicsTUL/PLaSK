@@ -1,7 +1,17 @@
 #include "rootdigger.h"
+#include "eim.h"
 using namespace std;
 
 namespace plask { namespace eim {
+
+dcomplex RootDigger::value(dcomplex x, bool count) const{
+    dcomplex y = module.char_val(x);
+    double ay = abs(y);
+    if (count) module.log_value.count(x, ay);
+    else module.log_value(x, ay);
+    return y;
+}
+
 
 vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> impoints) const
 {
@@ -75,9 +85,11 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
 
 //**************************************************************************
 /// Search for modes within the region real(start) - real(end),
-vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int replot,
-                                         int implot, int num_modes)
+vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int replot, int implot, int num_modes)
 {
+    if (imag(start) == imag(end)) implot = 0;
+    if (real(start) == real(end)) replot = 0;
+
     vector<double> repoints(replot+1), impoints(implot+1);
     double restep = 0, imstep = 0;
 
@@ -222,7 +234,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
 {
     // Compute the initial guess of the function (and check for the root)
     dcomplex F = value(x);
-    if (abs(F) < tolf_min) return x;
+    if (abs(F) < module.tolf_min) return x;
 
     bool restart = true;                    // do we have to recompute Jacobian?
     bool trueJacobian;                      // did we recently update Jacobian?
@@ -233,7 +245,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     dcomplex oldx, oldF;
 
     // Main loop
-    for (int i = 0; i < maxiterations; i++) {
+    for (int i = 0; i < module.maxiterations; i++) {
         oldx = x; oldF = F;
 
         if (restart) {                      // compute Broyden matrix as a Jacobian
@@ -257,13 +269,13 @@ dcomplex RootDigger::Broyden(dcomplex x) const
         dcomplex p = - dcomplex(real(F)*imag(Bi)-imag(F)*real(Bi), real(Br)*imag(F)-imag(Br)*real(F)) / M;
 
         // find the right step
-        if (lnsearch(x, F, g, p, maxstep)) {   // found sufficient functional decrease
+        if (lnsearch(x, F, g, p, module.maxstep)) {   // found sufficient functional decrease
             dx = x - oldx;
             dF = F - oldF;
-            if ((abs(dx) < tolx && abs(F) < tolf_max) || abs(F) < tolf_min)
+            if ((abs(dx) < module.tolx && abs(F) < module.tolf_max) || abs(F) < module.tolf_min)
                 return x;                       // convergence!
         } else {
-            if (abs(F) < tolf_max)              // convergence!
+            if (abs(F) < module.tolf_max)       // convergence!
                 return x;
             else if (!trueJacobian) {           // first try reinitializing the Jacobian
                  module.log(LOG_DETAIL, "Reinitializing Jacobian");

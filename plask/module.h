@@ -155,17 +155,13 @@ class ModuleCartesian2d: public Module {
 
   public:
 
-    ModuleCartesian2d(const shared_ptr<Space2dCartesian>& geometry) : geometry(geometry) {}
-
-    ModuleCartesian2d() = default;
-
     /**
      * Set new geometry for the module
      *
      * @param new_geometry new geometry space
-     **/
+     */
     void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
-        log(LOG_INFO, "Attaching new geometry to the module.");
+        log(LOG_INFO, "Attaching geometry");
         geometry = new_geometry;
     }
 

@@ -4,7 +4,7 @@
 #include <cmath>
 #include <boost/python.hpp>
 
-#include "../eim.hpp"
+#include "../eim.h"
 
 using namespace plask::eim;
 
@@ -20,8 +20,8 @@ BOOST_PYTHON_MODULE(eim)
     //boost::python::class_<plask::YourModule, plask::shared_ptr<plask::YourModule>, py::bases<plask::Module>>("YourModule",
     //    "Short module description and constructor documentation.")
     //    .def("method", &YourModule::method, "Short documentation")
-    //    .def_readonly("attribute", &YourModule::field, "Shord documentation")
-    //    .def_readwrite("attribute", &YourModule::field, "Shord documentation")
+    //    .def_readonly("attribute", &YourModule::field, "Short documentation")
+    //    .def_readwrite("attribute", &YourModule::field, "Short documentation")
     //    .add_attribute("attribute", &YourModule::getAttributeMethod, &YourModule::setAttributeMethod, "Shord documentation")
     // ;
 }
