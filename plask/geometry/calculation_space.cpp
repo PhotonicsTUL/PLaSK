@@ -22,14 +22,10 @@ shared_ptr<Material> Space2dCartesian::getMaterial(const Vec<2, double> &p) cons
     Vec<2, double> r = p;
     shared_ptr<Material> material;
 
-    bottom.applyIfLo(cachedBoundingBox, r, material);
-    if (material) return material;
-    up.applyIfHi(cachedBoundingBox, r, material);
+    bottomup.apply(cachedBoundingBox, r, material);
     if (material) return material;
 
-    left.applyIfLo(cachedBoundingBox, r, material);
-    if (material) return material;
-    right.applyIfHi(cachedBoundingBox, r, material);
+    leftright.apply(cachedBoundingBox, r, material);
     if (material) return material;
 
     return getMaterialOrDefault(r);
@@ -56,9 +52,7 @@ shared_ptr<Material> Space2dCylindrical::getMaterial(const Vec<2, double> &p) co
     Vec<2, double> r = p;
     shared_ptr<Material> material;
 
-    bottom.applyIfLo(cachedBoundingBox, r, material);
-    if (material) return material;
-    up.applyIfHi(cachedBoundingBox, r, material);
+    bottomup.apply(cachedBoundingBox, r, material);
     if (material) return material;
 
     outer.applyIfHi(cachedBoundingBox, r, material);

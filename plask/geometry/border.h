@@ -130,7 +130,6 @@ struct Mirror: public Strategy {
 
 };
 
-
 /**
  * Hold border strategy with given type and:
  * - delegate apply methods to holded strategy,
@@ -153,9 +152,13 @@ public:
 
     const StrategyType& getStrategy() const { return *strategy; }
 
-    void setStrategy(const Strategy& strategy) { delete this->strategy; this->strategy = strategy.clone(); }
+    void setStrategy(const StrategyType& strategy) {
+        if (this->strategy == &strategy) return;    //self-assigment protect
+        delete this->strategy;
+        this->strategy = strategy.clone();
+    }
 
-    StrategyHolder<direction, StrategyType>& operator=(const Strategy& strategy) { setStrategy(strategy); return *this; }
+    StrategyHolder<direction, StrategyType>& operator=(const StrategyType& strategy) { setStrategy(strategy); return *this; }
 
     template <int adirection>
     StrategyHolder<direction, StrategyType>& operator=(const StrategyHolder<adirection, StrategyType>& strategyHolder) {
@@ -185,6 +188,65 @@ public:
             apply(bbox, p, result_material);
     }
 
+};
+
+template <int direction, typename StrategyType = Strategy>
+class StrategyPairHolder {
+    //lo and hi strategy
+    StrategyHolder<direction, StrategyType> strategy_lo, strategy_hi;
+
+    //strategies calling order
+    bool reverseCallingOrder;
+
+    void setOrder(const StrategyType& strategy_lo, const StrategyType& strategy_hi) {
+        if (strategy_lo.canMoveOutsideBoundingBox()) {
+            if (strategy_hi.canMoveOutsideBoundingBox())
+                throw Exception("Border strategies on both sides can move point outside bounding box.");
+            reverseCallingOrder = true;
+        } else
+            reverseCallingOrder = false;
+    }
+
+public:
+
+    StrategyPairHolder(): reverseCallingOrder(false) {}
+
+    void setStrategies(const StrategyType& strategy_lo, const StrategyType& strategy_hi) {
+        setOrder(strategy_lo, strategy_hi);
+        this->strategy_lo = strategy_lo;
+        this->strategy_hi = strategy_hi;
+    }
+
+    void setLo(const StrategyType& strategy_lo) {
+        setOrder(strategy_lo, getHi());
+        this->strategy_lo = strategy_lo;
+    }
+
+    const StrategyType& getLo() const {
+        return strategy_lo.getStrategy();
+    }
+
+    void setHi(const StrategyType& strategy_hi) {
+        setOrder(getLo(), strategy_hi);
+        this->strategy_hi = strategy_hi;
+    }
+
+    const StrategyType& getHi() const {
+        return strategy_hi.getStrategy();
+    }
+
+    template <int dims>
+    inline void apply(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+        if (reverseCallingOrder) {
+            strategy_hi.applyIfHi(bbox, p, result_material);
+            if (result_material) return;
+            strategy_lo.applyIfLo(bbox, p, result_material);
+        } else {
+            strategy_lo.applyIfLo(bbox, p, result_material);
+            if (result_material) return;
+            strategy_hi.applyIfHi(bbox, p, result_material);
+        }
+    }
 };
 
 }   // namespace border

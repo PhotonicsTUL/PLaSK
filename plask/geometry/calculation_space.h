@@ -116,10 +116,58 @@ class Space2dCartesian: public CalculationSpaceD<2> {
 
     shared_ptr<Extrusion> extrusion;
 
+    border::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN> leftright;
+    border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
+
 public:
 
-    border::StrategyHolder<Primitive<2>::DIRECTION_TRAN> left, right;
-    border::StrategyHolder<Primitive<2>::DIRECTION_UP> up, bottom;
+    /**
+     * Set strategy for left border.
+     * @param newValue new strategy for left border
+     */
+    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); }
+
+    /**
+     * Get left border strategy.
+     * @return left border strategy
+     */
+    const border::Strategy& getLeftBorder() { return leftright.getLo(); }
+
+    /**
+     * Set strategy for right border.
+     * @param newValue new strategy for right border
+     */
+    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); }
+
+    /**
+     * Get right border strategy.
+     * @return right border strategy
+     */
+    const border::Strategy& getRightBorder() { return leftright.getHi(); }
+
+    /**
+     * Set strategy for bottom border.
+     * @param newValue new strategy for bottom border
+     */
+    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); }
+
+    /**
+     * Get bottom border strategy.
+     * @return bottom border strategy
+     */
+    const border::Strategy& getBottomBorder() { return bottomup.getLo(); }
+
+    /**
+     * Set strategy for up border.
+     * @param newValue new strategy for up border
+     */
+    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); }
+
+    /**
+     * Get up border strategy.
+     * @return up border strategy
+     */
+    const border::Strategy& getUpBorder() { return bottomup.getHi(); }
 
     Space2dCartesian(const shared_ptr<Extrusion>& extrusion);
 
@@ -141,10 +189,46 @@ class Space2dCylindrical: public CalculationSpaceD<2> {
 
     shared_ptr<Revolution> revolution;
 
+    border::StrategyHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> outer;
+    border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
+
 public:
 
-    border::StrategyHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> outer;
-    border::StrategyHolder<Primitive<2>::DIRECTION_UP> up, bottom;
+    /**
+     * Set strategy for outer border.
+     * @param newValue new strategy for outer border
+     */
+    void setOuterBorder(const border::UniversalStrategy& newValue) { outer = newValue; }
+
+    /**
+     * Get outer border strategy.
+     * @return outer border strategy
+     */
+    const border::UniversalStrategy& getOuterBorder() { return outer.getStrategy(); }
+
+    /**
+     * Set strategy for bottom border.
+     * @param newValue new strategy for bottom border
+     */
+    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); }
+
+    /**
+     * Get bottom border strategy.
+     * @return bottom border strategy
+     */
+    const border::Strategy& getBottomBorder() { return bottomup.getLo(); }
+
+    /**
+     * Set strategy for up border.
+     * @param newValue new strategy for up border
+     */
+    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); }
+
+    /**
+     * Get up border strategy.
+     * @return up border strategy
+     */
+    const border::Strategy& getUpBorder() { return bottomup.getHi(); }
 
     Space2dCylindrical(const shared_ptr<Revolution>& revolution);
 
