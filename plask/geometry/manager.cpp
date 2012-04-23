@@ -34,6 +34,11 @@ shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &n
     return result;
 }
 
+shared_ptr<CalculationSpace> GeometryManager::getCalculationSpace(const std::string& name) const {
+    auto result_it = calculationSpaces.find(name);
+    return result_it == calculationSpaces.end() ? shared_ptr<CalculationSpace>() : result_it->second;
+}
+
 //TODO move to reader (?)
 void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& materialsDB) {
     GeometryReader reader(*this, XMLreader, materialsDB);

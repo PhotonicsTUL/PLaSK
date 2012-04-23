@@ -190,12 +190,17 @@ public:
 
 };
 
+/**
+ * Hold pairs of strategies (for lo and hi band) with given type.
+ * @tparam direction holded strategy working direction (coordinate of vector component)
+ * @tpatam StrategyType (base) type of holded strategies, typically Strategy or UniversalStrategy
+ */
 template <int direction, typename StrategyType = Strategy>
 class StrategyPairHolder {
-    //lo and hi strategy
+    /// lo and hi strategy
     StrategyHolder<direction, StrategyType> strategy_lo, strategy_hi;
 
-    //strategies calling order
+    /// if true strategies calling order are: hi, lo
     bool reverseCallingOrder;
 
     void setOrder(const StrategyType& strategy_lo, const StrategyType& strategy_hi) {
@@ -233,6 +238,24 @@ public:
 
     const StrategyType& getHi() const {
         return strategy_hi.getStrategy();
+    }
+
+    /**
+     * Set lo or hi strategy.
+     * @param setNewHi if @true new hi strategy will be set, in other case new lo strategy will be set
+     * @param strategy new strategy value
+     */
+    void set(bool setNewHi, const StrategyType& strategy) {
+        if (setNewHi) setHi(strategy); else setLo(strategy);
+    }
+
+    /**
+     * Get lo or hi strategy.
+     * @param _getHi if @true hi strategy will be returned, in other case lo strategy will be returned
+     * @param lo or hi strategy, depends from @p _getHi value
+     */
+    const StrategyType& get(bool _getHi) {
+        return _getHi ? getHi() : getLo();
     }
 
     template <int dims>

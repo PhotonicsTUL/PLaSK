@@ -15,6 +15,8 @@ This file includes:
 #include "../material/db.h"
 #include "path.h"
 
+#include "calculation_space.h"
+
 namespace plask {
 
 /**
@@ -26,9 +28,6 @@ namespace plask {
  */
 struct GeometryManager {
 
-    // Store pointers to all elements.
-    //std::set<GeometryElement*> elements;
-
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;
 
@@ -37,6 +36,9 @@ struct GeometryManager {
 
     /// Roots elements.
     std::vector< shared_ptr<GeometryElement> > roots;
+
+    /// Calculation spaces by name.
+    std::map<std::string, shared_ptr<CalculationSpace> > calculationSpaces;
 
     /**
      * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
@@ -95,6 +97,21 @@ struct GeometryManager {
     shared_ptr<RequiredElementType> requireElement(const std::string& name) const;
 
     /**
+     * Get Calculation space with given @p name.
+     * @param name name of calculation space to get
+     * @return calculation space with given @p name or shared_ptr<CalculationSpace>() if there is no calculation space with given @p name
+     */
+    shared_ptr<CalculationSpace> getCalculationSpace(const std::string& name) const;
+
+    /**
+     * Get Calculation space with given @p name and try dynamic cast it to @a RequiredCalcSpaceType.
+     * @param name name of calculation space to get
+     * @return required calculation space or shared_ptr<CalculationSpace>() if there is no calculation space with given @p name or can't be casted to RequiredCalcSpaceType
+     */
+    template <typename RequiredCalcSpaceType>
+    shared_ptr<RequiredCalcSpaceType> getCalculationSpace(const std::string& name) const;
+
+    /**
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
      */
@@ -135,7 +152,7 @@ inline shared_ptr<RequiredElementType> GeometryManager::getElement(const std::st
     return dynamic_pointer_cast<RequiredElementType>(getElement(name));
 }
 
-//specialization for GeometryElement which doesn't required dynamic_cast
+//specialization for GeometryElement which doesn't require dynamic_cast
 template <>
 inline shared_ptr<GeometryElement> GeometryManager::getElement<GeometryElement>(const std::string& name) const {
     return getElement(name);
@@ -147,7 +164,7 @@ inline shared_ptr<RequiredElementType> GeometryManager::getRootElement(const std
     return dynamic_pointer_cast<RequiredElementType>(getRootElement(index));
 }
 
-//specialization for GeometryElement which doesn't required dynamic_cast
+//specialization for GeometryElement which doesn't require dynamic_cast
 template <>
 inline shared_ptr<GeometryElement> GeometryManager::getRootElement<GeometryElement>(const std::size_t index) const {
     return getRootElement(index);
@@ -161,10 +178,22 @@ inline shared_ptr<RequiredElementType> GeometryManager::requireElement(const std
     return result;
 }
 
-//specialization for GeometryElement which doesn't required dynamic_cast
+//specialization for GeometryElement which doesn't require dynamic_cast
 template <>
 inline shared_ptr<GeometryElement> GeometryManager::requireElement<GeometryElement>(const std::string& name) const {
     return requireElement(name);
+}
+
+//specialization for most types
+template <typename RequiredCalcSpaceType>
+inline shared_ptr<RequiredCalcSpaceType> GeometryManager::getCalculationSpace(const std::string& name) const {
+    return dynamic_pointer_cast<RequiredCalcSpaceType>(getCalculationSpace(name));
+}
+
+//specialization for CalculationSpace which doesn't require dynamic_cast
+template <>
+inline shared_ptr<CalculationSpace> GeometryManager::getCalculationSpace<CalculationSpace>(const std::string& name) const {
+    return getCalculationSpace(name);
 }
 
 }	// namespace plask
