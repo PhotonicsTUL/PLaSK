@@ -17,7 +17,42 @@ struct CalculationSpace {
     /// Default material, typically air.
     shared_ptr<Material> defaultMaterial;
 
-    CalculationSpace(): defaultMaterial(make_shared<Air>()) {}
+    CalculationSpace(shared_ptr<Material> defaultMaterial = make_shared<Air>()): defaultMaterial(defaultMaterial) {}
+
+    /**
+     * Set all borders in given ddirection or throw exception if this borders can't be set for this calculation space or direction.
+     * @param direction see Primitive<dim>::DIRECTION where dim=2 or 3 depends from number of space dimension
+     * @param higher @c true for higher bound, @c false for lower
+     * @param border_to_set new border strategy for given borders
+     */
+    virtual void setBorders(int direction, const border::Strategy& border_to_set) = 0;
+
+    /**
+     * Set border or throw exception if this border can't be set for this calculation space or direction.
+     * @param direction see Primitive<dim>::DIRECTION where dim=2 or 3 depends from number of space dimension
+     * @param higher @c true for higher bound, @c false for lower
+     * @param border_to_set new border strategy for given border
+     */
+    virtual void setBorder(int direction, bool higher, const border::Strategy& border_to_set) = 0;
+
+    /**
+     * Get border strategy or throw exception if border can't be get for this calculation space or direction.
+     * @param direction see Primitive<dim>::DIRECTION where dim=2 or 3 depends from number of space dimension
+     * @param higher @c true for higher bound, @c false for lower
+     * @return border strategy for given border
+     */
+    virtual const border::Strategy& getBorder(int direction, bool higher) const = 0;
+
+protected:
+
+    /**
+     * Dynamic cast border to given type and throw excpetion in case of bad cast.
+     * @param strategy border strategy to cast
+     */
+    template <typename BorderType>
+    static const BorderType& castBorder(const border::Strategy& strategy) {
+        return dynamic_cast<const BorderType&>(strategy);
+    }
 
 };
 
@@ -165,6 +200,12 @@ public:
      */
     void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); }
 
+    void setBorders(int direction, const border::Strategy& border_to_set);
+
+    void setBorder(int direction, bool higher, const border::Strategy& border_to_set);
+
+    const border::Strategy& getBorder(int direction, bool higher) const;
+
     /**
      * Get up border strategy.
      * @return up border strategy
@@ -195,6 +236,12 @@ class Space2dCylindrical: public CalculationSpaceD<2> {
 
     border::StrategyHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> outer;
     border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
+
+    static void ensureBoundDirIsProper(unsigned direction, bool hi) {
+        Primitive<2>::ensureIsValidDirection(direction);
+        if (direction == Primitive<2>::DIRECTION_TRAN && !hi)
+            throw Exception("Space2dCylindrical: Lower bound is not allowed in tran direction.");
+    }
 
 public:
 
@@ -245,6 +292,12 @@ public:
     shared_ptr<Revolution> getRevolution() const { return revolution; }
     
     virtual Space2dCylindrical* getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path = 0, bool copyBorders = false) const;
+
+    void setBorders(int direction, const border::Strategy& border_to_set);
+
+    void setBorder(int direction, bool higher, const border::Strategy& border_to_set);
+
+    const border::Strategy& getBorder(int direction, bool higher) const;
 
 };
 

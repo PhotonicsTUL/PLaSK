@@ -271,6 +271,12 @@ struct GeometryReader {
      */
     template <typename RequiredElementType>
     shared_ptr<RequiredElementType> readExactlyOneChild();
+
+    /**
+     * Try reading calculation space. Throw exception if can't.
+     * @return calculation space which was read
+     */
+    shared_ptr<CalculationSpace> readCalculationSpace();
 };
 
 //specialization for most types

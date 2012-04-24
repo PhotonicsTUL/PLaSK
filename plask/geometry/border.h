@@ -222,6 +222,8 @@ public:
         this->strategy_hi = strategy_hi;
     }
 
+    void setBoth(const StrategyType& s) { setStrategies(s, s); }
+
     void setLo(const StrategyType& strategy_lo) {
         setOrder(strategy_lo, getHi());
         this->strategy_lo = strategy_lo;
@@ -254,7 +256,7 @@ public:
      * @param _getHi if @true hi strategy will be returned, in other case lo strategy will be returned
      * @param lo or hi strategy, depends from @p _getHi value
      */
-    const StrategyType& get(bool _getHi) {
+    const StrategyType& get(bool _getHi) const {
         return _getHi ? getHi() : getLo();
     }
 

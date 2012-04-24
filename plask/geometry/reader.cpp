@@ -88,4 +88,9 @@ shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
     return result;
 }
 
+shared_ptr<CalculationSpace> GeometryReader::readCalculationSpace() {
+    std::string nodeName = source.getNodeName();
+
+}
+
 }   // namespace plask

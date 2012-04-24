@@ -6,6 +6,7 @@ This file includes useful geometry primitives, like boxes, etc.
 */
 
 #include "../vec.h"
+#include "../exceptions.h"
 
 namespace plask {
 
@@ -304,6 +305,10 @@ struct Primitive<2> {
         DIRECTION_TRAN = 0,
         DIRECTION_UP = 1
     };
+
+    static void ensureIsValidDirection(unsigned direction) {
+        if (direction > 1) throw Exception("Bad 2d direction index, %1% was given but allowed are: 0, 1.", direction);
+    }
 };
 
 /**
@@ -332,6 +337,10 @@ struct Primitive<3> {
         DIRECTION_TRAN = 1,
         DIRECTION_UP = 2
     };
+
+    static void ensureIsValidDirection(unsigned direction) {
+        if (direction > 2) throw Exception("Bad 3d direction index, %1% was given but allowed are: 0, 1, 2.", direction);
+    }
 };
 
 } // namespace plask
