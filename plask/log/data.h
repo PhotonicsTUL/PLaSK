@@ -18,10 +18,11 @@ class DataLog {
 
     /**
      * Log a data point and with specified counter. Most probably add another point to the list.
+     * @param counter current counter value
      * @param data data to log (e.g. argument and value)
      * @return current counter
      */
-      virtual DataLog& operator()(int counter, const Params&... data) = 0;
+      virtual DataLog& operator()(const Params&... data, int counter) = 0;
 
 
   public:
@@ -40,7 +41,7 @@ class DataLog {
      * @param data data to log (e.g. argument and value)
      * @return current counter
      */
-    int count(const Params&... data) { (*this)(cntr, std::forward<const Params&>(data)...); return ++cntr; };
+    int count(const Params&... data) { (*this)(std::forward<const Params&>(data)..., cntr); return ++cntr; };
 
     /// Reset the counter
     void resetCounter() { cntr = 0; }
@@ -66,7 +67,7 @@ struct Data2dLog: public DataLog<ArgT, ValT> {
 
     virtual Data2dLog& operator()(const ArgT& arg, const ValT& val) {}
 
-    virtual Data2dLog& operator()(int counter, const ArgT& arg, const ValT& val) {};
+    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val, int counter) {};
 };
 
 

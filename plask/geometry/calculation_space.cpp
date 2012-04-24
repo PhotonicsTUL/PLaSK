@@ -39,9 +39,9 @@ Space2dCartesian* Space2dCartesian::getSubspace(const shared_ptr< GeometryElemen
         std::unique_ptr<Space2dCartesian> result(new Space2dCartesian(*this));
         result->extrusion = make_shared<Extrusion>(new_child, getExtrusion()->length);
         return result.release();
-    } else    
+    } else
         return new Space2dCartesian(new_child, getExtrusion()->length);
-    
+
 }
 
 void Space2dCartesian::setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set) {
@@ -100,7 +100,7 @@ Space2dCylindrical* Space2dCylindrical::getSubspace(const shared_ptr< GeometryEl
         std::unique_ptr<Space2dCylindrical> result(new Space2dCylindrical(*this));
         result->revolution = make_shared<Revolution>(new_child);
         return result.release();
-    } else    
+    } else
         return new Space2dCylindrical(new_child);
 }
 

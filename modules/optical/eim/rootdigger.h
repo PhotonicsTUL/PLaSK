@@ -3,7 +3,7 @@
 
 #include <plask/plask.hpp>
 
-namespace plask { namespace eim {
+namespace plask { namespace modules { namespace eim {
 
 class EffectiveIndex2dModule;
 
@@ -68,5 +68,5 @@ class RootDigger {
     dcomplex getSolution(dcomplex point) const;
 };
 
-}} // namespace plask::eim
+}}} // namespace plask::modules::eim
 #endif // ROTDIGGER_H

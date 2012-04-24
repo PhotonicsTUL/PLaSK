@@ -7,7 +7,7 @@
 
 #include "rootdigger.h"
 
-namespace plask { namespace eim {
+namespace plask { namespace modules { namespace eim {
 
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
@@ -18,10 +18,16 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
 
     RootDigger rootdigger;
 
-    /// The mesh used for cutting the structure into one-dimentional stripes
+    /// The mesh used for cutting the structure into one-dimensional stripes
     shared_ptr<RectilinearMesh2d> mesh;
 
+    /// Logger for char_val
     Data2dLog<dcomplex,double> log_value;
+
+    /// Information if the geometry or mesh has changed since last cache
+    bool changed;
+
+    /// Cached refractive indices
 
   public:
 
@@ -46,21 +52,23 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
      *
      * @param new_geometry new geometry space
      */
-    void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
+    virtual void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
         ModuleCartesian2d::setGeometry(new_geometry);
         auto child = new_geometry->getChild();
         if (!child) throw NoChildException();
         mesh = make_shared<RectilinearMesh2d>(child);
+        changed = true;
     }
 
     /**
      * Set the simple mesh based on the geometry bounding boxes.
      **/
     void setSimpleMesh() {
-        log(LOG_INFO, "Creating automatic simple mesh");
+        log(LOG_INFO, "Creating simple mesh");
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
         mesh = make_shared<RectilinearMesh2d>(child);
+        changed = true;
     }
 
     /**
@@ -74,6 +82,7 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
         if (!child) throw NoChildException();
         RectilinearMesh2d meshxy(child);
         mesh = make_shared<RectilinearMesh2d>(meshx, meshxy.c1);
+        changed = true;
     }
 
     /**
@@ -84,6 +93,7 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
     void setMesh(const shared_ptr<RectilinearMesh1d>& meshx) {
         log(LOG_INFO, "Setting mesh");
         setMesh(*meshx);
+        changed = true;
     }
 
     /**
@@ -93,6 +103,7 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
      **/
     void setMesh(const shared_ptr<RectilinearMesh2d>& meshxy) {
         mesh = meshxy;
+        changed = true;
     }
 
 
@@ -100,10 +111,10 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
     /**
      * Find the mode around the specified propagation constant.
      *
-     * This method remembers the determined mode, for rietrieval of the field profiles.
+     * This method remembers the determined mode, for retrieval of the field profiles.
      *
      * \param neff initial effective index to search the mode around
-     * \return determined propagation constant
+     * \return determined effective index
      **/
     dcomplex computeMode(dcomplex neff);
 
@@ -117,9 +128,9 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
      * \param neff2 another end of the range to browse
      * \param steps number of steps for range browsing
      * \param nummodes maximum number of modes to find
-     * \return vector of determined propagation constants
+     * \return vector of determined effective indices
      */
-    std::vector<dcomplex> findModes(dcomplex neff1, dcomplex neff2, int steps=100, int nummodes=std::numeric_limits<int>::max());
+    std::vector<dcomplex> findModes(dcomplex neff1, dcomplex neff2, unsigned steps=100, unsigned nummodes=std::numeric_limits<unsigned>::max());
 
 
     /**
@@ -128,9 +139,9 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
      * \param neff1 one end of the range to browse
      * \param neff2 another end of the range to browse
      * \param steps number of steps for range browsing
-     * \return vector of determined potential propagation constants
+     * \return vector of determined potential effective indices
      */
-    std::vector<dcomplex> findModesMap(dcomplex neff1, dcomplex neff2, int steps=100);
+    std::vector<dcomplex> findModesMap(dcomplex neff1, dcomplex neff2, unsigned steps=100);
 
 
     /// Receiver of the wavelength
@@ -140,7 +151,7 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
     ReceiverFor<Temperature, Space2dCartesian> inTemperature;
 
     /// Provider for computed effective index
-    ProviderFor<PropagationConstant>::WithValue outNeff;
+    ProviderFor<EffectiveIndex>::WithValue outNeff;
 
     /// Provider of optical field
     ProviderFor<OpticalIntensity, Space2dCartesian>::Delegate outIntensity;
@@ -148,8 +159,11 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
 
   private:
 
+    /// Cache the effective indices
+    void updateCache();
+
     /// Return function value for root digger
-    dcomplex char_val(dcomplex x) { return 0.; /* TODO */ }
+    dcomplex char_val(dcomplex x);
 
     /// Method computing the distribution of light intensity
     shared_ptr<const std::vector<double>> getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);
@@ -157,6 +171,6 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
 };
 
 
-}} // namespace plask::eim
+}}} // namespace plask::modules::eim
 
 #endif // PLASK__MODULE_OPTICAL_EIM_HPP

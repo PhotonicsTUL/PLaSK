@@ -18,7 +18,7 @@ struct OpticalIntensity : public ScalarFieldProperty {};
  * Wavelength. It can be either computed by some optical modules or set by the user.
  *
  * It is a complex number, so it can contain information about both the wavelength and losses.
- * Its imaginary part is defined as |f$\Im(\lambda)=-\frac{\Re(\lambda)^2}{2\pi c}\Im(\omega)\f$.
+ * Its imaginary part is defined as \f$ \Im(\lambda)=-\frac{\Re(\lambda)^2}{2\pi c}\Im(\omega) \f$.
  */
 struct Wavelength : public SingleValueProperty<dcomplex> {};
 

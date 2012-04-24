@@ -3,8 +3,6 @@
 
 #include <plask/config.h>
 
-#ifdef PLASK_MATH_STD
-
 // Math library
 #include <cmath>
 
@@ -37,11 +35,19 @@ namespace plask {
     inline bool is_zero(dcomplex v) {
         return real(v)*real(v) + imag(v)*imag(v) < SMALL2;
     }
-
 }
 
 
-#endif // PLASK_MATH_STD
-
+namespace plask {
+    // C++ is lacking some operators
+    inline plask::dcomplex operator*(int a, const plask::dcomplex& b) { return double(a) * b; }
+    inline plask::dcomplex operator*(const plask::dcomplex& a, int b) { return a * double(b); }
+    inline plask::dcomplex operator*(unsigned a, const plask::dcomplex& b) { return double(a) * b; }
+    inline plask::dcomplex operator*(const plask::dcomplex& a, unsigned b) { return a * double(b); }
+    inline plask::dcomplex operator/(int a, const plask::dcomplex& b) { return double(a) / b; }
+    inline plask::dcomplex operator/(const plask::dcomplex& a, int b) { return a / double(b); }
+    inline plask::dcomplex operator/(unsigned a, const plask::dcomplex& b) { return double(a) / b; }
+    inline plask::dcomplex operator/(const plask::dcomplex& a, unsigned b) { return a / double(b); }
+}
 
 #endif // PLASK__NUMBERS_H

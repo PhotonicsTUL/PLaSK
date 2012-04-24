@@ -2,7 +2,7 @@
 #include "eim.h"
 using namespace std;
 
-namespace plask { namespace eim {
+namespace plask { namespace modules { namespace eim {
 
 dcomplex RootDigger::value(dcomplex x, bool count) const{
     dcomplex y = module.char_val(x);
@@ -22,7 +22,7 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
 
     module.log(LOG_INFO, "Searching for the root map from %1% points", NR*NI);
 
-    // Handle situation with unconvenient number of points in some direction
+    // Handle situations with inconvenient number of points in some direction
     // (this is not perfect but we must handle it somehow)
     if (NR == 0) throw BadInput(module.getId(), "Must have at least one point in real domain to browse for a map");
     if (NI == 0) { impoints = vector<double>(1, 0.0); NI = 1; }
@@ -289,4 +289,4 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     throw ComputationError(module.getId(), "Broyden: maximum number of iterations reached");
 }
 
-}} // namespace plask::eim
+}}} // namespace plask::modules::eim

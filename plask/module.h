@@ -138,8 +138,14 @@ struct Module {
         return Data2dLog<ArgT, ValT>(getId(), axis_arg_name, axis_val_name);
     }
 
+    /**
+    * Log a message for this module
+    * \param level log level to log
+    * \param msg log message
+    * \param params parameters passed to format
+    **/
     template<typename ...Args>
-    void log(LogLevel level, Args&&... params) {}
+    void log(LogLevel level, std::string msg, Args&&... params) { plask::log(level, getId() + ": " + msg, std::forward<Args>(params)...); }
 
 };
 
@@ -160,7 +166,7 @@ class ModuleCartesian2d: public Module {
      *
      * @param new_geometry new geometry space
      */
-    void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
+    virtual void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
         log(LOG_INFO, "Attaching geometry");
         geometry = new_geometry;
     }

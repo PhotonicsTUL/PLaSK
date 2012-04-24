@@ -1,6 +1,8 @@
 #ifndef PLASK__LOG_LOG_H
 #define PLASK__LOG_LOG_H
 
+#include <string>
+
 namespace plask {
 
 enum LogLevel {
@@ -14,9 +16,16 @@ enum LogLevel {
     LOG_DEBUG           // pretty much everything
 };
 
+
+/**
+ * Log a message
+ * \param level log level to log
+ * \param msg log message
+ * \param params parameters passed to format
+ **/
 template<typename ...Args>
-inline void log(LogLevel level, Args&&... params) {
-    // format(std::forward<Args>(params)...);
+inline void log(LogLevel level, std::string msg, Args&&... params) {
+    // format(msg, std::forward<Args>(params)...);
 }
 
 }   // namespace plask

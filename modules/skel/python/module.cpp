@@ -5,7 +5,7 @@
 
 // #include "../your_module_class_header.hpp"
 
-using namespace plask::your_module;
+using namespace plask::modules::your_module;
 
 /**
  * Initialization of your module to Python

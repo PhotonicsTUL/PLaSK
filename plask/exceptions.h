@@ -196,7 +196,6 @@ class MaterialCantBeMixedException: public Exception {
     }*/
 
 public:
-    /// @param material_name name of material which not exists
     MaterialCantBeMixedException(const std::string& material1name_with_components, const std::string& material2name_with_components, const std::string& common_dopant = "")
         : Exception("Material \"%1%%3%\" can not be mixed with material \"%2%%3%\".",
               material1name_with_components, material2name_with_components, common_dopant.empty() ? "" : ':' + common_dopant)

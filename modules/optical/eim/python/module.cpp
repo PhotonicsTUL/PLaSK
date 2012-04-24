@@ -6,7 +6,7 @@
 
 #include "../eim.h"
 
-using namespace plask::eim;
+using namespace plask::modules::eim;
 
 /**
  * Initialization of your module to Python
