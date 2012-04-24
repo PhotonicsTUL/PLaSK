@@ -44,11 +44,17 @@ struct Strategy {
 
     /**
      * Create new strategy (using operator new) described by string @p str.
+     *
+     * Throw excption if @p str not describe strategy.
      * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
      * @param materialsDB material database used to get material
      * @return created strategy
      */
     static Strategy* fromStr(const std::string& str, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
+    static std::unique_ptr<Strategy> fromStrUnique(const std::string& str, const MaterialsDB& materialsDB = MaterialsDB::getDefault()) {
+        return std::unique_ptr<Strategy>(fromStr(str, materialsDB));
+    }
 };
 
 /**

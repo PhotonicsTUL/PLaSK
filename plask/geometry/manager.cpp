@@ -72,7 +72,7 @@ void GeometryManager::loadSpacesFromReader(GeometryReader& reader) {
                     throw XMLUnexpectedElementException("end of \"spaces\" tag");
                 return;  //end of spaces
             case irr::io::EXN_ELEMENT:
-                //roots.push_back(reader.readSpace());
+                reader.readCalculationSpace();
                 break;
             case irr::io::EXN_COMMENT:
                 break;   //just ignore

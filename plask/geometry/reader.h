@@ -277,6 +277,7 @@ struct GeometryReader {
      * @return calculation space which was read
      */
     shared_ptr<CalculationSpace> readCalculationSpace();
+
 };
 
 //specialization for most types

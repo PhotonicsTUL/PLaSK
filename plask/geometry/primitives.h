@@ -341,6 +341,11 @@ struct Primitive<3> {
     static void ensureIsValidDirection(unsigned direction) {
         if (direction > 2) throw Exception("Bad 3d direction index, %1% was given but allowed are: 0, 1, 2.", direction);
     }
+
+    static void ensureIsValid2dDirection(unsigned direction) {
+        if (direction != DIRECTION_TRAN && direction != DIRECTION_UP)
+            throw Exception("Bad 2d direction index.", direction);
+    }
 };
 
 } // namespace plask

@@ -30,6 +30,18 @@ inline T getAttribute(XMLReader& reader, const std::string& name, T&& default_va
 
 boost::optional<std::string> getAttribute(XMLReader& reader, const char* name);
 
+template <typename T>
+inline boost::optional<T> getAttribute(XMLReader& reader, const char* name) {
+    const char* attr_str = reader.getAttributeValue(name);
+    if (attr_str == nullptr) return boost::optional<T>();
+    return boost::lexical_cast<T>(attr_str);
+}
+
+template <typename T>
+inline boost::optional<T> getAttribute(XMLReader& reader, const std::string& name) {
+    return getAttribute(reader, name.c_str());
+}
+
 inline boost::optional<std::string> getAttribute(XMLReader& reader, const std::string& name) {
     return getAttribute(reader, name.c_str());
 }

@@ -90,7 +90,33 @@ shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
 
 shared_ptr<CalculationSpace> GeometryReader::readCalculationSpace() {
     std::string nodeName = source.getNodeName();
+    std::string name = XML::requireAttr(source, "name");
+    std::string src = XML::requireAttr(source, "over");
+    shared_ptr<CalculationSpace> result;
+    if (nodeName == "cartesian") {    //TODO register with space names(?)
+        boost::optional<double> l = XML::getAttribute<double>(source, "length");
+        result = l ?
+            make_shared<Space2dCartesian>(manager.requireElement< GeometryElementD<2> >(src), *l) :
+            make_shared<Space2dCartesian>(manager.requireElement< Extrusion >(src));
+    } else
+    if (nodeName == "cylindrical") {
+        result = make_shared<Space2dCylindrical>(manager.requireElement< GeometryElementD<2> >(src));
+    } else
+        throw XMLUnexpectedElementException("space tag (cartesian or cylindrical)");
 
+    for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
+        std::string axis_name = getAxisName(dir_nr);
+        boost::optional<std::string> v;
+        v = XML::getAttribute(source, axis_name);
+        if (v) result->setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
+        v = XML::getAttribute(source, axis_name + "-lo");
+        if (v) result->setBorder(plask::Primitive<3>::DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v));
+        v = XML::getAttribute(source, axis_name + "-hi");
+        if (v) result->setBorder(plask::Primitive<3>::DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v));
+    }
+
+    manager.calculationSpaces[name] = result;
+    return result;
 }
 
 }   // namespace plask
