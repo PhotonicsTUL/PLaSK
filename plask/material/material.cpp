@@ -112,6 +112,11 @@ double Material::nr(double wl, double T) const { throwNotImplemented("nr(double 
 
 dcomplex Material::Nr(double wl, double T) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
 
+std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Material::Nr_tensor(double wl, double T) const {
+    dcomplex n = Nr(wl, T);
+    return std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex>(n, n, n, 0., 0.);
+}
+
 double Material::res(double T) const { throwNotImplemented("res(double T)"); assert(0); }
 double Material::res_l(double T) const { throwNotImplemented("res_l(double T)"); assert(0); }
 double Material::res_v(double T) const { throwNotImplemented("res_v(double T)"); assert(0); }
@@ -459,6 +464,16 @@ double MixedMaterial::nr(double wl, double T) const {
 
 dcomplex MixedMaterial::Nr(double wl, double T) const {
     return avg([&](const Material& m) { return m.Nr(wl, T); });
+}
+
+std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> MixedMaterial::Nr_tensor(double wl, double T) const {
+    std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> result;
+    std::get<0>(result) = avg([&](const Material& m) { return std::get<0>(m.Nr_tensor(wl, T)); });
+    std::get<1>(result) = avg([&](const Material& m) { return std::get<1>(m.Nr_tensor(wl, T)); });
+    std::get<2>(result) = avg([&](const Material& m) { return std::get<2>(m.Nr_tensor(wl, T)); });
+    std::get<3>(result) = avg([&](const Material& m) { return std::get<3>(m.Nr_tensor(wl, T)); });
+    std::get<4>(result) = avg([&](const Material& m) { return std::get<4>(m.Nr_tensor(wl, T)); });
+    return result;
 }
 
 double MixedMaterial::res(double T) const {

@@ -8,10 +8,23 @@ namespace plask {
 
 namespace border {
 
+/// Enum holding strategy types
+enum StrategyType {
+    DEFAULT,
+    SIMPLE,
+    EXTEND,
+    PERIODIC,
+    MIRROR,
+};
+
+
 /**
  * Base, abstract for all classes which describe what do with points outside geometry in calculation space.
  */
 struct Strategy {
+
+    /// \return strategy type
+    virtual StrategyType type() const = 0;
 
     /**
      * Apply strategy to given point @p p.
@@ -70,6 +83,7 @@ struct UniversalStrategy: public Strategy {
  * Strategy which does nothing.
  */
 struct Null: public UniversalStrategy {
+    virtual StrategyType type() const { return DEFAULT; }
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
     virtual Null* clone() const;
     virtual std::string str() const;
@@ -91,6 +105,8 @@ struct SimpleMaterial: public UniversalStrategy {
      */
     SimpleMaterial(const shared_ptr<Material>& material): material(material) {}
 
+    virtual StrategyType type() const { return SIMPLE; }
+
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual SimpleMaterial* clone() const;
@@ -103,6 +119,8 @@ struct SimpleMaterial: public UniversalStrategy {
  * Strategy which moves point p to nearest border.
  */
 struct Extend: public UniversalStrategy {
+
+    virtual StrategyType type() const { return EXTEND; }
 
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
@@ -117,6 +135,8 @@ struct Extend: public UniversalStrategy {
  */
 struct Periodic: public Strategy {
 
+    virtual StrategyType type() const { return PERIODIC; }
+
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual Periodic* clone() const;
@@ -125,6 +145,8 @@ struct Periodic: public Strategy {
 };
 
 struct Mirror: public Strategy {
+
+    virtual StrategyType type() const { return MIRROR; }
 
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 

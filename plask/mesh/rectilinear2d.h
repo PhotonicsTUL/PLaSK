@@ -257,6 +257,12 @@ class RectilinearMesh2d: public Mesh<2> {
     }
 
     /**
+     * Return a mesh that enables iterating over middle points of the rectangles
+     * \return new rectilinear mesh with points in the middles of original rectangles
+     */
+    RectilinearMesh2d getElementMesh() const;
+
+    /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate
@@ -274,7 +280,7 @@ class RectilinearMesh2d: public Mesh<2> {
 /**
  * Do linear 2d interpolation with checking bounds variants.
  * @param data 2d data source, data(i0, i1) should return data in point (c0[i0], c1[i1])
- * @param point_c0, point_c1 requested point
+ * @param point_c0,point_c1 requested point coordinates
  * @param c0 first coordinates of points
  * @param c1 second coordinates of points
  * @param index0 should be equal to c0.findIndex(point_c0)
@@ -331,18 +337,18 @@ struct InterpolationAlgorithm<RectilinearMesh2d, DataT, LINEAR> {
     }
 };
 
-}   // namespace plask
+} // namespace plask
 
-namespace std { //use fast iterator if know mesh type at compile time:
+namespace std { // use fast iterator if we know mesh type at compile time:
 
     inline auto begin(const plask::RectilinearMesh2d& m) -> decltype(m.begin_fast()) {
-      return m.begin_fast();
+        return m.begin_fast();
     }
 
     inline auto end(const plask::RectilinearMesh2d& m) -> decltype(m.end_fast()) {
-      return m.end_fast();
+        return m.end_fast();
     }
 
-}   // namespace std
+} // namespace std
 
 #endif // PLASK__RECTILINEAR2D_H

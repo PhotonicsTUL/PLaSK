@@ -41,7 +41,7 @@ public:
     const std::vector<double>& getPointsVector() const { return points; }
 
     /**
-     * Find position where @p to_find point could be insert.
+     * Find position where @p to_find point could be inserted.
      * @param to_find point to find
      * @return First position where to_find could be insert.
      *         Refer to value equal to @p to_find only if @p to_find is already in mesh.
@@ -51,7 +51,7 @@ public:
     const_iterator find(double to_find) const;
 
     /**
-     * Find index where @p to_find point could be insert.
+     * Find index where @p to_find point could be inserted.
      * @param to_find point to find
      * @return First index where to_find could be inserted.
      *         Refer to value equal to @p to_find only if @p to_find is already in mesh.

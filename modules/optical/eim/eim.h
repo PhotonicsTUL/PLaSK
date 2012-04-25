@@ -27,7 +27,11 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
     /// Information if the geometry or mesh has changed since last cache
     bool changed;
 
+    /// Cached sizes of mesh cells
+    std::vector<double> dTran, dUp;
+
     /// Cached refractive indices
+    std::vector<std::vector<dcomplex>> nrCache;
 
   public:
 
@@ -44,7 +48,7 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
 
     virtual std::string getDescription() const {
         return "Calculate optical modes and optical field distribution using the effective index method "
-               "in Cartesian two-dimentional space.";
+               "in Cartesian two-dimensional space.";
     }
 
     /**
@@ -55,9 +59,27 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
     virtual void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
         ModuleCartesian2d::setGeometry(new_geometry);
         auto child = new_geometry->getChild();
+
         if (!child) throw NoChildException();
-        mesh = make_shared<RectilinearMesh2d>(child);
-        changed = true;
+
+
+        setMesh(RectilinearMesh2d(child));
+    }
+
+    /**
+     * Set up the mesh. Both horizontal and vertical divisions are provided
+     *
+     * \param meshxy the new mesh
+     **/
+    void setMesh(const RectilinearMesh2d& meshxy);
+
+    /**
+     * Set up the mesh. Both horizontal and vertical divisions are provided
+     *
+     * \param meshxy the new mesh
+     **/
+    void setMesh(const shared_ptr<RectilinearMesh2d>& meshxy) {
+        setMesh(*meshxy);
     }
 
     /**
@@ -67,8 +89,7 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
         log(LOG_INFO, "Creating simple mesh");
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
-        mesh = make_shared<RectilinearMesh2d>(child);
-        changed = true;
+        setMesh(RectilinearMesh2d(child));
     }
 
     /**
@@ -81,8 +102,8 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
         RectilinearMesh2d meshxy(child);
-        mesh = make_shared<RectilinearMesh2d>(meshx, meshxy.c1);
-        changed = true;
+        meshxy.tran() = meshx;
+        setMesh(meshxy);
     }
 
     /**
@@ -91,19 +112,7 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
      * \param meshx horizontal mesh
      **/
     void setMesh(const shared_ptr<RectilinearMesh1d>& meshx) {
-        log(LOG_INFO, "Setting mesh");
         setMesh(*meshx);
-        changed = true;
-    }
-
-    /**
-     * Set up the mesh. Both horizontal and vertical divisions are provided
-     *
-     * \param meshxy the new mesh
-     **/
-    void setMesh(const shared_ptr<RectilinearMesh2d>& meshxy) {
-        mesh = meshxy;
-        changed = true;
     }
 
 

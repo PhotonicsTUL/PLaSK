@@ -9,6 +9,7 @@ This file includes base classes for materials and material database class.
 #include <map>
 #include <vector>
 #include <functional>
+#include <tuple>
 
 #include "../math.h"
 #include "../memory.h"
@@ -567,22 +568,30 @@ struct Material {
     virtual double nr(double wl, double T) const;
 
     /**
-     * Get absorption coefficient alpha[\f$cm^{-1}\f$].
+     * Get absorption coefficient alpha [\f$ cm^{-1} \f$].
      * @param wl Wavelength [nm]
      * @param T temperature [K]
-     * @return absorption coefficient alpha[\f$cm^{-1}\f$]
+     * @return absorption coefficient alpha [\f$ cm^{-1} \f$]
      */
     virtual double absp(double wl, double T) const;
 
     /**
-     * Get refractive index nR[-].
+     * Get refractive index nR [-].
      * @param wl Wavelength [nm]
      * @param T temperature [K]
      * @return refractive index nR[-]
      */
     virtual dcomplex Nr(double wl, double T) const;
 
-    //virtual std::tuple<double, double, double, double, double> Nr(double wl, double T..??..) const;// refractive index (tensor) nR[-]: Wavelength[nm], Temperature[K]
+    /**
+     * Get anisotropic refractive index tensor nR [-].
+     * Tensor must have the form \f$ \left[\begin{array}{ccc} n_{0} & n_{3} & 0\\ n_{4} & n_{1} & 0\\ 0 & 0 & n_{2} \end{array}\right] \f$,
+     * where \f$ n_i \f$ is i-th element of the returned tuple.
+     * @param wl Wavelength [nm]
+     * @param T temperature [K]
+     * @return refractive index tensor nR[-]
+     */
+    virtual std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Nr_tensor(double wl, double T) const;
 
 protected:
     void throwNotImplemented(const std::string& method_name) const;
@@ -757,13 +766,15 @@ struct MixedMaterial: public Material {
 
     virtual dcomplex Nr(double wl, double T) const;
 
+    virtual std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Nr_tensor(double wl, double T) const;
+
 private:
 
     /**
      * Calulate weighted sums of materials (from materials vector) properties.
      * @param f functore which calculate property value for given material
      * @return calculated sum, with the same type which return functor
-     * @tparam Functor type of functor wchich can take const Material& argument, and return something which can be multiple by scallar, added, and assigned
+     * @tparam Functor type of functor which can take const Material& argument, and return something which can be multiple by scalar, added, and assigned
      */
     template <typename Functor>
     auto avg(Functor f) const -> typename std::remove_cv<decltype(f(*((const Material*)0)))>::type {

@@ -51,6 +51,42 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomp
 }
 
 
+
+
+void EffectiveIndex2dModule::setMesh(const RectilinearMesh2d& meshxy) {
+    mesh = make_shared<RectilinearMesh2d>(meshxy.getElementMesh());
+
+    dTran.clear();
+    dTran.reserve(meshxy.tran().size()-1);
+    for (auto a = meshxy.tran().begin(), b = meshxy.tran().begin()+1; b != meshxy.tran().end(); ++a, ++b)
+        dTran.push_back(*b - *a);
+
+    dUp.clear();
+    dUp.reserve(meshxy.tran().size()-1);
+    for (auto a = meshxy.up().begin(), b = meshxy.up().begin()+1; b != meshxy.up().end(); ++a, ++b)
+        dUp.push_back(*b - *a);
+
+    changed = true;
+}
+
+
+
+void EffectiveIndex2dModule::updateCache()
+{
+    if (changed) {
+        // We need to resize cache vectors
+        nrCache.assign(mesh->tran().size()+1, std::vector<dcomplex>(mesh->up().size()+1, 1.));
+    }
+
+    if (inTemperature.changed || changed) {
+        // Either temperature or structure changed, so we need to get refractive indices
+    }
+
+    changed = false;
+}
+
+
+
 /********* Here are the computations *********/
 
 dcomplex EffectiveIndex2dModule::char_val(dcomplex x) {

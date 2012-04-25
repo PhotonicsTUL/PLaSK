@@ -311,6 +311,12 @@ class RectilinearMesh3d: public Mesh<3> {
     }
 
     /**
+     * Return a mesh that enables iterating over middle points of the rectangles
+     * \return new rectilinear mesh with points in the middles of original rectangles
+     */
+    RectilinearMesh3d getElementMesh() const;
+
+    /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate

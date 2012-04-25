@@ -193,7 +193,7 @@ struct MeshIteratorWrapperImpl: public Mesh<dim>::IteratorImpl {
 };
 
 /**
- * Construct Mesh<dim>::Iterator which wraps non-polimorphic iterator, using MeshIteratorWrapperImpl.
+ * Construct Mesh<dim>::Iterator which wraps non-polymorphic iterator, using MeshIteratorWrapperImpl.
  * @param iter iterator to wrap
  * @return wrapper over @p iter
  * @tparam IteratorType type of iterator to wrap

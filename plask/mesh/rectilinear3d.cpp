@@ -61,9 +61,6 @@ void RectilinearMesh3d::setOptimalIterationOrder() {
 }
 
 
-
-
-
 void RectilinearMesh3d::buildFromGeometry(const GeometryElementD<3>& geometry) {
     std::vector<Box3d> boxes = geometry.getLeafsBoundingBoxes();
 
@@ -76,5 +73,25 @@ void RectilinearMesh3d::buildFromGeometry(const GeometryElementD<3>& geometry) {
         c2.addPoint(box.upper.c2);
     }
 }
+
+
+RectilinearMesh3d RectilinearMesh3d::getElementMesh() const {
+
+    RectilinearMesh1d line0;
+    for (auto a = c0.begin(), b = c0.begin()+1; b != c0.end(); ++a, ++b)
+        line0.addPoint(0.5 * (*a + *b));
+
+    RectilinearMesh1d line1;
+    for (auto a = c1.begin(), b = c1.begin()+1; b != c1.end(); ++a, ++b)
+        line1.addPoint(0.5 * (*a + *b));
+
+    RectilinearMesh1d line2;
+    for (auto a = c2.begin(), b = c2.begin()+1; b != c2.end(); ++a, ++b)
+        line2.addPoint(0.5 * (*a + *b));
+
+    return RectilinearMesh3d(line0, line1, line2, getIterationOrder());
+}
+
+
 
 } // namespace plask

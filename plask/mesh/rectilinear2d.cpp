@@ -54,4 +54,18 @@ void RectilinearMesh2d::buildFromGeometry(const GeometryElementD<2>& geometry) {
     }
 }
 
+RectilinearMesh2d RectilinearMesh2d::getElementMesh() const {
+
+    RectilinearMesh1d line0;
+    for (auto a = c0.begin(), b = c0.begin()+1; b != c0.end(); ++a, ++b)
+        line0.addPoint(0.5 * (*a + *b));
+
+    RectilinearMesh1d line1;
+    for (auto a = c1.begin(), b = c1.begin()+1; b != c1.end(); ++a, ++b)
+        line1.addPoint(0.5 * (*a + *b));
+
+    return RectilinearMesh2d(line0, line1, getIterationOrder());
+}
+
+
 } // namespace plask

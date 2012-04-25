@@ -25,8 +25,8 @@ BOOST_AUTO_TEST_CASE(dim1) {
 BOOST_AUTO_TEST_CASE(dim2) {
     plask::RectilinearMesh2d mesh;
     BOOST_CHECK_EQUAL(mesh.empty(), true);
-    mesh.c0.addPointsLinear(0, 1.0, 2);
-    mesh.c1.addPointsLinear(0, 1.0, 2);
+    mesh.c0.addPointsLinear(0., 1., 2);
+    mesh.c1.addPointsLinear(0., 1., 2);
     BOOST_CHECK_EQUAL(mesh.size(), 4);
     double data[4] = {0.0, 2.0, 2.0, 0.0};
     BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(0.5, 0.5)), 1.0);
@@ -69,5 +69,18 @@ BOOST_AUTO_TEST_CASE(from_geometry_3) {
     BOOST_CHECK_EQUAL(mesh.c2, plask::RectilinearMesh1d({0., 3., 8., 10.}));
 
 }
+
+BOOST_AUTO_TEST_CASE(middle2) {
+    plask::RectilinearMesh2d mesh;
+    BOOST_CHECK_EQUAL(mesh.empty(), true);
+    mesh.c0.addPointsLinear(0., 4.0, 3);
+    mesh.c1.addPointsLinear(2., 6.0, 3);
+
+    auto middles = mesh.getElementMesh();
+    BOOST_CHECK_EQUAL(middles.c0, plask::RectilinearMesh1d({1., 3.}));
+    BOOST_CHECK_EQUAL(middles.c1, plask::RectilinearMesh1d({3., 5.}));
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
