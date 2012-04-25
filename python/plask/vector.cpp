@@ -118,60 +118,26 @@ template <int dim, typename T>  py::object vec_list__array__(py::object self) {
 
 
 // Access components by name
-template <typename T, typename V, int dim, char c, bool z_up>
-struct VecAccessor {
-    inline static T getComponent(const V& self) {
-        std::stringstream out;
-        out << "component " << c << " does not make sense for this vector if config.vertical_axis = '" << (z_up?'z':'y') << "'";
-        throw AttributeError(out.str());
-        return T(); // Make compiler happy, never reached anyway
+template <int dim>
+inline static int vec_attr_indx(const std::string& attr) {
+    int i = config.axes[attr] - 3 + dim;
+    if (i < 0 || i >= dim) {
+        if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" ||
+            attr == "lon" || attr == "tran" || attr == "up")
+            throw AttributeError("attribute '%s' has no sense for %dD vector if config.axes = '%s'", attr, dim, config.axes_name);
+        else
+            throw AttributeError("'vector' object has no attribute '%s'", attr);
     }
-    inline static void setComponent(V& self, T val) {
-        std::stringstream out;
-        out << "component " << c << " does not make sense for this vector if config.vertical_axis = '" << (z_up?'z':'y') << "'";
-        throw AttributeError(out.str());
-    }
+    return i;
+}
+
+template <int dim, typename T>
+struct VecAttr {
+    typedef Vec<dim, T> V;
+    static T get(const V& self, const std::string& attr) { return self[vec_attr_indx<dim>(attr)]; }
+    static void set(V& self, const std::string& attr, T val) { self[vec_attr_indx<dim>(attr)] = val; }
 };
 
-// Implementations for particular names
-#define COMP(dim, name, z_up, i) \
-    template <typename T, typename V> \
-    struct VecAccessor<T,V, dim,name,z_up> { \
-        inline static T getComponent(const V& self) { return self.components[i]; } \
-        inline static void setComponent(V& self, T val) { self.components[i] = val; } \
-    }
-
-COMP(2, 'x', false, 0);
-COMP(2, 'y', false, 1);
-
-COMP(2, 'y', true, 0);
-COMP(2, 'r', true, 0);
-COMP(2, 'z', true, 1);
-
-COMP(3, 'z', false, 0);
-COMP(3, 'x', false, 1);
-COMP(3, 'y', false, 2);
-
-COMP(3, 'x', true, 0);
-COMP(3, 'r', true, 0);
-COMP(3, 'y', true, 1);
-COMP(3, 'p', true, 1);
-COMP(3, 'z', true, 2);
-
-
-// Getter and setter functions
-template <int dim, typename T, char c>
-T get_vec_component(Vec<dim,T>& self) {
-    if (Config::z_up) return VecAccessor<T, Vec<dim,T>, dim, c, true>::getComponent(self);
-    return VecAccessor<T, Vec<dim,T>, dim, c, false>::getComponent(self);
-}
-template <int dim, typename T, char c>
-void set_vec_component(Vec<dim,T>& self, const T& val) {
-    if (Config::z_up) VecAccessor<T, Vec<dim,T>, dim, c, true>::setComponent(self, val);
-    else VecAccessor<T, Vec<dim,T>, dim, c, false>::setComponent(self, val);
-}
-
-#define vec_component_property(name) &get_vec_component<dim,T,name>, &set_vec_component<dim,T,name>
 
 
 // Register vector class to python
@@ -193,13 +159,10 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         "--------\n"
         "vector\t:\tcreate a new vector.\n"
         , py::no_init)
-        .add_property("x", vec_component_property('x'))
-        .add_property("y", vec_component_property('y'))
-        .add_property("z", vec_component_property('z'))
-        .add_property("r", vec_component_property('r'))
-        .add_property("phi", vec_component_property('p'))
-        .def("__getitem__", vec__getitem__<dim,T>)
-        .def("__setitem__", vec__setitem__<dim,T>)
+        .def("__getattr__", &VecAttr<dim,T>::get)
+        .def("__setattr__", &VecAttr<dim,T>::set)
+        .def("__getitem__", &vec__getitem__<dim,T>)
+        .def("__setitem__", &vec__setitem__<dim,T>)
         .def("__iter__", &Vec_iterator<dim,T>::new_iterator, py::with_custodian_and_ward_postcall<0,1>())
         .def("__len__", &vec__len__<dim>)
         .def("__str__", &vec__str__<dim,T>)
@@ -272,63 +235,20 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
 
     if (n == 0) { // Extract components from kwargs
 
-        bool cart = false, cylind = false;
         n = py::len(kwargs);
         py::object comp[3];
 
         py::stl_input_iterator<std::string> begin(kwargs.keys()), end;
         for (auto key = begin; key != end; ++key) {
             py::object val = kwargs[*key];
-
-            if (Config::z_up) {
-                if (*key == "x") {
-                    if (n == 3) {
-                        comp[0] = val;
-                    } else {
-                        throw TypeError("x component not allowed for 2D vectors if config.vertical_axis is 'z'");
-                    }
-                    cart = true;
-                } else if (*key == "y") {
-                    comp[n==2?0:1] = val;
-                    cart = true;
-                } else if (*key == "z") {
-                    comp[n==2?1:2] = val;
-                } else if (*key == "phi") {
-                    if (n == 3) {
-                        comp[1] = val;
-                    } else {
-                        throw TypeError("phi component not allowed for 2D vectors");
-                    }
-                    cylind = true;
-                } else if (*key == "r") {
-                    comp[0] = val;
-                    cylind = true;
-                } else {
-                    throw TypeError(("unrecognized component name '" + *key + "'").c_str());
-                }
-            } else {
-                if (*key == "z") {
-                    if (n == 3) {
-                        comp[0] = val;
-                    } else {
-                        throw TypeError("z component not allowed for 2D vectors if config.vertical_axis is 'y'");
-                    }
-                } else if (*key == "x") {
-                    comp[n==2?0:1] = val;
-                } else if (*key == "y") {
-                    comp[n==2?1:2] = val;
-                } else if (*key == "phi" || *key == "r") {
-                    throw TypeError("radial components not allowed if config.vertical_axis is 'z'");
-                } else if (*key != "dtype") {
-                    throw TypeError(("unrecognized component name '" + *key + "'").c_str());
-                }
+            try {
+                if (n == 2) comp[vec_attr_indx<2>(*key)] = val;
+                else if (n == 3) comp[vec_attr_indx<3>(*key)] = val;
+            } catch (AttributeError) {
+                throw TypeError("wrong component name for %dD vector if config.axes = '%s'", n, config.axes_name);
             }
-        }
 
-        if (cart && cylind) {
-            throw TypeError("mixed cylindrical and Cartesian component names");
         }
-
         for (int i = 0; i < n; i++)
             params.append(comp[i]);
 

@@ -10,6 +10,7 @@
 #include <plask/exceptions.h>
 #include <plask/math.h>
 #include <plask/memory.h>
+#include <plask/geometry/reader.h>
 
 namespace plask { namespace python {
 
@@ -58,28 +59,27 @@ struct StopIteration: public Exception {
 
 struct Config
 {
-    // Which axis is up (z or y)
-    static bool z_up;
+    // Current axis names
+    static std::string axes_name;
+    static AxisNames axes;
 
-    std::string get_vaxis() {
-        if (z_up) return "z"; else return "y";
+    std::string get_axes() {
+        return axes_name;
     }
-    void set_vaxis(std::string axis) {
-        if (axis != "z" and axis != "y") {
-            throw ValueError("Only z or y allowed for vertical_axis");
-        }
-        z_up = axis == "z";
+    void set_axes(std::string axis) {
+        axes_name = axis;
+        axes = GeometryReader::axisNamesRegister.get(axis);
     }
 
     std::string __str__() {
         return std::string()
-            + "vertical_axis:   " + (z_up?"z":"y")
+            + "axes:   " + axes_name;
         ;
     }
 
     std::string __repr__() {
-        return std::string()
-            + "config.vertical_axis = " + (z_up?"'z'":"'y'")
+        return
+            format("config.axes = '%s'", axes_name)
         ;
     }
 
@@ -91,8 +91,8 @@ inline static void register_config()
     py::class_<Config>("config", "Global PLaSK configuration.", py::no_init)
         .def("__str__", &Config::__str__)
         .def("__repr__", &Config::__repr__)
-        .add_property("vertical_axis", &Config::get_vaxis, &Config::set_vaxis,
-                      "Denotes orientation of coordinate system. Holds the name a vertical axis which i.e. the one along layers growth direction.")
+        .add_property("axes", &Config::get_axes, &Config::set_axes,
+                      "String representing axis names")
     ;
     py::scope().attr("config") = config;
 }

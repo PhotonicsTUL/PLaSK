@@ -27,26 +27,28 @@ class Vector(unittest.TestCase):
 
     def testFactory(self):
         '''Test vector creation by component names'''
-        va = plask.config.vertical_axis
+        ax = plask.config.axes
 
-        plask.config.vertical_axis = 'z'
+        plask.config.axes = 'xyz'
         self.assertEqual( plask.vec(y=1, z=2), plask.vec(1,2) )
-        self.assertEqual( plask.vec(r=1, z=2), plask.vec(1,2) )
         self.assertEqual( plask.vec(z=3, x=1, y=2), plask.vec(1,2,3) )
-        self.assertEqual( plask.vec(r=1, z=3, phi=2), plask.vec(1,2,3) )
-        self.assertRaises( TypeError, lambda: plask.vec(x=1, y=2) ) # for vertical_axis = 'z' x component is not allowed in 2D
+        self.assertRaises( TypeError, lambda: plask.vec(x=1, y=2) ) # for axes = 'z' x component is not allowed in 2D
         self.assertRaises( TypeError, lambda: plask.vec(bad_x=1, z=2, y=1) )
         self.assertRaises( TypeError, lambda: plask.vec(r=1, y=2, z=3) )
 
-        plask.config.vertical_axis = 'y'
+        plask.config.axes = "rz"
+        self.assertEqual( plask.vec(r=1, z=2), plask.vec(1,2) )
+        self.assertEqual( plask.vec(r=2, z=3, phi=1), plask.vec(1,2,3) )
+
+        plask.config.axes = 'xy'
         self.assertEqual( plask.vec(x=1, y=2), plask.vec(1,2) )
         self.assertEqual( plask.vec(y=3, x=2, z=1), plask.vec(1,2,3) )
-        self.assertRaises( TypeError, lambda: plask.vec(y=1, z=2) ) # for vertical_axis = 'y' z component is not allowed in 2D
+        self.assertRaises( TypeError, lambda: plask.vec(y=1, z=2) ) # for axes = 'y' z component is not allowed in 2D
         self.assertRaises( TypeError, lambda: plask.vec(r=1, z=2) )
         self.assertRaises( TypeError, lambda: plask.vec(phi=1, y=2, z=3) )
         self.assertRaises( TypeError, lambda: plask.vec(x=1, bad_x=2) )
 
-        plask.config.vertical_axis = va
+        plask.config.axes = ax
 
     def testItemAccess(self):
         '''Test if the items can be accessed corretly using all possible ways'''
@@ -64,15 +66,17 @@ class Vector(unittest.TestCase):
         a[1] = 2j
         self.assertEqual( a, plask.vec(1,2j,3) )
 
-        va = plask.config.vertical_axis
+        ax = plask.config.axes
 
-        plask.config.vertical_axis = 'z'
+        plask.config.axes = 'xyz'
         self.assertEqual( [self.a2.y, self.a2.z], [1, 2] )
-        self.assertEqual( [self.a2.r, self.a2.z], [1, 2] )
         self.assertEqual( [self.a3.x, self.a3.y, self.a3.z], [1, 2, 3] )
-        self.assertEqual( [self.a3.r, self.a3.phi, self.a3.z], [1, 2, 3] )
 
-        plask.config.vertical_axis = 'y'
+        plask.config.axes = "rz"
+        self.assertEqual( [self.a2.r, self.a2.z], [1, 2] )
+        self.assertEqual( [self.a3.r, self.a3.phi, self.a3.z], [2, 1, 3] )
+
+        plask.config.axes = 'xy'
         self.assertEqual( [self.a2.x, self.a2.y], [1, 2] )
         self.assertEqual( [self.a3.z, self.a3.x, self.a3.y], [1, 2, 3] )
 
@@ -80,7 +84,7 @@ class Vector(unittest.TestCase):
         self.assertEqual( [self.c3.z, self.c3.x, self.c3.y], [100, 2j, 300] )
         self.c3.x = 200
 
-        plask.config.vertical_axis = va
+        plask.config.axes = ax
 
     def testArray(self):
         a = numpy.array(self.c3)
