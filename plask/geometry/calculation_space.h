@@ -28,6 +28,23 @@ struct CalculationSpace {
     virtual void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set) = 0;
 
     /**
+     * Set all planar borders or throw exception if this borders can't be set for this calculation space or direction.
+     *
+     * Planar borders are all borders but up-bottom.
+     * @param border_to_set new border strategy for all planar borders
+     */
+    virtual void setPlanarBorders(const border::Strategy& border_to_set) = 0;
+
+    /**
+     * Set all borders (planar and up-bottom).
+     * @param border_to_set new border strategy for all borders
+     */
+    void setAllBorders(const border::Strategy& border_to_set) {
+        setPlanarBorders(border_to_set);
+        setBorders(Primitive<3>::DIRECTION_UP, border_to_set);
+    }
+
+    /**
      * Set border or throw exception if this border can't be set for this calculation space or direction.
      * @param direction see Primitive<3>::DIRECTION
      * @param higher @c true for higher bound, @c false for lower
@@ -143,6 +160,8 @@ public:
     }
 
     virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr< GeometryElementD<dim> >& element, const PathHints* path = 0, bool copyBorders = false) const = 0;
+
+    void setPlanarBorders(const border::Strategy& border_to_set);
 };
 
 /**

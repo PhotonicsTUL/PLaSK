@@ -104,9 +104,14 @@ shared_ptr<CalculationSpace> GeometryReader::readCalculationSpace() {
     } else
         throw XMLUnexpectedElementException("space tag (cartesian or cylindrical)");
 
+    boost::optional<std::string> v;
+    v = XML::getAttribute(source, "borders");
+    if (v) result->setAllBorders(*border::Strategy::fromStrUnique(*v));
+    v = XML::getAttribute(source, "planar");
+    if (v) result->setPlanarBorders(*border::Strategy::fromStrUnique(*v));
     for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
         std::string axis_name = getAxisName(dir_nr);
-        boost::optional<std::string> v;
+        if (v) result->setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
         v = XML::getAttribute(source, axis_name);
         if (v) result->setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
         v = XML::getAttribute(source, axis_name + "-lo");

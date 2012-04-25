@@ -4,6 +4,17 @@
 
 namespace plask {
 
+template <>
+void CalculationSpaceD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
+    setBorders(Primitive<3>::DIRECTION_TRAN, border_to_set);
+}
+
+template <>
+void CalculationSpaceD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
+    setBorders(Primitive<3>::DIRECTION_LON, border_to_set);
+    setBorders(Primitive<3>::DIRECTION_TRAN, border_to_set);
+}
+
 Space2dCartesian::Space2dCartesian(const shared_ptr<Extrusion>& extrusion)
     : extrusion(extrusion)
 {
