@@ -7,14 +7,15 @@ namespace plask {
 //initialization common for all leafs
 template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
-    leaf.material = reader.materialsDB.get(XML::requireAttr(reader.source, "material"));
-    XML::requireTagEndOrEmptyTag(reader.source, reader.source.getNodeName());
+    leaf.material = reader.materialsDB.get(reader.source.requireAttribute("material"));
+    //XML::requireTagEndOrEmptyTag(reader.source, reader.source.getNodeName());
+    reader.source.requireTagEnd(reader.source.getNodeName());
 }
 
 template <typename BlockType>
 inline void setupBlock2d3d(GeometryReader& reader, BlockType& block) {
-    block.size.tran = XML::requireAttr<double>(reader.source, reader.getAxisTranName());
-    block.size.up = XML::requireAttr<double>(reader.source, reader.getAxisUpName());
+    block.size.tran = reader.source.requireAttribute<double>(reader.getAxisTranName());
+    block.size.up = reader.source.requireAttribute<double>(reader.getAxisUpName());
     setupLeaf(reader, block);
 }
 
@@ -26,7 +27,7 @@ shared_ptr<GeometryElement> read_block2d(GeometryReader& reader) {
 
 shared_ptr<GeometryElement> read_block3d(GeometryReader& reader) {
     shared_ptr< Block<3> > block(new Block<3>());
-    block->size.lon = XML::requireAttr<double>(reader.source, reader.getAxisLonName());
+    block->size.lon = reader.source.requireAttribute<double>(reader.getAxisLonName());
     setupBlock2d3d(reader, *block);
     return block;
 }

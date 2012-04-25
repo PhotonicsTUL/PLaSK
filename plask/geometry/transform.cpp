@@ -7,8 +7,8 @@ namespace plask {
 
 template <typename TranslationType>
 inline void setupTranslation2d3d(GeometryReader& reader, TranslationType& translation) {
-    translation.translation.tran = XML::getAttribute(reader.source, reader.getAxisTranName(), 0.0);
-    translation.translation.up = XML::getAttribute(reader.source, reader.getAxisUpName(), 0.0);
+    translation.translation.tran = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
+    translation.translation.up = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
     translation.setChild(reader.readExactlyOneChild<typename TranslationType::ChildType>());
 }
 
@@ -22,7 +22,7 @@ shared_ptr<GeometryElement> read_translation2d(GeometryReader& reader) {
 shared_ptr<GeometryElement> read_translation3d(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     shared_ptr< Translation<3> > translation(new Translation<3>());
-    translation->translation.lon = XML::getAttribute(reader.source, reader.getAxisLonName(), 0.0);
+    translation->translation.lon = reader.source.getAttribute(reader.getAxisLonName(), 0.0);
     setupTranslation2d3d(reader, *translation);
     return translation;
 }

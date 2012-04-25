@@ -338,7 +338,7 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
 
             case irr::io::EXN_ELEMENT:
                 if (reader.source.getNodeName() == std::string("child")) {
-                    boost::optional<std::string> path = XML::getAttribute(reader.source, "path");
+                    boost::optional<std::string> path = reader.source.getAttribute("path");
                     PathHints::Hint hint = child_param_read();
                     if (path)
                         reader.manager.pathHints[*path].addHint(hint);  //this call readExactlyOneChild

@@ -42,7 +42,7 @@ AxisNames::Register GeometryReader::axisNamesRegister(
 
 GeometryReader::ReadAxisNames::ReadAxisNames(GeometryReader &reader)
     : reader(reader), old(reader.axisNames) {
-    const char* axis = reader.source.getAttributeValue("axes");
+    const char* axis = reader.source.getAttributeValueC("axes");
     if (axis) reader.axisNames = &axisNamesRegister.get(axis);
 }
 
@@ -60,7 +60,7 @@ plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XM
 shared_ptr<GeometryElement> GeometryReader::readElement() {
     std::string nodeName = source.getNodeName();
     if (nodeName == "ref")
-        return manager.requireElement(XML::requireAttr(source, "name"));
+        return manager.requireElement(source.requireAttribute("name"));
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     auto reader_it = elementReaders().find(nodeName);
     if (reader_it == elementReaders().end()) {
@@ -70,7 +70,7 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
         if (reader_it == elementReaders().end())
             throw NoSuchGeometryElementType(nodeName + "[" + expectedSuffix + "]");
     }
-    boost::optional<std::string> name = XML::getAttribute(source, "name");
+    boost::optional<std::string> name = source.getAttribute("name");
     shared_ptr<GeometryElement> new_element = reader_it->second(*this);
     //manager.elements.insert(new_element);   //first this, to ensure that memory will be freed
     if (name) {
@@ -82,19 +82,19 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
 
 shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
     std::string parent_tag = source.getNodeName();
-    XML::requireTag(source);
+    source.requireTag();
     shared_ptr<GeometryElement> result = readElement();
-    XML::requireTagEnd(source, parent_tag);
+    source.requireTagEnd(parent_tag);
     return result;
 }
 
 shared_ptr<CalculationSpace> GeometryReader::readCalculationSpace() {
     std::string nodeName = source.getNodeName();
-    std::string name = XML::requireAttr(source, "name");
-    std::string src = XML::requireAttr(source, "over");
+    std::string name = source.requireAttribute("name");
+    std::string src = source.requireAttribute("over");
     shared_ptr<CalculationSpace> result;
     if (nodeName == "cartesian") {    //TODO register with space names(?)
-        boost::optional<double> l = XML::getAttribute<double>(source, "length");
+        boost::optional<double> l = source.getAttribute<double>("length");
         result = l ?
             make_shared<Space2dCartesian>(manager.requireElement< GeometryElementD<2> >(src), *l) :
             make_shared<Space2dCartesian>(manager.requireElement< Extrusion >(src));
@@ -105,18 +105,18 @@ shared_ptr<CalculationSpace> GeometryReader::readCalculationSpace() {
         throw XMLUnexpectedElementException("space tag (cartesian or cylindrical)");
 
     boost::optional<std::string> v;
-    v = XML::getAttribute(source, "borders");
+    v = source.getAttribute("borders");
     if (v) result->setAllBorders(*border::Strategy::fromStrUnique(*v));
-    v = XML::getAttribute(source, "planar");
+    v = source.getAttribute("planar");
     if (v) result->setPlanarBorders(*border::Strategy::fromStrUnique(*v));
     for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
         std::string axis_name = getAxisName(dir_nr);
         if (v) result->setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
-        v = XML::getAttribute(source, axis_name);
+        v = source.getAttribute(axis_name);
         if (v) result->setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
-        v = XML::getAttribute(source, axis_name + "-lo");
+        v = source.getAttribute(axis_name + "-lo");
         if (v) result->setBorder(plask::Primitive<3>::DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v));
-        v = XML::getAttribute(source, axis_name + "-hi");
+        v = source.getAttribute(axis_name + "-hi");
         if (v) result->setBorder(plask::Primitive<3>::DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v));
     }
 

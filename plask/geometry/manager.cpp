@@ -89,10 +89,9 @@ void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& ma
 }
 
 void GeometryManager::loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB) {
-    XML::StreamReaderCallback cb(input);
-    std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(&cb));
-    XML::requireNext(*reader);
-    loadFromReader(*reader, materialsDB);
+    XMLReader reader(input);
+    reader.requireNext();
+    loadFromReader(reader, materialsDB);
 }
 
 void GeometryManager::loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB) {
@@ -102,10 +101,9 @@ void GeometryManager::loadFromXMLString(const std::string &input_XML_str, const 
 
 //TODO skip geometry elements ends
 void GeometryManager::loadFromFile(const std::string &fileName, const MaterialsDB& materialsDB) {
-    std::unique_ptr< XMLReader > reader(irr::io::createIrrXMLReader(fileName.c_str()));
-    if (reader == nullptr) throw Exception("Can't read from file \"%1%\".", fileName);
-    XML::requireNext(*reader);
-    loadFromReader(*reader, materialsDB);
+    XMLReader reader(fileName.c_str());
+    reader.requireNext();
+    loadFromReader(reader, materialsDB);
 }
 
 }	// namespace plask

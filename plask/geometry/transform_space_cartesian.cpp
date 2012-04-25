@@ -40,7 +40,7 @@ shared_ptr<GeometryElementTransform<3, Extrusion::ChildType>> Extrusion::shallow
 }
 
 shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {
-    double length = XML::requireAttr<double>(reader.source, "length");
+    double length = reader.source.requireAttribute<double>("length");
     //TODO read space size
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     return make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(), length);
