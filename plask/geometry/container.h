@@ -331,13 +331,13 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
     while (reader.source.read()) {
         switch (reader.source.getNodeType()) {
 
-            case irr::io::EXN_ELEMENT_END:
+            case XMLReader::NODE_ELEMENT_END:
                 if (reader.source.getNodeName() != container_tag_name)
                     throw XMLUnexpectedElementException("end of \"" + container_tag_name + "\" tag");
                 return; // container has been read
 
-            case irr::io::EXN_ELEMENT:
-                if (reader.source.getNodeName() == std::string("child")) {
+            case XMLReader::NODE_ELEMENT:
+                if (reader.source.getNodeName() == "child") {
                     boost::optional<std::string> path = reader.source.getAttribute("path");
                     PathHints::Hint hint = child_param_read();
                     if (path)
@@ -346,7 +346,7 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
                     without_child_param_add(reader.readElement< typename ConstructedType::ChildType >());
                 }
 
-            case irr::io::EXN_COMMENT:
+            case XMLReader::NODE_COMMENT:
                 break;  //skip comments
 
             default:

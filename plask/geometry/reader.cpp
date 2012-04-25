@@ -59,8 +59,11 @@ plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XM
 
 shared_ptr<GeometryElement> GeometryReader::readElement() {
     std::string nodeName = source.getNodeName();
-    if (nodeName == "ref")
-        return manager.requireElement(source.requireAttribute("name"));
+    if (nodeName == "ref") {
+        shared_ptr<GeometryElement> result = manager.requireElement(source.requireAttribute("name"));
+        source.requireTagEnd("ref");
+        return result;
+    }
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     auto reader_it = elementReaders().find(nodeName);
     if (reader_it == elementReaders().end()) {

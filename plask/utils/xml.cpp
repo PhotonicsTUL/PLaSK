@@ -53,10 +53,10 @@ bool XMLReader::read() {
     if (currentNodeType == NODE_ELEMENT && irrReader->isEmptyElement())
         currentNodeType = NODE_ELEMENT_END;
     else {
-        bool result = irrReader->read();
-        if (result) currentNodeType = NodeType(irrReader->getNodeType());
-        return result;
+        if (!irrReader->read()) return false;
+        currentNodeType = NodeType(irrReader->getNodeType());
     }
+    return true;
 }
 
 boost::optional<std::string> XMLReader::getAttribute(const char* name) const {

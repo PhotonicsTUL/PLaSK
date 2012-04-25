@@ -40,19 +40,19 @@ shared_ptr<CalculationSpace> GeometryManager::getCalculationSpace(const std::str
 }
 
 void GeometryManager::loadGeometryFromReader(GeometryReader& reader, const MaterialsDB& materialsDB) {
-    if (reader.source.getNodeType() != irr::io::EXN_ELEMENT || reader.source.getNodeName() != std::string("geometry"))
+    if (reader.source.getNodeType() != XMLReader::NODE_ELEMENT || reader.source.getNodeName() != std::string("geometry"))
         throw XMLUnexpectedElementException("<geometry> tag");
     GeometryReader::ReadAxisNames read_axis_tag(reader);
     while(reader.source.read()) {
         switch (reader.source.getNodeType()) {
-            case irr::io::EXN_ELEMENT_END:
+            case XMLReader::NODE_ELEMENT_END:
                 if (reader.source.getNodeName() != std::string("geometry"))
                     throw XMLUnexpectedElementException("end of \"geometry\" tag");
                 return;  //end of geometry
-            case irr::io::EXN_ELEMENT:
+            case XMLReader::NODE_ELEMENT:
                 roots.push_back(reader.readElement());
                 break;
-            case irr::io::EXN_COMMENT:
+            case XMLReader::NODE_COMMENT:
                 break;   //just ignore
             default:
                 throw XMLUnexpectedElementException("begin of geometry element tag or </geometry>");
@@ -62,19 +62,19 @@ void GeometryManager::loadGeometryFromReader(GeometryReader& reader, const Mater
 }
 
 void GeometryManager::loadSpacesFromReader(GeometryReader& reader) {
-    if (reader.source.getNodeType() != irr::io::EXN_ELEMENT || reader.source.getNodeName() != std::string("spaces"))
+    if (reader.source.getNodeType() != XMLReader::NODE_ELEMENT || reader.source.getNodeName() != std::string("spaces"))
         return; //space are optional
     GeometryReader::ReadAxisNames read_axis_tag(reader);
     while(reader.source.read()) {
         switch (reader.source.getNodeType()) {
-            case irr::io::EXN_ELEMENT_END:
+            case XMLReader::NODE_ELEMENT_END:
                 if (reader.source.getNodeName() != std::string("spaces"))
                     throw XMLUnexpectedElementException("end of \"spaces\" tag");
                 return;  //end of spaces
-            case irr::io::EXN_ELEMENT:
+            case XMLReader::NODE_ELEMENT:
                 reader.readCalculationSpace();
                 break;
-            case irr::io::EXN_COMMENT:
+            case XMLReader::NODE_COMMENT:
                 break;   //just ignore
             default:
                 throw XMLUnexpectedElementException("begin of space element tag or </spaces>");
