@@ -60,6 +60,15 @@ struct CalculationSpace {
      */
     virtual const border::Strategy& getBorder(Primitive<3>::DIRECTION direction, bool higher) const = 0;
 
+
+    bool isSymmetric(Primitive<3>::DIRECTION direction) const {
+        return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
+    }
+
+    bool isPeriodic(Primitive<3>::DIRECTION direction) const {
+        return getBorder(direction, false).type() == border::Strategy::PERIODIC && getBorder(direction, true).type() == border::Strategy::PERIODIC;
+    }
+
 protected:
 
     /**

@@ -34,7 +34,7 @@ struct Vec<3, T> {
         /// Allow to access to vector coordinates by name.
         struct { T c0, c1, c2; };
         struct { T lon, tran, up; };
-        struct { T r, phi, z; } rad;    // radial coordinates
+        struct { T phi, r, z; } rad;    // radial coordinates
         struct { T x, y, z; } se;       // for surface-emitting lasers (z-axis up)
         struct { T x, y, z; } z_up;     // for surface-emitting lasers (z-axis up)
         struct { T z, x, y; } ee;       // for edge emitting lasers (y-axis up), we keep the coordinates right-handed

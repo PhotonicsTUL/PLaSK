@@ -8,23 +8,22 @@ namespace plask {
 
 namespace border {
 
-/// Enum holding strategy types
-enum StrategyType {
-    DEFAULT,
-    SIMPLE,
-    EXTEND,
-    PERIODIC,
-    MIRROR,
-};
-
-
 /**
  * Base, abstract for all classes which describe what do with points outside geometry in calculation space.
  */
 struct Strategy {
 
+    /// Enum holding strategy types
+    enum Type {
+        DEFAULT,
+        SIMPLE,
+        EXTEND,
+        PERIODIC,
+        MIRROR
+    };
+
     /// \return strategy type
-    virtual StrategyType type() const = 0;
+    virtual Type type() const = 0;
 
     /**
      * Apply strategy to given point @p p.
@@ -42,6 +41,18 @@ struct Strategy {
      *         @c false if this strategy always move point p to bounding box or doesn't move p at all
      */
     virtual bool canMoveOutsideBoundingBox() const;
+
+    /**
+     * Check if this strategy can coexists on opposite side with oppositeStrategy.
+     */
+    virtual bool canCoexistsWith(const Strategy& oppositeStrategy) const {
+        return true;
+    }
+
+    void ensureCanCoexists(const Strategy& oppositeStrategy) const {
+        if (!canCoexistsWith(oppositeStrategy) || !oppositeStrategy.canCoexistsWith(*this))
+            throw Exception("Border strategies \"%1%\" and \"%2%\" can't be used on opposite sides.", this->str(), oppositeStrategy.str());
+    }
 
     /**
      * Clone this strategy.
@@ -83,7 +94,7 @@ struct UniversalStrategy: public Strategy {
  * Strategy which does nothing.
  */
 struct Null: public UniversalStrategy {
-    virtual StrategyType type() const { return DEFAULT; }
+    virtual Type type() const { return DEFAULT; }
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
     virtual Null* clone() const;
     virtual std::string str() const;
@@ -105,7 +116,7 @@ struct SimpleMaterial: public UniversalStrategy {
      */
     SimpleMaterial(const shared_ptr<Material>& material): material(material) {}
 
-    virtual StrategyType type() const { return SIMPLE; }
+    virtual Type type() const { return SIMPLE; }
 
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
@@ -120,7 +131,7 @@ struct SimpleMaterial: public UniversalStrategy {
  */
 struct Extend: public UniversalStrategy {
 
-    virtual StrategyType type() const { return EXTEND; }
+    virtual Type type() const { return EXTEND; }
 
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
@@ -135,18 +146,22 @@ struct Extend: public UniversalStrategy {
  */
 struct Periodic: public Strategy {
 
-    virtual StrategyType type() const { return PERIODIC; }
+    virtual Type type() const { return PERIODIC; }
 
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual Periodic* clone() const;
 
     virtual std::string str() const;
+
+    virtual bool canCoexistsWith(const Strategy& oppositeStrategy) const {
+        return oppositeStrategy.type() == Strategy::PERIODIC;
+    }
 };
 
 struct Mirror: public Strategy {
 
-    virtual StrategyType type() const { return MIRROR; }
+    virtual Type type() const { return MIRROR; }
 
     virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
@@ -232,7 +247,10 @@ class StrategyPairHolder {
     bool reverseCallingOrder;
 
     void setOrder(const StrategyType& strategy_lo, const StrategyType& strategy_hi) {
+
+
         if (strategy_lo.canMoveOutsideBoundingBox()) {
+            strategy_lo.ensureCanCoexists(strategy_hi);
             if (strategy_hi.canMoveOutsideBoundingBox())
                 throw Exception("Border strategies on both sides can move point outside bounding box.");
             reverseCallingOrder = true;
@@ -300,6 +318,10 @@ public:
             strategy_hi.applyIfHi(bbox, p, result_material);
         }
     }
+
+    bool isSymmetric() const { strategy_lo.type() == Strategy::MIRROR || strategy_hi.type() == Strategy::MIRROR; }
+
+    bool isPeriodic() const { strategy_lo.type() == Strategy::PERIODIC && strategy_hi.type() == Strategy::PERIODIC; }
 };
 
 }   // namespace border
