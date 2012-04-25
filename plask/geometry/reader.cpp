@@ -36,7 +36,7 @@ AxisNames::Register GeometryReader::axisNamesRegister(
         AxisNames::Register
         ("x", "y", "z", "yz", "se", "zup")
         ("z", "x", "y", "xy", "ee", "yup")
-        ("r", "phi", "z", "rz", "rad")
+        ("phi", "r", "z", "rz", "rad", "rphiz")
         ("lon", "tran", "up")
 );
 
