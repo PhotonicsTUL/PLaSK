@@ -146,7 +146,7 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
     for (auto i = begin; i != end; ++i) {
         if (std::isnan(i->second)) {
             if (no_info != end)
-                throw plask::MaterialParseException("More than one element in group (%1% in periodic table) have no information about composition amount.", group_nr);
+                throw plask::MaterialParseException("more than one element in group (%1% in periodic table) have no information about composition amount.", group_nr);
             else
                 no_info = i;
         } else {
@@ -155,12 +155,12 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
         }
     }
     if (n > 0 && sum - 1.0 > SMALL*n)
-        throw plask::MaterialParseException("Sum of composition ammounts in group (%1% in periodic table) exceeds 1.", group_nr);
+        throw plask::MaterialParseException("sum of composition ammounts in group (%1% in periodic table) exceeds 1.", group_nr);
     if (no_info != end) {
         no_info->second = 1.0 - sum;
     } else {
         if (!is_zero(sum - 1.0))
-             throw plask::MaterialParseException("Sum of composition ammounts in group (%1% in periodic table) diffrent from 1.", group_nr);
+             throw plask::MaterialParseException("sum of composition ammounts in group (%1% in periodic table) diffrent from 1.", group_nr);
     }
 }
 
@@ -168,7 +168,7 @@ Material::Composition Material::completeComposition(const Composition &compositi
     std::map<int, std::vector< std::pair<std::string, double> > > by_group;
     for (auto c: composition) {
         int group = elementGroup(c.first);
-        if (group == 0) throw plask::MaterialParseException("Wrong element name \"%1%\".", c.first);
+        if (group == 0) throw plask::MaterialParseException("wrong element name \"%1%\".", c.first);
         by_group[group].push_back(c);
     }
     Material::Composition result;
@@ -203,7 +203,7 @@ std::pair<std::string, double> Material::getFirstCompositionElement(const char*&
     std::pair<std::string, double> result;
     const char* comp_end = getElementEnd(begin, end);
     if (comp_end == begin)
-        throw MaterialParseException(std::string("Expected element but found character: ") + *begin);
+        throw MaterialParseException(std::string("expected element but found character: ") + *begin);
     result.first = std::string(begin, comp_end);
     const char* amount_end = getAmountEnd(comp_end, end);
     if (amount_end == comp_end) {       //no amount info for this element
@@ -211,7 +211,7 @@ std::pair<std::string, double> Material::getFirstCompositionElement(const char*&
         begin = amount_end;
     } else {
         if (amount_end == end)
-            throw MaterialParseException("Unexpected end of input while reading amount of element. Couldn't find ')'");
+            throw MaterialParseException("unexpected end of input while reading amount of element. Couldn't find ')'");
         result.second = toDouble(std::string(comp_end+1, amount_end));
         begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
     }
@@ -229,7 +229,7 @@ Material::Composition Material::parseComposition(const char* begin, const char* 
         int g = elementGroup(c.first);
         if (g != prev_g) {
             if (!groups.insert(g).second)
-                throw MaterialParseException("Incorrect elements order in \"%1%\".", fullname);
+                throw MaterialParseException("incorrect elements order in \"%1%\".", fullname);
             prev_g = g;
         }
         result.insert(c);
@@ -245,10 +245,10 @@ Material::Composition Material::parseComposition(const std::string& str) {
 void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, Material::DopingAmountType& doping_amount_type, double& doping_amount) {
     const char* name_end = getElementEnd(begin, end);
     if (name_end == begin)
-         throw MaterialParseException("No dopant name");
+         throw MaterialParseException("no dopant name");
     dopant_elem_name.assign(begin, name_end);
     if (*name_end == '=') {
-        if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading dopants concentation");
+        if (name_end+1 == end) throw MaterialParseException("unexpected end of input while reading dopants concentation");
         doping_amount_type = Material::DOPANT_CONCENTRATION;
         doping_amount = toDouble(std::string(name_end+1, end));
         return;
@@ -258,7 +258,7 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
         return;
     }
     if (!isspace(*name_end))
-        throw MaterialParseException("Expected space or '=' but found '%1%' instead", *name_end);
+        throw MaterialParseException("expected space or '=' but found '%1%' instead", *name_end);
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
     auto p = splitString2(std::string(name_end, end), '=');
     //TODO check std::get<0>(p) if is p/n compatibile with dopant_elem_name
@@ -276,7 +276,7 @@ std::vector<std::string> Material::parseElementsNames(const char *begin, const c
     std::vector<std::string> elemenNames;
     do {
         const char* new_begin = getElementEnd(begin, end);
-        if (new_begin == begin) throw MaterialParseException("Ill-formated name \"%1%\".", std::string(full_name, end));
+        if (new_begin == begin) throw MaterialParseException("ill-formated name \"%1%\".", std::string(full_name, end));
         elemenNames.push_back(std::string(begin, new_begin));
         begin = new_begin;
     } while (begin != end);

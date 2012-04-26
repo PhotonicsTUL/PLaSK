@@ -1,7 +1,7 @@
-#include "../globals.h"
+#include "globals.h"
 #include <boost/python/stl_iterator.hpp>
 
-#include "../../util/raw_constructor.h"
+#include "../util/raw_constructor.h"
 
 #include <plask/space.h>
 #include <plask/geometry/path.h>
@@ -94,15 +94,25 @@ shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py::dict k
         throw TypeError("__init__() takes 2 or 3 non-keyword arguments (%1%) given", na);
     }
 
+    std::set<std::string> parsed_kwargs;
+    parsed_kwargs.insert("geometry");
+    parsed_kwargs.insert("length");
+
+    static_pointer_cast<CalculationSpace>(space)->setBorders(
+        [&](const std::string& s) {
+            std::string str = s;
+            std::replace(str.begin(), str.end(), '-', '_');
+            parsed_kwargs.insert(str);
+            if (kwargs.has_key(str)) return boost::optional<std::string>(py::extract<std::string>(kwargs[str]));
+            return boost::optional<std::string>();
+        },
+    config.axes);
+
+    // Test if we have any spurious kwargs
     py::stl_input_iterator<std::string> begin(kwargs), end;
-    for (auto i = begin; i != end; ++i) {
-        if (*i != "geometry" && *i != "length") {
-            // Setting borders
-//             if (*i ==
-
-        }
-    }
-
+    for (auto item = begin; item != end; item++)
+        if (parsed_kwargs.find(*item) == parsed_kwargs.end())
+            throw TypeError("__init__() got an unexpected keyword argument '%s'", *item);
 
     return space;
 }

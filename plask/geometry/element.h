@@ -596,7 +596,7 @@ struct GeometryElementD: public GeometryElement {
      */
     shared_ptr< Translation<dimensions> > requireElementInThisCordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints* path = 0) const {
         shared_ptr< Translation<dimensions> > result = getElementInThisCordinates(element, path);
-        if (!result) throw Exception("requireElementInThisCordinates: Translation to element is not well defined.");
+        if (!result) throw Exception("requireElementInThisCordinates: translation to element is not well defined");
         return result;
     }
 

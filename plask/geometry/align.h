@@ -310,18 +310,18 @@ typedef details::Aligner2dImpl<DIRECTION_TRAN, details::centerToZero, details::C
 typedef TranslationAligner2d<DIRECTION_TRAN> Tran;
 
 //2d lon. aligners:
-typedef details::Aligner2dImpl<DIRECTION_LON, details::lowToZero, details::FRONT> Front;
-typedef details::Aligner2dImpl<DIRECTION_LON, details::hiToZero, details::BACK> Back;
+typedef details::Aligner2dImpl<DIRECTION_LON, details::hiToZero, details::FRONT> Front;
+typedef details::Aligner2dImpl<DIRECTION_LON, details::lowToZero, details::BACK> Back;
 typedef details::Aligner2dImpl<DIRECTION_LON, details::centerToZero, details::CENTER> LonCenter;
 typedef TranslationAligner2d<DIRECTION_LON> Lon;
 
 //3d lon/tran aligners:
-typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::FRONT, DIRECTION_TRAN, details::lowToZero, details::LEFT> FrontLeft;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::FRONT, DIRECTION_TRAN, details::hiToZero, details::RIGHT> FrontRight;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::FRONT, DIRECTION_TRAN, details::centerToZero, details::CENTER> FrontCenter;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::BACK, DIRECTION_TRAN, details::lowToZero, details::LEFT> BackLeft;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::BACK, DIRECTION_TRAN, details::hiToZero, details::RIGHT> BackRight;
-typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::BACK, DIRECTION_TRAN, details::centerToZero, details::CENTER> BackCenter;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::lowToZero, details::LEFT> FrontLeft;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::hiToZero, details::RIGHT> FrontRight;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::centerToZero, details::CENTER> FrontCenter;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::BACK, DIRECTION_TRAN, details::lowToZero, details::LEFT> BackLeft;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::BACK, DIRECTION_TRAN, details::hiToZero, details::RIGHT> BackRight;
+typedef details::Aligner3dImpl<DIRECTION_LON, details::lowToZero, details::BACK, DIRECTION_TRAN, details::centerToZero, details::CENTER> BackCenter;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::lowToZero, details::LEFT> CenterLeft;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::hiToZero, details::RIGHT> CenterRight;
 typedef details::Aligner3dImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::centerToZero, details::CENTER> CenterCenter;

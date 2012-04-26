@@ -37,7 +37,7 @@ Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN>* aligner3dFromString(std:
     else if (str == "front right" || str == "fr" || str == "right front" || str == "rf") return new FrontRight();
     else if (str == "center right" || str == "cr" || str == "right center" || str == "rc") return new CenterRight();
     else if (str == "back right" || str == "br" || str == "right back" || str == "rb") return new BackRight();
-    throw BadInput("alignerFromString", "Wrong aligner specification");
+    throw BadInput("alignerFromString", "wrong aligner specification");
     return nullptr;
 }
 

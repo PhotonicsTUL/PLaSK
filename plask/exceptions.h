@@ -71,14 +71,23 @@ struct OutOfBoundException: public Exception {
 };
 
 /**
+ * This exception is thrown if there is a problem with dimensions.
+ */
+struct DimensionError: public Exception {
+    template <typename... T>
+    DimensionError(T... args) : Exception(args...) {}
+};
+
+/**
  * This exception is thrown when value specified by the user is bad
  */
 struct BadInput: public Exception {
 
     /// @param where name of class/function/operation doing the computations
     /// @param msg error message
-    BadInput(const std::string& where, const std::string& msg)
-        : Exception("%1%: %2%", where, msg) {};
+    template <typename... Params>
+    BadInput(const std::string& where, const std::string& msg, Params... params)
+        : Exception("%1%: %2%", where, format(msg, params...)) {};
 };
 
 /**

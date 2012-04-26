@@ -39,7 +39,7 @@ int StreamReaderCallback::read(void *buffer, int sizeToRead) {
 }
 
 XMLReader::XMLReader(const char* file_name): currentNodeType(NODE_NONE), irrReader(irr::io::createIrrXMLReader(file_name)) {
-    if (irrReader == nullptr) throw Exception("Can't read from file \"%1%\".", file_name);
+    if (irrReader == nullptr) throw Exception("can't read from file \"%1%\"", file_name);
 }
 
 XMLReader::XMLReader(std::istream& input)
@@ -63,7 +63,7 @@ boost::optional<std::string> XMLReader::getAttribute(const char* name) const {
     const char* v = getAttributeValueC(name);
     return v != nullptr ? boost::optional<std::string>(v) : boost::optional<std::string>();
 }
-    
+
 std::string XMLReader::requireAttribute(const char* attr_name) const {
     const char* result = getAttributeValueC(attr_name);
     if (result == nullptr)
@@ -80,7 +80,7 @@ void XMLReader::requireNext() {
 void XMLReader::requireTag() {
     requireNext();
     if (getNodeType() != NODE_ELEMENT)
-        throw XMLUnexpectedElementException("begin of tag");    
+        throw XMLUnexpectedElementException("begin of tag");
 }
 
 void XMLReader::requireTagEnd(const std::string& tag) {

@@ -202,7 +202,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
      * @throw Exception if not all children have the same heights
      */
     void ensureAllChildrenHaveSameHeights() const {
-        if (!allChildrenHaveSameHeights()) throw Exception("Not all children in horizontal stack have the same height.");
+        if (!allChildrenHaveSameHeights()) throw Exception("not all children in horizontal stack have the same height");
     }
 
     /**

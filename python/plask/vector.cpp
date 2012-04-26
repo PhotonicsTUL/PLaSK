@@ -101,7 +101,7 @@ template <int dim, typename T>  py::object vec__array__(py::object self) {
     Vec<dim,T>* vec = py::extract<Vec<dim,T>*>(self);
     npy_intp dims[] = { dim };
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, get_typenum<T>(), (void*)vec->components);
-    if (arr == nullptr) throw plask::CriticalException("Cannot create array from vector");
+    if (arr == nullptr) throw plask::CriticalException("cannot create array from vector");
     py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the vector stays alive as long as the array
     return py::object(py::handle<>(arr));
 }
@@ -111,7 +111,7 @@ template <int dim, typename T>  py::object vec_list__array__(py::object self) {
     std::vector<Vec<dim,T>>* list = py::extract<std::vector<Vec<dim,T>>*>(self);
     npy_intp dims[] = { list->size(), dim };
     PyObject* arr = PyArray_SimpleNewFromData(2, dims, get_typenum<T>(), (void*)(&(*list)[0].components));
-    if (arr == nullptr) throw plask::CriticalException("Cannot create array from vector list");
+    if (arr == nullptr) throw plask::CriticalException("cannot create array from vector list");
     py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the vector list stays alive as long as the array
     return py::object(py::handle<>(arr));
 }

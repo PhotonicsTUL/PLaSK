@@ -132,7 +132,7 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
 {
     inline static void interpolate(SrcMeshT& src_mesh, const std::vector<DataT>& src_vec,
                 Mesh<SrcMeshT::dim>& dst_mesh, std::vector<DataT>& dst_vec, InterpolationMethod method) {
-        throw CriticalException("No such interpolation method.");
+        throw CriticalException("no such interpolation method");
     }
 };
 #endif // DOXYGEN

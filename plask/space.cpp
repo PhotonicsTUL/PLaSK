@@ -7,7 +7,8 @@ namespace plask {
 //void CalculationSpace::setBorders(const std::function<boost::optional<std::unique_ptr<border::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
 
 void CalculationSpace::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames) {
-    boost::optional<std::string> v;
+    const char* directions[3][2] = { {"back", "front"}, {"left", "right"}, {"bottom", "top"} };
+    boost::optional<std::string> v, v_lo, v_hi;
     v = borderValuesGetter("borders");
     if (v) setAllBorders(*border::Strategy::fromStrUnique(*v));
     v = borderValuesGetter("planar");
@@ -16,13 +17,25 @@ void CalculationSpace::setBorders(const std::function<boost::optional<std::strin
         std::string axis_name = axesNames[dir_nr];
         v = borderValuesGetter(axis_name);
         if (v) setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
-        v = borderValuesGetter(axis_name + "-lo");
-        boost::optional<std::string> v_hi = borderValuesGetter(axis_name + "-hi");
-        if (v && v_hi) {
-            setBorders(plask::Primitive<3>::DIRECTION(dir_nr),  *border::Strategy::fromStrUnique(*v), *border::Strategy::fromStrUnique(*v_hi));
-        } else {
-            if (v) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v));
-            if (v_hi) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi));
+        v_lo = borderValuesGetter(axis_name + "-lo");
+        if (v = borderValuesGetter(directions[dir_nr][0])) {
+            if (v_lo) throw BadInput("setBorders", "border specified by both '%1%-lo' and '%2%'", axis_name, directions[dir_nr][0]);
+            else v_lo = v;
+        }
+        v_hi = borderValuesGetter(axis_name + "-hi");
+        if (v = borderValuesGetter(directions[dir_nr][1])) {
+            if (v_hi) throw BadInput("setBorders", "border specified by both '%1%-hi' and '%2%'", axis_name, directions[dir_nr][1]);
+            else v_hi = v;
+        }
+        try {
+            if (v_lo && v_hi) {
+                setBorders(plask::Primitive<3>::DIRECTION(dir_nr),  *border::Strategy::fromStrUnique(*v_lo), *border::Strategy::fromStrUnique(*v_hi));
+            } else {
+                if (v_lo) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v_lo));
+                if (v_hi) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi));
+            }
+        } catch (DimensionError) {
+            throw BadInput("setBorders", "axis '%1%' is not allowed for this space", axis_name);
         }
     }
 }

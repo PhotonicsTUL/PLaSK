@@ -14,6 +14,7 @@ void initGeometry();
 void register_vector();
 void register_mesh();
 void register_providers();
+void register_calculation_spaces();
 
 // Config
 Config config;
@@ -36,6 +37,8 @@ BOOST_PYTHON_MODULE(plaskcore)
     // Vectors
     register_vector();
 
+    // Space
+    register_calculation_spaces();
 
     // Meshes
     register_mesh();
@@ -58,6 +61,7 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_exception<plask::python::AttributeError>(PyExc_AttributeError);
     register_exception<plask::python::StopIteration>(PyExc_StopIteration);
 
+    register_exception<plask::BadInput>(PyExc_ValueError);
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
 
 
