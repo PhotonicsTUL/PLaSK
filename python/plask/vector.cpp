@@ -124,7 +124,7 @@ inline static int vec_attr_indx(const std::string& attr) {
     if (i < 0 || i >= dim) {
         if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" ||
             attr == "lon" || attr == "tran" || attr == "up")
-            throw AttributeError("attribute '%s' has no sense for %dD vector if config.axes = '%s'", attr, dim, config.axes_name);
+            throw AttributeError("attribute '%s' has no sense for %dD vector if config.axes = '%s'", attr, dim, config.axes_name());
         else
             throw AttributeError("'vector' object has no attribute '%s'", attr);
     }
@@ -245,7 +245,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
                 if (n == 2) comp[vec_attr_indx<2>(*key)] = val;
                 else if (n == 3) comp[vec_attr_indx<3>(*key)] = val;
             } catch (AttributeError) {
-                throw TypeError("wrong component name for %dD vector if config.axes = '%s'", n, config.axes_name);
+                throw TypeError("wrong component name for %dD vector if config.axes = '%s'", n, config.axes_name());
             }
 
         }
@@ -293,41 +293,43 @@ const static std::string __doc__ =
     "    initialize with ordered components\n"
     "vector(x=#, y=#, z=#)\n"
     "    initialize with Cartesian components (z or x skipped in 2D)\n"
-    "vector(r=#, phi=#, z=#)\n"
-    "    initialize with cylindrical components (phi skipped in 2D)\n\n"
+    "vector(r=#, p=#, z=#)\n"
+    "    initialize with cylindrical components (p skipped in 2D)\n\n"
 
     "The order of its components always corresponds to the structure orientation\n"
     "(with the last component parallel to the epitaxial growth direction.\n\n"
 
-    "However, the component names depend on the config.axis_up configuration option.\n"
+    "However, the component names depend on the config.axes configuration option.\n"
     "Changing this option will change the order of component names accordingly:\n\n"
 
-    "For config.vertical_axis = 'z', the component name mapping is following:\n"
-    "in 2D vectors it is [y,z] (x-component skipped) or [r,z] (you can refer to\n"
-    "Cartesian or cylindrical cooridinates at your preference). In 3D vectors it is\n"
-    "[x,y,z] or [r,phi,z].\n\n"
-
-    "For config.vertical_axis = 'z' the order becomes: [x,y] and [z,x,y] for 2D and 3D vectors,\n"
-    "respectively. In this case, cylindrical component names are not allowed.\n\n"
+    "config.axes = 'xyz' (equivalents are 'yz' or 'z_up'):\n"
+    "   2D vectors: [y,z], 3D vectors: [x,y,z]\n"
+    "config.axes = 'zxy' (equivalents are 'xy' or 'y_up'):\n"
+    "   2D vectors: [x,y], 3D vectors: [z,x,y]\n"
+    "config.axes = 'prz' (equivalents are 'rz' or 'rad'):\n"
+    "   2D vectors: [r,z], 3D vectors: [p,r,z]\n"
+    "config.axes = 'lon,tran,up' (equivalent is 'absolute'):\n"
+    "   2D vectors: [tran,up], 3D vectors: [lon,tran,up]\n"
 
     "Examples\n"
     "--------\n\n"
-    ">>> vector(1,2)\n"
-    "vector(1,2)\n    \n"
+    ">>> vector(1, 2)\n"
+    "vector(1, 2)\n    \n"
     "Create two-dimensional vector.\n    \n"
 
-    ">>> config.vertical_axis = 'y'\n"
+    ">>> config.axes = 'xy'\n"
     ">>> vector(x=1, y=2, z=3)\n"
-    "vector(3,2,1)\n    \n"
+    "vector(3, 2, 1)\n    \n"
     "Create 3D vector specifying components in rotated coordinate system.\n    \n"
 
-    ">>> config.vertical_axis = 'z'\n"
+    ">>> config.axes = 'xyz'\n"
     ">>> vector(x=1, z=2, y=3)\n"
-    "vector(1,3,2)\n    \n"
+    "vector(1, 3, 2)\n    \n"
     "Create 3D vector specifying components.\n    \n"
 
+    ">>> config.axes = 'rz'\n"
     ">>> vector(r=2, z=0, dtype=complex)\n"
-    "vector(2,0)\n    \n"
+    "vector(2, 0)\n    \n"
     "Create 2D vector in cylindrical coordinates, specifying dtype.\n"
 
     ;

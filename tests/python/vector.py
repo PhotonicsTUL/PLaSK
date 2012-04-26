@@ -38,14 +38,14 @@ class Vector(unittest.TestCase):
 
         plask.config.axes = "rz"
         self.assertEqual( plask.vec(r=1, z=2), plask.vec(1,2) )
-        self.assertEqual( plask.vec(r=2, z=3, phi=1), plask.vec(1,2,3) )
+        self.assertEqual( plask.vec(r=2, z=3, p=1), plask.vec(1,2,3) )
 
         plask.config.axes = 'xy'
         self.assertEqual( plask.vec(x=1, y=2), plask.vec(1,2) )
         self.assertEqual( plask.vec(y=3, x=2, z=1), plask.vec(1,2,3) )
         self.assertRaises( TypeError, lambda: plask.vec(y=1, z=2) ) # for axes = 'y' z component is not allowed in 2D
         self.assertRaises( TypeError, lambda: plask.vec(r=1, z=2) )
-        self.assertRaises( TypeError, lambda: plask.vec(phi=1, y=2, z=3) )
+        self.assertRaises( TypeError, lambda: plask.vec(p=1, y=2, z=3) )
         self.assertRaises( TypeError, lambda: plask.vec(x=1, bad_x=2) )
 
         plask.config.axes = ax
@@ -74,7 +74,7 @@ class Vector(unittest.TestCase):
 
         plask.config.axes = "rz"
         self.assertEqual( [self.a2.r, self.a2.z], [1, 2] )
-        self.assertEqual( [self.a3.r, self.a3.phi, self.a3.z], [2, 1, 3] )
+        self.assertEqual( [self.a3.r, self.a3.p, self.a3.z], [2, 1, 3] )
 
         plask.config.axes = 'xy'
         self.assertEqual( [self.a2.x, self.a2.y], [1, 2] )

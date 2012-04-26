@@ -46,7 +46,7 @@ physical property. It can be easy obtain by subclass instantiation of one of tem
 
 Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters:
 - first is physical property tag and it's required,
-- second is type of space (see calculation_space.h) and it's required (and allowed) only for fields properties.
+- second is type of space (see space.h) and it's required (and allowed) only for fields properties.
 
 Example:
 @code
@@ -581,7 +581,7 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
     }
 
     static_assert(!(std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == FIELD_PROPERTY || PropertyTag::propertyType == INTERPOLATED_FIELD_PROPERTY)),
-                  "Receivers for fields properties require SpaceType. Use ReceiverFor<propertyTag, SpaceType>, where SpaceType is one of the classes defined in calculation_space.h.");
+                  "Receivers for fields properties require SpaceType. Use ReceiverFor<propertyTag, SpaceType>, where SpaceType is one of the classes defined in space.h.");
     static_assert(!(!std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == SINGLE_VALUE_PROPERTY)),
                   "Receivers for single value properties doesn't need SpaceType. Use ReceiverFor<propertyTag> (without second template parameter).");
 };

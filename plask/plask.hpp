@@ -55,6 +55,8 @@ You should start reading from section \ref modules "How to implement an own modu
 #include "exceptions.h"
 #include "module.h"
 #include "vec.h"
+#include "axes.h"
+#include "space.h"
 
 #include "geometry/geometry.h"
 #include "geometry/primitives.h"
@@ -62,13 +64,11 @@ You should start reading from section \ref modules "How to implement an own modu
 #include "geometry/manager.h"
 #include "geometry/transform.h"
 #include "geometry/leaf.h"
-#include "geometry/calculation_space.h"
 #include "geometry/transform_space_cartesian.h"
 #include "geometry/transform_space_cylindric.h"
 #include "geometry/container.h"
 #include "geometry/reader.h"
 #include "geometry/border.h"
-#include "geometry/calculation_space.h"
 
 #include "material/material.h"
 #include "material/db.h"

@@ -15,7 +15,7 @@ This file includes:
 #include "../material/db.h"
 #include "path.h"
 
-#include "calculation_space.h"
+#include "../space.h"
 
 namespace plask {
 

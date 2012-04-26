@@ -1,9 +1,9 @@
 #ifndef PLASK__CALCULATION_SPACE_H
 #define PLASK__CALCULATION_SPACE_H
 
-#include "transform_space_cartesian.h"
-#include "transform_space_cylindric.h"
-#include "border.h"
+#include "geometry/transform_space_cartesian.h"
+#include "geometry/transform_space_cylindric.h"
+#include "geometry/border.h"
 
 namespace plask {
 
@@ -72,7 +72,7 @@ struct CalculationSpace {
 protected:
 
     /**
-     * Dynamic cast border to given type and throw excpetion in case of bad cast.
+     * Dynamic cast border to given type and throw exception in case of bad cast.
      * @param strategy border strategy to cast
      */
     template <typename BorderType>

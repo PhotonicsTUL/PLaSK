@@ -17,8 +17,7 @@ void register_providers();
 
 // Config
 Config config;
-std::string Config::axes_name = "xyz";
-AxisNames Config::axes = GeometryReader::axisNamesRegister.get(axes_name);
+AxisNames Config::axes = AxisNames::axisNamesRegister.get("xyz");
 
 }}
 

@@ -3,7 +3,7 @@
 
 #include "../../util/raw_constructor.h"
 
-#include <plask/geometry/calculation_space.h>
+#include <plask/space.h>
 #include <plask/geometry/path.h>
 
 namespace plask { namespace python {
@@ -94,12 +94,14 @@ shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py::dict k
         throw TypeError("__init__() takes 2 or 3 non-keyword arguments (%1%) given", na);
     }
 
-//     TODO
-//     py::dict strategies;
-//
-//     py::stl_input_iterator<std::string> begin(kwargs), end;
-//     for (auto i = begin; i != end; ++i)
-//         if (*i != "geometry" && *i != "length") strategies[*i] = kwargs[*i];
+    py::stl_input_iterator<std::string> begin(kwargs), end;
+    for (auto i = begin; i != end; ++i) {
+        if (*i != "geometry" && *i != "length") {
+            // Setting borders
+//             if (*i ==
+
+        }
+    }
 
 
     return space;

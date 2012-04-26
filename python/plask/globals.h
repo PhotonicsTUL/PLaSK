@@ -10,7 +10,7 @@
 #include <plask/exceptions.h>
 #include <plask/math.h>
 #include <plask/memory.h>
-#include <plask/geometry/reader.h>
+#include <plask/axes.h>
 
 namespace plask { namespace python {
 
@@ -60,26 +60,24 @@ struct StopIteration: public Exception {
 struct Config
 {
     // Current axis names
-    static std::string axes_name;
     static AxisNames axes;
 
-    std::string get_axes() {
-        return axes_name;
+    std::string axes_name() {
+        return axes.str();
     }
     void set_axes(std::string axis) {
-        axes_name = axis;
-        axes = GeometryReader::axisNamesRegister.get(axis);
+        axes = AxisNames::axisNamesRegister.get(axis);
     }
 
     std::string __str__() {
         return std::string()
-            + "axes:   " + axes_name;
+            + "axes:   " + axes_name();
         ;
     }
 
     std::string __repr__() {
         return
-            format("config.axes = '%s'", axes_name)
+            format("config.axes = '%s'", axes_name())
         ;
     }
 
@@ -91,7 +89,7 @@ inline static void register_config()
     py::class_<Config>("config", "Global PLaSK configuration.", py::no_init)
         .def("__str__", &Config::__str__)
         .def("__repr__", &Config::__repr__)
-        .add_property("axes", &Config::get_axes, &Config::set_axes,
+        .add_property("axes", &Config::axes_name, &Config::set_axes,
                       "String representing axis names")
     ;
     py::scope().attr("config") = config;

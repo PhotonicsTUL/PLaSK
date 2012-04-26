@@ -93,7 +93,7 @@ See also example in plask::Temperature description.
 
 #include "log/log.h"
 #include "log/data.h"
-#include "geometry/calculation_space.h"
+#include "space.h"
 
 namespace plask {
 

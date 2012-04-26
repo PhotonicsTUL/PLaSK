@@ -1,4 +1,4 @@
-#include "calculation_space.h"
+#include "space.h"
 
 #include <memory>
 
