@@ -14,7 +14,6 @@ std::size_t AxisNames::operator [](const std::string &name) const {
     return 3;
 }
 
-/// \return string representation of the axes for the register
 std::string AxisNames::str() const {
     if (byIndex[0].length() == 1 && byIndex[1].length() == 1 && byIndex[2].length() == 1)
         return byIndex[0] + byIndex[1] + byIndex[2];

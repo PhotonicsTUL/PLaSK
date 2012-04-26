@@ -72,10 +72,21 @@ std::string Periodic::str() const {
     return "periodic";
 }
 
+#define mirror_not_at_zero "Mirror at border which is not at 0."
 
 void Mirror::apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>&) const {
-    if (p > bbox_hi) p -= 2.0 * (p - bbox_hi); else
-    if (p < bbox_lo) p += 2.0 * (bbox_lo - p);
+    if (p > bbox_hi) {
+        if (bbox_hi != 0.0)
+            throw Exception(mirror_not_at_zero);
+        p = -p;
+    } else
+    if (p < bbox_lo) {
+        if (bbox_lo != 0.0)
+            throw Exception(mirror_not_at_zero);
+        p = -p;
+    }
+    //if (p > bbox_hi) p -= 2.0 * (p - bbox_hi); else
+    //if (p < bbox_lo) p += 2.0 * (bbox_lo - p);*/
 }
 
 bool Mirror::canMoveOutsideBoundingBox() const {

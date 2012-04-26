@@ -5,6 +5,8 @@
 #include "geometry/transform_space_cylindric.h"
 #include "geometry/border.h"
 
+#include "axes.h"
+
 namespace plask {
 
 /**
@@ -20,12 +22,22 @@ struct CalculationSpace {
     CalculationSpace(shared_ptr<Material> defaultMaterial = make_shared<Air>()): defaultMaterial(defaultMaterial) {}
 
     /**
-     * Set all borders in given ddirection or throw exception if this borders can't be set for this calculation space or direction.
+     * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
+     * @param direction see Primitive<3>::DIRECTION
+     * @param border_lo new border strategy for lower border in given @p direction
+     * @param border_hi new border strategy for higher border in given @p direction
+     */
+    virtual void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) = 0;
+
+    /**
+     * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
      * @param direction see Primitive<3>::DIRECTION
      * @param higher @c true for higher bound, @c false for lower
      * @param border_to_set new border strategy for given borders
      */
-    virtual void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set) = 0;
+    virtual void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set) {
+        setBorders(direction, border_to_set, border_to_set);
+    }
 
     /**
      * Set all planar borders or throw exception if this borders can't be set for this calculation space or direction.
@@ -52,6 +64,16 @@ struct CalculationSpace {
      */
     virtual void setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set) = 0;
 
+    //void setBorders(const std::function< std::unique_ptr<border::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
+
+    /**
+     * Set borders using string value which get from @p borderValuesGetter.
+     * @param borderValuesGetter optionaly return border strategy string for direction(s) given in argument,
+     *   argument can be one of: "borders", "planar", "<axis_name>", "<axis_name>-lo", "<axis_name>-hi"
+     * @param axesNames name of axes, use to create arguments for @p borderValuesGetter
+     */
+    void setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
+
     /**
      * Get border strategy or throw exception if border can't be get for this calculation space or direction.
      * @param direction see Primitive<3>::DIRECTION
@@ -59,7 +81,6 @@ struct CalculationSpace {
      * @return border strategy for given border
      */
     virtual const border::Strategy& getBorder(Primitive<3>::DIRECTION direction, bool higher) const = 0;
-
 
     bool isSymmetric(Primitive<3>::DIRECTION direction) const {
         return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
@@ -228,7 +249,7 @@ public:
      */
     void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); }
 
-    void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set);
+    void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
     void setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set);
 
@@ -320,6 +341,8 @@ public:
     shared_ptr<Revolution> getRevolution() const { return revolution; }
 
     virtual Space2dCylindrical* getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path = 0, bool copyBorders = false) const;
+
+    void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
     void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set);
 

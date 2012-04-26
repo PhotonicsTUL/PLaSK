@@ -115,10 +115,10 @@ struct GeometryReader {
         ~SetExpectedSuffix() { reader.expectedSuffix = old; }
     };
 
-    ///Geometry manager which store reading results.
+    /// Geometry manager which store reading results.
     GeometryManager& manager;
 
-    ///XML data source
+    /// XML data source
     XMLReader& source;
 
     /**
@@ -179,7 +179,7 @@ struct GeometryReader {
 
 };
 
-//specialization for most types
+// specialization for most types
 template <typename RequiredElementType>
 inline shared_ptr<RequiredElementType> GeometryReader::readElement() {
     shared_ptr<RequiredElementType> result = dynamic_pointer_cast<RequiredElementType>(readElement());
@@ -187,13 +187,13 @@ inline shared_ptr<RequiredElementType> GeometryReader::readElement() {
     return result;
 }
 
-//specialization for GeometryElement which doesn't required dynamic_cast
+// specialization for GeometryElement which doesn't required dynamic_cast
 template <>
 inline shared_ptr<GeometryElement> GeometryReader::readElement<GeometryElement>() {
     return readElement();
 }
 
-//specialization for most types
+// specialization for most types
 template <typename RequiredElementType>
 inline shared_ptr<RequiredElementType> GeometryReader::readExactlyOneChild() {
     shared_ptr<RequiredElementType> result = dynamic_pointer_cast<RequiredElementType>(readExactlyOneChild());
@@ -201,7 +201,7 @@ inline shared_ptr<RequiredElementType> GeometryReader::readExactlyOneChild() {
     return result;
 }
 
-//specialization for GeometryElement which doesn't required dynamic_cast
+// specialization for GeometryElement which doesn't required dynamic_cast
 template <>
 inline shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild<GeometryElement>() {
     return readExactlyOneChild();

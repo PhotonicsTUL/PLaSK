@@ -4,6 +4,29 @@
 
 namespace plask {
 
+//void CalculationSpace::setBorders(const std::function<boost::optional<std::unique_ptr<border::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
+
+void CalculationSpace::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames) {
+    boost::optional<std::string> v;
+    v = borderValuesGetter("borders");
+    if (v) setAllBorders(*border::Strategy::fromStrUnique(*v));
+    v = borderValuesGetter("planar");
+    if (v) setPlanarBorders(*border::Strategy::fromStrUnique(*v));
+    for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
+        std::string axis_name = axesNames[dir_nr];
+        v = borderValuesGetter(axis_name);
+        if (v) setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
+        v = borderValuesGetter(axis_name + "-lo");
+        boost::optional<std::string> v_hi = borderValuesGetter(axis_name + "-hi");
+        if (v && v_hi) {
+            setBorders(plask::Primitive<3>::DIRECTION(dir_nr),  *border::Strategy::fromStrUnique(*v), *border::Strategy::fromStrUnique(*v_hi));
+        } else {
+            if (v) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v));
+            if (v_hi) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi));
+        }
+    }
+}
+
 template <>
 void CalculationSpaceD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
     setBorders(Primitive<3>::DIRECTION_TRAN, border_to_set);
@@ -55,12 +78,12 @@ Space2dCartesian* Space2dCartesian::getSubspace(const shared_ptr< GeometryElemen
 
 }
 
-void Space2dCartesian::setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set) {
+void Space2dCartesian::setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
     Primitive<3>::ensureIsValid2dDirection(direction);
     if (direction == Primitive<3>::DIRECTION_TRAN)
-        leftright.setBoth(border_to_set);
+        leftright.setStrategies(border_lo, border_hi);
     else
-        bottomup.setBoth(border_to_set);
+        bottomup.setStrategies(border_lo, border_hi);
 }
 
 void Space2dCartesian::setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
@@ -121,6 +144,12 @@ void Space2dCylindrical::setBorders(Primitive<3>::DIRECTION direction, const bor
         outer = castBorder<border::UniversalStrategy>(border_to_set);
     else
         bottomup.setBoth(border_to_set);
+}
+
+void Space2dCylindrical::setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
+    ensureBoundDirIsProper(direction, false);
+    ensureBoundDirIsProper(direction, true);
+    bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
 }
 
 void Space2dCylindrical::setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
