@@ -40,6 +40,8 @@ void CalculationSpace::setBorders(const std::function<boost::optional<std::strin
     }
 }
 
+
+
 template <>
 void CalculationSpaceD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
     setBorders(Primitive<3>::DIRECTION_TRAN, border_to_set);

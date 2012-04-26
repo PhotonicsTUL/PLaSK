@@ -126,21 +126,28 @@ void register_calculation_spaces() {
         "    Create a space around the provided extrusion geometry object\n\n"
         "Space2DCartesian(geometry, length=infty, **borders)\n"
         "    Create a space around the two-dimensional geometry element with given length\n\n"
-        "Borders ", //TODO
+        "'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
         py::no_init)
         .def("__init__", raw_constructor(Space2dCartesian__init__, 1))
         .add_property("child", &Space2dCartesian::getChild, "GeometryElement2D at the root of the tree")
         .add_property("extrusion", &Space2dCartesian::getExtrusion, "Extrusion object at the very root of the tree")
         .add_property("child_bbox", py::make_function(&Space2dCartesian::getChildBoundingBox, py::return_value_policy<py::return_by_value>()),
                       "Minimal rectangle which includes all points of the geometry element")
+        .add_property("front_material", &Space2dCartesian::getFrontMaterial, &Space2dCartesian::setFrontMaterial,
+                      "material on the positive side of the axis along the extrusion")
+        .add_property("back_material", &Space2dCartesian::getBackMaterial, &Space2dCartesian::setBackMaterial,
+                      "material on the negative side of the axis along the extrusion")
         .def("getMaterial", &Space2dCartesian::getMaterial, "Return material at given point", (py::arg("point")))
         .def("getMaterial", &Space_getMaterial<Space2dCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
         .def("getLeafs", &Space_getLeafs<2>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this element")
         .def("getLeafsPositions", &Space2dCartesian::getLeafsPositions, (py::arg("path")=py::object()), "Calculate positions of all leafs (in local coordinates)")
         .def("getLeafsBBoxes", &Space2dCartesian::getLeafsBoundingBoxes, (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
         .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Space2dCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
+        //TODO getting borders
     ;
 
+    //TODO
+    //convert borders classes to str
 
 }
 

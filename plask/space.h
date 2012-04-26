@@ -203,7 +203,17 @@ public:
         return getChild()->getLeafsBoundingBoxes(path);
     }
 
-    virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr< GeometryElementD<dim> >& element, const PathHints* path = 0, bool copyBorders = false) const = 0;
+    /**
+     * Get the sub/super-space of this one (automatically detected)
+     * \param element geometry element within the geometry tree of this subspace or with this space child as its sub-tree
+     * \param path hints specifying particular instance of the geometry element
+     * \param copyBorders indicates wheter the new space should have the same borders as this one
+     * \return new space
+     */
+    virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr< GeometryElementD<dim> >& element, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
+
+    //CalculationSpaceD<DIMS>* getSubspace(const shared_ptr< GeometryElementD<dim> >& element, const PathHints* path=nullptr, std::map<std::string, std::string> borders) const;
+
 
     void setPlanarBorders(const border::Strategy& border_to_set);
 };
@@ -218,6 +228,9 @@ class Space2dCartesian: public CalculationSpaceD<2> {
 
     border::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN> leftright;
     border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
+
+    shared_ptr<Material> frontMaterial;
+    shared_ptr<Material> backMaterial;
 
 public:
 
@@ -274,6 +287,21 @@ public:
      * @return up border strategy
      */
     const border::Strategy& getUpBorder() { return bottomup.getHi(); }
+
+    /// Set material on the positive side of the axis along the extrusion
+    /// \param material material to set
+    void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; }
+
+    /// \return material on the positive side of the axis along the extrusion
+    shared_ptr<Material> getFrontMaterial() const { return frontMaterial ? frontMaterial : defaultMaterial; }
+
+    /// Set material on the negative side of the axis along the extrusion
+    /// \param material material to set
+    void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; }
+
+    /// \return material on the negative side of the axis along extrusion
+    shared_ptr<Material> getBackMaterial() const { return backMaterial ? backMaterial : defaultMaterial; }
+
 
     Space2dCartesian(const shared_ptr<Extrusion>& extrusion);
 
