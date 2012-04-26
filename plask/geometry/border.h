@@ -4,6 +4,8 @@
 #include "../material/db.h"
 #include "primitives.h"
 
+#include "../log/log.h"
+
 namespace plask {
 
 namespace border {
@@ -42,17 +44,17 @@ struct Strategy {
      */
     virtual bool canMoveOutsideBoundingBox() const;
 
-    /**
+    /*
      * Check if this strategy can coexists on opposite side with oppositeStrategy.
      */
-    virtual bool canCoexistsWith(const Strategy& oppositeStrategy) const {
+    /*virtual bool canCoexistsWith(const Strategy& oppositeStrategy) const {
         return true;
-    }
+    }*/
 
-    void ensureCanCoexists(const Strategy& oppositeStrategy) const {
+    /*void ensureCanCoexists(const Strategy& oppositeStrategy) const {
         if (!canCoexistsWith(oppositeStrategy) || !oppositeStrategy.canCoexistsWith(*this))
             throw Exception("Border strategies \"%1%\" and \"%2%\" can't be used on opposite sides.", this->str(), oppositeStrategy.str());
-    }
+    }*/
 
     /**
      * Clone this strategy.
@@ -154,9 +156,9 @@ struct Periodic: public Strategy {
 
     virtual std::string str() const;
 
-    virtual bool canCoexistsWith(const Strategy& oppositeStrategy) const {
+    /*virtual bool canCoexistsWith(const Strategy& oppositeStrategy) const {
         return oppositeStrategy.type() == Strategy::PERIODIC;
-    }
+    }*/
 };
 
 struct Mirror: public Strategy {
@@ -247,10 +249,10 @@ class StrategyPairHolder {
     bool reverseCallingOrder;
 
     void setOrder(const StrategyType& strategy_lo, const StrategyType& strategy_hi) {
-
-
+        if ((strategy_lo.type() == Strategy::PERIODIC || strategy_hi.type() == Strategy::PERIODIC) && (strategy_lo.type() != strategy_hi.type()))
+            log(LOG_WARNING, "Periodic and non-periodic borders strategies used on opposite sides of one direction.");
+        //strategy_lo.ensureCanCoexists(strategy_hi);
         if (strategy_lo.canMoveOutsideBoundingBox()) {
-            strategy_lo.ensureCanCoexists(strategy_hi);
             if (strategy_hi.canMoveOutsideBoundingBox())
                 throw Exception("Border strategies on both sides can move point outside bounding box.");
             reverseCallingOrder = true;

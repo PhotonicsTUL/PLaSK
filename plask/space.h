@@ -16,9 +16,13 @@ namespace plask {
  */
 struct CalculationSpace {
 
-    /// Default material, typically air.
+    /// Default material (which will be used for places in which geometry doesn't define any material), typically air.
     shared_ptr<Material> defaultMaterial;
 
+    /**
+     * Calculation space constructor, set default material.
+     * @param defaultMaterial material which will be used for places in which geometry doesn't define any material, air by default
+     */
     CalculationSpace(shared_ptr<Material> defaultMaterial = make_shared<Air>()): defaultMaterial(defaultMaterial) {}
 
     /**
@@ -82,10 +86,20 @@ struct CalculationSpace {
      */
     virtual const border::Strategy& getBorder(Primitive<3>::DIRECTION direction, bool higher) const = 0;
 
+    /**
+     * Check if structure in given direction is simetric, i.e. one of border in this direction is mirror.
+     * @param direction direction to check
+     * @return @c true only if structure is simetric in given @p direction
+     */
     bool isSymmetric(Primitive<3>::DIRECTION direction) const {
         return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
     }
 
+    /**
+     * Check if structure in given direction is periodic, i.e. two borders in this direction are periodic.
+     * @param direction direction to check
+     * @return @c true only if structure is periodic in given @p direction
+     */
     bool isPeriodic(Primitive<3>::DIRECTION direction) const {
         return getBorder(direction, false).type() == border::Strategy::PERIODIC && getBorder(direction, true).type() == border::Strategy::PERIODIC;
     }
