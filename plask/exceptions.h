@@ -161,7 +161,7 @@ struct MaterialMethodNotImplemented: public NotImplemented {
      * @param method_name name of not implemented method
      */
     MaterialMethodNotImplemented(const std::string& material_name, const std::string& method_name)
-    : NotImplemented("material " + material_name, method_name) {
+    : NotImplemented("Material " + material_name, method_name) {
     }
 
 };
@@ -176,7 +176,7 @@ struct MaterialMethodNotApplicable: public Exception {
      * @param method_name name of not implemented method
      */
     MaterialMethodNotApplicable(const std::string& material_name, const std::string& method_name)
-    : Exception("material %1%: method not applicable: %2%", material_name, method_name) {
+    : Exception("Material %1%: method not applicable: %2%", material_name, method_name) {
     }
 
 };

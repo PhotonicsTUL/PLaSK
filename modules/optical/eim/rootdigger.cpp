@@ -24,7 +24,7 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
 
     // Handle situations with inconvenient number of points in some direction
     // (this is not perfect but we must handle it somehow)
-    if (NR == 0) throw BadInput(module.getId(), "must have at least one point in real domain to browse for a map");
+    if (NR == 0) throw BadInput(module.getId(), "At least one point in real domain required to browse for a map");
     if (NI == 0) { impoints = vector<double>(1, 0.0); NI = 1; }
     else if (NI  == 2) { impoints = vector<double>(1, 0.5*(impoints[0]+impoints[1])); NI = 1; }
     if (NR  == 2) { repoints = vector<double>(1, 0.5*(repoints[0]+repoints[1])); NR = 1; }

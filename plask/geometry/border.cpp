@@ -80,7 +80,7 @@ std::string Periodic::str() const {
     return "periodic";
 }
 
-#define mirror_not_at_zero "Mirror at border which is not at 0."
+#define mirror_not_at_zero "Mirror is not located at the axis"
 
 void Mirror::applyLo(double bbox_lo, double, double& p, shared_ptr<Material>&) const {
     if (bbox_lo != 0.0)

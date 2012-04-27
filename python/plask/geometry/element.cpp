@@ -32,16 +32,26 @@ template <> struct GeometryElementD_getMaterial<3> {
 };
 
 template <int dim>
-static py::list GeometryElementD_leafsAsTranslations(const GeometryElementD<dim>& self, const PathHints* path=0) {
+static py::list GeometryElementD_getLeafsAsTranslations(const GeometryElementD<dim>& self, const PathHints& path) {
     py::list result;
-    auto leafs = self.getLeafs(path);
-    auto translations = self.getLeafsPositions(path);
+    auto leafs = self.getLeafs(&path);
+    auto translations = self.getLeafsPositions(&path);
     auto l = leafs.begin();
     auto t = translations.begin();
     for (; l != leafs.end(); ++l, ++t) {
         result.append(make_shared<Translation<dim>>(const_pointer_cast<GeometryElementD<dim>>(static_pointer_cast<const GeometryElementD<dim>>(*l)), *t));
     }
     return result;
+}
+
+template <int dim>
+static std::vector<typename GeometryElementD<dim>::DVec> GeometryElementD_getLeafsPositions(const GeometryElementD<dim>& self, const PathHints& path) {
+    return self.getLeafsPositions(&path);
+}
+
+template <int dim>
+static std::vector<typename GeometryElementD<dim>::Box> GeometryElementD_getLeafsBBoxes(const GeometryElementD<dim>& self, const PathHints& path) {
+    return self.getLeafsBoundingBoxes(&path);
 }
 
 /// Initialize class GeometryElementD for Python
@@ -64,11 +74,11 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
                       "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
         .add_property("bbox_size", &GeometryElementD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
-        .def("getLeafsPositions", &GeometryElementD<dim>::getLeafsPositions, (py::arg("path")=py::object()),
+        .def("getLeafsPositions", &GeometryElementD_getLeafsPositions<dim>, (py::arg("path")=py::object()),
              "Calculate positions of all leafs (in local coordinates)")
-        .def("getLeafsBBoxes", (std::vector<typename GeometryElementD<dim>::Box> (GeometryElementD<dim>::*)(const PathHints*) const) &GeometryElementD<dim>::getLeafsBoundingBoxes,
-                     (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
-        .def("getLeafsAsTranslations", &GeometryElementD_leafsAsTranslations<dim>, (py::arg("path")=py::object()),
+        .def("getLeafsBBoxes", &GeometryElementD_getLeafsBBoxes<dim>, (py::arg("path")=py::object()),
+             "Calculate bounding boxes of all leafs (in local coordinates)")
+        .def("getLeafsAsTranslations", &GeometryElementD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
              "Return list of Translation objects holding all leafs")
     ;
 }
@@ -88,8 +98,8 @@ std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self) {
     return out.str();
 }
 
-static std::vector<shared_ptr<GeometryElement>> GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints* path=0) {
-    std::vector<shared_ptr<const GeometryElement>> leafs = self->getLeafs();
+static std::vector<shared_ptr<GeometryElement>> GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints& path=PathHints()) {
+    std::vector<shared_ptr<const GeometryElement>> leafs = self->getLeafs(&path);
     std::vector<shared_ptr<GeometryElement>> result;
     result.reserve(leafs.size());
     for (auto i: leafs) result.push_back(const_pointer_cast<GeometryElement>(i));

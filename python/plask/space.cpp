@@ -20,10 +20,21 @@ template <> struct Space_getMaterial<Space3d> {
 };
 
 template <typename S>
-static py::list Space_leafsAsTranslations(const S& self, const PathHints* path=0) {
+static std::vector<typename GeometryElementD<S::DIMS>::DVec> Space_getLeafsPositions(const S& self, const PathHints& path) {
+    return self.getLeafsPositions(&path);
+}
+
+template <typename S>
+static std::vector<typename GeometryElementD<S::DIMS>::Box> Space_getLeafsBBoxes(const S& self, const PathHints& path) {
+    return self.getLeafsBoundingBoxes(&path);
+}
+
+
+template <typename S>
+static py::list Space_leafsAsTranslations(const S& self, const PathHints& path=0) {
     py::list result;
-    auto leafs = self.getLeafs(path);
-    auto translations = self.getLeafsPositions(path);
+    auto leafs = self.getLeafs(&path);
+    auto translations = self.getLeafsPositions(&path);
     auto l = leafs.begin();
     auto t = translations.begin();
     for (; l != leafs.end(); ++l, ++t) {
@@ -32,9 +43,9 @@ static py::list Space_leafsAsTranslations(const S& self, const PathHints* path=0
     return result;
 }
 
-template <int dim>
-static std::vector<shared_ptr<GeometryElement>> Space_getLeafs(const CalculationSpaceD<dim>& self, const PathHints* path=0) {
-    std::vector<shared_ptr<const GeometryElement>> leafs = self.getLeafs();
+template <typename S>
+static std::vector<shared_ptr<GeometryElement>> Space_getLeafs(S& self, const PathHints& path) {
+    std::vector<shared_ptr<const GeometryElement>> leafs = self.getLeafs(&path);
     std::vector<shared_ptr<GeometryElement>> result;
     result.reserve(leafs.size());
     for (auto i: leafs) result.push_back(const_pointer_cast<GeometryElement>(i));
@@ -42,9 +53,27 @@ static std::vector<shared_ptr<GeometryElement>> Space_getLeafs(const Calculation
 }
 
 
+static void _Space_setBorders(CalculationSpace& self, py::dict borders, std::set<std::string>& parsed, const std::string& err_msg) {
+   self.setBorders(
+        [&](const std::string& s) {
+            std::string str = s;
+            std::replace(str.begin(), str.end(), '-', '_');
+            parsed.insert(str);
+            return borders.has_key(str) ?
+                boost::optional<std::string>( (borders[str]==py::object()) ? std::string("null") : py::extract<std::string>(borders[str]) ) :
+                boost::optional<std::string>();
+        },
+    config.axes);
+
+    // Test if we have any spurious borders
+    py::stl_input_iterator<std::string> begin(borders), end;
+    for (auto item = begin; item != end; item++)
+        if (parsed.find(*item) == parsed.end())
+            throw ValueError(err_msg, *item);
+}
 
 
-shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py::dict kwargs) {
+static shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py::dict kwargs) {
     int na = py::len(args);
 
     shared_ptr <Space2dCartesian> space;
@@ -98,57 +127,97 @@ shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py::dict k
     parsed_kwargs.insert("geometry");
     parsed_kwargs.insert("length");
 
-    static_pointer_cast<CalculationSpace>(space)->setBorders(
-        [&](const std::string& s) {
-            std::string str = s;
-            std::replace(str.begin(), str.end(), '-', '_');
-            parsed_kwargs.insert(str);
-            if (kwargs.has_key(str)) return boost::optional<std::string>(py::extract<std::string>(kwargs[str]));
-            return boost::optional<std::string>();
-        },
-    config.axes);
-
-    // Test if we have any spurious kwargs
-    py::stl_input_iterator<std::string> begin(kwargs), end;
-    for (auto item = begin; item != end; item++)
-        if (parsed_kwargs.find(*item) == parsed_kwargs.end())
-            throw TypeError("__init__() got an unexpected keyword argument '%s'", *item);
+    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
 
     return space;
 }
 
+template <typename S>
+static typename Primitive<S::DIMS>::Box Space_childBoundingBox(const S& self) {
+    return self.getChildBoundingBox();
+}
+
+static void Space_setBorders(CalculationSpace& self, py::dict borders) {
+    std::set<std::string> parsed;
+    _Space_setBorders(self, borders, parsed, "unexpected border name '%s'");
+}
+
+inline static py::object _border(const CalculationSpace& self, Primitive<3>::DIRECTION direction, bool higher) {
+    auto str = self.getBorder(direction, higher).str();
+    return (str=="null") ? py::object() : py::object(str);
+}
+
+static py::dict Space2dCartesian_getBorders(const Space2dCartesian& self) {
+    py::dict borders;
+    borders["left"] = _border(self, plask::Primitive<3>::DIRECTION_TRAN, false);
+    borders["right"] = _border(self, plask::Primitive<3>::DIRECTION_TRAN, true);
+    borders["top"] = _border(self, plask::Primitive<3>::DIRECTION_UP, true);
+    borders["bottom"] = _border(self, plask::Primitive<3>::DIRECTION_UP, false);
+    return borders;
+}
+
+template <typename S>
+static shared_ptr<S> Space_getSubspace(py::tuple args, py::dict kwargs) {
+    const S* self = py::extract<S*>(args[0]);
+
+    py::object arg;
+    py::ssize_t n = py::len(args);
+    if (n >= 2) {
+        if (kwargs.has_key("element")) throw TypeError("got multiple values for keyword argument 'element'");
+        arg = args[1];
+    } else
+        arg = kwargs["element"];
+    shared_ptr<GeometryElementD<S::DIMS>> element = py::extract<shared_ptr<GeometryElementD<S::DIMS>>>(arg);
+
+    PathHints* path = nullptr;
+    if (n >= 3) {
+        if (kwargs.has_key("path")) throw TypeError("got multiple values for keyword argument 'path'");
+        path = py::extract<PathHints*>(args[2]);
+    } else if (kwargs.has_key("path"))
+        path = py::extract<PathHints*>(kwargs["path"]);
+
+    if (n >= 4) throw TypeError("getSubspace() takes 2 or 3 non-keyword arguments (%1%) given", n);
+
+    S* space = self->getSubspace(element, path, false);
+
+    std::set<std::string> parsed;
+    parsed.insert("element");
+    parsed.insert("path");
+    _Space_setBorders(*space, kwargs, parsed, "unexpected border name '%s'");
+
+    return shared_ptr<S>(space);
+}
 
 void register_calculation_spaces() {
 
     py::class_<Space2dCartesian, shared_ptr<Space2dCartesian>>("Space2DCartesian",
         "Calculation space representing 2D Cartesian coordinate system\n\n"
-        "Space2DCartesian(geometry, **borders)\n"
-        "    Create a space around the provided extrusion geometry object\n\n"
         "Space2DCartesian(geometry, length=infty, **borders)\n"
-        "    Create a space around the two-dimensional geometry element with given length\n\n"
-        "'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
+        "    Create a space around the two-dimensional geometry element with given length.\n\n"
+        "    'geometry' can be either a 2D geometry object or plask.geometry.Extrusion, in which case\n"
+        "    the 'length' parameter should be skipped, as it is read directly from extrusion.\n"
+        "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
         py::no_init)
         .def("__init__", raw_constructor(Space2dCartesian__init__, 1))
         .add_property("child", &Space2dCartesian::getChild, "GeometryElement2D at the root of the tree")
         .add_property("extrusion", &Space2dCartesian::getExtrusion, "Extrusion object at the very root of the tree")
-        .add_property("child_bbox", py::make_function(&Space2dCartesian::getChildBoundingBox, py::return_value_policy<py::return_by_value>()),
-                      "Minimal rectangle which includes all points of the geometry element")
+        .add_property("bbox", &Space_childBoundingBox<Space2dCartesian>, "Minimal rectangle which includes all points of the geometry element")
+        .def_readwrite("default_material", &Space2dCartesian::defaultMaterial, "Material of the 'empty' regions of the geometry")
         .add_property("front_material", &Space2dCartesian::getFrontMaterial, &Space2dCartesian::setFrontMaterial,
-                      "material on the positive side of the axis along the extrusion")
+                      "Material on the positive side of the axis along the extrusion")
         .add_property("back_material", &Space2dCartesian::getBackMaterial, &Space2dCartesian::setBackMaterial,
-                      "material on the negative side of the axis along the extrusion")
+                      "Material on the negative side of the axis along the extrusion")
+        .add_property("borders", &Space2dCartesian_getBorders, &Space_setBorders,
+                      "Dictionary specifying the type of the surroundings around the structure")
         .def("getMaterial", &Space2dCartesian::getMaterial, "Return material at given point", (py::arg("point")))
         .def("getMaterial", &Space_getMaterial<Space2dCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("getLeafs", &Space_getLeafs<2>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this element")
-        .def("getLeafsPositions", &Space2dCartesian::getLeafsPositions, (py::arg("path")=py::object()), "Calculate positions of all leafs (in local coordinates)")
-        .def("getLeafsBBoxes", &Space2dCartesian::getLeafsBoundingBoxes, (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
+        .def("getLeafs", &Space_getLeafs<Space2dCartesian>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this element")
+        .def("getLeafsPositions", &Space_getLeafsPositions<Space2dCartesian>, (py::arg("path")=py::object()), "Calculate positions of all leafs (in local coordinates)")
+        .def("getLeafsBBoxes", &Space_getLeafsBBoxes<Space2dCartesian>, (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
         .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Space2dCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
-        //TODO getting borders
+        .def("getSubspace", py::raw_function(&Space_getSubspace<Space2dCartesian>, 2),
+             "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
-
-    //TODO
-    //convert borders classes to str
-
 }
 
 

@@ -132,7 +132,7 @@ shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_donor,
         return get(parsed_name_with_donor, Material::Composition(), dopant, doping_amount_type, doping_amount);
     std::vector<std::string> elements = Material::parseElementsNames(name);
     if (composition.size() > elements.size())
-        throw plask::Exception("too long composition vector (longer than number of elements in \"%1%\")", parsed_name_with_donor);
+        throw plask::Exception("Too long composition vector (longer than number of elements in \"%1%\")", parsed_name_with_donor);
     Material::Composition comp;
     for (std::size_t i = 0; i < composition.size(); ++i) comp[elements[i]] = composition[i];
     for (std::size_t i = composition.size(); i < elements.size(); ++i) comp[elements[i]] = std::numeric_limits<double>::quiet_NaN();

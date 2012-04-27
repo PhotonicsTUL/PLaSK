@@ -274,9 +274,9 @@ class StrategyPairHolder {
         if (strategy_lo.canMoveOutsideBoundingBox()) {
             if (strategy_hi.canMoveOutsideBoundingBox())
                 throw Exception("Border strategies on both sides can move point outside bounding box.");
-            reverseCallingOrder = true;
-        } else
             reverseCallingOrder = false;
+        } else
+            reverseCallingOrder = true;
     }
 
 public:

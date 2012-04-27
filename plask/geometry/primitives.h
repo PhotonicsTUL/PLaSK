@@ -307,7 +307,7 @@ struct Primitive<2> {
     };
 
     static void ensureIsValidDirection(unsigned direction) {
-        if (direction > 1) throw Exception("bad 2d direction index, %1% was given but allowed are: 0, 1.", direction);
+        if (direction > 1) throw Exception("Bad 2D direction index, %1% was given but allowed are: 0, 1.", direction);
     }
 };
 
@@ -339,7 +339,7 @@ struct Primitive<3> {
     };
 
     static void ensureIsValidDirection(unsigned direction) {
-        if (direction > 2) throw DimensionError("bad 3D direction index, %s was given but allowed are: 0, 1, 2.", direction);
+        if (direction > 2) throw DimensionError("Bad 3D direction index, %s was given but allowed are: 0, 1, 2.", direction);
     }
 
     static void ensureIsValid2dDirection(unsigned direction) {

@@ -115,6 +115,13 @@ protected:
         return dynamic_cast<const BorderType&>(strategy);
     }
 
+    /// \return alternative direction name
+    /// \param ax axis
+    /// \param orient orientation
+    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) {
+        const char* directions[3][2] = { {"back", "front"}, {"left", "right"}, {"bottom", "top"} };
+        return directions[ax][orient];
+    }
 };
 
 
@@ -203,6 +210,9 @@ public:
         return getChild()->getLeafsBoundingBoxes(path);
     }
 
+
+    virtual void setPlanarBorders(const border::Strategy& border_to_set);
+
     /**
      * Get the sub/super-space of this one (automatically detected)
      * \param element geometry element within the geometry tree of this subspace or with this space child as its sub-tree
@@ -210,12 +220,28 @@ public:
      * \param copyBorders indicates wheter the new space should have the same borders as this one
      * \return new space
      */
-    virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr< GeometryElementD<dim> >& element, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
+    virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
 
-    //CalculationSpaceD<DIMS>* getSubspace(const shared_ptr< GeometryElementD<dim> >& element, const PathHints* path=nullptr, std::map<std::string, std::string> borders) const;
+    /**
+     * Get the sub/super-space of this one (automatically detected) with specified borders
+     * \param element geometry element within the geometry tree of this subspace or with this space child as its sub-tree
+     * \param path hints specifying particular instance of the geometry element
+     * \param borders map of edge name to border description
+     * \param axesNames name of the axes for borders
+     * \return new space
+     */
+    virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr,
+                                                 const std::map<std::string, std::string>& borders=std::map<std::string, std::string>(),
+                                                 const AxisNames& axesNames="lon,tran,up") const {
+        CalculationSpaceD<dim>* subspace = getSubspace(element, path, false);
+        subspace->setBorders( [&](const std::string& s){
+            auto b = borders.find(s);
+            return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
+        }, axesNames);
+        return subspace;
+    }
 
 
-    void setPlanarBorders(const border::Strategy& border_to_set);
 };
 
 /**
@@ -313,7 +339,14 @@ public:
 
     shared_ptr<Extrusion> getExtrusion() const { return extrusion; }
 
-    virtual Space2dCartesian* getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path = 0, bool copyBorders = false) const;
+    virtual Space2dCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
+
+    virtual Space2dCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
+                                          const std::map<std::string, std::string>& borders=std::map<std::string, std::string>(),
+                                          const AxisNames& axesNames=AxisNames()) const {
+        return (Space2dCartesian*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
+    }
+
 
 };
 
@@ -331,7 +364,7 @@ class Space2dCylindrical: public CalculationSpaceD<2> {
     static void ensureBoundDirIsProper(Primitive<3>::DIRECTION direction, bool hi) {
         Primitive<3>::ensureIsValid2dDirection(direction);
         if (direction == Primitive<3>::DIRECTION_TRAN && !hi)
-            throw Exception("Space2dCylindrical: Lower bound is not allowed in tran direction.");
+            throw BadInput("setBorders", "Space2dCylindrical: Lower bound is not allowed in the transverse direction.");
     }
 
 public:
@@ -382,7 +415,13 @@ public:
 
     shared_ptr<Revolution> getRevolution() const { return revolution; }
 
-    virtual Space2dCylindrical* getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path = 0, bool copyBorders = false) const;
+    virtual Space2dCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
+
+    virtual Space2dCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
+                                            const std::map<std::string, std::string>& borders=std::map<std::string, std::string>(),
+                                            const AxisNames& axesNames=AxisNames()) const {
+        return (Space2dCylindrical*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
+    }
 
     void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
@@ -391,6 +430,13 @@ public:
     void setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set);
 
     const border::Strategy& getBorder(Primitive<3>::DIRECTION direction, bool higher) const;
+
+  protected:
+
+    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) {
+        const char* directions[3][2] = { {"back", "front"}, {"inner", "outer"}, {"bottom", "top"} };
+        return directions[ax][orient];
+    }
 
 };
 

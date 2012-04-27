@@ -596,7 +596,7 @@ struct GeometryElementD: public GeometryElement {
      */
     shared_ptr< Translation<dimensions> > requireElementInThisCordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints* path = 0) const {
         shared_ptr< Translation<dimensions> > result = getElementInThisCordinates(element, path);
-        if (!result) throw Exception("requireElementInThisCordinates: translation to element is not well defined");
+        if (!result) throw Exception("Translation to element required in local coordinates is not well defined");
         return result;
     }
 
@@ -608,12 +608,12 @@ struct GeometryElementD: public GeometryElement {
 
 namespace plask {
 
-template <int dimensions> inline shared_ptr< Translation<dimensions> >
-GeometryElementD<dimensions>::getElementInThisCordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints* path) const {
+template <int dimensions> inline shared_ptr<Translation<dimensions>>
+GeometryElementD<dimensions>::getElementInThisCordinates(const shared_ptr<GeometryElementD<dimensions>>& element, const PathHints* path) const {
     auto trans_vec = getElementPositions(*element, path);
     if (trans_vec.size() != 1 || std::isnan(trans_vec[0].components[0]))
-        shared_ptr< Translation<dimensions> >();
-    return make_shared< Translation<dimensions> >(element, trans_vec[0]);
+        shared_ptr<Translation<dimensions>>();
+    return make_shared<Translation<dimensions>>(element, trans_vec[0]);
 }
 
 } // namespace plask

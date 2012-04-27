@@ -4,10 +4,8 @@
 
 namespace plask {
 
-//void CalculationSpace::setBorders(const std::function<boost::optional<std::unique_ptr<border::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
-
-void CalculationSpace::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames) {
-    const char* directions[3][2] = { {"back", "front"}, {"left", "right"}, {"bottom", "top"} };
+void CalculationSpace::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames)
+{
     boost::optional<std::string> v, v_lo, v_hi;
     v = borderValuesGetter("borders");
     if (v) setAllBorders(*border::Strategy::fromStrUnique(*v));
@@ -18,13 +16,13 @@ void CalculationSpace::setBorders(const std::function<boost::optional<std::strin
         v = borderValuesGetter(axis_name);
         if (v) setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
         v_lo = borderValuesGetter(axis_name + "-lo");
-        if (v = borderValuesGetter(directions[dir_nr][0])) {
-            if (v_lo) throw BadInput("setBorders", "border specified by both '%1%-lo' and '%2%'", axis_name, directions[dir_nr][0]);
+        if (v = borderValuesGetter(alternativeDirectionName(dir_nr, 0))) {
+            if (v_lo) throw BadInput("setBorders", "Border specified by both '%1%-lo' and '%2%'", axis_name, alternativeDirectionName(dir_nr, 0));
             else v_lo = v;
         }
         v_hi = borderValuesGetter(axis_name + "-hi");
-        if (v = borderValuesGetter(directions[dir_nr][1])) {
-            if (v_hi) throw BadInput("setBorders", "border specified by both '%1%-hi' and '%2%'", axis_name, directions[dir_nr][1]);
+        if (v = borderValuesGetter(alternativeDirectionName(dir_nr, 1))) {
+            if (v_hi) throw BadInput("setBorders", "Border specified by both '%1%-hi' and '%2%'", axis_name, alternativeDirectionName(dir_nr, 1));
             else v_hi = v;
         }
         try {
@@ -35,11 +33,10 @@ void CalculationSpace::setBorders(const std::function<boost::optional<std::strin
                 if (v_hi) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi));
             }
         } catch (DimensionError) {
-            throw BadInput("setBorders", "axis '%1%' is not allowed for this space", axis_name);
+            throw BadInput("setBorders", "Axis '%1%' is not allowed for this space", axis_name);
         }
     }
 }
-
 
 
 template <>
@@ -82,15 +79,18 @@ shared_ptr<Material> Space2dCartesian::getMaterial(const Vec<2, double> &p) cons
     return getMaterialOrDefault(r);
 }
 
-Space2dCartesian* Space2dCartesian::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {
+Space2dCartesian* Space2dCartesian::getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path, bool copyBorders) const {
     auto new_child = getChild()->getElementInThisCordinates(element, path);
+    if (!new_child) {
+        new_child = element->requireElementInThisCordinates(getChild(), path);
+        new_child->translation = - new_child->translation;
+    }
     if (copyBorders) {
         std::unique_ptr<Space2dCartesian> result(new Space2dCartesian(*this));
         result->extrusion = make_shared<Extrusion>(new_child, getExtrusion()->length);
         return result.release();
     } else
         return new Space2dCartesian(new_child, getExtrusion()->length);
-
 }
 
 void Space2dCartesian::setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
@@ -145,6 +145,10 @@ shared_ptr<Material> Space2dCylindrical::getMaterial(const Vec<2, double> &p) co
 
 Space2dCylindrical* Space2dCylindrical::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {
     auto new_child = getChild()->getElementInThisCordinates(element, path);
+    if (!new_child) {
+        new_child = element->requireElementInThisCordinates(getChild(), path);
+        new_child->translation = - new_child->translation;
+    }
     if (copyBorders) {
         std::unique_ptr<Space2dCylindrical> result(new Space2dCylindrical(*this));
         result->revolution = make_shared<Revolution>(new_child);
