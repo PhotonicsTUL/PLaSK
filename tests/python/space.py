@@ -43,4 +43,6 @@ class CalculationSpaces(unittest.TestCase):
         h2 = stack.append(r2, "l")
         space = plask.Space2DCartesian(stack)
         subspace = space.getSubspace(r2)
-        self.assertEqual( space.getLeafsPositions(h2), subspace.getLeafsPositions(h2) )
+        v1 = space.getLeafsPositions(h2)
+        v2 = subspace.getLeafsPositions(h2)
+        self.assertEqual( space.getLeafsPositions(h2)[0], subspace.getLeafsPositions(h2)[0] )

@@ -25,7 +25,6 @@ void register_geometry_aligners();
 void register_geometry_path();
 void register_geometry_container();
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 shared_ptr<GeometryManager> Geometry__init__(py::tuple args, py::dict kwargs) {
@@ -106,12 +105,15 @@ void initGeometry() {
         "This module provides 2D and 3D geometry elements, necessary to describe the structure "
         "of analyzed device."; //TODO maybe more extensive description
 
+    // This must be the first one
+    register_geometry_path();
+
+
     register_geometry_element();
     register_geometry_primitive();
     register_geometry_leafs();
     register_geometry_transform();
     register_geometry_aligners();
-    register_geometry_path();
     register_geometry_container();
 
 

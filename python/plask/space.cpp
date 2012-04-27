@@ -8,6 +8,8 @@
 
 namespace plask { namespace python {
 
+const PathHints empty_path {};
+
 template <typename S> struct Space_getMaterial {
     static inline shared_ptr<Material> call(const S& self, double c0, double c1) {
         return self.getMaterial(Vec<2,double>(c0, c1));
@@ -211,10 +213,10 @@ void register_calculation_spaces() {
                       "Dictionary specifying the type of the surroundings around the structure")
         .def("getMaterial", &Space2dCartesian::getMaterial, "Return material at given point", (py::arg("point")))
         .def("getMaterial", &Space_getMaterial<Space2dCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("getLeafs", &Space_getLeafs<Space2dCartesian>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this element")
-        .def("getLeafsPositions", &Space_getLeafsPositions<Space2dCartesian>, (py::arg("path")=py::object()), "Calculate positions of all leafs (in local coordinates)")
-        .def("getLeafsBBoxes", &Space_getLeafsBBoxes<Space2dCartesian>, (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
-        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Space2dCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
+        .def("getLeafs", &Space_getLeafs<Space2dCartesian>, (py::arg("path")=empty_path),  "Return list of all leafs in the subtree originating from this element")
+        .def("getLeafsPositions", &Space_getLeafsPositions<Space2dCartesian>, (py::arg("path")=empty_path), "Calculate positions of all leafs (in local coordinates)")
+        .def("getLeafsBBoxes", &Space_getLeafsBBoxes<Space2dCartesian>, (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs (in local coordinates)")
+        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Space2dCartesian>, (py::arg("path")=empty_path), "Return list of Translation objects holding all leafs")
         .def("getSubspace", py::raw_function(&Space_getSubspace<Space2dCartesian>, 2),
              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;

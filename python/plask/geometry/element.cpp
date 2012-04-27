@@ -6,6 +6,9 @@
 
 namespace plask { namespace python {
 
+// Empty path to be used as default on functions
+const PathHints empty_path {};
+
 // Some helpful wrappers
 template <int dim> struct GeometryElementD_inside {};
 template <> struct GeometryElementD_inside<2> {
@@ -74,11 +77,11 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
                       "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
         .add_property("bbox_size", &GeometryElementD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
-        .def("getLeafsPositions", &GeometryElementD_getLeafsPositions<dim>, (py::arg("path")=py::object()),
+        .def("getLeafsPositions", &GeometryElementD_getLeafsPositions<dim>, (py::arg("path")=empty_path),
              "Calculate positions of all leafs (in local coordinates)")
-        .def("getLeafsBBoxes", &GeometryElementD_getLeafsBBoxes<dim>, (py::arg("path")=py::object()),
+        .def("getLeafsBBoxes", &GeometryElementD_getLeafsBBoxes<dim>, (py::arg("path")=empty_path),
              "Calculate bounding boxes of all leafs (in local coordinates)")
-        .def("getLeafsAsTranslations", &GeometryElementD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
+        .def("getLeafsAsTranslations", &GeometryElementD_getLeafsAsTranslations<dim>, (py::arg("path")=empty_path),
              "Return list of Translation objects holding all leafs")
     ;
 }
@@ -98,7 +101,7 @@ std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self) {
     return out.str();
 }
 
-static std::vector<shared_ptr<GeometryElement>> GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints& path=PathHints()) {
+static std::vector<shared_ptr<GeometryElement>> GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints& path=empty_path) {
     std::vector<shared_ptr<const GeometryElement>> leafs = self->getLeafs(&path);
     std::vector<shared_ptr<GeometryElement>> result;
     result.reserve(leafs.size());
@@ -119,7 +122,7 @@ void register_geometry_element()
         "Base class for all geometry elements.", py::no_init)
         .add_property("type", &GeometryElement::getType)
         .def("validate", &GeometryElement::validate)
-        .def("getLeafs", &GeometryElement_getLeafs, (py::arg("path")=py::object()),
+        .def("getLeafs", &GeometryElement_getLeafs, (py::arg("path")=empty_path),
              "Return list of all leafs in the subtree originating from this element")
         .def("__repr__", &GeometryElement__repr__)
     ;

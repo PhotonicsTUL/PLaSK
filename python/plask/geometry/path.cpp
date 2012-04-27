@@ -48,6 +48,14 @@ struct Element_List_from_Python {
     }
 };
 
+std::string Hint__repr__(const PathHints::Hint& self) {
+}
+
+std::string PathHint__repr__(const PathHints& self) {
+    if (self.hintFor.size() == 0) return "plask.geometry.PathHints()";
+    return format("plask.geometry.PathHints(<%1% hints>)", self.hintFor.size());
+}
+
 void register_geometry_path()
 {
     py::class_<PathHints::Hint>("Hint",
@@ -64,6 +72,7 @@ void register_geometry_path()
                           "PathHints is used to resolve ambiguities if any element is present in the geometry\n"
                           "tree more than once. It contains a set of ElementHint objects holding weak references\n"
                           "to containers and their childred.")
+        .def("__repr__", &PathHint__repr__)
         .def("add", (void (PathHints::*)(const PathHints::Hint&))&PathHints::addHint, "Append hint to the path.", (py::arg("hint")))
         .def(py::self += py::other<PathHints::Hint>())
         .def("getChildren", (std::set<shared_ptr<GeometryElement>> (PathHints::*)(const GeometryElement& container) const)&PathHints::getChildren,
