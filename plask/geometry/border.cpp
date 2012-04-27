@@ -20,7 +20,10 @@ Strategy* Strategy::fromStr(const std::string& str, const MaterialsDB& materials
     return new SimpleMaterial(materialsDB.get(str));
 }
 
-void SimpleMaterial::apply(double, double, double&, shared_ptr<plask::Material> &result_material) const {
+void SimpleMaterial::applyLo(double, double, double&, shared_ptr<plask::Material> &result_material) const {
+    result_material = material;
+}
+void SimpleMaterial::applyHi(double, double, double&, shared_ptr<plask::Material> &result_material) const {
     result_material = material;
 }
 
@@ -34,8 +37,8 @@ std::string SimpleMaterial::str() const {
 
 
 
-void Null::apply(double, double, double&, shared_ptr<plask::Material> &) const {
-}
+void Null::applyLo(double, double, double&, shared_ptr<plask::Material> &) const {}
+void Null::applyHi(double, double, double&, shared_ptr<plask::Material> &) const {}
 
 Null* Null::clone() const {
     return new Null();
@@ -46,9 +49,11 @@ std::string Null::str() const {
 }
 
 
-void Extend::apply(double bbox_lo, double bbox_hi, double &p, shared_ptr<plask::Material>&) const {
-    if (p < bbox_lo) p = bbox_lo;
-    if (p > bbox_hi) p = bbox_hi;
+void Extend::applyLo(double bbox_lo, double bbox_hi, double &p, shared_ptr<plask::Material>&) const {
+    p = bbox_lo;
+}
+void Extend::applyHi(double bbox_lo, double bbox_hi, double &p, shared_ptr<plask::Material>&) const {
+    p = bbox_hi;
 }
 
 Extend* Extend::clone() const {
@@ -60,7 +65,10 @@ std::string Extend::str() const {
 }
 
 
-void Periodic::apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>&) const {
+void Periodic::applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>&) const {
+    p = std::fmod(p-bbox_lo, bbox_hi-bbox_lo) + bbox_lo;
+}
+void Periodic::applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>&) const {
     p = std::fmod(p-bbox_lo, bbox_hi-bbox_lo) + bbox_lo;
 }
 
@@ -74,19 +82,17 @@ std::string Periodic::str() const {
 
 #define mirror_not_at_zero "Mirror at border which is not at 0."
 
-void Mirror::apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>&) const {
-    if (p > bbox_hi) {
-        if (bbox_hi != 0.0)
-            throw Exception(mirror_not_at_zero);
-        p = -p;
-    } else
-    if (p < bbox_lo) {
-        if (bbox_lo != 0.0)
-            throw Exception(mirror_not_at_zero);
-        p = -p;
-    }
-    //if (p > bbox_hi) p -= 2.0 * (p - bbox_hi); else
-    //if (p < bbox_lo) p += 2.0 * (bbox_lo - p);*/
+void Mirror::applyLo(double bbox_lo, double, double& p, shared_ptr<Material>&) const {
+    if (bbox_lo != 0.0)
+        throw Exception(mirror_not_at_zero);
+    p = -p;
+    //p += 2.0 * (bbox_lo - p);
+}
+void Mirror::applyHi(double, double bbox_hi, double& p, shared_ptr<Material>&) const {
+    if (bbox_hi != 0.0)
+        throw Exception(mirror_not_at_zero);
+    p = -p;
+    //p -= 2.0 * (p - bbox_hi);
 }
 
 bool Mirror::canMoveOutsideBoundingBox() const {

@@ -30,10 +30,18 @@ struct Strategy {
     /**
      * Apply strategy to given point @p p.
      * @param bbox_lo[in], bbox_hi[in] coordinates of geometry element bounding box in startegy working direction
-     * @param p[in,out] coordinate of point in startegy working direction, it's lower than @p bbox_lo or higher than @p bbox_hi, this method can move this point
+     * @param p[in,out] coordinate of point in startegy working direction, it's (must be) lower than @p bbox_lo, this method can move this point
      * @param result_material[out] optionaly, this method can assign to it material which should be used
      */
-    virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
+    
+    /**
+     * Apply strategy to given point @p p.
+     * @param bbox_lo[in], bbox_hi[in] coordinates of geometry element bounding box in startegy working direction
+     * @param p[in,out] coordinate of point in startegy working direction, it's (must be) higher than @p bbox_hi, this method can move this point
+     * @param result_material[out] optionaly, this method can assign to it material which should be used
+     */
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
 
     /**
      * Check if this strategy can move point p to place outside bounding box.
@@ -97,7 +105,8 @@ struct UniversalStrategy: public Strategy {
  */
 struct Null: public UniversalStrategy {
     virtual Type type() const { return DEFAULT; }
-    virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
     virtual Null* clone() const;
     virtual std::string str() const;
 };
@@ -120,7 +129,8 @@ struct SimpleMaterial: public UniversalStrategy {
 
     virtual Type type() const { return SIMPLE; }
 
-    virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual SimpleMaterial* clone() const;
 
@@ -135,7 +145,8 @@ struct Extend: public UniversalStrategy {
 
     virtual Type type() const { return EXTEND; }
 
-    virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual Extend* clone() const;
 
@@ -150,7 +161,8 @@ struct Periodic: public Strategy {
 
     virtual Type type() const { return PERIODIC; }
 
-    virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual Periodic* clone() const;
 
@@ -165,7 +177,8 @@ struct Mirror: public Strategy {
 
     virtual Type type() const { return MIRROR; }
 
-    virtual void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
 
     virtual bool canMoveOutsideBoundingBox() const;
 
@@ -211,26 +224,32 @@ public:
         return *this;
     }
 
-    inline void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const {
+    /*inline void apply(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const {
         strategy->apply(bbox_lo, bbox_hi, p, result_material);
-    }
+    }*/
 
     template <int dims>
-    inline void apply(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
-        apply(bbox.lower.components[direction], bbox.upper.components[direction],
+    inline void applyLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+        strategy->applyLo(bbox.lower.components[direction], bbox.upper.components[direction],
+              p.components[direction], result_material);
+    }
+    
+    template <int dims>
+    inline void applyHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+        strategy->applyHi(bbox.lower.components[direction], bbox.upper.components[direction],
               p.components[direction], result_material);
     }
 
     template <int dims>
     inline void applyIfLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
         if (p.components[direction] < bbox.lower.components[direction])
-            apply(bbox, p, result_material);
+            applyLo(bbox, p, result_material);
     }
 
     template <int dims>
     inline void applyIfHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
         if (p.components[direction] > bbox.upper.components[direction])
-            apply(bbox, p, result_material);
+            applyHi(bbox, p, result_material);
     }
 
 };
