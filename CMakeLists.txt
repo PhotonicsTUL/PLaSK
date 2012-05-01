@@ -55,16 +55,27 @@ cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 
 #option (PACK_EXE "Self-pack and strip executables." OFF)  # compress exe
 
+set(PYTHON_VERSION "" CACHE STRING "Python version to use")
+
 # ---------- External libraries --------------------------------------------
 if(BUILD_PYTHON)
-    find_package(PythonInterp REQUIRED)
+     if(NOT "${PYTHON_VERSION}" STREQUAL "${previous_user_python_version}")
+        unset(PYTHON_EXECUTABLE CACHE)
+        unset(PYTHON_LIBRARY CACHE)
+        unset(PYTHON_INCLUDE_DIR CACHE)
+        unset(PYTHON_INCLUDE_PATH CACHE)
+        set(previous_user_python_version ${PYTHON_VERSION} CACHE INTERNAL "Python version previously chosen by the user (to detect change)")
+     endif()
+
+    find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
     find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
     find_package(numpy REQUIRED)
 
     # Require Python >= 2.6
-#     if( 100 * ${PYTHON_VERSION_MAJOR} + ${PYTHON_VERSION_MINOR} < 206 )
-#         message(FATAL_ERROR "Python 2.6 or newer required.")
-#     endif()
+    math(EXPR PYTHON_VERSION_NUM "100 * ${PYTHON_VERSION_MAJOR} + ${PYTHON_VERSION_MINOR}")
+    if(${PYTHON_VERSION_NUM} LESS 206)
+        message(FATAL_ERROR "Python 2.6 or newer required.")
+    endif()
 endif(BUILD_PYTHON)
 
 # ---------- Boost components --------------------------------------------
@@ -72,7 +83,13 @@ endif(BUILD_PYTHON)
 set(boost_components unit_test_framework)
 
 if(BUILD_PYTHON)
-    list(APPEND boost_components "python")
+    find_package(Boost QUIET COMPONENTS "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+    unset(Boost_LIBRARIES)
+    if(Boost_PYTHON-PY${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}_FOUND)
+        list(APPEND boost_components "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+    else()
+        list(APPEND boost_components "python")
+    endif()
 endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})

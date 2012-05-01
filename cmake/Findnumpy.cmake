@@ -3,7 +3,7 @@
 #  NUMPY_FOUND - System has numpy
 #  NUMPY_INCLUDE_DIRS - Include directories when compiling against numpy
 
-find_package(PythonInterp)
+find_package(PythonInterp QUIET)
 
 if(PYTHON_EXECUTABLE)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/FindNumpy.py "try: import numpy; print(numpy.get_include())\nexcept: pass\n")
