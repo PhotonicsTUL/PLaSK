@@ -117,7 +117,7 @@ def interact(ipython=None, argv=[]):
             import IPython
         except ImportError:
             if ipython is not True:
-                print no_ipython
+                print (no_ipython)
                 ip = _init_python_session()
                 mainloop = ip.interact
             else:

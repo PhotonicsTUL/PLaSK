@@ -38,7 +38,7 @@ int StreamReaderCallback::read(void *buffer, int sizeToRead) {
     return input.gcount();
 }
 
-XMLReader::XMLReader(const char* file_name): currentNodeType(NODE_NONE), irrReader(irr::io::createIrrXMLReader(file_name)) {
+XMLReader::XMLReader(const char* file_name): irrReader(irr::io::createIrrXMLReader(file_name)), currentNodeType(NODE_NONE) {
     if (irrReader == nullptr) throw Exception("Can't read from file \"%1%\"", file_name);
 }
 

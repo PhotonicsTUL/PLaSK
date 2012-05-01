@@ -394,8 +394,7 @@ struct Material_from_Python_string
     }
 
     static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        const char* value = PyString_AsString(obj_ptr);
-        assert(value);
+        std::string value = PyString_AsString(obj_ptr);
 
         // Grab pointer to memory into which to construct the new Material
         void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<Material>>*)data)->storage.bytes;

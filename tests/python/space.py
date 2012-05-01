@@ -2,10 +2,6 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import sys
-if sys.version < "2.7":
-    unittest.TestCase.assertIsNone = lambda self, value: self.assertTrue(item is None)
-    unittest.TestCase.assertIn = lambda self, item, container: self.assertTrue(item in container)
 
 import plask, plask.materials, plask.geometry
 
@@ -24,16 +20,14 @@ class CalculationSpaces(unittest.TestCase):
     def testBorders(self):
         r = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
         s = plask.Space2DCartesian(r, x_lo="mirror" , right="AlN", top="GaN")
-        print s.bbox
+        print(s.bbox)
         #self.assertEqual( s.borders, {'left': "mirror", 'right': "AlN", 'top': "GaN", 'bottom': None} )
         self.assertEqual( str(s.getMaterial(-1.5, 0.5)), "Al(0.2)GaN" )
         self.assertEqual( str(s.getMaterial(3., 0.5)), "AlN" )
         self.assertEqual( str(s.getMaterial(-3., 0.5)), "AlN" )
         self.assertEqual( str(s.getMaterial(0., 2.)), "GaN" )
 
-        if sys.version >= 2.7:
-            with self.assertRaises(RuntimeError):
-                plask.Space2DCartesian(r, right="mirror").getMaterial(3., 0.5)
+        with self.assertRaises(RuntimeError): plask.Space2DCartesian(r, right="mirror").getMaterial(3., 0.5)
 
     def testSubspace(self):
         stack = plask.geometry.Stack2D()

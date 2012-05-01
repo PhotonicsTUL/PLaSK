@@ -353,7 +353,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         aligners.insert(aligners.begin(), aligner.clone());
         stackHeights.insert(stackHeights.begin(), stackHeights[0]);
         const double delta = bb.upper.up - bb.lower.up;
-        for (int i = 1; i < children.size(); ++i) {
+        for (std::size_t i = 1; i < children.size(); ++i) {
             stackHeights[i] += delta;
             children[i]->translation.up += delta;
         }

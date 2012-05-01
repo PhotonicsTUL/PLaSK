@@ -1,6 +1,6 @@
 # CMake file for project PLaSK
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required(VERSION 2.8)
 project (plask)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
@@ -55,13 +55,24 @@ cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 
 #option (PACK_EXE "Self-pack and strip executables." OFF)  # compress exe
 
+# ---------- External libraries --------------------------------------------
+if(BUILD_PYTHON)
+    find_package(PythonInterp REQUIRED)
+    find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
+    find_package(numpy REQUIRED)
+
+    # Require Python >= 2.6
+#     if( 100 * ${PYTHON_VERSION_MAJOR} + ${PYTHON_VERSION_MINOR} < 206 )
+#         message(FATAL_ERROR "Python 2.6 or newer required.")
+#     endif()
+endif(BUILD_PYTHON)
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
 set(boost_components unit_test_framework)
 
 if(BUILD_PYTHON)
-    list(APPEND boost_components python)
+    list(APPEND boost_components "python")
 endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
@@ -120,31 +131,17 @@ target_link_libraries(materials_default libplask)
 
 # ---------- Python --------------------------------------------
 
-if (BUILD_PYTHON)
+if(BUILD_PYTHON)
     set(plask_PYTHONPATH "${CMAKE_BINARY_DIR}/lib.python")
 
-    # Find Python
-    find_package(PythonInterp REQUIRED)
-    find_package(PythonLibs REQUIRED)
-    find_package(numpy REQUIRED)
-
-    # Require Python >= 2.6
-    file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CheckPythonversion.py "from sys import version\nif version >= '2.6': print 'YES'\nelse: print 'NO'")
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_BINARY_DIR}/CMakeFiles/CheckPythonversion.py" OUTPUT_VARIABLE PYTHON_SUFFICIENT_VERSION)
-    string(STRIP ${PYTHON_SUFFICIENT_VERSION} PYTHON_SUFFICIENT_VERSION)
-    if (NOT PYTHON_SUFFICIENT_VERSION)
-        message(FATAL_ERROR "Python 2.6 or newer required.")
-    endif()
-
     # Determine directory to install *.py files to
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py "from distutils import sysconfig\nprint sysconfig.get_python_lib(False, prefix='${CMAKE_INSTALL_PREFIX}')+'/plask'")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py "from distutils import sysconfig\nprint(sysconfig.get_python_lib(False, prefix='${CMAKE_INSTALL_PREFIX}')+'/plask')")
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py" OUTPUT_VARIABLE PYTHON_INSTALL_DIR)
     string(STRIP ${PYTHON_INSTALL_DIR} PYTHON_INSTALL_DIR)
     # Determine directory to install binary Python modules to
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py "from distutils import sysconfig\nprint sysconfig.get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}')+'/plask'")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py "from distutils import sysconfig\nprint(sysconfig.get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}')+'/plask')")
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py" OUTPUT_VARIABLE PYTHON_MODULE_INSTALL_DIR)
     string(STRIP ${PYTHON_MODULE_INSTALL_DIR} PYTHON_MODULE_INSTALL_DIR)
-
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 

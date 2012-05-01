@@ -27,14 +27,11 @@ struct Aligners_from_Python
     }
 
     static void construct2(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        const char* value = PyString_AsString(obj_ptr);
-        assert(value);
+        std::string str = PyString_AsString(obj_ptr);
+        boost::algorithm::to_lower(str);
 
         // Grab pointer to memory into which to construct the new Aligner
         void* storage = ((boost::python::converter::rvalue_from_python_storage<A2>*)data)->storage.bytes;
-
-        std::string str(value);
-        boost::algorithm::to_lower(str);
 
         if (str == "left" || str == "l") new(storage) align::Left();
         else if (str == "right" || str == "r") new(storage) align::Right();
@@ -48,14 +45,11 @@ struct Aligners_from_Python
     }
 
     static void construct3(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        const char* value = PyString_AsString(obj_ptr);
-        assert(value);
+        std::string str = PyString_AsString(obj_ptr);
+        boost::algorithm::to_lower(str);
 
         // Grab pointer to memory into which to construct the new Aligner
         void* storage = ((boost::python::converter::rvalue_from_python_storage<A3>*)data)->storage.bytes;
-
-        std::string str(value);
-        boost::algorithm::to_lower(str);
 
              if (str == "front left" || str == "fl" || str == "left front" || str == "lf") new(storage) align::FrontLeft();
         else if (str == "center left" || str == "cl" || str == "left center" || str == "lc") new(storage) align::CenterLeft();

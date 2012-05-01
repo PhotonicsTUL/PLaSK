@@ -129,7 +129,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * Check if this subtree is empty (its element points to null).
          * @return @c true only if this subtree is empty.
          */
-        bool empty() const { !element; }
+        bool empty() const { return !element; }
     };
 
     /**

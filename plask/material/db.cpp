@@ -173,9 +173,10 @@ MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string&
     //complex materials:
     if (material2name_with_components.find('(') == std::string::npos)   //mix complex with simple?
         throw MaterialCantBeMixedException(material1name_with_components, material2name_with_components, dopant_name);
-    getFactory(Material::parseComposition(material1name_with_components),
-               Material::parseComposition(material2name_with_components),
-               dopant_name, dopAmountType, m1DopAmount, m2DopAmount);
+
+    return getFactory(Material::parseComposition(material1name_with_components),
+                      Material::parseComposition(material2name_with_components),
+                      dopant_name, dopAmountType, m1DopAmount, m2DopAmount);
 }
 
 MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) {

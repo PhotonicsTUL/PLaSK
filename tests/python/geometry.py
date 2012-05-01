@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import sys
-if sys.version < "2.7":
-    unittest.TestCase.assertIsNone = lambda self, value: self.assertTrue(item is None)
-    unittest.TestCase.assertIn = lambda self, item, container: self.assertTrue(item in container)
-
 import plask, plask.materials, plask.geometry
 
 
@@ -48,8 +43,7 @@ class SimpleGeometry(unittest.TestCase):
         self.assertEqual( type(geometry.element("block")), plask.geometry.Block2D )
         self.assertEqual( list(geometry.element("stack").getLeafsBBoxes()),
             [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4), plask.geometry.Box2D(-2,4,2,6), plask.geometry.Box2D(-2,6,2,8)])
-        if sys.version >= "2.7":
-            with self.assertRaises(KeyError): geometry.element("nonexistent")
+        with self.assertRaises(KeyError): geometry.element("nonexistent")
 
 
 

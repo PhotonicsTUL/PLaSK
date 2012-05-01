@@ -86,7 +86,7 @@ struct Aligner2d<DIRECTION_TRAN>: public Aligner2dBase<DIRECTION_TRAN> {
      * @param childBoundingBox bounding box of object to align
      */
     inline double align(Translation<2>& toAlign, const Box2d& childBoundingBox) const {
-        toAlign.translation.tran = getAlign(childBoundingBox.lower.tran, childBoundingBox.upper.tran);
+        return toAlign.translation.tran = getAlign(childBoundingBox.lower.tran, childBoundingBox.upper.tran);
     }
 
     /**
@@ -98,9 +98,9 @@ struct Aligner2d<DIRECTION_TRAN>: public Aligner2dBase<DIRECTION_TRAN> {
      */
     virtual double align(Translation<2>& toAlign) const {
         if (useBounds())
-            align(toAlign, toAlign.getChild()->getBoundingBox());
+            return align(toAlign, toAlign.getChild()->getBoundingBox());
         else
-            toAlign.translation.tran = getAlign(0.0, 0.0);
+            return toAlign.translation.tran = getAlign(0.0, 0.0);
     }
 
 };

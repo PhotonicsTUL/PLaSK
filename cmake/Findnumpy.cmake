@@ -6,7 +6,7 @@
 find_package(PythonInterp)
 
 if(PYTHON_EXECUTABLE)
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/FindNumpy.py "try: import numpy; print numpy.get_include()\nexcept: pass\n")
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/FindNumpy.py "try: import numpy; print(numpy.get_include())\nexcept: pass\n")
     execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/FindNumpy.py" OUTPUT_VARIABLE NUMPY_INCLUDE_DIRS)
     string(STRIP ${NUMPY_INCLUDE_DIRS} NUMPY_INCLUDE_DIRS)
 endif(PYTHON_EXECUTABLE)

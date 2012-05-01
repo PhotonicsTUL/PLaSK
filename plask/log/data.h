@@ -65,9 +65,9 @@ struct Data2dLog: public DataLog<ArgT, ValT> {
         //chart_name = axis_arg_name(axis_arg_name)_getUniqueString()
     }
 
-    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val) {}
+    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val) { return *this; }
 
-    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val, int counter) {};
+    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val, int counter) { return *this; };
 };
 
 

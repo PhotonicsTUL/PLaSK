@@ -34,7 +34,7 @@ struct Strategy {
      * @param result_material[out] optionaly, this method can assign to it material which should be used
      */
     virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
-    
+
     /**
      * Apply strategy to given point @p p.
      * @param bbox_lo[in], bbox_hi[in] coordinates of geometry element bounding box in startegy working direction
@@ -233,7 +233,7 @@ public:
         strategy->applyLo(bbox.lower.components[direction], bbox.upper.components[direction],
               p.components[direction], result_material);
     }
-    
+
     template <int dims>
     inline void applyHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
         strategy->applyHi(bbox.lower.components[direction], bbox.upper.components[direction],
@@ -340,9 +340,9 @@ public:
         }
     }
 
-    bool isSymmetric() const { strategy_lo.type() == Strategy::MIRROR || strategy_hi.type() == Strategy::MIRROR; }
+    bool isSymmetric() const { return strategy_lo.type() == Strategy::MIRROR || strategy_hi.type() == Strategy::MIRROR; }
 
-    bool isPeriodic() const { strategy_lo.type() == Strategy::PERIODIC && strategy_hi.type() == Strategy::PERIODIC; }
+    bool isPeriodic() const { return strategy_lo.type() == Strategy::PERIODIC && strategy_hi.type() == Strategy::PERIODIC; }
 };
 
 }   // namespace border

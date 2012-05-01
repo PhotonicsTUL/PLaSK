@@ -226,6 +226,7 @@ public:
         if (changer.apply(result, translation) || children.empty()) return result;
         //if (translation) *translation = vec(0.0, 0.0, 0.0); // we can't recommend nothing special
         //TODO code... what with paths? add paths to changedVersion method
+        return result; //FIXME?
     }
 
     /**

@@ -10,6 +10,7 @@
 #include <numpy/arrayobject.h>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/concept_check.hpp>
 
 namespace plask { namespace python {
 
@@ -205,8 +206,9 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
 
     py::class_<Vec_iterator<dim,T>>("_Iterator", py::no_init)
         .def("__iter__", &Vec_iterator<dim,T>::__iter__, py::return_self<>())
+        .def("__next__", &Vec_iterator<dim,T>::next)
         .def("next", &Vec_iterator<dim,T>::next)
-    ;
+        ;
 
     return vec_class;
 }
@@ -334,10 +336,15 @@ const static std::string __doc__ =
 
     ;
 
+static inline bool plask_import_array() {
+    import_array1(false);
+    return true;
+}
+
 void register_vector()
 {
     // Initialize numpy
-    import_array();
+    if (!plask_import_array()) throw(py::error_already_set());
 
     register_vector_class<2,double>("vector2f");
     register_vector_class<2,dcomplex>("vector2fc");

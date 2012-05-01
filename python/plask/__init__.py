@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plaskcore import *
+from .plaskcore import *
 
 from numpy import *
 

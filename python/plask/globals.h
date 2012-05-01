@@ -55,6 +55,17 @@ struct StopIteration: public Exception {
 };
 
 // ----------------------------------------------------------------------------------------------------------------------
+// String functions for Python3
+
+#if PY_VERSION_HEX >= 0x03000000
+
+    inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
+
+    inline std::string PyString_AsString(PyObject* o) { return py::extract<std::string>(o); }
+
+#endif
+
+// ----------------------------------------------------------------------------------------------------------------------
 // Config
 
 struct Config

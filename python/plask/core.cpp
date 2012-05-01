@@ -16,18 +16,22 @@ void register_mesh();
 void register_providers();
 void register_calculation_spaces();
 
+// Hack necessary as macro import_array wants to return some value
+static inline bool plask_import_array() {
+    import_array1(false);
+    return true;
+}
+
 // Config
 Config config;
 AxisNames Config::axes = AxisNames::axisNamesRegister.get("xyz");
 
 }}
 
-
-
 BOOST_PYTHON_MODULE(plaskcore)
 {
     // Initialize numpy
-    import_array();
+    if (!plask_import_array()) throw(py::error_already_set());
 
     py::scope scope; // Default scope
 

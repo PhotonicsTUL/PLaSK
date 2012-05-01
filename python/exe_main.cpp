@@ -13,13 +13,20 @@ namespace py = boost::python;
 #ifdef __cplusplus
 extern "C"
 #endif
-void initplaskcore(void);
+
+#if PY_VERSION_HEX >= 0x03000000
+    PyObject* PyInit_plaskcore(void);
+#   define PLASK_MODULE PyInit_plaskcore
+#else
+    void initplaskcore(void);
+#   define PLASK_MODULE initplaskcore
+#endif
 
 // Initialize the binary modules and load the package from disc
 static py::object initPlaskModule(int argc, const char* argv[])
 {
     // Initialize the module plask
-    if (PyImport_AppendInittab("plaskcore", &initplaskcore) != 0) throw plask::CriticalException("No plaskcore module");
+    if (PyImport_AppendInittab("plaskcore", &PLASK_MODULE) != 0) throw plask::CriticalException("No plaskcore module");
 
     // Initialize Python
     Py_Initialize();
@@ -105,15 +112,20 @@ int main(int argc, const char *argv[])
         }
 
         try {
-            // We dont use python::exec_file, as we want to set "from __future__ import divisions" flag
             const char* f = argv[1];
-            PyObject *pyfile = PyFile_FromString(const_cast<char*>(f), const_cast<char*>("r"));
-            if (!pyfile) throw std::invalid_argument("No such file: " + std::string(f));
-            py::handle<> file(pyfile);
-            FILE *fs = PyFile_AsFile(file.get());
-            PyCompilerFlags flags { CO_FUTURE_DIVISION };
-            PyObject* result = PyRun_FileFlags(fs, f, Py_file_input, globals.ptr(), globals.ptr(), &flags);
-            if (!result) py::throw_error_already_set();
+#           if PY_VERSION_HEX >= 0x03000000
+                // For Python3 "from __future__ import division" flag is not necessary
+                py::exec_file(f, globals);
+#           else
+                // We dont use py::exec_file, as we want to set "from __future__ import division" flag
+                PyObject *pyfile = PyFile_FromString(const_cast<char*>(f), const_cast<char*>("r"));
+                if (!pyfile) throw std::invalid_argument("No such file: " + std::string(f));
+                py::handle<> file(pyfile);
+                FILE *fs = PyFile_AsFile(file.get());
+                PyCompilerFlags flags { CO_FUTURE_DIVISION };
+                PyObject* result = PyRun_FileFlags(fs, f, Py_file_input, globals.ptr(), globals.ptr(), &flags);
+                if (!result) py::throw_error_already_set();
+#           endif
         } catch (std::invalid_argument err) {
             std::cerr << err.what() << "\n";
             return 100;
