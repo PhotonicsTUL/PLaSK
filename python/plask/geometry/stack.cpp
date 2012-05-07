@@ -40,8 +40,8 @@ void register_geometry_container_stack()
         "Stack2D(base_level=0)\n"
         "    Create the stack with the bottom side of the first element at the base_level (in container local coordinates).",
         py::init<double>((py::arg("base_level")=0.)))
-        .def("append", &StackContainer<2>::push_back, (py::arg("child"), py::arg("align")=StackContainer<2>::CenterAligner()), "Append new element to the container")
-        .def("prepend", &StackContainer<2>::push_front, (py::arg("child"), py::arg("align")=StackContainer<2>::CenterAligner()), "Prepend new element to the container")
+        .def("append", &StackContainer<2>::push_back, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Append new element to the container")
+        .def("prepend", &StackContainer<2>::push_front, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Prepend new element to the container")
         .def("__delitem__", &Stack__delitem__int<2>)
         .def("__delitem__", &Stack__delitem__hints<2>)
         .def("__delitem__", &Stack__delitem__object<2>)
@@ -52,8 +52,8 @@ void register_geometry_container_stack()
         "Stack3D(base_level=0)\n"
         "    Create the stack with the bottom side of the first element at the base_level (in container local coordinates).",
         py::init<double>((py::arg("base_level")=0.)))
-        .def("append", &StackContainer<3>::push_back, (py::arg("child"), py::arg("align")=StackContainer<3>::CenterAligner()), "Append new element to the container")
-        .def("prepend", &StackContainer<3>::push_front, (py::arg("child"), py::arg("align")=StackContainer<3>::CenterAligner()), "Prepend new element to the container")
+        .def("append", &StackContainer<3>::push_back, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Append new element to the container")
+        .def("prepend", &StackContainer<3>::push_front, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Prepend new element to the container")
         .def("__delitem__", &Stack__delitem__int<3>)
         .def("__delitem__", &Stack__delitem__hints<3>)
         .def("__delitem__", &Stack__delitem__object<3>)

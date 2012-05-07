@@ -43,9 +43,9 @@ BOOST_AUTO_TEST_CASE(from_geometry_2) {
     plask::shared_ptr<plask::Rectangle> rect1(new plask::Rectangle(plask::Vec<2>(2., 3.), plask::shared_ptr<plask::Material>()));
     plask::shared_ptr<plask::Rectangle> rect2(new plask::Rectangle(plask::Vec<2>(4., 5.), plask::shared_ptr<plask::Material>()));
     plask::shared_ptr<plask::Rectangle> rect3(new plask::Rectangle(plask::Vec<2>(2., 2.), plask::shared_ptr<plask::Material>()));
-    stack->push_back(rect1);
-    stack->push_back(rect2);
-    stack->push_back(rect3);
+    stack->push_back(rect1, plask::align::Center());
+    stack->push_back(rect2, plask::align::Center());
+    stack->push_back(rect3, plask::align::Center());
 
     plask::RectilinearMesh2d mesh(stack);
     BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1d({-2., -1., 1., 2.}));
@@ -59,9 +59,9 @@ BOOST_AUTO_TEST_CASE(from_geometry_3) {
     plask::shared_ptr<plask::Cuboid> cub1(new plask::Cuboid(plask::Vec<3>(2., 2., 3.), plask::shared_ptr<plask::Material>()));
     plask::shared_ptr<plask::Cuboid> cub2(new plask::Cuboid(plask::Vec<3>(4., 2., 5.), plask::shared_ptr<plask::Material>()));
     plask::shared_ptr<plask::Cuboid> cub3(new plask::Cuboid(plask::Vec<3>(2., 2., 2.), plask::shared_ptr<plask::Material>()));
-    stack->push_back(cub1);
-    stack->push_back(cub2);
-    stack->push_back(cub3);
+    stack->push_back(cub1, plask::align::CenterCenter());
+    stack->push_back(cub2, plask::align::CenterCenter());
+    stack->push_back(cub3, plask::align::CenterCenter());
 
     plask::RectilinearMesh3d mesh(stack);
     BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1d({-2., -1., 1., 2.}));

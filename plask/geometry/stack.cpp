@@ -29,7 +29,7 @@ PathHints::Hint HorizontalStack::addUnsafe(const shared_ptr<ChildType>& el) {
 shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
     std::unique_ptr<align::Aligner2d<align::DIRECTION_TRAN>> default_aligner(
-          align::fromStr<align::DIRECTION_TRAN>(reader.source.getAttribute<std::string>(reader.getAxisTranName(), "c")));
+          align::fromStr<align::DIRECTION_TRAN>(reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")));
 
     shared_ptr< StackContainer<2> > result(
                     reader.source.hasAttribute(repeat_attr) ?
@@ -67,8 +67,8 @@ shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
             [&]() {
                 return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
                                           align::fromStr<align::DIRECTION_LON, align::DIRECTION_TRAN>(
-                                              reader.source.getAttribute<std::string>(reader.getAxisLonName(), "c"),
-                                              reader.source.getAttribute<std::string>(reader.getAxisTranName(), "c")
+                                              reader.source.getAttribute<std::string>(reader.getAxisLonName(), "b"),
+                                              reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")
                                           ));
             },
             [&](const shared_ptr<typename StackContainer<3>::ChildType>& child) {

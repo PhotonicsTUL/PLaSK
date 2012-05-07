@@ -34,7 +34,6 @@ class SimpleGeometry(unittest.TestCase):
         geometry.read('''
             <geometry axes="xy">
                 <stack2d repeat="2" name="stack">
-                <!--<stack2d name="stack">-->
                     <child><rectangle name="block" x="4" y="2" material="Dumb" /></child>
                     <ref name="block" />
                 </stack2d>
@@ -42,7 +41,7 @@ class SimpleGeometry(unittest.TestCase):
         ''')
         self.assertEqual( type(geometry.element("block")), plask.geometry.Block2D )
         self.assertEqual( list(geometry.element("stack").getLeafsBBoxes()),
-            [plask.geometry.Box2D(-2,0,2,2), plask.geometry.Box2D(-2,2,2,4), plask.geometry.Box2D(-2,4,2,6), plask.geometry.Box2D(-2,6,2,8)])
+            [plask.geometry.Box2D(0,0,4,2), plask.geometry.Box2D(0,2,4,4), plask.geometry.Box2D(0,4,4,6), plask.geometry.Box2D(0,6,4,8)])
         with self.assertRaises(KeyError): geometry.element("nonexistent")
 
 
@@ -129,13 +128,13 @@ class Containers(unittest.TestCase):
 
         self.assertIn( self.block1, multistack )
         # 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
-        self.assertEqual( multistack.bbox, plask.geometry.Box2D(-2.5, 10.0, 2.5, 40.0) )
+        self.assertEqual( multistack.bbox, plask.geometry.Box2D(0., 10.0, 5., 40.0) )
         self.assertEqual( multistack.getMaterial(1.0, 39.0), self.aln )
         self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
         self.assertEqual( multistack[0].child, self.block1 )
-        self.assertEqual( multistack[0].translation, plask.vec(-2.5, 10.) )
+        self.assertEqual( multistack[0].translation, plask.vec(0., 10.) )
         self.assertEqual( multistack[9].child, self.block2 )
-        self.assertEqual( multistack[9].translation, plask.vec(-2.5, 37.) )
+        self.assertEqual( multistack[9].translation, plask.vec(0., 37.) )
         hints1 = plask.geometry.PathHints()
         hints1 += hint1
         self.assertEqual( len(multistack[hints1]), 1 )
@@ -163,10 +162,10 @@ class Containers(unittest.TestCase):
 
 
         stack = plask.geometry.Stack3D()
-        stack.append(self.cube1) # to be removed by object
-        stack.append(self.cube2) # to be removed by index
-        h = stack.append(self.cube2) # to be removed by hint
-        stack.append(self.cube1)
+        stack.append(self.cube1, "c") # to be removed by object
+        stack.append(self.cube2, "c") # to be removed by index
+        h = stack.append(self.cube2, "c") # to be removed by hint
+        stack.append(self.cube1, "c")
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,8) )
         self.assertEqual( stack.getMaterial(0,0,5), self.aln)
         del stack[1]
@@ -180,7 +179,7 @@ class Containers(unittest.TestCase):
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,2) )
 
         self.assertEqual( stack.getMaterial(0,0,1), self.gan)
-        stack.prepend(self.cube2)
+        stack.prepend(self.cube2, "cc")
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,4) )
         self.assertEqual( stack.getMaterial(0,0,1), self.aln)
         self.assertEqual( stack.getMaterial(0,0,3), self.gan)

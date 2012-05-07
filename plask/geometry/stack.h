@@ -244,7 +244,7 @@ template <int dim>
 struct StackContainer: public StackContainerBaseImpl<dim> {
 
     typedef typename chooseType<dim-2, align::Aligner2d<align::DIRECTION_TRAN>, align::Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN> >::type Aligner;
-    typedef typename chooseType<dim-2, align::TranCenter, align::CenterCenter>::type CenterAligner;
+    typedef typename chooseType<dim-2, align::Left, align::BackLeft>::type DefaultAligner;
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
     typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;
@@ -304,7 +304,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(const shared_ptr<ChildType> &el, const Aligner& aligner = CenterAligner()) {
+    PathHints::Hint add(const shared_ptr<ChildType> &el, const Aligner& aligner = DefaultAligner()) {
         this->ensureCanHasAsChild(*el);
         return addUnsafe(el, aligner);
     }
@@ -316,7 +316,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_back(const shared_ptr<ChildType> &el, const Aligner& aligner = CenterAligner()) { return add(el, aligner); }
+    PathHints::Hint push_back(const shared_ptr<ChildType> &el, const Aligner& aligner = DefaultAligner()) { return add(el, aligner); }
 
     /**
      * Add children to stack top.
@@ -325,7 +325,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param aligner aligner for horizontal translation of element
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
         double el_translation, next_height;
         auto elBB = el->getBoundingBox();
         calcHeight(elBB, stackHeights.back(), el_translation, next_height);
@@ -345,7 +345,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param tran_translation horizontal translation of element
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
+    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
         const auto bb = el->getBoundingBox();
         shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[0] - bb.lower.up, bb);
         connectOnChildChanged(*trans_geom);
@@ -369,7 +369,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = CenterAligner()) {
+    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
         this->ensureCanHasAsChild(*el);
         return push_front_Unsafe(el, aligner);
     }
