@@ -239,15 +239,7 @@ struct Translation: public GeometryElementTransform<dim> {
         }
     }*/
 
-    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(getBoundingBox());
-            return;
-        }
-        std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);
-        dest.reserve(dest.size() + result.size());
-        for (Box& r: result) dest.push_back(r.translated(translation));
-    }
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = getChild()->getLeafsWithTranslations();
@@ -255,16 +247,7 @@ struct Translation: public GeometryElementTransform<dim> {
         return result;
     }*/
 
-    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(Primitive<dim>::ZERO_VEC);
-            return;
-        }
-        const std::size_t old_size = dest.size();
-        getChild()->getPositionsToVec(predicate, dest, path);
-        for (std::size_t i = old_size; i < dest.size(); ++i)
-            dest[i] += translation;
-    }
+    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
 
     /**
      * Get shallow copy of this.
@@ -278,19 +261,7 @@ struct Translation: public GeometryElementTransform<dim> {
         return copyShallow();
     }
 
-    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
-        shared_ptr<const GeometryElement> result(this->shared_from_this());
-        if (changer.apply(result, translation) || !this->hasChild()) return result;
-        Vec<3, double> returned_translation(0.0, 0.0, 0.0);
-        shared_ptr<const GeometryElement> new_child = this->getChild()->changedVersion(changer, &returned_translation);
-        Vec<dim, double> translation_we_will_do = vec<dim, double>(returned_translation);
-        if (new_child == getChild() && translation_we_will_do == Primitive<dim>::ZERO_VEC) return result;
-        if (translation)    //we will change translation (partially if dim==2) internaly, so we recommend no extra translation
-            *translation = returned_translation - vec<3, double>(translation_we_will_do); //still we can recommend translation in third direction
-        return shared_ptr<GeometryElement>(
-            new Translation<dim>(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)),
-            this->translation + translation_we_will_do) );
-    }
+    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const;
 
     /**
      * Get shallow, moved copy of this.
