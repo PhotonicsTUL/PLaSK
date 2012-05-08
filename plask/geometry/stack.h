@@ -298,9 +298,67 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     virtual ~StackContainer() { for (auto a: aligners) delete a; }
 
     /**
+     * Insert children to stack at given position.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to insert
+     * @param pos position where (before which) child should be inserted
+     * @param aligner aligner which will be used to calculate horizontal translation of inserted element
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner()) {
+        const auto bb = el->getBoundingBox();
+        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.up, bb);
+        connectOnChildChanged(*trans_geom);
+        children.insert(children.begin() + pos, trans_geom);
+        aligners.insert(aligners.begin() + pos, aligner.clone());
+        stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
+        const double delta = bb.upper.up - bb.lower.up;
+        for (std::size_t i = pos + 1; i < children.size(); ++i) {
+            stackHeights[i] += delta;
+            children[i]->translation.up += delta;
+        }
+        stackHeights.back() += delta;
+        this->fireChildrenChanged();
+        return PathHints::Hint(shared_from_this(), trans_geom);
+    }
+    
+    /**
+     * Insert children to stack at given position.
+     * @param el element to insert
+     * @param pos position where (before which) child should be inserted
+     * @param aligner aligner which will be used to calculate horizontal translation of inserted element
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner()) {
+        this->ensureCanHasAsChild(*el);
+        return addUnsafe(el, pos, aligner);
+    }
+    
+    /**
+     * Add children to stack top.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to add
+     * @param aligner aligner which will be used to calculate horizontal translation of inserted element
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
+        double el_translation, next_height;
+        auto elBB = el->getBoundingBox();
+        calcHeight(elBB, stackHeights.back(), el_translation, next_height);
+        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation, elBB);
+        connectOnChildChanged(*trans_geom);
+        children.push_back(trans_geom);
+        stackHeights.push_back(next_height);
+        aligners.push_back(aligner.clone());
+        this->fireChildrenChanged();
+        return PathHints::Hint(shared_from_this(), trans_geom);
+    }
+    
+    /**
      * Add children to stack top.
      * @param el element to add
-     * @param aligner aligner for horizontal translation of element
+     * @param aligner aligner which will be used to calculate horizontal translation of inserted element
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
@@ -319,26 +377,6 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     PathHints::Hint push_back(const shared_ptr<ChildType> &el, const Aligner& aligner = DefaultAligner()) { return add(el, aligner); }
 
     /**
-     * Add children to stack top.
-     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to add
-     * @param aligner aligner for horizontal translation of element
-     * @return path hint, see @ref geometry_paths
-     */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
-        double el_translation, next_height;
-        auto elBB = el->getBoundingBox();
-        calcHeight(elBB, stackHeights.back(), el_translation, next_height);
-        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation, elBB);
-        connectOnChildChanged(*trans_geom);
-        children.push_back(trans_geom);
-        stackHeights.push_back(next_height);
-        aligners.push_back(aligner.clone());
-        this->fireChildrenChanged();
-        return PathHints::Hint(shared_from_this(), trans_geom);
-    }
-
-    /**
      * Add children to stack bottom, move all other children up.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
@@ -346,20 +384,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
-        const auto bb = el->getBoundingBox();
-        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[0] - bb.lower.up, bb);
-        connectOnChildChanged(*trans_geom);
-        children.insert(children.begin(), trans_geom);
-        aligners.insert(aligners.begin(), aligner.clone());
-        stackHeights.insert(stackHeights.begin(), stackHeights[0]);
-        const double delta = bb.upper.up - bb.lower.up;
-        for (std::size_t i = 1; i < children.size(); ++i) {
-            stackHeights[i] += delta;
-            children[i]->translation.up += delta;
-        }
-        stackHeights.back() += delta;
-        this->fireChildrenChanged();
-        return PathHints::Hint(shared_from_this(), trans_geom);
+        return insertUnsafe(el, 0, aligner);
     }
 
     /**
