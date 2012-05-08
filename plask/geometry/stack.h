@@ -48,31 +48,13 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     /**
      * Set height where should start first element. Call changed.
      */
-    void setBaseHeight(double newBaseHeight) {
-        if (getBaseHeight() == newBaseHeight) return;
-        double diff = newBaseHeight - getBaseHeight();
-        stackHeights.front() = newBaseHeight;
-        for (std::size_t i = 1; i < stackHeights.size(); ++i) {
-            stackHeights[i] += diff;
-            children[i-1]->translation.components[growingDirection] += diff;
-            //children[i-1]->fireChanged(GeometryElement::Event::RESIZE);
-        }
-        this->fireChanged(GeometryElement::Event::RESIZE|GeometryElement::Event::CHILD_LIST);
-    }
+    void setBaseHeight(double newBaseHeight);
 
     /**
      * @param height
      * @return child which are on given @a height or @c nullptr
      */
-    const shared_ptr<TranslationT> getChildForHeight(double height) const {
-        auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
-        if (it == stackHeights.end()) return shared_ptr<TranslationT>();
-        if (it == stackHeights.begin()) {
-            if (height == stackHeights.front()) return children[0];
-            else return shared_ptr<TranslationT>();
-        }
-        return children[it-stackHeights.begin()-1];
-    }
+    const shared_ptr<TranslationT> getChildForHeight(double height) const;
 
     virtual bool inside(const DVec& p) const {
         const shared_ptr<TranslationT> c = getChildForHeight(p.components[growingDirection]);
@@ -90,6 +72,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      * @param predicate returns true only if the child passed as an argument should be deleted
      * @return true if anything has been removed
      */
+    //TODO this not remove aligners in StackContainer
     template <typename PredicateT>
     bool remove_if(PredicateT predicate) {
         std::deque<shared_ptr<TranslationT>> deleted;
@@ -305,22 +288,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param aligner aligner which will be used to calculate horizontal translation of inserted element
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner()) {
-        const auto bb = el->getBoundingBox();
-        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.up, bb);
-        connectOnChildChanged(*trans_geom);
-        children.insert(children.begin() + pos, trans_geom);
-        aligners.insert(aligners.begin() + pos, aligner.clone());
-        stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
-        const double delta = bb.upper.up - bb.lower.up;
-        for (std::size_t i = pos + 1; i < children.size(); ++i) {
-            stackHeights[i] += delta;
-            children[i]->translation.up += delta;
-        }
-        stackHeights.back() += delta;
-        this->fireChildrenChanged();
-        return PathHints::Hint(shared_from_this(), trans_geom);
-    }
+    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner());
     
     /**
      * Insert children to stack at given position.
@@ -332,7 +300,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner()) {
         this->ensureCanHasAsChild(*el);
-        return addUnsafe(el, pos, aligner);
+        return insertUnsafe(el, pos, aligner);
     }
     
     /**
@@ -404,19 +372,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         return *aligners[child_nr];
     }
 
-    /**
-     * Set new aligner.
-     * @param child_nr (real) child number for which aligner will be set
-     * @param aligner new aligner for given child, it will be clone
-     */
-    void setAlignerAt(std::size_t child_nr, const Aligner& aligner) {
-        this->ensureIsValidChildNr(child_nr, "setAlignerAt");
-        if (aligners[child_nr] == &aligner) return; //protected for self assign
-        delete aligners[child_nr];
-        aligners[child_nr] = aligner.clone();
-        aligners[child_nr]->align(*children[child_nr]);
-        this->fireChanged(GeometryElement::Event::RESIZE);
-    }
+    void setAlignerAt(std::size_t child_nr, const Aligner& aligner);
 
     /*
      * Set new aligner.

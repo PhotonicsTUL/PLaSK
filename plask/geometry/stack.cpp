@@ -2,6 +2,78 @@
 
 namespace plask {
 
+template <int dim, int growingDirection>
+void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBaseHeight) {
+    if (getBaseHeight() == newBaseHeight) return;
+    double diff = newBaseHeight - getBaseHeight();
+    stackHeights.front() = newBaseHeight;
+    for (std::size_t i = 1; i < stackHeights.size(); ++i) {
+        stackHeights[i] += diff;
+        children[i-1]->translation.components[growingDirection] += diff;
+        //children[i-1]->fireChanged(GeometryElement::Event::RESIZE);
+    }
+    this->fireChanged(GeometryElement::Event::RESIZE|GeometryElement::Event::CHILD_LIST);
+}
+
+template <int dim, int growingDirection>
+const shared_ptr<typename StackContainerBaseImpl<dim, growingDirection>::TranslationT>
+StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) const {
+    auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
+    if (it == stackHeights.end()) return shared_ptr<TranslationT>();
+    if (it == stackHeights.begin()) {
+        if (height == stackHeights.front()) return children[0];
+        else return shared_ptr<TranslationT>();
+    }
+    return children[it-stackHeights.begin()-1];
+}
+
+template class StackContainerBaseImpl<2, Primitive<2>::DIRECTION_UP>;
+template class StackContainerBaseImpl<3, Primitive<3>::DIRECTION_UP>;
+template class StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
+
+/*template <int dim>    //this is fine but GeometryElements doesn't have copy constructors at all, becose signal doesn't have copy constructor
+StackContainer<dim>::StackContainer(const StackContainer& to_copy)
+    : StackContainerBaseImpl<dim>(to_copy) //copy all but aligners
+{
+    std::vector<Aligner*> aligners_copy;
+    aligners_copy.reserve(to_copy.size());
+    for (auto a: to_copy.aligners) aligners_copy.push_back(a->clone());
+    this->aligners = aligners_copy;
+}*/
+
+template <int dim>
+PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner) {
+    const auto bb = el->getBoundingBox();
+    shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.up, bb);
+    connectOnChildChanged(*trans_geom);
+    children.insert(children.begin() + pos, trans_geom);
+    aligners.insert(aligners.begin() + pos, aligner.clone());
+    stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
+    const double delta = bb.upper.up - bb.lower.up;
+    for (std::size_t i = pos + 1; i < children.size(); ++i) {
+        stackHeights[i] += delta;
+        children[i]->translation.up += delta;
+    }
+    stackHeights.back() += delta;
+    this->fireChildrenChanged();
+    return PathHints::Hint(shared_from_this(), trans_geom);
+}
+
+template <int dim>
+void StackContainer<dim>::setAlignerAt(std::size_t child_nr, const Aligner& aligner) {
+    this->ensureIsValidChildNr(child_nr, "setAlignerAt");
+    if (aligners[child_nr] == &aligner) return; //protected against self assigment
+    delete aligners[child_nr];
+    aligners[child_nr] = aligner.clone();
+    aligners[child_nr]->align(*children[child_nr]);
+    this->fireChanged(GeometryElement::Event::RESIZE);
+}
+
+
+template class StackContainer<2>;
+template class StackContainer<3>;
+
+
 bool HorizontalStack::allChildrenHaveSameHeights() const {
     if (children.size() < 2) return true;
     double height = children.front()->getBoundingBoxSize().up;

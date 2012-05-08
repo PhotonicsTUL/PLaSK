@@ -604,20 +604,6 @@ struct GeometryElementD: public GeometryElement {
 
 } // namespace plask
 
-#include "transform.h"  //implementation which require translations:
-
-namespace plask {
-
-template <int dimensions> inline shared_ptr<Translation<dimensions>>
-GeometryElementD<dimensions>::getElementInThisCordinates(const shared_ptr<GeometryElementD<dimensions>>& element, const PathHints* path) const {
-    auto trans_vec = getElementPositions(*element, path);
-    if (trans_vec.size() != 1 || std::isnan(trans_vec[0].components[0]))
-        shared_ptr<Translation<dimensions>>();
-    return make_shared<Translation<dimensions>>(element, trans_vec[0]);
-}
-
-} // namespace plask
-
 #endif // PLASK__GEOMETRY_ELEMENT_H
 
 

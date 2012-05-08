@@ -2,6 +2,8 @@
 
 #include "leaf.h"
 
+#include "transform.h"
+
 namespace plask {
 
 GeometryElement::CompositeChanger::CompositeChanger(const Changer* changer) {
@@ -72,5 +74,20 @@ std::size_t GeometryElement::getRealChildrenCount() const {
 shared_ptr<GeometryElement> GeometryElement::getRealChildAt(std::size_t child_nr) const {
     return getChildAt(child_nr);
 }
+
+// --- GeometryElementD ---
+
+template <int dimensions>
+shared_ptr<Translation<dimensions>>
+GeometryElementD<dimensions>::getElementInThisCordinates(const shared_ptr<GeometryElementD<dimensions>>& element, const PathHints* path) const {
+    auto trans_vec = getElementPositions(*element, path);
+    if (trans_vec.size() != 1 || std::isnan(trans_vec[0].components[0]))
+        shared_ptr<Translation<dimensions>>();
+    return make_shared<Translation<dimensions>>(element, trans_vec[0]);
+}
+
+template class GeometryElementD<2>;
+template class GeometryElementD<3>;
+
 
 }   // namespace plask

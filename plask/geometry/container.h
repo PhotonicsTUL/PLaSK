@@ -235,6 +235,7 @@ public:
      * @param predicate returns true only if the child passed as an argument should be deleted
      * @return true if anything has been removed
      */
+    //TODO this is not fine for all subclasses
     template <typename PredicateT>
     bool remove_if(PredicateT predicate) {
         bool removed = false;

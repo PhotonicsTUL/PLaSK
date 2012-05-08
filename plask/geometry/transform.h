@@ -1,8 +1,7 @@
-#include "element.h"
-
 #ifndef PLASK__GEOMETRY_TRANSFORM_H
 #define PLASK__GEOMETRY_TRANSFORM_H
 
+#include "element.h"
 #include <boost/bind.hpp>
 //#include <functional>
 
