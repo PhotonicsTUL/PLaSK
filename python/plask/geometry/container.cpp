@@ -52,7 +52,8 @@ static void Container__delitem__int(py::object oself, int i) {
         throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
             std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
     }
-    self->remove_if([&](const shared_ptr<Translation<dim>>& c){ return c == self->getRealChildAt(i); });
+    //self->remove_if([&](const shared_ptr<Translation<dim>>& c){ return c == self->getRealChildAt(i); });
+    self->remove(i);
 }
 
 template <int dim>
@@ -61,7 +62,7 @@ static void Container__delitem__hints(GeometryElementContainer<dim>& self, const
 }
 
 template <int dim>
-static void Container__delitem__object(py::object oself, shared_ptr<typename GeometryElementContainer<dim>::ChildType> elem) {
+static void Container__delitem__object(py::object oself, shared_ptr<const typename GeometryElementContainer<dim>::ChildType> elem) {
     GeometryElementContainer<dim>* self = py::extract<GeometryElementContainer<dim>*>(oself);
     if (!self->remove(elem)) {
         throw KeyError("no such child");

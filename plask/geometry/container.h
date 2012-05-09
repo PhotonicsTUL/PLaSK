@@ -38,10 +38,12 @@ struct GeometryElementContainer: public GeometryElementD<dim> {
     typedef Translation<dim> TranslationT;
 
     /// Type of the vector holiding container children
-    typedef std::vector<shared_ptr<TranslationT>> TranslationVector;
+    typedef std::vector< shared_ptr<TranslationT> > TranslationVector;
 
 protected:
     TranslationVector children;
+
+    bool childrenEraseFromEnd(typename TranslationVector::iterator firstToErase);
 
     void ensureIsValidChildNr(std::size_t child_nr, const char* method_name = "getChildAt", const char* arg_name = "child_nr") const {
         if (child_nr >= children.size())
@@ -235,16 +237,16 @@ public:
      * @param predicate returns true only if the child passed as an argument should be deleted
      * @return true if anything has been removed
      */
-    //TODO this is not fine for all subclasses
-    template <typename PredicateT>
-    bool remove_if(PredicateT predicate) {
-        bool removed = false;
-        auto dst = children.begin();
-        for (auto i: children)
-            if (predicate(i)) { disconnectOnChildChanged(*i); removed = true; }
-            else *dst++ = i;
-        children.erase(dst, children.end());
-        return removed;
+    virtual bool removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+
+    /**
+     * Remove all children which fulfil predicate.
+     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
+     * @param predicate returns true only if the child passed as an argument should be deleted
+     * @return true if anything has been removed
+     */
+    virtual bool remove(const std::function<bool(const shared_ptr<const ChildType>& c)>& predicate) {
+        return removeT([&](const shared_ptr<const TranslationT>& c) { return predicate(c->getChild()); });
     }
 
     /**
@@ -252,8 +254,17 @@ public:
      * @param el child(ren) to remove
      * @return true if anything has been removed
      */
-    bool remove(shared_ptr<const ChildType> el) {
-        return remove_if([&el](const shared_ptr<const ChildType>& c) { return c == el; });
+    bool removeT(const shared_ptr<const TranslationT>& el) {
+        return removeT([&el](const shared_ptr<const TranslationT>& c) { return c == el; });
+    }
+
+    /**
+     * Remove all children exactly equal to @a el.
+     * @param el child(ren) to remove
+     * @return true if anything has been removed
+     */
+    bool remove(const shared_ptr<const ChildType>& el) {
+        return remove([&el](const shared_ptr<const ChildType>& c) { return c == el; });
     }
 
     /**
@@ -263,7 +274,15 @@ public:
      */
     bool remove(const PathHints& hints) {
         auto cset = hints.getChildren(*this);
-        return remove_if([&](shared_ptr<TranslationT> t) { return cset.find(static_pointer_cast<GeometryElement>(t)) != cset.end(); });
+        return removeT([&](const shared_ptr<TranslationT>& t) {
+                       return cset.find(static_pointer_cast<GeometryElement>(t)) != cset.end();
+                });
+    }
+
+    virtual void remove(std::size_t index) {
+        ensureIsValidChildNr(index, "remove", "index");
+        children.erase(children.begin() + index);
+        fireChildrenChanged();
     }
 };
 

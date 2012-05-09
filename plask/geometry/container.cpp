@@ -5,6 +5,30 @@
 
 namespace plask {
 
+template <int dim>
+bool GeometryElementContainer<dim>::childrenEraseFromEnd(typename TranslationVector::iterator firstToErase) {
+    if (firstToErase != children.end()) {
+        children.erase(firstToErase, children.end());
+        fireChildrenChanged();
+        return true;
+    } else
+        return false;
+}
+
+template <int dim>
+bool GeometryElementContainer<dim>::removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+    auto dst = children.begin();
+    for (auto i: children)
+        if (predicate(i))
+            disconnectOnChildChanged(*i);
+        else
+            *dst++ = i;
+    return childrenEraseFromEnd(dst);
+}
+
+template class GeometryElementContainer<2>;
+template class GeometryElementContainer<3>;
+
 // ---- containers readers: ----
 
 shared_ptr<GeometryElement> read_TranslationContainer2d(GeometryReader& reader) {
