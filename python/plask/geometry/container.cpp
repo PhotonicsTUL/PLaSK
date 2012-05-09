@@ -63,12 +63,12 @@ static void Container__delitem__(GeometryElementContainer<dim>& self, py::object
     } catch (py::error_already_set) { PyErr_Clear(); }
     try {
         shared_ptr<typename GeometryElementContainer<dim>::TranslationT> child = py::extract<shared_ptr<typename GeometryElementContainer<dim>::TranslationT>>(item);
-        self.removeT(const_pointer_cast<const typename GeometryElementContainer<dim>::TranslationT>(child));
+        self.removeT(child);
         return;
     } catch (py::error_already_set) { PyErr_Clear(); }
     try {
         shared_ptr<typename GeometryElementContainer<dim>::ChildType> child = py::extract<shared_ptr<typename GeometryElementContainer<dim>::ChildType>>(item);
-        self.remove(const_pointer_cast<const typename GeometryElementContainer<dim>::ChildType>(child));
+        self.remove(child);
         return;
     } catch (py::error_already_set) { PyErr_Clear(); }
     throw TypeError("unrecognized element %s delete from container", std::string(py::extract<std::string>(py::str(item))));

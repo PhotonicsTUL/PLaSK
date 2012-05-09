@@ -179,7 +179,7 @@ public:
      * @param predicate returns true only if the child passed as an argument should be deleted
      * @return true if anything has been removed
      */
-    bool removeIf(const std::function<bool(const shared_ptr<const ChildType>& c)>& predicate) {
+    bool removeIf(const std::function<bool(const shared_ptr<ChildType>& c)>& predicate) {
         return removeIfT([&](const shared_ptr<const TranslationT>& c) { return predicate(c->getChild()); });
     }
 
@@ -188,7 +188,7 @@ public:
      * @param el child(ren) to remove
      * @return true if anything has been removed
      */
-    bool removeT(const shared_ptr<const TranslationT>& el) {
+    bool removeT(shared_ptr<const TranslationT> el) {
         return removeIfT([&el](const shared_ptr<const TranslationT>& c) { return c == el; });
     }
 
@@ -197,7 +197,7 @@ public:
      * @param el child(ren) to remove
      * @return true if anything has been removed
      */
-    bool remove(const shared_ptr<const ChildType>& el) {
+    bool remove(shared_ptr<const ChildType> el) {
         return removeIf([&el](const shared_ptr<const ChildType>& c) { return c == el; });
     }
 
@@ -214,13 +214,18 @@ public:
     }
 
     /**
-     * Remove child at given index.
+     * Remove child at given @p index.
+     * 
+     * Throw exception if given @p index is not valid, real child index.
+     * @param index index of real child to remove
      */
     virtual void removeAt(std::size_t index) {
         ensureIsValidChildNr(index, "removeAt", "index");
         children.erase(children.begin() + index);
         fireChildrenChanged();
     }
+    
+    
 };
 
 /**
