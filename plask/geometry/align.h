@@ -53,6 +53,12 @@ struct Aligner2dBase {
      * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
      */
     virtual Aligner2d<direction>* clone() const = 0;
+    
+    /**
+     * Clone this aligner.
+     * @return copy of this aligner, construted using operator @c new, and wrapped by std::unique_ptr
+     */
+    std::unique_ptr< Aligner2d<direction> > cloneUnique() const { return std::unique_ptr< Aligner2d<direction> >(clone()); }
 
     /**
      * Get string representation of this aligner.
@@ -164,6 +170,12 @@ struct Aligner3d {
      * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
      */
     virtual Aligner3d<direction1, direction2>* clone() const = 0;
+    
+    /**
+     * Clone this aligner.
+     * @return copy of this aligner, construted using operator @c new, and wrapped by std::unique_ptr
+     */
+    std::unique_ptr< Aligner3d<direction1, direction2> > cloneUnique() const { return std::unique_ptr< Aligner3d<direction1, direction2> >(clone()); }
 
     virtual std::string strFirstDirection() const = 0;
     virtual std::string strSecondDirection() const = 0;

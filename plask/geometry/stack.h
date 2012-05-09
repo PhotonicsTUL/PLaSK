@@ -66,9 +66,9 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
 
-    //virtual bool removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
 
-    virtual void removeAt(std::size_t index);
+    virtual void removeAtUnsafe(std::size_t index);
 
     /// Called by child.change signal, update heights call this change
     void onChildChanged(const GeometryElement::Event& evt) {
@@ -80,7 +80,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     /**
      * stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements),
-     * stackHeights.size() = children.size() + 1 and stackHeights[0] is a base height
+     * stackHeights.size() = children.size() + 1 and stackHeights[0] is a base height (typically 0.0)
      */
     std::vector<double> stackHeights;
 
@@ -120,11 +120,20 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     /**
      * Update stack heights and up translation of all children, with indexes from @a first_child_index.
-     * @param first_child_index index of first child to update
+     * @param first_child_index index of first child for which stackHeights should be update
      */
     void updateAllHeights(std::size_t first_child_index = 0) {
         for ( ; first_child_index < children.size(); ++first_child_index)
             updateHeight(first_child_index);
+    }
+    
+    /**
+     * Resize stackHeights (to be compatibile with children vector) and refresh its value from given index.
+     * @param first_child_index index of first child for which stackHeights should be update
+     */
+    void rebuildStackHeights(std::size_t first_child_index = 0) {
+        stackHeights.resize(children.size() + 1);
+        updateAllHeights(first_child_index);
     }
 
 };
@@ -200,7 +209,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     using StackContainerBaseImpl<dim>::stackHeights;
 
   private:
-    std::vector<Aligner*> aligners;
+    std::vector< std::unique_ptr<Aligner> > aligners;
 
     /**
      * Get translation element over given element @p el.
@@ -238,7 +247,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     explicit StackContainer(const double baseHeight = 0.0): StackContainerBaseImpl<dim>(baseHeight) {}
 
-    virtual ~StackContainer() { for (auto a: aligners) delete a; }
+    //virtual ~StackContainer() { for (auto a: aligners) delete a; }
 
     /**
      * Insert children to stack at given position.
@@ -278,7 +287,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
         stackHeights.push_back(next_height);
-        aligners.push_back(aligner.clone());
+        aligners.push_back(aligner.cloneUnique());
         this->fireChildrenChanged();
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
@@ -347,7 +356,9 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         this->fireChanged(GeometryElement::Event::RESIZE);
     }*/
 
-    virtual void removeAt(std::size_t index);
+    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+    
+    virtual void removeAtUnsafe(std::size_t index);
 
 };
 

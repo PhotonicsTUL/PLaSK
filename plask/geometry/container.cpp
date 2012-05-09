@@ -92,10 +92,15 @@ GeometryElement::Subtree GeometryElementContainer<dim>::findPathsTo(const Geomet
 }
 
 template <int dim>
-bool GeometryElementContainer<dim>::childrenEraseFromEnd(typename TranslationVector::iterator firstToErase) {
-    if (firstToErase != children.end()) {
-        children.erase(firstToErase, children.end());
-        fireChildrenChanged();
+bool GeometryElementContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+    auto dst = children.begin();
+    for (auto i: children)
+        if (predicate(i))
+            disconnectOnChildChanged(*i);
+        else
+            *dst++ = i;
+    if (dst != children.end()) {
+        children.erase(dst, children.end());
         return true;
     } else
         return false;
@@ -103,13 +108,11 @@ bool GeometryElementContainer<dim>::childrenEraseFromEnd(typename TranslationVec
 
 template <int dim>
 bool GeometryElementContainer<dim>::removeIfT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
-    auto dst = children.begin();
-    for (auto i: children)
-        if (predicate(i))
-            disconnectOnChildChanged(*i);
-        else
-            *dst++ = i;
-    return childrenEraseFromEnd(dst);
+    if (removeIfTUnsafe(predicate)) {
+        fireChildrenChanged();
+        return true;
+    } else
+        return false;
 }
 
 template class GeometryElementContainer<2>;

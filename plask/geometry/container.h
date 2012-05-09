@@ -43,8 +43,6 @@ struct GeometryElementContainer: public GeometryElementD<dim> {
 protected:
     TranslationVector children;
 
-    bool childrenEraseFromEnd(typename TranslationVector::iterator firstToErase);
-
     void ensureIsValidChildNr(std::size_t child_nr, const char* method_name = "getChildAt", const char* arg_name = "child_nr") const {
         if (child_nr >= children.size())
             throw OutOfBoundException(method_name, arg_name, child_nr, 0, children.size()-1);
@@ -167,11 +165,20 @@ public:
 
     /**
      * Remove all children which fulfil predicate.
-     * @tparam PredicateT functor which can take child as argument and return something convertable to bool
-     * @param predicate returns true only if the child passed as an argument should be deleted
+     *
+     * This is unsafe but fast version, it doesn't call fireChildrenChanged() to inform listeners about this object changes.
+     * Caller should do this manually or call removeIfT instead.
+     * @param predicate returns true only if the child (with translation) passed as an argument should be deleted
      * @return true if anything has been removed
      */
-    virtual bool removeIfT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+    
+    /**
+     * Remove all children which fulfil predicate.
+     * @param predicate returns true only if the child (with translation) passed as an argument should be deleted
+     * @return true if anything has been removed
+     */
+    bool removeIfT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
 
     /**
      * Remove all children which fulfil predicate.
@@ -216,12 +223,23 @@ public:
     /**
      * Remove child at given @p index.
      * 
+     * This is unsafe but fast version, it doesn't check index and doesn't call fireChildrenChanged() to inform listeners about this object changes.
+     * Caller should do this manually or call removeAt(std::size_t) instead.
+     * @param index index of real child to remove 
+     */
+    virtual void removeAtUnsafe(std::size_t index) {
+        children.erase(children.begin() + index);
+    }
+    
+    /**
+     * Remove child at given @p index.
+     * 
      * Throw exception if given @p index is not valid, real child index.
      * @param index index of real child to remove
      */
-    virtual void removeAt(std::size_t index) {
+    void removeAt(std::size_t index) {
         ensureIsValidChildNr(index, "removeAt", "index");
-        children.erase(children.begin() + index);
+        removeAtUnsafe(index);
         fireChildrenChanged();
     }
     

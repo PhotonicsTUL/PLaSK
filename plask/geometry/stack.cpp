@@ -28,12 +28,10 @@ StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) 
 }
 
 template <int dim, int growingDirection>
-void StackContainerBaseImpl<dim, growingDirection>::removeAt(std::size_t index) {
-    this->ensureIsValidChildNr(index, "removeAt", "index");
+void StackContainerBaseImpl<dim, growingDirection>::removeAtUnsafe(std::size_t index) {
     children.erase(children.begin() + index);
     stackHeights.erase(stackHeights.begin() + index);
     updateAllHeights(index);
-    this->fireChildrenChanged();
 }
 
 /*template <typename PredicateT>
@@ -54,18 +52,17 @@ bool remove_if(PredicateT predicate) {
         return false;
 }
 
-virtual bool removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+virtual bool removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);*/
 
 template <int dim, int growingDirection>
-bool StackContainerBaseImpl<dim, growingDirection>::removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
-    auto dst = children.begin();
-    for (auto i: children)
-        if (predicate(i))
-            disconnectOnChildChanged(*i);
-        else
-            *dst++ = i;
-    return childrenEraseFromEnd(dst);
-}*/
+bool StackContainerBaseImpl<dim, growingDirection>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+    if (GeometryElementContainer<dim>::removeIfTUnsafe(predicate)) {
+        this->rebuildStackHeights();
+        this->fireChildrenChanged();
+        return true;
+    } else
+        return false;
+}
 
 template class StackContainerBaseImpl<2, Primitive<2>::DIRECTION_UP>;
 template class StackContainerBaseImpl<3, Primitive<3>::DIRECTION_UP>;
@@ -87,7 +84,7 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
     shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.up, bb);
     connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
-    aligners.insert(aligners.begin() + pos, aligner.clone());
+    aligners.insert(aligners.begin() + pos, aligner.cloneUnique());
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
     const double delta = bb.upper.up - bb.lower.up;
     for (std::size_t i = pos + 1; i < children.size(); ++i) {
@@ -102,22 +99,40 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
 template <int dim>
 void StackContainer<dim>::setAlignerAt(std::size_t child_nr, const Aligner& aligner) {
     this->ensureIsValidChildNr(child_nr, "setAlignerAt");
-    if (aligners[child_nr] == &aligner) return; //protected against self assigment
-    delete aligners[child_nr];
-    aligners[child_nr] = aligner.clone();
+    if (aligners[child_nr].get() == &aligner) return; //protected against self assigment
+    aligners[child_nr] = aligner.cloneUnique();
     aligners[child_nr]->align(*children[child_nr]);
     this->fireChanged(GeometryElement::Event::RESIZE);
 }
 
 template <int dim>
-void StackContainer<dim>::removeAt(std::size_t index) {
-    this->ensureIsValidChildNr(index, "removeAt", "index");
+bool StackContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+    auto dst = children.begin();
+    auto al_dst = aligners.begin();
+    auto al_src = aligners.begin();
+    for (auto i: children) {
+        if (predicate(i))
+            disconnectOnChildChanged(*i);
+        else {
+            *dst++ = i;
+            *al_dst++ = std::move(*al_src);
+        }
+        ++al_src;
+    }
+    if (dst != children.end()) {
+        children.erase(dst, children.end());
+        aligners.erase(al_dst, aligners.end());
+        return true;
+    } else
+        return false;
+}
+
+template <int dim>
+void StackContainer<dim>::removeAtUnsafe(std::size_t index) {
     children.erase(children.begin() + index);
     stackHeights.erase(stackHeights.begin() + index);
-    delete aligners[index];
     aligners.erase(aligners.begin() + index);
     this->updateAllHeights(index);
-    this->fireChildrenChanged();
 }
 
 
