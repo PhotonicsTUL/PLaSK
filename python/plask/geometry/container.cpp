@@ -44,42 +44,45 @@ static std::set<shared_ptr<GeometryElement>> Container__getitem__hints(const Geo
 }
 
 template <int dim>
-static void Container__delitem__int(py::object oself, int i) {
-    GeometryElementContainer<dim>* self = py::extract<GeometryElementContainer<dim>*>(oself);
-    int n = self->getRealChildrenCount();
-    if (i < 0) i = n + i;
-    if (i < 0 || i >= n) {
-        throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
-            std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
-    }
-    //self->remove_if([&](const shared_ptr<Translation<dim>>& c){ return c == self->getRealChildAt(i); });
-    self->removeAt(i);
-}
-
-template <int dim>
-static void Container__delitem__hints(GeometryElementContainer<dim>& self, const PathHints& hints) {
-    self.remove(hints);
-}
-
-template <int dim>
-static void Container__delitem__object(py::object oself, shared_ptr<const typename GeometryElementContainer<dim>::ChildType> elem) {
-    GeometryElementContainer<dim>* self = py::extract<GeometryElementContainer<dim>*>(oself);
-    if (!self->remove(elem)) {
-        throw KeyError("no such child");
-    }
+static void Container__delitem__(GeometryElementContainer<dim>& self, py::object item) {
+    try {
+        int i = py::extract<int>(item);
+        if (i < 0) i = self.getRealChildrenCount() + i;
+        self.removeAt(i);
+        return;
+    } catch (py::error_already_set) { PyErr_Clear(); }
+    try {
+        PathHints::Hint* hint = py::extract<PathHints::Hint*>(item);
+        self.remove(PathHints(*hint));
+        return;
+    } catch (py::error_already_set) { PyErr_Clear(); }
+    try {
+        PathHints* hints = py::extract<PathHints*>(item);
+        self.remove(*hints);
+        return;
+    } catch (py::error_already_set) { PyErr_Clear(); }
+    try {
+        shared_ptr<typename GeometryElementContainer<dim>::TranslationT> child = py::extract<shared_ptr<typename GeometryElementContainer<dim>::TranslationT>>(item);
+        self.removeT(const_pointer_cast<const typename GeometryElementContainer<dim>::TranslationT>(child));
+        return;
+    } catch (py::error_already_set) { PyErr_Clear(); }
+    try {
+        shared_ptr<typename GeometryElementContainer<dim>::ChildType> child = py::extract<shared_ptr<typename GeometryElementContainer<dim>::ChildType>>(item);
+        self.remove(const_pointer_cast<const typename GeometryElementContainer<dim>::ChildType>(child));
+        return;
+    } catch (py::error_already_set) { PyErr_Clear(); }
+    throw TypeError("unrecognized element %s delete from container", std::string(py::extract<std::string>(py::str(item))));
 }
 
 
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementContainer, "GeometryElementContainer", "Base class for all "," containers") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementContainer, GeometryElementD<dim>)
         .def("__contains__", &Container__contains__<dim>)
-        .def("__len__", &GeometryElementD<dim>::getChildrenCount)
         .def("__getitem__", &Container__getitem__int<dim>)
         .def("__getitem__", &Container__getitem__hints<dim>)
+        .def("__len__", &GeometryElementD<dim>::getChildrenCount)
         .def("__iter__", py::range(Container__begin<dim>, Container__end<dim>))
-        .def("__delitem__", &Container__delitem__int<dim>)
-        .def("__delitem__", &Container__delitem__hints<dim>)
-        .def("__delitem__", &Container__delitem__object<dim>)
+        .def("__delitem__", &Container__delitem__<dim>)
     ;
 }
 

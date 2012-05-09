@@ -1,30 +1,22 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+import sys, unittest
 
-import sys, os, unittest, imp
+if __name__ == '__main__':
+    exec(compile(open(sys.argv[1]).read(), "somefile.py", 'exec'), globals(), locals())
+    tests = []
+    for m in dict(globals()).values():
+        try:
+            if issubclass(m, unittest.TestCase):
+                tests.append(m)
+        except TypeError:
+            pass
 
-# Load test as a module
-mod_path = os.path.dirname(sys.argv[1])
-mod_name = os.path.basename(sys.argv[1])
-if mod_name[-3:] == '.py': mod_name = mod_name[:-3]
-fp, pathname, description = imp.find_module(mod_name, [mod_path])
-test_module = imp.load_module(mod_name, fp, pathname, description)
+    errors = 0
 
-tests = []
-for m in test_module.__dict__.values():
-    try:
-        if issubclass(m, unittest.TestCase):
-            tests.append(m)
-    except TypeError:
-        pass
+    for m in tests:
+            suite = unittest.TestLoader().loadTestsFromTestCase(m)
+            result = unittest.TextTestRunner().run(suite)
+            errors += len(result.errors) + len(result.failures)
 
-errors = 0
-
-for m in tests:
-        suite = unittest.TestLoader().loadTestsFromTestCase(m)
-        result = unittest.TextTestRunner().run(suite)
-        errors += len(result.errors) + len(result.failures)
-
-sys.exit(errors)
+    sys.exit(errors)
 
 #kate: syntax Python;
