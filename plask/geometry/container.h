@@ -171,7 +171,7 @@ public:
      * @param predicate returns true only if the child passed as an argument should be deleted
      * @return true if anything has been removed
      */
-    virtual bool removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+    virtual bool removeIfT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
 
     /**
      * Remove all children which fulfil predicate.
@@ -179,8 +179,8 @@ public:
      * @param predicate returns true only if the child passed as an argument should be deleted
      * @return true if anything has been removed
      */
-    bool remove(const std::function<bool(const shared_ptr<const ChildType>& c)>& predicate) {
-        return removeT([&](const shared_ptr<const TranslationT>& c) { return predicate(c->getChild()); });
+    bool removeIf(const std::function<bool(const shared_ptr<const ChildType>& c)>& predicate) {
+        return removeIfT([&](const shared_ptr<const TranslationT>& c) { return predicate(c->getChild()); });
     }
 
     /**
@@ -189,7 +189,7 @@ public:
      * @return true if anything has been removed
      */
     bool removeT(const shared_ptr<const TranslationT>& el) {
-        return removeT([&el](const shared_ptr<const TranslationT>& c) { return c == el; });
+        return removeIfT([&el](const shared_ptr<const TranslationT>& c) { return c == el; });
     }
 
     /**
@@ -198,7 +198,7 @@ public:
      * @return true if anything has been removed
      */
     bool remove(const shared_ptr<const ChildType>& el) {
-        return remove([&el](const shared_ptr<const ChildType>& c) { return c == el; });
+        return removeIf([&el](const shared_ptr<const ChildType>& c) { return c == el; });
     }
 
     /**
@@ -208,7 +208,7 @@ public:
      */
     bool remove(const PathHints& hints) {
         auto cset = hints.getChildren(*this);
-        return removeT([&](const shared_ptr<TranslationT>& t) {
+        return removeIfT([&](const shared_ptr<TranslationT>& t) {
                        return cset.find(static_pointer_cast<GeometryElement>(t)) != cset.end();
                 });
     }

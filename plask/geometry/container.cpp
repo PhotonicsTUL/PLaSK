@@ -102,7 +102,7 @@ bool GeometryElementContainer<dim>::childrenEraseFromEnd(typename TranslationVec
 }
 
 template <int dim>
-bool GeometryElementContainer<dim>::removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+bool GeometryElementContainer<dim>::removeIfT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
     auto dst = children.begin();
     for (auto i: children)
         if (predicate(i))
