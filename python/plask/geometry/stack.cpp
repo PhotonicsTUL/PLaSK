@@ -5,7 +5,7 @@
 
 namespace plask { namespace python {
 
-template <int dim>
+/*template <int dim>
 static void Stack__delitem__int(py::object oself, int i) {
     StackContainer<dim>* self = py::extract<StackContainer<dim>*>(oself);
     int n = self->getRealChildrenCount();
@@ -23,12 +23,12 @@ static void Stack__delitem__hints(StackContainer<dim>& self, const PathHints& hi
 }
 
 template <int dim>
-static void Stack__delitem__object(py::object oself, shared_ptr<typename StackContainer<dim>::ChildType> elem) {
+static void Stack__delitem__object(py::object oself, shared_ptr<const typename StackContainer<dim>::ChildType> elem) {
     StackContainer<dim>* self = py::extract<StackContainer<dim>*>(oself);
     if (!self->remove(elem)) {
         throw KeyError("no such child");
     }
-}
+}*/
 
 
 void register_geometry_container_stack()
@@ -42,9 +42,9 @@ void register_geometry_container_stack()
         py::init<double>((py::arg("base_level")=0.)))
         .def("append", &StackContainer<2>::push_back, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Append new element to the container")
         .def("prepend", &StackContainer<2>::push_front, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Prepend new element to the container")
-        .def("__delitem__", &Stack__delitem__int<2>)
+        /*.def("__delitem__", &Stack__delitem__int<2>)
         .def("__delitem__", &Stack__delitem__hints<2>)
-        .def("__delitem__", &Stack__delitem__object<2>)
+        .def("__delitem__", &Stack__delitem__object<2>)*/
     ;
 
     py::class_<StackContainer<3>, shared_ptr<StackContainer<3>>, py::bases<GeometryElementContainer<3>>, boost::noncopyable>("Stack3D",
@@ -54,9 +54,9 @@ void register_geometry_container_stack()
         py::init<double>((py::arg("base_level")=0.)))
         .def("append", &StackContainer<3>::push_back, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Append new element to the container")
         .def("prepend", &StackContainer<3>::push_front, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Prepend new element to the container")
-        .def("__delitem__", &Stack__delitem__int<3>)
+        /*.def("__delitem__", &Stack__delitem__int<3>)
         .def("__delitem__", &Stack__delitem__hints<3>)
-        .def("__delitem__", &Stack__delitem__object<3>)
+        .def("__delitem__", &Stack__delitem__object<3>)*/
     ;
 
     // Multi-stack constainer

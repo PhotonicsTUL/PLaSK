@@ -91,28 +91,9 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
             return false;
     }
 
-    /**
-     * Remove all children exactly equal to @a el.
-     * @param el child(ren) to remove
-     * @return true if anything has been removed
-     */
-    bool remove(shared_ptr<const ChildType> el) {
-        return remove_if([&el](const shared_ptr<const ChildType>& c) { return c == el; });
-    }
-
-    /**
-     * Remove child pointed, for this container, in @a hints.
-     * @param hints path hints, see @ref geometry_paths
-     * @return true if anything has been removed
-     */
-    bool remove(const PathHints& hints) {
-        auto cset = hints.getChildren(*this);
-        return remove_if([&](shared_ptr<TranslationT> t) { return cset.find(static_pointer_cast<GeometryElement>(t)) != cset.end(); });
-    }
-
     /// Called by child.change signal, update heights call this change
     void onChildChanged(const GeometryElement::Event& evt) {
-        if (evt.isResize()) updateAllHeights(); //TODO find evt source index
+        if (evt.isResize()) updateAllHeights(); //TODO optimization: find evt source index and update size from this index to back
         this->fireChanged(evt.flagsForParent());
     }
 

@@ -95,25 +95,13 @@ public:
         return false;
     }
 
-    virtual Box getBoundingBox() const {
-        if (children.empty()) return Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
-        Box result = children[0]->getBoundingBox();
-        for (std::size_t i = 1; i < children.size(); ++i)
-            result.include(children[i]->getBoundingBox());
-        return result;
-    }
+    virtual Box getBoundingBox() const;
 
     /**
      * Iterate over children in reverse order and check if any returns material.
      * @return material of first child which returns non @c nullptr or @c nullptr if all children return @c nullptr
      */
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
-            shared_ptr<Material> r = (*child_it)->getMaterial(p);
-            if (r != nullptr) return r;
-        }
-        return shared_ptr<Material>();
-    }
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const;
 
     /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Box, DVec> >& dest, const PathHints* path = 0) const {
         if (path) {
@@ -126,54 +114,15 @@ public:
         for (auto child: children) child->getLeafsInfoToVec(dest, path);
     }*/
 
-    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(getBoundingBox());
-            return;
-        }
-        if (path) {
-            auto c = path->getTranslationChildren<dim>(*this);
-            if (!c.empty()) {
-                for (auto child: c) child->getBoundingBoxesToVec(predicate, dest, path);
-                return;
-            }
-        }
-        for (auto child: children) child->getBoundingBoxesToVec(predicate, dest, path);
-    }
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
-    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(this->shared_from_this());
-            return;
-        }
-        if (path) {
-            auto c = path->getTranslationChildren<dim>(*this);
-            if (!c.empty()) {
-                for (auto child: c) child->getElementsToVec(predicate, dest, path);
-                return;
-            }
-        }
-        for (auto child: children) child->getElementsToVec(predicate, dest, path);
-    }
+    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const;
 
     /*virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
         for (auto child: children) child->getLeafsToVec(dest);
     }*/
 
-    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(Primitive<dim>::ZERO_VEC);
-            return;
-        }
-        if (path) {
-            auto c = path->getTranslationChildren<dim>(*this);
-            if (!c.empty()) {
-                for (auto child: c) child->getPositionsToVec(predicate, dest, path);
-                return;
-            }
-        }
-        for (auto child: children) child->getPositionsToVec(predicate, dest, path);
-    }
+    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result;
@@ -184,13 +133,7 @@ public:
         return result;
     }*/
 
-    virtual bool isInSubtree(const GeometryElement& el) const {
-        if (&el == this) return true;
-        for (auto child: children)
-            if (child->isInSubtree(el))
-                return true;
-        return false;
-    }
+    virtual bool isInSubtree(const GeometryElement& el) const;
 
     template <typename ChildIter>
     GeometryElement::Subtree findPathsFromChildTo(ChildIter childBegin, ChildIter childEnd, const GeometryElement& el, const PathHints* path = 0) const {
@@ -205,16 +148,7 @@ public:
         return result;
     }
 
-    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
-        if (this == &el) return this->shared_from_this();
-        if (path) {
-            auto hintChildren = path->getTranslationChildren<dim>(*this);
-            if (!hintChildren.empty())
-                return findPathsFromChildTo(hintChildren.begin(), hintChildren.end(), el, path);
-        }
-        return findPathsFromChildTo(children.begin(), children.end(), el, path);
-    }
-
+    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const;
 
     virtual std::size_t getChildrenCount() const { return children.size(); }
 
@@ -245,7 +179,7 @@ public:
      * @param predicate returns true only if the child passed as an argument should be deleted
      * @return true if anything has been removed
      */
-    virtual bool remove(const std::function<bool(const shared_ptr<const ChildType>& c)>& predicate) {
+    bool remove(const std::function<bool(const shared_ptr<const ChildType>& c)>& predicate) {
         return removeT([&](const shared_ptr<const TranslationT>& c) { return predicate(c->getChild()); });
     }
 
@@ -279,7 +213,10 @@ public:
                 });
     }
 
-    virtual void remove(std::size_t index) {
+    /**
+     * Remove child at given index.
+     */
+    virtual void removeAt(std::size_t index) {
         ensureIsValidChildNr(index, "remove", "index");
         children.erase(children.begin() + index);
         fireChildrenChanged();

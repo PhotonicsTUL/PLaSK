@@ -53,7 +53,7 @@ static void Container__delitem__int(py::object oself, int i) {
             std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
     }
     //self->remove_if([&](const shared_ptr<Translation<dim>>& c){ return c == self->getRealChildAt(i); });
-    self->remove(i);
+    self->removeAt(i);
 }
 
 template <int dim>
