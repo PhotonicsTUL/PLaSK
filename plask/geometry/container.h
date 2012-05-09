@@ -217,7 +217,7 @@ public:
      * Remove child at given index.
      */
     virtual void removeAt(std::size_t index) {
-        ensureIsValidChildNr(index, "remove", "index");
+        ensureIsValidChildNr(index, "removeAt", "index");
         children.erase(children.begin() + index);
         fireChildrenChanged();
     }

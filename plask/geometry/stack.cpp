@@ -27,6 +27,46 @@ StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) 
     return children[it-stackHeights.begin()-1];
 }
 
+template <int dim, int growingDirection>
+void StackContainerBaseImpl<dim, growingDirection>::removeAt(std::size_t index) {
+    this->ensureIsValidChildNr(index, "removeAt", "index");
+    children.erase(children.begin() + index);
+    stackHeights.erase(stackHeights.begin() + index);
+    updateAllHeights(index);
+    this->fireChildrenChanged();
+}
+
+/*template <typename PredicateT>
+bool remove_if(PredicateT predicate) {
+    std::deque<shared_ptr<TranslationT>> deleted;
+    auto dst = children.begin();
+    for (auto i: children)
+        if (predicate(i)) deleted.push_back(i);
+        else *dst++ = i;
+    children.erase(dst, children.end());
+    updateAllHeights();
+    for (auto i: deleted)
+        disconnectOnChildChanged(*i);
+    if (deleted.size() != 0) {
+        this->fireChildrenChanged();
+        return true;
+    } else
+        return false;
+}
+
+virtual bool removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+
+template <int dim, int growingDirection>
+bool StackContainerBaseImpl<dim, growingDirection>::removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+    auto dst = children.begin();
+    for (auto i: children)
+        if (predicate(i))
+            disconnectOnChildChanged(*i);
+        else
+            *dst++ = i;
+    return childrenEraseFromEnd(dst);
+}*/
+
 template class StackContainerBaseImpl<2, Primitive<2>::DIRECTION_UP>;
 template class StackContainerBaseImpl<3, Primitive<3>::DIRECTION_UP>;
 template class StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
@@ -67,6 +107,17 @@ void StackContainer<dim>::setAlignerAt(std::size_t child_nr, const Aligner& alig
     aligners[child_nr] = aligner.clone();
     aligners[child_nr]->align(*children[child_nr]);
     this->fireChanged(GeometryElement::Event::RESIZE);
+}
+
+template <int dim>
+void StackContainer<dim>::removeAt(std::size_t index) {
+    this->ensureIsValidChildNr(index, "removeAt", "index");
+    children.erase(children.begin() + index);
+    stackHeights.erase(stackHeights.begin() + index);
+    delete aligners[index];
+    aligners.erase(aligners.begin() + index);
+    this->updateAllHeights(index);
+    this->fireChildrenChanged();
 }
 
 

@@ -66,30 +66,9 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
 
-    /**
-     * Remove all children which fulfill predicate.
-     * @tparam PredicateT functor which can take child as argument and return something convertible to bool
-     * @param predicate returns true only if the child passed as an argument should be deleted
-     * @return true if anything has been removed
-     */
-    //TODO this not remove aligners in StackContainer
-    template <typename PredicateT>
-    bool remove_if(PredicateT predicate) {
-        std::deque<shared_ptr<TranslationT>> deleted;
-        auto dst = children.begin();
-        for (auto i: children)
-            if (predicate(i)) deleted.push_back(i);
-            else *dst++ = i;
-        children.erase(dst, children.end());
-        updateAllHeights();
-        for (auto i: deleted)
-            disconnectOnChildChanged(*i);
-        if (deleted.size() != 0) {
-            this->fireChildrenChanged();
-            return true;
-        } else
-            return false;
-    }
+    //virtual bool removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+
+    virtual void removeAt(std::size_t index);
 
     /// Called by child.change signal, update heights call this change
     void onChildChanged(const GeometryElement::Event& evt) {
@@ -367,6 +346,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         aligners[child_nr]->align(*children[child_nr]);
         this->fireChanged(GeometryElement::Event::RESIZE);
     }*/
+
+    virtual void removeAt(std::size_t index);
 
 };
 
