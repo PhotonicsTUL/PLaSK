@@ -141,6 +141,22 @@ PathHints::Hint HorizontalStack::addUnsafe(const shared_ptr<ChildType>& el) {
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
+PathHints::Hint HorizontalStack::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos) {
+    const auto bb = el->getBoundingBox();
+    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(stackHeights[pos] - bb.lower.tran, -bb.lower.up));
+    connectOnChildChanged(*trans_geom);
+    children.insert(children.begin() + pos, trans_geom);
+    stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
+    const double delta = bb.upper.up - bb.lower.up;
+    for (std::size_t i = pos + 1; i < children.size(); ++i) {
+        stackHeights[i] += delta;
+        children[i]->translation.up += delta;
+    }
+    stackHeights.back() += delta;
+    this->fireChildrenChanged();
+    return PathHints::Hint(shared_from_this(), trans_geom);
+}
+
 
 template <int dim>
 const bool MultiStackContainer<dim>::reduceHeight(double& height) const {

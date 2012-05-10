@@ -184,7 +184,48 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el);
 
+    /**
+     * Insert children to stack at given position.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to insert
+     * @param pos position where (before which) child should be inserted
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos);
 
+    /**
+     * Insert children to stack at given position.
+     * @param el element to insert
+     * @param pos position where (before which) child should be inserted
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos) {
+        this->ensureCanHasAsChild(*el);
+        return insertUnsafe(el, pos);
+    }
+
+    /**
+     * Add children to stack begin, move all other children right.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to add
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el) {
+        return insertUnsafe(el, 0);
+    }
+
+    /**
+     * Add children to stack begin, move all other children right.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el element to add
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint push_front(const shared_ptr<ChildType>& el) {
+        this->ensureCanHasAsChild(*el);
+        return push_front_Unsafe(el);
+    }
 };
 
 
