@@ -407,14 +407,7 @@ class MultiStackContainer: public StackContainer<dim> {
      * @param height to reduce
      * @return @c true only if height is inside this stack (only in such case @a height is reduced)
      */
-    const bool reduceHeight(double& height) const {
-        const double zeroBasedStackHeight = stackHeights.back() - stackHeights.front();
-        const double zeroBasedRequestHeight = height - stackHeights.front();
-        if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)
-            return false;
-        height = std::fmod(zeroBasedRequestHeight, zeroBasedStackHeight) + stackHeights.front();
-        return true;
-    }
+    const bool reduceHeight(double& height) const;
 
   public:
 
@@ -428,18 +421,12 @@ class MultiStackContainer: public StackContainer<dim> {
     explicit MultiStackContainer(unsigned repeat_count = 1, const double baseHeight = 0.0): UpperClass(baseHeight), repeat_count(repeat_count) {}
 
     //this is not used but, just for case redefine UpperClass::getChildForHeight
-    const typename UpperClass::TranslationT* getChildForHeight(double height) const {
+    /*const shared_ptr<TranslationT> getChildForHeight(double height) const {
         if (!reduceHeight(height)) return nullptr;
         return UpperClass::getChildForHeight(height);
-    }
+    }*/
 
-    virtual bool intersect(const Box& area) const {
-        const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
-        for (unsigned r = 0; r < repeat_count; ++r)
-            if (UpperClass::intersect(area.translatedUp(minusZeroBasedStackHeight*r)))
-                return true;
-        return false;
-    }
+    virtual bool intersect(const Box& area) const;
 
     virtual Box getBoundingBox() const {
         Box result = UpperClass::getBoundingBox();
@@ -447,51 +434,11 @@ class MultiStackContainer: public StackContainer<dim> {
         return result;
     }
 
-    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(getBoundingBox());
-            return;
-        }
-        std::size_t old_size = dest.size();
-        UpperClass::getBoundingBoxesToVec(predicate, dest, path);
-        std::size_t new_size = dest.size();
-        const double stackHeight = stackHeights.back() - stackHeights.front();
-        for (unsigned r = 1; r < repeat_count; ++r) {
-            for (std::size_t i = old_size; i < new_size; ++i)
-                dest.push_back(dest[i]);
-            for (auto i = dest.end() - (new_size-old_size); i != dest.end(); ++i)
-                i->translateUp(stackHeight * r);
-        }
-    }
+    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
-    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(this->shared_from_this());
-            return;
-        }
-        std::size_t old_size = dest.size();
-        UpperClass::getElementsToVec(predicate, dest, path);
-        std::size_t new_size = dest.size();
-        for (unsigned r = 1; r < repeat_count; ++r)
-            for (std::size_t i = old_size; i < new_size; ++i)
-                dest.push_back(dest[i]);
-    }
+    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const;
 
-    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) {
-            dest.push_back(Primitive<dim>::ZERO_VEC);
-            return;
-        }
-        std::size_t old_size = dest.size();
-        UpperClass::getPositionsToVec(predicate, dest, path);
-        std::size_t new_size = dest.size();
-        const double stackHeight = stackHeights.back() - stackHeights.front();
-        for (unsigned r = 1; r < repeat_count; ++r)
-            for (std::size_t i = old_size; i < new_size; ++i) {
-                dest.push_back(dest[i]);
-                dest.back().up += stackHeight * r;
-            }
-    }
+    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = UpperClass::getLeafsWithTranslations();
@@ -506,21 +453,7 @@ class MultiStackContainer: public StackContainer<dim> {
         return result;
     }*/
 
-    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
-        GeometryElement::Subtree result = UpperClass::findPathsTo(el, path);
-        if (!result.empty()) {
-            const std::size_t size = result.children.size();   //oryginal size
-            const double stackHeight = stackHeights.back() - stackHeights.front();
-            for (unsigned r = 1; r < repeat_count; ++r)
-                for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
-                    auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].element)));
-                    shared_ptr<Translation<dim>> new_child = org_child.copyShallow();
-                    new_child->translation.up += stackHeight;
-                    result.children.push_back(GeometryElement::Subtree(new_child, result.children[org_child_nr].children));
-                }
-        }
-        return result;
-    }
+    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const;
 
     virtual bool inside(const DVec& p) const {
         DVec p_reduced = p;
@@ -536,13 +469,7 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual std::size_t getChildrenCount() const { return children.size() * repeat_count; }
 
-    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
-        if (child_nr >= getChildrenCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildrenCount()-1);
-        if (child_nr < children.size()) return children[child_nr];
-        auto result = children[child_nr % children.size()]->copyShallow();
-        result->translation.up += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
-        return result;
-    }
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const;
 
     virtual std::size_t getRealChildrenCount() const {
         return StackContainer<dim>::getChildrenCount();

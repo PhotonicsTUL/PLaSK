@@ -34,26 +34,6 @@ void StackContainerBaseImpl<dim, growingDirection>::removeAtUnsafe(std::size_t i
     updateAllHeights(index);
 }
 
-/*template <typename PredicateT>
-bool remove_if(PredicateT predicate) {
-    std::deque<shared_ptr<TranslationT>> deleted;
-    auto dst = children.begin();
-    for (auto i: children)
-        if (predicate(i)) deleted.push_back(i);
-        else *dst++ = i;
-    children.erase(dst, children.end());
-    updateAllHeights();
-    for (auto i: deleted)
-        disconnectOnChildChanged(*i);
-    if (deleted.size() != 0) {
-        this->fireChildrenChanged();
-        return true;
-    } else
-        return false;
-}
-
-virtual bool removeT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);*/
-
 template <int dim, int growingDirection>
 bool StackContainerBaseImpl<dim, growingDirection>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
     if (GeometryElementContainer<dim>::removeIfTUnsafe(predicate)) {
@@ -160,6 +140,105 @@ PathHints::Hint HorizontalStack::addUnsafe(const shared_ptr<ChildType>& el) {
     this->fireChildrenChanged();
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
+
+
+template <int dim>
+const bool MultiStackContainer<dim>::reduceHeight(double& height) const {
+    const double zeroBasedStackHeight = stackHeights.back() - stackHeights.front();
+    const double zeroBasedRequestHeight = height - stackHeights.front();
+    if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)
+        return false;
+    height = std::fmod(zeroBasedRequestHeight, zeroBasedStackHeight) + stackHeights.front();
+    return true;
+}
+
+template <int dim>
+bool MultiStackContainer<dim>::intersect(const Box& area) const {
+    const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
+    for (unsigned r = 0; r < repeat_count; ++r)
+        if (UpperClass::intersect(area.translatedUp(minusZeroBasedStackHeight*r)))
+            return true;
+    return false;
+}
+
+template <int dim>
+void MultiStackContainer<dim>::getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+    if (predicate(*this)) {
+        dest.push_back(getBoundingBox());
+        return;
+    }
+    std::size_t old_size = dest.size();
+    UpperClass::getBoundingBoxesToVec(predicate, dest, path);
+    std::size_t new_size = dest.size();
+    const double stackHeight = stackHeights.back() - stackHeights.front();
+    for (unsigned r = 1; r < repeat_count; ++r) {
+        for (std::size_t i = old_size; i < new_size; ++i)
+            dest.push_back(dest[i]);
+        for (auto i = dest.end() - (new_size-old_size); i != dest.end(); ++i)
+            i->translateUp(stackHeight * r);
+    }
+}
+
+template <int dim>
+void MultiStackContainer<dim>::getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path) const {
+    if (predicate(*this)) {
+        dest.push_back(this->shared_from_this());
+        return;
+    }
+    std::size_t old_size = dest.size();
+    UpperClass::getElementsToVec(predicate, dest, path);
+    std::size_t new_size = dest.size();
+    for (unsigned r = 1; r < repeat_count; ++r)
+        for (std::size_t i = old_size; i < new_size; ++i)
+            dest.push_back(dest[i]);
+}
+
+template <int dim>
+void MultiStackContainer<dim>::getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
+    if (predicate(*this)) {
+        dest.push_back(Primitive<dim>::ZERO_VEC);
+        return;
+    }
+    std::size_t old_size = dest.size();
+    UpperClass::getPositionsToVec(predicate, dest, path);
+    std::size_t new_size = dest.size();
+    const double stackHeight = stackHeights.back() - stackHeights.front();
+    for (unsigned r = 1; r < repeat_count; ++r)
+        for (std::size_t i = old_size; i < new_size; ++i) {
+            dest.push_back(dest[i]);
+            dest.back().up += stackHeight * r;
+        }
+}
+
+template <int dim>
+GeometryElement::Subtree MultiStackContainer<dim>::findPathsTo(const GeometryElement& el, const PathHints* path) const {
+    GeometryElement::Subtree result = UpperClass::findPathsTo(el, path);
+    if (!result.empty()) {
+        const std::size_t size = result.children.size();   //oryginal size
+        const double stackHeight = stackHeights.back() - stackHeights.front();
+        for (unsigned r = 1; r < repeat_count; ++r)
+            for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
+                auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].element)));
+                shared_ptr<Translation<dim>> new_child = org_child.copyShallow();
+                new_child->translation.up += stackHeight;
+                result.children.push_back(GeometryElement::Subtree(new_child, result.children[org_child_nr].children));
+            }
+    }
+    return result;
+}
+
+template class MultiStackContainer<2>;
+template class MultiStackContainer<3>;
+
+template <int dim>
+shared_ptr<GeometryElement> MultiStackContainer<dim>::getChildAt(std::size_t child_nr) const {
+    if (child_nr >= getChildrenCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildrenCount()-1);
+    if (child_nr < children.size()) return children[child_nr];
+    auto result = children[child_nr % children.size()]->copyShallow();
+    result->translation.up += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
+    return result;
+}
+
 
 #define baseH_attr "from"
 #define repeat_attr "repeat"
