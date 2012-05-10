@@ -46,6 +46,8 @@ struct Box2d {
      */
     Box2d(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
 
+    Box2d(double x_lo, double y_lo, double x_up, double y_up): lower(x_lo, y_lo), upper(x_up, y_up) {}
+
     /**
      * Compare two boxes, @c this and @p r.
      * @param r box to compare

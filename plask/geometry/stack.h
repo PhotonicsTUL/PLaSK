@@ -119,7 +119,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     }
 
     /**
-     * Update stack heights and up translation of all children, with indexes from @a first_child_index.
+     * Update stack heights and translation in stack growing direction of all children, with indexes from @a first_child_index.
      * @param first_child_index index of first child for which stackHeights should be update
      */
     void updateAllHeights(std::size_t first_child_index = 0) {

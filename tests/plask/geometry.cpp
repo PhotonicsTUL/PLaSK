@@ -8,7 +8,10 @@
 struct Leafs2d {
     plask::shared_ptr<plask::Material> dumbMaterial;
     plask::shared_ptr<plask::Block<2>> block_5_3;
-    Leafs2d(): dumbMaterial(new DumbMaterial()), block_5_3(new plask::Block<2>(plask::vec(5.0, 3.0), dumbMaterial)) {}
+    plask::shared_ptr<plask::Block<2>> block_5_4;
+    Leafs2d(): dumbMaterial(new DumbMaterial()),
+        block_5_3(new plask::Block<2>(plask::vec(5.0, 3.0), dumbMaterial)),
+        block_5_4(new plask::Block<2>(plask::vec(5.0, 4.0), dumbMaterial)) {}
 };
 
 void test_multi_stack(plask::shared_ptr<plask::MultiStackContainer<2>> multistack, plask::PathHints& p) {
@@ -76,6 +79,22 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         plask::PathHints p; p += multistack->add(block_5_3, plask::align::Tran(0.0));
         test_multi_stack(multistack, p);
         BOOST_CHECK_EQUAL(multistack->getMaterial(plask::vec(4.0, 39.0)), dumbMaterial);
+    }
+
+    BOOST_FIXTURE_TEST_CASE(stack2d, Leafs2d) {
+        plask::shared_ptr<plask::StackContainer<2>> stack(new plask::StackContainer<2>(0.0));
+        for (int i = 0; i < 3; ++i) {
+            stack->add(block_5_3, plask::align::Tran(0.0));
+            stack->add(block_5_4, plask::align::Tran(0.0));
+        }   //3x(3+4)=21
+        BOOST_CHECK_EQUAL(stack->getRealChildrenCount(), 6);
+        BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2d(0.0, 0.0, 5.0, 21.0));
+        stack->removeAt(5); //remove one 5x4 block
+        BOOST_CHECK_EQUAL(stack->getRealChildrenCount(), 5);
+        BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2d(0.0, 0.0, 5.0, 21.0 - 4.0));
+        stack->remove(block_5_3);   //remove all, 3, 5x3 blocks, on stack stay 2 5x4 blocks
+        BOOST_CHECK_EQUAL(stack->getRealChildrenCount(), 2);
+        BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2d(0.0, 0.0, 5.0, 8.0));
     }
 
     BOOST_AUTO_TEST_CASE(manager_loading) {
