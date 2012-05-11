@@ -172,7 +172,7 @@ public:
      * @return true if anything has been removed
      */
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
-    
+
     /**
      * Remove all children which fulfil predicate.
      * @param predicate returns true only if the child (with translation) passed as an argument should be deleted
@@ -222,18 +222,18 @@ public:
 
     /**
      * Remove child at given @p index.
-     * 
+     *
      * This is unsafe but fast version, it doesn't check index and doesn't call fireChildrenChanged() to inform listeners about this object changes.
      * Caller should do this manually or call removeAt(std::size_t) instead.
-     * @param index index of real child to remove 
+     * @param index index of real child to remove
      */
     virtual void removeAtUnsafe(std::size_t index) {
         children.erase(children.begin() + index);
     }
-    
+
     /**
      * Remove child at given @p index.
-     * 
+     *
      * Throw exception if given @p index is not valid, real child index.
      * @param index index of real child to remove
      */
@@ -242,8 +242,8 @@ public:
         removeAtUnsafe(index);
         fireChildrenChanged();
     }
-    
-    
+
+
 };
 
 /**
@@ -277,7 +277,7 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         shared_ptr<TranslationT> trans_geom(new TranslationT(el, translation));
-        connectOnChildChanged(*trans_geom);
+        this->connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
         this->fireChildrenChanged();
         return PathHints::Hint(shared_from_this(), trans_geom);

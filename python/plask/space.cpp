@@ -22,17 +22,6 @@ template <> struct Space_getMaterial<Space3d> {
 };
 
 template <typename S>
-static std::vector<typename GeometryElementD<S::DIMS>::DVec> Space_getLeafsPositions(const S& self, const PathHints& path) {
-    return self.getLeafsPositions(&path);
-}
-
-template <typename S>
-static std::vector<typename GeometryElementD<S::DIMS>::Box> Space_getLeafsBBoxes(const S& self, const PathHints& path) {
-    return self.getLeafsBoundingBoxes(&path);
-}
-
-
-template <typename S>
 static py::list Space_leafsAsTranslations(const S& self, const PathHints& path=0) {
     py::list result;
     auto leafs = self.getLeafs(&path);
@@ -144,17 +133,17 @@ static void Space_setBorders(CalculationSpace& self, py::dict borders) {
     _Space_setBorders(self, borders, parsed, "unexpected border name '%s'");
 }
 
-inline static py::object _border(const CalculationSpace& self, Primitive<3>::DIRECTION direction, bool higher) {
+inline static py::object _border(const CalculationSpace& self, CalculationSpace::DIRECTION direction, bool higher) {
     auto str = self.getBorder(direction, higher).str();
     return (str=="null") ? py::object() : py::object(str);
 }
 
 static py::dict Space2dCartesian_getBorders(const Space2dCartesian& self) {
     py::dict borders;
-    borders["left"] = _border(self, plask::Primitive<3>::DIRECTION_TRAN, false);
-    borders["right"] = _border(self, plask::Primitive<3>::DIRECTION_TRAN, true);
-    borders["top"] = _border(self, plask::Primitive<3>::DIRECTION_UP, true);
-    borders["bottom"] = _border(self, plask::Primitive<3>::DIRECTION_UP, false);
+    borders["left"] = _border(self, CalculationSpace::DIRECTION_TRAN, false);
+    borders["right"] = _border(self, CalculationSpace::DIRECTION_TRAN, true);
+    borders["top"] = _border(self, CalculationSpace::DIRECTION_UP, true);
+    borders["bottom"] = _border(self, CalculationSpace::DIRECTION_UP, false);
     return borders;
 }
 
@@ -214,8 +203,10 @@ void register_calculation_spaces() {
         .def("getMaterial", &Space2dCartesian::getMaterial, "Return material at given point", (py::arg("point")))
         .def("getMaterial", &Space_getMaterial<Space2dCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
         .def("getLeafs", &Space_getLeafs<Space2dCartesian>, (py::arg("path")=empty_path),  "Return list of all leafs in the subtree originating from this element")
-        .def("getLeafsPositions", &Space_getLeafsPositions<Space2dCartesian>, (py::arg("path")=empty_path), "Calculate positions of all leafs (in local coordinates)")
-        .def("getLeafsBBoxes", &Space_getLeafsBBoxes<Space2dCartesian>, (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs (in local coordinates)")
+        .def("getLeafsPositions", (std::vector<Vec<2>>(Space2dCartesian::*)(const PathHints&)const) &Space2dCartesian::getLeafsPositions,
+             (py::arg("path")=empty_path), "Calculate positions of all leafs")
+        .def("getLeafsBBoxes", (std::vector<Box2d>(Space2dCartesian::*)(const PathHints&)const) &Space2dCartesian::getLeafsBoundingBoxes,
+             (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs")
         .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Space2dCartesian>, (py::arg("path")=empty_path), "Return list of Translation objects holding all leafs")
         .def("getSubspace", py::raw_function(&Space_getSubspace<Space2dCartesian>, 2),
              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")

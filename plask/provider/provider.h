@@ -576,7 +576,7 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
      * @return *this
      */
     ReceiverFor<PropertyTag, SpaceType>& operator=(const typename PropertyTag::ValueType& v) {
-        setValue(v);
+        this->setValue(v);
         return *this;
     }
 

@@ -47,16 +47,6 @@ static py::list GeometryElementD_getLeafsAsTranslations(const GeometryElementD<d
     return result;
 }
 
-template <int dim>
-static std::vector<typename GeometryElementD<dim>::DVec> GeometryElementD_getLeafsPositions(const GeometryElementD<dim>& self, const PathHints& path) {
-    return self.getLeafsPositions(&path);
-}
-
-template <int dim>
-static std::vector<typename GeometryElementD<dim>::Box> GeometryElementD_getLeafsBBoxes(const GeometryElementD<dim>& self, const PathHints& path) {
-    return self.getLeafsBoundingBoxes(&path);
-}
-
 /// Initialize class GeometryElementD for Python
 template <int dim> struct GeometryElementD_vector_args { static const py::detail::keywords<dim> args; };
 template<> const py::detail::keywords<2> GeometryElementD_vector_args<2>::args = (py::arg("c0"), py::arg("c1"));
@@ -77,10 +67,10 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
                       "Minimal rectangle which includes all points of the geometry element (in local coordinates)")
         .add_property("bbox_size", &GeometryElementD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
-        .def("getLeafsPositions", &GeometryElementD_getLeafsPositions<dim>, (py::arg("path")=empty_path),
-             "Calculate positions of all leafs (in local coordinates)")
-        .def("getLeafsBBoxes", &GeometryElementD_getLeafsBBoxes<dim>, (py::arg("path")=empty_path),
-             "Calculate bounding boxes of all leafs (in local coordinates)")
+        .def("getLeafsPositions", (std::vector<typename Primitive<dim>::DVec>(GeometryElementD<dim>::*)(const PathHints&)const) &GeometryElementD<dim>::getLeafsPositions,
+             (py::arg("path")=empty_path), "Calculate positions of all leafs (in local coordinates)")
+        .def("getLeafsBBoxes", (std::vector<typename Primitive<dim>::Box>(GeometryElementD<dim>::*)(const PathHints&)const) &GeometryElementD<dim>::getLeafsBoundingBoxes,
+             (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs (in local coordinates)")
         .def("getLeafsAsTranslations", &GeometryElementD_getLeafsAsTranslations<dim>, (py::arg("path")=empty_path),
              "Return list of Translation objects holding all leafs")
     ;

@@ -19,6 +19,12 @@ struct CalculationSpace {
     /// Default material (which will be used for places in which geometry doesn't define any material), typically air.
     shared_ptr<Material> defaultMaterial;
 
+    enum DIRECTION {
+        DIRECTION_LON = Primitive<3>::DIRECTION_LON,
+        DIRECTION_TRAN = Primitive<3>::DIRECTION_TRAN,
+        DIRECTION_UP = Primitive<3>::DIRECTION_UP
+    };
+
     /**
      * Calculation space constructor, set default material.
      * @param defaultMaterial material which will be used for places in which geometry doesn't define any material, air by default
@@ -27,19 +33,19 @@ struct CalculationSpace {
 
     /**
      * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
-     * @param direction see Primitive<3>::DIRECTION
+     * @param direction see DIRECTION
      * @param border_lo new border strategy for lower border in given @p direction
      * @param border_hi new border strategy for higher border in given @p direction
      */
-    virtual void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) = 0;
+    virtual void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) = 0;
 
     /**
      * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
-     * @param direction see Primitive<3>::DIRECTION
+     * @param direction see DIRECTION
      * @param higher @c true for higher bound, @c false for lower
      * @param border_to_set new border strategy for given borders
      */
-    virtual void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set) {
+    virtual void setBorders(DIRECTION direction, const border::Strategy& border_to_set) {
         setBorders(direction, border_to_set, border_to_set);
     }
 
@@ -57,16 +63,16 @@ struct CalculationSpace {
      */
     void setAllBorders(const border::Strategy& border_to_set) {
         setPlanarBorders(border_to_set);
-        setBorders(Primitive<3>::DIRECTION_UP, border_to_set);
+        setBorders(DIRECTION_UP, border_to_set);
     }
 
     /**
      * Set border or throw exception if this border can't be set for this calculation space or direction.
-     * @param direction see Primitive<3>::DIRECTION
+     * @param direction see DIRECTION
      * @param higher @c true for higher bound, @c false for lower
      * @param border_to_set new border strategy for given border
      */
-    virtual void setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set) = 0;
+    virtual void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) = 0;
 
     //void setBorders(const std::function< std::unique_ptr<border::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
 
@@ -80,18 +86,18 @@ struct CalculationSpace {
 
     /**
      * Get border strategy or throw exception if border can't be get for this calculation space or direction.
-     * @param direction see Primitive<3>::DIRECTION
+     * @param direction see DIRECTION
      * @param higher @c true for higher bound, @c false for lower
      * @return border strategy for given border
      */
-    virtual const border::Strategy& getBorder(Primitive<3>::DIRECTION direction, bool higher) const = 0;
+    virtual const border::Strategy& getBorder(DIRECTION direction, bool higher) const = 0;
 
     /**
-     * Check if structure in given direction is simetric, i.e. one of border in this direction is mirror.
+     * Check if structure in given direction is symmetric, i.e. one of border in this direction is mirror.
      * @param direction direction to check
-     * @return @c true only if structure is simetric in given @p direction
+     * @return @c true only if structure is symmetric in given @p direction
      */
-    bool isSymmetric(Primitive<3>::DIRECTION direction) const {
+    bool isSymmetric(DIRECTION direction) const {
         return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
     }
 
@@ -100,7 +106,7 @@ struct CalculationSpace {
      * @param direction direction to check
      * @return @c true only if structure is periodic in given @p direction
      */
-    bool isPeriodic(Primitive<3>::DIRECTION direction) const {
+    bool isPeriodic(DIRECTION direction) const {
         return getBorder(direction, false).type() == border::Strategy::PERIODIC && getBorder(direction, true).type() == border::Strategy::PERIODIC;
     }
 
@@ -202,11 +208,23 @@ public:
         return getChild()->getLeafs(path);
     }
 
+    std::vector<shared_ptr<const GeometryElement>> getLeafs(const PathHints& path) const {
+        return getChild()->getLeafs(path);
+    }
+
     std::vector<CoordsType> getLeafsPositions(const PathHints* path=nullptr) const {
         return getChild()->getLeafsPositions(path);
     }
 
+    std::vector<CoordsType> getLeafsPositions(const PathHints& path) const {
+        return getChild()->getLeafsPositions(path);
+    }
+
     std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints* path=nullptr) const {
+        return getChild()->getLeafsBoundingBoxes(path);
+    }
+
+    std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints& path) const {
         return getChild()->getLeafsBoundingBoxes(path);
     }
 
@@ -302,11 +320,11 @@ public:
      */
     void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); }
 
-    void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+    void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
-    void setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set);
+    void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
 
-    const border::Strategy& getBorder(Primitive<3>::DIRECTION direction, bool higher) const;
+    const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
 
     /**
      * Get up border strategy.
@@ -361,9 +379,9 @@ class Space2dCylindrical: public CalculationSpaceD<2> {
     border::StrategyHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> outer;
     border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
 
-    static void ensureBoundDirIsProper(Primitive<3>::DIRECTION direction, bool hi) {
+    static void ensureBoundDirIsProper(DIRECTION direction, bool hi) {
         Primitive<3>::ensureIsValid2dDirection(direction);
-        if (direction == Primitive<3>::DIRECTION_TRAN && !hi)
+        if (direction == DIRECTION_TRAN && !hi)
             throw BadInput("setBorders", "Space2dCylindrical: Lower bound is not allowed in the transverse direction.");
     }
 
@@ -423,13 +441,13 @@ public:
         return (Space2dCylindrical*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
     }
 
-    void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+    void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
-    void setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set);
+    void setBorders(DIRECTION direction, const border::Strategy& border_to_set);
 
-    void setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set);
+    void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
 
-    const border::Strategy& getBorder(Primitive<3>::DIRECTION direction, bool higher) const;
+    const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
 
   protected:
 

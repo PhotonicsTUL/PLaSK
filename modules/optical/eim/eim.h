@@ -35,12 +35,20 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
 
   public:
 
+    enum Symmetry {
+        NO_SYMMETRY,
+        SYMMETRY_POSITIVE,
+        SYMMETRY_NEGATIVE
+    };
+
+    Symmetry symmetry;  ///< Structure symmetry
+
     // Parameters for rootdigger
-    double tolx,        ///< absolute tolerance on the argument
-           tolf_min,    ///< sufficient tolerance on the function value
-           tolf_max,    ///< required tolerance on the function value
-           maxstep;     ///< maximum step in one iteration
-    int maxiterations;  ///< maximum number of iterations
+    double tolx,        ///< Absolute tolerance on the argument
+           tolf_min,    ///< Sufficient tolerance on the function value
+           tolf_max,    ///< Required tolerance on the function value
+           maxstep;     ///< Maximum step in one iteration
+    int maxiterations;  ///< Maximum number of iterations
 
     EffectiveIndex2dModule();
 
@@ -58,11 +66,9 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
      */
     virtual void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
         ModuleCartesian2d::setGeometry(new_geometry);
+        symmetry = geometry->isSymmetric(CalculationSpace::DIRECTION_TRAN)? SYMMETRY_POSITIVE : NO_SYMMETRY;
         auto child = new_geometry->getChild();
-
         if (!child) throw NoChildException();
-
-
         setMesh(RectilinearMesh2d(child));
     }
 

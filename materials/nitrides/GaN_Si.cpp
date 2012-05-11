@@ -66,7 +66,7 @@ double GaN_Si::condT(double T, double t) const {
  }
 
 MI_PROPERTY(GaN_Si, absp,
-            MISource("Perlin Unipress 11.2011 no published"),
+            MISource("Perlin Unipress 11.2011 unpublished"),
             MIArgumentRange(MaterialInfo::wl, 410, 410),
             MIComment("more data: 380, 390, 400, 420, 430, 440, 450"),
             MIComment("Nf: 1e18 - 5e19 cm-3"),
@@ -78,7 +78,7 @@ double GaN_Si::absp(double wl, double T) const {
 
 MI_PROPERTY(GaN_Si, nr,
             MISeeClass<GaN>(MaterialInfo::nr),
-            MISource("Perlin Unipress 11.2011 no published"),
+            MISource("Perlin Unipress 11.2011 unpublished"),
             MIComment("Nf: 1e18 - 5e19 cm-3"),
             MIComment("no temperature dependence")
             )

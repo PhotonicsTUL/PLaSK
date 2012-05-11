@@ -166,16 +166,20 @@ class Containers(unittest.TestCase):
         stack.append(self.cube2, "c") # to be removed by index
         h = stack.append(self.cube2, "c") # to be removed by hint
         stack.append(self.cube1, "c")
+        self.assertEqual( len(stack), 4 )
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,8) )
         self.assertEqual( stack.getMaterial(0,0,5), self.aln)
         del stack[1]
+        self.assertEqual( len(stack), 3 )
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,6) )
         self.assertEqual( stack.getMaterial(0,0,5), self.gan)
         self.assertEqual( stack.getMaterial(0,0,3), self.aln)
         del stack[h]
+        self.assertEqual( len(stack), 2 )
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,4) )
         self.assertEqual( stack.getMaterial(0,0,3), self.gan)
         del stack[stack[0]]
+        self.assertEqual( len(stack), 1 )
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,2) )
 
         self.assertEqual( stack.getMaterial(0,0,1), self.gan)

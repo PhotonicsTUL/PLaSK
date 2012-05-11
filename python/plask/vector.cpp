@@ -110,7 +110,7 @@ template <int dim, typename T>  py::object vec__array__(py::object self) {
 // vector_list.__array__
 template <int dim, typename T>  py::object vec_list__array__(py::object self) {
     std::vector<Vec<dim,T>>* list = py::extract<std::vector<Vec<dim,T>>*>(self);
-    npy_intp dims[] = { list->size(), dim };
+    npy_intp dims[] = { (npy_int)list->size(), dim };
     PyObject* arr = PyArray_SimpleNewFromData(2, dims, get_typenum<T>(), (void*)(&(*list)[0].components));
     if (arr == nullptr) throw plask::CriticalException("cannot create array from vector list");
     py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the vector list stays alive as long as the array

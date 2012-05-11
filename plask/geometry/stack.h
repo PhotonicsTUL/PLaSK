@@ -126,7 +126,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         for ( ; first_child_index < children.size(); ++first_child_index)
             updateHeight(first_child_index);
     }
-    
+
     /**
      * Resize stackHeights (to be compatibile with children vector) and refresh its value from given index.
      * @param first_child_index index of first child for which stackHeights should be update
@@ -299,7 +299,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner());
-    
+
     /**
      * Insert children to stack at given position.
      * @param el element to insert
@@ -312,7 +312,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         this->ensureCanHasAsChild(*el);
         return insertUnsafe(el, pos, aligner);
     }
-    
+
     /**
      * Add children to stack top.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
@@ -323,16 +323,16 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
         double el_translation, next_height;
         auto elBB = el->getBoundingBox();
-        calcHeight(elBB, stackHeights.back(), el_translation, next_height);
+        this->calcHeight(elBB, stackHeights.back(), el_translation, next_height);
         shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation, elBB);
-        connectOnChildChanged(*trans_geom);
+        this->connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
         stackHeights.push_back(next_height);
         aligners.push_back(aligner.cloneUnique());
         this->fireChildrenChanged();
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
-    
+
     /**
      * Add children to stack top.
      * @param el element to add
@@ -398,7 +398,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     }*/
 
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
-    
+
     virtual void removeAtUnsafe(std::size_t index);
 
 };

@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(middle2) {
     mesh.c0.addPointsLinear(0., 4.0, 3);
     mesh.c1.addPointsLinear(2., 6.0, 3);
 
-    auto middles = mesh.getElementMesh();
+    auto middles = mesh.getMidpointsMesh();
     BOOST_CHECK_EQUAL(middles.c0, plask::RectilinearMesh1d({1., 3.}));
     BOOST_CHECK_EQUAL(middles.c1, plask::RectilinearMesh1d({3., 5.}));
 }

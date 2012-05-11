@@ -54,7 +54,7 @@ void RectilinearMesh2d::buildFromGeometry(const GeometryElementD<2>& geometry) {
     }
 }
 
-RectilinearMesh2d RectilinearMesh2d::getElementMesh() const {
+RectilinearMesh2d RectilinearMesh2d::getMidpointsMesh() const {
 
     RectilinearMesh1d line0;
     for (auto a = c0.begin(), b = c0.begin()+1; b != c0.end(); ++a, ++b)

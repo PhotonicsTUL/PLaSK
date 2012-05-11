@@ -61,7 +61,7 @@ template <int dim>
 PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner) {
     const auto bb = el->getBoundingBox();
     shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.up, bb);
-    connectOnChildChanged(*trans_geom);
+    this->connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
     aligners.insert(aligners.begin() + pos, aligner.cloneUnique());
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
@@ -91,7 +91,7 @@ bool StackContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_
     auto al_src = aligners.begin();
     for (auto i: children) {
         if (predicate(i))
-            disconnectOnChildChanged(*i);
+            this->disconnectOnChildChanged(*i);
         else {
             *dst++ = i;
             *al_dst++ = std::move(*al_src);

@@ -14,7 +14,7 @@ void CalculationSpace::setBorders(const std::function<boost::optional<std::strin
     for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
         std::string axis_name = axesNames[dir_nr];
         v = borderValuesGetter(axis_name);
-        if (v) setBorders(plask::Primitive<3>::DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
+        if (v) setBorders(DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
         v_lo = borderValuesGetter(axis_name + "-lo");
         if (v = borderValuesGetter(alternativeDirectionName(dir_nr, 0))) {
             if (v_lo) throw BadInput("setBorders", "Border specified by both '%1%-lo' and '%2%'", axis_name, alternativeDirectionName(dir_nr, 0));
@@ -27,10 +27,10 @@ void CalculationSpace::setBorders(const std::function<boost::optional<std::strin
         }
         try {
             if (v_lo && v_hi) {
-                setBorders(plask::Primitive<3>::DIRECTION(dir_nr),  *border::Strategy::fromStrUnique(*v_lo), *border::Strategy::fromStrUnique(*v_hi));
+                setBorders(DIRECTION(dir_nr),  *border::Strategy::fromStrUnique(*v_lo), *border::Strategy::fromStrUnique(*v_hi));
             } else {
-                if (v_lo) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v_lo));
-                if (v_hi) setBorder(plask::Primitive<3>::DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi));
+                if (v_lo) setBorder(DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v_lo));
+                if (v_hi) setBorder(DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi));
             }
         } catch (DimensionError) {
             throw BadInput("setBorders", "Axis '%1%' is not allowed for this space", axis_name);
@@ -41,13 +41,13 @@ void CalculationSpace::setBorders(const std::function<boost::optional<std::strin
 
 template <>
 void CalculationSpaceD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
-    setBorders(Primitive<3>::DIRECTION_TRAN, border_to_set);
+    setBorders(DIRECTION_TRAN, border_to_set);
 }
 
 template <>
 void CalculationSpaceD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
-    setBorders(Primitive<3>::DIRECTION_LON, border_to_set);
-    setBorders(Primitive<3>::DIRECTION_TRAN, border_to_set);
+    setBorders(DIRECTION_LON, border_to_set);
+    setBorders(DIRECTION_TRAN, border_to_set);
 }
 
 Space2dCartesian::Space2dCartesian(const shared_ptr<Extrusion>& extrusion)
@@ -93,25 +93,25 @@ Space2dCartesian* Space2dCartesian::getSubspace(const shared_ptr<GeometryElement
         return new Space2dCartesian(new_child, getExtrusion()->length);
 }
 
-void Space2dCartesian::setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
+void Space2dCartesian::setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
     Primitive<3>::ensureIsValid2dDirection(direction);
-    if (direction == Primitive<3>::DIRECTION_TRAN)
+    if (direction == DIRECTION_TRAN)
         leftright.setStrategies(border_lo, border_hi);
     else
         bottomup.setStrategies(border_lo, border_hi);
 }
 
-void Space2dCartesian::setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
+void Space2dCartesian::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2dDirection(direction);
-    if (direction == Primitive<3>::DIRECTION_TRAN)
+    if (direction == DIRECTION_TRAN)
         leftright.set(higher, border_to_set);
     else
         bottomup.set(higher, border_to_set);
 }
 
-const border::Strategy& Space2dCartesian::getBorder(Primitive<3>::DIRECTION direction, bool higher) const {
+const border::Strategy& Space2dCartesian::getBorder(DIRECTION direction, bool higher) const {
     Primitive<3>::ensureIsValid2dDirection(direction);
-    return (direction == Primitive<3>::DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
+    return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
 }
 
 Space2dCylindrical::Space2dCylindrical(const shared_ptr<Revolution>& revolution)
@@ -157,31 +157,31 @@ Space2dCylindrical* Space2dCylindrical::getSubspace(const shared_ptr< GeometryEl
         return new Space2dCylindrical(new_child);
 }
 
-void Space2dCylindrical::setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_to_set) {
+void Space2dCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2dDirection(direction);
-    if (direction == Primitive<3>::DIRECTION_TRAN)
+    if (direction == DIRECTION_TRAN)
         outer = castBorder<border::UniversalStrategy>(border_to_set);
     else
         bottomup.setBoth(border_to_set);
 }
 
-void Space2dCylindrical::setBorders(Primitive<3>::DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
+void Space2dCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
     ensureBoundDirIsProper(direction, false);
     ensureBoundDirIsProper(direction, true);
     bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
 }
 
-void Space2dCylindrical::setBorder(Primitive<3>::DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
+void Space2dCylindrical::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
     ensureBoundDirIsProper(direction, higher);
-    if (direction == Primitive<3>::DIRECTION_TRAN) {
+    if (direction == DIRECTION_TRAN) {
         outer = castBorder<border::UniversalStrategy>(border_to_set);
     } else
         bottomup.set(higher, border_to_set);
 }
 
-const border::Strategy& Space2dCylindrical::getBorder(Primitive<3>::DIRECTION direction, bool higher) const {
+const border::Strategy& Space2dCylindrical::getBorder(DIRECTION direction, bool higher) const {
     ensureBoundDirIsProper(direction, higher);
-    return (direction == Primitive<3>::DIRECTION_TRAN) ? outer.getStrategy() : bottomup.get(higher);
+    return (direction == DIRECTION_TRAN) ? outer.getStrategy() : bottomup.get(higher);
 }
 
 }   // namespace plask

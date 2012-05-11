@@ -352,6 +352,22 @@ struct NoSuchAxisNames: public Exception {
 };
 
 
+//-------------- Connected with meshes: -----------------------
+/**
+ * This exception is thrown when value specified by the user is bad
+ */
+struct BadMesh: public Exception {
+
+    /// @param where name of class/function/operation doing the computations
+    /// @param msg error message
+    template <typename... Params>
+    BadMesh(const std::string& where, const std::string& msg, Params... params)
+        : Exception("%1%: Bad mesh: %2%", where, format(msg, params...)) {};
+};
+
+
+
+
 } // namespace plask
 
 #endif  //PLASK__EXCEPTIONS_H

@@ -260,7 +260,7 @@ class RectilinearMesh2d: public Mesh<2> {
      * Return a mesh that enables iterating over middle points of the rectangles
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
-    RectilinearMesh2d getElementMesh() const;
+    RectilinearMesh2d getMidpointsMesh() const;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.

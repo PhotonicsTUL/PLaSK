@@ -75,7 +75,7 @@ void RectilinearMesh3d::buildFromGeometry(const GeometryElementD<3>& geometry) {
 }
 
 
-RectilinearMesh3d RectilinearMesh3d::getElementMesh() const {
+RectilinearMesh3d RectilinearMesh3d::getMidpointsMesh() const {
 
     RectilinearMesh1d line0;
     for (auto a = c0.begin(), b = c0.begin()+1; b != c0.end(); ++a, ++b)
