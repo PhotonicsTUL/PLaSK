@@ -112,6 +112,9 @@ struct NoProvider: public Exception {
     NoProvider(): Exception("No provider.") {}
 };
 
+struct NoValue: public Exception {
+    NoValue(): Exception("No value.") {}
+};
 
 
 /*

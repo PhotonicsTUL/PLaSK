@@ -61,7 +61,7 @@ typedef plask::ReceiverFor<MyProperty> MyPropertyReceiver;
 
 // ...
 // Usage example:
-MyPropertyProvider::WithValue provider;
+MyPropertyProvider::WithValue provider; //or MyPropertyProvider::WithOptionalValue provider;
 MyPropertyReceiver receiver;
 reciver <<= provider;     //connect
 @endcode
@@ -105,7 +105,7 @@ assert(sr(3.0) == 6.0);
 #include <vector>
 #include <functional>   // std::function
 #include <type_traits>  // std::is_same
-
+#include <boost/optional.hpp>
 
 #include "../exceptions.h"
 #include "../mesh/mesh.h"
@@ -118,7 +118,7 @@ namespace plask {
  *
  * It implements listener (observer) pattern (can be observed by Receiver).
  *
- * Subclasses should only have implemented operator()(...) which return provided value.
+ * Subclasses should only have implemented operator()(...) which return provided value, or throw NoValue exception.
  * Receiver (for given provider type) can be easy implemented by inherit Receiver class template.
  *
  * @see @ref providers
@@ -289,6 +289,7 @@ struct Receiver: public Provider::Listener {
      * Get value from provider using its operator().
      * @return value from provider
      * @throw NoProvider when provider is not available
+     * @throw NoValue when provider can't give value (is unitialized, etc.)
      */
     //TODO const version? only const version?
     template<typename ...Args> auto
@@ -296,6 +297,21 @@ struct Receiver: public Provider::Listener {
         beforeGetValue();
         return (*provider)(std::forward<Args>(params)...);
     }
+
+    /**
+     * Get value from provider using its operator().
+     * If value can't be get (there is no provider or provider can't give value) empty optional is returned.
+     * @return value from provider or empty optional if value couldn't be got
+     */
+    template<typename ...Args> auto
+    optional(Args&&... params) -> boost::optional<decltype((*provider)(std::forward<Args>(params)...))> {
+        try {
+            return boost::optional<decltype((*provider)(std::forward<Args>(params)...))>(this->operator()(std::forward<Args>(params)...));
+        } catch (std::exception&) {
+            return boost::optional<decltype((*provider)(std::forward<Args>(params)...))>();
+        }
+    }
+
 
     /**
      * Set provider for this to provider of constant.
@@ -352,7 +368,7 @@ struct SingleValueProvider: public Provider {
 template <typename ValueT, typename SpaceType>
 struct OnMeshProvider: public Provider {
 
-    ///Type of value provided by this (returned by operator()).
+    /// Type of value provided by this (returned by operator()).
     typedef shared_ptr< const std::vector<ValueT> > ProvidedValueType;
 
     /**
@@ -540,7 +556,8 @@ struct ProviderImpl {};
  * Specializations of this class define implementations of providers for given property tag:
  * - ProviderFor<PropertyTag, SpaceType> is abstract, base class which inherited from Provider;
  * - ProviderFor<PropertyTag, SpaceType>::Delegate is class inharited from ProviderFor<PropertyTag, SpaceType> which delegate all request to functor given as constructor parameter;
- * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field).
+ * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field);
+ * - ProviderFor<PropertyTag, SpaceType>::WithOptionalValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field) and initialization flag (can throw NoValue if is not initialized).
  * @tparam PropertyTag property tag class (describe physical property)
  * @tparam SpaceType type of space, required (and allowed) only for fields properties
  * @see plask::Temperature (includes example); @ref providers
@@ -642,11 +659,69 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     };
 
     /**
+     * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
+     */
+    struct WithOptionalValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
+
+        /// Type of provided value.
+        typedef ValueT ProvidedValueType;
+
+        /// Provided value.
+        boost::optional<ProvidedValueType> value;
+
+        /// Reset value to be uninitialized.
+        void reset() { value.reset(); }
+
+        /**
+         * Check if this has value / is initialized.
+         * @return @c true only if this is initialized (has value)
+         */
+        bool hasValue() const { return value; }
+
+        /// Delegate all constructors to value.
+        template<typename ...Args>
+        WithOptionalValue(Args&&... params): value(ProvidedValueType(std::forward<Args>(params)...)) {}
+
+        /// Create empty boost::optional value.
+        WithOptionalValue() {}
+
+        /**
+         * Set new value.
+         * @param v new value
+         * @return *this
+         */
+        WithOptionalValue& operator=(const ValueT& v) {
+            value.reset(v);
+            return *this;
+        }
+
+        /**
+         * Get provided value.
+         * @return provided value
+         * @throw NoValue if value is empty boost::optional
+         */
+        ProvidedValueType& operator()() {
+            if (!hasValue()) throw NoValue();
+            return *value;
+        }
+
+        /**
+         * Get provided value.
+         * @return provided value
+         * @throw NoValue if value is empty boost::optional
+         */
+        virtual ProvidedValueType operator()() const {
+            if (!hasValue()) throw NoValue();
+            return *value;
+        }
+    };
+
+    /**
      * Implementation of one value provider class which delegates all operator() calls to external functor.
      */
     typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>, ProvidedValueType() > Delegate;
 
-    ///Used by receivers as const value provider, see Receiver::setConst
+    /// Used by receivers as const value provider, see Receiver::setConst
     typedef WithValue ConstProviderT;
 
 };
@@ -661,7 +736,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
     static_assert(!std::is_same<SpaceType, void>::value,
                   "Providers for fields properties require SpaceType. Use ProviderFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
 
-    ///Type of provided value.
+    /// Type of provided value.
     typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
 
     /**
@@ -713,14 +788,23 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
     template <typename MeshType>
     struct WithValue: public ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType> {
 
-        ///Type of provided value.
+        /// Type of provided value.
         typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
 
-        ///Provided value. Values in points describe by this->mesh.
+        /// Provided value. Values in points describe by this->mesh.
         ProvidedValueType values;
 
-        ///Mesh which describe in which points are this->values.
+        /// Mesh which describe in which points are this->values.
         MeshType mesh;
+
+        /// Reset values to uninitilized state.
+        void reset() { values = 0; }
+
+        /**
+         * Check if this has value / is initialized.
+         * @return @c true only if this is initialized (has value)
+         */
+        bool hasValue() const { return values; }
 
         /// Delegate all constructors to mesh.
         template<typename ...Args>
@@ -745,9 +829,12 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
          * @return values in points describe by mesh @a dst_mesh
          */
         virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method) const {
+            if (!values) throw NoValue();
             return interpolate(mesh, values, dst_mesh, method);
         }
     };
+
+    //typedef WithValue WithOptionalValue;
 
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.

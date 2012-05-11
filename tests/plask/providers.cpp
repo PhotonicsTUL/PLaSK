@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(single_value) {
     BOOST_CHECK(receiver.changed);
     BOOST_CHECK_EQUAL(receiver.getProvider(), &provider);
 
-    provider() = 1.0;
+    provider = 1.0;
     BOOST_CHECK_EQUAL(provider(), 1.0);
     BOOST_CHECK(receiver.changed);
     BOOST_CHECK_EQUAL(receiver(), 1.0);
@@ -31,6 +31,15 @@ BOOST_AUTO_TEST_CASE(single_value) {
 
     receiver = 2.0;
     BOOST_CHECK_EQUAL(receiver(), 2.0);
+
+    plask::ProviderFor<OneDouble>::WithOptionalValue providerOpt;
+    BOOST_CHECK(!providerOpt.hasValue());
+    receiver.setProvider(providerOpt);
+    BOOST_CHECK_THROW(receiver(), plask::NoValue);
+    providerOpt = 3.0;
+    BOOST_CHECK_EQUAL(receiver(), 3.0);
+    providerOpt.reset();
+    BOOST_CHECK_THROW(receiver(), plask::NoValue);
 }
 
 BOOST_AUTO_TEST_CASE(delegate_to_member) {
