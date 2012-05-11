@@ -33,8 +33,6 @@ protected:
     /// Cache for miniature
     QPixmap miniature;
 
-    //here can cache miniature
-
     /**
      * True only if this item was initialized. Its children are on childItems list, etc.
      */
@@ -51,12 +49,28 @@ protected:
     void ensureInitialized();
 
     /**
-     * Construct and add to childItems children items for an given element.
-     * @param elem element for which children should be constructed, typically (but not always) same as element
+     * Append to childItems children items for an given element.
+     * @param elem element for which children should be constructed, typically (but not always) same as wrapped element,
+     *  sometimes same as child of wrapped element
+     * @param reverse append children in reverse order
      */
-    virtual void constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem);
+    void appendChildrenItemsHelper(const plask::shared_ptr<plask::GeometryElement>& elem, bool reverse = false);
+
+    /**
+     * Append to childItems children items for wrapped element.
+     */
+    virtual void appendChildrenItems();
+
+    /**
+     * Clear children items list and call appendChildrenItems()
+     */
+    void constructChildrenItems();
 
 public:
+
+    virtual plask::shared_ptr<plask::GeometryElement> getLowerWrappedElement() {
+        return element.lock();
+    }
 
     /**
      * Index of this in parents item childItems. 0 for root.
@@ -98,6 +112,7 @@ public:
     /**
      * Construct root item (with parentItem = nullptr).
      * @param rootElements children of roots element (showing in tree as roots)
+     * @param model model to notify about changes
      */
     GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model);
 
@@ -174,6 +189,15 @@ public:
  */
 struct InContainerTreeItem: public GeometryTreeItem {
 
+    virtual plask::shared_ptr<plask::GeometryElement> getLowerWrappedElement() {
+        if (auto elem = element.lock()) {
+            std::size_t chCount = elem->getRealChildrenCount();
+            if (chCount == 0) return plask::shared_ptr<plask::GeometryElement>();
+            return elem->getRealChildAt(0);
+        } else
+            plask::shared_ptr<plask::GeometryElement>();
+    }
+
     /**
      * @param parentItem parent item, must wrap plask::Translation<2> or plask::Translation<3>
      * @param index (future) index of this in parent childItems
@@ -181,7 +205,10 @@ struct InContainerTreeItem: public GeometryTreeItem {
     InContainerTreeItem(GeometryTreeItem* parentItem, std::size_t index)
         : GeometryTreeItem(parentItem, index) {}
 
-    virtual void constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem);
+    InContainerTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element, std::size_t index)
+        : GeometryTreeItem(parentItem, element, index) {}
+
+    //virtual void appendChildrenItems();
 
     virtual QString elementText(plask::GeometryElement& element) const;
 
@@ -198,7 +225,7 @@ class GeometryTreeModel : public QAbstractItemModel {
 
     Q_OBJECT
 
-    ///Root of tree, not wraps real geometry element but its children do that.
+    /// Root of tree, not wraps real geometry element but its children do that.
     GeometryTreeItem *rootItem;
 
 public:

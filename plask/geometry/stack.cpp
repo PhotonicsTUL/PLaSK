@@ -147,10 +147,10 @@ PathHints::Hint HorizontalStack::insertUnsafe(const shared_ptr<ChildType>& el, c
     connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
-    const double delta = bb.upper.up - bb.lower.up;
+    const double delta = bb.upper.tran - bb.lower.tran;
     for (std::size_t i = pos + 1; i < children.size(); ++i) {
         stackHeights[i] += delta;
-        children[i]->translation.up += delta;
+        children[i]->translation.tran += delta;
     }
     stackHeights.back() += delta;
     this->fireChildrenChanged();
@@ -258,6 +258,7 @@ shared_ptr<GeometryElement> MultiStackContainer<dim>::getChildAt(std::size_t chi
 
 #define baseH_attr "from"
 #define repeat_attr "repeat"
+#define require_equal_heights_attr "check_heights"
 
 shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
@@ -313,5 +314,23 @@ shared_ptr<GeometryElement> read_StackContainer3d(GeometryReader& reader) {
 
 static GeometryReader::RegisterElementReader stack2d_reader("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_StackContainer2d);
 static GeometryReader::RegisterElementReader stack3d_reader("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_StackContainer3d);
+
+shared_ptr<GeometryElement> read_HorizontalStack(GeometryReader& reader) {
+    shared_ptr< HorizontalStack > result(new HorizontalStack(reader.source.getAttribute(baseH_attr, 0.0)));
+    bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, false);
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
+    read_children<StackContainer<2>>(reader,
+            [&]() {
+                return result->push_front(reader.readExactlyOneChild< typename HorizontalStack::ChildType >());
+            },
+            [&](const shared_ptr<typename HorizontalStack::ChildType>& child) {
+                result->push_front(child);
+            }
+    );
+    if (requireEqHeights) result->ensureAllChildrenHaveSameHeights();
+    return result;
+}
+
+static GeometryReader::RegisterElementReader horizontalstack_reader("horizontal", read_HorizontalStack);
 
 }   // namespace plask

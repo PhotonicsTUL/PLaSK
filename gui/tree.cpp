@@ -6,30 +6,41 @@
 
 void GeometryTreeItem::ensureInitialized() {
     if (childrenInitialized && miniatureInitialized) return;
+    if (!childrenInitialized) constructChildrenItems();
     if (auto e = element.lock()) {
-        if (!childrenInitialized) constructChildrenItems(e);
         miniature = ext(*e).getMiniature(50, 50);
     }
     childrenInitialized = true;
     miniatureInitialized = true;
 }
 
-void GeometryTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
-    qDeleteAll(childItems);
-    childItems.clear();
+void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::GeometryElement>& elem, bool reverse) {
+    //TODO reverse support
     std::size_t chCount = elem->getRealChildrenCount();
     if (elem->isContainer()) {
         for (int i = 0; i < chCount; ++i)
-            childItems.append(new InContainerTreeItem(this, i));
+            childItems.append(new InContainerTreeItem(this, elem->getRealChildAt(i), i));
     } else {
-        for (int i = 0; i < chCount; ++i)
-            childItems.append(new GeometryTreeItem(this, i));
+        for (int i = 0; i < chCount; ++i)   //should be 0 or 1 child here
+            childItems.append(new GeometryTreeItem(this, elem->getRealChildAt(i), i));
     }
+}
+
+void GeometryTreeItem::appendChildrenItems() {
+    if (auto e = getLowerWrappedElement()) {
+        appendChildrenItemsHelper(e);
+    }
+}
+
+void GeometryTreeItem::constructChildrenItems() {
+    qDeleteAll(childItems);
+    childItems.clear();
+    appendChildrenItems();
 }
 
 plask::shared_ptr<plask::GeometryElement> GeometryTreeItem::parent() {
     return parentItem ?
-        parentItem->element.lock() :
+        parentItem->getLowerWrappedElement() :
         plask::shared_ptr<plask::GeometryElement>();
 }
 
@@ -50,7 +61,7 @@ GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::sh
 }
 
 GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model)
-: model(model), childrenInitialized(false), miniatureInitialized(false), parentItem(0), inParentIndex(0) {
+: model(model), childrenInitialized(true), miniatureInitialized(true), parentItem(0), inParentIndex(0) {
     for (int i = 0; i < rootElements.size(); ++i)
         childItems.append(new GeometryTreeItem(this, rootElements[i], i));
 }
@@ -111,11 +122,13 @@ void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<plask::Geomet
 
 // ---------- InContainerTreeItem -----------
 
-void InContainerTreeItem::constructChildrenItems(const plask::shared_ptr<plask::GeometryElement>& elem) {
-    std::size_t chCount = elem->getRealChildrenCount();
-    if (chCount == 0) return;
-    GeometryTreeItem::constructChildrenItems(elem->getRealChildAt(0));
-}
+/*void InContainerTreeItem::appendChildrenItems() {
+    if (auto elem = element.lock()) {
+        std::size_t chCount = elem->getRealChildrenCount();
+        if (chCount == 0) return;
+        appendChildrenItemsHelper(elem->getRealChildAt(0));
+    }
+}*/
 
 QString InContainerTreeItem::elementText(plask::GeometryElement &element) const {
     if (element.getRealChildrenCount() == 0) return ext(element).toStr();

@@ -143,6 +143,8 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
  */
 struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
+    HorizontalStack(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
+
     /**
      * Check if all children have the same heights.
      * @return @c true only if all children have the same heights
