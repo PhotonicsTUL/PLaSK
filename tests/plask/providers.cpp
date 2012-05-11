@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(providers) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(single_value) {
     struct OneDouble: public plask::SingleValueProperty<double> {};
-    plask::ProviderFor<OneDouble>::WithValue provider;
+    plask::ProviderFor<OneDouble>::WithValueNoOptional provider;
     plask::ReceiverFor<OneDouble> receiver;
 
     BOOST_CHECK_THROW(receiver(), plask::NoProvider);
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(single_value) {
     receiver = 2.0;
     BOOST_CHECK_EQUAL(receiver(), 2.0);
 
-    plask::ProviderFor<OneDouble>::WithOptionalValue providerOpt;
+    plask::ProviderFor<OneDouble>::WithValue providerOpt;
     BOOST_CHECK(!providerOpt.hasValue());
     receiver.setProvider(providerOpt);
     BOOST_CHECK_THROW(receiver(), plask::NoValue);

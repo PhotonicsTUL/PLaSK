@@ -556,8 +556,8 @@ struct ProviderImpl {};
  * Specializations of this class define implementations of providers for given property tag:
  * - ProviderFor<PropertyTag, SpaceType> is abstract, base class which inherited from Provider;
  * - ProviderFor<PropertyTag, SpaceType>::Delegate is class inharited from ProviderFor<PropertyTag, SpaceType> which delegate all request to functor given as constructor parameter;
- * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field);
- * - ProviderFor<PropertyTag, SpaceType>::WithOptionalValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field) and initialization flag (can throw NoValue if is not initialized).
+ * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field) and know if it was initialized;
+ * - ProviderFor<PropertyTag, SpaceType>::WithValueNoOptional is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field) and doesn't know if it was initialized (should always have resonable value).
  * @tparam PropertyTag property tag class (describe physical property)
  * @tparam SpaceType type of space, required (and allowed) only for fields properties
  * @see plask::Temperature (includes example); @ref providers
@@ -623,7 +623,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
      */
-    struct WithValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
+    struct WithValueNoOptional: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
 
         ///Type of provided value.
         typedef ValueT ProvidedValueType;
@@ -633,14 +633,14 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
 
         /// Delegate all constructors to value.
         template<typename ...Args>
-        WithValue(Args&&... params): value(std::forward<Args>(params)...) {}
+        WithValueNoOptional(Args&&... params): value(std::forward<Args>(params)...) {}
 
         /**
          * Set new value.
          * @param v new value
          * @return *this
          */
-        WithValue& operator=(const ValueT& v) {
+        WithValueNoOptional& operator=(const ValueT& v) {
             value = v;
             return *this;
         }
@@ -661,7 +661,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
      */
-    struct WithOptionalValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
+    struct WithValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
 
         /// Type of provided value.
         typedef ValueT ProvidedValueType;
@@ -680,17 +680,17 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
 
         /// Delegate all constructors to value.
         template<typename ...Args>
-        WithOptionalValue(Args&&... params): value(ProvidedValueType(std::forward<Args>(params)...)) {}
+        WithValue(Args&&... params): value(ProvidedValueType(std::forward<Args>(params)...)) {}
 
         /// Create empty boost::optional value.
-        WithOptionalValue() {}
+        WithValue() {}
 
         /**
          * Set new value.
          * @param v new value
          * @return *this
          */
-        WithOptionalValue& operator=(const ValueT& v) {
+        WithValue& operator=(const ValueT& v) {
             value.reset(v);
             return *this;
         }
@@ -833,8 +833,6 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
             return interpolate(mesh, values, dst_mesh, method);
         }
     };
-
-    //typedef WithValue WithOptionalValue;
 
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
