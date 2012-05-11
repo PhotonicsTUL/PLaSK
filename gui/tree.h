@@ -117,7 +117,7 @@ public:
     GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model);
 
     /// Delete children items and disconnect onChanged.
-    ~GeometryTreeItem();
+    virtual ~GeometryTreeItem();
 
     /**
      * Get child item with given @p index.
