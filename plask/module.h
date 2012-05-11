@@ -147,17 +147,23 @@ struct Module {
     template<typename ...Args>
     void log(LogLevel level, std::string msg, Args&&... params) { plask::log(level, getId() + ": " + msg, std::forward<Args>(params)...); }
 
+    /**
+     * This method should be and is called if something important was changed: calculation space, mesh, etc.
+     */
+    virtual void invalidate() {}
+
 };
 
 /**
  * Base class for all modules operating on two-dimensional Cartesian space
  */
-class ModuleCartesian2d: public Module {
+template <typename SpaceType>
+class ModuleOver: public Module {
 
   protected:
 
     /// Space in which the calculations are performed
-    shared_ptr<Space2dCartesian> geometry;
+    shared_ptr<SpaceType> geometry;
 
   public:
 
@@ -166,13 +172,13 @@ class ModuleCartesian2d: public Module {
      *
      * @param new_geometry new geometry space
      */
-    virtual void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
+    virtual void setGeometry(const shared_ptr<SpaceType>& new_geometry) {
         log(LOG_INFO, "Attaching geometry");
         geometry = new_geometry;
     }
 
     // Get current module geometry space
-    inline shared_ptr<Space2dCartesian> getGeometry() const { return geometry; }
+    inline shared_ptr<SpaceType> getGeometry() const { return geometry; }
 };
 
 }       //namespace plask

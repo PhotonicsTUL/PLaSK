@@ -12,7 +12,7 @@ namespace plask { namespace modules { namespace eim {
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
  */
-class EffectiveIndex2dModule: public ModuleCartesian2d {
+class EffectiveIndex2dModule: public ModuleOver<Space2dCartesian> {
 
     friend class RootDigger;
 
@@ -65,7 +65,7 @@ class EffectiveIndex2dModule: public ModuleCartesian2d {
      * @param new_geometry new geometry space
      */
     virtual void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
-        ModuleCartesian2d::setGeometry(new_geometry);
+        ModuleOver<Space2dCartesian>::setGeometry(new_geometry);
         symmetry = geometry->isSymmetric(CalculationSpace::DIRECTION_TRAN)? SYMMETRY_POSITIVE : NO_SYMMETRY;
         auto child = new_geometry->getChild();
         if (!child) throw NoChildException();
