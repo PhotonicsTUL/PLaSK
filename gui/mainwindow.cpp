@@ -144,6 +144,12 @@ void MainWindow::treeSelectionChanged(const QItemSelection & selected, const QIt
         document.selectElement((GeometryTreeItem*) selected.indexes().first().internalPointer());
 }
 
+void MainWindow::treeRemoveSelected() {
+    QModelIndexList s = treeView->selectionModel()->selectedRows();
+    if (s.empty()) return;
+    document.treeModel.removeRow(s[0].row(), s[0].parent());
+}
+
 void MainWindow::createActions()
 {
     newDocumentAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
@@ -183,6 +189,10 @@ void MainWindow::createActions()
     aboutQtAct = new QAction(tr("About &Qt"), this);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
     connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+
+    treeRemoveAct = new QAction(tr("&Remove"), this);
+    treeRemoveAct->setToolTip(tr("Remove selected element from geometry tree"));
+    connect(treeRemoveAct, SIGNAL(triggered()), this, SLOT(treeRemoveSelected()));
 }
 
 void MainWindow::createMenus()
@@ -229,6 +239,8 @@ void MainWindow::createDockWindows() {
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     treeView = new QTreeView(dock);
     treeView->setAlternatingRowColors(true);    //2 colors for even/odd
+    treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
+    treeView->addAction(treeRemoveAct);
     treeView->setModel(&document.treeModel);
     //treeView->selectionModel()->
     QObject::connect(treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),

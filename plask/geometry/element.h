@@ -451,6 +451,10 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         fireChildrenChanged();
     }
 
+    void removeRangeUnsafe(std::size_t index_begin, std::size_t index_end) {
+        while (index_begin < index_end) removeAtUnsafe(--index_end);
+    }
+
     /**
      * Remove all children in given range [index_begin, index_end).
      * @param index_begin, index_end range of real children's indexes
@@ -458,8 +462,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     bool removeRange(std::size_t index_begin, std::size_t index_end) {
         if (index_begin >= index_end) return false;
-        ensureIsValidChildNr(index_end, "removeRange", "index_end");
-        while (index_begin < index_end) removeAtUnsafe(--index_end);
+        ensureIsValidChildNr(index_end-1, "removeRange", "index_end-1");
+        removeRangeUnsafe(index_begin, index_end);
         fireChildrenChanged();
         return true;
     }

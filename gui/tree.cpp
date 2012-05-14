@@ -120,11 +120,14 @@ void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<plask::Geomet
     if (el) el->changed.disconnect(boost::bind(&GeometryTreeItem::onChanged, this, _1));
 }
 
-bool GeometryTreeItem::remove(std::size_t begin_index, std::size_t end_index) {
+bool GeometryTreeItem::removeRange(std::size_t begin_index, std::size_t end_index) {
     if (auto e = getLowerWrappedElement()) {
-        return e->removeRange(begin_index, end_index);
-    } else
-        return false;
+        if (e->removeRange(begin_index, end_index)) {
+            childrenInitialized = false;
+            return true;
+        }
+    }
+    return false;
 }
 
 // ---------- InContainerTreeItem -----------

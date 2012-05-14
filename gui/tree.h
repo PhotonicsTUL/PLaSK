@@ -182,7 +182,7 @@ public:
     void disconnectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el);
 
     //TODO new subclass for root item and reimplementation of this which remove from manager
-    virtual bool remove(std::size_t begin_index, std::size_t end_index);
+    virtual bool removeRange(std::size_t begin_index, std::size_t end_index);
 
     /**
      * Remove given number of @p rows starting from given @p position.
@@ -190,7 +190,7 @@ public:
      * @param rows number of children to remove
      * @return @c true if remove something
      */
-    bool remove(int position, int rows) { return remove(position, position + rows); }
+    bool remove(int position, int rows) { return removeRange(position, position + rows); }
 
 };
 

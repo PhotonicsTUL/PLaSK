@@ -73,6 +73,7 @@ private slots:
     void undo();
     void about();
     void treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
+    void treeRemoveSelected();
 
 private:
 
@@ -104,6 +105,8 @@ private:
     QAction *aboutAct;
     QAction *aboutQtAct;
     QAction *quitAct;
+
+    QAction *treeRemoveAct;
 };
 
 #endif  // PLASK_GUI_MAINWINDOW_H

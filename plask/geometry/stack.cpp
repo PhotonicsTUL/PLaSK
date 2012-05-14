@@ -29,7 +29,7 @@ StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) 
 
 template <int dim, int growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::removeAtUnsafe(std::size_t index) {
-    children.erase(children.begin() + index);
+    GeometryElementContainer<dim>::removeAtUnsafe(index);
     stackHeights.pop_back();
     updateAllHeights(index);
 }
@@ -109,7 +109,7 @@ bool StackContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_
 
 template <int dim>
 void StackContainer<dim>::removeAtUnsafe(std::size_t index) {
-    children.erase(children.begin() + index);
+    GeometryElementContainer<dim>::removeAtUnsafe(index);
     aligners.erase(aligners.begin() + index);
     stackHeights.pop_back();
     this->updateAllHeights(index);

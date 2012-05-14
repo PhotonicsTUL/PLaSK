@@ -47,6 +47,11 @@ public:
 
     // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
 
+    /// Disconnect onChildChanged from current child change signal
+    ~GeometryElementContainer() {
+        for (auto& c: children) disconnectOnChildChanged(*c);
+    }
+
     /// Called by child.change signal, call this change
     virtual void onChildChanged(const GeometryElement::Event& evt) {
         this->fireChanged(evt.flagsForParent());
@@ -218,6 +223,7 @@ public:
      * @param index index of real child to remove
      */
     virtual void removeAtUnsafe(std::size_t index) {
+        disconnectOnChildChanged(*children[index]);
         children.erase(children.begin() + index);
     }
 
