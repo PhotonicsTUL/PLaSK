@@ -102,7 +102,45 @@ namespace plask {
  *
  * @see @ref modules
  */
-struct Module {
+class Module {
+protected:
+
+    /// true only if module is initialized
+    bool initialized;
+
+    /**
+     * Initialize module.
+     * Defualt implementation just do nothing but it is good idea to overwrite it in subclasses and put initialization code in it.
+     */
+    virtual void init() {}
+
+    /**
+     * This should be called on beggining of each calculation method to ensure that module will be initialized.
+     * It's do nothing if module is already initialized and call init() if it's not.
+     */
+    void beforeCalculation() {
+        if (initialized) return;
+        init();
+        initialized = true;
+    }
+
+public:
+
+    Module(): initialized(false) {}
+
+    /**
+     * Check if module is already initialized.
+     * @return @c true only if module is already initialized
+     */
+    bool isInitialized() { return initialized; }
+
+    /**
+     * This method should be and is called if something important was changed: calculation space, mesh, etc.
+     *
+     * Default implementation set initialization flag to @c false.
+     * @see beforeCalculation()
+     */
+    virtual void invalidate() { initialized = false; }
 
     /**
      * Do nothing.
@@ -124,6 +162,7 @@ struct Module {
     virtual std::string getId() const;
 
     /**
+     * Get a description of this module.
      * @return description of this module (empty string by default)
      */
     virtual std::string getDescription() const { return ""; }
@@ -147,11 +186,6 @@ struct Module {
     template<typename ...Args>
     void log(LogLevel level, std::string msg, Args&&... params) { plask::log(level, getId() + ": " + msg, std::forward<Args>(params)...); }
 
-    /**
-     * This method should be and is called if something important was changed: calculation space, mesh, etc.
-     */
-    virtual void invalidate() {}
-
 };
 
 /**
@@ -169,15 +203,18 @@ class ModuleOver: public Module {
 
     /**
      * Set new geometry for the module
-     *
      * @param new_geometry new geometry space
      */
     virtual void setGeometry(const shared_ptr<SpaceType>& new_geometry) {
         log(LOG_INFO, "Attaching geometry");
         geometry = new_geometry;
+        //TODO attach listener which call invalidate on geometry changes
     }
 
-    // Get current module geometry space
+    /**
+     * Get current module geometry space.
+     * @return current module geometry space
+     */
     inline shared_ptr<SpaceType> getGeometry() const { return geometry; }
 };
 
