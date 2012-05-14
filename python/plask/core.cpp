@@ -41,6 +41,9 @@ BOOST_PYTHON_MODULE(plaskcore)
     // Vectors
     register_vector();
 
+    // Materials
+    initMaterials();
+
     // Geometry
     initGeometry();
 
@@ -49,9 +52,6 @@ BOOST_PYTHON_MODULE(plaskcore)
 
     // Meshes
     register_mesh();
-
-    // Materials
-    initMaterials();
 
     // Modules
     py::class_<plask::Module, plask::shared_ptr<plask::Module>, boost::noncopyable>("Module", "Base class for all modules", py::no_init)

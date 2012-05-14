@@ -17,29 +17,42 @@ void RectilinearMesh1d_addPoints(RectilinearMesh1d& self, py::object points) {
     self.addOrderedPoints(data.begin(), data.end(), data.size());
 }
 
-shared_ptr<RectilinearMesh1d> RectilinearMesh1d__init__(py::object points) {
-    shared_ptr<RectilinearMesh1d> mesh(new RectilinearMesh1d);
-    if (points != py::object()) RectilinearMesh1d_addPoints(*mesh, points);
-    return mesh;
-}
-
-double RectilinearMesh1d__getitem__(const RectilinearMesh1d& self, int index) {
-    if (index < 0) index = self.size() - index;
-    if (index < 0 || index >= self.size()) {
-        throw IndexError("mesh index (%1%) out of range (0<=index<%2%)", index, self.size());
+/**
+ * Converter for Python string to material using default database.
+ * Allows to create geometry elements as \c rectange(2,1,"GaAs")
+ */
+struct Rectilinear1D_from_Sequence
+{
+    Rectilinear1D_from_Sequence() {
+        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RectilinearMesh1d>());
     }
-    return self[index];
-}
 
-std::string RectilinearMesh1d__str__(const RectilinearMesh1d& self) {
-    std::stringstream s;
-    s << self;
-    return s.str();
-}
 
-std::string RectilinearMesh1d__repr__(const RectilinearMesh1d& self) {
-    return "plask.meshes.Rectilinear1D(" + RectilinearMesh1d__str__(self) + ")";
-}
+    static void* convertible(PyObject* obj_ptr) {
+        if (!PySequence_Check(obj_ptr)) return NULL;
+        return obj_ptr;
+    }
+
+    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
+    {
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<RectilinearMesh1d>>*)data)->storage.bytes;
+        RectilinearMesh1d* mesh = new(storage) RectilinearMesh1d;
+
+        PyObject* fast_ptr = PySequence_Fast(obj_ptr, "Critical Error");
+        py::ssize_t len = PySequence_Fast_GET_SIZE(fast_ptr);
+        for (py::ssize_t i = 0; i < len; ++i) {
+            PyObject* item_ptr = PySequence_Fast_GET_ITEM(fast_ptr, i);
+            try {
+                mesh->addPoint(py::extract<double>(item_ptr));
+            } catch (py::error_already_set) {
+                Py_XDECREF(fast_ptr); throw;
+            }
+        }
+        Py_XDECREF(fast_ptr);
+
+        data->convertible = storage;
+    }
+};
 
 
 
@@ -179,31 +192,12 @@ void RectilinearMesh3d__setOrdering(RectilinearMesh3d& self, std::string order) 
 
 void register_mesh_rectilinear()
 {
-    py::class_<RectilinearMesh1d, shared_ptr<RectilinearMesh1d>>("Rectilinear1D",
-        "One-dimensional mesh\n\n"
-        "Rectilinear1D()\n    create empty mesh\n\n"
-        "Rectilinear1D(points)\n    create mesh filled with sequence of points\n\n",
-        py::no_init)
-        .def("__init__", py::make_constructor(&RectilinearMesh1d__init__, py::default_call_policies(), (py::arg("points")=py::object())))
-        .def("index", &RectilinearMesh1d::findIndex, "Find index of the point with specified value", (py::arg("value")))
-        .def(py::self == py::other<RectilinearMesh1d>())
-        .def("addPoint", &RectilinearMesh1d::addPoint, "Add point to the mesh", (py::arg("value")))
-        .def("addPoints", &RectilinearMesh1d_addPoints, "Add sequence of the points to the mesh", (py::arg("points")))
-        .def("addPointLinear", &RectilinearMesh1d::addPointsLinear, "Add equally distributed points",
-             (py::arg("first"), py::arg("last"), py::arg("count")))
-        .def("clear", &RectilinearMesh1d::clear, "Remove all points from the mesh")
-        .def("__len__", &RectilinearMesh1d::size)
-        .def("__getitem__", &RectilinearMesh1d__getitem__)
-        .def("__str__", &RectilinearMesh1d__str__)
-        .def("__repr__", &RectilinearMesh1d__repr__)
-        .def("__iter__", py::range(&RectilinearMesh1d::begin, &RectilinearMesh1d::end))
-    ;
-
+    Rectilinear1D_from_Sequence();
 
     py::class_<RectilinearMesh2d, shared_ptr<RectilinearMesh2d>, py::bases<Mesh<2>>>("Rectilinear2D",
         "Two-dimensional mesh\n\n"
         "Rectilinear2D(ordering='01')\n    create empty mesh\n\n"
-        "Rectilinear2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as meshes.Rectilinear1D\n\n"
+        "Rectilinear2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
         "Rectilinear2D(geometry, ordering='01')\n    create coarse mesh based on bounding boxes of geometry elements\n\n"
         "ordering can be either '01', '10' and specifies initial ordering of the mesh points",
         py::no_init
@@ -229,7 +223,7 @@ void register_mesh_rectilinear()
     py::class_<RectilinearMesh3d, shared_ptr<RectilinearMesh3d>, py::bases<Mesh<3>>>("Rectilinear3D",
         "Two-dimensional mesh\n\n"
         "Rectilinear3D()\n    create empty mesh\n\n"
-        "Rectilinear3D(axis0,axis1,axis2)\n    create mesh with axes supplied as meshes.Rectilinear1D\n\n"
+        "Rectilinear3D(axis0,axis1,axis2)\n    create mesh with axes supplied as mesh.Rectilinear1D\n\n"
         "Rectilinear3D(geometry)\n    create coarse mesh based on bounding boxes of geometry elements\n\n",
         py::no_init
         )

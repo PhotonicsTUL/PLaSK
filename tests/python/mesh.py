@@ -6,15 +6,15 @@ from numpy import *
 
 import plasktest as ptest
 
-import plask.meshes
+import plask.mesh
 
 
 
 class Meshes(unittest.TestCase):
 
     def setUp(self):
-        self.mesh2 = plask.meshes.Rectilinear2D(plask.meshes.Rectilinear1D([1,2,3]), plask.meshes.Rectilinear1D([10,20]))
-        self.mesh3 = plask.meshes.Rectilinear3D(plask.meshes.Rectilinear1D([1,2,3]), plask.meshes.Rectilinear1D([10,20]), plask.meshes.Rectilinear1D([100,200]))
+        self.mesh2 = plask.mesh.Rectilinear2D([1,2,3], array([10,20], float))
+        self.mesh3 = plask.mesh.Rectilinear3D([1,2,3], [10,20], [100,200])
 
 
     def testOrdering2D(self):

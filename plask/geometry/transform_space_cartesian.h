@@ -33,7 +33,7 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Calculati
 
     virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
-    virtual std::vector< shared_ptr<const GeometryElement> > getLeafs() const;
+    virtual std::vector< plask::shared_ptr< const plask::GeometryElement > > getLeafs() const;
 
     virtual shared_ptr<GeometryElementTransform<3, ChildType>> shallowCopy() const;
 

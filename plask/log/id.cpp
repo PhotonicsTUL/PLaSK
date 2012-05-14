@@ -1,6 +1,7 @@
 #include "id.h"
 
 #include <thread>
+#include <mutex>
 #include <boost/lexical_cast.hpp>
 
 namespace plask {

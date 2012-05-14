@@ -1,7 +1,7 @@
 import sys, unittest
 
 if __name__ == '__main__':
-    exec(compile(open(sys.argv[1]).read(), "somefile.py", 'exec'), globals(), locals())
+    exec(compile(open(sys.argv[1]).read(), sys.argv[1], 'exec'), globals(), locals())
     tests = []
     for m in dict(globals()).values():
         try:

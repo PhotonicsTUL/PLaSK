@@ -12,8 +12,8 @@ void register_mesh_rectilinear();
 
 void register_mesh()
 {
-    py::object mesh_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.meshes"))) };
-    py::scope().attr("meshes") = mesh_module;
+    py::object mesh_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.mesh"))) };
+    py::scope().attr("mesh") = mesh_module;
     py::scope scope = mesh_module;
 
     py::enum_<InterpolationMethod> pyInterpolationMethod("interpolation", "Available interpolation methods.");

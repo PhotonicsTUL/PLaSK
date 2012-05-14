@@ -3,13 +3,23 @@
 
 #include <cmath>
 
+// ----------------------------------------------------------------------------------------------------------------------
+// Shared pointer
+#include <plask/memory.h>
+
+#ifdef PLASK_SHARED_PTR_STD
+namespace boost { namespace python {
+    template<class T> inline T* get_pointer(std::shared_ptr<T> const& p) { return p.get(); }
+}}
+#endif
+
+// ----------------------------------------------------------------------------------------------------------------------
+// Important includes
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include <plask/config.h>
 #include <plask/exceptions.h>
 #include <plask/math.h>
-#include <plask/memory.h>
 #include <plask/axes.h>
 
 namespace plask { namespace python {

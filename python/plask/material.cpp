@@ -440,8 +440,8 @@ std::string Material__str__(const Material& self) {
     return self.str();
 }
 
-std::string Material__repr__(shared_ptr<Material> self) {
-    return format("plask.materials.Material('%1%')", Material__str__(*self));
+std::string Material__repr__(const Material& self) {
+    return format("plask.materials.Material('%1%')", Material__str__(self));
 }
 
 // Exception translators

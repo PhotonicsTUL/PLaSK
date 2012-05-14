@@ -31,7 +31,7 @@ void Extrusion::getBoundingBoxesToVec(const GeometryElement::Predicate& predicat
                    [&](const ChildBox& r) { return parentBox(r); });
 }
 
-std::vector< boost::shared_ptr< const plask::GeometryElement > > Extrusion::getLeafs() const {
+std::vector< plask::shared_ptr< const plask::GeometryElement > > Extrusion::getLeafs() const {
     return getChild()->getLeafs();
 }
 

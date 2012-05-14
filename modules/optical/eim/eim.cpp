@@ -12,7 +12,7 @@ EffectiveIndex2dModule::EffectiveIndex2dModule() :
     maxstep(0.1),                                           // maximum step in one iteration
     maxiterations(500),                                     // maximum number of iterations
     log_value(dataLog<dcomplex, double>("neff", "char_val")),
-    outNeff(NAN), outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+    outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
     inTemperature = 300.;
     setSimpleMesh();
 }
