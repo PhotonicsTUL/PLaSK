@@ -5,13 +5,14 @@
 #include "modelext/text.h"
 
 void GeometryTreeItem::ensureInitialized() {
-    if (childrenInitialized && miniatureInitialized) return;
-    if (!childrenInitialized) constructChildrenItems();
-    if (auto e = element.lock()) {
-        miniature = ext(*e).getMiniature(50, 50);
+    if (!childrenInitialized) {
+        constructChildrenItems();
+        childrenInitialized = true;
     }
-    childrenInitialized = true;
-    miniatureInitialized = true;
+    if (!miniatureInitialized) if (auto e = element.lock()) {
+        miniature = ext(*e).getMiniature(50, 50);
+        miniatureInitialized = true;
+    }
 }
 
 void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::GeometryElement>& elem, bool reverse) {
@@ -108,8 +109,8 @@ void GeometryTreeItem::onChanged(const plask::GeometryElement::Event& evt) {
     auto index = getIndex();
     miniatureInitialized = false;
     //TODO if container is change, its children list could changed... is code below is enaught? what with ...rows() model methods?
-    if (!evt.isDelgatedFromChild()) childrenInitialized = false;
-    emit model->dataChanged(index, index);
+    if (evt.hasChangedChildrenList()) childrenInitialized = false;
+    emit model->dataChanged(index, index);  //TODO czy ten sygnał jest wystarczający jeśli lista dzieci się zmieniła?
 }
 
 void GeometryTreeItem::connectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el) {
