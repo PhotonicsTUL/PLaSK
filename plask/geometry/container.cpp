@@ -109,7 +109,7 @@ bool GeometryElementContainer<dim>::removeIfTUnsafe(const std::function<bool(con
 template <int dim>
 bool GeometryElementContainer<dim>::removeIfT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
     if (removeIfTUnsafe(predicate)) {
-        fireChildrenChanged();
+        this->fireChildrenChanged();
         return true;
     } else
         return false;

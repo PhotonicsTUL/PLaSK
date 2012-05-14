@@ -108,7 +108,6 @@ QModelIndex GeometryTreeItem::getIndex() {
 void GeometryTreeItem::onChanged(const plask::GeometryElement::Event& evt) {
     auto index = getIndex();
     miniatureInitialized = false;
-    //TODO if container is change, its children list could changed... is code below is enaught? what with ...rows() model methods?
     if (evt.hasChangedChildrenList()) childrenInitialized = false;
     emit model->dataChanged(index, index);  //TODO czy ten sygnał jest wystarczający jeśli lista dzieci się zmieniła?
 }
@@ -119,6 +118,13 @@ void GeometryTreeItem::connectOnChanged(const plask::shared_ptr<plask::GeometryE
 
 void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el) {
     if (el) el->changed.disconnect(boost::bind(&GeometryTreeItem::onChanged, this, _1));
+}
+
+bool GeometryTreeItem::remove(std::size_t begin_index, std::size_t end_index) {
+    if (auto e = getLowerWrappedElement()) {
+        return e->removeRange(begin_index, end_index);
+    } else
+        return false;
 }
 
 // ---------- InContainerTreeItem -----------
@@ -201,19 +207,11 @@ QModelIndex GeometryTreeModel::parent(const QModelIndex &index) const {
 int GeometryTreeModel::rowCount(const QModelIndex &parent) const {
     if (parent.column() > 0)    //TODO
         return 0;
-
-    GeometryTreeItem *parentItem = parent.isValid() ?
-                static_cast<GeometryTreeItem*>(parent.internalPointer()) :
-                rootItem;
-
-    return parentItem->childCount();
+    return toItem(parent)->childCount();
 }
 
 int GeometryTreeModel::columnCount(const QModelIndex &parent) const {
-    if (parent.isValid())
-        return static_cast<GeometryTreeItem*>(parent.internalPointer())->columnCount();
-    else
-        return rootItem->columnCount();
+    return toItem(parent)->columnCount();
 }
 
 QVariant GeometryTreeModel::data(const QModelIndex &index, int role) const {
@@ -236,7 +234,7 @@ Qt::ItemFlags GeometryTreeModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return 0;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable; //| Qt::ItemIsEditable;
 }
 
 QVariant GeometryTreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
@@ -247,3 +245,9 @@ QVariant GeometryTreeModel::headerData(int section, Qt::Orientation orientation,
     return "Description";
 }
 
+bool GeometryTreeModel::removeRows(int position, int rows, const QModelIndex &parent) {
+    beginRemoveRows(parent, position, position + rows - 1);
+    bool result = toItem(parent)->remove(position, rows);
+    endRemoveRows();
+    return result;
+}

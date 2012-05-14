@@ -138,6 +138,10 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
         return new_child == _child ? result : shallowCopy(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)));
     }
 
+    virtual void removeAtUnsafe(std::size_t) {
+        _child.reset();
+    }
+
     protected:
     shared_ptr<ChildType> _child;
 

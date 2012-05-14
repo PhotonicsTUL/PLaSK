@@ -181,6 +181,17 @@ public:
      */
     void disconnectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el);
 
+    //TODO new subclass for root item and reimplementation of this which remove from manager
+    virtual bool remove(std::size_t begin_index, std::size_t end_index);
+
+    /**
+     * Remove given number of @p rows starting from given @p position.
+     * @param position index of first child to remove
+     * @param rows number of children to remove
+     * @return @c true if remove something
+     */
+    bool remove(int position, int rows) { return remove(position, position + rows); }
+
 };
 
 /**
@@ -221,7 +232,7 @@ class Document;
 /**
  * Implementation of QAbstractItemModel which holds and use GeometryTreeItem.
  */
-class GeometryTreeModel : public QAbstractItemModel {
+class GeometryTreeModel: public QAbstractItemModel {
 
     Q_OBJECT
 
@@ -247,6 +258,16 @@ public:
     /// Delete rootItem.
     ~GeometryTreeModel();
 
+    /**
+     * Get item from index.
+     * @return item from index if index.isValid(), rootItem in another case
+     */
+    GeometryTreeItem* toItem(const QModelIndex &index) const {
+        return index.isValid() ?
+               static_cast<GeometryTreeItem*>(index.internalPointer()) :
+               rootItem;
+    }
+
     // ---------- implementation of QAbstractItemModel methods: --------
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -263,6 +284,7 @@ public:
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
+    bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex());
 };
 
 #endif // PLASK_GUI_TREE_H

@@ -81,7 +81,7 @@ void StackContainer<dim>::setAlignerAt(std::size_t child_nr, const Aligner& alig
     if (aligners[child_nr].get() == &aligner) return; //protected against self assigment
     aligners[child_nr] = aligner.cloneUnique();
     aligners[child_nr]->align(*children[child_nr]);
-    this->fireChanged(GeometryElement::Event::RESIZE);
+    children[child_nr]->fireChanged();
 }
 
 template <int dim>

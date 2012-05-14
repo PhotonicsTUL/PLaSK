@@ -43,16 +43,6 @@ struct GeometryElementContainer: public GeometryElementD<dim> {
 protected:
     TranslationVector children;
 
-    void ensureIsValidChildNr(std::size_t child_nr, const char* method_name = "getChildAt", const char* arg_name = "child_nr") const {
-        if (child_nr >= children.size())
-            throw OutOfBoundException(method_name, arg_name, child_nr, 0, children.size()-1);
-    }
-
-    /// Inform observers that children list was changed (also that this is resized)
-    void fireChildrenChanged() {
-        this->fireChanged(GeometryElement::Event::RESIZE | GeometryElement::Event::CHILD_LIST);
-    }
-
 public:
 
     // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
@@ -151,7 +141,7 @@ public:
     virtual std::size_t getChildrenCount() const { return children.size(); }
 
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
-        ensureIsValidChildNr(child_nr);
+        this->ensureIsValidChildNr(child_nr);
         return children[child_nr];
     }
 
@@ -230,19 +220,6 @@ public:
     virtual void removeAtUnsafe(std::size_t index) {
         children.erase(children.begin() + index);
     }
-
-    /**
-     * Remove child at given @p index.
-     *
-     * Throw exception if given @p index is not valid, real child index.
-     * @param index index of real child to remove
-     */
-    void removeAt(std::size_t index) {
-        ensureIsValidChildNr(index, "removeAt", "index");
-        removeAtUnsafe(index);
-        fireChildrenChanged();
-    }
-
 
 };
 

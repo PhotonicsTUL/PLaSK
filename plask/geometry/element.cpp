@@ -75,6 +75,10 @@ shared_ptr<GeometryElement> GeometryElement::getRealChildAt(std::size_t child_nr
     return getChildAt(child_nr);
 }
 
+void GeometryElement::removeAtUnsafe(std::size_t index) {
+    throw NotImplemented("removeAtUnsafe(std::size_t index)");
+}
+
 // --- GeometryElementD ---
 
 template <int dimensions>
