@@ -12,7 +12,7 @@ namespace plask { namespace python {
 template<typename KeyType>
 struct set_to_python_list_conventer {
 
-    static PyObject* convert(std::set<KeyType> set)  {
+    static PyObject* convert(const std::set<KeyType>& set)  {
         boost::python::list list;
         for (auto item: set) {
             list.append(boost::python::object(item));

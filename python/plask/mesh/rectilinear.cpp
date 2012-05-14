@@ -1,6 +1,7 @@
 #include "../globals.h"
 #include <algorithm>
 #include <boost/python/stl_iterator.hpp>
+#include <numpy/arrayobject.h>
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/interpolation.h>
@@ -10,23 +11,12 @@
 
 namespace plask { namespace python {
 
-void RectilinearMesh1d_addPoints(RectilinearMesh1d& self, py::object points) {
-    py::stl_input_iterator<double> begin(points), end;
-    std::vector<double> data(begin, end);
-    std::sort(data.begin(), data.end());
-    self.addOrderedPoints(data.begin(), data.end(), data.size());
-}
-
-/**
- * Converter for Python string to material using default database.
- * Allows to create geometry elements as \c rectange(2,1,"GaAs")
- */
-struct Rectilinear1D_from_Sequence
+struct Rectilinear1D_fromto_Sequence
 {
-    Rectilinear1D_from_Sequence() {
+    Rectilinear1D_fromto_Sequence() {
+        boost::python::to_python_converter<RectilinearMesh1d, Rectilinear1D_fromto_Sequence>();
         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RectilinearMesh1d>());
     }
-
 
     static void* convertible(PyObject* obj_ptr) {
         if (!PySequence_Check(obj_ptr)) return NULL;
@@ -38,21 +28,62 @@ struct Rectilinear1D_from_Sequence
         void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<RectilinearMesh1d>>*)data)->storage.bytes;
         RectilinearMesh1d* mesh = new(storage) RectilinearMesh1d;
 
-        PyObject* fast_ptr = PySequence_Fast(obj_ptr, "Critical Error");
-        py::ssize_t len = PySequence_Fast_GET_SIZE(fast_ptr);
-        for (py::ssize_t i = 0; i < len; ++i) {
-            PyObject* item_ptr = PySequence_Fast_GET_ITEM(fast_ptr, i);
-            try {
-                mesh->addPoint(py::extract<double>(item_ptr));
-            } catch (py::error_already_set) {
-                Py_XDECREF(fast_ptr); throw;
-            }
-        }
-        Py_XDECREF(fast_ptr);
+        py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj_ptr)))), end;
+        std::vector<double> points(begin, end);
+        std::sort(points.begin(), points.end());
+        mesh->addOrderedPoints(points.begin(), points.end(), points.size());
 
         data->convertible = storage;
     }
+
+    static PyObject* convert(const RectilinearMesh1d& mesh) {
+        py::list obj;
+        for (auto i: mesh) {
+            obj.append(double(i));
+        }
+        return py::incref(obj.ptr());
+    }
 };
+
+
+template <typename T>
+py::object RectilinearMesh__axis(py::object self, T* mesh, RectilinearMesh1d& axis) {
+    npy_intp dims[] = { axis.size() };
+    PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*axis.begin()));
+    if (arr == nullptr) throw plask::CriticalException("cannot create array from mesh");
+    py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the mesh stays alive as long as the array
+    return py::object(py::handle<>(arr));
+}
+
+py::object RectilinearMesh2d_axis0(py::object self) {
+    RectilinearMesh2d* mesh = py::extract<RectilinearMesh2d*>(self);
+    return RectilinearMesh__axis(self, mesh, mesh->c0);
+}
+py::object RectilinearMesh2d_axis1(py::object self) {
+    RectilinearMesh2d* mesh = py::extract<RectilinearMesh2d*>(self);
+    return RectilinearMesh__axis(self, mesh, mesh->c1);
+}
+
+py::object RectilinearMesh3d_axis0(py::object self) {
+    RectilinearMesh3d* mesh = py::extract<RectilinearMesh3d*>(self);
+    return RectilinearMesh__axis(self, mesh, mesh->c0);
+}
+py::object RectilinearMesh3d_axis1(py::object self) {
+    RectilinearMesh3d* mesh = py::extract<RectilinearMesh3d*>(self);
+    return RectilinearMesh__axis(self, mesh, mesh->c1);
+}
+py::object RectilinearMesh3d_axis2(py::object self) {
+    RectilinearMesh3d* mesh = py::extract<RectilinearMesh3d*>(self);
+    return RectilinearMesh__axis(self, mesh, mesh->c2);
+}
+
+
+static inline bool plask_import_array() {
+    import_array1(false);
+    return true;
+}
+
+
 
 
 
@@ -102,21 +133,6 @@ Vec<2,double> RectilinearMesh2d__getitem__(const RectilinearMesh2d& self, py::ob
     return self(index0, index1);
 }
 
-void RectilinearMesh2d_setaxis0(RectilinearMesh2d& self, py::object points) {
-    py::stl_input_iterator<double> begin(points), end;
-    std::vector<double> data(begin, end);
-    std::sort(data.begin(), data.end());
-    self.c0.addOrderedPoints(data.begin(), data.end(), data.size());
-}
-
-void RectilinearMesh2d_setaxis1(RectilinearMesh2d& self, py::object points) {
-    py::stl_input_iterator<double> begin(points), end;
-    std::vector<double> data(begin, end);
-    std::sort(data.begin(), data.end());
-    self.c1.addOrderedPoints(data.begin(), data.end(), data.size());
-}
-
-
 shared_ptr<RectilinearMesh3d> RectilinearMesh3d__init__empty() {
     return make_shared<RectilinearMesh3d>();
 }
@@ -154,27 +170,6 @@ Vec<3,double> RectilinearMesh3d__getitem__(const RectilinearMesh3d& self, py::ob
     return self(index0, index1, index2);
 }
 
-void RectilinearMesh3d_setaxis0(RectilinearMesh3d& self, py::object points) {
-    py::stl_input_iterator<double> begin(points), end;
-    std::vector<double> data(begin, end);
-    std::sort(data.begin(), data.end());
-    self.c0.addOrderedPoints(data.begin(), data.end(), data.size());
-}
-
-void RectilinearMesh3d_setaxis1(RectilinearMesh3d& self, py::object points) {
-    py::stl_input_iterator<double> begin(points), end;
-    std::vector<double> data(begin, end);
-    std::sort(data.begin(), data.end());
-    self.c1.addOrderedPoints(data.begin(), data.end(), data.size());
-}
-
-void RectilinearMesh3d_setaxis2(RectilinearMesh3d& self, py::object points) {
-    py::stl_input_iterator<double> begin(points), end;
-    std::vector<double> data(begin, end);
-    std::sort(data.begin(), data.end());
-    self.c2.addOrderedPoints(data.begin(), data.end(), data.size());
-}
-
 void RectilinearMesh3d__setOrdering(RectilinearMesh3d& self, std::string order) {
     if (order == "012") self.setIterationOrder(RectilinearMesh3d::ORDER_012);
     else if (order == "021") self.setIterationOrder(RectilinearMesh3d::ORDER_021);
@@ -189,10 +184,12 @@ void RectilinearMesh3d__setOrdering(RectilinearMesh3d& self, std::string order) 
 
 
 
-
 void register_mesh_rectilinear()
 {
-    Rectilinear1D_from_Sequence();
+    // Initialize numpy
+    if (!plask_import_array()) throw(py::error_already_set());
+
+    Rectilinear1D_fromto_Sequence();
 
     py::class_<RectilinearMesh2d, shared_ptr<RectilinearMesh2d>, py::bases<Mesh<2>>>("Rectilinear2D",
         "Two-dimensional mesh\n\n"
@@ -205,10 +202,10 @@ void register_mesh_rectilinear()
         .def("__init__", py::make_constructor(&RectilinearMesh2d__init__empty, py::default_call_policies(), (py::arg("ordering")="01")))
         .def("__init__", py::make_constructor(&RectilinearMesh2d__init__axes, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
         .def("__init__", py::make_constructor(&RectilinearMesh2d__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="01")))
-        .add_property("axis0", py::make_getter(&RectilinearMesh2d::c0), &RectilinearMesh2d_setaxis0,
-                      "Rectilinear1D mesh containing first (transverse) axis of the mesh")
-        .add_property("axis1", py::make_getter(&RectilinearMesh2d::c1), &RectilinearMesh2d_setaxis1,
-                      "Rectilinear1D mesh containing second (vertical) axis of the mesh")
+        .add_property("axis0", &RectilinearMesh2d_axis0, py::make_setter(&RectilinearMesh2d::c0),
+                      "List of points along the first (transverse) axis of the mesh")
+        .add_property("axis1", &RectilinearMesh2d_axis1, py::make_setter(&RectilinearMesh2d::c0),
+                      "List of points along the second (vertical) axis of the mesh")
         .def("empty", &RectilinearMesh2d::empty, "Return True if the mesh is empty")
         .def("clear", &RectilinearMesh2d::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectilinearMesh2d__getitem__)
@@ -230,12 +227,12 @@ void register_mesh_rectilinear()
         .def("__init__", py::make_constructor(&RectilinearMesh3d__init__empty))
         .def("__init__", py::make_constructor(&RectilinearMesh3d__init__axes, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("axis2"))))
         .def("__init__", py::make_constructor(&RectilinearMesh3d__init__geometry, py::default_call_policies(), (py::arg("geometry"))))
-        .add_property("axis0", py::make_getter(&RectilinearMesh3d::c0), &RectilinearMesh2d_setaxis0,
-                      "Rectilinear1D mesh containing first (longitudinal) axis of the mesh")
-        .add_property("axis0", py::make_getter(&RectilinearMesh3d::c1), &RectilinearMesh2d_setaxis0,
-                      "Rectilinear1D mesh containing second (transverse) axis of the mesh")
-        .add_property("axis2", py::make_getter(&RectilinearMesh3d::c2), &RectilinearMesh2d_setaxis1,
-                      "Rectilinear1D mesh containing third (vertical) axis of the mesh")
+        .add_property("axis0", &RectilinearMesh3d_axis0, py::make_setter(&RectilinearMesh3d::c0),
+                      "List of points along the first (longitudinal) axis of the mesh")
+        .add_property("axis1", &RectilinearMesh3d_axis1, py::make_setter(&RectilinearMesh3d::c1),
+                      "List of points along the second (transverse) axis of the mesh")
+        .add_property("axis2", &RectilinearMesh3d_axis2, py::make_setter(&RectilinearMesh3d::c2),
+                      "List of points along the third (vertical) axis of the mesh")
         .def("empty", &RectilinearMesh3d::empty, "Return True if the mesh is empty")
         .def("clear", &RectilinearMesh3d::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectilinearMesh3d__getitem__)
