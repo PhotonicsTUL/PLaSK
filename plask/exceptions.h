@@ -357,7 +357,7 @@ struct NoSuchAxisNames: public Exception {
 
 //-------------- Connected with meshes: -----------------------
 /**
- * This exception is thrown when value specified by the user is bad
+ * This exception is thrown when the mesh is somehow bad
  */
 struct BadMesh: public Exception {
 

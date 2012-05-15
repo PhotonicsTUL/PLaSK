@@ -26,22 +26,17 @@ struct Rectilinear1D_fromto_Sequence
     static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
     {
         void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<RectilinearMesh1d>>*)data)->storage.bytes;
-        RectilinearMesh1d* mesh = new(storage) RectilinearMesh1d;
-
         py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj_ptr)))), end;
-        std::vector<double> points(begin, end);
-        std::sort(points.begin(), points.end());
-        mesh->addOrderedPoints(points.begin(), points.end(), points.size());
-
+        new(storage) RectilinearMesh1d(std::vector<double>(begin, end));
         data->convertible = storage;
     }
 
     static PyObject* convert(const RectilinearMesh1d& mesh) {
-        py::list obj;
-        for (auto i: mesh) {
-            obj.append(double(i));
-        }
-        return py::incref(obj.ptr());
+        npy_intp dims[] = { mesh.size() };
+        PyObject* arr = PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+        if (arr == nullptr) throw plask::CriticalException("cannot create array from mesh");
+        std::copy(mesh.begin(), mesh.end(), (double*)PyArray_DATA(arr));
+        return arr;
     }
 };
 
@@ -204,7 +199,7 @@ void register_mesh_rectilinear()
         .def("__init__", py::make_constructor(&RectilinearMesh2d__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="01")))
         .add_property("axis0", &RectilinearMesh2d_axis0, py::make_setter(&RectilinearMesh2d::c0),
                       "List of points along the first (transverse) axis of the mesh")
-        .add_property("axis1", &RectilinearMesh2d_axis1, py::make_setter(&RectilinearMesh2d::c0),
+        .add_property("axis1", &RectilinearMesh2d_axis1, py::make_setter(&RectilinearMesh2d::c1),
                       "List of points along the second (vertical) axis of the mesh")
         .def("empty", &RectilinearMesh2d::empty, "Return True if the mesh is empty")
         .def("clear", &RectilinearMesh2d::clear, "Remove all points from the mesh")

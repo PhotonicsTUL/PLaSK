@@ -202,10 +202,10 @@ struct Receiver: public Provider::Listener {
     /// Pointer to connected provider. Can be nullptr if no provider is connected.
     ProviderT* provider;
 
-    /// Is @c true only if data provides by provider was changed after recent value getting.
+    /// Is @c true only if data provides by provider was changed after previous value retrieval.
     bool changed;
 
-    ///Is @true only if provider is private and will be delete by this receiver.
+    /// Is @true only if provider is private and will be deleted by this receiver.
     bool hasPrivateProvider;
 
     /// Construct Receiver without connected provider and with set changed flag.
@@ -224,8 +224,8 @@ struct Receiver: public Provider::Listener {
     void setProvider(ProviderT* provider, bool newProviderIsPrivate = false) {
         if (this->provider == provider) return;
         if (this->provider) this->provider->listeners.erase(this);
-        if (provider) provider->add(this);
         if (hasPrivateProvider) delete this->provider;
+        if (provider) provider->add(this);
         this->provider = provider;
         this->hasPrivateProvider = newProviderIsPrivate;
         onChange();
@@ -289,7 +289,7 @@ struct Receiver: public Provider::Listener {
      * Get value from provider using its operator().
      * @return value from provider
      * @throw NoProvider when provider is not available
-     * @throw NoValue when provider can't give value (is unitialized, etc.)
+     * @throw NoValue when provider can't give value (is uninitialized, etc.)
      */
     //TODO const version? only const version?
     template<typename ...Args> auto
@@ -300,7 +300,7 @@ struct Receiver: public Provider::Listener {
 
     /**
      * Get value from provider using its operator().
-     * If value can't be get (there is no provider or provider can't give value) empty optional is returned.
+     * If value can't be gotten (there is no provider or provider can't give value) empty optional is returned.
      * @return value from provider or empty optional if value couldn't be got
      */
     template<typename ...Args> auto
@@ -659,7 +659,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     };
 
     /**
-     * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
+     * Implementation of one value provider class which holds value inside (in value field) and operator() return this hold value.
      */
     struct WithValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
 
@@ -769,7 +769,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
 };
 
 /**
- * Specialization which implement provider class which provide values in points describe by mesh and use interpolation.
+ * Specialization which implements provider class which provides values in points described by mesh and use interpolation.
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
 struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>: public OnMeshProviderWithInterpolation<ValueT, SpaceType> {

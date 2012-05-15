@@ -13,9 +13,8 @@ import plask.mesh
 class Meshes(unittest.TestCase):
 
     def setUp(self):
-        self.mesh2 = plask.mesh.Rectilinear2D([1,2,3], array([10,20], float))
+        self.mesh2 = plask.mesh.Rectilinear2D([1,3,2,1], array([10,20], float))
         self.mesh3 = plask.mesh.Rectilinear3D([1,2,3], [10,20], [100,200])
-
 
     def testOrdering2D(self):
         m = self.mesh2

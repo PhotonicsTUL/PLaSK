@@ -3,10 +3,12 @@
  */
 #include <cmath>
 #include <boost/python.hpp>
+namespace py = boost::python;
 
 #include "../eim.h"
-
+using namespace plask;
 using namespace plask::modules::eim;
+
 
 /**
  * Initialization of your module to Python
@@ -16,6 +18,9 @@ using namespace plask::modules::eim;
  */
 BOOST_PYTHON_MODULE(eim)
 {
+    py::class_<EffectiveIndex2dModule, shared_ptr<EffectiveIndex2dModule>, py::bases<Module>, boost::noncopyable>("EffectiveIndex2D",
+        "Calculate optical modes and optical field distribution using the effective index method in Cartesian two-dimensional space."
+    )
     ;
     //boost::python::class_<plask::YourModule, plask::shared_ptr<plask::YourModule>, py::bases<plask::Module>>("YourModule",
     //    "Short module description and constructor documentation.")

@@ -87,7 +87,7 @@ enum InterpolationMethod {
     SPLINE = 2,                 ///< spline interpolation
     COSINE = 3,                 ///< cosine interpolation
     FOURIER = 4,                ///< Fourier transform interpolation
-    //...add new interpolation algoritms here...
+    //...add new interpolation algorithms here...
 #   ifndef DOXYGEN
     __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop and automatic Python enums
 #   endif // DOXYGEN

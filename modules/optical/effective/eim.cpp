@@ -4,7 +4,6 @@ namespace plask { namespace modules { namespace eim {
 
 EffectiveIndex2dModule::EffectiveIndex2dModule() :
     rootdigger(*this),
-    changed(true),
     symmetry(NO_SYMMETRY),
     tolx(1.0e-07),                                          // absolute tolerance on the argument
     tolf_min(1.0e-12),                                      // sufficient tolerance on the function value
@@ -14,7 +13,6 @@ EffectiveIndex2dModule::EffectiveIndex2dModule() :
     log_value(dataLog<dcomplex, double>("neff", "char_val")),
     outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
     inTemperature = 300.;
-    setSimpleMesh();
 }
 
 
@@ -59,64 +57,64 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomp
 
 
 
-void EffectiveIndex2dModule::setMesh(const RectilinearMesh2d& meshxy)
+void EffectiveIndex2dModule::init()
 {
-    const double out_shift_factor = 1e-3;
+    // Set default mesh
+    if (!mesh) setSimpleMesh();
 
-    mesh = make_shared<RectilinearMesh2d>(meshxy.getMidpointsMesh());
-    mesh->c1.addPoint(meshxy.c1[0] - out_shift_factor * (meshxy.c1[1]-meshxy.c1[0]));
-    int last1 = mesh->c1.size()-1;
-    if (last1 < 1) throw BadMesh(getId(), "needs at least two points in vertical direction");
-    mesh->c1.addPoint(meshxy.c1[last1] - out_shift_factor * (meshxy.c1[last1]-meshxy.c1[last1-1]));
+    // Create middle-points mesh
+    middle_points = RectilinearMesh2d(mesh->getMidpointsMesh());
+    middle_points.c0.addPoint(mesh->c0[0] - outer_distance);
+    middle_points.c0.addPoint(mesh->c0[mesh->c0.size()-1] + outer_distance);
+    middle_points.c1.addPoint(mesh->c1[0] - outer_distance);
+    middle_points.c1.addPoint(mesh->c1[mesh->c1.size()-1] + outer_distance);
 
-    if (symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) {
-        if (geometry->isSymmetric(CalculationSpace::DIRECTION_TRAN)) {
-            // Make sure we have only positive points
-            for (auto x: mesh->c0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
-        } else {
-            log(LOG_WARNING, "Symmetry settings will be ignored for non-symmetric geometry.");
-            symmetry = NO_SYMMETRY;
-        }
-    } else {
-        mesh->c0.addPoint(meshxy.c0[0] - out_shift_factor * (meshxy.c0[1]-meshxy.c0[0]));
-    }
-    int last0 = mesh->c0.size()-1;
-    if (last0 < 1) throw BadMesh(getId(), "needs at least two points in horizontal direction");
-    mesh->c0.addPoint(meshxy.c0[last0] - out_shift_factor * (meshxy.c0[last0]-meshxy.c0[last0-1]));
-
-    dTran.clear();
-    dTran.reserve(meshxy.tran().size()-1);
-    for (auto a = meshxy.tran().begin(), b = meshxy.tran().begin()+1; b != meshxy.tran().end(); ++a, ++b)
-        dTran.push_back(*b - *a);
-
-    dUp.clear();
-    dUp.reserve(meshxy.tran().size()-1);
-    for (auto a = meshxy.up().begin(), b = meshxy.up().begin()+1; b != meshxy.up().end(); ++a, ++b)
-        dUp.push_back(*b - *a);
-
-    changed = true;
+    // Assign space for refractive indices cache
+    nrCache.assign(mesh->tran().size()+1, std::vector<dcomplex>(mesh->up().size()+1));
 }
-
 
 
 void EffectiveIndex2dModule::updateCache()
 {
-    // Some additional check
-    if ((symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) && !geometry->isSymmetric(CalculationSpace::DIRECTION_TRAN)) {
-        log(LOG_WARNING, "Symmetry settings will be ignored for non-symmetric geometry.");
-        symmetry = NO_SYMMETRY;
+    bool updated = beforeCalculation();
+
+    size_t xbegin = 0;
+
+    // Some additional checks
+    if (symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) {
+        if (geometry->isSymmetric(CalculationSpace::DIRECTION_TRAN)) {
+            if (updated) // Make sure we have only positive points
+                for (auto x: mesh->c0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
+            xbegin = 1;
+        } else {
+            log(LOG_WARNING, "Symmetry settings will be ignored for non-symmetric geometry.");
+            symmetry = NO_SYMMETRY;
+        }
     }
 
-    if (changed) {
-        // We need to resize cache vectors
-        nrCache.assign(mesh->tran().size()+1, std::vector<dcomplex>(mesh->up().size()+1, 1.));
-    }
+    size_t xsize = middle_points.c0.size();
+    size_t ysize = middle_points.c1.size();
+    size_t txmax = mesh->c0.size() - 1;
+    size_t tymax = mesh->c1.size() - 1;
 
-    if (inTemperature.changed || changed) {
+    if (updated || inTemperature.changed) {
         // Either temperature or structure changed, so we need to get refractive indices
-    }
+        auto temperature_ptr = inTemperature(*mesh);
+        const std::vector<double>& temp = *temperature_ptr;
 
-    changed = false;
+        for (size_t i = xbegin; i != xsize; ++i) {
+            size_t tx0 = (i > 0)? i - 1 : 0;
+            size_t tx1 = (i < txmax)? i : txmax;
+            for (size_t j = 0; j != ysize; ++j) {
+                size_t ty0 = (j > 0)? j - 1 : 0;
+                size_t ty1 = (j < tymax)? j : txmax;
+                double T = 0.25 * ( temp[mesh->index(tx0, ty0)] + temp[mesh->index(tx0, ty1)] +
+                                    temp[mesh->index(tx1, ty0)] + temp[mesh->index(tx1, ty1)] );
+                nrCache[i][j] = geometry->getMaterial(middle_points(i,j))->Nr(real(inWavelength()), T);
+            }
+        }
+
+    }
 }
 
 

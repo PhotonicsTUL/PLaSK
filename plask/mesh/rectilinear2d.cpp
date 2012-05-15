@@ -56,6 +56,8 @@ void RectilinearMesh2d::buildFromGeometry(const GeometryElementD<2>& geometry) {
 
 RectilinearMesh2d RectilinearMesh2d::getMidpointsMesh() const {
 
+    if (c0.size() < 2 || c1.size() < 2) throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
+
     RectilinearMesh1d line0;
     for (auto a = c0.begin(), b = c0.begin()+1; b != c0.end(); ++a, ++b)
         line0.addPoint(0.5 * (*a + *b));

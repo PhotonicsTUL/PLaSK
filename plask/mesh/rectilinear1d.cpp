@@ -2,8 +2,14 @@
 
 namespace plask {
 
-RectilinearMesh1d::RectilinearMesh1d(std::initializer_list< PointType > points) {
-    for (PointType p: points) addPoint(p);
+RectilinearMesh1d::RectilinearMesh1d(std::initializer_list<PointType> points) : points(points) {
+    std::sort(this->points.begin(), this->points.end());
+    this->points.erase(std::unique(this->points.begin(), this->points.end()), this->points.end());
+}
+
+RectilinearMesh1d::RectilinearMesh1d(std::vector<PointType> points) : points(points) {
+    std::sort(this->points.begin(), this->points.end());
+    this->points.erase(std::unique(this->points.begin(), this->points.end()), this->points.end());
 }
 
 bool RectilinearMesh1d::operator==(const plask::RectilinearMesh1d& to_compare) const {

@@ -12,23 +12,17 @@ namespace plask { namespace modules { namespace eim {
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
  */
-class EffectiveIndex2dModule: public ModuleOver<Space2dCartesian> {
+class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, RectilinearMesh2d> {
 
     friend class RootDigger;
 
     RootDigger rootdigger;
 
-    /// The mesh used for cutting the structure into one-dimensional stripes
-    shared_ptr<RectilinearMesh2d> mesh;
-
     /// Logger for char_val
     Data2dLog<dcomplex,double> log_value;
 
-    /// Information if the geometry or mesh has changed since last cache
-    bool changed;
-
-    /// Cached sizes of mesh cells
-    std::vector<double> dTran, dUp;
+    /// Middle-points mesh
+    RectilinearMesh2d middle_points;
 
     /// Cached refractive indices
     std::vector<std::vector<dcomplex>> nrCache;
@@ -42,6 +36,8 @@ class EffectiveIndex2dModule: public ModuleOver<Space2dCartesian> {
     };
 
     Symmetry symmetry;  ///< Structure symmetry
+
+    double outer_distance; ///< Distance outside outer borders where material is sampled
 
     // Parameters for rootdigger
     double tolx,        ///< Absolute tolerance on the argument
@@ -60,68 +56,30 @@ class EffectiveIndex2dModule: public ModuleOver<Space2dCartesian> {
     }
 
     /**
-     * Set new geometry for the module
-     *
-     * @param new_geometry new geometry space
-     */
-    virtual void setGeometry(const shared_ptr<Space2dCartesian>& new_geometry) {
-        ModuleOver<Space2dCartesian>::setGeometry(new_geometry);
-        symmetry = geometry->isSymmetric(CalculationSpace::DIRECTION_TRAN)? SYMMETRY_POSITIVE : NO_SYMMETRY;
-        auto child = new_geometry->getChild();
-        if (!child) throw NoChildException();
-        setMesh(RectilinearMesh2d(child));
-    }
-
-    /**
-     * Set up the mesh. Both horizontal and vertical divisions are provided
-     *
-     * \param meshxy the new mesh
-     **/
-    void setMesh(const RectilinearMesh2d& meshxy);
-
-    /**
-     * Set up the mesh. Both horizontal and vertical divisions are provided
-     *
-     * \param meshxy the new mesh
-     **/
-    void setMesh(const shared_ptr<RectilinearMesh2d>& meshxy) {
-        setMesh(*meshxy);
-    }
-
-    /**
      * Set the simple mesh based on the geometry bounding boxes.
      **/
     void setSimpleMesh() {
         log(LOG_INFO, "Creating simple mesh");
+        if (!geometry) throw NoChildException();
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
-        setMesh(RectilinearMesh2d(child));
+        setMesh(make_shared<RectilinearMesh2d>(child));
     }
 
     /**
-     * Set up the mesh. Horizontal division is provided while vertical one is created basing on the geometry bounding boxes.
+     * Set up the horizontal mesh. Horizontal division is provided while vertical one is created basing on the geometry bounding boxes.
      *
      * \param meshx horizontal mesh
      **/
-    void setMesh(const RectilinearMesh1d& meshx) {
+    void setHorizontalMesh(const RectilinearMesh1d& meshx) {
         log(LOG_INFO, "Setting horizontal mesh");
+        if (!geometry) throw NoChildException();
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
-        RectilinearMesh2d meshxy(child);
-        meshxy.tran() = meshx;
+        shared_ptr<RectilinearMesh2d> meshxy = make_shared<RectilinearMesh2d>(child);
+        meshxy->tran() = meshx;
         setMesh(meshxy);
     }
-
-    /**
-     * Set up the mesh. Horizontal division is provided while vertical one is created basing on the geometry bounding boxes.
-     *
-     * \param meshx horizontal mesh
-     **/
-    void setMesh(const shared_ptr<RectilinearMesh1d>& meshx) {
-        setMesh(*meshx);
-    }
-
-
 
     /**
      * Find the mode around the specified propagation constant.
@@ -171,6 +129,10 @@ class EffectiveIndex2dModule: public ModuleOver<Space2dCartesian> {
     /// Provider of optical field
     ProviderFor<OpticalIntensity, Space2dCartesian>::Delegate outIntensity;
 
+  protected:
+
+    /// Initialize the module
+    virtual void init();
 
   private:
 

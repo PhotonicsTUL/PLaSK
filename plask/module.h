@@ -103,28 +103,32 @@ namespace plask {
  * @see @ref modules
  */
 class Module {
-protected:
+
+  protected:
 
     /// true only if module is initialized
     bool initialized;
 
     /**
-     * Initialize module.
-     * Defualt implementation just do nothing but it is good idea to overwrite it in subclasses and put initialization code in it.
+     * Initialize the module.
+     * Default implementation just does nothing, however it is a good idea to overwrite it in subclasses and put initialization code in it.
      */
     virtual void init() {}
 
     /**
-     * This should be called on beggining of each calculation method to ensure that module will be initialized.
-     * It's do nothing if module is already initialized and call init() if it's not.
+     * This should be called on begining of each calculation method to ensure that module will be initialized.
+     * It's does nothing if module is already initialized and calls init() if it's not.
+     *
+     * \return \c true if the module had to be reinitialized (so one can make local initialization)
      */
-    void beforeCalculation() {
-        if (initialized) return;
+    bool beforeCalculation() {
+        if (initialized) return false;
         init();
         initialized = true;
+        return true;
     }
 
-public:
+  public:
 
     Module(): initialized(false) {}
 
@@ -189,7 +193,7 @@ public:
 };
 
 /**
- * Base class for all modules operating on two-dimensional Cartesian space
+ * Base class for all modules operating on specified space
  */
 template <typename SpaceType>
 class ModuleOver: public Module {
@@ -203,12 +207,13 @@ class ModuleOver: public Module {
 
     /**
      * Set new geometry for the module
-     * @param new_geometry new geometry space
+     * @param geometry new geometry space
      */
-    virtual void setGeometry(const shared_ptr<SpaceType>& new_geometry) {
-        log(LOG_INFO, "Attaching geometry");
-        geometry = new_geometry;
-        //TODO attach listener which call invalidate on geometry changes
+    void setGeometry(const shared_ptr<SpaceType>& geometry) {
+        log(LOG_INFO, "Attaching ginitializedeometry");
+        this->geometry = geometry;
+        initialized = false;
+        //TODO attach listener which calls invalidate on geometry changes
     }
 
     /**
@@ -217,6 +222,38 @@ class ModuleOver: public Module {
      */
     inline shared_ptr<SpaceType> getGeometry() const { return geometry; }
 };
+
+/**
+ * Base class for all modules operating on specified space holding an external mesh
+ */
+template <typename SpaceType, typename MeshType>
+class ModuleWithMesh: public ModuleOver<SpaceType> {
+
+  protected:
+
+    /// Space in which the calculations are performed
+    shared_ptr<MeshType> mesh;
+
+  public:
+
+    /**
+     * Set new mesh for the module
+     * @param new_mesh new geometry space
+     */
+    void setMesh(const shared_ptr<MeshType>& mesh) {
+        log(LOG_INFO, "Attaching mesh");
+        this->mesh = mesh;
+        this->initialized = false;
+        //TODO attach listener which calls invalidate on mesh changes
+    }
+
+    /**
+     * Get current module mesh.
+     * @return current module mesh
+     */
+    inline shared_ptr<SpaceType> getMesh() const { return mesh; }
+};
+
 
 }       //namespace plask
 

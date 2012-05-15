@@ -69,10 +69,17 @@ public:
 
     /**
      * Construct mesh with given points.
-     * It use algorithm which has quadric time complexity.
+     * It use algorithm which has logarithmic time complexity.
      * @param points points, in any order
      */
     RectilinearMesh1d(std::initializer_list<PointType> points);
+
+    /**
+     * Construct mesh with points given in a vector.
+     * It use algorithm which has logarithmic time complexity.
+     * @param points points, in any order
+     */
+    RectilinearMesh1d(std::vector<PointType> points);
 
     /**
      * Compares meshes
