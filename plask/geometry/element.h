@@ -277,7 +277,12 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     GeometryElement(const GeometryElement& to_copy) {}
 
-    GeometryElement(GeometryElement&& to_move) = default;
+    /**
+     * Set this to be the same as @p to_copy but doesn't changed changes observer.
+     * @param to_copy object to copy
+     */
+    GeometryElement& operator=(const GeometryElement& to_copy) { return *this; }
+
     GeometryElement() = default;
 
     //TODO

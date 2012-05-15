@@ -248,6 +248,11 @@ class ModuleOver: public Module {
 template <typename SpaceType, typename MeshType>
 class ModuleWithMesh: public ModuleOver<SpaceType> {
 
+    void diconnectMesh() {
+        if (this->mesh)
+            this->mesh->changedDisconnectMethod(this, &ModuleWithMesh<SpaceType, MeshType>::onMeshChange);
+    }
+
   protected:
 
     /// Space in which the calculations are performed
@@ -256,14 +261,26 @@ class ModuleWithMesh: public ModuleOver<SpaceType> {
   public:
 
     /**
+     * This method is called when mesh was changed.
+     * It's just call invalidate(); but subclasses can customize this.
+     * @param evt information about mesh changes
+     */
+    virtual void onMeshChange(const typename MeshType::Event& evt) {
+        this->invalidate();
+    }
+
+    /**
      * Set new mesh for the module
      * @param new_mesh new geometry space
      */
     void setMesh(const shared_ptr<MeshType>& mesh) {
+        if (mesh == this->mesh) return;
         log(LOG_INFO, "Attaching mesh");
+        diconnectMesh();
         this->mesh = mesh;
+        if (this->mesh)
+            this->mesh->changedConnectMethod(this, &ModuleWithMesh<SpaceType, MeshType>::onMeshChange);
         this->initialized = false;
-        //TODO attach listener which calls invalidate on mesh changes
     }
 
     /**

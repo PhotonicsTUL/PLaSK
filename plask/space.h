@@ -88,7 +88,14 @@ struct CalculationSpace {
      */
     CalculationSpace(const CalculationSpace& to_copy): defaultMaterial(to_copy.defaultMaterial) {}
 
-    CalculationSpace(CalculationSpace&& to_move) = default;
+    /**
+     * Set this to be the same as @p to_copy but doesn't changed changes observer.
+     * @param to_copy object to copy
+     */
+    CalculationSpace& operator=(const CalculationSpace& to_copy) { defaultMaterial = to_copy.defaultMaterial; return *this; }
+
+    /// Inform observators that this is deleting.
+    virtual ~CalculationSpace() { fireChanged(Event::DELETE); }
 
     /// Changed signal, fired when space was changed.
     boost::signals2::signal<void(const Event&)> changed;

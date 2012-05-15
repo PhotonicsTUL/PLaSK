@@ -118,6 +118,9 @@ You should also implement interpolation algorithms for your mesh, see @ref inter
 #include "../vec.h"
 #include "../utils/iterators.h"
 
+#include <boost/signals2.hpp>
+#include "../utils/event.h"
+
 namespace plask {
 
 /**
@@ -125,7 +128,8 @@ namespace plask {
  * Mesh represent a set of points in 2d or 3d space and:
  * - knows number of points,
  * - allows for iterate over this points,
- * - can calculate interpolated value for given destination points, source values, and the interpolation method.
+ * - can calculate interpolated value for given destination points, source values, and the interpolation method,
+ * - inform about self changes.
  *
  * @see @ref meshes
  */
@@ -160,6 +164,87 @@ struct Mesh {
     /// @return iterator just after last point
     virtual Iterator end() const = 0;
 
+    /**
+     * Store information about event connected with geometry element.
+     *
+     * Subclasses of this can includes additional information about specific type of event.
+     */
+    struct Event: public EventWithSourceAndFlags< Mesh<dimension> > {
+
+        /// Event flags (which describes event properties).
+        enum Flags {
+            DELETE = 1,             ///< is deleted
+            RESIZE = 1<<1,          ///< size could be changed (points added or deleted)
+            USER_DEFINED = 1<<2     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
+        };
+
+        /**
+         * Check if given @p flag is set.
+         * @param flag flag to check
+         * @return @c true only if @p flag is set
+         */
+        bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
+
+        /**
+         * Check if DELETE flag is set, which mean that source of event is deleted.
+         * @return @c true only if DELETE flag is set
+         */
+        bool isDelete() const { return hasFlag(DELETE); }
+
+        /**
+         * Check if RESIZE flag is set, which mean that source of event could be resized.
+         * @return @c true only if RESIZE flag is set
+         */
+        bool isResize() const { return hasFlag(RESIZE); }
+
+        /**
+         * Construct event.
+         * @param source source of event
+         * @param flags which describes event's properties
+         */
+        explicit Event(Mesh<dimension>& source, unsigned char falgs = 0):  EventWithSourceAndFlags< Mesh<dimension> >(source, falgs) {}
+    };
+
+    /// Changed signal, fired when space was changed.
+    boost::signals2::signal<void(const Event&)> changed;
+
+    template <typename ClassT, typename methodT>
+    void changedConnectMethod(ClassT* obj, methodT method) {
+        changed.connect(boost::bind(method, obj, _1));
+    }
+
+    template <typename ClassT, typename methodT>
+    void changedDisconnectMethod(ClassT* obj, methodT method) {
+        changed.disconnect(boost::bind(method, obj, _1));
+    }
+
+    /**
+     * Call changed with this as event source.
+     * @param event_constructor_params_without_source parameters for event constructor (without first - source)
+     */
+    template<typename EventT = Event, typename ...Args>
+    void fireChanged(Args&&... event_constructor_params_without_source) {
+        changed(EventT(*this, std::forward<Args>(event_constructor_params_without_source)...));
+    }
+
+    void fireResized() { fireChanged(Event::RESIZE); }
+
+    /**
+     * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
+     * @param to_copy object to copy
+     */
+    Mesh(const Mesh& to_copy) {}
+
+    /**
+     * Set this to be the same as @p to_copy but doesn't changed changes observer.
+     * @param to_copy object to copy
+     */
+    Mesh& operator=(const Mesh& to_copy) { return *this; }
+
+    Mesh() = default;
+
+    /// Inform observators that this is deleting.
+    virtual ~Mesh() { fireChanged(Event::DELETE); }
 };
 
 /**

@@ -21,6 +21,7 @@ namespace plask {
  * - c1 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y) such that x is in c0 and y is in c1.
  */
+//TODO methods which call fireResize() when points are adding, etc.
 class RectilinearMesh2d: public Mesh<2> {
 
     typedef std::size_t index_ft(const RectilinearMesh2d* mesh, std::size_t c0_index, std::size_t c1_index);

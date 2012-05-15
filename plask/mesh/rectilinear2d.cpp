@@ -33,6 +33,7 @@ void RectilinearMesh2d::setIterationOrder(IterationOrder iterationOrder) {
         index0_f = normal_index0;
         index1_f = normal_index1;
     }
+    fireChanged();
 }
 
 RectilinearMesh2d::IterationOrder RectilinearMesh2d::getIterationOrder() const {
@@ -46,12 +47,14 @@ void RectilinearMesh2d::setOptimalIterationOrder() {
 void RectilinearMesh2d::buildFromGeometry(const GeometryElementD<2>& geometry) {
     std::vector<Box2d> boxes = geometry.getLeafsBoundingBoxes();
 
-    for (auto box: boxes) {
+    for (auto& box: boxes) {
         c0.addPoint(box.lower.c0);
         c0.addPoint(box.upper.c0);
         c1.addPoint(box.lower.c1);
         c1.addPoint(box.upper.c1);
     }
+
+    fireChanged();
 }
 
 RectilinearMesh2d RectilinearMesh2d::getMidpointsMesh() const {

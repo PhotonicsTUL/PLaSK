@@ -26,7 +26,7 @@ DECLARE_ITERATION_ORDER(2,1,0)
 
 void RectilinearMesh3d::setIterationOrder(IterationOrder iterationOrder) {
 #   define CASE_ITERATION_ORDER(order) \
-        case ORDER_##order: index_f = index_##order; index0_f = index0_##order;  index1_f = index1_##order; index2_f = index2_##order; return;
+        case ORDER_##order: index_f = index_##order; index0_f = index0_##order;  index1_f = index1_##order; index2_f = index2_##order; break;
     switch (iterationOrder) {
         CASE_ITERATION_ORDER(021)
         CASE_ITERATION_ORDER(102)
@@ -34,8 +34,9 @@ void RectilinearMesh3d::setIterationOrder(IterationOrder iterationOrder) {
         CASE_ITERATION_ORDER(201)
         CASE_ITERATION_ORDER(210)
         default:
-            index_f = index_012; index0_f = index0_012;  index1_f = index1_012; index2_f = index2_012; return;
+            index_f = index_012; index0_f = index0_012;  index1_f = index1_012; index2_f = index2_012; break;
     }
+    fireChanged();
 }
 
 
@@ -64,7 +65,7 @@ void RectilinearMesh3d::setOptimalIterationOrder() {
 void RectilinearMesh3d::buildFromGeometry(const GeometryElementD<3>& geometry) {
     std::vector<Box3d> boxes = geometry.getLeafsBoundingBoxes();
 
-    for (auto box: boxes) {
+    for (auto& box: boxes) {
         c0.addPoint(box.lower.c0);
         c0.addPoint(box.upper.c0);
         c1.addPoint(box.lower.c1);
@@ -72,6 +73,8 @@ void RectilinearMesh3d::buildFromGeometry(const GeometryElementD<3>& geometry) {
         c2.addPoint(box.lower.c2);
         c2.addPoint(box.upper.c2);
     }
+
+    fireChanged();
 }
 
 
