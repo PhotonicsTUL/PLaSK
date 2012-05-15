@@ -132,6 +132,9 @@ class Module {
 
     Module(): initialized(false) {}
 
+    /// Virtual destructor (for subclassing). Do nothing.
+    virtual ~Module() {}
+
     /**
      * Check if module is already initialized.
      * @return @c true only if module is already initialized
@@ -145,11 +148,6 @@ class Module {
      * @see beforeCalculation()
      */
     virtual void invalidate() { initialized = false; }
-
-    /**
-     * Do nothing.
-     */
-    virtual ~Module() {}
 
     /**
      * Get name of module.
@@ -198,6 +196,11 @@ class Module {
 template <typename SpaceType>
 class ModuleOver: public Module {
 
+    void diconnectGeometry() {
+        if (this->geometry)
+            this->geometry->changedDisconnectMethod(this, &ModuleOver<SpaceType>::onGeometryChange);
+    }
+
   protected:
 
     /// Space in which the calculations are performed
@@ -205,15 +208,31 @@ class ModuleOver: public Module {
 
   public:
 
+    ~ModuleOver() {
+        diconnectGeometry();
+    }
+
+    /**
+     * This method is called when calculation space (geometry) was changed.
+     * It's just call invalidate(); but subclasses can customize this.
+     * @param evt information about calculation space changes
+     */
+    virtual void onGeometryChange(const CalculationSpace::Event& evt) {
+        this->invalidate();
+    }
+
     /**
      * Set new geometry for the module
      * @param geometry new geometry space
      */
     void setGeometry(const shared_ptr<SpaceType>& geometry) {
-        log(LOG_INFO, "Attaching ginitializedeometry");
+        if (geometry == this->geometry) return;
+        log(LOG_INFO, "Attaching geometry");
+        diconnectGeometry();
         this->geometry = geometry;
+        if (this->geometry)
+            this->geometry->changedConnectMethod(this, &ModuleOver<SpaceType>::onGeometryChange);
         initialized = false;
-        //TODO attach listener which calls invalidate on geometry changes
     }
 
     /**
