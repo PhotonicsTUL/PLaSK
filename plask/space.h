@@ -7,6 +7,9 @@
 
 #include "axes.h"
 
+#include <boost/signals2.hpp>
+#include "utils/event.h"
+
 namespace plask {
 
 /**
@@ -26,10 +29,88 @@ struct CalculationSpace {
     };
 
     /**
+     * Store information about event connected with calculation space.
+     *
+     * Subclasses of this can includes additional information about specific type of event.
+     */
+    struct Event: public EventWithSourceAndFlags<CalculationSpace> {
+
+        /// Event flags (which describes event properties).
+        enum Flags {
+            DELETE = 1<<0,          ///< is deleted
+            GEOMETRY = 1<<1,        ///< geometry was changed
+            BORDERS = 1<<2,         ///< type of borders was changed
+            USER_DEFINED = 1<<2     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
+        };
+
+        /**
+         * Check if given @p flag is set.
+         * @param flag flag to check
+         * @return @c true only if @p flag is set
+         */
+        bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
+
+        /**
+         * Check if DELETE flag is set, which mean that source of event is deleted.
+         * @return @c true only if DELETE flag is set
+         */
+        bool isDelete() const { return hasFlag(DELETE); }
+
+        /**
+         * Check if GEOMETRY flag is set, which mean that geometry connected with source could changed.
+         * @return @c true only if GEOMETRY_CHANGED flag is set
+         */
+        bool hasChangedGeometry() const { return hasFlag(GEOMETRY); }
+
+        /**
+         * Check if BORDERS flag is set, which mean that borders connected with source could changed.
+         * @return @c true only if BORDERS flag is set
+         */
+        bool hasChangedBorders() const { return hasFlag(BORDERS); }
+
+        /**
+         * Construct event.
+         * @param source source of event
+         * @param flags which describes event's properties
+         */
+        explicit Event(CalculationSpace& source, unsigned char falgs = 0): EventWithSourceAndFlags<CalculationSpace>(source, falgs) {}
+    };
+
+    /**
      * Calculation space constructor, set default material.
      * @param defaultMaterial material which will be used for places in which geometry doesn't define any material, air by default
      */
     CalculationSpace(shared_ptr<Material> defaultMaterial = make_shared<Air>()): defaultMaterial(defaultMaterial) {}
+
+    /**
+     * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
+     * @param to_copy object to copy
+     */
+    CalculationSpace(const CalculationSpace& to_copy): defaultMaterial(to_copy.defaultMaterial) {}
+
+    CalculationSpace(CalculationSpace&& to_move) = default;
+
+    /// Changed signal, fired when space was changed.
+    boost::signals2::signal<void(const Event&)> changed;
+
+    template <typename ClassT, typename methodT>
+    void changedConnectMethod(ClassT* obj, methodT method) {
+        changed.connect(boost::bind(method, obj, _1));
+    }
+
+    template <typename ClassT, typename methodT>
+    void changedDisconnectMethod(ClassT* obj, methodT method) {
+        changed.disconnect(boost::bind(method, obj, _1));
+    }
+
+    /**
+     * Call changed with this as event source.
+     * @param event_constructor_params_without_source parameters for event constructor (without first - source)
+     */
+    template<typename EventT = Event, typename ...Args>
+    void fireChanged(Args&&... event_constructor_params_without_source) {
+        changed(EventT(*this, std::forward<Args>(event_constructor_params_without_source)...));
+    }
 
     /**
      * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
@@ -162,6 +243,7 @@ protected:
      */
     void onChildChanged(const GeometryElement::Event& evt) {
         if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
+        fireChanged(Event::GEOMETRY);
     }
 
     /**
@@ -282,7 +364,7 @@ public:
      * Set strategy for left border.
      * @param newValue new strategy for left border
      */
-    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); }
+    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::BORDERS); }
 
     /**
      * Get left border strategy.
@@ -294,7 +376,7 @@ public:
      * Set strategy for right border.
      * @param newValue new strategy for right border
      */
-    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); }
+    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::BORDERS); }
 
     /**
      * Get right border strategy.
@@ -306,7 +388,7 @@ public:
      * Set strategy for bottom border.
      * @param newValue new strategy for bottom border
      */
-    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); }
+    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::BORDERS); }
 
     /**
      * Get bottom border strategy.
@@ -318,7 +400,7 @@ public:
      * Set strategy for up border.
      * @param newValue new strategy for up border
      */
-    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); }
+    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::BORDERS); }
 
     void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
@@ -334,6 +416,7 @@ public:
 
     /// Set material on the positive side of the axis along the extrusion
     /// \param material material to set
+    //TODO fireChanged(?); ?
     void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; }
 
     /// \return material on the positive side of the axis along the extrusion
@@ -341,6 +424,7 @@ public:
 
     /// Set material on the negative side of the axis along the extrusion
     /// \param material material to set
+    //TODO fireChanged(?); ?
     void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; }
 
     /// \return material on the negative side of the axis along extrusion
@@ -391,7 +475,7 @@ public:
      * Set strategy for outer border.
      * @param newValue new strategy for outer border
      */
-    void setOuterBorder(const border::UniversalStrategy& newValue) { outer = newValue; }
+    void setOuterBorder(const border::UniversalStrategy& newValue) { outer = newValue; fireChanged(Event::BORDERS); }
 
     /**
      * Get outer border strategy.
@@ -403,7 +487,7 @@ public:
      * Set strategy for bottom border.
      * @param newValue new strategy for bottom border
      */
-    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); }
+    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::BORDERS); }
 
     /**
      * Get bottom border strategy.
@@ -415,7 +499,7 @@ public:
      * Set strategy for up border.
      * @param newValue new strategy for up border
      */
-    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); }
+    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::BORDERS); }
 
     /**
      * Get up border strategy.

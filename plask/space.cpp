@@ -99,6 +99,7 @@ void Space2dCartesian::setBorders(DIRECTION direction, const border::Strategy& b
         leftright.setStrategies(border_lo, border_hi);
     else
         bottomup.setStrategies(border_lo, border_hi);
+    fireChanged(Event::BORDERS);
 }
 
 void Space2dCartesian::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
@@ -107,6 +108,7 @@ void Space2dCartesian::setBorder(DIRECTION direction, bool higher, const border:
         leftright.set(higher, border_to_set);
     else
         bottomup.set(higher, border_to_set);
+    fireChanged(Event::BORDERS);
 }
 
 const border::Strategy& Space2dCartesian::getBorder(DIRECTION direction, bool higher) const {
@@ -163,12 +165,14 @@ void Space2dCylindrical::setBorders(DIRECTION direction, const border::Strategy&
         outer = castBorder<border::UniversalStrategy>(border_to_set);
     else
         bottomup.setBoth(border_to_set);
+    fireChanged(Event::BORDERS);
 }
 
 void Space2dCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
     ensureBoundDirIsProper(direction, false);
     ensureBoundDirIsProper(direction, true);
     bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
+    fireChanged(Event::BORDERS);
 }
 
 void Space2dCylindrical::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
@@ -177,6 +181,7 @@ void Space2dCylindrical::setBorder(DIRECTION direction, bool higher, const borde
         outer = castBorder<border::UniversalStrategy>(border_to_set);
     } else
         bottomup.set(higher, border_to_set);
+    fireChanged(Event::BORDERS);
 }
 
 const border::Strategy& Space2dCylindrical::getBorder(DIRECTION direction, bool higher) const {

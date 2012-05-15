@@ -16,6 +16,7 @@ This file includes base class for geometries elements.
 #include "../utils/iterators.h"
 
 #include <boost/signals2.hpp>
+#include "../utils/event.h"
 
 namespace plask {
 
@@ -52,44 +53,16 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      *
      * Subclasses of this can includes additional information about specific type of event.
      */
-    struct Event {
+    struct Event: public EventWithSourceAndFlags<GeometryElement> {
 
         /// Event flags (which describes event properties).
         enum Flags {
-            DELETE = 1,     ///< is deleted
-            RESIZE = 1<<1,  ///< size could be changed
-            DELEGATED = 1<<2,    ///< delegated from child
-            CHILD_LIST = 1<<3,   ///< children list was changed
-            USER_DEFINED = 1<<4 ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
+            DELETE = 1,             ///< is deleted
+            RESIZE = 1<<1,          ///< size could be changed
+            DELEGATED = 1<<2,       ///< delegated from child
+            CHILD_LIST = 1<<3,      ///< children list was changed
+            USER_DEFINED = 1<<4     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
         };
-
-    private:
-        /// Source of event.
-        GeometryElement& _source;
-
-        /// Event flags (which describes event properties).
-        unsigned char _flags;
-
-    public:
-
-        /**
-         * Get source of event.
-         * @return source of event
-         */
-        const GeometryElement& source() const { return _source; }
-
-        /**
-         * Get event's flags.
-         * @return flags which describes event's properties
-         */
-        unsigned char flags() const { return _flags; }
-
-        /**
-         * Get event's flags with excluded @p flagsToRemove.
-         * @param flagsToRemove flags to exclude from result
-         * @return flags which describes event properties without @p flagsToRemove
-         */
-        unsigned char flagsWithout(unsigned char flagsToRemove) const { return _flags & ~flagsToRemove; }
 
         /**
          * Get event's flags for parent in tree of geometry
@@ -103,7 +76,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @param flag flag to check
          * @return @c true only if @p flag is set
          */
-        bool hasFlag(Flags flag) const { return _flags & flag; }
+        bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
 
         /**
          * Check if DELETE flag is set, which mean that source of event is deleted.
@@ -134,8 +107,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @param source source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryElement& source, unsigned char falgs = 0): _source(source), _flags(falgs) {}
-        virtual ~Event() {} //for eventual subclassing
+        explicit Event(GeometryElement& source, unsigned char falgs = 0):  EventWithSourceAndFlags<GeometryElement>(source, falgs) {}
     };
 
     /**
@@ -290,10 +262,25 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         changed.disconnect(boost::bind(method, obj, _1));
     }
 
+    /**
+     * Call changed with this as event source.
+     * @param event_constructor_params_without_source parameters for event constructor (without first - source)
+     */
     template<typename EventT = Event, typename ...Args>
     void fireChanged(Args&&... event_constructor_params_without_source) {
         changed(EventT(*this, std::forward<Args>(event_constructor_params_without_source)...));
     }
+
+    /**
+     * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
+     * @param to_copy object to copy
+     */
+    GeometryElement(const GeometryElement& to_copy) {}
+
+    GeometryElement(GeometryElement&& to_move) = default;
+    GeometryElement() = default;
+
+    //TODO
 
     /**
      * Virtual destructor. Inform all change listeners.

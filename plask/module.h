@@ -251,7 +251,7 @@ class ModuleWithMesh: public ModuleOver<SpaceType> {
      * Get current module mesh.
      * @return current module mesh
      */
-    inline shared_ptr<SpaceType> getMesh() const { return mesh; }
+    inline shared_ptr<MeshType> getMesh() const { return mesh; }
 };
 
 
