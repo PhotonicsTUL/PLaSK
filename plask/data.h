@@ -2,6 +2,7 @@
 #define PLASK__DATA_H
 
 #include <iterator>
+#include <algorithm>
 #include <initializer_list>
 
 namespace plask {
@@ -18,7 +19,7 @@ class DataVector {
     unsigned* gc_;                      ///< the reference count for the garbage collector
     T* data_;                           ///< The data of the matrix
 
-    // Decrease GC counter and free memory if necessary
+    /// Decrease GC counter and free memory if necessary.
     void dec_ref() {
         if (gc_ && --(*gc_) == 0) {
             delete gc_;
@@ -26,6 +27,7 @@ class DataVector {
         }
     }
 
+    /// Increace GC counter.
     void inc_ref() {
         if (gc_) ++(*gc_);
     }
@@ -84,12 +86,13 @@ class DataVector {
      * @return *this
      */
     DataVector<T>& operator=(DataVector&& src) {
-        this->dec_ref();
+        /*this->dec_ref();
         size_ = src.size_;
         data_ = src.data_;
         gc_ = src.gc_;
         src.data_ = 0;
-        src.gc_ = 0;
+        src.gc_ = 0;*/
+        swap(src);
         return *this;
     }
 
@@ -202,9 +205,20 @@ class DataVector {
         return unique() ? *this : copy();
     }
 
+    void swap(DataVector<T>& other) {
+        std::swap(size_, other.size_);
+        std::swap(gc_, other.gc_);
+        std::swap(data_, other.data_);
+    }
 };
 
+}   // namespace plask
 
-} // namespace plask
+namespace std {
+    template <typename T>
+    void swap (plask::DataVector<T>& s1, plask::DataVector<T>& s2) { // throw ()
+      s1.swap(s2);
+    }
+}   // namespace std
 
 #endif // PLASK__DATA_H
