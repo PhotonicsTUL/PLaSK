@@ -124,7 +124,7 @@ Path& Path::append(const std::vector< shared_ptr<const GeometryElement> >& path,
         if (completeFromLast(*path.front(), hints)) {
             push_back(path);
         } else
-            throw Exception("Can't connect paths.");
+            throw Exception("Cannott connect paths.");
     }
     return *this;
 }

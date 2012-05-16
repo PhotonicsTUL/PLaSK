@@ -18,14 +18,13 @@ include(${CMAKE_SOURCE_DIR}/cmake/modules.cmake)
 #find_package(GSL)
 #set(MODULE_LINK_LIBRARIES ${GSL_LIBRARIES})
 
-
 # Uncomment and edit the line below if you need some special include directories.
 # If you use external libraries, you can use the variables returned by find_package.
 # Don't include external directories with your own headers. Just copy them here and
 # commit to the repository.
 #
-#set(MODULE_INCLUDE_DIRECTORIES ${GSL_INCLUDE_DIRS})
-
+find_package(Eigen3)
+set(MODULE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
 
 # Uncomment and edit the line below if you need some special linker flags.
 #

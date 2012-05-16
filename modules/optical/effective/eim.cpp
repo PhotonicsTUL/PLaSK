@@ -97,8 +97,12 @@ void EffectiveIndex2dModule::updateCache()
     size_t txmax = mesh->c0.size() - 1;
     size_t tymax = mesh->c1.size() - 1;
 
-    if (updated || inTemperature.changed) {
-        // Either temperature or structure changed, so we need to get refractive indices
+    if (updated || inTemperature.changed || inWavelength.changed) {
+        // Either temperature, structure, or wavelength changed, so we need to get refractive indices
+
+        k02 = 2*M_PI / inWavelength();;
+        double w = real(k02);
+
         auto temp = inTemperature(*mesh);
 
         for (size_t i = xbegin; i != xsize; ++i) {
@@ -109,7 +113,7 @@ void EffectiveIndex2dModule::updateCache()
                 size_t ty1 = (j < tymax)? j : txmax;
                 double T = 0.25 * ( temp[mesh->index(tx0, ty0)] + temp[mesh->index(tx0, ty1)] +
                                     temp[mesh->index(tx1, ty0)] + temp[mesh->index(tx1, ty1)] );
-                nrCache[i][j] = geometry->getMaterial(middle_points(i,j))->Nr(real(inWavelength()), T);
+                nrCache[i][j] = geometry->getMaterial(middle_points(i,j))->Nr(w, T);
             }
         }
     }
@@ -118,6 +122,19 @@ void EffectiveIndex2dModule::updateCache()
 
 
 /********* Here are the computations *********/
+
+dcomplex EffectiveIndex2dModule::getStripeMatrix(size_t n, std::vector<std::pair<dcomplex, dcomplex>>* fields=nullptr)
+{
+
+
+}
+
+dcomplex EffectiveIndex2dModule::getMatrix(std::vector<std::vector<std::pair<dcomplex, dcomplex>>>* fields=nullptr)
+{
+
+
+}
+
 
 dcomplex EffectiveIndex2dModule::char_val(dcomplex x)
 {

@@ -76,8 +76,8 @@ class DataVector {
      * @param src data to move
      */
     DataVector(DataVector&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
-        src.gc_ = 0;
-        src.data_ = 0;
+        src.gc_ = nullptr;
+        src.data_ = nullptr;
     }
 
     /**
@@ -90,8 +90,8 @@ class DataVector {
         size_ = src.size_;
         data_ = src.data_;
         gc_ = src.gc_;
-        src.data_ = 0;
-        src.gc_ = 0;*/
+        src.data_ = nullptr;
+        src.gc_ = nullptr;*/
         swap(src);
         return *this;
     }
@@ -216,7 +216,7 @@ class DataVector {
 
 namespace std {
     template <typename T>
-    void swap (plask::DataVector<T>& s1, plask::DataVector<T>& s2) { // throw ()
+    void swap(plask::DataVector<T>& s1, plask::DataVector<T>& s2) { // throw ()
       s1.swap(s2);
     }
 }   // namespace std

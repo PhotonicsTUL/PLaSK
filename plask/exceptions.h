@@ -63,7 +63,7 @@ struct OutOfBoundException: public Exception {
 
     /// @param msg error message
     OutOfBoundException(const std::string& where, const std::string& argname)
-        : Exception("%1%: argument %2% out of bound", where, argname) {}
+        : Exception("%1%: argument %2% out of bound.", where, argname) {}
 
     template <typename BoundTypeWas, typename BoundTypeLo, typename BoundTypeHi>
     OutOfBoundException(const std::string& where, const std::string& argname, const BoundTypeWas& was, const BoundTypeLo& lo, const BoundTypeHi& hi)
@@ -290,6 +290,14 @@ struct XMLConflictingAttributesException: public Exception {
  */
 struct NoChildException: public Exception {
     NoChildException(): Exception("No child.") {}
+};
+
+/**
+ * Exceptions of this class are thrown by some geometry element classes when there is no required child.
+ */
+struct NotUniqueElementException: public Exception {
+    NotUniqueElementException(): Exception("Unique element instance required.") {}
+    NotUniqueElementException(const std::string msg): Exception(msg) {}
 };
 
 /**

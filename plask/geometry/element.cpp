@@ -54,7 +54,7 @@ std::vector< shared_ptr<const GeometryElement> > GeometryElement::Subtree::toLin
     if (empty()) return result;
     const GeometryElement::Subtree* path_nodes = this;
     while (true) {
-        if (path_nodes->children.size() > 1) throw Exception("there is more than one path");
+        if (path_nodes->children.size() > 1) throw NotUniqueElementException("There is more than one path.");
         result.push_back(path_nodes->element);
         if (path_nodes->children.empty()) break;
         path_nodes = &(path_nodes->children[0]);

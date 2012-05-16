@@ -18,6 +18,9 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
 
     RootDigger rootdigger;
 
+    /// Interface position (mesh index)
+    size_t interface;
+
     /// Logger for char_val
     Data2dLog<dcomplex,double> log_value;
 
@@ -82,6 +85,38 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     }
 
     /**
+     * Get the position of the matching interface.
+     *
+     * \return index of the vertical mesh, where interface is set
+     */
+    inline size_t getInterface() { return interface; }
+
+    /**
+     * Set the position of the matching interface.
+     *
+     * \param index index of the vertical mesh, where interface is set
+     */
+    inline void setInterface(size_t index) {
+        if (!mesh) setSimpleMesh();
+        if (index < 0 || index >= mesh->up().size())
+            throw BadInput(getId(), "wrong interface position");
+        interface = index;
+    }
+
+    /**
+     * Set the position of the matching interface at the bottom of the provided geometry element
+     *
+     * \param path path to the element in the geometry
+     */
+    void setInterface(const PathHints& path) {
+        if (!mesh) setSimpleMesh();
+        auto boxes = geometry->getLeafsBoundingBoxes(path);
+        if (boxes.size() != 1) throw NotUniqueElementException();
+        interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].lower.up) - mesh->up().begin();
+        if (interface >= mesh->up().size()) interface = mesh->up().size() - 1;
+    }
+
+    /**
      * Find the mode around the specified propagation constant.
      *
      * This method remembers the determined mode, for retrieval of the field profiles.
@@ -136,8 +171,16 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
 
   private:
 
+    dcomplex k02;       ///< Cache of the normalized frequency
+
     /// Cache the effective indices
     void updateCache();
+
+    /// Return the effective index of a single vertical stripe, optionally storing intermediate matrices for field computation
+    dcomplex getStripeMatrix(size_t n, std::vector<std::pair<dcomplex, dcomplex>>* fields);
+
+    /// Return the  effective index of the whole structure, optionally storing storing intermediate matrices for field computation
+    dcomplex getMatrix(std::vector<std::vector<std::pair<dcomplex, dcomplex>>>* fields);
 
     /// Return function value for root digger
     dcomplex char_val(dcomplex x);
