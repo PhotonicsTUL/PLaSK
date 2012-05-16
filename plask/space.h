@@ -433,7 +433,7 @@ public:
     /// Set material on the positive side of the axis along the extrusion
     /// \param material material to set
     //TODO fireChanged(?); ?
-    void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; }
+    void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; fireChanged(Event::BORDERS); }
 
     /// \return material on the positive side of the axis along the extrusion
     shared_ptr<Material> getFrontMaterial() const { return frontMaterial ? frontMaterial : defaultMaterial; }
@@ -441,7 +441,7 @@ public:
     /// Set material on the negative side of the axis along the extrusion
     /// \param material material to set
     //TODO fireChanged(?); ?
-    void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; }
+    void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; fireChanged(Event::BORDERS); }
 
     /// \return material on the negative side of the axis along extrusion
     shared_ptr<Material> getBackMaterial() const { return backMaterial ? backMaterial : defaultMaterial; }

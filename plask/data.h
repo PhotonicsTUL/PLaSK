@@ -1,6 +1,9 @@
 #ifndef PLASK__DATA_H
 #define PLASK__DATA_H
 
+#include <iterator>
+#include <initializer_list>
+
 namespace plask {
 
 /**
@@ -16,7 +19,7 @@ class DataVector {
     T* data_;                           ///< The data of the matrix
 
     // Decrease GC counter and free memory if necessary
-    void free() {
+    void dec_ref() {
         if (gc_ && --(*gc_) == 0) {
             delete gc_;
             delete[] data_;
@@ -58,7 +61,7 @@ class DataVector {
      */
     DataVector<T>& operator=(const DataVector<T>& M) {
         if (this == &M) return;
-        this->free();
+        this->dec_ref();
         size_ = M.size_;
         data_ = M.data_;
         gc_ = M.gc_;
@@ -81,7 +84,7 @@ class DataVector {
      * @return *this
      */
     DataVector<T>& operator=(DataVector&& src) {
-        this->free();
+        this->dec_ref();
         size_ = src.size_;
         data_ = src.data_;
         gc_ = src.gc_;
@@ -99,22 +102,57 @@ class DataVector {
     DataVector(T* existing_data, std::size_t size, bool manage = false)
         : size_(size), gc_(manage ? new unsigned(1) : nullptr), data_(existing_data) {}
 
-    DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new unsigned(1)), data_(new T[init.size()]) {
+    /**
+     * Create data vector and fill it with data from initializer list.
+     * @param init initializer list with data
+     */
+    DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new unsigned(1)), data_(new T[size_]) {
         std::copy(init.begin(), init.end(), data_);
     }
 
+    /**
+     * Create data vector with given @p size and fill all its' cells with given @p value.
+     * @param size size of vector
+     * @param value initial value for each cell
+     */
     DataVector(std::size_t size, const T& value): size_(size), gc_(new unsigned(1)), data_(new T[size]) {
         std::fill(begin(), end(), value);
     }
 
-    ~DataVector() { free(); }
+    /**
+     * Create vector which data are copy of range [begin, end).
+     * @param begin, end range of data to copy
+     */
+    template <typename InIterT>
+    DataVector(InIterT begin, InIterT end): size_(std::distance(begin, end)), gc_(new unsigned(1)), data_(new T[size_]) {
+        std::copy(begin, end, data_);
+    }
 
-    /// @return iterator referring to the first element in this matrix
+    /// Delete data if this was last reference to it.
+    ~DataVector() { dec_ref(); }
+
+    /**
+     * Get iterator referring to the first element in data vector.
+     * @return const iterator referring to the first element in data vector
+     */
     const_iterator begin() const { return data_; }
+
+    /**
+     * Get iterator referring to the first element in data vector.
+     * @return iterator referring to the first element in data vector
+     */
     iterator begin() { return data_; }
 
-    /// @return iterator referring to the past-the-end element in this matrix
+    /**
+     * Get iterator referring to the past-the-end element in data vector
+     * @return const iterator referring to the past-the-end element in data vector
+     */
     const_iterator end() const { return data_ + size_; }
+
+    /**
+     * Get iterator referring to the past-the-end element in data vector
+     * @return iterator referring to the past-the-end element in data vector
+     */
     iterator end() { return data_ + size_; }
 
     /// @return total size of the matrix/vector
