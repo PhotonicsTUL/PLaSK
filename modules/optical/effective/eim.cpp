@@ -113,7 +113,6 @@ void EffectiveIndex2dModule::updateCache()
                 nrCache[i][j] = geometry->getMaterial(middle_points(i,j))->Nr(real(inWavelength()), T);
             }
         }
-
     }
 }
 

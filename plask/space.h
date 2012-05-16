@@ -224,16 +224,18 @@ protected:
  * @tparam dim number of speace dimensions
  */
 template <int dim>
-struct CalculationSpaceD: public CalculationSpace {
+class CalculationSpaceD: public CalculationSpace {
+
+    /// Connection object with child. It is necessary since disconnectOnChileChanged doesn't work
+    boost::signals2::connection connection_with_child;
+
+  public:
 
     enum  { DIMS = dim };
 
     typedef Vec<dim, double> CoordsType;
 
-protected:
-
-    /// Connection object with child. It is necessary since disconnectOnChileChanged doesn't work
-    boost::signals2::connection connection_with_child;
+  protected:
 
     /**
      * Get material from geometry or return default material if geometry returns nullptr.
@@ -263,6 +265,10 @@ protected:
     void init() {
         connection_with_child = getChild()->changedConnectMethod(this, &CalculationSpaceD<dim>::onChildChanged);
         cachedBoundingBox = getChild()->getBoundingBox();
+    }
+
+    virtual ~CalculationSpaceD() {
+        connection_with_child.disconnect();
     }
 
 public:
@@ -445,10 +451,6 @@ public:
 
     Space2dCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
 
-    virtual ~Space2dCartesian() {
-        connection_with_child.disconnect();
-    }
-
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
@@ -524,10 +526,6 @@ public:
     Space2dCylindrical(const shared_ptr<Revolution>& revolution);
 
     Space2dCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
-
-    virtual ~Space2dCylindrical() {
-        connection_with_child.disconnect();
-    }
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
