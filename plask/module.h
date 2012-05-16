@@ -214,7 +214,7 @@ class ModuleOver: public Module {
 
     /**
      * This method is called when calculation space (geometry) was changed.
-     * It's just call invalidate(); but subclasses can customize this.
+     * It's just call invalidate(); but subclasses can customize it.
      * @param evt information about calculation space changes
      */
     virtual void onGeometryChange(const CalculationSpace::Event& evt) {
@@ -262,7 +262,7 @@ class ModuleWithMesh: public ModuleOver<SpaceType> {
 
     /**
      * This method is called when mesh was changed.
-     * It's just call invalidate(); but subclasses can customize this.
+     * It's just call invalidate(); but subclasses can customize it.
      * @param evt information about mesh changes
      */
     virtual void onMeshChange(const typename MeshType::Event& evt) {

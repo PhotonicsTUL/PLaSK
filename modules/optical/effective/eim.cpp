@@ -87,7 +87,7 @@ void EffectiveIndex2dModule::updateCache()
                 for (auto x: mesh->c0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
             xbegin = 1;
         } else {
-            log(LOG_WARNING, "Symmetry settings will be ignored for non-symmetric geometry.");
+            log(LOG_WARNING, "Symmetry reset to NO_SYMMETRY for non-symmetric geometry.");
             symmetry = NO_SYMMETRY;
         }
     }

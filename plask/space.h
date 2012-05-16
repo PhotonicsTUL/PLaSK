@@ -232,6 +232,9 @@ struct CalculationSpaceD: public CalculationSpace {
 
 protected:
 
+    /// Connection object with child. It is necessary since disconnectOnChileChanged doesn't work
+    boost::signals2::connection connection_with_child;
+
     /**
      * Get material from geometry or return default material if geometry returns nullptr.
      * @return default material in each point for which geometry return nullptr or material from geometry
@@ -255,10 +258,10 @@ protected:
 
     /**
      * Initialize bounding box cache.
-     * Subclasses should call this from it's constructors (can't be moved to constructor because use virtual method getChild).
+     * Subclasses should call this from it's constructors (can't be moved to constructor because it uses virtual method getChild).
      */
     void init() {
-        getChild()->changedConnectMethod(this, &CalculationSpaceD<dim>::onChildChanged);
+        connection_with_child = getChild()->changedConnectMethod(this, &CalculationSpaceD<dim>::onChildChanged);
         cachedBoundingBox = getChild()->getBoundingBox();
     }
 
@@ -442,6 +445,10 @@ public:
 
     Space2dCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
 
+    virtual ~Space2dCartesian() {
+        connection_with_child.disconnect();
+    }
+
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
@@ -517,6 +524,10 @@ public:
     Space2dCylindrical(const shared_ptr<Revolution>& revolution);
 
     Space2dCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
+
+    virtual ~Space2dCylindrical() {
+        connection_with_child.disconnect();
+    }
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 

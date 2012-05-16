@@ -80,9 +80,11 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
      * Set new child.
      * @param child new child
      * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
+     * @throw NoChildException if child is an empty pointer
      */
     void setChild(const shared_ptr<ChildType>& child) {
-        this->ensureCanHasAsChild(*child);
+        if (!child) throw NoChildException();
+        this->ensureCanHaveAsChild(*child);
         setChildUnsafe(child);
     }
 

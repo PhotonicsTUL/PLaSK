@@ -252,11 +252,13 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     /// Changed signal, fired when element was changed.
     boost::signals2::signal<void(const Event&)> changed;
 
+    /// Connect a method to changed signal
     template <typename ClassT, typename methodT>
-    void changedConnectMethod(ClassT* obj, methodT method) {
-        changed.connect(boost::bind(method, obj, _1));
+    boost::signals2::connection changedConnectMethod(ClassT* obj, methodT method) {
+        return changed.connect(boost::bind(method, obj, _1));
     }
 
+    /// Disconnect a method from changed signal
     template <typename ClassT, typename methodT>
     void changedDisconnectMethod(ClassT* obj, methodT method) {
         changed.disconnect(boost::bind(method, obj, _1));
@@ -501,7 +503,7 @@ protected:
      * Throw CyclicReferenceException if @p potential_child has this in subtree.
      * @param potential_child[in] potential, new child of this
      */
-    void ensureCanHasAsChild(const GeometryElement& potential_child) const { potential_child.ensureCanHasAsParent(*this); }
+    void ensureCanHaveAsChild(const GeometryElement& potential_child) const { potential_child.ensureCanHasAsParent(*this); }
 
     /**
      * Check if given @p index is valid child index and throw exception of it is not.

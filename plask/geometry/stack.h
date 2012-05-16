@@ -166,7 +166,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType> &el) {
-        this->ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return addUnsafe(el);
     }
 
@@ -203,7 +203,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos) {
-        this->ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, pos);
     }
 
@@ -225,7 +225,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el) {
-        this->ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return push_front_Unsafe(el);
     }
 };
@@ -312,7 +312,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner()) {
-        this->ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, pos, aligner);
     }
 
@@ -344,7 +344,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType> &el, const Aligner& aligner = DefaultAligner()) {
-        this->ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, aligner);
     }
 
@@ -376,7 +376,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
-        this->ensureCanHasAsChild(*el);
+        this->ensureCanHaveAsChild(*el);
         return push_front_Unsafe(el, aligner);
     }
 

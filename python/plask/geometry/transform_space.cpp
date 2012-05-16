@@ -1,6 +1,7 @@
 #include "geometry.h"
 
 #include <plask/geometry/transform_space_cartesian.h>
+#include <plask/geometry/transform_space_cylindric.h>
 
 namespace plask { namespace python {
 
@@ -30,12 +31,20 @@ void register_geometry_changespace()
     // ;
 
     py::class_<Extrusion, shared_ptr<Extrusion>, py::bases<GeometryElementTransformSpace<3,2>>, boost::noncopyable>("Extrusion",
-        "Extrusion in the longitudinal direction of a 2D object to the 3D one."
+        "Extrusion in the longitudinal direction of the 2D object into a 3D one."
         "Objects of this type can be supplied to 2D Cartesian modules or they can be used\n"
         "as a part of the 3D geometry tree.\n\n"
-        "Extrusion(child=None, length=infinity)\n    Create new extrusion of given length with provided child",
-        py::init<shared_ptr<GeometryElementD<2>>,double>((py::arg("child")=shared_ptr<GeometryElementD<2>>(), py::arg("length")=INFINITY)))
+        "Extrusion(child, length=infinity)\n    Create new extrusion of given length with provided child",
+        py::init<shared_ptr<GeometryElementD<2>>,double>((py::arg("child"), py::arg("length")=INFINITY)))
         .def_readwrite("length", &Extrusion::length, "Length of the extrusion in the longitudinal direction")
+    ;
+
+    py::class_<Revolution, shared_ptr<Revolution>, py::bases<GeometryElementTransformSpace<3,2>>, boost::noncopyable>("Revolution",
+        "Revolution around the vertical axis of the 2D object into a 3D one."
+        "Objects of this type can be supplied to 2D cylindrical modules or they can be used\n"
+        "as a part of the 3D geometry tree.\n\n"
+        "Revolution(child)\n    Create new revolution with provided child",
+        py::init<shared_ptr<GeometryElementD<2>>>((py::arg("child"))))
     ;
 }
 
