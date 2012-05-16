@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "python.hpp"
 #include <algorithm>
 #include <boost/python/stl_iterator.hpp>
 

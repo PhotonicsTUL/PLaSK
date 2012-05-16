@@ -1,7 +1,7 @@
 #include <plask/exceptions.h>
 #include <plask/module.h>
 
-#include "globals.h"
+#include "python.hpp"
 #include <numpy/arrayobject.h>
 using namespace plask::python;
 
@@ -26,7 +26,19 @@ static inline bool plask_import_array() {
 Config config;
 AxisNames Config::axes = AxisNames::axisNamesRegister.get("xyz");
 
-}}
+inline static void register_config()
+{
+    py::class_<Config>("config", "Global PLaSK configuration.", py::no_init)
+        .def("__str__", &Config::__str__)
+        .def("__repr__", &Config::__repr__)
+        .add_property("axes", &Config::axes_name, &Config::set_axes,
+                      "String representing axis names")
+    ;
+    py::scope().attr("config") = config;
+}
+
+
+}} // namespace plask::python
 
 BOOST_PYTHON_MODULE(plaskcore)
 {

@@ -123,13 +123,13 @@ void EffectiveIndex2dModule::updateCache()
 
 /********* Here are the computations *********/
 
-dcomplex EffectiveIndex2dModule::getStripeMatrix(size_t n, std::vector<std::pair<dcomplex, dcomplex>>* fields=nullptr)
+Eigen::Matrix2cd EffectiveIndex2dModule::getStripeMatrix(size_t n, std::vector<Eigen::Matrix2cd>* fields=nullptr)
 {
 
 
 }
 
-dcomplex EffectiveIndex2dModule::getMatrix(std::vector<std::vector<std::pair<dcomplex, dcomplex>>>* fields=nullptr)
+Eigen::Matrix2cd EffectiveIndex2dModule::getMatrix(std::vector<std::vector<Eigen::Matrix2cd>>* fields=nullptr)
 {
 
 

@@ -1,7 +1,7 @@
 #ifndef PLASK__PYTHON_GEOMETRY_H
 #define PLASK__PYTHON_GEOMETRY_H
 
-#include "../globals.h"
+#include "../python.hpp"
 
 
 #define DECLARE_GEOMETRY_ELEMENT_23D(cls, pyname, pydoc1, pydoc2) \

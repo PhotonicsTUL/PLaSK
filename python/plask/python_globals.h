@@ -66,13 +66,9 @@ struct StopIteration: public Exception {
 
 // ----------------------------------------------------------------------------------------------------------------------
 // String functions for Python3
-
 #if PY_VERSION_HEX >= 0x03000000
-
     inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
-
     inline std::string PyString_AsString(PyObject* o) { return py::extract<std::string>(o); }
-
 #endif
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -104,17 +100,6 @@ struct Config
 
 };
 extern Config config;
-
-inline static void register_config()
-{
-    py::class_<Config>("config", "Global PLaSK configuration.", py::no_init)
-        .def("__str__", &Config::__str__)
-        .def("__repr__", &Config::__repr__)
-        .add_property("axes", &Config::axes_name, &Config::set_axes,
-                      "String representing axis names")
-    ;
-    py::scope().attr("config") = config;
-}
 
 
 // ----------------------------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file
  * Sample Python wrapper for your module.
  */
-#include <boost/python.hpp>
+#include <plask/python.hpp>
 
 // #include "../your_module_class_header.hpp"
 

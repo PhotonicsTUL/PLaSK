@@ -4,7 +4,7 @@
 #include <plask/exceptions.h>
 #include <plask/config.h>
 
-#include "globals.h"
+#include "python.hpp"
 #include "../util/raw_constructor.h"
 
 #include <numpy/arrayobject.h>

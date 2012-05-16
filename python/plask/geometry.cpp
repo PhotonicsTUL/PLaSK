@@ -1,5 +1,5 @@
 #include <cmath>
-#include "globals.h"
+#include "python.hpp"
 #include <boost/python/stl_iterator.hpp>
 #include "../util/raw_constructor.h"
 

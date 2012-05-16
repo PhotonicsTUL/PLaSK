@@ -3,6 +3,8 @@
 
 #include <limits>
 
+#include <Eigen/Core>
+
 #include <plask/plask.hpp>
 
 #include "rootdigger.h"
@@ -177,10 +179,10 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     void updateCache();
 
     /// Return the effective index of a single vertical stripe, optionally storing intermediate matrices for field computation
-    dcomplex getStripeMatrix(size_t n, std::vector<std::pair<dcomplex, dcomplex>>* fields);
+    Eigen::Matrix2cd getStripeMatrix(size_t n, std::vector<Eigen::Matrix2cd>* fields);
 
     /// Return the  effective index of the whole structure, optionally storing storing intermediate matrices for field computation
-    dcomplex getMatrix(std::vector<std::vector<std::pair<dcomplex, dcomplex>>>* fields);
+    Eigen::Matrix2cd getMatrix(std::vector<std::vector<Eigen::Matrix2cd>>* fields);
 
     /// Return function value for root digger
     dcomplex char_val(dcomplex x);

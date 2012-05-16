@@ -122,6 +122,7 @@ file(GLOB_RECURSE materials_src FOLLOW_SYMLINKS materials/*.cpp materials/*.h)
 
 # Python sources and files
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp)
+file(GLOB_RECURSE python_plask_headers FOLLOW_SYMLINKS python/plask/*.h FOLLOW_SYMLINKS python/plask/*.hpp)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
 
 # GUI sources
@@ -395,6 +396,7 @@ if(BUILD_PYTHON)
             install(TARGETS plaskcore LIBRARY DESTINATION ${PYTHON_MODULE_INSTALL_DIR} COMPONENT core)
         endif()
     endif()
+    install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
 endif()
 
 if(BUILD_GUI)
