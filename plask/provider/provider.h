@@ -141,6 +141,8 @@ struct Provider {
          * @param from_where provider from which listener is being disconnected
          */
         virtual void onDisconnect(Provider* from_where) {}
+
+        virtual ~Listener() {}
     };
 
     ///Set of added (registered) listeners. This provider can call methods of listeners included in this set.
@@ -369,7 +371,7 @@ template <typename ValueT, typename SpaceType>
 struct OnMeshProvider: public Provider {
 
     /// Type of value provided by this (returned by operator()).
-    typedef shared_ptr< const std::vector<ValueT> > ProvidedValueType;
+    typedef DataVector<ValueT> ProvidedValueType;
 
     /**
      * @param dst_mesh set of requested points
@@ -762,7 +764,8 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
 
         virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh) const {
             //return copy of value for each point in dst_mesh
-            return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
+            //return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
+            return ProvidedValueType(dst_mesh.size(), value);
         }
     };
 
@@ -857,7 +860,8 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
 
         virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod) const {
             //return copy of value for each point in dst_mesh, ignore interpolation method
-            return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
+            //return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
+            return ProvidedValueType(dst_mesh.size(), value);
         }
     };
 

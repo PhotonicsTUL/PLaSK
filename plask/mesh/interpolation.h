@@ -74,6 +74,7 @@ Typically, the code of the function should iterate over all the points of the @a
 #include "mesh.h"
 #include "../exceptions.h"
 #include "../memory.h"
+#include "../data.h"
 
 namespace plask {
 
@@ -103,7 +104,7 @@ static const char* interpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE",
 template <typename SrcMeshT, typename DataT, InterpolationMethod method>
 struct InterpolationAlgorithm
 {
-    static void interpolate(SrcMeshT& src_mesh, const std::vector<DataT>& src_vec, const Mesh<SrcMeshT::dim>& dst_mesh, std::vector<DataT>& dst_vec) {
+    static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec, const Mesh<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
         std::string msg = "interpolate (source mesh type: ";
         msg += typeid(src_mesh).name();
         msg += ", interpolation method: ";
@@ -119,8 +120,8 @@ struct InterpolationAlgorithm
 template <typename SrcMeshT, typename DataT, int iter>
 struct __InterpolateMeta__
 {
-    inline static void interpolate(SrcMeshT& src_mesh, const std::vector<DataT>& src_vec,
-                Mesh<SrcMeshT::dim>& dst_mesh, std::vector<DataT>& dst_vec, InterpolationMethod method) {
+    inline static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
+                Mesh<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
         if (int(method) == iter)
             InterpolationAlgorithm<SrcMeshT, DataT, (InterpolationMethod)iter>::interpolate(src_mesh, src_vec, dst_mesh, dst_vec);
         else
@@ -130,8 +131,8 @@ struct __InterpolateMeta__
 template <typename SrcMeshT, typename DataT>
 struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
 {
-    inline static void interpolate(SrcMeshT& src_mesh, const std::vector<DataT>& src_vec,
-                Mesh<SrcMeshT::dim>& dst_mesh, std::vector<DataT>& dst_vec, InterpolationMethod method) {
+    inline static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
+                Mesh<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
         throw CriticalException("no such interpolation method");
     }
 };
@@ -152,27 +153,26 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  * @see @ref meshes_interpolation
  */
 template <typename SrcMeshT, typename DataT>
-inline shared_ptr<const std::vector<DataT>>
-interpolate(SrcMeshT& src_mesh, shared_ptr<const std::vector<DataT>> src_vec_ptr,
+inline const DataVector<DataT>
+interpolate(SrcMeshT& src_mesh, const DataVector<DataT> src_vec_ptr,
             Mesh<SrcMeshT::dim>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
 {
     if (&src_mesh == &dst_mesh) return src_vec_ptr; // meshes are identical, so just return src_vec
 
-    shared_ptr<std::vector<DataT>> result {new std::vector<DataT>};
-    result->resize(dst_mesh.size());
-    __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, *src_vec_ptr, dst_mesh, *result, method);
+    DataVector<DataT> result(dst_mesh.size());
+    __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, src_vec_ptr, dst_mesh, result, method);
     return result;
 }
 
 #ifndef DOXYGEN
 // This is necessary for passing non-const src_vec_ptr.
 // Apparently C++ has problems with proper casting is the vector is template argument of shared_ptr
-template <typename SrcMeshT, typename DataT>
+/*template <typename SrcMeshT, typename DataT>
 inline shared_ptr<const std::vector<DataT>>
 interpolate(SrcMeshT& src_mesh, shared_ptr<std::vector<DataT>> src_vec_ptr,
             Mesh<SrcMeshT::dim>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION) {
     return interpolate(src_mesh, (shared_ptr<const std::vector<DataT>>&&)src_vec_ptr, dst_mesh, method);
-}
+}*/
 #endif // DOXYGEN
 
 } // namespace plask

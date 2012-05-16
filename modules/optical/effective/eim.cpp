@@ -99,8 +99,7 @@ void EffectiveIndex2dModule::updateCache()
 
     if (updated || inTemperature.changed) {
         // Either temperature or structure changed, so we need to get refractive indices
-        auto temperature_ptr = inTemperature(*mesh);
-        const std::vector<double>& temp = *temperature_ptr;
+        auto temp = inTemperature(*mesh);
 
         for (size_t i = xbegin; i != xsize; ++i) {
             size_t tx0 = (i > 0)? i - 1 : 0;
@@ -129,7 +128,7 @@ dcomplex EffectiveIndex2dModule::char_val(dcomplex x)
 
 
 
-shared_ptr<const std::vector<double>> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method)
+const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method)
 {
 
 

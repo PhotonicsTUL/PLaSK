@@ -332,9 +332,10 @@ auto RectilinearMesh2d::interpolateLinear(const RandomAccessContainer& data, con
 
 template <typename DataT>    // for any data type
 struct InterpolationAlgorithm<RectilinearMesh2d, DataT, LINEAR> {
-    static void interpolate(RectilinearMesh2d& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<2>& dst_mesh, std::vector<DataT>& dst_vec) {
+    static void interpolate(RectilinearMesh2d& src_mesh, const DataVector<DataT>& src_vec, const plask::Mesh<2>& dst_mesh, DataVector<DataT>& dst_vec) {
+        auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
-            dst_vec.push_back(src_mesh.interpolateLinear(src_vec, p));
+            *dst++ = src_mesh.interpolateLinear(src_vec, p);
     }
 };
 

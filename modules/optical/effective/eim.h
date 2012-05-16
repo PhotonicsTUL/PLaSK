@@ -143,7 +143,7 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     dcomplex char_val(dcomplex x);
 
     /// Method computing the distribution of light intensity
-    shared_ptr<const std::vector<double>> getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);
+    const DataVector<double> getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);
 
 };
 
