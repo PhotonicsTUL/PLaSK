@@ -100,8 +100,8 @@ void EffectiveIndex2dModule::updateCache()
     if (updated || inTemperature.changed || inWavelength.changed) {
         // Either temperature, structure, or wavelength changed, so we need to get refractive indices
 
-        k02 = 2*M_PI / inWavelength();;
-        double w = real(k02);
+        k0 = 2*M_PI / inWavelength();;
+        double w = real(k0);
 
         auto temp = inTemperature(*mesh);
 
@@ -123,13 +123,34 @@ void EffectiveIndex2dModule::updateCache()
 
 /********* Here are the computations *********/
 
-Eigen::Matrix2cd EffectiveIndex2dModule::getStripeMatrix(size_t n, std::vector<Eigen::Matrix2cd>* fields=nullptr)
-{
+/* It would probably be better to use S-matrix method, but for simplicity we use T-matrix */
 
+using namespace Eigen;
+
+Matrix2cd EffectiveIndex2dModule::get1Matrix(size_t column)
+{
+    size_t N = nrCache[column].size();
+
+    auto fresnelT = [&](size_t i) -> Matrix2cd {
+        dcomplex n = 0.5 * nrCache[column][i] / nrCache[column][i+1];
+        Matrix2cd M; M << (0.5+n), (0.5-n),
+                          (0.5-n), (0.5+n);
+        return M;
+    };
+
+    Matrix2cd T = fresnelT(0);
+
+    for (size_t i = 1; i < N-1; ++i) {
+        dcomplex n = nrCache[column][i];
+        double d = mesh->c1[i] - mesh->c1[i-1];
+        dcomplex phas = exp(-I*n*d*k0);
+        DiagonalMatrix<dcomplex, 2> P;
+        P.diagonal() << phas, 1./phas;
+    }
 
 }
 
-Eigen::Matrix2cd EffectiveIndex2dModule::getMatrix(std::vector<std::vector<Eigen::Matrix2cd>>* fields=nullptr)
+Matrix2cd EffectiveIndex2dModule::getMatrix()
 {
 
 

@@ -12,7 +12,8 @@ set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works
 #add_definitions(-Wall)         # all warnings
 add_definitions(-std=c++0x)     # C++0x (C++11) standard
 
-include_directories(.)          # external modules can include plask using <plask/....h>
+include_directories(.)          # modules can include plask using <plask/plask.hpp>
+include_directories(python)     # modules can also include <plask/python.hpp>
 include_directories(extlib)     # place for local external libraries
 include_directories(${CMAKE_BINARY_DIR}/include) # for include config.h
 

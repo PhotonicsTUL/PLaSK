@@ -104,32 +104,11 @@ extern Config config;
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Format complex numbers in Python way
-namespace detail {
-
 template <typename T>
-struct Sc {
-    T v;
-    Sc(T c) : v(c) {}
-    friend inline std::ostream& operator<<(std::ostream& out, const Sc& c) {
-        out << c.v;
-        return out;
-    }
-};
+inline std::string pyformat(const T& v) { std::stringstream s; s << v; return s.str(); }
+
 template <>
-struct Sc<dcomplex> {
-    dcomplex v;
-    Sc(dcomplex c) : v(c) {}
-    friend inline std::ostream& operator<<(std::ostream& out, const Sc& c) {
-        double r = c.v.real(), i = c.v.imag();
-        out << "(" << r << ((i>=0)?"+":"") << i << "j)";
-        return out;
-    }
-};
-
-} // namespace plask::python::detail
-
-template <typename T>
-inline detail::Sc<T> sc(const T& v) { return detail::Sc<T>(v); }
+inline std::string pyformat<dcomplex>(const dcomplex& v) { return format("(%g%+gj)", real(v), imag(v)); }
 
 
 // ----------------------------------------------------------------------------------------------------------------------

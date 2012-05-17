@@ -1,4 +1,4 @@
-#include "python.hpp"
+#include "python_globals.h"
 #include <boost/python/stl_iterator.hpp>
 
 #include "../util/raw_constructor.h"

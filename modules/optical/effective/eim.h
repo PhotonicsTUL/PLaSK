@@ -40,7 +40,7 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
         SYMMETRY_NEGATIVE
     };
 
-    Symmetry symmetry;  ///< Structure symmetry
+    Symmetry symmetry;  ///< Symmetry of the searched modes
 
     double outer_distance; ///< Distance outside outer borders where material is sampled
 
@@ -106,20 +106,20 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     }
 
     /**
-     * Set the position of the matching interface at the bottom of the provided geometry element
+     * Set the position of the matching interface at the top of the provided geometry element
      *
      * \param path path to the element in the geometry
      */
-    void setInterface(const PathHints& path) {
+    void setInterfaceOn(const PathHints& path) {
         if (!mesh) setSimpleMesh();
         auto boxes = geometry->getLeafsBoundingBoxes(path);
         if (boxes.size() != 1) throw NotUniqueElementException();
-        interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].lower.up) - mesh->up().begin();
+        interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].upper.up) - mesh->up().begin();
         if (interface >= mesh->up().size()) interface = mesh->up().size() - 1;
     }
 
     /**
-     * Find the mode around the specified propagation constant.
+     * Find the mode around the specified effective index.
      *
      * This method remembers the determined mode, for retrieval of the field profiles.
      *
@@ -173,16 +173,16 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
 
   private:
 
-    dcomplex k02;       ///< Cache of the normalized frequency
+    dcomplex k0;        ///< Cache of the normalized frequency
 
     /// Cache the effective indices
     void updateCache();
 
-    /// Return the effective index of a single vertical stripe, optionally storing intermediate matrices for field computation
-    Eigen::Matrix2cd getStripeMatrix(size_t n, std::vector<Eigen::Matrix2cd>* fields);
+    /// Return the effective index of a single vertical stripe, optionally also computing fields
+    Eigen::Matrix2cd get1Matrix(std::size_t column);
 
-    /// Return the  effective index of the whole structure, optionally storing storing intermediate matrices for field computation
-    Eigen::Matrix2cd getMatrix(std::vector<std::vector<Eigen::Matrix2cd>>* fields);
+    /// Return the  effective index of the whole structure, optionally also computing fields
+    Eigen::Matrix2cd getMatrix();
 
     /// Return function value for root digger
     dcomplex char_val(dcomplex x);

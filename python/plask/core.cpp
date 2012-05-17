@@ -1,7 +1,7 @@
 #include <plask/exceptions.h>
 #include <plask/module.h>
 
-#include "python.hpp"
+#include "python_globals.h"
 #include <numpy/arrayobject.h>
 using namespace plask::python;
 

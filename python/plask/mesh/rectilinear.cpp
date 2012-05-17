@@ -1,4 +1,4 @@
-#include "../python.hpp"
+#include "../python_globals.h"
 #include <algorithm>
 #include <boost/python/stl_iterator.hpp>
 #include <numpy/arrayobject.h>

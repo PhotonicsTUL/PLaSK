@@ -93,6 +93,7 @@ See also example in plask::Temperature description.
 
 #include "log/log.h"
 #include "log/data.h"
+#include "mesh/mesh.h"
 #include "space.h"
 
 namespace plask {
@@ -129,6 +130,9 @@ class Module {
     }
 
   public:
+
+    /// Base class of this module (used for automatically determing its functionalities in meta-program)
+    typedef Module BASE_MODULE_TYPE;
 
     Module(): initialized(false) {}
 
@@ -193,20 +197,25 @@ class Module {
 /**
  * Base class for all modules operating on specified space
  */
-template <typename SpaceType>
+template <typename SpaceT>
 class ModuleOver: public Module {
 
     void diconnectGeometry() {
         if (this->geometry)
-            this->geometry->changedDisconnectMethod(this, &ModuleOver<SpaceType>::onGeometryChange);
+            this->geometry->changedDisconnectMethod(this, &ModuleOver<SpaceT>::onGeometryChange);
     }
 
   protected:
 
     /// Space in which the calculations are performed
-    shared_ptr<SpaceType> geometry;
+    shared_ptr<SpaceT> geometry;
 
   public:
+
+    typedef ModuleOver<CalculationSpace> BASE_MODULE_TYPE;
+
+    /// of the space for this module
+    typedef SpaceT SpaceType;
 
     ~ModuleOver() {
         diconnectGeometry();
@@ -222,72 +231,77 @@ class ModuleOver: public Module {
     }
 
     /**
+     * Get current module geometry space.
+     * @return current module geometry space
+     */
+    inline shared_ptr<SpaceT> getGeometry() const { return geometry; }
+
+    /**
      * Set new geometry for the module
      * @param geometry new geometry space
      */
-    void setGeometry(const shared_ptr<SpaceType>& geometry) {
+    void setGeometry(const shared_ptr<SpaceT>& geometry) {
         if (geometry == this->geometry) return;
         log(LOG_INFO, "Attaching geometry");
         diconnectGeometry();
         this->geometry = geometry;
         if (this->geometry)
-            this->geometry->changedConnectMethod(this, &ModuleOver<SpaceType>::onGeometryChange);
+            this->geometry->changedConnectMethod(this, &ModuleOver<SpaceT>::onGeometryChange);
         initialized = false;
     }
-
-    /**
-     * Get current module geometry space.
-     * @return current module geometry space
-     */
-    inline shared_ptr<SpaceType> getGeometry() const { return geometry; }
 };
 
 /**
  * Base class for all modules operating on specified space holding an external mesh
  */
-template <typename SpaceType, typename MeshType>
-class ModuleWithMesh: public ModuleOver<SpaceType> {
+template <typename SpaceT, typename MeshT>
+class ModuleWithMesh: public ModuleOver<SpaceT> {
 
     void diconnectMesh() {
         if (this->mesh)
-            this->mesh->changedDisconnectMethod(this, &ModuleWithMesh<SpaceType, MeshType>::onMeshChange);
+            this->mesh->changedDisconnectMethod(this, &ModuleWithMesh<SpaceT, MeshT>::onMeshChange);
     }
 
   protected:
 
-    /// Space in which the calculations are performed
-    shared_ptr<MeshType> mesh;
+    /// Mesh over which the calculations are performed
+    shared_ptr<MeshT> mesh;
 
   public:
+
+    typedef ModuleWithMesh<CalculationSpace, Mesh<SpaceT::DIMS>> BASE_MODULE_TYPE;
+
+    /// Type of the mesh for this module
+    typedef MeshT MeshType;
 
     /**
      * This method is called when mesh was changed.
      * It's just call invalidate(); but subclasses can customize it.
      * @param evt information about mesh changes
      */
-    virtual void onMeshChange(const typename MeshType::Event& evt) {
+    virtual void onMeshChange(const typename MeshT::Event& evt) {
         this->invalidate();
-    }
-
-    /**
-     * Set new mesh for the module
-     * @param new_mesh new geometry space
-     */
-    void setMesh(const shared_ptr<MeshType>& mesh) {
-        if (mesh == this->mesh) return;
-        log(LOG_INFO, "Attaching mesh");
-        diconnectMesh();
-        this->mesh = mesh;
-        if (this->mesh)
-            this->mesh->changedConnectMethod(this, &ModuleWithMesh<SpaceType, MeshType>::onMeshChange);
-        this->initialized = false;
     }
 
     /**
      * Get current module mesh.
      * @return current module mesh
      */
-    inline shared_ptr<MeshType> getMesh() const { return mesh; }
+    inline shared_ptr<MeshT> getMesh() const { return mesh; }
+
+    /**
+     * Set new mesh for the module
+     * @param new_mesh new geometry space
+     */
+    void setMesh(const shared_ptr<MeshT>& mesh) {
+        if (mesh == this->mesh) return;
+        log(LOG_INFO, "Attaching mesh");
+        diconnectMesh();
+        this->mesh = mesh;
+        if (this->mesh)
+            this->mesh->changedConnectMethod(this, &ModuleWithMesh<SpaceT, MeshT>::onMeshChange);
+        this->initialized = false;
+    }
 };
 
 

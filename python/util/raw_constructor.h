@@ -1,9 +1,9 @@
 #ifndef RAW_CONSTRUCTOR_HPP
 #define RAW_CONSTRUCTOR_HPP
 
-#include "boost/python.hpp"
-#include "boost/python/detail/api_placeholder.hpp"
-#include "boost/python/raw_function.hpp"
+#include <boost/python.hpp>
+#include <boost/python/detail/api_placeholder.hpp>
+#include <boost/python/raw_function.hpp>
 
 namespace plask { namespace python {
 

@@ -4,7 +4,7 @@
 #include <plask/exceptions.h>
 #include <plask/config.h>
 
-#include "python.hpp"
+#include "python_globals.h"
 #include "../util/raw_constructor.h"
 
 #include <numpy/arrayobject.h>
@@ -39,7 +39,7 @@ template <int dim, typename T>
 std::string vec__str__(const Vec<dim,T>& to_print) {
     std::stringstream out;
     out << "[";
-    for (int i = 0; i < dim; ++i) out << sc(to_print[i]) << (i!=dim-1 ? ", " : "]");
+    for (int i = 0; i < dim; ++i) out << pyformat(to_print[i]) << (i!=dim-1 ? ", " : "]");
     return out.str();
 }
 
@@ -48,7 +48,7 @@ template <int dim, typename T>
 std::string vec__repr__(const Vec<dim,T>& to_print) {
     std::stringstream out;
     out << "plask.vec(";
-    for (int i = 0; i < dim; ++i) out << sc(to_print[i]) << (i!=dim-1 ? ", " : ")");
+    for (int i = 0; i < dim; ++i) out << pyformat(to_print[i]) << (i!=dim-1 ? ", " : ")");
     return out.str();
 }
 

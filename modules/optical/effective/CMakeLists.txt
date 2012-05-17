@@ -1,10 +1,4 @@
-#/// \file
-#///  This is a default module CMake file.
-#///
-#/// In most cases you should be able to use it without modifications.
-#
-
-# Setup everything necessary
+## Setup everything necessary
 include(${CMAKE_SOURCE_DIR}/cmake/modules.cmake)
 
 
@@ -13,7 +7,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/modules.cmake)
 # to find the libray in the system.
 #
 # Some libraries, that you can find using find_package command are:
-#  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB
+#  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB, Eigen3
 #
 #find_package(GSL)
 #set(MODULE_LINK_LIBRARIES ${GSL_LIBRARIES})
@@ -52,9 +46,9 @@ set(MODULE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
 #
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #set(MODULE_TEST_DEPENDS mytest)
-#enable_testing()
+enable_testing()
 #add_test(modules/foo/bar mytest)
-#add_python_test(modules/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
+add_python_test(modules/optical/effective ${CMAKE_CURRENT_SOURCE_DIR}/tests/effective.py)
 
 
 # Build everything the default way.
