@@ -131,14 +131,14 @@ Matrix2cd EffectiveIndex2dModule::get1Matrix(size_t column)
 {
     size_t N = nrCache[column].size();
 
-    auto fresnelT = [&](size_t i) -> Matrix2cd {
+    auto fresnel = [&](size_t i) -> Matrix2cd {
         dcomplex n = 0.5 * nrCache[column][i] / nrCache[column][i+1];
         Matrix2cd M; M << (0.5+n), (0.5-n),
                           (0.5-n), (0.5+n);
         return M;
     };
 
-    Matrix2cd T = fresnelT(0);
+    Matrix2cd T = fresnel(0);
 
     for (size_t i = 1; i < N-1; ++i) {
         dcomplex n = nrCache[column][i];
@@ -146,7 +146,11 @@ Matrix2cd EffectiveIndex2dModule::get1Matrix(size_t column)
         dcomplex phas = exp(-I*n*d*k0);
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;
+        T = P * T;
+        T = fresnel(i) * T;
     }
+
+    return T;
 
 }
 
