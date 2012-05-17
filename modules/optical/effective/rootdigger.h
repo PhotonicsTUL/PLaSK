@@ -11,7 +11,12 @@ class RootDigger {
 
     EffectiveIndex2dModule& module;
 
-  protected:
+    // Module method computing the value to zero
+    dcomplex (EffectiveIndex2dModule::*val_function)(const dcomplex&, size_t);
+
+    // Provided stripe number
+    size_t stripe_number;
+
     // Parameters for Broyden algorithm
     const double alpha, lambda_min, EPS;
 
@@ -29,14 +34,15 @@ class RootDigger {
 
   public:
 
-    // Constructors
-    RootDigger(EffectiveIndex2dModule& module) : module(module),
+    // Constructor
+    RootDigger(EffectiveIndex2dModule& module, dcomplex(EffectiveIndex2dModule::*val_fun)(const dcomplex&, size_t), size_t stripe_number) :
+        module(module),
+        val_function(val_fun),
+        stripe_number(stripe_number),
         alpha(1.0e-4),                                          // ensures sufficient decrease of charval in each step
         lambda_min(1.0e-7),                                     // minimum decreased ratio of the step (lambda)
         EPS(sqrt(std::numeric_limits<double>::epsilon()))       // square root of machine precission
     {};
-
-    RootDigger(const RootDigger& d) = default;
 
     /**
      * Look for the minima map browsing through given points

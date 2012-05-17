@@ -18,11 +18,6 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
 
     friend class RootDigger;
 
-    RootDigger rootdigger;
-
-    /// Interface position (mesh index)
-    size_t interface;
-
     /// Logger for char_val
     Data2dLog<dcomplex,double> log_value;
 
@@ -86,37 +81,39 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
         setMesh(meshxy);
     }
 
-    /**
-     * Get the position of the matching interface.
-     *
-     * \return index of the vertical mesh, where interface is set
-     */
-    inline size_t getInterface() { return interface; }
-
-    /**
-     * Set the position of the matching interface.
-     *
-     * \param index index of the vertical mesh, where interface is set
-     */
-    inline void setInterface(size_t index) {
-        if (!mesh) setSimpleMesh();
-        if (index < 0 || index >= mesh->up().size())
-            throw BadInput(getId(), "wrong interface position");
-        interface = index;
-    }
-
-    /**
-     * Set the position of the matching interface at the top of the provided geometry element
-     *
-     * \param path path to the element in the geometry
-     */
-    void setInterfaceOn(const PathHints& path) {
-        if (!mesh) setSimpleMesh();
-        auto boxes = geometry->getLeafsBoundingBoxes(path);
-        if (boxes.size() != 1) throw NotUniqueElementException();
-        interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].upper.up) - mesh->up().begin();
-        if (interface >= mesh->up().size()) interface = mesh->up().size() - 1;
-    }
+    // /**
+    //  * Get the position of the matching interface.
+    //  *
+    //  * \return index of the vertical mesh, where interface is set
+    //  */
+    // inline size_t getInterface() { return interface; }
+    //
+    // /**
+    //  * Set the position of the matching interface.
+    //  *
+    //  * \param index index of the vertical mesh, where interface is set
+    //  */
+    // inline void setInterface(size_t index) {
+    //     if (!mesh) setSimpleMesh();
+    //     if (index < 0 || index >= mesh->up().size())
+    //         throw BadInput(getId(), "wrong interface position");
+    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->up()[index], index);
+    //     interface = index;
+    // }
+    //
+    // /**
+    //  * Set the position of the matching interface at the top of the provided geometry element
+    //  *
+    //  * \param path path to the element in the geometry
+    //  */
+    // void setInterfaceOn(const PathHints& path) {
+    //     if (!mesh) setSimpleMesh();
+    //     auto boxes = geometry->getLeafsBoundingBoxes(path);
+    //     if (boxes.size() != 1) throw NotUniqueElementException();
+    //     interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].upper.up) - mesh->up().begin();
+    //     if (interface >= mesh->up().size()) interface = mesh->up().size() - 1;
+    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->up()[interface], interface);
+    // }
 
     /**
      * Find the mode around the specified effective index.
@@ -179,13 +176,16 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     void updateCache();
 
     /// Return the effective index of a single vertical stripe, optionally also computing fields
-    Eigen::Matrix2cd get1Matrix(std::size_t column);
+    Eigen::Matrix2cd getMatrix1(const dcomplex& neff, std::size_t stripe);
+
+    /// Return S matrix deteminant for one stripe
+    dcomplex detS1(const dcomplex& x, std::size_t stripe);
 
     /// Return the  effective index of the whole structure, optionally also computing fields
-    Eigen::Matrix2cd getMatrix();
+    Eigen::Matrix2cd getMatrix(const dcomplex& neff);
 
-    /// Return function value for root digger
-    dcomplex char_val(dcomplex x);
+    /// Return S matrix deteminant for the whole structure
+    dcomplex detS(const dcomplex& x, std::size_t);
 
     /// Method computing the distribution of light intensity
     const DataVector<double> getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);

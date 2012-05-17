@@ -53,10 +53,8 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(tolf_max, "Required tolerance on the function value");
         RW_FIELD(maxstep, "Maximum step in one iteration");
         RW_FIELD(maxiterations, "Maximum number of iterations");
-        RW_PROPERTY(interface, getInterface, setInterface, "Vertical mesh index indicating the position of the matching interface");
         METHOD(setSimpleMesh, "Set simple mesh based on the geometry elements bounding boxes");
         METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry elements bounding boxes", "points");
-        METHOD(setInterfaceOn, "Set the position of the matching interface at the bottom of the geometry element indicated by path", "path");
         METHOD(computeMode, "Find the mode near the specified effective index", "neff");
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);

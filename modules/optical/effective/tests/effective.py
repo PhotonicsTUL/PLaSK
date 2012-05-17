@@ -21,11 +21,6 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         for i in range(5): stack.append(rect)
         space = Space2DCartesian(stack, left="mirror")
         self.module.geometry = space
-        self.module.setInterfaceOn(hint)
-
-    def testInterface(self):
-        self.assertEqual( self.module.interface, 5 )
-        self.assertEqual( list(self.module.mesh.axis1), range(11) )
 
     def testSymmetry(self):
         self.assertIsNone( self.module.symmetry )

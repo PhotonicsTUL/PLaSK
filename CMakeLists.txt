@@ -99,7 +99,7 @@ find_package(Boost REQUIRED COMPONENTS ${boost_components})
 include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
-    add_definitions(-Wno-attributes) # get rid of annoying warning in Boost
+    add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------

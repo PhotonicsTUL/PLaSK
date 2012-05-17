@@ -3,7 +3,6 @@
 namespace plask { namespace modules { namespace eim {
 
 EffectiveIndex2dModule::EffectiveIndex2dModule() :
-    rootdigger(*this),
     symmetry(NO_SYMMETRY),
     tolx(1.0e-07),                                          // absolute tolerance on the argument
     tolf_min(1.0e-12),                                      // sufficient tolerance on the function value
@@ -20,7 +19,7 @@ dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
 {
     updateCache();
 
-    dcomplex result = rootdigger.getSolution(neff);
+    dcomplex result = RootDigger(*this, &EffectiveIndex2dModule::detS, 0).getSolution(neff);
 
     outNeff = result;
     return result;
@@ -31,7 +30,7 @@ dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
 std::vector<dcomplex> EffectiveIndex2dModule::findModes(dcomplex neff1, dcomplex neff2, unsigned steps, unsigned nummodes)
 {
     updateCache();
-    return rootdigger.searchSolutions(neff1, neff2, steps, 0, nummodes);
+    return RootDigger(*this, &EffectiveIndex2dModule::detS, 0).searchSolutions(neff1, neff2, steps, 0, nummodes);
 }
 
 
@@ -51,7 +50,7 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomp
     std::vector<double> ipoints(1, imag(neff1));
     if (imag(neff2) != imag(neff1)) ipoints.push_back(imag(neff2));
 
-    return rootdigger.findMap(rpoints, ipoints);
+    return RootDigger(*this, &EffectiveIndex2dModule::detS, 0).findMap(rpoints, ipoints);
 }
 
 
@@ -127,12 +126,12 @@ void EffectiveIndex2dModule::updateCache()
 
 using namespace Eigen;
 
-Matrix2cd EffectiveIndex2dModule::get1Matrix(size_t column)
+Matrix2cd EffectiveIndex2dModule::getMatrix1(const dcomplex& neff, size_t stripe)
 {
-    size_t N = nrCache[column].size();
+    size_t N = nrCache[stripe].size();
 
     auto fresnel = [&](size_t i) -> Matrix2cd {
-        dcomplex n = 0.5 * nrCache[column][i] / nrCache[column][i+1];
+        dcomplex n = 0.5 * nrCache[stripe][i] / nrCache[stripe][i+1];
         Matrix2cd M; M << (0.5+n), (0.5-n),
                           (0.5-n), (0.5+n);
         return M;
@@ -141,9 +140,9 @@ Matrix2cd EffectiveIndex2dModule::get1Matrix(size_t column)
     Matrix2cd T = fresnel(0);
 
     for (size_t i = 1; i < N-1; ++i) {
-        dcomplex n = nrCache[column][i];
+        dcomplex n = sqrt(nrCache[stripe][i]*nrCache[stripe][i] - neff*neff); //FIXME check this
         double d = mesh->c1[i] - mesh->c1[i-1];
-        dcomplex phas = exp(-I*n*d*k0);
+        dcomplex phas = exp(-I * n * d * k0);
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;
         T = P * T;
@@ -151,29 +150,31 @@ Matrix2cd EffectiveIndex2dModule::get1Matrix(size_t column)
     }
 
     return T;
-
 }
 
-Matrix2cd EffectiveIndex2dModule::getMatrix()
+dcomplex EffectiveIndex2dModule::detS1(const dcomplex& x, std::size_t stripe)
 {
-
-
+    Matrix2cd T = getMatrix1(x, stripe);
+    //TODO
 }
 
 
-dcomplex EffectiveIndex2dModule::char_val(dcomplex x)
+Matrix2cd EffectiveIndex2dModule::getMatrix(const dcomplex& neff)
 {
+    //TODO
+}
 
 
-
+dcomplex EffectiveIndex2dModule::detS(const dcomplex& x, std::size_t)
+{
+    //TODO
 }
 
 
 
 const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method)
 {
-
-
+    //TODO
 }
 
 

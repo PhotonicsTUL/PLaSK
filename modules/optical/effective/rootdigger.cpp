@@ -5,7 +5,7 @@ using namespace std;
 namespace plask { namespace modules { namespace eim {
 
 dcomplex RootDigger::value(dcomplex x, bool count) const{
-    dcomplex y = module.char_val(x);
+    dcomplex y = (module.*val_function)(x, stripe_number);
     double ay = abs(y);
     if (count) module.log_value.count(x, ay);
     else module.log_value(x, ay);
