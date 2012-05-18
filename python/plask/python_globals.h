@@ -31,7 +31,7 @@ namespace py = boost::python;
 
 template <typename ExcType>
 void register_exception(PyObject* py_exc) {
-    py::register_exception_translator<ExcType>([=](const ExcType& err){ PyErr_SetString(py_exc, err.what()); });
+    py::register_exception_translator<ExcType>( [=](const ExcType& err) { PyErr_SetString(py_exc, err.what()); } );
 }
 
 struct ValueError: public Exception {

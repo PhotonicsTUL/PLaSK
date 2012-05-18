@@ -51,7 +51,9 @@ Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters
 Example:
 @code
 // Physical property tag class for something.
-struct MyProperty: public plask::SingleValueProperty<double> {};
+struct MyProperty: public plask::SingleValueProperty<double> {
+    static constexpr const char* NAME = "my property"; // use lowercase here
+};
 
 // Base type for MyProperty provider.
 typedef plask::ProviderFor<MyProperty> MyPropertyProvider;
@@ -63,7 +65,7 @@ typedef plask::ReceiverFor<MyProperty> MyPropertyReceiver;
 // Usage example:
 MyPropertyProvider::WithValue provider; //or MyPropertyProvider::WithOptionalValue provider;
 MyPropertyReceiver receiver;
-reciver <<= provider;     //connect
+reciver << provider;     //connect
 @endcode
 
 @subsection providers_writing_manual Flexible (manual) way
@@ -245,7 +247,7 @@ struct Receiver: public Provider::Listener {
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, can be @c nullptr to only disconnect from current provider.
      */
-    void operator<<=(ProviderT *provider) {
+    void operator<<(ProviderT *provider) {
         setProvider(provider);
     }
 
@@ -253,7 +255,7 @@ struct Receiver: public Provider::Listener {
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider
      */
-    void operator<<=(ProviderT &provider) {
+    void operator<<(ProviderT &provider) {
         setProvider(&provider);
     }
 
@@ -557,9 +559,9 @@ struct ProviderImpl {};
 /**
  * Specializations of this class define implementations of providers for given property tag:
  * - ProviderFor<PropertyTag, SpaceType> is abstract, base class which inherited from Provider;
- * - ProviderFor<PropertyTag, SpaceType>::Delegate is class inharited from ProviderFor<PropertyTag, SpaceType> which delegate all request to functor given as constructor parameter;
- * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field) and know if it was initialized;
- * - ProviderFor<PropertyTag, SpaceType>::WithValueNoOptional is class inharited from ProviderFor<PropertyTag, SpaceType> which store provided value (has value field) and doesn't know if it was initialized (should always have resonable value).
+ * - ProviderFor<PropertyTag, SpaceType>::Delegate is class inherited from ProviderFor<PropertyTag, SpaceType> which delegates all request to functor given as constructor parameter;
+ * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inherited from ProviderFor<PropertyTag, SpaceType> which stores provided value (has value field) and know if it was initialized;
+ * - ProviderFor<PropertyTag, SpaceType>::WithDefaultValue is class inherited from ProviderFor<PropertyTag, SpaceType> which stores provided value (has value field) and doesn't know if it was initialized (should always have reasonable default value).
  * @tparam PropertyTag property tag class (describe physical property)
  * @tparam SpaceType type of space, required (and allowed) only for fields properties
  * @see plask::Temperature (includes example); @ref providers
@@ -570,7 +572,7 @@ struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::Value
     /// Delegate all constructors to parent class.
     template<typename ...Args>
     ProviderFor(Args&&... params)
-    : ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, typename PropertyTag::SpaceType>(std::forward<Args>(params)...) {
+    : ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType>(std::forward<Args>(params)...) {
     }
 
 };
@@ -607,7 +609,7 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
 //struct ReceiverFor: public Receiver< ProviderFor<PropertyTag> > {};
 
 /**
- * Partial specialization which implement abstract provider class which provide one value, typically one double.
+ * Partial specialization which implements abstract provider class which provides a single value, typically one double.
  *
  * @tparam PropertyTag
  * @tparam ValueT type of provided value
@@ -623,9 +625,9 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     typedef typename SingleValueProvider<ValueT>::ProvidedValueType ProvidedValueType;
 
     /**
-     * Implementation of one value provider class which holds value inside (in value field) and operator() return this holded value.
+     * Implementation of one value provider class which holds value inside (in value field) and operator() returns this hold value.
      */
-    struct WithValueNoOptional: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
+    struct WithDefaultValue: public ProviderFor<PropertyTag, SpaceType> {
 
         ///Type of provided value.
         typedef ValueT ProvidedValueType;
@@ -635,14 +637,14 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
 
         /// Delegate all constructors to value.
         template<typename ...Args>
-        WithValueNoOptional(Args&&... params): value(std::forward<Args>(params)...) {}
+        WithDefaultValue(Args&&... params): value(std::forward<Args>(params)...) {}
 
         /**
          * Set new value.
          * @param v new value
          * @return *this
          */
-        WithValueNoOptional& operator=(const ValueT& v) {
+        WithDefaultValue& operator=(const ValueT& v) {
             value = v;
             return *this;
         }
@@ -663,7 +665,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() return this hold value.
      */
-    struct WithValue: public ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType> {
+    struct WithValue: public ProviderFor<PropertyTag, SpaceType> {
 
         /// Type of provided value.
         typedef ValueT ProvidedValueType;
@@ -721,7 +723,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     /**
      * Implementation of one value provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>, ProvidedValueType() > Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyTag, SpaceType>, ProvidedValueType()> Delegate;
 
     /// Used by receivers as const value provider, see Receiver::setConst
     typedef WithValue ConstProviderT;
@@ -729,7 +731,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
 };
 
 /**
- * Partial specialization which implement providers classes which provide values in points describe by mesh,
+ * Partial specialization which implements providers classes which provide values in mesh points
  * and don't use interpolation.
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
@@ -744,7 +746,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>, ProvidedValueType(const Mesh<SpaceType::DIMS>& dst_mesh) > Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyTag, SpaceType>, ProvidedValueType(const Mesh<SpaceType::DIMS>& dst_mesh)> Delegate;
 
     /**
      * Return same value in all points.
@@ -772,7 +774,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
 };
 
 /**
- * Specialization which implements provider class which provides values in points described by mesh and use interpolation.
+ * Specialization which implements provider class which provides values in mesh points and uses interpolation.
  */
 template <typename PropertyTag, typename ValueT, typename SpaceType>
 struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>: public OnMeshProviderWithInterpolation<ValueT, SpaceType> {
@@ -789,7 +791,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
      * @tparam MeshType type of mesh which is used for calculation and which describe places of data points
      */
     template <typename MeshType>
-    struct WithValue: public ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType> {
+    struct WithValue: public ProviderFor<PropertyTag, SpaceType> {
 
         /// Type of provided value.
         typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
@@ -797,16 +799,19 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
         /// Provided value. Values in points describe by this->mesh.
         ProvidedValueType values;
 
-        /// Mesh which describe in which points are this->values.
+        /// Mesh which describes in which points there are this->values.
+// FIXME powinien być jako shared_ptr albo wręcz jako zwykły wskaźnik, bo moduły mogą dzielić siatki oraz jeden moduł może mieć kilka providerów
         MeshType mesh;
 
         /// Reset values to uninitilized state.
+// FIXME values to DataVector, a nie wskaźnik
         void reset() { values = 0; }
 
         /**
          * Check if this has value / is initialized.
          * @return @c true only if this is initialized (has value)
          */
+// FIXME values to DataVector, a nie wskaźnik
         bool hasValue() const { return values; }
 
         /// Delegate all constructors to mesh.
@@ -838,16 +843,16 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
     };
 
     /**
-     * Implementation of  field provider class which delegates all operator() calls to external functor.
+     * Implementation of field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider< ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>, ProvidedValueType(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method) > Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyTag, SpaceType>, ProvidedValueType(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method)> Delegate;
 
     /**
      * Return same value in all points.
      *
      * Used by receivers as const value provider, see Receiver::setConst
      */
-    struct ConstProviderT: public ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType> {
+    struct ConstProviderT: public ProviderFor<PropertyTag, SpaceType> {
 
         typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
 

@@ -43,6 +43,9 @@ void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object
  */
 BOOST_PYTHON_MODULE(effective)
 {
+    USING_PROPERTY(Wavelength);
+    USING_PROPERTY(EffectiveIndex);
+
     {CLASS(EffectiveIndex2dModule, "EffectiveIndex2D",
         "Calculate optical modes and optical field distribution using the effective index\n"
         "method in Cartesian two-dimensional space.")
@@ -58,5 +61,9 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(computeMode, "Find the mode near the specified effective index", "neff");
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
+        RECEIVER(inWavelength, "Wavelength of the light");
+        RECEIVER(inTemperature, "Temperature distribution in the structure");
+        PROVIDER(outNeff, "Effective index of the last computed mode");
+        PROVIDER(outIntensity, "Light intensity of the last computed mode");
     }
 }

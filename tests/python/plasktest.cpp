@@ -1,8 +1,6 @@
-#include <cmath>
-#include <boost/python.hpp>
-namespace py = boost::python;
-
 #include <plask/plask.hpp>
+#include <plask/python.hpp>
+namespace py = boost::python;
 
 //// Vector ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,6 +72,14 @@ std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
     return typeid(*material).name();
 }
 
+//// Provider & Receiver /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct ReceiverTest : plask::Module {
+    virtual std::string getName() const { return "Receiver Test"; }
+    plask::ReceiverFor<plask::EffectiveIndex> inNeff;
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
@@ -95,4 +101,9 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("materialTypeId", &materialTypeId);
 
+
+    plask::python::RegisterProvider<plask::EffectiveIndex>();
+    plask::python::ExportModule<ReceiverTest>("ReceiverTest")
+        .add_receiver("inNeff", &ReceiverTest::inNeff, "Test receiver")
+    ;
 }

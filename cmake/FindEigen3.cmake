@@ -50,5 +50,3 @@ find_package_handle_standard_args(Eigen3 REQUIRED_VARS EIGEN3_INCLUDE_DIR
                                          VERSION_VAR EIGEN3_VERSION)
 
 mark_as_advanced(EIGEN3_INCLUDE_DIR)
-
-

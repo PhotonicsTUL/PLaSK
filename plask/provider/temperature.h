@@ -8,7 +8,7 @@ namespace plask {
 /**
  * Physical property tag class for temperature:
  *
- * - plask::ProviderFor<Temperature> is an abstract base class for temperature providers, which has following implementation:
+ * - plask::ProviderFor<Temperature> is an abstract base class for temperature providers, which has following implementations:
  *      - plask::ProviderFor<Temperature>::Delegate is a class for temperature provider which delegate calls to functor given in its constructor;
  *      - plask::ProviderFor<Temperature>::WithValue is a template (parametrized by mesh type) of class for temperature provider which holds vector of value (value member) and mesh (mesh member).
  * - plask::ReceiverFor<Temperature> is a class for temperature receivers.
@@ -20,7 +20,7 @@ namespace plask {
  *      plask::ProviderFor<Temperature, plask::Cartesian2d>::WithValue<SomeMeshType> outTemperature;
  *      // outTemperature.value stores temperature values in points pointed by outTemperature.mesh
  *      // outTemperature.value has type plask::shared_ptr< std::vector<double> >
- *      // outTemperature.mesh has type SomeMeshType (which should inharit from plask::Mest<plask::Cartesian2d>)
+ *      // outTemperature.mesh has type SomeMeshType (which should inherit from plask::Mesh<plask::Cartesian2d>)
  *      // ...
  * };
  *
@@ -45,13 +45,15 @@ namespace plask {
  * PModule1 m1;
  * PModule2 m2;
  * RModule r;
- * r.inTemperature <<= m1.outTemperature;   //connect
- * r.inTemperature <<= m2.outTemperature;   //change data source of r from m1 to m2
+ * r.inTemperature << m1.outTemperature;   //connect
+ * r.inTemperature << m2.outTemperature;   //change data source of r from m1 to m2
  * @endcode
  *
  * @see @ref modules_write; @ref providers; plask::ProviderFor
  */
-struct Temperature: public ScalarFieldProperty {};
+struct Temperature: public ScalarFieldProperty {
+    static constexpr const char* NAME = "temperature"; // mind lower case here
+};
 
 //TODO in gcc 4.7 can be done by new typedefs:
 

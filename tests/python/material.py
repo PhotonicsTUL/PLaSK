@@ -3,12 +3,11 @@
 import unittest
 
 from numpy import *
-
-import plasktest as ptest
-
 import sys
 
 import plask.materials
+import plasktest as ptest
+
 
 class Material(unittest.TestCase):
 

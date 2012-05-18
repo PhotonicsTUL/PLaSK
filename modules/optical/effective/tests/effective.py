@@ -9,7 +9,6 @@ from plask import geometry
 from plask.optical.effective import EffectiveIndex2D
 
 
-
 class EffectiveIndex2D_Test(unittest.TestCase):
 
     def setUp(self):
@@ -26,3 +25,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.assertIsNone( self.module.symmetry )
         self.module.symmetry = "-"
         self.assertEqual( self.module.symmetry, "negative" )
+
+    def testReceivers(self):
+        self.module.inWavelength = 850.
+        self.assertEqual( self.module.inWavelength(), 850. )

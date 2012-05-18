@@ -140,7 +140,8 @@ Matrix2cd EffectiveIndex2dModule::getMatrix1(const dcomplex& neff, size_t stripe
     Matrix2cd T = fresnel(0);
 
     for (size_t i = 1; i < N-1; ++i) {
-        dcomplex n = sqrt(nrCache[stripe][i]*nrCache[stripe][i] - neff*neff); //FIXME check this
+        dcomplex n = sqrt(nrCache[stripe][i]*nrCache[stripe][i] - neff*neff);
+        if (real(n) < 0) n = -n; // Is this necessary? Just to be on the safe side?
         double d = mesh->c1[i] - mesh->c1[i-1];
         dcomplex phas = exp(-I * n * d * k0);
         DiagonalMatrix<dcomplex, 2> P;
@@ -168,6 +169,7 @@ Matrix2cd EffectiveIndex2dModule::getMatrix(const dcomplex& neff)
 dcomplex EffectiveIndex2dModule::detS(const dcomplex& x, std::size_t)
 {
     //TODO
+    return 0.;
 }
 
 

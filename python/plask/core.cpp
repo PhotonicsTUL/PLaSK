@@ -1,4 +1,5 @@
 #include <plask/exceptions.h>
+#include <plask/mesh/interpolation.h>
 #include <plask/module.h>
 
 #include "python_globals.h"
@@ -15,6 +16,8 @@ void register_vector();
 void register_mesh();
 void register_providers();
 void register_calculation_spaces();
+
+void register_data_vector();
 
 // Hack necessary as macro import_array wants to return some value
 static inline bool plask_import_array() {
@@ -65,6 +68,9 @@ BOOST_PYTHON_MODULE(plaskcore)
     // Meshes
     register_mesh();
 
+    // Data vector
+    register_data_vector();
+
     // Modules
     py::class_<plask::Module, plask::shared_ptr<plask::Module>, boost::noncopyable>("Module", "Base class for all modules", py::no_init)
         .add_property("name", &plask::Module::getName, "Full name of the module")
@@ -82,6 +88,8 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_exception<plask::BadInput>(PyExc_ValueError);
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
 
+    register_exception<plask::NoValue>(PyExc_ValueError);
+    register_exception<plask::NoProvider>(PyExc_TypeError);
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

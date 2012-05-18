@@ -178,13 +178,13 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     /// Return the effective index of a single vertical stripe, optionally also computing fields
     Eigen::Matrix2cd getMatrix1(const dcomplex& neff, std::size_t stripe);
 
-    /// Return S matrix deteminant for one stripe
+    /// Return S matrix determinant for one stripe
     dcomplex detS1(const dcomplex& x, std::size_t stripe);
 
     /// Return the  effective index of the whole structure, optionally also computing fields
     Eigen::Matrix2cd getMatrix(const dcomplex& neff);
 
-    /// Return S matrix deteminant for the whole structure
+    /// Return S matrix determinant for the whole structure
     dcomplex detS(const dcomplex& x, std::size_t);
 
     /// Method computing the distribution of light intensity

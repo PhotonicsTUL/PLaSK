@@ -4,9 +4,9 @@ import unittest
 
 from numpy import *
 
+import plask.mesh
 import plasktest as ptest
 
-import plask.mesh
 
 
 
