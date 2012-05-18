@@ -98,7 +98,7 @@ typedef Receiver<ScalerProvider> ScalerReceiver;
 // Usage example:
 ScalerProvider sp(2.0);
 ScalerReceiver sr;
-sr <<= sp;        //connect
+sr << sp;        //connect
 assert(sr(3.0) == 6.0);
 @endcode
 */
