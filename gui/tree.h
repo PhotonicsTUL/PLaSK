@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <plask/geometry/element.h>
 #include <plask/memory.h>
+#include <memory>
 
 #include "utils/propbrowser.h"
 
@@ -28,7 +29,7 @@ protected:
     GeometryTreeModel *model;
 
     /// Children of this item.
-    QList<GeometryTreeItem*> childItems;
+    std::vector< std::unique_ptr<GeometryTreeItem> > childItems;
 
     /// Cache for miniature
     QPixmap miniature;
@@ -69,7 +70,7 @@ protected:
     /**
      * Delete children cache and childrenInitialized to @c false.
      */
-    void deinitializeChildren();
+    void deinitializeChildren();    //TODO can't be used
 
 public:
 
@@ -80,7 +81,7 @@ public:
     /**
      * Index of this in parents item childItems. 0 for root.
      */
-    std::size_t inParentIndex;
+    //std::size_t inParentIndex;
 
     /**
      * Parent of this in tree.
