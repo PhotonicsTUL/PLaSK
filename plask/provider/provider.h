@@ -753,7 +753,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
      *
      * Used by receivers as const value provider, see Receiver::setConst
      */
-    struct ConstProviderT: public ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType> {
+    struct ConstProviderT: public ProviderFor<PropertyTag, SpaceType> {
 
         typedef ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
 
