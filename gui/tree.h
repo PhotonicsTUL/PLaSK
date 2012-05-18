@@ -66,6 +66,11 @@ protected:
      */
     void constructChildrenItems();
 
+    /**
+     * Delete children cache and childrenInitialized to @c false.
+     */
+    void deinitializeChildren();
+
 public:
 
     virtual plask::shared_ptr<plask::GeometryElement> getLowerWrappedElement() {

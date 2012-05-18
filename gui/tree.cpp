@@ -39,6 +39,13 @@ void GeometryTreeItem::constructChildrenItems() {
     appendChildrenItems();
 }
 
+void GeometryTreeItem::deinitializeChildren()
+{
+    qDeleteAll(childItems);
+    childItems.clear();
+    childrenInitialized = false;
+}
+
 plask::shared_ptr<plask::GeometryElement> GeometryTreeItem::parent() {
     return parentItem ?
         parentItem->getLowerWrappedElement() :
@@ -108,7 +115,9 @@ QModelIndex GeometryTreeItem::getIndex() {
 void GeometryTreeItem::onChanged(const plask::GeometryElement::Event& evt) {
     auto index = getIndex();
     miniatureInitialized = false;
-    if (evt.hasChangedChildrenList()) childrenInitialized = false;
+    if (evt.hasChangedChildrenList()) {
+        deinitializeChildren();
+    }
     emit model->dataChanged(index, index);  //TODO czy ten sygnał jest wystarczający jeśli lista dzieci się zmieniła?
 }
 
@@ -123,7 +132,7 @@ void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<plask::Geomet
 bool GeometryTreeItem::removeRange(std::size_t begin_index, std::size_t end_index) {
     if (auto e = getLowerWrappedElement()) {
         if (e->removeRange(begin_index, end_index)) {
-            childrenInitialized = false;
+            deinitializeChildren();
             return true;
         }
     }
