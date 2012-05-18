@@ -8,9 +8,14 @@
 namespace plask {
 
 /**
- * Store pointer and size.
+ * Store pointer and size. Is like inteligent pointer for plain data arrays.
  *
- * Has reference counter, and also can referee to external data (without management it).
+ * Can work in two modes:
+ * - manage - data will be deleted (by delete[]) by destructor of last DataVector instance which referee to this data (reference counting is using);
+ * - non-manage - data will be not deleted by DataVector (so DataVector just referee to external data).
+ *
+ * In both cases, asign operation and copy constructor of DataVector do not copy the data, but just create DataVectors which referee to the same data.
+ * So both of this operations are very fast.
  */
 template <typename T>
 class DataVector {
@@ -77,7 +82,6 @@ class DataVector {
      */
     DataVector(DataVector&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
         src.gc_ = nullptr;
-        src.data_ = nullptr;
     }
 
     /**
@@ -90,7 +94,6 @@ class DataVector {
         size_ = src.size_;
         data_ = src.data_;
         gc_ = src.gc_;
-        src.data_ = nullptr;
         src.gc_ = nullptr;*/
         swap(src);
         return *this;
@@ -100,7 +103,7 @@ class DataVector {
      * Create vector out of existing data.
      * @param size  total size of the existing data
      * @param existing_data pointer to existing data
-     * @param manage indicates whether the matrix object should manage the data and garbage-collect it (with delete[] operator)
+     * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
     DataVector(T* existing_data, std::size_t size, bool manage = false)
         : size_(size), gc_(manage ? new unsigned(1) : nullptr), data_(existing_data) {}
@@ -205,6 +208,10 @@ class DataVector {
         return unique() ? *this : copy();
     }
 
+    /**
+     * Swap all internals of this and @p other.
+     * @param other data vector to swap with
+     */
     void swap(DataVector<T>& other) {
         std::swap(size_, other.size_);
         std::swap(gc_, other.gc_);

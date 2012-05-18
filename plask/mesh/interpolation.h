@@ -18,10 +18,10 @@ plask::interpolate method calculates and returns @a dst_vec for a given
 
 plask::interpolate can return a newly created vector or the @a src_vec if @a src_mesh and @a dst_mesh are the same.
 Furthermore, the lifespan of both source and destination data cannot be determined in advance.
-For this reason @a src_vec is passed and @a dst_vec is returned through an shared_ptr, a smart pointer
+For this reason @a src_vec is passed and @a dst_vec is returned through an DataVector,
 which is responsible for deleting the data in the proper time (i.e. when all the existing modules delete their copy
 of the pointer, indicating they are not going to use this data any more). However, for this mechanism to work
-efficiently, all the modules must allocate the data using the shared_ptr, as described in
+efficiently, all the modules should allocate the data using DataVector, as described in
 @ref modules.
 
 Typically, plask::interpolate is called inside providers of the fields of scalars or vectors (see @ref providers).
@@ -42,7 +42,7 @@ For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshTyp
 @code
 template <typename DataT>    //for any data type
 struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const std::vector<DataT>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, std::vector<DataT>& dst_vec) {
+    static void interpolate(MyMeshType& src_mesh, const DataVector<DataT>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
 
         // here comes your interpolation code
     }
@@ -55,7 +55,7 @@ To implement the interpolation version for the 'double' type, you should write:
 @code
 template <>
 struct plask::InterpolationAlgorithm<MyMeshType, double, plask::LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const std::vector<double>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, std::vector<double>& dst_vec) {
+    static void interpolate(MyMeshType& src_mesh, const DataVector<double>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, DataVector<double>& dst_vec) {
 
         // interpolation code for vectors of doubles
     }

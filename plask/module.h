@@ -75,8 +75,10 @@ struct MyModule: public plask::Module {
     }
 
     void calculateC() {
-        if (!a.changed && !b.changed)   // if input doesn't changed after last calculation
+        // if module wasn't reinitialized and inputs don't changed after last calculation
+        if (!beforeCalculation() && !a.changed && !b.changed)
             return;                     // we don't have to update c
+
         // ...here calculate c...
         // values of a and b can be get by a() and b()
 
