@@ -30,8 +30,8 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.module.inWavelength = 850.
         self.assertEqual( self.module.inWavelength(), 850. )
 
-    #def testProvider(self):
-        #m = mesh.Rectilinear2D([1,2],[3,4])
-        #o = self.module.outIntensity(m)
-        #print o[:-1]
-        #self.assertTrue(False)
+    def testProvider(self):
+        m = mesh.Rectilinear2D([1,2],[3,4])
+        o = self.module.outIntensity(m)
+        print array(o)
+        self.assertTrue(False)

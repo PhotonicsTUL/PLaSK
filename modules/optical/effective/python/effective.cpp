@@ -45,6 +45,7 @@ BOOST_PYTHON_MODULE(effective)
 {
     USING_VALUE(Wavelength);
     USING_VALUE(EffectiveIndex);
+    USING_VALUE(EffectiveIndex);
     USING_FIELD(OpticalIntensity, Space2dCartesian);
     USING_FIELD(Temperature, Space2dCartesian);
 
