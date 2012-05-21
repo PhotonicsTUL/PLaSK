@@ -1,6 +1,11 @@
 #ifndef PLASK__MEMORY_H
 #define PLASK__MEMORY_H
 
+/** @file
+This file includes utils connected with memory managment.
+It put smart pointers (boost or std ones - dependly of plask build configuration) in plask namespace.
+*/
+
 #include <plask/config.h>
 
 #ifdef PLASK_SHARED_PTR_STD

@@ -1,6 +1,10 @@
 #ifndef PLASK__DATA_H
 #define PLASK__DATA_H
 
+/** @file
+This file includes classes which can hold (or points to) datas.
+*/
+
 #include <iterator>
 #include <algorithm>
 #include <initializer_list>
@@ -54,6 +58,15 @@ class DataVector {
      * @param size total size of the data
      */
     DataVector(std::size_t size) : size_(size), gc_(new unsigned(1)), data_(new T[size]) {}
+
+    /**
+     * Create data vector with given @p size and fill all its' cells with given @p value.
+     * @param size size of vector
+     * @param value initial value for each cell
+     */
+    DataVector(std::size_t size, const T& value): size_(size), gc_(new unsigned(1)), data_(new T[size]) {
+        std::fill(begin(), end(), value);
+    }
 
     /**
      * Copy constructor. Only makes shallow copy (doesn't copy data).
@@ -117,15 +130,6 @@ class DataVector {
     }
 
     /**
-     * Create data vector with given @p size and fill all its' cells with given @p value.
-     * @param size size of vector
-     * @param value initial value for each cell
-     */
-    DataVector(std::size_t size, const T& value): size_(size), gc_(new unsigned(1)), data_(new T[size]) {
-        std::fill(begin(), end(), value);
-    }
-
-    /**
      * Create vector which data are copy of range [begin, end).
      * @param begin, end range of data to copy
      */
@@ -147,6 +151,63 @@ class DataVector {
         size_ = 0;
         gc_ = 0;
         data_ = nullptr;
+    }
+
+    /**
+     * Chenge data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
+     * @param size  total size of the existing data
+     * @param existing_data pointer to existing data
+     * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
+     */
+    void reset(T* existing_data, std::size_t size, bool manage = false) {
+        dec_ref();
+        size_ = size;
+        gc_ = manage ? new unsigned(1) : nullptr;
+        data_ = existing_data;
+    }
+
+    /**
+     * Chenge data of this data vector to unitilized data with given @p size.
+     *
+     * Reserve memory using new T[size] call.
+     *
+     * Same as: DataVector(size).swap(*this);
+     * @param size total size of the data
+     */
+    void reset(std::size_t size) {
+        dec_ref();
+        size_ = size;
+        gc_ = new unsigned(1);
+        data_ = new T[size];
+    }
+
+    /**
+     * Chenge data of this to array of given @p size and fill all its' cells with given @p value.
+     *
+     * Same as: DataVector(size, value).swap(*this);
+     * @param size size of vector
+     * @param value initial value for each cell
+     */
+    void reset(std::size_t size, const T& value) {
+        dec_ref();
+        size_ = size;
+        gc_ = new unsigned(1);
+        data_ = new T[size];
+        std::fill(begin(), end(), value);
+    }
+
+    /**
+     * Chenge data of this to copy of range [begin, end).
+     *
+     * Same as: DataVector(begin, end).swap(*this);
+     * @param begin, end range of data to copy
+     */
+    template <typename InIterT>
+    void reset(InIterT begin, InIterT end) {
+        size_ = std::distance(begin, end);
+        gc_ = new unsigned(1);
+        data_ = new T[size_];
+        std::copy(begin, end, data_);
     }
 
     /**

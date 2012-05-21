@@ -4,6 +4,9 @@
 #include <string>
 #include <map>
 
+/** @file
+This file includes utils connected with names of axes.
+*/
 
 namespace plask {
 
