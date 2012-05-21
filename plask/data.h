@@ -138,6 +138,18 @@ class DataVector {
     ~DataVector() { dec_ref(); }
 
     /**
+     * Make this data vector points to nullptr data with 0-size.
+     *
+     * Same as: DataVector().swap(*this);
+     */
+    void reset() {
+        dec_ref();
+        size_ = 0;
+        gc_ = 0;
+        data_ = nullptr;
+    }
+
+    /**
      * Get iterator referring to the first element in data vector.
      * @return const iterator referring to the first element in data vector
      */

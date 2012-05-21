@@ -788,9 +788,9 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
      * operator() call plask::interpolate.
-     * @tparam MeshType type of mesh which is used for calculation and which describe places of data points
+     * @tparam MeshTypePtr type of pointer (shared_ptr or unique_ptr) to mesh which is used for calculation and which describe places of data points
      */
-    template <typename MeshType>
+    template <typename MeshTypePtr>
     struct WithValue: public ProviderFor<PropertyTag, SpaceType> {
 
         /// Type of provided value.
@@ -800,23 +800,32 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
         ProvidedValueType values;
 
         /// Mesh which describes in which points there are this->values.
-// FIXME powinien być jako shared_ptr albo wręcz jako zwykły wskaźnik, bo moduły mogą dzielić siatki oraz jeden moduł może mieć kilka providerów
-        MeshType mesh;
+        MeshTypePtr meshPtr;
 
-        /// Reset values to uninitilized state.
-// FIXME values to DataVector, a nie wskaźnik
-        void reset() { values = 0; }
+        /**
+         * Get mesh.
+         * @return @c *meshPtr
+         */
+        auto mesh() -> decltype(*meshPtr) { return *meshPtr; }
+
+        /**
+         * Get mesh (const).
+         * @return @c *meshPtr
+         */
+        auto mesh() const -> decltype(*meshPtr) { return *meshPtr; }
+
+        /// Reset values to uninitilized state (nullptr data).
+        void reset() { values.reset(); }
 
         /**
          * Check if this has value / is initialized.
          * @return @c true only if this is initialized (has value)
          */
-// FIXME values to DataVector, a nie wskaźnik
-        bool hasValue() const { return values; }
+        bool hasValue() const { return values.data() != nullptr; }
 
-        /// Delegate all constructors to mesh.
+        /// Delegate all constructors to pointer to mesh.
         template<typename ...Args>
-        WithValue(Args&&... params): mesh(std::forward<Args>(params)...) {}
+        WithValue(Args&&... params): meshPtr(std::forward<Args>(params)...) {}
 
         /**
          * Get provided value in points describe by this->mesh.
@@ -838,7 +847,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
          */
         virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method) const {
             if (!values) throw NoValue();
-            return interpolate(mesh, values, dst_mesh, method);
+            return interpolate(mesh(), values, dst_mesh, method);
         }
     };
 
@@ -856,16 +865,22 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
 
         typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
 
+        /// Provided value
         ValueT value;
 
         //ConstProviderT(const ValueT& value): value(value) {}
 
+        /**
+         * Constructor which delegate all parameters to value constructor.
+         * @param params ValueT constructor parameters, forwarded to value
+         */
         template<typename ...Args>
         ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
 
+        /**
+         * @return copy of value for each point in dst_mesh, ignore interpolation method
+         */
         virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod) const {
-            //return copy of value for each point in dst_mesh, ignore interpolation method
-            //return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
             return ProvidedValueType(dst_mesh.size(), value);
         }
     };
