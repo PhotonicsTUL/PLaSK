@@ -674,7 +674,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
         boost::optional<ProvidedValueType> value;
 
         /// Reset value to be uninitialized.
-        void reset() { value.reset(); }
+        void invalidate() { value.reset(); }
 
         /**
          * Check if this has value / is initialized.
@@ -815,7 +815,10 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
         auto mesh() const -> decltype(*meshPtr) { return *meshPtr; }
 
         /// Reset values to uninitilized state (nullptr data).
-        void reset() { values.reset(); }
+        void invalidate() { values.reset(); }
+
+        /// Reserve memory in values using mesh size.
+        void allocate() { values.reset(mesh().size()); }
 
         /**
          * Check if this has value / is initialized.
@@ -823,9 +826,18 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
          */
         bool hasValue() const { return values.data() != nullptr; }
 
-        /// Delegate all constructors to pointer to mesh.
-        template<typename ...Args>
-        WithValue(Args&&... params): meshPtr(std::forward<Args>(params)...) {}
+        /**
+         * @param values provided value, values in points describe by this->mesh.
+         * @param meshPtr pointer to mesh which describes in which points there are this->values
+         */
+        explicit WithValue(ProvidedValueType values, MeshTypePtr meshPtr = nullptr)
+            : values(values), meshPtr(meshPtr) {}
+
+        /**
+         * @param meshPtr pointer to mesh which describes in which points there are this->values
+         */
+        explicit WithValue(MeshTypePtr meshPtr = nullptr)
+            : meshPtr(meshPtr) {}
 
         /**
          * Get provided value in points describe by this->mesh.

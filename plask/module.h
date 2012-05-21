@@ -76,7 +76,7 @@ struct MyModule: public plask::Module {
 
     void calculateC() {
         // if module wasn't reinitialized and inputs don't changed after last calculation
-        if (!beforeCalculation() && !a.changed && !b.changed)
+        if (!init() && !a.changed && !b.changed)
             return;                     // we don't have to update c
 
         // ...here calculate c...
@@ -116,7 +116,7 @@ class Module {
      * Initialize the module.
      * Default implementation just does nothing, however it is a good idea to overwrite it in subclasses and put initialization code in it.
      */
-    virtual void init() {}
+    virtual void onInitialize() {}
 
     /**
      * This should be called on begining of each calculation method to ensure that module will be initialized.
@@ -124,9 +124,9 @@ class Module {
      *
      * \return \c true if the module had to be reinitialized (so one can make local initialization)
      */
-    bool beforeCalculation() {
+    bool init() {
         if (initialized) return false;
-        init();
+        onInitialize();
         initialized = true;
         return true;
     }
@@ -148,12 +148,25 @@ class Module {
     bool isInitialized() { return initialized; }
 
     /**
+     * This method is called by invalidate() to reset stored values.
+     *
+     * Default implementation do nothing.
+     * @see invalidate()
+     */
+    virtual void onInvalidate() { }
+
+    /**
      * This method should be and is called if something important was changed: calculation space, mesh, etc.
      *
-     * Default implementation set initialization flag to @c false.
+     * Default implementation set initialization flag to @c false and can call onInvalidate() if initialization flag was @c true.
      * @see beforeCalculation()
      */
-    virtual void invalidate() { initialized = false; }
+    void invalidate() {
+        if (initialized) {
+            initialized = false;
+            onInvalidate();
+        }
+    }
 
     /**
      * Get name of module.

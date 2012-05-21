@@ -56,7 +56,7 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomp
 
 
 
-void EffectiveIndex2dModule::init()
+void EffectiveIndex2dModule::onInitialize()
 {
     // Set default mesh
     if (!mesh) setSimpleMesh();
@@ -75,7 +75,7 @@ void EffectiveIndex2dModule::init()
 
 void EffectiveIndex2dModule::updateCache()
 {
-    bool updated = beforeCalculation();
+    bool updated = init();
 
     size_t xbegin = 0;
 

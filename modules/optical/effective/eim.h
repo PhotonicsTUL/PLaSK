@@ -166,7 +166,7 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
   protected:
 
     /// Initialize the module
-    virtual void init();
+    virtual void onInitialize();
 
   private:
 

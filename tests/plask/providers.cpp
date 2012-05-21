@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(single_value) {
     BOOST_CHECK_THROW(receiver(), plask::NoValue);
     providerOpt = 4.0;
     BOOST_CHECK_EQUAL(receiver(), 4.0);
-    providerOpt.reset();
+    providerOpt.invalidate();
     BOOST_CHECK_THROW(receiver(), plask::NoValue);
 }
 
