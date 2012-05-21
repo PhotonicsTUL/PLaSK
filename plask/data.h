@@ -43,7 +43,7 @@ class DataVector {
 
   public:
 
-    typedef T type;                     ///< type of the stored data
+    typedef T value_type;                     ///< type of the stored data
 
     typedef T* iterator;                ///< iterator type for the array
     typedef const T* const_iterator;    ///< constant iterator type for the array

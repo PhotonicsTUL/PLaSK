@@ -231,7 +231,7 @@ void register_mesh_rectilinear()
         .def("empty", &RectilinearMesh3d::empty, "Return True if the mesh is empty")
         .def("clear", &RectilinearMesh3d::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectilinearMesh3d__getitem__)
-        .def("__iter__", py::range(&RectilinearMesh3d::begin, &RectilinearMesh3d::end))
+        .def("__iter__", py::range(&RectilinearMesh3d::begin_fast, &RectilinearMesh3d::end_fast))
         .def("index", &RectilinearMesh3d::index, (py::arg("index0"), py::arg("index1"), py::arg("index2")),
              "Return single index of the point indexed with index0, index1, and index2")
         .def("index0", &RectilinearMesh3d::index0, "Return index in the first axis of the point with given index", (py::arg("index")))

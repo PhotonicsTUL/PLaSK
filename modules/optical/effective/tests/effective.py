@@ -5,7 +5,7 @@ import unittest
 from numpy import *
 
 from plask import *
-from plask import geometry
+from plask import geometry, mesh
 from plask.optical.effective import EffectiveIndex2D
 
 
@@ -29,3 +29,9 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def testReceivers(self):
         self.module.inWavelength = 850.
         self.assertEqual( self.module.inWavelength(), 850. )
+
+    #def testProvider(self):
+        #m = mesh.Rectilinear2D([1,2],[3,4])
+        #o = self.module.outIntensity(m)
+        #print o[:-1]
+        #self.assertTrue(False)

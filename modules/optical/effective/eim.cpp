@@ -177,6 +177,9 @@ dcomplex EffectiveIndex2dModule::detS(const dcomplex& x, std::size_t)
 const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method)
 {
     //TODO
+    DataVector<double> data(4);
+    data[0] = 10; data[1] = 20; data[2] = 30; data[3] = 40;
+    return data;
 }
 
 

@@ -111,7 +111,9 @@ struct ExportModule : public py::class_<ModuleT, shared_ptr<ModuleT>, py::bases<
 #define PROVIDER(name, help) __module__.add_provider(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 #define RECEIVER(name, help) __module__.add_receiver(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 
-#define USING_PROPERTY(name) RegisterProvider<name>()
+#define USING_VALUE(name) RegisterProviderReceiver<name,void>()
+#define USING_FIELD(name,space) RegisterProviderReceiver<name,space>()
+#define USING_FIELD_WITH_VALUE(name,space,mesh) RegisterProviderReceiver<name,space>().WithValue<mesh>()
 
 
 using py::arg; // for more convenient specification of default arguments

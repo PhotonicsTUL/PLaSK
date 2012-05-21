@@ -12,7 +12,9 @@ namespace plask {
  * This property should be provided by every optical module as it has a nice advantage that does not depend on
  * the internal representation of field (whether it is scalar or vectorial one).
  */
-struct OpticalIntensity : public ScalarFieldProperty {};
+struct OpticalIntensity : public ScalarFieldProperty {
+    static constexpr const char* NAME = "light intensity";
+};
 
 /**
  * Wavelength. It can be either computed by some optical modules or set by the user.

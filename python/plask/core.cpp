@@ -17,7 +17,7 @@ void register_mesh();
 void register_providers();
 void register_calculation_spaces();
 
-void register_data_vector();
+void register_data_vectors();
 
 // Hack necessary as macro import_array wants to return some value
 static inline bool plask_import_array() {
@@ -69,7 +69,7 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_mesh();
 
     // Data vector
-    register_data_vector();
+    register_data_vectors();
 
     // Modules
     py::class_<plask::Module, plask::shared_ptr<plask::Module>, boost::noncopyable>("Module", "Base class for all modules", py::no_init)
