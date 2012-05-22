@@ -18,7 +18,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         for i in range(4): stack.append(rect)
         hint = stack.append(rect)
         for i in range(5): stack.append(rect)
-        space = Space2DCartesian(stack, left="mirror")
+        space = geometry.Space2DCartesian(stack, left="mirror")
         self.module.geometry = space
 
     def testSymmetry(self):
@@ -30,8 +30,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.module.inWavelength = 850.
         self.assertEqual( self.module.inWavelength(), 850. )
 
-    def testProvider(self):
+    def testProviders(self):
         m = mesh.Rectilinear2D([1,2],[3,4])
         o = self.module.outIntensity(m)
-        print array(o)
-        self.assertTrue(False)
+        self.assertEqual( list(o), [10., 20., 30., 40.] ) # TODO to są ręcznie wpisane wartości tak na chwilę

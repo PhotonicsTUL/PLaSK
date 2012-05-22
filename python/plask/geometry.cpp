@@ -15,6 +15,8 @@ namespace py = boost::python;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void register_calculation_spaces();
+
 void register_geometry_aligners();
 void register_geometry_element();
 void register_geometry_primitive();
@@ -139,6 +141,8 @@ void initGeometry() {
     ;
 
 
+    // Calculation spaces
+    register_calculation_spaces();
 }
 
 }} // namespace plask::python

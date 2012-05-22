@@ -5,6 +5,8 @@
 #include "python_globals.h"
 #include "python_provider.h"
 
+#include <plask/provider/optical.h>
+
 namespace plask { namespace python {
 
 // template <typename ModuleT> struct ExportModule;
@@ -44,18 +46,16 @@ namespace detail {
     };
 
 
-    template <typename Class, typename PropertyTag, typename SpaceType>
+    template <typename Class, typename ReceiverT>
     struct ReceiverSetter
     {
-        typedef ReceiverFor<PropertyTag,SpaceType> Data;
-
-        ReceiverSetter(Data Class::* field) : field(field) {}
-        void operator()(Class& self, typename PropertyTag::ValueType const& value) {
+        ReceiverSetter(ReceiverT Class::* field) : field(field) {}
+        void operator()(Class& self, typename ReceiverT::PropertyTag::ValueType const& value) {
             self.*field = value;
         }
 
       private:
-        Data Class::* field;
+        ReceiverT Class::* field;
     };
 
 
@@ -80,17 +80,19 @@ struct ExportModule : public py::class_<ModuleT, shared_ptr<ModuleT>, py::bases<
     }
 
     template <typename ProviderT>
-    ExportModule& add_provider(const char* name, const ProviderT& field, const char* help) {
+    ExportModule& add_provider(const char* name, ProviderT Class::* field, const char* help) {
+        RegisterProvider<ProviderT>();
         this->def_readonly(name, field, help);
         return *this;
     }
 
-    template <typename PropertyTag, typename SpaceType>
-    ExportModule& add_receiver(const char* name, ReceiverFor<PropertyTag,SpaceType> Class::* field, const char* help) {
+    template <typename ReceiverT>
+    ExportModule& add_receiver(const char* name, ReceiverT Class::* field, const char* help) {
+        RegisterReceiver<ReceiverT>();
         this->add_property(name, py::make_getter(field),
-                           py::make_function(detail::ReceiverSetter<Class,PropertyTag,SpaceType>(field),
+                           py::make_function(detail::ReceiverSetter<Class,ReceiverT>(field),
                                              py::default_call_policies(),
-                                             boost::mpl::vector3<void, Class&, typename PropertyTag::ValueType const&>()
+                                             boost::mpl::vector3<void, Class&, typename ReceiverT::PropertyTag::ValueType const&>()
                                             ),
                            help
                           );
@@ -110,10 +112,6 @@ struct ExportModule : public py::class_<ModuleT, shared_ptr<ModuleT>, py::bases<
 #define RW_FIELD(name, help) __module__.def_readwrite(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 #define PROVIDER(name, help) __module__.add_provider(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 #define RECEIVER(name, help) __module__.add_receiver(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
-
-#define USING_VALUE(name) RegisterProviderReceiver<name,void>()
-#define USING_FIELD(name,space) RegisterProviderReceiver<name,space>()
-#define USING_FIELD_WITH_VALUE(name,space,mesh) RegisterProviderReceiver<name,space>().WithValue<mesh>()
 
 
 using py::arg; // for more convenient specification of default arguments

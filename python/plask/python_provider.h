@@ -1,6 +1,9 @@
 #ifndef PLASK__PYTHON_PROVIDER_H
 #define PLASK__PYTHON_PROVIDER_H
 
+#include <type_traits>  // std::is_same
+#include <qshareddata.h>
+
 #include "python_globals.h"
 #include <plask/provider/provider.h>
 
@@ -16,108 +19,136 @@ struct DataVectorWrap : public DataVector<T> {
 };
 
 
+
+
 namespace detail {
 
-    template <typename PropertyTag, typename ValueType, typename SpaceType>
-    struct RegisterProviderReceiverBase
-    {
-        typedef ProviderFor<PropertyTag,SpaceType> ProviderType;
-        typedef ReceiverFor<PropertyTag,SpaceType> ReceiverType;
 
+    template <typename ReceiverT>
+    struct RegisterReceiverBase {
+        typedef ProviderFor<typename ReceiverT::PropertyTag,typename ReceiverT::SpaceType> ProviderT;
         const std::string property_name;
-
-        py::class_<ProviderType, boost::noncopyable> provider_class;
-        py::class_<ReceiverType, boost::noncopyable> receiver_class;
-
-        static void connect(ReceiverType& receiver, ProviderType* provider) { receiver.setProvider(provider); }
-        static void disconnect(ReceiverType& receiver) { receiver.setProvider(nullptr); }
-
-        RegisterProviderReceiverBase() :
-            property_name ([](const std::string& s){size_t n=s.find_last_of(':'); return (n!=s.npos)?s.substr(n+1):s; }(py::type_id<PropertyTag>().name())),
-            provider_class(("ProviderFor" + property_name + "Base").c_str(), py::no_init),
-            receiver_class(("ReceiverFor" + property_name).c_str(), py::no_init)
-        {
+        py::class_<ReceiverT, boost::noncopyable> receiver_class;
+        static void connect(ReceiverT& receiver, ProviderT* provider) { receiver.setProvider(provider); }
+        static shared_ptr<ProviderT> rconnect(ReceiverT& receiver, const shared_ptr<ProviderT>& provider) {
+            receiver.setProvider(provider.get()); return provider;
+        }
+        static void disconnect(ReceiverT& receiver) { receiver.setProvider(nullptr); }
+        RegisterReceiverBase() :
+            property_name ([](const std::string& s){size_t n=s.find_last_of(':'); return (n!=s.npos)?s.substr(n+1):s; }(py::type_id<typename ReceiverT::PropertyTag>().name())),
+            receiver_class(("ReceiverFor" + property_name).c_str(), py::no_init) {
             receiver_class.def("__lshift__", &connect, "Connect provider to receiver");
             receiver_class.def("__rrshift__", &connect, "Connect provider to receiver");
             receiver_class.def("connect", &connect, "Connect provider to receiver");
             receiver_class.def("disconnect", &disconnect, "Disconnect any provider from receiver");
+            py::delattr(py::scope(), ("ReceiverFor" + property_name).c_str());
         }
     };
 
-    template <typename PropertyTag, typename ValueType, PropertyType propertyType, typename SpaceType>
-    struct RegisterProviderReceiverImpl: public RegisterProviderReceiverBase<PropertyTag, ValueType, SpaceType> {};
+    template <typename ReceiverT, PropertyType propertyType>
+    struct RegisterReceiverImpl: public RegisterReceiverBase<ReceiverT> {};
 
-    template <typename PropertyTag, typename ValueType, typename SpaceType>
-    struct RegisterProviderReceiverImpl<PropertyTag, ValueType, SINGLE_VALUE_PROPERTY, SpaceType>:
-    public RegisterProviderReceiverBase<PropertyTag, ValueType, SpaceType>
+    template <typename ReceiverT>
+    struct RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY> : public RegisterReceiverBase<ReceiverT>
     {
-        typedef ProviderFor<PropertyTag,SpaceType> ProviderType;
-        typedef ReceiverFor<PropertyTag,SpaceType> ReceiverType;
-
-        template <typename What> static ValueType __call__(What& self) { return self(); }
-
-        RegisterProviderReceiverImpl() {
-            this->provider_class.def("__call__", &__call__<ProviderType>, "Get value from the provider");
-            this->receiver_class.def("__call__", &__call__<ReceiverType>, "Get value from the connected provider");
-            py::class_<typename ProviderType::WithDefaultValue, py::bases<ProviderType>, boost::noncopyable>(("ProviderFor" + this->property_name).c_str());
-            py::class_<typename ProviderType::WithValue, py::bases<ProviderType>, boost::noncopyable>(("ProviderFor" + this->property_name).c_str());
-            py::class_<typename ProviderType::Delegate, py::bases<ProviderType>, boost::noncopyable>(("ProviderFor" + this->property_name).c_str());
+        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
+        static ValueT __call__(ReceiverT& self) { return self(); }
+        RegisterReceiverImpl() {
+            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider");
         }
     };
 
-    template <typename PropertyTag, typename ValueType, typename SpaceType>
-    struct RegisterProviderReceiverImpl<PropertyTag, ValueType, FIELD_PROPERTY, SpaceType>:
-    public RegisterProviderReceiverBase<PropertyTag, ValueType, SpaceType>
+    template <typename ReceiverT>
+    struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT>
     {
-        typedef ProviderFor<PropertyTag,SpaceType> ProviderType;
-        typedef ReceiverFor<PropertyTag,SpaceType> ReceiverType;
-
-        template <typename What, int dim> static DataVectorWrap<ValueType,SpaceType::DIMS> __call__(What& self, const shared_ptr<Mesh<SpaceType::DIMS>>& mesh) {
-            return DataVectorWrap<ValueType,SpaceType::DIMS>(self(*mesh), mesh);
+        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
+        static const int dim = ReceiverT::SpaceType::DIMS;
+        static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<Mesh<dim>>& mesh) {
+            return DataVectorWrap<ValueT,dim>(self(*mesh), mesh);
         }
-
-        RegisterProviderReceiverImpl() {
-            this->provider_class.def("__call__", &__call__<ProviderType>, "Get value from the provider", (py::arg("mesh")));
-            this->receiver_class.def("__call__", &__call__<ReceiverType>, "Get value from the connected provider", (py::arg("mesh")));
-            py::class_<typename ProviderType::Delegate, py::bases<ProviderType>, boost::noncopyable>(("ProviderFor" + this->property_name).c_str());
+        RegisterReceiverImpl() {
+            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", (py::arg("mesh")));
         }
     };
 
-    template <typename PropertyTag, typename ValueType, typename SpaceType>
-    struct RegisterProviderReceiverImpl<PropertyTag, ValueType, INTERPOLATED_FIELD_PROPERTY, SpaceType>:
-    public RegisterProviderReceiverBase<PropertyTag, ValueType, SpaceType> {
-        typedef ProviderFor<PropertyTag,SpaceType> ProviderType;
-        typedef ReceiverFor<PropertyTag,SpaceType> ReceiverType;
-
-        template <typename What> static DataVectorWrap<ValueType,SpaceType::DIMS> __call__(What& self, const shared_ptr<Mesh<SpaceType::DIMS>>& mesh) {
-            return DataVectorWrap<ValueType,SpaceType::DIMS>(self(*mesh), mesh);
+    template <typename ReceiverT>
+    struct RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT> {
+        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
+        static const int dim = ReceiverT::SpaceType::DIMS;
+        static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<Mesh<dim>>& mesh, InterpolationMethod method) {
+            return DataVectorWrap<ValueT,dim>(self(*mesh, method), mesh);
         }
-
-        RegisterProviderReceiverImpl() {
-            this->provider_class.def("__call__", &__call__<ProviderType>, "Get value from the provider", (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
-            this->receiver_class.def("__call__", &__call__<ReceiverType>, "Get value from the connected provider", (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
-            py::class_<typename ProviderType::Delegate, py::bases<ProviderType>, boost::noncopyable>(("ProviderFor" + this->property_name).c_str());
-        }
-
-        template <typename MeshP>
-        RegisterProviderReceiverImpl<PropertyTag, ValueType, INTERPOLATED_FIELD_PROPERTY, SpaceType>& WithValue() {
-            py::class_<typename ProviderType::template WithValue<MeshP>, py::bases<ProviderType>, boost::noncopyable>(("ProviderFor" + this->property_name).c_str());
-            return *this;
+        RegisterReceiverImpl() {
+            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider",
+                                     (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
         }
     };
 
+
+    template <typename ProviderT>
+    struct RegisterProviderBase
+    {
+        const std::string property_name;
+        typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> ProviderBase;
+        py::class_<ProviderBase, boost::noncopyable> provider_base_class;
+        py::class_<ProviderT, py::bases<ProviderBase>, boost::noncopyable> provider_class;
+        RegisterProviderBase() :
+            property_name ([](const std::string& s){size_t n=s.find_last_of(':'); return (n!=s.npos)?s.substr(n+1):s; }(py::type_id<typename ProviderT::PropertyTag>().name())),
+            provider_base_class(("ProviderFor" + property_name + "Base").c_str(), py::no_init),
+            provider_class(("ProviderFor" + property_name).c_str(), py::no_init) {
+            py::delattr(py::scope(), ("ProviderFor" + property_name + "Base").c_str());
+            py::delattr(py::scope(), ("ProviderFor" + property_name).c_str());
+        }
+    };
+
+    template <typename ProviderT, PropertyType propertyType>
+    struct RegisterProviderImpl : public RegisterProviderBase<ProviderT> {};
+
+    template <typename ProviderT>
+    struct RegisterProviderImpl<ProviderT, SINGLE_VALUE_PROPERTY> : public RegisterProviderBase<ProviderT>
+    {
+        typedef typename ProviderT::PropertyTag::ValueType ValueT;
+        static ValueT __call__(ProviderT& self) { return self(); }
+        RegisterProviderImpl() {
+            this->provider_class.def("__call__", &__call__, "Get value from the provider");
+        }
+    };
+
+    template <typename ProviderT>
+    struct RegisterProviderImpl<ProviderT, FIELD_PROPERTY> : public RegisterProviderBase<ProviderT>
+    {
+        typedef typename ProviderT::PropertyTag::ValueType ValueT;
+        static const int dim = ProviderT::SpaceType::DIMS;
+        static DataVectorWrap<ValueT,dim> __call__(ProviderT& self, const shared_ptr<Mesh<dim>>& mesh) {
+            return DataVectorWrap<ValueT,dim>(self(*mesh), mesh);
+        }
+        RegisterProviderImpl() {
+            this->provider_class.def("__call__", &__call__, "Get value from the provider", (py::arg("mesh")));
+        }
+    };
+
+    template <typename ProviderT>
+    struct RegisterProviderImpl<ProviderT, INTERPOLATED_FIELD_PROPERTY> : public RegisterProviderBase<ProviderT>
+    {
+        typedef typename ProviderT::PropertyTag::ValueType ValueT;
+        static const int dim = ProviderT::SpaceType::DIMS;
+        static DataVectorWrap<ValueT,dim> __call__(ProviderT& self, const shared_ptr<Mesh<dim>>& mesh, InterpolationMethod method) {
+            return DataVectorWrap<ValueT,dim>(self(*mesh, method), mesh);
+        }
+        RegisterProviderImpl() {
+            this->provider_class.def("__call__", &__call__, "Get value from the provider", (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
+        }
+    };
 
 } // namespace detail
 
 
-template <typename PropertyTag, typename SpaceType>
-struct RegisterProviderReceiver: public detail::RegisterProviderReceiverImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType>  {
-    /// Delegate all constructors to parent class.
-    template<typename ...Args>
-    RegisterProviderReceiver(Args&&... params)
-    : detail::RegisterProviderReceiverImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType>(std::forward<Args>(params)...) {
-    }
-};
+template <typename ReceiverT>
+struct RegisterReceiver : public detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType> {};
+
+template <typename ProviderT>
+struct RegisterProvider : public detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType>  {};
+
 
 }} // namespace plask::python
 

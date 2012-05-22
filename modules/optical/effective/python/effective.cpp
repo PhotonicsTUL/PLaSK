@@ -43,12 +43,6 @@ void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object
  */
 BOOST_PYTHON_MODULE(effective)
 {
-    USING_VALUE(Wavelength);
-    USING_VALUE(EffectiveIndex);
-    USING_VALUE(EffectiveIndex);
-    USING_FIELD(OpticalIntensity, Space2dCartesian);
-    USING_FIELD(Temperature, Space2dCartesian);
-
     {CLASS(EffectiveIndex2dModule, "EffectiveIndex2D",
         "Calculate optical modes and optical field distribution using the effective index\n"
         "method in Cartesian two-dimensional space.")

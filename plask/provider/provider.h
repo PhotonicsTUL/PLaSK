@@ -63,7 +63,7 @@ typedef plask::ReceiverFor<MyProperty> MyPropertyReceiver;
 
 // ...
 // Usage example:
-MyPropertyProvider::WithValue provider; //or MyPropertyProvider::WithOptionalValue provider;
+MyPropertyProvider::WithValue provider; //or MyPropertyProvider::WithDefaultValue provider;
 MyPropertyReceiver receiver;
 reciver << provider;     //connect
 @endcode
@@ -369,7 +369,7 @@ struct SingleValueProvider: public Provider {
  * Instantiation of this template is abstract base class for provider which provide values in points described by mesh
  * and don't use interpolation.
  */
-template <typename ValueT, typename SpaceType>
+template <typename ValueT, typename SpaceT>
 struct OnMeshProvider: public Provider {
 
     /// Type of value provided by this (returned by operator()).
@@ -379,7 +379,7 @@ struct OnMeshProvider: public Provider {
      * @param dst_mesh set of requested points
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh) const = 0;
+    virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh) const = 0;
 
 };
 
@@ -389,25 +389,25 @@ struct OnMeshProvider: public Provider {
  * Instantiation of this template is abstract base class for provider class which provide values in points describe by mesh
  * and use interpolation.
  */
-template <typename ValueT, typename SpaceType>
-struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceType> {
+template <typename ValueT, typename SpaceT>
+struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT> {
 
     /// Type of value provided by this (returned by operator()).
-    typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
+    typedef typename OnMeshProvider<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
 
     /**
      * @param dst_mesh set of requested points
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method) const = 0;
+    virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const = 0;
 
     /**
      * Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
      * @param dst_mesh set of requested points
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh) const {
+    virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh) const {
         return this->operator()(dst_mesh, DEFAULT_INTERPOLATION);
     }
 
@@ -449,8 +449,10 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
 
 template<typename _BaseClass, typename _Signature> struct PolymorphicDelegateProvider;
 
+
+
 /**
- * Template of class which is good base class for providers which delegate calls of operator() to external functor
+ * Template of class which is a good base class for providers which delegate calls of operator() to external functor
  * (function or method).
  * @tparam _Res(_ArgTypes...) functor signature (result and arguments types)
  */
@@ -519,8 +521,8 @@ struct Property {
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-template<typename ValueType = double>
-struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueType> {};
+template<typename ValueT = double>
+struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueT> {};
 
 /**
  * Helper class which makes easiest to define property tags class for non-scalar fields.
@@ -528,8 +530,8 @@ struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueType> {}
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-template<typename ValueType>
-struct FieldProperty: public Property<FIELD_PROPERTY, ValueType> {};
+template<typename ValueT>
+struct FieldProperty: public Property<FIELD_PROPERTY, ValueT> {};
 
 /**
  * Helper class which makes easiest to define property tags class for possible to interpolate fields.
@@ -537,8 +539,8 @@ struct FieldProperty: public Property<FIELD_PROPERTY, ValueType> {};
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-template<typename ValueType = double>
-struct InterpolatedFieldProperty: public Property<INTERPOLATED_FIELD_PROPERTY, ValueType> {};
+template<typename ValueT = double>
+struct InterpolatedFieldProperty: public Property<INTERPOLATED_FIELD_PROPERTY, ValueT> {};
 
 /**
  * Helper class which makes easiest to define property tags class for scalar fields (fields of doubles).
@@ -553,26 +555,29 @@ typedef InterpolatedFieldProperty<double> ScalarFieldProperty;
  *
  * Don't use this class directly. Use plask::Provider class or plask::ProviderFor template.
  */
-template <typename PropertyTag, typename ValueType, PropertyType propertyType, typename spaceType>
+template <typename PropertyT, typename ValueT, PropertyType propertyType, typename spaceType>
 struct ProviderImpl {};
 
 /**
  * Specializations of this class define implementations of providers for given property tag:
- * - ProviderFor<PropertyTag, SpaceType> is abstract, base class which inherited from Provider;
- * - ProviderFor<PropertyTag, SpaceType>::Delegate is class inherited from ProviderFor<PropertyTag, SpaceType> which delegates all request to functor given as constructor parameter;
- * - ProviderFor<PropertyTag, SpaceType>::WithValue is class inherited from ProviderFor<PropertyTag, SpaceType> which stores provided value (has value field) and know if it was initialized;
- * - ProviderFor<PropertyTag, SpaceType>::WithDefaultValue is class inherited from ProviderFor<PropertyTag, SpaceType> which stores provided value (has value field) and doesn't know if it was initialized (should always have reasonable default value).
- * @tparam PropertyTag property tag class (describe physical property)
- * @tparam SpaceType type of space, required (and allowed) only for fields properties
+ * - ProviderFor<PropertyT, SpaceT> is abstract, base class which inherited from Provider;
+ * - ProviderFor<PropertyT, SpaceT>::Delegate is class inherited from ProviderFor<PropertyT, SpaceT> which delegates all request to functor given as constructor parameter;
+ * - ProviderFor<PropertyT, SpaceT>::WithValue is class inherited from ProviderFor<PropertyT, SpaceT> which stores provided value (has value field) and know if it was initialized;
+ * - ProviderFor<PropertyT, SpaceT>::WithDefaultValue is class inherited from ProviderFor<PropertyT, SpaceT> which stores provided value (has value field) and doesn't know if it was initialized (should always have reasonable default value).
+ * @tparam PropertyT property tag class (describe physical property)
+ * @tparam SpaceT type of space, required (and allowed) only for fields properties
  * @see plask::Temperature (includes example); @ref providers
  */
-template <typename PropertyTag, typename SpaceType = void>
-struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType> {
+template <typename PropertyT, typename SpaceT = void>
+struct ProviderFor: public ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT> {
+
+    typedef PropertyT PropertyTag;
+    typedef SpaceT SpaceType;
 
     /// Delegate all constructors to parent class.
     template<typename ...Args>
     ProviderFor(Args&&... params)
-    : ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType>(std::forward<Args>(params)...) {
+    : ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT>(std::forward<Args>(params)...) {
     }
 
 };
@@ -580,14 +585,17 @@ struct ProviderFor: public ProviderImpl<PropertyTag, typename PropertyTag::Value
 
 /**
  * Specializations of this class are implementations of Receiver for given property tag.
- * @tparam PropertyTag property tag class (describe physical property)
- * @tparam SpaceType type of space, required (and allowed) only for fields properties
+ * @tparam PropertyT property tag class (describe physical property)
+ * @tparam SpaceT type of space, required (and allowed) only for fields properties
  */
-template <typename PropertyTag, typename SpaceType = void>
-struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename PropertyTag::ValueType, PropertyTag::propertyType, SpaceType> > {
+template <typename PropertyT, typename SpaceT = void>
+struct ReceiverFor: public Receiver< ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT> > {
     ReceiverFor & operator=(const ReceiverFor&) = delete;
     ReceiverFor(const ReceiverFor&) = delete;
     ReceiverFor() = default;
+
+    typedef PropertyT PropertyTag;
+    typedef SpaceT SpaceType;
 
     /**
      * Set provider for this to provider of constant.
@@ -596,43 +604,43 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyTag, typename Property
      * @param v value which should be provided for this receiver
      * @return *this
      */
-    ReceiverFor<PropertyTag, SpaceType>& operator=(const typename PropertyTag::ValueType& v) {
+    ReceiverFor<PropertyT, SpaceT>& operator=(const typename PropertyT::ValueType& v) {
         this->setValue(v);
         return *this;
     }
 
-    static_assert(!(std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == FIELD_PROPERTY || PropertyTag::propertyType == INTERPOLATED_FIELD_PROPERTY)),
-                  "Receivers for fields properties require SpaceType. Use ReceiverFor<propertyTag, SpaceType>, where SpaceType is one of the classes defined in space.h.");
-    static_assert(!(!std::is_same<SpaceType, void>::value && (PropertyTag::propertyType == SINGLE_VALUE_PROPERTY)),
-                  "Receivers for single value properties doesn't need SpaceType. Use ReceiverFor<propertyTag> (without second template parameter).");
+    static_assert(!(std::is_same<SpaceT, void>::value && (PropertyT::propertyType == FIELD_PROPERTY || PropertyT::propertyType == INTERPOLATED_FIELD_PROPERTY)),
+                  "Receivers for fields properties require SpaceT. Use ReceiverFor<propertyTag, SpaceT>, where SpaceT is one of the classes defined in space.h.");
+    static_assert(!(!std::is_same<SpaceT, void>::value && (PropertyT::propertyType == SINGLE_VALUE_PROPERTY)),
+                  "Receivers for single value properties doesn't need SpaceT. Use ReceiverFor<propertyTag> (without second template parameter).");
 };
-//struct ReceiverFor: public Receiver< ProviderFor<PropertyTag> > {};
+//struct ReceiverFor: public Receiver< ProviderFor<PropertyT> > {};
 
 /**
  * Partial specialization which implements abstract provider class which provides a single value, typically one double.
  *
- * @tparam PropertyTag
+ * @tparam PropertyT
  * @tparam ValueT type of provided value
- * @tparam SpaceType ignored
+ * @tparam SpaceT ignored
  */
-template <typename PropertyTag, typename ValueT, typename SpaceType>
-struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: public SingleValueProvider<ValueT> {
+template <typename PropertyT, typename ValueT, typename SpaceT>
+struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public SingleValueProvider<ValueT> {
 
-    static_assert(std::is_same<SpaceType, void>::value,
-                  "Providers for single value properties doesn't need SpaceType. Use ProviderFor<propertyTag> (without second template parameter).");
+    static_assert(std::is_same<SpaceT, void>::value,
+                  "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
 
-    ///Type of provided value.
+    /// Type of provided value.
     typedef typename SingleValueProvider<ValueT>::ProvidedValueType ProvidedValueType;
 
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() returns this hold value.
      */
-    struct WithDefaultValue: public ProviderFor<PropertyTag, SpaceType> {
+    struct WithDefaultValue: public ProviderFor<PropertyT, SpaceT> {
 
-        ///Type of provided value.
+        /// Type of provided value.
         typedef ValueT ProvidedValueType;
 
-        ///Provided value.
+        /// Provided value.
         ProvidedValueType value;
 
         /// Delegate all constructors to value.
@@ -665,7 +673,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() return this hold value.
      */
-    struct WithValue: public ProviderFor<PropertyTag, SpaceType> {
+    struct WithValue: public ProviderFor<PropertyT, SpaceT> {
 
         /// Type of provided value.
         typedef ValueT ProvidedValueType;
@@ -723,7 +731,7 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
     /**
      * Implementation of one value provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider<ProviderFor<PropertyTag, SpaceType>, ProvidedValueType()> Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedValueType()> Delegate;
 
     /// Used by receivers as const value provider, see Receiver::setConst
     typedef WithValue ConstProviderT;
@@ -734,28 +742,28 @@ struct ProviderImpl<PropertyTag, ValueT, SINGLE_VALUE_PROPERTY, SpaceType>: publ
  * Partial specialization which implements providers classes which provide values in mesh points
  * and don't use interpolation.
  */
-template <typename PropertyTag, typename ValueT, typename SpaceType>
-struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMeshProvider<ValueT, SpaceType> {
+template <typename PropertyT, typename ValueT, typename SpaceT>
+struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshProvider<ValueT, SpaceT> {
 
-    static_assert(!std::is_same<SpaceType, void>::value,
-                  "Providers for fields properties require SpaceType. Use ProviderFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
+    static_assert(!std::is_same<SpaceT, void>::value,
+                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in space.h.");
 
     /// Type of provided value.
-    typedef typename OnMeshProvider<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
+    typedef typename OnMeshProvider<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
 
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider<ProviderFor<PropertyTag, SpaceType>, ProvidedValueType(const Mesh<SpaceType::DIMS>& dst_mesh)> Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedValueType(const Mesh<SpaceT::DIMS>& dst_mesh)> Delegate;
 
     /**
      * Return same value in all points.
      *
      * Used by receivers as const value provider, see Receiver::setConst
      */
-    struct ConstProviderT: public ProviderFor<PropertyTag, SpaceType> {
+    struct ConstProviderT: public ProviderFor<PropertyT, SpaceT> {
 
-        typedef ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
+        typedef ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
 
         ValueT value;
 
@@ -764,7 +772,7 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
         template<typename ...Args>
         ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
 
-        virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh) const {
+        virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh) const {
             //return copy of value for each point in dst_mesh
             //return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
             return ProvidedValueType(dst_mesh.size(), value);
@@ -776,31 +784,34 @@ struct ProviderImpl<PropertyTag, ValueT, FIELD_PROPERTY, SpaceType>: public OnMe
 /**
  * Specialization which implements provider class which provides values in mesh points and uses interpolation.
  */
-template <typename PropertyTag, typename ValueT, typename SpaceType>
-struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>: public OnMeshProviderWithInterpolation<ValueT, SpaceType> {
+template <typename PropertyT, typename ValueT, typename SpaceT>
+struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: public OnMeshProviderWithInterpolation<ValueT, SpaceT> {
 
-    static_assert(!std::is_same<SpaceType, void>::value,
-                  "Providers for fields properties require SpaceType. Use ProviderFor<propertyTag, SpaceType>, where SpaceType is one of the class defined in space.h.");
+    static_assert(!std::is_same<SpaceT, void>::value,
+                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in space.h.");
 
     ///Type of provided value.
-    typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceType>::ProvidedValueType ProvidedValueType;
+    typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
 
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
      * operator() call plask::interpolate.
-     * @tparam MeshTypePtr type of pointer (shared_ptr or unique_ptr) to mesh which is used for calculation and which describe places of data points
+     * @tparam MeshPtrType type of pointer (shared_ptr or unique_ptr) to mesh which is used for calculation and which describe places of data points
      */
-    template <typename MeshTypePtr>
-    struct WithValue: public ProviderFor<PropertyTag, SpaceType> {
+    template <typename MeshPtrType>
+    struct WithValue: public ProviderFor<PropertyT, SpaceT> {
+
+        /// Type of mesh pointer
+        typedef MeshPtrType MeshPointerType;
 
         /// Type of provided value.
-        typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
+        typedef ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
 
         /// Provided value. Values in points describe by this->mesh.
         ProvidedValueType values;
 
         /// Mesh which describes in which points there are this->values.
-        MeshTypePtr meshPtr;
+        MeshPtrType meshPtr;
 
         /**
          * Get mesh.
@@ -830,13 +841,13 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
          * @param values provided value, values in points describe by this->mesh.
          * @param meshPtr pointer to mesh which describes in which points there are this->values
          */
-        explicit WithValue(ProvidedValueType values, MeshTypePtr meshPtr = nullptr)
+        explicit WithValue(ProvidedValueType values, MeshPtrType meshPtr = nullptr)
             : values(values), meshPtr(meshPtr) {}
 
         /**
          * @param meshPtr pointer to mesh which describes in which points there are this->values
          */
-        explicit WithValue(MeshTypePtr meshPtr = nullptr)
+        explicit WithValue(MeshPtrType meshPtr = nullptr)
             : meshPtr(meshPtr) {}
 
         /**
@@ -857,7 +868,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
          * @param method method which should be use to do interpolation
          * @return values in points describe by mesh @a dst_mesh
          */
-        virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method) const {
+        virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const {
             if (!values) throw NoValue();
             return interpolate(mesh(), values, dst_mesh, method);
         }
@@ -866,16 +877,16 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
     /**
      * Implementation of field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider<ProviderFor<PropertyTag, SpaceType>, ProvidedValueType(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod method)> Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedValueType(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod method)> Delegate;
 
     /**
      * Return same value in all points.
      *
      * Used by receivers as const value provider, see Receiver::setConst
      */
-    struct ConstProviderT: public ProviderFor<PropertyTag, SpaceType> {
+    struct ConstProviderT: public ProviderFor<PropertyT, SpaceT> {
 
-        typedef ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>::ProvidedValueType ProvidedValueType;
+        typedef ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
 
         /// Provided value
         ValueT value;
@@ -892,7 +903,7 @@ struct ProviderImpl<PropertyTag, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceType>
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */
-        virtual ProvidedValueType operator()(const Mesh<SpaceType::DIMS>& dst_mesh, InterpolationMethod) const {
+        virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod) const {
             return ProvidedValueType(dst_mesh.size(), value);
         }
     };

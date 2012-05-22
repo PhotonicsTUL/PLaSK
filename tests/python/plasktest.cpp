@@ -101,8 +101,6 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("materialTypeId", &materialTypeId);
 
-
-    plask::python::RegisterProviderReceiver<plask::EffectiveIndex,void>();
     plask::python::ExportModule<ReceiverTest>("ReceiverTest")
         .add_receiver("inNeff", &ReceiverTest::inNeff, "Test receiver")
     ;

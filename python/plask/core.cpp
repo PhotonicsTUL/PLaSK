@@ -15,7 +15,6 @@ void initGeometry();
 void register_vector();
 void register_mesh();
 void register_providers();
-void register_calculation_spaces();
 
 void register_data_vectors();
 
@@ -61,9 +60,6 @@ BOOST_PYTHON_MODULE(plaskcore)
 
     // Geometry
     initGeometry();
-
-    // Space
-    register_calculation_spaces();
 
     // Meshes
     register_mesh();
