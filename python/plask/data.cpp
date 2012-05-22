@@ -4,6 +4,7 @@
 
 #include <plask/mesh/mesh.h>
 #include <plask/data.h>
+#include <plask/vec.h>
 
 namespace plask { namespace python {
 
@@ -95,6 +96,15 @@ void register_data_vectors() {
 
     register_data_vector<double, 2>();
     register_data_vector<dcomplex, 2>();
+    register_data_vector< Vec<2,double>, 2 >();
+    register_data_vector< Vec<2,dcomplex>, 2 >();
+    register_data_vector< Vec<3,double>, 2 >();
+    register_data_vector< Vec<3,dcomplex>, 2 >();
+
+    register_data_vector<double, 3>();
+    register_data_vector<dcomplex, 3>();
+    register_data_vector< Vec<3,double>, 3 >();
+    register_data_vector< Vec<3,dcomplex>, 3 >();
 }
 
 }} // namespace plask::python

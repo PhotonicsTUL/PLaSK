@@ -3,7 +3,7 @@
 
 #include <limits>
 
-#include <Eigen/Core>
+#include <Eigen/Dense>
 
 #include <plask/plask.hpp>
 
@@ -27,6 +27,9 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     /// Cached refractive indices
     std::vector<std::vector<dcomplex>> nrCache;
 
+    /// Computed effective indices for each stripe
+    std::vector<dcomplex> stripeNeffs;
+
   public:
 
     enum Symmetry {
@@ -45,6 +48,8 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
            tolf_max,    ///< Required tolerance on the function value
            maxstep;     ///< Maximum step in one iteration
     int maxiterations;  ///< Maximum number of iterations
+
+    dcomplex initial_vertical_neff; ///< Initial effective index for vertical stripe calculations
 
     EffectiveIndex2dModule();
 
@@ -168,12 +173,18 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     /// Initialize the module
     virtual void onInitialize();
 
+    /// Invalidate the data
+    virtual void onInvalidate();
+
   private:
 
     dcomplex k0;        ///< Cache of the normalized frequency
 
-    /// Cache the effective indices
-    void updateCache();
+    /**
+     * Fist stage of computations
+     * Update the refractive indices cache and perform vertical computations
+     */
+    void stageOne();
 
     /// Return the effective index of a single vertical stripe, optionally also computing fields
     Eigen::Matrix2cd getMatrix1(const dcomplex& neff, std::size_t stripe);

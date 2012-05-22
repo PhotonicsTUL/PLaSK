@@ -35,6 +35,8 @@ void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object
         throw ValueError("wrong symmetry specification");
     }
 }
+
+
 /**
  * Initialization of your module to Python
  *
@@ -53,6 +55,7 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(tolf_max, "Required tolerance on the function value");
         RW_FIELD(maxstep, "Maximum step in one iteration");
         RW_FIELD(maxiterations, "Maximum number of iterations");
+        RW_FIELD(initial_vertical_neff, "Initial value of vertical effective index for each stripe");
         METHOD(setSimpleMesh, "Set simple mesh based on the geometry elements bounding boxes");
         METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry elements bounding boxes", "points");
         METHOD(computeMode, "Find the mode near the specified effective index", "neff");
