@@ -729,6 +729,11 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
          */
         bool hasValue() const { return value; }
 
+        /// Throw NoValue exception if value is not initialized.
+        void ensureHasValue() const {
+            if (!hasValue()) throw NoValue(NAME);
+        }
+
         /// Delegate all constructors to value.
         template<typename ...Args>
         WithValue(Args&&... params): value(ProvidedValueType(std::forward<Args>(params)...)) {}
@@ -752,7 +757,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
          * @throw NoValue if value is empty boost::optional
          */
         ProvidedValueType& operator()() {
-            if (!hasValue()) throw NoValue(NAME);
+            ensureHasValue();
             return *value;
         }
 
@@ -762,7 +767,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
          * @throw NoValue if value is empty boost::optional
          */
         virtual ProvidedValueType operator()() const {
-            if (!hasValue()) throw NoValue(NAME);
+            ensureHasValue();
             return *value;
         }
     };
@@ -880,6 +885,11 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
          */
         bool hasValue() const { return values.data() != nullptr; }
 
+        /// Throw NoValue exception if value is not initialized.
+        void ensureHasValue() const {
+            if (!hasValue()) throw NoValue(NAME);
+        }
+
         /**
          * @param values provided value, values in points describe by this->mesh.
          * @param meshPtr pointer to mesh which describes in which points there are this->values
@@ -912,7 +922,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
          * @return values in points describe by mesh @a dst_mesh
          */
         virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const {
-            if (!values) throw NoValue(NAME);
+            ensureHasValue();
             return interpolate(mesh(), values, dst_mesh, method);
         }
     };
