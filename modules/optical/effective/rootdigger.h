@@ -1,21 +1,23 @@
 #ifndef ROOTDIGGER_H
 #define ROOTDIGGER_H
 
+#include <functional>
 #include <plask/plask.hpp>
 
 namespace plask { namespace modules { namespace eim {
 
 class EffectiveIndex2dModule;
 
-class RootDigger {
+struct RootDigger {
+
+    typedef std::function<dcomplex(const dcomplex&)> function_type;
+
+  private:
 
     EffectiveIndex2dModule& module;
 
     // Module method computing the value to zero
-    dcomplex (EffectiveIndex2dModule::*val_function)(const dcomplex&, size_t);
-
-    // Provided stripe number
-    size_t stripe_number;
+    function_type val_function;
 
     // Parameters for Broyden algorithm
     const double alpha, lambda_min, EPS;
@@ -35,10 +37,9 @@ class RootDigger {
   public:
 
     // Constructor
-    RootDigger(EffectiveIndex2dModule& module, dcomplex(EffectiveIndex2dModule::*val_fun)(const dcomplex&, size_t), size_t stripe_number) :
+    RootDigger(EffectiveIndex2dModule& module, const function_type& val_fun) :
         module(module),
         val_function(val_fun),
-        stripe_number(stripe_number),
         alpha(1.0e-4),                                          // ensures sufficient decrease of charval in each step
         lambda_min(1.0e-7),                                     // minimum decreased ratio of the step (lambda)
         EPS(sqrt(std::numeric_limits<double>::epsilon()))       // square root of machine precission

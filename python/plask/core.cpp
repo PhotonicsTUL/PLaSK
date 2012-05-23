@@ -1,3 +1,4 @@
+#include <complex>
 #include <plask/exceptions.h>
 #include <plask/mesh/interpolation.h>
 #include <plask/module.h>
@@ -12,7 +13,7 @@ namespace plask { namespace python {
 void initMaterials();
 void initGeometry();
 
-void register_vector();
+void register_vectors();
 void register_mesh();
 void register_providers();
 
@@ -53,7 +54,10 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_config();
 
     // Vectors
-    register_vector();
+    register_vectors();
+
+    register_vector_of<double>("float");
+    register_vector_of<std::complex<double>>("complex");
 
     // Materials
     initMaterials();
@@ -71,21 +75,25 @@ BOOST_PYTHON_MODULE(plaskcore)
     py::class_<plask::Module, plask::shared_ptr<plask::Module>, boost::noncopyable>("Module", "Base class for all modules", py::no_init)
         .add_property("name", &plask::Module::getName, "Full name of the module")
         .add_property("description", &plask::Module::getDescription, "Short description of the module")
+        .add_property("initialized", &plask::Module::isInitialized, "True if the module has been initialized")
+        .def("invalidate", &plask::Module::invalidate, "Set module back to uninitialized state")
     ;
 
     // Exceptions
+    register_exception<plask::Exception>(PyExc_RuntimeError);
+
+    register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
+    register_exception<plask::NoSuchMaterial>(PyExc_ValueError);
+    register_exception<plask::BadInput>(PyExc_ValueError);
+    register_exception<plask::NoValue>(PyExc_ValueError);
+    register_exception<plask::NoProvider>(PyExc_TypeError);
+
     register_exception<plask::python::ValueError>(PyExc_ValueError);
     register_exception<plask::python::TypeError>(PyExc_TypeError);
     register_exception<plask::python::IndexError>(PyExc_IndexError);
     register_exception<plask::python::KeyError>(PyExc_KeyError);
     register_exception<plask::python::AttributeError>(PyExc_AttributeError);
     register_exception<plask::python::StopIteration>(PyExc_StopIteration);
-
-    register_exception<plask::BadInput>(PyExc_ValueError);
-    register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
-
-    register_exception<plask::NoValue>(PyExc_ValueError);
-    register_exception<plask::NoProvider>(PyExc_TypeError);
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

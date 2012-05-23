@@ -21,18 +21,27 @@ void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object
     if (symmetry == py::object()) { self.symmetry = EffectiveIndex2dModule::NO_SYMMETRY; return; }
     try {
         std::string sym = py::extract<std::string>(symmetry);
-        if (sym == "0") {
+        if (sym == "0" || sym == "none" ) {
             self.symmetry = EffectiveIndex2dModule::NO_SYMMETRY; return;
         }
-        if (sym == "positive" || sym == "pos" || sym == "symmeric" || sym == "+") {
+        if (sym == "positive" || sym == "pos" || sym == "symmeric" || sym == "+" || sym == "+1") {
             self.symmetry = EffectiveIndex2dModule::SYMMETRY_POSITIVE; return;
         }
-        if (sym == "negative" || sym == "neg" || sym == "anti-symmeric" || sym == "antisymmeric" || sym == "-") {
+        if (sym == "negative" || sym == "neg" || sym == "anti-symmeric" || sym == "antisymmeric" || sym == "-" || sym == "-1") {
             self.symmetry = EffectiveIndex2dModule::SYMMETRY_NEGATIVE; return;
         }
         throw py::error_already_set();
     } catch (py::error_already_set) {
-        throw ValueError("wrong symmetry specification");
+        PyErr_Clear();
+        try {
+            int sym = py::extract<int>(symmetry);
+            if (sym ==  0) { self.symmetry = EffectiveIndex2dModule::NO_SYMMETRY; return; }
+            if (sym == +1) { self.symmetry = EffectiveIndex2dModule::SYMMETRY_POSITIVE; return; }
+            if (sym == -1) { self.symmetry = EffectiveIndex2dModule::SYMMETRY_NEGATIVE; return; }
+            throw py::error_already_set();
+        } catch (py::error_already_set) {
+            throw ValueError("wrong symmetry specification");
+        }
     }
 }
 
@@ -55,7 +64,6 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(tolf_max, "Required tolerance on the function value");
         RW_FIELD(maxstep, "Maximum step in one iteration");
         RW_FIELD(maxiterations, "Maximum number of iterations");
-        RW_FIELD(initial_vertical_neff, "Initial value of vertical effective index for each stripe");
         METHOD(setSimpleMesh, "Set simple mesh based on the geometry elements bounding boxes");
         METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry elements bounding boxes", "points");
         METHOD(computeMode, "Find the mode near the specified effective index", "neff");

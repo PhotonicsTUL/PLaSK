@@ -127,7 +127,7 @@ namespace plask {
  */
 struct Provider {
 
-    static constexpr const char* NAME = "unknown provider";
+    static constexpr const char* NAME = "undefined";
 
     Provider & operator=(const Provider&) = delete;
     Provider(const Provider&) = delete;
@@ -357,7 +357,7 @@ protected:
 template <typename ValueT>
 struct SingleValueProvider: public Provider {
 
-    static constexpr const char* NAME = "unknown single value provider";
+    static constexpr const char* NAME = "undefined value";
 
     /// Type of provided value.
     typedef ValueT ProvidedValueType;
@@ -379,7 +379,7 @@ struct SingleValueProvider: public Provider {
 template <typename ValueT, typename SpaceT>
 struct OnMeshProvider: public Provider {
 
-    static constexpr const char* NAME = "unknown on-mesh provider";
+    static constexpr const char* NAME = "undefined field";
 
     /// Type of value provided by this (returned by operator()).
     typedef DataVector<ValueT> ProvidedValueType;
@@ -401,7 +401,7 @@ struct OnMeshProvider: public Provider {
 template <typename ValueT, typename SpaceT>
 struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT> {
 
-    static constexpr const char* NAME = "unknown on-mesh provider with interpolation";
+    static constexpr const char* NAME = "undefined field";
 
     /// Type of value provided by this (returned by operator()).
     typedef typename OnMeshProvider<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
@@ -436,8 +436,6 @@ template<typename _Signature> struct DelegateProvider;
 template<typename _Res, typename... _ArgTypes>
 struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
 
-    static constexpr const char* NAME = "unknown delegate provider";
-
     /// Hold external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
 
@@ -471,8 +469,6 @@ template<typename _BaseClass, typename _Signature> struct PolymorphicDelegatePro
  */
 template<typename _BaseClass, typename _Res, typename... _ArgTypes>
 struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _BaseClass {
-
-    static constexpr const char* NAME = "unknown polymorphic delegate provider";
 
     /// Hold external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
@@ -516,22 +512,22 @@ enum PropertyType {
 
 template <PropertyType prop_type>
 struct PropertyTypeToProviderName {
-    static constexpr const char* value = "unknown provider";
+    static constexpr const char* value = "undefined";
 };
 
 template <>
 struct PropertyTypeToProviderName<SINGLE_VALUE_PROPERTY> {
-    static constexpr const char* value = "unknown single value provider";
+    static constexpr const char* value = "undefined value";
 };
 
 template <>
 struct PropertyTypeToProviderName<FIELD_PROPERTY> {
-    static constexpr const char* value = "unknown field provider";
+    static constexpr const char* value = "undefined field";
 };
 
 template <>
 struct PropertyTypeToProviderName<INTERPOLATED_FIELD_PROPERTY> {
-    static constexpr const char* value = "unknown interpolated field provider";
+    static constexpr const char* value = "undefined field";
 };
 
 /**

@@ -5,12 +5,11 @@ namespace plask { namespace modules { namespace eim {
 EffectiveIndex2dModule::EffectiveIndex2dModule() :
     symmetry(NO_SYMMETRY),
     tolx(1.0e-07),                                          // absolute tolerance on the argument
-    tolf_min(1.0e-12),                                      // sufficient tolerance on the function value
-    tolf_max(1.0e-10),                                      // required tolerance on the function value
+    tolf_min(1.0e-10),                                      // sufficient tolerance on the function value
+    tolf_max(1.0e-8),                                       // required tolerance on the function value
     maxstep(0.1),                                           // maximum step in one iteration
     maxiterations(500),                                     // maximum number of iterations
-    initial_vertical_neff(NAN),
-    log_value(dataLog<dcomplex, double>("neff", "char_val")),
+    log_value(dataLog<dcomplex, double>(getId(), "neff", "char_val")),
     outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
     inTemperature = 300.;
 }
@@ -18,10 +17,9 @@ EffectiveIndex2dModule::EffectiveIndex2dModule() :
 
 dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
 {
+    log(LOG_INFO, "Searching for the mode starting from n_eff = %1%", str(neff));
     stageOne();
-
-    dcomplex result = RootDigger(*this, &EffectiveIndex2dModule::detS, 0).getSolution(neff);
-
+    dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}).getSolution(neff);
     outNeff = result;
     return result;
 }
@@ -30,14 +28,16 @@ dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
 
 std::vector<dcomplex> EffectiveIndex2dModule::findModes(dcomplex neff1, dcomplex neff2, unsigned steps, unsigned nummodes)
 {
+    log(LOG_INFO, "Searching for the modes for n_eff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
-    return RootDigger(*this, &EffectiveIndex2dModule::detS, 0).searchSolutions(neff1, neff2, steps, 0, nummodes);
+    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}).searchSolutions(neff1, neff2, steps, 0, nummodes);
 }
 
 
 
 std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomplex neff2, unsigned steps)
 {
+    log(LOG_INFO, "Searching for the approximate modes for n_eff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
 
     double rdneff = real(neff2 - neff1);
@@ -51,7 +51,7 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomp
     std::vector<double> ipoints(1, imag(neff1));
     if (imag(neff2) != imag(neff1)) ipoints.push_back(imag(neff2));
 
-    return RootDigger(*this, &EffectiveIndex2dModule::detS, 0).findMap(rpoints, ipoints);
+    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}).findMap(rpoints, ipoints);
 }
 
 
@@ -84,7 +84,7 @@ void EffectiveIndex2dModule::onInvalidate()
 
 void EffectiveIndex2dModule::stageOne()
 {
-    bool updated = init();
+    bool updated = initCalculation();
 
     size_t xbegin = 0;
 
@@ -107,6 +107,7 @@ void EffectiveIndex2dModule::stageOne()
 
     if (updated || inTemperature.changed || inWavelength.changed) {
         // Either temperature, structure, or wavelength changed, so we need to get refractive indices
+        log(LOG_DEBUG, "Updating refractive indices cache");
         k0 = 2*M_PI / inWavelength();;
         double w = real(k0);
         auto temp = inTemperature(*mesh);
@@ -126,10 +127,12 @@ void EffectiveIndex2dModule::stageOne()
     size_t N = stripeNeffs.size();
 
     // Compute effective indices for all stripes
-    // TODO: is there a better way to do this to ensure proper mode is found for all stripes?
-    dcomplex initial_neff/* = std::isnan(real(initial_vertical_neff))? neff : initial_vertical_neff TODO*/;
+    // TODO: start form the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
+    log(LOG_INFO, "Computing effective index for each vertical stripe");
     for (size_t i = xbegin; i != nrCache.size(); ++i) {
-       stripeNeffs[i] = RootDigger(*this, &EffectiveIndex2dModule::detS1, i).getSolution(initial_neff);
+        auto maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
+        log(LOG_DEBUG, "Computing effective index for vertical stripe no %1% (x=%2%µm)", i, middle_points.c0[i]);
+        stripeNeffs[i] = RootDigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);} ).getSolution(maxn);
     }
 }
 
@@ -141,12 +144,12 @@ void EffectiveIndex2dModule::stageOne()
 
 using namespace Eigen;
 
-Matrix2cd EffectiveIndex2dModule::getMatrix1(const dcomplex& neff, size_t stripe)
+Eigen::Matrix2cd EffectiveIndex2dModule::getMatrix1(const plask::dcomplex& neff, const std::vector<dcomplex>& NR)
 {
-    size_t N = nrCache[stripe].size();
+    size_t N = NR.size();
 
     auto fresnel = [&](size_t i) -> Matrix2cd {
-        dcomplex n = 0.5 * nrCache[stripe][i] / nrCache[stripe][i+1];
+        dcomplex n = 0.5 * NR[i] / NR[i+1];
         Matrix2cd M; M << (0.5+n), (0.5-n),
                           (0.5-n), (0.5+n);
         return M;
@@ -155,7 +158,7 @@ Matrix2cd EffectiveIndex2dModule::getMatrix1(const dcomplex& neff, size_t stripe
     Matrix2cd T = fresnel(0);
 
     for (size_t i = 1; i < N-1; ++i) {
-        dcomplex n = sqrt(nrCache[stripe][i]*nrCache[stripe][i] - neff*neff);
+        dcomplex n = sqrt(NR[i]*NR[i] - neff*neff);
         if (real(n) < 0) n = -n; // Is this necessary? Just to be on the safe side?
         double d = mesh->c1[i] - mesh->c1[i-1];
         dcomplex phas = exp(-I * n * d * k0);
@@ -168,13 +171,14 @@ Matrix2cd EffectiveIndex2dModule::getMatrix1(const dcomplex& neff, size_t stripe
     return T;
 }
 
-dcomplex EffectiveIndex2dModule::detS1(const dcomplex& x, std::size_t stripe)
+dcomplex EffectiveIndex2dModule::detS1(const plask::dcomplex& x, const std::vector<dcomplex>& NR)
 {
-    Matrix2cd T = getMatrix1(x, stripe);
+    Matrix2cd T = getMatrix1(x, NR);
 
     Matrix2cd S; // Scattering matrix
     S <<     1. / T(0,0)  ,  - T(0,1) / T(0,0),
          T(1,0) / T(0,0)  ,  - T(0,1) / T(0,0) * T(1,0) + T(1,1);
+std::cout << T << "\n" << S << "\n";
     return S.determinant();
 }
 
@@ -218,7 +222,7 @@ Matrix2cd EffectiveIndex2dModule::getMatrix(const dcomplex& neff)
 }
 
 
-dcomplex EffectiveIndex2dModule::detS(const dcomplex& x, std::size_t)
+dcomplex EffectiveIndex2dModule::detS(const dcomplex& x)
 {
     Matrix2cd T = getMatrix(x);
 
@@ -227,13 +231,15 @@ dcomplex EffectiveIndex2dModule::detS(const dcomplex& x, std::size_t)
         S <<     1. / T(0,0)  ,  - T(0,1) / T(0,0),
              T(1,0) / T(0,0)  ,  - T(0,1) / T(0,0) * T(1,0) + T(1,1);
         return S.determinant();
-    }
+    } // else TODO
 }
 
 
 
 const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method)
 {
+    if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
+
     //TODO
     DataVector<double> data(4);
     data[0] = 10; data[1] = 20; data[2] = 30; data[3] = 40;

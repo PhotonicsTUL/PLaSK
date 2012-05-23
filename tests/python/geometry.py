@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import plask, plask.materials, plask.geometry
+import plask, plask.material, plask.geometry
 
 
 
 class SimpleGeometry(unittest.TestCase):
 
     def setUp(self):
-        @plask.materials.simple
-        class Dumb(plask.materials.Material): pass
+        @plask.material.simple
+        class Dumb(plask.material.Material): pass
 
     def testPrimitives(self):
         '''Test the properties of primitives'''
@@ -49,8 +49,8 @@ class SimpleGeometry(unittest.TestCase):
 class GeometryObjects(unittest.TestCase):
 
     def setUp(self):
-        @plask.materials.simple
-        class Mat(plask.materials.Material): pass
+        @plask.material.simple
+        class Mat(plask.material.Material): pass
 
         self.mat = Mat()
         self.block53 = plask.geometry.Block2D(5,3, self.mat)
@@ -67,7 +67,7 @@ class GeometryObjects(unittest.TestCase):
 class Transforms(unittest.TestCase):
 
     def setUp(self):
-        self.mat = plask.materials.GaN()
+        self.mat = plask.material.GaN()
         self.block53 = plask.geometry.Block2D(5,3, self.mat)
 
     def testTranslation(self):
@@ -85,7 +85,7 @@ class GeometryPath(unittest.TestCase):
     def setUp(self):
         self.stack1 = plask.geometry.Stack2D()
         self.stack2 = plask.geometry.Stack2D()
-        self.element = plask.geometry.Rectangle(1,2, plask.materials.GaN())
+        self.element = plask.geometry.Rectangle(1,2, plask.material.GaN())
         self.stack1.append(self.stack2)
         self.stack2.append(self.element)
 
@@ -98,8 +98,8 @@ class GeometryPath(unittest.TestCase):
 class Containers(unittest.TestCase):
 
     def setUp(self):
-        self.gan = plask.materials.GaN()
-        self.aln = plask.materials.AlN()
+        self.gan = plask.material.GaN()
+        self.aln = plask.material.AlN()
         self.block1 = plask.geometry.Block2D(5,3, self.gan)
         self.block2 = plask.geometry.Block2D(5,3, self.aln)
         self.cube1 = plask.geometry.Block3D(4,4,2, self.gan)

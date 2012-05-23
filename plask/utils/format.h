@@ -1,6 +1,8 @@
 #ifndef PLASK__UTILS_FORMAT_H
 #define PLASK__UTILS_FORMAT_H
 
+#include <boost/lexical_cast.hpp>
+
 /** @file
 This file includes utils to format strings.
 */
@@ -39,6 +41,24 @@ std::string format(const std::string& msg, const T&... args) {
     return format.str();
 }
 
+
+/**
+ * Convert something number to a prettier string
+ * @param x value to convert
+ */
+template <typename T>
+inline std::string str(T x) {
+    return boost::lexical_cast<std::string>(x);
+}
+
+/**
+ * Convert double number to a prettier string
+ * @param x value to convert
+ */
+inline std::string str(double x) {
+    return format("%.9g", x);
+}
+
 /**
  * Convert complex number to a prettier string
  * @param x value to convert
@@ -46,6 +66,8 @@ std::string format(const std::string& msg, const T&... args) {
 inline std::string str(dcomplex x) {
     return format("%.9g%+-0.9gj", real(x), imag(x));
 }
+
+
 
 }   // namespace plask
 

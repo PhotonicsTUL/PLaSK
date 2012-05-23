@@ -3,6 +3,9 @@
 
 #include <string>
 
+#include "log.h"
+#include "id.h"
+
 namespace plask {
 
 /**
@@ -58,16 +61,31 @@ class DataLog {
 template <typename ArgT, typename ValT>
 struct Data2dLog: public DataLog<ArgT, ValT> {
 
-    Data2dLog(const std::string& global_prefix, const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
+    std::string global_prefix;  ///< Prefix for the log
+    std::string chart_name;     ///< Name of the plot
+    std::string axis_arg_name;  ///< Name of the argument
+    std::string axis_val_name;  ///< Name of the value
+
+    Data2dLog(const std::string& global_prefix, const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) :
+        global_prefix(global_prefix), chart_name(chart_name), axis_arg_name(axis_arg_name), axis_val_name(axis_val_name)
+    {
     }
 
-    Data2dLog(const std::string& global_prefix, const std::string& axis_arg_name, const std::string& axis_val_name) {
+    Data2dLog(const std::string& global_prefix, const std::string& axis_arg_name, const std::string& axis_val_name) :
+        global_prefix(global_prefix), chart_name(axis_arg_name + "_" + getUniqueString()), axis_arg_name(axis_arg_name), axis_val_name(axis_val_name)
+    {
         //chart_name = axis_arg_name(axis_arg_name)_getUniqueString()
     }
 
-    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val) { return *this; }
+    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val) {
+        log(LOG_DATA, "%1%: %2%=%4% %3%=%5%", chart_name, axis_arg_name, axis_val_name, str(arg), str(val));
+        return *this;
+    }
 
-    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val, int counter) { return *this; };
+    virtual Data2dLog& operator()(const ArgT& arg, const ValT& val, int counter) {
+        log(LOG_DATA, "%1%: %2%=%4% %3%=%5% (%6%)", chart_name, axis_arg_name, axis_val_name, str(arg), str(val), counter);
+        return *this;
+    };
 };
 
 

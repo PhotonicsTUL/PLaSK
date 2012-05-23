@@ -3,19 +3,19 @@ from .plaskcore import *
 
 from numpy import *
 
-## ## plask.materials ## ##
+## ## plask.material ## ##
 
-materialsdb = materials.database = materials.MaterialsDB.getDefault()
+materialdb = material.database = material.MaterialsDB.getDefault()
 
 def updateFactories():
-    '''For each material in default database make factory in plask.materials'''
+    '''For each material in default database make factory in plask.material'''
     def factory(name):
-        return lambda **kwargs: materialsdb.get(name, **kwargs)
-    for mat in materials.database:
+        return lambda **kwargs: materialdb.get(name, **kwargs)
+    for mat in material.database:
         name = mat.split(":")[0]
-        if name not in materials.__dict__:
-            materials.__dict__[name] = factory(name)
-materials.updateFactories = updateFactories
+        if name not in material.__dict__:
+            material.__dict__[name] = factory(name)
+material.updateFactories = updateFactories
 del updateFactories
 
 def importLibrary(name):
@@ -26,13 +26,13 @@ def importLibrary(name):
         except OSError:
             pass
         else:
-            materials.updateFactories()
+            material.updateFactories()
             return
     raise OSError("Cannot import library '%s'" % name)
-materials.importLibrary = importLibrary
+material.importLibrary = importLibrary
 del importLibrary
 
-materials.importLibrary("plask_materialsdefault")
+material.importLibrary("plask_materialsdefault")
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''
@@ -40,8 +40,8 @@ def register_material(cls=None, name=None, complex=False, DB=None):
     # A trick allowing passing arguments to decorator
     if cls is None:
         return lambda M: register_material(M, name=name, DB=DB)
-    elif not issubclass(cls, materials.Material):
-        raise TypeError("Wrong decorated class (must be a subclass of plask.materials.Material")
+    elif not issubclass(cls, material.Material):
+        raise TypeError("Wrong decorated class (must be a subclass of plask.material.Material")
 
     if 'name' in cls.__dict__:
         if name is not None:
@@ -52,20 +52,20 @@ def register_material(cls=None, name=None, complex=False, DB=None):
         cls.name = cls.__name__
 
     if DB is None:
-        DB = materials.database
+        DB = material.database
 
     if complex:
-        materials._register_material_complex(cls.name, cls, DB)
+        material._register_material_complex(cls.name, cls, DB)
     else:
-        materials._register_material_simple(cls.name, cls, DB)
+        material._register_material_simple(cls.name, cls, DB)
 
     return cls
 
-materials.register_material = register_material
+material.register_material = register_material
 del register_material
 
-materials.simple = lambda mat, **kwargs: materials.register_material(mat, complex=False, **kwargs)
-materials.complex = lambda mat, **kwargs: materials.register_material(mat, complex=True, **kwargs)
+material.simple = lambda mat, **kwargs: material.register_material(mat, complex=False, **kwargs)
+material.complex = lambda mat, **kwargs: material.register_material(mat, complex=True, **kwargs)
 
 
 ## ## plask.geometry ## ##

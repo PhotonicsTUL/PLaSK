@@ -1,7 +1,10 @@
 #ifndef PLASK__LOG_LOG_H
 #define PLASK__LOG_LOG_H
 
+#include <iostream>
 #include <string>
+
+#include "../utils/format.h"
 
 namespace plask {
 
@@ -16,6 +19,18 @@ enum LogLevel {
     LOG_DEBUG           // pretty much everything
 };
 
+static inline std::string logLevelName(LogLevel level) {
+    switch (level) {
+        case LOG_CRITICAL_ERROR:return "CRITICAL ERROR";
+        case LOG_ERROR:         return "ERROR         ";
+        case LOG_WARNING:       return "WARNING       ";
+        case LOG_INFO:          return "INFO          ";
+        case LOG_RESULT:        return "RESULT        ";
+        case LOG_DATA:          return "DATA          ";
+        case LOG_DETAIL:        return "DETAIL        ";
+        case LOG_DEBUG:         return "DEBUG         ";
+    }
+}
 
 /**
  * Log a message
@@ -25,7 +40,7 @@ enum LogLevel {
  **/
 template<typename ...Args>
 inline void log(LogLevel level, std::string msg, Args&&... params) {
-    // format(msg, std::forward<Args>(params)...);
+    std::cout << logLevelName(level) << ": " << format(msg, std::forward<Args>(params)...) << "\n";
 }
 
 }   // namespace plask

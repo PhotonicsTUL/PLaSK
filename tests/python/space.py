@@ -3,7 +3,7 @@
 import unittest
 
 
-import plask, plask.materials, plask.geometry
+import plask, plask.geometry
 
 
 

@@ -341,7 +341,7 @@ static inline bool plask_import_array() {
     return true;
 }
 
-void register_vector()
+void register_vectors()
 {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());

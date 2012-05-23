@@ -49,11 +49,9 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
            maxstep;     ///< Maximum step in one iteration
     int maxiterations;  ///< Maximum number of iterations
 
-    dcomplex initial_vertical_neff; ///< Initial effective index for vertical stripe calculations
-
     EffectiveIndex2dModule();
 
-    virtual std::string getName() const { return "Optical: Effective Index Method 2D"; }
+    virtual std::string getName() const { return "Effective Index Method 2D"; }
 
     virtual std::string getDescription() const {
         return "Calculate optical modes and optical field distribution using the effective index method "
@@ -187,16 +185,16 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     void stageOne();
 
     /// Return the effective index of a single vertical stripe, optionally also computing fields
-    Eigen::Matrix2cd getMatrix1(const dcomplex& neff, std::size_t stripe);
+    Eigen::Matrix2cd getMatrix1(const dcomplex& neff, const std::vector<dcomplex>& NR);
 
     /// Return S matrix determinant for one stripe
-    dcomplex detS1(const dcomplex& x, std::size_t stripe);
+    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR);
 
     /// Return the  effective index of the whole structure, optionally also computing fields
     Eigen::Matrix2cd getMatrix(const dcomplex& neff);
 
     /// Return S matrix determinant for the whole structure
-    dcomplex detS(const dcomplex& x, std::size_t);
+    dcomplex detS(const dcomplex& x);
 
     /// Method computing the distribution of light intensity
     const DataVector<double> getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);

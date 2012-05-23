@@ -65,7 +65,7 @@ class MaterialWrap : public Material
         int len = py::len(args);
         if (len == 2) {
             if (args[0].attr("__class__").attr("__name__") == "Material" &&
-                args[0].attr("__module__") == "plask.materials") {
+                args[0].attr("__module__") == "plask.material") {
                 //TODO maybe there is a better way to compare class objects
                 return MaterialsDB::getDefault().get(py::extract<std::string>(args[1]));
             }
@@ -448,8 +448,8 @@ std::string Material__repr__(const Material& self) {
 
 void initMaterials() {
 
-    py::object materials_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.materials"))) };
-    py::scope().attr("materials") = materials_module;
+    py::object materials_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.material"))) };
+    py::scope().attr("material") = materials_module;
     py::scope scope = materials_module;
 
     py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB",
@@ -472,7 +472,7 @@ void initMaterials() {
     MaterialClass
         .def("__init__", raw_constructor(&MaterialWrap::__init__))
         .def("_completeComposition", &Material__completeComposition, (py::arg("composition"), py::arg("name")=""),
-             "Fix incomplete material composition basing on patten")
+             "Fix incomplete material composition basing on pattern")
         .staticmethod("_completeComposition")
         .add_property("name", &Material::name)
         .add_property("kind", &Material::kind)

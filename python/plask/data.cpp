@@ -83,6 +83,9 @@ void register_data_vector() {
         .def("__array__", &DataVectorWrap__array<T,dim>)
     ;
 
+    // TODO Podłączenie do receivera
+    // serializacja?
+
 }
 
 static inline bool plask_import_array() {

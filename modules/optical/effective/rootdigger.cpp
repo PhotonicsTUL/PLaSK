@@ -5,7 +5,7 @@ using namespace std;
 namespace plask { namespace modules { namespace eim {
 
 dcomplex RootDigger::value(dcomplex x, bool count) const{
-    dcomplex y = (module.*val_function)(x, stripe_number);
+    dcomplex y = val_function(x);
     double ay = abs(y);
     if (count) module.log_value.count(x, ay);
     else module.log_value(x, ay);
@@ -20,7 +20,7 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
     int NR = repoints.size();
     int NI = impoints.size();
 
-    module.log(LOG_INFO, "Searching for the root map from %1% points", NR*NI);
+    module.log(LOG_DETAIL, "Searching for the solutions map using %1% points", NR*NI);
 
     // Handle situations with inconvenient number of points in some direction
     // (this is not perfect but we must handle it somehow)
@@ -84,7 +84,7 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
 }
 
 //**************************************************************************
-/// Search for modes within the region real(start) - real(end),
+/// Search for solutions within the region real(start) - real(end),
 vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int replot, int implot, int num_modes)
 {
     if (imag(start) == imag(end)) implot = 0;
@@ -114,14 +114,14 @@ vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int r
     // Determine map
     vector<dcomplex> map = findMap(repoints, impoints);
 
-    // Find modes starting from the map points
+    // Find solutions starting from the map points
     int iend = min(int(map.size()), num_modes);
     for (int i = 0; i < iend; i++) {
         try {
             dcomplex mode = getSolution(map[i]);
             modes.push_back(mode);
         } catch (runtime_error err) {
-            module.log(LOG_ERROR, "Failed to get mode around " + str(map[i]) + " (" + err.what() + ")");
+            module.log(LOG_ERROR, "Failed to get solution around " + str(map[i]) + " (" + err.what() + ")");
         };
     }
 
@@ -132,9 +132,10 @@ vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int r
 /// Search for a single mode starting from the given point: point
 dcomplex RootDigger::getSolution(dcomplex point) const
 {
-    module.log(LOG_INFO, "Searching for the mode with Broyden method starting from " + str(point));
+    module.log(LOG_DETAIL, "Searching for the solution with Broyden method starting from " + str(point));
+    module.log_value.resetCounter();
     dcomplex x = Broyden(point);
-    module.log(LOG_RESULT, "Found mode at " + str(x));
+    module.log(LOG_RESULT, "Found solution at " + str(x));
     return x;
 }
 

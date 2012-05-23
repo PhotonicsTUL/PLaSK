@@ -124,8 +124,9 @@ class Module {
      *
      * \return \c true if the module had to be reinitialized (so one can make local initialization)
      */
-    bool init() {
+    bool initCalculation() {
         if (initialized) return false;
+        log(LOG_INFO, "Initializing module");
         onInitialize();
         initialized = true;
         return true;
@@ -133,7 +134,7 @@ class Module {
 
   public:
 
-    /// Base class of this module (used for automatically determing its functionalities in meta-program)
+    /// Base class of this module (used for automatically determining its functionalities in meta-program)
     typedef Module BASE_MODULE_TYPE;
 
     Module(): initialized(false) {}
@@ -164,6 +165,7 @@ class Module {
     void invalidate() {
         if (initialized) {
             initialized = false;
+            log(LOG_INFO, "Invalidating module");
             onInvalidate();
         }
     }
@@ -257,7 +259,7 @@ class ModuleOver: public Module {
      */
     void setGeometry(const shared_ptr<SpaceT>& geometry) {
         if (geometry == this->geometry) return;
-        log(LOG_INFO, "Attaching geometry");
+        log(LOG_INFO, "Attaching geometry to the module");
         diconnectGeometry();
         this->geometry = geometry;
         if (this->geometry)
@@ -310,7 +312,7 @@ class ModuleWithMesh: public ModuleOver<SpaceT> {
      */
     void setMesh(const shared_ptr<MeshT>& mesh) {
         if (mesh == this->mesh) return;
-        log(LOG_INFO, "Attaching mesh");
+        this->log(LOG_INFO, "Attaching mesh to the module");
         diconnectMesh();
         this->mesh = mesh;
         if (this->mesh)

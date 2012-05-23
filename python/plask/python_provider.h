@@ -2,7 +2,6 @@
 #define PLASK__PYTHON_PROVIDER_H
 
 #include <type_traits>  // std::is_same
-#include <qshareddata.h>
 
 #include "python_globals.h"
 #include <plask/provider/provider.h>
@@ -38,7 +37,7 @@ namespace detail {
             property_name ([](const std::string& s){size_t n=s.find_last_of(':'); return (n!=s.npos)?s.substr(n+1):s; }(py::type_id<typename ReceiverT::PropertyTag>().name())),
             receiver_class(("ReceiverFor" + property_name).c_str(), py::no_init) {
             receiver_class.def("__lshift__", &connect, "Connect provider to receiver");
-            receiver_class.def("__rrshift__", &connect, "Connect provider to receiver");
+            receiver_class.def("__rrshift__", &rconnect, "Connect provider to receiver");
             receiver_class.def("connect", &connect, "Connect provider to receiver");
             receiver_class.def("disconnect", &disconnect, "Disconnect any provider from receiver");
             py::delattr(py::scope(), ("ReceiverFor" + property_name).c_str());

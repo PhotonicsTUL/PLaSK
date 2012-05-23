@@ -66,7 +66,7 @@ namespace detail {
  * This class should be instantiated to export a module to Python.
  *
  * It automatically determines one of the standard bases for the module and exports its methods
- * and fields. Furthermode it provides convenient methods to export providers and receivers (TODO).
+ * and fields. Furthermore it provides convenient methods to export providers and receivers.
  */
 template <typename ModuleT>
 struct ExportModule : public py::class_<ModuleT, shared_ptr<ModuleT>, py::bases<Module>, boost::noncopyable> {

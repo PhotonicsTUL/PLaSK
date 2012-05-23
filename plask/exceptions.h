@@ -110,12 +110,12 @@ struct ComputationError: public Exception {
  */
 struct NoProvider: public Exception {
     NoProvider(): Exception("No provider.") {}
-    NoProvider(const char* provider_name): Exception("No provider of type: %1%", provider_name) {}
+    NoProvider(const char* provider_name): Exception("No %1% set nor its provider connected.", provider_name) {}
 };
 
 struct NoValue: public Exception {
     NoValue(): Exception("No value.") {}
-    NoValue(const char* provider_name): Exception("No value from provider of type: %1%", provider_name) {}
+    NoValue(const char* provider_name): Exception("%1% cannot be provided now.", [](std::string s){s[0]=std::toupper(s[0]);return s;}(provider_name) ) {}
 };
 
 
