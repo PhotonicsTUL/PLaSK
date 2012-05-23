@@ -110,10 +110,12 @@ struct ComputationError: public Exception {
  */
 struct NoProvider: public Exception {
     NoProvider(): Exception("No provider.") {}
+    NoProvider(const char* provider_name): Exception("No provider of type: %1%", provider_name) {}
 };
 
 struct NoValue: public Exception {
     NoValue(): Exception("No value.") {}
+    NoValue(const char* provider_name): Exception("No value from provider of type: %1%", provider_name) {}
 };
 
 

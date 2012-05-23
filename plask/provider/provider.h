@@ -127,6 +127,8 @@ namespace plask {
  */
 struct Provider {
 
+    static constexpr const char* NAME = "unknown provider";
+
     Provider & operator=(const Provider&) = delete;
     Provider(const Provider&) = delete;
     Provider() = default;
@@ -199,6 +201,9 @@ struct Provider {
  */
 template <typename ProviderT>
 struct Receiver: public Provider::Listener {
+
+    /// Name of provider.
+    static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
 
     Receiver & operator=(const Receiver&) = delete;
     Receiver(const Receiver&) = delete;
@@ -286,7 +291,7 @@ struct Receiver: public Provider::Listener {
 
     ///@throw NoProvider when provider is not available
     void ensureHasProvider() {
-        if (!provider) throw NoProvider();	//TODO some name, maybe Provider should have virtual name or name field?
+        if (!provider) throw NoProvider(PROVIDER_NAME);
     }
 
     /**
@@ -352,6 +357,8 @@ protected:
 template <typename ValueT>
 struct SingleValueProvider: public Provider {
 
+    static constexpr const char* NAME = "unknown single value provider";
+
     /// Type of provided value.
     typedef ValueT ProvidedValueType;
 
@@ -372,6 +379,8 @@ struct SingleValueProvider: public Provider {
 template <typename ValueT, typename SpaceT>
 struct OnMeshProvider: public Provider {
 
+    static constexpr const char* NAME = "unknown on-mesh provider";
+
     /// Type of value provided by this (returned by operator()).
     typedef DataVector<ValueT> ProvidedValueType;
 
@@ -391,6 +400,8 @@ struct OnMeshProvider: public Provider {
  */
 template <typename ValueT, typename SpaceT>
 struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT> {
+
+    static constexpr const char* NAME = "unknown on-mesh provider with interpolation";
 
     /// Type of value provided by this (returned by operator()).
     typedef typename OnMeshProvider<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
@@ -425,6 +436,8 @@ template<typename _Signature> struct DelegateProvider;
 template<typename _Res, typename... _ArgTypes>
 struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
 
+    static constexpr const char* NAME = "unknown delegate provider";
+
     /// Hold external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
 
@@ -458,6 +471,8 @@ template<typename _BaseClass, typename _Signature> struct PolymorphicDelegatePro
  */
 template<typename _BaseClass, typename _Res, typename... _ArgTypes>
 struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _BaseClass {
+
+    static constexpr const char* NAME = "unknown polymorphic delegate provider";
 
     /// Hold external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
@@ -499,6 +514,26 @@ enum PropertyType {
     INTERPOLATED_FIELD_PROPERTY = 2	///< Property for field of values which can be interpolated
 };	//TODO change this to empty classes(?)
 
+template <PropertyType prop_type>
+struct PropertyTypeToProviderName {
+    static constexpr const char* value = "unknown provider";
+};
+
+template <>
+struct PropertyTypeToProviderName<SINGLE_VALUE_PROPERTY> {
+    static constexpr const char* value = "unknown single value provider";
+};
+
+template <>
+struct PropertyTypeToProviderName<FIELD_PROPERTY> {
+    static constexpr const char* value = "unknown field provider";
+};
+
+template <>
+struct PropertyTypeToProviderName<INTERPOLATED_FIELD_PROPERTY> {
+    static constexpr const char* value = "unknown interpolated field provider";
+};
+
 /**
  * Helper class which makes easiest to define property tags class.
  *
@@ -513,6 +548,8 @@ struct Property {
     static const PropertyType propertyType = _propertyType;
     ///Type of provided value.
     typedef _ValueType ValueType;
+
+    static constexpr const char* NAME = PropertyTypeToProviderName<_propertyType>::value;
 };
 
 /**
@@ -626,6 +663,8 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyT, typename PropertyT:
 template <typename PropertyT, typename ValueT, typename SpaceT>
 struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public SingleValueProvider<ValueT> {
 
+    static constexpr const char* NAME = PropertyT::NAME;
+
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
 
@@ -713,7 +752,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
          * @throw NoValue if value is empty boost::optional
          */
         ProvidedValueType& operator()() {
-            if (!hasValue()) throw NoValue();
+            if (!hasValue()) throw NoValue(NAME);
             return *value;
         }
 
@@ -723,7 +762,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
          * @throw NoValue if value is empty boost::optional
          */
         virtual ProvidedValueType operator()() const {
-            if (!hasValue()) throw NoValue();
+            if (!hasValue()) throw NoValue(NAME);
             return *value;
         }
     };
@@ -744,6 +783,8 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
  */
 template <typename PropertyT, typename ValueT, typename SpaceT>
 struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshProvider<ValueT, SpaceT> {
+
+    static constexpr const char* NAME = PropertyT::NAME;
 
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in space.h.");
@@ -786,6 +827,8 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshPro
  */
 template <typename PropertyT, typename ValueT, typename SpaceT>
 struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: public OnMeshProviderWithInterpolation<ValueT, SpaceT> {
+
+    static constexpr const char* NAME = PropertyT::NAME;
 
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in space.h.");
@@ -869,7 +912,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
          * @return values in points describe by mesh @a dst_mesh
          */
         virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const {
-            if (!values) throw NoValue();
+            if (!values) throw NoValue(NAME);
             return interpolate(mesh(), values, dst_mesh, method);
         }
     };
