@@ -1,2 +1,94 @@
 #include "element.h"
 
+#include "../modelext/converter.h"
+#include "../modelext/text.h"
+#include "../utils/draw.h"
+
+#include "register.h"
+
+Element::~Element() {}
+
+void Element::draw(QPainter& painter) const {
+    plask::GeometryElement& toDraw = *plaskElement;
+    if (toDraw.getDimensionsCount() != 2)
+        return; //we draw 2d only at this moment
+    if (toDraw.isLeaf()) {
+        auto bb = toQt(static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox());
+        painter.fillRect(bb, QColor(150, 100, 100));
+        painter.drawRect(bb);
+    } else {
+        for (std::size_t i = 0; i < toDraw.getChildrenCount(); ++i)
+            geomExt(toDraw.getChildAt(i))->draw(painter);
+    }
+}
+
+void Element::drawMiniature(QPainter& painter, qreal w, qreal h) const {
+    plask::GeometryElement& toDraw = *plaskElement;
+
+    if (toDraw.getDimensionsCount() != 2)
+        return; //we draw 2d only at this moment
+
+    QTransform transformBackup = painter.transform();
+
+    painter.setTransform(flipVertical);
+    painter.translate(0.0, -h);
+
+    plask::Box2d bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
+
+    plask::Vec<2, double> s = bb.size();
+    double scale = std::min(w / s.tran, h / s.up);
+    painter.scale(scale, scale);
+
+    painter.translate(-bb.lower.tran, -bb.lower.up);
+
+    draw(painter);
+
+    painter.setTransform(transformBackup);
+}
+
+QPixmap Element::getMiniature(qreal w, qreal h) const {
+    plask::GeometryElement& toDraw = *plaskElement;
+
+    if (toDraw.getDimensionsCount() != 2)
+        return QPixmap(); //we draw 2d only at this moment
+
+    //TODO do not calc. bb. two times
+    plask::Vec<2, double> s = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox().size();
+    double obj_prop = s.tran / s.up;
+    if (obj_prop > w / h) { //obj. to wide
+        h = w / obj_prop;
+    } else  //obj to high
+        w = h * obj_prop;
+
+    QPixmap result(w+1, h+1);
+    result.fill(QColor(255, 255, 255, 0));
+    if (w < 1.0 || h < 1.0) return result;  //to small miniature
+    QPainter painter;
+    painter.begin(&result);           // paint in picture
+    drawMiniature(painter, w-1.0, h-1.0);   //-1.0 for typical pen size
+    return result;
+}
+
+QString Element::toStr() const {
+    plask::GeometryElement& el = *plaskElement;
+    return QString(QObject::tr("%1%2d%3\n%4 children")
+        .arg(::toStr(el.getType())))
+        .arg(el.getDimensionsCount())
+        .arg(name.empty() ? "" : (" \"" + name + "\"").c_str())
+        .arg(el.getChildrenCount());
+}
+
+void Element::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+}
+
+void Element::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+    plask::shared_ptr<plask::GeometryElement> e = plaskElement->getRealChildAt(index);
+    if (e->getRealChildrenCount() == 0) return;
+    geomExt(e->getRealChildAt(0))->setupPropertiesBrowser(managers, dst);
+}
+
+/*QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {
+    if (toDraw.getDimensionsCount() != 2)
+        return; //we draw 2d only at this moment
+    auto bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
+}*/
