@@ -156,7 +156,7 @@ void RootDigger::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
     if (hr == 0.0) hr = EPS; if (hi == 0.0) hi = EPS;
 
     double xr1 = xr0 + hr, xi1 = xi0 + hi;
-    hr = xr1 - xr0; hi = xi1 - xi0;             // trick to reduce finite precission error
+    hr = xr1 - xr0; hi = xi1 - xi0;             // trick to reduce finite precision error
 
     dcomplex Fr = value(dcomplex(xr1, xi0), false),
              Fi = value(dcomplex(xr0, xi1), false);

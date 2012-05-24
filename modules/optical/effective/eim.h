@@ -14,15 +14,25 @@ namespace plask { namespace modules { namespace eim {
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
  */
-class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, RectilinearMesh2d> {
+struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, RectilinearMesh2d> {
+
+    enum Symmetry {
+        NO_SYMMETRY,
+        SYMMETRY_POSITIVE,
+        SYMMETRY_NEGATIVE
+    };
+
+    enum Polarization {
+        TE,
+        TM,
+    };
+
+  private:
 
     friend class RootDigger;
 
     /// Logger for char_val
     Data2dLog<dcomplex,double> log_value;
-
-    /// Middle-points mesh
-    RectilinearMesh2d middle_points;
 
     /// Cached refractive indices
     std::vector<std::vector<dcomplex>> nrCache;
@@ -30,13 +40,15 @@ class EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectilinea
     /// Computed effective indices for each stripe
     std::vector<dcomplex> stripeNeffs;
 
+    /// Number of stripe to start from
+    size_t xbegin;
+
+    /// Old polarization
+    Polarization old_polarization;
+
   public:
 
-    enum Symmetry {
-        NO_SYMMETRY,
-        SYMMETRY_POSITIVE,
-        SYMMETRY_NEGATIVE
-    };
+    Polarization polarization;  ///< Chosen light polarization
 
     Symmetry symmetry;  ///< Symmetry of the searched modes
 

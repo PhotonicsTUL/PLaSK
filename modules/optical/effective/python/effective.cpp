@@ -24,10 +24,10 @@ void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object
         if (sym == "0" || sym == "none" ) {
             self.symmetry = EffectiveIndex2dModule::NO_SYMMETRY; return;
         }
-        if (sym == "positive" || sym == "pos" || sym == "symmeric" || sym == "+" || sym == "+1") {
+        else if (sym == "positive" || sym == "pos" || sym == "symmeric" || sym == "+" || sym == "+1") {
             self.symmetry = EffectiveIndex2dModule::SYMMETRY_POSITIVE; return;
         }
-        if (sym == "negative" || sym == "neg" || sym == "anti-symmeric" || sym == "antisymmeric" || sym == "-" || sym == "-1") {
+        else if (sym == "negative" || sym == "neg" || sym == "anti-symmeric" || sym == "antisymmeric" || sym == "-" || sym == "-1") {
             self.symmetry = EffectiveIndex2dModule::SYMMETRY_NEGATIVE; return;
         }
         throw py::error_already_set();
@@ -36,12 +36,25 @@ void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object
         try {
             int sym = py::extract<int>(symmetry);
             if (sym ==  0) { self.symmetry = EffectiveIndex2dModule::NO_SYMMETRY; return; }
-            if (sym == +1) { self.symmetry = EffectiveIndex2dModule::SYMMETRY_POSITIVE; return; }
-            if (sym == -1) { self.symmetry = EffectiveIndex2dModule::SYMMETRY_NEGATIVE; return; }
+            else if (sym == +1) { self.symmetry = EffectiveIndex2dModule::SYMMETRY_POSITIVE; return; }
+            else if (sym == -1) { self.symmetry = EffectiveIndex2dModule::SYMMETRY_NEGATIVE; return; }
             throw py::error_already_set();
         } catch (py::error_already_set) {
             throw ValueError("wrong symmetry specification");
         }
+    }
+}
+
+std::string EffectiveIndex2dModule_getPolarization(const EffectiveIndex2dModule& self) {
+    return self.polarization==EffectiveIndex2dModule::TE ? "TE" : "TM";
+}
+
+void EffectiveIndex2dModule_setPolarization(EffectiveIndex2dModule& self, std::string polarization) {
+    if (polarization == "TE" || polarization == "s" ) {
+        self.polarization = EffectiveIndex2dModule::TE; return;
+    }
+    if (polarization == "TM" || polarization == "p") {
+        self.polarization = EffectiveIndex2dModule::TM; return;
     }
 }
 
@@ -58,6 +71,7 @@ BOOST_PYTHON_MODULE(effective)
         "Calculate optical modes and optical field distribution using the effective index\n"
         "method in Cartesian two-dimensional space.")
         __module__.add_property("symmetry", &EffectiveIndex2dModule_getSymmetry, &EffectiveIndex2dModule_setSymmetry, "Symmetry of the searched modes");
+        __module__.add_property("polarization", &EffectiveIndex2dModule_getPolarization, &EffectiveIndex2dModule_setPolarization, "Polarization of the searched modes");
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
         RW_FIELD(tolx, "Absolute tolerance on the argument");
         RW_FIELD(tolf_min, "Sufficient tolerance on the function value");

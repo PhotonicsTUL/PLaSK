@@ -9,8 +9,8 @@ include(${CMAKE_SOURCE_DIR}/cmake/modules.cmake)
 # Some libraries, that you can find using find_package command are:
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB, Eigen3
 #
-#find_package(GSL)
-#set(MODULE_LINK_LIBRARIES ${GSL_LIBRARIES})
+# find_package(GSL)
+# set(MODULE_LINK_LIBRARIES ${GSL_LIBRARIES})
 
 # Uncomment and edit the line below if you need some special include directories.
 # If you use external libraries, you can use the variables returned by find_package.
