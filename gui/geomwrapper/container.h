@@ -11,13 +11,24 @@
 #include <plask/geometry/stack.h>
 
 template <int dim>
-struct Stack: public ElementWrapperFor< plask::StackContainer<dim> > {
+struct StackWrapper: public ElementWrapperFor< plask::StackContainer<dim> > {
 
     virtual QString toStr() const;
 
     virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
 
     virtual void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
+
+};
+
+template <int dim>
+struct MultiStackWrapper: public ElementWrapperFor< plask::MultiStackContainer<dim>, StackWrapper<dim> > {
+
+    virtual QString toStr() const;
+
+    virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
+
+    //virtual void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
 
 };
 

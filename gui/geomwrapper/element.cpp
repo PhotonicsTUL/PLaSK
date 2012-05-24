@@ -6,9 +6,9 @@
 
 #include "register.h"
 
-Element::~Element() {}
+ElementWrapper::~ElementWrapper() {}
 
-void Element::draw(QPainter& painter) const {
+void ElementWrapper::draw(QPainter& painter) const {
     plask::GeometryElement& toDraw = *plaskElement;
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
@@ -22,7 +22,7 @@ void Element::draw(QPainter& painter) const {
     }
 }
 
-void Element::drawMiniature(QPainter& painter, qreal w, qreal h) const {
+void ElementWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
     plask::GeometryElement& toDraw = *plaskElement;
 
     if (toDraw.getDimensionsCount() != 2)
@@ -46,7 +46,7 @@ void Element::drawMiniature(QPainter& painter, qreal w, qreal h) const {
     painter.setTransform(transformBackup);
 }
 
-QPixmap Element::getMiniature(qreal w, qreal h) const {
+QPixmap ElementWrapper::getMiniature(qreal w, qreal h) const {
     plask::GeometryElement& toDraw = *plaskElement;
 
     if (toDraw.getDimensionsCount() != 2)
@@ -69,7 +69,7 @@ QPixmap Element::getMiniature(qreal w, qreal h) const {
     return result;
 }
 
-QString Element::toStr() const {
+QString ElementWrapper::toStr() const {
     plask::GeometryElement& el = *plaskElement;
     return QString(QObject::tr("%1%2d%3\n%4 children")
         .arg(::toStr(el.getType())))
@@ -78,10 +78,10 @@ QString Element::toStr() const {
         .arg(el.getChildrenCount());
 }
 
-void Element::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+void ElementWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
 }
 
-void Element::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+void ElementWrapper::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
     plask::shared_ptr<plask::GeometryElement> e = plaskElement->getRealChildAt(index);
     if (e->getRealChildrenCount() == 0) return;
     geomExt(e->getRealChildAt(0))->setupPropertiesBrowser(managers, dst);

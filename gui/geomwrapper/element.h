@@ -25,17 +25,17 @@ QT_END_NAMESPACE
  * - has extra method used by Qt GUI,
  * - has extra data (like element name)
  */
-struct Element {
+struct ElementWrapper {
 
     plask::shared_ptr<plask::GeometryElement> plaskElement;
 
     std::string name;
 
-    Element(plask::shared_ptr<plask::GeometryElement> plaskElement)
+    ElementWrapper(plask::shared_ptr<plask::GeometryElement> plaskElement)
         : plaskElement(plaskElement) {}
 
     /// Empty, virtual destructor.
-    virtual ~Element();
+    virtual ~ElementWrapper();
 
     /**
      * Draw geometry element using given Qt @p painter.
@@ -87,12 +87,12 @@ struct Element {
 
 };
 
-template <typename WrappedType>
-struct ElementWrapperFor: public Element {
+template <typename WrappedType, typename BaseClass = ElementWrapper>
+struct ElementWrapperFor: public BaseClass {
 
-    ElementWrapperFor(plask::shared_ptr<WrappedType> plaskElement): Element(plaskElement) {}
+    ElementWrapperFor(plask::shared_ptr<WrappedType> plaskElement): ElementWrapper(plaskElement) {}
 
-    WrappedType& c() const { return static_cast<WrappedType&>(*plaskElement); }
+    WrappedType& c() const { return static_cast<WrappedType&>(*this->plaskElement); }
 
 };
 

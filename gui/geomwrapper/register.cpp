@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <map>
 
-typedef Element* construct_element_wrapper_t(plask::shared_ptr<plask::GeometryElement> to_wrap);
+typedef ElementWrapper* construct_element_wrapper_t(plask::shared_ptr<plask::GeometryElement> to_wrap);
 
 struct Register {
 
@@ -13,7 +13,7 @@ struct Register {
     std::unordered_map<std::type_index, construct_element_wrapper_t*> wrappersConstructors;
 
     /// Constructed wrappers for geometry elements, map: geometry element -> wrapper for key element.
-    std::map< const plask::GeometryElement*, plask::weak_ptr<Element> > constructed;
+    std::map< const plask::GeometryElement*, plask::weak_ptr<ElementWrapper> > constructed;
 
     /// If evt is delete event, remove source of event from constructed map.
     void removeOnDelete(const plask::GeometryElement::Event& evt) {
@@ -21,15 +21,15 @@ struct Register {
     }
 
     /// Construct geometry element wrapper using wrappersConstructors. Doesn't change constructed map.
-    Element* construct(plask::shared_ptr<plask::GeometryElement> el) {
+    ElementWrapper* construct(plask::shared_ptr<plask::GeometryElement> el) {
         auto i = wrappersConstructors.find(std::type_index(typeid(*el)));
-        return i == wrappersConstructors.end() ? new Element(el) : i->second(el);
+        return i == wrappersConstructors.end() ? new ElementWrapper(el) : i->second(el);
     }
 
     /**
      * Get wrapper for given element. Try get it from constructed map first.
      */
-    plask::shared_ptr<Element> get(plask::shared_ptr<plask::GeometryElement> el) {
+    plask::shared_ptr<ElementWrapper> get(plask::shared_ptr<plask::GeometryElement> el) {
         auto constr_iter = constructed.find(el.get());
         if (constr_iter != constructed.end()) {
             if (auto res = constr_iter->second.lock())
@@ -37,7 +37,7 @@ struct Register {
             else
                 constructed.erase(constr_iter);
         }
-        auto res = plask::shared_ptr<Element>(construct(el));
+        auto res = plask::shared_ptr<ElementWrapper>(construct(el));
         constructed[el.get()] = res;
         el->changedConnectMethod(this, &Register::removeOnDelete);
         return res;
@@ -47,6 +47,6 @@ struct Register {
 
 Register geom_register;
 
-plask::shared_ptr<Element> geomExt(plask::shared_ptr<plask::GeometryElement> el) {
+plask::shared_ptr<ElementWrapper> geomExt(plask::shared_ptr<plask::GeometryElement> el) {
     return geom_register.get(el);
 }
