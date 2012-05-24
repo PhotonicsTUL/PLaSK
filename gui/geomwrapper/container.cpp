@@ -17,7 +17,8 @@ QString StackWrapper<dim>::toStr() const {
 }
 
 template <int dim>
-void StackWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+void StackWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
+    ElementWrapperFor< plask::StackContainer<dim> >::setupPropertiesBrowser(managers, dst);
     QtProperty *from = managers.doubl.addProperty("from");
     managers.doubl.setValue(from, this->c().getBaseHeight());
     dst.addProperty(from);
@@ -41,7 +42,7 @@ static void setupAlignerEditor(plask::StackContainer<3>& s, std::size_t index, B
 }
 
 template <int dim>
-void StackWrapper<dim>::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+void StackWrapper<dim>::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
     setupAlignerEditor(this->c(), index, managers, dst);
     ElementWrapper::setupPropertiesBrowserForChild(index, managers, dst);
 }
@@ -63,7 +64,7 @@ QString MultiStackWrapper<dim>::toStr() const {
 }
 
 template <int dim>
-void MultiStackWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+void MultiStackWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
     // all stack properties:
     StackWrapper<dim>::setupPropertiesBrowser(managers, dst);
     // multiple stack extras:

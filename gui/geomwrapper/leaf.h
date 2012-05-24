@@ -14,7 +14,7 @@ struct BlockWrapper: public ElementWrapperFor< plask::Block<dim> > {
 
     virtual QString toStr() const;
 
-    virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
+    virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
 };
 

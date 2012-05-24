@@ -20,7 +20,7 @@ QT_END_NAMESPACE
 struct GeometryTreeModel;
 
 /**
- * Geometry tree item. Holds (weak) geometry element.
+ * Geometry tree item. Holds geometry element wrapper.
  */
 class GeometryTreeItem {
 
@@ -71,7 +71,7 @@ protected:
     /**
      * Delete children cache and childrenInitialized to @c false.
      */
-    void deinitializeChildren();    //TODO can't be used
+    void deinitializeChildren();    //TODO can't be used, to remove
 
 public:
 

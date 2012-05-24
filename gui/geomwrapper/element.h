@@ -194,9 +194,9 @@ public:
     /**
      * Fill property browser with properties of wrapped element.
      */
-    virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
+    virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
-    void setupPropertiesBrowser(BrowserWithManagers& managers) const {
+    void setupPropertiesBrowser(BrowserWithManagers& managers) {
         setupPropertiesBrowser(managers, managers.browser);
     }
 
@@ -207,9 +207,9 @@ public:
      * Typically, you can call ElementExtensionImplBase::setupPropertiesBrowserForChild in subclasses.
      * @param index real child index
      */
-    virtual void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
+    virtual void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
-    void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers) const {
+    void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers) {
         setupPropertiesBrowserForChild(index, managers, managers.browser);
     }
 

@@ -80,10 +80,16 @@ QString ElementWrapper::toStr() const {
         .arg(el.getChildrenCount());
 }
 
-void ElementWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+void ElementWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
+    QtProperty *nameProp = managers.string.addProperty("name");
+    managers.string.setValue(nameProp, getName());
+    dst.addProperty(nameProp);
+    managers.connectString(nameProp, [this](const QString& v) {
+        this->setName(v);
+    });
 }
 
-void ElementWrapper::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
+void ElementWrapper::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
     plask::shared_ptr<plask::GeometryElement> e = wrappedElement->getRealChildAt(index);
     if (e->getRealChildrenCount() == 0) return;
     ext(e->getRealChildAt(0))->setupPropertiesBrowser(managers, dst);
