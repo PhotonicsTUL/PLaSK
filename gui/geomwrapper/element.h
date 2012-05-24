@@ -27,12 +27,16 @@ QT_END_NAMESPACE
  */
 struct ElementWrapper {
 
+    typedef plask::GeometryElement WrappedType;
+
     plask::shared_ptr<plask::GeometryElement> plaskElement;
 
     std::string name;
 
-    ElementWrapper(plask::shared_ptr<plask::GeometryElement> plaskElement)
-        : plaskElement(plaskElement) {}
+    /// This is typically called once, just after constructor
+    virtual void setPlaskElement(plask::shared_ptr<plask::GeometryElement> plaskElement) {
+        this->plaskElement = plaskElement;
+    }
 
     /// Empty, virtual destructor.
     virtual ~ElementWrapper();
@@ -87,10 +91,10 @@ struct ElementWrapper {
 
 };
 
-template <typename WrappedType, typename BaseClass = ElementWrapper>
+template <typename WrappedT, typename BaseClass = ElementWrapper>
 struct ElementWrapperFor: public BaseClass {
 
-    ElementWrapperFor(plask::shared_ptr<WrappedType> plaskElement): ElementWrapper(plaskElement) {}
+    typedef WrappedT WrappedType;
 
     WrappedType& c() const { return static_cast<WrappedType&>(*this->plaskElement); }
 

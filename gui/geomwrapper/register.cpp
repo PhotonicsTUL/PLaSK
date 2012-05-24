@@ -5,9 +5,20 @@
 #include <unordered_map>
 #include <map>
 
+#include "container.h"
+#include "leaf.h"
+#include "transform.h"
+
 typedef ElementWrapper* construct_element_wrapper_t(plask::shared_ptr<plask::GeometryElement> to_wrap);
 
 struct Register {
+
+    template <typename WrapperType>
+    static ElementWrapper* constructWrapper(plask::shared_ptr<plask::GeometryElement> to_wrap) {
+        auto res = new WrapperType();
+        res->setPlaskElement(to_wrap);
+        return res;
+    }
 
     /// Constructors of wrappers for geometry elements, map: type id index of plask::GeometryElements -> wrapper constructor.
     std::unordered_map<std::type_index, construct_element_wrapper_t*> wrappersConstructors;
@@ -23,7 +34,7 @@ struct Register {
     /// Construct geometry element wrapper using wrappersConstructors. Doesn't change constructed map.
     ElementWrapper* construct(plask::shared_ptr<plask::GeometryElement> el) {
         auto i = wrappersConstructors.find(std::type_index(typeid(*el)));
-        return i == wrappersConstructors.end() ? new ElementWrapper(el) : i->second(el);
+        return i == wrappersConstructors.end() ? constructWrapper<ElementWrapper>(el) : i->second(el);
     }
 
     /**
@@ -41,6 +52,23 @@ struct Register {
         constructed[el.get()] = res;
         el->changedConnectMethod(this, &Register::removeOnDelete);
         return res;
+    }
+
+    template <typename WrapperType, typename PlaskType = typename WrapperType::WrappedType>
+    void appendConstructor() {
+        wrappersConstructors[std::type_index(typeid(*plask::make_shared<PlaskType>()))] =
+                &constructWrapper<WrapperType>;
+    }
+
+    Register() {
+        appendConstructor< TranslationWrapper<2> >();
+        appendConstructor< TranslationWrapper<3> >();
+        appendConstructor< StackWrapper<2> >();
+        appendConstructor< StackWrapper<3> >();
+        appendConstructor< MultiStackWrapper<2> >();
+        appendConstructor< MultiStackWrapper<3> >();
+        appendConstructor< BlockWrapper<2> >();
+        appendConstructor< BlockWrapper<3> >();
     }
 
 };
