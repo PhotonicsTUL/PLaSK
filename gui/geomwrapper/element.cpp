@@ -18,7 +18,7 @@ void ElementWrapper::draw(QPainter& painter) const {
         painter.drawRect(bb);
     } else {
         for (std::size_t i = 0; i < toDraw.getChildrenCount(); ++i)
-            geomExt(toDraw.getChildAt(i))->draw(painter);
+            ext(toDraw.getChildAt(i))->draw(painter);
     }
 }
 
@@ -84,7 +84,7 @@ void ElementWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbs
 void ElementWrapper::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
     plask::shared_ptr<plask::GeometryElement> e = plaskElement->getRealChildAt(index);
     if (e->getRealChildrenCount() == 0) return;
-    geomExt(e->getRealChildAt(0))->setupPropertiesBrowser(managers, dst);
+    ext(e->getRealChildAt(0))->setupPropertiesBrowser(managers, dst);
 }
 
 /*QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {

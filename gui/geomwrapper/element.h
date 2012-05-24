@@ -4,7 +4,7 @@
 /** @file
  * This file includes interface to plask geometry elements model extensions connected with Qt.
  *
- * Typically you should call geomExt() function with pointer to your geometry element object as argument.
+ * Typically you should call ext() function with pointer to your geometry element object as argument.
  * This function return Element which provide methods which operates on your element, knowing its type.
  */
 
@@ -23,7 +23,10 @@ QT_END_NAMESPACE
 /**
  * Wrapper over plask::GeometryElement, which:
  * - has extra method used by Qt GUI,
- * - has extra data (like element name)
+ * - has extra data (like element name).
+ *
+ * Typically you should not create object of this class or subclasses of this directly,
+ * but useing ext function (defined in register.h).
  */
 struct ElementWrapper {
 

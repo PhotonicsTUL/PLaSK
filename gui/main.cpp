@@ -42,8 +42,6 @@
 
 #include <plask/material/db.h>
 
-#include "modelext/map.h"
-
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
@@ -54,7 +52,7 @@ int main(int argc, char *argv[])
     if (!load_material_library.load())
         std::cerr << "Can't load materials library." << std::endl;
 
-    initModelExtensions();
+    //initModelExtensions();
 
     QApplication app(argc, argv);
     Q_INIT_RESOURCE(plaskgui);

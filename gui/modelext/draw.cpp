@@ -1,7 +1,7 @@
 #include "draw.h"
 
 #include "converter.h"
-#include "map.h"
+#include "../geomwrapper/register.h"
 
 #include <plask/geometry/transform.h>
 
@@ -49,7 +49,7 @@ QRectF GeometryElementItem::boundingRect() const {
 
 void GeometryElementItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     if (auto shared = element.lock()) {
-        ext(*shared).draw(*painter);
+        ext(shared)->draw(*painter);
     }
 }
 

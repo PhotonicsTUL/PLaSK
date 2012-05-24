@@ -7,7 +7,7 @@
 template <int dim>
 QString BlockWrapper<dim>::toStr() const {
     auto& el = this->c();
-    return QString(QObject::tr("bloc%1d%2\nsize: %3"))
+    return QString(QObject::tr("block%1d%2\nsize: %3"))
         .arg(dim)
         .arg(this->name.empty() ? "" : (" \"" + this->name + "\"").c_str())
         .arg(QString(boost::lexical_cast<std::string>(el.size).c_str()));

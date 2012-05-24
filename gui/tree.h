@@ -149,7 +149,7 @@ public:
      * @param element element wrapped by this
      * @return text representation of an @p element
      */
-    virtual QString elementText(plask::GeometryElement& element) const;
+    virtual QString elementText(plask::shared_ptr<plask::GeometryElement> element) const;
 
     /**
      * @return string returned by elementText or empty QVariant if this wraps non-existing element
@@ -227,7 +227,7 @@ struct InContainerTreeItem: public GeometryTreeItem {
 
     //virtual void appendChildrenItems();
 
-    virtual QString elementText(plask::GeometryElement& element) const;
+    virtual QString elementText(plask::shared_ptr<plask::GeometryElement> element) const;
 
     virtual void fillPropertyBrowser(BrowserWithManagers& browser);
 };

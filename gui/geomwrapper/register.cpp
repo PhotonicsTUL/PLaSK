@@ -75,6 +75,6 @@ struct Register {
 
 Register geom_register;
 
-plask::shared_ptr<ElementWrapper> geomExt(plask::shared_ptr<plask::GeometryElement> el) {
+plask::shared_ptr<ElementWrapper> ext(plask::shared_ptr<plask::GeometryElement> el) {
     return geom_register.get(el);
 }

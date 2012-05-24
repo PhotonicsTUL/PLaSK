@@ -1,7 +1,7 @@
 #include "tree.h"
 
 #include "document.h"
-#include "modelext/map.h"
+#include "geomwrapper/register.h"
 #include "modelext/text.h"
 
 void GeometryTreeItem::ensureInitialized() {
@@ -10,7 +10,7 @@ void GeometryTreeItem::ensureInitialized() {
         childrenInitialized = true;
     }
     if (!miniatureInitialized) if (auto e = element.lock()) {
-        miniature = ext(*e).getMiniature(50, 50);
+        miniature = ext(e)->getMiniature(50, 50);
         miniatureInitialized = true;
     }
 }
@@ -96,20 +96,20 @@ std::size_t GeometryTreeItem::indexInParent() const {
    // return inParentIndex;
 }
 
-QString GeometryTreeItem::elementText(plask::GeometryElement& element) const {
-    return ext(element).toStr();
+QString GeometryTreeItem::elementText(plask::shared_ptr<plask::GeometryElement> element) const {
+    return ext(element)->toStr();
 }
 
 QVariant GeometryTreeItem::data(int column) {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
-        return elementText(*e);
+        return elementText(e);
     } else  //should never happen
         QVariant();
 }
 
 void GeometryTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
-        ext(*e).setupPropertiesBrowser(browser);
+        ext(e)->setupPropertiesBrowser(browser);
     }
 }
 
@@ -155,14 +155,14 @@ bool GeometryTreeItem::removeRange(std::size_t begin_index, std::size_t end_inde
     }
 }*/
 
-QString InContainerTreeItem::elementText(plask::GeometryElement &element) const {
-    if (element.getRealChildrenCount() == 0) return ext(element).toStr();
-    QString result = ext(*element.getRealChildAt(0)).toStr();
+QString InContainerTreeItem::elementText(plask::shared_ptr<plask::GeometryElement> element) const {
+    if (element->getRealChildrenCount() == 0) return ext(element)->toStr();
+    QString result = ext(element->getRealChildAt(0))->toStr();
     result += "\nat ";
-    if (element.getDimensionsCount() == 2) {
-        result += toStr(static_cast<plask::Translation<2>&>(element).translation);
+    if (element->getDimensionsCount() == 2) {
+        result += toStr(static_cast<plask::Translation<2>&>(*element).translation);
     } else
-        result += toStr(static_cast<plask::Translation<3>&>(element).translation);
+        result += toStr(static_cast<plask::Translation<3>&>(*element).translation);
     return result;
 }
 
@@ -170,10 +170,10 @@ void InContainerTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
     if (plask::shared_ptr<plask::GeometryElement> e = element.lock()) {
         auto p = parent();  //should be a container
         if (p) {
-            ext(*p).setupPropertiesBrowserForChild(indexInParent(), browser);
+            ext(p)->setupPropertiesBrowserForChild(indexInParent(), browser);
         } else {
             if (e->getRealChildrenCount() == 0) return;
-            ext(*e->getRealChildAt(0)).setupPropertiesBrowser(browser);
+            ext(e->getRealChildAt(0))->setupPropertiesBrowser(browser);
         }
     }
 }
