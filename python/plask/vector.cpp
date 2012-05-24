@@ -12,6 +12,12 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/concept_check.hpp>
 
+#if PY_VERSION_HEX >= 0x03000000
+#   define NEXT "__next__"
+#else
+#   define NEXT "next"
+#endif
+
 namespace plask { namespace python {
 
 // v = vector[i]
@@ -206,8 +212,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
 
     py::class_<Vec_iterator<dim,T>>("_Iterator", py::no_init)
         .def("__iter__", &Vec_iterator<dim,T>::__iter__, py::return_self<>())
-        .def("__next__", &Vec_iterator<dim,T>::next)
-        .def("next", &Vec_iterator<dim,T>::next)
+        .def(NEXT, &Vec_iterator<dim,T>::next)
         ;
 
     return vec_class;
