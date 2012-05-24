@@ -3,6 +3,8 @@
 
 #include <plask/geometry/manager.h>
 #include <QString>
+#include <QUndoStack>
+
 #include "tree.h"
 
 #include "utils/propbrowser.h"
@@ -21,6 +23,8 @@ public:
     GeometryTreeModel treeModel;
 
     BrowserWithManagers propertiesBrowser;
+
+    QUndoStack undoStack;
 
     void open(const QString& fileName);
 
