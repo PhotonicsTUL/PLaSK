@@ -10,7 +10,7 @@ QString TranslationWrapper<dim>::toStr() const {
     auto& el = this->c();
     return QString(QObject::tr("translation%1d%2\n%3"))
         .arg(dim)
-        .arg(this->name.empty() ? "" : (" \"" + this->name + "\"").c_str())
+        .arg(this->name.isEmpty() ? "" : (" \"" + this->name + "\""))
         .arg(::toStr(el.translation));
 }
 

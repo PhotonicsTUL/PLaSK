@@ -6,6 +6,7 @@
 #include <plask/geometry/element.h>
 #include <plask/memory.h>
 #include <memory>
+#include "geomwrapper/register.h"
 
 #include "utils/propbrowser.h"
 
@@ -74,8 +75,8 @@ protected:
 
 public:
 
-    virtual plask::shared_ptr<plask::GeometryElement> getLowerWrappedElement() {
-        return element.lock();
+    virtual plask::shared_ptr<ElementWrapper> getLowerWrappedElement() {
+        return element;
     }
 
     /**
@@ -91,14 +92,14 @@ public:
     /**
      * Wrapped geometry element.
      */
-    plask::weak_ptr<plask::GeometryElement> element;
+    plask::shared_ptr<ElementWrapper> element;
 
     /**
      * Get geometry element from parent item.
      * @return geometry element from parent item or plask::shared_ptr<plask::GeometryElement>()
      *  if can't get it (for example in case of root or parent doesn't wrap existing geometry element object).
      */
-    plask::shared_ptr<plask::GeometryElement> parent();
+    plask::shared_ptr<ElementWrapper> parent();
 
     /**
      * Construct item using parent item and index in it.
@@ -113,7 +114,7 @@ public:
      * @param element wrapped element
      * @param index (future) index of this in parent childItems
      */
-    GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element, std::size_t index);
+    GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper>& element, std::size_t index);
 
     /**
      * Construct root item (with parentItem = nullptr).
@@ -149,7 +150,7 @@ public:
      * @param element element wrapped by this
      * @return text representation of an @p element
      */
-    virtual QString elementText(plask::shared_ptr<plask::GeometryElement> element) const;
+    virtual QString elementText(plask::shared_ptr<ElementWrapper> element) const;
 
     /**
      * @return string returned by elementText or empty QVariant if this wraps non-existing element
@@ -173,19 +174,19 @@ public:
      * Called when wrapped geometry element was changed.
      * @param evt information about event from model
      */
-    void onChanged(const plask::GeometryElement::Event& evt);
+    void onChanged(const ElementWrapper::Event& evt);
 
     /**
      * Connect onChanged method to el->changed.
      * @param el element, typically this->element.lock()
      */
-    void connectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el);
+    void connectOnChanged(const plask::shared_ptr<ElementWrapper> &el);
 
     /**
      * Disconnect onChanged method from el->changed.
      * @param el element, typically this->element.lock()
      */
-    void disconnectOnChanged(const plask::shared_ptr<plask::GeometryElement>& el);
+    void disconnectOnChanged(const plask::shared_ptr<ElementWrapper>& el);
 
     //TODO new subclass for root item and reimplementation of this which remove from manager
     virtual bool removeRange(std::size_t begin_index, std::size_t end_index);
@@ -206,13 +207,18 @@ public:
  */
 struct InContainerTreeItem: public GeometryTreeItem {
 
-    virtual plask::shared_ptr<plask::GeometryElement> getLowerWrappedElement() {
-        if (auto elem = element.lock()) {
-            std::size_t chCount = elem->getRealChildrenCount();
-            if (chCount == 0) return plask::shared_ptr<plask::GeometryElement>();
-            return elem->getRealChildAt(0);
-        } else
-            plask::shared_ptr<plask::GeometryElement>();
+    plask::shared_ptr<ElementWrapper> lowerElement;
+
+private:
+    void initLowerElement() {
+        std::size_t chCount = element->wrappedElement->getRealChildrenCount();
+        if (chCount == 0) lowerElement = plask::shared_ptr<ElementWrapper>();
+        else lowerElement = ext(element->wrappedElement->getRealChildAt(0));
+    }
+public:
+
+    virtual plask::shared_ptr<ElementWrapper> getLowerWrappedElement() {
+        return lowerElement;
     }
 
     /**
@@ -220,14 +226,18 @@ struct InContainerTreeItem: public GeometryTreeItem {
      * @param index (future) index of this in parent childItems
      */
     InContainerTreeItem(GeometryTreeItem* parentItem, std::size_t index)
-        : GeometryTreeItem(parentItem, index) {}
+        : GeometryTreeItem(parentItem, index) {
+        initLowerElement();
+    }
 
-    InContainerTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<plask::GeometryElement>& element, std::size_t index)
-        : GeometryTreeItem(parentItem, element, index) {}
+    InContainerTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper>& element, std::size_t index)
+        : GeometryTreeItem(parentItem, element, index) {
+        initLowerElement();
+    }
 
     //virtual void appendChildrenItems();
 
-    virtual QString elementText(plask::shared_ptr<plask::GeometryElement> element) const;
+    virtual QString elementText(plask::shared_ptr<ElementWrapper> element) const;
 
     virtual void fillPropertyBrowser(BrowserWithManagers& browser);
 };

@@ -9,10 +9,10 @@
 
 template <int dim>
 QString StackWrapper<dim>::toStr() const {
-    plask::GeometryElement& el = *this->plaskElement;
+    plask::GeometryElement& el = *this->wrappedElement;
     return QString(QObject::tr("stack%1d%2\n%3 children"))
         .arg(dim)
-        .arg(this->name.empty() ? "" : (" \"" + this->name + "\"").c_str())
+        .arg(this->name.isEmpty() ? "" : (" \"" + this->name + "\""))
         .arg(el.getChildrenCount());
 }
 
@@ -56,7 +56,7 @@ QString MultiStackWrapper<dim>::toStr() const {
     auto& el = this->c();
     return QString(QObject::tr("multistack%1d%2\n%3 children (%4 repeated %5 times)"))
         .arg(dim)
-        .arg(this->name.empty() ? "" : (" \"" + this->name + "\"").c_str())
+        .arg(this->name.isEmpty() ? "" : (" \"" + this->name + "\""))
         .arg(el.getChildrenCount())
         .arg(el.getRealChildrenCount())
         .arg(el.repeat_count);

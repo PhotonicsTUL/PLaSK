@@ -6,10 +6,12 @@
 
 #include "register.h"
 
-ElementWrapper::~ElementWrapper() {}
+ElementWrapper::~ElementWrapper() {
+    if (this->wrappedElement) this->wrappedElement->changedDisconnectMethod(this, &ElementWrapper::onWrappedChange);
+}
 
 void ElementWrapper::draw(QPainter& painter) const {
-    plask::GeometryElement& toDraw = *plaskElement;
+    plask::GeometryElement& toDraw = *wrappedElement;
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
     if (toDraw.isLeaf()) {
@@ -23,7 +25,7 @@ void ElementWrapper::draw(QPainter& painter) const {
 }
 
 void ElementWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
-    plask::GeometryElement& toDraw = *plaskElement;
+    plask::GeometryElement& toDraw = *wrappedElement;
 
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
@@ -47,7 +49,7 @@ void ElementWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
 }
 
 QPixmap ElementWrapper::getMiniature(qreal w, qreal h) const {
-    plask::GeometryElement& toDraw = *plaskElement;
+    plask::GeometryElement& toDraw = *wrappedElement;
 
     if (toDraw.getDimensionsCount() != 2)
         return QPixmap(); //we draw 2d only at this moment
@@ -70,11 +72,11 @@ QPixmap ElementWrapper::getMiniature(qreal w, qreal h) const {
 }
 
 QString ElementWrapper::toStr() const {
-    plask::GeometryElement& el = *plaskElement;
+    plask::GeometryElement& el = *wrappedElement;
     return QString(QObject::tr("%1%2d%3\n%4 children")
         .arg(::toStr(el.getType())))
         .arg(el.getDimensionsCount())
-        .arg(name.empty() ? "" : (" \"" + name + "\"").c_str())
+        .arg(name.isEmpty() ? "" : (" \"" + name + "\""))
         .arg(el.getChildrenCount());
 }
 
@@ -82,7 +84,7 @@ void ElementWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbs
 }
 
 void ElementWrapper::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const {
-    plask::shared_ptr<plask::GeometryElement> e = plaskElement->getRealChildAt(index);
+    plask::shared_ptr<plask::GeometryElement> e = wrappedElement->getRealChildAt(index);
     if (e->getRealChildrenCount() == 0) return;
     ext(e->getRealChildAt(0))->setupPropertiesBrowser(managers, dst);
 }

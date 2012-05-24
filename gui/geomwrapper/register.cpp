@@ -13,10 +13,12 @@ typedef ElementWrapper* construct_element_wrapper_t(plask::shared_ptr<plask::Geo
 
 struct Register {
 
+    //TODO possible destructor which disconnect from all changed signals is required
+
     template <typename WrapperType>
     static ElementWrapper* constructWrapper(plask::shared_ptr<plask::GeometryElement> to_wrap) {
         auto res = new WrapperType();
-        res->setPlaskElement(to_wrap);
+        res->setWrappedElement(to_wrap);
         return res;
     }
 
