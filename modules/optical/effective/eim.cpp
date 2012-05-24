@@ -5,6 +5,7 @@ using plask::dcomplex;
 namespace plask { namespace modules { namespace eim {
 
 EffectiveIndex2dModule::EffectiveIndex2dModule() :
+    have_fields(false),
     old_polarization(TE),
     polarization(TE),
     symmetry(NO_SYMMETRY),
@@ -26,6 +27,7 @@ dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
     stageOne();
     dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}).getSolution(neff);
     outNeff = result;
+    have_fields = false;
     return result;
 }
 
@@ -76,6 +78,7 @@ void EffectiveIndex2dModule::onInitialize()
 void EffectiveIndex2dModule::onInvalidate()
 {
     outNeff.invalidate();
+    have_fields = false;
 }
 
 
@@ -198,7 +201,9 @@ Eigen::Matrix2cd EffectiveIndex2dModule::getMatrix1(const plask::dcomplex& neff,
 dcomplex EffectiveIndex2dModule::detS1(const plask::dcomplex& x, const std::vector<dcomplex>& NR)
 {
     Matrix2cd T = getMatrix1(x, NR);
-    return T(1,1);
+    // Fn = | T00 T01 | F0
+    // Bn = | T10 T11 | B0
+    return T(1,1);          // F0 = 0   Bn = 0
 }
 
 
@@ -215,7 +220,7 @@ Matrix2cd EffectiveIndex2dModule::getMatrix(const dcomplex& neff)
         dcomplex f =  (polarization==TM)? 1. : stripeNeffs[i+1]/stripeNeffs[i];
         dcomplex n = 0.5 * beta[i]/beta[i+1] * f*f;
         Matrix2cd M; M << (0.5+n), (0.5-n),
-                        (0.5-n), (0.5+n);
+                          (0.5-n), (0.5+n);
         return M;
     };
 
@@ -246,9 +251,11 @@ Matrix2cd EffectiveIndex2dModule::getMatrix(const dcomplex& neff)
 dcomplex EffectiveIndex2dModule::detS(const dcomplex& x)
 {
     Matrix2cd T = getMatrix(x);
-    if (symmetry == SYMMETRY_POSITIVE) return T(1,0) + T(1,1);
-    else if (symmetry == SYMMETRY_NEGATIVE) return T(1,0) - T(1,1);
-    else return T(1,1);
+    // Rn = | T00 T01 | R0
+    // Ln = | T10 T11 | L0
+    if (symmetry == SYMMETRY_POSITIVE) return T(1,0) + T(1,1);      // R0 = L0   Ln = 0
+    else if (symmetry == SYMMETRY_NEGATIVE) return T(1,0) - T(1,1); // R0 = -L0  Ln = 0
+    else return T(1,1);                                             // R0 = 0    Ln = 0
 }
 
 
@@ -256,6 +263,41 @@ dcomplex EffectiveIndex2dModule::detS(const dcomplex& x)
 const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method)
 {
     if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
+
+    if (!have_fields) {
+
+        size_t Nx = mesh->tran().size()+1;
+        size_t Ny = mesh->up().size()+1;
+        size_t Nx2 = Nx/2.;
+        size_t Ny2 = Ny/2.;
+
+        fieldX.resize(Nx);
+
+        Matrix2cd T = getMatrix(outNeff());
+        // R0 = | iT00 iT01 | Rn   Rn = 1
+        // L0 = | iT10 iT11 | Ln   Ln = 0
+        fieldX[Nx-1] << 1., 0;
+        fieldX[xbegin].noalias() = T.inverse() * fieldX[Nx-1];
+
+        for (size_t ix = xbegin; ix <= Nx2; ++ix) {
+        }
+        for (size_t ix = Nx-1; ix > Nx2; --ix) {
+        }
+
+
+//         fieldsY.resize(Nx); for (auto vec: fieldsY) vec.resize(Ny);
+//         for (size_t ix = xbegin; ix < Nx; ++ix) {
+//             fieldF[ix][0] = 0.; fieldB[ix][Ny-1] = 0.;                      // Fn = | T00 T01 | F0
+//             fieldB[ix][0] = 1.; fieldF[ix][Ny-1] = T(0,1) * fieldB[ix][0];  // Bn = | T10 T11 | B0
+//             size_t Ny2 = Ny/2.;
+//             for (size_t iy = 0; iy < Ny2; ++iy) {
+//             }
+//             for (size_t iy = Ny-1; iy >= Ny2; --iy) {
+//             }
+//
+//         }
+    }
+
 
     //TODO
     DataVector<double> data(4);

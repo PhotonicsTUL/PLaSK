@@ -16,7 +16,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
     def setUp(self):
         self.module = EffectiveIndex2D()
-        rect = geometry.Rectangle(1.0, 0.5, LowContrastMaterial())
+        rect = geometry.Rectangle(0.75, 0.5, LowContrastMaterial())
         space = geometry.Space2DCartesian(rect, left="mirror")
         self.module.geometry = space
 
@@ -38,3 +38,12 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def testReceivers(self):
         self.module.inWavelength = 850.
         self.assertEqual( self.module.inWavelength(), 850. )
+
+    def testComputations(self):
+        self.module.inWavelength = 1000.
+
+        self.module.polarization = "TE"
+        self.module.symmetry = "+"
+        self.assertAlmostEqual( self.module.computeMode(1.05), 1.15028185)
+        self.module.symmetry = "-"
+        self.assertAlmostEqual( self.module.computeMode(1.05), 1.06757427)

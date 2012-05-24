@@ -37,6 +37,15 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     /// Cached refractive indices
     std::vector<std::vector<dcomplex>> nrCache;
 
+    /// Computed vertical fields
+    std::vector<std::vector<Eigen::Vector2cd>> fieldsY;
+
+    /// Computed horizontal fields
+    std::vector<Eigen::Vector2cd> fieldX;
+
+    /// Did we compute fields for current Neff?
+    bool have_fields;
+
     /// Computed effective indices for each stripe
     std::vector<dcomplex> stripeNeffs;
 
