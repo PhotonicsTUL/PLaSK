@@ -19,18 +19,8 @@ enum LogLevel {
     LOG_DEBUG           // pretty much everything
 };
 
-static inline std::string logLevelName(LogLevel level) {
-    switch (level) {
-        case LOG_CRITICAL_ERROR:return "CRITICAL ERROR";
-        case LOG_ERROR:         return "ERROR         ";
-        case LOG_WARNING:       return "WARNING       ";
-        case LOG_INFO:          return "INFO          ";
-        case LOG_RESULT:        return "RESULT        ";
-        case LOG_DATA:          return "DATA          ";
-        case LOG_DETAIL:        return "DETAIL        ";
-        case LOG_DEBUG:         return "DEBUG         ";
-    }
-}
+
+void log(LogLevel level, const std::string& msg);
 
 /**
  * Log a message
@@ -39,8 +29,8 @@ static inline std::string logLevelName(LogLevel level) {
  * \param params parameters passed to format
  **/
 template<typename ...Args>
-inline void log(LogLevel level, std::string msg, Args&&... params) {
-    std::cout << logLevelName(level) << ": " << format(msg, std::forward<Args>(params)...) << "\n";
+inline void log(LogLevel level, const std::string& msg, Args&&... params) {
+    log(level, format(msg, std::forward<Args>(params)...));
 }
 
 }   // namespace plask

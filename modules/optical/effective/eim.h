@@ -32,6 +32,9 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     friend class RootDigger;
 
     /// Logger for char_val
+    Data2dLog<dcomplex,double> log_stripe;
+
+    /// Logger for char_val
     Data2dLog<dcomplex,double> log_value;
 
     /// Cached refractive indices

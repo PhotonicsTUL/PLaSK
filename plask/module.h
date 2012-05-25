@@ -291,6 +291,10 @@ class ModuleWithMesh: public ModuleOver<SpaceT> {
     /// Type of the mesh for this module
     typedef MeshT MeshType;
 
+    ~ModuleWithMesh() {
+        diconnectMesh();
+    }
+
     /**
      * This method is called when mesh was changed.
      * It's just call invalidate(); but subclasses can customize it.

@@ -11,11 +11,12 @@ EffectiveIndex2dModule::EffectiveIndex2dModule() :
     symmetry(NO_SYMMETRY),
     outer_distance(0.1),
     tolx(1.0e-07),
-    tolf_min(1.0e-10),
-    tolf_max(1.0e-8),
+    tolf_min(1.0e-8),
+    tolf_max(1.0e-6),
     maxstep(0.1),
     maxiterations(500),
-    log_value(dataLog<dcomplex, double>(getId(), "neff", "char_val")),
+    log_stripe(dataLog<dcomplex, double>(getId(), "neff", "det")),
+    log_value(dataLog<dcomplex, double>(getId(), "Neff", "det")),
     outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
     inTemperature = 300.;
 }
@@ -23,9 +24,9 @@ EffectiveIndex2dModule::EffectiveIndex2dModule() :
 
 dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
 {
-    log(LOG_INFO, "Searching for the mode starting from n_eff = %1%", str(neff));
+    log(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
-    dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}).getSolution(neff);
+    dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, tolx, tolf_min, tolf_max, maxstep, maxiterations).getSolution(neff);
     outNeff = result;
     have_fields = false;
     return result;
@@ -35,16 +36,15 @@ dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
 
 std::vector<dcomplex> EffectiveIndex2dModule::findModes(dcomplex neff1, dcomplex neff2, unsigned steps, unsigned nummodes)
 {
-    log(LOG_INFO, "Searching for the modes for n_eff between %1% and %2%", str(neff1), str(neff2));
+    log(LOG_INFO, "Searching for the modes for Neff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
-    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}).searchSolutions(neff1, neff2, steps, 0, nummodes);
+    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, tolx, tolf_min, tolf_max, maxstep, maxiterations)
+            .searchSolutions(neff1, neff2, steps, 0, nummodes);
 }
-
-
 
 std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomplex neff2, unsigned steps)
 {
-    log(LOG_INFO, "Searching for the approximate modes for n_eff between %1% and %2%", str(neff1), str(neff2));
+    log(LOG_INFO, "Searching for the approximate modes for Neff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
 
     double rdneff = real(neff2 - neff1);
@@ -55,10 +55,8 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomp
         rpoints[i] = rneff1 + rdneff * i / steps1;
     }
 
-    std::vector<double> ipoints(1, imag(neff1));
-    if (imag(neff2) != imag(neff1)) ipoints.push_back(imag(neff2));
-
-    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}).findMap(rpoints, ipoints);
+    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, tolf_min, tolf_max, maxstep, maxiterations)
+            .findMap(neff1, neff2, steps, 0);
 }
 
 
@@ -136,7 +134,7 @@ void EffectiveIndex2dModule::stageOne()
 
         for (size_t i = xbegin; i != nrCache.size(); ++i) {
 
-            log(LOG_DETAIL, "Computing effective index for vertical stripe no %1%", i);
+            log(LOG_DETAIL, "Computing effective index for vertical stripe no %1% (polarization %2%)", i, (polarization==TE)?"TE":"TM");
             std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
             log(LOG_DEBUG, "nR[%1%] = [%2% ]", i, nrs.str().substr(1));
 
@@ -148,8 +146,12 @@ void EffectiveIndex2dModule::stageOne()
             if (all_the_same) {
                 stripeNeffs[i] = same_val;
             } else {
-                auto maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
-                stripeNeffs[i] = RootDigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);} ).getSolution(0.9999*maxn);
+                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, 1e-4, 1e-6, 1e-5, 1.0, maxiterations);
+                dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
+                stripeNeffs[i] = rootdigger.getSolution(0.999999*maxn);
+                // dcomplex minn = *std::min_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
+                // auto map = rootdigger.findMap(0.999999*maxn, 1.000001*minn, initial_stripe_neff_map, 0);
+                // stripeNeffs[i] = rootdigger.getSolution(map[0]);
             }
         }
     }
@@ -217,7 +219,7 @@ Matrix2cd EffectiveIndex2dModule::getMatrix(const dcomplex& neff)
     }
 
     auto fresnel = [&](size_t i) -> Matrix2cd {
-        dcomplex f =  (polarization==TM)? 1. : stripeNeffs[i+1]/stripeNeffs[i];
+        dcomplex f =  (polarization==TE)? stripeNeffs[i+1]/stripeNeffs[i] :  1.;
         dcomplex n = 0.5 * beta[i]/beta[i+1] * f*f;
         Matrix2cd M; M << (0.5+n), (0.5-n),
                           (0.5-n), (0.5+n);

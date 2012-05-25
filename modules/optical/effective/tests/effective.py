@@ -21,8 +21,6 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.module.geometry = space
 
     def testExceptions(self):
-        self.module.inWavelength.disconnect()
-        self.module.invalidate()
         with self.assertRaisesRegexp(TypeError, r"^No wavelength set nor its provider connected\.$"):
             self.module.inWavelength()
         with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now\.$"):
@@ -47,3 +45,9 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.assertAlmostEqual( self.module.computeMode(1.05), 1.15028185)
         self.module.symmetry = "-"
         self.assertAlmostEqual( self.module.computeMode(1.05), 1.06757427)
+
+        self.module.polarization = "TM"
+        self.module.symmetry = "+"
+        self.assertAlmostEqual( self.module.computeMode(1.10), 1.11566048)
+        self.module.symmetry = "-"
+        self.assertAlmostEqual( self.module.computeMode(1.10), 1.04500324)

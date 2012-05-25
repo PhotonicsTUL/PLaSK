@@ -7,8 +7,8 @@ namespace plask { namespace modules { namespace eim {
 dcomplex RootDigger::value(dcomplex x, bool count) const{
     dcomplex y = val_function(x);
     double ay = abs(y);
-    if (count) module.log_value.count(x, ay);
-    else module.log_value(x, ay);
+    if (count) log_value.count(x, ay);
+    else log_value(x, ay);
     return y;
 }
 
@@ -42,7 +42,7 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
              values[r][i] = abs(value(dcomplex(repoints[r], impoints[i]), false));
         } catch(...) {
             values[r][i] = NAN;
-        // TODO: print warning on screen and handle it in minima search
+            //TODO: print warning on screen and handle it in minima search
         }
     }
 
@@ -84,8 +84,8 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
 }
 
 //**************************************************************************
-/// Search for solutions within the region real(start) - real(end),
-vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int replot, int implot, int num_modes)
+/// Look for the minima map browsing through given points
+std::vector<dcomplex> RootDigger::findMap(plask::dcomplex start, plask::dcomplex end, int replot, int implot)
 {
     if (imag(start) == imag(end)) implot = 0;
     if (real(start) == real(end)) replot = 0;
@@ -109,10 +109,18 @@ vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int r
         impoints[0] = 0.5 * (imag(start) + imag(end));
     }
 
+    return findMap(repoints, impoints);
+}
+
+
+//**************************************************************************
+/// Search for solutions within the region real(start) - real(end),
+std::vector< dcomplex > RootDigger::searchSolutions(plask::dcomplex start, plask::dcomplex end, int replot, int implot, int num_modes)
+{
     vector<dcomplex> modes;
 
     // Determine map
-    vector<dcomplex> map = findMap(repoints, impoints);
+    vector<dcomplex> map = findMap(start, end, replot, implot);
 
     // Find solutions starting from the map points
     int iend = min(int(map.size()), num_modes);
@@ -133,7 +141,7 @@ vector<dcomplex> RootDigger::searchSolutions(dcomplex start, dcomplex end, int r
 dcomplex RootDigger::getSolution(dcomplex point) const
 {
     module.log(LOG_DETAIL, "Searching for the solution with Broyden method starting from " + str(point));
-    module.log_value.resetCounter();
+    log_value.resetCounter();
     dcomplex x = Broyden(point);
     module.log(LOG_RESULT, "Found solution at " + str(x));
     return x;
@@ -235,7 +243,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
 {
     // Compute the initial guess of the function (and check for the root)
     dcomplex F = value(x);
-    if (abs(F) < module.tolf_min) return x;
+    if (abs(F) < tolf_min) return x;
 
     bool restart = true;                    // do we have to recompute Jacobian?
     bool trueJacobian;                      // did we recently update Jacobian?
@@ -246,7 +254,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     dcomplex oldx, oldF;
 
     // Main loop
-    for (int i = 0; i < module.maxiterations; i++) {
+    for (int i = 0; i < maxiterations; i++) {
         oldx = x; oldF = F;
 
         if (restart) {                      // compute Broyden matrix as a Jacobian
@@ -270,13 +278,13 @@ dcomplex RootDigger::Broyden(dcomplex x) const
         dcomplex p = - dcomplex(real(F)*imag(Bi)-imag(F)*real(Bi), real(Br)*imag(F)-imag(Br)*real(F)) / M;
 
         // find the right step
-        if (lnsearch(x, F, g, p, module.maxstep)) {   // found sufficient functional decrease
+        if (lnsearch(x, F, g, p, maxstep)) {   // found sufficient functional decrease
             dx = x - oldx;
             dF = F - oldF;
-            if ((abs(dx) < module.tolx && abs(F) < module.tolf_max) || abs(F) < module.tolf_min)
+            if ((abs(dx) < tolx && abs(F) < tolf_max) || abs(F) < tolf_min)
                 return x;                       // convergence!
         } else {
-            if (abs(F) < module.tolf_max)       // convergence!
+            if (abs(F) < tolf_max)       // convergence!
                 return x;
             else if (!trueJacobian) {           // first try reinitializing the Jacobian
                  module.log(LOG_DETAIL, "Reinitializing Jacobian");
