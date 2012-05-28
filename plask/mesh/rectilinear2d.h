@@ -275,36 +275,36 @@ class RectilinearMesh2d: public Mesh<2> {
 
     // boundaries:
     template <typename Predicate>
-    static PredicateBoundry<RectilinearMesh2d, Predicate>* getBoundry(Predicate predicate) {
-        return new PredicateBoundry<RectilinearMesh2d, Predicate>(predicate);
+    static PredicateBoundary<RectilinearMesh2d, Predicate>* getBoundary(Predicate predicate) {
+        return new PredicateBoundary<RectilinearMesh2d, Predicate>(predicate);
     }
 
 private:
 
     // Common code for: left, right, bottom, top boundries:
-    struct BoundryIteratorImpl: public Boundary<RectilinearMesh2d>::IteratorImpl {
+    struct BoundaryIteratorImpl: public Boundary<RectilinearMesh2d>::IteratorImpl {
 
         const RectilinearMesh2d &mesh;
 
         std::size_t index;
 
-        BoundryIteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): mesh(mesh), index(index) {}
+        BoundaryIteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): mesh(mesh), index(index) {}
 
         virtual void increment() { ++index; }
 
         virtual bool equal(const typename Boundary<RectilinearMesh2d>::IteratorImpl& other) const {
-            return index == static_cast<const BoundryIteratorImpl&>(other).index;
+            return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
     };
 
 public:
 
-    struct LeftBoundry: public Boundary<RectilinearMesh2d> {
+    struct LeftBoundary: public Boundary<RectilinearMesh2d> {
 
-        struct IteratorImpl: public BoundryIteratorImpl {
+        struct IteratorImpl: public BoundaryIteratorImpl {
 
-            IteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): BoundryIteratorImpl(mesh, index) {}
+            IteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
             virtual std::size_t dereference() const { return mesh.index(0, index); }
 
@@ -328,11 +328,11 @@ public:
 
     };
 
-    struct RightBoundry: public Boundary<RectilinearMesh2d> {
+    struct RightBoundary: public Boundary<RectilinearMesh2d> {
 
-        struct IteratorImpl: public BoundryIteratorImpl {
+        struct IteratorImpl: public BoundaryIteratorImpl {
 
-            IteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): BoundryIteratorImpl(mesh, index) {}
+            IteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
             virtual std::size_t dereference() const { return mesh.index(mesh.c0.size()-1, index); }
 
@@ -356,11 +356,11 @@ public:
 
     };
 
-    struct TopBoundry: public Boundary<RectilinearMesh2d> {
+    struct TopBoundary: public Boundary<RectilinearMesh2d> {
 
-        struct IteratorImpl: public BoundryIteratorImpl {
+        struct IteratorImpl: public BoundaryIteratorImpl {
 
-            IteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): BoundryIteratorImpl(mesh, index) {}
+            IteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
             virtual std::size_t dereference() const { return mesh.index(index, 0); }
 
@@ -384,11 +384,11 @@ public:
 
     };
 
-    struct BottomBoundry: public Boundary<RectilinearMesh2d> {
+    struct BottomBoundary: public Boundary<RectilinearMesh2d> {
 
-        struct IteratorImpl: public BoundryIteratorImpl {
+        struct IteratorImpl: public BoundaryIteratorImpl {
 
-            IteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): BoundryIteratorImpl(mesh, index) {}
+            IteratorImpl(const RectilinearMesh2d& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
             virtual std::size_t dereference() const { return mesh.index(index, mesh.c1.size()-1); }
 

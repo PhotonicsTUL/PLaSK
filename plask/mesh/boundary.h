@@ -17,7 +17,7 @@ namespace plask {
 template <typename MeshType>
 struct Boundary {
 
-    /// Base class for boundry iterator implementation.
+    /// Base class for boundary iterator implementation.
     typedef PolymorphicForwardIteratorImpl<std::size_t, std::size_t> IteratorImpl;
 
     /// Boundy iterator type.
@@ -89,7 +89,7 @@ struct Boundary {
         return WithMesh(*this, mesh);
     }
 
-    /// Base class for boundry iterator implementation which includes reference to boundry.
+    /// Base class for boundary iterator implementation which includes reference to boundary.
     struct IteratorWithMeshImpl: public IteratorImpl {
 
         WithMesh& boundaryWithMesh;
@@ -109,7 +109,7 @@ struct Boundary {
  * @tparam Predicate preicate which check if given point (passed as plask::vec over MeshType space) is in boundary
  */
 template <typename MeshType, typename Predicate>
-struct PredicateBoundry: public Boundary<MeshType> {
+struct PredicateBoundary: public Boundary<MeshType> {
 
     struct PredicateIteratorImpl: public Boundary<MeshType>::IteratorWithMeshImpl {
 
@@ -132,7 +132,7 @@ struct PredicateBoundry: public Boundary<MeshType> {
             do {
                 ++meshIterator;
             } while (meshIterator != meshIteratorEnd &&
-                     static_cast<PredicateBoundry&>(this->getBoundary()).predicate(*meshIterator));
+                     static_cast<PredicateBoundary&>(this->getBoundary()).predicate(*meshIterator));
         }
 
         virtual bool equal(const typename Boundary<MeshType>::IteratorImpl& other) const {
@@ -147,7 +147,7 @@ struct PredicateBoundry: public Boundary<MeshType> {
 
     Predicate predicate;
 
-    PredicateBoundry(Predicate predicate): predicate(predicate) {}
+    PredicateBoundary(Predicate predicate): predicate(predicate) {}
 
     virtual bool includes(const MeshType& mesh, std::size_t mesh_index) const {
         return predicate(mesh[mesh_index]);
@@ -167,8 +167,8 @@ struct PredicateBoundry: public Boundary<MeshType> {
  * Use: makePredicateBoundary<MeshType>(predicate);
  */
 template <typename MeshType, typename Predicate>
-inline PredicateBoundry<MeshType, Predicate> makePredicateBoundary(Predicate predicate) {
-    return PredicateBoundry<MeshType, Predicate>(predicate);
+inline PredicateBoundary<MeshType, Predicate> makePredicateBoundary(Predicate predicate) {
+    return PredicateBoundary<MeshType, Predicate>(predicate);
 }
 
 }   // namespace plask
