@@ -7,6 +7,7 @@ This file includes templates of base classes for mesh's boundaries.
 */
 
 #include "../utils/iterators.h"
+#include "../memory.h"
 
 namespace plask {
 
@@ -15,7 +16,7 @@ namespace plask {
  * @tparam MeshType type of mesh
  */
 template <typename MeshType>
-struct Boundary {
+struct BoundaryImpl {
 
     /// Base class for boundary iterator implementation.
     typedef PolymorphicForwardIteratorImpl<std::size_t, std::size_t> IteratorImpl;
@@ -26,6 +27,8 @@ struct Boundary {
     /// iterator over indexes of mesh
     typedef Iterator const_iterator;
     typedef const_iterator iterator;
+    
+    virtual BoundaryImpl<MeshType>* clone() const;
 
     /**
      * Check if boundary includes point with given index.
@@ -56,13 +59,13 @@ struct Boundary {
      */
     struct WithMesh {
 
-        typedef Boundary<MeshType>::const_iterator const_iterator;
-        typedef Boundary<MeshType>::iterator iterator;
+        typedef BoundaryImpl<MeshType>::const_iterator const_iterator;
+        typedef BoundaryImpl<MeshType>::iterator iterator;
 
-        const Boundary& boundary;
+        const BoundaryImpl& boundary;
         const MeshType& mesh;
 
-        WithMesh(const Boundary& boundary, const MeshType& mesh)
+        WithMesh(const BoundaryImpl& boundary, const MeshType& mesh)
             : boundary(boundary), mesh(mesh) {}
 
         bool includes(std::size_t mesh_index) const {
@@ -94,13 +97,24 @@ struct Boundary {
 
         WithMesh& boundaryWithMesh;
 
-        const Boundary& getBoundary() const { return boundaryWithMesh.boundary; }
+        const BoundaryImpl& getBoundary() const { return boundaryWithMesh.boundary; }
         const MeshType& getMesh() const { return boundaryWithMesh.mesh; }
 
-        IteratorWithMeshImpl(const Boundary& boundary, const MeshType& mesh):
+        IteratorWithMeshImpl(const BoundaryImpl& boundary, const MeshType& mesh):
             boundaryWithMesh(boundary, mesh) {}
     };
 
+};
+
+template <typename MeshType>
+struct Boundary: public Holder< const BoundaryImpl<MeshType> > {
+    
+    typedef typename BoundaryImpl<MeshType>::WithMesh WithMesh;
+    
+    Boundary(const BoundaryImpl<MeshType>* to_hold = nullptr): Holder< const BoundaryImpl<MeshType> >(to_hold) {}
+    
+    WithMesh operator()(const MeshType& mesh) const { return this->holded->get(mesh); }
+    WithMesh get(const MeshType& mesh) const { return this->holded->get(mesh); }
 };
 
 /**
@@ -109,18 +123,18 @@ struct Boundary {
  * @tparam Predicate preicate which check if given point (passed as plask::vec over MeshType space) is in boundary
  */
 template <typename MeshType, typename Predicate>
-struct PredicateBoundary: public Boundary<MeshType> {
+struct PredicateBoundary: public BoundaryImpl<MeshType> {
 
-    struct PredicateIteratorImpl: public Boundary<MeshType>::IteratorWithMeshImpl {
+    struct PredicateIteratorImpl: public BoundaryImpl<MeshType>::IteratorWithMeshImpl {
 
-        using Boundary<MeshType>::IteratorWithMeshImpl::getMesh;
+        using BoundaryImpl<MeshType>::IteratorWithMeshImpl::getMesh;
 
         decltype(std::begin(getMesh())) meshIterator;
         decltype(std::end(getMesh())) meshIteratorEnd;
 
-        PredicateIteratorImpl(const Boundary<MeshType>& boundary, const MeshType& mesh,
+        PredicateIteratorImpl(const BoundaryImpl<MeshType>& boundary, const MeshType& mesh,
                               decltype(std::begin(mesh)) meshIterator):
-            Boundary<MeshType>::IteratorWithMeshImpl(boundary, mesh),
+            BoundaryImpl<MeshType>::IteratorWithMeshImpl(boundary, mesh),
             meshIterator(meshIterator),
             meshIteratorEnd(std::end(mesh)) {}
 
@@ -135,11 +149,11 @@ struct PredicateBoundary: public Boundary<MeshType> {
                      static_cast<PredicateBoundary&>(this->getBoundary()).predicate(*meshIterator));
         }
 
-        virtual bool equal(const typename Boundary<MeshType>::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryImpl<MeshType>::IteratorImpl& other) const {
             return meshIterator == static_cast<const PredicateIteratorImpl&>(other).meshIterator;
         }
 
-        virtual typename Boundary<MeshType>::IteratorImpl* clone() const {
+        virtual typename BoundaryImpl<MeshType>::IteratorImpl* clone() const {
             return new PredicateIteratorImpl(*this);
         }
 
@@ -148,17 +162,19 @@ struct PredicateBoundary: public Boundary<MeshType> {
     Predicate predicate;
 
     PredicateBoundary(Predicate predicate): predicate(predicate) {}
+    
+    virtual PredicateBoundary<MeshType, Predicate>* clone() const { return new PredicateBoundary<MeshType, Predicate>(predicate); }
 
     virtual bool includes(const MeshType& mesh, std::size_t mesh_index) const {
         return predicate(mesh[mesh_index]);
     }
 
-    typename Boundary<MeshType>::Iterator begin(const MeshType &mesh) const {
-        return typename Boundary<MeshType>::Iterator(new PredicateIteratorImpl(*this, mesh, std::begin(mesh)));
+    typename BoundaryImpl<MeshType>::Iterator begin(const MeshType &mesh) const {
+        return typename BoundaryImpl<MeshType>::Iterator(new PredicateIteratorImpl(*this, mesh, std::begin(mesh)));
     }
 
-    typename Boundary<MeshType>::Iterator end(const MeshType &mesh) const {
-        return typename Boundary<MeshType>::Iterator(new PredicateIteratorImpl(*this, mesh, std::end(mesh)));
+    typename BoundaryImpl<MeshType>::Iterator end(const MeshType &mesh) const {
+        return typename BoundaryImpl<MeshType>::Iterator(new PredicateIteratorImpl(*this, mesh, std::end(mesh)));
     }
 
 };
@@ -167,8 +183,8 @@ struct PredicateBoundary: public Boundary<MeshType> {
  * Use: makePredicateBoundary<MeshType>(predicate);
  */
 template <typename MeshType, typename Predicate>
-inline PredicateBoundary<MeshType, Predicate> makePredicateBoundary(Predicate predicate) {
-    return PredicateBoundary<MeshType, Predicate>(predicate);
+inline Boundary<MeshType> makePredicateBoundary(Predicate predicate) {
+    return Boundary<MeshType>(new PredicateBoundary<MeshType, Predicate>(predicate));
 }
 
 }   // namespace plask

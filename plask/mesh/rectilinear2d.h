@@ -273,16 +273,12 @@ class RectilinearMesh2d: public Mesh<2> {
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
 
-    // boundaries:
-    template <typename Predicate>
-    static PredicateBoundary<RectilinearMesh2d, Predicate>* getBoundary(Predicate predicate) {
-        return new PredicateBoundary<RectilinearMesh2d, Predicate>(predicate);
-    }
-
 private:
+    
+    void buildFromGeometry(const GeometryElementD<2>& geometry);
 
     // Common code for: left, right, bottom, top boundries:
-    struct BoundaryIteratorImpl: public Boundary<RectilinearMesh2d>::IteratorImpl {
+    struct BoundaryIteratorImpl: public BoundaryImpl<RectilinearMesh2d>::IteratorImpl {
 
         const RectilinearMesh2d &mesh;
 
@@ -292,15 +288,13 @@ private:
 
         virtual void increment() { ++index; }
 
-        virtual bool equal(const typename Boundary<RectilinearMesh2d>::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryImpl<RectilinearMesh2d>::IteratorImpl& other) const {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
     };
 
-public:
-
-    struct LeftBoundary: public Boundary<RectilinearMesh2d> {
+    struct LeftBoundary: public BoundaryImpl<RectilinearMesh2d> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -308,11 +302,13 @@ public:
 
             virtual std::size_t dereference() const { return mesh.index(0, index); }
 
-            virtual typename Boundary<RectilinearMesh2d>::IteratorImpl* clone() const {
+            virtual typename BoundaryImpl<RectilinearMesh2d>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
+        
+        virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
         bool includes(const RectilinearMesh2d &mesh, std::size_t mesh_index) const {
             return mesh.index0(mesh_index) == 0;
@@ -328,7 +324,7 @@ public:
 
     };
 
-    struct RightBoundary: public Boundary<RectilinearMesh2d> {
+    struct RightBoundary: public BoundaryImpl<RectilinearMesh2d> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -336,11 +332,13 @@ public:
 
             virtual std::size_t dereference() const { return mesh.index(mesh.c0.size()-1, index); }
 
-            virtual typename Boundary<RectilinearMesh2d>::IteratorImpl* clone() const {
+            virtual typename BoundaryImpl<RectilinearMesh2d>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
+        
+        virtual RightBoundary* clone() const { return new RightBoundary(); }
 
         bool includes(const RectilinearMesh2d &mesh, std::size_t mesh_index) const {
             return mesh.index0(mesh_index) == mesh.c0.size()-1;
@@ -356,7 +354,7 @@ public:
 
     };
 
-    struct TopBoundary: public Boundary<RectilinearMesh2d> {
+    struct TopBoundary: public BoundaryImpl<RectilinearMesh2d> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -364,11 +362,13 @@ public:
 
             virtual std::size_t dereference() const { return mesh.index(index, 0); }
 
-            virtual typename Boundary<RectilinearMesh2d>::IteratorImpl* clone() const {
+            virtual typename BoundaryImpl<RectilinearMesh2d>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
+        
+        virtual TopBoundary* clone() const { return new TopBoundary(); }
 
         bool includes(const RectilinearMesh2d &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == 0;
@@ -381,10 +381,9 @@ public:
         Iterator end(const RectilinearMesh2d &mesh) const {
             return Iterator(new IteratorImpl(mesh, mesh.c0.size()));
         }
-
     };
 
-    struct BottomBoundary: public Boundary<RectilinearMesh2d> {
+    struct BottomBoundary: public BoundaryImpl<RectilinearMesh2d> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -392,11 +391,13 @@ public:
 
             virtual std::size_t dereference() const { return mesh.index(index, mesh.c1.size()-1); }
 
-            virtual typename Boundary<RectilinearMesh2d>::IteratorImpl* clone() const {
+            virtual typename BoundaryImpl<RectilinearMesh2d>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
+        
+        virtual BottomBoundary* clone() const { return new BottomBoundary(); }
 
         bool includes(const RectilinearMesh2d &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == mesh.c1.size()-1;
@@ -412,10 +413,29 @@ public:
 
     };
 
-private:
+public:
+    // boundaries:
+    
+    template <typename Predicate>
+    static Boundary<RectilinearMesh2d> getBoundary(Predicate predicate) {
+        return Boundary<RectilinearMesh2d>(new PredicateBoundary<RectilinearMesh2d, Predicate>(predicate));
+    }
+    
+    static Boundary<RectilinearMesh2d> getLeftBoundary() {
+        return Boundary<RectilinearMesh2d>(new LeftBoundary());
+    }
+    
+    static Boundary<RectilinearMesh2d> getRightBoundary() {
+        return Boundary<RectilinearMesh2d>(new RightBoundary());
+    }
 
-    void buildFromGeometry(const GeometryElementD<2>& geometry);
-
+    static Boundary<RectilinearMesh2d> getTopBoundary() {
+        return Boundary<RectilinearMesh2d>(new TopBoundary());
+    }
+    
+    static Boundary<RectilinearMesh2d> getBottomBoundary() {
+        return Boundary<RectilinearMesh2d>(new BottomBoundary());
+    }
 };
 
 /**
