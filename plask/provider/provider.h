@@ -108,6 +108,7 @@ assert(sr(3.0) == 6.0);
 #include <functional>   // std::function
 #include <type_traits>  // std::is_same
 #include <boost/optional.hpp>
+#include <boost/signals2.hpp>
 
 #include "../exceptions.h"
 #include "../mesh/mesh.h"
@@ -205,6 +206,9 @@ struct Receiver: public Provider::Listener {
     /// Name of provider.
     static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
 
+    /// Signal called when provider value or provider was changed (called by onChange)
+    boost::signals2::signal<void(Receiver& src)> providerValueChanged;
+
     Receiver & operator=(const Receiver&) = delete;
     Receiver(const Receiver&) = delete;
 
@@ -279,7 +283,7 @@ struct Receiver: public Provider::Listener {
     /// React on provider value changes. Set changed flag to true.
     void onChange() {
         changed = true;
-        //TODO callback?
+        providerValueChanged(*this);
     }
 
     virtual void onDisconnect(Provider* from_where) {

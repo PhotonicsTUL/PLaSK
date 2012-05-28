@@ -167,6 +167,8 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
 
     Reference dereference() const { return (*container)[index]; }
 
+    std::size_t getIndex() const { return index; }
+
 };
 
 /**
@@ -224,6 +226,8 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
     std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
 
     Reference dereference() const { return functor(index); }
+
+    std::size_t getIndex() const { return index; }
 
 };
 
