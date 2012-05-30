@@ -35,6 +35,11 @@ template <typename firstType, typename... restTypes> struct chooseType<0, firstT
     typedef firstType type;
 };*/
 
+/**
+ * Check if PotentiallyCallable is callable with given Args types (answare is in bool value static field).
+ * @tparam PotentiallyCallable somthing which can be a functor
+ * @tparam Args types of arguments
+ */
 // from http://stackoverflow.com/questions/5100015/c-metafunction-to-determine-whether-a-type-is-callable
 template < typename PotentiallyCallable, typename... Args>
 struct is_callable
@@ -49,6 +54,7 @@ struct is_callable
   template < typename CheckType>
   static no check(...);
 
+  /// @c true only if PotentiallyCallable is callable with given Args.
   enum { value = sizeof(check<PotentiallyCallable>(0)) == sizeof(yes) };
 };
 
