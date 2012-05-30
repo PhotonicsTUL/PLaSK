@@ -25,7 +25,7 @@ There are two typical approaches to implementing new types of meshes:
 - @ref meshes_write_adapters "using adapters" (this approach is recommended),
 - @ref meshes_write_direct "direct".
 
-@see @ref interpolation_write
+@see @ref interpolation_write @ref boundaries_impl
 
 @subsection meshes_write_adapters Using adapters to generate plask::Mesh implementation
 You can specialize adapter template to generate class which inheriting from plask::Mesh instantiation.
