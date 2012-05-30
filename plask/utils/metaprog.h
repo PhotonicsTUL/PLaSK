@@ -6,6 +6,7 @@ This file includes meta-programing tools.
 */
 
 #include <tuple>
+#include <type_traits>
 
 namespace plask {
 
@@ -33,6 +34,24 @@ struct chooseType {
 template <typename firstType, typename... restTypes> struct chooseType<0, firstType, restTypes...> {
     typedef firstType type;
 };*/
+
+// from http://stackoverflow.com/questions/5100015/c-metafunction-to-determine-whether-a-type-is-callable
+template < typename PotentiallyCallable, typename... Args>
+struct is_callable
+{
+  typedef char (&no)  [1];
+  typedef char (&yes) [2];
+
+  template < typename T > struct dummy;
+
+  template < typename CheckType>
+  static yes check(dummy<decltype(std::declval<CheckType>()(std::declval<Args>()...))> *);
+  template < typename CheckType>
+  static no check(...);
+
+  enum { value = sizeof(check<PotentiallyCallable>(0)) == sizeof(yes) };
+};
+
 
 }   // namespace plask
 

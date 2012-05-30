@@ -45,6 +45,7 @@ You should start reading from section \ref modules "How to implement an own modu
 - \subpage providers_writing "How to implement new providers and receivers for new data types?"
 - \subpage meshes "How to use meshes and write an own ones?"
     - \subpage interpolation "All about interpolation."
+    - \subpage boundaries "All about boundaries and boundaries conditions."
 - \subpage geometry "All about geometry."
 */
 

@@ -18,7 +18,7 @@ to <code>plask::Mesh::size()-1</code>,
 you can store data in any indexed structure, like an array (1d) or std::vector (which is recommended),
 storing the data value for the i-th point in the mesh under the i-th index.
 
-@see @ref interpolation
+@see @ref interpolation @ref boundaries
 
 @section meshes_write How to implement a new mesh?
 There are two typical approaches to implementing new types of meshes:
