@@ -491,7 +491,8 @@ public:
      */
     virtual shared_ptr<const GeometryElement> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const = 0;
 
-protected:
+    bool canHasAsChild(const GeometryElement& potential_child) const { return !potential_child.isInSubtree(*this); }
+    bool canHasAsParent(const GeometryElement& potential_parent) const { return !this->isInSubtree(potential_parent); }
 
     /**
      * Throw CyclicReferenceException if @p potential_parent is in subtree with this in root.
@@ -504,6 +505,8 @@ protected:
      * @param potential_child[in] potential, new child of this
      */
     void ensureCanHaveAsChild(const GeometryElement& potential_child) const { potential_child.ensureCanHasAsParent(*this); }
+
+protected:
 
     /**
      * Check if given @p index is valid child index and throw exception of it is not.

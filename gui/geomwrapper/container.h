@@ -19,6 +19,11 @@ struct StackWrapper: public ElementWrapperFor< plask::StackContainer<dim> > {
 
     virtual void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
+    //TODO can be move to generic container wrapper
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
+        return index <= this->c().getRealChildrenCount() && to_insert->getDimensionsCount() == dim && this->c().canHasAsChild(*to_insert);
+    }
+
 };
 
 template <int dim>

@@ -213,6 +213,24 @@ public:
         setupPropertiesBrowserForChild(index, managers, managers.browser);
     }
 
+    /**
+     * Check if @p to_insert can be insert to this at position @p index.
+     *
+     * Type of @p to_insert and possible loops are checked. Also @p index is checked.
+     * @return @c true if @p to_insert can be insert to this at position @p index
+     */
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
+        return false;
+    }
+
+    /**
+     * Insert @p to_insert at postion @p index to this.
+     * @return @c true if @p to_insert can be insert to this at position @p index
+     */
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+        return false;
+    }
+
 };
 
 template <typename WrappedT, typename BaseClass = ElementWrapper>
