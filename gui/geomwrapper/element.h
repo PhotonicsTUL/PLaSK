@@ -11,6 +11,7 @@
 #include <QPainter>
 #include <QGraphicsItem>
 #include "../utils/propbrowser.h"
+#include "../modelext/creator.h"
 
 QT_BEGIN_NAMESPACE
 class QPainter;
@@ -229,6 +230,16 @@ public:
      */
     virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
         return false;
+    }
+
+    /**
+     * Get child creators for thie element.
+     *
+     * Default implementation returns empty vector, but sublasses redefine this.
+     * @return vector of creators of child of this
+     */
+    std::vector<const GeometryElementCreator*> getChildCreators() const {
+        return std::vector<const GeometryElementCreator*>();
     }
 
 };

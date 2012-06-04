@@ -24,6 +24,17 @@ struct StackWrapper: public ElementWrapperFor< plask::StackContainer<dim> > {
         return index <= this->c().getRealChildrenCount() && to_insert->getDimensionsCount() == dim && this->c().canHasAsChild(*to_insert);
     }
 
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+        if (!canInsert(to_insert, index)) return false;
+        this->c().insertUnsafe(plask::static_pointer_cast< plask::GeometryElementD<dim> >(to_insert), index);
+        return true;
+    }
+
+     //TODO can be move to generic container wrapper
+    std::vector<const GeometryElementCreator*> getChildCreators() const {
+        return getCreators<dim>();
+    }
+
 };
 
 template <int dim>
