@@ -199,6 +199,8 @@ public:
      */
     bool remove(int position, int rows) { return removeRange(position, position + rows); }
 
+    bool tryInsert(plask::shared_ptr<plask::GeometryElement> element, int index);
+
 };
 
 /**
@@ -301,6 +303,8 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
     bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex());
+
+    bool insertRow(plask::shared_ptr<plask::GeometryElement> to_insert, const QModelIndex &parent = QModelIndex(), int position = 0);
 };
 
 #endif // PLASK_GUI_TREE_H

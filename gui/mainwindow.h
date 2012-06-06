@@ -74,6 +74,7 @@ private slots:
     void about();
     void treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
     void treeRemoveSelected();
+    void treeAddBlock2d();
 
 private:
 
@@ -107,6 +108,7 @@ private:
     QAction *quitAct;
 
     QAction *treeRemoveAct;
+    QAction *treeAddBlockAct;
 };
 
 #endif  // PLASK_GUI_MAINWINDOW_H
