@@ -18,7 +18,7 @@ const typename DataVector<T>::const_iterator DataVectorWrap_end(const DataVector
 template <typename T, int dim>
 T DataVectorWrap_getitem(const DataVectorWrap<T,dim>& self, std::ptrdiff_t i) {
     if (i < 0) i = self.size() - i;
-    if (i < 0 || i >= self.size()) throw IndexError("index out of range");
+    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("index out of range");
     return self[i];
 }
 
@@ -43,7 +43,7 @@ py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std::ptrdi
     if (from < 0) from = self.size() - from;
     if (to < 0) to = self.size() - to;
     if (from < 0) from = 0;
-    if (to > self.size()) to = self.size();
+    if (std::size_t(to) > self.size()) to = self.size();
 
     // TODO return array
     std::vector<npy_intp> dims = get_dims<T>(to-from);
