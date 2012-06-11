@@ -75,7 +75,9 @@ struct BoundaryImpl {
     /// iterator over indexes of mesh
     typedef Iterator const_iterator;
     typedef const_iterator iterator;
-    
+
+    virtual ~BoundaryImpl() {}
+
     virtual BoundaryImpl<MeshType>* clone() const;
 
     /**
@@ -156,11 +158,11 @@ struct BoundaryImpl {
 
 template <typename MeshType>
 struct Boundary: public Holder< const BoundaryImpl<MeshType> > {
-    
+
     typedef typename BoundaryImpl<MeshType>::WithMesh WithMesh;
-    
+
     Boundary(const BoundaryImpl<MeshType>* to_hold = nullptr): Holder< const BoundaryImpl<MeshType> >(to_hold) {}
-    
+
     WithMesh operator()(const MeshType& mesh) const { return this->holded->get(mesh); }
     WithMesh get(const MeshType& mesh) const { return this->holded->get(mesh); }
 };
@@ -194,7 +196,7 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
             return meshIterator.getIndex();
         }
 
-        private:
+      private:
         bool check_predicate(typename std::enable_if<is_callable<Predicate, typename MeshType::LocalCoords>::value >::type* = 0) {
             return static_cast<PredicateBoundary&>(this->getBoundary()).predicate(*meshIterator);
         }
@@ -208,7 +210,7 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
             return static_cast<PredicateBoundary&>(this->getBoundary()).predicate(meshIterator->getIndex());
         }
 
-        public:
+      public:
 
         virtual void increment() {
             do {
@@ -229,7 +231,7 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
     Predicate predicate;
 
     PredicateBoundary(Predicate predicate): predicate(predicate) {}
-    
+
     virtual PredicateBoundary<MeshType, Predicate>* clone() const { return new PredicateBoundary<MeshType, Predicate>(predicate); }
 
 private:

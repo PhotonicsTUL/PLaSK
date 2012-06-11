@@ -16,7 +16,7 @@ namespace detail {
     template <typename ModuleT, typename BaseT>
     struct ExportedModuleDefaultDefs {
         template <typename PyModule>
-        static auto init(PyModule& module) -> PyModule& {}
+        static auto init(PyModule& module) -> PyModule& { return module; }
     };
 
     template <typename ModuleT>
@@ -24,6 +24,7 @@ namespace detail {
         template <typename PyModule>
         static auto init(PyModule& module) -> PyModule& {
             module.add_property("geometry", &ModuleT::getGeometry, &ModuleT::setGeometry, "Geometry provided to the module");
+            return module;
         }
     };
 
@@ -33,6 +34,7 @@ namespace detail {
         static auto init(PyModule& module) -> PyModule& {
             module.add_property("geometry", &ModuleT::getGeometry, &ModuleT::setGeometry, "Geometry provided to the module");
             module.add_property("mesh", &ModuleT::getMesh, &ModuleT::setMesh, "Mesh provided to the module");
+            return module;
         }
     };
 

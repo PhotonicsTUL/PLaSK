@@ -40,11 +40,8 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     /// Cached refractive indices
     std::vector<std::vector<dcomplex>> nrCache;
 
-    /// Computed vertical fields
-    std::vector<std::vector<Eigen::Vector2cd>> fieldsY;
-
     /// Computed horizontal fields
-    std::vector<Eigen::Vector2cd> fieldX;
+    std::vector<Eigen::Vector2cd> fieldX, fieldY;
 
     /// Did we compute fields for current Neff?
     bool have_fields;
@@ -86,7 +83,7 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
      * Set the simple mesh based on the geometry bounding boxes.
      **/
     void setSimpleMesh() {
-        log(LOG_INFO, "Creating simple mesh");
+        logger(LOG_INFO, "Creating simple mesh");
         if (!geometry) throw NoChildException();
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
@@ -99,7 +96,7 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
      * \param meshx horizontal mesh
      **/
     void setHorizontalMesh(const RectilinearMesh1d& meshx) {
-        log(LOG_INFO, "Setting horizontal mesh");
+        logger(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
@@ -202,6 +199,17 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
 
     dcomplex k0;        ///< Cache of the normalized frequency
 
+    /// Compute mirror losses for specified effective index
+    double getMirrorLosses(const dcomplex& neff) {
+        const double lambda = real(inWavelength());
+        const double n = real(neff);
+        const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
+                     n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
+        const double R1 = abs((n-n1) / (n+n1)),
+                     R2 = abs((n-n2) / (n+n2));
+        return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->length);
+    }
+
     /**
      * Fist stage of computations
      * Update the refractive indices cache and perform vertical computations
@@ -215,13 +223,13 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR);
 
     /// Return the  effective index of the whole structure, optionally also computing fields
-    Eigen::Matrix2cd getMatrix(const dcomplex& neff);
+    Eigen::Matrix2cd getMatrix(dcomplex neff);
 
     /// Return S matrix determinant for the whole structure
     dcomplex detS(const dcomplex& x);
 
     /// Method computing the distribution of light intensity
-    const DataVector<double> getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);
+    const DataVector<double> getLightIntenisty(const plask::Mesh< 2 >& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
 
 };
 

@@ -13,9 +13,10 @@ static std::string logLevelHead(LogLevel level) {
         case LOG_DETAIL:        return "\033[30mDETAIL        ";
         case LOG_DEBUG:         return "\033[37mDEBUG         ";
     }
+    return "";
 }
 
-void log(LogLevel level, const std::string& msg) {
+void logger(LogLevel level, const std::string& msg) {
     std::cerr << logLevelHead(level) << ": " <<  msg << "\033[0m\n";
 }
 

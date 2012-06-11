@@ -9,7 +9,7 @@ set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works
 
 # ---------- common options --------------------------------------------
 
-#add_definitions(-Wall)         # all warnings
+add_definitions(-Wall)         # all warnings
 add_definitions(-std=c++0x)     # C++0x (C++11) standard
 
 include_directories(.)          # modules can include plask using <plask/plask.hpp>

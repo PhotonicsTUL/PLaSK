@@ -4,6 +4,8 @@
 
 namespace plask {
 
+const std::map<std::string, std::string> CalculationSpace::null_borders;
+
 void CalculationSpace::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames)
 {
     boost::optional<std::string> v, v_lo, v_hi;

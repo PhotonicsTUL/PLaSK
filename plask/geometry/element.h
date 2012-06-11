@@ -203,7 +203,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     };
 
     /**
-     * Changer which replace given geometry element @a from to given geometry element @a to.
+     * Changer which replaces given geometry element @a from to given geometry element @a to.
      */
     struct ReplaceChanger: public Changer {
 
@@ -216,8 +216,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
             : from(from), to(to), translation(translation) {}
 
         template <typename F>
-        ReplaceChanger(const shared_ptr<const GeometryElement>&, F calc_replace): from(from) {
-            this->to = calc_replace(this->from, &this->translation);
+        ReplaceChanger(const shared_ptr<const GeometryElement>& from, F calc_replace): from(from) {
+            this->to = calc_replace(this->from);
         }
 
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
@@ -225,7 +225,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     };
 
     /**
-     * Changer which replace given geometry element @a toChange to block (2d or 3d, depents from @a toChange)
+     * Changer which replaces given geometry element @a toChange to block (2d or 3d, depents from @a toChange)
      * with size equals to @a toChange bounding box, and with given material.
      */
     struct ToBlockChanger: public ReplaceChanger {

@@ -13,6 +13,7 @@ py::object EffectiveIndex2dModule_getSymmetry(const EffectiveIndex2dModule& self
     switch (self.symmetry) {
         case EffectiveIndex2dModule::SYMMETRY_POSITIVE: return py::object("positive");
         case EffectiveIndex2dModule::SYMMETRY_NEGATIVE: return py::object("negative");
+        case EffectiveIndex2dModule::NO_SYMMETRY: return py::object();
     }
     return py::object();
 }

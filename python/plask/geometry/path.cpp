@@ -48,9 +48,6 @@ struct Element_List_from_Python {
     }
 };
 
-std::string Hint__repr__(const PathHints::Hint& self) {
-}
-
 std::string PathHint__repr__(const PathHints& self) {
     if (self.hintFor.size() == 0) return "plask.geometry.PathHints()";
     return format("plask.geometry.PathHints(<%1% hints>)", self.hintFor.size());

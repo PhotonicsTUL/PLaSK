@@ -45,7 +45,7 @@ namespace plask {
 /**
  * Template for base class of object holder. It allow to hold polimorhic class inside one type.
  *
- * Typically, subclasses adds some delegates methods to holded object.
+ * Typically, subclasses adds some delegates methods to hold object.
  * Holded object is store by pointer, so it can store class dirived from T.
  * Stored object is deleted in destructor.
  * Holder has all asign and copy constructors which use stored object clone() method.
@@ -53,65 +53,65 @@ namespace plask {
  */
 template <typename T>
 struct Holder {
-    
+
     protected:
-    
+
     /// Holded object. Typically can be nullptr only after move assigment.
-    T* holded;
-    
+    T* hold;
+
     public:
-    
+
     /**
-     * @brief Construct a holder with given @p holded object.
-     * @param holded object to hold, should be not nullptr
+     * @brief Construct a holder with given @p hold object.
+     * @param hold object to hold, should be not nullptr
      */
-    Holder(T* holded): holded(holded) {}
-    
+    Holder(T* hold): hold(hold) {}
+
     /**
-     * @brief Construct a holder with given @p holded object.
-     * @param holded object to hold, should be not nullptr
+     * @brief Construct a holder with given @p hold object.
+     * @param hold object to hold, should be not nullptr
      */
-    Holder(T& holded): holded(&holded) {}
-    
+    Holder(T& hold): hold(&hold) {}
+
     /**
-     * @brief Copy constructor. Use holded.clone().
+     * @brief Copy constructor. Use hold.clone().
      * @param to_copy object to copy
      */
-    Holder(const Holder<T>& to_copy): holded(to_copy.holded.clone()) {}
-    
+    Holder(const Holder<T>& to_copy): hold(to_copy.hold.clone()) {}
+
     /**
      * @brief Move constructor.
      *
-     * It doesn't call holded.clone().
+     * It doesn't call hold.clone().
      * @param to_move object to move
      */
-    Holder(Holder<T>&& to_move): holded(to_move.holded) { to_move.holded = nullptr; }
-    
+    Holder(Holder<T>&& to_move): hold(to_move.hold) { to_move.hold = nullptr; }
+
     /**
-     * @brief Copy operator. Use holded.clone().
+     * @brief Copy operator. Use hold.clone().
      * @param to_copy object to copy
      */
     Holder<T>& operator=(const Holder& to_copy) {
-        if (holded == to_copy.holded) return;   //self-assigment protection
-        delete holded;
-        holded = to_copy.holded.clone();
+        if (hold == to_copy.hold) return;   //self-assigment protection
+        delete hold;
+        hold = to_copy.hold.clone();
         return *this;
     }
-    
+
     /**
      * @brief Move operator.
      *
-     * It doesn't call holded.clone().
+     * It doesn't call hold.clone().
      * @param to_move object to move
      */
     Holder<T>& operator=(Holder&& to_move) {
-        std::swap(holded, to_move.holded);  //to_move destructor will delete this old holded for a moment
+        std::swap(hold, to_move.hold);  //to_move destructor will delete this old hold for a moment
         return *this;
     }
-    
-    /// Delete holded object using delete.
-    ~Holder() { delete holded; }
-    
+
+    /// Delete hold object using delete.
+    ~Holder() { delete hold; }
+
 };
 
 /**

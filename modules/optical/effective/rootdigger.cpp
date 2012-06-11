@@ -20,7 +20,7 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
     int NR = repoints.size();
     int NI = impoints.size();
 
-    module.log(LOG_DETAIL, "Searching for the solutions map using %1% points", NR*NI);
+    module.logger(LOG_DETAIL, "Searching for the solutions map using %1% points", NR*NI);
 
     // Handle situations with inconvenient number of points in some direction
     // (this is not perfect but we must handle it somehow)
@@ -78,7 +78,7 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
         if (map != results.begin()) resultsrt << ", ";
         resultsrt << str(*map);
     }
-    module.log(LOG_RESULT, resultsrt.str());
+    module.logger(LOG_RESULT, resultsrt.str());
 
     return results;
 }
@@ -129,7 +129,7 @@ std::vector< dcomplex > RootDigger::searchSolutions(plask::dcomplex start, plask
             dcomplex mode = getSolution(map[i]);
             modes.push_back(mode);
         } catch (runtime_error err) {
-            module.log(LOG_ERROR, "Failed to get solution around " + str(map[i]) + " (" + err.what() + ")");
+            module.logger(LOG_ERROR, "Failed to get solution around " + str(map[i]) + " (" + err.what() + ")");
         };
     }
 
@@ -140,10 +140,10 @@ std::vector< dcomplex > RootDigger::searchSolutions(plask::dcomplex start, plask
 /// Search for a single mode starting from the given point: point
 dcomplex RootDigger::getSolution(dcomplex point) const
 {
-    module.log(LOG_DETAIL, "Searching for the solution with Broyden method starting from " + str(point));
+    module.logger(LOG_DETAIL, "Searching for the solution with Broyden method starting from " + str(point));
     log_value.resetCounter();
     dcomplex x = Broyden(point);
-    module.log(LOG_RESULT, "Found solution at " + str(x));
+    module.logger(LOG_RESULT, "Found solution at " + str(x));
     return x;
 }
 
@@ -192,7 +192,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
     double f0 = f;
 
     double lambda = 1.0;                        // lambda parameter x = x0 + lambda*p
-    double lambda1, lambda2, f2;
+    double lambda1, lambda2 = 0., f2 = 0.;
 
     while(true) {
         if (lambda < lambda_min) {              // we have (possible) convergence of x
@@ -231,7 +231,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
 
         lambda = max(lambda, 0.1*lambda1);      // guard against too fast decrease of lambda
 
-        module.log(LOG_DETAIL, "Broyden step decreased to the fraction " + str(lambda) + " of the original step");
+        module.logger(LOG_DETAIL, "Broyden step decreased to the fraction " + str(lambda) + " of the original step");
     }
 
 }
@@ -287,7 +287,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
             if (abs(F) < tolf_max)       // convergence!
                 return x;
             else if (!trueJacobian) {           // first try reinitializing the Jacobian
-                 module.log(LOG_DETAIL, "Reinitializing Jacobian");
+                 module.logger(LOG_DETAIL, "Reinitializing Jacobian");
                 restart = true;
             } else {                            // either spurious convergence (local minimum) or failure
                 throw ComputationError(module.getId(), "Broyden method failed to converge");

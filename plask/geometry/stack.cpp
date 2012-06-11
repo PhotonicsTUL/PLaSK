@@ -272,7 +272,7 @@ shared_ptr<GeometryElement> read_StackContainer2d(GeometryReader& reader) {
                 );
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children<StackContainer<2>>(reader,
-            [&]() {
+            [&]() -> PathHints::Hint {
                 boost::optional<std::string> aligner_str = reader.source.getAttribute(reader.getAxisTranName());
                 if (aligner_str) {
                    std::unique_ptr<align::Aligner2d<align::DIRECTION_TRAN>> aligner(align::fromStr<align::DIRECTION_TRAN>(*aligner_str));

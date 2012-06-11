@@ -34,7 +34,7 @@ namespace detail {
         }
         static void disconnect(ReceiverT& receiver) { receiver.setProvider(nullptr); }
         RegisterReceiverBase() :
-            property_name ([](const std::string& s){size_t n=s.find_last_of(':'); return (n!=s.npos)?s.substr(n+1):s; }(py::type_id<typename ReceiverT::PropertyTag>().name())),
+            property_name([](const std::string& s)->std::string{size_t n=s.find_last_of(':'); return (n!=s.npos)?s.substr(n+1):s; }(py::type_id<typename ReceiverT::PropertyTag>().name())),
             receiver_class(("ReceiverFor" + property_name).c_str(), py::no_init) {
             receiver_class.def("__lshift__", &connect, "Connect provider to receiver");
             receiver_class.def("__rrshift__", &rconnect, "Connect provider to receiver");
@@ -92,7 +92,7 @@ namespace detail {
         py::class_<ProviderBase, boost::noncopyable> provider_base_class;
         py::class_<ProviderT, py::bases<ProviderBase>, boost::noncopyable> provider_class;
         RegisterProviderBase() :
-            property_name ([](const std::string& s){size_t n=s.find_last_of(':'); return (n!=s.npos)?s.substr(n+1):s; }(py::type_id<typename ProviderT::PropertyTag>().name())),
+            property_name ([](const std::string& s)->std::string{size_t n=s.find_last_of(':'); return (n!=s.npos)?s.substr(n+1):s; }(py::type_id<typename ProviderT::PropertyTag>().name())),
             provider_base_class(("ProviderFor" + property_name + "Base").c_str(), py::no_init),
             provider_class(("ProviderFor" + property_name).c_str(), py::no_init) {
             py::delattr(py::scope(), ("ProviderFor" + property_name + "Base").c_str());

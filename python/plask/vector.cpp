@@ -30,7 +30,7 @@ static T vec__getitem__(Vec<dim,T>& self, int i) {
 
 // vector[i] = v
 template <int dim, typename T>
-static T vec__setitem__(Vec<dim,T>& self, int i, T v) {
+static void vec__setitem__(Vec<dim,T>& self, int i, T v) {
     if (i < 0) i = dim + i;
     if (i >= dim || i < 0) throw IndexError("vector index out of range");
     self[i] = v;

@@ -10,6 +10,7 @@
 #   include <complex>
 #endif // PLASK_MATH_STD
 
+class T;
 namespace plask {
 
 // size_t is preferred for array indexing
@@ -18,7 +19,14 @@ using std::size_t;
 // Complex numbers library
 #ifdef PLASK_MATH_STD
     using std::complex; using std::conj;
+    using std::sqrt; using std::hypot;
     using std::abs; using std::real; using std::imag;
+    using std::log; using std::exp;
+    using std::sin; using std::cos; using std::tan;
+    using std::sinh; using std::cosh; using std::tanh;
+    using std::asin; using std::acos; using std::atan; using std::atan2;
+    using std::asinh; using std::acosh; using std::atanh;
+    using std::erf; using std::tgamma;
     typedef complex<double> dcomplex;
     const dcomplex I(0.,1.);
 #endif // PLASK_MATH_STD
@@ -54,6 +62,12 @@ inline plask::dcomplex operator/(unsigned a, const plask::dcomplex& b) { return 
 inline plask::dcomplex operator/(const plask::dcomplex& a, unsigned b) { return a / double(b); }
 
 
+// Useful functions
+template <typename T>
+T max(const T& v1, const T& v2) { return (v1<v2)? v2 : v1; }
+
+template <typename T>
+T min(const T& v1, const T& v2) { return (v1<v2)? v1 : v2; }
 
 } // namespace plask
 

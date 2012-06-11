@@ -46,7 +46,7 @@ public:
      * @param flags flags to check
      * @return @c true only if all of @p flags are set
      */
-    bool hasAllFlags(FlagsType flags) const { return _flags & flags == flags; }
+    bool hasAllFlags(FlagsType flags) const { return (_flags & flags) == flags; }
 
     /**
      * Check if one of given @p flags are set.

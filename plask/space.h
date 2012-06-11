@@ -216,6 +216,8 @@ protected:
         const char* directions[3][2] = { {"back", "front"}, {"left", "right"}, {"bottom", "top"} };
         return directions[ax][orient];
     }
+
+    static const std::map<std::string, std::string> null_borders;
 };
 
 
@@ -347,10 +349,10 @@ public:
      * \return new space
      */
     virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr,
-                                                 const std::map<std::string, std::string>& borders=std::map<std::string, std::string>(),
-                                                 const AxisNames& axesNames="lon,tran,up") const {
+                                                 const std::map<std::string, std::string>& borders=null_borders,
+                                                 const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
         CalculationSpaceD<dim>* subspace = getSubspace(element, path, false);
-        subspace->setBorders( [&](const std::string& s){
+        subspace->setBorders( [&](const std::string& s) -> boost::optional<std::string> {
             auto b = borders.find(s);
             return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
         }, axesNames);
@@ -377,8 +379,8 @@ class Space2dCartesian: public CalculationSpaceD<2> {
 public:
 
     /**
-     * Set strategy for left border.
-     * @param newValue new strategy for left border
+     * Set strategy for the left border.
+     * @param newValue new strategy for lthe eft border
      */
     void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::BORDERS); }
 
@@ -389,8 +391,8 @@ public:
     const border::Strategy& getLeftBorder() { return leftright.getLo(); }
 
     /**
-     * Set strategy for right border.
-     * @param newValue new strategy for right border
+     * Set strategy for the right border.
+     * @param newValue new strategy for the right border
      */
     void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::BORDERS); }
 
@@ -401,8 +403,8 @@ public:
     const border::Strategy& getRightBorder() { return leftright.getHi(); }
 
     /**
-     * Set strategy for bottom border.
-     * @param newValue new strategy for bottom border
+     * Set strategy for the bottom border.
+     * @param newValue new strategy for the bottom border
      */
     void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::BORDERS); }
 
@@ -413,26 +415,37 @@ public:
     const border::Strategy& getBottomBorder() { return bottomup.getLo(); }
 
     /**
-     * Set strategy for up border.
-     * @param newValue new strategy for up border
+     * Set strategy for the top border.
+     * @param newValue new strategy for the top border
      */
-    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::BORDERS); }
+    void setTopBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::BORDERS); }
 
+    /**
+     * Get top border strategy.
+     * @return top border strategy
+     */
+    const border::Strategy& getTopBorder() { return bottomup.getHi(); }
+
+    /**
+     * Set strategies for both borders in specified direction
+     * \param direction direction of the borders
+     * \param border_lo new strategy for the border with lower coordinate
+     * \param border_hi new strategy for the border with higher coordinate
+     */
     void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
+    /**
+     * Set strategies for a border in specified direction
+     * \param direction direction of the borders
+     * \param higher indicates whether higher- or lower-coordinate border is to be set
+     * \param border_to_set new strategy for the border with higher coordinate
+     */
     void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
 
     const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
 
-    /**
-     * Get up border strategy.
-     * @return up border strategy
-     */
-    const border::Strategy& getUpBorder() { return bottomup.getHi(); }
-
     /// Set material on the positive side of the axis along the extrusion
     /// \param material material to set
-    //TODO fireChanged(?); ?
     void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; fireChanged(Event::BORDERS); }
 
     /// \return material on the positive side of the axis along the extrusion
@@ -440,7 +453,6 @@ public:
 
     /// Set material on the negative side of the axis along the extrusion
     /// \param material material to set
-    //TODO fireChanged(?); ?
     void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; fireChanged(Event::BORDERS); }
 
     /// \return material on the negative side of the axis along extrusion
@@ -460,7 +472,7 @@ public:
     virtual Space2dCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
 
     virtual Space2dCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
-                                          const std::map<std::string, std::string>& borders=std::map<std::string, std::string>(),
+                                          const std::map<std::string, std::string>& borders=null_borders,
                                           const AxisNames& axesNames=AxisNames()) const {
         return (Space2dCartesian*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
     }
@@ -536,7 +548,7 @@ public:
     virtual Space2dCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
 
     virtual Space2dCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
-                                            const std::map<std::string, std::string>& borders=std::map<std::string, std::string>(),
+                                            const std::map<std::string, std::string>& borders=null_borders,
                                             const AxisNames& axesNames=AxisNames()) const {
         return (Space2dCylindrical*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
     }

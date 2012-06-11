@@ -85,7 +85,7 @@ void Geometry_loadFromXMLString(GeometryManager& self, const std::string &inputX
 void Geometry_loadFromFile(GeometryManager& self, const std::string &filename, const shared_ptr<MaterialsDB>& DB) {
     py::object plask_module = py::import("plask");
     MaterialsDB* db = DB? DB.get() : &MaterialsDB::getDefault();
-    self.loadFromFile(filename, *DB);
+    self.loadFromFile(filename, *db);
 }
 
 shared_ptr<GeometryElement> Geometry_element(GeometryManager& self, const char* key) {

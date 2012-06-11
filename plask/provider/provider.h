@@ -154,7 +154,7 @@ struct Provider {
     std::set<Listener*> listeners;
 
     ///Call onDisconnect for all lighteners in listeners set.
-    ~Provider() {
+    virtual ~Provider() {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
             (*i)->onDisconnect(this);
     }
@@ -457,7 +457,7 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
      * @param params parameters for functor holded by valueGetter
      * @return value returned by functor holded by valueGetter
      */
-    _Res operator()(_ArgTypes&&... params) const {
+    virtual _Res operator()(_ArgTypes&&... params) const {
         return valueGetter(std::forward<_ArgTypes>(params)...);
     }
 };
