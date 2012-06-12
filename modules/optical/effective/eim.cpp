@@ -332,29 +332,68 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
     DataVector<double> results(dst_mesh.size());
     size_t idx = 0;
 
-    for (auto point: dst_mesh) {
-        double x = point.tran;
+    if (dynamic_cast<const RectilinearMesh2d*>(&dst_mesh)) { // We can use optimized algorithm
 
-        bool negate = false;
-        if (x < 0. && symmetry != NO_SYMMETRY) {
-            x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
+        const RectilinearMesh2d& rect_mesh = dynamic_cast<const RectilinearMesh2d&>(dst_mesh);
+
+        std::vector<dcomplex> valx(rect_mesh.tran().size());
+        std::vector<dcomplex> valy(rect_mesh.up().size());
+        size_t idx = 0, idy = 0;
+
+        for (auto x: rect_mesh.tran()) {
+            bool negate = false;
+            if (x < 0. && symmetry != NO_SYMMETRY) {
+                x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
+            }
+
+            size_t ix = mesh->tran().findIndex(x);
+            if (ix != 0) x -= mesh->tran()[ix-1];
+            else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
+            dcomplex phasx = exp(- I * betax[ix] * x);
+            dcomplex val = fieldX[ix][0] * phasx + fieldX[ix][1] / phasx;
+            if (negate) val = - val;
+            valx[idx++] = val;
         }
 
-        size_t ix = mesh->tran().findIndex(x);
-        if (ix != 0) x -= mesh->tran()[ix-1];
-        else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
-        dcomplex phasx = exp(- I * betax[ix] * x);
-        dcomplex val = fieldX[ix][0] * phasx + fieldX[ix][1] / phasx;
-        if (negate) val = - val;
+       for (auto y: rect_mesh.up()) {
+            size_t iy = mesh->up().findIndex(y);
+            y -= mesh->up()[max(int(iy)-1, 0)];
+            dcomplex phasy = exp(- I * betay[iy] * y);
+            valy[idy++] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
+       }
+
+        for (size_t i = 0; i != rect_mesh.size(); ++i) {
+            dcomplex f = valx[rect_mesh.index0(i)] * valy[rect_mesh.index1(i)];
+            results[i] = real(f * conj(f));
+        }
+
+    } else {
+
+        for (auto point: dst_mesh) {
+            double x = point.tran;
+
+            bool negate = false;
+            if (x < 0. && symmetry != NO_SYMMETRY) {
+                x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
+            }
+
+            size_t ix = mesh->tran().findIndex(x);
+            if (ix != 0) x -= mesh->tran()[ix-1];
+            else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
+            dcomplex phasx = exp(- I * betax[ix] * x);
+            dcomplex val = fieldX[ix][0] * phasx + fieldX[ix][1] / phasx;
+            if (negate) val = - val;
 
 
-        double y = point.up;
-        size_t iy = mesh->up().findIndex(y);
-        y -= mesh->up()[max(int(iy)-1, 0)];
-        dcomplex phasy = exp(- I * betay[iy] * y);
-        val *= fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
+            double y = point.up;
+            size_t iy = mesh->up().findIndex(y);
+            y -= mesh->up()[max(int(iy)-1, 0)];
+            dcomplex phasy = exp(- I * betay[iy] * y);
+            val *= fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
 
-        results[idx++] = real(val*conj(val));
+            results[idx++] = real(val*conj(val));
+        }
+
     }
 
     return results;

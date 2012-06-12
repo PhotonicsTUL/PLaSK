@@ -83,8 +83,8 @@ static inline bool plask_import_array() {
 
 
 void RectilinearMesh2d__setOrdering(RectilinearMesh2d& self, std::string order) {
-    if (order == "01") self.setIterationOrder(RectilinearMesh2d::NORMAL_ORDER);
-    else if (order == "10") self.setIterationOrder(RectilinearMesh2d::TRANSPOSED_ORDER);
+    if (order == "10") self.setIterationOrder(RectilinearMesh2d::NORMAL_ORDER);
+    else if (order == "01") self.setIterationOrder(RectilinearMesh2d::TRANSPOSED_ORDER);
     else {
         throw ValueError("order must be either '01' or '10'");
     }
@@ -191,12 +191,12 @@ void register_mesh_rectilinear()
         "Rectilinear2D(ordering='01')\n    create empty mesh\n\n"
         "Rectilinear2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
         "Rectilinear2D(geometry, ordering='01')\n    create coarse mesh based on bounding boxes of geometry elements\n\n"
-        "ordering can be either '01', '10' and specifies initial ordering of the mesh points",
+        "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
         py::no_init
         )
-        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__empty, py::default_call_policies(), (py::arg("ordering")="01")))
-        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__axes, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
-        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__empty, py::default_call_policies(), (py::arg("ordering")="10")))
+        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__axes, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="10")))
+        .def("__init__", py::make_constructor(&RectilinearMesh2d__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="10")))
         .add_property("axis0", &RectilinearMesh2d_axis0, py::make_setter(&RectilinearMesh2d::c0),
                       "List of points along the first (transverse) axis of the mesh")
         .add_property("axis1", &RectilinearMesh2d_axis1, py::make_setter(&RectilinearMesh2d::c1),

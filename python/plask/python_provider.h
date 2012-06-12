@@ -11,13 +11,25 @@ namespace plask { namespace python {
 template <typename T, int dim>
 struct DataVectorWrap : public DataVector<T> {
     shared_ptr<Mesh<dim>> mesh;
-    DataVectorWrap(const DataVector<T>& src, const shared_ptr<Mesh<dim>>& mesh) : DataVector<T>(src), mesh(mesh) {}
+    bool mesh_changed;
+
+    DataVectorWrap(const DataVector<T>& src, const shared_ptr<Mesh<dim>>& mesh) : DataVector<T>(src), mesh(mesh), mesh_changed(false) {
+        mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+    }
+
     DataVectorWrap(const DataVector<T>& src) : DataVector<T>(src) {}
+
     DataVectorWrap() = default;
-    DataVectorWrap(const DataVectorWrap<T,dim>& src) = default;
+    DataVectorWrap(const DataVectorWrap<T,dim>& src) : DataVector<T>(src), mesh(src.mesh), mesh_changed(src.mesh_changed) {
+        if (mesh) mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+    }
+
+    ~DataVectorWrap() {
+        mesh->changedDisconnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+    };
+
+    void onMeshChanged(const typename Mesh<dim>::Event& event) { mesh_changed = true; }
 };
-
-
 
 
 namespace detail {

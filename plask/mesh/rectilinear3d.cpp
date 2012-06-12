@@ -4,16 +4,16 @@ namespace plask {
 
 #define DECLARE_ITERATION_ORDER(first, second, third) \
     static std::size_t index_##first##second##third(const RectilinearMesh3d* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index) { \
-        return c##first##_index + mesh->c##first.size() * (c##second##_index + mesh->c##second.size() * c##third##_index); \
+        return c##third##_index + mesh->c##third.size() * (c##second##_index + mesh->c##second.size() * c##first##_index); \
     } \
     static std::size_t index##first##_##first##second##third(const RectilinearMesh3d* mesh, std::size_t mesh_index) { \
-        return mesh_index % mesh->c##first.size(); \
+        return mesh_index / mesh->c##third.size() / mesh->c##second.size(); \
     } \
     static std::size_t index##second##_##first##second##third(const RectilinearMesh3d* mesh, std::size_t mesh_index) { \
-        return (mesh_index / mesh->c##first.size()) % mesh->c##second.size(); \
+        return (mesh_index / mesh->c##third.size()) % mesh->c##second.size(); \
     } \
     static std::size_t index##third##_##first##second##third(const RectilinearMesh3d* mesh, std::size_t mesh_index) { \
-        return mesh_index / mesh->c##first.size() / mesh->c##second.size(); \
+        return mesh_index % mesh->c##third.size(); \
     }
 
 DECLARE_ITERATION_ORDER(0,1,2)
@@ -52,7 +52,7 @@ RectilinearMesh3d::IterationOrder RectilinearMesh3d::getIterationOrder() const {
 
 void RectilinearMesh3d::setOptimalIterationOrder() {
 #   define DETERMINE_ITERATION_ORDER(first, second, third) \
-        if (c##first.size() <= c##second.size() && c##second.size() <= c##third.size()) { setIterationOrder(ORDER_##first##second##third); return; }
+        if (c##third.size() <= c##second.size() && c##second.size() <= c##first.size()) { setIterationOrder(ORDER_##first##second##third); return; }
     DETERMINE_ITERATION_ORDER(0,1,2)
     DETERMINE_ITERATION_ORDER(0,2,1)
     DETERMINE_ITERATION_ORDER(1,0,2)

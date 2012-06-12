@@ -21,10 +21,10 @@ class Meshes(unittest.TestCase):
 
         self.assertEqual( [list(i) for i in m], [[1,10], [2,10], [3,10], [1,20], [2,20], [3,20]] )
 
-        m.setOrdering("10")
+        m.setOrdering("01")
         self.assertEqual( [list(i) for i in m], [[1,10], [1,20], [2,10], [2,20], [3,10], [3,20]] )
 
-        m.setOrdering("01")
+        m.setOrdering("10")
         self.assertEqual( [list(i) for i in m], [[1,10], [2,10], [3,10], [1,20], [2,20], [3,20]] )
 
         m.setOptimalOrdering()
@@ -39,7 +39,7 @@ class Meshes(unittest.TestCase):
     def testOrdering3D(self):
         m = self.mesh3
 
-        m.setOrdering('102')
+        m.setOrdering('201')
         self.assertEqual( [list(i) for i in m], [[1,10,100], [1,20,100], [2,10,100], [2,20,100], [3,10,100], [3,20,100],
                                                  [1,10,200], [1,20,200], [2,10,200], [2,20,200], [3,10,200], [3,20,200]] )
 
@@ -50,6 +50,6 @@ class Meshes(unittest.TestCase):
             self.assertEqual( m.index(i0, i1, i2), i )
 
         m.setOptimalOrdering()
-        self.assertEqual( [list(i) for i in m], [[1,10,100], [1,20,100], [1,10,200], [1,20,200],
-                                                [2,10,100], [2,20,100], [2,10,200], [2,20,200],
-                                                [3,10,100], [3,20,100], [3,10,200], [3,20,200]] )
+        self.assertEqual( [list(i) for i in m], [[1,10,100], [1,10,200], [1,20,100], [1,20,200],
+                                                [2,10,100], [2,10,200], [2,20,100], [2,20,200],
+                                                [3,10,100], [3,10,200], [3,20,100], [3,20,200]] )

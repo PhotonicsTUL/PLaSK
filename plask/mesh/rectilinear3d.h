@@ -51,7 +51,7 @@ class RectilinearMesh3d: public Mesh<3> {
     enum IterationOrder { ORDER_012, ORDER_021, ORDER_102, ORDER_120, ORDER_201, ORDER_210 };
 
     /// Construct an empty mesh
-    RectilinearMesh3d(IterationOrder iterationOrder=ORDER_012) {
+    RectilinearMesh3d(IterationOrder iterationOrder=ORDER_210) {
         setIterationOrder(iterationOrder);
     }
 
