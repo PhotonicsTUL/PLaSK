@@ -43,12 +43,12 @@ namespace plask {
 
 namespace plask {
 /**
- * Template for base class of object holder. It allow to hold polimorhic class inside one type.
+ * Template for base class of object holder. It allow to hold polymorphic class inside one type.
  *
  * Typically, subclasses adds some delegates methods to hold object.
- * Holded object is store by pointer, so it can store class dirived from T.
+ * Hold object is stored by pointer, so it can store class derived from T.
  * Stored object is deleted in destructor.
- * Holder has all asign and copy constructors which use stored object clone() method.
+ * Holder has all assign and copy constructors which use stored object clone() method.
  * @tparam T type of class to hold, must have clone() method which make a copy of object
  */
 template <typename T>

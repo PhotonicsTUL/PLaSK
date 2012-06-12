@@ -20,7 +20,7 @@ struct RootDigger {
     // Module method computing the value to zero
     function_type val_function;
 
-    // Value logger
+    // Value writelog
     Data2dLog<dcomplex,double>& log_value;
 
     // Parameters for Broyden algorithm

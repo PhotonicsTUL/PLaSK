@@ -15,6 +15,7 @@ namespace plask {
 
 // size_t is preferred for array indexing
 using std::size_t;
+using std::ptrdiff_t;
 
 // Complex numbers library
 #ifdef PLASK_MATH_STD

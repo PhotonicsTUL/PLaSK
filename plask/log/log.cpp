@@ -16,7 +16,7 @@ static std::string logLevelHead(LogLevel level) {
     return "";
 }
 
-void logger(LogLevel level, const std::string& msg) {
+void writelog(LogLevel level, const std::string& msg) {
     std::cerr << logLevelHead(level) << ": " <<  msg << "\033[0m\n";
 }
 

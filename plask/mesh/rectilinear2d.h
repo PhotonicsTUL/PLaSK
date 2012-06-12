@@ -274,7 +274,7 @@ class RectilinearMesh2d: public Mesh<2> {
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
 
 private:
-    
+
     void buildFromGeometry(const GeometryElementD<2>& geometry);
 
     // Common code for: left, right, bottom, top boundries:
@@ -307,7 +307,7 @@ private:
             }
 
         };
-        
+
         virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
         bool includes(const RectilinearMesh2d &mesh, std::size_t mesh_index) const {
@@ -337,7 +337,7 @@ private:
             }
 
         };
-        
+
         virtual RightBoundary* clone() const { return new RightBoundary(); }
 
         bool includes(const RectilinearMesh2d &mesh, std::size_t mesh_index) const {
@@ -367,7 +367,7 @@ private:
             }
 
         };
-        
+
         virtual TopBoundary* clone() const { return new TopBoundary(); }
 
         bool includes(const RectilinearMesh2d &mesh, std::size_t mesh_index) const {
@@ -396,7 +396,7 @@ private:
             }
 
         };
-        
+
         virtual BottomBoundary* clone() const { return new BottomBoundary(); }
 
         bool includes(const RectilinearMesh2d &mesh, std::size_t mesh_index) const {
@@ -415,16 +415,16 @@ private:
 
 public:
     // boundaries:
-    
+
     template <typename Predicate>
     static Boundary<RectilinearMesh2d> getBoundary(Predicate predicate) {
         return Boundary<RectilinearMesh2d>(new PredicateBoundary<RectilinearMesh2d, Predicate>(predicate));
     }
-    
+
     static Boundary<RectilinearMesh2d> getLeftBoundary() {
         return Boundary<RectilinearMesh2d>(new LeftBoundary());
     }
-    
+
     static Boundary<RectilinearMesh2d> getRightBoundary() {
         return Boundary<RectilinearMesh2d>(new RightBoundary());
     }
@@ -432,7 +432,7 @@ public:
     static Boundary<RectilinearMesh2d> getTopBoundary() {
         return Boundary<RectilinearMesh2d>(new TopBoundary());
     }
-    
+
     static Boundary<RectilinearMesh2d> getBottomBoundary() {
         return Boundary<RectilinearMesh2d>(new BottomBoundary());
     }

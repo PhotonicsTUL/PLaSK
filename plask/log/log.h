@@ -20,7 +20,7 @@ enum LogLevel {
 };
 
 
-void logger(LogLevel level, const std::string& msg);
+void writelog(LogLevel level, const std::string& msg);
 
 /**
  * Log a message
@@ -29,8 +29,8 @@ void logger(LogLevel level, const std::string& msg);
  * \param params parameters passed to format
  **/
 template<typename ...Args>
-inline void logger(LogLevel level, const std::string& msg, Args&&... params) {
-    logger(level, format(msg, std::forward<Args>(params)...));
+inline void writelog(LogLevel level, const std::string& msg, Args&&... params) {
+    writelog(level, format(msg, std::forward<Args>(params)...));
 }
 
 }   // namespace plask

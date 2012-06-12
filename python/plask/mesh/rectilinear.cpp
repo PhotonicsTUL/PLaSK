@@ -117,12 +117,12 @@ Vec<2,double> RectilinearMesh2d__getitem__(const RectilinearMesh2d& self, py::ob
     }
     int index0 = py::extract<int>(index[0]);
     if (index0 < 0) index0 = self.c0.size() - index0;
-    if (index0 < 0 || index0 >= self.c0.size()) {
+    if (index0 < 0 || index0 >= int(self.c0.size())) {
         throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.c0.size());
     }
     int index1 = py::extract<int>(index[1]);
     if (index1 < 0) index1 = self.c1.size() - index1;
-    if (index1 < 0 || index1 >= self.c1.size()) {
+    if (index1 < 0 || index1 >= int(self.c1.size())) {
         throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.c1.size());
     }
     return self(index0, index1);
@@ -149,17 +149,17 @@ Vec<3,double> RectilinearMesh3d__getitem__(const RectilinearMesh3d& self, py::ob
     }
     int index0 = py::extract<int>(index[0]);
     if (index0 < 0) index0 = self.c0.size() - index0;
-    if (index0 < 0 || index0 >= self.c0.size()) {
+    if (index0 < 0 || index0 >= int(self.c0.size())) {
         throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.c0.size());
     }
     int index1 = py::extract<int>(index[1]);
     if (index1 < 0) index1 = self.c1.size() - index1;
-    if (index1 < 0 || index1 >= self.c1.size()) {
+    if (index1 < 0 || index1 >= int(self.c1.size())) {
         throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.c1.size());
     }
     int index2 = py::extract<int>(index[2]);
     if (index2 < 0) index2 = self.c2.size() - index2;
-    if (index2 < 0 || index2 >= self.c2.size()) {
+    if (index2 < 0 || index2 >= int(self.c2.size())) {
         throw IndexError("third mesh index (%1%) out of range (0<=index<%2%)", index2, self.c2.size());
     }
     return self(index0, index1, index2);

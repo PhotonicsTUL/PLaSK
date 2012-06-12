@@ -271,7 +271,7 @@ class StrategyPairHolder {
 
     void setOrder(const StrategyType& strategy_lo, const StrategyType& strategy_hi) {
         if ((strategy_lo.type() == Strategy::PERIODIC || strategy_hi.type() == Strategy::PERIODIC) && (strategy_lo.type() != strategy_hi.type()))
-            logger(LOG_WARNING, "Periodic and non-periodic borders strategies used on opposite sides of one direction.");
+            writelog(LOG_WARNING, "Periodic and non-periodic borders strategies used on opposite sides of one direction.");
         //strategy_lo.ensureCanCoexists(strategy_hi);
         if (strategy_lo.canMoveOutsideBoundingBox()) {
             if (strategy_hi.canMoveOutsideBoundingBox())

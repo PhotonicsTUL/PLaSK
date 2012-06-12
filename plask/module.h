@@ -126,7 +126,7 @@ class Module {
      */
     bool initCalculation() {
         if (initialized) return false;
-        logger(LOG_INFO, "Initializing module");
+        writelog(LOG_INFO, "Initializing module");
         onInitialize();
         initialized = true;
         return true;
@@ -165,7 +165,7 @@ class Module {
     void invalidate() {
         if (initialized) {
             initialized = false;
-            logger(LOG_INFO, "Invalidating module");
+            writelog(LOG_INFO, "Invalidating module");
             onInvalidate();
         }
     }
@@ -207,7 +207,7 @@ class Module {
     * \param params parameters passed to format
     **/
     template<typename ...Args>
-    void logger(LogLevel level, std::string msg, Args&&... params) { plask::logger(level, getId() + ": " + msg, std::forward<Args>(params)...); }
+    void writelog(LogLevel level, std::string msg, Args&&... params) { plask::writelog(level, getId() + ": " + msg, std::forward<Args>(params)...); }
 
 };
 
@@ -259,7 +259,7 @@ class ModuleOver: public Module {
      */
     void setGeometry(const shared_ptr<SpaceT>& geometry) {
         if (geometry == this->geometry) return;
-        logger(LOG_INFO, "Attaching geometry to the module");
+        writelog(LOG_INFO, "Attaching geometry to the module");
         diconnectGeometry();
         this->geometry = geometry;
         if (this->geometry)
@@ -316,7 +316,7 @@ class ModuleWithMesh: public ModuleOver<SpaceT> {
      */
     void setMesh(const shared_ptr<MeshT>& mesh) {
         if (mesh == this->mesh) return;
-        this->logger(LOG_INFO, "Attaching mesh to the module");
+        this->writelog(LOG_INFO, "Attaching mesh to the module");
         diconnectMesh();
         this->mesh = mesh;
         if (this->mesh)

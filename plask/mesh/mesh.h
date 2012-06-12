@@ -291,27 +291,27 @@ inline typename Mesh<dim>::Iterator makeMeshIterator(IteratorType iter) {
 
 
 /**
-Template which instantiation is a class inherited from plask::Mesh (it is a Mesh implementation).
-
-It helds an @a internal mesh (of type InternalMeshType) and uses it to implement plask::Mesh methods.
-All constructors and -> calls are delegated to the @a internal mesh.
-
-Example usage:
-@code
-// Create 3D mesh which uses std::vector of 3d points as internal representation:
-plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, 3 > mesh;
-// Append two points to vector:
-mesh.internal.push_back(plask::vec(1.0, 1.2, 3.0));
-mesh->push_back(plask::vec(3.0, 4.0, 0.0)); // mesh-> is a shortcut to mesh.internal.
-// Now, mesh contains two points:
-assert(mesh.size() == 2);
-@endcode
-
-@tparam InternalMeshType Internal mesh type.
-It must:
-- allow for iterate (has begin() and end() methods) over Vec<dim, double>,
-- has size() method which return number of points in mesh.
-*/
+ *  Template which instantiation is a class inherited from plask::Mesh (it is a Mesh implementation).
+ *
+ *  It helds an @a internal mesh (of type InternalMeshType) and uses it to implement plask::Mesh methods.
+ *  All constructors and -> calls are delegated to the @a internal mesh.
+ *
+ *  Example usage:
+ *  @code
+ *  // Create 3D mesh which uses std::vector of 3d points as internal representation:
+ *  plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, 3 > mesh;
+ *  // Append two points to vector:
+ *  mesh.internal.push_back(plask::vec(1.0, 1.2, 3.0));
+ *  mesh->push_back(plask::vec(3.0, 4.0, 0.0)); // mesh-> is a shortcut to mesh.internal.
+ *  // Now, mesh contains two points:
+ *  assert(mesh.size() == 2);
+ *  @endcode
+ *
+ *  @tparam InternalMeshType Internal mesh type.
+ *  It must:
+ *  - allow for iterate (has begin() and end() methods) over Vec<dim, double>,
+ *  - has size() method which return number of points in mesh.
+ */
 template <typename InternalMeshType, int dim>
 struct SimpleMeshAdapter: public Mesh<dim> {
 

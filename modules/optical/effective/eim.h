@@ -83,7 +83,7 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
      * Set the simple mesh based on the geometry bounding boxes.
      **/
     void setSimpleMesh() {
-        logger(LOG_INFO, "Creating simple mesh");
+        writelog(LOG_INFO, "Creating simple mesh");
         if (!geometry) throw NoChildException();
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
@@ -96,7 +96,7 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
      * \param meshx horizontal mesh
      **/
     void setHorizontalMesh(const RectilinearMesh1d& meshx) {
-        logger(LOG_INFO, "Setting horizontal mesh");
+        writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
         auto child = geometry->getChild();
         if (!child) throw NoChildException();

@@ -45,7 +45,6 @@ py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std::ptrdi
     if (from < 0) from = 0;
     if (std::size_t(to) > self.size()) to = self.size();
 
-    // TODO return array
     std::vector<npy_intp> dims = get_dims<T>(to-from);
     PyObject* arr = PyArray_SimpleNew(dims.size(), &dims.front(), get_typenum<T>());
     T* arr_data = (T*)PyArray_DATA(arr);
