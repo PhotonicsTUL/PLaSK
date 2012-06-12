@@ -160,7 +160,7 @@ class Module {
      * This method should be and is called if something important was changed: calculation space, mesh, etc.
      *
      * Default implementation set initialization flag to @c false and can call onInvalidate() if initialization flag was @c true.
-     * @see beforeCalculation()
+     * @see onInitialize()
      */
     void invalidate() {
         if (initialized) {

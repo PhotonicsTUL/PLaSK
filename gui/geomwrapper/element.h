@@ -61,7 +61,7 @@ struct ElementWrapper {
         const plask::GeometryElement::Event* delegatedEvent;
 
         plask::shared_ptr<plask::GeometryElement> wrappedElement() {
-            this->source().wrappedElement;
+            return this->source().wrappedElement;
         }
 
         /**

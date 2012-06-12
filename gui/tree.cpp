@@ -19,10 +19,10 @@ void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::
     //TODO reverse support
     std::size_t chCount = elem->getRealChildrenCount();
     if (elem->isContainer()) {
-        for (int i = 0; i < chCount; ++i)
+        for (std::size_t i = 0; i < chCount; ++i)
             childItems.emplace_back(new InContainerTreeItem(this, ext(elem->getRealChildAt(i)), i));
     } else {
-        for (int i = 0; i < chCount; ++i)   //should be 0 or 1 child here
+        for (std::size_t i = 0; i < chCount; ++i)   //should be 0 or 1 child here
             childItems.emplace_back(new GeometryTreeItem(this, ext(elem->getRealChildAt(i)), i));
     }
 }
@@ -68,7 +68,7 @@ GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::sh
 
 GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model)
 : model(model), childrenInitialized(true), miniatureInitialized(true), parentItem(0)/*, inParentIndex(0)*/ {
-    for (int i = 0; i < rootElements.size(); ++i)
+    for (std::size_t i = 0; i < rootElements.size(); ++i)
         childItems.emplace_back(new GeometryTreeItem(this, ext(rootElements[i]), i));
 }
 
