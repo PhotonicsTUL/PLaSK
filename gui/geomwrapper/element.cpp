@@ -17,6 +17,7 @@ void ElementWrapper::draw(QPainter& painter) const {
     if (toDraw.isLeaf()) {
         auto bb = toQt(static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox());
         painter.fillRect(bb, QColor(150, 100, 100));
+        //painter.setPen(QPen(QColor(0,0,0), 0.0));
         painter.drawRect(bb);
     } else {
         for (std::size_t i = 0; i < toDraw.getChildrenCount(); ++i)

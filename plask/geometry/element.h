@@ -208,15 +208,27 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     struct ReplaceChanger: public Changer {
 
         shared_ptr<const GeometryElement> from, to;
+
+        /// Translation to return by apply.
         Vec<3, double> translation;
 
+        /// Construct uninitilized changer.
         ReplaceChanger() {}
 
+        /**
+         * Construct changer which change @p from to @p to and return given @p translation.
+         * @param from, to, translation changer parameters
+         */
         ReplaceChanger(const shared_ptr<const GeometryElement>& from, const shared_ptr<const GeometryElement>& to, Vec<3, double> translation)
             : from(from), to(to), translation(translation) {}
 
+        /**
+         * Construct changer which change @p from to calc_replace(to) and return zeroed translation.
+         * @param from element which should be changed
+         * @param functor which is used to calculate change destination element
+         */
         template <typename F>
-        ReplaceChanger(const shared_ptr<const GeometryElement>& from, F calc_replace): from(from) {
+        ReplaceChanger(const shared_ptr<const GeometryElement>& from, F calc_replace): from(from), translation(0.0, 0.0, 0.0) {
             this->to = calc_replace(this->from);
         }
 

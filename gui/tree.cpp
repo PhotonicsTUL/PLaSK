@@ -207,6 +207,10 @@ QModelIndex GeometryTreeModel::index(int row, int column, const QModelIndex &par
                 rootItem;
 
     GeometryTreeItem *childItem = parentItem->child(row);
+
+    if (childItem)
+        return createIndex(row, column, childItem);
+
     return childItem ?
         createIndex(row, column, childItem) :
         QModelIndex();

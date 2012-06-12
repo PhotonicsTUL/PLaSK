@@ -47,6 +47,7 @@
 #include <QtTreePropertyBrowser>
 #include <QItemSelection>
 #include "document.h"
+#include "view/elementview.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -66,7 +67,7 @@ public:
     MainWindow();
 
 private slots:
-    void newDocument();
+    void newDocument() {}
     void open();
     void save();
     void print();
@@ -84,8 +85,7 @@ private:
     void createStatusBar();
     void createDockWindows();
 
-    QGraphicsView *view;
-    QGraphicsScene *scene;
+    ElementViewer *view;
 
     QTreeView *treeView;
     QtTreePropertyBrowser *propertyTree;

@@ -9,10 +9,8 @@
 MainWindow::MainWindow()
     : propertyTree(new QtTreePropertyBrowser(this)), document(*propertyTree)
 {
-    scene = new QGraphicsScene;
-    view = new QGraphicsView;
-    view->setScene(scene);
-
+    view = new ElementViewer(this);
+    view->setModel(&document.treeModel);
     setCentralWidget(view);
 
     createActions();
@@ -23,12 +21,7 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("PLaSK GUI"));
 
-    newDocument();
     setUnifiedTitleAndToolBarOnMac(true);
-}
-
-void MainWindow::newDocument()
-{
 }
 
 void MainWindow::print()
@@ -51,11 +44,13 @@ void MainWindow::open() {
     QString loadName = QFileDialog::getOpenFileName(this, tr("Choose name of experiment file to open"), ".", tr("XPML (*.xpml *.xpl)"));
     if (loadName.isEmpty()) return;
     document.open(loadName);
-    view->setTransform(flipVertical);
+    view->setRootIndex(document.treeModel.index(0, 0));
+
+    /*view->setTransform(flipVertical);
     view->scale(10.0, 10.0);
     scene->addItem(new GeometryElementItem(document.manager.getRootElement<plask::GeometryElementD<2>>(0)));
     scene->addLine(-10.0, 0.0, 10.0, 0.0, QPen(Qt::red));
-    scene->addLine(0.0, -10.0, 0.0, 10.0, QPen(Qt::red));
+    scene->addLine(0.0, -10.0, 0.0, 10.0, QPen(Qt::red));*/
 }
 
 
