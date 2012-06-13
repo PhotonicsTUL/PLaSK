@@ -9,6 +9,8 @@
 
 #include "elementview.h"
 
+#include "../modelext/converter.h"
+
 ElementViewer::ElementViewer(QWidget *parent)
     : QAbstractItemView(parent), model_center(0.0, 0.0), zoom(10.0, 10.0)
 {
@@ -16,8 +18,6 @@ ElementViewer::ElementViewer(QWidget *parent)
     verticalScrollBar()->setRange(0, 0);
 
     margin = 8;
-    validItems = 0;
-    totalValue = 0.0;
     rubberBand = 0;
 }
 
@@ -25,7 +25,8 @@ void ElementViewer::dataChanged(const QModelIndex &topLeft,
                           const QModelIndex &bottomRight)
 {
     QAbstractItemView::dataChanged(topLeft, bottomRight);
-    viewport()->update();
+    updateGeometries(); //bounding-box could be changed
+    viewport()->update();   //redraw
 }
 
 bool ElementViewer::edit(const QModelIndex &index, EditTrigger trigger, QEvent *event)
@@ -263,13 +264,30 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
     if (!el) return;
 
     QPainter painter(viewport());
-    painter.setRenderHint(QPainter::Antialiasing);
+    //painter.setRenderHint(QPainter::Antialiasing);
     QStyleOptionViewItem option = viewOptions();
     painter.fillRect(event->rect(), option.palette.base());
 
     painter.save();
     painter.setTransform(getTransformMatrix());
     el->draw(painter);
+
+    for (QModelIndex current: selectionModel()->selectedIndexes()) {
+       // QItemSelectionModel *selections = ;
+       // QModelIndex current = selectionModel()->getcurrentIndex();
+        if (current.isValid() && current.parent() == rootIndex()) {
+            GeometryTreeItem* i = model()->toItem(current);
+            plask::shared_ptr<plask::GeometryElement> e = i->element->wrappedElement;
+            if (e->getDimensionsCount() == 2) {
+                plask::Box2d b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
+                auto r = toQt(b);
+                painter.fillRect(r, QColor(40, 10, 100, 60));
+                painter.setPen(QPen(QColor(60, 20, 150, 170), 0.3, Qt::DashLine));
+                painter.drawRect(r);
+            }
+        }
+    }
+
     painter.restore();
 
     /*QItemSelectionModel *selections = selectionModel();
@@ -482,9 +500,9 @@ void ElementViewer::updateGeometries()
     //viewport()->resize(s.c0 * zoom.x(), s.c1 * zoom.y());
 
     horizontalScrollBar()->setPageStep(viewport()->width());
-    horizontalScrollBar()->setRange(0, qMax(0.0, 2*margin + s.c0 * zoom.x() - viewport()->width()));
+    horizontalScrollBar()->setRange(0, qMax(0, int( 2* margin + s.c0 * zoom.x() - viewport()->width()) ));
     verticalScrollBar()->setPageStep(viewport()->height());
-    verticalScrollBar()->setRange(0, qMax(0.0, 2*margin + s.c1 * zoom.y() - viewport()->height()));
+    verticalScrollBar()->setRange(0, qMax(0, int( 2* margin + s.c1 * zoom.y() - viewport()->height()) ));
 
    /*horizontalScrollBar()->setPageStep(viewport()->width());
     horizontalScrollBar()->setRange(0, qMax(0, 2*totalSize - viewport()->width()));
@@ -497,8 +515,8 @@ QTransform ElementViewer::getTransformMatrix() {
 
     return QTransform(zoom.x(), 0.0,
                       0.0, -zoom.y(),
-                      -bb.lower.c0 * zoom.x() + margin - horizontalScrollBar()->value(),
-                      viewport()->height() + bb.lower.c1 * zoom.y() - margin - verticalScrollBar()->value());
+                      margin - bb.lower.c0 * zoom.x() - horizontalScrollBar()->value(),
+                      margin + bb.upper.c1 * zoom.y() - verticalScrollBar()->value());
 }
 
 

@@ -86,7 +86,6 @@ private:
     void createDockWindows();
 
     ElementViewer *view;
-
     QTreeView *treeView;
     QtTreePropertyBrowser *propertyTree;
 
@@ -98,6 +97,7 @@ private:
     QMenu *helpMenu;
     QToolBar *fileToolBar;
     QToolBar *editToolBar;
+    QToolBar *viewToolBar;
     QAction *newDocumentAct;
     QAction *openAct;
     QAction *saveAct;
@@ -109,6 +109,9 @@ private:
 
     QAction *treeRemoveAct;
     QAction *treeAddBlockAct;
+
+    QAction *zoomInAct;
+    QAction *zoomOutAct;
 };
 
 #endif  // PLASK_GUI_MAINWINDOW_H

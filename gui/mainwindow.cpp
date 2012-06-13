@@ -11,6 +11,7 @@ MainWindow::MainWindow()
 {
     view = new ElementViewer(this);
     view->setModel(&document.treeModel);
+
     setCentralWidget(view);
 
     createActions();
@@ -18,6 +19,9 @@ MainWindow::MainWindow()
     createToolBars();
     createStatusBar();
     createDockWindows();
+
+    view->setSelectionModel(treeView->selectionModel());
+    //treeView->setSelectionModel(selectionModel);
 
     setWindowTitle(tr("PLaSK GUI"));
 
@@ -114,27 +118,27 @@ void MainWindow::treeAddBlock2d() {
 
 void MainWindow::createActions()
 {
-    newDocumentAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
+    newDocumentAct = new QAction(QIcon::fromTheme("document-new"), tr("&New"), this);
     newDocumentAct->setShortcuts(QKeySequence::New);
     newDocumentAct->setStatusTip(tr("Create a new document"));
     connect(newDocumentAct, SIGNAL(triggered()), this, SLOT(newDocument()));
 
-    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
+    openAct = new QAction(QIcon::fromTheme("document-open"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open experiment file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save..."), this);
+    saveAct = new QAction(QIcon::fromTheme("document-save"), tr("&Save..."), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the current form letter"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-    printAct = new QAction(QIcon(":/images/print.png"), tr("&Print..."), this);
+    printAct = new QAction(QIcon::fromTheme("document-print"), tr("&Print..."), this);
     printAct->setShortcuts(QKeySequence::Print);
     printAct->setStatusTip(tr("Print the current form letter"));
     connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
 
-    undoAct = new QAction(QIcon(":/images/undo.png"), tr("&Undo"), this);
+    undoAct = new QAction(QIcon::fromTheme("edit-undo"), tr("&Undo"), this);
     undoAct->setShortcuts(QKeySequence::Undo);
     undoAct->setStatusTip(tr("Undo the last editing action"));
     connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
@@ -158,6 +162,14 @@ void MainWindow::createActions()
 
     treeAddBlockAct = new QAction(tr("Add &Block2d"), this);
     connect(treeAddBlockAct, SIGNAL(triggered()), this, SLOT(treeAddBlock2d()));
+
+    zoomInAct = new QAction(QIcon::fromTheme("zoom-in"), tr("Zoom &in"), this);
+    zoomInAct->setToolTip(tr("Increase view zoom"));
+    connect(zoomInAct, SIGNAL(triggered()), view, SLOT(zoomIn()));
+
+    zoomOutAct = new QAction(QIcon::fromTheme("zoom-out"), tr("Zoom &out"), this);
+    zoomOutAct->setToolTip(tr("Decrease view zoom"));
+    connect(zoomOutAct, SIGNAL(triggered()), view, SLOT(zoomOut()));
 }
 
 void MainWindow::createMenus()
@@ -192,6 +204,10 @@ void MainWindow::createToolBars()
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(undoAct);
+
+    viewToolBar = addToolBar(tr("View"));
+    viewToolBar->addAction(zoomInAct);
+    viewToolBar->addAction(zoomOutAct);
 }
 
 void MainWindow::createStatusBar()

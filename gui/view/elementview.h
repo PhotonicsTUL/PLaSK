@@ -80,9 +80,6 @@ private:
     void updateGeometries();
 
     int margin;
-    int pieSize;
-    int validItems;
-    double totalValue;
     QPoint origin;
     QRubberBand *rubberBand;
 
@@ -91,9 +88,23 @@ private:
 
     QTransform getTransformMatrix();
 
-    void updateViewSize() {
-        plask::Vec<2, double> s = getBoundingBox().size();
-        viewport()->resize(s.c0 * zoom.x(), s.c1 * zoom.y());
+public slots:
+    void zoomIn() {
+        if (zoom.x() < 1000.0 && zoom.y() < 1000.0) {
+            zoom.rx() *= 1.2;
+            zoom.ry() *= 1.2;
+            updateGeometries();
+            viewport()->update();
+        }
+    }
+
+    void zoomOut() {
+        if (zoom.x() > 0.001 && zoom.y() > 0.001) {
+            zoom.rx() /= 1.2;
+            zoom.ry() /= 1.2;
+            updateGeometries();
+            viewport()->update();
+        }
     }
 };
 
