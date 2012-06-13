@@ -33,6 +33,7 @@ material.importLibrary = importLibrary
 del importLibrary
 
 material.importLibrary("plask_materialsdefault")
+material.Air = material.air
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''

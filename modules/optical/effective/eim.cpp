@@ -293,14 +293,14 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
     for (size_t i = 0; i < Nx; ++i) {
         betax[i] = k0 * sqrt(stripeNeffs[i]*stripeNeffs[i] - neff*neff);
     }
-    auto fresnelX = [&](size_t i) -> Matrix2cd {
-        dcomplex f =  (polarization==TE)? stripeNeffs[i]/stripeNeffs[i+1] :  1.;
-        dcomplex n = 0.5 * betax[i+1]/betax[i] * f*f;
-        Matrix2cd M; M << (0.5+n), (0.5-n),
-                          (0.5-n), (0.5+n);
-        return M;
-    };
     if (!have_fields) {
+        auto fresnelX = [&](size_t i) -> Matrix2cd {
+            dcomplex f =  (polarization==TE)? stripeNeffs[i]/stripeNeffs[i+1] :  1.;
+            dcomplex n = 0.5 * betax[i+1]/betax[i] * f*f;
+            Matrix2cd M; M << (0.5+n), (0.5-n),
+                            (0.5-n), (0.5+n);
+            return M;
+        };
         fieldX.resize(Nx);
         fieldX[Nx-1] << 1., 0;
         fieldWeights.resize(Nx);
@@ -314,20 +314,24 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
             DiagonalMatrix<dcomplex, 2> P;
             P.diagonal() << 1./phas, phas;  // we propagate backward
             fieldX[i] = P * fieldX[i];
-            // Compute how much of the field is stored in the i-th layer
+            // Compute density of the field is stored in the i-th layer
             dcomplex w_ff, w_bb, w_fb, w_bf;
-            if (imag(b) != 0) { dcomplex bb = b - conj(b);
-                w_ff = (exp(-I*d*bb) - 1.) / bb;
-                w_bb = (exp(+I*d*bb) - 1.) / bb;
-            } else w_ff = w_bb = dcomplex(0., -d);
-            if (real(b) != 0) { dcomplex bb = b + conj(b);
-                w_fb = (exp(-I*d*bb) - 1.) / bb;
-                w_bf = (exp(+I*d*bb) - 1.) / bb;
-            } else w_ff = w_bb = dcomplex(0., -d);
-            fieldWeights[i] = -imag(  fieldX[i][0] * conj(fieldX[i][0]) * w_ff
-                                    - fieldX[i][1] * conj(fieldX[i][1]) * w_bb
-                                    + fieldX[i][0] * conj(fieldX[i][1]) * w_fb
-                                    - fieldX[i][1] * conj(fieldX[i][0]) * w_bb);
+            if (d != 0.) {
+                if (imag(b) != 0) { dcomplex bb = b - conj(b);
+                    w_ff = (exp(-I*d*bb) - 1.) / bb;
+                    w_bb = (exp(+I*d*bb) - 1.) / bb;
+                } else w_ff = w_bb = dcomplex(0., -d);
+                if (real(b) != 0) { dcomplex bb = b + conj(b);
+                    w_fb = (exp(-I*d*bb) - 1.) / bb;
+                    w_bf = (exp(+I*d*bb) - 1.) / bb;
+                } else w_ff = w_bb = dcomplex(0., -d);
+                fieldWeights[i] = -imag(  fieldX[i][0] * conj(fieldX[i][0]) * w_ff
+                                        - fieldX[i][1] * conj(fieldX[i][1]) * w_bb
+                                        + fieldX[i][0] * conj(fieldX[i][1]) * w_fb
+                                        - fieldX[i][1] * conj(fieldX[i][0]) * w_bb);
+            } else {
+                fieldWeights[i] = 0.;
+            }
         }
         double sumw = 0; for (const double& w: fieldWeights) sumw += w;
         double factor = 1./sumw; for (double& w: fieldWeights) w *= factor;
@@ -336,40 +340,50 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
     }
 
     size_t Ny = mesh->up().size()+1;
-    size_t mid_x = 1;
-    double max_val = 0.;
-    for (size_t i = 1; i != Nx; ++i) { // Find max element that has different refractive indices
-        if (fieldWeights[i] > max_val) {
-            dcomplex same_val = nrCache[i].front(); bool all_the_same = true;
-            for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
-            if (!all_the_same) {
-                max_val = fieldWeights[i];
-                mid_x = i;
-            }
-        }
-    }
+    size_t mid_x = std::max_element(fieldWeights.begin(), fieldWeights.end()) - fieldWeights.begin();
+    // double max_val = 0.;
+    // for (size_t i = 1; i != Nx; ++i) { // Find stripe with maximum weight that has non-constant refractive indices
+    //     if (fieldWeights[i] > max_val) {
+    //         dcomplex same_val = nrCache[i].front(); bool all_the_same = true;
+    //         for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
+    //         if (!all_the_same) {
+    //             max_val = fieldWeights[i];
+    //             mid_x = i;
+    //         }
+    //     }
+    // }
     writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", mid_x-xbegin);
     std::vector<dcomplex> betay(Ny);
-    for (size_t i = 0; i < Ny; ++i) {
-        betay[i] = k0 * sqrt(nrCache[mid_x][i]*nrCache[mid_x][i] - stripeNeffs[mid_x]*stripeNeffs[mid_x]);
+    bool all_the_same = true; dcomplex same_n = nrCache[mid_x][0];
+    for (const dcomplex& n: nrCache[mid_x]) if (n != same_n) { all_the_same = false; break; }
+    if (all_the_same) {
+        betay.assign(Ny, 0.);
+    } else {
+        for (size_t i = 0; i < Ny; ++i) {
+            betay[i] = k0 * sqrt(nrCache[mid_x][i]*nrCache[mid_x][i] - stripeNeffs[mid_x]*stripeNeffs[mid_x]);
+        }
     }
-    auto fresnelY = [&](size_t i) -> Matrix2cd {
-        dcomplex f =  (polarization==TM)? nrCache[mid_x][i]/nrCache[mid_x][i+1] :  1.;
-        dcomplex n = 0.5 * betay[i+1]/betay[i] * f*f;
-        Matrix2cd M; M << (0.5+n), (0.5-n),
-                          (0.5-n), (0.5+n);
-        return M;
-    };
     if (!have_fields) {
-        fieldY.resize(Ny);
-        fieldY[Ny-1] << 1., 0;
-        for (ptrdiff_t i = Ny-2; i >= 0; --i) {
-            fieldY[i].noalias() = fresnelY(i) * fieldY[i+1];
-            double d = mesh->up()[i] - mesh->up()[max(int(i)-1, 0)];
-            dcomplex phas = exp(- I * betay[i] * d);
-            DiagonalMatrix<dcomplex, 2> P;
-            P.diagonal() << 1./phas, phas;  // we propagate backward
-            fieldY[i] = P * fieldY[i];
+        if (all_the_same) {
+            fieldY.assign(Ny, 0.5 * Vector2cd::Ones(2));
+        } else {
+            auto fresnelY = [&](size_t i) -> Matrix2cd {
+                dcomplex f =  (polarization==TM)? nrCache[mid_x][i]/nrCache[mid_x][i+1] :  1.;
+                dcomplex n = 0.5 * betay[i+1]/betay[i] * f*f;
+                Matrix2cd M; M << (0.5+n), (0.5-n),
+                                (0.5-n), (0.5+n);
+                return M;
+            };
+            fieldY.resize(Ny);
+            fieldY[Ny-1] << 1., 0;
+            for (ptrdiff_t i = Ny-2; i >= 0; --i) {
+                fieldY[i].noalias() = fresnelY(i) * fieldY[i+1];
+                double d = mesh->up()[i] - mesh->up()[max(int(i)-1, 0)];
+                dcomplex phas = exp(- I * betay[i] * d);
+                DiagonalMatrix<dcomplex, 2> P;
+                P.diagonal() << 1./phas, phas;  // we propagate backward
+                fieldY[i] = P * fieldY[i];
+            }
         }
     }
 
@@ -398,12 +412,12 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
             valx[idx++] = val;
         }
 
-       for (auto y: rect_mesh.up()) {
+        for (auto y: rect_mesh.up()) {
             size_t iy = mesh->up().findIndex(y);
             y -= mesh->up()[max(int(iy)-1, 0)];
             dcomplex phasy = exp(- I * betay[iy] * y);
             valy[idy++] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
-       }
+        }
 
         for (size_t i = 0; i != rect_mesh.size(); ++i) {
             dcomplex f = valx[rect_mesh.index0(i)] * valy[rect_mesh.index1(i)];
