@@ -62,6 +62,19 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomp
 }
 
 
+void EffectiveIndex2dModule::setMode(dcomplex neff)
+{
+    if (!initialized) {
+        writelog(LOG_WARNING, "Module invalidated or not initialized, so performing some initial computations");
+        stageOne();
+    }
+    double det = abs(detS(neff));
+    if (det > tolf_max) throw BadInput(getId(), "Provided effective index does not correspond to any mode (det = %1%)", det);
+    writelog(LOG_INFO, "Setting current mode to %1%", str(neff));
+    outNeff = neff;
+    outNeff.fireChanged();
+    outIntensity.fireChanged();
+}
 
 
 void EffectiveIndex2dModule::onInitialize()
@@ -82,6 +95,12 @@ void EffectiveIndex2dModule::onInvalidate()
     outNeff.fireChanged();
     outIntensity.fireChanged();
 }
+
+/********* Here are the computations *********/
+
+/* It would probably be better to use S-matrix method, but for simplicity we use T-matrix */
+
+using namespace Eigen;
 
 
 
@@ -138,9 +157,9 @@ void EffectiveIndex2dModule::stageOne()
 
         for (size_t i = xbegin; i != nrCache.size(); ++i) {
 
-            writelog(LOG_DETAIL, "Computing effective index for vertical stripe no %1% (polarization %2%)", i, (polarization==TE)?"TE":"TM");
+            writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
             std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
-            writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i, nrs.str().substr(1));
+            writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
 
             dcomplex same_val = nrCache[i].front();
             bool all_the_same = true;
@@ -168,14 +187,7 @@ void EffectiveIndex2dModule::stageOne()
 }
 
 
-
-/********* Here are the computations *********/
-
-/* It would probably be better to use S-matrix method, but for simplicity we use T-matrix */
-
-using namespace Eigen;
-
-Eigen::Matrix2cd EffectiveIndex2dModule::getMatrix1(const plask::dcomplex& neff, const std::vector<dcomplex>& NR)
+Matrix2cd EffectiveIndex2dModule::getMatrix1(const plask::dcomplex& neff, const std::vector<dcomplex>& NR)
 {
     size_t N = NR.size();
 
@@ -276,6 +288,8 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
 
     dcomplex neff = outNeff();
 
+    writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(neff));
+
     size_t Nx = mesh->tran().size()+1;
     std::vector<dcomplex> betax(Nx);
     for (size_t i = 0; i < Nx; ++i) {
@@ -291,20 +305,41 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
     if (!have_fields) {
         fieldX.resize(Nx);
         fieldX[Nx-1] << 1., 0;
+        fieldWeights.resize(Nx);
+        fieldWeights[Nx-1] = 0.;
         for (ptrdiff_t i = Nx-2; i >= 0; --i) {
             fieldX[i].noalias() = fresnelX(i) * fieldX[i+1];
             double d = (symmetry == NO_SYMMETRY)? mesh->tran()[i] - mesh->tran()[max(int(i)-1, 0)] :
                        (i == 0)? mesh->tran()[0] : mesh->tran()[i] - mesh->tran()[i-1];
-            dcomplex phas = exp(- I * betax[i] * d);
+            dcomplex b = betax[i];
+            dcomplex phas = exp(- I * b * d);
             DiagonalMatrix<dcomplex, 2> P;
             P.diagonal() << 1./phas, phas;  // we propagate backward
             fieldX[i] = P * fieldX[i];
+            // Compute how much of the field is stored in the i-th layer
+            dcomplex w_ff, w_bb, w_fb, w_bf;
+            if (imag(b) != 0) { dcomplex bb = b - conj(b);
+                w_ff = (exp(-I*d*bb) - 1.) / bb;
+                w_bb = (exp(+I*d*bb) - 1.) / bb;
+            } else w_ff = w_bb = dcomplex(0., -d);
+            if (real(b) != 0) { dcomplex bb = b + conj(b);
+                w_fb = (exp(-I*d*bb) - 1.) / bb;
+                w_bf = (exp(+I*d*bb) - 1.) / bb;
+            } else w_ff = w_bb = dcomplex(0., -d);
+            fieldWeights[i] = -imag(  fieldX[i][0] * conj(fieldX[i][0]) * w_ff
+                                    - fieldX[i][1] * conj(fieldX[i][1]) * w_bb
+                                    + fieldX[i][0] * conj(fieldX[i][1]) * w_fb
+                                    - fieldX[i][1] * conj(fieldX[i][0]) * w_bb);
         }
+        double sumw = 0; for (const double& w: fieldWeights) sumw += w;
+        double factor = 1./sumw; for (double& w: fieldWeights) w *= factor;
+        std::stringstream weightss; for (size_t i = xbegin; i < Nx; ++i) weightss << ", " << str(fieldWeights[i]);
+        writelog(LOG_DEBUG, "field confinement in stripes = [%1% ]", weightss.str().substr(1));
     }
 
     size_t Ny = mesh->up().size()+1;
-    // TODO better choice for field. Maybe some averaging?
-    size_t mid_x = (symmetry == NO_SYMMETRY)? Nx/2. : 0;
+    size_t mid_x = std::max_element(fieldWeights.begin(), fieldWeights.end()) - fieldWeights.begin();
+    writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", mid_x-xbegin);
     std::vector<dcomplex> betay(Ny);
     for (size_t i = 0; i < Ny; ++i) {
         betay[i] = k0 * sqrt(nrCache[mid_x][i]*nrCache[mid_x][i] - stripeNeffs[mid_x]*stripeNeffs[mid_x]);
@@ -345,7 +380,6 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
             if (x < 0. && symmetry != NO_SYMMETRY) {
                 x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
             }
-
             size_t ix = mesh->tran().findIndex(x);
             if (ix != 0) x -= mesh->tran()[ix-1];
             else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
@@ -371,12 +405,12 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
 
         for (auto point: dst_mesh) {
             double x = point.tran;
+            double y = point.up;
 
             bool negate = false;
             if (x < 0. && symmetry != NO_SYMMETRY) {
                 x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
             }
-
             size_t ix = mesh->tran().findIndex(x);
             if (ix != 0) x -= mesh->tran()[ix-1];
             else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
@@ -384,8 +418,6 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
             dcomplex val = fieldX[ix][0] * phasx + fieldX[ix][1] / phasx;
             if (negate) val = - val;
 
-
-            double y = point.up;
             size_t iy = mesh->up().findIndex(y);
             y -= mesh->up()[max(int(iy)-1, 0)];
             dcomplex phasy = exp(- I * betay[iy] * y);
@@ -395,6 +427,10 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
         }
 
     }
+
+    // Normalize results to make maximum value equal to one
+    double factor = 1. / *std::max_element(results.begin(), results.end());
+    for (double& val: results) val *= factor;
 
     return results;
 }

@@ -265,7 +265,7 @@ class RectilinearMesh2d: public Mesh<2> {
     RectilinearMesh2d getMidpointsMesh() const;
 
     /**
-     * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
+     * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate
      * @return interpolated value in point @p point

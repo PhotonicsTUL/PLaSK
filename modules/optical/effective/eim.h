@@ -43,6 +43,9 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     /// Computed horizontal fields
     std::vector<Eigen::Vector2cd> fieldX, fieldY;
 
+    /// Field confinement weights in stripes
+    std::vector<double> fieldWeights;
+
     /// Did we compute fields for current Neff?
     bool have_fields;
 
@@ -173,6 +176,14 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
      * \return vector of determined potential effective indices
      */
     std::vector<dcomplex> findModesMap(dcomplex neff1, dcomplex neff2, unsigned steps=100);
+
+    /**
+     * Set particular value of the effective index, e.g. to one of the values returnd by findModes.
+     * If it is not proper mode, exception is throw
+     *
+     * \param neff effective index of the mode
+     */
+    void setMode(dcomplex neff);
 
 
     /// Receiver of the wavelength
