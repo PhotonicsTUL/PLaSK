@@ -163,9 +163,7 @@ void EffectiveIndex2dModule::stageOne()
 
             dcomplex same_val = nrCache[i].front();
             bool all_the_same = true;
-            for (auto n: nrCache[i]) {
-                if (n != same_val) { all_the_same = false; break; }
-            }
+            for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
             if (all_the_same) {
                 stripeNeffs[i] = same_val;
             } else {
@@ -338,7 +336,18 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
     }
 
     size_t Ny = mesh->up().size()+1;
-    size_t mid_x = std::max_element(fieldWeights.begin(), fieldWeights.end()) - fieldWeights.begin();
+    size_t mid_x = 1;
+    double max_val = 0.;
+    for (size_t i = 1; i != Nx; ++i) { // Find max element that has different refractive indices
+        if (fieldWeights[i] > max_val) {
+            dcomplex same_val = nrCache[i].front(); bool all_the_same = true;
+            for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
+            if (!all_the_same) {
+                max_val = fieldWeights[i];
+                mid_x = i;
+            }
+        }
+    }
     writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", mid_x-xbegin);
     std::vector<dcomplex> betay(Ny);
     for (size_t i = 0; i < Ny; ++i) {
