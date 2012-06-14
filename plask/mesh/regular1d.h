@@ -42,8 +42,44 @@ class RegularMesh1d {
     /// Construct uninitialized mesh.
     RegularMesh1d() {}
 
+    /**
+     * Construct mesh with given paramters.
+     * @param first coordinate of first point in mesh
+     * @param last coordinate of last point in mesh
+     * @param points_count number of points in mesh
+     */
     RegularMesh1d(double first, double last, std::size_t points_count)
         : lo(first), step((last - first) / (points_count-1)), step_count(points_count) {}
+
+    /**
+     * Set new mesh parameters.
+     * @param first coordinate of first point in mesh
+     * @param last coordinate of last point in mesh
+     * @param points_count number of points in mesh
+     */
+    void reset(double first, double last, std::size_t points_count) {
+        lo = first;
+        step = (last - first) / (points_count-1);
+        step_count = points_count;
+    }
+
+    /**
+     * @return coordinate of first point in mesh
+     */
+    double getFirst() const { return lo; }
+
+    /**
+     * @return coordinate of last point in mesh
+     */
+    double getLast() const { return lo + step * step_count; }
+
+    /**
+     * @return distanse between two neighbouring points in mesh
+     */
+    double getStep() const { return step; }
+
+    /// @return number of points in mesh
+    std::size_t size() const { return step_count; }
 
      /**
       * Compares meshes
@@ -70,9 +106,6 @@ class RegularMesh1d {
          return out;
      }
 
-     /// @return number of points in mesh
-     std::size_t size() const { return step_count; }
-
      /// @return true only if there are no points in mesh
      bool empty() const { return step_count == 0; }
 
@@ -87,6 +120,30 @@ class RegularMesh1d {
       * Remove all points from mesh.
       */
      void clear() { step_count = 0; }
+
+     /**
+      * Find index where @p to_find point could be inserted.
+      * @param to_find point to find
+      * @return First index where to_find could be inserted.
+      *         Refer to value equal to @p to_find only if @p to_find is already in mesh.
+      *         Can be equal to size() if to_find is higher than all points in mesh.
+      */
+     std::size_t findIndex(double to_find) const {
+         return clamp(int(cail((to_find - lo) / step)), 0, int(step_count));
+
+     }
+
+     /**
+      * Find position where @p to_find point could be inserted.
+      * @param to_find point to find
+      * @return First position where to_find could be insert.
+      *         Refer to value equal to @p to_find only if @p to_find is in mesh.
+      *         Can be equal to end() if to_find is higher than all points in mesh
+      *         (in such case returned iterator can't be dereferenced).
+      */
+     const_iterator find(double to_find) const {
+         return begin() + findIndex(to_find);
+     }
 
      /**
       * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.

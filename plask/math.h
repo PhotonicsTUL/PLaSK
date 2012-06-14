@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <limits>
+#include <algorithm>
 
 #ifdef PLASK_MATH_STD
 #   include <complex>
@@ -64,11 +65,27 @@ inline plask::dcomplex operator/(const plask::dcomplex& a, unsigned b) { return 
 
 
 // Useful functions
-template <typename T>
+/*template <typename T>
 T max(const T& v1, const T& v2) { return (v1<v2)? v2 : v1; }
 
 template <typename T>
-T min(const T& v1, const T& v2) { return (v1<v2)? v1 : v2; }
+T min(const T& v1, const T& v2) { return (v1<v2)? v1 : v2; }*/
+
+using std::max;
+using std::min;
+
+/**
+ * Clamp value to given range.
+ * @param v value to clamp
+ * @param min, max minimal and maximal value which can be returned
+ * @param @p min if v < min, @p max if v > max, @p v in another cases
+ */
+template <typename T>
+const T& clamp(const T& v, const T& min, const T& max) {
+    if (v < min) return min;
+    if (v > max) return max;
+    return v;
+}
 
 } // namespace plask
 
