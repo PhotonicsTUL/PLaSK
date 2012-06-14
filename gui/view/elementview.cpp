@@ -73,45 +73,6 @@ QRectF ElementViewer::itemRect(const QModelIndex &index) const
     return QRectF();
 }
 
-QRegion ElementViewer::itemRegion(const QModelIndex &index) const
-{
-
-    std::cout << "itemRegion" << std::endl;
-    /*if (!index.isValid())
-        return QRegion();
-
-    if (index.column() != 1)
-        return itemRect(index);
-
-    if (model()->data(index).toDouble() <= 0.0)
-        return QRegion();
-
-    double startAngle = 0.0;
-    for (int row = 0; row < model()->rowCount(rootIndex()); ++row) {
-
-        QModelIndex sliceIndex = model()->index(row, 1, rootIndex());
-        double value = model()->data(sliceIndex).toDouble();
-
-        if (value > 0.0) {
-            double angle = 360*value/totalValue;
-
-            if (sliceIndex == index) {
-                QPainterPath slicePath;
-                slicePath.moveTo(totalSize/2, totalSize/2);
-                slicePath.arcTo(margin, margin, margin+pieSize, margin+pieSize,
-                                startAngle, angle);
-                slicePath.closeSubpath();
-
-                return QRegion(slicePath.toFillPolygon().toPolygon());
-            }
-
-            startAngle += angle;
-        }
-    }*/
-
-    return QRegion();
-}
-
 int ElementViewer::horizontalOffset() const
 {
     return horizontalScrollBar()->value();

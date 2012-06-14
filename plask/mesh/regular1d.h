@@ -5,15 +5,9 @@
 This file defines regular mesh for 1d space.
 */
 
-#include <vector>
-#include <algorithm>
-#include <initializer_list>
-
-#include "../vec.h"
 #include "../utils/iterators.h"
 #include "../utils/interpolation.h"
 
-#include "../utils/iterators.h"
 
 namespace plask {
 
