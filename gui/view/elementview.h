@@ -80,6 +80,7 @@ protected:
 
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
     void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
@@ -103,11 +104,16 @@ private:
     QPoint origin;
     QRubberBand *rubberBand;
 
-    QPointF model_center;
+    /**
+     * Viewer zoom in x and y directions.
+     */
     QPointF zoom;
 
     /**
      * Get transform matrix which can transform model coordinates to view one.
+     *
+     * Matrix inverted to returned can transform view coordinates to model one.
+     * @return transform matrix which can transform model coordinates to view one
      */
     QTransform getTransformMatrix() const;
 

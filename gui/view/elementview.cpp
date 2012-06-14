@@ -8,7 +8,7 @@
 #include "../modelext/converter.h"
 
 ElementViewer::ElementViewer(QWidget *parent)
-    : QAbstractItemView(parent), model_center(0.0, 0.0), zoom(10.0, 10.0)
+    : QAbstractItemView(parent), zoom(10.0, 10.0)
 {
     horizontalScrollBar()->setRange(0, 0);
     verticalScrollBar()->setRange(0, 0);
@@ -35,6 +35,8 @@ bool ElementViewer::edit(const QModelIndex &index, EditTrigger trigger, QEvent *
 
 QModelIndex ElementViewer::indexAt(const QPoint &point) const
 {
+    if (!rootIndex().isValid()) return QModelIndex();   //model not set
+
     plask::Vec<2, double> model_point = fromQt(getTransformMatrix().inverted().map(QPointF(point)));
 
     plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
@@ -132,6 +134,17 @@ QModelIndex ElementViewer::moveCursor(QAbstractItemView::CursorAction cursorActi
 
     viewport()->update();
     return current;
+}
+
+void ElementViewer::wheelEvent(QWheelEvent *event) {
+    if ((event->modifiers() & Qt::ControlModifier) != 0) {
+        if (event->delta() > 0) {
+            zoomIn();
+        } else {
+            zoomOut();
+        }
+    } else
+        QAbstractItemView::wheelEvent(event);
 }
 
 void ElementViewer::paintEvent(QPaintEvent *event) {
