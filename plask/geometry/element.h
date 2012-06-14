@@ -33,6 +33,8 @@ struct GeometryTransform {
     //GeometryTransform compose(GeometryTransform)
 };
 
+template < int dimensions > struct GeometryElementD;
+
 /**
  * Base class for all geometries.
  */
@@ -307,6 +309,20 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     virtual ~GeometryElement();
 
     /**
+     * Cast this to GeometryElementD<DIMS>.
+     * @return this casted to GeometryElementD<DIMS> or nullptr if casting is not possible.
+     */
+    template<int DIMS>
+    shared_ptr< GeometryElementD<DIMS> > asD();
+
+    /**
+     * Cast this to GeometryElementD<DIMS> (const version).
+     * @return this casted to GeometryElementD<DIMS> or nullptr if casting is not possible.
+     */
+    template<int DIMS>
+    shared_ptr< const GeometryElementD<DIMS> > asD() const;
+
+    /**
      * Check if geometry is: leaf, transform or container type element.
      * @return type of this element
      */
@@ -578,6 +594,17 @@ struct GeometryElementD: public GeometryElement {
     virtual Box getBoundingBox() const = 0;
 
     virtual DVec getBoundingBoxSize() const { return getBoundingBox().size(); }
+
+    /**
+     * Calculate minimal rectangle which includes all points of real geometry element.
+     *
+     * This box can be diffrent from getBoundingBox() only for elements which have virtual children, like multple-stack.
+     * Returned box is always included in (in most cases: equal to) box returned by getBoundingBox().
+     *
+     * Default implementation returns result of getBoundingBox() call.
+     * @return calculated rectangle
+     */
+    virtual Box getRealBoundingBox() const { return getBoundingBox(); }
 
     /**
      * Return material in a given point inside the geometry element

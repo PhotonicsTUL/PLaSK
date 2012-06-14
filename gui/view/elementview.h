@@ -27,8 +27,16 @@ class ElementViewer: public QAbstractItemView
 public:
     ElementViewer(QWidget *parent = 0);
 
+    /**
+       @return the position of the item in viewport coordinates.
+    */
     QRect visualRect(const QModelIndex &index) const;
+
     void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible);
+
+    /**
+        Returns the item that covers the coordinate given in the view.
+    */
     QModelIndex indexAt(const QPoint &point) const;
 
     GeometryTreeModel* model() const { return static_cast<GeometryTreeModel*>(QAbstractItemView::model()); }
@@ -40,9 +48,12 @@ public:
         return ew ? plask::static_pointer_cast<plask::GeometryElementD<2>>(ew->wrappedElement) : plask::shared_ptr<plask::GeometryElementD<2> >();
     }
 
+    /**
+     * Get model bounding box in model coordinates.
+     */
     plask::Box2d getBoundingBox() const {
         plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
-        return e ? e->getBoundingBox() : plask::Box2d(0.0, 0.0, 0.0, 0.0);
+        return e ? e->getRealBoundingBox() : plask::Box2d(0.0, 0.0, 0.0, 0.0);
     }
 
 protected slots:
@@ -60,6 +71,9 @@ protected:
 
     bool isIndexHidden(const QModelIndex &index) const;
 
+    /**
+      Find the indices corresponding to the extent of the selection.
+    */
     void setSelection(const QRect&, QItemSelectionModel::SelectionFlags command);
 
     void mousePressEvent(QMouseEvent *event);
@@ -71,10 +85,17 @@ protected:
     void resizeEvent(QResizeEvent *event);
     void scrollContentsBy(int dx, int dy);
 
+    /**
+      @return a region corresponding to the selection in viewport coordinates
+    */
     QRegion visualRegionForSelection(const QItemSelection &selection) const;
 
 private:
-    QRect itemRect(const QModelIndex &item) const;
+    /**
+        Returns the rectangle of the item at position \a index in the
+        model. The rectangle is in contents coordinates.
+    */
+    QRectF itemRect(const QModelIndex &item) const;
     QRegion itemRegion(const QModelIndex &index) const;
     int rows(const QModelIndex &index = QModelIndex()) const;
     void updateGeometries();
@@ -86,7 +107,10 @@ private:
     QPointF model_center;
     QPointF zoom;
 
-    QTransform getTransformMatrix();
+    /**
+     * Get transform matrix which can transform model coordinates to view one.
+     */
+    QTransform getTransformMatrix() const;
 
 public slots:
     void zoomIn() {

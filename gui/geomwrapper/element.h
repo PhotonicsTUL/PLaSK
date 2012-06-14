@@ -180,6 +180,12 @@ public:
     virtual void drawMiniature(QPainter& painter, qreal w, qreal h) const;
 
     /**
+     * Draw real part (real children only) of geometry element using given Qt @p painter.
+     * @param painter where draw element
+     */
+    virtual void drawReal(QPainter& painter) const;
+
+    /**
      * Get miniature image with size close to given.
      * @param w, h requested miniature size
      * @return miniature

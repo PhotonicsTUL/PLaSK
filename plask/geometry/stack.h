@@ -478,6 +478,10 @@ class MultiStackContainer: public StackContainer<dim> {
         return result;
     }
 
+    virtual Box getRealBoundingBox() const {
+        return UpperClass::getBoundingBox();
+    }
+
     virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
     virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const;

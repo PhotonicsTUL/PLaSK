@@ -49,6 +49,16 @@ void ElementWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
     painter.setTransform(transformBackup);
 }
 
+void ElementWrapper::drawReal(QPainter &painter) const
+{
+    plask::GeometryElement& toDraw = *wrappedElement;
+    if (toDraw.isContainer()) {
+        for (std::size_t i = 0; i < toDraw.getRealChildrenCount(); ++i)
+            ext(toDraw.getRealChildAt(i))->draw(painter);
+    } else
+        draw(painter);
+}
+
 QPixmap ElementWrapper::getMiniature(qreal w, qreal h) const {
     plask::GeometryElement& toDraw = *wrappedElement;
 

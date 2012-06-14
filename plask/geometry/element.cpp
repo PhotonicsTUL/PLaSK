@@ -40,6 +40,23 @@ GeometryElement::~GeometryElement() {
     fireChanged(Event::DELETE);
 }
 
+template<int DIMS>
+shared_ptr< GeometryElementD<DIMS> > GeometryElement::asD() {
+    if (getDimensionsCount() != DIMS) return shared_ptr< GeometryElementD<DIMS> >();
+    return static_pointer_cast< GeometryElementD<DIMS> >(shared_from_this());
+}
+
+template<int DIMS>
+shared_ptr< const GeometryElementD<DIMS> > GeometryElement::asD() const {
+    if (getDimensionsCount() != DIMS) return shared_ptr< const GeometryElementD<DIMS> >();
+    return static_pointer_cast< const GeometryElementD<DIMS> >(shared_from_this());
+}
+
+template shared_ptr< GeometryElementD<2> > GeometryElement::asD<2>();
+template shared_ptr< GeometryElementD<3> > GeometryElement::asD<3>();
+template shared_ptr< const GeometryElementD<2> > GeometryElement::asD<2>() const;
+template shared_ptr< const GeometryElementD<3> > GeometryElement::asD<3>() const;
+
 bool GeometryElement::Subtree::hasBranches() const {
     const std::vector<Subtree>* c = &children;
     while (!c->empty()) {

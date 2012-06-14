@@ -22,4 +22,12 @@ inline QSizeF toQtSize(const plask::Vec<2, double>& plask_size) {
     return QSizeF(plask_size.tran, plask_size.up);
 }
 
+inline const plask::Box2d fromQt(const QRectF& r) {
+    return plask::Box2d(r.left(), r.top(), r.right(), r.bottom());
+}
+
+inline plask::Vec<2, double> fromQt(const QPointF& p) {
+    return plask::Vec<2, double>(p.x(), p.y());
+}
+
 #endif // PLASK_GUI_MODEL_EXT_CONVERTER_H

@@ -37,69 +37,17 @@ bool ElementViewer::edit(const QModelIndex &index, EditTrigger trigger, QEvent *
         return false;
 }
 
-/*
-    Returns the item that covers the coordinate given in the view.
-*/
-
 QModelIndex ElementViewer::indexAt(const QPoint &point) const
 {
-    /*if (validItems == 0)
-        return QModelIndex();
+    plask::Vec<2, double> model_point = fromQt(getTransformMatrix().inverted().map(QPointF(point)));
 
-    // Transform the view coordinates into contents widget coordinates.
-    int wx = point.x() + horizontalScrollBar()->value();
-    int wy = point.y() + verticalScrollBar()->value();
-
-    if (wx < totalSize) {
-        double cx = wx - totalSize/2;
-        double cy = totalSize/2 - wy; // positive cy for items above the center
-
-        // Determine the distance from the center point of the pie chart.
-        double d = pow(pow(cx, 2) + pow(cy, 2), 0.5);
-
-        if (d == 0 || d > pieSize/2)
-            return QModelIndex();
-
-        // Determine the angle of the point.
-        double angle = (180 / M_PI) * acos(cx/d);
-        if (cy < 0)
-            angle = 360 - angle;
-
-        // Find the relevant slice of the pie.
-        double startAngle = 0.0;
-
-        for (int row = 0; row < model()->rowCount(rootIndex()); ++row) {
-
-            QModelIndex index = model()->index(row, 1, rootIndex());
-            double value = model()->data(index).toDouble();
-
-            if (value > 0.0) {
-                double sliceAngle = 360*value/totalValue;
-
-                if (angle >= startAngle && angle < (startAngle + sliceAngle))
-                    return model()->index(row, 1, rootIndex());
-
-                startAngle += sliceAngle;
-            }
-        }
-    } else {
-        double itemHeight = QFontMetrics(viewOptions().font).height();
-        int listItem = int((wy - margin) / itemHeight);
-        int validRow = 0;
-
-        for (int row = 0; row < model()->rowCount(rootIndex()); ++row) {
-
-            QModelIndex index = model()->index(row, 1, rootIndex());
-            if (model()->data(index).toDouble() > 0.0) {
-
-                if (listItem == validRow)
-                    return model()->index(row, 0, rootIndex());
-
-                // Update the list index that corresponds to the next valid row.
-                validRow++;
-            }
-        }
-    }*/
+    plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
+    const std::size_t ch_count = e->getRealChildrenCount();
+    for (std::size_t i = 0; i < ch_count; ++i) {
+        plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
+        if (ch && ch->getBoundingBox().inside(model_point))
+            return model()->index(i, 0, rootIndex());
+    }
 
     return QModelIndex();
 }
@@ -116,52 +64,23 @@ bool ElementViewer::isIndexHidden(const QModelIndex & /*index*/) const
     return false;
 }
 
-/*
-    Returns the rectangle of the item at position \a index in the
-    model. The rectangle is in contents coordinates.
-*/
-
-QRect ElementViewer::itemRect(const QModelIndex &index) const
+QRectF ElementViewer::itemRect(const QModelIndex &index) const
 {
-   /* if (!index.isValid())
-        return QRect();
-
-    // Check whether the index's row is in the list of rows represented
-    // by slices.
-    QModelIndex valueIndex;
-
-    if (index.column() != 1)
-        valueIndex = model()->index(index.row(), 1, rootIndex());
-    else
-        valueIndex = index;
-
-    if (model()->data(valueIndex).toDouble() > 0.0) {
-
-        int listItem = 0;
-        for (int row = index.row()-1; row >= 0; --row) {
-            if (model()->data(model()->index(row, 1, rootIndex())).toDouble() > 0.0)
-                listItem++;
+    if (index.isValid() && index.parent() == rootIndex()) {
+        GeometryTreeItem* i = model()->toItem(index);
+        plask::shared_ptr<plask::GeometryElement> e = i->element->wrappedElement;
+        if (e->getDimensionsCount() == 2) {
+            plask::Box2d b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
+            return toQt(b);
         }
-
-        double itemHeight;
-
-        switch (index.column()) {
-        case 0:
-            itemHeight = QFontMetrics(viewOptions().font).height();
-
-            return QRect(totalSize,
-                         int(margin + listItem*itemHeight),
-                         totalSize - margin, int(itemHeight));
-        case 1:
-            return viewport()->rect();
-        }
-
-    }*/
-    return QRect();
+    }
+    return QRectF();
 }
 
 QRegion ElementViewer::itemRegion(const QModelIndex &index) const
 {
+
+    std::cout << "itemRegion" << std::endl;
     /*if (!index.isValid())
         return QRegion();
 
@@ -270,7 +189,7 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
 
     painter.save();
     painter.setTransform(getTransformMatrix());
-    el->draw(painter);
+    el->drawReal(painter);
 
     for (QModelIndex current: selectionModel()->selectedIndexes()) {
        // QItemSelectionModel *selections = ;
@@ -280,94 +199,15 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
             plask::shared_ptr<plask::GeometryElement> e = i->element->wrappedElement;
             if (e->getDimensionsCount() == 2) {
                 plask::Box2d b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
-                auto r = toQt(b);
-                painter.fillRect(r, QColor(40, 10, 100, 60));
-                painter.setPen(QPen(QColor(60, 20, 150, 170), 0.3, Qt::DashLine));
+                QRectF r = toQt(b);
+                painter.fillRect(r, QColor(50, 20, 120, 70));
+                painter.setPen(QPen(QColor(90, 40, 230, 170), 0.0, Qt::DashLine));
                 painter.drawRect(r);
             }
         }
     }
 
     painter.restore();
-
-    /*QItemSelectionModel *selections = selectionModel();
-    QStyleOptionViewItem option = viewOptions();
-    QStyle::State state = option.state;
-
-    QBrush background = option.palette.base();
-    QPen foreground(option.palette.color(QPalette::WindowText));
-    QPen textPen(option.palette.color(QPalette::Text));
-    QPen highlightedPen(option.palette.color(QPalette::HighlightedText));
-
-    QPainter painter(viewport());
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    painter.fillRect(event->rect(), background);
-    painter.setPen(foreground);
-
-    // Viewport rectangles
-    QRect pieRect = QRect(margin, margin, pieSize, pieSize);
-    QPoint keyPoint = QPoint(totalSize - horizontalScrollBar()->value(),
-                             margin - verticalScrollBar()->value());
-
-    if (validItems > 0) {
-
-        painter.save();
-        painter.translate(pieRect.x() - horizontalScrollBar()->value(),
-                          pieRect.y() - verticalScrollBar()->value());
-        painter.drawEllipse(0, 0, pieSize, pieSize);
-        double startAngle = 0.0;
-        int row;
-
-        for (row = 0; row < model()->rowCount(rootIndex()); ++row) {
-
-            QModelIndex index = model()->index(row, 1, rootIndex());
-            double value = model()->data(index).toDouble();
-
-            if (value > 0.0) {
-                double angle = 360*value/totalValue;
-
-                QModelIndex colorIndex = model()->index(row, 0, rootIndex());
-                QColor color = QColor(model()->data(colorIndex,
-                                Qt::DecorationRole).toString());
-
-                if (currentIndex() == index)
-                    painter.setBrush(QBrush(color, Qt::Dense4Pattern));
-                else if (selections->isSelected(index))
-                    painter.setBrush(QBrush(color, Qt::Dense3Pattern));
-                else
-                    painter.setBrush(QBrush(color));
-
-                painter.drawPie(0, 0, pieSize, pieSize, int(startAngle*16),
-                                int(angle*16));
-
-                startAngle += angle;
-            }
-        }
-        painter.restore();
-
-        int keyNumber = 0;
-
-        for (row = 0; row < model()->rowCount(rootIndex()); ++row) {
-
-            QModelIndex index = model()->index(row, 1, rootIndex());
-            double value = model()->data(index).toDouble();
-
-            if (value > 0.0) {
-                QModelIndex labelIndex = model()->index(row, 0, rootIndex());
-
-                QStyleOptionViewItem option = viewOptions();
-                option.rect = visualRect(labelIndex);
-                if (selections->isSelected(labelIndex))
-                    option.state |= QStyle::State_Selected;
-                if (currentIndex() == labelIndex)
-                    option.state |= QStyle::State_HasFocus;
-                itemDelegate()->paint(&painter, option, labelIndex);
-
-                keyNumber++;
-            }
-        }
-    }*/
 }
 
 void ElementViewer::resizeEvent(QResizeEvent * /* event */)
@@ -415,7 +255,6 @@ void ElementViewer::scrollContentsBy(int dx, int dy)
 {
     scrollDirtyRegion(dx, dy);
     viewport()->scroll(dx, dy);
-    //viewport()->update();
 }
 
 void ElementViewer::scrollTo(const QModelIndex &index, ScrollHint)
@@ -442,30 +281,18 @@ void ElementViewer::scrollTo(const QModelIndex &index, ScrollHint)
     update();
 }
 
-/*
-    Find the indices corresponding to the extent of the selection.
-*/
-
 void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
 {
-    // Use content widget coordinates because we will use the itemRegion()
-    // function to check for intersections.
+    plask::Box2d model_sel = fromQt(getTransformMatrix().inverted().mapRect(QRectF(rect)));
 
-    /*QRect contentsRect = rect.translated(
-                            horizontalScrollBar()->value(),
-                            verticalScrollBar()->value()).normalized();
-
-    int rows = model()->rowCount(rootIndex());
-    int columns = model()->columnCount(rootIndex());
     QModelIndexList indexes;
 
-    for (int row = 0; row < rows; ++row) {
-        for (int column = 0; column < columns; ++column) {
-            QModelIndex index = model()->index(row, column, rootIndex());
-            QRegion region = itemRegion(index);
-            if (!region.intersect(contentsRect).isEmpty())
-                indexes.append(index);
-        }
+    plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
+    const std::size_t ch_count = e->getRealChildrenCount();
+    for (std::size_t i = 0; i < ch_count; ++i) {
+        plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
+        if (ch && ch->getBoundingBox().intersect(model_sel))
+            indexes.append(model()->index(i, 0, rootIndex()));
     }
 
     if (indexes.size() > 0) {
@@ -489,7 +316,7 @@ void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::Selecti
         QModelIndex noIndex;
         QItemSelection selection(noIndex, noIndex);
         selectionModel()->select(selection, command);
-    }*/
+    }
 
     update();
 }
@@ -497,20 +324,13 @@ void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::Selecti
 void ElementViewer::updateGeometries()
 {
     plask::Vec<2, double> s = getBoundingBox().size();
-    //viewport()->resize(s.c0 * zoom.x(), s.c1 * zoom.y());
-
     horizontalScrollBar()->setPageStep(viewport()->width());
     horizontalScrollBar()->setRange(0, qMax(0, int( 2* margin + s.c0 * zoom.x() - viewport()->width()) ));
     verticalScrollBar()->setPageStep(viewport()->height());
     verticalScrollBar()->setRange(0, qMax(0, int( 2* margin + s.c1 * zoom.y() - viewport()->height()) ));
-
-   /*horizontalScrollBar()->setPageStep(viewport()->width());
-    horizontalScrollBar()->setRange(0, qMax(0, 2*totalSize - viewport()->width()));
-    verticalScrollBar()->setPageStep(viewport()->height());
-    verticalScrollBar()->setRange(0, qMax(0, totalSize - viewport()->height()));*/
 }
 
-QTransform ElementViewer::getTransformMatrix() {
+QTransform ElementViewer::getTransformMatrix() const {
     plask::Box2d bb = getBoundingBox();
 
     return QTransform(zoom.x(), 0.0,
@@ -525,24 +345,14 @@ int ElementViewer::verticalOffset() const
     return verticalScrollBar()->value();
 }
 
-/*
-    Returns the position of the item in viewport coordinates.
-*/
-
 QRect ElementViewer::visualRect(const QModelIndex &index) const
 {
-    QRect rect = itemRect(index);
+    QRectF rect = itemRect(index);
     if (rect.isValid())
-        return QRect(rect.left() - horizontalScrollBar()->value(),
-                     rect.top() - verticalScrollBar()->value(),
-                     rect.width(), rect.height());
-    else
-        return rect;
-}
+        return getTransformMatrix().mapRect(rect).toRect().adjusted(-1, -1, 1, 1);
 
-/*
-    Returns a region corresponding to the selection in viewport coordinates.
-*/
+    return QRect();
+}
 
 QRegion ElementViewer::visualRegionForSelection(const QItemSelection &selection) const
 {

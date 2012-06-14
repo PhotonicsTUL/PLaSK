@@ -143,11 +143,11 @@ struct Block: public GeometryElementLeaf<dim> {
     }
 
     virtual bool inside(const DVec& p) const {
-        return getBoundingBox().inside(p);
+        return this->getBoundingBox().inside(p);
     }
 
     virtual bool intersect(const Box& area) const {
-        return getBoundingBox().intersect(area);
+        return this->getBoundingBox().intersect(area);
     }
 
 };

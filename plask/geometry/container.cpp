@@ -26,7 +26,7 @@ shared_ptr<Material> GeometryElementContainer<dim>::getMaterial(const DVec& p) c
 template <int dim>
 void GeometryElementContainer<dim>::getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
-        dest.push_back(getBoundingBox());
+        dest.push_back(this->getBoundingBox());
         return;
     }
     if (path) {
