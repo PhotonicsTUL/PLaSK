@@ -141,26 +141,26 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 /**
  * Horizontal stack.
  */
-struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
+struct ShelfContainer2d: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
-    HorizontalStack(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
+    ShelfContainer2d(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
 
     /**
      * Check if all children have the same heights.
      * @return @c true only if all children have the same heights
      */
-    bool allChildrenHaveSameHeights() const;
+    bool isFlat() const;
 
     /**
      * Check if all children have the same heights and throw exception it's not true.
      * @throw Exception if not all children have the same heights
      */
-    void ensureAllChildrenHaveSameHeights() const {
-        if (!allChildrenHaveSameHeights()) throw Exception("Not all children in horizontal stack have the same height");
+    void ensureFlat() const {
+        if (!isFlat()) throw Exception("Not all children in the shelf have the same height");
     }
 
     /**
-     * Add children to stack top.
+     * Add children to shelf top.
      * @param el element to add
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
@@ -171,7 +171,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
     }
 
     /**
-     * Add child to stack top.
+     * Add child to shelf top.
      * @param el element to add
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
@@ -179,7 +179,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
     PathHints::Hint push_back(const shared_ptr<ChildType> &el) { return add(el); }
 
     /**
-     * Add children to stack top.
+     * Add children to shelf top.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
      * @return path hint, see @ref geometry_paths
@@ -187,7 +187,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el);
 
     /**
-     * Insert children to stack at given position.
+     * Insert children to shelf at given position.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to insert
      * @param pos position where (before which) child should be inserted
@@ -196,7 +196,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
     PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos);
 
     /**
-     * Insert children to stack at given position.
+     * Insert children to shelf at given position.
      * @param el element to insert
      * @param pos position where (before which) child should be inserted
      * @return path hint, see @ref geometry_paths
@@ -208,7 +208,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
     }
 
     /**
-     * Add children to stack begin, move all other children right.
+     * Add children to shelf begin, move all other children right.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
      * @return path hint, see @ref geometry_paths
@@ -218,7 +218,7 @@ struct HorizontalStack: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION
     }
 
     /**
-     * Add children to stack begin, move all other children right.
+     * Add children to shelf begin, move all other children right.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
      * @return path hint, see @ref geometry_paths

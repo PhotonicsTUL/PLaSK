@@ -1,5 +1,5 @@
-#ifndef ROOTDIGGER_H
-#define ROOTDIGGER_H
+#ifndef BROYDEN_H
+#define BROYDEN_H
 
 #include <functional>
 #include <plask/plask.hpp>
@@ -35,9 +35,6 @@ struct RootDigger {
 
     // Search for the root of char_val using globally convergent Broyden method
     dcomplex Broyden(dcomplex x) const;
-
-    // Compute the function value
-    dcomplex value(dcomplex x, bool count=true) const;
 
   public:
 
@@ -108,4 +105,4 @@ struct RootDigger {
 };
 
 }}} // namespace plask::modules::eim
-#endif // ROTDIGGER_H
+#endif // BROYDEN_H

@@ -65,14 +65,11 @@ inline plask::dcomplex operator/(const plask::dcomplex& a, unsigned b) { return 
 
 
 // Useful functions
-/*template <typename T>
-T max(const T& v1, const T& v2) { return (v1<v2)? v2 : v1; }
+using std::max; using std::min;
 
-template <typename T>
-T min(const T& v1, const T& v2) { return (v1<v2)? v1 : v2; }*/
-
-using std::max;
-using std::min;
+inline double abs2(const dcomplex& x) {
+    return real(x)*real(x) + imag(x)*imag(x);
+}
 
 /**
  * Clamp value to given range.

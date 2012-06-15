@@ -163,6 +163,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     struct Changer {
 
+        virtual ~Changer() {}
+
         /**
          * Try to apply changes.
          * @param to_change[in,out] pointer to element which eventualy will be changed (in such case pointer after call can point to another geometry element)

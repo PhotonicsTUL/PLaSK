@@ -47,6 +47,30 @@ static py::list GeometryElementD_getLeafsAsTranslations(const GeometryElementD<d
     return result;
 }
 
+
+static py::list GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints& path=empty_path) {
+    std::vector<shared_ptr<const GeometryElement>> leafs = self->getLeafs(&path);
+    py::list result;
+    for (auto i: leafs) result.append(const_pointer_cast<GeometryElement>(i));
+    return result;
+}
+
+std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self) {
+    std::stringstream out;
+    try {
+        py::object obj(self);
+        py::object cls = obj.attr("__class__");
+        std::string module = py::extract<std::string>(cls.attr("__module__"));
+        std::string name = py::extract<std::string>(cls.attr("__name__"));
+        out << "<" << module << "." << name << " object at (" << self << ")>";
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        out << "<Unrecognized plask.geometry.GeometryElement subclass object at (" << self << ")>";
+    }
+    return out.str();
+}
+
+
 /// Initialize class GeometryElementD for Python
 template <int dim> struct GeometryElementD_vector_args { static const py::detail::keywords<dim> args; };
 template<> const py::detail::keywords<2> GeometryElementD_vector_args<2>::args = (py::arg("c0"), py::arg("c1"));
@@ -73,30 +97,9 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
              (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs (in local coordinates)")
         .def("getLeafsAsTranslations", &GeometryElementD_getLeafsAsTranslations<dim>, (py::arg("path")=empty_path),
              "Return list of Translation objects holding all leafs")
+        .def("getLeafs", &GeometryElement_getLeafs, (py::arg("path")=empty_path),
+             "Return list of all leafs in the subtree originating from this element")
     ;
-}
-
-std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self) {
-    std::stringstream out;
-    try {
-        py::object obj(self);
-        py::object cls = obj.attr("__class__");
-        std::string module = py::extract<std::string>(cls.attr("__module__"));
-        std::string name = py::extract<std::string>(cls.attr("__name__"));
-        out << "<" << module << "." << name << " object at (" << self << ")>";
-    } catch (py::error_already_set) {
-        PyErr_Clear();
-        out << "<Unrecognized plask.geometry.GeometryElement subclass object at (" << self << ")>";
-    }
-    return out.str();
-}
-
-static std::vector<shared_ptr<GeometryElement>> GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints& path=empty_path) {
-    std::vector<shared_ptr<const GeometryElement>> leafs = self->getLeafs(&path);
-    std::vector<shared_ptr<GeometryElement>> result;
-    result.reserve(leafs.size());
-    for (auto i: leafs) result.push_back(const_pointer_cast<GeometryElement>(i));
-    return result;
 }
 
 void register_geometry_element()
@@ -111,9 +114,7 @@ void register_geometry_element()
     py::class_<GeometryElement, shared_ptr<GeometryElement>, boost::noncopyable>("GeometryElement",
         "Base class for all geometry elements.", py::no_init)
         .add_property("type", &GeometryElement::getType)
-        .def("validate", &GeometryElement::validate)
-        .def("getLeafs", &GeometryElement_getLeafs, (py::arg("path")=empty_path),
-             "Return list of all leafs in the subtree originating from this element")
+        .def("validate", &GeometryElement::validate, "Check if the element is compete and ready for calculations")
         .def("__repr__", &GeometryElement__repr__)
     ;
 

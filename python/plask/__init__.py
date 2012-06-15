@@ -12,6 +12,7 @@ def updateFactories():
     def factory(name):
         return lambda **kwargs: materialdb.get(name, **kwargs)
     for mat in material.database:
+        if mat == 'air': continue
         name = mat.split(":")[0]
         if name not in material.__dict__:
             material.__dict__[name] = factory(name)
@@ -32,8 +33,10 @@ def importLibrary(name):
 material.importLibrary = importLibrary
 del importLibrary
 
+material.air = materialdb.get("air")
+material.Air = lambda: material.air
+
 material.importLibrary("plask_materialsdefault")
-material.Air = material.air
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''

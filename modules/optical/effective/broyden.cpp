@@ -1,17 +1,8 @@
-#include "rootdigger.h"
+#include "broyden.h"
 #include "eim.h"
 using namespace std;
 
 namespace plask { namespace modules { namespace eim {
-
-dcomplex RootDigger::value(dcomplex x, bool count) const{
-    dcomplex y = val_function(x);
-    double ay = abs(y);
-    if (count) log_value.count(x, ay);
-    else log_value(x, ay);
-    return y;
-}
-
 
 vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> impoints) const
 {
@@ -39,11 +30,14 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
     for (int r = 0; r < NR; r++)
         for (int i = 0; i < NI; i++) {
         try {
-             values[r][i] = abs(value(dcomplex(repoints[r], impoints[i]), false));
+                dcomplex x = dcomplex(repoints[r], impoints[i]);
+                dcomplex y = val_function(x);
+                log_value(x, values[r][i] = abs(y));
         } catch(...) {
             values[r][i] = NAN;
             //TODO: print warning on screen and handle it in minima search
         }
+        if (std::isnan(values[r][i])) writelog(LOG_WARNING, "Computed value is NaN in map search");
     }
 
     vector<dcomplex> results;
@@ -166,8 +160,11 @@ void RootDigger::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
     double xr1 = xr0 + hr, xi1 = xi0 + hi;
     hr = xr1 - xr0; hi = xi1 - xi0;             // trick to reduce finite precision error
 
-    dcomplex Fr = value(dcomplex(xr1, xi0), false),
-             Fi = value(dcomplex(xr0, xi1), false);
+    dcomplex xr = dcomplex(xr1, xi0), xi = dcomplex(xr0, xi1);
+    dcomplex Fr = val_function(xr),
+             Fi = val_function(xi);
+    log_value(xr, abs(Fr));
+    log_value(xi, abs(Fi));
 
     Jr = (Fr - F) / hr;
     Ji = (Fi - F) / hi;
@@ -194,6 +191,8 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
     double lambda = 1.0;                        // lambda parameter x = x0 + lambda*p
     double lambda1, lambda2 = 0., f2 = 0.;
 
+    bool first = true;
+
     while(true) {
         if (lambda < lambda_min) {              // we have (possible) convergence of x
             x = x0; f = f0;
@@ -201,16 +200,22 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
         }
 
         x = x0 + lambda*p;
-        F = value(x);
-        f = 0.5 * (real(F)*real(F) + imag(F)*imag(F));
+        F = val_function(x);
 
-        if (f < f0 + alpha*lambda*slope)        // sufficient function decrease
+        f = 0.5 * (real(F)*real(F) + imag(F)*imag(F));
+        if (std::isnan(f)) throw ComputationError(module.getId(), "Computed value is NaN");
+
+        if (f < f0 + alpha*lambda*slope) {      // sufficient function decrease
+            log_value.count(x, abs(F));
             return true;
+        }
+        log_value(x, abs(F));
 
         lambda1 = lambda;
 
-        if (lambda1 == 1.0) {                   // first backtrack
+        if (first) {                            // first backtrack
             lambda = -slope / (2. * (f-f0-slope));
+            first = false;
         } else {                                // subsequent backtracks
             double rsh1 = f - f0 - lambda1*slope;
             double rsh2 = f2 - f0 - lambda2*slope;
@@ -227,6 +232,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
             }
         }
 
+
         lambda2 = lambda1; f2 = f;              // store the second last parameters
 
         lambda = max(lambda, 0.1*lambda1);      // guard against too fast decrease of lambda
@@ -242,8 +248,10 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
 dcomplex RootDigger::Broyden(dcomplex x) const
 {
     // Compute the initial guess of the function (and check for the root)
-    dcomplex F = value(x);
-    if (abs(F) < tolf_min) return x;
+    dcomplex F = val_function(x);
+    double absF = abs(F);
+    log_value.count(x, absF);
+    if (absF < tolf_min) return x;
 
     bool restart = true;                    // do we have to recompute Jacobian?
     bool trueJacobian;                      // did we recently update Jacobian?

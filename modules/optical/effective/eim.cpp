@@ -167,7 +167,7 @@ void EffectiveIndex2dModule::stageOne()
             if (all_the_same) {
                 stripeNeffs[i] = same_val;
             } else {
-                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, 1e-4, 1e-6, 1e-5, 1.0, maxiterations);
+                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, 1e-5, 1e-7, 1e-6, 0.01, maxiterations);
                 dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
                 stripeNeffs[i] = rootdigger.getSolution(0.999999*maxn);
                 // dcomplex minn = *std::min_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
@@ -222,6 +222,16 @@ dcomplex EffectiveIndex2dModule::detS1(const plask::dcomplex& x, const std::vect
     // Fn = | T00 T01 | F0
     // Bn = | T10 T11 | B0
     return T(1,1);          // F0 = 0   Bn = 0
+
+    // F0 = |   1 / T00     - T01 / T00 | Fn
+    // Bn = | T10 / T00    det(T) / T00 | B0
+
+    // Compute smallest eigenvalue
+//     const dcomplex b = (1. + T.determinant()) / T(0,0), c = T(1,1)/T(0,0); // a = 1,  b = S00 + S11,  c = det(S)
+//     const dcomplex delta = b*b - 4*c;
+//     dcomplex z0 = 0.5 * (-b + sqrt(delta)),
+//              z1 = 0.5 * (-b - sqrt(delta));
+//     return (abs2(z0) < abs2(z1)) ? z0 : z1;
 }
 
 
@@ -421,7 +431,7 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
 
         for (size_t i = 0; i != rect_mesh.size(); ++i) {
             dcomplex f = valx[rect_mesh.index0(i)] * valy[rect_mesh.index1(i)];
-            results[i] = real(f * conj(f));
+            results[i] = real(abs2(f));
         }
 
     } else {
@@ -446,7 +456,7 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
             dcomplex phasy = exp(- I * betay[iy] * y);
             val *= fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
 
-            results[idx++] = real(val*conj(val));
+            results[idx++] = real(abs2(val));
         }
 
     }

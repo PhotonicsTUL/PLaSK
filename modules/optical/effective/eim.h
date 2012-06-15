@@ -7,7 +7,7 @@
 
 #include <plask/plask.hpp>
 
-#include "rootdigger.h"
+#include "broyden.h"
 
 namespace plask { namespace modules { namespace eim {
 
