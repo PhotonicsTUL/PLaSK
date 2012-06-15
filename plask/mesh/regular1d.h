@@ -17,7 +17,7 @@ namespace plask {
 class RegularMesh1d {
 
     double lo, step;
-    std::size_t step_count;
+    std::size_t points_count;
 
     public:
 
@@ -31,7 +31,7 @@ class RegularMesh1d {
     const_iterator begin() const { return const_iterator(this, 0); }
 
     /// @return iterator referring to the past-the-end point in this mesh
-    const_iterator end() const { return const_iterator(this, step_count); }
+    const_iterator end() const { return const_iterator(this, points_count); }
 
     /// Construct uninitialized mesh.
     RegularMesh1d() {}
@@ -43,7 +43,7 @@ class RegularMesh1d {
      * @param points_count number of points in mesh
      */
     RegularMesh1d(double first, double last, std::size_t points_count)
-        : lo(first), step((last - first) / (points_count-1)), step_count(points_count) {}
+        : lo(first), step((last - first) / (points_count-1)), points_count(points_count) {}
 
     /**
      * Set new mesh parameters.
@@ -54,7 +54,7 @@ class RegularMesh1d {
     void reset(double first, double last, std::size_t points_count) {
         lo = first;
         step = (last - first) / (points_count-1);
-        step_count = points_count;
+        points_count = points_count;
     }
 
     /**
@@ -65,7 +65,7 @@ class RegularMesh1d {
     /**
      * @return coordinate of last point in mesh
      */
-    double getLast() const { return lo + step * step_count; }
+    double getLast() const { return lo + step * (points_count-1); }
 
     /**
      * @return distanse between two neighbouring points in mesh
@@ -73,7 +73,7 @@ class RegularMesh1d {
     double getStep() const { return step; }
 
     /// @return number of points in mesh
-    std::size_t size() const { return step_count; }
+    std::size_t size() const { return points_count; }
 
      /**
       * Compares meshes
@@ -82,7 +82,7 @@ class RegularMesh1d {
       * @return @c true only if this mesh and @p to_compare represents the same set of points
       */
      bool operator==(const RegularMesh1d& to_compare) const {
-         return this->lo == to_compare.lo && this->step == to_compare.step && this->step_count == to_compare.step_count;
+         return this->lo == to_compare.lo && this->step == to_compare.step && this->points_count == to_compare.points_count;
      }
 
      /**
@@ -92,7 +92,7 @@ class RegularMesh1d {
       */
      friend inline std::ostream& operator<<(std::ostream& out, const RegularMesh1d& self) {
          out << "[";
-         for (std::size_t i = 0; i < step_count; ++i) {
+         for (std::size_t i = 0; i < points_count; ++i) {
              if (i != 0) out << ", ";
              out << this->operator [](i);
          }
@@ -101,7 +101,7 @@ class RegularMesh1d {
      }
 
      /// @return true only if there are no points in mesh
-     bool empty() const { return step_count == 0; }
+     bool empty() const { return points_count == 0; }
 
      /**
       * Get point by index.
@@ -113,7 +113,7 @@ class RegularMesh1d {
      /**
       * Remove all points from mesh.
       */
-     void clear() { step_count = 0; }
+     void clear() { points_count = 0; }
 
      /**
       * Find index where @p to_find point could be inserted.
@@ -123,7 +123,7 @@ class RegularMesh1d {
       *         Can be equal to size() if to_find is higher than all points in mesh.
       */
      std::size_t findIndex(double to_find) const {
-         return clamp(int(cail((to_find - lo) / step)), 0, int(step_count));
+         return clamp(int(cail((to_find - lo) / step)), 0, int(points_count));
 
      }
 
