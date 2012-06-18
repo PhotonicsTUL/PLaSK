@@ -32,7 +32,7 @@ struct StackWrapper: public ElementWrapperFor< plask::StackContainer<dim> > {
 
      //TODO can be move to generic container wrapper
     std::vector<const GeometryElementCreator*> getChildCreators() const {
-        return getCreators<dim>();
+        return getCreators(dim);
     }
 
 };

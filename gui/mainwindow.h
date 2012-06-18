@@ -44,10 +44,14 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QTreeView>
+#include <QListView>
 #include <QtTreePropertyBrowser>
 #include <QItemSelection>
+
+
 #include "document.h"
 #include "view/elementview.h"
+#include "creatorslist.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -55,6 +59,7 @@ class QListWidget;
 class QMenu;
 class QTextEdit;
 class QTreeView;
+class QListView;
 class QtTreePropertyBrowser;
 class QItemSelection;
 QT_END_NAMESPACE
@@ -85,11 +90,13 @@ private:
     void createStatusBar();
     void createDockWindows();
 
-    ElementViewer *view;
-    QTreeView *treeView;
+    ElementViewer *view;    //TODO should accept only drop with source() != 0 (from this application)
+    QTreeView *treeView;    //TODO should accept only drop with source() != 0 (from this application)
     QtTreePropertyBrowser *propertyTree;
+    QListView *creatorsList;
 
     Document document;
+    CreatorsListModel creators;
 
     QMenu *fileMenu;
     QMenu *editMenu;

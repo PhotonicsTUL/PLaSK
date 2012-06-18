@@ -245,13 +245,12 @@ QVariant GeometryTreeModel::data(const QModelIndex &index, int role) const {
 
     GeometryTreeItem* item = static_cast<GeometryTreeItem*>(index.internalPointer());
 
-    if (role == Qt::DecorationRole)
-        return item->icon();
+    switch (role) {
+        case Qt::DecorationRole: return item->icon();
+        case Qt::DisplayRole: return item->data(index.column());
+    }
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
-    return item->data(index.column());
+    return QVariant();
 }
 
 Qt::ItemFlags GeometryTreeModel::flags(const QModelIndex &index) const

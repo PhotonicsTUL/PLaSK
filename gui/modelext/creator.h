@@ -10,13 +10,14 @@ struct GeometryElementCreator {
 
     /**
      * Construct element.
-     * @return constructed element
+     * @param dim number of dimentions of constructed element
+     * @return constructed element or nullptr if this doesn't support given @p dim
      */
-    virtual plask::shared_ptr<plask::GeometryElement> getElement() const = 0;
+    virtual plask::shared_ptr<plask::GeometryElement> getElement(int dim) const = 0;
 
     template <int dim>
     plask::shared_ptr< plask::GeometryElementD<dim> > getElement() const {
-        return plask::static_pointer_cast< plask::GeometryElementD<dim> >(getElement());
+        return plask::static_pointer_cast< plask::GeometryElementD<dim> >(getElement(dim));
     }
 
     /**
@@ -26,16 +27,21 @@ struct GeometryElementCreator {
     virtual std::string getName() const = 0;
 
     /**
-     * Get number of dimentions of created element.
-     * @return number of dimentions
+     * Check if this can create element with given number of dimentions @p dim.
+     *
+     * Default implementation returns @c true only for @p dim equal to 2 or 3.
+     * @param dim number of dimentions
+     * @return @c true only if this can create element with given number of dimentions @p dim
      */
-    virtual int getDimensionsCount() const = 0;
+    virtual bool supportDimensionsCount(int dim) const {
+        return dim == 2 || dim == 3;
+    }
 
     //TODO icons? Qt actions?
 };
 
-template <int dim>
-std::vector<const GeometryElementCreator*> getCreators();
+const std::vector<const GeometryElementCreator*>& getCreators();
+const std::vector<const GeometryElementCreator*>& getCreators(int dim);
 
 //std::vector<GeometryElementCreator&> get3dCreators();
 

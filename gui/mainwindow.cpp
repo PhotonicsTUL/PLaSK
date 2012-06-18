@@ -217,7 +217,7 @@ void MainWindow::createStatusBar()
 
 void MainWindow::createDockWindows() {
     QDockWidget *dock = new QDockWidget(tr("Geometry elements tree"), this);
-    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea); 
     treeView = new QTreeView(dock);
     treeView->setAlternatingRowColors(true);    //2 colors for even/odd
     treeView->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -234,16 +234,22 @@ void MainWindow::createDockWindows() {
     dock = new QDockWidget(tr("Properties"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
    // propertyTree = new QtTreePropertyBrowser(dock);
-
     /*QWidget* group = new QWidget(this);
     QFormLayout* l = new QFormLayout(group);
     group->setLayout(l);
     l->addRow("ExampleLabel1", new QSpinBox);
     l->addRow("ExampleLabel2", new QSpinBox);
     dock->setWidget(group);*/
-
     dock->setWidget(propertyTree);
     addDockWidget(Qt::LeftDockWidgetArea, dock);
+    viewMenu->addAction(dock->toggleViewAction());
+
+    dock = new QDockWidget(tr("New geometry elements"), this);
+    dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    creatorsList = new QListView(dock);
+    creatorsList->setModel(&creators);
+    dock->setWidget(creatorsList);
+    addDockWidget(Qt::RightDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
 }
 

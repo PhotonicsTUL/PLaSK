@@ -3,40 +3,61 @@
 #include <plask/geometry/leaf.h>
 #include <plask/geometry/stack.h>
 
-struct Block2dCreator: public GeometryElementCreator {
+struct BlockCreator: public GeometryElementCreator {
 
-    virtual plask::shared_ptr<plask::GeometryElement> getElement() const {
-        return plask::make_shared< plask::Block<2> >();
+    virtual plask::shared_ptr<plask::GeometryElement> getElement(int dim) const {
+        switch (dim) {
+            case 2: return plask::make_shared< plask::Block<2> >();
+            case 3: return plask::make_shared< plask::Block<3> >();
+        }
+        return plask::shared_ptr<plask::GeometryElement>();
     }
 
-    virtual std::string getName() const { return "block2d"; }
+    virtual std::string getName() const { return "block"; }
 
-    virtual int getDimensionsCount() const { return 2; }
 };
 
-struct Stack2dCreator: public GeometryElementCreator {
+struct StackCreator: public GeometryElementCreator {
 
-    virtual plask::shared_ptr<plask::GeometryElement> getElement() const {
-        return plask::make_shared< plask::StackContainer<2> >();
+    virtual plask::shared_ptr<plask::GeometryElement> getElement(int dim) const {
+        switch (dim) {
+            case 2: return plask::make_shared< plask::StackContainer<2> >();
+            case 3: return plask::make_shared< plask::StackContainer<3> >();
+        }
+        return plask::shared_ptr<plask::GeometryElement>();
     }
 
-    virtual std::string getName() const { return "stack2d"; }
+    virtual std::string getName() const { return "stack"; }
 
-    virtual int getDimensionsCount() const { return 2; }
 };
 
+struct MultiStackCreator: public GeometryElementCreator {
 
-template <>
-std::vector<const GeometryElementCreator*> getCreators<2>() {
-    static std::vector<const GeometryElementCreator*> vec = { new Block2dCreator(), new Stack2dCreator() };
+    virtual plask::shared_ptr<plask::GeometryElement> getElement(int dim) const {
+        switch (dim) {
+            case 2: return plask::make_shared< plask::MultiStackContainer<2> >();
+            case 3: return plask::make_shared< plask::MultiStackContainer<3> >();
+        }
+        return plask::shared_ptr<plask::GeometryElement>();
+    }
+
+    virtual std::string getName() const { return "multistack"; }
+
+};
+
+const std::vector<const GeometryElementCreator*>& getCreators() {
+    static std::vector<const GeometryElementCreator*> vec = { new BlockCreator(), new StackCreator(), new MultiStackCreator() };
     return vec;
 }
 
-template <>
-std::vector<const GeometryElementCreator*> getCreators<3>() {
-    static std::vector<const GeometryElementCreator*> vec = {  };
-    return vec;
+const std::vector<const GeometryElementCreator*>& getCreators(int dim) {
+    static std::vector<const GeometryElementCreator*> vec2 = { new BlockCreator(), new StackCreator(), new MultiStackCreator() };
+    static std::vector<const GeometryElementCreator*> vec3 = { new BlockCreator(), new StackCreator(), new MultiStackCreator() };
+    static std::vector<const GeometryElementCreator*> empty_vec;
+    switch (dim) {
+        case 2: return vec2;
+        case 3: return vec3;
+    }
+    return empty_vec;
 }
 
-template std::vector<const GeometryElementCreator*> getCreators<2>();
-template std::vector<const GeometryElementCreator*> getCreators<3>();
