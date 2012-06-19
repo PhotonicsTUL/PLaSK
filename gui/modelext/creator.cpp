@@ -45,13 +45,30 @@ struct MultiStackCreator: public GeometryElementCreator {
 
 };
 
+struct ShelfCreator: public GeometryElementCreator {
+
+    virtual plask::shared_ptr<plask::GeometryElement> getElement(int dim) const {
+        switch (dim) {
+            case 2: return plask::make_shared< plask::ShelfContainer2d >();
+        }
+        return plask::shared_ptr<plask::GeometryElement>();
+    }
+
+    virtual std::string getName() const { return "shelf2d"; }
+
+    virtual bool supportDimensionsCount(int dim) const {
+        return dim == 2;
+    }
+
+};
+
 const std::vector<const GeometryElementCreator*>& getCreators() {
-    static std::vector<const GeometryElementCreator*> vec = { new BlockCreator(), new StackCreator(), new MultiStackCreator() };
+    static std::vector<const GeometryElementCreator*> vec = { new BlockCreator(), new StackCreator(), new MultiStackCreator(), new ShelfCreator() };
     return vec;
 }
 
 const std::vector<const GeometryElementCreator*>& getCreators(int dim) {
-    static std::vector<const GeometryElementCreator*> vec2 = { new BlockCreator(), new StackCreator(), new MultiStackCreator() };
+    static std::vector<const GeometryElementCreator*> vec2 = { new BlockCreator(), new StackCreator(), new MultiStackCreator(), new ShelfCreator() };
     static std::vector<const GeometryElementCreator*> vec3 = { new BlockCreator(), new StackCreator(), new MultiStackCreator() };
     static std::vector<const GeometryElementCreator*> empty_vec;
     switch (dim) {

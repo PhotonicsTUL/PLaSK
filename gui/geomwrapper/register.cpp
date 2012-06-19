@@ -69,6 +69,7 @@ struct Register {
         appendConstructor< StackWrapper<3> >();
         appendConstructor< MultiStackWrapper<2> >();
         appendConstructor< MultiStackWrapper<3> >();
+        appendConstructor< ShelfWrapper >();
         appendConstructor< BlockWrapper<2> >();
         appendConstructor< BlockWrapper<3> >();
     }

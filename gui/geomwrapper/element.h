@@ -234,7 +234,10 @@ public:
      * @return @c true if @p to_insert can be insert to this at position @p index
      */
     virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
-        return false;
+        return wrappedElement->isContainer() &&
+                index <= wrappedElement->getRealChildrenCount() &&
+                to_insert->getDimensionsCount() == getChildrenDimensionsCount() &&
+                wrappedElement->canHasAsChild(*to_insert);;
     }
 
     virtual bool canInsert(const GeometryElementCreator& to_insert, std::size_t index) const {
@@ -269,6 +272,12 @@ public:
         return std::vector<const GeometryElementCreator*>();
     }
 
+    /**
+     * Get index where element should be insert to be near place pointed by @p point.
+     * @param point point to place in this
+     * @return value which will be returned by tryInsertNearPoint2d for given point
+     * @see tryInsertNearPoint2d
+     */
     virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point) {
         return -1;
     }
@@ -285,6 +294,12 @@ public:
         return this->tryInsert(to_insert, index) ? index : -1;
     }
 
+    /**
+     * Insert element created by @p to_insert near place pointed by @p point.
+     * @param to_insert creator of element to insert
+     * @param point point to place in this, near which element @p to_insert should be inserted
+     * @return index of inserted element in this, or -1 if insertion wasn't succesed
+     */
     virtual int tryInsertNearPoint2d(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point) {
         if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
         return tryInsertNearPoint2d(to_insert.getElement(getChildrenDimensionsCount()), point);

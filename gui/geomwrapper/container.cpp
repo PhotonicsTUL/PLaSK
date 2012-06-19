@@ -49,7 +49,7 @@ void StackWrapper<dim>::setupPropertiesBrowserForChild(std::size_t index, Browse
 
 template <int dim>
 int StackWrapper<dim>::getInsertionIndexForPoint(const plask::Vec<2, double>& point) {
-    return this->c().getInsertionIndexForHeight(point.up);
+    return std::min(this->c().getInsertionIndexForHeight(point.up), this->wrappedElement->getRealChildrenCount());
 }
 
 template class StackWrapper<2>;
@@ -87,3 +87,16 @@ void MultiStackWrapper<dim>::setupPropertiesBrowserForChild(std::size_t index, B
 
 template class MultiStackWrapper<2>;
 template class MultiStackWrapper<3>;
+
+QString ShelfWrapper::toStr() const
+{
+    plask::GeometryElement& el = *this->wrappedElement;
+    return QString(QObject::tr("shelf2d%2\n%3 children"))
+        .arg(this->name.isEmpty() ? "" : (" \"" + this->name + "\""))
+            .arg(el.getChildrenCount());
+}
+
+int ShelfWrapper::getInsertionIndexForPoint(const plask::Vec<2, double> &point)
+{
+    return std::min(this->c().getInsertionIndexForHeight(point.tran), this->wrappedElement->getRealChildrenCount());
+}

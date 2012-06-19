@@ -19,20 +19,10 @@ struct StackWrapper: public ElementWrapperFor< plask::StackContainer<dim> > {
 
     virtual void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
-    //TODO can be move to generic container wrapper
-    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
-        return index <= this->c().getRealChildrenCount() && to_insert->getDimensionsCount() == dim && this->c().canHasAsChild(*to_insert);
-    }
-
     virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
-        if (!canInsert(to_insert, index)) return false;
+        if (!this->canInsert(to_insert, index)) return false;
         this->c().insertUnsafe(plask::static_pointer_cast< plask::GeometryElementD<dim> >(to_insert), index);
         return true;
-    }
-
-     //TODO can be move to generic container wrapper
-    std::vector<const GeometryElementCreator*> getChildCreators() const {
-        return getCreators(dim);
     }
 
     virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
@@ -47,6 +37,24 @@ struct MultiStackWrapper: public ElementWrapperFor< plask::MultiStackContainer<d
     virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
     //virtual void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) const;
+
+};
+
+struct ShelfWrapper: public ElementWrapperFor< plask::ShelfContainer2d > {
+
+    virtual QString toStr() const;
+
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
+        return index <= this->c().getRealChildrenCount() && to_insert->getDimensionsCount() == 2 && this->c().canHasAsChild(*to_insert);
+    }
+
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+        if (!canInsert(to_insert, index)) return false;
+        this->c().insertUnsafe(plask::static_pointer_cast< plask::GeometryElementD<2> >(to_insert), index);
+        return true;
+    }
+
+    virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
 
 };
 
