@@ -42,12 +42,12 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
         self.module.polarization = "TE"
         self.module.symmetry = "+"
-        self.assertAlmostEqual( self.module.computeMode(1.15), 1.1502819)
+        self.assertAlmostEqual( self.module.computeMode(1.15), 1.1502818)
         self.module.symmetry = "-"
         self.assertAlmostEqual( self.module.computeMode(1.07), 1.0675743)
 
         self.module.polarization = "TM"
         self.module.symmetry = "+"
-        #self.assertAlmostEqual( self.module.computeMode(1.10), 1.1156605)
+        self.assertAlmostEqual( self.module.computeMode(1.10), 1.1156605)
         self.module.symmetry = "-"
-        #self.assertAlmostEqual( self.module.computeMode(1.05), 1.0450032)
+        self.assertAlmostEqual( self.module.computeMode(1.05), 1.0450032)

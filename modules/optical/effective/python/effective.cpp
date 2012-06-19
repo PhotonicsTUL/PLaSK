@@ -59,6 +59,18 @@ void EffectiveIndex2dModule_setPolarization(EffectiveIndex2dModule& self, std::s
     }
 }
 
+// py::object EffectiveIndex2dModule_getStripeDeterminant(EffectiveIndex2dModule& self, int i, py::object neff) {
+//     if (i < 0) i = self.getMesh()->tran().size() + 1 - i;
+//     if (i > self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
+//
+//     try {
+//         return self.getStripeDeterminant(i, py::extract<dcomplex> neff);
+//     } catch (py::error_already_set) {
+//         PyErr_Clear();
+//         if (PyArr
+//     }
+//
+// }
 
 /**
  * Initialization of your module to Python
@@ -85,6 +97,8 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
         METHOD(setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by findModes.", "neff");
+        METHOD(getStripeDeterminant, "Get single stripe modal determinant for debugging purposes", "stripe", "neff");
+        METHOD(getDeterminant, "Get modal determinant for debugging purposes", "neff");
         RECEIVER(inWavelength, "Wavelength of the light");
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         PROVIDER(outNeff, "Effective index of the last computed mode");

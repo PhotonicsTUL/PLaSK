@@ -21,7 +21,7 @@ struct RootDigger {
     function_type val_function;
 
     // Value writelog
-    Data2dLog<dcomplex,double>& log_value;
+    Data2dLog<dcomplex,dcomplex>& log_value;
 
     // Parameters for Broyden algorithm
     constexpr static double EPS         ///< Square root of machine precission
@@ -47,7 +47,7 @@ struct RootDigger {
            lambda_min;  ///< Minimum decreased ratio of the step (lambda)
 
     // Constructor
-    RootDigger(EffectiveIndex2dModule& module, const function_type& val_fun, Data2dLog<dcomplex,double>& log_value,
+    RootDigger(EffectiveIndex2dModule& module, const function_type& val_fun, Data2dLog<dcomplex,dcomplex>& log_value,
                double tolx=1.0e-07, double tolf_min=1.0e-10, double tolf_max=1.0e-8, double maxstep=0.1, int maxiterations=500,
                double alpha=1.0e-6, double lambda_min=1.0e-7) :
         module(module),

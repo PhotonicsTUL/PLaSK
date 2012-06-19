@@ -27,15 +27,15 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
         TM,
     };
 
-  private:
+  protected:
 
     friend class RootDigger;
 
     /// Logger for char_val
-    Data2dLog<dcomplex,double> log_stripe;
+    Data2dLog<dcomplex,dcomplex> log_stripe;
 
     /// Logger for char_val
-    Data2dLog<dcomplex,double> log_value;
+    Data2dLog<dcomplex,dcomplex> log_value;
 
     /// Cached refractive indices
     std::vector<std::vector<dcomplex>> nrCache;
@@ -185,6 +185,19 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
      */
     void setMode(dcomplex neff);
 
+    /**
+     * Compute determinant for a single stripe
+     * \param stripe index of stripe
+     * \param neff effective index to use
+     */
+    dcomplex getStripeDeterminant(size_t stripe, dcomplex neff) { updateCache(); return detS1(neff, nrCache[stripe]); }
+
+    /**
+     * Compute modal determinant for the whole matrix
+     * \param neff effective index to use
+     */
+    dcomplex getDeterminant(dcomplex neff) { stageOne(); return detS(neff); }
+
 
     /// Receiver of the wavelength
     ReceiverFor<Wavelength> inWavelength;
@@ -206,8 +219,6 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     /// Invalidate the data
     virtual void onInvalidate();
 
-  private:
-
     dcomplex k0;        ///< Cache of the normalized frequency
 
     /// Compute mirror losses for specified effective index
@@ -221,14 +232,14 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
         return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->length);
     }
 
+    /// Update the refractive indices cache and do some checks
+    bool updateCache();
+
     /**
      * Fist stage of computations
-     * Update the refractive indices cache and perform vertical computations
+     * Perform vertical computations
      */
     void stageOne();
-
-    /// Return the effective index of a single vertical stripe, optionally also computing fields
-    Eigen::Matrix2cd getMatrix1(const dcomplex& neff, const std::vector<dcomplex>& NR);
 
     /// Return S matrix determinant for one stripe
     dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR);

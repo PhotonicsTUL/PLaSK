@@ -1,5 +1,6 @@
 #include <plask/plask.hpp>
 #include <plask/python.hpp>
+#include <boost/concept_check.hpp>
 namespace py = boost::python;
 
 //// Vector ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +79,6 @@ struct ReceiverTest : plask::Module {
     virtual std::string getName() const { return "Receiver Test"; }
     plask::ReceiverFor<plask::EffectiveIndex> inNeff;
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

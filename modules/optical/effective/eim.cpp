@@ -5,8 +5,8 @@ using plask::dcomplex;
 namespace plask { namespace modules { namespace eim {
 
 EffectiveIndex2dModule::EffectiveIndex2dModule() :
-    log_stripe(dataLog<dcomplex, double>(getId(), "neff", "det")),
-    log_value(dataLog<dcomplex, double>(getId(), "Neff", "det")),
+    log_stripe(dataLog<dcomplex, dcomplex>(getId(), "neff", "det")),
+    log_value(dataLog<dcomplex, dcomplex>(getId(), "Neff", "det")),
     have_fields(false),
     old_polarization(TE),
     polarization(TE),
@@ -104,7 +104,7 @@ using namespace Eigen;
 
 
 
-void EffectiveIndex2dModule::stageOne()
+bool EffectiveIndex2dModule::updateCache()
 {
     bool updated = initCalculation();
 
@@ -124,8 +124,6 @@ void EffectiveIndex2dModule::stageOne()
 
     size_t xsize = mesh->tran().size() + 1;
     size_t ysize = mesh->up().size() + 1;
-
-    size_t N = stripeNeffs.size();
 
     if (updated || inTemperature.changed || inWavelength.changed || polarization != old_polarization) { // We need to update something
 
@@ -151,10 +149,18 @@ void EffectiveIndex2dModule::stageOne()
                 nrCache[i][j] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->Nr(w, T);
             }
         }
+        if (xbegin == 1) nrCache[0] = nrCache[1];
+        return true;
+    }
+    return false;
+}
+
+void EffectiveIndex2dModule::stageOne()
+{
+    if (updateCache()) {
 
         // Compute effective indices for all stripes
         // TODO: start form the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
-
         for (size_t i = xbegin; i != nrCache.size(); ++i) {
 
             writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
@@ -167,7 +173,7 @@ void EffectiveIndex2dModule::stageOne()
             if (all_the_same) {
                 stripeNeffs[i] = same_val;
             } else {
-                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, 1e-5, 1e-7, 1e-6, 0.01, maxiterations);
+                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, 1e-5, 1e-7, 1e-6, 0.5, maxiterations);
                 dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
                 stripeNeffs[i] = rootdigger.getSolution(0.999999*maxn);
                 // dcomplex minn = *std::min_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
@@ -175,63 +181,44 @@ void EffectiveIndex2dModule::stageOne()
                 // stripeNeffs[i] = rootdigger.getSolution(map[0]);
             }
         }
-        if (xbegin == 1) {
-            nrCache[0] = nrCache[1];
-            stripeNeffs[0] = stripeNeffs[1];
-        }
+        if (xbegin == 1) stripeNeffs[0] = stripeNeffs[1];
     }
-    std::stringstream nrs; for (size_t i = xbegin; i < N; ++i) nrs << ", " << str(stripeNeffs[i]);
+    std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
     writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
 }
 
 
-Matrix2cd EffectiveIndex2dModule::getMatrix1(const plask::dcomplex& neff, const std::vector<dcomplex>& NR)
+dcomplex EffectiveIndex2dModule::detS1(const plask::dcomplex& x, const std::vector<dcomplex>& NR)
 {
     size_t N = NR.size();
 
     std::vector<dcomplex> beta(N);
     for (size_t i = 0; i < N; ++i) {
-        beta[i] = k0 * sqrt(NR[i]*NR[i] - neff*neff);
+        beta[i] = k0 * sqrt(NR[i]*NR[i] - x*x);
+        if (imag(beta[i]) > 0.) beta[i] = -beta[i];
     }
 
     auto fresnel = [&](size_t i) -> Matrix2cd {
         dcomplex f =  (polarization==TM)? NR[i+1]/NR[i] : 1.;
         dcomplex n = 0.5 * beta[i]/beta[i+1] * f*f;
         Matrix2cd M; M << (0.5+n), (0.5-n),
-                        (0.5-n), (0.5+n);
+                          (0.5-n), (0.5+n);
         return M;
     };
 
-    Matrix2cd T = fresnel(0);
+    Vector2cd E; E << 0., 1.;
+    E = fresnel(0) * E;
 
     for (size_t i = 1; i < N-1; ++i) {
         double d = mesh->c1[i] - mesh->c1[i-1];
         dcomplex phas = exp(-I * beta[i] * d);
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;
-        T = P * T;
-        T = fresnel(i) * T;
+        E = P * E;
+        E = fresnel(i) * E;
     }
 
-    return T;
-}
-
-dcomplex EffectiveIndex2dModule::detS1(const plask::dcomplex& x, const std::vector<dcomplex>& NR)
-{
-    Matrix2cd T = getMatrix1(x, NR);
-    // Fn = | T00 T01 | F0
-    // Bn = | T10 T11 | B0
-    return T(1,1);          // F0 = 0   Bn = 0
-
-    // F0 = |   1 / T00     - T01 / T00 | Fn
-    // Bn = | T10 / T00    det(T) / T00 | B0
-
-    // Compute smallest eigenvalue
-//     const dcomplex b = (1. + T.determinant()) / T(0,0), c = T(1,1)/T(0,0); // a = 1,  b = S00 + S11,  c = det(S)
-//     const dcomplex delta = b*b - 4*c;
-//     dcomplex z0 = 0.5 * (-b + sqrt(delta)),
-//              z1 = 0.5 * (-b - sqrt(delta));
-//     return (abs2(z0) < abs2(z1)) ? z0 : z1;
+    return E[1];
 }
 
 
@@ -245,6 +232,7 @@ Matrix2cd EffectiveIndex2dModule::getMatrix(dcomplex neff)
     std::vector<dcomplex> beta(N);
     for (size_t i = xbegin; i < N; ++i) {
         beta[i] = k0 * sqrt(stripeNeffs[i]*stripeNeffs[i] - neff*neff);
+        if (imag(beta[i]) > 0.) beta[i] = -beta[i];
     }
 
     auto fresnel = [&](size_t i) -> Matrix2cd {
@@ -302,6 +290,7 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
     std::vector<dcomplex> betax(Nx);
     for (size_t i = 0; i < Nx; ++i) {
         betax[i] = k0 * sqrt(stripeNeffs[i]*stripeNeffs[i] - neff*neff);
+        if (imag(betax[i]) > 0.) betax[i] = -betax[i];
     }
     if (!have_fields) {
         auto fresnelX = [&](size_t i) -> Matrix2cd {
@@ -371,6 +360,7 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
     } else {
         for (size_t i = 0; i < Ny; ++i) {
             betay[i] = k0 * sqrt(nrCache[mid_x][i]*nrCache[mid_x][i] - stripeNeffs[mid_x]*stripeNeffs[mid_x]);
+            if (imag(betay[i]) > 0.) betay[i] = -betay[i];
         }
     }
     if (!have_fields) {

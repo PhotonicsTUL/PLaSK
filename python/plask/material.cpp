@@ -82,7 +82,7 @@ class MaterialWrap : public Material
     }
 
 
-    // Here there are overriden methods from Material class
+    // Here there are overridden methods from Material class
 
     virtual std::string name() const {
         py::object cls = py::object(py::detail::borrowed_reference(self)).attr("__class__");
@@ -152,11 +152,9 @@ class MaterialWrap : public Material
                              -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
     }
 
-
     // End of overriden methods
 
 };
-
 
 /**
  * Object constructing custom simple Python material when read from XML file
@@ -165,7 +163,7 @@ class MaterialWrap : public Material
  *
  * Other parameters are ignored
  */
-class PythonSimpleMaterialConstructor : public MaterialsDB::MaterialConstructor
+class PythonSimpleMaterialConstructor: public MaterialsDB::MaterialConstructor
 {
     py::object material_class;
     std::string dopant;

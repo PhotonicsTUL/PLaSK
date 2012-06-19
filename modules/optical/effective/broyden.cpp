@@ -32,7 +32,8 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
         try {
                 dcomplex x = dcomplex(repoints[r], impoints[i]);
                 dcomplex y = val_function(x);
-                log_value(x, values[r][i] = abs(y));
+                log_value(x, y);
+                values[r][i] = abs(y);
         } catch(...) {
             values[r][i] = NAN;
             //TODO: print warning on screen and handle it in minima search
@@ -163,8 +164,8 @@ void RootDigger::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
     dcomplex xr = dcomplex(xr1, xi0), xi = dcomplex(xr0, xi1);
     dcomplex Fr = val_function(xr),
              Fi = val_function(xi);
-    log_value(xr, abs(Fr));
-    log_value(xi, abs(Fi));
+    log_value(xr, Fr);
+    log_value(xi, Fi);
 
     Jr = (Fr - F) / hr;
     Ji = (Fi - F) / hi;
@@ -206,10 +207,10 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
         if (std::isnan(f)) throw ComputationError(module.getId(), "Computed value is NaN");
 
         if (f < f0 + alpha*lambda*slope) {      // sufficient function decrease
-            log_value.count(x, abs(F));
+            log_value.count(x, F);
             return true;
         }
-        log_value(x, abs(F));
+        log_value(x, F);
 
         lambda1 = lambda;
 
@@ -250,7 +251,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     // Compute the initial guess of the function (and check for the root)
     dcomplex F = val_function(x);
     double absF = abs(F);
-    log_value.count(x, absF);
+    log_value.count(x, F);
     if (absF < tolf_min) return x;
 
     bool restart = true;                    // do we have to recompute Jacobian?
