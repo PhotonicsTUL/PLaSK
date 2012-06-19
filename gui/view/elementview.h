@@ -27,9 +27,15 @@ class ElementViewer: public QAbstractItemView
 public:
     ElementViewer(QWidget *parent = 0);
 
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dragLeaveEvent(QDragLeaveEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
+
+    void dropEvent(QDropEvent *event);
+
     /**
-       @return the position of the item in viewport coordinates.
-    */
+     * @return the position of the item in viewport coordinates.
+     */
     QRect visualRect(const QModelIndex &index) const;
 
     void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible);
@@ -103,6 +109,11 @@ private:
     int margin;
     QPoint origin;
     QRubberBand *rubberBand;
+
+    /**
+     * Highlighted rectangle, used in drop events to show drop place.
+     */
+    QRectF highlightedRect;
 
     /**
      * Viewer zoom in x and y directions.

@@ -7,8 +7,8 @@ struct BlockCreator: public GeometryElementCreator {
 
     virtual plask::shared_ptr<plask::GeometryElement> getElement(int dim) const {
         switch (dim) {
-            case 2: return plask::make_shared< plask::Block<2> >();
-            case 3: return plask::make_shared< plask::Block<3> >();
+            case 2: return plask::make_shared< plask::Block<2> >(plask::vec(1.0, 1.0));
+            case 3: return plask::make_shared< plask::Block<3> >(plask::vec(1.0, 1.0, 1.0));
         }
         return plask::shared_ptr<plask::GeometryElement>();
     }

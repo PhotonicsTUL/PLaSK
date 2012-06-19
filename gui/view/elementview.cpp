@@ -10,11 +10,80 @@
 ElementViewer::ElementViewer(QWidget *parent)
     : QAbstractItemView(parent), zoom(10.0, 10.0)
 {
+    setAcceptDrops(true);
+
     horizontalScrollBar()->setRange(0, 0);
     verticalScrollBar()->setRange(0, 0);
 
     margin = 8;
     rubberBand = 0;
+}
+
+void ElementViewer::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->source() != 0 && event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR))
+        event->accept();
+    else
+        event->ignore();
+}
+
+void ElementViewer::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    /*QRect updateRect = highlightedRect;
+    highlightedRect = QRect();
+    update(updateRect);*/
+    event->accept();
+}
+
+void ElementViewer::dragMoveEvent(QDragMoveEvent *event)
+{
+    //QRect updateRect = highlightedRect.unite(targetSquare(event->pos()));
+
+    if (event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
+        /*&& findPiece(targetSquare(event->pos())) == -1*/) {
+
+        //highlightedRect = targetSquare(event->pos());
+        event->setDropAction(Qt::MoveAction);
+        event->accept();
+    } else {
+        //highlightedRect = QRect();
+        event->ignore();
+    }
+
+    //update(updateRect);
+}
+
+void ElementViewer::dropEvent(QDropEvent *event)
+{
+    if (event->source() != 0 &&     //source is local
+        event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
+        /*&& findPiece(targetSquare(event->pos())) == -1*/) {
+
+        QByteArray ptrData = event->mimeData()->data(MIME_PTR_TO_CREATOR);
+        QDataStream stream(&ptrData, QIODevice::ReadOnly);
+
+        GeometryElementCreator* creator;
+        stream.readRawData(reinterpret_cast<char*>(creator), sizeof(creator));
+
+        //highlightedRect = QRect();
+        //update(square);
+
+        event->setDropAction(Qt::CopyAction);
+        event->accept();
+
+       // plask::shared_ptr<ElementWrapper> dst = getElementWrapper();
+       // dst->tryInsert(creator->getElement(2), 0);
+        model()->insertRow(creator->getElement(2), rootIndex(), 0);
+
+        /*if (location == QPoint(square.x()/pieceSize(), square.y()/pieceSize())) {
+            inPlace++;
+            if (inPlace == 25)
+                emit puzzleCompleted();
+        }*/
+    } else {
+        //highlightedRect = QRect();
+        event->ignore();
+    }
 }
 
 void ElementViewer::dataChanged(const QModelIndex &topLeft,
@@ -175,6 +244,10 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
                 painter.drawRect(r);
             }
         }
+    }
+
+    if (highlightedRect.isValid()) {
+        painter.fillRect(highlightedRect, QColor(120, 20, 50, 70));
     }
 
     painter.restore();
@@ -343,3 +416,4 @@ QRegion ElementViewer::visualRegionForSelection(const QItemSelection &selection)
     }
     return region;
 }
+

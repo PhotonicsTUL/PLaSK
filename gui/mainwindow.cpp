@@ -248,6 +248,7 @@ void MainWindow::createDockWindows() {
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     creatorsList = new QListView(dock);
     creatorsList->setModel(&creators);
+    creatorsList->setDragDropMode(QAbstractItemView::DragOnly);
     dock->setWidget(creatorsList);
     addDockWidget(Qt::RightDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());

@@ -13,6 +13,12 @@ struct CreatorsListModel: public QAbstractListModel {
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
+    QStringList mimeTypes() const;
+
+    QMimeData *mimeData(const QModelIndexList &indexes) const;
+
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+
 };
 
 #endif // PLASK_GUI_CREATORSLIST_H
