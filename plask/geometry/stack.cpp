@@ -16,6 +16,11 @@ void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBase
 }
 
 template <int dim, int growingDirection>
+std::size_t StackContainerBaseImpl<dim, growingDirection>::getInsertionIndexForHeight(double height) const {
+    return std::lower_bound(stackHeights.begin(), stackHeights.end(), height) - stackHeights.begin();
+}
+
+template <int dim, int growingDirection>
 const shared_ptr<typename StackContainerBaseImpl<dim, growingDirection>::TranslationT>
 StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) const {
     auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);

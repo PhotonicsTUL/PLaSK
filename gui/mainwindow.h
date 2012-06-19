@@ -77,6 +77,7 @@ private slots:
     void save();
     void print();
     void undo();
+    void editSelected();
     void about();
     void treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
     void treeRemoveSelected();
@@ -110,6 +111,7 @@ private:
     QAction *saveAct;
     QAction *printAct;
     QAction *undoAct;
+    QAction *editSelectedAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
     QAction *quitAct;

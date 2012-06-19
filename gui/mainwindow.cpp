@@ -88,6 +88,12 @@ void MainWindow::undo()
     document->undo();*/
 }
 
+void MainWindow::editSelected() {
+    auto selIndexes = treeView->selectionModel()->selectedIndexes();
+    if (!selIndexes.empty())
+        view->setRootIndex(selIndexes[0]);
+}
+
 void MainWindow::about()
 {
    QMessageBox::about(this, tr("About PLaSK GUI"),
@@ -143,6 +149,10 @@ void MainWindow::createActions()
     undoAct->setStatusTip(tr("Undo the last editing action"));
     connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
 
+    editSelectedAct = new QAction(QIcon::fromTheme("media-record"), tr("&Edit selected"), this);
+    editSelectedAct->setStatusTip(tr("Edit selected element"));
+    connect(editSelectedAct, SIGNAL(triggered()), this, SLOT(editSelected()));
+
     quitAct = new QAction(tr("&Quit"), this);
     quitAct->setShortcuts(QKeySequence::Quit);
     quitAct->setStatusTip(tr("Quit the application"));
@@ -184,6 +194,7 @@ void MainWindow::createMenus()
 
     editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAct);
+    editMenu->addAction(editSelectedAct);
 
     viewMenu = menuBar()->addMenu(tr("&View"));
 
@@ -204,6 +215,7 @@ void MainWindow::createToolBars()
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(undoAct);
+    editToolBar->addAction(editSelectedAct);
 
     viewToolBar = addToolBar(tr("View"));
     viewToolBar->addAction(zoomInAct);

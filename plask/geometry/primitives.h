@@ -137,6 +137,28 @@ struct Box2d {
     friend inline std::ostream& operator<<(std::ostream& out, const Box2d& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
+
+    /**
+     * Check if this box is valid.
+     *
+     * Valid box has: upper.c0 >= lower.c0 && upper.c1 >= lower.c1
+     * @return @c true only if this box is valid
+     */
+    bool isValid() const { return upper.c0 >= lower.c0 && upper.c1 >= lower.c1; }
+
+    /**
+     * Check if this box is empty.
+     *
+     * Empty box has: lower == upper
+     * @return @c true only if this box is empty
+     */
+    bool isEmpty() const { return lower == upper; }
+
+    /**
+     * Set this box coordinates to invalid once, so isValid() returns @c false after this call.
+     * @see isValid()
+     */
+    void makeInvalid() { lower = vec(0.0, 0.0); upper = vec(-1.0, -1.0); }
 };
 
 /**
@@ -256,6 +278,28 @@ struct Box3d {
     friend inline std::ostream& operator<<(std::ostream& out, const Box3d& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
+
+    /**
+     * Check if this box is valid.
+     *
+     * Valid box has: upper.c0 >= lower.c0 && upper.c1 >= lower.c1 && upper.c2 >= lower.c2
+     * @return @c true only if this box is valid
+     */
+    bool isValid() const { return upper.c0 >= lower.c0 && upper.c1 >= lower.c1 && upper.c2 >= lower.c2; }
+
+    /**
+     * Check if this box is empty.
+     *
+     * Empty box has: lower == upper
+     * @return @c true only if this box is empty
+     */
+    bool isEmpty() const { return lower == upper; }
+
+    /**
+     * Set this box coordinates to invalid once, so isValid() returns @c false after this call.
+     * @see isValid()
+     */
+    void makeInvalid() { lower = vec(0.0, 0.0, 0.0); upper = vec(-1.0, -1.0, -1.0); }
 
 };
 

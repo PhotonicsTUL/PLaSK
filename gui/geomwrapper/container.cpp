@@ -47,6 +47,11 @@ void StackWrapper<dim>::setupPropertiesBrowserForChild(std::size_t index, Browse
     ElementWrapper::setupPropertiesBrowserForChild(index, managers, dst);
 }
 
+template <int dim>
+int StackWrapper<dim>::getInsertionIndexForPoint(const plask::Vec<2, double>& point) {
+    return this->c().getInsertionIndexForHeight(point.up);
+}
+
 template class StackWrapper<2>;
 template class StackWrapper<3>;
 

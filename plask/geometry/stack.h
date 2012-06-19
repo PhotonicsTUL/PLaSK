@@ -50,6 +50,8 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      */
     void setBaseHeight(double newBaseHeight);
 
+    std::size_t getInsertionIndexForHeight(double height) const;
+
     /**
      * @param height
      * @return child which are on given @a height or @c nullptr

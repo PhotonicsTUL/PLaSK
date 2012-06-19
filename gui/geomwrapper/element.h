@@ -149,6 +149,13 @@ protected:
 
 public:
 
+    int getDimensionsCount() const { return wrappedElement->getDimensionsCount(); }
+
+    /**
+     * @return dimentions count of children, by default same as getDimensionsCount()
+     */
+    virtual int getChildrenDimensionsCount() const { return getDimensionsCount(); }
+
     /**
      * Set new name and inform observers about this.
      * @param new_name new name
@@ -230,12 +237,26 @@ public:
         return false;
     }
 
+    virtual bool canInsert(const GeometryElementCreator& to_insert, std::size_t index) const {
+        if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
+        return canInsert(to_insert.getElement(getChildrenDimensionsCount()), index);
+    }
+
     /**
      * Insert @p to_insert at postion @p index to this.
      * @return @c true if @p to_insert can be insert to this at position @p index
      */
     virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
         return false;
+    }
+
+    /**
+     * Insert @p to_insert at postion @p index to this.
+     * @return @c true if @p to_insert can be insert to this at position @p index
+     */
+    virtual bool tryInsert(const GeometryElementCreator& to_insert, std::size_t index) {
+        if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
+        return tryInsert(to_insert.getElement(getChildrenDimensionsCount()), index);
     }
 
     /**
@@ -246,6 +267,27 @@ public:
      */
     std::vector<const GeometryElementCreator*> getChildCreators() const {
         return std::vector<const GeometryElementCreator*>();
+    }
+
+    virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point) {
+        return -1;
+    }
+
+    /**
+     * Insert element @p to_insert near place pointed by @p point.
+     * @param to_insert element to insert
+     * @param point point to place in this, near which element @p to_insert should be inserted
+     * @return index of inserted element in this, or -1 if insertion wasn't succesed
+     */
+    virtual int tryInsertNearPoint2d(plask::shared_ptr<plask::GeometryElement> to_insert, const plask::Vec<2, double>& point) {
+        int index = getInsertionIndexForPoint(point);
+        if (index == -1) return -1;
+        return this->tryInsert(to_insert, index) ? index : -1;
+    }
+
+    virtual int tryInsertNearPoint2d(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point) {
+        if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
+        return tryInsertNearPoint2d(to_insert.getElement(getChildrenDimensionsCount()), point);
     }
 
 };

@@ -150,6 +150,22 @@ bool GeometryTreeItem::tryInsert(plask::shared_ptr<plask::GeometryElement> eleme
         return false;
 }
 
+int GeometryTreeItem::getInsertionIndexForPoint(const plask::Vec<2, double> &point)
+{
+    return getLowerWrappedElement()->getInsertionIndexForPoint(point);
+}
+
+int GeometryTreeItem::tryInsertRow2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point)
+{
+    auto this_elem = getLowerWrappedElement();
+    int index = this_elem->tryInsertNearPoint2d(to_insert, point);
+    if (index >= 0) {
+        childItems.emplace(childItems.begin() + index,
+                          new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
+    }
+    return index;
+}
+
 // ---------- InContainerTreeItem -----------
 
 /*void InContainerTreeItem::appendChildrenItems() {
@@ -281,4 +297,14 @@ bool GeometryTreeModel::insertRow(plask::shared_ptr<plask::GeometryElement> to_i
     bool result = toItem(parent)->tryInsert(to_insert, position);
     endInsertRows();
     return result;
+}
+
+int GeometryTreeModel::insertRow2d(const GeometryElementCreator &to_insert, const QModelIndex &parent, const plask::Vec<2, double> &point) {
+    GeometryTreeItem* item = toItem(parent);
+    int p = item->getInsertionIndexForPoint(point);
+    if (p == -1) return -1;
+    beginInsertRows(parent, p, p);
+    p = item->tryInsertRow2d(to_insert, point);
+    endInsertRows();
+    return p;
 }

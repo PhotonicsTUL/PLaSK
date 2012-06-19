@@ -126,7 +126,9 @@ private:
      * Matrix inverted to returned can transform view coordinates to model one.
      * @return transform matrix which can transform model coordinates to view one
      */
-    QTransform getTransformMatrix() const;
+    QTransform modelToView() const;
+
+    QTransform viewToModel() const { return modelToView().inverted(); }
 
 public slots:
     void zoomIn() {

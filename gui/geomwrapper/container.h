@@ -35,6 +35,8 @@ struct StackWrapper: public ElementWrapperFor< plask::StackContainer<dim> > {
         return getCreators(dim);
     }
 
+    virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
+
 };
 
 template <int dim>

@@ -62,8 +62,8 @@ void ElementViewer::dropEvent(QDropEvent *event)
         QByteArray ptrData = event->mimeData()->data(MIME_PTR_TO_CREATOR);
         QDataStream stream(&ptrData, QIODevice::ReadOnly);
 
-        GeometryElementCreator* creator;
-        stream.readRawData(reinterpret_cast<char*>(creator), sizeof(creator));
+        GeometryElementCreator* creator = 0;
+        stream.readRawData(reinterpret_cast<char*>(&creator), sizeof(creator));
 
         //highlightedRect = QRect();
         //update(square);
@@ -71,15 +71,10 @@ void ElementViewer::dropEvent(QDropEvent *event)
         event->setDropAction(Qt::CopyAction);
         event->accept();
 
-       // plask::shared_ptr<ElementWrapper> dst = getElementWrapper();
-       // dst->tryInsert(creator->getElement(2), 0);
-        model()->insertRow(creator->getElement(2), rootIndex(), 0);
+        int index = model()->insertRow2d(*creator, rootIndex(), fromQt(viewToModel().map(QPointF(event->pos()))));
+        if (index != -1)
+            selectionModel()->select(model()->index(index, 0, rootIndex()), QItemSelectionModel::ClearAndSelect);
 
-        /*if (location == QPoint(square.x()/pieceSize(), square.y()/pieceSize())) {
-            inPlace++;
-            if (inPlace == 25)
-                emit puzzleCompleted();
-        }*/
     } else {
         //highlightedRect = QRect();
         event->ignore();
@@ -106,7 +101,7 @@ QModelIndex ElementViewer::indexAt(const QPoint &point) const
 {
     if (!rootIndex().isValid()) return QModelIndex();   //model not set
 
-    plask::Vec<2, double> model_point = fromQt(getTransformMatrix().inverted().map(QPointF(point)));
+    plask::Vec<2, double> model_point = fromQt(viewToModel().map(QPointF(point)));
 
     plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
     const std::size_t ch_count = e->getRealChildrenCount();
@@ -227,7 +222,7 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
     painter.fillRect(event->rect(), option.palette.base());
 
     painter.save();
-    painter.setTransform(getTransformMatrix());
+    painter.setTransform(modelToView());
     el->drawReal(painter);
 
     for (QModelIndex current: selectionModel()->selectedIndexes()) {
@@ -326,7 +321,7 @@ void ElementViewer::scrollTo(const QModelIndex &index, ScrollHint)
 
 void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
 {
-    plask::Box2d model_sel = fromQt(getTransformMatrix().inverted().mapRect(QRectF(rect)));
+    plask::Box2d model_sel = fromQt(viewToModel().mapRect(QRectF(rect)));
 
     QModelIndexList indexes;
 
@@ -373,7 +368,7 @@ void ElementViewer::updateGeometries()
     verticalScrollBar()->setRange(0, qMax(0, int( 2* margin + s.c1 * zoom.y() - viewport()->height()) ));
 }
 
-QTransform ElementViewer::getTransformMatrix() const {
+QTransform ElementViewer::modelToView() const {
     plask::Box2d bb = getBoundingBox();
 
     return QTransform(zoom.x(), 0.0,
@@ -392,7 +387,7 @@ QRect ElementViewer::visualRect(const QModelIndex &index) const
 {
     QRectF rect = itemRect(index);
     if (rect.isValid())
-        return getTransformMatrix().mapRect(rect).toRect().adjusted(-1, -1, 1, 1);
+        return modelToView().mapRect(rect).toRect().adjusted(-1, -1, 1, 1);
 
     return QRect();
 }
