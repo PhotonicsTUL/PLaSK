@@ -288,6 +288,13 @@ struct XMLConflictingAttributesException: public Exception {
 //-------------- Connected with geometry: -----------------------
 
 /**
+ * Exceptions of this class are thrown when modules don't have geometry set
+ */
+struct NoGeometryException: public Exception {
+    NoGeometryException(const std::string& where): Exception("$1$: No geometry specified", where) {}
+};
+
+/**
  * Exceptions of this class are thrown by some geometry element classes when there is no required child.
  */
 struct NoChildException: public Exception {
@@ -366,6 +373,15 @@ struct NoSuchAxisNames: public Exception {
 
 
 //-------------- Connected with meshes: -----------------------
+
+/**
+ * Exceptions of this class are thrown when modules don't have mesh set
+ */
+struct NoMeshException: public Exception {
+    NoMeshException(const std::string& where): Exception("$1$: No mesh specified", where) {}
+};
+
+
 /**
  * This exception is thrown when the mesh is somehow bad
  */

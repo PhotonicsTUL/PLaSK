@@ -25,7 +25,7 @@ TODO
 
 Note that typically, modules are used from python scripts.
 
-@section modules_write How to write new a calculation module?
+@section modules_writing How to write new a calculation module?
 To write module you should:
 -# If you write an official module for PLaSK, create a subdirectory streucture in directory modules. The subdirectories
    in modules should have a form \b modules/category/your_module, e.g. \b modules/optical/FDTD.
@@ -59,41 +59,23 @@ Once you have your source tree set up, do the following:
 -# (TODO: in future do something to make the module available in GUI)
 
 
-Example:
-@code
+\subsection modules_writing_details Writing modules in depth
+
+Below we explain the above steps in detail on a simple example. Assume that we want to write a module computing an effective
+index and optical field intensity for edge emitting lasers. The module performs its computation using effective index method.
+Hence, we name it \b EffectiveIndexModule.
+
+To start we create a subdirectory \a modules/optical/effective under the PLaSK trunk write a file \a effective_module.h to it
+(remember to add all of them to subversion repository). We assume that the module uses rectilinear mesh provided by the user,
+so we inherit our class from plask::ModuleWithMesh<plask::Space2dCartesian, plask::RectilinearMesh2d>.
+
+\code
 #include <plask/plask.hpp>
 
-struct MyModule: public plask::Module {
+struct EffectiveIndexModule: public plask::ModuleWithMesh<plask::Space2dCartesian, plask::RectilinearMesh2d> {
+\endcode
 
-    ReceiverAType a;
-
-    ReceiverBType b;
-
-    ProviderCType c;
-
-    virtual std::string getName() const {
-        return "My module name";
-    }
-
-    virtual std::string getDescription() const {
-        return "Calculate c using a and b.";
-    }
-
-    void calculateC() {
-        // if module wasn't reinitialized and inputs don't changed after last calculation
-        if (!init() && !a.changed && !b.changed)
-            return;                     // we don't have to update c
-
-        // ...here calculate c...
-        // values of a and b can be get by a() and b()
-
-        // say receivers of c that it has been changed:
-        c.fireChanged();
-    }
-
-};
-@endcode
-See also example in plask::Temperature description.
+TODO
 */
 
 #include <string>

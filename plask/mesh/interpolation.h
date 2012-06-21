@@ -18,8 +18,8 @@ plask::interpolate method calculates and returns @a dst_vec for a given
 
 plask::interpolate can return a newly created vector or the @a src_vec if @a src_mesh and @a dst_mesh are the same.
 Furthermore, the lifespan of both source and destination data cannot be determined in advance.
-For this reason @a src_vec is passed and @a dst_vec is returned through an DataVector,
-which is responsible for deleting the data in the proper time (i.e. when all the existing modules delete their copy
+For this reason @a src_vec is passed and @a dst_vec is returned through a DataVector class,
+which is responsible for deleting the data in the proper time (i.e. when all the existing modules delete their copies
 of the pointer, indicating they are not going to use this data any more). However, for this mechanism to work
 efficiently, all the modules should allocate the data using DataVector, as described in
 @ref modules.

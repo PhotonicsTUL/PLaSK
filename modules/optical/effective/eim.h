@@ -90,7 +90,7 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
      **/
     void setSimpleMesh() {
         writelog(LOG_INFO, "Creating simple mesh");
-        if (!geometry) throw NoChildException();
+        if (!geometry) throw NoGeometryException(getId());
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
         setMesh(make_shared<RectilinearMesh2d>(child));

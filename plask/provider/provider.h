@@ -28,7 +28,9 @@ available for other modules and reports and it also should have one receiver fie
 property which value it wants to know (needs for calculations).
 Most providers are classes obtain by using plask::ProviderFor template.
 
-See @ref modules_write for more details and examples.
+See @ref modules_writing for more details and examples.
+
+An example of using providers and receivers in modules can be found in description of plask::Temperature.
 
 @section providers_writing Writing new providers and receivers types
 
@@ -65,15 +67,15 @@ typedef plask::ReceiverFor<MyProperty> MyPropertyReceiver;
 // Usage example:
 MyPropertyProvider::WithValue provider; //or MyPropertyProvider::WithDefaultValue provider;
 MyPropertyReceiver receiver;
-reciver << provider;     //connect
+receiver << provider;     //connect
 @endcode
 
 @subsection providers_writing_manual Flexible (manual) way
-Little harder, but more flexible than using plask::ProviderFor and plask::ReceiverFor templates (described @ref providers_writing_easy "above") is writing provider class which:
+A harder but more flexible approach than using plask::ProviderFor and plask::ReceiverFor templates (described @ref providers_writing_easy "above") is writing your own provider class which:
 - inherits from plask::Provider,
-- has operator(), which for some parameters (depends from your choice) return provided value.
+- has operator(), which for some parameters (depending on your choice) return provided value.
 
-Receiver class for your provider class still may be very easy obtain by plask::Receiver template. This template require only one parameter: type of provider.
+Receiver class for your provider still may be very easy obtained by plask::Receiver template. This template requires only one parameter: the type of the provider.
 You can use it directly or as a base class for your receiver.
 
 Example:
