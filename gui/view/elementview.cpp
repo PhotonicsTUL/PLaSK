@@ -21,6 +21,8 @@ ElementViewer::ElementViewer(QWidget *parent)
 
 void ElementViewer::dragEnterEvent(QDragEnterEvent *event)
 {
+    if (!rootIndex().isValid()) { event->ignore(); return; }
+
     if (event->source() != 0 && event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR))
         event->accept();
     else
@@ -29,44 +31,44 @@ void ElementViewer::dragEnterEvent(QDragEnterEvent *event)
 
 void ElementViewer::dragLeaveEvent(QDragLeaveEvent *event)
 {
-    /*QRect updateRect = highlightedRect;
-    highlightedRect = QRect();
-    update(updateRect);*/
+    QRect updateRect = highlightedRectView();
+    highlightedRect = QRectF();
+    update(updateRect);
     event->accept();
 }
 
 void ElementViewer::dragMoveEvent(QDragMoveEvent *event)
 {
-    //QRect updateRect = highlightedRect.unite(targetSquare(event->pos()));
+    if (!rootIndex().isValid()) { event->ignore(); return; }
 
-    if (event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
+    if (event->source() != 0 && event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
         /*&& findPiece(targetSquare(event->pos())) == -1*/) {
 
-        //highlightedRect = targetSquare(event->pos());
+        GeometryElementCreator* creator = fromMimeData(event->mimeData());
+        highlightedRect = toQt(model()->insertPlace2d(*creator, rootIndex(), fromQt(viewToModel().map(QPointF(event->pos())))));
+
         event->setDropAction(Qt::MoveAction);
         event->accept();
     } else {
-        //highlightedRect = QRect();
+        highlightedRect = QRectF();
         event->ignore();
     }
 
-    //update(updateRect);
+    viewport()->update();
 }
 
 void ElementViewer::dropEvent(QDropEvent *event)
 {
+    if (!rootIndex().isValid()) { event->ignore(); return; }
+
     if (event->source() != 0 &&     //source is local
         event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
         /*&& findPiece(targetSquare(event->pos())) == -1*/) {
 
-        QByteArray ptrData = event->mimeData()->data(MIME_PTR_TO_CREATOR);
-        QDataStream stream(&ptrData, QIODevice::ReadOnly);
+        GeometryElementCreator* creator = fromMimeData(event->mimeData());
 
-        GeometryElementCreator* creator = 0;
-        stream.readRawData(reinterpret_cast<char*>(&creator), sizeof(creator));
-
-        //highlightedRect = QRect();
-        //update(square);
+        highlightedRect = QRect();
+        viewport()->update();
 
         event->setDropAction(Qt::CopyAction);
         event->accept();
@@ -76,7 +78,7 @@ void ElementViewer::dropEvent(QDropEvent *event)
             selectionModel()->select(model()->index(index, 0, rootIndex()), QItemSelectionModel::ClearAndSelect);
 
     } else {
-        //highlightedRect = QRect();
+        highlightedRect = QRect();
         event->ignore();
     }
 }
@@ -243,6 +245,8 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
 
     if (highlightedRect.isValid()) {
         painter.fillRect(highlightedRect, QColor(120, 20, 50, 70));
+        painter.setPen(QPen(QColor(230, 40, 90, 170), 0.3, Qt::SolidLine));
+        painter.drawRect(highlightedRect);
     }
 
     painter.restore();

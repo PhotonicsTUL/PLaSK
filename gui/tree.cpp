@@ -166,6 +166,11 @@ int GeometryTreeItem::tryInsertRow2d(const GeometryElementCreator &to_insert, co
     return index;
 }
 
+plask::Box2d GeometryTreeItem::getInsertPlace2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point)
+{
+    return getLowerWrappedElement()->getInsertPlace2d(to_insert, point);
+}
+
 // ---------- InContainerTreeItem -----------
 
 /*void InContainerTreeItem::appendChildrenItems() {
@@ -307,4 +312,8 @@ int GeometryTreeModel::insertRow2d(const GeometryElementCreator &to_insert, cons
     p = item->tryInsertRow2d(to_insert, point);
     endInsertRows();
     return p;
+}
+
+plask::Box2d GeometryTreeModel::insertPlace2d(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point) {
+    return toItem(parent)->getInsertPlace2d(to_insert, point);
 }

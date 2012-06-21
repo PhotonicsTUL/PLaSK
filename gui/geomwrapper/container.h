@@ -27,6 +27,8 @@ struct StackWrapper: public ElementWrapperFor< plask::StackContainer<dim> > {
 
     virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
 
+    plask::Box2d getInsertPlace2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point);
+
 };
 
 template <int dim>
@@ -55,6 +57,8 @@ struct ShelfWrapper: public ElementWrapperFor< plask::ShelfContainer2d > {
     }
 
     virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
+
+    plask::Box2d getInsertPlace2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point);
 
 };
 

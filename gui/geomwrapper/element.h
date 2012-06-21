@@ -305,6 +305,10 @@ public:
         return tryInsertNearPoint2d(to_insert.getElement(getChildrenDimensionsCount()), point);
     }
 
+    virtual plask::Box2d getInsertPlace2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point) {
+        return plask::Box2d::invalidInstance();
+    }
+
 };
 
 template <typename WrappedT, typename BaseClass = ElementWrapper>

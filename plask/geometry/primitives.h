@@ -48,6 +48,10 @@ struct Box2d {
 
     Box2d(double x_lo, double y_lo, double x_up, double y_up): lower(x_lo, y_lo), upper(x_up, y_up) {}
 
+    static Box2d invalidInstance() {
+        Box2d r; r.makeInvalid(); return r;
+    }
+
     /**
      * Compare two boxes, @c this and @p r.
      * @param r box to compare
@@ -196,6 +200,10 @@ struct Box3d {
      * @param upper position of upper corner of cuboid (with maximal all coordinates)
      */
     Box3d(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
+
+    static Box3d invalidInstance() {
+        Box3d r; r.makeInvalid(); return r;
+    }
 
     /**
      * Compare two boxes, @c this and @p r.

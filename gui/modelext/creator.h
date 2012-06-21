@@ -3,6 +3,8 @@
 
 #include <plask/geometry/element.h>
 
+#include <QMimeData>
+
 /**
  * Create geometry element.
  */
@@ -46,5 +48,7 @@ const std::vector<const GeometryElementCreator*>& getCreators(int dim);
 //std::vector<GeometryElementCreator&> get3dCreators();
 
 #define MIME_PTR_TO_CREATOR "data/pointer-to-element-creator"
+
+GeometryElementCreator* fromMimeData(const QMimeData * data);
 
 #endif // PLASK_GUI_MODEL_EXT_CREATOR_H

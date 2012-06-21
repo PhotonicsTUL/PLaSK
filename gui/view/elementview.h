@@ -115,6 +115,13 @@ private:
      */
     QRectF highlightedRect;
 
+    QRect highlightedRectView() const {
+        return
+                highlightedRect.isValid() ?
+                modelToView().mapRect(highlightedRect).toRect().adjusted(-1, -1, 1, 1) :
+                QRect();
+    }
+
     /**
      * Viewer zoom in x and y directions.
      */
