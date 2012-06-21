@@ -21,11 +21,11 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.module.geometry = space
 
     def testExceptions(self):
-        with self.assertRaisesRegexp(TypeError, r"^No wavelength set nor its provider connected\.$"):
+        with self.assertRaisesRegexp(TypeError, r"^No wavelength set nor its provider connected$"):
             self.module.inWavelength()
-        with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now\.$"):
+        with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now$"):
             self.module.outNeff()
-        with self.assertRaisesRegexp(ValueError, r"^Light intensity cannot be provided now\.$"):
+        with self.assertRaisesRegexp(ValueError, r"^Light intensity cannot be provided now$"):
             self.module.outIntensity(mesh.Rectilinear2D([1,2],[3,4]))
 
     def testSymmetry(self):

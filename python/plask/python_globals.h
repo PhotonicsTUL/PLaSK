@@ -17,9 +17,11 @@ namespace boost { namespace python {
 // Important includes
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <numpy/ndarraytypes.h>
 
 #include <plask/exceptions.h>
 #include <plask/math.h>
+#include <plask/vec.h>
 #include <plask/axes.h>
 
 namespace plask { namespace python {
@@ -112,6 +114,17 @@ inline std::string pyformat<dcomplex>(const dcomplex& v) { return format("(%g%+g
 
 
 // ----------------------------------------------------------------------------------------------------------------------
+// Get numpy typenums for some types
+namespace detail {
+    template <typename T> static inline constexpr int get_typenum();
+    template <> inline constexpr int get_typenum<double>() { return NPY_DOUBLE; }
+    template <> inline constexpr int get_typenum<dcomplex>() { return NPY_CDOUBLE; }
+    template <> constexpr inline int get_typenum<Vec<2,double>>() { return NPY_DOUBLE; }
+    template <> constexpr inline int get_typenum<Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> constexpr inline int get_typenum<Vec<3,double>>() { return NPY_DOUBLE; }
+    template <> constexpr inline int get_typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
+}
+
 // Register vectors of something
 template <typename T>
 static std::string str__vector_of(const std::vector<T>& self) {

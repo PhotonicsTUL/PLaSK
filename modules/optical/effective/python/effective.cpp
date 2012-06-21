@@ -3,13 +3,14 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
+#include <util/ufunc.h>
 using namespace plask;
 using namespace plask::python;
 
 #include "../eim.h"
-using namespace plask::modules::eim;
+using namespace plask::modules::effective;
 
-py::object EffectiveIndex2dModule_getSymmetry(const EffectiveIndex2dModule& self) {
+static py::object EffectiveIndex2dModule_getSymmetry(const EffectiveIndex2dModule& self) {
     switch (self.symmetry) {
         case EffectiveIndex2dModule::SYMMETRY_POSITIVE: return py::object("positive");
         case EffectiveIndex2dModule::SYMMETRY_NEGATIVE: return py::object("negative");
@@ -18,7 +19,7 @@ py::object EffectiveIndex2dModule_getSymmetry(const EffectiveIndex2dModule& self
     return py::object();
 }
 
-void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object symmetry) {
+static void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object symmetry) {
     if (symmetry == py::object()) { self.symmetry = EffectiveIndex2dModule::NO_SYMMETRY; return; }
     try {
         std::string sym = py::extract<std::string>(symmetry);
@@ -46,11 +47,11 @@ void EffectiveIndex2dModule_setSymmetry(EffectiveIndex2dModule& self, py::object
     }
 }
 
-std::string EffectiveIndex2dModule_getPolarization(const EffectiveIndex2dModule& self) {
+static std::string EffectiveIndex2dModule_getPolarization(const EffectiveIndex2dModule& self) {
     return self.polarization==EffectiveIndex2dModule::TE ? "TE" : "TM";
 }
 
-void EffectiveIndex2dModule_setPolarization(EffectiveIndex2dModule& self, std::string polarization) {
+static void EffectiveIndex2dModule_setPolarization(EffectiveIndex2dModule& self, std::string polarization) {
     if (polarization == "TE" || polarization == "s" ) {
         self.polarization = EffectiveIndex2dModule::TE; return;
     }
@@ -59,18 +60,25 @@ void EffectiveIndex2dModule_setPolarization(EffectiveIndex2dModule& self, std::s
     }
 }
 
-// py::object EffectiveIndex2dModule_getStripeDeterminant(EffectiveIndex2dModule& self, int i, py::object neff) {
-//     if (i < 0) i = self.getMesh()->tran().size() + 1 - i;
-//     if (i > self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
-//
-//     try {
-//         return self.getStripeDeterminant(i, py::extract<dcomplex> neff);
-//     } catch (py::error_already_set) {
-//         PyErr_Clear();
-//         if (PyArr
-//     }
-//
-// }
+static py::object EffectiveIndex2dModule_getStripeDeterminant(EffectiveIndex2dModule& self, int stripe, py::object neffs)
+{
+    if (!self.getMesh()) self.setSimpleMesh();
+    if (stripe < 0) stripe = self.getMesh()->tran().size() + 1 - stripe;
+    if (stripe > self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
+
+    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, neffs);
+}
+
+static py::object EffectiveIndex2dModule_getDeterminant(EffectiveIndex2dModule& self, py::object neffs)
+{
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, neffs);
+}
+
+static inline bool plask_import_array() {
+    import_array1(false);
+    return true;
+}
+
 
 /**
  * Initialization of your module to Python
@@ -80,6 +88,8 @@ void EffectiveIndex2dModule_setPolarization(EffectiveIndex2dModule& self, std::s
  */
 BOOST_PYTHON_MODULE(effective)
 {
+    if (!plask_import_array()) throw(py::error_already_set());
+
     {CLASS(EffectiveIndex2dModule, "EffectiveIndex2D",
         "Calculate optical modes and optical field distribution using the effective index\n"
         "method in Cartesian two-dimensional space.")
@@ -97,8 +107,9 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
         METHOD(setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by findModes.", "neff");
-        METHOD(getStripeDeterminant, "Get single stripe modal determinant for debugging purposes", "stripe", "neff");
-        METHOD(getDeterminant, "Get modal determinant for debugging purposes", "neff");
+        __module__.def("getStripeDeterminant", &EffectiveIndex2dModule_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
+                       (py::arg("stripe"), "neff"));
+        __module__.def("getDeterminant", &EffectiveIndex2dModule_getDeterminant, "Get modal determinant for debugging purposes", (py::arg("neff")));
         RECEIVER(inWavelength, "Wavelength of the light");
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         PROVIDER(outNeff, "Effective index of the last computed mode");

@@ -23,14 +23,6 @@ static T DataVectorWrap_getitem(const DataVectorWrap<T,dim>& self, std::ptrdiff_
     return self[i];
 }
 
-template <typename T> constexpr inline static int get_typenum();
-template <> constexpr inline int get_typenum<double>() { return NPY_DOUBLE; }
-template <> constexpr inline int get_typenum<dcomplex>() { return NPY_CDOUBLE; }
-template <> constexpr inline int get_typenum<Vec<2,double>>() { return NPY_DOUBLE; }
-template <> constexpr inline int get_typenum<Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
-template <> constexpr inline int get_typenum<Vec<3,double>>() { return NPY_DOUBLE; }
-template <> constexpr inline int get_typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
-
 template <typename T> constexpr inline static npy_intp get_dim() { return 1; }
 template <> constexpr inline npy_intp get_dim<Vec<2,double>>() { return 2; }
 template <> constexpr inline npy_intp get_dim<Vec<2,dcomplex>>() { return 2; }
@@ -48,7 +40,7 @@ static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std
     if (std::size_t(to) > self.size()) to = self.size();
 
     npy_intp dims[] = { to-from, get_dim<T>() };
-    PyObject* arr = PyArray_SimpleNew((dims[1]!=1)? 2 : 1, dims, get_typenum<T>());
+    PyObject* arr = PyArray_SimpleNew((dims[1]!=1)? 2 : 1, dims, detail::get_typenum<T>());
     T* arr_data = (T*)PyArray_DATA(arr);
     for (auto i = self.begin()+from; i < self.begin()+to; ++i, ++arr_data)
         *arr_data = *i;
@@ -113,7 +105,7 @@ static PyObject* DataVectorWrap_ArrayImpl(const DataVectorWrap<T,dim>* self) {
     PyObject* arr = PyArray_New(&PyArray_Type,
                                 dims.size(),
                                 & dims.front(),
-                                get_typenum<T>(),
+                                detail::get_typenum<T>(),
                                 & get_meshstrides<T>(*mesh, dims.size()).front(),
                                 (void*)self->data(),
                                 0,

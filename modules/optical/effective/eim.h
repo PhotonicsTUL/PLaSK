@@ -9,7 +9,7 @@
 
 #include "broyden.h"
 
-namespace plask { namespace modules { namespace eim {
+namespace plask { namespace modules { namespace effective {
 
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
@@ -45,6 +45,9 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
 
     /// Field confinement weights in stripes
     std::vector<double> fieldWeights;
+
+    /// Did we computed stripeNeffs?
+    bool have_stripeNeffs;
 
     /// Did we compute fields for current Neff?
     bool have_fields;
@@ -233,7 +236,7 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     }
 
     /// Update the refractive indices cache and do some checks
-    bool updateCache();
+    void updateCache();
 
     /**
      * Fist stage of computations
@@ -256,6 +259,6 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
 };
 
 
-}}} // namespace plask::modules::eim
+}}} // namespace plask::modules::effective
 
 #endif // PLASK__MODULE_OPTICAL_EIM_HPP

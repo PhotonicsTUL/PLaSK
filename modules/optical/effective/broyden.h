@@ -4,7 +4,7 @@
 #include <functional>
 #include <plask/plask.hpp>
 
-namespace plask { namespace modules { namespace eim {
+namespace plask { namespace modules { namespace effective {
 
 class EffectiveIndex2dModule;
 
@@ -104,5 +104,5 @@ struct RootDigger {
     dcomplex getSolution(dcomplex point) const;
 };
 
-}}} // namespace plask::modules::eim
+}}} // namespace plask::modules::effective
 #endif // BROYDEN_H

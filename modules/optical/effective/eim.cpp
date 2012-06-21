@@ -2,11 +2,12 @@
 
 using plask::dcomplex;
 
-namespace plask { namespace modules { namespace eim {
+namespace plask { namespace modules { namespace effective {
 
 EffectiveIndex2dModule::EffectiveIndex2dModule() :
     log_stripe(dataLog<dcomplex, dcomplex>(getId(), "neff", "det")),
     log_value(dataLog<dcomplex, dcomplex>(getId(), "Neff", "det")),
+    have_stripeNeffs(false),
     have_fields(false),
     old_polarization(TE),
     polarization(TE),
@@ -104,7 +105,7 @@ using namespace Eigen;
 
 
 
-bool EffectiveIndex2dModule::updateCache()
+void EffectiveIndex2dModule::updateCache()
 {
     bool updated = initCalculation();
 
@@ -150,14 +151,16 @@ bool EffectiveIndex2dModule::updateCache()
             }
         }
         if (xbegin == 1) nrCache[0] = nrCache[1];
-        return true;
+
+        have_stripeNeffs = false;
     }
-    return false;
 }
 
 void EffectiveIndex2dModule::stageOne()
 {
-    if (updateCache()) {
+    updateCache();
+
+    if (!have_stripeNeffs) {
 
         // Compute effective indices for all stripes
         // TODO: start form the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
@@ -182,9 +185,12 @@ void EffectiveIndex2dModule::stageOne()
             }
         }
         if (xbegin == 1) stripeNeffs[0] = stripeNeffs[1];
+
+        std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
+        writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str()/*.substr(1)*/);
+
+        have_stripeNeffs = true;
     }
-    std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
-    writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
 }
 
 
@@ -461,4 +467,4 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
 
 
 
-}}} // namespace plask::modules::eim
+}}} // namespace plask::modules::effective

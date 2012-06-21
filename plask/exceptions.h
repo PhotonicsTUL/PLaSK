@@ -63,11 +63,11 @@ struct OutOfBoundException: public Exception {
 
     /// @param msg error message
     OutOfBoundException(const std::string& where, const std::string& argname)
-        : Exception("%1%: argument %2% out of bound.", where, argname) {}
+        : Exception("%1%: argument %2% out of bound", where, argname) {}
 
     template <typename BoundTypeWas, typename BoundTypeLo, typename BoundTypeHi>
     OutOfBoundException(const std::string& where, const std::string& argname, const BoundTypeWas& was, const BoundTypeLo& lo, const BoundTypeHi& hi)
-        : Exception("%1%: argument %2% out of bound, should be between %3% and %4%, but was %5%.", where, argname, lo, hi, was) {}
+        : Exception("%1%: argument %2% out of bound, should be between %3% and %4%, but was %5%", where, argname, lo, hi, was) {}
 };
 
 /**
@@ -109,13 +109,13 @@ struct ComputationError: public Exception {
  * @see @ref providers
  */
 struct NoProvider: public Exception {
-    NoProvider(): Exception("No provider.") {}
-    NoProvider(const char* provider_name): Exception("No %1% set nor its provider connected.", provider_name) {}
+    NoProvider(): Exception("No provider") {}
+    NoProvider(const char* provider_name): Exception("No %1% set nor its provider connected", provider_name) {}
 };
 
 struct NoValue: public Exception {
-    NoValue(): Exception("No value.") {}
-    NoValue(const char* provider_name): Exception("%1% cannot be provided now.", [](std::string s)->std::string{s[0]=std::toupper(s[0]);return s;}(provider_name) ) {}
+    NoValue(): Exception("No value") {}
+    NoValue(const char* provider_name): Exception("%1% cannot be provided now", [](std::string s)->std::string{s[0]=std::toupper(s[0]);return s;}(provider_name) ) {}
 };
 
 
@@ -123,7 +123,7 @@ struct NoValue: public Exception {
  * Exceptions of this class are thrownwhen some string parser find errors.
  */
 /*struct ParseException: public Exception {
-    ParseException(): Exception("Parse error.") {}
+    ParseException(): Exception("Parse error") {}
     ParseException(std::string& msg): Exception("Parse error: " + msg) {}
 };*/
 
@@ -190,7 +190,7 @@ struct MaterialMethodNotApplicable: public Exception {
  * Exceptions of this class are thrownwhen material string parser find errors.
  */
 struct MaterialParseException: public Exception {
-    MaterialParseException(): Exception("Material parse error.") {}
+    MaterialParseException(): Exception("Material parse error") {}
     /// @param msg error message
     MaterialParseException(const std::string& msg): Exception("Material parse error: " + msg) {}
 
@@ -211,7 +211,7 @@ class MaterialCantBeMixedException: public Exception {
 
 public:
     MaterialCantBeMixedException(const std::string& material1name_with_components, const std::string& material2name_with_components, const std::string& common_dopant = "")
-        : Exception("Material \"%1%%3%\" can not be mixed with material \"%2%%3%\".",
+        : Exception("Material \"%1%%3%\" can not be mixed with material \"%2%%3%\"",
               material1name_with_components, material2name_with_components, common_dopant.empty() ? "" : ':' + common_dopant)
               {}
 
@@ -245,7 +245,7 @@ struct XMLBadAttrException: public Exception {
  * Exceptions of this class are thrownwhen XML file/data stream unexpected end.
  */
 struct XMLUnexpectedEndException: public Exception {
-    XMLUnexpectedEndException(): Exception("Unexpected end of XML data.") {}
+    XMLUnexpectedEndException(): Exception("Unexpected end of XML data") {}
 };
 
 /**
@@ -291,14 +291,14 @@ struct XMLConflictingAttributesException: public Exception {
  * Exceptions of this class are thrown by some geometry element classes when there is no required child.
  */
 struct NoChildException: public Exception {
-    NoChildException(): Exception("No child.") {}
+    NoChildException(): Exception("Incomplete geometry tree") {}
 };
 
 /**
  * Exceptions of this class are thrown by some geometry element classes when there is no required child.
  */
 struct NotUniqueElementException: public Exception {
-    NotUniqueElementException(): Exception("Unique element instance required.") {}
+    NotUniqueElementException(): Exception("Unique element instance required") {}
     NotUniqueElementException(const std::string msg): Exception(msg) {}
 };
 
@@ -306,7 +306,7 @@ struct NotUniqueElementException: public Exception {
  * Exceptions of this class are thrown when called operation on geometry graph will cause cyclic reference.
  */
 struct CyclicReferenceException: public Exception {
-    CyclicReferenceException(): Exception("Detected cycle in geometry graph.") {}
+    CyclicReferenceException(): Exception("Detected cycle in geometry tree") {}
 };
 
 /**
@@ -330,7 +330,7 @@ struct GeometryElementNamesConflictException: public Exception {
     /**
      * @param element_name name of element which is already exists
      */
-    GeometryElementNamesConflictException(const std::string& element_name): Exception("Geometry element with given name \"" + element_name + "\" already exists.") {}
+    GeometryElementNamesConflictException(const std::string& element_name): Exception("Geometry element with given name \"" + element_name + "\" already exists") {}
 };
 
 /**
@@ -350,7 +350,7 @@ struct NoSuchGeometryElement: public Exception {
  * This exception is thrown when geometry element has type different than expectation (for example is 3d but expected 2d).
  */
 struct UnexpectedGeometryElementTypeException: public Exception {
-    UnexpectedGeometryElementTypeException(): Exception("Geometry element has unexpected type.") {}
+    UnexpectedGeometryElementTypeException(): Exception("Geometry element has unexpected type") {}
 };
 
 /**
@@ -361,7 +361,7 @@ struct NoSuchAxisNames: public Exception {
 
     /// @param axis_names name of axis which not exists
     NoSuchAxisNames(const std::string& axis_names)
-        : Exception("No such axis names \"%1%\".", axis_names) {}
+        : Exception("No such axis names \"%1%\"", axis_names) {}
 };
 
 

@@ -2,7 +2,7 @@
 #include "eim.h"
 using namespace std;
 
-namespace plask { namespace modules { namespace eim {
+namespace plask { namespace modules { namespace effective {
 
 vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> impoints) const
 {
@@ -307,4 +307,4 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     throw ComputationError(module.getId(), "Broyden: maximum number of iterations reached");
 }
 
-}}} // namespace plask::modules::eim
+}}} // namespace plask::modules::effective
