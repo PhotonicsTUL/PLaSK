@@ -17,10 +17,6 @@ using namespace plask::modules::your_module;
  */
 BOOST_PYTHON_MODULE(module_name)
 {
-    // This is necessary to make providers and receivers accessible
-    USING_VALUE(SingleValuePropertyName);
-    USING_FIELD(FieldPropertySpace, SpaceName);
-
     {CLASS(Class_Name, "YourModule", "Short module description and constructor documentation.")
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
         RO_FIELD(field_name, "Short documentation"); // read-only field

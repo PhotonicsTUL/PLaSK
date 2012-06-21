@@ -1,16 +1,15 @@
 #include "id.h"
 
-#include <thread>
-#include <mutex>
+#include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 
 namespace plask {
 
 std::uint64_t id = 0;
-std::mutex id_m;
+boost::mutex id_m;
 
 std::uint64_t getUniqueNumber() {
-    std::lock_guard<std::mutex> lock(id_m);
+    boost::lock_guard<boost::mutex> lock(id_m);
     return ++id;
 }
 

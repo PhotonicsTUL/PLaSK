@@ -35,8 +35,12 @@ To write module you should:
    \b your_module/python.
 
 Once you have your source tree set up, do the following:
--# Write new class which inherit from plask::Module.
+-# Write new class which inherit from plask::ModuleOver<SPACE_TYPE> or plask::ModuleWithMesh<SPACE_TYPE, MESH_TYPE>.
+   SPACE_TYPE should be one of Space2dCartesian, Space2dCylindrical, or Space3d and should indicate in what space your module
+   is doing calculations. If you want to allow user to specify a mesh for your module, inherit from plask::ModuleWithMesh<SPACE_TYPE, MESH_TYPE>,
+   where MESH_TYPE is the type of your mesh.
 -# Implement plask::Module::getName method. This method should just return name of your module.
+-# Implement plask::Module::onInitialize and optionally plask::Module::onInvalidate methods.
 -# Place in your class public providers and receivers fields:
     - providers fields allows your module to provide results to another modules or to reports,
     - receivers field are used to getting data which are required for calculations from another modules
@@ -44,9 +48,10 @@ Once you have your source tree set up, do the following:
     - you don't have to care about connection between providers and corresponding receivers (this is done externally),
     - note that most providers are classes obtain by using plask::ProviderFor template,
     - more details can be found in @ref providers.
--# Typically, implement calculate method. This method is a place for your calculation code.
+-# Typically, implement calculation method. This method is a place for your calculation code.
    You don't have to implement it if you don't need to do any calculations. You can also write more methods performing
-   different calculations, however, you need to clearly document them.
+   different calculations, however, you need to clearly document them. Each calculation method must call plask::Module::initCalculation()
+   as the first operation.
 -# Optionally implement plask::Module::getDescription method. This method should just return description of your module.
 -# Finally write the Python interface to your class using Boost Python. See the Boos Python documentation or take a look into
    modules/skel/python/module.cpp (for your convenience we have provided some macros that will faciliate creation
