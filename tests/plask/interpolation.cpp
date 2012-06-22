@@ -13,7 +13,7 @@ namespace plask {
     };
 
     template <typename DataT>    //for any data type
-    struct InterpolationAlgorithm<DummyMesh, DataT, plask::LINEAR> {
+    struct InterpolationAlgorithm<DummyMesh, DataT, plask::INTERPOLATION_LINEAR> {
         static void interpolate(DummyMesh& src_mesh, const DataVector<DataT>& src_vec,
                                 const plask::Mesh<DummyMesh::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
             dst_vec[0] = src_vec[0] + 10;
@@ -33,11 +33,11 @@ BOOST_AUTO_TEST_SUITE(interpolation) // MUST be the same as the file name
                           plask::CriticalException);
         BOOST_CHECK_THROW(plask::interpolate(src_mesh, src_data, dst_mesh, (plask::InterpolationMethod)9999),
                           plask::CriticalException);
-        BOOST_CHECK_THROW(plask::interpolate(src_mesh, src_data, dst_mesh, plask::SPLINE),
+        BOOST_CHECK_THROW(plask::interpolate(src_mesh, src_data, dst_mesh, plask::INTERPOLATION_SPLINE),
                           plask::NotImplemented);
 
         // Check simple interpolate
-        auto ret_data = plask::interpolate<plask::DummyMesh,int>(src_mesh, src_data, dst_mesh, plask::LINEAR);
+        auto ret_data = plask::interpolate<plask::DummyMesh,int>(src_mesh, src_data, dst_mesh, plask::INTERPOLATION_LINEAR);
         BOOST_CHECK_EQUAL(ret_data[0], 11);
     }
 

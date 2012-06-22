@@ -407,7 +407,7 @@ auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, con
 }
 
 template <typename DataT>    //for any data type
-struct InterpolationAlgorithm<RectilinearMesh3d, DataT, LINEAR> {
+struct InterpolationAlgorithm<RectilinearMesh3d, DataT, INTERPOLATION_LINEAR> {
     static void interpolate(RectilinearMesh3d& src_mesh, const DataVector<DataT>& src_vec, const plask::Mesh<3>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)

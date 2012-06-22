@@ -17,7 +17,7 @@ using namespace plask::modules::your_module;
  */
 BOOST_PYTHON_MODULE(module_name)
 {
-    {CLASS(Class_Name, "YourModule", "Short module description and constructor documentation.")
+    {CLASS(Class_Name, "YourModule", "Short module description.")
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
         RO_FIELD(field_name, "Short documentation"); // read-only field
         RW_FIELD(field_name, "Short documentation"); // read-write field
@@ -26,7 +26,6 @@ BOOST_PYTHON_MODULE(module_name)
         RECEIVER(inReceiver, "Short documentation"); // receiver in the module
         PROVIDER(outProvider, "Short documentation"); // provider in the module
     }
-
 
 }
 

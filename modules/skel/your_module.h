@@ -1,3 +1,7 @@
+/**
+ * \file
+ * Sample module header for your module
+ */
 #ifndef PLASK__MODULE_YOUR_MODULE_H
 #define PLASK__MODULE_YOUR_MODULE_H
 
@@ -20,7 +24,7 @@ struct YourModule: public ModuleWithMesh<ForExample_Space2dCartesian, ForExample
     /// Sample provider for field (it's better to use delegate here).
     ProviderFor<SomeFieldProperty, Space2dCartesian>::Delegate outSomeField;
 
-    EffectiveIndex2dModule():
+    YourModule():
         outDelegateProvider(this, getDelegated) // getDelegated will be called whether provider value is requested
     {
         inTemperature = 300.; // temperature receiver has some sensible value
@@ -65,7 +69,8 @@ struct YourModule: public ModuleWithMesh<ForExample_Space2dCartesian, ForExample
     /// Invalidate the data
     virtual void onInvalidate() { // This will be called when e.g. geometry or mesh changes and your results become outdated
         outSingleValue.invalidate(); // clear the value
-        // Make sure that no provider return any value.
+        my_data.reset();
+        // Make sure that no provider returns any value.
         // If this method has been called, before next computations, onInitialize will be called.
    }
 
@@ -73,6 +78,7 @@ struct YourModule: public ModuleWithMesh<ForExample_Space2dCartesian, ForExample
     const DataVector<double> getDelegated(const plask::Mesh<2>& dst_mesh, plask::InterpolationMethod method=DEFAULT_INTERPOLATION) {
         if (!outSingleValue.hasValue())  // this is one possible indication that the module is invalidated
             throw NoValue(SomeSingleValueProperty::NAME);
+        if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
         return interpolate(*mesh, my_data, dst_mesh, method); // interpolate your data to the requested mesh
     }
 

@@ -40,15 +40,26 @@ tag class and use it to specialize plask::ProviderFor and plask::ReceiverFor tem
 
 Physical property tag class is an class which only has static fields and typedefs which describe
 physical property. It can be easy obtain by subclass instantiation of one of templates:
-- plask::Property - allow to obtain all possible physical properties tags classes, but require many parameters (not recommended);
-- plask::SingleValueProperty - allow to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
-- plask::FieldProperty - allow to obtain tags for properties described by values in points described by mesh (doesn't use interpolation), require only one parameter - type of provided value;
-- plask::InterpolatedFieldProperty - allow to obtain tags for properties described by values in points described by mesh and use interpolation, require only one parameter - type of provided value;
-- plask::ScalarFieldProperty - equal to plask::InterpolatedFieldProperty\<double\>, doesn't require any parameters.
+- plask::Property — allows to obtain all possible physical properties tags classes, but require many parameters (not recommended);
+- plask::SingleValueProperty — allows to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
+- plask::FieldProperty — allows to obtain tags for properties described by values in points described by mesh (doesn't use interpolation), require only one parameter - type of provided value;
+- plask::InterpolatedFieldProperty — allows to obtain tags for properties described by values in points described by mesh and use interpolation, require only one parameter - type of provided value;
+- plask::ScalarFieldProperty — equals to plask::InterpolatedFieldProperty\<double\>, doesn't require any parameters.
 
 Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters:
 - first is physical property tag and it's required,
 - second is type of space (see space.h) and it's required (and allowed) only for fields properties.
+
+plask::ProviderFor class cannot be used directly, but one must declare it using some specialized class within the plask::ProviderFor namespace.
+E.g. \b plask::ProviderFor<MyProperty>::WithValue. The specialized class \b WithValue specifies how the provided values can be obtained.
+You can choose from the following options:
+- \b WithValue (available only for plask::SingleValueProperty) — the value is stored in the provider itself.
+  It can be assigned a value just like any class member field.
+- \b WithDefaultValue (available only for plask::SingleValueProperty) — similar to \b WithValue, however it always has some value.
+  Use it if there is always some sensible default value for the provided quantity, even before any calculations have been performed.
+- \b Delegate (available for all properties) — the module needs to contain the method that computes the provided value (field or scalar) on demand.
+  This provider requires the pointer to both the module containing it and the this method as its constructor arguments. See \ref modules_writing_details
+  for an example.
 
 Example:
 @code
@@ -65,15 +76,19 @@ typedef plask::ReceiverFor<MyProperty> MyPropertyReceiver;
 
 // ...
 // Usage example:
-MyPropertyProvider::WithValue provider; //or MyPropertyProvider::WithDefaultValue provider;
+MyPropertyProvider::WithValue provider;
 MyPropertyReceiver receiver;
-receiver << provider;     //connect
+receiver << provider;       // connect
+provider = 2.0;             // set some value to provider
+assert(receiver() == 2.0);  // test the received value
 @endcode
 
+
 @subsection providers_writing_manual Flexible (manual) way
-A harder but more flexible approach than using plask::ProviderFor and plask::ReceiverFor templates (described @ref providers_writing_easy "above") is writing your own provider class which:
-- inherits from plask::Provider,
-- has operator(), which for some parameters (depending on your choice) return provided value.
+
+The (described @ref providers_writing_easy "above") method of creating providers and receivers should be sufficient for most cases. However, there is also
+a harder but more flexible approach than using plask::ProviderFor and plask::ReceiverFor templates. You can write your own provider class which
+inherits from plask::Provider and has operator(), which for some parameters (depending on your choice) returns the provided value.
 
 Receiver class for your provider still may be very easy obtained by plask::Receiver template. This template requires only one parameter: the type of the provider.
 You can use it directly or as a base class for your receiver.
@@ -100,8 +115,8 @@ typedef Receiver<ScalerProvider> ScalerReceiver;
 // Usage example:
 ScalerProvider sp(2.0);
 ScalerReceiver sr;
-sr << sp;        //connect
-assert(sr(3.0) == 6.0);
+sr << sp;               // connect
+assert(sr(3.0) == 6.0); // test the received value
 @endcode
 */
 

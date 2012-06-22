@@ -29,7 +29,7 @@ All 2D elements lie in the tran-up (or R-Z) plane.
 Geometry can be read from an XML content (for details about reading XML see @ref geometry_create).
 
 Example of XML which describes geometry:
-@verbatim
+\code{.xml}
 <geometry axes="xy">
     <container2d name="trans_cont">
         <rectangle x="5" y="3" name="block_5_3" material="exampleMaterial"/>
@@ -45,7 +45,7 @@ Example of XML which describes geometry:
         <rectangle x="8" y="12" material="exampleMaterial"/>
     </stack2d>
 </geometry>
-@endverbatim
+\endcode
 
 Above XML describes geometry in 2D space, which includes two containers.
 
@@ -68,7 +68,7 @@ an \c axes attribute. In such cases this attribute defines local names of axes (
 
 Geometry graph can be created:
 - manually in Python (by constructing its element), for example we construct the same container as the one in the example from section @ref geometry_XML:
-\verbatim
+\code{.py}
 # create 2D solid block (with size 5x3) filled with example material
 # (which is an object of class plask.material.Material or its subclass):
 block_5_3 = plask.geometry.Rectangle(5.0, 3.0, exampleMaterial)
@@ -86,7 +86,7 @@ container.append(block_5_3, plask.vec(3.0, 3.0))
 assert container.boundingBox == plask.geometry.Box2D(0.0, 0.0, 8.0, 6.0)
 assert container.getMaterial(6.0, 6.0) == exampleMaterial
 assert container.getMaterial(6.0, 2.0) == None
-\endverbatim
+\endcode
 - manually from C++. The same example as the Python code above:
 @code
 // create 2D solid block (with size 5x3) filled with example material:
@@ -107,7 +107,7 @@ assert(container->getMaterial(plask::vec(6.0, 6.0)) == exampleMaterial);
 assert(container->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
 @endcode
 - from XML file in Python using Geometry class, for example  (we suppose that example_file_name.xml file includes content showed in @ref geometry_XML section):
-\verbatim
+\code{.py}
 geometry = plask.geometry.Geometry("example_file_name.xml")
 # use:
 block_5_3 = geometry.element("block_5_3")
@@ -119,7 +119,7 @@ container = geometry.element("trans_cont")
 assert container.boundingBox == plask.geometry.Box2D(plask.vec(0.0, 0.0), plask.vec(8.0, 6.0))
 assert container.getMaterial(plask.vec(6.0, 6.0)) == exampleMaterial
 assert container.getMaterial(plask.vec(6.0, 2.0)) == None
-\endverbatim
+\endcode
 - from XML content in C++, by using plask::GeometryManager, for example:
 @code
 plask::GeometryManager geometry;
@@ -150,22 +150,34 @@ Hints are returned by methods which adds new elements to containers, and can be 
 @code
 plask::PathHints mypath;
 // ...
-mypath += container_element.append(child_element);
-container_element.append(child_element);
-container_element.append(child_element);
+mypath += container_element.push_back(child_element);
+container_element.push_back(child_element);
+container_element.push_back(child_element);
 // Now child_element is three times in container_element.
-// In mypath is arc from container_element to first appearance of child_element.
+// There is an arc from container_element to first appearance of child_element in mypath.
 // ...
-// Remove one (pointed by mypath - first) appearance of child_element from container_element:
+// Remove one (pointed by mypath i.e. the first) appearance of child_element from container_element:
 container_element.remove(mypath);
-// Still child_element is in container_element two times.
+// There are still two instances child_element is in container_element.
 // Remove all child_elements from container_element:
 container_element.remove(child_element);
 @endcode
 
 In Python this can be done in similar way (see User Manual for more examples):
 
-TODO
+\code{.py}
+mypath += container_element.append(child_element)
+container_element.append(child_element)
+container_element.append(child_element)
+# Now child_element is three times in container_element.
+# There is an arc from container_element to first appearance of child_element in mypath
+# ...
+# Remove one (pointed by mypath i.e. the first) appearance of child_element from container_element:
+del container_element[mypath]
+# There are still two instances child_element is in container_element.
+# Remove all child_elements from container_element:
+del container_element[child_element]
+\endcode
 
 @section geometry_newelements Writing new geometry elements
 

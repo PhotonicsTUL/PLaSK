@@ -9,8 +9,8 @@ include(${CMAKE_SOURCE_DIR}/cmake/modules.cmake)
 
 
 # Uncomment and edit the line below if you need to link some external libraries.
-# Note that mose probably you will need to use CMake command find_package or find_library
-# to find the libray in the system.
+# Note that most probably you will need to use CMake command find_package or find_library
+# to find the library in the system.
 #
 # Some libraries, that you can find using find_package command are:
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB

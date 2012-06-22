@@ -84,10 +84,10 @@ namespace plask {
  */
 enum InterpolationMethod {
     DEFAULT_INTERPOLATION = 0,  ///< default interpolation (depends on source mesh)
-    LINEAR = 1,                 ///< linear interpolation
-    SPLINE = 2,                 ///< spline interpolation
-    COSINE = 3,                 ///< cosine interpolation
-    FOURIER = 4,                ///< Fourier transform interpolation
+    INTERPOLATION_LINEAR = 1,   ///< linear interpolation
+    INTERPOLATION_SPLINE = 2,   ///< spline interpolation
+    INTERPOLATION_COSINE = 3,   ///< cosine interpolation
+    INTERPOLATION_FOURIER = 4,  ///< Fourier transform interpolation
     //...add new interpolation algorithms here...
 #   ifndef DOXYGEN
     __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop and automatic Python enums
