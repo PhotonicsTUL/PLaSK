@@ -76,7 +76,7 @@ public:
 
     /**
      * Construct mesh with points given in a vector.
-     * It use algorithm which has logarithmic time complexity.
+     * It use algorithm which has logarithmic time complexity pew point in @p points.
      * @param points points, in any order
      */
     RectilinearMesh1d(std::vector<PointType> points);

@@ -273,6 +273,71 @@ class RectilinearMesh2d: public Mesh<2> {
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
 
+    /**
+     * Get number of elements (for FEM method) in first direction.
+     * @return number of elements in this mesh in first direction (c0 direction).
+     */
+    std::size_t getElementsCount0() const {
+        return std::max(int(c0.size())-1, 0);
+    }
+
+    /**
+     * Get number of elements (for FEM method) in second direction.
+     * @return number of elements in this mesh in second direction (c1 direction).
+     */
+    std::size_t getElementsCount1() const {
+        return std::max(int(c1.size())-1, 0);
+    }
+
+    /**
+     * Get number of elements (for FEM method).
+     * @return number of elements in this mesh
+     */
+    std::size_t getElementsCount() const {
+        return std::max((int(c0.size())-1) * (int(c1.size())-1), 0);
+    }
+
+    /**
+     * Get area of given element.
+     * @param c0index, c1index index of element
+     * @return area of element with given index
+     */
+    double getElementArea(std::size_t c0index, std::size_t c1index) const {
+        return (c0[c0index+1] - c0[c0index])*(c1[c1index+1] - c1[c1index]);
+    }
+
+    /**
+     * Get first coordinate of point in center of element.
+     * @param c0index index of element (c0 index)
+     * @return first coordinate of point point in center of element with given index
+     */
+    double getElementCenter0(std::size_t c0index) const { return (c0[c0index+1] + c0[c0index]) / 2.0; }
+
+    /**
+     * Get second coordinate of point in center of element.
+     * @param c1index index of element (c1 index)
+     * @return second coordinate of point point in center of element with given index
+     */
+    double getElementCenter1(std::size_t c1index) const { return (c1[c1index+1] + c1[c1index]) / 2.0; }
+
+    /**
+     * Get point in center of element.
+     * @param c0index, c1index index of element
+     * @return point in center of element with given index
+     */
+    Vec<2, double> getElementCenter(std::size_t c0index, std::size_t c1index) const {
+        return vec(getElementCenter0(c0index), getElementCenter1(c1index));
+    }
+
+    /**
+     * Get element (as rectangle).
+     * @param c0index, c1index index of element
+     * @return element with given index
+     */
+    Box2d getElement(std::size_t c0index, std::size_t c1index) const {
+        return Box2d(c0[c0index], c1[c1index], c0[c0index+1], c1[c1index+1]);
+    }
+
 private:
 
     void buildFromGeometry(const GeometryElementD<2>& geometry);
