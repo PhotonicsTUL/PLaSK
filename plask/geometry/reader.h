@@ -5,6 +5,7 @@
 #include "../axes.h"
 #include "manager.h"
 #include "../material/db.h"
+#include <functional>
 
 namespace plask {
 
@@ -66,9 +67,6 @@ struct GeometryReader {
      */
     const char* expectedSuffix;
 
-    /// Material database used by geometry (leafs).
-    const MaterialsDB& materialsDB;
-
     /**
      * Get current axis name.
      * @param axis_index axis index
@@ -121,12 +119,36 @@ struct GeometryReader {
     /// XML data source
     XMLReader& source;
 
+    /// Type of material source, can return material with given name.
+    typedef std::function<shared_ptr<Material>(const std::string& material_full_name)> MaterialsSource;
+
+    /// Source of materials, typically use material database.
+    MaterialsSource materialSource;
+
+    /**
+     * Get material from material source (typically material database) connected with this reader.
+     *
+     * Throw excpetion if can't get material (no material with given name, etc.).
+     * @param material_full_name full material name to get
+     * @return material with name @p material_full_name
+     */
+    shared_ptr<Material> getMaterial(const std::string& material_full_name) const {
+        return materialSource(material_full_name);
+    }
+
     /**
      * @param manager
      * @param source xml data source from which element data should be read
      * @param materialsDB materials database used to set leafs materials
      */
     GeometryReader(GeometryManager& manager, XMLReader& source, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
+    /**
+     * @param manager
+     * @param source xml data source from which element data should be read
+     * @param materialsSource materials source used to set leafs materials
+     */
+    GeometryReader(GeometryManager& manager, XMLReader& source, const MaterialsSource& materialsSource);
 
     /**
      * Read geometry element from @p source and add it GeometryManager structures.

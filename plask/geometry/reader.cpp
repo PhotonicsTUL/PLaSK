@@ -26,7 +26,14 @@ GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, con
 }
 
 plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
-    : expectedSuffix(0), materialsDB(materialsDB), manager(manager), source(source)
+    : expectedSuffix(0), manager(manager), source(source),
+      materialSource([&materialsDB](const std::string& mat_name) { return materialsDB.get(mat_name); })
+{
+    axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
+}
+
+GeometryReader::GeometryReader(GeometryManager &manager, XMLReader &source, const GeometryReader::MaterialsSource &materialsSource)
+    : expectedSuffix(0), manager(manager), source(source), materialSource(materialSource)
 {
     axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
 }

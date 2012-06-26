@@ -117,7 +117,7 @@ struct GeometryManager {
      * Load geometry using geometry reader.
      * @param reader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
      */
-    void loadGeometryFromReader(GeometryReader& reader, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    void loadGeometryFromReader(GeometryReader& reader);
 
     /**
      * Load geometry using geometry reader.

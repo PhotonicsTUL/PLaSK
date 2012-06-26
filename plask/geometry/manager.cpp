@@ -39,7 +39,7 @@ shared_ptr<CalculationSpace> GeometryManager::getCalculationSpace(const std::str
     return result_it == calculationSpaces.end() ? shared_ptr<CalculationSpace>() : result_it->second;
 }
 
-void GeometryManager::loadGeometryFromReader(GeometryReader& reader, const MaterialsDB& materialsDB) {
+void GeometryManager::loadGeometryFromReader(GeometryReader& reader) {
     if (reader.source.getNodeType() != XMLReader::NODE_ELEMENT || reader.source.getNodeName() != std::string("geometry"))
         throw XMLUnexpectedElementException("<geometry> tag");
     GeometryReader::ReadAxisNames read_axis_tag(reader);
@@ -85,7 +85,7 @@ void GeometryManager::loadSpacesFromReader(GeometryReader& reader) {
 
 void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& materialsDB) {
     GeometryReader reader(*this, XMLreader, materialsDB);
-    loadGeometryFromReader(reader, materialsDB);
+    loadGeometryFromReader(reader);
 }
 
 void GeometryManager::loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB) {
