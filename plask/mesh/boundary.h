@@ -69,7 +69,7 @@ struct BoundaryImpl {
     /// Base class for boundary iterator implementation.
     typedef PolymorphicForwardIteratorImpl<std::size_t, std::size_t> IteratorImpl;
 
-    /// Boundy iterator type.
+    /// Boundary iterator type.
     typedef PolymorphicForwardIterator<IteratorImpl> Iterator;
 
     /// iterator over indexes of mesh

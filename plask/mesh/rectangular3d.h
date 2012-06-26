@@ -1,11 +1,11 @@
-#ifndef PLASK__RECTILINEAR3D_H
-#define PLASK__RECTILINEAR3D_H
+#ifndef PLASK__RECTANGULAR3D_H
+#define PLASK__RECTANGULAR3D_H
 
 /** @file
 This file includes rectilinear mesh for 3d space.
 */
 
-#include "rectilinear2d.h"
+#include "rectangular2d.h"
 
 namespace plask {
 
@@ -19,10 +19,11 @@ namespace plask {
  * Represent all points (x, y, z) such that x is in c0, y is in c1, z is in c2.
  */
 //TODO methods which call fireResize() when points are adding, etc.
-class RectilinearMesh3d: public Mesh<3> {
+template <typename Mesh1D>
+class RectangularMesh3d: public Mesh<3> {
 
-    typedef std::size_t index_ft(const RectilinearMesh3d* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index);
-    typedef std::size_t index012_ft(const RectilinearMesh3d* mesh, std::size_t mesh_index);
+    typedef std::size_t index_ft(const RectangularMesh3d* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index);
+    typedef std::size_t index012_ft(const RectangularMesh3d* mesh, std::size_t mesh_index);
 
     // our own virtual table, changeable in run-time:
     index_ft* index_f;
@@ -33,13 +34,13 @@ class RectilinearMesh3d: public Mesh<3> {
   public:
 
     /// First coordinate of points in this mesh.
-    RectilinearMesh1d c0;
+    Mesh1D c0;
 
     /// Second coordinate of points in this mesh.
-    RectilinearMesh1d c1;
+    Mesh1D c1;
 
     /// Third coordinate of points in this mesh.
-    RectilinearMesh1d c2;
+    Mesh1D c2;
 
     /**
      * Iteration orders:
@@ -51,7 +52,7 @@ class RectilinearMesh3d: public Mesh<3> {
     enum IterationOrder { ORDER_012, ORDER_021, ORDER_102, ORDER_120, ORDER_201, ORDER_210 };
 
     /// Construct an empty mesh
-    RectilinearMesh3d(IterationOrder iterationOrder=ORDER_210) {
+    RectangularMesh3d(IterationOrder iterationOrder=ORDER_210) {
         setIterationOrder(iterationOrder);
     }
 
@@ -81,139 +82,118 @@ class RectilinearMesh3d: public Mesh<3> {
      * @param mesh1 mesh for the second coordinate
      * @param mesh2 mesh for the third coordinate
      */
-    RectilinearMesh3d(const RectilinearMesh1d& mesh0, const RectilinearMesh1d& mesh1, const RectilinearMesh1d& mesh2, IterationOrder iterationOrder=ORDER_012)
+    RectangularMesh3d(const Mesh1D& mesh0, const Mesh1D& mesh1, const Mesh1D& mesh2, IterationOrder iterationOrder=ORDER_012)
         : c0(mesh0), c1(mesh1), c2(mesh2) {
             setIterationOrder(iterationOrder);
     }
 
     /**
-     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
-     *
-     * @param geometry geometry in which bounding boxes are searched
+     * Get first coordinate of points in this mesh.
+     * @return c0
      */
-    RectilinearMesh3d(const GeometryElementD<3>& geometry, IterationOrder iterationOrder=ORDER_012) {
-        buildFromGeometry(geometry);
-        setIterationOrder(iterationOrder);
-    }
-
-    /**
-     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
-     *
-     * @param geometry geometry in which bounding boxes are searched
-     */
-    RectilinearMesh3d(shared_ptr<const GeometryElementD<3>> geometry, IterationOrder iterationOrder=ORDER_012) {
-        buildFromGeometry(*geometry);
-        setIterationOrder(iterationOrder);
-    }
-
+    Mesh1D& lon() { return c0; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    RectilinearMesh1d& lon() { return c0; }
-
-    /**
-     * Get first coordinate of points in this mesh.
-     * @return c0
-     */
-    const RectilinearMesh1d& lon() const { return c0; }
+    const Mesh1D& lon() const { return c0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    RectilinearMesh1d& tran() { return c1; }
+    Mesh1D& tran() { return c1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    const RectilinearMesh1d& tran() const { return c1; }
+    const Mesh1D& tran() const { return c1; }
 
     /**
      * Get third coordinate of points in this mesh.
      * @return c2
      */
-    RectilinearMesh1d& up() { return c2; }
+    Mesh1D& up() { return c2; }
 
     /**
      * Get third coordinate of points in this mesh.
      * @return c2
      */
-    const RectilinearMesh1d& up() const { return c2; }
+    const Mesh1D& up() const { return c2; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    RectilinearMesh1d& ee_z() { return c0; }
+    Mesh1D& ee_z() { return c0; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    const RectilinearMesh1d& ee_z() const { return c0; }
+    const Mesh1D& ee_z() const { return c0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    RectilinearMesh1d& ee_x() { return c1; }
+    Mesh1D& ee_x() { return c1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    const RectilinearMesh1d& ee_x() const { return c1; }
+    const Mesh1D& ee_x() const { return c1; }
 
     /**
      * Get third coordinate of points in this mesh.
      * @return c2
      */
-    RectilinearMesh1d& ee_y() { return c1; }
+    Mesh1D& ee_y() { return c1; }
 
     /**
      * Get third coordinate of points in this mesh.
      * @return c2
      */
-    const RectilinearMesh1d& ee_y() const { return c1; }
+    const Mesh1D& ee_y() const { return c1; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    RectilinearMesh1d& rad_r() { return c0; }
+    Mesh1D& rad_r() { return c0; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return c0
      */
-    const RectilinearMesh1d& rad_r() const { return c0; }
+    const Mesh1D& rad_r() const { return c0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    RectilinearMesh1d& rad_phi() { return c1; }
+    Mesh1D& rad_phi() { return c1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    const RectilinearMesh1d& rad_phi() const { return c1; }
+    const Mesh1D& rad_phi() const { return c1; }
 
     /**
      * Get thirs coordinate of points in this mesh.
      * @return c1
      */
-    RectilinearMesh1d& rad_z() { return c1; }
+    Mesh1D& rad_z() { return c1; }
 
     /**
      * Get thirs coordinate of points in this mesh.
      * @return c1
      */
-    const RectilinearMesh1d& rad_z() const { return c1; }
+    const Mesh1D& rad_z() const { return c1; }
 
     ///Type of points in this mesh.
     typedef Vec<3, double> PointType;
@@ -222,7 +202,7 @@ class RectilinearMesh3d: public Mesh<3> {
      * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].
      * This iterator type is indexed, which mean that it have (read-write) index field equal to 0 for begin() and growing up to size() for end().
      */
-    typedef IndexedIterator< const RectilinearMesh3d, PointType > const_iterator;
+    typedef IndexedIterator< const RectangularMesh3d, PointType > const_iterator;
 
     ///@return iterator referring to the first point in this mesh
     const_iterator begin_fast() const { return const_iterator(this, 0); }
@@ -315,7 +295,7 @@ class RectilinearMesh3d: public Mesh<3> {
      * Return a mesh that enables iterating over middle points of the rectangles
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
-    RectilinearMesh3d getMidpointsMesh() const;
+    RectangularMesh3d getMidpointsMesh() const;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
@@ -324,91 +304,81 @@ class RectilinearMesh3d: public Mesh<3> {
      * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
-    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type;
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type {
+        std::size_t index0 = c0.findIndex(point.c0);
+        std::size_t index1 = c1.findIndex(point.c1);
+        std::size_t index2 = c2.findIndex(point.c2);
 
+        if (index2 == 0)
+            return interpolateLinear2d(
+                [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1, 0)]; },
+                point.c0, point.c1, c0, c1, index0, index1
+            );
 
-  private:
+        if (index2 == c0.size()) {
+            --index2;
+            return interpolateLinear2d(
+                [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1, index2)]; },
+                point.c0, point.c1, c0, c1, index0, index1
+            );
+        }
 
-    void buildFromGeometry(const GeometryElementD<3>& geometry);
+        if (index1 == 0)
+            return interpolateLinear2d(
+                [&] (std::size_t i0, std::size_t i2) { return data[index(i0, 0, i2)]; },
+                point.c0, point.c2, c0, c2, index0, index2
+            );
 
+        if (index1 == c1.size()) {
+            --index1;
+            return interpolateLinear2d(
+                [&] (std::size_t i0, std::size_t i2) { return data[index(i0, index1, i2)]; },
+                point.c0, point.c2, c0, c2, index0, index2
+            );
+        }
+
+        //index1 and index2 are in bounds here:
+        if (index0 == 0)
+        return interpolation::bilinear(c1[index1-1], c1[index1],
+                                        c2[index2-1], c2[index2],
+                                        data[index(0, index1-1, index2-1)],
+                                        data[index(0, index1,   index2-1)],
+                                        data[index(0, index1,   index2  )],
+                                        data[index(0, index1-1, index2  )],
+                                        point.c1, point.c2);
+        if (index0 == c0.size()) {
+            --index0;
+        return interpolation::bilinear(c1[index1-1], c1[index1],
+                                        c2[index2-1], c2[index2],
+                                        data[index(index0, index1-1, index2-1)],
+                                        data[index(index0, index1,   index2-1)],
+                                        data[index(index0, index1,   index2  )],
+                                        data[index(index0, index1-1, index2  )],
+                                        point.c1, point.c2);
+        }
+
+        //all indexes are in bounds
+        return interpolation::trilinear(
+            c0[index0-1], c0[index0],
+            c1[index1-1], c1[index1],
+            c2[index2-1], c2[index2],
+            data[index(index0-1, index1-1, index2-1)],
+            data[index(index0,   index1-1, index2-1)],
+            data[index(index0,   index1  , index2-1)],
+            data[index(index0-1, index1  , index2-1)],
+            data[index(index0-1, index1-1, index2)],
+            data[index(index0,   index1-1, index2)],
+            data[index(index0,   index1  , index2)],
+            data[index(index0-1, index1  , index2)],
+            point.c0, point.c1, point.c2
+        );
+
+    }
 };
 
-// RectilinearMesh3d method templates implementation
-template <typename RandomAccessContainer>
-auto RectilinearMesh3d::interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type {
-    std::size_t index0 = c0.findIndex(point.c0);
-    std::size_t index1 = c1.findIndex(point.c1);
-    std::size_t index2 = c2.findIndex(point.c2);
-
-    if (index2 == 0)
-        return interpolateLinear2d(
-            [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1, 0)]; },
-            point.c0, point.c1, c0, c1, index0, index1
-        );
-
-    if (index2 == c0.size()) {
-        --index2;
-        return interpolateLinear2d(
-            [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1, index2)]; },
-            point.c0, point.c1, c0, c1, index0, index1
-        );
-    }
-
-    if (index1 == 0)
-        return interpolateLinear2d(
-            [&] (std::size_t i0, std::size_t i2) { return data[index(i0, 0, i2)]; },
-            point.c0, point.c2, c0, c2, index0, index2
-        );
-
-    if (index1 == c1.size()) {
-        --index1;
-        return interpolateLinear2d(
-            [&] (std::size_t i0, std::size_t i2) { return data[index(i0, index1, i2)]; },
-            point.c0, point.c2, c0, c2, index0, index2
-        );
-    }
-
-    //index1 and index2 are in bounds here:
-    if (index0 == 0)
-       return interpolation::bilinear(c1[index1-1], c1[index1],
-                                      c2[index2-1], c2[index2],
-                                      data[index(0, index1-1, index2-1)],
-                                      data[index(0, index1,   index2-1)],
-                                      data[index(0, index1,   index2  )],
-                                      data[index(0, index1-1, index2  )],
-                                      point.c1, point.c2);
-    if (index0 == c0.size()) {
-        --index0;
-       return interpolation::bilinear(c1[index1-1], c1[index1],
-                                      c2[index2-1], c2[index2],
-                                      data[index(index0, index1-1, index2-1)],
-                                      data[index(index0, index1,   index2-1)],
-                                      data[index(index0, index1,   index2  )],
-                                      data[index(index0, index1-1, index2  )],
-                                      point.c1, point.c2);
-    }
-
-    //all indexes are in bounds
-    return interpolation::trilinear(
-        c0[index0-1], c0[index0],
-        c1[index1-1], c1[index1],
-        c2[index2-1], c2[index2],
-        data[index(index0-1, index1-1, index2-1)],
-        data[index(index0,   index1-1, index2-1)],
-        data[index(index0,   index1  , index2-1)],
-        data[index(index0-1, index1  , index2-1)],
-        data[index(index0-1, index1-1, index2)],
-        data[index(index0,   index1-1, index2)],
-        data[index(index0,   index1  , index2)],
-        data[index(index0-1, index1  , index2)],
-        point.c0, point.c1, point.c2
-    );
-
-}
-
-template <typename DataT>    //for any data type
-struct InterpolationAlgorithm<RectilinearMesh3d, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(RectilinearMesh3d& src_mesh, const DataVector<DataT>& src_vec, const plask::Mesh<3>& dst_mesh, DataVector<DataT>& dst_vec) {
+template <typename Mesh1D,typename DataT>    //for any data type
+struct InterpolationAlgorithm<RectangularMesh3d<Mesh1D>, DataT, INTERPOLATION_LINEAR> {
+    static void interpolate(RectangularMesh3d<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::Mesh<3>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
             *dst++ = src_mesh.interpolateLinear(src_vec, p);
@@ -419,14 +389,16 @@ struct InterpolationAlgorithm<RectilinearMesh3d, DataT, INTERPOLATION_LINEAR> {
 
 namespace std { //use fast iterator if know mesh type at compile time:
 
-    inline auto begin(const plask::RectilinearMesh3d& m) -> decltype(m.begin_fast()) {
+    template <typename Mesh1D>
+    inline auto begin(const plask::RectangularMesh3d<Mesh1D>& m) -> decltype(m.begin_fast()) {
       return m.begin_fast();
     }
 
-    inline auto end(const plask::RectilinearMesh3d& m) -> decltype(m.end_fast()) {
+    template <typename Mesh1D>
+    inline auto end(const plask::RectangularMesh3d<Mesh1D>& m) -> decltype(m.end_fast()) {
       return m.begin_fast();
     }
 
 }   // namespace std
 
-#endif // PLASK__RECTILINEAR3D_H
+#endif // PLASK__RECTANGULAR3D_H

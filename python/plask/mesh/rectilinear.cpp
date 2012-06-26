@@ -6,8 +6,7 @@
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/interpolation.h>
 #include <plask/mesh/rectilinear1d.h>
-#include <plask/mesh/rectilinear2d.h>
-#include <plask/mesh/rectilinear3d.h>
+#include <plask/mesh/rectilinear.h>
 
 namespace plask { namespace python {
 
