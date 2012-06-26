@@ -268,7 +268,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
         result->translation.up = up_trans;
         aligner.align(*result, elBB);
-        el->fireChanged();
+        //el->fireChanged();    //??
         return result;
     }
 

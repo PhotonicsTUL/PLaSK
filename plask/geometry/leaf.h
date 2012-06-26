@@ -25,6 +25,11 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 
     GeometryElementLeaf<dim>(shared_ptr<Material> material): material(material) {}
 
+    void setMaterial(shared_ptr<Material> new_material) {
+        material = new_material;
+        this->fireChanged();
+    }
+
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_LEAF; }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
