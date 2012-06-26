@@ -78,7 +78,7 @@ struct BoundaryImpl {
 
     virtual ~BoundaryImpl() {}
 
-    virtual BoundaryImpl<MeshType>* clone() const;
+    virtual BoundaryImpl<MeshType>* clone() const = 0;
 
     /**
      * Check if boundary includes point with given index.
