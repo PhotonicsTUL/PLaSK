@@ -19,7 +19,7 @@ class RegularMesh1d {
     double lo, step;
     std::size_t points_count;
 
-    public:
+  public:
 
     /// Type of points in this mesh.
     typedef double PointType;

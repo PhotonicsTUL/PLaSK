@@ -6,10 +6,7 @@
 namespace plask {
 
 template class RectangularMesh2d<RectilinearMesh1d>;
-template class BoundaryImpl<RectangularMesh2d<RectilinearMesh1d>>;
-
 template class RectangularMesh3d<RectilinearMesh1d>;
-template class BoundaryImpl<RectangularMesh3d<RectilinearMesh1d>>;
 
 void RectilinearMesh2d::buildFromGeometry(const GeometryElementD<2>& geometry) {
     std::vector<Box2d> boxes = geometry.getLeafsBoundingBoxes();
