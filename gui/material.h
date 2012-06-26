@@ -13,13 +13,15 @@ struct NameOnlyMaterial: public plask::Material {
 public:
     NameOnlyMaterial(const std::string& name): _name(name) {}
 
-    static plask::shared_ptr<Material> getInstance(const std::string& name) {
+    static plask::shared_ptr<NameOnlyMaterial> getInstance(const std::string& name) {
         return plask::make_shared<NameOnlyMaterial>(name);
     }
 
     virtual std::string name() const;
 
     virtual Kind kind() const;
+
+    void setName(const std::string& newName);
 
 };
 

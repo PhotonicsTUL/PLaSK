@@ -16,7 +16,7 @@ namespace plask {
 typename RectangularMesh2d<RegularMesh1d> RegularMesh2d;
 
 /// Three-dimensional rectilinear mesh type
-typename RectangularMesh2d<RegularMesh1d> RegularMesh3d;
+typename RectangularMesh3d<RegularMesh1d> RegularMesh3d;
 
 
 

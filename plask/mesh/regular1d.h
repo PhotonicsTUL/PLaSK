@@ -8,6 +8,7 @@ This file defines regular mesh for 1d space.
 #include "../utils/iterators.h"
 #include "../utils/interpolation.h"
 
+#include "../math.h"
 
 namespace plask {
 
@@ -24,8 +25,8 @@ class RegularMesh1d {
     /// Type of points in this mesh.
     typedef double PointType;
 
-    typedef IndexedIterator<RegularMesh1d> iterator;
-    typedef IndexedIterator<RegularMesh1d> const_iterator;
+    typedef IndexedIterator<const RegularMesh1d, PointType> iterator;
+    typedef IndexedIterator<const RegularMesh1d, PointType> const_iterator;
 
     /// @return iterator referring to the first point in this mesh
     const_iterator begin() const { return const_iterator(this, 0); }
@@ -92,9 +93,9 @@ class RegularMesh1d {
       */
      friend inline std::ostream& operator<<(std::ostream& out, const RegularMesh1d& self) {
          out << "[";
-         for (std::size_t i = 0; i < points_count; ++i) {
+         for (std::size_t i = 0; i < self.points_count; ++i) {
              if (i != 0) out << ", ";
-             out << this->operator [](i);
+             out << self[i];
          }
          out << "]";
          return out;
@@ -108,7 +109,7 @@ class RegularMesh1d {
       * @param index index of point, from 0 to size()-1
       * @return point with given @p index
       */
-     const double& operator[](std::size_t index) const { return lo + index * step; }
+     const double operator[](std::size_t index) const { return lo + index * step; }
 
      /**
       * Remove all points from mesh.
@@ -123,8 +124,7 @@ class RegularMesh1d {
       *         Can be equal to size() if to_find is higher than all points in mesh.
       */
      std::size_t findIndex(double to_find) const {
-         return clamp(int(cail((to_find - lo) / step)), 0, int(points_count));
-
+         return clamp(int(std::ceil((to_find - lo) / step)), 0, int(points_count));
      }
 
      /**
@@ -155,9 +155,9 @@ class RegularMesh1d {
  auto RegularMesh1d::interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
      std::size_t index = findIndex(point);
      if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
-     if (index == 0 || points[index] == point) return data[index]; //hit exactly
+     if (index == 0 || this->operator[](index) == point) return data[index]; //hit exactly
      // here: points[index-1] < point < points[index]
-     return interpolation::linear(points[index-1], data[index-1], points[index], data[index], point);
+     return interpolation::linear(this->operator[](index-1), data[index-1], this->operator[](index), data[index], point);
  }
 
  }   // namespace plask

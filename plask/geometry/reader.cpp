@@ -33,7 +33,7 @@ plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XM
 }
 
 GeometryReader::GeometryReader(GeometryManager &manager, XMLReader &source, const GeometryReader::MaterialsSource &materialsSource)
-    : expectedSuffix(0), manager(manager), source(source), materialSource(materialSource)
+    : expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
 {
     axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
 }
