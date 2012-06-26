@@ -112,10 +112,10 @@ struct BoundaryImpl {
         typedef BoundaryImpl<MeshType>::const_iterator const_iterator;
         typedef BoundaryImpl<MeshType>::iterator iterator;
 
-        const BoundaryImpl& boundary;
+        const BoundaryImpl<MeshType>& boundary;
         const MeshType& mesh;
 
-        WithMesh(const BoundaryImpl& boundary, const MeshType& mesh)
+        WithMesh(const BoundaryImpl<MeshType>& boundary, const MeshType& mesh)
             : boundary(boundary), mesh(mesh) {}
 
         bool includes(std::size_t mesh_index) const {
@@ -145,13 +145,13 @@ struct BoundaryImpl {
     /// Base class for boundary iterator implementation which includes reference to boundary.
     struct IteratorWithMeshImpl: public IteratorImpl {
 
-        WithMesh& boundaryWithMesh;
+        WithMesh boundaryWithMesh;
 
-        const BoundaryImpl& getBoundary() const { return boundaryWithMesh.boundary; }
+        const BoundaryImpl<MeshType>& getBoundary() const { return boundaryWithMesh.boundary; }
         const MeshType& getMesh() const { return boundaryWithMesh.mesh; }
 
-        IteratorWithMeshImpl(const BoundaryImpl& boundary, const MeshType& mesh):
-            boundaryWithMesh(boundary, mesh) {}
+        IteratorWithMeshImpl(const BoundaryImpl<MeshType>& boundary, const MeshType& mesh)
+            : boundaryWithMesh(boundary, mesh) {}
     };
 
 };

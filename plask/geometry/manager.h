@@ -16,10 +16,11 @@ This file includes:
 #include "path.h"
 
 #include "../space.h"
+#include "reader.h"
 
 namespace plask {
 
-class GeometryReader;
+//class GeometryReader;
 
 /**
  * Geometry manager features:
@@ -128,8 +129,15 @@ struct GeometryManager {
     /**
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
+
      */
     void loadFromReader(XMLReader& XMLreader, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
+    /**
+     * Load geometry using XML reader.
+     * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
+     */
+    void loadFromReader(XMLReader& XMLreader, const GeometryReader::MaterialsSource& materialsSource);
 
     /**
      * Load geometry from (XML) stream.
@@ -138,10 +146,22 @@ struct GeometryManager {
     void loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
+     * Load geometry from (XML) stream.
+     * @param input stream to read from, with XML content
+     */
+    void loadFromXMLStream(std::istream &input, const GeometryReader::MaterialsSource& materialsSource);
+
+    /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
      */
     void loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
+    /**
+     * Load geometry from string which consist of XML.
+     * @param input_XML_str string with XML content
+     */
+    void loadFromXMLString(const std::string &input_XML_str, const GeometryReader::MaterialsSource& materialsSource);
 
     /*
      * Read all elements up to end of XML tag and call functor(element) for each element which was read.
@@ -158,6 +178,12 @@ struct GeometryManager {
      * @param fileName name of XML file
      */
     void loadFromFile(const std::string& fileName, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
+    /**
+     * Load geometry from XML file.
+     * @param fileName name of XML file
+     */
+    void loadFromFile(const std::string& fileName, const GeometryReader::MaterialsSource& materialsSource);
 };
 
 //specialization for most types
