@@ -123,7 +123,35 @@ struct PolymorphicForwardIterator:
  * Template to create iterators for containers which have operator[].
  * @tparam ContainerType type of container (can be const or non-const)
  * @tparam Reference iterator reference type, should be the same type which return container operator[]
+ * In most cases it can be auto-deduced from ContainerType, but only if ContainerType is fully defined and known.
  * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
+ *
+ * Example:
+ * @code
+ * struct MyIntContainer {
+ *   //Typdefes for iterator types:
+ *   //(note that second template parameter can't be auto-deduced becose MyIntContainer is not already fully defined)
+ *   typedef IndexedIterator<MyRandomAccessContainer, int&> iterator;
+ *   typedef IndexedIterator<const MyRandomAccessContainer, const int&> const_iterator;
+ *
+ *   //begin() and end() methods (non-const and const versions):
+ *   iterator begin() { return iterator(0); } //0 is begin index
+ *   const_iterator begin() const { return const_iterator(0); } //0 is begin index
+ *   iterator end() { return iterator(size()); } //size() is end index
+ *   const_iterator end() const { return const_iterator(size()); } //size() is end index
+ *
+ *   //Methods to get element by index, etc.:
+ *   int& operator[](std::size_t index) {  //used by iterator
+ *      //code which returns element with given index
+ *   }
+ *   const int& operator[](std::size_t index) const {  //used by const_iterator
+ *      //code which returns element with given index
+ *   }
+ *   std::size_t size() const { //used by end()
+ *      //code which returns number of elements
+ *   }
+ * };
+ * @endcode
  */
 template <
     typename ContainerType,
