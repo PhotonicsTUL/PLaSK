@@ -44,7 +44,7 @@ public:
     */
     bool read();
 
-    /// Returns if an element is an empty element, like <foo />
+    /// Returns if an element is an empty element, like \<foo /\>
     bool isEmptyElement() const { return irrReader->isEmptyElement(); }
 
     /**

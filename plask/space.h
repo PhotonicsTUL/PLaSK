@@ -73,7 +73,7 @@ struct CalculationSpace {
          * @param source source of event
          * @param flags which describes event's properties
          */
-        explicit Event(CalculationSpace& source, unsigned char falgs = 0): EventWithSourceAndFlags<CalculationSpace>(source, falgs) {}
+        explicit Event(CalculationSpace& source, unsigned char flags = 0): EventWithSourceAndFlags<CalculationSpace>(source, flags) {}
     };
 
     /**
@@ -130,7 +130,6 @@ struct CalculationSpace {
     /**
      * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
      * @param direction see DIRECTION
-     * @param higher @c true for higher bound, @c false for lower
      * @param border_to_set new border strategy for given borders
      */
     virtual void setBorders(DIRECTION direction, const border::Strategy& border_to_set) {

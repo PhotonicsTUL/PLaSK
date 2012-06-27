@@ -78,7 +78,6 @@ struct RootDigger {
      * \param end end of the range
      * \param replot number of segments in real domain to divide the range into
      * \param implot number of segments in imaginary domain to divide the range into
-     * \param num_modes maximum number of modes to look for
      * \return potential values close to minima
      */
     std::vector<dcomplex> findMap(dcomplex start, dcomplex end, int replot, int implot);

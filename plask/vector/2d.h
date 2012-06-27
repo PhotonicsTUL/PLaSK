@@ -285,7 +285,7 @@ inline auto dot(const Vec<2, complex<double>>& v1, const Vec<2,complex<double>>&
 
 /**
  * Helper to create 2d vector.
- * @param cc0__tran, c1__up vector coordinates.
+ * @param c0__tran, c1__up vector coordinates.
  */
 template <typename T>
 inline Vec<2, T> vec(const T c0__tran, const T c1__up) {

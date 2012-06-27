@@ -116,26 +116,26 @@ struct GeometryManager {
 
     /**
      * Load geometry using geometry reader.
-     * @param reader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
+     * @param reader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      */
     void loadGeometryFromReader(GeometryReader& reader);
 
     /**
      * Load geometry using geometry reader.
-     * @param reader reader to read from, should point to <space> tag, after read it will be point to </space> tag
+     * @param reader reader to read from, should point to @c \<space> tag, after read it will be point to @c \</space> tag
      */
     void loadSpacesFromReader(GeometryReader& reader);
 
     /**
      * Load geometry using XML reader.
-     * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
+     * @param XMLreader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
 
      */
     void loadFromReader(XMLReader& XMLreader, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry using XML reader.
-     * @param XMLreader reader to read from, should point to <geometry> tag, after read it will be point to </geometry> tag
+     * @param XMLreader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      */
     void loadFromReader(XMLReader& XMLreader, const GeometryReader::MaterialsSource& materialsSource);
 

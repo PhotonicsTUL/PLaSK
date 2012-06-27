@@ -273,7 +273,7 @@ public:
      * Append @p element to this path.
      *
      * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
-     * @param hint elements to add
+     * @param element elements to add
      * @param hints optional path hints which are use to non-ambiguous completion of paths
      */
     Path& append(shared_ptr<const GeometryElement> element, const PathHints* hints = nullptr);

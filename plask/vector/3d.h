@@ -303,7 +303,7 @@ inline auto dot(const Vec<3,complex<double>>& v1, const Vec<3,complex<double>>& 
 
 /**
  * Helper to create 3d vector.
- * @param c0, c1, c2 vector coordinates.
+ * @param c0__lon, c1__tran, c2__up vector coordinates.
  */
 template <typename T>
 inline Vec<3, T> vec(const T c0__lon, const T c1__tran, const T c2__up) {

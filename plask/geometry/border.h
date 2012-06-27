@@ -195,7 +195,7 @@ struct Mirror: public Strategy {
  * - delegate apply methods to holded strategy,
  * - allow to assing strategy to self (using operator=).
  * @tparam direction holded strategy working direction (coordinate of vector component)
- * @tpatam StrategyType (base) type of holded strategy, typically Strategy or UniversalStrategy
+ * @tparam StrategyType (base) type of holded strategy, typically Strategy or UniversalStrategy
  */
 template <int direction, typename StrategyType = Strategy>
 class StrategyHolder {
@@ -259,7 +259,7 @@ public:
 /**
  * Hold pairs of strategies (for lo and hi band) with given type.
  * @tparam direction holded strategy working direction (coordinate of vector component)
- * @tpatam StrategyType (base) type of holded strategies, typically Strategy or UniversalStrategy
+ * @tparam StrategyType (base) type of holded strategies, typically Strategy or UniversalStrategy
  */
 template <int direction, typename StrategyType = Strategy>
 class StrategyPairHolder {
@@ -313,7 +313,7 @@ public:
 
     /**
      * Set lo or hi strategy.
-     * @param setNewHi if @true new hi strategy will be set, in other case new lo strategy will be set
+     * @param setNewHi if @c true new hi strategy will be set, in other case new lo strategy will be set
      * @param strategy new strategy value
      */
     void set(bool setNewHi, const StrategyType& strategy) {
@@ -323,7 +323,7 @@ public:
     /**
      * Get lo or hi strategy.
      * @param _getHi if @true hi strategy will be returned, in other case lo strategy will be returned
-     * @param lo or hi strategy, depends from @p _getHi value
+     * @return lo or hi strategy, depends from @p _getHi value
      */
     const StrategyType& get(bool _getHi) const {
         return _getHi ? getHi() : getLo();

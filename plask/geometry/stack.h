@@ -88,7 +88,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     /**
      * Calculate element up translation and height of stack with element @a el.
-     * @param el[in] bounding box of geometry element (typically: for element which is or will be in stack)
+     * @param elBoudingBox[in] bounding box of geometry element (typically: for element which is or will be in stack)
      * @param prev_height[in] height of stack under an @a el
      * @param el_translation[out] up translation which should element @a el have
      * @param next_height[out] height of stack with an @a el on top (up to @a el)

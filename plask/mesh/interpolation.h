@@ -38,10 +38,10 @@ you have to write a specialization or a partial specialization of the plask::Int
 for specific: source mesh type, data type, and/or @ref plask::InterpolationMethod "interpolation method".
 Your specialization must contain an implementation of the static method plask::InterpolationAlgorithm::interpolate.
 
-For example to implement @ref plask::LINEAR "linear" interpolation for MyMeshType source mesh type using the same code for all possible data types, you write:
+For example to implement @ref plask::INTERPOLATION_LINEAR "linear" interpolation for MyMeshType source mesh type using the same code for all possible data types, you write:
 @code
 template <typename DataT>    //for any data type
-struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::LINEAR> {
+struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::INTERPOLATION_LINEAR> {
     static void interpolate(MyMeshType& src_mesh, const DataVector<DataT>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
 
         // here comes your interpolation code
@@ -54,7 +54,7 @@ The next example, shows how to implement algorithm for a particular data type.
 To implement the interpolation version for the 'double' type, you should write:
 @code
 template <>
-struct plask::InterpolationAlgorithm<MyMeshType, double, plask::LINEAR> {
+struct plask::InterpolationAlgorithm<MyMeshType, double, plask::INTERPOLATION_LINEAR> {
     static void interpolate(MyMeshType& src_mesh, const DataVector<double>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, DataVector<double>& dst_vec) {
 
         // interpolation code for vectors of doubles

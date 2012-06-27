@@ -100,7 +100,6 @@ struct Aligner2D<DIRECTION_TRAN>: public Aligner2DBase<DIRECTION_TRAN> {
      *
      * This version is called if caller doesn't know child bounding box.
      * @param toAlign trasnlation to set, should have child, which is an object to align
-     * @param childBoundingBox bounding box of object to align
      */
     virtual double align(Translation<2>& toAlign) const {
         if (useBounds())
@@ -159,7 +158,6 @@ struct Aligner3D {
      *
      * This version is called if caller doesn't know child bounding box.
      * @param toAlign trasnlation to set, should have child, which is an object to align
-     * @param childBoundingBox bounding box of object to align
      */
     virtual void align(Translation<3>& toAlign) const {
         align(toAlign, toAlign.getChild()->getBoundingBox());
@@ -349,7 +347,7 @@ namespace details {
 /**
  * Construct 2d aligner in given direction from string.
  * @param str string which describes 2d aligner
- * @tpatam direction direction
+ * @tparam direction direction
  */
 template <DIRECTION direction>
 Aligner2D<direction>* fromStr(const std::string& str);

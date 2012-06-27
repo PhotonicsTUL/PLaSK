@@ -60,7 +60,7 @@ public:
      * @param source source of event
      * @param flags falgs which describes event's properties
      */
-    explicit EventWithSourceAndFlags(SourceType& source, FlagsType falgs = 0): _source(source), _flags(falgs) {}
+    explicit EventWithSourceAndFlags(SourceType& source, FlagsType flags = 0): _source(source), _flags(flags) {}
 
     /// Virtual destructor for eventual subclassing
     virtual ~EventWithSourceAndFlags() {}

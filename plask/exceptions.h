@@ -61,7 +61,6 @@ struct NotImplemented: public Exception {
  */
 struct OutOfBoundException: public Exception {
 
-    /// @param msg error message
     OutOfBoundException(const std::string& where, const std::string& argname)
         : Exception("%1%: argument %2% out of bound", where, argname) {}
 
@@ -83,8 +82,11 @@ struct DimensionError: public Exception {
  */
 struct BadInput: public Exception {
 
-    /// @param where name of class/function/operation doing the computations
-    /// @param msg error message
+    /**
+     * @param where name of class/function/operation doing the computations
+     * @param msg error message (format)
+     * @param params formating parmeters for msg
+     */
     template <typename... Params>
     BadInput(const std::string& where, const std::string& msg, Params... params)
         : Exception("%1%: %2%", where, format(msg, params...)) {};
@@ -95,8 +97,10 @@ struct BadInput: public Exception {
  */
 struct ComputationError: public Exception {
 
-    /// @param where name of class/function/operation doing the computations
-    /// @param msg error message
+    /**
+     * @param where name of class/function/operation doing the computations
+     * @param msg error message
+     */
     ComputationError(const std::string& where, const std::string& msg)
         : Exception("%1%: %2%", where, msg) {};
 };
@@ -230,12 +234,13 @@ struct XMLNoAttrException: public Exception {
 };
 
 /**
- * Exceptions of this class are thrown when the attribute value has wrong value.
+ * Exceptions of this class are thrown when the attribute has wrong value.
  */
 struct XMLBadAttrException: public Exception {
     /**
-     * @param where where (typically in which tag) there are no required attribiute
-     * @param attr_name name of required attribiute
+     * @param where where (typically in which tag) there is bad value for atribiute
+     * @param attr_name name of attribiute
+     * @param attr_value illegal value of attribiute
      */
     XMLBadAttrException(const std::string& where, const std::string& attr_name, const std::string& attr_value):
         Exception(where + ": XML tag attribute \"" + attr_name + "\" has bad value \"" + attr_value + "\"") {}

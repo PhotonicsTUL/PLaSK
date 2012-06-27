@@ -67,7 +67,7 @@ an \c axes attribute. In such cases this attribute defines local names of axes (
 @section geometry_create How to create and use geometry graph? (examples)
 
 Geometry graph can be created:
-- manually in Python (by constructing its element), for example we construct the same container as the one in the example from section @ref geometry_XML:
+- manually in Python (by constructing its element), for example we construct the same container as the one in the example from section @ref geometry_XML :
 \code{.py}
 # create 2D solid block (with size 5x3) filled with example material
 # (which is an object of class plask.material.Material or its subclass):

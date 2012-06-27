@@ -74,7 +74,7 @@ inline double abs2(const dcomplex& x) {
  * Clamp value to given range.
  * @param v value to clamp
  * @param min, max minimal and maximal value which can be returned
- * @param @p min if v < min, @p max if v > max, @p v in another cases
+ * @return @p min if v < min, @p max if v > max, @p v in another cases
  */
 template <typename T>
 const T& clamp(const T& v, const T& min, const T& max) {

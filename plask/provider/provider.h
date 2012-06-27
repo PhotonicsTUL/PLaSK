@@ -235,7 +235,7 @@ struct Receiver: public Provider::Listener {
     /// Is @c true only if data provides by provider was changed after previous value retrieval.
     bool changed;
 
-    /// Is @true only if provider is private and will be deleted by this receiver.
+    /// Is @c true only if provider is private and will be deleted by this receiver.
     bool hasPrivateProvider;
 
     /// Construct Receiver without connected provider and with set changed flag.
@@ -249,7 +249,7 @@ struct Receiver: public Provider::Listener {
     /**
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, can be @c nullptr to only disconnect from current provider.
-     * @param newProviderIsPrivate @true only if @p provider is private for this and will be delete by this receiver
+     * @param newProviderIsPrivate @c true only if @p provider is private for this and will be delete by this receiver
      */
     void setProvider(ProviderT* provider, bool newProviderIsPrivate = false) {
         if (this->provider == provider) return;
