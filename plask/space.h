@@ -366,7 +366,7 @@ public:
  * 2D calculation space over extrusion geometry.
  * @see plask::Extrusion
  */
-class Space2dCartesian: public CalculationSpaceD<2> {
+class Space2DCartesian: public CalculationSpaceD<2> {
 
     shared_ptr<Extrusion> extrusion;
 
@@ -459,9 +459,9 @@ public:
     shared_ptr<Material> getBackMaterial() const { return backMaterial ? backMaterial : defaultMaterial; }
 
 
-    Space2dCartesian(const shared_ptr<Extrusion>& extrusion);
+    Space2DCartesian(const shared_ptr<Extrusion>& extrusion);
 
-    Space2dCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
+    Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
@@ -469,12 +469,12 @@ public:
 
     shared_ptr<Extrusion> getExtrusion() const { return extrusion; }
 
-    virtual Space2dCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
+    virtual Space2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
 
-    virtual Space2dCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
+    virtual Space2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
                                           const std::map<std::string, std::string>& borders=null_borders,
                                           const AxisNames& axesNames=AxisNames()) const {
-        return (Space2dCartesian*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
+        return (Space2DCartesian*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
     }
 
 
@@ -484,7 +484,7 @@ public:
  * 2D calculation space over revolution geometry.
  * @see plask::Revolution
  */
-class Space2dCylindrical: public CalculationSpaceD<2> {
+class Space2DCylindrical: public CalculationSpaceD<2> {
 
     shared_ptr<Revolution> revolution;
 
@@ -492,9 +492,9 @@ class Space2dCylindrical: public CalculationSpaceD<2> {
     border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
 
     static void ensureBoundDirIsProper(DIRECTION direction, bool hi) {
-        Primitive<3>::ensureIsValid2dDirection(direction);
+        Primitive<3>::ensureIsValid2DDirection(direction);
         if (direction == DIRECTION_TRAN && !hi)
-            throw BadInput("setBorders", "Space2dCylindrical: Lower bound is not allowed in the transverse direction.");
+            throw BadInput("setBorders", "Space2DCylindrical: Lower bound is not allowed in the transverse direction.");
     }
 
 public:
@@ -535,9 +535,9 @@ public:
      */
     const border::Strategy& getUpBorder() { return bottomup.getHi(); }
 
-    Space2dCylindrical(const shared_ptr<Revolution>& revolution);
+    Space2DCylindrical(const shared_ptr<Revolution>& revolution);
 
-    Space2dCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
+    Space2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
@@ -545,12 +545,12 @@ public:
 
     shared_ptr<Revolution> getRevolution() const { return revolution; }
 
-    virtual Space2dCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
+    virtual Space2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
 
-    virtual Space2dCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
+    virtual Space2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
                                             const std::map<std::string, std::string>& borders=null_borders,
                                             const AxisNames& axesNames=AxisNames()) const {
-        return (Space2dCylindrical*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
+        return (Space2DCylindrical*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
     }
 
     void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
@@ -573,7 +573,7 @@ public:
 /**
  * 3D calculation space over 3d geometry.
  */
-class Space3d: public CalculationSpaceD<3> {
+class Space3D: public CalculationSpaceD<3> {
 };
 
 

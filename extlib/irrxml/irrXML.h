@@ -15,13 +15,13 @@
   Welcome to the irrXML API documentation.
   Here you'll find any information you'll need to develop applications with
   irrXML. If you look for a tutorial on how to start, take a look at the \ref irrxmlexample,
-  at the homepage of irrXML at <A HREF="http://xml.irrlicht3d.org" >xml.irrlicht3d.org</A> 
+  at the homepage of irrXML at <A HREF="http://xml.irrlicht3D.org" >xml.irrlicht3D.org</A> 
   or into the SDK in the directory \example.
  
   irrXML is intended to be a high speed and easy-to-use XML Parser for C++, and
   this documentation is an important part of it. If you have any questions or
   suggestions, just send a email to the author of the engine, Nikolaus Gebhardt
-  (niko (at) irrlicht3d.org). For more informations about this parser, see \ref history.
+  (niko (at) irrlicht3D.org). For more informations about this parser, see \ref history.
 
   \section features Features
 

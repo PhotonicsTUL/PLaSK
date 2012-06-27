@@ -275,8 +275,8 @@ public:
     /**
      * Get index where element should be insert to be near place pointed by @p point.
      * @param point point to place in this
-     * @return value which will be returned by tryInsertNearPoint2d for given point
-     * @see tryInsertNearPoint2d
+     * @return value which will be returned by tryInsertNearPoint2D for given point
+     * @see tryInsertNearPoint2D
      */
     virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point) {
         return -1;
@@ -288,7 +288,7 @@ public:
      * @param point point to place in this, near which element @p to_insert should be inserted
      * @return index of inserted element in this, or -1 if insertion wasn't succesed
      */
-    virtual int tryInsertNearPoint2d(plask::shared_ptr<plask::GeometryElement> to_insert, const plask::Vec<2, double>& point) {
+    virtual int tryInsertNearPoint2D(plask::shared_ptr<plask::GeometryElement> to_insert, const plask::Vec<2, double>& point) {
         int index = getInsertionIndexForPoint(point);
         if (index == -1) return -1;
         return this->tryInsert(to_insert, index) ? index : -1;
@@ -300,13 +300,13 @@ public:
      * @param point point to place in this, near which element @p to_insert should be inserted
      * @return index of inserted element in this, or -1 if insertion wasn't succesed
      */
-    virtual int tryInsertNearPoint2d(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point) {
+    virtual int tryInsertNearPoint2D(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point) {
         if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
-        return tryInsertNearPoint2d(to_insert.getElement(getChildrenDimensionsCount()), point);
+        return tryInsertNearPoint2D(to_insert.getElement(getChildrenDimensionsCount()), point);
     }
 
-    virtual plask::Box2d getInsertPlace2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point) {
-        return plask::Box2d::invalidInstance();
+    virtual plask::Box2D getInsertPlace2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point) {
+        return plask::Box2D::invalidInstance();
     }
 
 };

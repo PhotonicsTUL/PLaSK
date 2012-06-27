@@ -32,14 +32,14 @@ shared_ptr<GeometryElementTransform< 3, GeometryElementD<2> > > Revolution::shal
     return make_shared<Revolution>(this->getChild());
 }
 
-Box2d Revolution::childBox(const plask::Box3d& r) {
-    Box2d result(childVec(r.lower), childVec(r.upper));
+Box2D Revolution::childBox(const plask::Box3D& r) {
+    Box2D result(childVec(r.lower), childVec(r.upper));
     result.fix();
     return result;
 }
 
-Box3d Revolution::parentBox(const ChildBox& r) {
-    return Box3d(
+Box3D Revolution::parentBox(const ChildBox& r) {
+    return Box3D(
             vec(-r.upper.tran, -r.upper.tran, r.lower.up),
             vec(r.upper.tran,  r.upper.tran,  r.upper.up)
            );

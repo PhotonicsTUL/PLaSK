@@ -54,16 +54,16 @@ static bool DataVectorWrap_contains(const DataVectorWrap<T,dim>& self, const T& 
 
 
 
-inline std::vector<npy_intp> get_meshdims(const RectilinearMesh2d& mesh) { return { mesh.c1.size(), mesh.c0.size() }; }
-inline std::vector<npy_intp> get_meshdims(const RectilinearMesh3d& mesh) { return { mesh.c2.size(), mesh.c1.size(), mesh.c0.size() }; }
-// inline std::vector<npy_intp> get_meshdims(const RegularMesh2d& mesh) { return { mesh.c1.size(), mesh.c0.size() }; }
-// inline std::vector<npy_intp> get_meshdims(const RegularMesh3d& mesh) { return { mesh.c2.size(), mesh.c1.size(), mesh.c0.size() }; }
+inline std::vector<npy_intp> get_meshdims(const RectilinearMesh2D& mesh) { return { mesh.c1.size(), mesh.c0.size() }; }
+inline std::vector<npy_intp> get_meshdims(const RectilinearMesh3D& mesh) { return { mesh.c2.size(), mesh.c1.size(), mesh.c0.size() }; }
+// inline std::vector<npy_intp> get_meshdims(const RegularMesh2D& mesh) { return { mesh.c1.size(), mesh.c0.size() }; }
+// inline std::vector<npy_intp> get_meshdims(const RegularMesh3D& mesh) { return { mesh.c2.size(), mesh.c1.size(), mesh.c0.size() }; }
 
 
 template <typename T>
-inline std::vector<npy_intp> get_meshstrides(const RectilinearMesh2d& mesh, size_t nd) {
+inline std::vector<npy_intp> get_meshstrides(const RectilinearMesh2D& mesh, size_t nd) {
     std::vector<npy_intp> strides(nd, sizeof(T)/get_dim<T>());
-    if (mesh.getIterationOrder() == RectilinearMesh2d::NORMAL_ORDER) {
+    if (mesh.getIterationOrder() == RectilinearMesh2D::NORMAL_ORDER) {
         strides[0] = mesh.c0.size() * sizeof(T);
         strides[1] = sizeof(T);
     } else {
@@ -74,13 +74,13 @@ inline std::vector<npy_intp> get_meshstrides(const RectilinearMesh2d& mesh, size
 }
 
 #define ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(first, second, third) \
-    case RectilinearMesh3d::ORDER_##first##second##third: \
+    case RectilinearMesh3D::ORDER_##first##second##third: \
         strides[2-first] = mesh.c##second.size() * mesh.c##third.size() * sizeof(T); \
         strides[2-second] = mesh.c##third.size() * sizeof(T); \
         strides[2-third] = sizeof(T); \
         break;
 template <typename T>
-inline std::vector<npy_intp> get_meshstrides(const RectilinearMesh3d& mesh, size_t nd) {
+inline std::vector<npy_intp> get_meshstrides(const RectilinearMesh3D& mesh, size_t nd) {
     std::vector<npy_intp> strides(nd, sizeof(T)/get_dim<T>());
     switch (mesh.getIterationOrder()) {
         ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(0,1,2)
@@ -123,8 +123,8 @@ static py::object DataVectorWrap_Array(py::object oself) {
 
     if (self->mesh_changed) throw Exception("cannot create array, mesh changed since data retrieval");
 
-    PyObject* arr = DataVectorWrap_ArrayImpl<T, dim, RectilinearMesh2d>(self);
-    if (!arr) arr = DataVectorWrap_ArrayImpl<T, dim, RectilinearMesh3d>(self);
+    PyObject* arr = DataVectorWrap_ArrayImpl<T, dim, RectilinearMesh2D>(self);
+    if (!arr) arr = DataVectorWrap_ArrayImpl<T, dim, RectilinearMesh3D>(self);
 
     if (arr == nullptr) throw TypeError("cannot create array for data on this mesh type");
 

@@ -4,7 +4,7 @@ using plask::dcomplex;
 
 namespace plask { namespace modules { namespace effective {
 
-EffectiveIndex2dModule::EffectiveIndex2dModule() :
+EffectiveIndex2DModule::EffectiveIndex2DModule() :
     log_stripe(dataLog<dcomplex, dcomplex>(getId(), "neff", "det")),
     log_value(dataLog<dcomplex, dcomplex>(getId(), "Neff", "det")),
     have_stripeNeffs(false),
@@ -18,12 +18,12 @@ EffectiveIndex2dModule::EffectiveIndex2dModule() :
     tolf_max(1.0e-6),
     maxstep(0.1),
     maxiterations(500),
-    outIntensity(this, &EffectiveIndex2dModule::getLightIntenisty) {
+    outIntensity(this, &EffectiveIndex2DModule::getLightIntenisty) {
     inTemperature = 300.;
 }
 
 
-dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
+dcomplex EffectiveIndex2DModule::computeMode(dcomplex neff)
 {
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
@@ -37,7 +37,7 @@ dcomplex EffectiveIndex2dModule::computeMode(dcomplex neff)
 
 
 
-std::vector<dcomplex> EffectiveIndex2dModule::findModes(dcomplex neff1, dcomplex neff2, unsigned steps, unsigned nummodes)
+std::vector<dcomplex> EffectiveIndex2DModule::findModes(dcomplex neff1, dcomplex neff2, unsigned steps, unsigned nummodes)
 {
     writelog(LOG_INFO, "Searching for the modes for Neff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
@@ -45,7 +45,7 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModes(dcomplex neff1, dcomplex
             .searchSolutions(neff1, neff2, steps, 0, nummodes);
 }
 
-std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomplex neff2, unsigned steps)
+std::vector<dcomplex> EffectiveIndex2DModule::findModesMap(dcomplex neff1, dcomplex neff2, unsigned steps)
 {
     writelog(LOG_INFO, "Searching for the approximate modes for Neff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
@@ -63,7 +63,7 @@ std::vector<dcomplex> EffectiveIndex2dModule::findModesMap(dcomplex neff1, dcomp
 }
 
 
-void EffectiveIndex2dModule::setMode(dcomplex neff)
+void EffectiveIndex2DModule::setMode(dcomplex neff)
 {
     if (!initialized) {
         writelog(LOG_WARNING, "Module invalidated or not initialized, so performing some initial computations");
@@ -78,7 +78,7 @@ void EffectiveIndex2dModule::setMode(dcomplex neff)
 }
 
 
-void EffectiveIndex2dModule::onInitialize()
+void EffectiveIndex2DModule::onInitialize()
 {
     // Set default mesh
     if (!mesh) setSimpleMesh();
@@ -89,7 +89,7 @@ void EffectiveIndex2dModule::onInitialize()
 }
 
 
-void EffectiveIndex2dModule::onInvalidate()
+void EffectiveIndex2DModule::onInvalidate()
 {
     outNeff.invalidate();
     have_fields = false;
@@ -105,7 +105,7 @@ using namespace Eigen;
 
 
 
-void EffectiveIndex2dModule::updateCache()
+void EffectiveIndex2DModule::updateCache()
 {
     bool updated = initCalculation();
 
@@ -156,7 +156,7 @@ void EffectiveIndex2dModule::updateCache()
     }
 }
 
-void EffectiveIndex2dModule::stageOne()
+void EffectiveIndex2DModule::stageOne()
 {
     updateCache();
 
@@ -194,7 +194,7 @@ void EffectiveIndex2dModule::stageOne()
 }
 
 
-dcomplex EffectiveIndex2dModule::detS1(const plask::dcomplex& x, const std::vector<dcomplex>& NR)
+dcomplex EffectiveIndex2DModule::detS1(const plask::dcomplex& x, const std::vector<dcomplex>& NR)
 {
     size_t N = NR.size();
 
@@ -228,7 +228,7 @@ dcomplex EffectiveIndex2dModule::detS1(const plask::dcomplex& x, const std::vect
 }
 
 
-Matrix2cd EffectiveIndex2dModule::getMatrix(dcomplex neff)
+Matrix2cd EffectiveIndex2DModule::getMatrix(dcomplex neff)
 {
     // Adjust for mirror losses
     neff = dcomplex(real(neff), imag(neff)-getMirrorLosses(neff));
@@ -272,7 +272,7 @@ Matrix2cd EffectiveIndex2dModule::getMatrix(dcomplex neff)
 }
 
 
-dcomplex EffectiveIndex2dModule::detS(const dcomplex& x)
+dcomplex EffectiveIndex2DModule::detS(const dcomplex& x)
 {
     Matrix2cd T = getMatrix(x);
     // Rn = | T00 T01 | R0
@@ -284,7 +284,7 @@ dcomplex EffectiveIndex2dModule::detS(const dcomplex& x)
 
 
 
-const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod)
+const DataVector<double> EffectiveIndex2DModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod)
 {
     if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
 
@@ -396,9 +396,9 @@ const DataVector<double> EffectiveIndex2dModule::getLightIntenisty(const Mesh<2>
     DataVector<double> results(dst_mesh.size());
     size_t idx = 0;
 
-    if (dynamic_cast<const RectilinearMesh2d*>(&dst_mesh)) { // We can use optimized algorithm
+    if (dynamic_cast<const RectilinearMesh2D*>(&dst_mesh)) { // We can use optimized algorithm
 
-        const RectilinearMesh2d& rect_mesh = dynamic_cast<const RectilinearMesh2d&>(dst_mesh);
+        const RectilinearMesh2D& rect_mesh = dynamic_cast<const RectilinearMesh2D&>(dst_mesh);
 
         std::vector<dcomplex> valx(rect_mesh.tran().size());
         std::vector<dcomplex> valy(rect_mesh.up().size());

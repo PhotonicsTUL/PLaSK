@@ -18,7 +18,7 @@ namespace plask {
 /**
  * Rectilinear mesh in 1d space.
  */
-class RectilinearMesh1d {
+class RectilinearMesh1D {
 
     /// Points coordinates in ascending order.
     std::vector<double> points;
@@ -65,21 +65,21 @@ public:
     iterator end() { return points.end(); }*/
 
     /// Construct an empty mesh.
-    RectilinearMesh1d() {}
+    RectilinearMesh1D() {}
 
     /**
      * Construct mesh with given points.
      * It use algorithm which has logarithmic time complexity.
      * @param points points, in any order
      */
-    RectilinearMesh1d(std::initializer_list<PointType> points);
+    RectilinearMesh1D(std::initializer_list<PointType> points);
 
     /**
      * Construct mesh with points given in a vector.
      * It use algorithm which has logarithmic time complexity pew point in @p points.
      * @param points points, in any order
      */
-    RectilinearMesh1d(std::vector<PointType> points);
+    RectilinearMesh1D(std::vector<PointType> points);
 
     /**
      * Compares meshes
@@ -87,14 +87,14 @@ public:
      * @param to_compare mesh to compare
      * @return @c true only if this mesh and @p to_compare represents the same set of points
      */
-    bool operator==(const RectilinearMesh1d& to_compare) const;
+    bool operator==(const RectilinearMesh1D& to_compare) const;
 
     /**
      * Print mesh to stream
      * @param out stream to print
      * @return out
      */
-    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearMesh1d& self) {
+    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearMesh1D& self) {
         out << "[";
         for (auto p: self.points) {
             out << p << ((p != self.points.back())? ", " : "");
@@ -169,9 +169,9 @@ public:
 
 };
 
-// RectilinearMesh1d method templates implementation
+// RectilinearMesh1D method templates implementation
 template <typename RandomAccessContainer>
-auto RectilinearMesh1d::interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
+auto RectilinearMesh1D::interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
     if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
     if (index == 0 || points[index] == point) return data[index]; //hit exactly
@@ -180,7 +180,7 @@ auto RectilinearMesh1d::interpolateLinear(const RandomAccessContainer& data, dou
 }
 
 template <typename IteratorT>
-inline void RectilinearMesh1d::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint) {
+inline void RectilinearMesh1D::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint) {
     std::vector<double> result;
     result.reserve(this->size() + points_count_hint);
     std::set_union(this->points.begin(), this->points.end(), begin, end, std::back_inserter(result));

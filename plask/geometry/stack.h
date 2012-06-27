@@ -143,9 +143,9 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 /**
  * Horizontal stack.
  */
-struct ShelfContainer2d: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
+struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
-    ShelfContainer2d(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
+    ShelfContainer2D(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
 
     /**
      * Check if all children have the same heights.
@@ -240,7 +240,7 @@ struct ShelfContainer2d: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
 template <int dim>
 struct StackContainer: public StackContainerBaseImpl<dim> {
 
-    typedef typename chooseType<dim-2, align::Aligner2d<align::DIRECTION_TRAN>, align::Aligner3d<align::DIRECTION_LON, align::DIRECTION_TRAN> >::type Aligner;
+    typedef typename chooseType<dim-2, align::Aligner2D<align::DIRECTION_TRAN>, align::Aligner3D<align::DIRECTION_LON, align::DIRECTION_TRAN> >::type Aligner;
     typedef typename chooseType<dim-2, align::Left, align::BackLeft>::type DefaultAligner;
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;

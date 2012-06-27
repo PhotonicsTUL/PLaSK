@@ -24,13 +24,13 @@ Typically, you should call @c MeshType static methods to obtain value for @c Bou
 Example:
 @code
 using namespace plask;
-Boundary<RectilinearMesh2d> boundary;   //stores boundary for mesh of type RectilinearMesh2d
-boundary = RectilinearMesh2d::getLeftBoundary();
-// now boundary represent condition which choose indexes of points on left boundary of any RectilinearMesh2d instance
+Boundary<RectilinearMesh2D> boundary;   //stores boundary for mesh of type RectilinearMesh2D
+boundary = RectilinearMesh2D::getLeftBoundary();
+// now boundary represent condition which choose indexes of points on left boundary of any RectilinearMesh2D instance
 //...
-RectilinearMesh2d mesh;
+RectilinearMesh2D mesh;
 //... (add some points to mesh)
-Boundary<RectilinearMesh2d>::WithMesh bwm = boundary.get(mesh); //or boundary(mesh);
+Boundary<RectilinearMesh2D>::WithMesh bwm = boundary.get(mesh); //or boundary(mesh);
 // bwm represent set of points indexes which lies on left boundary of mesh
 std::cout << "Does point with index 0 lies on left boundary? Answare: " << bwm.includes(0) << std::endl;
 

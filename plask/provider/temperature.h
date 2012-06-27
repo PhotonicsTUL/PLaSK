@@ -16,21 +16,21 @@ namespace plask {
  * Example:
  * @code
  * // module calculating temperature in Cartesian 2d space:
- * struct PModule1: plask::ModuleOver<plask::Space2dCartesian> {
- *      plask::ProviderFor<Temperature, plask::Cartesian2d>::WithValue<SomeMeshType> outTemperature;
+ * struct PModule1: plask::ModuleOver<plask::Space2DCartesian> {
+ *      plask::ProviderFor<Temperature, plask::Cartesian2D>::WithValue<SomeMeshType> outTemperature;
  *      // outTemperature.value stores temperature values in points pointed by outTemperature.mesh
  *      // outTemperature.value has type plask::shared_ptr< std::vector<double> >
- *      // outTemperature.mesh has type SomeMeshType (which should inherit from plask::Mesh<plask::Cartesian2d>)
+ *      // outTemperature.mesh has type SomeMeshType (which should inherit from plask::Mesh<plask::Cartesian2D>)
  *      // ...
  * };
  *
  * // another module which calculates temperature in Cartesian 2d space:
- * struct PModule2: plask::ModuleWithMesh<plask::Space2dCartesian, plask::RectilinearMesh2d> {
- *      plask::ProviderFor<Temperature, plask::Cartesian2d>::Delegate outTemperature;
+ * struct PModule2: plask::ModuleWithMesh<plask::Space2DCartesian, plask::RectilinearMesh2D> {
+ *      plask::ProviderFor<Temperature, plask::Cartesian2D>::Delegate outTemperature;
  *
  *      plask::DataVector<double> my_temperature;
  *
- *      plask::DataVector<double> getTemperature(const plask::Mesh<plask::Cartesian2d>& dst_mesh, plask::InterpolationMethod method) {
+ *      plask::DataVector<double> getTemperature(const plask::Mesh<plask::Cartesian2D>& dst_mesh, plask::InterpolationMethod method) {
  *          return interpolate(*mesh, my_temperature, dst_mesh, method);
  *      }
  *      // ...
@@ -39,7 +39,7 @@ namespace plask {
  *
  * // needs temperature in Cartesian 2d space:
  * struct RModule {
- *      plask::ReceiverFor<Temperature, plask::Cartesian2d> inTemperature;
+ *      plask::ReceiverFor<Temperature, plask::Cartesian2D> inTemperature;
  *      // ...
  * };
  *

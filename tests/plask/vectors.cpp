@@ -4,18 +4,18 @@
 
 BOOST_AUTO_TEST_SUITE(vectors) // MUST be the same as the file name
 
-BOOST_AUTO_TEST_CASE(Vector2d) {
+BOOST_AUTO_TEST_CASE(Vector2D) {
     plask::Vec<2,double> v_d(1.0, 2.0);
     BOOST_CHECK(v_d.c0 == 1.0 && v_d.c1 == 2.0);
 
-    //plask::Vector2d<float> v_f(1.0, 2.0);
+    //plask::Vector2D<float> v_f(1.0, 2.0);
 }
 
-BOOST_AUTO_TEST_CASE(Vector3d) {
+BOOST_AUTO_TEST_CASE(Vector3D) {
     plask::Vec<3,double> v_d(1.0, 2.0, 3.0);
     BOOST_CHECK(v_d.c0 == 1.0 && v_d.c1 == 2.0 && v_d.c2 == 3.0);
 
-    //plask::Vector2d<float> v_f(1.0, 2.0);
+    //plask::Vector2D<float> v_f(1.0, 2.0);
 }
 
 BOOST_AUTO_TEST_CASE(VectorOperations) {

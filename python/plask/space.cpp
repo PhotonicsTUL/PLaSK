@@ -15,8 +15,8 @@ template <typename S> struct Space_getMaterial {
         return self.getMaterial(Vec<2,double>(c0, c1));
     }
 };
-template <> struct Space_getMaterial<Space3d> {
-    static inline shared_ptr<Material> call(const Space3d& self, double c0, double c1, double c2) {
+template <> struct Space_getMaterial<Space3D> {
+    static inline shared_ptr<Material> call(const Space3D& self, double c0, double c1, double c2) {
         return self.getMaterial(Vec<3,double>(c0, c1, c2));
     }
 };
@@ -64,23 +64,23 @@ static void _Space_setBorders(CalculationSpace& self, py::dict borders, std::set
 }
 
 
-static shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py::dict kwargs) {
+static shared_ptr<Space2DCartesian> Space2DCartesian__init__(py::tuple args, py::dict kwargs) {
     int na = py::len(args);
 
-    shared_ptr <Space2dCartesian> space;
+    shared_ptr <Space2DCartesian> space;
 
     if (na == 3) {
         if (kwargs.has_key("geometry")) throw TypeError("got multiple values for keyword argument 'geometry'");
         if (kwargs.has_key("length")) throw TypeError("got multiple values for keyword argument 'length'");
         shared_ptr<GeometryElementD<2>> element = py::extract<shared_ptr<GeometryElementD<2>>>(args[1]);
         double length = py::extract<double>(args[2]);
-        space = make_shared<Space2dCartesian>(element, length);
+        space = make_shared<Space2DCartesian>(element, length);
     } else if (na == 2) {
         if (kwargs.has_key("geometry")) throw TypeError("got multiple values for keyword argument 'geometry'");
         try {
             shared_ptr<Extrusion> extrusion = py::extract<shared_ptr<Extrusion>>(args[1]);
             if (kwargs.has_key("length")) throw TypeError("keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
-            space = make_shared<Space2dCartesian>(extrusion);
+            space = make_shared<Space2DCartesian>(extrusion);
         } catch (py::error_already_set) {
             PyErr_Clear();
             shared_ptr<GeometryElementD<2>> element;
@@ -91,13 +91,13 @@ static shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py:
                 throw TypeError("'geometry' argument type must be either Extrusion or GeometryElement2D");
             }
             double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : INFINITY;
-            space = make_shared<Space2dCartesian>(element, length);
+            space = make_shared<Space2DCartesian>(element, length);
         }
     } else if (na == 1 && kwargs.has_key("geometry")) {
         try {
             shared_ptr<Extrusion> extrusion = py::extract<shared_ptr<Extrusion>>(kwargs["geometry"]);
             if (kwargs.has_key("length")) throw TypeError("keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
-            space = make_shared<Space2dCartesian>(extrusion);
+            space = make_shared<Space2DCartesian>(extrusion);
         } catch (py::error_already_set) {
             PyErr_Clear();
             shared_ptr<GeometryElementD<2>> element;
@@ -108,7 +108,7 @@ static shared_ptr<Space2dCartesian> Space2dCartesian__init__(py::tuple args, py:
                 throw TypeError("'geometry' argument type must be either Extrusion or GeometryElement2D");
             }
             double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : INFINITY;
-            space = make_shared<Space2dCartesian>(element, length);
+            space = make_shared<Space2DCartesian>(element, length);
         }
     } else {
         throw TypeError("__init__() takes 2 or 3 non-keyword arguments (%1%) given", na);
@@ -138,7 +138,7 @@ inline static py::object _border(const CalculationSpace& self, CalculationSpace:
     return (str=="null") ? py::object() : py::object(str);
 }
 
-static py::dict Space2dCartesian_getBorders(const Space2dCartesian& self) {
+static py::dict Space2DCartesian_getBorders(const Space2DCartesian& self) {
     py::dict borders;
     borders["left"] = _border(self, CalculationSpace::DIRECTION_TRAN, false);
     borders["right"] = _border(self, CalculationSpace::DIRECTION_TRAN, true);
@@ -181,7 +181,7 @@ static shared_ptr<S> Space_getSubspace(py::tuple args, py::dict kwargs) {
 
 void register_calculation_spaces() {
 
-    py::class_<Space2dCartesian, shared_ptr<Space2dCartesian>>("Space2DCartesian",
+    py::class_<Space2DCartesian, shared_ptr<Space2DCartesian>>("Space2DCartesian",
         "Calculation space representing 2D Cartesian coordinate system\n\n"
         "Space2DCartesian(geometry, length=infty, **borders)\n"
         "    Create a space around the two-dimensional geometry element with given length.\n\n"
@@ -189,26 +189,26 @@ void register_calculation_spaces() {
         "    the 'length' parameter should be skipped, as it is read directly from extrusion.\n"
         "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
         py::no_init)
-        .def("__init__", raw_constructor(Space2dCartesian__init__, 1))
-        .add_property("child", &Space2dCartesian::getChild, "GeometryElement2D at the root of the tree")
-        .add_property("extrusion", &Space2dCartesian::getExtrusion, "Extrusion object at the very root of the tree")
-        .add_property("bbox", &Space_childBoundingBox<Space2dCartesian>, "Minimal rectangle which includes all points of the geometry element")
-        .def_readwrite("default_material", &Space2dCartesian::defaultMaterial, "Material of the 'empty' regions of the geometry")
-        .add_property("front_material", &Space2dCartesian::getFrontMaterial, &Space2dCartesian::setFrontMaterial,
+        .def("__init__", raw_constructor(Space2DCartesian__init__, 1))
+        .add_property("child", &Space2DCartesian::getChild, "GeometryElement2D at the root of the tree")
+        .add_property("extrusion", &Space2DCartesian::getExtrusion, "Extrusion object at the very root of the tree")
+        .add_property("bbox", &Space_childBoundingBox<Space2DCartesian>, "Minimal rectangle which includes all points of the geometry element")
+        .def_readwrite("default_material", &Space2DCartesian::defaultMaterial, "Material of the 'empty' regions of the geometry")
+        .add_property("front_material", &Space2DCartesian::getFrontMaterial, &Space2DCartesian::setFrontMaterial,
                       "Material on the positive side of the axis along the extrusion")
-        .add_property("back_material", &Space2dCartesian::getBackMaterial, &Space2dCartesian::setBackMaterial,
+        .add_property("back_material", &Space2DCartesian::getBackMaterial, &Space2DCartesian::setBackMaterial,
                       "Material on the negative side of the axis along the extrusion")
-        .add_property("borders", &Space2dCartesian_getBorders, &Space_setBorders,
+        .add_property("borders", &Space2DCartesian_getBorders, &Space_setBorders,
                       "Dictionary specifying the type of the surroundings around the structure")
-        .def("getMaterial", &Space2dCartesian::getMaterial, "Return material at given point", (py::arg("point")))
-        .def("getMaterial", &Space_getMaterial<Space2dCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("getLeafs", &Space_getLeafs<Space2dCartesian>, (py::arg("path")=empty_path),  "Return list of all leafs in the subtree originating from this element")
-        .def("getLeafsPositions", (std::vector<Vec<2>>(Space2dCartesian::*)(const PathHints&)const) &Space2dCartesian::getLeafsPositions,
+        .def("getMaterial", &Space2DCartesian::getMaterial, "Return material at given point", (py::arg("point")))
+        .def("getMaterial", &Space_getMaterial<Space2DCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
+        .def("getLeafs", &Space_getLeafs<Space2DCartesian>, (py::arg("path")=empty_path),  "Return list of all leafs in the subtree originating from this element")
+        .def("getLeafsPositions", (std::vector<Vec<2>>(Space2DCartesian::*)(const PathHints&)const) &Space2DCartesian::getLeafsPositions,
              (py::arg("path")=empty_path), "Calculate positions of all leafs")
-        .def("getLeafsBBoxes", (std::vector<Box2d>(Space2dCartesian::*)(const PathHints&)const) &Space2dCartesian::getLeafsBoundingBoxes,
+        .def("getLeafsBBoxes", (std::vector<Box2D>(Space2DCartesian::*)(const PathHints&)const) &Space2DCartesian::getLeafsBoundingBoxes,
              (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs")
-        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Space2dCartesian>, (py::arg("path")=empty_path), "Return list of Translation objects holding all leafs")
-        .def("getSubspace", py::raw_function(&Space_getSubspace<Space2dCartesian>, 2),
+        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Space2DCartesian>, (py::arg("path")=empty_path), "Return list of Translation objects holding all leafs")
+        .def("getSubspace", py::raw_function(&Space_getSubspace<Space2DCartesian>, 2),
              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 }

@@ -80,11 +80,11 @@ shared_ptr<CalculationSpace> GeometryReader::readCalculationSpace() {
     if (nodeName == "cartesian") {    //TODO register with space names(?)
         boost::optional<double> l = source.getAttribute<double>("length");
         result = l ?
-            make_shared<Space2dCartesian>(manager.requireElement< GeometryElementD<2> >(src), *l) :
-            make_shared<Space2dCartesian>(manager.requireElement< Extrusion >(src));
+            make_shared<Space2DCartesian>(manager.requireElement< GeometryElementD<2> >(src), *l) :
+            make_shared<Space2DCartesian>(manager.requireElement< Extrusion >(src));
     } else
     if (nodeName == "cylindrical") {
-        result = make_shared<Space2dCylindrical>(manager.requireElement< GeometryElementD<2> >(src));
+        result = make_shared<Space2DCylindrical>(manager.requireElement< GeometryElementD<2> >(src));
     } else
         throw XMLUnexpectedElementException("space tag (cartesian or cylindrical)");
 

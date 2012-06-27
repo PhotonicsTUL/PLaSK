@@ -116,7 +116,7 @@ void MainWindow::treeRemoveSelected() {
     document.treeModel.removeRow(s[0].row(), s[0].parent());
 }
 
-void MainWindow::treeAddBlock2d() {
+void MainWindow::treeAddBlock2D() {
     QModelIndexList s = treeView->selectionModel()->selectedRows();
     if (s.empty()) return;
     document.treeModel.insertRow(plask::make_shared<plask::Block<2> >(plask::vec(1.0, 1.0)), s[0]);
@@ -170,8 +170,8 @@ void MainWindow::createActions()
     treeRemoveAct->setToolTip(tr("Remove selected element from geometry tree"));
     connect(treeRemoveAct, SIGNAL(triggered()), this, SLOT(treeRemoveSelected()));
 
-    treeAddBlockAct = new QAction(tr("Add &Block2d"), this);
-    connect(treeAddBlockAct, SIGNAL(triggered()), this, SLOT(treeAddBlock2d()));
+    treeAddBlockAct = new QAction(tr("Add &Block2D"), this);
+    connect(treeAddBlockAct, SIGNAL(triggered()), this, SLOT(treeAddBlock2D()));
 
     zoomInAct = new QAction(QIcon::fromTheme("zoom-in"), tr("Zoom &in"), this);
     zoomInAct->setToolTip(tr("Increase view zoom"));

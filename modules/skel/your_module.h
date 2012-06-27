@@ -13,16 +13,16 @@ namespace plask { namespace modules { namespace your_module {
  * This is Doxygen documentation of your module.
  * Write a brief description of it.
  */
-struct YourModule: public ModuleWithMesh<ForExample_Space2dCartesian, ForExample_RectilinearMesh2d> {
+struct YourModule: public ModuleWithMesh<ForExample_Space2DCartesian, ForExample_RectilinearMesh2D> {
 
     /// Sample receiver for temperature.
-    ReceiverFor<Temperature, Space2dCartesian> inTemperature;
+    ReceiverFor<Temperature, Space2DCartesian> inTemperature;
 
     /// Sample provider for simple value.
     ProviderFor<SomeSingleValueProperty>::WithValue outSingleValue;
 
     /// Sample provider for field (it's better to use delegate here).
-    ProviderFor<SomeFieldProperty, Space2dCartesian>::Delegate outSomeField;
+    ProviderFor<SomeFieldProperty, Space2DCartesian>::Delegate outSomeField;
 
     YourModule():
         outDelegateProvider(this, getDelegated) // getDelegated will be called whether provider value is requested

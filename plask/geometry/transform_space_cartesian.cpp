@@ -46,6 +46,6 @@ shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {
     return make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(), length);
 }
 
-static GeometryReader::RegisterElementReader cartesianExtend2d_reader("extrusion", read_cartesianExtend);
+static GeometryReader::RegisterElementReader cartesianExtend2D_reader("extrusion", read_cartesianExtend);
 
 }   // namespace plask

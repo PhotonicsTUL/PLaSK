@@ -36,7 +36,7 @@ void ElementWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
     painter.setTransform(flipVertical);
     painter.translate(0.0, -h);
 
-    plask::Box2d bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
+    plask::Box2D bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
 
     plask::Vec<2, double> s = bb.size();
     double scale = std::min(w / s.tran, h / s.up);

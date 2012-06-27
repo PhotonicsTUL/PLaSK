@@ -120,7 +120,7 @@ template class GeometryElementContainer<3>;
 
 // ---- containers readers: ----
 
-shared_ptr<GeometryElement> read_TranslationContainer2d(GeometryReader& reader) {
+shared_ptr<GeometryElement> read_TranslationContainer2D(GeometryReader& reader) {
     shared_ptr< TranslationContainer<2> > result(new TranslationContainer<2>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children<TranslationContainer<2>>(reader,
@@ -137,7 +137,7 @@ shared_ptr<GeometryElement> read_TranslationContainer2d(GeometryReader& reader) 
     return result;
 }
 
-shared_ptr<GeometryElement> read_TranslationContainer3d(GeometryReader& reader) {
+shared_ptr<GeometryElement> read_TranslationContainer3D(GeometryReader& reader) {
     shared_ptr< TranslationContainer<3> > result(new TranslationContainer<3>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children<TranslationContainer<3>>(reader,
@@ -157,8 +157,8 @@ shared_ptr<GeometryElement> read_TranslationContainer3d(GeometryReader& reader) 
 
 
 
-static GeometryReader::RegisterElementReader container2d_reader("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_TranslationContainer2d);
-static GeometryReader::RegisterElementReader container3d_reader("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_TranslationContainer3d);
+static GeometryReader::RegisterElementReader container2D_reader("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_TranslationContainer2D);
+static GeometryReader::RegisterElementReader container3D_reader("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_TranslationContainer3D);
 
 
 } // namespace plask

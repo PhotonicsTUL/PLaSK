@@ -8,7 +8,7 @@
 
 namespace plask { namespace python {
 
-void register_mesh_rectilinear();
+void register_mesh_rectangular();
 
 void register_mesh()
 {
@@ -29,7 +29,7 @@ void register_mesh()
         .def("__len__", &Mesh<3>::size)
     ;
 
-    register_mesh_rectilinear();
+    register_mesh_rectangular();
 
 }
 

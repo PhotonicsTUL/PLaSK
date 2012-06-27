@@ -5,7 +5,7 @@
 
 namespace plask {
 
-template class RectangularMesh2d<RegularMesh1d>;
-template class RectangularMesh3d<RegularMesh1d>;
+template class RectangularMesh2D<RegularMesh1D>;
+template class RectangularMesh3D<RegularMesh1D>;
 
 } // namespace plask

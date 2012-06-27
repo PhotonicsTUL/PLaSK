@@ -6,22 +6,22 @@ BOOST_AUTO_TEST_SUITE(mesh) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(Mesh) {
 
-    struct OnePoint3dMesh: public plask::Mesh<3> {
+    struct OnePoint3DMesh: public plask::Mesh<3> {
 
         //Held point:
         plask::Vec<3, double> point;
 
-        OnePoint3dMesh(const plask::Vec<3, double>& point)
+        OnePoint3DMesh(const plask::Vec<3, double>& point)
         : point(point) {}
 
         //Iterator:
         struct IteratorImpl: public Mesh<3>::IteratorImpl {
 
             //point to mesh or is equal to nullptr for end iterator
-            const OnePoint3dMesh* mesh_ptr;
+            const OnePoint3DMesh* mesh_ptr;
 
             //mesh == nullptr for end iterator
-            IteratorImpl(const OnePoint3dMesh* mesh)
+            IteratorImpl(const OnePoint3DMesh* mesh)
             : mesh_ptr(mesh) {}
 
             virtual const plask::Vec<3, double> dereference() const {
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
 
         };
 
-        //plask::Mesh<plask::space::Cartesian3d> methods implementation:
+        //plask::Mesh<plask::space::Cartesian3D> methods implementation:
 
         virtual std::size_t size() const {
             return 1;
@@ -58,8 +58,8 @@ BOOST_AUTO_TEST_CASE(Mesh) {
 
     };
 
-    OnePoint3dMesh mesh(plask::vec(1.0, 2.0, 3.0));
-    OnePoint3dMesh::Iterator it = mesh.begin();
+    OnePoint3DMesh mesh(plask::vec(1.0, 2.0, 3.0));
+    OnePoint3DMesh::Iterator it = mesh.begin();
     BOOST_CHECK(it != mesh.end());
     BOOST_CHECK_EQUAL(*it, plask::vec(1.0, 2.0, 3.0));
     ++it;

@@ -45,7 +45,7 @@ struct GeometryElementCreator {
 const std::vector<const GeometryElementCreator*>& getCreators();
 const std::vector<const GeometryElementCreator*>& getCreators(int dim);
 
-//std::vector<GeometryElementCreator&> get3dCreators();
+//std::vector<GeometryElementCreator&> get3DCreators();
 
 #define MIME_PTR_TO_CREATOR "data/pointer-to-element-creator"
 

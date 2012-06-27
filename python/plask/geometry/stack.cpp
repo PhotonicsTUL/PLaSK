@@ -45,15 +45,15 @@ void register_geometry_container_stack()
     ;
 
     // Shelf (horizontal stack)
-    py::class_<ShelfContainer2d, shared_ptr<ShelfContainer2d>, py::bases<GeometryElementContainer<2>>, boost::noncopyable>("Shelf2D",
+    py::class_<ShelfContainer2D, shared_ptr<ShelfContainer2D>, py::bases<GeometryElementContainer<2>>, boost::noncopyable>("Shelf2D",
         "Container that organizes its children one next to another (like books on a bookshelf)\n\n"
         "Shelf2D(base=0)\n"
         "    Create the shelf with the left side of the first element at the base (in container local coordinates).",
         py::init<double>((py::arg("base")=0.)))
-        .def("append", &ShelfContainer2d::push_back, (py::arg("child")), "Append new element to the container")
-        .def("prepend", &ShelfContainer2d::push_front, (py::arg("child")), "Prepend new element to the container")
-        .def("insert", &ShelfContainer2d::insert, (py::arg("child"), "pos"), "Insert new element to the container")
-        .add_property("flat", &ShelfContainer2d::isFlat, "Return true if all children has the same height (the top line is flat)")
+        .def("append", &ShelfContainer2D::push_back, (py::arg("child")), "Append new element to the container")
+        .def("prepend", &ShelfContainer2D::push_front, (py::arg("child")), "Prepend new element to the container")
+        .def("insert", &ShelfContainer2D::insert, (py::arg("child"), "pos"), "Insert new element to the container")
+        .add_property("flat", &ShelfContainer2D::isFlat, "Return true if all children has the same height (the top line is flat)")
     ;
     py::scope().attr("Shelf") = py::scope().attr("Shelf2D");
 }

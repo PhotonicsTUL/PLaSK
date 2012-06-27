@@ -34,7 +34,7 @@ const float fast_atof_table[] =	{
 
 //! Provides a fast function for converting a string into a float,
 //! about 6 times faster than atof in win32.
-// If you find any bugs, please send them to me, niko (at) irrlicht3d.org.
+// If you find any bugs, please send them to me, niko (at) irrlicht3D.org.
 inline char* fast_atof_move(char* c, float& out)
 {
 	bool inv = false;
@@ -80,7 +80,7 @@ inline char* fast_atof_move(char* c, float& out)
 
 //! Provides a fast function for converting a string into a float,
 //! about 6 times faster than atof in win32.
-// If you find any bugs, please send them to me, niko (at) irrlicht3d.org.
+// If you find any bugs, please send them to me, niko (at) irrlicht3D.org.
 inline const char* fast_atof_move_const(const char* c, float& out)
 {
 	bool inv = false;

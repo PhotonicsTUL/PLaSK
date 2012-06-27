@@ -58,22 +58,22 @@ You are required to:
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3d space):
 @code
-struct OnePoint3dMesh: public plask::Mesh<3> {
+struct OnePoint3DMesh: public plask::Mesh<3> {
 
     //Held point:
     plask::Vec<3, double> point;
 
-    OnePoint3dMesh(const plask::Vec<3, double>& point)
+    OnePoint3DMesh(const plask::Vec<3, double>& point)
     : point(point) {}
 
     //Iterator:
-    struct IteratorImpl: public Mesh<plask::space::Cartesian3d>::IteratorImpl {
+    struct IteratorImpl: public Mesh<plask::space::Cartesian3D>::IteratorImpl {
 
         //point to mesh or is equal to nullptr for end iterator
-        const OnePoint3dMesh* mesh_ptr;
+        const OnePoint3DMesh* mesh_ptr;
 
         //mesh == nullptr for end iterator
-        IteratorImpl(const OnePoint3dMesh* mesh)
+        IteratorImpl(const OnePoint3DMesh* mesh)
         : mesh_ptr(mesh) {}
 
         virtual const plask::Vec<3, double> dereference() const {
@@ -84,7 +84,7 @@ struct OnePoint3dMesh: public plask::Mesh<3> {
             mesh_ptr = nullptr; //we iterate only over one point, so next state is end
         }
 
-        virtual bool equal(const typename Mesh<plask::space::Cartesian3d>::IteratorImpl& other) const {
+        virtual bool equal(const typename Mesh<plask::space::Cartesian3D>::IteratorImpl& other) const {
             return mesh_ptr == static_cast<const IteratorImpl&>(other).mesh_ptr;
         }
 
@@ -100,11 +100,11 @@ struct OnePoint3dMesh: public plask::Mesh<3> {
         return 1;
     }
 
-    virtual typename Mesh<plask::space::Cartesian3d>::Iterator begin() const {
+    virtual typename Mesh<plask::space::Cartesian3D>::Iterator begin() const {
         return Mesh<3>::Iterator(new IteratorImpl(this));
     }
 
-    virtual typename Mesh<plask::space::Cartesian3d>::Iterator end() const {
+    virtual typename Mesh<plask::space::Cartesian3D>::Iterator end() const {
         return Mesh<3>::Iterator(new IteratorImpl(nullptr));
     }
 

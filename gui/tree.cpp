@@ -155,10 +155,10 @@ int GeometryTreeItem::getInsertionIndexForPoint(const plask::Vec<2, double> &poi
     return getLowerWrappedElement()->getInsertionIndexForPoint(point);
 }
 
-int GeometryTreeItem::tryInsertRow2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point)
+int GeometryTreeItem::tryInsertRow2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point)
 {
     auto this_elem = getLowerWrappedElement();
-    int index = this_elem->tryInsertNearPoint2d(to_insert, point);
+    int index = this_elem->tryInsertNearPoint2D(to_insert, point);
     if (index >= 0) {
         childItems.emplace(childItems.begin() + index,
                           new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
@@ -166,9 +166,9 @@ int GeometryTreeItem::tryInsertRow2d(const GeometryElementCreator &to_insert, co
     return index;
 }
 
-plask::Box2d GeometryTreeItem::getInsertPlace2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point)
+plask::Box2D GeometryTreeItem::getInsertPlace2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point)
 {
-    return getLowerWrappedElement()->getInsertPlace2d(to_insert, point);
+    return getLowerWrappedElement()->getInsertPlace2D(to_insert, point);
 }
 
 // ---------- InContainerTreeItem -----------
@@ -304,16 +304,16 @@ bool GeometryTreeModel::insertRow(plask::shared_ptr<plask::GeometryElement> to_i
     return result;
 }
 
-int GeometryTreeModel::insertRow2d(const GeometryElementCreator &to_insert, const QModelIndex &parent, const plask::Vec<2, double> &point) {
+int GeometryTreeModel::insertRow2D(const GeometryElementCreator &to_insert, const QModelIndex &parent, const plask::Vec<2, double> &point) {
     GeometryTreeItem* item = toItem(parent);
     int p = item->getInsertionIndexForPoint(point);
     if (p == -1) return -1;
     beginInsertRows(parent, p, p);
-    p = item->tryInsertRow2d(to_insert, point);
+    p = item->tryInsertRow2D(to_insert, point);
     endInsertRows();
     return p;
 }
 
-plask::Box2d GeometryTreeModel::insertPlace2d(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point) {
-    return toItem(parent)->getInsertPlace2d(to_insert, point);
+plask::Box2D GeometryTreeModel::insertPlace2D(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point) {
+    return toItem(parent)->getInsertPlace2D(to_insert, point);
 }

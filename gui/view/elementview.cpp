@@ -45,7 +45,7 @@ void ElementViewer::dragMoveEvent(QDragMoveEvent *event)
         /*&& findPiece(targetSquare(event->pos())) == -1*/) {
 
         GeometryElementCreator* creator = fromMimeData(event->mimeData());
-        highlightedRect = toQt(model()->insertPlace2d(*creator, rootIndex(), fromQt(viewToModel().map(QPointF(event->pos())))));
+        highlightedRect = toQt(model()->insertPlace2D(*creator, rootIndex(), fromQt(viewToModel().map(QPointF(event->pos())))));
 
         event->setDropAction(Qt::MoveAction);
         event->accept();
@@ -73,7 +73,7 @@ void ElementViewer::dropEvent(QDropEvent *event)
         event->setDropAction(Qt::CopyAction);
         event->accept();
 
-        int index = model()->insertRow2d(*creator, rootIndex(), fromQt(viewToModel().map(QPointF(event->pos()))));
+        int index = model()->insertRow2D(*creator, rootIndex(), fromQt(viewToModel().map(QPointF(event->pos()))));
         if (index != -1)
             selectionModel()->select(model()->index(index, 0, rootIndex()), QItemSelectionModel::ClearAndSelect);
 
@@ -134,7 +134,7 @@ QRectF ElementViewer::itemRect(const QModelIndex &index) const
         GeometryTreeItem* i = model()->toItem(index);
         plask::shared_ptr<plask::GeometryElement> e = i->element->wrappedElement;
         if (e->getDimensionsCount() == 2) {
-            plask::Box2d b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
+            plask::Box2D b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
             return toQt(b);
         }
     }
@@ -234,7 +234,7 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
             GeometryTreeItem* i = model()->toItem(current);
             plask::shared_ptr<plask::GeometryElement> e = i->element->wrappedElement;
             if (e->getDimensionsCount() == 2) {
-                plask::Box2d b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
+                plask::Box2D b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
                 QRectF r = toQt(b);
                 painter.fillRect(r, QColor(50, 20, 120, 70));
                 painter.setPen(QPen(QColor(90, 40, 230, 170), 0.0, Qt::DashLine));
@@ -325,7 +325,7 @@ void ElementViewer::scrollTo(const QModelIndex &index, ScrollHint)
 
 void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
 {
-    plask::Box2d model_sel = fromQt(viewToModel().mapRect(QRectF(rect)));
+    plask::Box2D model_sel = fromQt(viewToModel().mapRect(QRectF(rect)));
 
     QModelIndexList indexes;
 
@@ -373,7 +373,7 @@ void ElementViewer::updateGeometries()
 }
 
 QTransform ElementViewer::modelToView() const {
-    plask::Box2d bb = getBoundingBox();
+    plask::Box2D bb = getBoundingBox();
 
     return QTransform(zoom.x(), 0.0,
                       0.0, -zoom.y(),

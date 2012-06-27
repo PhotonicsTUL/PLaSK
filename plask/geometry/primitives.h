@@ -16,7 +16,7 @@ namespace plask {
  * Allows for some basic operation on boxes.
  * Has almost identical interface as .
  */
-struct Box2d {
+struct Box2D {
 
     ///Lower corner of box (with minimal all coordinates).
     Vec<2,double> lower;
@@ -37,19 +37,19 @@ struct Box2d {
     double sizeUp() const { return upper.up - lower.up; }
 
     ///Construct uninitialized .
-    Box2d() {}
+    Box2D() {}
 
     /**
      * Construct box.
      * @param lower lower corner of box (with minimal all coordinates)
      * @param upper upper corner of box (with maximal all coordinates)
      */
-    Box2d(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
+    Box2D(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
 
-    Box2d(double x_lo, double y_lo, double x_up, double y_up): lower(x_lo, y_lo), upper(x_up, y_up) {}
+    Box2D(double x_lo, double y_lo, double x_up, double y_up): lower(x_lo, y_lo), upper(x_up, y_up) {}
 
-    static Box2d invalidInstance() {
-        Box2d r; r.makeInvalid(); return r;
+    static Box2D invalidInstance() {
+        Box2D r; r.makeInvalid(); return r;
     }
 
     /**
@@ -57,14 +57,14 @@ struct Box2d {
      * @param r box to compare
      * @return true only if @c this box and @p p have equals coordinates
      */
-    bool operator==(const Box2d& r) const;
+    bool operator==(const Box2D& r) const;
 
     /**
      * Compare two boxes, @c this and @p r.
      * @param r box to compare
      * @return @c true only if @c this box and @p p don't have equals coordinates
      */
-    bool operator!=(const Box2d& r) const;
+    bool operator!=(const Box2D& r) const;
 
     /**
      * Ensure that lower[0] <= upper[0] and lower[1] <= upper[1].
@@ -84,7 +84,7 @@ struct Box2d {
      * @param other box
      * @return true only if this and other have common points
      */
-    bool intersect(const Box2d& other) const;
+    bool intersect(const Box2D& other) const;
 
     /**
      * Make this box, the minimal one which include @c this and given point @p p.
@@ -96,21 +96,21 @@ struct Box2d {
      * Make this box, the minimal one which include @c this and @p other box.
      * @param other point which should be inside box
      */
-    void include(const Box2d& other);
+    void include(const Box2D& other);
 
     /**
      * Get translated copy of this.
      * @param translation_vec translation vector
      * @return this translated by @p translation_vec
      */
-    Box2d translated(const Vec<2,double>& translation_vec) const { return Box2d(lower + translation_vec, upper + translation_vec); }
+    Box2D translated(const Vec<2,double>& translation_vec) const { return Box2D(lower + translation_vec, upper + translation_vec); }
 
     /**
      * Get translated copy of this.
      * @param trasnalation_in_up_dir translation in up direction
      * @return this translated up by @p trasnalation_in_up_dir
      */
-    Box2d translatedUp(const double trasnalation_in_up_dir) const { return translated(vec(0.0, trasnalation_in_up_dir)); }
+    Box2D translatedUp(const double trasnalation_in_up_dir) const { return translated(vec(0.0, trasnalation_in_up_dir)); }
 
     /**
      * Translate this by @p translation_vec.
@@ -138,7 +138,7 @@ struct Box2d {
      * @param to_print box to print
      * @return out stream
      */
-    friend inline std::ostream& operator<<(std::ostream& out, const Box2d& to_print) {
+    friend inline std::ostream& operator<<(std::ostream& out, const Box2D& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
 
@@ -171,7 +171,7 @@ struct Box2d {
  * Allow for some basic operation on cuboid.
  * Has almost identical interface as .
  */
-struct Box3d {
+struct Box3D {
 
     /// Position of lower corner of cuboid (with minimal all coordinates).
     Vec<3,double> lower;
@@ -192,17 +192,17 @@ struct Box3d {
     double sizeUp() const { return upper.up - lower.up; }
 
     /// Construct uninitialized .
-    Box3d() {}
+    Box3D() {}
 
     /**
      * Construct  with given lower and upper corner positions.
      * @param lower position of lower corner of cuboid (with minimal all coordinates)
      * @param upper position of upper corner of cuboid (with maximal all coordinates)
      */
-    Box3d(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
+    Box3D(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
 
-    static Box3d invalidInstance() {
-        Box3d r; r.makeInvalid(); return r;
+    static Box3D invalidInstance() {
+        Box3D r; r.makeInvalid(); return r;
     }
 
     /**
@@ -210,14 +210,14 @@ struct Box3d {
      * @param r box to compare
      * @return true only if @c this box and @p p have equals coordinates
      */
-    bool operator==(const Box3d& r) const;
+    bool operator==(const Box3D& r) const;
 
     /**
      * Compare two boxes, @c this and @p r.
      * @param r box to compare
      * @return true only if @c this box and @p p don't have equals coordinates
      */
-    bool operator!=(const Box3d& r) const;
+    bool operator!=(const Box3D& r) const;
 
     /**
      * Ensure that lower[0] <= upper.c0, lower[1] <= upper[1], and lower[2] <= upper[3].
@@ -237,7 +237,7 @@ struct Box3d {
      * @param other box
      * @return true only if this and other have common points
      */
-    bool intersect(const Box3d& other) const;
+    bool intersect(const Box3D& other) const;
 
     /**
      * Make this box, the minimal one which include @c this and given point @p p.
@@ -249,17 +249,17 @@ struct Box3d {
      * Make this box, the minimal one which include @c this and @p other box.
      * @param other point which should be inside box
      */
-    void include(const Box3d& other);
+    void include(const Box3D& other);
 
-    Box3d translated(const Vec<3,double>& translation_vec) const { return Box3d(lower + translation_vec, upper + translation_vec); }
+    Box3D translated(const Vec<3,double>& translation_vec) const { return Box3D(lower + translation_vec, upper + translation_vec); }
 
     /**
      * Get translated copy of this.
      * @param trasnalation_in_up_dir translation in up direction
      * @return @c this translated up by @p trasnalation_in_up_dir
      */
-    Box3d translatedUp(const double trasnalation_in_up_dir) const {
-        Box3d r = *this; r.translateUp(trasnalation_in_up_dir); return r; }
+    Box3D translatedUp(const double trasnalation_in_up_dir) const {
+        Box3D r = *this; r.translateUp(trasnalation_in_up_dir); return r; }
 
     void translate(const Vec<3,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
 
@@ -283,7 +283,7 @@ struct Box3d {
      * @param to_print box to print
      * @return out stream
      */
-    friend inline std::ostream& operator<<(std::ostream& out, const Box3d& to_print) {
+    friend inline std::ostream& operator<<(std::ostream& out, const Box3D& to_print) {
         return out << '[' << to_print.lower << ", " << to_print.upper << ']';
     }
 
@@ -341,7 +341,7 @@ template <>
 struct Primitive<2> {
 
     /// Rectangle type in 2d space.
-    typedef Box2d Box;
+    typedef Box2D Box;
 
     /// Real (double) vector type in 2d space.
     typedef Vec<2,double> DVec;
@@ -372,7 +372,7 @@ template <>
 struct Primitive<3> {
 
     /// Rectangle type (cuboid) in 3d space.
-    typedef Box3d Box;
+    typedef Box3D Box;
 
     /// Real (double) vector type in 3d space.
     typedef Vec<3,double> DVec;
@@ -396,7 +396,7 @@ struct Primitive<3> {
         if (direction > 2) throw DimensionError("Bad 3D direction index, %s was given but allowed are: 0, 1, 2.", direction);
     }
 
-    static void ensureIsValid2dDirection(unsigned direction) {
+    static void ensureIsValid2DDirection(unsigned direction) {
         if (direction != DIRECTION_TRAN && direction != DIRECTION_UP)
             throw DimensionError("bad 2D direction index, %s was given but allowed are: 0, 1.", direction);
     }

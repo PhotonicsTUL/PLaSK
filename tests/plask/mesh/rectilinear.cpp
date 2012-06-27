@@ -7,13 +7,13 @@
 BOOST_AUTO_TEST_SUITE(rectilinear) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(dim1) {
-    plask::RectilinearMesh1d mesh = {3.0, 1.0, 3.0};
+    plask::RectilinearMesh1D mesh = {3.0, 1.0, 3.0};
     BOOST_CHECK_EQUAL(mesh.empty(), false);
     BOOST_REQUIRE_EQUAL(mesh.size(), 2);
     BOOST_CHECK_EQUAL(mesh[0], 1.0);
     BOOST_CHECK_EQUAL(mesh[1], 3.0);
     mesh.addPointsLinear(1.0, 2.0, 3);
-    BOOST_CHECK_EQUAL(mesh, plask::RectilinearMesh1d({1.0, 1.5, 2.0, 3.0}));
+    BOOST_CHECK_EQUAL(mesh, plask::RectilinearMesh1D({1.0, 1.5, 2.0, 3.0}));
     double data[4] =  {0.7, 2.0, 3.0, 4.0};
     BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, 2.3), 3.3);
     BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, 0.5), 0.7);
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(dim1) {
 }
 
 BOOST_AUTO_TEST_CASE(dim2) {
-    plask::RectilinearMesh2d mesh;
+    plask::RectilinearMesh2D mesh;
     BOOST_CHECK_EQUAL(mesh.empty(), true);
     mesh.c0.addPointsLinear(0., 1., 2);
     mesh.c1.addPointsLinear(0., 1., 2);
@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE(from_geometry_2) {
     stack->push_back(rect2, plask::align::Center());
     stack->push_back(rect3, plask::align::Center());
 
-    plask::RectilinearMesh2d mesh(stack);
-    BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1d({-2., -1., 1., 2.}));
-    BOOST_CHECK_EQUAL(mesh.c1, plask::RectilinearMesh1d({0., 3., 8., 10.}));
+    plask::RectilinearMesh2D mesh(stack);
+    BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1D({-2., -1., 1., 2.}));
+    BOOST_CHECK_EQUAL(mesh.c1, plask::RectilinearMesh1D({0., 3., 8., 10.}));
 
 }
 
@@ -63,22 +63,22 @@ BOOST_AUTO_TEST_CASE(from_geometry_3) {
     stack->push_back(cub2, plask::align::CenterCenter());
     stack->push_back(cub3, plask::align::CenterCenter());
 
-    plask::RectilinearMesh3d mesh(stack);
-    BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1d({-2., -1., 1., 2.}));
-    BOOST_CHECK_EQUAL(mesh.c1, plask::RectilinearMesh1d({-1., 1.}));
-    BOOST_CHECK_EQUAL(mesh.c2, plask::RectilinearMesh1d({0., 3., 8., 10.}));
+    plask::RectilinearMesh3D mesh(stack);
+    BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1D({-2., -1., 1., 2.}));
+    BOOST_CHECK_EQUAL(mesh.c1, plask::RectilinearMesh1D({-1., 1.}));
+    BOOST_CHECK_EQUAL(mesh.c2, plask::RectilinearMesh1D({0., 3., 8., 10.}));
 
 }
 
 BOOST_AUTO_TEST_CASE(middle2) {
-    plask::RectilinearMesh2d mesh;
+    plask::RectilinearMesh2D mesh;
     BOOST_CHECK_EQUAL(mesh.empty(), true);
     mesh.c0.addPointsLinear(0., 4.0, 3);
     mesh.c1.addPointsLinear(2., 6.0, 3);
 
     auto middles = mesh.getMidpointsMesh();
-    BOOST_CHECK_EQUAL(middles.c0, plask::RectilinearMesh1d({1., 3.}));
-    BOOST_CHECK_EQUAL(middles.c1, plask::RectilinearMesh1d({3., 5.}));
+    BOOST_CHECK_EQUAL(middles.c0, plask::RectilinearMesh1D({1., 3.}));
+    BOOST_CHECK_EQUAL(middles.c1, plask::RectilinearMesh1D({3., 5.}));
 }
 
 

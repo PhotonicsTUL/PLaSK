@@ -27,7 +27,7 @@ struct StackWrapper: public ElementWrapperFor< plask::StackContainer<dim> > {
 
     virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
 
-    plask::Box2d getInsertPlace2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point);
+    plask::Box2D getInsertPlace2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point);
 
 };
 
@@ -42,7 +42,7 @@ struct MultiStackWrapper: public ElementWrapperFor< plask::MultiStackContainer<d
 
 };
 
-struct ShelfWrapper: public ElementWrapperFor< plask::ShelfContainer2d > {
+struct ShelfWrapper: public ElementWrapperFor< plask::ShelfContainer2D > {
 
     virtual QString toStr() const;
 
@@ -58,7 +58,7 @@ struct ShelfWrapper: public ElementWrapperFor< plask::ShelfContainer2d > {
 
     virtual int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
 
-    plask::Box2d getInsertPlace2d(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point);
+    plask::Box2D getInsertPlace2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point);
 
 };
 

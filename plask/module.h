@@ -36,7 +36,7 @@ To write module you should:
 
 Once you have your source tree set up, do the following:
 -# Write new class which inherit from plask::ModuleOver<SPACE_TYPE> or plask::ModuleWithMesh<SPACE_TYPE, MESH_TYPE>.
-   SPACE_TYPE should be one of Space2dCartesian, Space2dCylindrical, or Space3d and should indicate in what space your module
+   SPACE_TYPE should be one of Space2DCartesian, Space2DCylindrical, or Space3D and should indicate in what space your module
    is doing calculations. If you want to allow user to specify a mesh for your module, inherit from plask::ModuleWithMesh<SPACE_TYPE, MESH_TYPE>,
    where MESH_TYPE is the type of your mesh.
 -# Implement plask::Module::getName method. This method should just return name of your module.
@@ -88,7 +88,7 @@ If you are working within the PLaSK source, remember to add all the directories 
 \subsubsection modules_writing_tutorial Module C++ class
 
 Now we assume that our module uses rectilinear mesh provided by the user, so we inherit our class from
-\link plask::ModuleWithMesh plask::ModuleWithMesh<plask::Space2dCartesian, plask::RectilinearMesh2d>\endlink. So our header
+\link plask::ModuleWithMesh plask::ModuleWithMesh<plask::Space2DCartesian, plask::RectilinearMesh2D>\endlink. So our header
 \a finite_differences.h should begin as follows:
 
 \code
@@ -99,7 +99,7 @@ Now we assume that our module uses rectilinear mesh provided by the user, so we 
 
 namespace plask { namespace modules { namespace optical_finite_differences { // put everything in private namespace
 
-class FiniteDifferencesModule: public plask::ModuleWithMesh < plask::Space2dCartesian, plask::RectilinearMesh2d >
+class FiniteDifferencesModule: public plask::ModuleWithMesh < plask::Space2DCartesian, plask::RectilinearMesh2D >
 {
 \endcode
 
@@ -113,11 +113,11 @@ field intensity. Hence, we declare the following \link providers providers and r
 
     plask::ReceiverFor<plask::Wavelength> inWavelength;
 
-    plask::ReceiverFor<plask::Temperature, plask::Space2dCartesian> inTemperature;
+    plask::ReceiverFor<plask::Temperature, plask::Space2DCartesian> inTemperature;
 
     plask::ProviderFor<plask::EffectiveIndex>::WithValue outNeff;
 
-    plask::ProviderFor<plask::OpticalIntensity, plask::Space2dCartesian>::Delegate outIntensity;
+    plask::ProviderFor<plask::OpticalIntensity, plask::Space2DCartesian>::Delegate outIntensity;
 \endcode
 
 In the code above, we have declared two receivers (by convention in PLaSK, names of every receiver in all modules should begin with
@@ -466,14 +466,14 @@ class Module {
     virtual std::string getDescription() const { return ""; }
 
     template<typename ArgT = double, typename ValT = double>
-    Data2dLog<ArgT, ValT> dataLog(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
-        return Data2dLog<ArgT, ValT>(getId(), chart_name, axis_arg_name, axis_val_name);
+    Data2DLog<ArgT, ValT> dataLog(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
+        return Data2DLog<ArgT, ValT>(getId(), chart_name, axis_arg_name, axis_val_name);
     }
 
 
     template<typename ArgT = double, typename ValT = double>
-    Data2dLog<ArgT, ValT> dataLog(const std::string& axis_arg_name, const std::string& axis_val_name) {
-        return Data2dLog<ArgT, ValT>(getId(), axis_arg_name, axis_val_name);
+    Data2DLog<ArgT, ValT> dataLog(const std::string& axis_arg_name, const std::string& axis_val_name) {
+        return Data2DLog<ArgT, ValT>(getId(), axis_arg_name, axis_val_name);
     }
 
     /**

@@ -203,9 +203,9 @@ public:
 
     int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
 
-    int tryInsertRow2d(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point);
+    int tryInsertRow2D(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point);
 
-    plask::Box2d getInsertPlace2d(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point);
+    plask::Box2D getInsertPlace2D(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point);
 
 };
 
@@ -312,9 +312,9 @@ public:
 
     bool insertRow(plask::shared_ptr<plask::GeometryElement> to_insert, const QModelIndex &parent = QModelIndex(), int position = 0);
 
-    int insertRow2d(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point);
+    int insertRow2D(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point);
 
-    plask::Box2d insertPlace2d(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point);
+    plask::Box2D insertPlace2D(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point);
 };
 
 #endif // PLASK_GUI_TREE_H

@@ -43,20 +43,20 @@ Example of XML which describes geometry:
             <ref name="c1"/>
         </child>
         <rectangle x="8" y="12" material="exampleMaterial"/>
-    </stack2d>
+    </stack2D>
 </geometry>
 \endcode
 
 Above XML describes geometry in 2D space, which includes two containers.
 
-First container (described by the \c container2d tag), has name "trans_cont" (see \c name attribute) and has 2 (identical) children.
+First container (described by the \c container2D tag), has name "trans_cont" (see \c name attribute) and has 2 (identical) children.
 They are actually the same rectangular block (\c rectangle tag) with name "block_5_3" and size 5x3 (see \c x and \c y attributes).
 Its first instance is locates at point (0, 0) (which is a default), and the second one is located at point (3, 3) (which is given in the \c child tag attributes).
 Second appearance of the block in container is given by the \c ref tag.
 This tag represents reference to an ealier defined element and it requires only one attribute,
 namely the name of the element which was earlier defined.
 
-Second container is described by a tag \c stack2d and is named "mystack". Because it has a \c repeat attribute it will be
+Second container is described by a tag \c stack2D and is named "mystack". Because it has a \c repeat attribute it will be
 represented by an object of class plask::MultiStackContainer. This container has two children:
 earlier defined elements with names "block_5_3" and "c1" (the second one is translated inside "mystack" in x direction by -5),
 and a block with size 8x12.

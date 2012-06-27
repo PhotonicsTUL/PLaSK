@@ -81,7 +81,7 @@ private slots:
     void about();
     void treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
     void treeRemoveSelected();
-    void treeAddBlock2d();
+    void treeAddBlock2D();
 
 private:
 

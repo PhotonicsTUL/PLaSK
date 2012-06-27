@@ -14,7 +14,7 @@ namespace plask { namespace modules { namespace effective {
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
  */
-struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, RectilinearMesh2d> {
+struct EffectiveIndex2DModule: public ModuleWithMesh<Space2DCartesian, RectilinearMesh2D> {
 
     enum Symmetry {
         NO_SYMMETRY,
@@ -32,10 +32,10 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     friend class RootDigger;
 
     /// Logger for char_val
-    Data2dLog<dcomplex,dcomplex> log_stripe;
+    Data2DLog<dcomplex,dcomplex> log_stripe;
 
     /// Logger for char_val
-    Data2dLog<dcomplex,dcomplex> log_value;
+    Data2DLog<dcomplex,dcomplex> log_value;
 
     /// Cached refractive indices
     std::vector<std::vector<dcomplex>> nrCache;
@@ -76,7 +76,7 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
            maxstep;     ///< Maximum step in one iteration
     int maxiterations;  ///< Maximum number of iterations
 
-    EffectiveIndex2dModule();
+    EffectiveIndex2DModule();
 
     virtual std::string getName() const { return "Effective Index Method 2D"; }
 
@@ -93,7 +93,7 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
         if (!geometry) throw NoGeometryException(getId());
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
-        setMesh(make_shared<RectilinearMesh2d>(child));
+        setMesh(make_shared<RectilinearMesh2D>(child));
     }
 
     /**
@@ -101,12 +101,12 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
      *
      * \param meshx horizontal mesh
      **/
-    void setHorizontalMesh(const RectilinearMesh1d& meshx) {
+    void setHorizontalMesh(const RectilinearMesh1D& meshx) {
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
-        shared_ptr<RectilinearMesh2d> meshxy = make_shared<RectilinearMesh2d>(child);
+        shared_ptr<RectilinearMesh2D> meshxy = make_shared<RectilinearMesh2D>(child);
         meshxy->tran() = meshx;
         setMesh(meshxy);
     }
@@ -206,13 +206,13 @@ struct EffectiveIndex2dModule: public ModuleWithMesh<Space2dCartesian, Rectiline
     ReceiverFor<Wavelength> inWavelength;
 
     /// Receiver for temperature
-    ReceiverFor<Temperature, Space2dCartesian> inTemperature;
+    ReceiverFor<Temperature, Space2DCartesian> inTemperature;
 
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::WithValue outNeff;
 
     /// Provider of optical field
-    ProviderFor<OpticalIntensity, Space2dCartesian>::Delegate outIntensity;
+    ProviderFor<OpticalIntensity, Space2DCartesian>::Delegate outIntensity;
 
   protected:
 

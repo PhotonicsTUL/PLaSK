@@ -194,14 +194,14 @@ MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Co
 }
 
 MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname) {
-    std::string m1comp, m1dop, m2comp, m2dop;
+    std::string m1comp, m1dop, m2comp, m2Dop;
     std::tie(m1comp, m1dop) = splitString2(material1_fullname, ':');
-    std::tie(m2comp, m2dop) = splitString2(material2_fullname, ':');
+    std::tie(m2comp, m2Dop) = splitString2(material2_fullname, ':');
     std::string m1_dop_name, m2_dop_name;
     Material::DopingAmountType m1_dop_type = Material::NO_DOPING, m2_dop_type = Material::NO_DOPING;
     double m1_dop_am = 0.0, m2_dop_am = 0.0;
     Material::parseDopant(m1dop, m1_dop_name, m1_dop_type, m1_dop_am);
-    Material::parseDopant(m2dop, m2_dop_name, m2_dop_type, m2_dop_am);
+    Material::parseDopant(m2Dop, m2_dop_name, m2_dop_type, m2_dop_am);
     if (m1_dop_name != m2_dop_name)
         throw MaterialParseException("can't mix materials with different doping: \"%1%\" and \"%2%\"", material1_fullname, material2_fullname);
     if (m1_dop_type != m2_dop_type)

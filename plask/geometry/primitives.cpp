@@ -14,26 +14,26 @@ static inline void ensureHi(double& to_be_hi, double how_hi) {
 
 //-------------  ---------------------
 
-bool Box2d::operator ==(const Box2d &r) const {
+bool Box2D::operator ==(const Box2D &r) const {
     return lower == r.lower && upper == r.upper;
 }
 
-bool Box2d::operator !=(const Box2d &r) const {
+bool Box2D::operator !=(const Box2D &r) const {
     return lower != r.lower || upper != r.upper;
 }
 
-void Box2d::fix() {
+void Box2D::fix() {
     if (lower.c0 > upper.c0) std::swap(lower.c0, upper.c0);
     if (lower.c1 > upper.c1) std::swap(lower.c1, upper.c1);
 }
 
 
-bool Box2d::inside(const Vec<2, double >& p) const {
+bool Box2D::inside(const Vec<2, double >& p) const {
     return lower.c0/**/ <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1;
 }
 
-bool Box2d::intersect(const plask::Box2d& other) const {
+bool Box2D::intersect(const plask::Box2D& other) const {
     return !(
         lower.c0 > other.upper.c0 ||
         lower.c1 > other.upper.c1 ||
@@ -42,19 +42,19 @@ bool Box2d::intersect(const plask::Box2d& other) const {
     );
 }
 
-void Box2d::include(const Vec<2, double >& p) {
+void Box2D::include(const Vec<2, double >& p) {
     if (p.c0 < lower.c0) lower.c0 = p.c0; else ensureHi(upper.c0, p.c0);
     if (p.c1 < lower.c1) lower.c1 = p.c1; else ensureHi(upper.c1, p.c1);
 }
 
-void Box2d::include(const plask::Box2d& other) {
+void Box2D::include(const plask::Box2D& other) {
     ensureLo(lower.c0, other.lower.c0);
     ensureLo(lower.c1, other.lower.c1);
     ensureHi(upper.c0, other.upper.c0);
     ensureHi(upper.c1, other.upper.c1);
 }
 
-Vec<2,double> Box2d::moveInside(Vec<2,double> p) const {
+Vec<2,double> Box2D::moveInside(Vec<2,double> p) const {
     if (p.c0 < lower.c0) p.c0 = lower.c0; else ensureLo(p.c0, upper.c0);
     if (p.c1 < lower.c1) p.c1 = lower.c1; else ensureLo(p.c1, upper.c1);
     return p;
@@ -63,28 +63,28 @@ Vec<2,double> Box2d::moveInside(Vec<2,double> p) const {
 
 //-------------  ---------------------
 
-bool Box3d::operator ==(const Box3d &r) const {
+bool Box3D::operator ==(const Box3D &r) const {
     return lower == r.lower && upper == r.upper;
 }
 
-bool Box3d::operator !=(const Box3d &r) const {
+bool Box3D::operator !=(const Box3D &r) const {
     return lower != r.lower || upper != r.upper;
 }
 
-void Box3d::fix() {
+void Box3D::fix() {
     if (lower.c0 > upper.c0) std::swap(lower.c0, upper.c0);
     if (lower.c1 > upper.c1) std::swap(lower.c1, upper.c1);
     if (lower.c2 > upper.c2) std::swap(lower.c2, upper.c2);
 }
 
 
-bool Box3d::inside(const Vec<3, double >& p) const {
+bool Box3D::inside(const Vec<3, double >& p) const {
     return lower.c0 <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1 &&
            lower.c2 <= p.c2 && p.c2 <= upper.c2;
 }
 
-bool Box3d::intersect(const plask::Box3d& other) const {
+bool Box3D::intersect(const plask::Box3D& other) const {
     return !(
         lower.c0 > other.upper.c0 ||
         lower.c1 > other.upper.c1 ||
@@ -95,13 +95,13 @@ bool Box3d::intersect(const plask::Box3d& other) const {
     );
 }
 
-void Box3d::include(const Vec<3, double >& p) {
+void Box3D::include(const Vec<3, double >& p) {
     if (p.c0 < lower.c0) lower.c0 = p.c0; else ensureHi(upper.c0, p.c0);
     if (p.c1 < lower.c1) lower.c1 = p.c1; else ensureHi(upper.c1, p.c1);
     if (p.c2 < lower.c2) lower.c2 = p.c2; else ensureHi(upper.c2, p.c2);
 }
 
-void Box3d::include(const plask::Box3d& other) {
+void Box3D::include(const plask::Box3D& other) {
     ensureLo(lower.c0, other.lower.c0);
     ensureLo(lower.c1, other.lower.c1);
     ensureLo(lower.c2, other.lower.c2);
@@ -110,7 +110,7 @@ void Box3d::include(const plask::Box3d& other) {
     ensureHi(upper.c2, other.upper.c2);
 }
 
-Vec<3,double> Box3d::moveInside(Vec<3,double> p) const {
+Vec<3,double> Box3D::moveInside(Vec<3,double> p) const {
     if (p.c0 < lower.c0) p.c0 = lower.c0; else ensureLo(p.c0, upper.c0);
     if (p.c1 < lower.c1) p.c1 = lower.c1; else ensureLo(p.c1, upper.c1);
     if (p.c2 < lower.c2) p.c2 = lower.c2; else ensureLo(p.c2, upper.c2);

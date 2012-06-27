@@ -49,12 +49,12 @@ struct ShelfCreator: public GeometryElementCreator {
 
     virtual plask::shared_ptr<plask::GeometryElement> getElement(int dim) const {
         switch (dim) {
-            case 2: return plask::make_shared< plask::ShelfContainer2d >();
+            case 2: return plask::make_shared< plask::ShelfContainer2D >();
         }
         return plask::shared_ptr<plask::GeometryElement>();
     }
 
-    virtual std::string getName() const { return "shelf2d"; }
+    virtual std::string getName() const { return "shelf2D"; }
 
     virtual bool supportDimensionsCount(int dim) const {
         return dim == 2;

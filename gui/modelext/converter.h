@@ -13,7 +13,7 @@ QT_END_NAMESPACE
 This file includes convneters between qt and plask primitives.
 */
 
-inline QRectF toQt(const plask::Box2d& box) {
+inline QRectF toQt(const plask::Box2D& box) {
     auto size = box.size();
     return QRectF(box.lower.tran, box.lower.up, size.tran, size.up);
 }
@@ -22,8 +22,8 @@ inline QSizeF toQtSize(const plask::Vec<2, double>& plask_size) {
     return QSizeF(plask_size.tran, plask_size.up);
 }
 
-inline const plask::Box2d fromQt(const QRectF& r) {
-    return plask::Box2d(r.left(), r.top(), r.right(), r.bottom());
+inline const plask::Box2D fromQt(const QRectF& r) {
+    return plask::Box2D(r.left(), r.top(), r.right(), r.bottom());
 }
 
 inline plask::Vec<2, double> fromQt(const QPointF& p) {

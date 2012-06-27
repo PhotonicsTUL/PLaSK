@@ -57,9 +57,9 @@ public:
     /**
      * Get model bounding box in model coordinates.
      */
-    plask::Box2d getBoundingBox() const {
+    plask::Box2D getBoundingBox() const {
         plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
-        return e ? e->getRealBoundingBox() : plask::Box2d(0.0, 0.0, 0.0, 0.0);
+        return e ? e->getRealBoundingBox() : plask::Box2D(0.0, 0.0, 0.0, 0.0);
     }
 
 protected slots:
