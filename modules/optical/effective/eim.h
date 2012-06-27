@@ -256,6 +256,11 @@ struct EffectiveIndex2DModule: public ModuleWithMesh<Space2DCartesian, Rectiline
     /// Method computing the distribution of light intensity
     const DataVector<double> getLightIntenisty(const plask::Mesh<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
 
+  private:
+    template <typename MeshT>
+    bool getLightIntenisty_Efficient(const plask::Mesh<2>& dst_mesh, DataVector<double>& result,
+                                     const std::vector<dcomplex>& betax, const std::vector<dcomplex>& betay);
+
 };
 
 

@@ -59,26 +59,26 @@ class RegularMesh1D {
     }
 
     /**
-     * @return coordinate of first point in mesh
+     * @return coordinate of the first point in the mesh
      */
     double getFirst() const { return lo; }
 
     /**
-     * @return coordinate of last point in mesh
+     * @return coordinate of the last point in the mesh
      */
     double getLast() const { return lo + step * (points_count-1); }
 
     /**
-     * @return distanse between two neighbouring points in mesh
+     * @return distance between two neighboring points in the mesh
      */
     double getStep() const { return step; }
 
-    /// @return number of points in mesh
+    /// @return number of points in the mesh
     std::size_t size() const { return points_count; }
 
      /**
-      * Compares meshes
-      * It use algorithm which has contant time complexity.
+      * Compare meshes
+      * It uses algorithm which has constant time complexity.
       * @param to_compare mesh to compare
       * @return @c true only if this mesh and @p to_compare represents the same set of points
       */

@@ -176,6 +176,15 @@ class RectangularMesh2D: public Mesh<2> {
     virtual typename Mesh<2>::Iterator end() const { return makeMeshIterator(end_fast()); }
 
     /**
+      * Compare meshes
+      * @param to_compare mesh to compare
+      * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
+      */
+    bool operator==(const RectangularMesh2D<Mesh1D>& to_compare) {
+        return c0 == to_compare.c0 && c1 == to_compare.c1;
+    }
+
+    /**
      * Get number of points in mesh.
      * @return number of points in mesh
      */

@@ -37,6 +37,11 @@ void RectilinearMesh1D::addPointsLinear(double first, double last, std::size_t p
     addOrderedPoints(makeFunctorIndexedIterator(get_el, 0), makeFunctorIndexedIterator(get_el, points_count+1), points_count+1);
 }
 
+void RectilinearMesh1D::removePoint(std::size_t index) {
+    points.erase(points.begin() + index);
+}
+
+
 void RectilinearMesh1D::clear() {
     points.clear();
 }

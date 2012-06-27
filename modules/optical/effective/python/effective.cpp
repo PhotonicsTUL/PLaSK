@@ -63,8 +63,8 @@ static void EffectiveIndex2DModule_setPolarization(EffectiveIndex2DModule& self,
 static py::object EffectiveIndex2DModule_getStripeDeterminant(EffectiveIndex2DModule& self, int stripe, py::object neffs)
 {
     if (!self.getMesh()) self.setSimpleMesh();
-    if (stripe < 0) stripe = self.getMesh()->tran().size() + 1 - stripe;
-    if (stripe > self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
+    if (stripe < 0) stripe = self.getMesh()->tran().size() + 1 + stripe;
+    if (stripe < 0) throw IndexError("wrong stripe number");
 
     return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, neffs);
 }

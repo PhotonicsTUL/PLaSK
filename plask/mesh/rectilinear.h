@@ -66,7 +66,7 @@ class RectilinearMesh3D: public RectangularMesh3D<RectilinearMesh1D> {
   public:
 
     /// Construct an empty mesh
-    RectilinearMesh3D(RectangularMesh3D<RectilinearMesh1D>::IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_021) :
+    RectilinearMesh3D(RectangularMesh3D<RectilinearMesh1D>::IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_210) :
         RectangularMesh3D<RectilinearMesh1D>(iterationOrder) {}
 
     /**
@@ -76,7 +76,7 @@ class RectilinearMesh3D: public RectangularMesh3D<RectilinearMesh1D> {
      * @param mesh1 mesh for the second coordinate
      */
     RectilinearMesh3D(const RectilinearMesh1D& mesh0, const RectilinearMesh1D& mesh1, const RectilinearMesh1D& mesh2,
-                      RectangularMesh3D<RectilinearMesh1D>::IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_021) :
+                      RectangularMesh3D<RectilinearMesh1D>::IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_210) :
         RectangularMesh3D<RectilinearMesh1D>(mesh0, mesh1, mesh2, iterationOrder) {}
 
 
@@ -84,7 +84,7 @@ class RectilinearMesh3D: public RectangularMesh3D<RectilinearMesh1D> {
      * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
      * @param geometry geometry in which bounding boxes are searched
      */
-    RectilinearMesh3D(const GeometryElementD<3>& geometry, IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_021) {
+    RectilinearMesh3D(const GeometryElementD<3>& geometry, IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_210) {
         buildFromGeometry(geometry);
         this->setIterationOrder(iterationOrder);
     }
@@ -93,7 +93,7 @@ class RectilinearMesh3D: public RectangularMesh3D<RectilinearMesh1D> {
      * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
      * @param geometry geometry in which bounding boxes are searched
      */
-    RectilinearMesh3D(shared_ptr<const GeometryElementD<3>> geometry, IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_021) {
+    RectilinearMesh3D(shared_ptr<const GeometryElementD<3>> geometry, IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_210) {
         buildFromGeometry(*geometry);
         this->setIterationOrder(iterationOrder);
     }

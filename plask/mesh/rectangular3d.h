@@ -82,7 +82,7 @@ class RectangularMesh3D: public Mesh<3> {
      * @param mesh1 mesh for the second coordinate
      * @param mesh2 mesh for the third coordinate
      */
-    RectangularMesh3D(const Mesh1D& mesh0, const Mesh1D& mesh1, const Mesh1D& mesh2, IterationOrder iterationOrder=ORDER_012)
+    RectangularMesh3D(const Mesh1D& mesh0, const Mesh1D& mesh1, const Mesh1D& mesh2, IterationOrder iterationOrder=ORDER_210)
         : c0(mesh0), c1(mesh1), c2(mesh2) {
             setIterationOrder(iterationOrder);
     }
@@ -213,6 +213,15 @@ class RectangularMesh3D: public Mesh<3> {
     // implement Mesh<3> polymorphic iterators:
     virtual typename Mesh<3>::Iterator begin() const { return makeMeshIterator(begin_fast()); }
     virtual typename Mesh<3>::Iterator end() const { return makeMeshIterator(end_fast()); }
+
+    /**
+      * Compare meshes
+      * @param to_compare mesh to compare
+      * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
+      */
+    bool operator==(const RectangularMesh3D<Mesh1D>& to_compare) {
+        return c0 == to_compare.c0 && c1 == to_compare.c1 && c2 == to_compare.c2;
+    }
 
     /**
      * Get number of points in the mesh.

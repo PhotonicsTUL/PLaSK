@@ -16,7 +16,7 @@ This file includes rectilinear mesh for 1d space.
 namespace plask {
 
 /**
- * Rectilinear mesh in 1d space.
+ * Rectilinear mesh in 1D space.
  */
 class RectilinearMesh1D {
 
@@ -94,10 +94,10 @@ public:
      * @param out stream to print
      * @return out
      */
-    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearMesh1D& self) {
+    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearMesh1D& mesh) {
         out << "[";
-        for (auto p: self.points) {
-            out << p << ((p != self.points.back())? ", " : "");
+        for (auto p: mesh.points) {
+            out << p << ((p != mesh.points.back())? ", " : "");
         }
         out << "]";
         return out;
@@ -116,6 +116,12 @@ public:
      * @param new_node_cord coordinate of point to add
      */
     void addPoint(double new_node_cord);
+
+    /**
+     * Remove point at specified index
+     * \param index intex of the point to remove
+     */
+    void removePoint(std::size_t index);
 
     /**
      * Add points from ordered range.
