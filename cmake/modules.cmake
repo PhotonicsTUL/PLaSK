@@ -15,6 +15,10 @@ set(TARGET_NAME module-${TARGET_NAME})
 # Obtain default canonical module name
 get_filename_component(MODULE_NAME ${MODULE_DIR} NAME)
 
+# Obtain name of the variable indicating successful configuration of the module
+string(REPLACE "/" "_" BUILD_MODULE_OK ${MODULE_DIR})
+string(TOUPPER "BUILD_MODULE_${BUILD_MODULE_OK}_OK" BUILD_MODULE_OK)
+
 # Obtain intermediate path list and to create necessary __init__.py files to mark packages
 get_filename_component(MODULE_PATH ${MODULE_DIR} PATH)
 if(NOT MODULE_PATH STREQUAL "")
@@ -33,8 +37,25 @@ else()
     add_definitions(-fPIC)
 endif()
 
-# This is macro that sets all the targets autmagically
+# This is macro that sets all the targets automagically
 macro(make_default)
+
+    set(${BUILD_MODULE_OK} YES PARENT_SCOPE)
+
+    foreach(i ${MODULE_LINK_LIBRARIES})
+        if(NOT i)
+            message(WARNING "Module '${MODULE_DIR}' will not be built: ${i}")
+            set(${BUILD_MODULE_OK} NO PARENT_SCOPE)
+            return()
+        endif()
+    endforeach()
+    foreach(i ${MODULE_INCLUDE_DIRECTORIES})
+        if(NOT i)
+            message(WARNING "Module '${MODULE_DIR}' will not be built: ${i}")
+            set(${BUILD_MODULE_OK} NO PARENT_SCOPE)
+            return()
+        endif()
+    endforeach()
 
     # Build module library
     add_library(${TARGET_NAME} ${module_src})

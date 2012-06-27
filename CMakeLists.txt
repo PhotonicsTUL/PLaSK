@@ -246,28 +246,20 @@ endmacro()
 
 # ----------===== modules =====--------------------------------------------
 
-# Automagically get list of available module
+macro(mod_option mod opt)
+    string(REPLACE "/" "_" ${opt} ${mod})
+    string(TOUPPER "BUILD_MODULE_${${opt}}" ${opt})
+endmacro()
+
+# Automagically get list of available module and set options to turn on/off building particular modules
 file(GLOB_RECURSE module_lists RELATIVE  ${CMAKE_SOURCE_DIR}/modules modules/*CMakeLists.txt)
 list(REMOVE_ITEM module_lists modules/skel/CMakeLists.txt)
 foreach(mod ${module_lists})
     string(REPLACE "/CMakeLists.txt" "" mod ${mod})
     if (NOT ${mod} STREQUAL skel)
         list(APPEND modules ${mod})
-    endif()
-endforeach()
-
-macro(mod_option mod opt)
-    string(REPLACE "/" "_" ${opt} ${mod})
-    string(TOUPPER "BUILD_MODULE_${${opt}}" ${opt})
-endmacro()
-
-# Set options to turn on/off building particular modules
-message(STATUS "Building the following modules:")
-foreach(mod ${modules})
-    mod_option(${mod} opt)
-    option(${opt} "Build module '${mod}'" ON)
-    if (${opt})
-        message(STATUS "  ${mod}")
+        mod_option(${mod} opt)
+        option(${opt} "Build module '${mod}'" ON)
     endif()
 endforeach()
 
@@ -282,6 +274,15 @@ foreach(mod ${modules})
             list(APPEND modules_test_targets "module-${modtarget}-test")
         endif()
         add_subdirectory(modules/${mod})
+    endif()
+endforeach()
+
+# Report which modules can be build
+message(STATUS "Building the following modules:")
+foreach(mod ${modules})
+    mod_option(${mod} opt)
+    if (${opt} AND ${opt}_OK)
+        message(STATUS "  ${mod}")
     endif()
 endforeach()
 
