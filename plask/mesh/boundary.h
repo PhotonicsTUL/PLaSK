@@ -1,5 +1,5 @@
-#ifndef BOUNDARY_H
-#define BOUNDARY_H
+#ifndef PLASK__BOUNDARY_H
+#define PLASK__BOUNDARY_H
 
 /** @file
 This file includes templates of base classes for mesh's boundaries.
@@ -335,4 +335,4 @@ inline Boundary<MeshType> makePredicateBoundary(Predicate predicate) {
 
 }   // namespace plask
 
-#endif // BOUNDARY_H
+#endif // PLASK__BOUNDARY_H
