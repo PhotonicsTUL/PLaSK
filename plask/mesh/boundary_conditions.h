@@ -65,6 +65,13 @@ private:
 public:
     
     /**
+     * Delegate all constructors to underline container (which is std::list\<Element>).
+     * @param args arguments to delegate
+     */
+    template <typename... ArgsTypes>
+    BoundaryConditions(ArgsTypes&& args): container(std::forward<ArgsTypes>(args)...) {}
+    
+    /**
      * Get iterator to element with given @p index.
      * @param[in] index index of element
      * @return iterator to element with given @p index or @c end() if @p index is not valid
