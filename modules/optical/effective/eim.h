@@ -5,6 +5,10 @@
 
 #include <Eigen/Dense>
 
+#include<Eigen/StdVector> // This is needed to ensure the proper alignment of Eigen::Vector2cd in std::vector
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2cd)
+
+
 #include <plask/plask.hpp>
 
 #include "broyden.h"
