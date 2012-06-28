@@ -88,10 +88,10 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     /**
      * Calculate element up translation and height of stack with element @a el.
-     * @param elBoudingBox[in] bounding box of geometry element (typically: for element which is or will be in stack)
-     * @param prev_height[in] height of stack under an @a el
-     * @param el_translation[out] up translation which should element @a el have
-     * @param next_height[out] height of stack with an @a el on top (up to @a el)
+     * @param[in] elBoudingBox bounding box of geometry element (typically: for element which is or will be in stack)
+     * @param[in] prev_height height of stack under an @a el
+     * @param[out] el_translation up translation which should element @a el have
+     * @param[out] next_height height of stack with an @a el on top (up to @a el)
      */
     void calcHeight(const Box& elBoudingBox, double prev_height, double& el_translation, double& next_height) {
         el_translation = prev_height - elBoudingBox.lower.components[growingDirection];
@@ -100,10 +100,10 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 
     /**
      * Calculate element up translation and height of stack with element @a el.
-     * @param el[in] geometry element (typically: which is or will be in stack)
-     * @param prev_height[in] height of stack under an @a el
-     * @param el_translation[out] up translation which should element @a el have
-     * @param next_height[out] height of stack with an @a el on top (up to @a el)
+     * @param[in] el geometry element (typically: which is or will be in stack)
+     * @param[in] prev_height height of stack under an @a el
+     * @param[out] el_translation up translation which should element @a el have
+     * @param[out] next_height height of stack with an @a el on top (up to @a el)
      */
     void calcHeight(const shared_ptr<ChildType>& el, double prev_height, double& el_translation, double& next_height) {
         calcHeight(el->getBoundingBox(), prev_height, el_translation, next_height);
@@ -363,7 +363,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * Add children to stack bottom, move all other children up.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el element to add
-     * @param tran_translation horizontal translation of element
+     * @param aligner aligner which describe horizontal translation of added element
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
@@ -373,7 +373,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     /**
      * Add child to stack bottom, move all other children up.
      * @param el element to add
-     * @param tran_translation horizontal translation of element
+     * @param aligner aligner which describe horizontal translation of element
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */

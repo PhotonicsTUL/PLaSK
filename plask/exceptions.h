@@ -392,8 +392,11 @@ struct NoMeshException: public Exception {
  */
 struct BadMesh: public Exception {
 
-    /// @param where name of class/function/operation doing the computations
-    /// @param msg error message
+    /**
+     * @param where name of class/function/operation doing the computations
+     * @param msg error message (format)
+     * @param params paramters for @p msg
+     */
     template <typename... Params>
     BadMesh(const std::string& where, const std::string& msg, Params... params)
         : Exception("%1%: Bad mesh: %2%", where, format(msg, params...)) {};

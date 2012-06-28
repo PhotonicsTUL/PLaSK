@@ -589,7 +589,7 @@ class ModuleWithMesh: public ModuleOver<SpaceT> {
 
     /**
      * Set new mesh for the module
-     * @param new_mesh new geometry space
+     * @param mesh new mesh
      */
     void setMesh(const shared_ptr<MeshT>& mesh) {
         if (mesh == this->mesh) return;

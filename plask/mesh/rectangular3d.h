@@ -81,6 +81,7 @@ class RectangularMesh3D: public Mesh<3> {
      * @param mesh0 mesh for the first coordinate
      * @param mesh1 mesh for the second coordinate
      * @param mesh2 mesh for the third coordinate
+     * @param iterationOrder iteration order
      */
     RectangularMesh3D(const Mesh1D& mesh0, const Mesh1D& mesh1, const Mesh1D& mesh2, IterationOrder iterationOrder=ORDER_210)
         : c0(mesh0), c1(mesh1), c2(mesh2) {

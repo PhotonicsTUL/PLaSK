@@ -200,9 +200,9 @@ struct Mesh {
         /**
          * Construct event.
          * @param source source of event
-         * @param flags which describes event's properties
+         * @param flags flags which describes event's properties
          */
-        explicit Event(Mesh<dimension>& source, unsigned char falgs = 0):  EventWithSourceAndFlags< Mesh<dimension> >(source, falgs) {}
+        explicit Event(Mesh<dimension>& source, unsigned char flags = 0):  EventWithSourceAndFlags< Mesh<dimension> >(source, flags) {}
     };
 
     /// Changed signal, fired when space was changed.

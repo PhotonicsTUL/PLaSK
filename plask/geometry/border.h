@@ -31,17 +31,17 @@ struct Strategy {
 
     /**
      * Apply strategy to given point @p p.
-     * @param bbox_lo[in], bbox_hi[in] coordinates of geometry element bounding box in startegy working direction
-     * @param p[in,out] coordinate of point in startegy working direction, it's (must be) lower than @p bbox_lo, this method can move this point
-     * @param result_material[out] optionaly, this method can assign to it material which should be used
+     * @param[in] bbox_lo, bbox_hi coordinates of geometry element bounding box in startegy working direction
+     * @param[in,out] p coordinate of point in startegy working direction, it's (must be) lower than @p bbox_lo, this method can move this point
+     * @param[out] result_material optionaly, this method can assign to it material which should be used
      */
     virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
 
     /**
      * Apply strategy to given point @p p.
-     * @param bbox_lo[in], bbox_hi[in] coordinates of geometry element bounding box in startegy working direction
-     * @param p[in,out] coordinate of point in startegy working direction, it's (must be) higher than @p bbox_hi, this method can move this point
-     * @param result_material[out] optionaly, this method can assign to it material which should be used
+     * @param[in] bbox_lo, bbox_hi coordinates of geometry element bounding box in startegy working direction
+     * @param[in,out] p coordinate of point in startegy working direction, it's (must be) higher than @p bbox_hi, this method can move this point
+     * @param[out] result_material optionaly, this method can assign to it material which should be used
      */
     virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
 
@@ -322,7 +322,7 @@ public:
 
     /**
      * Get lo or hi strategy.
-     * @param _getHi if @true hi strategy will be returned, in other case lo strategy will be returned
+     * @param _getHi if @c true hi strategy will be returned, in other case lo strategy will be returned
      * @return lo or hi strategy, depends from @p _getHi value
      */
     const StrategyType& get(bool _getHi) const {

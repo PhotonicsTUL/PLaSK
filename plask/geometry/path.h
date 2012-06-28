@@ -240,7 +240,7 @@ public:
      * @param path elements to add, exception will be throwed if it have branches
      * @param hints optional path hints which are use to non-ambiguous completion of paths
      */
-    Path& append(const GeometryElement::Subtree& paths, const PathHints* hints = nullptr);
+    Path& append(const GeometryElement::Subtree& path, const PathHints* hints = nullptr);
 
     /**
      * Append @p path content to this path.
@@ -264,7 +264,7 @@ public:
      * Append @p element to this path.
      *
      * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
-     * @param hint elements to add
+     * @param element elements to add
      * @param hints optional path hints which are use to non-ambiguous completion of paths
      */
     Path& append(const GeometryElement& element, const PathHints* hints = nullptr);

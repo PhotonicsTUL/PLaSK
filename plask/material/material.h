@@ -186,8 +186,8 @@ struct Material {
      * Parse information about dopant from string.
      *
      * Throws exception in case of parsing errors.
-     * @param begin, end [begin, end) string or range in string
-     * @param dopant_elem_name[out], doping_amount_type[out], doping_amount[out] parsed values
+     * @param[in] begin, end [begin, end) string or range in string
+     * @param[out] dopant_elem_name, doping_amount_type, doping_amount parsed values
      */
     static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount);
 
@@ -195,8 +195,8 @@ struct Material {
      * Parse information about dopant from string.
      *
      * Throws exception in case of parsing errors.
-     * @param dopant string to parse
-     * @param dopant_elem_name[out], doping_amount_type[out], doping_amount[out] parsed values
+     * @param[in] dopant string to parse
+     * @param[out] dopant_elem_name, doping_amount_type, doping_amount parsed values
      */
     static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount);
 

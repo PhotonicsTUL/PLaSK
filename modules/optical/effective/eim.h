@@ -156,7 +156,7 @@ struct EffectiveIndex2DModule: public ModuleWithMesh<Space2DCartesian, Rectiline
      *
      * \param neff initial effective index to search the mode around
      * \return determined effective index
-     **/
+     */
     dcomplex computeMode(dcomplex neff);
 
 

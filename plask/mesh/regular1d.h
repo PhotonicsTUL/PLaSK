@@ -89,6 +89,7 @@ class RegularMesh1D {
      /**
       * Print mesh to stream
       * @param out stream to print
+      * @param self mesh to print
       * @return out
       */
      friend inline std::ostream& operator<<(std::ostream& out, const RegularMesh1D& self) {

@@ -80,6 +80,7 @@ class RectangularMesh2D: public Mesh<2> {
      *
      * @param mesh0 mesh for the first coordinate
      * @param mesh1 mesh for the second coordinate
+     * @param iterationOrder iteration order
      */
     RectangularMesh2D(const Mesh1D& mesh0, const Mesh1D& mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
         c0(mesh0), c1(mesh1) { setIterationOrder(iterationOrder); }

@@ -92,6 +92,7 @@ public:
     /**
      * Print mesh to stream
      * @param out stream to print
+     * @param mesh mesh to print
      * @return out
      */
     friend inline std::ostream& operator<<(std::ostream& out, const RectilinearMesh1D& mesh) {

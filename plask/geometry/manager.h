@@ -129,37 +129,42 @@ struct GeometryManager {
     /**
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
-
+     * @param materialsDB materials database, used to get materials by name for leafs
      */
     void loadFromReader(XMLReader& XMLreader, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
+     * @param materialsSource source of materials, used to get materials by name for leafs
      */
     void loadFromReader(XMLReader& XMLreader, const GeometryReader::MaterialsSource& materialsSource);
 
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content
+     * @param materialsDB materials database, used to get materials by name for leafs
      */
     void loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content
+     * @param materialsSource source of materials, used to get materials by name for leafs
      */
     void loadFromXMLStream(std::istream &input, const GeometryReader::MaterialsSource& materialsSource);
 
     /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
+     * @param materialsDB materials database, used to get materials by name for leafs
      */
     void loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
+     * @param materialsSource source of materials, used to get materials by name for leafs
      */
     void loadFromXMLString(const std::string &input_XML_str, const GeometryReader::MaterialsSource& materialsSource);
 
@@ -176,12 +181,14 @@ struct GeometryManager {
     /**
      * Load geometry from XML file.
      * @param fileName name of XML file
+     * @param materialsDB materials database, used to get materials by name for leafs
      */
     void loadFromFile(const std::string& fileName, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry from XML file.
      * @param fileName name of XML file
+     * @param materialsSource source of materials, used to get materials by name for leafs
      */
     void loadFromFile(const std::string& fileName, const GeometryReader::MaterialsSource& materialsSource);
 };

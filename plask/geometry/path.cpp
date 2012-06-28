@@ -129,8 +129,8 @@ Path& Path::append(const std::vector< shared_ptr<const GeometryElement> >& path,
     return *this;
 }
 
-Path& Path::append(const GeometryElement::Subtree& paths, const PathHints* hints) {
-    return append(paths.toLinearPath(), hints);
+Path& Path::append(const GeometryElement::Subtree& path, const PathHints* hints) {
+    return append(path.toLinearPath(), hints);
 }
 
 Path& Path::append(const Path& path, const PathHints* hints) {

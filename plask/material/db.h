@@ -75,8 +75,6 @@ struct MaterialsDB {
         /**
          * Construct MixedCompositionFactory for given material constructor and two compositions for this constructor.
          * @param constructor material constructor
-         * @param material1composition incomplate composition of first material
-         * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
          */
         MixedCompositionFactory(const shared_ptr<const MaterialConstructor>& constructor): constructor(constructor) {}
 
@@ -310,7 +308,7 @@ public:
 
     /**
      * Create material object.
-     * @param full_name material name, with encoded parameters in format composition[:dopant], see @ref get(const std::string& name_with_components, const std::string& dopant_descr)
+     * @param full_name material name, with encoded parameters in format composition[:dopant], see get(const std::string&, const std::string&)
      * @return material with @p full_name
      * @throw NoSuchMaterial if material with given name not exists
      * @throw MaterialParseException if can't parse @p full_name
@@ -329,7 +327,7 @@ public:
      * Construct mixed material factory.
      * @param material1composition incomplate composition of first material
      * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
-     * @param dopantName name of dopant, empty if there is no dopant
+     * @param dopant_name name of dopant, empty if there is no dopant
      * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
      * @return constructed factory created using new operator, should by delete by caller
@@ -351,7 +349,7 @@ public:
 
     /**
      * Construct mixed material factory.
-     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see @ref get(const std::string& name_with_components, const std::string& dopant_descr),
+     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see get(const std::string& name_with_components, const std::string& dopant_descr),
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
      * @return constructed factory created using new operator, should by delete by caller
      */
