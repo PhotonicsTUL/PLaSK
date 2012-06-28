@@ -48,6 +48,7 @@ Once you have your source tree set up, do the following:
     - you don't have to care about connection between providers and corresponding receivers (this is done externally),
     - note that most providers are classes obtained by using plask::ProviderFor template,
     - more details can be found in @ref providers.
+-# If you need boundary conditions, place in your class public plask::BoundaryConditions fields which are containers of boundary-condition pairs.
 -# Typically, implement calculation method. This method is a place for your calculation code.
    You don't have to implement it if you don't need to do any calculations. You can also write more methods performing
    different calculations, however, you need to clearly document them. Each calculation method must call plask::Module::initCalculation()
@@ -106,7 +107,9 @@ class FiniteDifferencesModule: public plask::ModuleWithMesh < plask::Space2DCart
 Then, you declare all the fields and methods of the class. We will skip all the fields that are required privately for
 computations from this tutorial and focus only on the ones necessary for PLaSK interface. Assume, that \b FiniteDifferencesModule
 needs a temperature distribution and wavelength as an input, and outputs effective index of the waveguide and the optical
-field intensity. Hence, we declare the following \link providers providers and receivers\endlink:
+field intensity.
+Additionaly, boundary conditions of the first kind on temperature is needed.
+Hence, we declare the following \link providers providers, receivers\endlink and \link boundaries boundary conditions\endlink:
 
 \code
   public:
@@ -118,6 +121,8 @@ field intensity. Hence, we declare the following \link providers providers and r
     plask::ProviderFor<plask::EffectiveIndex>::WithValue outNeff;
 
     plask::ProviderFor<plask::OpticalIntensity, plask::Space2DCartesian>::Delegate outIntensity;
+
+    plask::BoundaryConditions<plask::RectilinearMesh2D, double> boundaryConditionsOnTemperature;
 \endcode
 
 In the code above, we have declared two receivers (by convention in PLaSK, names of every receiver in all modules should begin with
