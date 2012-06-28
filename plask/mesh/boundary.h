@@ -280,8 +280,13 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
 
     };
 
+    /// Predicate which check if given point is in boundary.
     Predicate predicate;
 
+    /**
+     * Construct predicate boundary which use given @p predicate.
+     * @param predicate predicate which check if given point is in boundary
+     */
     PredicateBoundary(Predicate predicate): predicate(predicate) {}
 
     virtual PredicateBoundary<MeshType, Predicate>* clone() const { return new PredicateBoundary<MeshType, Predicate>(predicate); }
@@ -318,8 +323,8 @@ public:
 
 /**
  * Helper to create boundary which wrap predicate.
- * Use: makePredicateBoundary<MeshType>(predicate);
- * @param predicate
+ * Use: makePredicateBoundary\<MeshType>(predicate);
+ * @param predicate functor which check if given point is in boundary
  * @return <code>Boundary<MeshType>(new PredicateBoundary<MeshType, Predicate>(predicate))</code>
  * @tparam MeshType type of mesh
  * @tparam Predicate predicate which check if given point is in boundary, predicate can has exactly one of the following arguments set:

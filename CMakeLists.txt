@@ -357,6 +357,7 @@ find_package(Doxygen)
 
 if(BUILD_DOCUMENTATION)
     if(DOXYGEN_FOUND)
+        file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
         add_custom_target(doc ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
     else()
         message("Doxygen not found. Building without documentation.")
