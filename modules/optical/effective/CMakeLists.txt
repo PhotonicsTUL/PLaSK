@@ -29,6 +29,10 @@ set(MODULE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
 #
 #set(MODULE_COMPILE_FLAGS ${CMAKE_GSL_CXX_FLAGS})
 
+# Fix a bug with alignment for Eigen matrices
+if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
+    set(MODULE_COMPILE_FLAGS -mincoming-stack-boundary=2)
+endif()
 
 # If you want, you can manually specify your sources. Just uncomment and edit
 # the following lines. If you don't do it, your module directory will be scanned
