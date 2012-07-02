@@ -2,8 +2,6 @@
 
 #include <plask/mesh/regular.h>
 
-
-
 using plask::dcomplex;
 
 namespace plask { namespace modules { namespace effective {

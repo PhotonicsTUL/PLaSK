@@ -56,7 +56,7 @@ struct Holder {
 
     protected:
 
-    /// Holded object. Typically can be nullptr only after move assigment.
+    /// Hold object. Typically can be nullptr only after move assigment.
     T* hold;
 
     public:
@@ -74,10 +74,10 @@ struct Holder {
     Holder(T& hold): hold(&hold) {}
 
     /**
-     * @brief Copy constructor. Use hold.clone().
+     * @brief Copy constructor. Use hold->clone().
      * @param to_copy object to copy
      */
-    Holder(const Holder<T>& to_copy): hold(to_copy.hold.clone()) {}
+    Holder(const Holder<T>& to_copy): hold(to_copy.hold->clone()) {}
 
     /**
      * @brief Move constructor.
@@ -88,13 +88,13 @@ struct Holder {
     Holder(Holder<T>&& to_move): hold(to_move.hold) { to_move.hold = nullptr; }
 
     /**
-     * @brief Copy operator. Use hold.clone().
+     * @brief Copy operator. Use hold->clone().
      * @param to_copy object to copy
      */
     Holder<T>& operator=(const Holder& to_copy) {
         if (hold == to_copy.hold) return;   //self-assigment protection
         delete hold;
-        hold = to_copy.hold.clone();
+        hold = to_copy.hold->clone();
         return *this;
     }
 

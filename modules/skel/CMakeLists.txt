@@ -51,9 +51,9 @@ include(${CMAKE_SOURCE_DIR}/cmake/modules.cmake)
 # the test as 'modules/your_module/test_name'. Then uncomment and edit the line
 # below.
 #
+enable_testing()
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #set(MODULE_TEST_DEPENDS mytest)
-#enable_testing()
 #add_test(modules/foo/bar mytest)
 #add_python_test(modules/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
 

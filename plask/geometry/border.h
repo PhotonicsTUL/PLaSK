@@ -192,10 +192,10 @@ struct Mirror: public Strategy {
 
 /**
  * Hold border strategy with given type and:
- * - delegate apply methods to holded strategy,
+ * - delegate apply methods to hold strategy,
  * - allow to assing strategy to self (using operator=).
- * @tparam direction holded strategy working direction (coordinate of vector component)
- * @tparam StrategyType (base) type of holded strategy, typically Strategy or UniversalStrategy
+ * @tparam direction hold strategy working direction (coordinate of vector component)
+ * @tparam StrategyType (base) type of hold strategy, typically Strategy or UniversalStrategy
  */
 template <int direction, typename StrategyType = Strategy>
 class StrategyHolder {
@@ -258,8 +258,8 @@ public:
 
 /**
  * Hold pairs of strategies (for lo and hi band) with given type.
- * @tparam direction holded strategy working direction (coordinate of vector component)
- * @tparam StrategyType (base) type of holded strategies, typically Strategy or UniversalStrategy
+ * @tparam direction hold strategy working direction (coordinate of vector component)
+ * @tparam StrategyType (base) type of hold strategies, typically Strategy or UniversalStrategy
  */
 template <int direction, typename StrategyType = Strategy>
 class StrategyPairHolder {

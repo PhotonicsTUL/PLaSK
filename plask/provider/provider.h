@@ -470,9 +470,9 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
     }
 
     /**
-     * Call functor holded by valueGetter.
-     * @param params parameters for functor holded by valueGetter
-     * @return value returned by functor holded by valueGetter
+     * Call functor hold by valueGetter.
+     * @param params parameters for functor hold by valueGetter
+     * @return value returned by functor hold by valueGetter
      */
     virtual _Res operator()(_ArgTypes&&... params) const {
         return valueGetter(std::forward<_ArgTypes>(params)...);

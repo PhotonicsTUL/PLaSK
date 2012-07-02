@@ -350,7 +350,7 @@ class RectangularMesh3D: public Mesh<3> {
             );
         }
 
-        //index1 and index2 are in bounds here:
+        // index1 and index2 are in bounds here:
         if (index0 == 0)
         return interpolation::bilinear(c1[index1-1], c1[index1],
                                         c2[index2-1], c2[index2],
@@ -370,7 +370,7 @@ class RectangularMesh3D: public Mesh<3> {
                                         point.c1, point.c2);
         }
 
-        //all indexes are in bounds
+        // all indexes are in bounds
         return interpolation::trilinear(
             c0[index0-1], c0[index0],
             c1[index1-1], c1[index1],

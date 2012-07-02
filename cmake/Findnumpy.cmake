@@ -11,7 +11,7 @@ if(PYTHON_EXECUTABLE)
     string(STRIP ${NUMPY_INCLUDE_DIRS} NUMPY_INCLUDE_DIRS)
 endif(PYTHON_EXECUTABLE)
 
-# handle the QUIETLY and REQUIRED arguments and set ARPACK_FOUND to TRUE
+# handle the QUIETLY and REQUIRED arguments and set NUMPY_FOUND to TRUE
 # if all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(numpy DEFAULT_MSG NUMPY_INCLUDE_DIRS)

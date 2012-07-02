@@ -254,12 +254,14 @@ endmacro()
 # Automagically get list of available module and set options to turn on/off building particular modules
 file(GLOB_RECURSE module_lists RELATIVE  ${CMAKE_SOURCE_DIR}/modules modules/*CMakeLists.txt)
 list(REMOVE_ITEM module_lists modules/skel/CMakeLists.txt)
+message(STATUS "Trying to build the following modules (in case of error disable the offending module and try again):")
 foreach(mod ${module_lists})
     string(REPLACE "/CMakeLists.txt" "" mod ${mod})
     if (NOT ${mod} STREQUAL skel)
         list(APPEND modules ${mod})
         mod_option(${mod} opt)
         option(${opt} "Build module '${mod}'" ON)
+        message(STATUS "  ${mod}")
     endif()
 endforeach()
 
@@ -276,16 +278,6 @@ foreach(mod ${modules})
         add_subdirectory(modules/${mod})
     endif()
 endforeach()
-
-# Report which modules can be build
-message(STATUS "Building the following modules:")
-foreach(mod ${modules})
-    mod_option(${mod} opt)
-    if (${opt} AND ${opt}_OK)
-        message(STATUS "  ${mod}")
-    endif()
-endforeach()
-
 
 # ----------===== unit tests =====--------------------------------------------
 if(BUILD_TESTING)

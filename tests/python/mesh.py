@@ -10,7 +10,7 @@ import plasktest as ptest
 
 
 
-class Meshes(unittest.TestCase):
+class RectilinearMeshes(unittest.TestCase):
 
     def setUp(self):
         self.mesh2 = plask.mesh.Rectilinear2D([1,3,2,1], array([10,20], float))
@@ -55,3 +55,7 @@ class Meshes(unittest.TestCase):
         self.assertEqual( [list(i) for i in m], [[1,10,100], [1,10,200], [1,20,100], [1,20,200],
                                                 [2,10,100], [2,10,200], [2,20,100], [2,20,200],
                                                 [3,10,100], [3,10,200], [3,20,100], [3,20,200]] )
+
+    def testBoundary(self):
+        b = plask.mesh.Rectilinear2D.leftBoundary(self.mesh2)
+        self.assertEqual( [list(i) for i in b], [[1,10], [1,20]] )

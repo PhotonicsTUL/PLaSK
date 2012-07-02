@@ -199,7 +199,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         CompositeChanger& operator()(const Changer* changer);
 
-        /// Delete all holded changers (using delete operator).
+        /// Delete all hold changers (using delete operator).
         ~CompositeChanger();
 
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
@@ -256,7 +256,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     /// Predicate which check if given element is leaf.
     static bool PredicateIsLeaf(const GeometryElement& el) { return el.isLeaf(); }
 
-    /// Predicate which check if given element is identical to other, holded element (given in constructor).
+    /// Predicate which check if given element is identical to other, hold element (given in constructor).
     struct PredicateIsIdenticalTo {
         const GeometryElement& elementToBeEqual;
         PredicateIsIdenticalTo(const GeometryElement& elementToBeEqual): elementToBeEqual(elementToBeEqual) {}

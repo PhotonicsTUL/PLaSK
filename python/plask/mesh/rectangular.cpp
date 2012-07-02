@@ -1,4 +1,5 @@
 #include "../python_globals.h"
+#include "../python_boundary.h"
 #include <algorithm>
 #include <boost/python/stl_iterator.hpp>
 #include <numpy/arrayobject.h>
@@ -303,7 +304,6 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
         .def("__iter__", py::range(&RectilinearMesh1D::begin, &RectilinearMesh1D::end))
     ;
-
     Rectilinear1D_from_Sequence();
 
     py::class_<RectilinearMesh2D, shared_ptr<RectilinearMesh2D>, py::bases<Mesh<2>>>("Rectilinear2D",
@@ -327,9 +327,15 @@ void register_mesh_rectangular()
         .def("index1", &RectilinearMesh2D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
         .def("setOptimalOrdering", &RectilinearMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .def("setOrdering", &RectangularMesh2D__setOrdering<RectilinearMesh2D>, "Set desired ordering of the points in this mesh", (py::arg("ordering")))
+        .add_static_property("leftBoundary", &RectilinearMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions")
+        .add_static_property("rightBoundary", &RectilinearMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
+        .add_static_property("topBoundary", &RectilinearMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
+        .add_static_property("bottomBoundary", &RectilinearMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
         .def(py::self == py::self)
         .def("__iter__", py::range((auto (*)(const plask::RectilinearMesh2D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RectilinearMesh2D& m)->decltype(m.end_fast()))&std::end))
     ;
+    py::implicitly_convertible<RectilinearMesh2D, RectangularMesh2D<RectilinearMesh1D>>();
+    ExportBoundary<RectangularMesh2D<RectilinearMesh1D>>("Rectilinear2D");
 
     py::class_<RectilinearMesh3D, shared_ptr<RectilinearMesh3D>, py::bases<Mesh<3>>>("Rectilinear3D",
         "Two-dimensional mesh\n\n"
@@ -380,7 +386,6 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
         .def("__iter__", py::range(&RegularMesh1D::begin, &RegularMesh1D::end))
     ;
-
     Regular1D_from_Sequence();
 
     py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<Mesh<2>>>("Regular2D",
@@ -402,9 +407,14 @@ void register_mesh_rectangular()
         .def("index1", &RegularMesh2D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
         .def("setOptimalOrdering", &RegularMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .def("setOrdering", &RectangularMesh2D__setOrdering<RegularMesh2D>, "Set desired ordering of the points in this mesh", (py::arg("ordering")))
+        .add_static_property("leftBoundary", &RegularMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions")
+        .add_static_property("rightBoundary", &RegularMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
+        .add_static_property("topBoundary", &RegularMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
+        .add_static_property("bottomBoundary", &RegularMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
         .def(py::self == py::self)
         .def("__iter__", py::range((auto (*)(const plask::RegularMesh2D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RegularMesh2D& m)->decltype(m.end_fast()))&std::end))
     ;
+    ExportBoundary<RectangularMesh2D<RegularMesh1D>>("Regular2D");
 
     py::class_<RegularMesh3D, shared_ptr<RegularMesh3D>, py::bases<Mesh<3>>>("Regular3D",
         "Two-dimensional mesh\n\n"

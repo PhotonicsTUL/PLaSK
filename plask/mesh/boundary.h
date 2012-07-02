@@ -24,9 +24,9 @@ Typically, you should call @c MeshType static methods to obtain value for @ref p
 Example:
 @code
 using namespace plask;
-Boundary<RectilinearMesh2D> boundary;   //stores boundary for mesh of type RectilinearMesh2D
+Boundary<RectilinearMesh2D> boundary;   // stores boundary for mesh of type RectilinearMesh2D
 boundary = RectilinearMesh2D::getLeftBoundary();
-// now boundary represent condition which choose indexes of points on left boundary of any RectilinearMesh2D instance
+// now boundary represents condition which choose indexes of points on left boundary of any RectilinearMesh2D instance
 //...
 RectilinearMesh2D mesh;
 //... (add some points to mesh)
@@ -125,10 +125,10 @@ struct BoundaryImpl {
         /// iterator over indexes of mesh
         typedef BoundaryImpl<MeshType>::iterator iterator;
 
-        /// Logic of holded boundary.
+        /// Logic of hold boundary.
         const BoundaryImpl<MeshType>& boundary;
 
-        /// Holded mesh.
+        /// Hold mesh.
         const MeshType& mesh;
 
         /**
@@ -141,15 +141,15 @@ struct BoundaryImpl {
 
         /**
          * Check if boundary includes point with given index.
-         * @param mesh_index valid index of point in holded mesh
-         * @return @c true only if point with index @p mesh_index in holded mesh lies on boundary
+         * @param mesh_index valid index of point in hold mesh
+         * @return @c true only if point with index @p mesh_index in hold mesh lies on boundary
          */
         bool includes(std::size_t mesh_index) const {
             return boundary.includes(mesh, mesh_index);
         }
 
         /**
-         * Get begin iterator over boundary points (which are defined by indexes in holded mesh).
+         * Get begin iterator over boundary points (which are defined by indexes in hold mesh).
          * @return begin iterator over boundary points
          */
         const_iterator begin() const {
@@ -157,7 +157,7 @@ struct BoundaryImpl {
         }
 
         /**
-         * Get end iterator over boundary points (which are defined by indexes in holded mesh).
+         * Get end iterator over boundary points (which are defined by indexes in hold mesh).
          * @return end iterator over boundary points
          */
         const_iterator end() const {
@@ -218,13 +218,13 @@ struct Boundary: public Holder< const BoundaryImpl<MeshType> > {
      * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
      */
-    WithMesh operator()(const MeshType& mesh) const { return this->holded->get(mesh); }
+    WithMesh operator()(const MeshType& mesh) const { return this->hold->get(mesh); }
 
     /**
      * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
      */
-    WithMesh get(const MeshType& mesh) const { return this->holded->get(mesh); }
+    WithMesh get(const MeshType& mesh) const { return this->hold->get(mesh); }
 };
 
 /**
