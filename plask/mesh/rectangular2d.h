@@ -25,6 +25,9 @@ namespace plask {
 template <typename Mesh1D>
 class RectangularMesh2D: public Mesh<2> {
 
+    static_assert(std::is_floating_point< typename std::remove_reference<decltype(std::declval<Mesh1D>().operator[](0))>::type >::value,
+                  "Mesh1d must have operator[](std::size_t index) which returns floating-point value");
+
     typedef std::size_t index_ft(const RectangularMesh2D<Mesh1D>* mesh, std::size_t c0_index, std::size_t c1_index);
     typedef std::size_t index01_ft(const RectangularMesh2D<Mesh1D>* mesh, std::size_t mesh_index);
 

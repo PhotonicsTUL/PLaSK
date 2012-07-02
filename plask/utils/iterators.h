@@ -155,7 +155,8 @@ struct PolymorphicForwardIterator:
  */
 template <
     typename ContainerType,
-    typename Reference = decltype((((ContainerType*)0)->*(&ContainerType::operator[]))(0)),
+   // typename Reference = decltype((((ContainerType*)0)->*(&ContainerType::operator[]))(0)),
+    typename Reference = decltype(std::declval<ContainerType>()[0]),
     typename Value = typename std::remove_reference<Reference>::type>
 struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
 
@@ -218,7 +219,8 @@ inline IndexedIterator<ContainerType> makeIndexedIterator(ContainerType* c, std:
  * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
  */
 template <typename FunctorType,
-    typename Reference = decltype((((FunctorType*)0)->*(&FunctorType::operator()))(0)),
+    //typename Reference = decltype((((FunctorType*)0)->*(&FunctorType::operator()))(0)),
+    typename Reference = decltype(std::declval<FunctorType>()(0)),
     typename Value = typename std::remove_reference<Reference>::type>
 struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIterator<FunctorType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
 
