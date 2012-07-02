@@ -168,7 +168,7 @@ struct BoundaryImpl {
 
     /**
      * Get boundary with mesh wrapper.
-     * It allow for easier calling of this boundaring methods.
+     * It allows for easier calling of this boundaring methods.
      * @param mesh mesh which should be passed by returnet object as first parameter for each calling to boundaries method
      * @return wrapper for @c this boundary and given @p mesh
      */

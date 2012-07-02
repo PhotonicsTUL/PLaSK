@@ -81,6 +81,21 @@ BOOST_AUTO_TEST_CASE(middle2) {
     BOOST_CHECK_EQUAL(middles.c1, plask::RectilinearMesh1D({3., 5.}));
 }
 
+BOOST_AUTO_TEST_CASE(boundary) {
+    plask::RectilinearMesh2D mesh;
+    mesh.c0.addPointsLinear(0.0, 4.0, 3);
+    mesh.c1.addPointsLinear(2.0, 6.0, 3);
+    auto leftB = plask::RectilinearMesh2D::getLeftBoundary();
+    auto left = leftB(mesh);
+    // auto left = plask::RectilinearMesh2D::getLeftBoundary()(mesh); // WRONG!
+
+    std::vector<std::size_t> indxs(left.begin(), left.end());
+
+    BOOST_CHECK_EQUAL(indxs.size(), 3);
+    BOOST_CHECK_EQUAL(indxs[0], 0);
+    BOOST_CHECK_EQUAL(indxs[1], 3);
+    BOOST_CHECK_EQUAL(indxs[2], 6);
+}
 
 
 BOOST_AUTO_TEST_SUITE_END()
