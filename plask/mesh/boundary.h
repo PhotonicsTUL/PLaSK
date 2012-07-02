@@ -88,7 +88,7 @@ struct BoundaryImpl {
 
     virtual ~BoundaryImpl() {}
 
-    virtual BoundaryImpl<MeshType>* clone() const = 0;
+    //virtual BoundaryImpl<MeshType>* clone() const = 0;
 
     /**
      * Check if boundary includes point with given index.
@@ -203,7 +203,7 @@ struct BoundaryImpl {
  * @ref boundaries
  */
 template <typename MeshType>
-struct Boundary: public Holder< const BoundaryImpl<MeshType> > {
+struct Boundary: public HolderRef< const BoundaryImpl<MeshType> > {
 
     /// Type of boundary-mesh pair which shows points described by boundary in particular mesh.
     typedef typename BoundaryImpl<MeshType>::WithMesh WithMesh;
@@ -212,7 +212,7 @@ struct Boundary: public Holder< const BoundaryImpl<MeshType> > {
      * Construct a boundary which holds given boundary logic.
      * @param to_hold pointer to object which describe boundary logic
      */
-    Boundary(const BoundaryImpl<MeshType>* to_hold = nullptr): Holder< const BoundaryImpl<MeshType> >(to_hold) {}
+    Boundary(const BoundaryImpl<MeshType>* to_hold = nullptr): HolderRef< const BoundaryImpl<MeshType> >(to_hold) {}
 
     /**
      * Get boundary-mesh pair for this boundary and given @p mesh.
@@ -285,9 +285,9 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
             return meshIterator == static_cast<const PredicateIteratorImpl&>(other).meshIterator;
         }
 
-        virtual typename BoundaryImpl<MeshType>::IteratorImpl* clone() const {
+        /*virtual typename BoundaryImpl<MeshType>::IteratorImpl* clone() const {
             return new PredicateIteratorImpl(*this);
-        }
+        }*/
 
     };
 
@@ -300,7 +300,7 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
      */
     PredicateBoundary(Predicate predicate): predicate(predicate) {}
 
-    virtual PredicateBoundary<MeshType, Predicate>* clone() const { return new PredicateBoundary<MeshType, Predicate>(predicate); }
+    //virtual PredicateBoundary<MeshType, Predicate>* clone() const { return new PredicateBoundary<MeshType, Predicate>(predicate); }
 
 private:
     bool check_predicate(const MeshType& mesh, std::size_t mesh_index, typename std::enable_if<is_callable<Predicate, typename MeshType::LocalCoords>::value >::type* = 0) {

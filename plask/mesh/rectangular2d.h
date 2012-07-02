@@ -366,7 +366,7 @@ private:
 
         typedef typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::Iterator Iterator;
 
-        virtual LeftBoundary* clone() const { return new LeftBoundary(); }
+        //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
         bool includes(const RectangularMesh2D<Mesh1D> &mesh, std::size_t mesh_index) const {
             return mesh.index0(mesh_index) == 0;
@@ -398,7 +398,7 @@ private:
 
         typedef typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::Iterator Iterator;
 
-        virtual RightBoundary* clone() const { return new RightBoundary(); }
+        //virtual RightBoundary* clone() const { return new RightBoundary(); }
 
         bool includes(const RectangularMesh2D<Mesh1D> &mesh, std::size_t mesh_index) const {
             return mesh.index0(mesh_index) == mesh.c0.size()-1;
@@ -430,7 +430,7 @@ private:
 
         typedef typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::Iterator Iterator;
 
-        virtual TopBoundary* clone() const { return new TopBoundary(); }
+        //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
         bool includes(const RectangularMesh2D<Mesh1D> &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == 0;
@@ -461,7 +461,7 @@ private:
 
         typedef typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::Iterator Iterator;
 
-        virtual BottomBoundary* clone() const { return new BottomBoundary(); }
+        //virtual BottomBoundary* clone() const { return new BottomBoundary(); }
 
         bool includes(const RectangularMesh2D &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == mesh.c1.size()-1;
@@ -486,15 +486,15 @@ public:
     }
 
     static Boundary<RectangularMesh2D<Mesh1D>> getLeftBoundary() {
-        return Boundary<RectangularMesh2D>(new LeftBoundary());
+        return Boundary<RectangularMesh2D<Mesh1D>>(new LeftBoundary());
     }
 
     static Boundary<RectangularMesh2D<Mesh1D>> getRightBoundary() {
-        return Boundary<RectangularMesh2D>(new RightBoundary());
+        return Boundary<RectangularMesh2D<Mesh1D>>(new RightBoundary());
     }
 
     static Boundary<RectangularMesh2D<Mesh1D>> getTopBoundary() {
-        return Boundary<RectangularMesh2D>(new TopBoundary());
+        return Boundary<RectangularMesh2D<Mesh1D>>(new TopBoundary());
     }
 
     static Boundary<RectangularMesh2D<Mesh1D>> getBottomBoundary() {

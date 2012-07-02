@@ -115,6 +115,32 @@ struct Holder {
 };
 
 /**
+ * Template for base class of object holder. It allow to hold polymorphic class inside one type and use reference counting to delete hold object in proper time.
+ *
+ * Typically, subclasses adds some delegates methods to hold object.
+ * Hold object is stored by pointer, so it can store class derived from T.
+ * Stored object is deleted in destructor when last reference to it is lost.
+ * @tparam T type of class to hold
+ */
+template <typename T>
+struct HolderRef {
+
+    protected:
+
+    /// Hold object. Typically can be nullptr only after move assigment.
+    shared_ptr<T> hold;
+
+    public:
+
+    /**
+     * @brief Construct a holder with given @p hold object.
+     * @param hold object to hold
+     */
+    HolderRef(T* hold): hold(hold) {}
+
+};
+
+/**
  * Copy @a ptr data if is not the only shared_ptr instance managing the current object, i.e. whether ptr.unique() is @c false (ptr.use_count() != 1).
  * @param ptr shared pointer
  * @return @a ptr if ptr.unique() is @c true (ptr.use_count() == 1) or shared_ptr with copy of object managing by @a ptr if ptr.unique() is @c false
