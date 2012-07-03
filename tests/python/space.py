@@ -4,7 +4,7 @@ import unittest
 
 
 import plask, plask.geometry
-
+import plasktest
 
 
 class CalculationSpaces(unittest.TestCase):
@@ -40,3 +40,12 @@ class CalculationSpaces(unittest.TestCase):
         v1 = space.getLeafsPositions(h2)
         v2 = subspace.getLeafsPositions(h2)
         self.assertEqual( space.getLeafsPositions(h2)[0], subspace.getLeafsPositions(h2)[0] )
+
+    def testModule(self):
+        module = plasktest.SpaceTest()
+        r = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
+        s = plask.geometry.Space2DCartesian(r)
+        module.geometry = s
+        self.assertEqual( module.geometry, s )
+        with self.assertRaises(AttributeError):
+            print module.mesh

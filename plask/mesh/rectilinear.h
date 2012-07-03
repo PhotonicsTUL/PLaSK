@@ -59,6 +59,8 @@ class RectilinearMesh2D: public RectangularMesh2D<RectilinearMesh1D> {
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
     RectilinearMesh2D getMidpointsMesh() const;
+
+
 };
 
 /// Three-dimensional rectilinear mesh type
@@ -114,7 +116,6 @@ class RectilinearMesh3D: public RectangularMesh3D<RectilinearMesh1D> {
      */
     RectilinearMesh3D getMidpointsMesh() const;
 };
-
 
 } // namespace  plask
 

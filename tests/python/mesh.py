@@ -5,7 +5,7 @@ import unittest
 from numpy import *
 
 import plask.mesh
-import plasktest as ptest
+import plasktest
 
 
 
@@ -63,4 +63,8 @@ class RectilinearMeshes(unittest.TestCase):
             print i in b
         self.assertIn(0, b)
         self.assertIn(3, b)
-        #self.assertEqual( [list(b), [0, 3] )
+        self.assertEqual( list(b), [0, 3] )
+
+        p = lambda mesh,i: i == 2
+
+

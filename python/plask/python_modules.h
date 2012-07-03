@@ -1,6 +1,8 @@
 #ifndef PLASK__PYTHON_MODULES_H
 #define PLASK__PYTHON_MODULES_H
 
+#include <type_traits>
+
 #include <plask/module.h>
 #include "python_globals.h"
 #include "python_provider.h"
@@ -13,14 +15,18 @@ namespace plask { namespace python {
 
 namespace detail {
 
-    template <typename ModuleT, typename BaseT>
-    struct ExportedModuleDefaultDefs {
+    template <typename ModuleT, typename EnableSpace=void, typename EnableMesh=void>
+    struct ExportedModuleDefaultDefs
+    {
         template <typename PyModule>
         static auto init(PyModule& module) -> PyModule& { return module; }
     };
 
-    template <typename ModuleT>
-    struct ExportedModuleDefaultDefs<ModuleT, ModuleOver<CalculationSpace>> {
+    template <typename ModuleT, typename EnableMesh>
+    struct ExportedModuleDefaultDefs<ModuleT,
+        typename std::enable_if<std::is_base_of<ModuleOver<typename ModuleT::SpaceType>, ModuleT>::value>::type,
+        EnableMesh>
+    {
         template <typename PyModule>
         static auto init(PyModule& module) -> PyModule& {
             module.add_property("geometry", &ModuleT::getGeometry, &ModuleT::setGeometry, "Geometry provided to the module");
@@ -29,7 +35,10 @@ namespace detail {
     };
 
     template <typename ModuleT>
-    struct ExportedModuleDefaultDefs<ModuleT, ModuleWithMesh<CalculationSpace, Mesh<2>>> {
+    struct ExportedModuleDefaultDefs<ModuleT,
+        typename std::enable_if<std::is_base_of<ModuleOver<typename ModuleT::SpaceType>, ModuleT>::value>::type,
+        typename std::enable_if<std::is_base_of<ModuleWithMesh<typename ModuleT::SpaceType, typename ModuleT::MeshType>, ModuleT>::value>::type>
+    {
         template <typename PyModule>
         static auto init(PyModule& module) -> PyModule& {
             module.add_property("geometry", &ModuleT::getGeometry, &ModuleT::setGeometry, "Geometry provided to the module");
@@ -37,16 +46,6 @@ namespace detail {
             return module;
         }
     };
-
-    template <typename ModuleT>
-    struct ExportedModuleDefaultDefs<ModuleT, ModuleWithMesh<CalculationSpace, Mesh<3>>> {
-        template <typename PyModule>
-        static auto init(PyModule& module) -> PyModule& {
-            module.add_property("geometry", &ModuleT::getGeometry, &ModuleT::setGeometry, "Geometry provided to the module");
-            module.add_property("mesh", &ModuleT::getMesh, &ModuleT::setMesh, "Mesh provided to the module");
-        }
-    };
-
 
     template <typename Class, typename ReceiverT>
     struct ReceiverSetter
@@ -59,8 +58,6 @@ namespace detail {
       private:
         ReceiverT Class::* field;
     };
-
-
 
 } // namespace detail
 
@@ -78,7 +75,7 @@ struct ExportModule : public py::class_<ModuleT, shared_ptr<ModuleT>, py::bases<
 
     template <typename... Args>
     ExportModule(Args&&... args) : PyClass(std::forward<Args>(args)...) {
-        detail::ExportedModuleDefaultDefs<ModuleT, typename ModuleT::BASE_MODULE_TYPE>::init(*this);
+        detail::ExportedModuleDefaultDefs<ModuleT>::init(*this);
     }
 
     template <typename ProviderT>

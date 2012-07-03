@@ -414,9 +414,6 @@ class Module {
 
   public:
 
-    /// Base class of this module (used for automatically determining its functionalities in meta-program)
-    typedef Module BASE_MODULE_TYPE;
-
     Module(): initialized(false) {}
 
     /// Virtual destructor (for subclassing). Do nothing.
@@ -510,8 +507,6 @@ class ModuleOver: public Module {
 
   public:
 
-    typedef ModuleOver<CalculationSpace> BASE_MODULE_TYPE;
-
     /// of the space for this module
     typedef SpaceT SpaceType;
 
@@ -567,8 +562,6 @@ class ModuleWithMesh: public ModuleOver<SpaceT> {
     shared_ptr<MeshT> mesh;
 
   public:
-
-    typedef ModuleWithMesh<CalculationSpace, Mesh<SpaceT::DIMS>> BASE_MODULE_TYPE;
 
     /// Type of the mesh for this module
     typedef MeshT MeshType;

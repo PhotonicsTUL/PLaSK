@@ -73,6 +73,24 @@ std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
     return typeid(*material).name();
 }
 
+//// Boundary conditions /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+py::list testBoundaries(const typename plask::RectilinearMesh2D::Boundary& boundary, const plask::RectilinearMesh2D& mesh) {
+    py::list result;
+    for(auto i: boundary(mesh)) {
+        result.append(i);
+    }
+    return result;
+}
+
+
+//// Module with space /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct SpaceTest : plask::ModuleOver<plask::Space2DCartesian> {
+    virtual std::string getName() const { return "Space Test"; }
+};
+
+
 //// Provider & Receiver /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct ReceiverTest : plask::Module {
@@ -101,7 +119,12 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("materialTypeId", &materialTypeId);
 
+    py::def("testBoundaries", &testBoundaries);
+
     plask::python::ExportModule<ReceiverTest>("ReceiverTest")
         .add_receiver("inNeff", &ReceiverTest::inNeff, "Test receiver")
     ;
+
+    plask::python::ExportModule<SpaceTest>("SpaceTest");
+
 }

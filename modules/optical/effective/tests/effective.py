@@ -51,3 +51,6 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.assertAlmostEqual( self.module.computeMode(1.10), 1.1156605)
         self.module.symmetry = "-"
         self.assertAlmostEqual( self.module.computeMode(1.05), 1.0450032)
+
+    def testMesh(self):
+        mesh = self.module.mesh
