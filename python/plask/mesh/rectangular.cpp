@@ -334,7 +334,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
         .def("__iter__", py::range((auto (*)(const plask::RectilinearMesh2D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RectilinearMesh2D& m)->decltype(m.end_fast()))&std::end))
     ;
-    ExportBoundary<RectilinearMesh2D>("Rectilinear2D");
+//     ExportBoundary<RectilinearMesh2D>("Rectilinear2D");
 
     py::class_<RectilinearMesh3D, shared_ptr<RectilinearMesh3D>, py::bases<Mesh<3>>>("Rectilinear3D",
         "Two-dimensional mesh\n\n"

@@ -67,4 +67,4 @@ class RectilinearMeshes(unittest.TestCase):
 
         p = lambda mesh,i: i == 2
 
-
+        self.assertEqual( plasktest.testBoundary(self.mesh2, p), [2] )

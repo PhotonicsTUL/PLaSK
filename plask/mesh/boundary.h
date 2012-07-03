@@ -259,10 +259,10 @@ struct PredicateBoundary: public BoundaryImpl<MeshT> {
 
         using BoundaryImpl<MeshT>::IteratorWithMeshImpl::getMesh;
 
-        decltype(std::begin(getMesh())) meshIterator;
-        decltype(std::end(getMesh())) meshIteratorEnd;
-        //decltype(std::begin(typename MeshT::Boundary::MeshType())) meshIterator;
-        //decltype(std::end(typename MeshT::Boundary::MeshType())) meshIteratorEnd;
+        //decltype(std::begin(getMesh())) meshIterator;
+        //decltype(std::end(getMesh())) meshIteratorEnd;
+        decltype(std::begin(typename MeshT::Boundary::MeshType())) meshIterator;
+        decltype(std::end(typename MeshT::Boundary::MeshType())) meshIteratorEnd;
 
         PredicateIteratorImpl(const BoundaryImpl<MeshT>& boundary, const MeshT& mesh,
                               decltype(std::begin(mesh)) meshIterator):
@@ -291,9 +291,9 @@ struct PredicateBoundary: public BoundaryImpl<MeshT> {
             return meshIterator == static_cast<const PredicateIteratorImpl&>(other).meshIterator;
         }
 
-        /*virtual typename BoundaryImpl<MeshT>::IteratorImpl* clone() const {
+        virtual typename BoundaryImpl<MeshT>::IteratorImpl* clone() const {
             return new PredicateIteratorImpl(*this);
-        }*/
+        }
 
     };
 
@@ -309,7 +309,7 @@ struct PredicateBoundary: public BoundaryImpl<MeshT> {
     //virtual PredicateBoundary<MeshT, Predicate>* clone() const { return new PredicateBoundary<MeshT, Predicate>(predicate); }
 
 private:
-    bool check_predicate(const MeshT& mesh, std::size_t mesh_index) {
+    bool check_predicate(const MeshT& mesh, std::size_t mesh_index) const {
         return predicate(mesh, mesh_index);
     }
 

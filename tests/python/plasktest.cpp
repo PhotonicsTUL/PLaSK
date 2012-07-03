@@ -75,7 +75,7 @@ std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
 
 //// Boundary conditions /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-py::list testBoundaries(const typename plask::RectilinearMesh2D::Boundary& boundary, const plask::RectilinearMesh2D& mesh) {
+py::list testBoundary(const plask::RectilinearMesh2D& mesh, const typename plask::RectilinearMesh2D::Boundary& boundary) {
     py::list result;
     for(auto i: boundary(mesh)) {
         result.append(i);
@@ -119,7 +119,7 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("materialTypeId", &materialTypeId);
 
-    py::def("testBoundaries", &testBoundaries);
+    py::def("testBoundary", &testBoundary);
 
     plask::python::ExportModule<ReceiverTest>("ReceiverTest")
         .add_receiver("inNeff", &ReceiverTest::inNeff, "Test receiver")
