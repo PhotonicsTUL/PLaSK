@@ -37,6 +37,19 @@ BOOST_AUTO_TEST_CASE(dim2) {
     BOOST_CHECK_EQUAL(mesh.empty(), true);
 }
 
+BOOST_AUTO_TEST_CASE(dim2boundary) {
+    plask::RectangularMesh2D<plask::RectilinearMesh1D>::Boundary left_boundary = plask::RectilinearMesh2D::getLeftBoundary();
+    plask::RectilinearMesh2D mesh;
+    mesh.c0.addPointsLinear(1.0, 3.0, 3);   //1.0, 2.0, 3.0
+    mesh.c1.addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
+    auto left_boundary_on_mesh = left_boundary(mesh);
+    std::vector< std::size_t > expected = { 0, 3 };
+    BOOST_CHECK_EQUAL_COLLECTIONS(left_boundary_on_mesh.begin(), left_boundary_on_mesh.end(),
+                                  expected.begin(), expected.end());
+    BOOST_CHECK(left_boundary_on_mesh.includes(0));
+    BOOST_CHECK(!left_boundary_on_mesh.includes(1));
+}
+
 BOOST_AUTO_TEST_CASE(from_geometry_2) {
     // Prepare the geometry
     plask::shared_ptr<plask::StackContainer<2>> stack(new plask::StackContainer<2>);
@@ -88,7 +101,6 @@ BOOST_AUTO_TEST_CASE(boundary) {
     auto leftB = plask::RectilinearMesh2D::getLeftBoundary();
     auto left = leftB(mesh);
     // auto left = plask::RectilinearMesh2D::getLeftBoundary()(mesh); // WRONG!
-
     std::vector<std::size_t> indxs(left.begin(), left.end());
 
     BOOST_CHECK_EQUAL(indxs.size(), 3);

@@ -36,6 +36,9 @@ class RectangularMesh3D: public Mesh<3> {
 
   public:
 
+    /// Boundary type.
+    typedef ::plask::Boundary<RectangularMesh3D<Mesh1D>> Boundary;
+
     /// First coordinate of points in this mesh.
     Mesh1D c0;
 

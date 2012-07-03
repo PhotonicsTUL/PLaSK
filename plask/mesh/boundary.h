@@ -13,9 +13,9 @@ Boundaries are typically used by modules to show points for boundaries condition
 
 @section boundaries_use How to use boundaries?
 Boundaries are specific for given type of mesh.
-Class @ref plask::Boundary "Boundary\<MeshType\>" stores boundary for mesh of type @c MeshType.
-It has @c get method which return @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" instance for mesh given as parameter.
-@ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" represent a set of points (indexes of points in given mesh) and allow for:
+Class MeshType::Boundary (which in most cases is same as @ref plask::Boundary "Boundary\<MeshType\>") stores boundary for mesh of type @c MeshType.
+It has @c get method which return @ref plask::Boundary::WithMesh "MeshType::Boundary::WithMesh" instance for mesh given as parameter.
+@ref plask::Boundary::WithMesh "MeshType::Boundary::WithMesh" represent a set of points (indexes of points in given mesh) and allow for:
 - checking if it includes point with given index (@ref plask::Boundary::WithMesh::includes "includes" method),
 - iterate over represented indexes (has @ref plask::Boundary::WithMesh::begin "begin" and @ref plask::Boundary::WithMesh::end "end" methods).
 
@@ -24,7 +24,7 @@ Typically, you should call @c MeshType static methods to obtain value for @ref p
 Example:
 @code
 using namespace plask;
-Boundary<RectilinearMesh2D> boundary;   // stores boundary for mesh of type RectilinearMesh2D
+RectilinearMesh2D::Boundary boundary;   // stores boundary for mesh of type RectilinearMesh2D
 boundary = RectilinearMesh2D::getLeftBoundary();
 // now boundary represents condition which choose indexes of points on left boundary of any RectilinearMesh2D instance
 //...
@@ -42,7 +42,7 @@ for (std::size_t index: bwm) {  //iterate over boundary points (indexes)
 @endcode
 
 @section boundaries_modules How to use boundaries in modules?
-Modules hold boundary conditions which are pairs of:
+Modules hold @ref plask::BoundaryCondition "boundary conditions" which are pairs of:
 boundary (described by plask::Boundary) and condidion (description depends from type of condition, can be module specific).
 Class plask::BoundaryConditions is container template of such pairs (it depends from both types: mesh and condition).
 So, typically, modules have one or more public fields of type @ref plask::BoundaryConditions "BoundaryConditions\<MeshType, ConditionType>".

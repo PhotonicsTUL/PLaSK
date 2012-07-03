@@ -38,6 +38,9 @@ class RectangularMesh2D: public Mesh<2> {
 
   public:
 
+    /// Boundary type.
+    typedef ::plask::Boundary<RectangularMesh2D<Mesh1D>> Boundary;
+
     /// First coordinate of points in this mesh.
     Mesh1D c0;
 
@@ -481,24 +484,24 @@ public:
     // boundaries:
 
     template <typename Predicate>
-    static Boundary<RectangularMesh2D<Mesh1D>> getBoundary(Predicate predicate) {
-        return Boundary<RectangularMesh2D<Mesh1D>>(new PredicateBoundary<RectangularMesh2D<Mesh1D>, Predicate>(predicate));
+    static Boundary getBoundary(Predicate predicate) {
+        return Boundary(new PredicateBoundary<RectangularMesh2D<Mesh1D>, Predicate>(predicate));
     }
 
-    static Boundary<RectangularMesh2D<Mesh1D>> getLeftBoundary() {
-        return Boundary<RectangularMesh2D<Mesh1D>>(new LeftBoundary());
+    static Boundary getLeftBoundary() {
+        return Boundary(new LeftBoundary());
     }
 
-    static Boundary<RectangularMesh2D<Mesh1D>> getRightBoundary() {
-        return Boundary<RectangularMesh2D<Mesh1D>>(new RightBoundary());
+    static Boundary getRightBoundary() {
+        return Boundary(new RightBoundary());
     }
 
-    static Boundary<RectangularMesh2D<Mesh1D>> getTopBoundary() {
-        return Boundary<RectangularMesh2D<Mesh1D>>(new TopBoundary());
+    static Boundary getTopBoundary() {
+        return Boundary(new TopBoundary());
     }
 
-    static Boundary<RectangularMesh2D<Mesh1D>> getBottomBoundary() {
-        return Boundary<RectangularMesh2D<Mesh1D>>(new BottomBoundary());
+    static Boundary getBottomBoundary() {
+        return Boundary(new BottomBoundary());
     }
 };
 

@@ -13,7 +13,7 @@ struct BoundaryCondition {
     typename MeshT MeshType;    ///< type of mesh
     typename ConditionT ConditionType;  ///< type which describe boundary condition
     
-    Boundary<MeshType> boundary;    ///< Boundary
+    typename MeshType::Boundary boundary;    ///< Boundary
     ConditionType condition;        ///< Condition
 
     /**
