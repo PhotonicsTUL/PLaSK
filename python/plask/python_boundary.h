@@ -11,7 +11,7 @@ namespace plask { namespace python {
 
 namespace py = boost::python;
 
-// Generic declaration of boundary class for a specifie dmesh type
+// Generic declaration of boundary class for a specific mesh type
 template <typename MeshT>
 struct ExportBoundary {
 
@@ -23,18 +23,21 @@ struct ExportBoundary {
 
         ~PythonPredicate() { Py_XDECREF(pyfun); }
 
-        bool operator()(const MeshT& mesh, std::size_t indx) const {
-            py::tuple args = py::make_tuple(mesh, indx);
+        bool operator()(const typename MeshT::Boundary::MeshType& mesh, std::size_t indx) const {
+            const MeshT* pmesh = static_cast<const MeshT*>(&mesh);
+            py::tuple args = py::make_tuple(/*pmesh,*/ indx);
             PyObject* pyresult = PyObject_CallObject(pyfun, args.ptr());
-            bool result;
-            try {
-                result = py::extract<bool>(pyresult);
-                Py_XDECREF(pyresult);
-            } catch (py::error_already_set) {
+            if (pyresult == NULL) throw py::error_already_set();
+            if (!PyBool_Check(pyresult)) {
                 Py_XDECREF(pyresult);
                 throw TypeError("Boundary predicate did not return Boolean value");
+            } else {
+                bool result = pyresult == Py_True;
+                if (result) std::cout << indx << "_";
+                Py_XDECREF(pyresult);
+                return result;
             }
-            return result;
+            return false;
         }
 
         static void* convertible(PyObject* obj) {

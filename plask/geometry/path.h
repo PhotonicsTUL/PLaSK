@@ -176,13 +176,15 @@ struct PathHints {
 /**
  * Path in geometry graph.
  */
-class Path {
+struct Path {
+
+  private:
 
     bool completeToFirst(const GeometryElement& newFirst, const PathHints* hints = nullptr);
 
     bool completeFromLast(const GeometryElement& newLast, const PathHints* hints = nullptr);
 
-public:
+  public:
 
     Path(const std::vector< shared_ptr<const GeometryElement> >& path)
         : elements(path) {}

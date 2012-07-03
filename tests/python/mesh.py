@@ -59,12 +59,9 @@ class RectilinearMeshes(unittest.TestCase):
     def testBoundary(self):
         self.mesh2.setOrdering("10")
         b = plask.mesh.Rectilinear2D.leftBoundary(self.mesh2)
-        for i in range(len(self.mesh2)):
-            print i in b
         self.assertIn(0, b)
+        self.assertNotIn(1, b)
         self.assertIn(3, b)
         self.assertEqual( list(b), [0, 3] )
 
-        p = lambda mesh,i: i == 2
-
-        self.assertEqual( plasktest.testBoundary(self.mesh2, p), [2] )
+        self.assertEqual( plasktest.testBoundary(self.mesh2, lambda mesh,i: i in [2,3]), [2, 3] )

@@ -253,22 +253,18 @@ struct Boundary: public HolderRef< const BoundaryImpl<MeshT> > {
  * @ref boundaries
  */
 template <typename MeshT, typename Predicate>
-struct PredicateBoundary: public BoundaryImpl<typename MeshT::Boundary::MeshType> {
+struct PredicateBoundary: public BoundaryImpl<MeshT> {
 
-    struct PredicateIteratorImpl: public BoundaryImpl<MeshT>::IteratorWithMeshImpl {
+    struct PredicateIteratorImpl: public BoundaryImpl<typename MeshT::Boundary::MeshType>::IteratorWithMeshImpl {
 
-       using BoundaryImpl<typename MeshT::Boundary::MeshType>::IteratorWithMeshImpl::getMesh;
-
-       //decltype(std::begin(getMesh())) meshIterator;
-       //decltype(std::end(getMesh())) meshIteratorEnd;
-       typedef decltype(std::begin(std::declval<typename MeshT::Boundary::MeshType>())) MeshBeginIterator;
-       typedef decltype(std::end(std::declval<typename MeshT::Boundary::MeshType>())) MeshEndIterator;
+       typedef decltype(std::begin(std::declval<MeshT>())) MeshBeginIterator;
+       typedef decltype(std::end(std::declval<MeshT>())) MeshEndIterator;
 
        MeshBeginIterator meshIterator;
        MeshEndIterator meshIteratorEnd;
        std::size_t index;
 
-       PredicateIteratorImpl(const BoundaryImpl<typename MeshT::Boundary::MeshType>& boundary, const MeshT& mesh,
+       PredicateIteratorImpl(const BoundaryImpl<MeshT>& boundary, const MeshT& mesh,
                               MeshBeginIterator meshIterator):
             BoundaryImpl<MeshT>::IteratorWithMeshImpl(boundary, mesh),
             meshIterator(meshIterator),
@@ -280,7 +276,7 @@ struct PredicateBoundary: public BoundaryImpl<typename MeshT::Boundary::MeshType
 
       private:
         bool check_predicate() {
-            return static_cast<const PredicateBoundary&>(this->getBoundary()).predicate(getMesh(), meshIterator.getIndex());
+            return static_cast<const PredicateBoundary&>(this->getBoundary()).predicate(this->getMesh(), meshIterator.getIndex());
         }
 
       public:
@@ -291,11 +287,11 @@ struct PredicateBoundary: public BoundaryImpl<typename MeshT::Boundary::MeshType
             } while (meshIterator != meshIteratorEnd && check_predicate());
         }
 
-        virtual bool equal(const typename BoundaryImpl<typename MeshT::Boundary::MeshType>::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryImpl<MeshT>::IteratorImpl& other) const {
             return meshIterator == static_cast<const PredicateIteratorImpl&>(other).meshIterator;
         }
 
-        virtual typename BoundaryImpl<typename MeshT::Boundary::MeshType>::IteratorImpl* clone() const {
+        virtual typename BoundaryImpl<MeshT>::IteratorImpl* clone() const {
             return new PredicateIteratorImpl(*this);
         }
 
@@ -347,7 +343,7 @@ public:
  */
 template <typename MeshT, typename Predicate>
 inline typename MeshT::Boundary makePredicateBoundary(Predicate predicate) {
-    return typename MeshT::Boundary(new PredicateBoundary<MeshT, Predicate>(predicate));
+    return typename MeshT::Boundary(new PredicateBoundary<typename MeshT::Boundary::MeshType, Predicate>(predicate));
 }
 
 }   // namespace plask
