@@ -14,8 +14,8 @@ struct BoundaryCondition {
     typedef ConditionT ConditionType;  ///< type which describe boundary condition
     typedef typename MeshType::Boundary Boundary;   ///< Boundary type for mesh of type MeshType
     
-    Boundary boundary;    ///< Boundary
-    ConditionType condition;        ///< Condition
+    Boundary boundary;          ///< Boundary
+    ConditionType condition;    ///< Condition
 
     /**
      * Construct boundary-condition pair.
@@ -24,8 +24,8 @@ struct BoundaryCondition {
      */
     template <typename... ConditionArgumentsTypes>
     BoundaryCondition(Boundary&& boundary, ConditionArgumentsTypes&&... conditionsArg)
-        :boundary(std::forward<boundary>(boundary)),
-         condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
+        : boundary(std::forward<Boundary>(boundary)),
+          condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
 
 
 };
@@ -75,6 +75,8 @@ public:
     
     /**
      * Get iterator to element with given @p index.
+     *
+     * This method has linear time complexity.
      * @param[in] index index of element
      * @return iterator to element with given @p index or @c end() if @p index is not valid
      */
@@ -86,6 +88,8 @@ public:
     
     /**
      * Get iterator to element with given @p index.
+     *
+     * This method has linear time complexity.
      * @param[in] index index of element
      * @return iterator to element with given @p index or @c end() if @p index is not valid
      */
@@ -97,23 +101,27 @@ public:
     
     /**
      * Get reference to boundary condition with given @p index.
+     *
+     * This method has linear time complexity.
      * @param index index of element
      * @return reference to boundary condition with given @p index
      * @throw OutOfBoundException if @p index is not valid
      */
-    Element& at(std::size_t index) {
+    Element& operator[](std::size_t index) {
         iterator i = getIteratorForIndex(index);
-        if (i == end()) OutOfBoundException("BoundaryConditions::at", "index");
+        if (i == end()) OutOfBoundException("BoundaryConditions[]", "index");
         return *i;
     }
     
     /**
      * Get const reference to boundary condition with given @p index.
+     *
+     * This method has linear time complexity.
      * @param index index of element
      * @return const reference to boundary condition with given @p index
      * @throw OutOfBoundException if @p index is not valid
      */
-    const Element& at(std::size_t index) const {
+    const Element& operator[](std::size_t index) const {
         const_iterator i = getIteratorForIndex(index);
         if (i == end()) OutOfBoundException("BoundaryConditions::at", "index");
         return *i;
@@ -122,7 +130,7 @@ public:
     /**
      * Add new boundary condidion to this (to end of elements list).
      *
-     * It doesn't invalidate any iterators.
+     * It doesn't invalidate any iterators. It has constant time complexity.
      * @param element boundary condidion to add
      * @return iterator to added element which allow to change or erase added element in future
      */
@@ -134,7 +142,7 @@ public:
     /**
      * Add new boundary condidion to this (to end of elements list).
      *
-     * It doesn't invalidate any iterators.
+     * It doesn't invalidate any iterators. It has constant time complexity.
      * @param boundary boundary
      * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
      * @return iterator to added element which allow to change or erase added element in future
@@ -153,7 +161,7 @@ public:
     /**
      * Remove from list the element point by @p to_erase.
      *
-     * It doesn't invalidate any iterators other than @p to_erase.
+     * It doesn't invalidate any iterators other than @p to_erase. It has constant time complexity.
      * @param to_erase iterator which show element to erase
      */
     void erase(const_iterator to_erase) {
@@ -163,7 +171,7 @@ public:
     /**
      * Remove from list the elements in the range [first, last).
      *
-     * It doesn't invalidate any iterators from outside of deleted range.
+     * It doesn't invalidate any iterators from outside of deleted range. It has linear time complexity depends from length of range.
      * @param first, last range of elements to remove
      */
     void erase(const_iterator first, const_iterator last) {
@@ -176,10 +184,43 @@ public:
      * Do nothing if @p index is not valid.
      *
      * It doesn't invalidate any iterators which not point to deleted element.
+     * It has linear time complexity.
      * @param index index of element to remove
      */
     void erase(std::size_t index) {
         erase(getIteratorForIndex(index));
+    }
+
+    /**
+     * Get number of elements.
+     *
+     * This method has linear time complexity.
+     * @return number of elements
+     */
+    std::size_t size() const {
+        return container.size();
+    }
+
+    /**
+     * Check if this is empty.
+     *
+     * It has constant time complexity.
+     * @return @c true only if this container includes no conditions boundaries
+     */
+    bool empty() const {
+        return container.empty();
+    }
+
+    /**
+     * Check if any boundary includes a @p mesh_index for given @p mesh.
+     * @param mesh mesh
+     * @param mesh_index index in @p mesh
+     * @return element which boundary includes @p mesh_index for given @p mesh or @ref end() if there is no such element
+     */
+    iterator includes(const MeshType& mesh, std::size_t mesh_index) {
+        auto i = begin();
+        while (i != end() && !i->boundary.includes(mesh, mesh_index)) ++i;
+        return i;
     }
 };
 

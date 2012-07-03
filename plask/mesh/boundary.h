@@ -230,6 +230,16 @@ struct Boundary: public HolderRef< const BoundaryImpl<MeshT> > {
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
     WithMesh get(const MeshT& mesh) const { return this->hold->get(mesh); }
+
+    /**
+     * Check if boundary includes point with given index.
+     * @param mesh mesh
+     * @param mesh_index valid index of point in @p mesh
+     * @return @c true only if point with index @p mesh_index in @p mesh lies on boundary
+     */
+    bool includes(const MeshT& mesh, std::size_t mesh_index) const {
+        return this->hold->includes(mesh, mesh_index);
+    }
 };
 
 /**
