@@ -320,6 +320,7 @@ inline typename Mesh<dim>::Iterator makeMeshIterator(IteratorType iter) {
  *  - allow for iterate (has begin() and end() methods) over Vec<dim, double>,
  *  - has size() method which return number of points in mesh.
  */
+//TODO needs getIndex in iterators or another iterator wrapper which calculate this
 template <typename InternalMeshType, int dim>
 struct SimpleMeshAdapter: public Mesh<dim> {
 

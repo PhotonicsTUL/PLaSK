@@ -268,7 +268,10 @@ struct PredicateBoundary: public BoundaryImpl<MeshT> {
                               MeshBeginIterator meshIterator):
             BoundaryImpl<MeshT>::IteratorWithMeshImpl(boundary, mesh),
             meshIterator(meshIterator),
-            meshIteratorEnd(std::end(mesh)) {}
+            meshIteratorEnd(std::end(mesh)) {
+           while (meshIterator != meshIteratorEnd && !check_predicate())
+               ++meshIterator;  //go to first element which fulfill predicate
+       }
 
         virtual std::size_t dereference() const {
             return meshIterator.getIndex();
@@ -284,7 +287,7 @@ struct PredicateBoundary: public BoundaryImpl<MeshT> {
         virtual void increment() {
             do {
                 ++meshIterator;
-            } while (meshIterator != meshIteratorEnd && check_predicate());
+            } while (meshIterator != meshIteratorEnd && !check_predicate());
         }
 
         virtual bool equal(const typename BoundaryImpl<MeshT>::IteratorImpl& other) const {
