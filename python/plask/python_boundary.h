@@ -12,32 +12,24 @@ namespace plask { namespace python {
 namespace py = boost::python;
 
 // Generic declaration of boundary class for a specific mesh type
-template <typename MeshT>
+template <typename MeshType>
 struct ExportBoundary {
 
     struct PythonPredicate {
 
-        PyObject* pyfun;
+        py::object pyfun;
 
-        PythonPredicate(PyObject* fun) : pyfun(fun) { Py_INCREF(pyfun); }
+        PythonPredicate(PyObject* obj) : pyfun(py::object(py::handle<>(py::incref(obj)))) { }
 
-        ~PythonPredicate() { Py_XDECREF(pyfun); }
-
-        bool operator()(const typename MeshT::Boundary::MeshType& mesh, std::size_t indx) const {
-            const MeshT* pmesh = static_cast<const MeshT*>(&mesh);
-            py::tuple args = py::make_tuple(/*pmesh,*/ indx);
-            PyObject* pyresult = PyObject_CallObject(pyfun, args.ptr());
-            if (pyresult == NULL) throw py::error_already_set();
-            if (!PyBool_Check(pyresult)) {
-                Py_XDECREF(pyresult);
+        bool operator()(const MeshType& mesh, std::size_t indx) const {
+            py::object pyresult = pyfun(mesh, indx);
+            bool result;
+            try {
+                result = py::extract<bool>(pyresult);
+            } catch (py::error_already_set) {
                 throw TypeError("Boundary predicate did not return Boolean value");
-            } else {
-                bool result = pyresult == Py_True;
-                if (result) std::cout << indx << "_";
-                Py_XDECREF(pyresult);
-                return result;
             }
-            return false;
+            return result;
         }
 
         static void* convertible(PyObject* obj) {
@@ -45,34 +37,34 @@ struct ExportBoundary {
             return nullptr;
         }
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<typename MeshT::Boundary>*)data)->storage.bytes;
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<typename MeshType::Boundary>*)data)->storage.bytes;
             PythonPredicate predicate(obj);
-            new (storage) typename MeshT::Boundary { makePredicateBoundary<MeshT>(predicate) };
+            new (storage) typename MeshType::Boundary { makePredicateBoundary<MeshType>(predicate) };
             data->convertible = storage;
         }
 
     };
 
-    static typename MeshT::Boundary::WithMesh Boundary__call__(const typename MeshT::Boundary& self, const MeshT& mesh) {
+    static typename MeshType::Boundary::WithMesh Boundary__call__(const typename MeshType::Boundary& self, const MeshType& mesh) {
         return self(mesh);
     }
 
     ExportBoundary(const std::string& name) {
 
-        py::class_<typename MeshT::Boundary::WithMesh, shared_ptr<typename MeshT::Boundary::WithMesh>>((name+"BoundaryInstance").c_str(),
+        py::class_<typename MeshType::Boundary::WithMesh, shared_ptr<typename MeshType::Boundary::WithMesh>>((name+"BoundaryInstance").c_str(),
             ("Boundary specification for particular "+name+" mesh object").c_str(), py::no_init)
-            .def("__contains__", &MeshT::Boundary::WithMesh::includes)
-            .def("__iter__", py::range(&MeshT::Boundary::WithMesh::begin, &MeshT::Boundary::WithMesh::end))
+            .def("__contains__", &MeshType::Boundary::WithMesh::includes)
+            .def("__iter__", py::range(&MeshType::Boundary::WithMesh::begin, &MeshType::Boundary::WithMesh::end))
         ;
 
-        py::class_<typename MeshT::Boundary, shared_ptr<typename MeshT::Boundary>>((name+"Boundary").c_str(),
+        py::class_<typename MeshType::Boundary, shared_ptr<typename MeshType::Boundary>>((name+"Boundary").c_str(),
             ("Generic boundary specification for "+name+"mesh").c_str(), py::no_init)
             .def("__call__", &Boundary__call__, py::arg("mesh"), "Get boundary instance for particular mesh",
                  py::with_custodian_and_ward_postcall<0,1,
                  py::with_custodian_and_ward_postcall<0,2>>())
         ;
 
-        boost::python::converter::registry::push_back(&PythonPredicate::convertible, &PythonPredicate::construct, boost::python::type_id<typename MeshT::Boundary>());
+        boost::python::converter::registry::push_back(&PythonPredicate::convertible, &PythonPredicate::construct, boost::python::type_id<typename MeshType::Boundary>());
     }
 
 };

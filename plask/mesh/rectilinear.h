@@ -13,109 +13,39 @@ This file includes rectilinear meshes for 1d, 2d, and 3d spaces.
 namespace plask {
 
 /// Two-dimensional rectilinear mesh type
-class RectilinearMesh2D: public RectangularMesh2D<RectilinearMesh1D> {
-
-    void buildFromGeometry(const GeometryElementD<2>& geometry);
-
-  public:
-
-    /// Construct an empty mesh
-    RectilinearMesh2D(RectangularMesh2D<RectilinearMesh1D>::IterationOrder iterationOrder = RectangularMesh2D<RectilinearMesh1D>::NORMAL_ORDER) :
-        RectangularMesh2D<RectilinearMesh1D>(iterationOrder) {}
-
-    /**
-     * Construct mesh with is based on given 1D meshes
-     *
-     * @param mesh0 mesh for the first coordinate
-     * @param mesh1 mesh for the second coordinate
-     * @param iterationOrder iteration order
-     */
-    RectilinearMesh2D(const RectilinearMesh1D& mesh0, const RectilinearMesh1D& mesh1,
-                      RectangularMesh2D<RectilinearMesh1D>::IterationOrder iterationOrder = RectangularMesh2D<RectilinearMesh1D>::NORMAL_ORDER) :
-        RectangularMesh2D<RectilinearMesh1D>(mesh0, mesh1, iterationOrder) {}
-
-    /**
-     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
-     * @param geometry geometry in which bounding boxes are searched
-     * @param iterationOrder iteration order
-     */
-    RectilinearMesh2D(const GeometryElementD<2>& geometry, IterationOrder iterationOrder=RectangularMesh2D<RectilinearMesh1D>::NORMAL_ORDER) {
-        buildFromGeometry(geometry);
-        this->setIterationOrder(iterationOrder);
-    }
-
-    /**
-     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
-     * @param geometry geometry in which bounding boxes are searched
-     * @param iterationOrder iteration order
-     */
-    RectilinearMesh2D(shared_ptr<const GeometryElementD<2>> geometry, IterationOrder iterationOrder=RectangularMesh2D<RectilinearMesh1D>::NORMAL_ORDER) {
-        buildFromGeometry(*geometry);
-        this->setIterationOrder(iterationOrder);
-    }
-
-    /**
-     * Return a mesh that enables iterating over middle points of the rectangles
-     * \return new rectilinear mesh with points in the middles of original rectangles
-     */
-    RectilinearMesh2D getMidpointsMesh() const;
-
-
-};
+typedef RectangularMesh2D<RectilinearMesh1D> RectilinearMesh2D;
 
 /// Three-dimensional rectilinear mesh type
-class RectilinearMesh3D: public RectangularMesh3D<RectilinearMesh1D> {
-
-    void buildFromGeometry(const GeometryElementD<3>& geometry);
-
-  public:
-
-    /**
-     * Construct an empty mesh.
-     * @param iterationOrder iteration order
-     */
-    RectilinearMesh3D(RectangularMesh3D<RectilinearMesh1D>::IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_210) :
-        RectangularMesh3D<RectilinearMesh1D>(iterationOrder) {}
-
-    /**
-     * Construct mesh with is based on given 1D meshes
-     *
-     * @param mesh0 mesh for the first coordinate
-     * @param mesh1 mesh for the second coordinate
-     * @param mesh2 mesh for the third coordinate
-     * @param iterationOrder iteration order
-     */
-    RectilinearMesh3D(const RectilinearMesh1D& mesh0, const RectilinearMesh1D& mesh1, const RectilinearMesh1D& mesh2,
-                      RectangularMesh3D<RectilinearMesh1D>::IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_210) :
-        RectangularMesh3D<RectilinearMesh1D>(mesh0, mesh1, mesh2, iterationOrder) {}
+typedef RectangularMesh3D<RectilinearMesh1D> RectilinearMesh3D;
 
 
-    /**
-     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
-     * @param geometry geometry in which bounding boxes are searched
-     * @param iterationOrder iteration order
-     */
-    RectilinearMesh3D(const GeometryElementD<3>& geometry, IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_210) {
-        buildFromGeometry(geometry);
-        this->setIterationOrder(iterationOrder);
-    }
 
-    /**
-     * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
-     * @param geometry geometry in which bounding boxes are searched
-     * @param iterationOrder iteration order
-     */
-    RectilinearMesh3D(shared_ptr<const GeometryElementD<3>> geometry, IterationOrder iterationOrder = RectangularMesh3D<RectilinearMesh1D>::ORDER_210) {
-        buildFromGeometry(*geometry);
-        this->setIterationOrder(iterationOrder);
-    }
+/**
+* Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+* @param geometry geometry in which bounding boxes are searched
+* @param iterationOrder iteration order
+*/
+RectilinearMesh2D RectilinearMeshFromGeometry(const GeometryElementD<2>& geometry, RectilinearMesh2D::IterationOrder iterationOrder=RectilinearMesh2D::NORMAL_ORDER);
 
-    /**
-     * Return a mesh that enables iterating over middle points of the rectangles
-     * \return new rectilinear mesh with points in the middles of original rectangles
-     */
-    RectilinearMesh3D getMidpointsMesh() const;
-};
+/**
+* Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+* @param geometry geometry in which bounding boxes are searched
+* @param iterationOrder iteration order
+*/
+RectilinearMesh2D RectilinearMeshFromGeometry(shared_ptr<const GeometryElementD<2>> geometry, RectilinearMesh2D::IterationOrder iterationOrder=RectilinearMesh2D::NORMAL_ORDER);
+/**
+    * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+    * @param geometry geometry in which bounding boxes are searched
+    * @param iterationOrder iteration order
+    */
+RectilinearMesh3D RectilinearMeshFromGeometry(const GeometryElementD<3>& geometry, RectilinearMesh3D::IterationOrder iterationOrder=RectilinearMesh3D::ORDER_210);
+
+/**
+    * Construct mesh with lines along boundaries of bounding boxes of all leafs in geometry
+    * @param geometry geometry in which bounding boxes are searched
+    * @param iterationOrder iteration order
+    */
+RectilinearMesh3D RectilinearMeshFromGeometry(shared_ptr<const GeometryElementD<3>> geometry, RectilinearMesh3D::IterationOrder iterationOrder=RectilinearMesh3D::ORDER_210);
 
 } // namespace  plask
 

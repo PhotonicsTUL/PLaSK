@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(dim2) {
 }
 
 BOOST_AUTO_TEST_CASE(dim2boundary) {
-    plask::RectangularMesh2D<plask::RectilinearMesh1D>::Boundary left_boundary = plask::RectilinearMesh2D::getLeftBoundary();
+    plask::RectilinearMesh2D::Boundary left_boundary = plask::RectilinearMesh2D::getLeftBoundary();
     plask::RectilinearMesh2D mesh;
     mesh.c0.addPointsLinear(1.0, 3.0, 3);   //1.0, 2.0, 3.0
     mesh.c1.addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(from_geometry_2) {
     stack->push_back(rect2, plask::align::Center());
     stack->push_back(rect3, plask::align::Center());
 
-    plask::RectilinearMesh2D mesh(stack);
+    plask::RectilinearMesh2D mesh = plask::RectilinearMeshFromGeometry(stack);
     BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1D({-2., -1., 1., 2.}));
     BOOST_CHECK_EQUAL(mesh.c1, plask::RectilinearMesh1D({0., 3., 8., 10.}));
 
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(from_geometry_3) {
     stack->push_back(cub2, plask::align::CenterCenter());
     stack->push_back(cub3, plask::align::CenterCenter());
 
-    plask::RectilinearMesh3D mesh(stack);
+    plask::RectilinearMesh3D mesh = plask::RectilinearMeshFromGeometry(stack);
     BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1D({-2., -1., 1., 2.}));
     BOOST_CHECK_EQUAL(mesh.c1, plask::RectilinearMesh1D({-1., 1.}));
     BOOST_CHECK_EQUAL(mesh.c2, plask::RectilinearMesh1D({0., 3., 8., 10.}));

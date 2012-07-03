@@ -334,6 +334,12 @@ class RectangularMesh2D: public Mesh<2> {
         return Box2D(c0[c0index], c1[c1index], c0[c0index+1], c1[c1index+1]);
     }
 
+    /**
+     * Return a mesh that enables iterating over middle points of the rectangles
+     * \return new rectilinear mesh with points in the middles of original rectangles
+     */
+    RectangularMesh2D getMidpointsMesh() const;
+
 private:
 
     // Common code for: left, right, bottom, top boundries:

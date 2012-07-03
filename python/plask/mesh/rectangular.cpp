@@ -260,13 +260,13 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
 
 
 shared_ptr<RectilinearMesh2D> RectilinearMesh2D__init__geometry(const GeometryElementD<2>& geometry, std::string order) {
-    auto mesh = make_shared<RectilinearMesh2D>(geometry);
+    auto mesh = make_shared<RectilinearMesh2D>(RectilinearMeshFromGeometry(geometry));
     RectangularMesh2D__setOrdering(*mesh, order);
     return mesh;
 }
 
 shared_ptr<RectilinearMesh3D> RectilinearMesh3D__init__geometry(const GeometryElementD<3>& geometry, std::string order) {
-    auto mesh = make_shared<RectilinearMesh3D>(geometry);
+    auto mesh = make_shared<RectilinearMesh3D>(RectilinearMeshFromGeometry(geometry));
     RectangularMesh3D__setOrdering(*mesh, order);
     return mesh;
 }

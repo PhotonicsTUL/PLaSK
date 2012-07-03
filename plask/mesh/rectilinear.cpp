@@ -8,19 +8,7 @@ namespace plask {
 template class RectangularMesh2D<RectilinearMesh1D>;
 template class RectangularMesh3D<RectilinearMesh1D>;
 
-void RectilinearMesh2D::buildFromGeometry(const GeometryElementD<2>& geometry) {
-    std::vector<Box2D> boxes = geometry.getLeafsBoundingBoxes();
-
-    for (auto& box: boxes) {
-        c0.addPoint(box.lower.c0);
-        c0.addPoint(box.upper.c0);
-        c1.addPoint(box.lower.c1);
-        c1.addPoint(box.upper.c1);
-    }
-
-    fireChanged();
-}
-
+template<>
 RectilinearMesh2D RectilinearMesh2D::getMidpointsMesh() const {
 
     if (c0.size() < 2 || c1.size() < 2) throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
@@ -36,22 +24,7 @@ RectilinearMesh2D RectilinearMesh2D::getMidpointsMesh() const {
     return RectilinearMesh2D(line0, line1, getIterationOrder());
 }
 
-void RectilinearMesh3D::buildFromGeometry(const GeometryElementD<3>& geometry) {
-    std::vector<Box3D> boxes = geometry.getLeafsBoundingBoxes();
-
-    for (auto& box: boxes) {
-        c0.addPoint(box.lower.c0);
-        c0.addPoint(box.upper.c0);
-        c1.addPoint(box.lower.c1);
-        c1.addPoint(box.upper.c1);
-        c2.addPoint(box.lower.c2);
-        c2.addPoint(box.upper.c2);
-    }
-
-    fireChanged();
-}
-
-
+template<>
 RectilinearMesh3D RectilinearMesh3D::getMidpointsMesh() const {
 
     if (c0.size() < 2 || c1.size() < 2 || c2.size() < 2) throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
@@ -69,6 +42,57 @@ RectilinearMesh3D RectilinearMesh3D::getMidpointsMesh() const {
         line2.addPoint(0.5 * (*a + *b));
 
     return RectilinearMesh3D(line0, line1, line2, getIterationOrder());
+}
+
+
+RectilinearMesh2D RectilinearMeshFromGeometry(const GeometryElementD<2>& geometry, RectilinearMesh2D::IterationOrder iterationOrder)
+{
+    RectilinearMesh2D mesh;
+
+    std::vector<Box2D> boxes = geometry.getLeafsBoundingBoxes();
+
+    for (auto& box: boxes) {
+        mesh.c0.addPoint(box.lower.c0);
+        mesh.c0.addPoint(box.upper.c0);
+        mesh.c1.addPoint(box.lower.c1);
+        mesh.c1.addPoint(box.upper.c1);
+    }
+
+    mesh.setIterationOrder(iterationOrder);
+
+    mesh.fireChanged();
+
+    return mesh;
+}
+
+RectilinearMesh2D RectilinearMeshFromGeometry(shared_ptr<const GeometryElementD<2>> geometry, RectilinearMesh2D::IterationOrder iterationOrder) {
+    return RectilinearMeshFromGeometry(*geometry, iterationOrder);
+}
+
+RectilinearMesh3D RectilinearMeshFromGeometry(const GeometryElementD<3>& geometry, RectilinearMesh3D::IterationOrder iterationOrder)
+{
+    RectilinearMesh3D mesh;
+
+    std::vector<Box3D> boxes = geometry.getLeafsBoundingBoxes();
+
+    for (auto& box: boxes) {
+        mesh.c0.addPoint(box.lower.c0);
+        mesh.c0.addPoint(box.upper.c0);
+        mesh.c1.addPoint(box.lower.c1);
+        mesh.c1.addPoint(box.upper.c1);
+        mesh.c2.addPoint(box.lower.c2);
+        mesh.c2.addPoint(box.upper.c2);
+    }
+
+    mesh.setIterationOrder(iterationOrder);
+
+    mesh.fireChanged();
+
+    return mesh;
+}
+
+RectilinearMesh3D RectilinearMeshFromGeometry(shared_ptr<const GeometryElementD<3>> geometry, RectilinearMesh3D::IterationOrder iterationOrder) {
+    return RectilinearMeshFromGeometry(*geometry, iterationOrder);
 }
 
 } // namespace plask
