@@ -38,16 +38,16 @@ BOOST_AUTO_TEST_CASE(dim2) {
 }
 
 BOOST_AUTO_TEST_CASE(dim2boundary) {
-    plask::RectilinearMesh2D::Boundary left_boundary = plask::RectilinearMesh2D::getLeftBoundary();
+    plask::RectilinearMesh2D::Boundary right_boundary = plask::RectilinearMesh2D::getRightBoundary();
     plask::RectilinearMesh2D mesh;
     mesh.c0.addPointsLinear(1.0, 3.0, 3);   //1.0, 2.0, 3.0
     mesh.c1.addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
-    auto left_boundary_on_mesh = left_boundary(mesh);
-    std::vector< std::size_t > expected = { 0, 3 };
-    BOOST_CHECK_EQUAL_COLLECTIONS(left_boundary_on_mesh.begin(), left_boundary_on_mesh.end(),
-                                  expected.begin(), expected.end());
-    BOOST_CHECK(left_boundary_on_mesh.includes(0));
-    BOOST_CHECK(!left_boundary_on_mesh.includes(1));
+    auto right_boundary_on_mesh = right_boundary(mesh);
+    std::size_t expected[2] = { 2, 5 };
+    BOOST_CHECK_EQUAL_COLLECTIONS(right_boundary_on_mesh.begin(), right_boundary_on_mesh.end(),
+                                  std::begin(expected), std::end(expected));
+    BOOST_CHECK(right_boundary_on_mesh.includes(2));
+    BOOST_CHECK(!right_boundary_on_mesh.includes(1));
 }
 
 BOOST_AUTO_TEST_CASE(from_geometry_2) {
@@ -107,6 +107,15 @@ BOOST_AUTO_TEST_CASE(boundary) {
     BOOST_CHECK_EQUAL(indxs[0], 0);
     BOOST_CHECK_EQUAL(indxs[1], 3);
     BOOST_CHECK_EQUAL(indxs[2], 6);
+
+    auto only_index_24 = plask::makePredicateBoundary<plask::RectilinearMesh2D>(
+                [](const plask::RectilinearMesh2D& mesh, std::size_t index) -> bool { return index == 2 || index == 4; }
+    );
+    std::size_t expected[2] = { 2, 4 };
+    auto pred_bound_with_mesh = only_index_24(mesh);
+    BOOST_CHECK_EQUAL_COLLECTIONS(pred_bound_with_mesh.begin(), pred_bound_with_mesh.end(),
+                                  std::begin(expected), std::end(expected));
+
 }
 
 

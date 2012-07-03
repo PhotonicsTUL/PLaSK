@@ -249,6 +249,7 @@ struct Boundary: public HolderRef< const BoundaryImpl<MeshType> > {
  * - std::size_t index (index in mesh)
  * @ref boundaries
  */
+//TODO predykat powinien być na iterator po siatce
 template <typename MeshType, typename Predicate>
 struct PredicateBoundary: public BoundaryImpl<MeshType> {
 
@@ -266,8 +267,8 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
             BoundaryImpl<MeshType>::IteratorWithMeshImpl(boundary, mesh),
             meshIterator(meshIterator),
             meshIteratorEnd(std::end(mesh)) {
-           while (meshIterator != meshIteratorEnd && !check_predicate())
-               ++meshIterator;  //go to first element which fulfill predicate
+           while (this->meshIterator != meshIteratorEnd && !check_predicate())
+               ++this->meshIterator;  //go to first element which fulfill predicate
        }
 
         virtual std::size_t dereference() const {
