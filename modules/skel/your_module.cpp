@@ -3,8 +3,7 @@
 namespace plask { namespace modules { namespace your_module {
 
 void YourModule::compute(double parameter) {
-    // The code of this method probably should be in cpp file...
-    // But below we show some key elements
+    // Below we show some key elements of the computational methods
     initCalculation(); // This must be called before any calculation!
     writelog(LOG_INFO, "Begining calculation of something");
     auto temperature = inTemperature(*mesh); // Obtain temperature from some other module

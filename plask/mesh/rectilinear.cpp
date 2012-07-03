@@ -65,10 +65,6 @@ RectilinearMesh2D RectilinearMeshFromGeometry(const GeometryElementD<2>& geometr
     return mesh;
 }
 
-RectilinearMesh2D RectilinearMeshFromGeometry(shared_ptr<const GeometryElementD<2>> geometry, RectilinearMesh2D::IterationOrder iterationOrder) {
-    return RectilinearMeshFromGeometry(*geometry, iterationOrder);
-}
-
 RectilinearMesh3D RectilinearMeshFromGeometry(const GeometryElementD<3>& geometry, RectilinearMesh3D::IterationOrder iterationOrder)
 {
     RectilinearMesh3D mesh;
@@ -89,10 +85,6 @@ RectilinearMesh3D RectilinearMeshFromGeometry(const GeometryElementD<3>& geometr
     mesh.fireChanged();
 
     return mesh;
-}
-
-RectilinearMesh3D RectilinearMeshFromGeometry(shared_ptr<const GeometryElementD<3>> geometry, RectilinearMesh3D::IterationOrder iterationOrder) {
-    return RectilinearMeshFromGeometry(*geometry, iterationOrder);
 }
 
 } // namespace plask
