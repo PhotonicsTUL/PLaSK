@@ -10,10 +10,11 @@ namespace plask {
 /// One boundary-condition pair.
 template <typename MeshT, typename ConditionT>
 struct BoundaryCondition {
-    typename MeshT MeshType;    ///< type of mesh
-    typename ConditionT ConditionType;  ///< type which describe boundary condition
+    typedef MeshT MeshType;    ///< type of mesh
+    typedef ConditionT ConditionType;  ///< type which describe boundary condition
+    typedef typename MeshType::Boundary Boundary;   ///< Boundary type for mesh of type MeshType
     
-    typename MeshType::Boundary boundary;    ///< Boundary
+    Boundary boundary;    ///< Boundary
     ConditionType condition;        ///< Condition
 
     /**
@@ -38,19 +39,20 @@ struct BoundaryCondition {
 template <typename MeshT, typename ConditionT>
 struct BoundaryConditions
 {
-    typename MeshT MeshType;    ///< type of mesh
-    typename ConditionT ConditionType;  ///< type which describe boundary condition
+    typedef MeshT MeshType;    ///< type of mesh
+    typedef ConditionT ConditionType;  ///< type which describe boundary condition
+    typedef typename MeshType::Boundary Boundary;   ///< Boundary type for mesh of type MeshType
 
     /// One boundary-condition pair.
-    typename BoundaryCondition<MeshType, ConditionType> Element;
+    typedef BoundaryCondition<MeshType, ConditionType> Element;
 
 private:
     typedef std::list<Element> elements_container_t;    //std::list to not invalidate iterators on add/erase
     elements_container_t container;
     
 public:
-    typedef elements_container_t::iterator iterator;
-    typedef elements_container_t::const_iterator const_iterator;
+    typedef typename elements_container_t::iterator iterator;
+    typedef typename elements_container_t::const_iterator const_iterator;
 
     iterator begin() { return container.begin(); }
     const_iterator begin() const { return container.begin(); }
@@ -69,7 +71,7 @@ public:
      * @param args arguments to delegate
      */
     template <typename... ArgsTypes>
-    BoundaryConditions(ArgsTypes&& args): container(std::forward<ArgsTypes>(args)...) {}
+    BoundaryConditions(ArgsTypes&&... args): container(std::forward<ArgsTypes>(args)...) {}
     
     /**
      * Get iterator to element with given @p index.
