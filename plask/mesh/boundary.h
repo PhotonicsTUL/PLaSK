@@ -257,15 +257,19 @@ struct PredicateBoundary: public BoundaryImpl<typename MeshT::Boundary::MeshType
 
     struct PredicateIteratorImpl: public BoundaryImpl<MeshT>::IteratorWithMeshImpl {
 
-        using BoundaryImpl<typename MeshT::Boundary::MeshType>::IteratorWithMeshImpl::getMesh;
+       using BoundaryImpl<typename MeshT::Boundary::MeshType>::IteratorWithMeshImpl::getMesh;
 
-        //decltype(std::begin(getMesh())) meshIterator;
-        //decltype(std::end(getMesh())) meshIteratorEnd;
-        decltype(std::begin(typename MeshT::Boundary::MeshType())) meshIterator;
-        decltype(std::end(typename MeshT::Boundary::MeshType())) meshIteratorEnd;
+       //decltype(std::begin(getMesh())) meshIterator;
+       //decltype(std::end(getMesh())) meshIteratorEnd;
+       typedef decltype(std::begin(std::declval<typename MeshT::Boundary::MeshType>())) MeshBeginIterator;
+       typedef decltype(std::end(std::declval<typename MeshT::Boundary::MeshType>())) MeshEndIterator;
 
-        PredicateIteratorImpl(const BoundaryImpl<typename MeshT::Boundary::MeshType>& boundary, const MeshT& mesh,
-                              decltype(std::begin(mesh)) meshIterator):
+       MeshBeginIterator meshIterator;
+       MeshEndIterator meshIteratorEnd;
+       std::size_t index;
+
+       PredicateIteratorImpl(const BoundaryImpl<typename MeshT::Boundary::MeshType>& boundary, const MeshT& mesh,
+                              MeshBeginIterator meshIterator):
             BoundaryImpl<MeshT>::IteratorWithMeshImpl(boundary, mesh),
             meshIterator(meshIterator),
             meshIteratorEnd(std::end(mesh)) {}
@@ -276,7 +280,7 @@ struct PredicateBoundary: public BoundaryImpl<typename MeshT::Boundary::MeshType
 
       private:
         bool check_predicate() {
-            return static_cast<PredicateBoundary&>(this->getBoundary()).predicate(getMesh(), meshIterator->getIndex());
+            return static_cast<const PredicateBoundary&>(this->getBoundary()).predicate(getMesh(), meshIterator.getIndex());
         }
 
       public:

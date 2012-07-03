@@ -92,6 +92,10 @@ struct OnePoint3DMesh: public plask::Mesh<3> {
             return new IteratorImpl(mesh_ptr);
         }
 
+        virtual std::size_t getIndex() const {
+            return 0;
+        }
+
     };
 
     //plask::Mesh<3> methods implementation:
@@ -149,10 +153,10 @@ struct Mesh {
     typedef Vec<dim, double> LocalCoords;
 
     /// Base class for mesh iterator implementation.
-    typedef PolymorphicForwardIteratorImpl<LocalCoords, const LocalCoords> IteratorImpl;
+    typedef PolymorphicForwardIteratorWithIndexImpl<LocalCoords, const LocalCoords> IteratorImpl;
 
     /// Mesh iterator type.
-    typedef PolymorphicForwardIterator<IteratorImpl> Iterator;
+    typedef PolymorphicForwardIteratorWithIndex<IteratorImpl> Iterator;
 
     // To be more compatibile with STL:
     typedef Iterator iterator;
@@ -273,6 +277,10 @@ struct MeshIteratorWrapperImpl: public Mesh<dim>::IteratorImpl {
 
     virtual MeshIteratorWrapperImpl<const_internal_iterator_t, dim>* clone() const {
         return new MeshIteratorWrapperImpl<const_internal_iterator_t, dim>(internal_iterator);
+    }
+
+    virtual std::size_t getIndex() const {
+        return internal_iterator.getIndex();
     }
 
 };

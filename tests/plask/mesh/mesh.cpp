@@ -40,6 +40,10 @@ BOOST_AUTO_TEST_CASE(Mesh) {
                 return new IteratorImpl(mesh_ptr);
             }
 
+            std::size_t getIndex() const {
+                return 0;
+            }
+
         };
 
         //plask::Mesh<plask::space::Cartesian3D> methods implementation:
@@ -66,12 +70,12 @@ BOOST_AUTO_TEST_CASE(Mesh) {
     BOOST_CHECK(it == mesh.end());
 }
 
-BOOST_AUTO_TEST_CASE(SimpleMeshAdapter) {
+/*BOOST_AUTO_TEST_CASE(SimpleMeshAdapter) {
     // Create 3d mesh which uses the std::vector of 3d points as internal representation:
     plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, 3 > mesh;
     mesh.internal.push_back(plask::vec(1.0, 1.2, 3.0));
     mesh->push_back(plask::vec(3.0, 4.0, 0.0));
     BOOST_CHECK_EQUAL(mesh.size(), 2);
-}
+}*/
 
 BOOST_AUTO_TEST_SUITE_END()

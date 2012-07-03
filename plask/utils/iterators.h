@@ -13,15 +13,10 @@ This file includes iterators utils.
 namespace plask {
 
 /**
-Base class for forward, polymorphic iterators implementations.
-@tparam ValueT Type to iterate over.
-@tparam ReferenceT Type returned by dereference operation.
-Note that default type is not good if dereference returns temporary object.
-In such case <code>const ValueT</code> can be a better choice.
-*/
+ * Base class for other  PolymorphicForwardIteratorImpl, should not be used directly.
+ */
 template <typename ValueT, typename ReferenceT = ValueT&>
-struct PolymorphicForwardIteratorImpl {
-
+struct PolymorphicForwardIteratorImplBase {
     // some typedefs compatibile with stl:
 
     /// Type of elements pointed by the iterator.
@@ -36,7 +31,22 @@ struct PolymorphicForwardIteratorImpl {
     /// Iterate to next value.
     virtual void increment() = 0;
 
+    /// Virtual destructor, do nothing.
+    virtual ~PolymorphicForwardIteratorImplBase() {}
+};
+
+/**
+Base class for forward, polymorphic iterators implementations.
+@tparam ValueT Type to iterate over.
+@tparam ReferenceT Type returned by dereference operation.
+Note that default type is not good if dereference returns temporary object.
+In such case <code>const ValueT</code> can be a better choice.
+*/
+template <typename ValueT, typename ReferenceT = ValueT&>
+struct PolymorphicForwardIteratorImpl: public PolymorphicForwardIteratorImplBase<ValueT, ReferenceT> {
+
     /**
+     * Check if this is equal to @p other.
      * @return true only if this is equal to @a other
      */
     virtual bool equal(const PolymorphicForwardIteratorImpl& other) const = 0;
@@ -54,9 +64,37 @@ struct PolymorphicForwardIteratorImpl {
      * @return clone of @c *this, reserved by @a new operator (clone caller must trust to delete it)
      */
     virtual PolymorphicForwardIteratorImpl<ValueT, ReferenceT>* clone() const = 0;
+};
 
-    //Do nothing.
-    virtual ~PolymorphicForwardIteratorImpl() {}
+/**
+Base class for forward, polymorphic iterators implementations which allow to get index of current position.
+
+It is simillar to PolymorphicForwardIteratorImpl but has getIndex method.
+@tparam ValueT Type to iterate over.
+@tparam ReferenceT Type returned by dereference operation.
+Note that default type is not good if dereference returns temporary object.
+In such case <code>const ValueT</code> can be a better choice.
+*/
+template <typename ValueT, typename ReferenceT = ValueT&>
+struct PolymorphicForwardIteratorWithIndexImpl: public PolymorphicForwardIteratorImplBase<ValueT, ReferenceT> {
+
+    /**
+     * Get index for current iterator state.
+     * @return index for current iterator state
+     */
+    virtual std::size_t getIndex() const = 0;
+
+    /**
+     * Check if this is equal to @p other.
+     * @return true only if this is equal to @a other
+     */
+    virtual bool equal(const PolymorphicForwardIteratorWithIndexImpl& other) const = 0;
+
+    /**
+     * Clone this iterator.
+     * @return clone of @c *this, reserved by @a new operator (clone caller must trust to delete it)
+     */
+    virtual PolymorphicForwardIteratorWithIndexImpl<ValueT, ReferenceT>* clone() const = 0;
 };
 
 /**
@@ -75,6 +113,7 @@ struct PolymorphicForwardIterator:
         typename ImplT::reference
     > {
 
+    protected:
     ImplT* impl;
 
     public:
@@ -82,7 +121,7 @@ struct PolymorphicForwardIterator:
     /**
      * Construct iterator which hold given implementation object.
      * @param impl Implementation object. It will be delete by constructor of this.
-     *             If it is @c nullptr you should not call any methods of this before assign
+     *             If it is @c nullptr you should not call any methods of this before assign.
      */
     PolymorphicForwardIterator(ImplT* impl = nullptr): impl(impl) {}
 
@@ -118,6 +157,33 @@ struct PolymorphicForwardIterator:
 
     //TODO use advance?
 };
+
+/**
+Polymorphic, forward iterator which allow to get index of current position.
+
+Hold and delegate all calls to implementation object which is a instantiation of PolymorphicForwardIteratorWithIndexImpl template.
+
+@tparam ImplT instantiation of PolymorphicForwardIteratorWithIndexImpl
+*/
+template <typename ImplT>
+struct PolymorphicForwardIteratorWithIndex: public PolymorphicForwardIterator<ImplT> {
+
+    /**
+     * Construct iterator which hold given implementation object.
+     * @param impl Implementation object. It will be delete by constructor of this.
+     *             If it is @c nullptr you should not call any methods of this before assign.
+     */
+    PolymorphicForwardIteratorWithIndex(ImplT* impl = nullptr): PolymorphicForwardIterator<ImplT>(impl) {}
+
+    /**
+     * Get index for current iterator state.
+     * @return index for current iterator state
+     */
+    std::size_t getIndex() const {
+        return this->impl->getIndex();
+    }
+};
+
 
 /**
  * Template to create iterators for containers which have operator[].
@@ -160,13 +226,13 @@ template <
     typename Value = typename std::remove_reference<Reference>::type>
 struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
 
-    ///Pointer to container over which we iterate.
+    /// Pointer to container over which we iterate.
     ContainerType* container;
 
-    ///Current iterator position (index).
+    /// Current iterator position (index).
     std::size_t index;
 
-    ///Construct uninitialized iterator. Don't use it before initialization.
+    /// Construct uninitialized iterator. Don't use it before initialization.
     IndexedIterator() {}
 
     /**
@@ -175,6 +241,12 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
      * @param index index in @a container
      */
     IndexedIterator(ContainerType* container, std::size_t index): container(container), index(index) {}
+
+    /**
+     * Get current iterator position (index).
+     * @return current iterator position (index)
+     */
+    std::size_t getIndex() const { return index; }
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
@@ -195,8 +267,6 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
     std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
 
     Reference dereference() const { return (*container)[index]; }
-
-    std::size_t getIndex() const { return index; }
 
 };
 
@@ -224,10 +294,10 @@ template <typename FunctorType,
     typename Value = typename std::remove_reference<Reference>::type>
 struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIterator<FunctorType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
 
-    ///Functor
+    /// Functor
     FunctorType functor;
 
-    ///Current iterator position (index).
+    /// Current iterator position (index).
     std::size_t index;
 
     /**
@@ -236,6 +306,12 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
      * @param index index for which this iterator should refere, argument for functor
      */
     FunctorIndexedIterator(FunctorType functor, std::size_t index): functor(functor), index(index) {}
+
+    /**
+     * Get current iterator position (index).
+     * @return current iterator position (index)
+     */
+    std::size_t getIndex() const { return index; }
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
@@ -255,9 +331,7 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
     template <typename OtherT>
     std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
 
-    Reference dereference() const { return functor(index); }
-
-    std::size_t getIndex() const { return index; }
+    Reference dereference() const { return functor(index); }    
 
 };
 
