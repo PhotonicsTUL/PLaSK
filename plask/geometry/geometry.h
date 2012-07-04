@@ -31,32 +31,38 @@ Geometry can be read from an XML content (for details about reading XML see @ref
 Example of XML which describes geometry:
 \code{.xml}
 <geometry axes="xy">
-    <container2d name="trans_cont">
-        <rectangle x="5" y="3" name="block_5_3" material="exampleMaterial"/>
-        <child x="3" y="3">
+    <cartesian2d name="cartesian geometry" length="2">
+        <container2d name="trans_cont">
+            <rectangle x="5" y="3" name="block_5_3" material="exampleMaterial"/>
+            <child x="3" y="3">
+                <ref name="block_5_3"/>
+            </child>
+        </container2d>
+    </cartesian2d>
+    <cylindrical name="cylindrical geometry">
+        <stack2d repeat="4" name="mystack">
             <ref name="block_5_3"/>
-        </child>
-    </container2d>
-    <stack2d repeat="4" name="mystack">
-        <ref name="block_5_3"/>
-        <child x="-5">
-            <ref name="c1"/>
-        </child>
-        <rectangle x="8" y="12" material="exampleMaterial"/>
-    </stack2D>
+            <child x="-5">
+                <ref name="c1"/>
+            </child>
+            <rectangle x="8" y="12" material="exampleMaterial"/>
+        </stack2D>
+     </cylindrical>
 </geometry>
 \endcode
 
-Above XML describes geometry in 2D space, which includes two containers.
+Above XML describes 2 geometries, each is in 2D space, and each includes one container.
+First geometry is cartesian, has name "cartesian geometry", and length equal to 2.
+Second geometry is cylindrical and has name "cylindrical geometry".
 
-First container (described by the \c container2D tag), has name "trans_cont" (see \c name attribute) and has 2 (identical) children.
+Container in first geometry (described by the \c container2D tag), has name "trans_cont" (see \c name attribute) and has 2 (identical) children.
 They are actually the same rectangular block (\c rectangle tag) with name "block_5_3" and size 5x3 (see \c x and \c y attributes).
 Its first instance is locates at point (0, 0) (which is a default), and the second one is located at point (3, 3) (which is given in the \c child tag attributes).
 Second appearance of the block in container is given by the \c ref tag.
 This tag represents reference to an ealier defined element and it requires only one attribute,
 namely the name of the element which was earlier defined.
 
-Second container is described by a tag \c stack2D and is named "mystack". Because it has a \c repeat attribute it will be
+Container in second geometry is described by a tag \c stack2D and is named "mystack". Because it has a \c repeat attribute it will be
 represented by an object of class plask::MultiStackContainer. This container has two children:
 earlier defined elements with names "block_5_3" and "c1" (the second one is translated inside "mystack" in x direction by -5),
 and a block with size 8x12.

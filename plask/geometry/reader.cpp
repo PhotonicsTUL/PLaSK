@@ -73,24 +73,29 @@ shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
 }
 
 shared_ptr<Geometry> GeometryReader::readGeometry() {
+    ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     std::string nodeName = source.getNodeName();
     std::string name = source.requireAttribute("name");
-    std::string src = source.requireAttribute("over");
+//    std::string src = source.requireAttribute("over");
     shared_ptr<Geometry> result;
-    if (nodeName == "cartesian") {    //TODO register with space names(?)
+    if (nodeName == "cartesian" || nodeName == "cartesian2d") {    //TODO register with space names(?)
         boost::optional<double> l = source.getAttribute<double>("length");
-        result = l ?
-            make_shared<Geometry2DCartesian>(manager.requireElement< GeometryElementD<2> >(src), *l) :
-            make_shared<Geometry2DCartesian>(manager.requireElement< Extrusion >(src));
+        if (l) {
+            SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
+            result = make_shared<Geometry2DCartesian>(readExactlyOneChild< GeometryElementD<2> >(), *l);
+        } else {
+            result = make_shared<Geometry2DCartesian>(readExactlyOneChild< Extrusion >());
+        }
     } else
     if (nodeName == "cylindrical") {
-        result = make_shared<Geometry2DCylindrical>(manager.requireElement< GeometryElementD<2> >(src));
+        SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
+        result = make_shared<Geometry2DCylindrical>(readExactlyOneChild< GeometryElementD<2> >());
     } else
         throw XMLUnexpectedElementException("space tag (cartesian or cylindrical)");
 
     result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
 
-    manager.calculationSpaces[name] = result;
+    manager.geometries[name] = result;
     return result;
 }
 

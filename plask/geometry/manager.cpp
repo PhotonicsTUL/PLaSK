@@ -35,8 +35,8 @@ shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &n
 }
 
 shared_ptr<Geometry> GeometryManager::getGeometry(const std::string& name) const {
-    auto result_it = calculationSpaces.find(name);
-    return result_it == calculationSpaces.end() ? shared_ptr<Geometry>() : result_it->second;
+    auto result_it = geometries.find(name);
+    return result_it == geometries.end() ? shared_ptr<Geometry>() : result_it->second;
 }
 
 void GeometryManager::loadGeometryFromReader(GeometryReader& reader) {
@@ -50,7 +50,8 @@ void GeometryManager::loadGeometryFromReader(GeometryReader& reader) {
                     throw XMLUnexpectedElementException("end of \"geometry\" tag");
                 return;  //end of geometry
             case XMLReader::NODE_ELEMENT:
-                roots.push_back(reader.readElement());
+                //roots.push_back(reader.readElement());
+                reader.readGeometry();
                 break;
             case XMLReader::NODE_COMMENT:
                 break;   //just ignore
@@ -61,7 +62,7 @@ void GeometryManager::loadGeometryFromReader(GeometryReader& reader) {
     throw XMLUnexpectedEndException();
 }
 
-void GeometryManager::loadSpacesFromReader(GeometryReader& reader) {
+/*void GeometryManager::loadSpacesFromReader(GeometryReader& reader) {
     if (reader.source.getNodeType() != XMLReader::NODE_ELEMENT || reader.source.getNodeName() != std::string("spaces"))
         return; //space are optional
     GeometryReader::ReadAxisNames read_axis_tag(reader);
@@ -81,7 +82,7 @@ void GeometryManager::loadSpacesFromReader(GeometryReader& reader) {
         }
     }
     throw XMLUnexpectedEndException();
-}
+}*/
 
 void GeometryManager::loadFromReader(XMLReader &XMLreader, const MaterialsDB& materialsDB) {
     GeometryReader reader(*this, XMLreader, materialsDB);

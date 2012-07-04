@@ -38,10 +38,10 @@ struct GeometryManager {
     std::map<std::string, weak_ptr<GeometryElement> > namedElements;
 
     /// Roots elements.
-    std::vector< shared_ptr<GeometryElement> > roots;
+    //std::vector< shared_ptr<GeometryElement> > roots;
 
-    /// Calculation spaces by name.
-    std::map<std::string, shared_ptr<Geometry> > calculationSpaces;
+    /// Geometries (calculation spaces) by name.
+    std::map<std::string, shared_ptr<Geometry> > geometries;
 
     /**
      * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
@@ -75,10 +75,10 @@ struct GeometryManager {
     template <typename RequiredElementType>
     shared_ptr<RequiredElementType> getElement(const std::string& name) const;
 
-    shared_ptr<GeometryElement> getRootElement(const std::size_t index) const { return roots[index]; }
+    //shared_ptr<GeometryElement> getRootElement(const std::size_t index) const { return roots[index]; }
 
-    template <typename RequiredElementType>
-    shared_ptr<RequiredElementType> getRootElement(const std::size_t index) const;
+    //template <typename RequiredElementType>
+    //shared_ptr<RequiredElementType> getRootElement(const std::size_t index) const;
 
     /**
      * Get element with given name or throw exception if element with given name does not exist.
@@ -206,7 +206,7 @@ inline shared_ptr<GeometryElement> GeometryManager::getElement<GeometryElement>(
 }
 
 //specialization for most types
-template <typename RequiredElementType>
+/*template <typename RequiredElementType>
 inline shared_ptr<RequiredElementType> GeometryManager::getRootElement(const std::size_t index) const {
     return dynamic_pointer_cast<RequiredElementType>(getRootElement(index));
 }
@@ -215,7 +215,7 @@ inline shared_ptr<RequiredElementType> GeometryManager::getRootElement(const std
 template <>
 inline shared_ptr<GeometryElement> GeometryManager::getRootElement<GeometryElement>(const std::size_t index) const {
     return getRootElement(index);
-}
+}*/
 
 //specialization for most types
 template <typename RequiredElementType>

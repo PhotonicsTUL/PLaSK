@@ -215,7 +215,8 @@ GeometryTreeModel::~GeometryTreeModel() {
 
 void GeometryTreeModel::refresh(Document& document) {
     delete rootItem;
-    rootItem = new GeometryTreeItem(document.manager.roots, this);
+    //TODO
+    //rootItem = new GeometryTreeItem(document.manager.roots, this);
     reset();
 }
 
