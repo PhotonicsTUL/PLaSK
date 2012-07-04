@@ -43,7 +43,7 @@ std::string format(const std::string& msg, T&&... args) {
 
 
 /**
- * Convert something number to a prettier string
+ * Convert something to pretty string
  * @param x value to convert
  */
 template <typename T>
@@ -52,7 +52,7 @@ inline std::string str(T x) {
 }
 
 /**
- * Convert double number to a prettier string
+ * Convert double number to pretty string
  * @param x value to convert
  */
 inline std::string str(double x) {
@@ -60,7 +60,7 @@ inline std::string str(double x) {
 }
 
 /**
- * Convert complex number to a prettier string
+ * Convert complex number to pretty string
  * @param x value to convert
  */
 inline std::string str(dcomplex x) {

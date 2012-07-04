@@ -48,7 +48,7 @@ physical property. It can be easy obtain by subclass instantiation of one of tem
 
 Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters:
 - first is physical property tag and it's required,
-- second is type of space (see space.h) and it's required (and allowed) only for fields properties.
+- second is type of space (see ) and it's required (and allowed) only for fields properties.
 
 plask::ProviderFor class cannot be used directly, but one must declare it using some specialized class within the plask::ProviderFor namespace.
 E.g. \b plask::ProviderFor<MyProperty>::WithValue. The specialized class \b WithValue specifies how the provided values can be obtained.
@@ -664,7 +664,7 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyT, typename PropertyT:
     }
 
     static_assert(!(std::is_same<SpaceT, void>::value && (PropertyT::propertyType == FIELD_PROPERTY || PropertyT::propertyType == INTERPOLATED_FIELD_PROPERTY)),
-                  "Receivers for fields properties require SpaceT. Use ReceiverFor<propertyTag, SpaceT>, where SpaceT is one of the classes defined in space.h.");
+                  "Receivers for fields properties require SpaceT. Use ReceiverFor<propertyTag, SpaceT>, where SpaceT is one of the classes defined in .");
     static_assert(!(!std::is_same<SpaceT, void>::value && (PropertyT::propertyType == SINGLE_VALUE_PROPERTY)),
                   "Receivers for single value properties doesn't need SpaceT. Use ReceiverFor<propertyTag> (without second template parameter).");
 };
@@ -809,7 +809,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshPro
     static constexpr const char* NAME = PropertyT::NAME;
 
     static_assert(!std::is_same<SpaceT, void>::value,
-                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in space.h.");
+                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in .");
 
     /// Type of provided value.
     typedef typename OnMeshProvider<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
@@ -853,7 +853,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
     static constexpr const char* NAME = PropertyT::NAME;
 
     static_assert(!std::is_same<SpaceT, void>::value,
-                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in space.h.");
+                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in .");
 
     ///Type of provided value.
     typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;

@@ -4,9 +4,9 @@
 
 namespace plask {
 
-const std::map<std::string, std::string> CalculationSpace::null_borders;
+const std::map<std::string, std::string> Geometry::null_borders;
 
-void CalculationSpace::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames)
+void Geometry::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames)
 {
     boost::optional<std::string> v, v_lo, v_hi;
     v = borderValuesGetter("borders");
@@ -42,33 +42,33 @@ void CalculationSpace::setBorders(const std::function<boost::optional<std::strin
 
 
 template <>
-void CalculationSpaceD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
+void GeometryD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
     setBorders(DIRECTION_TRAN, border_to_set);
 }
 
 template <>
-void CalculationSpaceD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
+void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
     setBorders(DIRECTION_LON, border_to_set);
     setBorders(DIRECTION_TRAN, border_to_set);
 }
 
-Space2DCartesian::Space2DCartesian(const shared_ptr<Extrusion>& extrusion)
+Geometry2DCartesian::Geometry2DCartesian(const shared_ptr<Extrusion>& extrusion)
     : extrusion(extrusion)
 {
     init();
 }
 
-Space2DCartesian::Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
+Geometry2DCartesian::Geometry2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
     : extrusion(make_shared<Extrusion>(childGeometry, length))
 {
    init();
 }
 
-shared_ptr< GeometryElementD<2> > Space2DCartesian::getChild() const {
+shared_ptr< GeometryElementD<2> > Geometry2DCartesian::getChild() const {
     return extrusion->getChild();
 }
 
-shared_ptr<Material> Space2DCartesian::getMaterial(const Vec<2, double> &p) const {
+shared_ptr<Material> Geometry2DCartesian::getMaterial(const Vec<2, double> &p) const {
     Vec<2, double> r = p;
     shared_ptr<Material> material;
 
@@ -81,21 +81,21 @@ shared_ptr<Material> Space2DCartesian::getMaterial(const Vec<2, double> &p) cons
     return getMaterialOrDefault(r);
 }
 
-Space2DCartesian* Space2DCartesian::getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path, bool copyBorders) const {
+Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path, bool copyBorders) const {
     auto new_child = getChild()->getElementInThisCordinates(element, path);
     if (!new_child) {
         new_child = element->requireElementInThisCordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
-        std::unique_ptr<Space2DCartesian> result(new Space2DCartesian(*this));
+        std::unique_ptr<Geometry2DCartesian> result(new Geometry2DCartesian(*this));
         result->extrusion = make_shared<Extrusion>(new_child, getExtrusion()->length);
         return result.release();
     } else
-        return new Space2DCartesian(new_child, getExtrusion()->length);
+        return new Geometry2DCartesian(new_child, getExtrusion()->length);
 }
 
-void Space2DCartesian::setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
+void Geometry2DCartesian::setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         leftright.setStrategies(border_lo, border_hi);
@@ -104,7 +104,7 @@ void Space2DCartesian::setBorders(DIRECTION direction, const border::Strategy& b
     fireChanged(Event::BORDERS);
 }
 
-void Space2DCartesian::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
+void Geometry2DCartesian::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         leftright.set(higher, border_to_set);
@@ -113,28 +113,28 @@ void Space2DCartesian::setBorder(DIRECTION direction, bool higher, const border:
     fireChanged(Event::BORDERS);
 }
 
-const border::Strategy& Space2DCartesian::getBorder(DIRECTION direction, bool higher) const {
+const border::Strategy& Geometry2DCartesian::getBorder(DIRECTION direction, bool higher) const {
     Primitive<3>::ensureIsValid2DDirection(direction);
     return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
 }
 
-Space2DCylindrical::Space2DCylindrical(const shared_ptr<Revolution>& revolution)
+Geometry2DCylindrical::Geometry2DCylindrical(const shared_ptr<Revolution>& revolution)
     : revolution(revolution)
 {
     init();
 }
 
-Space2DCylindrical::Space2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry)
+Geometry2DCylindrical::Geometry2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry)
     : revolution(make_shared<Revolution>(childGeometry))
 {
    init();
 }
 
-shared_ptr< GeometryElementD<2> > Space2DCylindrical::getChild() const {
+shared_ptr< GeometryElementD<2> > Geometry2DCylindrical::getChild() const {
     return revolution->getChild();
 }
 
-shared_ptr<Material> Space2DCylindrical::getMaterial(const Vec<2, double> &p) const {
+shared_ptr<Material> Geometry2DCylindrical::getMaterial(const Vec<2, double> &p) const {
     Vec<2, double> r = p;
     shared_ptr<Material> material;
 
@@ -147,21 +147,21 @@ shared_ptr<Material> Space2DCylindrical::getMaterial(const Vec<2, double> &p) co
     return getMaterialOrDefault(r);
 }
 
-Space2DCylindrical* Space2DCylindrical::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {
+Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {
     auto new_child = getChild()->getElementInThisCordinates(element, path);
     if (!new_child) {
         new_child = element->requireElementInThisCordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
-        std::unique_ptr<Space2DCylindrical> result(new Space2DCylindrical(*this));
+        std::unique_ptr<Geometry2DCylindrical> result(new Geometry2DCylindrical(*this));
         result->revolution = make_shared<Revolution>(new_child);
         return result.release();
     } else
-        return new Space2DCylindrical(new_child);
+        return new Geometry2DCylindrical(new_child);
 }
 
-void Space2DCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_to_set) {
+void Geometry2DCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         outer = castBorder<border::UniversalStrategy>(border_to_set);
@@ -170,14 +170,14 @@ void Space2DCylindrical::setBorders(DIRECTION direction, const border::Strategy&
     fireChanged(Event::BORDERS);
 }
 
-void Space2DCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
+void Geometry2DCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
     ensureBoundDirIsProper(direction, false);
     ensureBoundDirIsProper(direction, true);
     bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
     fireChanged(Event::BORDERS);
 }
 
-void Space2DCylindrical::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
+void Geometry2DCylindrical::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
     ensureBoundDirIsProper(direction, higher);
     if (direction == DIRECTION_TRAN) {
         outer = castBorder<border::UniversalStrategy>(border_to_set);
@@ -186,7 +186,7 @@ void Space2DCylindrical::setBorder(DIRECTION direction, bool higher, const borde
     fireChanged(Event::BORDERS);
 }
 
-const border::Strategy& Space2DCylindrical::getBorder(DIRECTION direction, bool higher) const {
+const border::Strategy& Geometry2DCylindrical::getBorder(DIRECTION direction, bool higher) const {
     ensureBoundDirIsProper(direction, higher);
     return (direction == DIRECTION_TRAN) ? outer.getStrategy() : bottomup.get(higher);
 }

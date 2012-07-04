@@ -36,7 +36,7 @@ To write module you should:
 
 Once you have your source tree set up, do the following:
 -# Write new class which inherit from plask::ModuleOver<SPACE_TYPE> or plask::ModuleWithMesh<SPACE_TYPE, MESH_TYPE>.
-   SPACE_TYPE should be one of Space2DCartesian, Space2DCylindrical, or Space3D and should indicate in what space your module
+   SPACE_TYPE should be one of Geometry2DCartesian, Geometry2DCylindrical, or Geometry3D and should indicate in what space your module
    is doing calculations. If you want to allow user to specify a mesh for your module, inherit from plask::ModuleWithMesh<SPACE_TYPE, MESH_TYPE>,
    where MESH_TYPE is the type of your mesh.
 -# Implement plask::Module::getName method. This method should just return name of your module.
@@ -89,7 +89,7 @@ If you are working within the PLaSK source, remember to add all the directories 
 \subsubsection modules_writing_tutorial Module C++ class
 
 Now we assume that our module uses rectilinear mesh provided by the user, so we inherit our class from
-\link plask::ModuleWithMesh plask::ModuleWithMesh<plask::Space2DCartesian, plask::RectilinearMesh2D>\endlink. So our header
+\link plask::ModuleWithMesh plask::ModuleWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D>\endlink. So our header
 \a finite_differences.h should begin as follows:
 
 \code
@@ -100,7 +100,7 @@ Now we assume that our module uses rectilinear mesh provided by the user, so we 
 
 namespace plask { namespace modules { namespace optical_finite_differences { // put everything in private namespace
 
-class FiniteDifferencesModule: public plask::ModuleWithMesh < plask::Space2DCartesian, plask::RectilinearMesh2D >
+class FiniteDifferencesModule: public plask::ModuleWithMesh < plask::Geometry2DCartesian, plask::RectilinearMesh2D >
 {
 \endcode
 
@@ -116,11 +116,11 @@ Hence, we declare the following \link providers providers, receivers\endlink and
 
     plask::ReceiverFor<plask::Wavelength> inWavelength;
 
-    plask::ReceiverFor<plask::Temperature, plask::Space2DCartesian> inTemperature;
+    plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> inTemperature;
 
     plask::ProviderFor<plask::EffectiveIndex>::WithValue outNeff;
 
-    plask::ProviderFor<plask::OpticalIntensity, plask::Space2DCartesian>::Delegate outIntensity;
+    plask::ProviderFor<plask::OpticalIntensity, plask::Geometry2DCartesian>::Delegate outIntensity;
 
     plask::BoundaryConditions<plask::RectilinearMesh2D, double> boundaryConditionsOnTemperature;
 \endcode
@@ -353,7 +353,7 @@ import plask
 import plask.optical.fd
 
 module = plask.optical.fd.FiniteDifferencesCartesian2D()
-module.geometry = plask.geometry.Space2DCartesian(plask.geometry.Rectangle(2, 1, "GaN"))
+module.geometry = plask.geometry.Geometry2DCartesian(plask.geometry.Rectangle(2, 1, "GaN"))
 module.mesh = plask.mesh.RectilinearMesh2D(numpy.linspace(0,2), numpy.linspace(0,1))
 module.inTemperature = 280
 module.compute()
@@ -375,7 +375,7 @@ This concludes our short tutorial. Now you can go on and write your own calculat
 #include "log/log.h"
 #include "log/data.h"
 #include "mesh/mesh.h"
-#include "space.h"
+#include "geometry/space.h"
 
 namespace plask {
 
@@ -398,7 +398,7 @@ class Module {
     virtual void onInitialize() {}
 
     /**
-     * This should be called on begining of each calculation method to ensure that module will be initialized.
+     * This should be called on beginning of each calculation method to ensure that module will be initialized.
      * It's does nothing if module is already initialized and calls init() if it's not.
      *
      * \return \c true if the module had to be reinitialized (so one can make local initialization)
@@ -519,7 +519,7 @@ class ModuleOver: public Module {
      * It's just call invalidate(); but subclasses can customize it.
      * @param evt information about calculation space changes
      */
-    virtual void onGeometryChange(const CalculationSpace::Event& evt) {
+    virtual void onGeometryChange(const Geometry::Event& evt) {
         this->invalidate();
     }
 
@@ -546,7 +546,7 @@ class ModuleOver: public Module {
 };
 
 /**
- * Base class for all modules operating on specified space holding an external mesh
+ * Base class for all modules operating on specified olding an external mesh
  */
 template <typename SpaceT, typename MeshT>
 class ModuleWithMesh: public ModuleOver<SpaceT> {

@@ -16,7 +16,7 @@ namespace plask {
  * Example:
  * @code
  * // module calculating temperature in Cartesian 2d space:
- * struct PModule1: plask::ModuleOver<plask::Space2DCartesian> {
+ * struct PModule1: plask::ModuleOver<plask::Geometry2DCartesian> {
  *      plask::ProviderFor<Temperature, plask::Cartesian2D>::WithValue<SomeMeshType> outTemperature;
  *      // outTemperature.value stores temperature values in points pointed by outTemperature.mesh
  *      // outTemperature.value has type plask::shared_ptr< std::vector<double> >
@@ -25,7 +25,7 @@ namespace plask {
  * };
  *
  * // another module which calculates temperature in Cartesian 2d space:
- * struct PModule2: plask::ModuleWithMesh<plask::Space2DCartesian, plask::RectilinearMesh2D> {
+ * struct PModule2: plask::ModuleWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D> {
  *      plask::ProviderFor<Temperature, plask::Cartesian2D>::Delegate outTemperature;
  *
  *      plask::DataVector<double> my_temperature;

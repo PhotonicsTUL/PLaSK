@@ -1,9 +1,9 @@
 #ifndef PLASK__BOUNDARY_CONDITIONS_H
 #define PLASK__BOUNDARY_CONDITIONS_H
 
-#include "boundary.h"
 #include <list>
 #include "../exceptions.h"
+#include "boundary.h"
 
 namespace plask {
 
@@ -13,7 +13,7 @@ struct BoundaryCondition {
     typedef MeshT MeshType;    ///< type of mesh
     typedef ConditionT ConditionType;  ///< type which describe boundary condition
     typedef typename MeshType::Boundary Boundary;   ///< Boundary type for mesh of type MeshType
-    
+
     Boundary boundary;          ///< Boundary
     ConditionType condition;    ///< Condition
 
@@ -40,16 +40,16 @@ template <typename MeshT, typename ConditionT>
 struct BoundaryConditions
 {
     typedef MeshT MeshType;    ///< type of mesh
-    typedef ConditionT ConditionType;  ///< type which describe boundary condition
-    typedef typename MeshType::Boundary Boundary;   ///< Boundary type for mesh of type MeshType
+    typedef ConditionT ConditionType;  ///< type which describes boundary condition
+    typedef typename MeshType::Boundary Boundary;   ///< Boundary type for a mesh of type MeshType
 
     /// One boundary-condition pair.
     typedef BoundaryCondition<MeshType, ConditionType> Element;
 
 private:
-    typedef std::list<Element> elements_container_t;    //std::list to not invalidate iterators on add/erase
+    typedef std::list<Element> elements_container_t;    // std::list to not invalidate iterators on add/erase
     elements_container_t container;
-    
+
 public:
     typedef typename elements_container_t::iterator iterator;
     typedef typename elements_container_t::const_iterator const_iterator;
@@ -59,20 +59,20 @@ public:
 
     iterator end() { return container.end(); }
     const_iterator end() const { return container.end(); }
-    
+
 private:
     /// @return iterator to last element
     iterator lastIterator() { return --end(); }
-        
+
 public:
-    
+
     /**
      * Delegate all constructors to underline container (which is std::list\<Element>).
      * @param args arguments to delegate
      */
     template <typename... ArgsTypes>
     BoundaryConditions(ArgsTypes&&... args): container(std::forward<ArgsTypes>(args)...) {}
-    
+
     /**
      * Get iterator to element with given @p index.
      *
@@ -85,7 +85,7 @@ public:
         while (index > 0 && result != end()) { ++result; --index; }
         return result;
     }
-    
+
     /**
      * Get iterator to element with given @p index.
      *
@@ -98,7 +98,7 @@ public:
         while (index > 0 && result != end()) { ++result; --index; }
         return result;
     }
-    
+
     /**
      * Get reference to boundary condition with given @p index.
      *
@@ -112,7 +112,7 @@ public:
         if (i == end()) OutOfBoundException("BoundaryConditions[]", "index");
         return *i;
     }
-    
+
     /**
      * Get const reference to boundary condition with given @p index.
      *
@@ -128,10 +128,10 @@ public:
     }
 
     /**
-     * Add new boundary condidion to this (to end of elements list).
+     * Add new boundary condition to this (to end of elements list).
      *
      * It doesn't invalidate any iterators. It has constant time complexity.
-     * @param element boundary condidion to add
+     * @param element boundary condition to add
      * @return iterator to added element which allow to change or erase added element in future
      */
     iterator add(Element&& element) {
@@ -140,7 +140,7 @@ public:
     }
 
     /**
-     * Add new boundary condidion to this (to end of elements list).
+     * Add new boundary condition to this (to end of elements list).
      *
      * It doesn't invalidate any iterators. It has constant time complexity.
      * @param boundary boundary
@@ -153,13 +153,13 @@ public:
         return lastIterator();
     }
 
-    /// Delete all boundaries conditions from this set.
+    /// Delete all boundary conditions from this set.
     void clear() {
         container.clear();
     }
-    
+
     /**
-     * Remove from list the element point by @p to_erase.
+     * Remove the element point by @p to_erase from list.
      *
      * It doesn't invalidate any iterators other than @p to_erase. It has constant time complexity.
      * @param to_erase iterator which show element to erase
@@ -167,19 +167,19 @@ public:
     void erase(const_iterator to_erase) {
         container.erase(to_erase);
     }
-    
+
     /**
-     * Remove from list the elements in the range [first, last).
+     * Remove the elements in the range [first, last) from list.
      *
-     * It doesn't invalidate any iterators from outside of deleted range. It has linear time complexity depends from length of range.
+     * It doesn't invalidate any iterators from outside of deleted range. It has linear time complexity dependent on the length of the range.
      * @param first, last range of elements to remove
      */
     void erase(const_iterator first, const_iterator last) {
         container.erase(first, last);
     }
-    
+
     /**
-     * Remove from list the element with given @p index.
+     * Remove the element with given @p index from list.
      *
      * Do nothing if @p index is not valid.
      *

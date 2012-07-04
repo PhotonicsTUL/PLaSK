@@ -34,9 +34,9 @@ shared_ptr<GeometryElement> GeometryManager::requireElement(const std::string &n
     return result;
 }
 
-shared_ptr<CalculationSpace> GeometryManager::getCalculationSpace(const std::string& name) const {
+shared_ptr<Geometry> GeometryManager::getGeometry(const std::string& name) const {
     auto result_it = calculationSpaces.find(name);
-    return result_it == calculationSpaces.end() ? shared_ptr<CalculationSpace>() : result_it->second;
+    return result_it == calculationSpaces.end() ? shared_ptr<Geometry>() : result_it->second;
 }
 
 void GeometryManager::loadGeometryFromReader(GeometryReader& reader) {
@@ -72,7 +72,7 @@ void GeometryManager::loadSpacesFromReader(GeometryReader& reader) {
                     throw XMLUnexpectedElementException("end of \"spaces\" tag");
                 return;  //end of spaces
             case XMLReader::NODE_ELEMENT:
-                reader.readCalculationSpace();
+                reader.readGeometry();
                 break;
             case XMLReader::NODE_COMMENT:
                 break;   //just ignore

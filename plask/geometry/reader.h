@@ -4,7 +4,7 @@
 #include "../utils/xml.h"
 #include "../axes.h"
 #include "../material/db.h"
-#include "../space.h"
+#include "space.h"
 #include <functional>
 
 namespace plask {
@@ -199,7 +199,7 @@ struct GeometryReader {
      * Try reading calculation space. Throw exception if can't.
      * @return calculation space which was read
      */
-    shared_ptr<CalculationSpace> readCalculationSpace();
+    shared_ptr<Geometry> readGeometry();
 
 };
 

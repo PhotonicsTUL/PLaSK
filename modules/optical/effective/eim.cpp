@@ -115,7 +115,7 @@ void EffectiveIndex2DModule::updateCache()
 
     // Some additional checks
     if (symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) {
-        if (geometry->isSymmetric(CalculationSpace::DIRECTION_TRAN)) {
+        if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
             if (updated) // Make sure we have only positive points
                 for (auto x: mesh->c0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
             if (mesh->c0[0] == 0.) xbegin = 1;

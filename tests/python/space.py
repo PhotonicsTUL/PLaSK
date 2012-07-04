@@ -7,7 +7,7 @@ import plask, plask.geometry
 import plasktest
 
 
-class CalculationSpaces(unittest.TestCase):
+class Geometrys(unittest.TestCase):
 
     def setUp(self):
         self.axes_backup = plask.config.axes
@@ -19,7 +19,7 @@ class CalculationSpaces(unittest.TestCase):
 
     def testBorders(self):
         r = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
-        s = plask.geometry.Space2DCartesian(r, x_lo="mirror" , right="AlN", top="GaN")
+        s = plask.geometry.Geometry2DCartesian(r, x_lo="mirror" , right="AlN", top="GaN")
         print(s.bbox)
         self.assertEqual( s.borders, {'left': "mirror", 'right': "AlN", 'top': "GaN", 'bottom': None} )
         self.assertEqual( str(s.getMaterial(-1.5, 0.5)), "Al(0.2)GaN" )
@@ -27,7 +27,7 @@ class CalculationSpaces(unittest.TestCase):
         self.assertEqual( str(s.getMaterial(-3., 0.5)), "AlN" )
         self.assertEqual( str(s.getMaterial(0., 2.)), "GaN" )
 
-        with self.assertRaises(RuntimeError): plask.geometry.Space2DCartesian(r, right="mirror").getMaterial(3., 0.5)
+        with self.assertRaises(RuntimeError): plask.geometry.Geometry2DCartesian(r, right="mirror").getMaterial(3., 0.5)
 
     def testSubspace(self):
         stack = plask.geometry.Stack2D()
@@ -35,7 +35,7 @@ class CalculationSpaces(unittest.TestCase):
         r2 = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
         stack.append(r1, "l")
         h2 = stack.append(r2, "l")
-        space = plask.geometry.Space2DCartesian(stack)
+        space = plask.geometry.Geometry2DCartesian(stack)
         subspace = space.getSubspace(r2)
         v1 = space.getLeafsPositions(h2)
         v2 = subspace.getLeafsPositions(h2)
@@ -44,7 +44,7 @@ class CalculationSpaces(unittest.TestCase):
     def testModule(self):
         module = plasktest.SpaceTest()
         r = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
-        s = plask.geometry.Space2DCartesian(r)
+        s = plask.geometry.Geometry2DCartesian(r)
         module.geometry = s
         self.assertEqual( module.geometry, s )
         with self.assertRaises(AttributeError):

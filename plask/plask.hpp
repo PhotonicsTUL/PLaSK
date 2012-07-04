@@ -57,7 +57,7 @@ You should start reading from section \ref modules "How to implement an own modu
 #include "module.h"
 #include "vec.h"
 #include "axes.h"
-#include "space.h"
+#include "geometry/space.h"
 
 #include "geometry/geometry.h"
 #include "geometry/primitives.h"
@@ -83,6 +83,7 @@ You should start reading from section \ref modules "How to implement an own modu
 
 #include "mesh/mesh.h"
 #include "mesh/interpolation.h"
+#include "mesh/boundary_conditions.h"
 #include "mesh/rectilinear.h"
 #include "mesh/regular.h"
 

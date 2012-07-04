@@ -23,7 +23,7 @@ void register_geometry_changespace()
     ;
 
     // py::class_<GeometryElementTransformSpace<2,3>, shared_ptr<GeometryElementTransformSpace<2,3>>, py::bases<GeometryElementD<2>>, boost::noncopyable>
-    // ("GeometryElementTransformSpace3Dto2D", "Base class for elements changing space 3D to 2D using some averaging or cross-section", py::no_init)
+    // ("GeometryElementTransformGeometry3Dto2D", "Base class for elements changing space 3D to 2D using some averaging or cross-section", py::no_init)
     //     .add_property("child",
     //                   (shared_ptr<typename GeometryElementTransformSpace<2,3>::ChildType> (GeometryElementTransformSpace<2,3>::*)()) &GeometryElementTransformSpace<2,3>::getChild,
     //                   &GeometryElementTransformSpace<2,3>::setChild, "Child of the transform object")

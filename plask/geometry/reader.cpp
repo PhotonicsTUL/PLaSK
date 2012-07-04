@@ -72,19 +72,19 @@ shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
     return result;
 }
 
-shared_ptr<CalculationSpace> GeometryReader::readCalculationSpace() {
+shared_ptr<Geometry> GeometryReader::readGeometry() {
     std::string nodeName = source.getNodeName();
     std::string name = source.requireAttribute("name");
     std::string src = source.requireAttribute("over");
-    shared_ptr<CalculationSpace> result;
+    shared_ptr<Geometry> result;
     if (nodeName == "cartesian") {    //TODO register with space names(?)
         boost::optional<double> l = source.getAttribute<double>("length");
         result = l ?
-            make_shared<Space2DCartesian>(manager.requireElement< GeometryElementD<2> >(src), *l) :
-            make_shared<Space2DCartesian>(manager.requireElement< Extrusion >(src));
+            make_shared<Geometry2DCartesian>(manager.requireElement< GeometryElementD<2> >(src), *l) :
+            make_shared<Geometry2DCartesian>(manager.requireElement< Extrusion >(src));
     } else
     if (nodeName == "cylindrical") {
-        result = make_shared<Space2DCylindrical>(manager.requireElement< GeometryElementD<2> >(src));
+        result = make_shared<Geometry2DCylindrical>(manager.requireElement< GeometryElementD<2> >(src));
     } else
         throw XMLUnexpectedElementException("space tag (cartesian or cylindrical)");
 

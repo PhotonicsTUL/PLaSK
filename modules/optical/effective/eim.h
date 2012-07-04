@@ -18,7 +18,7 @@ namespace plask { namespace modules { namespace effective {
 /**
  * Module performing calculations in 2D Cartesian space using effective index method
  */
-struct EffectiveIndex2DModule: public ModuleWithMesh<Space2DCartesian, RectilinearMesh2D> {
+struct EffectiveIndex2DModule: public ModuleWithMesh<Geometry2DCartesian, RectilinearMesh2D> {
 
     enum Symmetry {
         NO_SYMMETRY,
@@ -210,13 +210,13 @@ struct EffectiveIndex2DModule: public ModuleWithMesh<Space2DCartesian, Rectiline
     ReceiverFor<Wavelength> inWavelength;
 
     /// Receiver for temperature
-    ReceiverFor<Temperature, Space2DCartesian> inTemperature;
+    ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
 
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::WithValue outNeff;
 
     /// Provider of optical field
-    ProviderFor<OpticalIntensity, Space2DCartesian>::Delegate outIntensity;
+    ProviderFor<OpticalIntensity, Geometry2DCartesian>::Delegate outIntensity;
 
   protected:
 

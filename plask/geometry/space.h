@@ -1,23 +1,21 @@
 #ifndef PLASK__CALCULATION_SPACE_H
 #define PLASK__CALCULATION_SPACE_H
 
-#include "geometry/transform_space_cartesian.h"
-#include "geometry/transform_space_cylindric.h"
-#include "geometry/border.h"
+#include "transform_space_cartesian.h"
+#include "transform_space_cylindric.h"
+#include "border.h"
 
-#include "axes.h"
+#include "../axes.h"
 
 #include <boost/signals2.hpp>
-#include "utils/event.h"
+#include "../utils/event.h"
 
 namespace plask {
 
 /**
- * Base class for calculation spaces. Modules can do calculation in calculation space with specific type.
- *
- * Typically, calculation space classes wrap geometry element with specific type.
+ * Base class for all geometry trunks. Modules can do calculation in calculation space with specific type.
  */
-struct CalculationSpace {
+struct Geometry {
 
     /// Default material (which will be used for places in which geometry doesn't define any material), typically air.
     shared_ptr<Material> defaultMaterial;
@@ -33,7 +31,7 @@ struct CalculationSpace {
      *
      * Subclasses of this can includes additional information about specific type of event.
      */
-    struct Event: public EventWithSourceAndFlags<CalculationSpace> {
+    struct Event: public EventWithSourceAndFlags<Geometry> {
 
         /// Event flags (which describes event properties).
         enum Flags {
@@ -73,29 +71,29 @@ struct CalculationSpace {
          * @param source source of event
          * @param flags which describes event's properties
          */
-        explicit Event(CalculationSpace& source, unsigned char flags = 0): EventWithSourceAndFlags<CalculationSpace>(source, flags) {}
+        explicit Event(Geometry& source, unsigned char flags = 0): EventWithSourceAndFlags<Geometry>(source, flags) {}
     };
 
     /**
      * Calculation space constructor, set default material.
      * @param defaultMaterial material which will be used for places in which geometry doesn't define any material, air by default
      */
-    CalculationSpace(shared_ptr<Material> defaultMaterial = make_shared<Air>()): defaultMaterial(defaultMaterial) {}
+    Geometry(shared_ptr<Material> defaultMaterial = make_shared<Air>()): defaultMaterial(defaultMaterial) {}
 
     /**
      * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
      * @param to_copy object to copy
      */
-    CalculationSpace(const CalculationSpace& to_copy): defaultMaterial(to_copy.defaultMaterial) {}
+    Geometry(const Geometry& to_copy): defaultMaterial(to_copy.defaultMaterial) {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't changed changes observer.
      * @param to_copy object to copy
      */
-    CalculationSpace& operator=(const CalculationSpace& to_copy) { defaultMaterial = to_copy.defaultMaterial; return *this; }
+    Geometry& operator=(const Geometry& to_copy) { defaultMaterial = to_copy.defaultMaterial; return *this; }
 
     /// Inform observators that this is deleting.
-    virtual ~CalculationSpace() { fireChanged(Event::DELETE); }
+    virtual ~Geometry() { fireChanged(Event::DELETE); }
 
     /// Changed signal, fired when space was changed.
     boost::signals2::signal<void(const Event&)> changed;
@@ -221,11 +219,11 @@ protected:
 
 
 /**
- * Base class for calculation spaces in given space.
+ * Base class for all geometry trunks in given space.
  * @tparam dim number of speace dimensions
  */
 template <int dim>
-class CalculationSpaceD: public CalculationSpace {
+class GeometryD: public Geometry {
 
     /// Connection object with child. It is necessary since disconnectOnChileChanged doesn't work
     boost::signals2::connection connection_with_child;
@@ -264,11 +262,11 @@ class CalculationSpaceD: public CalculationSpace {
      * Subclasses should call this from it's constructors (can't be moved to constructor because it uses virtual method getChild).
      */
     void init() {
-        connection_with_child = getChild()->changedConnectMethod(this, &CalculationSpaceD<dim>::onChildChanged);
+        connection_with_child = getChild()->changedConnectMethod(this, &GeometryD<dim>::onChildChanged);
         cachedBoundingBox = getChild()->getBoundingBox();
     }
 
-    virtual ~CalculationSpaceD() {
+    virtual ~GeometryD() {
         connection_with_child.disconnect();
     }
 
@@ -337,7 +335,7 @@ public:
      * \param copyBorders indicates wheter the new space should have the same borders as this one
      * \return new space
      */
-    virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
+    virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
 
     /**
      * Get the sub/super-space of this one (automatically detected) with specified borders
@@ -347,10 +345,10 @@ public:
      * \param axesNames name of the axes for borders
      * \return new space
      */
-    virtual CalculationSpaceD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr,
+    virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr,
                                                  const std::map<std::string, std::string>& borders=null_borders,
                                                  const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
-        CalculationSpaceD<dim>* subspace = getSubspace(element, path, false);
+        GeometryD<dim>* subspace = getSubspace(element, path, false);
         subspace->setBorders( [&](const std::string& s) -> boost::optional<std::string> {
             auto b = borders.find(s);
             return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
@@ -362,10 +360,10 @@ public:
 };
 
 /**
- * 2D calculation space over extrusion geometry.
+ * Geometry trunk in 2D Cartesian space
  * @see plask::Extrusion
  */
-class Space2DCartesian: public CalculationSpaceD<2> {
+class Geometry2DCartesian: public GeometryD<2> {
 
     shared_ptr<Extrusion> extrusion;
 
@@ -379,7 +377,7 @@ public:
 
     /**
      * Set strategy for the left border.
-     * @param newValue new strategy for lthe eft border
+     * @param newValue new strategy for the left border
      */
     void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::BORDERS); }
 
@@ -458,9 +456,9 @@ public:
     shared_ptr<Material> getBackMaterial() const { return backMaterial ? backMaterial : defaultMaterial; }
 
 
-    Space2DCartesian(const shared_ptr<Extrusion>& extrusion);
+    Geometry2DCartesian(const shared_ptr<Extrusion>& extrusion);
 
-    Space2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
+    Geometry2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
@@ -468,22 +466,22 @@ public:
 
     shared_ptr<Extrusion> getExtrusion() const { return extrusion; }
 
-    virtual Space2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
+    virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
 
-    virtual Space2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
+    virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
                                           const std::map<std::string, std::string>& borders=null_borders,
                                           const AxisNames& axesNames=AxisNames()) const {
-        return (Space2DCartesian*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
+        return (Geometry2DCartesian*)GeometryD<2>::getSubspace(element, path, borders, axesNames);
     }
 
 
 };
 
 /**
- * 2D calculation space over revolution geometry.
+ * Geometry trunk in 2D Cylindrical space
  * @see plask::Revolution
  */
-class Space2DCylindrical: public CalculationSpaceD<2> {
+class Geometry2DCylindrical: public GeometryD<2> {
 
     shared_ptr<Revolution> revolution;
 
@@ -493,7 +491,7 @@ class Space2DCylindrical: public CalculationSpaceD<2> {
     static void ensureBoundDirIsProper(DIRECTION direction, bool hi) {
         Primitive<3>::ensureIsValid2DDirection(direction);
         if (direction == DIRECTION_TRAN && !hi)
-            throw BadInput("setBorders", "Space2DCylindrical: Lower bound is not allowed in the transverse direction.");
+            throw BadInput("setBorders", "Geometry2DCylindrical: Lower bound is not allowed in the transverse direction.");
     }
 
 public:
@@ -534,9 +532,9 @@ public:
      */
     const border::Strategy& getUpBorder() { return bottomup.getHi(); }
 
-    Space2DCylindrical(const shared_ptr<Revolution>& revolution);
+    Geometry2DCylindrical(const shared_ptr<Revolution>& revolution);
 
-    Space2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
+    Geometry2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
 
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
@@ -544,12 +542,12 @@ public:
 
     shared_ptr<Revolution> getRevolution() const { return revolution; }
 
-    virtual Space2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
+    virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
 
-    virtual Space2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
+    virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
                                             const std::map<std::string, std::string>& borders=null_borders,
                                             const AxisNames& axesNames=AxisNames()) const {
-        return (Space2DCylindrical*)CalculationSpaceD<2>::getSubspace(element, path, borders, axesNames);
+        return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(element, path, borders, axesNames);
     }
 
     void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
@@ -570,9 +568,9 @@ public:
 };
 
 /**
- * 3D calculation space over 3d geometry.
+ * Geometry trunk in 3D space
  */
-class Space3D: public CalculationSpaceD<3> {
+class Geometry3D: public GeometryD<3> {
 };
 
 

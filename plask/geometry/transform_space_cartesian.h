@@ -8,7 +8,7 @@ namespace plask {
 /**
  * Represent 3d geometry element which are extend of 2d element (child) in lon direction.
  */
-struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public CalculationSpace*/ {
+struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*/ {
 
     typedef GeometryElementTransformSpace<3, 2>::ChildType ChildType;
 

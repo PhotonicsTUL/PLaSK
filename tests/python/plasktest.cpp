@@ -86,7 +86,7 @@ py::list testBoundary(const plask::RectilinearMesh2D& mesh, const typename plask
 
 //// Module with space /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct SpaceTest : plask::ModuleOver<plask::Space2DCartesian> {
+struct SpaceTest : plask::ModuleOver<plask::Geometry2DCartesian> {
     virtual std::string getName() const { return "Space Test"; }
 };
 
