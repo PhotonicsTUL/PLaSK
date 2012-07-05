@@ -26,15 +26,15 @@ RectilinearMesh1D RectilinearMesh2DfromSimpleDivision::get1DMesh(const Rectiline
     do {
         double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
         repeat = false;
-        for (size_t i = 1; i != result.size(); ++i) {
+        for (auto i = result.begin()+1; i != result.end(); ++i) {
             if (w > 2.*w_prev || w > 2.*w_next) {
-                result.addPoint(0.5 * (result[i-1]+result[i]));
+                result.addPoint(0.5 * (*(i-1) + *i));
                 repeat = true;
                 break;
             }
             w_prev = w;
             w = w_next;
-            w_next = (i >= result.size()-2)? INFINITY : result[i+2] - result[i+1];
+            w_next = (i+2 == result.end())? INFINITY : *(i+2) - *(i+1);
         }
     } while (repeat);
     return result;
