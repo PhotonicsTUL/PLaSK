@@ -441,30 +441,57 @@ public:
 
     const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
 
-    /// Set material on the positive side of the axis along the extrusion
-    /// \param material material to set
+    /**
+     * Set material on the positive side of the axis along the extrusion.
+     * \param material material to set
+     */
     void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; fireChanged(Event::BORDERS); }
 
     /// \return material on the positive side of the axis along the extrusion
     shared_ptr<Material> getFrontMaterial() const { return frontMaterial ? frontMaterial : defaultMaterial; }
 
-    /// Set material on the negative side of the axis along the extrusion
-    /// \param material material to set
+    /**
+     * Set material on the negative side of the axis along the extrusion.
+     * \param material material to set
+     */
     void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; fireChanged(Event::BORDERS); }
 
     /// \return material on the negative side of the axis along extrusion
     shared_ptr<Material> getBackMaterial() const { return backMaterial ? backMaterial : defaultMaterial; }
 
+    /**
+     * Construct geometry over given @p extrusion element.
+     * @param extrusion extrusion geometry element
+     */
+    Geometry2DCartesian(shared_ptr<Extrusion> extrusion);
 
-    Geometry2DCartesian(const shared_ptr<Extrusion>& extrusion);
+    /**
+     * Construct geometry over extrusion element build on top of given 2D @p childGeometry and with given @p length.
+     *
+     * It construct new extrusion element internally.
+     * @param childGeometry, length parameters which will be passed to plask::Extrusion constructor
+     */
+    Geometry2DCartesian(shared_ptr<GeometryElementD<2>> childGeometry, double length);
 
-    Geometry2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length);
-
+    /**
+     * Get child of extrusion element used by this geometry.
+     * @return child geometry
+     */
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
+    /**
+     * Get extrusion element included in this geometry.
+     * @return extrusion element included in this geometry
+     */
     shared_ptr<Extrusion> getExtrusion() const { return extrusion; }
+
+    /**
+     * Set new extrusion element for this geometry and inform observers about changing of geometry.
+     * @param extrusion new extrusion element to set and use
+     */
+    void setExtrusion(shared_ptr<Extrusion> extrusion);
 
     virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
 
@@ -532,15 +559,39 @@ public:
      */
     const border::Strategy& getUpBorder() { return bottomup.getHi(); }
 
-    Geometry2DCylindrical(const shared_ptr<Revolution>& revolution);
+    /**
+     * Construct geometry over given @p revolution element.
+     * @param childGeometry revolution element
+     */
+    Geometry2DCylindrical(shared_ptr<Revolution> revolution);
 
-    Geometry2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry);
+    /**
+     * Construct geometry over revolution element build on top of given 2D @p childGeometry.
+     *
+     * It construct new plask::Revolution element internally.
+     * @param childGeometry, length parameters which will be passed to plask::Extrusion constructor
+     */
+    Geometry2DCylindrical(shared_ptr<GeometryElementD<2>> childGeometry);
 
+    /**
+     * Get child of revolution element used by this geometry.
+     * @return child geometry
+     */
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
+    /**
+     * Get revolution element included in this geometry.
+     * @return revolution element included in this geometry
+     */
     shared_ptr<Revolution> getRevolution() const { return revolution; }
+
+    /**
+     * Set new revolution element for this geometry and inform observers about changing of geometry.
+     * @param revolution new revolution element to set and use
+     */
+    void setRevolution(shared_ptr<Revolution> revolution);
 
     virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
 

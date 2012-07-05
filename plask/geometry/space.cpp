@@ -52,13 +52,13 @@ void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
     setBorders(DIRECTION_TRAN, border_to_set);
 }
 
-Geometry2DCartesian::Geometry2DCartesian(const shared_ptr<Extrusion>& extrusion)
+Geometry2DCartesian::Geometry2DCartesian(shared_ptr<Extrusion> extrusion)
     : extrusion(extrusion)
 {
     init();
 }
 
-Geometry2DCartesian::Geometry2DCartesian(const shared_ptr<GeometryElementD<2>>& childGeometry, double length)
+Geometry2DCartesian::Geometry2DCartesian(shared_ptr<GeometryElementD<2>> childGeometry, double length)
     : extrusion(make_shared<Extrusion>(childGeometry, length))
 {
    init();
@@ -79,6 +79,12 @@ shared_ptr<Material> Geometry2DCartesian::getMaterial(const Vec<2, double> &p) c
     if (material) return material;
 
     return getMaterialOrDefault(r);
+}
+
+void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
+    if (this->extrusion == extrusion) return;
+    this->extrusion = extrusion;
+    fireChanged(Event::GEOMETRY);
 }
 
 Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path, bool copyBorders) const {
@@ -118,13 +124,13 @@ const border::Strategy& Geometry2DCartesian::getBorder(DIRECTION direction, bool
     return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
 }
 
-Geometry2DCylindrical::Geometry2DCylindrical(const shared_ptr<Revolution>& revolution)
+Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<Revolution> revolution)
     : revolution(revolution)
 {
     init();
 }
 
-Geometry2DCylindrical::Geometry2DCylindrical(const shared_ptr<GeometryElementD<2>>& childGeometry)
+Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<GeometryElementD<2>> childGeometry)
     : revolution(make_shared<Revolution>(childGeometry))
 {
    init();
@@ -145,6 +151,12 @@ shared_ptr<Material> Geometry2DCylindrical::getMaterial(const Vec<2, double> &p)
     if (material) return material;
 
     return getMaterialOrDefault(r);
+}
+
+void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
+    if (this->revolution == revolution) return;
+    this->revolution = revolution;
+    fireChanged(Event::GEOMETRY);
 }
 
 Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {
