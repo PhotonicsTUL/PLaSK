@@ -266,7 +266,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     };
 
     /// Changed signal, fired when element was changed.
-    boost::signals2::signal<void(const Event&)> changed;
+    boost::signals2::signal<void(Event&)> changed;
 
     /// Connect a method to changed signal
     template <typename ClassT, typename methodT>
@@ -286,7 +286,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     template<typename EventT = Event, typename ...Args>
     void fireChanged(Args&&... event_constructor_params_without_source) {
-        changed(EventT(*this, std::forward<Args>(event_constructor_params_without_source)...));
+        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
+        changed(evt);
     }
 
     /**

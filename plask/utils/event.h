@@ -29,6 +29,12 @@ public:
     const SourceType& source() const { return _source; }
 
     /**
+     * Get source of event.
+     * @return source of event
+     */
+    SourceType& source() { return _source; }
+
+    /**
      * Get event's flags.
      * @return flags which describes event's properties
      */
