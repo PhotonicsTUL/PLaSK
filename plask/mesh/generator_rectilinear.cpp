@@ -8,9 +8,19 @@ RectilinearMesh1D RectilinearMesh2DfromSimpleDivision::get1DMesh(const Rectiline
 {
     // TODO: Użyj algorytmu Roberta, może będzie lepszy
 
-    if (initial.size() < 3) return initial;
-
     RectilinearMesh1D result = initial;
+
+    // First divide each element
+    double x = *initial.begin();
+    for (auto i = initial.begin()+1; i!= initial.end(); ++i) {
+        double w = *i - x;
+        std::vector<double> points; points.reserve(division-1);
+        for (size_t j = 1; j != division; ++j) points.push_back(x + w*j/division);
+        result.addOrderedPoints(points.begin(), points.end());
+        x = *i;
+    }
+
+    if (result.size() < 3) return result;
 
     bool repeat;
     do {
