@@ -100,14 +100,14 @@ struct GeometryManager {
     shared_ptr<RequiredElementType> requireElement(const std::string& name) const;
 
     /**
-     * Get Calculation space with given @p name.
+     * Get geometry trunk with given @p name.
      * @param name name of calculation space to get
      * @return calculation space with given @p name or shared_ptr<Geometry>() if there is no calculation space with given @p name
      */
     shared_ptr<Geometry> getGeometry(const std::string& name) const;
 
     /**
-     * Get Calculation space with given @p name and try dynamic cast it to @a RequiredCalcSpaceType.
+     * Get geometry trunk with given @p name and try dynamic cast it to @a RequiredCalcSpaceType.
      * @param name name of calculation space to get
      * @return required calculation space or shared_ptr<Geometry>() if there is no calculation space with given @p name or can't be casted to RequiredCalcSpaceType
      */

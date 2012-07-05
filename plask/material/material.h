@@ -445,21 +445,21 @@ struct Material {
     virtual double mob(double T) const;
 
     /**
-     * Get electrical conductivity Sigma [S/m].
+     * Get electrical conductivity sigma [S/m].
      * @param T temperature [K]
-     * @return electrical conductivity Sigma [S/m]
+     * @return electrical conductivity sigma [S/m]
      */
     virtual double cond(double T) const;
 
     /**
-     * Get electrical conductivity in vertical direction Sigma [S/m].
+     * Get electrical conductivity in vertical direction sigma [S/m].
      * @param T temperature [K]
-     * @return electrical conductivity in vertical direction Sigma [S/m]
+     * @return electrical conductivity in vertical direction sigma [S/m]
      */
     virtual double cond_v(double T) const;
 
     /**
-     * Get electrical conductivity in lateral direction Sigma [S/m].
+     * Get electrical conductivity in lateral direction sigma [S/m].
      * @param T temperature [K]
      * @return electrical conductivity in lateral direction Sigma[S/m]
      */

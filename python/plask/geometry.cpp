@@ -35,7 +35,7 @@ shared_ptr<GeometryManager> Geometry__init__(py::tuple args, py::dict kwargs) {
     bool has_filename = false, has_materialsdb = false;
 
     if (py::len(args) > 3) {
-        throw TypeError("__init__ takes at most 3 arguments (%d given)", py::len(args));
+        throw TypeError("__init__ takes 2 or 3 arguments (%d given)", py::len(args));
     }
     if (py::len(args) > 1) {
         has_filename = true;
@@ -123,10 +123,10 @@ void initGeometry() {
 
     register_exception<NoSuchGeometryElement>(PyExc_IndexError);
 
-    py::class_<GeometryManager, boost::noncopyable>("Geometry",
+    py::class_<GeometryManager, boost::noncopyable>("GeometryReader",
         "    Main geometry manager. It provides methods to read it from XML file and fetch geometry elements by name.\n\n"
-        "    Geometry(filename="", materials=plask.material.database)\n"
-        "        Create geometry with specified material database and optionally load it from XML file\n\n"
+        "    GeometryReader(filename="", materials=plask.material.database)\n"
+        "        Create geometry manager with specified material database and optionally load it from XML file\n\n"
         "    Parameters\n"
         "    ----------\n"
         "    filename:\n"
