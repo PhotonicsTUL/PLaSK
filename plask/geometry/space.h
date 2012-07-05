@@ -96,7 +96,7 @@ struct Geometry {
     virtual ~Geometry() { fireChanged(Event::DELETE); }
 
     /// Changed signal, fired when space was changed.
-    boost::signals2::signal<void(const Event&)> changed;
+    boost::signals2::signal<void(Event&)> changed;
 
     template <typename ClassT, typename methodT>
     void changedConnectMethod(ClassT* obj, methodT method) {
@@ -114,7 +114,8 @@ struct Geometry {
      */
     template<typename EventT = Event, typename ...Args>
     void fireChanged(Args&&... event_constructor_params_without_source) {
-        changed(EventT(*this, std::forward<Args>(event_constructor_params_without_source)...));
+        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
+        changed(evt);
     }
 
     /**
