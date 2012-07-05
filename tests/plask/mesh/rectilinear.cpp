@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(boundary) {
 }
 
 BOOST_AUTO_TEST_CASE(generator) {
-    plask::RectilinearMesh2DfromSimpleDivision generator;
+    plask::RectilinearMesh2DGeneratorSimple generator;
 
     auto stack(plask::make_shared<plask::StackContainer<2>>());
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 4.), plask::shared_ptr<plask::Material>()));

@@ -6,7 +6,7 @@
 
 namespace plask {
 
-class RectilinearMesh2DfromSimpleDivision: public MeshGeneratorOf<RectilinearMesh2D> {
+class RectilinearMesh2DGeneratorSimple: public MeshGeneratorOf<RectilinearMesh2D> {
 
     size_t division;
 
@@ -17,7 +17,7 @@ class RectilinearMesh2DfromSimpleDivision: public MeshGeneratorOf<RectilinearMes
 
   public:
 
-      RectilinearMesh2DfromSimpleDivision(size_t div=1, double factor=2.0) : division(div) {}
+      RectilinearMesh2DGeneratorSimple(size_t div=1, double factor=2.0) : division(div) {}
 
       /// Get initial division of the smallest element in the mesh
       inline size_t getDivision() { return division; }

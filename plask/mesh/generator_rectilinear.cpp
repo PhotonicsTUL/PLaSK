@@ -4,7 +4,7 @@
 
 namespace plask {
 
-RectilinearMesh1D RectilinearMesh2DfromSimpleDivision::get1DMesh(const RectilinearMesh1D& initial)
+RectilinearMesh1D RectilinearMesh2DGeneratorSimple::get1DMesh(const RectilinearMesh1D& initial)
 {
     // TODO: Użyj algorytmu Roberta, może będzie lepszy
 
@@ -40,7 +40,7 @@ RectilinearMesh1D RectilinearMesh2DfromSimpleDivision::get1DMesh(const Rectiline
     return result;
 }
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2DfromSimpleDivision::generate(const shared_ptr<GeometryElementD<2>>& geometry)
+shared_ptr<RectilinearMesh2D> RectilinearMesh2DGeneratorSimple::generate(const shared_ptr<GeometryElementD<2>>& geometry)
 {
     RectilinearMesh2D initial = RectilinearMeshFromGeometry(geometry);
     auto mesh = make_shared<RectilinearMesh2D>();

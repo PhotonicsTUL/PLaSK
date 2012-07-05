@@ -1,5 +1,5 @@
 #include "../python_globals.h"
-#include "../python_boundary.h"
+#include "../python_mesh.h"
 #include <algorithm>
 #include <boost/python/stl_iterator.hpp>
 #include <numpy/arrayobject.h>
@@ -7,6 +7,7 @@
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/interpolation.h>
 #include <plask/mesh/rectilinear.h>
+#include <plask/mesh/generator_rectilinear.h>
 #include <plask/mesh/regular.h>
 
 namespace plask { namespace python {
@@ -442,6 +443,18 @@ void register_mesh_rectangular()
         .def("__iter__", py::range((auto (*)(const plask::RegularMesh3D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RegularMesh3D& m)->decltype(m.end_fast()))&std::end))
     ;
 
+    ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");
+
+    py::class_<RectilinearMesh2DGeneratorSimple, shared_ptr<RectilinearMesh2DGeneratorSimple>,
+                py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("SimpleGenerator",
+        "Generator of Rectilinear2D mesh by simple division of the geometry.\n\n"
+        "SimpleGenerator(division=1)\n"
+        "    create generator with initial division of all geometry elements", py::init<size_t>(py::arg("division")=1))
+        .add_property("division", &RectilinearMesh2DGeneratorSimple::getDivision, &RectilinearMesh2DGeneratorSimple::setDivision,
+                    "initial division of all geometry elements")
+    ;
+    py::scope().attr("Rectilinear2D").attr("SimpleGenerator") = py::scope().attr("SimpleGenerator");
+    py::delattr(py::scope(), "SimpleGenerator");
 }
 
 }} // namespace plask::python

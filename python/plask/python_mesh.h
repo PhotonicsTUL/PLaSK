@@ -1,17 +1,31 @@
-#ifndef PLASK__PYTHON_BOUNDARY_H
-#define PLASK__PYTHON_BOUNDARY_H
+#ifndef PLASK__PYTHON_MESH_H
+#define PLASK__PYTHON_MESH_H
 
 #include <cmath>
 
 // Important includes
 #include "python_globals.h"
+#include <plask/mesh/mesh.h>
 #include <plask/mesh/boundary.h>
 
 namespace plask { namespace python {
 
 namespace py = boost::python;
 
-// Generic declaration of boundary class for a specific mesh type
+/// Generic declaration of mesh generator
+template <typename MeshType>
+py::class_<MeshGeneratorOf<MeshType>, shared_ptr<MeshGeneratorOf<MeshType>>, boost::noncopyable>
+ExportMeshGenerator(const std::string name) {
+    py::class_<MeshGeneratorOf<MeshType>, shared_ptr<MeshGeneratorOf<MeshType>>, boost::noncopyable>
+    pyclass("Generator", ("Base class for all "+name+" mesh generators.").c_str(), py::no_init);
+    pyclass.def("__call__", &MeshGeneratorOf<MeshType>::operator(), "Generate mesh for given geometry", py::arg("geometry"));
+    pyclass.def("clearCache", &MeshGeneratorOf<MeshType>::clearCache, "Clear cache of generated meshes");
+    py::scope().attr(name.c_str()).attr("Generator") = py::scope().attr("Generator");
+    py::delattr(py::scope(), "Generator");
+    return pyclass;
+}
+
+/// Generic declaration of boundary class for a specific mesh type
 template <typename MeshType>
 struct ExportBoundary {
 
@@ -71,4 +85,4 @@ struct ExportBoundary {
 
 }} // namespace plask::python
 
-#endif // PLASK__PYTHON_BOUNDARY_H
+#endif // PLASK__PYTHON_MESH_H

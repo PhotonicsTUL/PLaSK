@@ -65,3 +65,15 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertEqual( list(b), [0, 3] )
 
         self.assertEqual( plasktest.testBoundary(self.mesh2, lambda mesh,i: i in [2,3]), [2, 3] )
+
+
+    def testSimpleGenerator(self):
+        stack = plask.geometry.Stack2D()
+        stack.append(plask.geometry.Rectangle(2, 2, None))
+        stack.append(plask.geometry.Rectangle(2, 16, None))
+        stack.append(plask.geometry.Rectangle(2, 8, None))
+        generator = plask.mesh.Rectilinear2D.SimpleGenerator()
+        generator.division = 2
+        mesh = generator(stack)
+        self.assertEqual( list(mesh.axis0), [0., 1., 2.] )
+        self.assertEqual( list(mesh.axis1), [0., 1., 2., 4., 6., 10., 18, 22., 26.] )
