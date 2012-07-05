@@ -39,10 +39,25 @@ namespace detail {
         typename std::enable_if<std::is_base_of<ModuleOver<typename ModuleT::SpaceType>, ModuleT>::value>::type,
         typename std::enable_if<std::is_base_of<ModuleWithMesh<typename ModuleT::SpaceType, typename ModuleT::MeshType>, ModuleT>::value>::type>
     {
+        static void Module_setMesh(ModuleT& self, py::object omesh) {
+            try {
+                shared_ptr<typename ModuleT::MeshType> mesh = py::extract<shared_ptr<typename ModuleT::MeshType>>(omesh);
+                self.setMesh(mesh);
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                try {
+                    MeshGeneratorOf<typename ModuleT::MeshType>* mesh = py::extract<MeshGeneratorOf<typename ModuleT::MeshType>*>(omesh);
+                    self.setMesh(*mesh);
+                } catch (py::error_already_set) {
+                    throw TypeError("Cannot convert argument to proper mesh type.");
+                }
+            }
+        }
+
         template <typename PyModule>
         static auto init(PyModule& module) -> PyModule& {
             module.add_property("geometry", &ModuleT::getGeometry, &ModuleT::setGeometry, "Geometry provided to the module");
-            module.add_property("mesh", &ModuleT::getMesh, &ModuleT::setMesh, "Mesh provided to the module");
+            module.add_property("mesh", &ModuleT::getMesh, Module_setMesh, "Mesh provided to the module");
             return module;
         }
     };

@@ -84,8 +84,9 @@ You should start reading from section \ref modules "How to implement an own modu
 #include "mesh/mesh.h"
 #include "mesh/interpolation.h"
 #include "mesh/boundary_conditions.h"
-#include "mesh/rectilinear.h"
 #include "mesh/regular.h"
+#include "mesh/rectilinear.h"
+#include "mesh/generator_rectilinear.h"
 
 #include "provider/provider.h"
 #include "provider/temperature.h"

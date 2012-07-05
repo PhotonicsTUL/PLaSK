@@ -598,6 +598,14 @@ class ModuleWithMesh: public ModuleOver<SpaceT> {
             this->mesh->changedConnectMethod(this, &ModuleWithMesh<SpaceT, MeshT>::onMeshChange);
         this->initialized = false;
     }
+
+    /**
+     * Set new mesh got from generator
+     * \param generator mesh generator
+     */
+    void setMesh(MeshGeneratorOf<MeshT>& generator) {
+        setMesh(generator(this->geometry->getChild()));
+    }
 };
 
 

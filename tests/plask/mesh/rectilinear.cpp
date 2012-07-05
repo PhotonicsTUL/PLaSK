@@ -1,8 +1,10 @@
 #include <boost/test/unit_test.hpp>
 
-#include <plask/mesh/rectilinear.h>
 #include <plask/geometry/stack.h>
 #include <plask/geometry/leaf.h>
+
+#include <plask/mesh/rectilinear.h>
+#include <plask/mesh/generator_rectilinear.h>
 
 BOOST_AUTO_TEST_SUITE(rectilinear) // MUST be the same as the file name
 
@@ -116,6 +118,24 @@ BOOST_AUTO_TEST_CASE(boundary) {
     BOOST_CHECK_EQUAL_COLLECTIONS(pred_bound_with_mesh.begin(), pred_bound_with_mesh.end(),
                                   std::begin(expected), std::end(expected));
 
+}
+
+BOOST_AUTO_TEST_CASE(generator) {
+    plask::RectilinearMesh2DfromSimpleDivision generator;
+
+    auto stack(plask::make_shared<plask::StackContainer<2>>());
+    stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 4.), plask::shared_ptr<plask::Material>()));
+    stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 1.), plask::shared_ptr<plask::Material>()));
+    stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 8.), plask::shared_ptr<plask::Material>()));
+
+    auto mesh = generator(stack);
+    BOOST_CHECK_EQUAL(mesh->c1[0],  0.);
+    BOOST_CHECK_EQUAL(mesh->c1[1],  2.);
+    BOOST_CHECK_EQUAL(mesh->c1[2],  4.);
+    BOOST_CHECK_EQUAL(mesh->c1[3],  5.);
+    BOOST_CHECK_EQUAL(mesh->c1[4],  7.);
+    BOOST_CHECK_EQUAL(mesh->c1[5],  9.);
+    BOOST_CHECK_EQUAL(mesh->c1[6], 13.);
 }
 
 

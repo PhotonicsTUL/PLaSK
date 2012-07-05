@@ -117,9 +117,13 @@ struct OnePoint3DMesh: public plask::Mesh<3> {
 You should also implement interpolation algorithms for your mesh, see @ref interpolation_write for more details.
 */
 
+#include <map>
+
 #include <plask/config.h>
+#include <plask/memory.h>
 
 #include "../vec.h"
+#include "../geometry/element.h"
 #include "../utils/iterators.h"
 
 #include <boost/signals2.hpp>
@@ -360,6 +364,67 @@ struct SimpleMeshAdapter: public Mesh<dim> {
     virtual typename Mesh<dim>::Iterator begin() const { return makeMeshIterator(internal.begin()); }
     virtual typename Mesh<dim>::Iterator end() const { return makeMeshIterator(internal.end()); }
 
+};
+
+/** Base class for every mesh generator */
+class MeshGenerator {};
+
+/** Base class for specific mesh generator */
+template <typename MeshT>
+class MeshGeneratorOf: public MeshGenerator {
+
+    std::map<GeometryElementD<MeshT::dim>*, weak_ptr<MeshT>> cache;
+
+    void removeFromCache(GeometryElementD<MeshT::dim>* geometry) {
+        std::cerr << "ODPIĘCIE\n";
+        geometry->changedDisconnectMethod(this, &MeshGeneratorOf<MeshT>::onGeometryChange);
+        cache.erase(cache.find(geometry));
+    }
+
+    void onGeometryChange(typename GeometryElementD<MeshT::dim>::Event& evt) {
+        removeFromCache(&dynamic_cast<GeometryElementD<MeshT::dim>&>(evt.source()));
+    }
+
+  protected:
+
+    /**
+     * Generate new mesh
+     * \param geometry on which the mesh should be generated
+     * \return new generated mesh
+     */
+    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryElementD<MeshT::dim>>& geometry) = 0;
+
+  public:
+    // Type of generated mesh
+    typedef MeshT MeshType;
+
+    virtual ~MeshGeneratorOf() {
+        clearCache();
+    }
+
+    /**
+     * Clear the cache of generated meshes.
+     * This method should be called each time the value of generator was changed
+     */
+    void clearCache() {
+        for (auto i: cache)
+            i.first->changedDisconnectMethod(this, &MeshGeneratorOf<MeshT>::onGeometryChange);
+        cache.clear();
+    }
+
+    /// Get generated mesh if it is cached or create a new one
+    shared_ptr<MeshT> operator()(const shared_ptr<GeometryElementD<MeshT::dim>>& geometry) {
+        auto found = cache.find(geometry.get());
+        if (found != cache.end()) {
+            auto mesh = (found->second).lock();
+            if (mesh) return mesh;
+            else removeFromCache(geometry.get());
+        }
+        auto mesh = generate(geometry);
+        cache[geometry.get()] = weak_ptr<MeshT>(mesh);
+        geometry->changedConnectMethod(this, &MeshGeneratorOf<MeshT>::onGeometryChange);
+        return mesh;
+    }
 };
 
 } // namespace plask
