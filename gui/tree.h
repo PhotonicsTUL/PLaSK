@@ -4,6 +4,7 @@
 #include <QAbstractItemModel>
 #include <QPixmap>
 #include <plask/geometry/element.h>
+#include <plask/geometry/space.h>
 #include <plask/memory.h>
 #include <memory>
 #include "geomwrapper/register.h"
@@ -32,8 +33,14 @@ protected:
     /// Children of this item.
     std::vector< std::unique_ptr<GeometryTreeItem> > childItems;
 
+    /// ?? For top level items like extrusion it is a geometry in which element is included, for rest this is nullptr.
+    plask::shared_ptr<plask::Geometry> geometry;
+
     /// Cache for miniature
     QPixmap miniature;
+
+    /// ?? Don't display children of this in tree, used by translation in containers and some geometries on top of tree.
+    bool skipChildrenDisplay;
 
     /**
      * True only if this item was initialized. Its children are on childItems list, etc.
