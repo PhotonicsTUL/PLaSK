@@ -373,16 +373,15 @@ class MeshGenerator {};
 template <typename MeshT>
 class MeshGeneratorOf: public MeshGenerator {
 
-    std::map<GeometryElementD<MeshT::dim>*, weak_ptr<MeshT>> cache;
+    std::map<GeometryElement*, weak_ptr<MeshT>> cache;
 
-    void removeFromCache(GeometryElementD<MeshT::dim>* geometry) {
-        std::cerr << "ODPIĘCIE\n";
+    void removeFromCache(GeometryElement* geometry) {
         geometry->changedDisconnectMethod(this, &MeshGeneratorOf<MeshT>::onGeometryChange);
         cache.erase(cache.find(geometry));
     }
 
-    void onGeometryChange(typename GeometryElementD<MeshT::dim>::Event& evt) {
-        removeFromCache(&dynamic_cast<GeometryElementD<MeshT::dim>&>(evt.source()));
+    void onGeometryChange(GeometryElement::Event& evt) {
+        removeFromCache(&evt.source());
     }
 
   protected:

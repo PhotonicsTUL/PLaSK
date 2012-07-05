@@ -109,7 +109,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @param source source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryElement& source, unsigned char flags = 0):  EventWithSourceAndFlags<GeometryElement>(source, flags) {}
+        explicit Event(GeometryElement& source, unsigned char flags = 0): EventWithSourceAndFlags<GeometryElement>(source, flags) {}
     };
 
     /**

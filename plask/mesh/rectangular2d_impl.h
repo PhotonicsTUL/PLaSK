@@ -44,8 +44,7 @@ void RectangularMesh2D<Mesh1D>::setIterationOrder(IterationOrder iterationOrder)
 
 template <typename Mesh1D>
 typename RectangularMesh2D<Mesh1D>::IterationOrder RectangularMesh2D<Mesh1D>::getIterationOrder() const {
-    auto f = transposed_index<Mesh1D>;
-    return (index_f == f)? TRANSPOSED_ORDER : NORMAL_ORDER;
+    return (index_f == &transposed_index<Mesh1D>)? TRANSPOSED_ORDER : NORMAL_ORDER;
 }
 
 
