@@ -273,6 +273,19 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3D__init__geometry(const GeometryEl
 }
 
 
+void RectilinearMesh2DSimpleGenerator_addRefinement(RectilinearMesh2DSimpleGenerator& self, const PathHints& path, const std::string& axis, double position) {
+    int i = config.axes[axis] - 1;
+    std::cerr << "axis:" << axis << " " << i << "\n";
+    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    self.addRefinement(path, RectilinearMesh2DSimpleGenerator::Direction(i), position);
+}
+
+void RectilinearMesh2DSimpleGenerator_removeRefinement(RectilinearMesh2DSimpleGenerator& self, const PathHints& path, const std::string& axis, double position) {
+    int i = config.axes[axis] - 1;
+    if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
+    self.removeRefinement(path, RectilinearMesh2DSimpleGenerator::Direction(i), position);
+}
+
 
 static inline bool plask_import_array() {
     import_array1(false);
@@ -445,13 +458,19 @@ void register_mesh_rectangular()
 
     ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");
 
-    py::class_<RectilinearMesh2DGeneratorSimple, shared_ptr<RectilinearMesh2DGeneratorSimple>,
+    py::class_<RectilinearMesh2DSimpleGenerator, shared_ptr<RectilinearMesh2DSimpleGenerator>,
                 py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("SimpleGenerator",
         "Generator of Rectilinear2D mesh by simple division of the geometry.\n\n"
         "SimpleGenerator(division=1)\n"
         "    create generator with initial division of all geometry elements", py::init<size_t>(py::arg("division")=1))
-        .add_property("division", &RectilinearMesh2DGeneratorSimple::getDivision, &RectilinearMesh2DGeneratorSimple::setDivision,
+        .add_property("division", &RectilinearMesh2DSimpleGenerator::getDivision, &RectilinearMesh2DSimpleGenerator::setDivision,
                     "initial division of all geometry elements")
+        .def("addRefinement", &RectilinearMesh2DSimpleGenerator_addRefinement, "Add a refining line inside the object pointed by path",
+             (py::arg("path"), "axis", "position"))
+        .def("removeRefinement", &RectilinearMesh2DSimpleGenerator_removeRefinement, "Remove the refining line from the object pointed by path",
+             (py::arg("path"), "axis", "position"))
+        .def("removeRefinements", &RectilinearMesh2DSimpleGenerator_removeRefinement, "Remove the all refining lines from the object pointed by path",
+             (py::arg("path")))
     ;
     py::scope().attr("Rectilinear2D").attr("SimpleGenerator") = py::scope().attr("SimpleGenerator");
     py::delattr(py::scope(), "SimpleGenerator");

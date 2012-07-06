@@ -98,7 +98,7 @@ template<class KeyType> void
 export_set(const char* py_name) {
    typedef py_set<KeyType> set_T;
 
-   boost::python::class_<set_T > (py_name, "mutable set")
+   boost::python::class_<set_T > (py_name, "Mutable set")
        .def("__len__", &set_T::size)
        .def("__contains__",&set_T::contains)
        .def("add", &set_T::add, "add element")
@@ -129,7 +129,7 @@ template<class KeyType> void
 export_frozenset(const char* py_name) {
    typedef py_set<KeyType> set_T;
 
-   boost::python::class_<set_T > (py_name, "immutable set")
+   boost::python::class_<set_T > (py_name, "Immutable set")
        .def("__len__", &set_T::size)
        .def("__contains__", &set_T::contains)
        .def("__iter__", boost::python::iterator<set_T> ())

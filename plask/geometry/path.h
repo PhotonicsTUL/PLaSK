@@ -77,6 +77,11 @@ struct PathHints {
         return *this;
     }
 
+    /// Comparison operator for using PathHints as map keys
+    bool operator<(const PathHints& comp) const {
+        return hintFor < comp.hintFor;
+    }
+
     /**
      * Add hint to hints map. Overwrite if hint for given container already exists.
      * @param container, child hint to add
