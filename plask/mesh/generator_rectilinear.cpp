@@ -5,7 +5,7 @@
 
 namespace plask {
 
-RectilinearMesh1D RectilinearMesh2DSimpleGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryElementD<2>>& geometry, size_t dir)
+RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryElementD<2>>& geometry, size_t dir)
 {
     // TODO: Użyj algorytmu Roberta, może będzie lepszy
 
@@ -14,11 +14,11 @@ RectilinearMesh1D RectilinearMesh2DSimpleGenerator::get1DMesh(const RectilinearM
     // First add refinement points
     for (auto ref: refinements[dir]) {
         auto boxes = geometry->getLeafsBoundingBoxes(&ref.first);
-        if (boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DSimpleGenerator: Single refinement defined for more than one object.");
+        if (warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Single refinement defined for more than one object.");
         for (auto box: boxes) {
             for (auto x: ref.second) {
-                if (x < 0 || x > box.upper[dir]-box.lower[dir])
-                    writelog(LOG_WARNING, "RectilinearMesh2DSimpleGenerator: Refinement at %1% outside of the object (0 ... %2%).", x, box.upper[dir]-box.lower[dir]);
+                if (warn_outside && (x < 0 || x > box.upper[dir]-box.lower[dir]))
+                    writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement at %1% outside of the object (0 ... %2%).", x, box.upper[dir]-box.lower[dir]);
                 result.addPoint(box.lower[dir] + x);
             }
         }
@@ -55,7 +55,7 @@ RectilinearMesh1D RectilinearMesh2DSimpleGenerator::get1DMesh(const RectilinearM
     return result;
 }
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryElementD<2>>& geometry)
+shared_ptr<RectilinearMesh2D> RectilinearMesh2DDividingGenerator::generate(const shared_ptr<GeometryElementD<2>>& geometry)
 {
     RectilinearMesh2D initial = RectilinearMeshFromGeometry(geometry);
     auto mesh = make_shared<RectilinearMesh2D>();

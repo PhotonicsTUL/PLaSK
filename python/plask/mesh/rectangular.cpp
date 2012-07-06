@@ -273,17 +273,17 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3D__init__geometry(const GeometryEl
 }
 
 
-void RectilinearMesh2DSimpleGenerator_addRefinement(RectilinearMesh2DSimpleGenerator& self, const PathHints& path, const std::string& axis, double position) {
+void RectilinearMesh2DDividingGenerator_addRefinement(RectilinearMesh2DDividingGenerator& self, const PathHints& path, const std::string& axis, double position) {
     int i = config.axes[axis] - 1;
     std::cerr << "axis:" << axis << " " << i << "\n";
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.addRefinement(path, RectilinearMesh2DSimpleGenerator::Direction(i), position);
+    self.addRefinement(path, RectilinearMesh2DDividingGenerator::Direction(i), position);
 }
 
-void RectilinearMesh2DSimpleGenerator_removeRefinement(RectilinearMesh2DSimpleGenerator& self, const PathHints& path, const std::string& axis, double position) {
+void RectilinearMesh2DDividingGenerator_removeRefinement(RectilinearMesh2DDividingGenerator& self, const PathHints& path, const std::string& axis, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.removeRefinement(path, RectilinearMesh2DSimpleGenerator::Direction(i), position);
+    self.removeRefinement(path, RectilinearMesh2DDividingGenerator::Direction(i), position);
 }
 
 
@@ -458,22 +458,24 @@ void register_mesh_rectangular()
 
     ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");
 
-    py::class_<RectilinearMesh2DSimpleGenerator, shared_ptr<RectilinearMesh2DSimpleGenerator>,
-                py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("SimpleGenerator",
+    py::class_<RectilinearMesh2DDividingGenerator, shared_ptr<RectilinearMesh2DDividingGenerator>,
+                py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("DividingGenerator",
         "Generator of Rectilinear2D mesh by simple division of the geometry.\n\n"
-        "SimpleGenerator(division=1)\n"
+        "DividingGenerator(division=1)\n"
         "    create generator with initial division of all geometry elements", py::init<size_t>(py::arg("division")=1))
-        .add_property("division", &RectilinearMesh2DSimpleGenerator::getDivision, &RectilinearMesh2DSimpleGenerator::setDivision,
+        .add_property("division", &RectilinearMesh2DDividingGenerator::getDivision, &RectilinearMesh2DDividingGenerator::setDivision,
                     "initial division of all geometry elements")
-        .def("addRefinement", &RectilinearMesh2DSimpleGenerator_addRefinement, "Add a refining line inside the object pointed by path",
+        .def_readwrite("warn_multiple", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if path points to more than one object")
+        .def_readwrite("warn_ouside", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining line is outside of its object")
+        .def("addRefinement", &RectilinearMesh2DDividingGenerator_addRefinement, "Add a refining line inside the object pointed by path",
              (py::arg("path"), "axis", "position"))
-        .def("removeRefinement", &RectilinearMesh2DSimpleGenerator_removeRefinement, "Remove the refining line from the object pointed by path",
+        .def("removeRefinement", &RectilinearMesh2DDividingGenerator_removeRefinement, "Remove the refining line from the object pointed by path",
              (py::arg("path"), "axis", "position"))
-        .def("removeRefinements", &RectilinearMesh2DSimpleGenerator_removeRefinement, "Remove the all refining lines from the object pointed by path",
+        .def("removeRefinements", &RectilinearMesh2DDividingGenerator::removeRefinements, "Remove the all refining lines from the object pointed by path",
              (py::arg("path")))
     ;
-    py::scope().attr("Rectilinear2D").attr("SimpleGenerator") = py::scope().attr("SimpleGenerator");
-    py::delattr(py::scope(), "SimpleGenerator");
+    py::scope().attr("Rectilinear2D").attr("DividingGenerator") = py::scope().attr("DividingGenerator");
+    py::delattr(py::scope(), "DividingGenerator");
 }
 
 }} // namespace plask::python

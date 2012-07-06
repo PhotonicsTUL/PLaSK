@@ -7,7 +7,7 @@
 
 namespace plask {
 
-class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
+class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
     size_t division;
 
@@ -27,7 +27,9 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D
         VERTICAL = 1
     };
 
-    RectilinearMesh2DSimpleGenerator(size_t div=1) : division(div) {}
+    bool warn_multiple, warn_outside;
+
+    RectilinearMesh2DDividingGenerator(size_t div=1) : division(div), warn_multiple(true), warn_outside(true) {}
 
     /// Get initial division of the smallest element in the mesh
     inline size_t getDivision() { return division; }
@@ -52,9 +54,9 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D
     */
     void removeRefinement(const PathHints& path, Direction direction, double position) {
         auto object = refinements[std::size_t(direction)].find(path);
-        if (object == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMesh2DSimpleGenerator", "There are no refinements for specified geometry element.");
+        if (object == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMesh2DDividingGenerator", "There are no refinements for specified geometry element.");
         auto oposition = object->second.find(position);
-        if (oposition == object->second.end()) throw BadInput("RectilinearMesh2DSimpleGenerator", "Specified geometry element does not have refinements on %1%.", *oposition);
+        if (oposition == object->second.end()) throw BadInput("RectilinearMesh2DDividingGenerator", "Specified geometry element does not have refinements on %1%.", *oposition);
         object->second.erase(oposition);
         if (object->second.empty()) refinements[std::size_t(direction)].erase(object);
     }
@@ -72,7 +74,7 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D
         if (object0 != refinements[0].end()) refinements[0].erase(object0);
         if (object1 != refinements[1].end()) refinements[1].erase(object1);
         if (object0 == refinements[0].end() && object1 == refinements[1].end())
-            throw BadInput("RectilinearMesh2DSimpleGenerator", "There are no refinements for specified geometry element.");
+            throw BadInput("RectilinearMesh2DDividingGenerator", "There are no refinements for specified geometry element.");
     }
 };
 
