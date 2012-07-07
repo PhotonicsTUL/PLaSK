@@ -260,14 +260,14 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
 
 
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2D__init__geometry(const GeometryElementD<2>& geometry, std::string order) {
-    auto mesh = make_shared<RectilinearMesh2D>(RectilinearMeshFromGeometry(geometry));
+shared_ptr<RectilinearMesh2D> RectilinearMesh2D__init__geometry(const shared_ptr<GeometryElementD<2>>& geometry, std::string order) {
+    auto mesh = RectilinearMesh2DSimpleGenerator().generate(geometry);
     RectangularMesh2D__setOrdering(*mesh, order);
     return mesh;
 }
 
-shared_ptr<RectilinearMesh3D> RectilinearMesh3D__init__geometry(const GeometryElementD<3>& geometry, std::string order) {
-    auto mesh = make_shared<RectilinearMesh3D>(RectilinearMeshFromGeometry(geometry));
+shared_ptr<RectilinearMesh3D> RectilinearMesh3D__init__geometry(const shared_ptr<GeometryElementD<3>>& geometry, std::string order) {
+    auto mesh = RectilinearMesh3DSimpleGenerator().generate(geometry);
     RectangularMesh3D__setOrdering(*mesh, order);
     return mesh;
 }
@@ -277,13 +277,13 @@ void RectilinearMesh2DDividingGenerator_addRefinement(RectilinearMesh2DDividingG
     int i = config.axes[axis] - 1;
     std::cerr << "axis:" << axis << " " << i << "\n";
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.addRefinement(path, RectilinearMesh2DDividingGenerator::Direction(i), position);
+    self.addRefinement(path, Primitive<2>::DIRECTION(i), position);
 }
 
 void RectilinearMesh2DDividingGenerator_removeRefinement(RectilinearMesh2DDividingGenerator& self, const PathHints& path, const std::string& axis, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.removeRefinement(path, RectilinearMesh2DDividingGenerator::Direction(i), position);
+    self.removeRefinement(path, Primitive<2>::DIRECTION(i), position);
 }
 
 
@@ -458,8 +458,16 @@ void register_mesh_rectangular()
 
     ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");
 
+    py::class_<RectilinearMesh2DSimpleGenerator, shared_ptr<RectilinearMesh2DSimpleGenerator>,
+               py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("SimpleGenerator",
+        "Generator of Rectilinear2D mesh with lines at edges of all elements.\n\n"
+        "SimpleGenerator()\n    create generator")
+    ;
+    py::scope().attr("Rectilinear2D").attr("SimpleGenerator") = py::scope().attr("SimpleGenerator");
+    py::delattr(py::scope(), "SimpleGenerator");
+
     py::class_<RectilinearMesh2DDividingGenerator, shared_ptr<RectilinearMesh2DDividingGenerator>,
-                py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("DividingGenerator",
+               py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("DividingGenerator",
         "Generator of Rectilinear2D mesh by simple division of the geometry.\n\n"
         "DividingGenerator(division=1)\n"
         "    create generator with initial division of all geometry elements", py::init<size_t>(py::arg("division")=1))
@@ -476,6 +484,17 @@ void register_mesh_rectangular()
     ;
     py::scope().attr("Rectilinear2D").attr("DividingGenerator") = py::scope().attr("DividingGenerator");
     py::delattr(py::scope(), "DividingGenerator");
+
+    ExportMeshGenerator<RectilinearMesh3D>("Rectilinear3D");
+
+    py::class_<RectilinearMesh3DSimpleGenerator, shared_ptr<RectilinearMesh3DSimpleGenerator>,
+               py::bases<MeshGeneratorOf<RectilinearMesh3D>>>("SimpleGenerator",
+        "Generator of Rectilinear3D mesh with lines at edges of all elements.\n\n"
+        "SimpleGenerator()\n    create generator")
+    ;
+    py::scope().attr("Rectilinear3D").attr("SimpleGenerator") = py::scope().attr("SimpleGenerator");
+    py::delattr(py::scope(), "SimpleGenerator");
+
 }
 
 }} // namespace plask::python

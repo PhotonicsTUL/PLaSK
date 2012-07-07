@@ -45,46 +45,4 @@ RectilinearMesh3D RectilinearMesh3D::getMidpointsMesh() const {
 }
 
 
-RectilinearMesh2D RectilinearMeshFromGeometry(const GeometryElementD<2>& geometry, RectilinearMesh2D::IterationOrder iterationOrder)
-{
-    RectilinearMesh2D mesh;
-
-    std::vector<Box2D> boxes = geometry.getLeafsBoundingBoxes();
-
-    for (auto& box: boxes) {
-        mesh.c0.addPoint(box.lower.c0);
-        mesh.c0.addPoint(box.upper.c0);
-        mesh.c1.addPoint(box.lower.c1);
-        mesh.c1.addPoint(box.upper.c1);
-    }
-
-    mesh.setIterationOrder(iterationOrder);
-
-    mesh.fireChanged();
-
-    return mesh;
-}
-
-RectilinearMesh3D RectilinearMeshFromGeometry(const GeometryElementD<3>& geometry, RectilinearMesh3D::IterationOrder iterationOrder)
-{
-    RectilinearMesh3D mesh;
-
-    std::vector<Box3D> boxes = geometry.getLeafsBoundingBoxes();
-
-    for (auto& box: boxes) {
-        mesh.c0.addPoint(box.lower.c0);
-        mesh.c0.addPoint(box.upper.c0);
-        mesh.c1.addPoint(box.lower.c1);
-        mesh.c1.addPoint(box.upper.c1);
-        mesh.c2.addPoint(box.lower.c2);
-        mesh.c2.addPoint(box.upper.c2);
-    }
-
-    mesh.setIterationOrder(iterationOrder);
-
-    mesh.fireChanged();
-
-    return mesh;
-}
-
 } // namespace plask

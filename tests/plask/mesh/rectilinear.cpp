@@ -62,10 +62,9 @@ BOOST_AUTO_TEST_CASE(from_geometry_2) {
     stack->push_back(rect2, plask::align::Center());
     stack->push_back(rect3, plask::align::Center());
 
-    plask::RectilinearMesh2D mesh = plask::RectilinearMeshFromGeometry(stack);
-    BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1D({-2., -1., 1., 2.}));
-    BOOST_CHECK_EQUAL(mesh.c1, plask::RectilinearMesh1D({0., 3., 8., 10.}));
-
+    auto mesh = plask::RectilinearMesh2DSimpleGenerator().generate(stack);
+    BOOST_CHECK_EQUAL(mesh->c0, plask::RectilinearMesh1D({-2., -1., 1., 2.}));
+    BOOST_CHECK_EQUAL(mesh->c1, plask::RectilinearMesh1D({0., 3., 8., 10.}));
 }
 
 BOOST_AUTO_TEST_CASE(from_geometry_3) {
@@ -78,11 +77,10 @@ BOOST_AUTO_TEST_CASE(from_geometry_3) {
     stack->push_back(cub2, plask::align::CenterCenter());
     stack->push_back(cub3, plask::align::CenterCenter());
 
-    plask::RectilinearMesh3D mesh = plask::RectilinearMeshFromGeometry(stack);
-    BOOST_CHECK_EQUAL(mesh.c0, plask::RectilinearMesh1D({-2., -1., 1., 2.}));
-    BOOST_CHECK_EQUAL(mesh.c1, plask::RectilinearMesh1D({-1., 1.}));
-    BOOST_CHECK_EQUAL(mesh.c2, plask::RectilinearMesh1D({0., 3., 8., 10.}));
-
+    auto mesh = plask::RectilinearMesh3DSimpleGenerator().generate(stack);
+    BOOST_CHECK_EQUAL(mesh->c0, plask::RectilinearMesh1D({-2., -1., 1., 2.}));
+    BOOST_CHECK_EQUAL(mesh->c1, plask::RectilinearMesh1D({-1., 1.}));
+    BOOST_CHECK_EQUAL(mesh->c2, plask::RectilinearMesh1D({0., 3., 8., 10.}));
 }
 
 BOOST_AUTO_TEST_CASE(middle2) {

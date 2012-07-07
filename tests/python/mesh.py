@@ -73,10 +73,15 @@ class RectilinearMeshes(unittest.TestCase):
         stack.append(plask.geometry.Rectangle(2, 16, None))
         hint = stack.append(plask.geometry.Rectangle(2, 16, None))
 
-        generator = plask.mesh.Rectilinear2D.DividingGenerator()
-        generator.division = 2
-        generator.addRefinement(hint, "z", 8.)
+        generator1 = plask.mesh.Rectilinear2D.SimpleGenerator()
+        generator2 = plask.mesh.Rectilinear2D.DividingGenerator()
+        generator2.division = 2
+        generator2.addRefinement(hint, "z", 8.)
 
-        mesh = generator(stack)
-        self.assertEqual( list(mesh.axis0), [0., 1., 2.] )
-        self.assertEqual( list(mesh.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )
+        mesh1 = generator1(stack)
+        self.assertEqual( list(mesh1.axis0), [0., 2.] )
+        self.assertEqual( list(mesh1.axis1), [0., 2., 18., 34.] )
+
+        mesh2 = generator2(stack)
+        self.assertEqual( list(mesh2.axis0), [0., 1., 2.] )
+        self.assertEqual( list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )

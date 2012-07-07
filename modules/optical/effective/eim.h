@@ -97,7 +97,7 @@ struct EffectiveIndex2DModule: public ModuleWithMesh<Geometry2DCartesian, Rectil
         if (!geometry) throw NoGeometryException(getId());
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
-        setMesh(make_shared<RectilinearMesh2D>(RectilinearMeshFromGeometry(child)));
+        setMesh(RectilinearMesh2DSimpleGenerator().generate(child));
     }
 
     /**
@@ -110,7 +110,7 @@ struct EffectiveIndex2DModule: public ModuleWithMesh<Geometry2DCartesian, Rectil
         if (!geometry) throw NoChildException();
         auto child = geometry->getChild();
         if (!child) throw NoChildException();
-        shared_ptr<RectilinearMesh2D> meshxy = make_shared<RectilinearMesh2D>(RectilinearMeshFromGeometry(child));
+        shared_ptr<RectilinearMesh2D> meshxy = RectilinearMesh2DSimpleGenerator().generate(child);
         meshxy->tran() = meshx;
         setMesh(meshxy);
     }

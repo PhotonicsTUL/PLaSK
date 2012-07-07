@@ -7,6 +7,22 @@
 
 namespace plask {
 
+class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
+
+  public:
+
+    virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryElementD<2>>& geometry);
+};
+
+
+class RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3D> {
+
+  public:
+
+    virtual shared_ptr<RectilinearMesh3D> generate(const shared_ptr<GeometryElementD<3>>& geometry);
+};
+
+
 class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
     size_t division;
@@ -17,19 +33,13 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
 
     RectilinearMesh1D get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<plask::GeometryElementD<2>>& geometry, size_t dir);
 
-  protected:
-    virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryElementD<2>>& geometry);
-
   public:
-
-    enum Direction {
-        HORIZONTAL = 0,
-        VERTICAL = 1
-    };
 
     bool warn_multiple, warn_outside;
 
     RectilinearMesh2DDividingGenerator(size_t div=1) : division(div), warn_multiple(true), warn_outside(true) {}
+
+    virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryElementD<2>>& geometry);
 
     /// Get initial division of the smallest element in the mesh
     inline size_t getDivision() { return division; }
@@ -42,7 +52,7 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
     * \param direction direction in which the object should be refined
     * \param position position of the additional grid line in the refined object
     */
-    void addRefinement(const PathHints& path, Direction direction, double position) {
+    void addRefinement(const PathHints& path, Primitive<2>::DIRECTION direction, double position) {
         refinements[std::size_t(direction)][path].insert(position);
     }
 
@@ -52,7 +62,7 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
     * \param direction direction in which the object should be refined
     * \param position position of the additional grid line in the refined object
     */
-    void removeRefinement(const PathHints& path, Direction direction, double position) {
+    void removeRefinement(const PathHints& path, Primitive<2>::DIRECTION direction, double position) {
         auto object = refinements[std::size_t(direction)].find(path);
         if (object == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMesh2DDividingGenerator", "There are no refinements for specified geometry element.");
         auto oposition = object->second.find(position);

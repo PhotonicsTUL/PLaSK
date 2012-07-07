@@ -5,6 +5,44 @@
 
 namespace plask {
 
+shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryElementD<2>>& geometry)
+{
+    auto mesh = make_shared<RectilinearMesh2D>();
+
+    std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
+
+    for (auto& box: boxes) {
+        mesh->c0.addPoint(box.lower.c0);
+        mesh->c0.addPoint(box.upper.c0);
+        mesh->c1.addPoint(box.lower.c1);
+        mesh->c1.addPoint(box.upper.c1);
+    }
+
+    mesh->setOptimalIterationOrder();
+    return mesh;
+}
+
+shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryElementD<3>>& geometry)
+{
+    auto mesh = make_shared<RectilinearMesh3D>();
+
+
+    std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
+
+    for (auto& box: boxes) {
+        mesh->c0.addPoint(box.lower.c0);
+        mesh->c0.addPoint(box.upper.c0);
+        mesh->c1.addPoint(box.lower.c1);
+        mesh->c1.addPoint(box.upper.c1);
+        mesh->c2.addPoint(box.lower.c2);
+        mesh->c2.addPoint(box.upper.c2);
+    }
+
+    mesh->setOptimalIterationOrder();
+    return mesh;
+}
+
+
 RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryElementD<2>>& geometry, size_t dir)
 {
     // TODO: Użyj algorytmu Roberta, może będzie lepszy
@@ -57,10 +95,20 @@ RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const Rectilinea
 
 shared_ptr<RectilinearMesh2D> RectilinearMesh2DDividingGenerator::generate(const shared_ptr<GeometryElementD<2>>& geometry)
 {
-    RectilinearMesh2D initial = RectilinearMeshFromGeometry(geometry);
+    RectilinearMesh2D initial;
+    std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
+    for (auto& box: boxes) {
+        initial.c0.addPoint(box.lower.c0);
+        initial.c0.addPoint(box.upper.c0);
+        initial.c1.addPoint(box.lower.c1);
+        initial.c1.addPoint(box.upper.c1);
+    }
+
     auto mesh = make_shared<RectilinearMesh2D>();
     mesh->c0 = get1DMesh(initial.c0, geometry, 0);
     mesh->c1 = get1DMesh(initial.c1, geometry, 1);
+
+    mesh->setOptimalIterationOrder();
     return mesh;
 }
 

@@ -18,7 +18,8 @@ py::class_<MeshGeneratorOf<MeshType>, shared_ptr<MeshGeneratorOf<MeshType>>, boo
 ExportMeshGenerator(const std::string name) {
     py::class_<MeshGeneratorOf<MeshType>, shared_ptr<MeshGeneratorOf<MeshType>>, boost::noncopyable>
     pyclass("Generator", ("Base class for all "+name+" mesh generators.").c_str(), py::no_init);
-    pyclass.def("__call__", &MeshGeneratorOf<MeshType>::operator(), "Generate mesh for given geometry", py::arg("geometry"));
+    pyclass.def("__call__", &MeshGeneratorOf<MeshType>::operator(), "Generate mesh for given geometry or load it from the cache", py::arg("geometry"));
+    pyclass.def("generate", &MeshGeneratorOf<MeshType>::generate, "Generate mesh for given geometry omitting the cache", py::arg("geometry"));
     pyclass.def("clearCache", &MeshGeneratorOf<MeshType>::clearCache, "Clear cache of generated meshes");
     py::scope().attr(name.c_str()).attr("Generator") = py::scope().attr("Generator");
     py::delattr(py::scope(), "Generator");

@@ -384,15 +384,6 @@ class MeshGeneratorOf: public MeshGenerator {
         removeFromCache(&evt.source());
     }
 
-  protected:
-
-    /**
-     * Generate new mesh
-     * \param geometry on which the mesh should be generated
-     * \return new generated mesh
-     */
-    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryElementD<MeshT::dim>>& geometry) = 0;
-
   public:
     // Type of generated mesh
     typedef MeshT MeshType;
@@ -400,6 +391,13 @@ class MeshGeneratorOf: public MeshGenerator {
     virtual ~MeshGeneratorOf() {
         clearCache();
     }
+
+    /**
+     * Generate new mesh
+     * \param geometry on which the mesh should be generated
+     * \return new generated mesh
+     */
+    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryElementD<MeshT::dim>>& geometry) = 0;
 
     /**
      * Clear the cache of generated meshes.
