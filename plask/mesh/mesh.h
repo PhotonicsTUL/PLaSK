@@ -380,10 +380,6 @@ class MeshGeneratorOf: public MeshGenerator {
     // Type of generated mesh
     typedef MeshT MeshType;
 
-    virtual ~MeshGeneratorOf() {
-        clearCache();
-    }
-
     /**
      * Generate new mesh
      * \param geometry on which the mesh should be generated

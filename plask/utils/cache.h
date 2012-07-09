@@ -52,6 +52,11 @@ struct CacheRemoveOnEachChange: public CacheRemoveStrategyBase<Key, Value> {
 template <typename Key, typename Value, template<typename Key, typename Value> class DeleteStrategy = CacheRemoveOnlyWhenDelete >
 struct Cache: public DeleteStrategy<Key, Value> {
 
+    /// Clear cache.
+    ~Cache() {
+        clear();
+    }
+
     /**
      * Try get element from cache.
      *
