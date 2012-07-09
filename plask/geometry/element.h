@@ -54,6 +54,9 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Store information about event connected with geometry element.
      *
      * Subclasses of this can includes additional information about specific type of event.
+     *
+     * Note: when element is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to subclasses of GeometryElement,
+     * because source() is already partially deleted.
      */
     struct Event: public EventWithSourceAndFlags<GeometryElement> {
 

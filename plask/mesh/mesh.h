@@ -125,6 +125,7 @@ You should also implement interpolation algorithms for your mesh, see @ref inter
 #include "../vec.h"
 #include "../geometry/element.h"
 #include "../utils/iterators.h"
+#include "../utils/cache.h"
 
 #include <boost/signals2.hpp>
 #include "../utils/event.h"
@@ -373,16 +374,7 @@ class MeshGenerator {};
 template <typename MeshT>
 class MeshGeneratorOf: public MeshGenerator {
 
-    std::map<GeometryElement*, weak_ptr<MeshT>> cache;
-
-    void removeFromCache(GeometryElement* geometry) {
-        geometry->changedDisconnectMethod(this, &MeshGeneratorOf<MeshT>::onGeometryChange);
-        cache.erase(cache.find(geometry));
-    }
-
-    void onGeometryChange(GeometryElement::Event& evt) {
-        removeFromCache(&evt.source());
-    }
+    Cache<GeometryElement, MeshT, CacheRemoveOnEachChange> cache;
 
   public:
     // Type of generated mesh
@@ -404,23 +396,15 @@ class MeshGeneratorOf: public MeshGenerator {
      * This method should be called each time the value of generator was changed
      */
     void clearCache() {
-        for (auto i: cache)
-            i.first->changedDisconnectMethod(this, &MeshGeneratorOf<MeshT>::onGeometryChange);
         cache.clear();
     }
 
     /// Get generated mesh if it is cached or create a new one
     shared_ptr<MeshT> operator()(const shared_ptr<GeometryElementD<MeshT::dim>>& geometry) {
-        auto found = cache.find(geometry.get());
-        if (found != cache.end()) {
-            auto mesh = (found->second).lock();
-            if (mesh) return mesh;
-            else removeFromCache(geometry.get());
-        }
-        auto mesh = generate(geometry);
-        cache[geometry.get()] = weak_ptr<MeshT>(mesh);
-        geometry->changedConnectMethod(this, &MeshGeneratorOf<MeshT>::onGeometryChange);
-        return mesh;
+        if (auto res = cache.get(geometry))
+            return res;
+        else
+            return cache(geometry, generate(geometry));
     }
 };
 

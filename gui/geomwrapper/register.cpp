@@ -8,6 +8,7 @@
 #include "container.h"
 #include "leaf.h"
 #include "transform.h"
+#include <plask/utils/cache.h>
 
 typedef ElementWrapper* construct_element_wrapper_t(plask::shared_ptr<plask::GeometryElement> to_wrap);
 
@@ -26,12 +27,7 @@ struct Register {
     std::unordered_map<std::type_index, construct_element_wrapper_t*> wrappersConstructors;
 
     /// Constructed wrappers for geometry elements, map: geometry element -> wrapper for key element.
-    std::map< const plask::GeometryElement*, plask::weak_ptr<ElementWrapper> > constructed;
-
-    /// If evt is delete event, remove source of event from constructed map.
-    void removeOnDelete(const plask::GeometryElement::Event& evt) {
-        if (evt.isDelete()) constructed.erase(&evt.source());
-    }
+    plask::Cache<plask::GeometryElement, ElementWrapper> constructed;
 
     /// Construct geometry element wrapper using wrappersConstructors. Doesn't change constructed map.
     ElementWrapper* construct(plask::shared_ptr<plask::GeometryElement> el) {
@@ -43,17 +39,10 @@ struct Register {
      * Get wrapper for given element. Try get it from constructed map first.
      */
     plask::shared_ptr<ElementWrapper> get(plask::shared_ptr<plask::GeometryElement> el) {
-        auto constr_iter = constructed.find(el.get());
-        if (constr_iter != constructed.end()) {
-            if (auto res = constr_iter->second.lock())
-                return res;
-            else
-                constructed.erase(constr_iter);
-        }
-        auto res = plask::shared_ptr<ElementWrapper>(construct(el));
-        constructed[el.get()] = res;
-        el->changedConnectMethod(this, &Register::removeOnDelete);
-        return res;
+        if (auto res = constructed.get(el))
+            return res;
+        else
+            return constructed(el, construct(el));
     }
 
     template <typename WrapperType, typename PlaskType = typename WrapperType::WrappedType>
