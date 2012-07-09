@@ -275,7 +275,6 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3D__init__geometry(const shared_ptr
 
 void RectilinearMesh2DDividingGenerator_addRefinement(RectilinearMesh2DDividingGenerator& self, const PathHints& path, const std::string& axis, double position) {
     int i = config.axes[axis] - 1;
-    std::cerr << "axis:" << axis << " " << i << "\n";
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(path, Primitive<2>::DIRECTION(i), position);
 }
@@ -473,7 +472,8 @@ void register_mesh_rectangular()
         "    create generator with initial division of all geometry elements", py::init<size_t>(py::arg("division")=1))
         .add_property("division", &RectilinearMesh2DDividingGenerator::getDivision, &RectilinearMesh2DDividingGenerator::setDivision,
                     "initial division of all geometry elements")
-        .def_readwrite("warn_multiple", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if path points to more than one object")
+        .def_readwrite("warn_multiple", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining path points to more than one object")
+        .def_readwrite("warn_none", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining path does not point to any object")
         .def_readwrite("warn_ouside", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining line is outside of its object")
         .def("addRefinement", &RectilinearMesh2DDividingGenerator_addRefinement, "Add a refining line inside the object pointed by path",
              (py::arg("path"), "axis", "position"))

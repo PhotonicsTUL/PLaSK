@@ -35,7 +35,9 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
 
   public:
 
-    bool warn_multiple, warn_outside;
+    bool warn_multiple, ///< Warn if a single refinement points to more than one object.
+         warn_none,     ///< Warn if a defined refinement points to object absent from provided geometry.
+         warn_outside;  ///< Warn if a defined refinemtent takes place outside of the pointed object.
 
     RectilinearMesh2DDividingGenerator(size_t div=1) : division(div), warn_multiple(true), warn_outside(true) {}
 

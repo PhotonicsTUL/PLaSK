@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+'''
+PLaSK (Photonic Laser Simultion Kit) is a comprehensive toolkit for simulation
+of various micro-scale photonic devices. It is particularly well suited for
+analysis of semiconductor lasers, as it allows to perform simulations of various
+physical phenomena with defferent models: thermal, electrial, quantum and optical.
+PLaSK takes care of considering mutual interactions between these models and
+allows to easily perform complex self-consitent analysis of complete devices.
+'''
 from .plaskcore import *
 
 from numpy import *

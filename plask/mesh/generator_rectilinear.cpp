@@ -53,6 +53,7 @@ RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const Rectilinea
     for (auto ref: refinements[dir]) {
         auto boxes = geometry->getLeafsBoundingBoxes(&ref.first);
         if (warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Single refinement defined for more than one object.");
+        if (warn_multiple && boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement defined for object absent from the geometry.");
         for (auto box: boxes) {
             for (auto x: ref.second) {
                 if (warn_outside && (x < 0 || x > box.upper[dir]-box.lower[dir]))

@@ -249,7 +249,7 @@ struct Receiver: public Provider::Listener {
     /**
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, can be @c nullptr to only disconnect from current provider.
-     * @param newProviderIsPrivate @c true only if @p provider is private for this and will be delete by this receiver
+     * @param newProviderIsPrivate @c true only if @p provider is private for this and will be deleted by this receiver
      */
     void setProvider(ProviderT* provider, bool newProviderIsPrivate = false) {
         if (this->provider == provider) return;
@@ -494,6 +494,20 @@ struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _Base
     /// Hold external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
 
+    /**
+     * Create delegate provider
+     * \param functor delegate functor
+     */
+    template<typename ClassType, typename Functor>
+    PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>(Functor functor)
+        : valueGetter(functor)
+    {}
+
+    /**
+     * Create delegate provider
+     * \param object object of class with delegate method
+     * \param member delegate member method
+     */
     template<typename ClassType, typename MemberType>
     PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>(ClassType* object, MemberType member)
         : valueGetter(
@@ -643,7 +657,7 @@ struct ProviderFor: public ProviderImpl<PropertyT, typename PropertyT::ValueType
  * @tparam SpaceT type of space, required (and allowed) only for fields properties
  */
 template <typename PropertyT, typename SpaceT = void>
-struct ReceiverFor: public Receiver< ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT> > {
+struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT>> {
     ReceiverFor & operator=(const ReceiverFor&) = delete;
     ReceiverFor(const ReceiverFor&) = delete;
     ReceiverFor() = default;
@@ -667,6 +681,16 @@ struct ReceiverFor: public Receiver< ProviderImpl<PropertyT, typename PropertyT:
                   "Receivers for fields properties require SpaceT. Use ReceiverFor<propertyTag, SpaceT>, where SpaceT is one of the classes defined in .");
     static_assert(!(!std::is_same<SpaceT, void>::value && (PropertyT::propertyType == SINGLE_VALUE_PROPERTY)),
                   "Receivers for single value properties doesn't need SpaceT. Use ReceiverFor<propertyTag> (without second template parameter).");
+
+    ///**
+    //    * Set provider to of derived type
+    //    * \param provider new provider
+    //    */
+    //template <typename OtherProvidersT>
+    //void setProvider(OtherProviderT* provider) {
+    //    auto provider = new ProviderFor<OtherProviderT::PropertyTag>::Delegate([&provider](){})
+    //}
+
 };
 //struct ReceiverFor: public Receiver< ProviderFor<PropertyT> > {};
 

@@ -48,28 +48,36 @@ struct Element_List_from_Python {
     }
 };
 
-std::string PathHint__repr__(const PathHints& self) {
+shared_ptr<PathHints> Hint__add__(const PathHints::Hint& first, const PathHints::Hint& second) {
+    auto hints = make_shared<PathHints>();
+    *hints += first;
+    *hints += second;
+    return hints;
+}
+
+std::string PathHints__repr__(const PathHints& self) {
     if (self.hintFor.size() == 0) return "plask.geometry.PathHints()";
     return format("plask.geometry.PathHints(<%1% hints>)", self.hintFor.size());
 }
 
 void register_geometry_path()
 {
-    py::class_<PathHints::Hint>("Hint",
-                                "Hint stores weak references to container and its child with translation.\n\n"
+    py::class_<PathHints::Hint>("PathHint",
+                                "PathHint stores weak references to container and its child with translation.\n\n"
                                 "It may only be used as an intermediate object to either add it to Path, PathHints, or\n"
                                 "to retrieve the container, child, or translation elements.",
                                 py::no_init)
+        .def("__add__", &Hint__add__)
     ;
 
     set_to_python_list_conventer<shared_ptr<GeometryElement>>();
     // export_frozenset<shared_ptr<GeometryElement>>("GeometryElement_set");
 
-    py::class_<PathHints>("PathHints",
+    py::class_<PathHints, shared_ptr<PathHints>>("PathHints",
                           "PathHints is used to resolve ambiguities if any element is present in the geometry\n"
-                          "tree more than once. It contains a set of ElementHint objects holding weak references\n"
+                          "tree more than once. It contains a set of PathHint objects holding weak references\n"
                           "to containers and their childred.")
-        .def("__repr__", &PathHint__repr__)
+        .def("__repr__", &PathHints__repr__)
         .def("add", (void (PathHints::*)(const PathHints::Hint&))&PathHints::addHint, "Append hint to the path.", (py::arg("hint")))
         .def(py::self += py::other<PathHints::Hint>())
         .def("getChildren", (std::set<shared_ptr<GeometryElement>> (PathHints::*)(const GeometryElement& container) const)&PathHints::getChildren,
@@ -79,7 +87,7 @@ void register_geometry_path()
 
     py::implicitly_convertible<PathHints::Hint,PathHints>();
 
-    py::class_<Path>("Path",
+    py::class_<Path, shared_ptr<Path>>("Path",
                      "Path is used to specify unique instance of every element in the geometry,\n"
                      "even if this element is inserted to the geometry tree in more than one place.\n\n"
                      "It contains a sequence of objects in the geometry tree.", py::no_init)
@@ -108,6 +116,8 @@ void register_geometry_path()
         .def(py::self += py::other<GeometryElement::Subtree>())
         .def(py::self += py::other<std::vector<shared_ptr<const GeometryElement>>>())
     ;
+
+    py::implicitly_convertible<Path,PathHints>();
 
     boost::python::converter::registry::push_back(&Element_List_from_Python::convertible, &Element_List_from_Python::construct,
                                                   boost::python::type_id<std::vector<shared_ptr<const GeometryElement>>>());

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Module launching interactive session.
+
 Based on the sympy session.py:
 
 Copyright (c) 2006, 2007, 2008 SymPy developers
@@ -34,12 +36,12 @@ DAMAGE.
 
 BANNER = '''\
 You are entering interactive mode of PLaSK.
-Modules 'plask' is already imported'''
+Package 'plask' is already imported'''
 
 preexec_source = '''\
 from __future__ import division
-import plask
 from numpy import *
+import plask
 '''
 
 no_ipython = """\
@@ -84,7 +86,7 @@ def _init_python_session():
                 readline.parse_and_bind('tab: complete')
 
                 if hasattr(readline, 'read_history_file'):
-                    history = os.path.expanduser('~/.plask-history')
+                    history = os.path.expanduser('~/.plask_history')
 
                     try:
                         readline.read_history_file(history)

@@ -51,4 +51,14 @@ BOOST_AUTO_TEST_CASE(delegate_to_member) {
     BOOST_CHECK_EQUAL(receiver(), 1.0);
 }
 
+// BOOST_AUTO_TEST_CASE(polymorphic_receivers) {
+//     struct OneDouble: public plask::SingleValueProperty<double> {};
+//     plask::ProviderFor<OneDouble>::WithDefaultValue provider;
+//     plask::ReceiverFor<plask::SingleValueProperty<double>> receiver;
+//
+//     receiver.setProvider(provider);
+//     provider = 1.0;
+//     BOOST_CHECK_EQUAL(receiver(), 1.0);
+// }
+
 BOOST_AUTO_TEST_SUITE_END()
