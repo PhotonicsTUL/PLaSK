@@ -216,7 +216,7 @@ struct Cache: public DeleteStrategy<Key, Value> {
     //TODO operator() variants Value constructor parameters, ...?
 
     /**
-     * Clean all entries for which values is already deleted.
+     * Clean all entries for which values are already deleted.
      */
     void cleanDeleted() {
         for(auto i = this->map.begin(); i != this->map.end(); )
