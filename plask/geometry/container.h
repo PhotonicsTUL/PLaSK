@@ -14,6 +14,7 @@ This file includes containers of geometries elements.
 #include "align.h"
 #include "reader.h"
 #include "manager.h"
+#include "../utils/string.h"
 
 namespace plask {
 
@@ -308,10 +309,13 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
 
             case XMLReader::NODE_ELEMENT:
                 if (reader.source.getNodeName() == "child") {
-                    boost::optional<std::string> path = reader.source.getAttribute("path");
-                    PathHints::Hint hint = child_param_read();
-                    if (path)
-                        reader.manager.pathHints[*path].addHint(hint);  //this call readExactlyOneChild
+                    boost::optional<std::string> paths_str = reader.source.getAttribute("path");
+                    PathHints::Hint hint = child_param_read();  //this call readExactlyOneChild
+                    if (paths_str) {
+                        std::vector<std::string> paths = splitAndTrimEsc(*paths_str, ',');
+                        for (auto& path: paths)
+                            reader.manager.pathHints[path].addHint(hint);
+                    }
                 } else {
                     without_child_param_add(reader.readElement< typename ConstructedType::ChildType >());
                 }

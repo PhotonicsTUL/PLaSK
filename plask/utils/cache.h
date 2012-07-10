@@ -217,6 +217,8 @@ struct Cache: public DeleteStrategy<Key, Value> {
 
     /**
      * Clean all entries for which values are already deleted.
+     *
+     * This method has O(N+DlogN) time complexity, where N is number of elements in cache, and D is number of deleted elements.
      */
     void cleanDeleted() {
         for(auto i = this->map.begin(); i != this->map.end(); )

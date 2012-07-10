@@ -7,6 +7,10 @@ This file includes string and parsers utils.
 
 #include <string>
 #include <tuple>
+#include <vector>
+
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 namespace plask {
 
@@ -54,6 +58,31 @@ std::string replaceChars(const std::string& str, CharReplacer repl) {
  * @return copy of @a str with removed chars which are include in @a chars_to_remove
  */
 std::string removedChars(const std::string& str, const std::string& chars_to_remove);
+
+/**
+ * Split @p input to sequence of tokens. White spaces on beginning and ending of each token are removed.
+ * @param input input string
+ * @param pred a predicate to identify separators, this predicate is supposed to return @c true only if a given element is a separator
+ * @param eCompress if it is set to boost::algorithm::token_compress_on, adjacent separators are merged together, otherwise, every two separators delimit a token.
+ * @return sequence of token
+ */
+template<typename RangeT, typename PredicateT, typename SequenceSequenceT = std::vector<std::string> >
+SequenceSequenceT splitAndTrimPred(RangeT & input, PredicateT pred, boost::algorithm::token_compress_mode_type eCompress = boost::algorithm::token_compress_off) {
+    SequenceSequenceT result;
+    boost::algorithm::split(result, input, pred, eCompress);
+    for (auto& r: result) boost::algorithm::trim(r);
+    return result;
+}
+
+/**
+ * Split @p str to sequence of tokens. White spaces on beginning and ending of each token are removed.
+ * @param input input string
+ * @param splitter character which separate tokents, typically ',' or ';'
+ * @param esc_char escape character which alow to insert separate character in token
+ * @param quote_char the character to use for the quote also alow to insert separate character in token
+ * @return sequence of token
+ */
+std::vector<std::string> splitAndTrimEsc(const std::string& str, char splitter, char esc_char = '\\', char quote_char = '\'');
 
 }       // namespace plask
 
