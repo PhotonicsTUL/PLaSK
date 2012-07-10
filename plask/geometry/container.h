@@ -312,7 +312,7 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
                     boost::optional<std::string> paths_str = reader.source.getAttribute("path");
                     PathHints::Hint hint = child_param_read();  //this call readExactlyOneChild
                     if (paths_str) {
-                        std::vector<std::string> paths = splitAndTrimEsc(*paths_str, ',');
+                        auto paths = splitEscIterator(*paths_str, ',');
                         for (auto& path: paths)
                             reader.manager.pathHints[path].addHint(hint);
                     }

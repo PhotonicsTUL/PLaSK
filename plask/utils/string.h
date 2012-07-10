@@ -11,6 +11,7 @@ This file includes string and parsers utils.
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/tokenizer.hpp>
 
 namespace plask {
 
@@ -74,15 +75,27 @@ SequenceSequenceT splitAndTrimPred(RangeT & input, PredicateT pred, boost::algor
     return result;
 }
 
+typedef boost::tokenizer< boost::escaped_list_separator<char> > split_esc_tokenizer;
+
 /**
  * Split @p str to sequence of tokens. White spaces on beginning and ending of each token are removed.
  * @param input input string
  * @param splitter character which separate tokents, typically ',' or ';'
- * @param esc_char escape character which alow to insert separate character in token
+ * @param quote_char the character to use for the quote, alow to insert separate character in token (if token is quoted)
+ * @param esc_char escape character which alow to insert separate character in token, typically '\\'
+ * @return tokenizer which allow to iterate over tokens
+ */
+split_esc_tokenizer splitEscIterator(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');
+
+/**
+ * Split @p str to sequence of tokens. White spaces on beginning and ending of each token are removed.
+ * @param input input string
+ * @param splitter character which separate tokents, typically ',' or ';'
  * @param quote_char the character to use for the quote also alow to insert separate character in token
+ * @param esc_char escape character which alow to insert separate character in token
  * @return sequence of token
  */
-std::vector<std::string> splitAndTrimEsc(const std::string& str, char splitter, char esc_char = '\\', char quote_char = '\'');
+std::vector<std::string> splitEsc(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');
 
 }       // namespace plask
 
