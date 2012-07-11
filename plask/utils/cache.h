@@ -19,7 +19,7 @@ struct CacheRemoveStrategyBase {
 };
 
 template <typename Key, typename Value>
-struct CacheRemoveOnlyWhenDelete: public CacheRemoveStrategyBase<Key, Value> {
+struct CacheRemoveOnlyWhenDeleted: public CacheRemoveStrategyBase<Key, Value> {
 
     /// If evt is delete event, remove source of event from cache map.
     void onEvent(typename Key::Event& evt) {
@@ -44,12 +44,12 @@ struct CacheRemoveOnEachChange: public CacheRemoveStrategyBase<Key, Value> {
  * Cache values of type Value using Key type to index it.
  * @tparam Key type using as index in cache (pointer to this type will be used), must be able to emit events;
  * @tparam Value type for cache values, will be stored in weak_ptr;
- * @tparam deleteStrategy when cache entries should be delete:
- * - CacheRemoveOnlyWhenDelete - when key is deleted (default),
+ * @tparam deleteStrategy when cache entries should be deleted:
+ * - CacheRemoveOnlyWhenDeleted - when key is deleted (default),
  * - CacheRemoveOnEachChange - when key is changed,
  * - other class template which derive from plask::CacheRemoveStrategyBase and have void onEvent(typename Key::Event& evt) method - custom.
  */
-template <typename Key, typename Value, template<typename Key, typename Value> class DeleteStrategy = CacheRemoveOnlyWhenDelete >
+template <typename Key, typename Value, template<typename Key, typename Value> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
 struct Cache: public DeleteStrategy<Key, Value> {
 
     /// Clear cache.

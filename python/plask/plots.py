@@ -20,9 +20,8 @@ def plotGeometry2D(geometry, axes=None, color='k', width=3.0, set_limits=False, 
                                                         ec=color, lw=width, fill=False, zorder=zorder))
     if set_limits:
         box = geometry.bbox
-        pad = 0.05 * geometry.bbox_size
-        axes.set_xlim(box.lower[0] - pad[0], box.upper[0] + pad[0])
-        axes.set_ylim(box.lower[1] - pad[1], box.upper[1] + pad[1])
+        axes.set_xlim(box.lower[0], box.upper[0])
+        axes.set_ylim(box.lower[1], box.upper[1])
     return axes
 
 def plotRectilinearMesh2D(mesh, axes=None, color='0.5', width=1.0, set_limits=False, zorder=2):
@@ -34,8 +33,6 @@ def plotRectilinearMesh2D(mesh, axes=None, color='0.5', width=1.0, set_limits=Fa
     for y in mesh.axis1:
         axes.add_line(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
     if set_limits:
-        pad_x = 0.05 * (x_max - x_min)
-        pad_y = 0.05 * (y_max - y_min)
-        axes.set_xlim(x_min - pad_x, x_max + pad_x)
-        axes.set_ylim(y_min - pad_y, y_max + pad_y)
+        axes.set_xlim(x_min, x_max)
+        axes.set_ylim(y_min, y_max)
     return axes

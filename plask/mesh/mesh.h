@@ -372,8 +372,9 @@ class MeshGenerator {};
 
 /** Base class for specific mesh generator */
 template <typename MeshT>
-class MeshGeneratorOf: public MeshGenerator {
-
+class MeshGeneratorOf: public MeshGenerator
+{
+  protected:
     Cache<GeometryElement, MeshT, CacheRemoveOnEachChange> cache;
 
   public:
@@ -389,9 +390,9 @@ class MeshGeneratorOf: public MeshGenerator {
 
     /**
      * Clear the cache of generated meshes.
-     * This method should be called each time the value of generator was changed
+     * This method should be called each time any parameter of generator is changed
      */
-    void clearCache() {
+    inline void clearCache() {
         cache.clear();
     }
 

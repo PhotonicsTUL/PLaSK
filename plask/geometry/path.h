@@ -78,7 +78,7 @@ struct PathHints {
     }
 
     /// Comparison operator for using PathHints as map keys
-    bool operator<(const PathHints& comp) const {
+    inline bool operator<(const PathHints& comp) const {
         return hintFor < comp.hintFor;
     }
 
@@ -245,7 +245,7 @@ struct Path {
      *
      * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
      * @param path elements to add, exception will be throwed if it have branches
-     * @param hints optional path hints which are use to non-ambiguous completion of paths
+     * @param hints optional path hints which are used to non-ambiguous completion of paths
      */
     Path& append(const GeometryElement::Subtree& path, const PathHints* hints = nullptr);
 
@@ -299,15 +299,15 @@ struct Path {
 
     /**
      * Get path hints implicted by this.
-     * @return path hints which includes all hints implicted by this path
+     * @return path hints which include all hints implicted by this path
      */
     PathHints getPathHints() const;
 
-//     /**
-//      * Get path hinst implicted by this.
-//      * @return path hints which includes all hints implicted by this path
-//      */
-//     operator PathHints() const { return getPathHints(); }
+    /**
+     * Get path hinst implicted by this.
+     * @return path hints which include all hints implicted by this path
+     */
+    operator PathHints() const { return getPathHints(); }
 };
 
 }
