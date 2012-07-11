@@ -66,7 +66,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
             RESIZE = 1<<1,          ///< size could be changed
             DELEGATED = 1<<2,       ///< delegated from child
             CHILD_LIST = 1<<3,      ///< children list was changed
-            USER_DEFINED = 1<<4     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
+            BORDERS = 1<<4,         ///< borders was changed (only Geometries/calculation spaces emit events with this flags)
+            USER_DEFINED = 1<<5     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
         };
 
         /**
@@ -106,6 +107,12 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @return @c true only if CHILD_LIST flag is set
          */
         bool hasChangedChildrenList() const { return hasFlag(CHILD_LIST); }
+
+        /**
+         * Check if BORDERS flag is set, which mean that borders connected with source could changed.
+         * @return @c true only if BORDERS flag is set
+         */
+        bool hasChangedBorders() const { return hasFlag(BORDERS); }
 
         /**
          * Construct event.
@@ -283,6 +290,15 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         changed.disconnect(boost::bind(method, obj, _1));
     }
 
+    /*
+     * Just call changed with given event data.
+     * Subclasses can redefine this and do some extra actions.
+     * @param evt event data
+     */
+    /*virtual void callChanged(Event& evt) {
+        changed(evt);
+    }*/
+
     /**
      * Call changed with this as event source.
      * @param event_constructor_params_without_source parameters for event constructor (without first - source)
@@ -290,7 +306,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     template<typename EventT = Event, typename ...Args>
     void fireChanged(Args&&... event_constructor_params_without_source) {
         EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
-        changed(evt);
+        changed(evt);   //callChanged
     }
 
     /**

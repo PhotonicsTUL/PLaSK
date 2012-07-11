@@ -35,6 +35,22 @@ public:
     SourceType& source() { return _source; }
 
     /**
+     * Get source of event casted (using dynamic_cast) to given type T.
+     * @return source of event as T
+     * @tparam T required type
+     */
+    template <typename T>
+    const T& source() const { return dynamic_cast<const T&>(source()); }
+
+    /**
+     * Get source of event casted (using dynamic_cast) to given type T.
+     * @return source of event as T
+     * @tparam T required type
+     */
+    template <typename T>
+    T& source() { return dynamic_cast<T&>(source()); }
+
+    /**
      * Get event's flags.
      * @return flags which describes event's properties
      */
