@@ -31,7 +31,7 @@ class RectangularMesh2D: public Mesh<2> {
     typedef std::size_t index_ft(const RectangularMesh2D<Mesh1D>* mesh, std::size_t c0_index, std::size_t c1_index);
     typedef std::size_t index01_ft(const RectangularMesh2D<Mesh1D>* mesh, std::size_t mesh_index);
 
-    // our own virtual table, changeable in run-time:
+    // Our own virtual table, changeable in run-time:
     index_ft* index_f;
     index01_ft* index0_f;
     index01_ft* index1_f;
@@ -162,6 +162,30 @@ class RectangularMesh2D: public Mesh<2> {
      * @return c1
      */
     const Mesh1D& rad_z() const { return c1; }
+
+    /// \return major (changing slowest) axis
+    const Mesh1D& majorAxis() const {
+        if (getIterationOrder() == NORMAL_ORDER) return c1;
+        else return c0;
+    }
+
+    /// \return major (changing slowest) axis
+    Mesh1D& majorAxis() {
+        if (getIterationOrder() == NORMAL_ORDER) return c1;
+        else return c0;
+    }
+
+    /// \return minor (changing fastes) axis
+    const Mesh1D& minorAxis() const {
+        if (getIterationOrder() == NORMAL_ORDER) return c0;
+        else return c1;
+    }
+
+    /// \return minor (changing fastes) axis
+    Mesh1D& minorAxis() {
+        if (getIterationOrder() == NORMAL_ORDER) return c0;
+        else return c1;
+    }
 
     /// Type of points in this mesh.
     typedef Vec<2,double> PointType;

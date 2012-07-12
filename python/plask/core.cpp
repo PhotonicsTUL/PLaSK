@@ -1,10 +1,12 @@
 #include <complex>
+
+#include "python_globals.h"
+#include <numpy/arrayobject.h>
+
 #include <plask/exceptions.h>
 #include <plask/mesh/interpolation.h>
 #include <plask/module.h>
 
-#include "python_globals.h"
-#include <numpy/arrayobject.h>
 using namespace plask::python;
 
 // Declare some initialization functions
@@ -12,6 +14,8 @@ namespace plask { namespace python {
 
 void initMaterials();
 void initGeometry();
+
+void register_manager();
 
 void register_vectors();
 void register_mesh();

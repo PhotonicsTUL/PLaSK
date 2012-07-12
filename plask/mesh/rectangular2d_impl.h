@@ -47,5 +47,4 @@ typename RectangularMesh2D<Mesh1D>::IterationOrder RectangularMesh2D<Mesh1D>::ge
     return (index_f == &transposed_index<Mesh1D>)? TRANSPOSED_ORDER : NORMAL_ORDER;
 }
 
-
 } // namespace plask

@@ -107,16 +107,14 @@ using namespace Eigen;
 
 
 
-void EffectiveIndex2DModule::updateCache()
+void EffectiveIndex2DModule::onBeginCalculation(bool fresh)
 {
-    bool updated = initCalculation();
-
     xbegin = 0;
 
     // Some additional checks
     if (symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) {
         if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
-            if (updated) // Make sure we have only positive points
+            if (fresh) // Make sure we have only positive points
                 for (auto x: mesh->c0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
             if (mesh->c0[0] == 0.) xbegin = 1;
         } else {
@@ -128,7 +126,7 @@ void EffectiveIndex2DModule::updateCache()
     size_t xsize = mesh->tran().size() + 1;
     size_t ysize = mesh->up().size() + 1;
 
-    if (updated || inTemperature.changed || inWavelength.changed || polarization != old_polarization) { // We need to update something
+    if (fresh || inTemperature.changed || inWavelength.changed || polarization != old_polarization) { // We need to update something
 
         old_polarization = polarization;
 
@@ -160,7 +158,7 @@ void EffectiveIndex2DModule::updateCache()
 
 void EffectiveIndex2DModule::stageOne()
 {
-    updateCache();
+    initCalculation();
 
     if (!have_stripeNeffs) {
 

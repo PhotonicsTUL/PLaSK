@@ -202,6 +202,84 @@ class RectangularMesh3D: public Mesh<3> {
      */
     const Mesh1D& rad_z() const { return c1; }
 
+    /// \return major (changing slowest) axis
+    const Mesh1D& majorAxis() const {
+        switch (getIterationOrder()) {
+            case ORDER_012:
+            case ORDER_021: return c0;
+            case ORDER_102:
+            case ORDER_120: return c1;
+            case ORDER_201:
+            case ORDER_210: ;
+        }
+        return c2;
+    }
+
+    /// \return major (changing slowest) axis
+    Mesh1D& majorAxis() {
+        switch (getIterationOrder()) {
+            case ORDER_012:
+            case ORDER_021: return c0;
+            case ORDER_102:
+            case ORDER_120: return c1;
+            case ORDER_201:
+            case ORDER_210: ;
+        }
+        return c2;
+    }
+
+    /// \return middle (in change order) axis
+    const Mesh1D& middleAxis() const {
+        switch (getIterationOrder()) {
+            case ORDER_102:
+            case ORDER_201: return c0;
+            case ORDER_012:
+            case ORDER_210: return c1;
+            case ORDER_021:
+            case ORDER_120: ;
+        }
+        return c2;
+    }
+
+    /// \return middle (in change order) axis
+    Mesh1D& middleAxis() {
+        switch (getIterationOrder()) {
+            case ORDER_102:
+            case ORDER_201: return c0;
+            case ORDER_012:
+            case ORDER_210: return c1;
+            case ORDER_021:
+            case ORDER_120: ;
+        }
+        return c2;
+    }
+
+    /// \return minor (changing fastes) axis
+    const Mesh1D& minorAxis() const {
+        switch (getIterationOrder()) {
+            case ORDER_120:
+            case ORDER_210: return c0;
+            case ORDER_021:
+            case ORDER_201: return c1;
+            case ORDER_012:
+            case ORDER_102: ;
+        }
+        return c2;
+    }
+
+    /// \return minor (changing fastes) axis
+    Mesh1D& minorAxis() {
+        switch (getIterationOrder()) {
+            case ORDER_120:
+            case ORDER_210: return c0;
+            case ORDER_021:
+            case ORDER_201: return c1;
+            case ORDER_012:
+            case ORDER_102: ;
+        }
+        return c2;
+    }
+
     ///Type of points in this mesh.
     typedef Vec<3, double> PointType;
 

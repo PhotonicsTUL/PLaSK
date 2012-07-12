@@ -398,18 +398,33 @@ class Module {
     virtual void onInitialize() {}
 
     /**
+     * Begin calculations.
+     * This method is called ALWAYS from initCalculation(). You can put some code common for all your calculation methods here
+     * \param fresh indicates whether the module has been just switched from uninitialized state
+     */
+    virtual void onBeginCalculation(bool fresh) {}
+
+    /**
+     * This method is called by invalidate() to reset stored values.
+     *
+     * Default implementation does nothing.
+     * @see invalidate()
+     */
+    virtual void onInvalidate() {}
+
+    /**
      * This should be called on beginning of each calculation method to ensure that module will be initialized.
      * It's does nothing if module is already initialized and calls init() if it's not.
-     *
-     * \return \c true if the module had to be reinitialized (so one can make local initialization)
      */
-    bool initCalculation() {
-
-        if (initialized) return false;
-        writelog(LOG_INFO, "Initializing module");
-        onInitialize();
-        initialized = true;
-        return true;
+    void initCalculation() {
+        if (!initialized) {
+            writelog(LOG_INFO, "Initializing module");
+            onInitialize();
+            initialized = true;
+            onBeginCalculation(true);
+        } else {
+            onBeginCalculation(false);
+        }
     }
 
   public:
@@ -424,14 +439,6 @@ class Module {
      * @return @c true only if module is already initialized
      */
     bool isInitialized() { return initialized; }
-
-    /**
-     * This method is called by invalidate() to reset stored values.
-     *
-     * Default implementation do nothing.
-     * @see invalidate()
-     */
-    virtual void onInvalidate() { }
 
     /**
      * This method should be and is called if something important was changed: calculation space, mesh, etc.

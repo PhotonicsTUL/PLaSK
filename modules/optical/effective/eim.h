@@ -197,7 +197,7 @@ struct EffectiveIndex2DModule: public ModuleWithMesh<Geometry2DCartesian, Rectil
      * \param stripe index of stripe
      * \param neff effective index to use
      */
-    dcomplex getStripeDeterminant(size_t stripe, dcomplex neff) { updateCache(); return detS1(neff, nrCache[stripe]); }
+    dcomplex getStripeDeterminant(size_t stripe, dcomplex neff) { initCalculation(); return detS1(neff, nrCache[stripe]); }
 
     /**
      * Compute modal determinant for the whole matrix
@@ -240,7 +240,7 @@ struct EffectiveIndex2DModule: public ModuleWithMesh<Geometry2DCartesian, Rectil
     }
 
     /// Update the refractive indices cache and do some checks
-    void updateCache();
+    virtual void onBeginCalculation(bool fresh);
 
     /**
      * Fist stage of computations
