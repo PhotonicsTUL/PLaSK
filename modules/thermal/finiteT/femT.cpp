@@ -16,9 +16,9 @@ FiniteElementMethodThermal2DModule::~FiniteElementMethodThermal2DModule()
 void FiniteElementMethodThermal2DModule::setSolver()
 {
     std::cout << "Setting solver" << std::endl;
-    size_t tNoOfXPts = 10; // TODO: TU MUSI WEJSC LICZBA WEZLOW DLA BOKU, GDZIE JEST ICH MNIEJ
+    size_t tNoOfXPts = mesh->minorAxis().size(); // number of nodes on minor axis (for optimal mesh smaller one)
     size_t tSize = tNoOfXPts + 2;
-    size_t tNoNodes = 100; // TODO: TU MUSI WEJSC LICZBA WSZYSTKICH WÊZ£ÓW
+    size_t tNoNodes = mesh->size(); // number of all the nodes
     mA = new std::vector<double> (tNoNodes*tSize, 0.);
     mB = new std::vector<double> (tNoNodes, 0.);
 }
@@ -36,8 +36,8 @@ void FiniteElementMethodThermal2DModule::setMatrixData()
     //(*getMesh)[0].
 
 
-    size_t tNoOfNodesX = getMesh()->getMinSize(); // TODO: TU MUSI WEJSC LICZBA WEZLOW DLA BOKU, GDZIE JEST ICH MNIEJ
-    size_t tNoOfNodesY = getMesh()->getMaxSize(); // TODO: TU MUSI WEJSC LICZBA WEZLOW DLA BOKU, GDZIE JEST ICH WIÊCEJ
+    size_t tNoOfNodesX = mesh->minorAxis().size(); // number of nodes on minor axis (for optimal mesh smaller one)
+    size_t tNoOfNodesY = mesh->majorAxis().size(); // number of nodes on major axis (for optimal mesh larger one)
 
     size_t tNoOfElements = (tNoOfNodesX -1) * (tNoOfNodesY -1); // number of elements (all)
 
