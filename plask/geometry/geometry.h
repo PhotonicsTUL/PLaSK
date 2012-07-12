@@ -126,9 +126,9 @@ assert container.boundingBox == plask.geometry.Box2D(plask.vec(0.0, 0.0), plask.
 assert container.getMaterial(plask.vec(6.0, 6.0)) == exampleMaterial
 assert container.getMaterial(plask.vec(6.0, 2.0)) == None
 \endcode
-- from XML content in C++, by using plask::GeometryManager, for example:
+- from XML content in C++, by using plask::Manager, for example:
 @code
-plask::GeometryManager geometry;
+plask::Manager geometry;
 // read XML content from file:
 geometry.loadFromFile("example_file_name.xml");
 // use:
@@ -203,8 +203,6 @@ Good base classes for geometries elements are, for example:
 #include "leaf.h"
 #include "transform.h"
 #include "container.h"
-
-#include "manager.h"
 
 namespace plask {
 

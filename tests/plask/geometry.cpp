@@ -100,16 +100,16 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
     BOOST_AUTO_TEST_CASE(manager_loading) {
         plask::MaterialsDB materialsDB;
         initDumbMaterialDb(materialsDB);
-        plask::GeometryManager manager;
-        manager.loadFromXMLString(
+        plask::Manager manager;
+        manager.loadGeometryFromXMLString(
                     "<geometry><cartesian2d name=\"space\" length=\"1\" axes=\"xy\"><stack repeat=\"5\" from=\"10\" name=\"multistack\">"
                     "<child x=\"0\"><block name=\"block_5_3\" x=\"5\" y=\"3\" material=\"Al\" /></child>"
                     "<child x=\"0\" path=\"p, other, 'jet another one'\"><ref name=\"block_5_3\" /></child>"
                     "</stack></cartesian2d></geometry>", materialsDB);
         //BOOST_CHECK_EQUAL(manager.elements.size(), 3);
-        BOOST_CHECK(manager.getElement("block_5_3") != nullptr);
-        BOOST_CHECK(manager.getElement("notexist") == nullptr);
-        test_multi_stack(manager.getElement<plask::MultiStackContainer<2>>("multistack"), manager.requirePathHints("p"));
+        BOOST_CHECK(manager.getGeometryElement("block_5_3") != nullptr);
+        BOOST_CHECK(manager.getGeometryElement("notexist") == nullptr);
+        test_multi_stack(manager.getGeometryElement<plask::MultiStackContainer<2>>("multistack"), manager.requirePathHints("p"));
     }
 
     BOOST_AUTO_TEST_CASE(path_from_vector) {

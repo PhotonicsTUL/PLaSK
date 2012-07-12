@@ -9,7 +9,7 @@
 
 namespace plask {
 
-struct GeometryManager;
+struct Manager;
 
 /// Value for expected suffix for names of 2d elements types, see GeometryReader::expectedSuffix.
 #define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D "2d"
@@ -116,7 +116,7 @@ struct GeometryReader {
     };
 
     /// Geometry manager which store reading results.
-    GeometryManager& manager;
+    Manager& manager;
 
     /// XML data source
     XMLReader& source;
@@ -143,17 +143,17 @@ struct GeometryReader {
      * @param source xml data source from which element data should be read
      * @param materialsDB materials database used to set leafs materials
      */
-    GeometryReader(GeometryManager& manager, XMLReader& source, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    GeometryReader(Manager& manager, XMLReader& source, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * @param manager
      * @param source xml data source from which element data should be read
      * @param materialsSource materials source used to set leafs materials
      */
-    GeometryReader(GeometryManager& manager, XMLReader& source, const MaterialsSource& materialsSource);
+    GeometryReader(Manager& manager, XMLReader& source, const MaterialsSource& materialsSource);
 
     /**
-     * Read geometry element from @p source and add it GeometryManager structures.
+     * Read geometry element from @p source and add it Manager structures.
      *
      * Typically it creates new geometry element using elementReaders,
      * but it also support references and can return existing elements.

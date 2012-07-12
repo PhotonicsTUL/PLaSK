@@ -1,7 +1,5 @@
 #include "container.h"
 
-#include "manager.h"
-
 
 namespace plask {
 

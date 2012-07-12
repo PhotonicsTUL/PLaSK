@@ -1,6 +1,5 @@
 #include "transform.h"
 
-#include "manager.h"
 #include "reader.h"
 
 namespace plask {

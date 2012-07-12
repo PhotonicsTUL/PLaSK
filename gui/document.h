@@ -18,7 +18,7 @@ class Document
 
 public:
 
-    plask::GeometryManager manager;
+    plask::Manager manager;
 
     GeometryTreeModel treeModel;
 

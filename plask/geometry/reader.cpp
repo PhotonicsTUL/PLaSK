@@ -1,6 +1,6 @@
 #include "reader.h"
 
-#include "manager.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -25,14 +25,14 @@ GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, con
     reader.expectedSuffix = new_expected_suffix;
 }
 
-plask::GeometryReader::GeometryReader(plask::GeometryManager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
+plask::GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
     : expectedSuffix(0), manager(manager), source(source),
       materialSource([&materialsDB](const std::string& mat_name) { return materialsDB.get(mat_name); })
 {
     axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
 }
 
-GeometryReader::GeometryReader(GeometryManager &manager, XMLReader &source, const GeometryReader::MaterialsSource &materialsSource)
+GeometryReader::GeometryReader(Manager &manager, XMLReader &source, const GeometryReader::MaterialsSource &materialsSource)
     : expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
 {
     axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
@@ -41,7 +41,7 @@ GeometryReader::GeometryReader(GeometryManager &manager, XMLReader &source, cons
 shared_ptr<GeometryElement> GeometryReader::readElement() {
     std::string nodeName = source.getNodeName();
     if (nodeName == "ref") {
-        shared_ptr<GeometryElement> result = manager.requireElement(source.requireAttribute("name"));
+        shared_ptr<GeometryElement> result = manager.requireGeometryElement(source.requireAttribute("name"));
         source.requireTagEnd("ref");
         return result;
     }

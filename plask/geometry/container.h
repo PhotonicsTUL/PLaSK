@@ -13,7 +13,7 @@ This file includes containers of geometries elements.
 #include "path.h"
 #include "align.h"
 #include "reader.h"
-#include "manager.h"
+#include "../manager.h"
 #include "../utils/string.h"
 
 namespace plask {

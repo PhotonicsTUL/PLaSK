@@ -1,5 +1,4 @@
 #include "leaf.h"
-#include "manager.h"
 #include "reader.h"
 
 namespace plask {
