@@ -562,7 +562,7 @@ public:
 
     /**
      * Construct geometry over given @p revolution element.
-     * @param childGeometry revolution element
+     * @param revolution revolution element
      */
     Geometry2DCylindrical(shared_ptr<Revolution> revolution);
 
@@ -570,7 +570,7 @@ public:
      * Construct geometry over revolution element build on top of given 2D @p childGeometry.
      *
      * It construct new plask::Revolution element internally.
-     * @param childGeometry, length parameters which will be passed to plask::Extrusion constructor
+     * @param childGeometry parameters which will be passed to plask::Revolution constructor
      */
     Geometry2DCylindrical(shared_ptr<GeometryElementD<2>> childGeometry);
 

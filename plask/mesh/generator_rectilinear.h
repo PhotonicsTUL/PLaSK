@@ -91,8 +91,6 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
     /**
     * Remove refinements all refinements from the object
     * \param path path hints pointing to the refined object
-    * \param direction direction in which the object should be refined
-    * \param position position of the additional grid line in the refined object
     */
     void removeRefinements(const PathHints& path) {
         auto object0 = refinements[0].find(path);
