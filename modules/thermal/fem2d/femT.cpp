@@ -43,7 +43,7 @@ void FiniteElementMethodThermal2DModule::setMatrixData()
 
     getMesh()->setOptimalIterationOrder();
 /*
-    size_t tN = 1; // TODO: TU MUSI WEJSC NR PIERWSZEGO ELEMENTU (O ILE S¥ W OGÓLE NUMEROWANE, JEŒLI NIE TO DAÆ 1)
+    size_t tN = 1; // TODO: TU MUSI WEJSC NR PIERWSZEGO ELEMENTU (O ILE Sï¿½ W OGï¿½LE NUMEROWANE, JEï¿½LI NIE TO DAï¿½ 1)
     size_t tE = 1; // first element
 
     size_t tSize, tLoLeftNr = 0, tLoRightNr = 0, tUpLeftNr = 0, tUpRightNr = 0, // element nodes numebers
@@ -62,10 +62,10 @@ void FiniteElementMethodThermal2DModule::setMatrixData()
     for (size_t i=1; i<=tNoOfElements; ++i)
     {
         // set element nodes numbers
-        tLoLeftNr = 1; // TODO: TU MUSI WEJSC NR ODPOWIEDNIEGO WÊZ£A
-        tLoRightNr = 2; // TODO: TU MUSI WEJSC NR ODPOWIEDNIEGO WÊZ£A
-        tUpLeftNr = 6; // TODO: TU MUSI WEJSC NR ODPOWIEDNIEGO WÊZ£A
-        tUpRightNr = 7; // TODO: TU MUSI WEJSC NR ODPOWIEDNIEGO WÊZ£A
+        tLoLeftNr = 1; // TODO: TU MUSI WEJSC NR ODPOWIEDNIEGO Wï¿½Zï¿½A
+        tLoRightNr = 2; // TODO: TU MUSI WEJSC NR ODPOWIEDNIEGO Wï¿½Zï¿½A
+        tUpLeftNr = 6; // TODO: TU MUSI WEJSC NR ODPOWIEDNIEGO Wï¿½Zï¿½A
+        tUpRightNr = 7; // TODO: TU MUSI WEJSC NR ODPOWIEDNIEGO Wï¿½Zï¿½A
 
         // set elements size
         tElemWidth = 10.; // TODO: TU TRZEBA WSTAWIC SZEROKOSC ELEMENTU
@@ -77,7 +77,7 @@ void FiniteElementMethodThermal2DModule::setMatrixData()
         // load vector
         double tHeat = 0.; // heat sources
 
-        tF = 0.25*tElemWidth*tElemHeight*(tHeat); // TODO: DODAÆ RÓD£A
+        tF = 0.25*tElemWidth*tElemHeight*(tHeat); // TODO: DODAï¿½ ï¿½Rï¿½Dï¿½A
 
         // calculating K
         tK22 = tK11 = 0.5 * tKYAssist;
@@ -113,10 +113,10 @@ void FiniteElementMethodThermal2DModule::setMatrixData()
         //ipA->at((tSecArg-1)*tSize+tFstArg-tSecArg) += (tK43 + tG43); // 1D2D
 
         // get element nodes values
-        tValLoLeft = 300.; // TODO: TU TRZEBA WSTAWIC TEMPERATURÊ W TYM WÊLE
-        tValLoRight = 300.; // TODO: TU TRZEBA WSTAWIC TEMPERATURÊ W TYM WÊLE
-        tValUpLeft = 300.; // TODO: TU TRZEBA WSTAWIC TEMPERATURÊ W TYM WÊLE
-        tValUpRight = 300.; // TODO: TU TRZEBA WSTAWIC TEMPERATURÊ W TYM WÊLE
+        tValLoLeft = 300.; // TODO: TU TRZEBA WSTAWIC TEMPERATURï¿½ W TYM WÊLE
+        tValLoRight = 300.; // TODO: TU TRZEBA WSTAWIC TEMPERATURï¿½ W TYM WÊLE
+        tValUpLeft = 300.; // TODO: TU TRZEBA WSTAWIC TEMPERATURï¿½ W TYM WÊLE
+        tValUpRight = 300.; // TODO: TU TRZEBA WSTAWIC TEMPERATURï¿½ W TYM WÊLE
 
         // set vector B
         ipB->at(tLoLeftNr-1)  += -(tK11*tValLoLeft + tK21*tValLoRight + tK31*tValUpRight + tK41*tValUpLeft) + tF;

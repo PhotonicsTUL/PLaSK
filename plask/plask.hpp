@@ -50,6 +50,7 @@ You should start reading from section \ref modules "How to implement an own modu
 */
 
 #include <plask/config.h>
+#include <plask/version.h>
 
 #include "memory.h"
 #include "math.h"

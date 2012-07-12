@@ -1,5 +1,6 @@
-#include "Node.h"
+#include "node2D.h"
 
+namespace plask { namespace modules { namespace thermal {
 
 //CONSTRUCTORS-----------------------------------------------------------------------------------------------------------
 //Constructor - set Numer, Coordinates Pointers, Layer Pointer or NULL if Boundary, Temperature (Const)
@@ -30,7 +31,7 @@ std::string Node2D::getSetUp()
 //Return Data
 std::string Node2D::getData()
 {
-	return ( (boost::format("%.0f") % mNr).str() + " \t" + (boost::format("%.6e") % mT).str() + " \t" + 
+	return ( (boost::format("%.0f") % mNr).str() + " \t" + (boost::format("%.6e") % mT).str() + " \t" +
 			 (boost::format("%.6e") % mPsi).str() + " \t" + (boost::format("%.6e") % mFn).str() + " \t" +
 			 (boost::format("%.6e") % mFp).str() + " \t" );
 }
@@ -38,3 +39,5 @@ std::string Node2D::getData()
 
 //SETTERS----------------------------------------------------------------------------------------------------------------
 void Node2D::setT(double iT)  { if (!mfTConst)  mT = iT; } //Set Temperature
+
+}}} // namespace plask::modules::thermal

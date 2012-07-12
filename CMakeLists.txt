@@ -443,5 +443,6 @@ set(CPACK_SOURCE_IGNORE_FILES
 
 include(CPack)
 
-# ----------===== config.h =====--------------------------------------------
+# ----------===== config.h & version.h =====--------------------------------------------
 configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/plask/config.h)
+configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/include/plask/version.h)

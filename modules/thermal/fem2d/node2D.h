@@ -1,8 +1,9 @@
 #ifndef PLASK__MODULE_THERMAL_NODE2D_H
 #define PLASK__MODULE_THERMAL_NODE2D_H
 
-#include "../Headers.h"
-#include "Layer.h" 
+// #include "../Headers.h"
+// #include "Layer.h"
+namespace plask { namespace modules { namespace thermal {
 
 
 class Node2D //Node of Finite Element Model
@@ -24,7 +25,7 @@ public:
 
 	//Setters
 	void setT(double iT); //Set Temperature
-    
+
 protected:
     //Members
 	int mNr; //Numer
@@ -34,5 +35,5 @@ protected:
     double mT; //Temperature
 };
 
-
+}}} // namespace plask::modules::thermal
 #endif

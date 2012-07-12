@@ -1,10 +1,11 @@
-#include "Element.h"
+#include "element2D.h"
 
+namespace plask { namespace modules { namespace thermal {
 
 //CONSTRUCTORS-----------------------------------------------------------------------------------------------------------
 //Constructor - set Numer, Layer Pointer and Four Nodes Pointers
 Element2D::Element2D(int iNr, const Layer* ipL, const Node* ipNLoLeft, const Node* ipNLoRight, const Node* ipNUpLeft, const Node* ipNUpRight):
-mNr(iNr), mpL(ipL), mpNLoLeft(ipNLoLeft), mpNLoRight(ipNLoRight), mpNUpLeft(ipNUpLeft), mpNUpRight(ipNUpRight), 
+mNr(iNr), mpL(ipL), mpNLoLeft(ipNLoLeft), mpNLoRight(ipNLoRight), mpNUpLeft(ipNUpLeft), mpNUpRight(ipNUpRight),
 mT(iT)
 {
 }
@@ -24,7 +25,7 @@ double Element2D::getHeight() const  { return (mpNUpLeft->getY() - mpNLoLeft->ge
 //Return Set-Up
 std::string Element::getSetUp()
 {
-	return ( (boost::format("%.0f") % mNr).str() + " \t" + mpL->getName() + " \t" + (boost::format("%.0f") % mpNLoLeft->getNr()).str() + " \t" + 
+	return ( (boost::format("%.0f") % mNr).str() + " \t" + mpL->getName() + " \t" + (boost::format("%.0f") % mpNLoLeft->getNr()).str() + " \t" +
 			 (boost::format("%.0f") % mpNLoRight->getNr()).str() + " \t" + (boost::format("%.0f") % mpNUpLeft->getNr()).str() + " \t" +
 			 (boost::format("%.0f") % mpNUpRight->getNr()).str() + "\t" + (mpELeft ? (boost::format("%.0f") % mpELeft->getNr()).str() : "0") + "\t" +
 			 (mpERight ? (boost::format("%.0f") % mpERight->getNr()).str() : "0") + "\t" + (mpELo ? (boost::format("%.0f") % mpELo->getNr()).str() : "0") + "\t" +

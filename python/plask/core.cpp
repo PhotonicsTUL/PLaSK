@@ -3,6 +3,7 @@
 #include "python_globals.h"
 #include <numpy/arrayobject.h>
 
+#include <plask/version.h>
 #include <plask/exceptions.h>
 #include <plask/mesh/interpolation.h>
 #include <plask/module.h>

@@ -1,11 +1,6 @@
 #ifndef PLASK__CONFIG_H
 #define PLASK__CONFIG_H
 
-// PLaSK version
-#define PLASK_VERSION_MAJOR ${VERSION_MAJOR}
-#define PLASK_VERSION_MINOR ${VERSION_MINOR}
-#define PLASK_VERSION "${VERSION}"
-
 // We use boost::shared_ptr, as otherwise boost::python fails
 #undef PLASK_SHARED_PTR_STD
 

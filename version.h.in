@@ -1,0 +1,10 @@
+#ifndef PLASK__VERSION_H
+#define PLASK__VERSION_H
+
+// PLaSK version
+#define PLASK_VERSION_MAJOR ${VERSION_MAJOR}
+#define PLASK_VERSION_MINOR ${VERSION_MINOR}
+#define PLASK_VERSION "${VERSION}"
+
+#endif // PLASK__VERSION_H
+// kate: syntax c++;

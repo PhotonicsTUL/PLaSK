@@ -9,12 +9,12 @@
 //#include "node.h"
 //#include "element.h"
 
-namespace plask { namespace modules { namespace finiteT {
+namespace plask { namespace modules { namespace thermal {
 
 /**
  * Module performing calculations in 2D Cartesian space using finite element method
  */
-struct FiniteElementMethodThermal2DModule: public ModuleWithMesh<Space2DCartesian, RectilinearMesh2D> {
+struct FiniteElementMethodThermal2DModule: public ModuleWithMesh<Geometry2DCartesian, RectilinearMesh2D> {
 /*
     /// Sample receiver for temperature.
     ReceiverFor<Temperature, Space2DCartesian> inTemperature;
