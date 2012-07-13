@@ -1,87 +1,105 @@
+#include <fstream>
+
 #include "python_globals.h"
+#include <boost/python/suite/indexing/map_indexing_suite.hpp>
 #include <numpy/arrayobject.h>
 
 #include <plask/manager.h>
 
 namespace plask { namespace python {
 
-// shared_ptr<Manager> Manager__init__(py::tuple args, py::dict kwargs) {
-//
-//     std::string filename="";
-//     MaterialsDB* materialsDB;
-//     bool has_filename = false, has_materialsdb = false;
-//
-//     if (py::len(args) > 3) {
-//         throw TypeError("__init__ takes 2 or 3 arguments (%d given)", py::len(args));
-//     }
-//     if (py::len(args) > 1) {
-//         has_filename = true;
-//         filename = py::extract<std::string>(args[1]);
-//         if (py::len(args) > 2) {
-//                     has_materialsdb = true;
-//             materialsDB = py::extract<MaterialsDB*>(args[2]);
-//         }
-//     }
-//     py::stl_input_iterator<std::string> begin(kwargs), end;
-//     for (auto i = begin; i != end; ++i) {
-//         if (*i == "filename") {
-//             if (has_filename) {
-//                 throw TypeError("__init__() got multiple values for keyword argument 'filename'");
-//             } else {
-//                 has_filename = true;
-//                 filename = py::extract<std::string>(kwargs["filename"]);
-//             }
-//         } else if (*i == "materialsdb") {
-//             if (has_materialsdb) {
-//                 throw TypeError("__init__() got multiple values for keyword argument 'materialsdb'");
-//             } else {
-//                 materialsDB = py::extract<MaterialsDB*>(kwargs["materialsdb"]);
-//                 has_materialsdb = true;
-//             }
-//         } else {
-//             throw TypeError("__init__() got unexpected keyword argument '%s'", *i);
-//         }
-//
-//     }
-//
-//     if (!has_materialsdb) {
-//         py::object plask_module = py::import("plask");
-//         materialsDB = &MaterialsDB::getDefault();
-//     }
-//     shared_ptr<Manager> geometry(new Manager());
-//     if (filename != "") geometry->loadGeometryFromFile(filename, *materialsDB);
-//     return geometry;
-// }
-//
-// void Geometry_loadFromXMLString(Manager& self, const std::string &inputXMLstr, const shared_ptr<MaterialsDB>& DB) {
-//     py::object plask_module = py::import("plask");
-//     MaterialsDB* db = DB? DB.get() : &MaterialsDB::getDefault();
-//     self.loadGeometryFromXMLString(inputXMLstr, *db);
-// }
-//
-// void Geometry_loadFromFile(Manager& self, const std::string &filename, const shared_ptr<MaterialsDB>& DB) {
-//     py::object plask_module = py::import("plask");
-//     MaterialsDB* db = DB? DB.get() : &MaterialsDB::getDefault();
-//     self.loadGeometryFromFile(filename, *db);
-// }
+struct PythonManager: public Manager {
+
+    MaterialsDB* materialsDB;
+
+    PythonManager(MaterialsDB* db=nullptr) : materialsDB(db? db : &MaterialsDB::getDefault()) {}
+
+    void read(py::object src) {
+        std::string str;
+        try {
+            str = py::extract<std::string>(src);
+            if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) { // str is not XML (a filename probably)
+                std::ifstream file;
+                file.open(str);
+                if (!file.is_open()) throw IOError("No such file: '%1%'", str);
+                file >> str;
+            }
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            try {
+                str = py::extract<std::string>(src.attr("read")());
+            } catch (py::error_already_set) {
+                throw TypeError("argument is neither string nor a proper file-like object");
+            }
+        }
+        loadGeometryFromXMLString(str, *materialsDB);
+    }
+};
+
+template <typename T>
+static py::list dict_keys(const std::map<std::string,T>& self) {
+    py::list result;
+    for (auto item: self) {
+        result.append(item.first);
+    }
+    return result;
+}
+
+template <typename T>
+static py::list dict_values(const std::map<std::string,T>& self) {
+    py::list result;
+    for (auto item: self) {
+        result.append(item.second);
+    }
+    return result;
+}
+
+template <typename T>
+static py::list dict_items(const std::map<std::string,T>& self) {
+    py::list result;
+    for (auto item: self) {
+        result.append(py::make_tuple(item.first, item.second));
+    }
+    return result;
+}
+
+
+//         .def("__iter__")
+
 
 void register_manager() {
-//     py::class_<Manager, boost::noncopyable>("Manager",
-//         "    Main geometry manager. It provides methods to read it from XML file and fetch geometry elements by name.\n\n"
-//         "    GeometryReader(filename="", materials=plask.material.database)\n"
-//         "        Create geometry manager with specified material database and optionally load it from XML file\n\n"
-//         "    Parameters\n"
-//         "    ----------\n"
-//         "    filename:\n"
-//         "        XML file with geometry specification. If left empty, empty geometry is created.\n"
-//         "    materialsdb:\n"
-//         "        Material database. If not specified, set to default database.\n"
-//         , py::no_init)
-//          .def("__init__", raw_constructor(&Geometry__init__))
-//          .def("element", &Geometry_element, "Get geometry element with given name", (py::arg("name")))
-//          .def("load", &Geometry_loadFromFile, "Load geometry from file", (py::arg("filename"), py::arg("materialsdb")=shared_ptr<MaterialsDB>()))
-//          .def("read", &Geometry_loadFromXMLString, "Read geometry from string", (py::arg("data"), py::arg("materialsdb")=shared_ptr<MaterialsDB>()))
-//     ;
+    py::class_<PythonManager, boost::noncopyable>("Manager",
+        "Main input manager. It provides methods to read the XML file and fetch geometry elements, pathes,"
+        "meshes, and generators by name.\n\n"
+        "GeometryReader(materials=None)\n"
+        "    Create manager with specified material database (if None, use default database)\n\n",
+        py::init<MaterialsDB*>(py::arg("materials")=py::object()))
+        .def("read", &PythonManager::read, "Read data. source can be a filename, file, or XML string to read.", py::arg("source"))
+        .def_readonly("elements", &PythonManager::namedElements, "Dictionary of all named geometry elements")
+        .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
+        .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")
+    ;
+
+    py::class_<std::map<std::string, shared_ptr<GeometryElement>>, boost::noncopyable>("GeometryElementDictionary")
+        .def(py::map_indexing_suite<std::map<std::string, shared_ptr<GeometryElement>>, true>())
+        .def("keys", &dict_keys<shared_ptr<GeometryElement>>)
+        .def("values", &dict_values<shared_ptr<GeometryElement>>)
+        .def("items", &dict_items<shared_ptr<GeometryElement>>)
+    ;
+
+    py::class_<std::map<std::string, PathHints>, boost::noncopyable>("PathHintsDictionary")
+        .def(py::map_indexing_suite<std::map<std::string, PathHints>>())
+        .def("keys", &dict_keys<PathHints>)
+        .def("values", &dict_values<PathHints>)
+        .def("items", &dict_items<PathHints>)
+    ;
+
+    py::class_<std::map<std::string, shared_ptr<Geometry>>, boost::noncopyable>("GeometryDictionary")
+        .def(py::map_indexing_suite<std::map<std::string, shared_ptr<Geometry>>, true>())
+        .def("keys", &dict_keys<shared_ptr<Geometry>>)
+        .def("values", &dict_values<shared_ptr<Geometry>>)
+        .def("items", &dict_items<shared_ptr<Geometry>>)
+    ;
 }
 
 }} // namespace plask::python

@@ -58,6 +58,9 @@ BOOST_PYTHON_MODULE(plaskcore)
     // Config
     register_config();
 
+    // Manager
+    register_manager();
+
     // Vectors
     register_vectors();
 
@@ -99,6 +102,7 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_exception<plask::python::KeyError>(PyExc_KeyError);
     register_exception<plask::python::AttributeError>(PyExc_AttributeError);
     register_exception<plask::python::StopIteration>(PyExc_StopIteration);
+    register_exception<plask::python::IOError>(PyExc_IOError);
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

@@ -106,6 +106,8 @@ int main(int argc, const char *argv[])
         py::object plask = py::import("plask");
         py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
 
+        plask.attr("_main_globals") = globals;
+
         globals["plask"] = plask; // import plask
         if (from_import) { // from plask import *
             from_import_all("plask", globals);

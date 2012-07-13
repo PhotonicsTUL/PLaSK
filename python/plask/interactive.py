@@ -42,6 +42,7 @@ preexec_source = '''\
 from __future__ import division
 from numpy import *
 import plask
+plask._main_globals = globals()
 '''
 
 no_ipython = """\

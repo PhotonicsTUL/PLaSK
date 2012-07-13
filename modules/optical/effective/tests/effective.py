@@ -17,7 +17,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def setUp(self):
         self.module = EffectiveIndex2D()
         rect = geometry.Rectangle(0.75, 0.5, LowContrastMaterial())
-        space = geometry.Geometry2DCartesian(rect, left="mirror")
+        space = geometry.Cartesian2D(rect, left="mirror")
         self.module.geometry = space
 
     def testExceptions(self):

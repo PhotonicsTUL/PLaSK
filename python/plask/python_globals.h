@@ -66,6 +66,11 @@ struct StopIteration: public Exception {
     StopIteration(const std::string& msg, const T&... args) : Exception(msg, args...) {}
 };
 
+struct IOError: public Exception {
+    template <typename... T>
+    IOError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
+};
+
 // ----------------------------------------------------------------------------------------------------------------------
 // String functions for Python3
 #if PY_VERSION_HEX >= 0x03000000

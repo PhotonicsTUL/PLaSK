@@ -123,6 +123,39 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
     return space;
 }
 
+static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple args, py::dict kwargs) {
+    int na = py::len(args);
+
+    shared_ptr<Geometry2DCylindrical> space;
+    py::object geometry;
+
+    if (na == 2) geometry = args[1];
+    else if (na == 1 && kwargs.has_key("geometry")) geometry = kwargs["geometry"];
+    else throw TypeError("__init__() takes 1 or 2 non-keyword arguments (%1%) given", na);
+
+    try {
+        shared_ptr<Revolution> revolution = py::extract<shared_ptr<Revolution>>(geometry);
+        space = make_shared<Geometry2DCylindrical>(revolution);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        shared_ptr<GeometryElementD<2>> element;
+        try {
+            element = py::extract<shared_ptr<GeometryElementD<2>>>(geometry);
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            throw TypeError("'geometry' argument type must be either Extrusion or GeometryElement2D");
+        }
+        space = make_shared<Geometry2DCylindrical>(element);
+    }
+
+    std::set<std::string> parsed_kwargs;
+    parsed_kwargs.insert("geometry");
+
+    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
+
+    return space;
+}
+
 template <typename S>
 static typename Primitive<S::DIMS>::Box Space_childBoundingBox(const S& self) {
     return self.getChildBoundingBox();
@@ -142,6 +175,15 @@ static py::dict Geometry2DCartesian_getBorders(const Geometry2DCartesian& self) 
     py::dict borders;
     borders["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
     borders["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
+    borders["top"] = _border(self, Geometry::DIRECTION_UP, true);
+    borders["bottom"] = _border(self, Geometry::DIRECTION_UP, false);
+    return borders;
+}
+
+static py::dict Geometry2DCylindrical_getBorders(const Geometry2DCylindrical& self) {
+    py::dict borders;
+    borders["inner"] = _border(self, Geometry::DIRECTION_TRAN, false);
+    borders["outer"] = _border(self, Geometry::DIRECTION_TRAN, true);
     borders["top"] = _border(self, Geometry::DIRECTION_UP, true);
     borders["bottom"] = _border(self, Geometry::DIRECTION_UP, false);
     return borders;
@@ -181,9 +223,13 @@ static shared_ptr<S> Space_getSubspace(py::tuple args, py::dict kwargs) {
 
 void register_calculation_spaces() {
 
-    py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>>("Geometry2DCartesian",
+    py::class_<Geometry, shared_ptr<Geometry>, boost::noncopyable>("Geometry",
+        "Base class for all geometries", py::no_init)
+    ;
+
+    py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",
         "Geometry trunk in 2D Cartesian space\n\n"
-        "Geometry2DCartesian(geometry, length=infty, **borders)\n"
+        "Cartesian2D(geometry, length=infty, **borders)\n"
         "    Create a space around the two-dimensional geometry element with given length.\n\n"
         "    'geometry' can be either a 2D geometry object or plask.geometry.Extrusion, in which case\n"
         "    the 'length' parameter should be skipped, as it is read directly from extrusion.\n"
@@ -211,6 +257,33 @@ void register_calculation_spaces() {
         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
+
+    py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
+        "Geometry trunk in 2D cylindrical space\n\n"
+        "Cylindircal2D(geometry, **borders)\n"
+        "    Create a space around the two-dimensional geometry element.\n\n"
+        "    'geometry' can be either a 2D geometry object or plask.geometry.Revolution.\n"
+        "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
+        py::no_init)
+        .def("__init__", raw_constructor(Geometry2DCylindrical__init__, 1))
+        .add_property("child", &Geometry2DCylindrical::getChild, "GeometryElement2D at the root of the tree")
+        .add_property("extrusion", &Geometry2DCylindrical::getRevolution, "Revolution object at the very root of the tree")
+        .add_property("bbox", &Space_childBoundingBox<Geometry2DCylindrical>, "Minimal rectangle which includes all points of the geometry element")
+        .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial, "Material of the 'empty' regions of the geometry")
+        .add_property("borders", &Geometry2DCylindrical_getBorders, &Space_setBorders,
+                      "Dictionary specifying the type of the surroundings around the structure")
+        .def("getMaterial", &Geometry2DCylindrical::getMaterial, "Return material at given point", (py::arg("point")))
+        .def("getMaterial", &Space_getMaterial<Geometry2DCylindrical>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
+        .def("getLeafs", &Space_getLeafs<Geometry2DCylindrical>, (py::arg("path")=empty_path),  "Return list of all leafs in the subtree originating from this element")
+        .def("getLeafsPositions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsPositions,
+             (py::arg("path")=empty_path), "Calculate positions of all leafs")
+        .def("getLeafsBBoxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsBoundingBoxes,
+             (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs")
+        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=empty_path), "Return list of Translation objects holding all leafs")
+        .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
+             "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+    ;
+
 }
 
 

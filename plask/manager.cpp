@@ -20,10 +20,10 @@ const PathHints& Manager::requirePathHints(const std::string& path_hints_name) c
 shared_ptr<GeometryElement> Manager::getGeometryElement(const std::string &name) const {
     auto result_it = namedElements.find(name);
     if (result_it == namedElements.end()) return shared_ptr<GeometryElement>();
-    auto result = result_it->second.lock();
-    if (!result) const_cast<Manager*>(this)->namedElements.erase(name);
-    return result;
-
+    // auto result = result_it->second.lock();
+    // if (!result) const_cast<Manager*>(this)->namedElements.erase(name);
+    // return result;
+    return result_it->second;
     /*auto result_it = namedElements.find(name);
     return result_it != namedElements.end() ? result_it->second.lock() : shared_ptr<GeometryElement>();*/
 }

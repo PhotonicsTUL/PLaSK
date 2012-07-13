@@ -9,7 +9,6 @@
 
 #include <numpy/arrayobject.h>
 #include <boost/python/stl_iterator.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/concept_check.hpp>
 
 #if PY_VERSION_HEX >= 0x03000000

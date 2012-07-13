@@ -33,7 +33,7 @@ struct Manager {
     std::map<std::string, PathHints> pathHints;
 
     /// Allow to access elements by name.
-    std::map<std::string, weak_ptr<GeometryElement> > namedElements;
+    std::map<std::string, shared_ptr<GeometryElement> > namedElements;
 
     /// Roots elements.
     //std::vector< shared_ptr<GeometryElement> > roots;
