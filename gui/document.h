@@ -1,7 +1,7 @@
 #ifndef PLASK_GUI_DOCUMENT_H
 #define PLASK_GUI_DOCUMENT_H
 
-#include <plask/geometry/manager.h>
+#include <plask/manager.h>
 #include <QString>
 #include <QUndoStack>
 
