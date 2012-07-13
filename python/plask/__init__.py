@@ -85,9 +85,10 @@ material.complex = lambda mat, **kwargs: material.register_material(mat, complex
 def read(source, destination=None):
     if destination is None:
         try:
-            destination = _main_globals
+            destination = _globals_
         except NameError:
-            raise RuntimeError("You must call this function as 'read(source, globals())' when using PLaSK as Python module")
+            import __main__
+            destination = __main__.__dict__
 
     manager = Manager()
     manager.read(source)
