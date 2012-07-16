@@ -273,20 +273,40 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3D__init__geometry(const shared_ptr
 }
 
 
-py::object RectilinearMesh2DDividingGenerator_getDivision(const RectilinearMesh2DDividingGenerator& self) {
-    auto division = self.getDivision();
+py::object RectilinearMesh2DDividingGenerator_getPreDivision(const RectilinearMesh2DDividingGenerator& self) {
+    auto division = self.getPreDivision();
     return py::make_tuple(division.first, division.second);
 }
 
-void RectilinearMesh2DDividingGenerator_setDivision(RectilinearMesh2DDividingGenerator& self, const py::object division) {
+void RectilinearMesh2DDividingGenerator_setPreDivision(RectilinearMesh2DDividingGenerator& self, const py::object division) {
     try {
-        self.setDivision(py::extract<size_t>(division));
+        self.setPreDivision(py::extract<size_t>(division));
     } catch (py::error_already_set) {
         PyErr_Clear();
         try {
             if (!PySequence_Check(division.ptr()) || py::len(division) != 2)
                 throw py::error_already_set();
-            self.setDivision(py::extract<size_t>(division[0]), py::extract<size_t>(division[1]));
+            self.setPreDivision(py::extract<size_t>(division[0]), py::extract<size_t>(division[1]));
+        } catch (py::error_already_set) {
+            throw TypeError("division must be either a single positive integer or a sequence of two positive integers");
+        }
+    }
+}
+
+py::object RectilinearMesh2DDividingGenerator_getPostDivision(const RectilinearMesh2DDividingGenerator& self) {
+    auto division = self.getPostDivision();
+    return py::make_tuple(division.first, division.second);
+}
+
+void RectilinearMesh2DDividingGenerator_setPostDivision(RectilinearMesh2DDividingGenerator& self, const py::object division) {
+    try {
+        self.setPostDivision(py::extract<size_t>(division));
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        try {
+            if (!PySequence_Check(division.ptr()) || py::len(division) != 2)
+                throw py::error_already_set();
+            self.setPostDivision(py::extract<size_t>(division[0]), py::extract<size_t>(division[1]));
         } catch (py::error_already_set) {
             throw TypeError("division must be either a single positive integer or a sequence of two positive integers");
         }
@@ -514,8 +534,11 @@ void register_mesh_rectangular()
         "Generator of Rectilinear2D mesh by simple division of the geometry.\n\n"
         "DividingGenerator(division=1)\n"
         "    create generator with initial division of all geometry elements", py::init<size_t>(py::arg("division")=1))
-        .add_property("division", &RectilinearMesh2DDividingGenerator_getDivision, &RectilinearMesh2DDividingGenerator_setDivision,
+        .add_property("prediv", &RectilinearMesh2DDividingGenerator_getPreDivision, &RectilinearMesh2DDividingGenerator_setPreDivision,
                     "initial division of all geometry elements")
+        .add_property("postdiv", &RectilinearMesh2DDividingGenerator_getPostDivision, &RectilinearMesh2DDividingGenerator_setPostDivision,
+                    "final division of all geometry elements")
+        .def_readwrite("limit_change", &RectilinearMesh2DDividingGenerator::limit_change, "Limit maximum adjacent elements size change to the factor of two")
         .def_readwrite("warn_multiple", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining path points to more than one object")
         .def_readwrite("warn_none", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining path does not point to any object")
         .def_readwrite("warn_ouside", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining line is outside of its object")

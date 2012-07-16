@@ -25,7 +25,8 @@ class RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3D
 
 class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
-    size_t divisions[2];
+    size_t pre_divisions[2];
+    size_t post_divisions[2];
 
     typedef std::map<PathHints, std::set<double>> Refinements;
 
@@ -35,23 +36,44 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
 
   public:
 
+    bool limit_change;  ///< Limit the change of size of adjacent elements to the factor of two
     bool warn_multiple, ///< Warn if a single refinement points to more than one object.
          warn_none,     ///< Warn if a defined refinement points to object absent from provided geometry.
-         warn_outside;  ///< Warn if a defined refinemtent takes place outside of the pointed object.
+         warn_outside;  ///< Warn if a defined refinement takes place outside of the pointed object.
 
-    RectilinearMesh2DDividingGenerator(size_t div0=1, size_t div1=0) : warn_multiple(true), warn_outside(true) {
-        divisions[0] = div0;
-        divisions[1] = div1? div1 : div0;
+         /**
+          * Create new generator
+          * \param prediv0 Initial mesh division in horizontal direction
+          * \param postdiv0 Final mesh division in horizontal direction
+          * \param prediv1 Initial mesh division in vertical direction (0 means the same as horizontal)
+          * \param postdiv1 Final mesh division in vertical direction (0 means the same as horizontal)
+          **/
+    RectilinearMesh2DDividingGenerator(size_t prediv0=1, size_t postdiv0=1, size_t prediv1=0, size_t postdiv1=0) :
+        limit_change(true), warn_multiple(true), warn_outside(true)
+    {
+        pre_divisions[0] = prediv0;
+        pre_divisions[1] = prediv1? prediv1 : prediv0;
+        post_divisions[0] = postdiv0;
+        post_divisions[1] = postdiv1? postdiv1 : postdiv0;
     }
 
     virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryElementD<2>>& geometry);
 
     /// Get initial division of the smallest element in the mesh
-    inline std::pair<size_t,size_t> getDivision() const { return std::pair<size_t,size_t>(divisions[0], divisions[1]); }
+    inline std::pair<size_t,size_t> getPreDivision() const { return std::pair<size_t,size_t>(pre_divisions[0], pre_divisions[1]); }
     /// Set initial division of the smallest element in the mesh
-    inline void setDivision(size_t div0, size_t div1=0) {
-        divisions[0] = div0;
-        divisions[1] = div1? div1 : div0;
+    inline void setPreDivision(size_t div0, size_t div1=0) {
+        pre_divisions[0] = div0;
+        pre_divisions[1] = div1? div1 : div0;
+        clearCache();
+    }
+
+    /// Get final division of the smallest element in the mesh
+    inline std::pair<size_t,size_t> getPostDivision() const { return std::pair<size_t,size_t>(post_divisions[0], post_divisions[1]); }
+    /// Set final division of the smallest element in the mesh
+    inline void setPostDivision(size_t div0, size_t div1=0) {
+        post_divisions[0] = div0;
+        post_divisions[1] = div1? div1 : div0;
         clearCache();
     }
 

@@ -70,10 +70,10 @@ RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const Rectilinea
 
     // First divide each element
     double x = *result.begin();
-    std::vector<double> points; points.reserve((divisions[dir]-1)*(result.size()-1));
+    std::vector<double> points; points.reserve((pre_divisions[dir]-1)*(result.size()-1));
     for (auto i = result.begin()+1; i!= result.end(); ++i) {
         double w = *i - x;
-        for (size_t j = 1; j != divisions[dir]; ++j) points.push_back(x + w*j/divisions[dir]);
+        for (size_t j = 1; j != pre_divisions[dir]; ++j) points.push_back(x + w*j/pre_divisions[dir]);
         x = *i;
     }
     result.addOrderedPoints(points.begin(), points.end());
@@ -81,28 +81,42 @@ RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const Rectilinea
     if (result.size() <= 2) return result;
 
     // Now ensure, that the grids do not change to quickly
-    size_t end = result.size()-2;
-    double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
-    for (size_t i = 0; i <= end;) {
-        if (w > 2.*w_prev) {
-            result.addPoint(0.5 * (result[i] + result[i+1])); ++end;
-            w = w_next = result[i+1] - result[i];
-        } else if (w > 2.*w_next) {
-            result.addPoint(0.5 * (result[i] + result[i+1])); ++end;
-            w_next = result[i+1] - result[i];
-            if (i) {
-                --i;
-                w = w_prev;
-                w_prev = (i == 0)? INFINITY : result[i] - result[i-1];
-            } else
+    if (limit_change) {
+        size_t end = result.size()-2;
+        double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
+        for (size_t i = 0; i <= end;) {
+            if (w > 2.*w_prev) {
+                result.addPoint(0.5 * (result[i] + result[i+1])); ++end;
+                w = w_next = result[i+1] - result[i];
+            } else if (w > 2.*w_next) {
+                result.addPoint(0.5 * (result[i] + result[i+1])); ++end;
+                w_next = result[i+1] - result[i];
+                if (i) {
+                    --i;
+                    w = w_prev;
+                    w_prev = (i == 0)? INFINITY : result[i] - result[i-1];
+                } else
+                    w = w_next;
+            } else {
+                ++i;
+                w_prev = w;
                 w = w_next;
-        } else {
-            ++i;
-            w_prev = w;
-            w = w_next;
-            w_next = (i == end)? INFINITY : result[i+2] - result[i+1];
+                w_next = (i == end)? INFINITY : result[i+2] - result[i+1];
+            }
         }
     }
+
+    // Finally divide each element in post- division
+    x = *result.begin();
+    points.clear(); points.reserve((post_divisions[dir]-1)*(result.size()-1));
+    for (auto i = result.begin()+1; i!= result.end(); ++i) {
+        double w = *i - x;
+        for (size_t j = 1; j != post_divisions[dir]; ++j) points.push_back(x + w*j/post_divisions[dir]);
+        x = *i;
+    }
+
+    result.addOrderedPoints(points.begin(), points.end());
+
     return result;
 }
 
