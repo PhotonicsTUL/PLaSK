@@ -23,6 +23,15 @@ void PathHints::addAllHintsFromPath(const Path& path) {
     addAllHintsFromPath(path.elements);
 }
 
+void PathHints::addAllHintsFromSubtree(const GeometryElement::Subtree &subtree) {
+    if (subtree.element->isContainer()) {
+        for (auto& c: subtree.children)
+            addHint(const_pointer_cast<GeometryElement>(subtree.element), const_pointer_cast<GeometryElement>(c.element));
+    }
+    for (auto& c: subtree.children)
+        addAllHintsFromPath(c);
+}
+
 std::set<shared_ptr<GeometryElement>> PathHints::getChildren(shared_ptr<const GeometryElement> container) {
     std::set<shared_ptr<GeometryElement>> result;
     auto e = hintFor.find(const_pointer_cast<GeometryElement>(container));

@@ -60,6 +60,14 @@ struct PathHints {
         addAllHintsFromPath(path);
     }
 
+    /**
+     * Construct path hints with all hinst included in @p subtree.
+     * @param subtree subtree
+     */
+    explicit PathHints(const GeometryElement::Subtree& subtree) {
+        addAllHintsFromSubtree(subtree);
+    }
+
     PathHints() = default;
 
     /**
@@ -99,6 +107,12 @@ struct PathHints {
      * @param path path
      */
     void addAllHintsFromPath(const Path& path);
+
+    /**
+     * Add all hinst included in @p subtree.
+     * @param subtree subtree
+     */
+    void addAllHintsFromSubtree(const GeometryElement::Subtree& subtree);
 
     /**
      * Get children for given container.
