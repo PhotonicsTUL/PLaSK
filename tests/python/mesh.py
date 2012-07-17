@@ -76,12 +76,13 @@ class RectilinearMeshes(unittest.TestCase):
         stack = plask.geometry.Stack2D()
         stack.append(plask.geometry.Rectangle(2, 2, None))
         stack.append(plask.geometry.Rectangle(2, 16, None))
-        hint = stack.append(plask.geometry.Rectangle(2, 16, None))
+        rect = plask.geometry.Rectangle(2, 16, None)
+        stack.append(rect)
 
         generator1 = plask.mesh.Rectilinear2D.SimpleGenerator()
         generator2 = plask.mesh.Rectilinear2D.DividingGenerator()
         generator2.prediv = 2
-        generator2.addRefinement("z", hint, 8.)
+        generator2.addRefinement("z", rect, 8.)
 
         self.assertEqual( generator2.getRefinements("z").values(), [[8.]] )
 

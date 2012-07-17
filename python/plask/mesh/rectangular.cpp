@@ -12,6 +12,7 @@
 
 namespace plask { namespace python {
 
+
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
@@ -313,16 +314,20 @@ void RectilinearMesh2DDividingGenerator_setPostDivision(RectilinearMesh2DDividin
     }
 }
 
-void RectilinearMesh2DDividingGenerator_addRefinement(RectilinearMesh2DDividingGenerator& self, const std::string& axis, const PathHints& path, double position) {
+void RectilinearMesh2DDividingGenerator_addRefinement(RectilinearMesh2DDividingGenerator& self, const std::string& axis, GeometryElement& element, double position, const PathHints& path) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.addRefinement(path, Primitive<2>::DIRECTION(i), position);
+    self.addRefinement(Primitive<2>::DIRECTION(i), element.shared_from_this(), position, path);
 }
 
-void RectilinearMesh2DDividingGenerator_removeRefinement(RectilinearMesh2DDividingGenerator& self, const std::string& axis, const PathHints& path, double position) {
+void RectilinearMesh2DDividingGenerator_removeRefinement(RectilinearMesh2DDividingGenerator& self, const std::string& axis, GeometryElement& element, double position, const PathHints& path) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.removeRefinement(path, Primitive<2>::DIRECTION(i), position);
+    self.removeRefinement(Primitive<2>::DIRECTION(i), element.shared_from_this(), position, path);
+}
+
+void RectilinearMesh2DDividingGenerator_removeRefinements(RectilinearMesh2DDividingGenerator& self, GeometryElement& element, const PathHints& path) {
+    self.removeRefinements(element.shared_from_this(), path);
 }
 
 py::dict RectilinearMesh2DDividingGenerator_listRefinements(const RectilinearMesh2DDividingGenerator& self, const std::string& axis) {
@@ -330,12 +335,15 @@ py::dict RectilinearMesh2DDividingGenerator_listRefinements(const RectilinearMes
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     py::dict refinements;
     for (auto refinement: self.getRefinements(Primitive<2>::DIRECTION(i))) {
-        py::object path(refinement.first);
+        py::object element(refinement.first.first.lock());
+        auto pth = refinement.first.second;
+        py::object path;
+        if (pth.hintFor.size() != 0) path = py::object(pth);
         py::list refs;
         for (auto x: refinement.second) {
             refs.append(x);
         }
-        refinements[path] = refs;
+        refinements[py::make_tuple(element, path)] = refs;
     }
     return refinements;
 }
@@ -543,11 +551,11 @@ void register_mesh_rectangular()
         .def_readwrite("warn_none", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining path does not point to any object")
         .def_readwrite("warn_ouside", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining line is outside of its object")
         .def("addRefinement", &RectilinearMesh2DDividingGenerator_addRefinement, "Add a refining line inside the object pointed by path",
-             (py::arg("axis"), "path", "position"))
+             (py::arg("axis"), "element", "pos", py::arg("path")=py::object()))
         .def("removeRefinement", &RectilinearMesh2DDividingGenerator_removeRefinement, "Remove the refining line from the object pointed by path",
-             (py::arg("axis"), "path", "position"))
-        .def("removeRefinements", &RectilinearMesh2DDividingGenerator::removeRefinements, "Remove the all refining lines from the object pointed by path",
-             py::arg("path"))
+             (py::arg("axis"), "element", "pos", py::arg("path")=py::object()))
+        .def("removeRefinements", &RectilinearMesh2DDividingGenerator_removeRefinements, "Remove the all refining lines from the object pointed by path",
+             py::arg("element"), py::arg("path")=py::object())
         .def("getRefinements", &RectilinearMesh2DDividingGenerator_listRefinements, py::arg("axis"),
              "Get list of all the refinements defined for this generator for specified axis"
         )

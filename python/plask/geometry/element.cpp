@@ -6,9 +6,6 @@
 
 namespace plask { namespace python {
 
-// Empty path to be used as default on functions
-const PathHints empty_path {};
-
 // Some helpful wrappers
 template <int dim> struct GeometryElementD_inside {};
 template <> struct GeometryElementD_inside<2> {
@@ -48,7 +45,7 @@ static py::list GeometryElementD_getLeafsAsTranslations(const GeometryElementD<d
 }
 
 
-static py::list GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints& path=empty_path) {
+static py::list GeometryElement_getLeafs(const shared_ptr<GeometryElement>& self, const PathHints& path) {
     std::vector<shared_ptr<const GeometryElement>> leafs = self->getLeafs(&path);
     py::list result;
     for (auto i: leafs) result.append(const_pointer_cast<GeometryElement>(i));
@@ -92,13 +89,19 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
         .add_property("bbox_size", &GeometryElementD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
         .def("getLeafsPositions", (std::vector<typename Primitive<dim>::DVec>(GeometryElementD<dim>::*)(const PathHints&)const) &GeometryElementD<dim>::getLeafsPositions,
-             (py::arg("path")=empty_path), "Calculate positions of all leafs (in local coordinates)")
+             (py::arg("path")=py::object()), "Calculate positions of all leafs (in local coordinates)")
         .def("getLeafsBBoxes", (std::vector<typename Primitive<dim>::Box>(GeometryElementD<dim>::*)(const PathHints&)const) &GeometryElementD<dim>::getLeafsBoundingBoxes,
-             (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs (in local coordinates)")
-        .def("getLeafsAsTranslations", &GeometryElementD_getLeafsAsTranslations<dim>, (py::arg("path")=empty_path),
+             (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
+        .def("getLeafsAsTranslations", &GeometryElementD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
              "Return list of Translation objects holding all leafs")
-        .def("getLeafs", &GeometryElement_getLeafs, (py::arg("path")=empty_path),
+        .def("getLeafs", &GeometryElement_getLeafs, (py::arg("path")=py::object()),
              "Return list of all leafs in the subtree originating from this element")
+        .def("getElementPositions", (std::vector<typename Primitive<dim>::DVec>(GeometryElementD<dim>::*)(const GeometryElement&, const PathHints&)const) &GeometryElementD<dim>::getElementPositions,
+             (py::arg("element"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified element (in local coordinates)")
+        .def("getElementBBoxes", (std::vector<typename Primitive<dim>::Box>(GeometryElementD<dim>::*)(const GeometryElement&, const PathHints&)const) &GeometryElementD<dim>::getElementBoundingBoxes,
+             (py::arg("element"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified element (in local coordinates)")
+        .def("getElementAsTranslation", (shared_ptr<Translation<dim>> (GeometryElementD<dim>::*)(const shared_ptr<GeometryElementD<dim>>&, const PathHints&)const) &GeometryElementD<dim>::getElementInThisCoordinates,
+             (py::arg("element"), py::arg("path")=py::object()), "Return Translation object holding specified element")
     ;
 }
 

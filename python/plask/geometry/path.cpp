@@ -60,6 +60,27 @@ std::string PathHints__repr__(const PathHints& self) {
     return format("plask.geometry.PathHints(<%1% hints>)", self.hintFor.size());
 }
 
+struct PathHints_from_None {
+    PathHints_from_None() {
+        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<PathHints>());
+    }
+
+    // Determine if obj_ptr can be converted into an Aligner
+    static void* convertible(PyObject* obj_ptr) {
+        if (obj_ptr != Py_None) return 0;
+        return obj_ptr;
+    }
+
+    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        // Grab pointer to memory into which to construct the new Aligner
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<PathHints>*)data)->storage.bytes;
+        new(storage) PathHints;
+        // Stash the memory chunk pointer for later use by boost.python
+        data->convertible = storage;
+    }
+
+};
+
 void register_geometry_path()
 {
     py::class_<PathHints::Hint>("PathHint",
@@ -86,6 +107,7 @@ void register_geometry_path()
     ;
 
     py::implicitly_convertible<PathHints::Hint,PathHints>();
+    PathHints_from_None();
 
     py::class_<Path, shared_ptr<Path>>("Path",
                      "Path is used to specify unique instance of every element in the geometry,\n"

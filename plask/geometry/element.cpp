@@ -100,7 +100,7 @@ void GeometryElement::removeAtUnsafe(std::size_t) {
 
 template <int dimensions>
 shared_ptr<Translation<dimensions>>
-GeometryElementD<dimensions>::getElementInThisCordinates(const shared_ptr<GeometryElementD<dimensions>>& element, const PathHints* path) const {
+GeometryElementD<dimensions>::getElementInThisCoordinates(const shared_ptr<GeometryElementD<dimensions>>& element, const PathHints* path) const {
     auto trans_vec = getElementPositions(*element, path);
     if (trans_vec.size() != 1 || std::isnan(trans_vec[0].components[0]))
         shared_ptr<Translation<dimensions>>();

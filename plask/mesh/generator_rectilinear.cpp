@@ -43,27 +43,33 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
 
 RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryElementD<2>>& geometry, size_t dir)
 {
-    // TODO: Użyj algorytmu Roberta, może będzie lepszy
-
     RectilinearMesh1D result = initial;
 
     // First add refinement points
     for (auto ref: refinements[dir]) {
-        auto boxes = geometry->getLeafsBoundingBoxes(&ref.first);
-        auto origins = geometry->getLeafsPositions(&ref.first);
-        if (warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Single refinement defined for more than one object.");
-        if (warn_multiple && boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement defined for object absent from the geometry.");
-        auto box = boxes.begin();
-        auto origin = origins.begin();
-        for (; box != boxes.end(); ++box, ++origin) {
-            for (auto x: ref.second) {
-                double zero = (*origin)[dir];
-                double lower = box->lower[dir] - zero;
-                double upper = box->upper[dir] - zero;
-                if (warn_outside && (x < lower || x > upper))
-                    writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement at %1% outside of the object (%2% to %3%).",
-                                           x, lower, upper);
-                result.addPoint(zero + x);
+        auto element = ref.first.first.lock();
+        if (!element) {
+             if (warn_multiple) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement defined for object not existing any more.");
+        } else {
+            auto path = ref.first.second;
+            auto boxes = geometry->getElementBoundingBoxes(*element, path);
+            auto origins = geometry->getElementPositions(*element, path);
+            if (warn_multiple) {
+                if (boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement defined for object absent from the geometry.");
+                else if (boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Single refinement defined for more than one object.");
+            }
+            auto box = boxes.begin();
+            auto origin = origins.begin();
+            for (; box != boxes.end(); ++box, ++origin) {
+                for (auto x: ref.second) {
+                    double zero = (*origin)[dir];
+                    double lower = box->lower[dir] - zero;
+                    double upper = box->upper[dir] - zero;
+                    if (warn_outside && (x < lower || x > upper))
+                        writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement at %1% outside of the object (%2% to %3%).",
+                                            x, lower, upper);
+                    result.addPoint(zero + x);
+                }
             }
         }
     }

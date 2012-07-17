@@ -144,7 +144,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
         _child.reset();
     }
 
-    protected:
+  protected:
     shared_ptr<ChildType> _child;
 
 };

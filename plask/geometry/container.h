@@ -39,7 +39,7 @@ struct GeometryElementContainer: public GeometryElementD<dim> {
     /// Type of translation geometry element in space of this.
     typedef Translation<dim> TranslationT;
 
-    /// Type of the vector holiding container children
+    /// Type of the vector holding container children
     typedef std::vector< shared_ptr<TranslationT> > TranslationVector;
 
 protected:

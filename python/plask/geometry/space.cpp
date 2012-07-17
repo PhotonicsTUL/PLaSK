@@ -8,8 +8,6 @@
 
 namespace plask { namespace python {
 
-const PathHints empty_path {};
-
 template <typename S> struct Space_getMaterial {
     static inline shared_ptr<Material> call(const S& self, double c0, double c1) {
         return self.getMaterial(Vec<2,double>(c0, c1));
@@ -248,12 +246,12 @@ void register_calculation_spaces() {
                       "Dictionary specifying the type of the surroundings around the structure")
         .def("getMaterial", &Geometry2DCartesian::getMaterial, "Return material at given point", (py::arg("point")))
         .def("getMaterial", &Space_getMaterial<Geometry2DCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("getLeafs", &Space_getLeafs<Geometry2DCartesian>, (py::arg("path")=empty_path),  "Return list of all leafs in the subtree originating from this element")
+        .def("getLeafs", &Space_getLeafs<Geometry2DCartesian>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this element")
         .def("getLeafsPositions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsPositions,
-             (py::arg("path")=empty_path), "Calculate positions of all leafs")
+             (py::arg("path")=py::object()), "Calculate positions of all leafs")
         .def("getLeafsBBoxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsBoundingBoxes,
-             (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs")
-        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCartesian>, (py::arg("path")=empty_path), "Return list of Translation objects holding all leafs")
+             (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
+        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -274,12 +272,12 @@ void register_calculation_spaces() {
                       "Dictionary specifying the type of the surroundings around the structure")
         .def("getMaterial", &Geometry2DCylindrical::getMaterial, "Return material at given point", (py::arg("point")))
         .def("getMaterial", &Space_getMaterial<Geometry2DCylindrical>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("getLeafs", &Space_getLeafs<Geometry2DCylindrical>, (py::arg("path")=empty_path),  "Return list of all leafs in the subtree originating from this element")
+        .def("getLeafs", &Space_getLeafs<Geometry2DCylindrical>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this element")
         .def("getLeafsPositions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsPositions,
-             (py::arg("path")=empty_path), "Calculate positions of all leafs")
+             (py::arg("path")=py::object()), "Calculate positions of all leafs")
         .def("getLeafsBBoxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsBoundingBoxes,
-             (py::arg("path")=empty_path), "Calculate bounding boxes of all leafs")
-        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=empty_path), "Return list of Translation objects holding all leafs")
+             (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
+        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;

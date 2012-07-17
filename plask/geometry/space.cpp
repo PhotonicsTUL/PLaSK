@@ -88,9 +88,9 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
 }
 
 Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getElementInThisCordinates(element, path);
+    auto new_child = getChild()->getElementInThisCoordinates(element, path);
     if (!new_child) {
-        new_child = element->requireElementInThisCordinates(getChild(), path);
+        new_child = element->requireElementInThisCoordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
@@ -160,9 +160,9 @@ void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
 }
 
 Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getElementInThisCordinates(element, path);
+    auto new_child = getChild()->getElementInThisCoordinates(element, path);
     if (!new_child) {
-        new_child = element->requireElementInThisCordinates(getChild(), path);
+        new_child = element->requireElementInThisCoordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
