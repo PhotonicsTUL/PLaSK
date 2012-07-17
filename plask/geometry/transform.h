@@ -165,7 +165,7 @@ struct GeometryElementTransformSpace: public GeometryElementTransform<this_dim, 
 
     explicit GeometryElementTransformSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransform<this_dim, ChildType>(child) {}
 
-    /// @return GE_TYPE_SPACE_CHANGER
+    /// @return TYPE_SPACE_CHANGER
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_SPACE_CHANGER; }
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {

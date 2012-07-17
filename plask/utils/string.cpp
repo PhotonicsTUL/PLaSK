@@ -24,4 +24,25 @@ std::vector<std::string> splitEsc(const std::string& str, char splitter, char qu
     return std::vector<std::string>(tok.begin(), tok.end());
 }
 
+inline bool isEngLower(char ch) {
+    return 'a' <= ch && ch <= 'z';
+}
+
+inline bool isEngUpper(char ch) {
+    return 'A' <= ch && ch <= 'Z';
+}
+
+bool isEngAlpha(char ch) { return isEngLower(ch) || isEngUpper(ch); }
+
+bool isDigit(char ch) { return '0' <= ch && ch <= '9'; }
+
+bool isCid(const char* potential_id, char underline_ch) {
+    if (!isEngAlpha(*potential_id) && *potential_id != underline_ch)
+        return false;   //first should be letter or underline
+    for (++potential_id; *potential_id; ++potential_id) //all next, if are non NULL
+        if (!isEngAlpha(*potential_id) && !isDigit(*potential_id) && *potential_id != underline_ch)    //must be letter, digit or underline
+            return false;
+    return true;
+}
+
 }       // namespace plask

@@ -97,6 +97,14 @@ split_esc_tokenizer splitEscIterator(const std::string& str, char splitter, char
  */
 std::vector<std::string> splitEsc(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');
 
+/**
+ * Check if @p potential_id is valid C/C++/python name.
+ * @param potential_id
+ * @param underline_ch underline character which can be in id, '_' by default
+ * @return @c true only if @p potential_id is valid C/C++/python name
+ */
+bool isCid(const char* potential_id, char underline_ch = '_');
+
 }       // namespace plask
 
 #endif // STRING_H

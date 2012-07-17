@@ -7,6 +7,7 @@ This file includes definitions of all exceptions classes which are used in PLaSK
 
 #include <stdexcept>
 #include "utils/format.h"
+#include "utils/string.h"
 
 namespace plask {
 
@@ -103,6 +104,25 @@ struct ComputationError: public Exception {
      */
     ComputationError(const std::string& where, const std::string& msg)
         : Exception("%1%: %2%", where, msg) {};
+};
+
+/**
+ * This is throwed if name is bad id.
+ */
+struct BadId: public Exception {
+
+    BadId(const std::string& where, const char* str_to_check, char underline_ch = '_')
+        : Exception("\"%1%\" is bad name for %2%, this name shouldn't be empty and should consists of english letters, '%3%' character and digits (but not at beggining).", str_to_check, where, underline_ch) {};
+
+    static void throwIfBad(const std::string& where, const char* str_to_check, char underline_ch = '_') {
+        if (!isCid(str_to_check, underline_ch))
+            throw BadId(where, str_to_check, underline_ch);
+    }
+
+    static void throwIfBad(const std::string& where, const std::string& str_to_check, char underline_ch = '_') {
+        throwIfBad(where, str_to_check.c_str(), underline_ch);
+    }
+
 };
 
 //-------------- Connected with providers/receivers: -----------------------

@@ -313,8 +313,10 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
                     PathHints::Hint hint = child_param_read();  //this call readExactlyOneChild
                     if (paths_str) {
                         auto paths = splitEscIterator(*paths_str, ',');
-                        for (auto& path: paths)
+                        for (auto& path: paths) {
+                            BadId::throwIfBad("path", path, ' ');
                             reader.manager.pathHints[path].addHint(hint);
+                        }
                     }
                 } else {
                     without_child_param_add(reader.readElement< typename ConstructedType::ChildType >());

@@ -54,10 +54,10 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
         if (reader_it == elementReaders().end())
             throw NoSuchGeometryElementType(nodeName + "[" + expectedSuffix + "]");
     }
-    boost::optional<std::string> name = source.getAttribute("name");
-    shared_ptr<GeometryElement> new_element = reader_it->second(*this);
-    //manager.elements.insert(new_element);   //first this, to ensure that memory will be freed
-    if (name) {
+    boost::optional<std::string> name = source.getAttribute("name");    //read name
+    if (name) BadId::throwIfBad("geometry element", *name, ' ');
+    shared_ptr<GeometryElement> new_element = reader_it->second(*this); //and rest (but while reading this subtree, name is not registred yet)
+    if (name) { //if have name, register it (add it to map of names)
         if (!manager.namedElements.insert(std::map<std::string, shared_ptr<GeometryElement> >::value_type(*name, new_element)).second)
             throw GeometryElementNamesConflictException(*name);
     }
@@ -76,6 +76,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     std::string nodeName = source.getNodeName();
     std::string name = source.requireAttribute("name");
+    BadId::throwIfBad("geometry", name, ' ');
 //    std::string src = source.requireAttribute("over");
     shared_ptr<Geometry> result;
     if (nodeName == "2d" || nodeName == "cartesian2d") {    //TODO register with space names(?)
