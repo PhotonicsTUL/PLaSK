@@ -8,7 +8,7 @@ typename GeometryElementContainer<dim>::Box GeometryElementContainer<dim>::getBo
     if (children.empty()) return Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     Box result = children[0]->getBoundingBox();
     for (std::size_t i = 1; i < children.size(); ++i)
-        result.include(children[i]->getBoundingBox());
+        result.makeInclude(children[i]->getBoundingBox());
     return result;
 }
 
@@ -87,6 +87,19 @@ GeometryElement::Subtree GeometryElementContainer<dim>::findPathsTo(const Geomet
             return findPathsFromChildTo(hintChildren.begin(), hintChildren.end(), el, path);
     }
     return findPathsFromChildTo(children.begin(), children.end(), el, path);
+}
+
+template <int dim>
+GeometryElement::Subtree GeometryElementContainer<dim>::findPathsTo(const GeometryElementContainer::DVec &point) const {
+    GeometryElement::Subtree result;
+    for (auto& child: children) {
+        GeometryElement::Subtree child_path = child->findPathsTo(point);
+        if (!child_path.empty())
+            result.children.push_back(std::move(child_path));
+    }
+    if (!result.children.empty())
+        result.element = this->shared_from_this();
+    return result;
 }
 
 template <int dim>

@@ -68,8 +68,8 @@ static std::string Box3D__repr__(const Box3D& self) {
 /// Register primitives to Python
 void register_geometry_primitive()
 {
-    void (Box2D::*includeR2p)(const Vec<2,double>&) = &Box2D::include;
-    void (Box2D::*includeR2R)(const Box2D&)       = &Box2D::include;
+    void (Box2D::*includeR2p)(const Vec<2,double>&) = &Box2D::makeInclude;
+    void (Box2D::*includeR2R)(const Box2D&)       = &Box2D::makeInclude;
 
     py::class_<Box2D, shared_ptr<Box2D>>("Box2D",
         "Rectangular two-dimensional box. Provides some basic operation on boxes.\n\n"
@@ -85,10 +85,10 @@ void register_geometry_primitive()
         .def("fix", &Box2D::fix, "Ensure that lower[0] <= upper[0] and lower[1] <= upper[1]. Exchange components of lower and upper if necessary.")
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("inside", &Box2D::inside, py::args("point"), "Check if the point is inside the box.")
+        .def("include", &Box2D::include, py::args("point"), "Check if the point is inside the box.")
         .def("intersect", &Box2D::intersect, py::args("other"), "Check if this and the other box have common points.")
-        .def("include", includeR2p, py::args("point"), "Make this box, the minimal one which include this and given point")
-        .def("include", includeR2R, py::args("other"), "Make this box, the minimal one which include this and the other box.")
+        .def("makeInclude", includeR2p, py::args("point"), "Make this box, the minimal one which include this and given point")
+        .def("makeInclude", includeR2R, py::args("other"), "Make this box, the minimal one which include this and the other box.")
         .def("translated", &Box2D::translated, py::args("trans"), "Get translated copy of this box")
         .def("translate", &Box2D::translate, py::args("trans"), "Translate this box")
         .def("__str__", &Box2D__str__)
@@ -98,8 +98,8 @@ void register_geometry_primitive()
     register_vector_of<Box2D>("Box2D");
 
 
-    void (Box3D::*includeR3p)(const Vec<3,double>&) = &Box3D::include;
-    void (Box3D::*includeR3R)(const Box3D&)       = &Box3D::include;
+    void (Box3D::*includeR3p)(const Vec<3,double>&) = &Box3D::makeInclude;
+    void (Box3D::*includeR3R)(const Box3D&)       = &Box3D::makeInclude;
 
     py::class_<Box3D, shared_ptr<Box3D>>("Box3D",
         "Cuboidal three-dimensional box. Provides some basic operation on boxes.\n\n"
@@ -115,10 +115,10 @@ void register_geometry_primitive()
         .def("fix", &Box3D::fix, "Ensure that lower[0] <= upper.c0, lower[1] <= upper[1], and lower[2] <= upper[3].  Exchange components of lower and upper if necessary.")
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("inside", &Box3D::inside, "Check if the point is inside the box.")
+        .def("include", &Box3D::include, "Check if the point is inside the box.")
         .def("intersect", &Box3D::intersect, "Check if this and the other box have common points.")
-        .def("include", includeR3p, (py::arg("point")), "Make this box, the minimal one which include this and given point")
-        .def("include", includeR3R, (py::arg("other")), "Make this box, the minimal one which include this and the other box.")
+        .def("makeInclude", includeR3p, (py::arg("point")), "Make this box, the minimal one which include this and given point")
+        .def("makeInclude", includeR3R, (py::arg("other")), "Make this box, the minimal one which include this and the other box.")
         .def("translated", &Box2D::translated, py::args("trans"), "Get translated copy of this box")
         .def("translate", &Box2D::translate, py::args("trans"), "Translate this box")
         .def("__str__", &Box3D__str__)

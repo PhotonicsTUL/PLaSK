@@ -2,8 +2,8 @@
 
 namespace plask {
 
-bool Revolution::inside(const GeometryElementD< 3 >::DVec& p) const {
-    return getChild()->inside(childVec(p));
+bool Revolution::include(const GeometryElementD< 3 >::DVec& p) const {
+    return getChild()->include(childVec(p));
 }
 
 bool Revolution::intersect(const Box& area) const {
@@ -30,6 +30,10 @@ void Revolution::getBoundingBoxesToVec(const GeometryElement::Predicate& predica
 
 shared_ptr<GeometryElementTransform< 3, GeometryElementD<2> > > Revolution::shallowCopy() const {
     return make_shared<Revolution>(this->getChild());
+}
+
+GeometryElement::Subtree Revolution::findPathsTo(const DVec& point) const {
+    return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->findPathsTo(childVec(point)));
 }
 
 Box2D Revolution::childBox(const plask::Box3D& r) {

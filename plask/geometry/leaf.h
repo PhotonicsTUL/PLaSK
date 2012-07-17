@@ -33,7 +33,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_LEAF; }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return this->inside(p) ? material : shared_ptr<Material>();
+        return this->include(p) ? material : shared_ptr<Material>();
     }
 
     virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const {
@@ -79,6 +79,10 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
 
     virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
         return GeometryElement::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
+    }
+
+    virtual GeometryElement::Subtree findPathsTo(const DVec& point) const {
+        return GeometryElement::Subtree( this->include(point) ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
     }
 
     virtual std::size_t getChildrenCount() const { return 0; }
@@ -147,8 +151,8 @@ struct Block: public GeometryElementLeaf<dim> {
         return Box(Primitive<dim>::ZERO_VEC, size);
     }
 
-    virtual bool inside(const DVec& p) const {
-        return this->getBoundingBox().inside(p);
+    virtual bool include(const DVec& p) const {
+        return this->getBoundingBox().include(p);
     }
 
     virtual bool intersect(const Box& area) const {

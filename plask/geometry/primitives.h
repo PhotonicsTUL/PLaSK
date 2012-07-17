@@ -77,7 +77,7 @@ struct Box2D {
      * @param p point
      * @return true only if point is inside this box
      */
-    bool inside(const Vec<2,double>& p) const;
+    bool include(const Vec<2,double>& p) const;
 
     /**
      * Check if this and other boxes have common points.
@@ -90,13 +90,13 @@ struct Box2D {
      * Make this box, the minimal one which include @c this and given point @p p.
      * @param p point which should be inside box
      */
-    void include(const Vec<2,double>& p);
+    void makeInclude(const Vec<2,double>& p);
 
     /**
      * Make this box, the minimal one which include @c this and @p other box.
      * @param other point which should be inside box
      */
-    void include(const Box2D& other);
+    void makeInclude(const Box2D& other);
 
     /**
      * Get translated copy of this.
@@ -230,7 +230,7 @@ struct Box3D {
      * @param p point
      * @return true only if point is inside this box
      */
-    bool inside(const Vec<3,double>& p) const;
+    bool include(const Vec<3,double>& p) const;
 
     /**
      * Check if this and other boxes have common points.
@@ -243,13 +243,13 @@ struct Box3D {
      * Make this box, the minimal one which include @c this and given point @p p.
      * @param p point which should be inside box
      */
-    void include(const Vec<3,double>& p);
+    void makeInclude(const Vec<3,double>& p);
 
     /**
      * Make this box, the minimal one which include @c this and @p other box.
      * @param other point which should be inside box
      */
-    void include(const Box3D& other);
+    void makeInclude(const Box3D& other);
 
     Box3D translated(const Vec<3,double>& translation_vec) const { return Box3D(lower + translation_vec, upper + translation_vec); }
 

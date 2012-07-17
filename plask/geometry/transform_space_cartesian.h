@@ -21,7 +21,7 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
 
     explicit Extrusion(double length/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
-    virtual bool inside(const DVec& p) const;
+    virtual bool include(const DVec& p) const;
 
     virtual bool intersect(const Box& area) const;
 
@@ -36,6 +36,10 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
     virtual std::vector< plask::shared_ptr< const plask::GeometryElement > > getLeafs() const;
 
     virtual shared_ptr<GeometryElementTransform<3, ChildType>> shallowCopy() const;
+
+    using GeometryElementTransformSpace<3, 2>::findPathsTo;
+
+    GeometryElement::Subtree findPathsTo(const DVec& point) const;
 
 private:
     /// @return true only if p can be inside this, false if for sure its not inside

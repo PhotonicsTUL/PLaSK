@@ -17,7 +17,7 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
      */
     Revolution(shared_ptr<ChildType> child): GeometryElementTransformSpace<3, 2>(child) {}
 
-    virtual bool inside(const DVec& p) const;
+    virtual bool include(const DVec& p) const;
 
     virtual bool intersect(const Box& area) const;
 
@@ -28,6 +28,10 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
     virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
     virtual shared_ptr<GeometryElementTransform<3, GeometryElementD<2> > > shallowCopy() const;
+
+    using GeometryElementTransformSpace<3, 2>::findPathsTo;
+
+    virtual GeometryElement::Subtree findPathsTo(const DVec& point) const;
 
 private:
 

@@ -80,8 +80,8 @@ public:
     /// @return GE_TYPE_CONTAINER
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_CONTAINER; }
 
-    virtual bool inside(const DVec& p) const {
-        for (auto child: children) if (child->inside(p)) return true;
+    virtual bool include(const DVec& p) const {
+        for (auto child: children) if (child->include(p)) return true;
         return false;
     }
 
@@ -144,6 +144,8 @@ public:
     }
 
     virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const;
+
+    virtual GeometryElement::Subtree findPathsTo(const DVec& point) const;
 
     virtual std::size_t getChildrenCount() const { return children.size(); }
 

@@ -5,8 +5,8 @@
 
 namespace plask {
 
-bool Extrusion::inside(const DVec& p) const {
-    return canBeInside(p) && getChild()->inside(childVec(p));
+bool Extrusion::include(const DVec& p) const {
+    return canBeInside(p) && getChild()->include(childVec(p));
 }
 
 bool Extrusion::intersect(const Box& area) const {
@@ -37,6 +37,10 @@ std::vector< plask::shared_ptr< const plask::GeometryElement > > Extrusion::getL
 
 shared_ptr<GeometryElementTransform<3, Extrusion::ChildType>> Extrusion::shallowCopy() const {
     return shared_ptr<GeometryElementTransform<3, Extrusion::ChildType>>(new Extrusion(getChild(), length));
+}
+
+GeometryElement::Subtree Extrusion::findPathsTo(const DVec& point) const {
+    return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->findPathsTo(childVec(point)));
 }
 
 shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {

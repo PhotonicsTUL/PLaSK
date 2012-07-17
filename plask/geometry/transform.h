@@ -228,12 +228,18 @@ struct Translation: public GeometryElementTransform<dim> {
         return getChild()->getMaterial(p-translation);
     }
 
-    virtual bool inside(const DVec& p) const {
-        return getChild()->inside(p-translation);
+    virtual bool include(const DVec& p) const {
+        return getChild()->include(p-translation);
     }
 
     virtual bool intersect(const Box& area) const {
         return getChild()->intersect(area.translated(-translation));
+    }
+
+    using GeometryElementTransform<dim>::findPathsTo;
+
+    virtual GeometryElement::Subtree findPathsTo(const DVec& point) const {
+        return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->findPathsTo(point-translation));
     }
 
     /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Box, DVec> >& dest, const PathHints* path = 0) const {

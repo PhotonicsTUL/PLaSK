@@ -7,15 +7,15 @@
 namespace plask { namespace python {
 
 // Some helpful wrappers
-template <int dim> struct GeometryElementD_inside {};
-template <> struct GeometryElementD_inside<2> {
+template <int dim> struct GeometryElementD_include {};
+template <> struct GeometryElementD_include<2> {
     static inline bool call(const GeometryElementD<2>& self, double c0, double c1) {
-        return self.inside(Vec<2,double>(c0, c1));
+        return self.include(Vec<2,double>(c0, c1));
     }
 };
-template <> struct GeometryElementD_inside<3> {
+template <> struct GeometryElementD_include<3> {
     static inline bool call(const GeometryElementD<3>& self, double c0, double c1, double c2) {
-        return self.inside(Vec<3,double>(c0, c1, c2));
+        return self.include(Vec<3,double>(c0, c1, c2));
     }
 };
 
@@ -74,9 +74,9 @@ template<> const py::detail::keywords<2> GeometryElementD_vector_args<2>::args =
 template<> const py::detail::keywords<3> GeometryElementD_vector_args<3>::args = (py::arg("c0"), py::arg("c1"), py::arg("c2"));
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementD, GeometryElement)
-        .def("inside", &GeometryElementD<dim>::inside, (py::arg("point")),
+        .def("include", &GeometryElementD<dim>::include, (py::arg("point")),
              "Return True if the geometry element includes a point (in local coordinates)")
-        .def("inside", &GeometryElementD_inside<dim>::call, GeometryElementD_vector_args<dim>::args,
+        .def("include", &GeometryElementD_include<dim>::call, GeometryElementD_vector_args<dim>::args,
              "Return True if the geometry element includes a point (in local coordinates)")
         .def("intersect", &GeometryElementD<dim>::intersect, (py::arg("area")),
              "Return True if the geometry element has common points (in local coordinates) with an area")

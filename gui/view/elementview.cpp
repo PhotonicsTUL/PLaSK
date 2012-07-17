@@ -109,7 +109,7 @@ QModelIndex ElementViewer::indexAt(const QPoint &point) const
     const std::size_t ch_count = e->getRealChildrenCount();
     for (std::size_t i = 0; i < ch_count; ++i) {
         plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
-        if (ch && ch->getBoundingBox().inside(model_point))
+        if (ch && ch->getBoundingBox().include(model_point))
             return model()->index(i, 0, rootIndex());
     }
 

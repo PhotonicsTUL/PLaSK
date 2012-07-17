@@ -248,6 +248,13 @@ GeometryElement::Subtree MultiStackContainer<dim>::findPathsTo(const GeometryEle
     return result;
 }
 
+template <int dim>
+GeometryElement::Subtree MultiStackContainer<dim>::findPathsTo(const MultiStackContainer::DVec &point) const {
+    MultiStackContainer::DVec new_point = point;
+    new_point.up = reduceHeight(new_point.up);
+    return GeometryElementContainer<dim>::findPathsTo(new_point);
+}
+
 template class MultiStackContainer<2>;
 template class MultiStackContainer<3>;
 

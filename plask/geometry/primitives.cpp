@@ -28,7 +28,7 @@ void Box2D::fix() {
 }
 
 
-bool Box2D::inside(const Vec<2, double >& p) const {
+bool Box2D::include(const Vec<2, double >& p) const {
     return lower.c0/**/ <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1;
 }
@@ -42,12 +42,12 @@ bool Box2D::intersect(const plask::Box2D& other) const {
     );
 }
 
-void Box2D::include(const Vec<2, double >& p) {
+void Box2D::makeInclude(const Vec<2, double >& p) {
     if (p.c0 < lower.c0) lower.c0 = p.c0; else ensureHi(upper.c0, p.c0);
     if (p.c1 < lower.c1) lower.c1 = p.c1; else ensureHi(upper.c1, p.c1);
 }
 
-void Box2D::include(const plask::Box2D& other) {
+void Box2D::makeInclude(const plask::Box2D& other) {
     ensureLo(lower.c0, other.lower.c0);
     ensureLo(lower.c1, other.lower.c1);
     ensureHi(upper.c0, other.upper.c0);
@@ -78,7 +78,7 @@ void Box3D::fix() {
 }
 
 
-bool Box3D::inside(const Vec<3, double >& p) const {
+bool Box3D::include(const Vec<3, double >& p) const {
     return lower.c0 <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1 &&
            lower.c2 <= p.c2 && p.c2 <= upper.c2;
@@ -95,13 +95,13 @@ bool Box3D::intersect(const plask::Box3D& other) const {
     );
 }
 
-void Box3D::include(const Vec<3, double >& p) {
+void Box3D::makeInclude(const Vec<3, double >& p) {
     if (p.c0 < lower.c0) lower.c0 = p.c0; else ensureHi(upper.c0, p.c0);
     if (p.c1 < lower.c1) lower.c1 = p.c1; else ensureHi(upper.c1, p.c1);
     if (p.c2 < lower.c2) lower.c2 = p.c2; else ensureHi(upper.c2, p.c2);
 }
 
-void Box3D::include(const plask::Box3D& other) {
+void Box3D::makeInclude(const plask::Box3D& other) {
     ensureLo(lower.c0, other.lower.c0);
     ensureLo(lower.c1, other.lower.c1);
     ensureLo(lower.c2, other.lower.c2);

@@ -142,6 +142,14 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         Subtree(shared_ptr<const GeometryElement> element, std::vector<Subtree>&& children): element(element), children(std::forward< std::vector<Subtree> >(children)) {}
 
+        static Subtree extendIfNotEmpty(shared_ptr<const GeometryElement> first, Subtree&& child) {
+            return child.empty() ? Subtree() : Subtree(first, std::vector<Subtree>{ std::forward< Subtree >(child) });
+        }
+
+        static Subtree extendIfNotEmpty(const GeometryElement* first, Subtree&& child) {
+            return child.empty() ? Subtree() : Subtree(first->shared_from_this(), std::vector<Subtree>{ std::forward< Subtree >(child) });
+        }
+
         /**
          * Check if this subtree inludes more than one branch (has more than one children or has one child which has more than one branch).
          * @return @c true only if this subtree inludes branches, @c false if it is linear path
@@ -604,12 +612,21 @@ struct GeometryElementD: public GeometryElement {
 
     //virtual Box getBoundingBox() const;
 
+    using GeometryElement::findPathsTo;
+
+    /**
+     * Find all paths to elements which lies at given @p point.
+     * @param point point in coordinates of this
+     * @return all paths, last one is on top and overlies rest
+     */
+    virtual Subtree findPathsTo(const DVec& point) const = 0;
+
     /**
      * Check if geometry includes point.
      * @param p point
      * @return true only if this geometry includes point @a p
      */
-    virtual bool inside(const DVec& p) const = 0;
+    virtual bool include(const DVec& p) const = 0;
 
     /**
      * Check if geometry includes some point from given @a area.
