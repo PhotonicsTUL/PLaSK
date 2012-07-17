@@ -63,43 +63,56 @@ static py::list dict_items(const std::map<std::string,T>& self) {
     return result;
 }
 
+template <typename T>
+static py::object dict__getattr__(const std::map<std::string,T>& self, std::string key) {
+    std::replace(key.begin(), key.end(), '_', ' ');
+    auto found = self.find(key);
+    if (found == self.end()) throw AttributeError(key);
+    return py::object(found->second);
+}
 
-//         .def("__iter__")
+template <typename T>
+static void dict__setattr__(std::map<std::string,T>& self, std::string key, const T& value) {
+    std::replace(key.begin(), key.end(), '_', ' ');
+    self[key] = value;
+}
+
+
+template <typename T>
+static void register_manager_dict(const std::string name) {
+    py::class_<std::map<std::string, T>, boost::noncopyable>(name.c_str())
+        .def(py::map_indexing_suite<std::map<std::string, T>, true>())
+        .def("keys", &dict_keys<T>)
+        .def("values", &dict_values<T>)
+        .def("items", &dict_items<T>)
+        .def("__getattr__", &dict__getattr__<T>)
+        .def("__setattr__", &dict__setattr__<T>)
+    ;
+
+}
 
 
 void register_manager() {
-    py::class_<PythonManager, boost::noncopyable>("Manager",
+    py::class_<PythonManager, boost::noncopyable> manager("Manager",
         "Main input manager. It provides methods to read the XML file and fetch geometry elements, pathes,"
         "meshes, and generators by name.\n\n"
         "GeometryReader(materials=None)\n"
         "    Create manager with specified material database (if None, use default database)\n\n",
-        py::init<MaterialsDB*>(py::arg("materials")=py::object()))
+        py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
         .def("read", &PythonManager::read, "Read data. source can be a filename, file, or XML string to read.", py::arg("source"))
         .def_readonly("elements", &PythonManager::namedElements, "Dictionary of all named geometry elements")
         .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
         .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")
     ;
+    manager.attr("el") = manager.attr("elements");
+    manager.attr("pt") = manager.attr("paths");
+    manager.attr("ge") = manager.attr("geometries");
+    //manager.attr("ms") = manager.attr("meshes");
+    //manager.attr("mg") = manager.attr("mesh_generators");
 
-    py::class_<std::map<std::string, shared_ptr<GeometryElement>>, boost::noncopyable>("GeometryElementDictionary")
-        .def(py::map_indexing_suite<std::map<std::string, shared_ptr<GeometryElement>>, true>())
-        .def("keys", &dict_keys<shared_ptr<GeometryElement>>)
-        .def("values", &dict_values<shared_ptr<GeometryElement>>)
-        .def("items", &dict_items<shared_ptr<GeometryElement>>)
-    ;
-
-    py::class_<std::map<std::string, PathHints>, boost::noncopyable>("PathHintsDictionary")
-        .def(py::map_indexing_suite<std::map<std::string, PathHints>>())
-        .def("keys", &dict_keys<PathHints>)
-        .def("values", &dict_values<PathHints>)
-        .def("items", &dict_items<PathHints>)
-    ;
-
-    py::class_<std::map<std::string, shared_ptr<Geometry>>, boost::noncopyable>("GeometryDictionary")
-        .def(py::map_indexing_suite<std::map<std::string, shared_ptr<Geometry>>, true>())
-        .def("keys", &dict_keys<shared_ptr<Geometry>>)
-        .def("values", &dict_values<shared_ptr<Geometry>>)
-        .def("items", &dict_items<shared_ptr<Geometry>>)
-    ;
+    register_manager_dict<shared_ptr<GeometryElement>>("GeometryElementDictionary");
+    register_manager_dict<shared_ptr<Geometry>>("GeometryDictionary");
+    register_manager_dict<PathHints>("PathHintsDictionary");
 }
 
 }} // namespace plask::python

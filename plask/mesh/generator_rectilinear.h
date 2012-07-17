@@ -28,7 +28,7 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
     size_t pre_divisions[2];
     size_t post_divisions[2];
 
-    typedef std::map<std::pair<weak_ptr<GeometryElement>,PathHints>, std::set<double>> Refinements;
+    typedef std::map<std::pair<weak_ptr<GeometryElementD<2>>,PathHints>, std::set<double>> Refinements;
 
     Refinements refinements[2];
 
@@ -90,7 +90,7 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
      * \param position position of the additional grid line in the refined object
      * \param path additional path hints pointing to the refined object
      */
-    void addRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<GeometryElement>& element, double position, const PathHints& path=PathHints()) {
+    void addRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<GeometryElementD<2>>& element, double position, const PathHints& path=PathHints()) {
         auto key = std::make_pair(element, path);
         refinements[std::size_t(direction)][key].insert(position);
         clearCache();
@@ -103,7 +103,7 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
      * \param position position of the additional grid line in the refined object
      * \param path additional path hints pointing to the refined object
      */
-    void removeRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<GeometryElement>& element, double position, const PathHints& path=PathHints()) {
+    void removeRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<GeometryElementD<2>>& element, double position, const PathHints& path=PathHints()) {
         auto key = std::make_pair(element, path);
         auto object = refinements[std::size_t(direction)].find(key);
         if (object == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMesh2DDividingGenerator", "There are no refinements for specified geometry element.");
@@ -119,7 +119,7 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
      * \param element refined object
      * \param path additional path hints pointing to the refined object
      */
-    void removeRefinements(const weak_ptr<GeometryElement>& element, const PathHints& path=PathHints()) {
+    void removeRefinements(const weak_ptr<GeometryElementD<2>>& element, const PathHints& path=PathHints()) {
         auto key = std::make_pair(element, path);
         auto object0 = refinements[0].find(key);
         auto object1 = refinements[1].find(key);

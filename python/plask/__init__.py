@@ -93,24 +93,10 @@ def read(source, destination=None):
     manager = Manager()
     manager.read(source)
 
-    buf = {}
-    for k,v in manager.elements.items():
-        buf[k] = v
-    for k,v in manager.geometries.items():
-        if k in manager.elements: raise ValueError("Geometry and GeometryElement with the same name '%s'. Use plask.Manager() to load data." % k)
-        buf[k] = v
-    for k,v in manager.paths.items():
-        if k in manager.elements: raise ValueError("GeometryElement and Path with the same name '%s'. Use plask.Manager() to load data." % k)
-        if k in manager.geometries: raise ValueError("Geometry and Path with the same name '%s'. Use plask.Manager() to load data." % k)
-        buf[k] = v
-
-    import re
-    r = re.compile("^[A-Za-z_][A-Za-z_0-9]*$")
-    for k in buf:
-        if not r.match(k): raise ValueError("Name '%s' is not valid Python identifier. Use plask.Manager() to load data." % k)
-        if k in destination: raise ValueError("There is already a variable '%s' in your globals. Delete it or use plask.Manager() to load data." % k)
-
-    for k,v in buf.items(): # Call this only if everything is ok. This way the read is atomic
-        destination[k] = v
+    destination["el"] = manager.elements
+    destination["pt"] = manager.paths
+    destination["ge"] = manager.geometries
+    #destination["ms"] = manager.meshes
+    #destination["mg"] = manager.mesh_generators
 
 ## ##  ## ##

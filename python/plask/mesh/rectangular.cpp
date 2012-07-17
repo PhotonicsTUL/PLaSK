@@ -314,20 +314,48 @@ void RectilinearMesh2DDividingGenerator_setPostDivision(RectilinearMesh2DDividin
     }
 }
 
-void RectilinearMesh2DDividingGenerator_addRefinement(RectilinearMesh2DDividingGenerator& self, const std::string& axis, GeometryElement& element, double position, const PathHints& path) {
+void RectilinearMesh2DDividingGenerator_addRefinement(RectilinearMesh2DDividingGenerator& self, const std::string& axis, py::object target, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.addRefinement(Primitive<2>::DIRECTION(i), element.shared_from_this(), position, path);
+    GeometryElement* element;
+    PathHints path;
+    try {
+        element = py::extract<GeometryElement*>(target);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        try {
+            if (py::len(target) != 2) throw py::error_already_set();
+            element = py::extract<GeometryElementD<2>*>(target[0]);
+            path = py::extract<PathHints>(target[1]);
+        } catch (py::error_already_set) {
+            throw TypeError("target must be either geometry.GeometryElement or (geometry.GeometryElement, geometry.PathHints)");
+        }
+    }
+    self.addRefinement(Primitive<2>::DIRECTION(i), dynamic_pointer_cast<GeometryElementD<2>>(element->shared_from_this()), position, path);
 }
 
-void RectilinearMesh2DDividingGenerator_removeRefinement(RectilinearMesh2DDividingGenerator& self, const std::string& axis, GeometryElement& element, double position, const PathHints& path) {
+void RectilinearMesh2DDividingGenerator_removeRefinement(RectilinearMesh2DDividingGenerator& self, const std::string& axis, py::object target, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.removeRefinement(Primitive<2>::DIRECTION(i), element.shared_from_this(), position, path);
+    GeometryElement* element;
+    PathHints path;
+    try {
+        element = py::extract<GeometryElementD<2>*>(target);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        try {
+            if (py::len(target) != 2) throw py::error_already_set();
+            element = py::extract<GeometryElement*>(target[0]);
+            path = py::extract<PathHints>(target[1]);
+        } catch (py::error_already_set) {
+            throw TypeError("target must be either geometry.GeometryElement or (geometry.GeometryElement, geometry.PathHints)");
+        }
+    }
+    self.removeRefinement(Primitive<2>::DIRECTION(i), dynamic_pointer_cast<GeometryElementD<2>>(element->shared_from_this()), position, path);
 }
 
-void RectilinearMesh2DDividingGenerator_removeRefinements(RectilinearMesh2DDividingGenerator& self, GeometryElement& element, const PathHints& path) {
-    self.removeRefinements(element.shared_from_this(), path);
+void RectilinearMesh2DDividingGenerator_removeRefinements(RectilinearMesh2DDividingGenerator& self, GeometryElementD<2>& element, const PathHints& path) {
+    self.removeRefinements(dynamic_pointer_cast<GeometryElementD<2>>(element.shared_from_this()), path);
 }
 
 py::dict RectilinearMesh2DDividingGenerator_listRefinements(const RectilinearMesh2DDividingGenerator& self, const std::string& axis) {
@@ -550,12 +578,12 @@ void register_mesh_rectangular()
         .def_readwrite("warn_multiple", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining path points to more than one object")
         .def_readwrite("warn_none", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining path does not point to any object")
         .def_readwrite("warn_ouside", &RectilinearMesh2DDividingGenerator::warn_multiple, "Warn if refining line is outside of its object")
-        .def("addRefinement", &RectilinearMesh2DDividingGenerator_addRefinement, "Add a refining line inside the object pointed by path",
-             (py::arg("axis"), "element", "pos", py::arg("path")=py::object()))
-        .def("removeRefinement", &RectilinearMesh2DDividingGenerator_removeRefinement, "Remove the refining line from the object pointed by path",
-             (py::arg("axis"), "element", "pos", py::arg("path")=py::object()))
+        .def("addRefinement", &RectilinearMesh2DDividingGenerator_addRefinement, "Add a refining line inside the target object",
+             (py::arg("axis"), "target", "pos"))
+        .def("removeRefinement", &RectilinearMesh2DDividingGenerator_removeRefinement, "Remove the refining line from the target object",
+             (py::arg("axis"), "target", "pos"))
         .def("removeRefinements", &RectilinearMesh2DDividingGenerator_removeRefinements, "Remove the all refining lines from the object pointed by path",
-             py::arg("element"), py::arg("path")=py::object())
+             (py::arg("element"), py::arg("path")=py::object()))
         .def("getRefinements", &RectilinearMesh2DDividingGenerator_listRefinements, py::arg("axis"),
              "Get list of all the refinements defined for this generator for specified axis"
         )
