@@ -14,8 +14,10 @@ namespace plask {
 
 /**
  * Base class for all geometry trunks. Modules can do calculation in calculation space with specific type.
+ *
+ * Almost all GeometryElement methods are delegate to child of this.
  */
-struct Geometry {
+struct Geometry: public GeometryElement {
 
     /// Default material (which will be used for places in which geometry doesn't define any material), typically air.
     shared_ptr<Material> defaultMaterial;
@@ -24,54 +26,6 @@ struct Geometry {
         DIRECTION_LON = Primitive<3>::DIRECTION_LON,
         DIRECTION_TRAN = Primitive<3>::DIRECTION_TRAN,
         DIRECTION_UP = Primitive<3>::DIRECTION_UP
-    };
-
-    /**
-     * Store information about event connected with calculation space.
-     *
-     * Subclasses of this can includes additional information about specific type of event.
-     */
-    struct Event: public EventWithSourceAndFlags<Geometry> {
-
-        /// Event flags (which describes event properties).
-        enum Flags {
-            DELETE = 1<<0,          ///< is deleted
-            GEOMETRY = 1<<1,        ///< geometry was changed
-            BORDERS = 1<<2,         ///< type of borders was changed
-            USER_DEFINED = 1<<2     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
-        };
-
-        /**
-         * Check if given @p flag is set.
-         * @param flag flag to check
-         * @return @c true only if @p flag is set
-         */
-        bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
-
-        /**
-         * Check if DELETE flag is set, which mean that source of event is deleted.
-         * @return @c true only if DELETE flag is set
-         */
-        bool isDelete() const { return hasFlag(DELETE); }
-
-        /**
-         * Check if GEOMETRY flag is set, which mean that geometry connected with source could changed.
-         * @return @c true only if GEOMETRY_CHANGED flag is set
-         */
-        bool hasChangedGeometry() const { return hasFlag(GEOMETRY); }
-
-        /**
-         * Check if BORDERS flag is set, which mean that borders connected with source could changed.
-         * @return @c true only if BORDERS flag is set
-         */
-        bool hasChangedBorders() const { return hasFlag(BORDERS); }
-
-        /**
-         * Construct event.
-         * @param source source of event
-         * @param flags which describes event's properties
-         */
-        explicit Event(Geometry& source, unsigned char flags = 0): EventWithSourceAndFlags<Geometry>(source, flags) {}
     };
 
     /**
@@ -94,29 +48,6 @@ struct Geometry {
 
     /// Inform observators that this is deleting.
     virtual ~Geometry() { fireChanged(Event::DELETE); }
-
-    /// Changed signal, fired when space was changed.
-    boost::signals2::signal<void(Event&)> changed;
-
-    template <typename ClassT, typename methodT>
-    void changedConnectMethod(ClassT* obj, methodT method) {
-        changed.connect(boost::bind(method, obj, _1));
-    }
-
-    template <typename ClassT, typename methodT>
-    void changedDisconnectMethod(ClassT* obj, methodT method) {
-        changed.disconnect(boost::bind(method, obj, _1));
-    }
-
-    /**
-     * Call changed with this as event source.
-     * @param event_constructor_params_without_source parameters for event constructor (without first - source)
-     */
-    template<typename EventT = Event, typename ...Args>
-    void fireChanged(Args&&... event_constructor_params_without_source) {
-        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
-        changed(evt);
-    }
 
     /**
      * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
@@ -196,6 +127,8 @@ struct Geometry {
         return getBorder(direction, false).type() == border::Strategy::PERIODIC && getBorder(direction, true).type() == border::Strategy::PERIODIC;
     }
 
+    virtual Type getType() const { return TYPE_GEOMETRY; }
+
 protected:
 
     /**
@@ -255,7 +188,7 @@ class GeometryD: public Geometry {
      */
     void onChildChanged(const GeometryElement::Event& evt) {
         if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
-        fireChanged(Event::GEOMETRY);
+        fireChanged(evt.flagsForParent());
     }
 
     /**
@@ -272,6 +205,8 @@ class GeometryD: public Geometry {
     }
 
 public:
+
+    virtual int getDimensionsCount() const { return DIMS; }
 
     /**
      * Get material in point @p p of child space.
@@ -302,6 +237,28 @@ public:
         return cachedBoundingBox;
     }
 
+    virtual bool isInSubtree(const GeometryElement& el) const {
+        return getChild()->isInSubtree(el);
+    }
+
+    virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const {
+        return getChild()->findPathsTo(el, pathHints);
+    }
+
+    virtual void getElementsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
+        return getChild()->getElementsToVec(predicate, dest, path);
+    }
+
+    virtual std::size_t getChildrenCount() const {
+        return 1;
+    }
+
+    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+        //if (!hasChild() || child_nr > 0) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
+        if (child_nr > 0) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
+        return getChild();
+    }
+
     std::vector<shared_ptr<const GeometryElement>> getLeafs(const PathHints* path=nullptr) const {
         return getChild()->getLeafs(path);
     }
@@ -324,8 +281,11 @@ public:
 
     std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints& path) const {
         return getChild()->getLeafsBoundingBoxes(path);
-    }
+    } 
 
+    virtual shared_ptr<const GeometryElement> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const {
+        return getChild()->changedVersion(changer, translation);
+    }
 
     virtual void setPlanarBorders(const border::Strategy& border_to_set);
 

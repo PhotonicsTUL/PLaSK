@@ -3,6 +3,7 @@
 #include "leaf.h"
 
 #include "transform.h"
+#include "space.h"
 
 namespace plask {
 
@@ -42,13 +43,13 @@ GeometryElement::~GeometryElement() {
 
 template<int DIMS>
 shared_ptr< GeometryElementD<DIMS> > GeometryElement::asD() {
-    if (getDimensionsCount() != DIMS) return shared_ptr< GeometryElementD<DIMS> >();
+    if (getDimensionsCount() != DIMS || isGeometry()) return shared_ptr< GeometryElementD<DIMS> >();
     return static_pointer_cast< GeometryElementD<DIMS> >(shared_from_this());
 }
 
 template<int DIMS>
 shared_ptr< const GeometryElementD<DIMS> > GeometryElement::asD() const {
-    if (getDimensionsCount() != DIMS) return shared_ptr< const GeometryElementD<DIMS> >();
+    if (getDimensionsCount() != DIMS || isGeometry()) return shared_ptr< const GeometryElementD<DIMS> >();
     return static_pointer_cast< const GeometryElementD<DIMS> >(shared_from_this());
 }
 
@@ -56,6 +57,23 @@ template shared_ptr< GeometryElementD<2> > GeometryElement::asD<2>();
 template shared_ptr< GeometryElementD<3> > GeometryElement::asD<3>();
 template shared_ptr< const GeometryElementD<2> > GeometryElement::asD<2>() const;
 template shared_ptr< const GeometryElementD<3> > GeometryElement::asD<3>() const;
+
+shared_ptr<Geometry> GeometryElement::asGeometry() {
+    return isGeometry() ? static_pointer_cast<Geometry>(shared_from_this()) : shared_ptr<Geometry>();
+}
+
+shared_ptr<const Geometry> GeometryElement::asGeometry() const {
+    return isGeometry() ? static_pointer_cast<const Geometry>(shared_from_this()) : shared_ptr<const Geometry>();
+}
+
+bool GeometryElement::isInSubtree(const GeometryElement &el) const {
+    if (&el == this) return true;
+    std::size_t c = getRealChildrenCount();
+    for (std::size_t i = 0; i < c; ++i)
+        if (getRealChildAt(i)->isInSubtree(el))
+            return true;
+    return false;
+}
 
 bool GeometryElement::Subtree::hasBranches() const {
     const std::vector<Subtree>* c = &children;

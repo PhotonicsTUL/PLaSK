@@ -22,17 +22,7 @@ namespace plask {
 
 struct PathHints;
 
-/**
- * Transform coordinates of points between two geometries.
- *
- * Transform objects can be composed.
- */
-struct GeometryTransform {
-    //Vec3 to(Vec3)
-    //Vec3 from(Vec3)
-    //GeometryTransform compose(GeometryTransform)
-};
-
+struct Geometry;
 template < int dimensions > struct GeometryElementD;
 
 /**
@@ -45,7 +35,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         TYPE_LEAF = 0,         ///< leaf element (has no child)
         TYPE_TRANSFORM = 1,    ///< transform element (has one child)
         TYPE_SPACE_CHANGER = 2,///< transform element which changing its space, typically changing number of dimensions (has one child)
-        TYPE_CONTAINER = 3     ///< container (can have more than one child)
+        TYPE_CONTAINER = 3,    ///< container (can have more than one child)
+        TYPE_GEOMETRY = 4      ///< geometry / space
     };
 
     /**
@@ -143,6 +134,13 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @param children some (but not necessary all) children of @p element
          */
         Subtree(shared_ptr<const GeometryElement> element, const std::vector<Subtree>& children): element(element), children(children) {}
+
+        /**
+         * Construct subtree.
+         * @param element geometry element
+         * @param children some (but not necessary all) children of @p element
+         */
+        Subtree(shared_ptr<const GeometryElement> element, std::vector<Subtree>&& children): element(element), children(std::forward< std::vector<Subtree> >(children)) {}
 
         /**
          * Check if this subtree inludes more than one branch (has more than one children or has one child which has more than one branch).
@@ -343,6 +341,18 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     shared_ptr< const GeometryElementD<DIMS> > asD() const;
 
     /**
+     * Cast this to Geometry.
+     * @return this casted to Geometry or nullptr if casting is not possible.
+     */
+    shared_ptr< Geometry > asGeometry();
+
+    /**
+     * Cast this to Geometry.
+     * @return this casted to Geometry or nullptr if casting is not possible.
+     */
+    shared_ptr< const Geometry > asGeometry() const;
+
+    /**
      * Check if geometry is: leaf, transform or container type element.
      * @return type of this element
      */
@@ -352,6 +362,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     bool isTransform() const { return getType() == TYPE_TRANSFORM || getType() == TYPE_SPACE_CHANGER; }
     bool isSpaceChanger() const { return getType() == TYPE_SPACE_CHANGER; }
     bool isContainer() const { return getType() == TYPE_CONTAINER; }
+    bool isGeometry() const { return getType() == TYPE_GEOMETRY; }
 
     /**
      * Get number of dimentions.
@@ -373,7 +384,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @return @c true only if @a el is in subtree with @c this in root
      */
     //TODO predicate, path
-    virtual bool isInSubtree(const GeometryElement& el) const = 0;
+    virtual bool isInSubtree(const GeometryElement& el) const;
 
     /**
      * Find paths to @a el.
