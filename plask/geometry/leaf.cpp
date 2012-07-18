@@ -8,7 +8,7 @@ template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
     leaf.material = reader.getMaterial(reader.source.requireAttribute("material"));
     //XML::requireTagEndOrEmptyTag(reader.source, reader.source.getNodeName());
-    reader.source.requireTagEnd(reader.source.getNodeName());
+    reader.source.requireTagEnd();
 }
 
 template <typename BlockType>

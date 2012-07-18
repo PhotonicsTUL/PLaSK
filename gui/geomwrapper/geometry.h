@@ -28,17 +28,17 @@ struct GeometryWrapper: public ElementWrapperFor< plask::GeometryD<dim> > {
 
 struct Geometry2DCartesianWrapper: public GeometryWrapper<2> {
 
-    virtual QString toStr() const;
-
     typedef plask::Geometry2DCartesian WrappedType;
+
+    virtual QString toStr() const;
 
 };
 
 struct Geometry2DCylindricalWrapper: public GeometryWrapper<2> {
 
-    virtual QString toStr() const;
-
     typedef plask::Geometry2DCylindrical WrappedType;
+
+    virtual QString toStr() const;
 
 };
 

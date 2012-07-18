@@ -50,21 +50,60 @@ XMLReader::XMLReader(std::istream& input)
 }
 
 bool XMLReader::read() {
+    if (currentNodeType == NODE_ELEMENT) {
+        if (std::size_t(getAttributeCount()) != read_attribiutes.size()) {
+            std::string attr;
+            for (int i = 0; i < irrReader->getAttributeCount(); ++i)
+                if (read_attribiutes.find(irrReader->getAttributeName(i)) == read_attribiutes.end()) {
+                    if (!attr.empty()) attr += ", ";
+                    attr += irrReader->getAttributeName(i);
+                }
+            throw Exception("Following attributes are unexpected in XML tag \"%1%\": %2%", getNodeName(), attr);
+        }
+        read_attribiutes.clear();
+    }
+
     if (currentNodeType == NODE_ELEMENT && irrReader->isEmptyElement())
         currentNodeType = NODE_ELEMENT_END;
     else {
-        if (!irrReader->read()) return false;
+        if (!irrReader->read()) {
+            if (!path.empty()) throw std::runtime_error("unexpected end of XML input, some tags was not closed");
+            return false;
+        }
         currentNodeType = NodeType(irrReader->getNodeType());
     }
+
+    switch (currentNodeType) {
+        case NODE_ELEMENT:
+            path.push_back(getNodeName());
+            break;
+
+        case NODE_ELEMENT_END:
+            if (path.empty())
+                throw Exception("unexpected closing of XML tag \"%1%\"", getNodeName());
+            if (path.back() != getNodeName())
+                throw Exception("expected closing of %1% tag, but obtained closing of \"%2%\" tag", path.back(), getNodeName());
+            path.pop_back();
+
+        default:    //just for compiler warning
+            ;
+    }
+
     return true;
 }
 
-boost::optional<std::string> XMLReader::getAttribute(const char* name) const {
+const char *XMLReader::getAttributeValueC(const std::string &name) const {
+     const char * result = irrReader->getAttributeValue(name.c_str());
+     if (result) const_cast<std::unordered_set<std::string>&>(read_attribiutes).insert(name);
+     return result;
+}
+
+boost::optional<std::string> XMLReader::getAttribute(const std::string& name) const {
     const char* v = getAttributeValueC(name);
     return v != nullptr ? boost::optional<std::string>(v) : boost::optional<std::string>();
 }
 
-std::string XMLReader::requireAttribute(const char* attr_name) const {
+std::string XMLReader::requireAttribute(const std::string& attr_name) const {
     const char* result = getAttributeValueC(attr_name);
     if (result == nullptr)
         throw XMLNoAttrException(getNodeName(), attr_name);
@@ -83,10 +122,10 @@ void XMLReader::requireTag() {
         throw XMLUnexpectedElementException("begin of tag");
 }
 
-void XMLReader::requireTagEnd(const std::string& tag) {
+void XMLReader::requireTagEnd() {
     requireNext();
-    if (getNodeType() != NODE_ELEMENT_END || getNodeName() != tag)
-        throw XMLUnexpectedElementException("end of tag \"" +tag + "\"");
+    if (getNodeType() != NODE_ELEMENT_END)
+        throw XMLUnexpectedElementException("end of tag \"" +path.back() + "\"");
 }
 
 /*void requireTagEndOrEmptyTag(XMLReader& reader, const std::string& tag) {

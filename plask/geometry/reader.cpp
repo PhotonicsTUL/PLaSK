@@ -42,7 +42,7 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
     std::string nodeName = source.getNodeName();
     if (nodeName == "ref") {
         shared_ptr<GeometryElement> result = manager.requireGeometryElement(source.requireAttribute("name"));
-        source.requireTagEnd("ref");
+        source.requireTagEnd();
         return result;
     }
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
@@ -65,10 +65,9 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
 }
 
 shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
-    std::string parent_tag = source.getNodeName();
     source.requireTag();
     shared_ptr<GeometryElement> result = readElement();
-    source.requireTagEnd(parent_tag);
+    source.requireTagEnd();
     return result;
 }
 
