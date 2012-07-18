@@ -51,7 +51,7 @@ public:
     plask::shared_ptr<ElementWrapper> getElementWrapper() const;
     plask::shared_ptr<plask::GeometryElementD<2> > getElement() const {
         plask::shared_ptr<ElementWrapper> ew = getElementWrapper();
-        return ew ? plask::static_pointer_cast<plask::GeometryElementD<2>>(ew->wrappedElement) : plask::shared_ptr<plask::GeometryElementD<2> >();
+        return ew ? ew->wrappedElement->asD<2>() : plask::shared_ptr<plask::GeometryElementD<2> >();
     }
 
     /**

@@ -142,12 +142,28 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         Subtree(shared_ptr<const GeometryElement> element, std::vector<Subtree>&& children): element(element), children(std::forward< std::vector<Subtree> >(children)) {}
 
-        static Subtree extendIfNotEmpty(shared_ptr<const GeometryElement> first, Subtree&& child) {
-            return child.empty() ? Subtree() : Subtree(first, std::vector<Subtree>{ std::forward< Subtree >(child) });
+        /**
+         * Construct subtree which consist with given @p root element and @p children or empty element if @p children vector is empty.
+         *
+         * This method is used to make set of paths (subtree) longer if this set is not empty.
+         * @param root potential root of constructed subtree element
+         * @param children potential children of @p root in constructed subtree
+         * @return subtree which consist with given @p root element and @p children or empty element if @p children vector is empty
+         */
+        static Subtree extendIfNotEmpty(shared_ptr<const GeometryElement> root, Subtree&& children) {
+            return children.empty() ? Subtree() : Subtree(root, std::vector<Subtree>{ std::forward< Subtree >(children) });
         }
 
-        static Subtree extendIfNotEmpty(const GeometryElement* first, Subtree&& child) {
-            return child.empty() ? Subtree() : Subtree(first->shared_from_this(), std::vector<Subtree>{ std::forward< Subtree >(child) });
+        /**
+         * Construct subtree which consist with given @p root element and @p children or empty element if @p children vector is empty.
+         *
+         * This method is used to make set of paths (subtree) longer if this set is not empty.
+         * @param root potential root of constructed subtree element
+         * @param children potential children of @p root in constructed subtree
+         * @return subtree which consist with given @p root element and @p children or empty element if @p children vector is empty
+         */
+        static Subtree extendIfNotEmpty(const GeometryElement* root, Subtree&& children) {
+            return children.empty() ? Subtree() : Subtree(root->shared_from_this(), std::vector<Subtree>{ std::forward< Subtree >(children) });
         }
 
         /**

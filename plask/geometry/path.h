@@ -61,6 +61,14 @@ struct PathHints {
     }
 
     /**
+     * Construct path hints with all hinst included in @p path.
+     * @param path path
+     */
+    explicit PathHints(const std::vector< shared_ptr<const GeometryElement> >& path) {
+        addAllHintsFromPath(path);
+    }
+
+    /**
      * Construct path hints with all hinst included in @p subtree.
      * @param subtree subtree
      */
@@ -68,6 +76,9 @@ struct PathHints {
         addAllHintsFromSubtree(subtree);
     }
 
+    /**
+     * Construct empty set of path hints.
+     */
     PathHints() = default;
 
     /**
@@ -100,7 +111,7 @@ struct PathHints {
      * Add all hinst included in path elements.
      * @param pathElements geometry elements which are on path
      */
-    void addAllHintsFromPath(std::vector< shared_ptr<const GeometryElement> > pathElements);
+    void addAllHintsFromPath(const std::vector< shared_ptr<const GeometryElement> >& pathElements);
 
     /**
      * Add all hinst included in @p path.

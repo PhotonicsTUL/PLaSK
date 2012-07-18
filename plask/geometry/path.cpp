@@ -12,7 +12,7 @@ void PathHints::addHint(weak_ptr<GeometryElement> container, weak_ptr<GeometryEl
     hintFor[container].insert(child);
 }
 
-void PathHints::addAllHintsFromPath(std::vector< shared_ptr<const GeometryElement> > pathElements) {
+void PathHints::addAllHintsFromPath(const std::vector< shared_ptr<const GeometryElement> >& pathElements) {
     int possibleContainers_size = pathElements.size() - 1;
     for (int i = 0; i < possibleContainers_size; ++i)
         if (pathElements[i]->isContainer())

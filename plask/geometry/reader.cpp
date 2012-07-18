@@ -75,8 +75,8 @@ shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild() {
 shared_ptr<Geometry> GeometryReader::readGeometry() {
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     std::string nodeName = source.getNodeName();
-    std::string name = source.requireAttribute("name");
-    BadId::throwIfBad("geometry", name, ' ');
+    boost::optional<std::string> name = source.getAttribute("name");
+    if (name) BadId::throwIfBad("geometry", *name, ' ');
 //    std::string src = source.requireAttribute("over");
     shared_ptr<Geometry> result;
     if (nodeName == "2d" || nodeName == "cartesian2d") {    //TODO register with space names(?)
@@ -103,7 +103,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
 
     result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
 
-    manager.geometries[name] = result;
+    if (name) manager.geometries[*name] = result;
     return result;
 }
 
