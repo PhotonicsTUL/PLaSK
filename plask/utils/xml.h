@@ -13,18 +13,22 @@ namespace plask {
 
 /**
  * XML pull parser.
+ *
+ * It makes some checks while reading and throw exeptions when XML document is valid:
+ * - it check open/close tags,
+ * - it checks if all attribiutes was read.
  */
 struct XMLReader {
 
     /// Enumeration for all xml nodes which are parsed by XMLReader
     enum NodeType {
-            NODE_NONE = irr::io::EXN_NONE,   //<No xml node. This is usually the node if you did not read anything yet.
-            NODE_ELEMENT = irr::io::EXN_ELEMENT,    //<A xml element, like <foo>
-            NODE_ELEMENT_END = irr::io::EXN_ELEMENT_END,    //<End of an xml element, like </foo>
-            NODE_TEXT = irr::io::EXN_TEXT,   //< Text within a xml element: <foo> this is the text. </foo>
-            NODE_COMMENT =  irr::io::EXN_COMMENT,    //< An xml comment like &lt;!-- I am a comment --&gt; or a DTD definition.
-            NODE_CDATA =  irr::io::EXN_CDATA,  //< An xml cdata section like &lt;![CDATA[ this is some CDATA ]]&gt;
-            NODE_UNKNOWN = irr::io::EXN_UNKNOWN //< Unknown element
+            NODE_NONE = irr::io::EXN_NONE,                  ///< No xml node. This is usually the node if you did not read anything yet.
+            NODE_ELEMENT = irr::io::EXN_ELEMENT,            ///< A xml element, like <foo>
+            NODE_ELEMENT_END = irr::io::EXN_ELEMENT_END,    ///< End of an xml element, like </foo>
+            NODE_TEXT = irr::io::EXN_TEXT,                  ///< Text within a xml element: <foo> this is the text. </foo>
+            NODE_COMMENT =  irr::io::EXN_COMMENT,           ///< An xml comment like &lt;!-- I am a comment --&gt; or a DTD definition.
+            NODE_CDATA =  irr::io::EXN_CDATA,               ///< An xml cdata section like &lt;![CDATA[ this is some CDATA ]]&gt;
+            NODE_UNKNOWN = irr::io::EXN_UNKNOWN             ///< Unknown element
     };
 
 private:
@@ -56,6 +60,12 @@ public:
     bool isEmptyElement() const { return irrReader->isEmptyElement(); }
 
     /**
+     * Get vector of names of all opened tags from root to current one.
+     * @return vector of names of all opened tags, first is root, last is current tag
+     */
+    const std::vector<std::string> getPath() const { return path; }
+
+    /**
      * Returns attribute count of the current XML node.
 
      * This is usually non 0 if the current node is NODE_ELEMENT, and the element has attributes.
@@ -79,7 +89,8 @@ public:
     const char* getAttributeValueC(const std::string& name) const;
 
     /**
-     * Mark argument with given name as read.
+     * Mark argument with given name as read, so parser not throw an exeption if this attribiute will be not read.
+     * @param name name of attribiute to ignore
      */
     void ignoreAttribute(const std::string& name) { getAttributeValueC(name); }
 
@@ -105,9 +116,11 @@ public:
 
     std::string getNodeName() const { return irrReader->getNodeName(); }
 
-    //! Returns data of the current node.
-    /** Only non null if the node has some
-    data and it is of type NODE_TEXT or NODE_UNKNOWN. */
+    /** Returns data of the current node.
+     *
+     * Only non null if the node has some data and it is of type NODE_TEXT or NODE_UNKNOWN.
+     * @return data of the current node
+     */
     const char* getNodeDataC() const { return irrReader->getNodeData(); }
 
     template <typename T>
@@ -134,13 +147,19 @@ public:
     }
 
     /**
-     * Call read(), one or more time (skip comments).
+     * Call read(), one or more time skipping comments.
      * @throw XMLUnexpectedEndException if there is no next element
      */
     void requireNext();
 
+    /**
+     * Call requireNext() and next check if current element is tag opening. Throw exception if it's not.
+     */
     void requireTag();
 
+    /**
+     * Call requireNext() and next check if current element is tag closing. Throw exception if it's not.
+     */
     void requireTagEnd();
 
     //void requireTagEndOrEmptyTag(const std::string& tag);
