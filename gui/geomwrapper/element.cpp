@@ -1,5 +1,7 @@
 #include "element.h"
 
+#include <plask/geometry/space.h>
+
 #include "../modelext/converter.h"
 #include "../modelext/text.h"
 #include "../utils/draw.h"
@@ -66,7 +68,13 @@ QPixmap ElementWrapper::getMiniature(qreal w, qreal h) const {
         return QPixmap(); //we draw 2d only at this moment
 
     //TODO do not calc. bb. two times
-    plask::Vec<2, double> s = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox().size();
+    plask::Vec<2, double> s;
+    if (toDraw.isGeometry())
+        s = static_cast< const plask::GeometryD<2>& >(toDraw).getChildBoundingBox().size();
+    else
+        s = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox().size();
+    //plask::Vec<2, double> s = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox().size();
+
     double obj_prop = s.tran / s.up;
     if (obj_prop > w / h) { //obj. to wide
         h = w / obj_prop;

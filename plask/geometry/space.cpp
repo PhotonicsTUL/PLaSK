@@ -55,7 +55,7 @@ void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
 Geometry2DCartesian::Geometry2DCartesian(shared_ptr<Extrusion> extrusion)
     : extrusion(extrusion)
 {
-    init();
+    if (extrusion) init();
 }
 
 Geometry2DCartesian::Geometry2DCartesian(shared_ptr<GeometryElementD<2>> childGeometry, double length)
@@ -128,7 +128,7 @@ const border::Strategy& Geometry2DCartesian::getBorder(DIRECTION direction, bool
 Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<Revolution> revolution)
     : revolution(revolution)
 {
-    init();
+    if (revolution) init();
 }
 
 Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<GeometryElementD<2>> childGeometry)

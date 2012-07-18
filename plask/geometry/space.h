@@ -129,6 +129,12 @@ struct Geometry: public GeometryElement {
 
     virtual Type getType() const { return TYPE_GEOMETRY; }
 
+    /**
+     * Get 3D element holded by this geometry (which has type Extrusion or Revolution for 2d geometries).
+     * @param 3D geometry element holded by this geometry
+     */
+    virtual shared_ptr< GeometryElementD<3> > getElement3D() const = 0;
+
 protected:
 
     /**
@@ -424,7 +430,7 @@ public:
      * Construct geometry over given @p extrusion element.
      * @param extrusion extrusion geometry element
      */
-    Geometry2DCartesian(shared_ptr<Extrusion> extrusion);
+    Geometry2DCartesian(shared_ptr<Extrusion> extrusion = shared_ptr<Extrusion>());
 
     /**
      * Construct geometry over extrusion element build on top of given 2D @p childGeometry and with given @p length.
@@ -447,6 +453,12 @@ public:
      * @return extrusion element included in this geometry
      */
     shared_ptr<Extrusion> getExtrusion() const { return extrusion; }
+
+    /**
+     * Get extrusion element included in this geometry.
+     * @return extrusion element included in this geometry
+     */
+    virtual shared_ptr< GeometryElementD<3> > getElement3D() const { return extrusion; }
 
     /**
      * Set new extrusion element for this geometry and inform observers about changing of geometry.
@@ -524,7 +536,7 @@ public:
      * Construct geometry over given @p revolution element.
      * @param revolution revolution element
      */
-    Geometry2DCylindrical(shared_ptr<Revolution> revolution);
+    Geometry2DCylindrical(shared_ptr<Revolution> revolution = shared_ptr<Revolution>());
 
     /**
      * Construct geometry over revolution element build on top of given 2D @p childGeometry.
@@ -547,6 +559,12 @@ public:
      * @return revolution element included in this geometry
      */
     shared_ptr<Revolution> getRevolution() const { return revolution; }
+
+    /**
+     * Get revolution element included in this geometry.
+     * @return revolution element included in this geometry
+     */
+    virtual shared_ptr< GeometryElementD<3> > getElement3D() const { return revolution; }
 
     /**
      * Set new revolution element for this geometry and inform observers about changing of geometry.

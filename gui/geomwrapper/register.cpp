@@ -8,6 +8,7 @@
 #include "container.h"
 #include "leaf.h"
 #include "transform.h"
+#include "geometry.h"
 #include <plask/utils/cache.h>
 
 typedef ElementWrapper* construct_element_wrapper_t(plask::shared_ptr<plask::GeometryElement> to_wrap);
@@ -61,6 +62,8 @@ struct Register {
         appendConstructor< ShelfWrapper >();
         appendConstructor< BlockWrapper<2> >();
         appendConstructor< BlockWrapper<3> >();
+        appendConstructor< Geometry2DCartesianWrapper >();
+        appendConstructor< Geometry2DCylindricalWrapper >();
     }
 
 };
