@@ -48,4 +48,4 @@ class Geometrys(unittest.TestCase):
         module.geometry = s
         self.assertEqual( module.geometry, s )
         with self.assertRaises(AttributeError):
-            print module.mesh
+            print(module.mesh)

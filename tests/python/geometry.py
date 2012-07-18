@@ -28,28 +28,6 @@ class SimpleGeometry(unittest.TestCase):
         r3b = plask.geometry.Box3D(plask.vec(1.,2.,0.), plask.vec(3.,5.,1.))
         self.assertEqual( r3a, r3b )
 
-    def testReader(self):
-        '''Test geometry reader'''
-        manager = plask.Manager()
-        manager.read('''
-            <geometry>
-                <2d name="space" axes="xy">
-                    <stack repeat="2" name="stack">
-                        <child><rectangle name="block" x="4" y="2" material="Dumb" /></child>
-                        <ref name="block" />
-                    </stack>
-                </2d>
-            </geometry>
-        ''')
-        self.assertEqual( len(manager.elements), 2 )
-        self.assertEqual( type(manager.elements["block"]), plask.geometry.Block2D )
-        self.assertEqual( list(manager.elements["stack"].getLeafsBBoxes()),
-            [plask.geometry.Box2D(0,0,4,2), plask.geometry.Box2D(0,2,4,4), plask.geometry.Box2D(0,4,4,6), plask.geometry.Box2D(0,6,4,8)])
-        self.assertEqual( type(manager.geometries["space"]), plask.geometry.Cartesian2D )
-        del manager.elements["block"]
-        self.assertEqual( len(manager.elements), 1 )
-        with self.assertRaises(KeyError): manager.elements["block"]
-
 
 
 class GeometryObjects(unittest.TestCase):

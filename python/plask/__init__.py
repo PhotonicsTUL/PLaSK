@@ -89,14 +89,8 @@ def read(source, destination=None):
         except NameError:
             import __main__
             destination = __main__.__dict__
-
     manager = Manager()
     manager.read(source)
-
-    destination["el"] = manager.elements
-    destination["pt"] = manager.paths
-    destination["ge"] = manager.geometries
-    #destination["ms"] = manager.meshes
-    #destination["mg"] = manager.mesh_generators
+    manager.export(destination)
 
 ## ##  ## ##

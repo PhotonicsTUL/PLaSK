@@ -207,7 +207,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
     py::class_<Vec_iterator<dim,T>>("_Iterator", py::no_init)
         .def("__iter__", &Vec_iterator<dim,T>::__iter__, py::return_self<>())
         .def(NEXT, &Vec_iterator<dim,T>::next)
-        ;
+    ;
 
     return vec_class;
 }
