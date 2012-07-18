@@ -23,16 +23,19 @@ struct XMLReader {
     /// Enumeration for all xml nodes which are parsed by XMLReader
     enum NodeType {
             NODE_NONE = irr::io::EXN_NONE,                  ///< No xml node. This is usually the node if you did not read anything yet.
-            NODE_ELEMENT = irr::io::EXN_ELEMENT,            ///< A xml element, like <foo>
-            NODE_ELEMENT_END = irr::io::EXN_ELEMENT_END,    ///< End of an xml element, like </foo>
-            NODE_TEXT = irr::io::EXN_TEXT,                  ///< Text within a xml element: <foo> this is the text. </foo>
+            NODE_ELEMENT = irr::io::EXN_ELEMENT,            ///< A xml element, like \<foo>
+            NODE_ELEMENT_END = irr::io::EXN_ELEMENT_END,    ///< End of an xml element, like \</foo>
+            NODE_TEXT = irr::io::EXN_TEXT,                  ///< Text within a xml element: \<foo> this is the text. \</foo>
             NODE_COMMENT =  irr::io::EXN_COMMENT,           ///< An xml comment like &lt;!-- I am a comment --&gt; or a DTD definition.
             NODE_CDATA =  irr::io::EXN_CDATA,               ///< An xml cdata section like &lt;![CDATA[ this is some CDATA ]]&gt;
             NODE_UNKNOWN = irr::io::EXN_UNKNOWN             ///< Unknown element
     };
 
 private:
+    /// xml reader, low level
     irr::io::IrrXMLReader* irrReader;
+
+    /// current type of node
     NodeType currentNodeType;
 
     /// path from root to current tag
@@ -43,12 +46,24 @@ private:
 
 public:
 
+    /**
+     * Construct XML reader to read XML from given file.
+     * @param file_name name of file to read
+     */
     XMLReader(const char* file_name);
 
+    /**
+     * Construct XML reader to read XML from given @p input stream.
+     * @param input input stream
+     */
     XMLReader(std::istream& input);
 
     ~XMLReader() { delete irrReader; }
 
+    /**
+     * Get current type of node.
+     * @return current type of node
+     */
     NodeType getNodeType() const { return currentNodeType; }
 
     /** Reads forward to the next xml node.
@@ -56,7 +71,13 @@ public:
     */
     bool read();
 
-    /// Returns if an element is an empty element, like \<foo /\>
+    /**
+     * Check if node is empty, like \<foo /\>.
+     *
+     * Note that empty nodes are comunicate by parser two times: as NODE_ELEMENT and next as NODE_ELEMENT_END.
+     * So for \<foo /\> parser work just like for \<foo>\</foo> and only this method allow to check which notation was used.
+     * @return if an element is an empty element, like \<foo /\>
+     */
     bool isEmptyElement() const { return irrReader->isEmptyElement(); }
 
     /**
@@ -104,16 +125,27 @@ public:
 
     //bool hasAttribute(const char* name) const { return getAttributeValueC(name) != 0; }
 
-    bool hasAttribute(const std::string& name) const { return getAttributeValueC(name.c_str()) != 0; }
+    /**
+     * Check if current node has attribiute with given @p name.
+     * @param name attribiute name
+     * @return @c true only if current node has attribiute with given @p name
+     */
+    bool hasAttribute(const std::string& name) const { return getAttributeValueC(name) != 0; }
 
     /**
      * Returns the name of the current node.
      *
      * Only non null, if the node type is NODE_ELEMENT.
-     * @return Name of the current node or 0 if the node has no name.
+     * @return name of the current node or 0 if the node has no name.
      */
     const char* getNodeNameC() const { return irrReader->getNodeName(); }
 
+    /**
+     * Returns the name of the current node.
+     *
+     * Bechaviour is undefined if name is not defined.
+     * @return name of the current node
+     */
     std::string getNodeName() const { return irrReader->getNodeName(); }
 
     /** Returns data of the current node.
@@ -123,6 +155,13 @@ public:
      */
     const char* getNodeDataC() const { return irrReader->getNodeData(); }
 
+    /**
+     * Get value of attribiute with given @p name, or @p default_value if attribiute with given @p name is not defined in current node.
+     * @param name name of attribiute
+     * @param default_value default value which will be return when attribiute with given @p name is not defined
+     * @return attribiute with given @p name, or @p default_value if attribiute with given @p name is not defined in current node
+     * @tparem required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
+     */
     template <typename T>
     inline T getAttribute(const std::string& name, T&& default_value) const {
         const char* attr_str = getAttributeValueC(name);
