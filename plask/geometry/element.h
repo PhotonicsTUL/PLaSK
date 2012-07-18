@@ -160,8 +160,15 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * Convert this subtree to linear path: element, child[0].element, child[0].child[0].element, ...
          *
          * Throw excpetion if this subtree is not linear path (inludes more than one branch).
+         * @return linear path represented by this
          */
         std::vector<shared_ptr<const GeometryElement>> toLinearPath() const;
+
+        /**
+         * Get last (last child is choosen at each level), linear path from subtree.
+         * @return last path from subtree
+         */
+        std::vector<shared_ptr<const GeometryElement>> getLastPath() const;
 
         /**
          * Check if this subtree is empty (its element points to null).

@@ -97,6 +97,18 @@ std::vector< shared_ptr<const GeometryElement> > GeometryElement::Subtree::toLin
     return result;
 }
 
+std::vector<shared_ptr<const GeometryElement>> GeometryElement::Subtree::getLastPath() const {
+    std::vector< shared_ptr<const GeometryElement> > result;
+    if (empty()) return result;
+    const GeometryElement::Subtree* path_nodes = this;
+    while (true) {
+        result.push_back(path_nodes->element);
+        if (path_nodes->children.empty()) break;
+        path_nodes = &(path_nodes->children.back());
+    }
+    return result;
+}
+
 void GeometryElement::ensureCanHasAsParent(const GeometryElement& potential_parent) const {
     if (isInSubtree(potential_parent))
         throw CyclicReferenceException();

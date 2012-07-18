@@ -35,8 +35,8 @@ struct Manager {
     /// Allow to access elements by name.
     std::map<std::string, shared_ptr<GeometryElement> > namedElements;
 
-    /// Roots elements.
-    //std::vector< shared_ptr<GeometryElement> > roots;
+    /// Roots elements, geometries.
+    std::vector< shared_ptr<Geometry> > roots;
 
     /// Geometries (calculation spaces) by name.
     std::map<std::string, shared_ptr<Geometry> > geometries;

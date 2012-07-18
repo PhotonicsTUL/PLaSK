@@ -51,7 +51,7 @@ void Manager::loadGeometryFromReader(GeometryReader& reader) {
                 return;  //end of geometry
             case XMLReader::NODE_ELEMENT:
                 //roots.push_back(reader.readElement());
-                reader.readGeometry();
+                roots.push_back(reader.readGeometry());
                 break;
             case XMLReader::NODE_COMMENT:
                 break;   //just ignore

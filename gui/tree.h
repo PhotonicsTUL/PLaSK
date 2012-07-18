@@ -128,7 +128,7 @@ public:
      * @param rootElements children of roots element (showing in tree as roots)
      * @param model model to notify about changes
      */
-    GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model);
+    GeometryTreeItem(const std::vector< plask::shared_ptr<plask::Geometry> >& rootElements, GeometryTreeModel* model);
 
     /// Delete children items and disconnect onChanged.
     virtual ~GeometryTreeItem();

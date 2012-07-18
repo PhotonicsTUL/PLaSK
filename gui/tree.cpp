@@ -66,7 +66,7 @@ GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::sh
     //constructChildrenItems(element);
 }
 
-GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::GeometryElement> >& rootElements, GeometryTreeModel* model)
+GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::Geometry> >& rootElements, GeometryTreeModel* model)
 : model(model), childrenInitialized(true), miniatureInitialized(true), parentItem(0)/*, inParentIndex(0)*/ {
     for (std::size_t i = 0; i < rootElements.size(); ++i)
         childItems.emplace_back(new GeometryTreeItem(this, ext(rootElements[i]), i));
@@ -216,7 +216,7 @@ GeometryTreeModel::~GeometryTreeModel() {
 void GeometryTreeModel::refresh(Document& document) {
     delete rootItem;
     //TODO
-    //rootItem = new GeometryTreeItem(document.manager.roots, this);
+    rootItem = new GeometryTreeItem(document.manager.roots, this);
     reset();
 }
 
