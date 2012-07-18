@@ -31,6 +31,18 @@ template <> struct GeometryElementD_getMaterial<3> {
     }
 };
 
+template <int dim> struct GeometryElementD_getPathsTo {};
+template <> struct GeometryElementD_getPathsTo<2> {
+    static inline GeometryElement::Subtree call(const GeometryElementD<2>& self, double c0, double c1) {
+        return self.getPathsTo(Vec<2,double>(c0, c1));
+    }
+};
+template <> struct GeometryElementD_getPathsTo<3> {
+    static inline GeometryElement::Subtree call(const GeometryElementD<3>& self, double c0, double c1, double c2) {
+        return self.getPathsTo(Vec<3,double>(c0, c1, c2));
+    }
+};
+
 template <int dim>
 static py::list GeometryElementD_getLeafsAsTranslations(const GeometryElementD<dim>& self, const PathHints& path) {
     py::list result;
@@ -67,7 +79,6 @@ std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self) {
     return out.str();
 }
 
-
 /// Initialize class GeometryElementD for Python
 template <int dim> struct GeometryElementD_vector_args { static const py::detail::keywords<dim> args; };
 template<> const py::detail::keywords<2> GeometryElementD_vector_args<2>::args = (py::arg("c0"), py::arg("c1"));
@@ -102,6 +113,10 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
              (py::arg("element"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified element (in local coordinates)")
         .def("getElementAsTranslation", (shared_ptr<Translation<dim>> (GeometryElementD<dim>::*)(const shared_ptr<GeometryElementD<dim>>&, const PathHints&)const) &GeometryElementD<dim>::getElementInThisCoordinates,
              (py::arg("element"), py::arg("path")=py::object()), "Return Translation object holding specified element")
+        .def("getPathsTo", (GeometryElement::Subtree(GeometryElementD<dim>::*)(const typename GeometryElementD<dim>::DVec&)const) &GeometryElementD<dim>::getPathsTo, py::arg("point"),
+             "Return subtree containing paths to all leafs covering specified point")
+        .def("getPathsTo", &GeometryElementD_getPathsTo<dim>::call, GeometryElementD_vector_args<dim>::args,
+             "Return subtree containing paths to all leafs covering specified point")
     ;
 }
 

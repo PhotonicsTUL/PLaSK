@@ -42,7 +42,7 @@ struct PythonManager: public Manager {
 
     static void export_dict(py::object self, py::dict dict) {
         dict["el"] = self.attr("el");
-        dict["pt"] = self.attr("pt");
+        dict["ph"] = self.attr("ph");
         dict["ge"] = self.attr("ge");
         //dict["ms"] = self.attr("ms");
         //dict["mg"] = self.attr("mg");
@@ -210,7 +210,7 @@ void register_manager() {
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
     manager.attr("el") = manager.attr("elements");
-    manager.attr("pt") = manager.attr("paths");
+    manager.attr("ph") = manager.attr("paths");
     manager.attr("ge") = manager.attr("geometries");
     //manager.attr("ms") = manager.attr("meshes");
     //manager.attr("mg") = manager.attr("mesh_generators");

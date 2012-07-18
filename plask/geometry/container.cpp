@@ -79,7 +79,7 @@ bool GeometryElementContainer<dim>::isInSubtree(const GeometryElement& el) const
 }
 
 template <int dim>
-GeometryElement::Subtree GeometryElementContainer<dim>::findPathsTo(const GeometryElement& el, const PathHints* path) const {
+GeometryElement::Subtree GeometryElementContainer<dim>::getPathsTo(const GeometryElement& el, const PathHints* path) const {
     if (this == &el) return this->shared_from_this();
     if (path) {
         auto hintChildren = path->getTranslationChildren<dim>(*this);
@@ -90,10 +90,10 @@ GeometryElement::Subtree GeometryElementContainer<dim>::findPathsTo(const Geomet
 }
 
 template <int dim>
-GeometryElement::Subtree GeometryElementContainer<dim>::findPathsTo(const GeometryElementContainer::DVec &point) const {
+GeometryElement::Subtree GeometryElementContainer<dim>::getPathsTo(const GeometryElementContainer::DVec &point) const {
     GeometryElement::Subtree result;
     for (auto& child: children) {
-        GeometryElement::Subtree child_path = child->findPathsTo(point);
+        GeometryElement::Subtree child_path = child->getPathsTo(point);
         if (!child_path.empty())
             result.children.push_back(std::move(child_path));
     }

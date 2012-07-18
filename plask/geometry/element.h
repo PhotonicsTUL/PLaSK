@@ -181,7 +181,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         std::vector<shared_ptr<const GeometryElement>> toLinearPath() const;
 
         /**
-         * Get last (last child is choosen at each level), linear path from subtree.
+         * Get last (last child is chosen at each level), linear path from subtree.
          * @return last path from subtree
          */
         std::vector<shared_ptr<const GeometryElement>> getLastPath() const;
@@ -424,7 +424,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @return sub-tree with paths to given element (@p el is in all leafs), empty sub-tree if @p el is not in subtree with @c this in root
      */
     //TODO predicate
-    virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const = 0;
+    virtual Subtree getPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const = 0;
 
     /**
      * Append all elements from subtree with this in root, which fullfil predicate to vector @p dest.
@@ -635,14 +635,14 @@ struct GeometryElementD: public GeometryElement {
 
     //virtual Box getBoundingBox() const;
 
-    using GeometryElement::findPathsTo;
+    using GeometryElement::getPathsTo;
 
     /**
      * Find all paths to elements which lies at given @p point.
      * @param point point in coordinates of this
      * @return all paths, last one is on top and overlies rest
      */
-    virtual Subtree findPathsTo(const DVec& point) const = 0;
+    virtual Subtree getPathsTo(const DVec& point) const = 0;
 
     /**
      * Check if geometry includes point.

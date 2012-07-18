@@ -77,11 +77,11 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return &el == this;
     }
 
-    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+    virtual GeometryElement::Subtree getPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
         return GeometryElement::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
     }
 
-    virtual GeometryElement::Subtree findPathsTo(const DVec& point) const {
+    virtual GeometryElement::Subtree getPathsTo(const DVec& point) const {
         return GeometryElement::Subtree( this->include(point) ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
     }
 

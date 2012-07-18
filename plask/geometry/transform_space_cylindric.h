@@ -29,9 +29,9 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
 
     virtual shared_ptr<GeometryElementTransform<3, GeometryElementD<2> > > shallowCopy() const;
 
-    using GeometryElementTransformSpace<3, 2>::findPathsTo;
+    using GeometryElementTransformSpace<3, 2>::getPathsTo;
 
-    virtual GeometryElement::Subtree findPathsTo(const DVec& point) const;
+    virtual GeometryElement::Subtree getPathsTo(const DVec& point) const;
 
 private:
 

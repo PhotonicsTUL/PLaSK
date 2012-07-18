@@ -247,8 +247,8 @@ public:
         return getChild()->isInSubtree(el);
     }
 
-    virtual Subtree findPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const {
-        return getChild()->findPathsTo(el, pathHints);
+    virtual Subtree getPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const {
+        return getChild()->getPathsTo(el, pathHints);
     }
 
     virtual void getElementsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
@@ -281,13 +281,49 @@ public:
         return getChild()->getLeafsPositions(path);
     }
 
+    std::vector<CoordsType> getElementPositions(const GeometryElement& element, const PathHints* path=nullptr) const {
+        return getChild()->getElementPositions(element, path);
+    }
+
+    std::vector<CoordsType> getElementPositions(const GeometryElement& element, const PathHints& path) const {
+        return getChild()->getElementPositions(element, path);
+    }
+
+    std::vector<CoordsType> getElementPositions(const shared_ptr<const GeometryElement>& element, const PathHints* path=nullptr) const {
+        return getChild()->getElementPositions(*element, path);
+    }
+
+    std::vector<CoordsType> getElementPositions(const shared_ptr<const GeometryElement>& element, const PathHints& path) const {
+        return getChild()->getElementPositions(*element, path);
+    }
+
     std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints* path=nullptr) const {
         return getChild()->getLeafsBoundingBoxes(path);
     }
 
     std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints& path) const {
         return getChild()->getLeafsBoundingBoxes(path);
-    } 
+    }
+
+    std::vector<typename Primitive<DIMS>::Box> getElementBoundingBoxes(const GeometryElement& element, const PathHints* path=nullptr) const {
+        return getChild()->getElementBoundingBoxes(element, path);
+    }
+
+    std::vector<typename Primitive<DIMS>::Box> getElementBoundingBoxes(const GeometryElement& element, const PathHints& path) const {
+        return getChild()->getElementBoundingBoxes(element, path);
+    }
+
+    std::vector<typename Primitive<DIMS>::Box> getElementBoundingBoxes(const shared_ptr<const GeometryElement>& element, const PathHints* path=nullptr) const {
+        return getChild()->getElementBoundingBoxes(*element, path);
+    }
+
+    std::vector<typename Primitive<DIMS>::Box> getElementBoundingBoxes(const shared_ptr<const GeometryElement>& element, const PathHints& path) const {
+        return getChild()->getElementBoundingBoxes(*element, path);
+    }
+
+    GeometryElement::Subtree getPathsTo(const CoordsType& point) const {
+        return getChild()->getPathsTo(point);
+    }
 
     virtual shared_ptr<const GeometryElement> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const {
         return getChild()->changedVersion(changer, translation);

@@ -85,14 +85,14 @@ void PathHints::cleanDeleted() {
 //----------------- Path ------------------------------------------
 
 bool Path::completeToFirst(const GeometryElement& newFirst, const PathHints* hints) {
-    GeometryElement::Subtree path = newFirst.findPathsTo(*elements.front(), hints);
+    GeometryElement::Subtree path = newFirst.getPathsTo(*elements.front(), hints);
     if (path.empty()) return false;
     push_front(path.toLinearPath());
     return true;
 }
 
 bool Path::completeFromLast(const GeometryElement& newLast, const PathHints* hints) {
-    GeometryElement::Subtree path = elements.back()->findPathsTo(newLast, hints);
+    GeometryElement::Subtree path = elements.back()->getPathsTo(newLast, hints);
     if (path.empty()) return false;
     push_back(path.toLinearPath());
     return true;

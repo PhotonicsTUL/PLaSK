@@ -37,9 +37,9 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
 
     virtual shared_ptr<GeometryElementTransform<3, ChildType>> shallowCopy() const;
 
-    using GeometryElementTransformSpace<3, 2>::findPathsTo;
+    using GeometryElementTransformSpace<3, 2>::getPathsTo;
 
-    GeometryElement::Subtree findPathsTo(const DVec& point) const;
+    GeometryElement::Subtree getPathsTo(const DVec& point) const;
 
 private:
     /// @return true only if p can be inside this, false if for sure its not inside

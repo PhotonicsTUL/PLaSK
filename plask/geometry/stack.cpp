@@ -232,8 +232,8 @@ void MultiStackContainer<dim>::getPositionsToVec(const GeometryElement::Predicat
 }
 
 template <int dim>
-GeometryElement::Subtree MultiStackContainer<dim>::findPathsTo(const GeometryElement& el, const PathHints* path) const {
-    GeometryElement::Subtree result = UpperClass::findPathsTo(el, path);
+GeometryElement::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryElement& el, const PathHints* path) const {
+    GeometryElement::Subtree result = UpperClass::getPathsTo(el, path);
     if (!result.empty()) {
         const std::size_t size = result.children.size();   //oryginal size
         const double stackHeight = stackHeights.back() - stackHeights.front();
@@ -249,10 +249,10 @@ GeometryElement::Subtree MultiStackContainer<dim>::findPathsTo(const GeometryEle
 }
 
 template <int dim>
-GeometryElement::Subtree MultiStackContainer<dim>::findPathsTo(const MultiStackContainer::DVec &point) const {
+GeometryElement::Subtree MultiStackContainer<dim>::getPathsTo(const MultiStackContainer::DVec &point) const {
     MultiStackContainer::DVec new_point = point;
     new_point.up = reduceHeight(new_point.up);
-    return GeometryElementContainer<dim>::findPathsTo(new_point);
+    return GeometryElementContainer<dim>::getPathsTo(new_point);
 }
 
 template class MultiStackContainer<2>;

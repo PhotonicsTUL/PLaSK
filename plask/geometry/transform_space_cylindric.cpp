@@ -32,8 +32,8 @@ shared_ptr<GeometryElementTransform< 3, GeometryElementD<2> > > Revolution::shal
     return make_shared<Revolution>(this->getChild());
 }
 
-GeometryElement::Subtree Revolution::findPathsTo(const DVec& point) const {
-    return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->findPathsTo(childVec(point)));
+GeometryElement::Subtree Revolution::getPathsTo(const DVec& point) const {
+    return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
 }
 
 Box2D Revolution::childBox(const plask::Box3D& r) {

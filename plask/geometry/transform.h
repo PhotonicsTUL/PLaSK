@@ -104,10 +104,10 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
         return &el == this || (hasChild() && _child->isInSubtree(el));
     }
 
-    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
+    virtual GeometryElement::Subtree getPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
         if (this == &el) return GeometryElement::Subtree(this->shared_from_this());
         if (!_child) GeometryElement::Subtree();
-        GeometryElement::Subtree e = _child->findPathsTo(el, path);
+        GeometryElement::Subtree e = _child->getPathsTo(el, path);
         if (e.empty()) return GeometryElement::Subtree();
         GeometryElement::Subtree result(this->shared_from_this());
         result.children.push_back(std::move(e));
@@ -236,10 +236,10 @@ struct Translation: public GeometryElementTransform<dim> {
         return getChild()->intersect(area.translated(-translation));
     }
 
-    using GeometryElementTransform<dim>::findPathsTo;
+    using GeometryElementTransform<dim>::getPathsTo;
 
-    virtual GeometryElement::Subtree findPathsTo(const DVec& point) const {
-        return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->findPathsTo(point-translation));
+    virtual GeometryElement::Subtree getPathsTo(const DVec& point) const {
+        return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(point-translation));
     }
 
     /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Box, DVec> >& dest, const PathHints* path = 0) const {

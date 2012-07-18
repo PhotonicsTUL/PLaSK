@@ -235,7 +235,7 @@ struct Path {
 
     Path(shared_ptr<const GeometryElement> element) { append(*element); }
 
-    ///Path content.
+    /// Path content
     std::vector< shared_ptr<const GeometryElement> > elements;
 
     /**
@@ -327,6 +327,12 @@ struct Path {
      * @return path hints which include all hints implicted by this path
      */
     PathHints getPathHints() const;
+
+    /// \return first element of the path
+    shared_ptr<const GeometryElement> front() const { return elements.front(); }
+
+    /// \return last element of the path
+    shared_ptr<const GeometryElement> back() const { return elements.back(); }
 
     /**
      * Get path hinst implicted by this.

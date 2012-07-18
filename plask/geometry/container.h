@@ -134,7 +134,7 @@ public:
     GeometryElement::Subtree findPathsFromChildTo(ChildIter childBegin, ChildIter childEnd, const GeometryElement& el, const PathHints* path = 0) const {
         GeometryElement::Subtree result;
         for (auto child_iter = childBegin; child_iter != childEnd; ++child_iter) {
-            GeometryElement::Subtree child_path = (*child_iter)->findPathsTo(el, path);
+            GeometryElement::Subtree child_path = (*child_iter)->getPathsTo(el, path);
             if (!child_path.empty())
                 result.children.push_back(std::move(child_path));
         }
@@ -143,9 +143,9 @@ public:
         return result;
     }
 
-    virtual GeometryElement::Subtree findPathsTo(const GeometryElement& el, const PathHints* path = 0) const;
+    virtual GeometryElement::Subtree getPathsTo(const GeometryElement& el, const PathHints* path = 0) const;
 
-    virtual GeometryElement::Subtree findPathsTo(const DVec& point) const;
+    virtual GeometryElement::Subtree getPathsTo(const DVec& point) const;
 
     virtual std::size_t getChildrenCount() const { return children.size(); }
 

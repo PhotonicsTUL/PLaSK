@@ -39,8 +39,8 @@ shared_ptr<GeometryElementTransform<3, Extrusion::ChildType>> Extrusion::shallow
     return shared_ptr<GeometryElementTransform<3, Extrusion::ChildType>>(new Extrusion(getChild(), length));
 }
 
-GeometryElement::Subtree Extrusion::findPathsTo(const DVec& point) const {
-    return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->findPathsTo(childVec(point)));
+GeometryElement::Subtree Extrusion::getPathsTo(const DVec& point) const {
+    return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
 }
 
 shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {

@@ -19,6 +19,17 @@ template <> struct Space_getMaterial<Geometry3D> {
     }
 };
 
+template <typename S> struct Space_getPathsTo {
+    static inline GeometryElement::Subtree call(const S& self, double c0, double c1) {
+        return self.getPathsTo(Vec<2,double>(c0, c1));
+    }
+};
+template <> struct Space_getPathsTo<Geometry3D> {
+    static inline GeometryElement::Subtree call(const Geometry3D& self, double c0, double c1, double c2) {
+        return self.getPathsTo(Vec<3,double>(c0, c1, c2));
+    }
+};
+
 template <typename S>
 static py::list Space_leafsAsTranslations(const S& self, const PathHints& path=0) {
     py::list result;
@@ -252,6 +263,13 @@ void register_calculation_spaces() {
         .def("getLeafsBBoxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsBoundingBoxes,
              (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
         .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
+        .def("getElementPositions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const shared_ptr<const GeometryElement>&, const PathHints&)const) &Geometry2DCartesian::getElementPositions,
+             (py::arg("element"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified element (in local coordinates)")
+        .def("getElementBBoxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const shared_ptr<const GeometryElement>&, const PathHints&)const) &Geometry2DCartesian::getElementBoundingBoxes,
+             (py::arg("element"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified element (in local coordinates)")
+        .def("getPathsTo", (GeometryElement::Subtree(Geometry2DCartesian::*)(const Vec<2>&)const) &Geometry2DCartesian::getPathsTo, py::arg("point"),
+             "Return subtree containg paths to all leafs covering specified point")
+        .def("getPathsTo", &Space_getMaterial<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1")))
         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -278,6 +296,13 @@ void register_calculation_spaces() {
         .def("getLeafsBBoxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsBoundingBoxes,
              (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
         .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
+        .def("getElementPositions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const GeometryElement&, const PathHints&)const) &Geometry2DCylindrical::getElementPositions,
+             (py::arg("element"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified element (in local coordinates)")
+        .def("getElementBBoxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const GeometryElement&, const PathHints&)const) &Geometry2DCylindrical::getElementBoundingBoxes,
+             (py::arg("element"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified element (in local coordinates)")
+        .def("getPathsTo", (GeometryElement::Subtree(Geometry2DCylindrical::*)(const Vec<2>&)const) &Geometry2DCylindrical::getPathsTo, py::arg("point"),
+             "Return subtree containing paths to all leafs covering specified point")
+        .def("getPathsTo", &Space_getMaterial<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1")))
         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
