@@ -1,6 +1,8 @@
 #include "mesh.h"
 #include "../utils/xml.h"
 
+namespace plask {
+
 std::map<std::string, RegisterMeshReader::ReadingFunction*>& RegisterMeshReader::readers() {
     static std::map<std::string, RegisterMeshReader::ReadingFunction*> result;
     return result;
@@ -18,3 +20,5 @@ std::map<std::string, RegisterMeshGeneratorReader::ReadingFunction*>& RegisterMe
 RegisterMeshGeneratorReader::RegisterMeshGeneratorReader(const std::string& tag_name, RegisterMeshGeneratorReader::ReadingFunction* reader) {
     readers()[tag_name] = reader;
 }
+
+}   // namespace plask

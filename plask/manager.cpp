@@ -62,6 +62,17 @@ void Manager::loadGeometryFromReader(GeometryReader& reader) {
     throw XMLUnexpectedEndException();
 }
 
+void Manager::loadModulesFromReader(GeometryReader &reader)
+{
+    /*TODO
+    - read module name
+    - load module library from file
+    - call module = createModule(...) from library
+    - call module.loadConfiguration(reader)
+    - add module to modules map
+    */
+}
+
 void Manager::loadGeometryFromReader(XMLReader &XMLreader, const MaterialsDB& materialsDB) {
     GeometryReader reader(*this, XMLreader, materialsDB);
     loadGeometryFromReader(reader);

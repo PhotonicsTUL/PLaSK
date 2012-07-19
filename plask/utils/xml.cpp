@@ -49,6 +49,31 @@ XMLReader::XMLReader(std::istream& input)
     irrReader = irr::io::createIrrXMLReader(&cb);
 }
 
+#if __cplusplus >= 201103L
+XMLReader::XMLReader(XMLReader &&to_move)
+    : irrReader(to_move.irrReader),
+      currentNodeType(to_move.currentNodeType),
+      path(std::move(to_move.path)),
+      read_attribiutes(std::move(to_move.read_attribiutes))
+{
+    to_move.irrReader = 0;
+}
+
+XMLReader &XMLReader::operator =(XMLReader &&to_move)
+{
+    swap(to_move);
+    return *this;
+}
+#endif
+
+void XMLReader::swap(XMLReader &to_swap)
+{
+    std::swap(irrReader, to_swap.irrReader);
+    std::swap(currentNodeType, to_swap.currentNodeType);
+    std::swap(path, to_swap.path);
+    std::swap(read_attribiutes, to_swap.read_attribiutes);
+}
+
 bool XMLReader::read() {
     if (currentNodeType == NODE_ELEMENT) {
         if (std::size_t(getAttributeCount()) != read_attribiutes.size()) {

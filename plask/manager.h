@@ -41,6 +41,9 @@ struct Manager {
     /// Geometries (calculation spaces) by name.
     std::map<std::string, shared_ptr<Geometry> > geometries;
 
+    //TODO modules map
+    //TODO boundaries map (Boundary top class - probably empty, with virtual destructor)
+
     /**
      * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
      * @param path_hints_name name of path hints to get
@@ -112,6 +115,12 @@ struct Manager {
      * @param reader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      */
     void loadGeometryFromReader(GeometryReader& reader);
+
+    /**
+     * Load modules using reader.
+     * @param reader reader to read from, should point to @c \<module> tag, after read it will be point to @c \</module> tag
+     */
+    void loadModulesFromReader(GeometryReader& reader);
 
     /**
      * Load geometry using XML reader.

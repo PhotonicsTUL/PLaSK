@@ -376,6 +376,7 @@ This concludes our short tutorial. Now you can go on and write your own calculat
 #include "log/data.h"
 #include "mesh/mesh.h"
 #include "geometry/space.h"
+#include "geometry/reader.h"
 
 namespace plask {
 
@@ -433,6 +434,17 @@ class Module {
 
     /// Virtual destructor (for subclassing). Do nothing.
     virtual ~Module() {}
+
+    /**
+     * Load configuration from given @p config.
+     *
+     * XML reader (source field) of @p config point to opening of @c this module tag and
+     * after return from this method should point to this module closing tag.
+     *
+     * Default implementation require empty configuration (just call <code>conf.source.requireTagEnd();</code>).
+     * @param config source of configuration
+     */
+    virtual void loadConfiguration(GeometryReader& source);
 
     /**
      * Check if module is already initialized.

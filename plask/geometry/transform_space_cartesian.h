@@ -21,6 +21,10 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
 
     explicit Extrusion(double length = 0.0/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
+    /**
+     * Set length and inform observers.
+     * @param new_length new length
+     */
     void setLength(double new_length);
 
     virtual bool include(const DVec& p) const;

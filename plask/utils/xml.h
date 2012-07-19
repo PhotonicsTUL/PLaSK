@@ -58,7 +58,37 @@ public:
      */
     XMLReader(std::istream& input);
 
-    ~XMLReader() { delete irrReader; }
+#if __cplusplus >= 201103L
+    /**
+     * Move constructor.
+     * @param to_move object to move from, should not be used but only delete after move
+     */
+    XMLReader(XMLReader&& to_move);
+
+    /**
+     * Move assigment operator.
+     * @param to_move object to move from, should not be used but only delete after move
+     * @return *this
+     */
+    XMLReader& operator=(XMLReader&& to_move);
+
+    /// Disallow copy of reader.
+    XMLReader(const XMLReader& to_copy) = delete;
+    XMLReader& operator=(const XMLReader& to_copy) = delete;
+#else
+private:
+    XMLReader(const XMLReader&) {}
+    XMLReader& operator=(const XMLReader&) { return *this; }
+public:
+#endif
+
+    ~XMLReader() { delete irrReader; }  //if irrReader is not nullptr throw exception if path is not empty
+
+    /**
+     * Swap states of @c this and @p to_swap.
+     * @param to_swap object to swap with this
+     */
+    void swap(XMLReader& to_swap);
 
     /**
      * Get current type of node.
@@ -210,6 +240,10 @@ public:
     bool skipComments();
 };
 
-}
+}   // namespace plask
+
+namespace std {
+inline void swap(plask::XMLReader& a, plask::XMLReader& b) { a.swap(b); }
+}   // namespace std
 
 #endif // PLASK__UTILS_XML_H
