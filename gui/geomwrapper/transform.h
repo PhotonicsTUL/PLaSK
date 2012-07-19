@@ -8,6 +8,7 @@
 #include "element.h"
 
 #include <plask/geometry/transform.h>
+#include <plask/geometry/transform_space_cartesian.h>
 
 template <int dim>
 struct TranslationWrapper: public ElementWrapperFor< plask::Translation<dim> > {
@@ -15,6 +16,14 @@ struct TranslationWrapper: public ElementWrapperFor< plask::Translation<dim> > {
     virtual QString toStr() const;
 
     virtual void draw(QPainter& painter) const;
+
+};
+
+struct ExtrusionWrapper: public ElementWrapperFor< plask::Extrusion > {
+
+    virtual QString toStr() const;
+
+    virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
 };
 

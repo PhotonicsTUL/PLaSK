@@ -31,3 +31,19 @@ void TranslationWrapper<3>::draw(QPainter& painter) const {
 
 template class TranslationWrapper<2>;
 template class TranslationWrapper<3>;
+
+QString ExtrusionWrapper::toStr() const {
+    auto& el = this->c();
+    return QString(QObject::tr("extrusion %1\nlength: %2"))
+        .arg(this->name.isEmpty() ? "" : (" \"" + this->name + "\""))
+            .arg(el.length);
+}
+
+void ExtrusionWrapper::setupPropertiesBrowser(BrowserWithManagers &managers, QtAbstractPropertyBrowser &dst) {
+    ElementWrapperFor< plask::Extrusion >::setupPropertiesBrowser(managers, dst);
+
+    QtProperty *length = managers.doubl.addProperty("length");
+    managers.doubl.setValue(length, this->c().length);
+    dst.addProperty(length);
+    managers.connectDouble(length, [&](const double &v) { this->c().setLength(v); });
+}

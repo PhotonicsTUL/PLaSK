@@ -19,7 +19,9 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
 
     explicit Extrusion(shared_ptr<ChildType> child, double length): GeometryElementTransformSpace<3,2>(child), length(length) {}
 
-    explicit Extrusion(double length/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
+    explicit Extrusion(double length = 0.0/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
+
+    void setLength(double new_length);
 
     virtual bool include(const DVec& p) const;
 

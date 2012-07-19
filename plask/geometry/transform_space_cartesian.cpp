@@ -5,6 +5,12 @@
 
 namespace plask {
 
+void Extrusion::setLength(double new_length) {
+    if (length == new_length) return;
+    length = new_length;
+    fireChanged(Event::RESIZE);
+}
+
 bool Extrusion::include(const DVec& p) const {
     return canBeInside(p) && getChild()->include(childVec(p));
 }

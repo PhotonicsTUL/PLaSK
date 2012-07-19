@@ -62,6 +62,7 @@ struct Register {
         appendConstructor< ShelfWrapper >();
         appendConstructor< BlockWrapper<2> >();
         appendConstructor< BlockWrapper<3> >();
+        appendConstructor< ExtrusionWrapper >();
         appendConstructor< Geometry2DCartesianWrapper >();
         appendConstructor< Geometry2DCylindricalWrapper >();
     }
