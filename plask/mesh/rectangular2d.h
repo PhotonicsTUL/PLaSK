@@ -16,7 +16,7 @@ namespace plask {
 /**
  * Rectilinear mesh in 2d space.
  *
- * Includes two 1d rectilinear meshes:
+ * Includes two 1D rectilinear meshes:
  * - c0 (alternative names: tran(), ee_x(), r())
  * - c1 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y) such that x is in c0 and y is in c1.

@@ -115,7 +115,7 @@ struct GeometryReader {
         ~SetExpectedSuffix() { reader.expectedSuffix = old; }
     };
 
-    /// Geometry manager which store reading results.
+    /// Geometry manager which stores reading results.
     Manager& manager;
 
     /// XML data source

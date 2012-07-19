@@ -126,6 +126,7 @@ You should also implement interpolation algorithms for your mesh, see @ref inter
 #include "../geometry/element.h"
 #include "../utils/iterators.h"
 #include "../utils/cache.h"
+#include "../utils/xml.h"
 
 #include <boost/signals2.hpp>
 #include "../utils/event.h"
@@ -134,7 +135,7 @@ namespace plask {
 
 /**
  * Base class for all the meshes.
- * Mesh represent a set of points in 2d or 3d space and:
+ * Mesh represent a set of points in 2D or 3D space and:
  * - knows number of points,
  * - allows for iterate over this points,
  * - can calculate interpolated value for given destination points, source values, and the interpolation method,
@@ -142,8 +143,16 @@ namespace plask {
  *
  * @see @ref meshes
  */
+
+struct MeshBase {
+    virtual ~MeshBase() {}
+};
+
+/**
+ * Base class for all meshes defined for specified number of dimensions.
+ */
 template <int dimension>
-struct Mesh {
+struct Mesh: public MeshBase {
 
     /// Number of dimensions
     static const int dim = dimension;
@@ -253,8 +262,9 @@ struct Mesh {
 
     Mesh() = default;
 
-    /// Inform observators that this is deleting.
+    /// Inform observators that this is being deleted
     virtual ~Mesh() { fireChanged(Event::DELETE); }
+
 };
 
 /**
@@ -368,7 +378,10 @@ struct SimpleMeshAdapter: public Mesh<dim> {
 };
 
 /** Base class for every mesh generator */
-class MeshGenerator {};
+class MeshGenerator {
+  public:
+    virtual ~MeshGenerator() {}
+};
 
 /** Base class for specific mesh generator */
 template <typename MeshT>
@@ -403,7 +416,29 @@ class MeshGeneratorOf: public MeshGenerator
         else
             return cache(geometry, generate(geometry));
     }
+
 };
+
+/**
+ * Helper which call stores mesh reader when constructed.
+ * Each mesh can create one global instance of this class to register its reader.
+ */
+struct RegisterMeshReader {
+    typedef shared_ptr<MeshBase> ReadingFunction(XMLReader&);
+    RegisterMeshReader(const std::string& tag_name, ReadingFunction* reader);
+    static std::map<std::string, ReadingFunction*>& readers();
+};
+
+/**
+ * Helper which call stores mesh reader when constructed.
+ * Each mesh can create one global instance of this class to register its reader.
+ */
+struct RegisterMeshGeneratorReader {
+    typedef shared_ptr<MeshGenerator> ReadingFunction(XMLReader&);
+    RegisterMeshGeneratorReader(const std::string& tag_name, ReadingFunction* reader);
+    static std::map<std::string, ReadingFunction*>& readers();
+};
+
 
 } // namespace plask
 
