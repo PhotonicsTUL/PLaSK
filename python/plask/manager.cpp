@@ -41,11 +41,13 @@ struct PythonManager: public Manager {
     }
 
     static void export_dict(py::object self, py::dict dict) {
-        dict["el"] = self.attr("el");
-        dict["ph"] = self.attr("ph");
-        dict["ge"] = self.attr("ge");
-        dict["ms"] = self.attr("ms");
-        dict["mg"] = self.attr("mg");
+        dict["GEL"] = self.attr("gel");
+        dict["PTH"] = self.attr("pth");
+        dict["GEO"] = self.attr("geo");
+        dict["MSH"] = self.attr("msh");
+        dict["MSG"] = self.attr("msg");
+
+        //dict["SLV"] = self.attr("slv");
     }
 };
 
@@ -211,11 +213,12 @@ void register_manager() {
         .def_readonly("mesh_generators", &PythonManager::generators, "Dictionary of all named mesh generators")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
-    manager.attr("el") = manager.attr("elements");
-    manager.attr("ph") = manager.attr("paths");
-    manager.attr("ge") = manager.attr("geometries");
-    manager.attr("ms") = manager.attr("meshes");
-    manager.attr("mg") = manager.attr("mesh_generators");
+    manager.attr("gel") = manager.attr("elements");
+    manager.attr("pth") = manager.attr("paths");
+    manager.attr("geo") = manager.attr("geometries");
+    manager.attr("msh") = manager.attr("meshes");
+    manager.attr("msg") = manager.attr("mesh_generators");
+    //manager.attr("slv") = manager.attr("solvers");
 
     register_manager_dict<shared_ptr<GeometryElement>>("GeometryElements");
     register_manager_dict<shared_ptr<Geometry>>("Geometries");

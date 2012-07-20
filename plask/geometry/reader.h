@@ -161,7 +161,7 @@ struct GeometryReader {
      *
      * After call source reader point to end of tag which represent read element.
      * @return element which was read and create or to which reference was read
-     * @throw GeometryElementNamesConflictException if element with read name already exists
+     * @throw NamesConflictException if element with read name already exists
      * @throw NoSuchGeometryElement if ref element reference to element which not exists
      * @throw NoAttrException if XML tag has no required attributes
      */
@@ -181,7 +181,7 @@ struct GeometryReader {
      * @return element (casted to RequiredElementType) which was read and create or to which reference was read
      * @tparam RequiredElementType required type of element
      * @throw UnexpectedGeometryElementTypeException if requested element is not of type RequiredElementType
-     * @throw GeometryElementNamesConflictException if element with read name already exists
+     * @throw NamesConflictException if element with read name already exists
      * @throw NoSuchGeometryElement if ref element reference to element which not exists
      * @throw NoAttrException if XML tag has no required attributes
      */

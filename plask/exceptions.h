@@ -357,12 +357,13 @@ struct NoSuchGeometryElementType: public Exception {
 /**
  * Exceptions of this class are thrownby some geometry element classes when there is no required child.
  */
-struct GeometryElementNamesConflictException: public Exception {
+struct NamesConflictException: public Exception {
 
     /**
      * @param element_name name of element which is already exists
      */
-    GeometryElementNamesConflictException(const std::string& element_name): Exception("Geometry element with given name \"" + element_name + "\" already exists") {}
+    NamesConflictException(const std::string& what, const std::string& element_name):
+        Exception(what + " with name \"" + element_name + "\" already exists") {}
 };
 
 /**
@@ -375,7 +376,29 @@ struct NoSuchGeometryElement: public Exception {
      * @param element_name name of element which is not found
      */
     NoSuchGeometryElement(const std::string& element_name)
-    : Exception("No geometry element with name " + element_name)/*, materialName(material_name)*/ {}
+    : Exception("No geometry element with name \"" + element_name + "\"") {}
+};
+
+/**
+ * This exception is thrown when geometry (typically with given name) is not found.
+ */
+struct NoSuchGeometry: public Exception {
+    /**
+     * @param element_name name of element which is not found
+     */
+    NoSuchGeometry(const std::string& element_name)
+    : Exception("No geometry of required type with name \"" + element_name + "\"") {}
+};
+
+/**
+ * This exception is thrown when named PatHints are not found.
+ */
+struct NoSuchPath: public Exception {
+    /**
+     * @param element_name name of element which is not found
+     */
+    NoSuchPath(const std::string& element_name)
+    : Exception("No path with name \"" + element_name + "\"") {}
 };
 
 /**

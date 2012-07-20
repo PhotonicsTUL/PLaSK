@@ -129,6 +129,18 @@ class Manager {
     shared_ptr<RequiredCalcSpaceType> getGeometry(const std::string& name) const;
 
     /**
+     * Get geometry trunk with given @p name and try dynamic cast it to @a RequiredCalcSpaceType.
+     * @param name name of calculation space to get
+     * @return required calculation space or shared_ptr<Geometry>() if there is no calculation space with given @p name or can't be casted to RequiredCalcSpaceType
+     */
+    template <typename RequiredCalcSpaceType>
+    shared_ptr<RequiredCalcSpaceType> requireGeometry(const std::string& name) const {
+        auto geometry = getGeometry<RequiredCalcSpaceType>(name);
+        if (!geometry) throw NoSuchGeometry(name);
+        return geometry;
+    }
+
+    /**
      * Load geometry using geometry reader.
      * @param reader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      */

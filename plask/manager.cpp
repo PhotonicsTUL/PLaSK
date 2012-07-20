@@ -7,13 +7,13 @@ namespace plask {
 
 PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
     auto result_it = pathHints.find(path_hints_name);
-    if (result_it == pathHints.end()) throw Exception("No such path hints: %1%", path_hints_name);
+    if (result_it == pathHints.end()) throw NoSuchPath(path_hints_name);
     return result_it->second;
 }
 
 const PathHints& Manager::requirePathHints(const std::string& path_hints_name) const {
     auto result_it = pathHints.find(path_hints_name);
-    if (result_it == pathHints.end()) throw Exception("No such path hints: %1%", path_hints_name);
+    if (result_it == pathHints.end()) throw NoSuchPath(path_hints_name);
     return result_it->second;
 }
 
@@ -131,8 +131,8 @@ void Manager::loadGrids(XMLReader &reader)
                     std::string name = reader.requireAttribute("name");
                     std::string key = type + "." + method;
                     if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
-                        throw NotUniqueElementException("Duplicated mesh name");
-                    shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader);
+                        throw NamesConflictException("Mesh or mesh generator", name);
+                    shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader, *this);
                     generators[name] = generator;
                 } else
                     throw XMLUnexpectedElementException("<mesh...>, <generator...>, or </grids>");

@@ -1,5 +1,8 @@
 #include <plask/log/log.h>
+#include <plask/manager.h>
+
 #include "generator_rectilinear.h"
+
 
 namespace plask {
 
@@ -49,15 +52,13 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
     for (auto ref: refinements[dir]) {
         auto element = ref.first.first.lock();
         if (!element) {
-             if (warn_multiple) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement defined for object not existing any more.");
+             if (warn_missing) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement defined for object not existing any more.");
         } else {
             auto path = ref.first.second;
             auto boxes = geometry->getElementBoundingBoxes(*element, path);
             auto origins = geometry->getElementPositions(*element, path);
-            if (warn_multiple) {
-                if (boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement defined for object absent from the geometry.");
-                else if (boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Single refinement defined for more than one object.");
-            }
+            if (warn_missing && boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement defined for object absent from the geometry.");
+            else if (warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Single refinement defined for more than one object.");
             auto box = boxes.begin();
             auto origin = origins.begin();
             for (; box != boxes.end(); ++box, ++origin) {
@@ -151,48 +152,57 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const s
 
 
 template <typename GeneratorT>
-static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader)
+static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const Manager&)
 {
     reader.requireTagEnd();
     return make_shared<GeneratorT>();
 }
 
 
-static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader& reader)
+static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader& reader, const Manager& manager)
 {
     auto result = make_shared<RectilinearMesh2DDivideGenerator>();
 
+    std::set<std::string> read;
     while (reader.requireTagOrEnd()) {
+        if (read.find(reader.getNodeName()) != read.end())
+            throw XMLUnexpectedElementException("tag \""+reader.getNodeName()+"\" to appear only once for a single generator specification");
+        read.insert(reader.getNodeName());
         if (reader.getNodeName() == "prediv") {
-            std::vector<std::string> divs; divs.reserve(2);
-            std::string text = reader.requireAttribute("value");
-            boost::split(divs, text, boost::is_any_of(", \n"), boost::token_compress_on);
-            if (divs.size() == 1) result->setPreDivision(boost::lexical_cast<size_t>(divs[0]));
-            else if (divs.size() == 2) result->setPreDivision(boost::lexical_cast<size_t>(divs[0]), boost::lexical_cast<size_t>(divs[1]));
-            else throw XMLUnexpectedElementException("one or two integers");
+            boost::optional<size_t> into = reader.getAttribute<size_t>("by");
+            if (into)
+                result->setPreDivision(*into);
+            else
+                result->setPreDivision(reader.getAttribute<size_t>("hor_by", 1), reader.getAttribute<size_t>("vert_by", 1));
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
-            std::vector<std::string> divs; divs.reserve(2);
-            std::string text = reader.requireAttribute("value");
-            boost::split(divs, text, boost::is_any_of(", \n"), boost::token_compress_on);
-            if (divs.size() == 1) result->setPostDivision(boost::lexical_cast<size_t>(divs[0]));
-            else if (divs.size() == 2) result->setPostDivision(boost::lexical_cast<size_t>(divs[0]), boost::lexical_cast<size_t>(divs[1]));
-            else throw XMLUnexpectedElementException("one or two integers");
+            boost::optional<size_t> into = reader.getAttribute<size_t>("by");
+            if (into)
+                result->setPostDivision(*into);
+            else
+                result->setPostDivision(reader.getAttribute<size_t>("hor_by", 1), reader.getAttribute<size_t>("vert_by", 1));
             reader.requireTagEnd();
-        } else if (reader.getNodeName() == "limit_change") {
-            result->limit_change = reader.getAttribute<bool>("value", true);
+        } else if (reader.getNodeName() == "dont_limit_change") {
+            result->limit_change = false;
             reader.requireTagEnd();
-        } else if (reader.getNodeName() == "warn_none") {
-            result->warn_none = reader.getAttribute<bool>("value", true);
-            reader.requireTagEnd();
-        } else if (reader.getNodeName() == "warn_multiple") {
-            result->warn_multiple = reader.getAttribute<bool>("value", true);
-            reader.requireTagEnd();
-        } else if (reader.getNodeName() == "warn_outside") {
-            result->warn_outside = reader.getAttribute<bool>("value", true);
+        } else if (reader.getNodeName() == "warnings") {
+            result->warn_missing = reader.getAttribute<bool>("missing", true);
+            result->warn_multiple = reader.getAttribute<bool>("multiple", true);
+            result->warn_outside = reader.getAttribute<bool>("outside", true);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "refinements") {
-            //TODO
+            while (reader.requireTagOrEnd()) {
+                if (reader.getNodeName() != "horizontal" && reader.getNodeName() != "vertical")
+                    throw XMLUnexpectedElementException("<horizontal ...> of <vertical ...> tag");
+                auto direction = (reader.getNodeName()=="horizontal")? Primitive<2>::DIRECTION_TRAN : Primitive<2>::DIRECTION_UP;
+                weak_ptr<GeometryElementD<2>> element =
+                    manager.requireGeometryElement<GeometryElementD<2>>(reader.requireAttribute("element"));
+                double pos = reader.requireAttribute<double>("pos");
+                auto path = reader.getAttribute("path");
+                if (path) result->addRefinement(direction, element, manager.requirePathHints(*path), pos);
+                else result->addRefinement(direction, element, pos);
+                reader.requireTagEnd();
+            }
         } else throw XMLUnexpectedElementException("'divide' generator configuration");
     }
     return result;

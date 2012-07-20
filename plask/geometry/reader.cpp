@@ -59,7 +59,7 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
     shared_ptr<GeometryElement> new_element = reader_it->second(*this); //and rest (but while reading this subtree, name is not registred yet)
     if (name) { //if have name, register it (add it to map of names)
         if (!manager.namedElements.insert(std::map<std::string, shared_ptr<GeometryElement> >::value_type(*name, new_element)).second)
-            throw GeometryElementNamesConflictException(*name);
+            throw NamesConflictException("Geometry element", *name);
     }
     return new_element;
 }

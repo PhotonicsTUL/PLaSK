@@ -32,6 +32,9 @@ void register_mesh()
         .def("__len__", &MeshD<3>::size)
     ;
 
+    py::class_<MeshGenerator, shared_ptr<MeshGenerator>, boost::noncopyable>("MeshGenerator", "Base class for all mesh generators", py::no_init)
+    ;
+
     register_mesh_rectangular();
 
 }

@@ -205,7 +205,7 @@ public:
     boost::optional<std::string> getAttribute(const std::string& name) const;
 
     template <typename T>
-    boost::optional<T> getAttribute(const std::string& name) const {
+    inline boost::optional<T> getAttribute(const std::string& name) const {
         const char* attr_str = getAttributeValueC(name);
         if (attr_str == nullptr) return boost::optional<T>();
         return boost::lexical_cast<T>(attr_str);
@@ -271,7 +271,42 @@ public:
 };
 
 
+template <>
+inline bool XMLReader::getAttribute<bool>(const std::string& name, bool&& default_value) const {
+    const char* cstr = getAttributeValueC(name);
+    if (cstr != nullptr) {
+        std::string str(cstr);
+        boost::algorithm::to_lower(str);
+        if (str == "yes" || str == "true" || str == "1") return true;
+        else if (str == "no" || str == "false" || str == "0") return false;
+        else throw XMLBadAttrException(getNodeName(), name, str);
+    }
+    return default_value;
+}
+
+template <>
+inline boost::optional<bool> XMLReader::getAttribute<bool>(const std::string& name) const {
+    const char* cstr = getAttributeValueC(name);
+    if (cstr != nullptr) {
+        std::string str(cstr);
+        boost::algorithm::to_lower(str);
+        if (str == "yes" || str == "true" || str == "1") return true;
+        else if (str == "no" || str == "false" || str == "0") return false;
+        else throw XMLBadAttrException(getNodeName(), name, str);
+    }
+    return boost::optional<bool>();
+}
+
+template <>
+inline bool XMLReader::requireAttribute<bool>(const std::string& name) const {
+    boost::optional<bool> result = getAttribute<bool>(name);
+    if (!result) throw XMLNoAttrException(getNodeName(), name);
+    return *result;
+}
+
+
 }   // namespace plask
+
 
 namespace std {
 inline void swap(plask::XMLReader& a, plask::XMLReader& b) { a.swap(b); }

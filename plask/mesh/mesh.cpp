@@ -8,8 +8,8 @@ std::map<std::string, RegisterMeshReader::ReadingFunction*>& RegisterMeshReader:
     return result;
 }
 
-RegisterMeshReader::RegisterMeshReader(const std::string& tag_name, RegisterMeshReader::ReadingFunction* reader) {
-    getReaders()[tag_name] = reader;
+RegisterMeshReader::RegisterMeshReader(const std::string& tag_name, RegisterMeshReader::ReadingFunction* fun) {
+    getReaders()[tag_name] = fun;
 }
 
 RegisterMeshReader::ReadingFunction* RegisterMeshReader::getReader(const std::string& name) {
@@ -24,8 +24,8 @@ std::map<std::string, RegisterMeshGeneratorReader::ReadingFunction*>& RegisterMe
     return result;
 }
 
-RegisterMeshGeneratorReader::RegisterMeshGeneratorReader(const std::string& tag_name, RegisterMeshGeneratorReader::ReadingFunction* reader) {
-    getReaders()[tag_name] = reader;
+RegisterMeshGeneratorReader::RegisterMeshGeneratorReader(const std::string& tag_name, RegisterMeshGeneratorReader::ReadingFunction* fun) {
+    getReaders()[tag_name] = fun;
 }
 
 RegisterMeshGeneratorReader::ReadingFunction* RegisterMeshGeneratorReader::getReader(const std::string& name) {

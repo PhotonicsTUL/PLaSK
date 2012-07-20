@@ -126,39 +126,6 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
     return v != nullptr ? boost::optional<std::string>(v) : boost::optional<std::string>();
 }
 
-template <>
-inline bool XMLReader::getAttribute<bool>(const std::string& name, bool&& default_value) const {
-    const char* cstr = getAttributeValueC(name);
-    if (cstr != nullptr) {
-        std::string str(cstr);
-        boost::algorithm::to_lower(str);
-        if (str == "yes" || str == "true" || str == "1") return true;
-        else if (str == "no" || str == "false" || str == "0") return false;
-        else throw XMLBadAttrException(getNodeName(), name, str);
-    }
-    return default_value;
-}
-
-template <>
-boost::optional<bool> XMLReader::getAttribute<bool>(const std::string& name) const {
-    const char* cstr = getAttributeValueC(name);
-    if (cstr != nullptr) {
-        std::string str(cstr);
-        boost::algorithm::to_lower(str);
-        if (str == "yes" || str == "true" || str == "1") return true;
-        else if (str == "no" || str == "false" || str == "0") return false;
-        else throw XMLBadAttrException(getNodeName(), name, str);
-    }
-    return boost::optional<bool>();
-}
-
-template <>
-inline bool XMLReader::requireAttribute<bool>(const std::string& name) const {
-    boost::optional<bool> result = getAttribute<bool>(name);
-    if (!result) throw XMLNoAttrException(getNodeName(), name);
-    return *result;
-}
-
 std::string XMLReader::requireAttribute(const std::string& attr_name) const {
     const char* result = getAttributeValueC(attr_name);
     if (result == nullptr)

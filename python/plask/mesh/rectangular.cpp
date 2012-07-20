@@ -593,8 +593,8 @@ void register_mesh_rectangular()
                     "final division of all geometry elements")
         .def_readwrite("limit_change", &RectilinearMesh2DDivideGenerator::limit_change, "Limit maximum adjacent elements size change to the factor of two")
         .def_readwrite("warn_multiple", &RectilinearMesh2DDivideGenerator::warn_multiple, "Warn if refining path points to more than one object")
-        .def_readwrite("warn_none", &RectilinearMesh2DDivideGenerator::warn_multiple, "Warn if refining path does not point to any object")
-        .def_readwrite("warn_ouside", &RectilinearMesh2DDivideGenerator::warn_multiple, "Warn if refining line is outside of its object")
+        .def_readwrite("warn_missing", &RectilinearMesh2DDivideGenerator::warn_missing, "Warn if refining path does not point to any object")
+        .def_readwrite("warn_ouside", &RectilinearMesh2DDivideGenerator::warn_outside, "Warn if refining line is outside of its object")
         .def("addRefinement", &RectilinearMesh2DDivideGenerator_addRefinement1, "Add a refining line inside the element",
              (py::arg("axis"), "element", "path", "pos"))
         .def("addRefinement", &RectilinearMesh2DDivideGenerator_addRefinement2, "Add a refining line inside the element",
@@ -616,6 +616,8 @@ void register_mesh_rectangular()
         .def("removeRefinements", &RectilinearMesh2DDivideGenerator_removeRefinements2, "Remove the all refining lines from the element",
              py::arg("path"))
         .def("removeRefinements", &RectilinearMesh2DDivideGenerator_removeRefinements3, "Remove the all refining lines from the element",
+             py::arg("subtree"))
+        .def("clearRefinements", &RectilinearMesh2DDivideGenerator::clearRefinements, "Clear all refining lines",
              py::arg("subtree"))
         .def("getRefinements", &RectilinearMesh2DDivideGenerator_listRefinements, py::arg("axis"),
              "Get list of all the refinements defined for this generator for specified axis"

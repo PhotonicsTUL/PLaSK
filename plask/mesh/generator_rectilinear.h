@@ -38,7 +38,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     bool limit_change;  ///< Limit the change of size of adjacent elements to the factor of two
     bool warn_multiple, ///< Warn if a single refinement points to more than one object.
-         warn_none,     ///< Warn if a defined refinement points to object absent from provided geometry.
+         warn_missing,     ///< Warn if a defined refinement points to object absent from provided geometry.
          warn_outside;  ///< Warn if a defined refinement takes place outside of the pointed object.
 
     /**
@@ -192,6 +192,15 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
             if (object1 != refinements[1].end()) refinements[1].erase(object1);
             clearCache();
         }
+    }
+
+    /**
+     * Remove all refinements from all objects
+     */
+    void clearRefinements() {
+        refinements[0].clear();
+        refinements[1].clear();
+        clearCache();
     }
 
     /**
