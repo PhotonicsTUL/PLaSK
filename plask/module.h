@@ -243,7 +243,7 @@ For interpolated fields they will look like in the following example:
 \code
   protected:
 
-    const DataVector<double> getIntensity(const plask::Mesh<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION)
+    const DataVector<double> getIntensity(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION)
     {
         if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME); // this is one possible indication that the module is in invalidated state
 

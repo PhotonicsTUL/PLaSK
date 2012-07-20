@@ -21,12 +21,15 @@ void register_mesh()
     py::scope().attr("mesh") = mesh_module;
     py::scope scope = mesh_module;
 
-    py::class_<Mesh<2>, shared_ptr<Mesh<2>>, boost::noncopyable>("Mesh2D", "Base class for every two-dimensional mesh", py::no_init)
-        .def("__len__", &Mesh<2>::size)
+    py::class_<Mesh, shared_ptr<Mesh>, boost::noncopyable>("Mesh2D", "Base class for all meshes", py::no_init)
     ;
 
-    py::class_<Mesh<3>, shared_ptr<Mesh<3>>, boost::noncopyable>("Mesh3D", "Base class for every two-dimensional mesh", py::no_init)
-        .def("__len__", &Mesh<3>::size)
+    py::class_<MeshD<2>, shared_ptr<MeshD<2>>, py::bases<Mesh>, boost::noncopyable>("Mesh2D", "Base class for every two-dimensional mesh", py::no_init)
+        .def("__len__", &MeshD<2>::size)
+    ;
+
+    py::class_<MeshD<3>, shared_ptr<MeshD<3>>, py::bases<Mesh>, boost::noncopyable>("Mesh3D", "Base class for every two-dimensional mesh", py::no_init)
+        .def("__len__", &MeshD<3>::size)
     ;
 
     register_mesh_rectangular();

@@ -58,7 +58,7 @@ You are required to:
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3d space):
 @code
-struct OnePoint3DMesh: public plask::Mesh<3> {
+struct OnePoint3DMesh: public plask::MeshD<3> {
 
     //Held point:
     plask::Vec<3, double> point;
@@ -67,7 +67,7 @@ struct OnePoint3DMesh: public plask::Mesh<3> {
     : point(point) {}
 
     //Iterator:
-    struct IteratorImpl: public Mesh<plask::space::Cartesian3D>::IteratorImpl {
+    struct IteratorImpl: public MeshD<plask::space::Cartesian3D>::IteratorImpl {
 
         //point to mesh or is equal to nullptr for end iterator
         const OnePoint3DMesh* mesh_ptr;
@@ -84,7 +84,7 @@ struct OnePoint3DMesh: public plask::Mesh<3> {
             mesh_ptr = nullptr; //we iterate only over one point, so next state is end
         }
 
-        virtual bool equal(const typename Mesh<plask::space::Cartesian3D>::IteratorImpl& other) const {
+        virtual bool equal(const typename MeshD<plask::space::Cartesian3D>::IteratorImpl& other) const {
             return mesh_ptr == static_cast<const IteratorImpl&>(other).mesh_ptr;
         }
 
@@ -98,18 +98,18 @@ struct OnePoint3DMesh: public plask::Mesh<3> {
 
     };
 
-    //plask::Mesh<3> methods implementation:
+    //plask::MeshD<3> methods implementation:
 
     virtual std::size_t size() const {
         return 1;
     }
 
-    virtual typename Mesh<plask::space::Cartesian3D>::Iterator begin() const {
-        return Mesh<3>::Iterator(new IteratorImpl(this));
+    virtual typename MeshD<plask::space::Cartesian3D>::Iterator begin() const {
+        return MeshD<3>::Iterator(new IteratorImpl(this));
     }
 
-    virtual typename Mesh<plask::space::Cartesian3D>::Iterator end() const {
-        return Mesh<3>::Iterator(new IteratorImpl(nullptr));
+    virtual typename MeshD<plask::space::Cartesian3D>::Iterator end() const {
+        return MeshD<3>::Iterator(new IteratorImpl(nullptr));
     }
 
 };
@@ -144,15 +144,15 @@ namespace plask {
  * @see @ref meshes
  */
 
-struct MeshBase {
-    virtual ~MeshBase() {}
+struct Mesh {
+    virtual ~Mesh() {}
 };
 
 /**
  * Base class for all meshes defined for specified number of dimensions.
  */
 template <int dimension>
-struct Mesh: public MeshBase {
+struct MeshD: public Mesh {
 
     /// Number of dimensions
     static const int dim = dimension;
@@ -187,7 +187,7 @@ struct Mesh: public MeshBase {
      *
      * Subclasses of this can includes additional information about specific type of event.
      */
-    struct Event: public EventWithSourceAndFlags< Mesh<dimension> > {
+    struct Event: public EventWithSourceAndFlags< MeshD<dimension> > {
 
         /// Event flags (which describes event properties).
         enum Flags {
@@ -220,7 +220,7 @@ struct Mesh: public MeshBase {
          * @param source source of event
          * @param flags flags which describes event's properties
          */
-        explicit Event(Mesh<dimension>& source, unsigned char flags = 0):  EventWithSourceAndFlags< Mesh<dimension> >(source, flags) {}
+        explicit Event(MeshD<dimension>& source, unsigned char flags = 0):  EventWithSourceAndFlags< MeshD<dimension> >(source, flags) {}
     };
 
     /// Changed signal, fired when space was changed.
@@ -252,18 +252,18 @@ struct Mesh: public MeshBase {
      * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
      * @param to_copy object to copy
      */
-    Mesh(const Mesh& to_copy) {}
+    MeshD(const MeshD& to_copy) {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't changed changes observer.
      * @param to_copy object to copy
      */
-    Mesh& operator=(const Mesh& to_copy) { return *this; }
+    MeshD& operator=(const MeshD& to_copy) { return *this; }
 
-    Mesh() = default;
+    MeshD() = default;
 
     /// Inform observators that this is being deleted
-    virtual ~Mesh() { fireChanged(Event::DELETE); }
+    virtual ~MeshD() { fireChanged(Event::DELETE); }
 
 };
 
@@ -272,14 +272,14 @@ struct Mesh: public MeshBase {
  * Holds iterator of wrapped type (const_internal_iterator_t) and delegate all calls to it.
  */
 template <typename const_internal_iterator_t, int dim = std::iterator_traits<const_internal_iterator_t>::value_type::DIMS>
-struct MeshIteratorWrapperImpl: public Mesh<dim>::IteratorImpl {
+struct MeshIteratorWrapperImpl: public MeshD<dim>::IteratorImpl {
 
     const_internal_iterator_t internal_iterator;
 
     MeshIteratorWrapperImpl(const const_internal_iterator_t& internal_iterator)
     : internal_iterator(internal_iterator) {}
 
-    virtual const typename Mesh<dim>::LocalCoords dereference() const {
+    virtual const typename MeshD<dim>::LocalCoords dereference() const {
         return *internal_iterator;
     }
 
@@ -287,7 +287,7 @@ struct MeshIteratorWrapperImpl: public Mesh<dim>::IteratorImpl {
         ++internal_iterator;
     }
 
-    virtual bool equal(const typename Mesh<dim>::IteratorImpl& other) const {
+    virtual bool equal(const typename MeshD<dim>::IteratorImpl& other) const {
         return internal_iterator == static_cast<const MeshIteratorWrapperImpl<const_internal_iterator_t, dim>&>(other).internal_iterator;
     }
 
@@ -302,15 +302,15 @@ struct MeshIteratorWrapperImpl: public Mesh<dim>::IteratorImpl {
 };
 
 /**
- * Construct Mesh<dim>::Iterator which wraps non-polymorphic iterator, using MeshIteratorWrapperImpl.
+ * Construct MeshD<dim>::Iterator which wraps non-polymorphic iterator, using MeshIteratorWrapperImpl.
  * @param iter iterator to wrap
  * @return wrapper over @p iter
  * @tparam IteratorType type of iterator to wrap
  * @tparam dim number of dimensions of IteratorType and resulted iterator (can be auto-detected in most situations)
  */
 template <typename IteratorType, int dim = std::iterator_traits<IteratorType>::value_type::DIMS>
-inline typename Mesh<dim>::Iterator makeMeshIterator(IteratorType iter) {
-    return typename Mesh<dim>::Iterator(new MeshIteratorWrapperImpl<IteratorType, dim>(iter));
+inline typename MeshD<dim>::Iterator makeMeshIterator(IteratorType iter) {
+    return typename MeshD<dim>::Iterator(new MeshIteratorWrapperImpl<IteratorType, dim>(iter));
 }
 
 
@@ -338,7 +338,7 @@ inline typename Mesh<dim>::Iterator makeMeshIterator(IteratorType iter) {
  */
 //TODO needs getIndex in iterators or another iterator wrapper which calculate this
 template <typename InternalMeshType, int dim>
-struct SimpleMeshAdapter: public Mesh<dim> {
+struct SimpleMeshAdapter: public MeshD<dim> {
 
     //typedef MeshIteratorWrapperImpl<typename InternalMeshType::const_iterator, dim> IteratorImpl;
 
@@ -370,10 +370,10 @@ struct SimpleMeshAdapter: public Mesh<dim> {
         return &internal;
     }
 
-    // Mesh<dim> methods implementation:
+    // MeshD<dim> methods implementation:
     virtual std::size_t size() const { return internal.size(); }
-    virtual typename Mesh<dim>::Iterator begin() const { return makeMeshIterator(internal.begin()); }
-    virtual typename Mesh<dim>::Iterator end() const { return makeMeshIterator(internal.end()); }
+    virtual typename MeshD<dim>::Iterator begin() const { return makeMeshIterator(internal.begin()); }
+    virtual typename MeshD<dim>::Iterator end() const { return makeMeshIterator(internal.end()); }
 
 };
 
@@ -424,9 +424,10 @@ class MeshGeneratorOf: public MeshGenerator
  * Each mesh can create one global instance of this class to register its reader.
  */
 struct RegisterMeshReader {
-    typedef shared_ptr<MeshBase> ReadingFunction(XMLReader&);
+    typedef shared_ptr<Mesh> ReadingFunction(XMLReader&);
     RegisterMeshReader(const std::string& tag_name, ReadingFunction* reader);
-    static std::map<std::string, ReadingFunction*>& readers();
+    static std::map<std::string, ReadingFunction*>& getReaders();
+    static ReadingFunction* getReader(const std::string& name);
 };
 
 /**
@@ -436,7 +437,8 @@ struct RegisterMeshReader {
 struct RegisterMeshGeneratorReader {
     typedef shared_ptr<MeshGenerator> ReadingFunction(XMLReader&);
     RegisterMeshGeneratorReader(const std::string& tag_name, ReadingFunction* reader);
-    static std::map<std::string, ReadingFunction*>& readers();
+    static std::map<std::string, ReadingFunction*>& getReaders();
+    static ReadingFunction* getReader(const std::string& name);
 };
 
 

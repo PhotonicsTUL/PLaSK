@@ -23,7 +23,7 @@ class RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3D
 };
 
 
-class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
+class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
     size_t pre_divisions[2];
     size_t post_divisions[2];
@@ -41,14 +41,14 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
          warn_none,     ///< Warn if a defined refinement points to object absent from provided geometry.
          warn_outside;  ///< Warn if a defined refinement takes place outside of the pointed object.
 
-         /**
-          * Create new generator
-          * \param prediv0 Initial mesh division in horizontal direction
-          * \param postdiv0 Final mesh division in horizontal direction
-          * \param prediv1 Initial mesh division in vertical direction (0 means the same as horizontal)
-          * \param postdiv1 Final mesh division in vertical direction (0 means the same as horizontal)
-          **/
-    RectilinearMesh2DDividingGenerator(size_t prediv0=1, size_t postdiv0=1, size_t prediv1=0, size_t postdiv1=0) :
+    /**
+     * Create new generator
+     * \param prediv0 Initial mesh division in horizontal direction
+     * \param postdiv0 Final mesh division in horizontal direction
+     * \param prediv1 Initial mesh division in vertical direction (0 means the same as horizontal)
+     * \param postdiv1 Final mesh division in vertical direction (0 means the same as horizontal)
+    **/
+    RectilinearMesh2DDivideGenerator(size_t prediv0=1, size_t postdiv0=1, size_t prediv1=0, size_t postdiv1=0) :
         limit_change(true), warn_multiple(true), warn_outside(true)
     {
         pre_divisions[0] = prediv0;
@@ -136,9 +136,9 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
     void removeRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryElementD<2>>& element, const PathHints& path, double position) {
         auto key = std::make_pair(element, path);
         auto object = refinements[std::size_t(direction)].find(key);
-        if (object == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMesh2DDividingGenerator", "There are no refinements for specified geometry element.");
+        if (object == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMesh2DDivideGenerator", "There are no refinements for specified geometry element.");
         auto oposition = object->second.find(position);
-        if (oposition == object->second.end()) throw BadInput("RectilinearMesh2DDividingGenerator", "Specified geometry element does not have refinements at %1%.", *oposition);
+        if (oposition == object->second.end()) throw BadInput("RectilinearMesh2DDivideGenerator", "Specified geometry element does not have refinements at %1%.", *oposition);
         object->second.erase(oposition);
         if (object->second.empty()) refinements[std::size_t(direction)].erase(object);
         clearCache();
@@ -186,7 +186,7 @@ class RectilinearMesh2DDividingGenerator: public MeshGeneratorOf<RectilinearMesh
         auto object0 = refinements[0].find(key);
         auto object1 = refinements[1].find(key);
         if (object0 == refinements[0].end() && object1 == refinements[1].end())
-            throw BadInput("RectilinearMesh2DDividingGenerator", "There are no refinements for specified geometry element.");
+            throw BadInput("RectilinearMesh2DDivideGenerator", "There are no refinements for specified geometry element.");
         else {
             if (object0 != refinements[0].end()) refinements[0].erase(object0);
             if (object1 != refinements[1].end()) refinements[1].erase(object1);

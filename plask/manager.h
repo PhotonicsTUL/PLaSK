@@ -12,9 +12,9 @@ This file includes:
 
 #include "utils/xml.h"
 
+#include "mesh/mesh.h"
 #include "material/db.h"
 #include "geometry/path.h"
-
 #include "geometry/space.h"
 #include "geometry/reader.h"
 
@@ -27,7 +27,12 @@ namespace plask {
  *
  * @see @ref geometry
  */
-struct Manager {
+class Manager {
+
+    template <typename MaterialsSource>
+    void load(XMLReader& XMLreader, const MaterialsSource& materialsSource);
+
+  public:
 
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;
@@ -40,6 +45,12 @@ struct Manager {
 
     /// Geometries (calculation spaces) by name.
     std::map<std::string, shared_ptr<Geometry> > geometries;
+
+    /// Meshes by name.
+    std::map< std::string, shared_ptr<Mesh> > meshes;
+
+    /// Meshe generators by name.
+    std::map< std::string, shared_ptr<MeshGenerator> > generators;
 
     //TODO modules map
     //TODO boundaries map (Boundary top class - probably empty, with virtual destructor)
@@ -98,9 +109,16 @@ struct Manager {
     /**
      * Get geometry trunk with given @p name.
      * @param name name of calculation space to get
-     * @return calculation space with given @p name or shared_ptr<Geometry>() if there is no calculation space with given @p name
+     * @return calculation space with given @p name or shared_ptr<Geometry>() if there is geometry with given @p name
      */
     shared_ptr<Geometry> getGeometry(const std::string& name) const;
+
+    /**
+     * Get mesh with given \p name.
+     * \param name name of calculation space to get
+     * \return calculation space with given \p name or shared_ptr<Mesh>() if there is no mesh with given @p name
+     */
+    shared_ptr<Mesh> getMesh(const std::string& name) const;
 
     /**
      * Get geometry trunk with given @p name and try dynamic cast it to @a RequiredCalcSpaceType.
@@ -114,55 +132,61 @@ struct Manager {
      * Load geometry using geometry reader.
      * @param reader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      */
-    void loadGeometryFromReader(GeometryReader& reader);
+    void loadGeometry(GeometryReader& reader);
+
+    /**
+     * Load meshes and mesh generators using reader.
+     * @param reader reader to read from, should point to @c \<module> tag, after read it will be point to @c \</module> tag
+     */
+    void loadGrids(XMLReader& reader);
 
     /**
      * Load modules using reader.
      * @param reader reader to read from, should point to @c \<module> tag, after read it will be point to @c \</module> tag
      */
-    void loadModulesFromReader(GeometryReader& reader);
+    void loadModules(XMLReader& reader);
 
     /**
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      * @param materialsDB materials database, used to get materials by name for leafs
      */
-    void loadGeometryFromReader(XMLReader& XMLreader, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    void loadFromReader(XMLReader& XMLreader, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      * @param materialsSource source of materials, used to get materials by name for leafs
      */
-    void loadGeometryFromReader(XMLReader& XMLreader, const GeometryReader::MaterialsSource& materialsSource);
+    void loadFromReader(XMLReader& XMLreader, const GeometryReader::MaterialsSource& materialsSource);
 
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content
      * @param materialsDB materials database, used to get materials by name for leafs
      */
-    void loadGeometryFromXMLStream(std::istream &input, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    void loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content
      * @param materialsSource source of materials, used to get materials by name for leafs
      */
-    void loadGeometryFromXMLStream(std::istream &input, const GeometryReader::MaterialsSource& materialsSource);
+    void loadFromXMLStream(std::istream &input, const GeometryReader::MaterialsSource& materialsSource);
 
     /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
      * @param materialsDB materials database, used to get materials by name for leafs
      */
-    void loadGeometryFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    void loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
      * @param materialsSource source of materials, used to get materials by name for leafs
      */
-    void loadGeometryFromXMLString(const std::string &input_XML_str, const GeometryReader::MaterialsSource& materialsSource);
+    void loadFromXMLString(const std::string &input_XML_str, const GeometryReader::MaterialsSource& materialsSource);
 
     /*
      * Read all elements up to end of XML tag and call functor(element) for each element which was read.
@@ -179,14 +203,14 @@ struct Manager {
      * @param fileName name of XML file
      * @param materialsDB materials database, used to get materials by name for leafs
      */
-    void loadGeometryFromFile(const std::string& fileName, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    void loadFromFile(const std::string& fileName, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry from XML file.
      * @param fileName name of XML file
      * @param materialsSource source of materials, used to get materials by name for leafs
      */
-    void loadGeometryFromFile(const std::string& fileName, const GeometryReader::MaterialsSource& materialsSource);
+    void loadFromFile(const std::string& fileName, const GeometryReader::MaterialsSource& materialsSource);
 };
 
 // Specialization for most types

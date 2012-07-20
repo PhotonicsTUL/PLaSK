@@ -20,7 +20,7 @@ namespace plask {
  *      plask::ProviderFor<Temperature, plask::Cartesian2D>::WithValue<SomeMeshType> outTemperature;
  *      // outTemperature.value stores temperature values in points pointed by outTemperature.mesh
  *      // outTemperature.value has type plask::shared_ptr< std::vector<double> >
- *      // outTemperature.mesh has type SomeMeshType (which should inherit from plask::Mesh<plask::Cartesian2D>)
+ *      // outTemperature.mesh has type SomeMeshType (which should inherit from plask::MeshD<plask::Cartesian2D>)
  *      // ...
  * };
  *
@@ -30,7 +30,7 @@ namespace plask {
  *
  *      plask::DataVector<double> my_temperature;
  *
- *      plask::DataVector<double> getTemperature(const plask::Mesh<plask::Cartesian2D>& dst_mesh, plask::InterpolationMethod method) {
+ *      plask::DataVector<double> getTemperature(const plask::MeshD<plask::Cartesian2D>& dst_mesh, plask::InterpolationMethod method) {
  *          return interpolate(*mesh, my_temperature, dst_mesh, method);
  *      }
  *      // ...

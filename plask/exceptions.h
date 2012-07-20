@@ -280,7 +280,7 @@ struct XMLUnexpectedElementException: public Exception {
     /**
      * @param what_is_expected what is expected (typically tag with name, etc.)
      */
-    XMLUnexpectedElementException(const std::string& what_is_expected): Exception("There is no expected " + what_is_expected + " in XML") {}
+    XMLUnexpectedElementException(const std::string& what_is_expected): Exception("Expected " + what_is_expected + " in XML") {}
 };
 
 /**

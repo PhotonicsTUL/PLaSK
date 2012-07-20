@@ -72,7 +72,7 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertEqual( plasktest.testBoundary(self.mesh2, lambda mesh,i: i in [2,3]), [2, 3] )
 
 
-    def testDividingGenerator(self):
+    def testDivideGenerator(self):
         stack = plask.geometry.Stack2D()
         stack.append(plask.geometry.Rectangle(2, 2, None))
         stack.append(plask.geometry.Rectangle(2, 16, None))
@@ -80,7 +80,7 @@ class RectilinearMeshes(unittest.TestCase):
         stack.append(rect)
 
         generator1 = plask.mesh.Rectilinear2D.SimpleGenerator()
-        generator2 = plask.mesh.Rectilinear2D.DividingGenerator()
+        generator2 = plask.mesh.Rectilinear2D.DivideGenerator()
         generator2.prediv = 2
         generator2.addRefinement("z", rect, 8.)
 

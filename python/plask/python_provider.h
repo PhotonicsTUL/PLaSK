@@ -10,10 +10,10 @@ namespace plask { namespace python {
 
 template <typename T, int dim>
 struct DataVectorWrap : public DataVector<T> {
-    shared_ptr<Mesh<dim>> mesh;
+    shared_ptr<MeshD<dim>> mesh;
     bool mesh_changed;
 
-    DataVectorWrap(const DataVector<T>& src, const shared_ptr<Mesh<dim>>& mesh) : DataVector<T>(src), mesh(mesh), mesh_changed(false) {
+    DataVectorWrap(const DataVector<T>& src, const shared_ptr<MeshD<dim>>& mesh) : DataVector<T>(src), mesh(mesh), mesh_changed(false) {
         mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
     }
 
@@ -28,7 +28,7 @@ struct DataVectorWrap : public DataVector<T> {
         mesh->changedDisconnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
     };
 
-    void onMeshChanged(const typename Mesh<dim>::Event& event) { mesh_changed = true; }
+    void onMeshChanged(const typename MeshD<dim>::Event& event) { mesh_changed = true; }
 };
 
 
@@ -74,7 +74,7 @@ namespace detail {
     {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
         static const int dim = ReceiverT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<Mesh<dim>>& mesh) {
+        static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<MeshD<dim>>& mesh) {
             return DataVectorWrap<ValueT,dim>(self(*mesh), mesh);
         }
         RegisterReceiverImpl() {
@@ -86,7 +86,7 @@ namespace detail {
     struct RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT> {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
         static const int dim = ReceiverT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<Mesh<dim>>& mesh, InterpolationMethod method) {
+        static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<MeshD<dim>>& mesh, InterpolationMethod method) {
             return DataVectorWrap<ValueT,dim>(self(*mesh, method), mesh);
         }
         RegisterReceiverImpl() {
@@ -130,7 +130,7 @@ namespace detail {
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static const int dim = ProviderT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,dim> __call__(ProviderT& self, const shared_ptr<Mesh<dim>>& mesh) {
+        static DataVectorWrap<ValueT,dim> __call__(ProviderT& self, const shared_ptr<MeshD<dim>>& mesh) {
             return DataVectorWrap<ValueT,dim>(self(*mesh), mesh);
         }
         RegisterProviderImpl() {
@@ -143,7 +143,7 @@ namespace detail {
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static const int dim = ProviderT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,dim> __call__(ProviderT& self, const shared_ptr<Mesh<dim>>& mesh, InterpolationMethod method) {
+        static DataVectorWrap<ValueT,dim> __call__(ProviderT& self, const shared_ptr<MeshD<dim>>& mesh, InterpolationMethod method) {
             return DataVectorWrap<ValueT,dim>(self(*mesh, method), mesh);
         }
         RegisterProviderImpl() {

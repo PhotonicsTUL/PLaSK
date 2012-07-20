@@ -37,15 +37,15 @@ struct PythonManager: public Manager {
                 throw TypeError("argument is neither string nor a proper file-like object");
             }
         }
-        loadGeometryFromXMLString(str, *materialsDB);
+        loadFromXMLString(str, *materialsDB);
     }
 
     static void export_dict(py::object self, py::dict dict) {
         dict["el"] = self.attr("el");
         dict["ph"] = self.attr("ph");
         dict["ge"] = self.attr("ge");
-        //dict["ms"] = self.attr("ms");
-        //dict["mg"] = self.attr("mg");
+        dict["ms"] = self.attr("ms");
+        dict["mg"] = self.attr("mg");
     }
 };
 
@@ -203,21 +203,25 @@ void register_manager() {
         "GeometryReader(materials=None)\n"
         "    Create manager with specified material database (if None, use default database)\n\n",
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
-        .def("read", &PythonManager::read, "Read data. source can be a filename, file, or XML string to read.", py::arg("source"))
+        .def("read", &PythonManager::read, "Read data from source (can be a filename, file, or an XML string to read)", py::arg("source"))
         .def_readonly("elements", &PythonManager::namedElements, "Dictionary of all named geometry elements")
         .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
         .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")
+        .def_readonly("meshes", &PythonManager::meshes, "Dictionary of all named meshes")
+        .def_readonly("mesh_generators", &PythonManager::generators, "Dictionary of all named mesh generators")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
     manager.attr("el") = manager.attr("elements");
     manager.attr("ph") = manager.attr("paths");
     manager.attr("ge") = manager.attr("geometries");
-    //manager.attr("ms") = manager.attr("meshes");
-    //manager.attr("mg") = manager.attr("mesh_generators");
+    manager.attr("ms") = manager.attr("meshes");
+    manager.attr("mg") = manager.attr("mesh_generators");
 
     register_manager_dict<shared_ptr<GeometryElement>>("GeometryElements");
     register_manager_dict<shared_ptr<Geometry>>("Geometries");
     register_manager_dict<PathHints>("PathHintses");
+    register_manager_dict<shared_ptr<Mesh>>("Meshes");
+    register_manager_dict<shared_ptr<MeshGenerator>>("MeshGenerators");
 }
 
 }} // namespace plask::python

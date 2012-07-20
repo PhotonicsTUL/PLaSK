@@ -42,7 +42,7 @@ For example to implement @ref plask::INTERPOLATION_LINEAR "linear" interpolation
 @code
 template <typename DataT>    //for any data type
 struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::INTERPOLATION_LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const DataVector<DataT>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(MyMeshType& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<MyMeshType::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
 
         // here comes your interpolation code
     }
@@ -55,7 +55,7 @@ To implement the interpolation version for the 'double' type, you should write:
 @code
 template <>
 struct plask::InterpolationAlgorithm<MyMeshType, double, plask::INTERPOLATION_LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const DataVector<double>& src_vec, const plask::Mesh<MyMeshType::dim>& dst_mesh, DataVector<double>& dst_vec) {
+    static void interpolate(MyMeshType& src_mesh, const DataVector<double>& src_vec, const plask::MeshD<MyMeshType::dim>& dst_mesh, DataVector<double>& dst_vec) {
 
         // interpolation code for vectors of doubles
     }
@@ -104,7 +104,7 @@ static const char* interpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE",
 template <typename SrcMeshT, typename DataT, InterpolationMethod method>
 struct InterpolationAlgorithm
 {
-    static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec, const Mesh<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec, const MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
         std::string msg = "interpolate (source mesh type: ";
         msg += typeid(src_mesh).name();
         msg += ", interpolation method: ";
@@ -121,7 +121,7 @@ template <typename SrcMeshT, typename DataT, int iter>
 struct __InterpolateMeta__
 {
     inline static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                Mesh<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
+                MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
         if (int(method) == iter)
             InterpolationAlgorithm<SrcMeshT, DataT, (InterpolationMethod)iter>::interpolate(src_mesh, src_vec, dst_mesh, dst_vec);
         else
@@ -132,7 +132,7 @@ template <typename SrcMeshT, typename DataT>
 struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
 {
     inline static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                Mesh<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
+                MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
         throw CriticalException("no such interpolation method");
     }
 };
@@ -155,7 +155,7 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
 template <typename SrcMeshT, typename DataT>
 inline const DataVector<DataT>
 interpolate(SrcMeshT& src_mesh, const DataVector<DataT> src_vec_ptr,
-            Mesh<SrcMeshT::dim>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
+            MeshD<SrcMeshT::dim>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
 {
     if (&src_mesh == &dst_mesh) return src_vec_ptr; // meshes are identical, so just return src_vec
 
@@ -170,7 +170,7 @@ interpolate(SrcMeshT& src_mesh, const DataVector<DataT> src_vec_ptr,
 /*template <typename SrcMeshT, typename DataT>
 inline shared_ptr<const std::vector<DataT>>
 interpolate(SrcMeshT& src_mesh, shared_ptr<std::vector<DataT>> src_vec_ptr,
-            Mesh<SrcMeshT::dim>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION) {
+            MeshD<SrcMeshT::dim>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION) {
     return interpolate(src_mesh, (shared_ptr<const std::vector<DataT>>&&)src_vec_ptr, dst_mesh, method);
 }*/
 #endif // DOXYGEN

@@ -409,7 +409,7 @@ struct OnMeshProvider: public Provider {
      * @param dst_mesh set of requested points
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh) const = 0;
+    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh) const = 0;
 
 };
 
@@ -432,14 +432,14 @@ struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT> {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const = 0;
+    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const = 0;
 
     /**
      * Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
      * @param dst_mesh set of requested points
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh) const {
+    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh) const {
         return this->operator()(dst_mesh, DEFAULT_INTERPOLATION);
     }
 
@@ -841,7 +841,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshPro
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedValueType(const Mesh<SpaceT::DIMS>& dst_mesh)> Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedValueType(const MeshD<SpaceT::DIMS>& dst_mesh)> Delegate;
 
     /**
      * Return same value in all points.
@@ -859,7 +859,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshPro
         template<typename ...Args>
         ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
 
-        virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh) const {
+        virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh) const {
             //return copy of value for each point in dst_mesh
             //return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
             return ProvidedValueType(dst_mesh.size(), value);
@@ -962,7 +962,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
          * @param method method which should be use to do interpolation
          * @return values in points describe by mesh @a dst_mesh
          */
-        virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const {
+        virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const {
             ensureHasValue();
             return interpolate(mesh(), values, dst_mesh, method);
         }
@@ -971,7 +971,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
     /**
      * Implementation of field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedValueType(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod method)> Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedValueType(const MeshD<SpaceT::DIMS>& dst_mesh, InterpolationMethod method)> Delegate;
 
     /**
      * Return same value in all points.
@@ -997,7 +997,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */
-        virtual ProvidedValueType operator()(const Mesh<SpaceT::DIMS>& dst_mesh, InterpolationMethod) const {
+        virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, InterpolationMethod) const {
             return ProvidedValueType(dst_mesh.size(), value);
         }
     };

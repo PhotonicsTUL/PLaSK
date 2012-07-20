@@ -78,7 +78,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     if (name) BadId::throwIfBad("geometry", *name, ' ');
 //    std::string src = source.requireAttribute("over");
     shared_ptr<Geometry> result;
-    if (nodeName == "2d" || nodeName == "cartesian2d") {    //TODO register with space names(?)
+    if (nodeName == "cartesian2d") {    //TODO register with space names(?)
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         boost::optional<double> l = source.getAttribute<double>("length");
         if (l) {
@@ -93,12 +93,14 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
                 if (!result) throw UnexpectedGeometryElementTypeException();
             }
         }
-    } else
-    if (nodeName == "cylindrical") {
+    } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = make_shared<Geometry2DCylindrical>(readExactlyOneChild<GeometryElementD<2>>());
+//     } else if (nodeName == "3d" || nodeName == "cartesian3d") {
+//         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+//         result = make_shared<Geometry3D>(readExactlyOneChild<GeometryElementD<3>>());
     } else
-        throw XMLUnexpectedElementException("space tag (cartesian or cylindrical)");
+        throw XMLUnexpectedElementException("geometry tag (\"cartesian2d\", \"cartesian3d\", or \"cylindrical\")");
 
     result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
 

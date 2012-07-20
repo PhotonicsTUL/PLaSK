@@ -20,7 +20,7 @@ namespace plask {
  */
 //TODO methods which call fireResize() when points are adding, etc.
 template <typename Mesh1D>
-class RectangularMesh3D: public Mesh<3> {
+class RectangularMesh3D: public MeshD<3> {
 
     static_assert(std::is_floating_point< typename std::remove_reference<decltype(std::declval<Mesh1D>().operator[](0))>::type >::value,
                   "Mesh1d must have operator[](std::size_t index) which returns floating-point value");
@@ -295,9 +295,9 @@ class RectangularMesh3D: public Mesh<3> {
     ///@return iterator referring to the past-the-end point in this mesh
     const_iterator end_fast() const { return const_iterator(this, size()); }
 
-    // implement Mesh<3> polymorphic iterators:
-    virtual typename Mesh<3>::Iterator begin() const { return makeMeshIterator(begin_fast()); }
-    virtual typename Mesh<3>::Iterator end() const { return makeMeshIterator(end_fast()); }
+    // implement MeshD<3> polymorphic iterators:
+    virtual typename MeshD<3>::Iterator begin() const { return makeMeshIterator(begin_fast()); }
+    virtual typename MeshD<3>::Iterator end() const { return makeMeshIterator(end_fast()); }
 
     /**
       * Compare meshes
@@ -472,7 +472,7 @@ class RectangularMesh3D: public Mesh<3> {
 
 template <typename Mesh1D,typename DataT>    //for any data type
 struct InterpolationAlgorithm<RectangularMesh3D<Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(RectangularMesh3D<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::Mesh<3>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(RectangularMesh3D<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
             *dst++ = src_mesh.interpolateLinear(src_vec, p);

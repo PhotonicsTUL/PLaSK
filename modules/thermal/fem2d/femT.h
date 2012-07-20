@@ -88,7 +88,7 @@ struct FiniteElementMethodThermal2DModule: public ModuleWithMesh<Geometry2DCarte
    }
 
     /// Method computing the value for the delegate provider
-    const DataVector<double> getDelegated(const plask::Mesh<2>& dst_mesh, plask::InterpolationMethod method=DEFAULT_INTERPOLATION) {
+    const DataVector<double> getDelegated(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod method=DEFAULT_INTERPOLATION) {
         if (!outSingleValue.hasValue())  // this is one possible indication that the module is invalidated
             throw NoValue(SomeSingleValueProperty::NAME);
         if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;

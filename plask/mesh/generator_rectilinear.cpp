@@ -41,7 +41,7 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
 }
 
 
-RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryElementD<2>>& geometry, size_t dir)
+RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryElementD<2>>& geometry, size_t dir)
 {
     RectilinearMesh1D result = initial;
 
@@ -49,14 +49,14 @@ RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const Rectilinea
     for (auto ref: refinements[dir]) {
         auto element = ref.first.first.lock();
         if (!element) {
-             if (warn_multiple) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement defined for object not existing any more.");
+             if (warn_multiple) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement defined for object not existing any more.");
         } else {
             auto path = ref.first.second;
             auto boxes = geometry->getElementBoundingBoxes(*element, path);
             auto origins = geometry->getElementPositions(*element, path);
             if (warn_multiple) {
-                if (boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement defined for object absent from the geometry.");
-                else if (boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Single refinement defined for more than one object.");
+                if (boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement defined for object absent from the geometry.");
+                else if (boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Single refinement defined for more than one object.");
             }
             auto box = boxes.begin();
             auto origin = origins.begin();
@@ -66,7 +66,7 @@ RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const Rectilinea
                     double lower = box->lower[dir] - zero;
                     double upper = box->upper[dir] - zero;
                     if (warn_outside && (x < lower || x > upper))
-                        writelog(LOG_WARNING, "RectilinearMesh2DDividingGenerator: Refinement at %1% outside of the object (%2% to %3%).",
+                        writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement at %1% outside of the object (%2% to %3%).",
                                             x, lower, upper);
                     result.addPoint(zero + x);
                 }
@@ -126,7 +126,7 @@ RectilinearMesh1D RectilinearMesh2DDividingGenerator::get1DMesh(const Rectilinea
     return result;
 }
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2DDividingGenerator::generate(const shared_ptr<GeometryElementD<2>>& geometry)
+shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const shared_ptr<GeometryElementD<2>>& geometry)
 {
     RectilinearMesh2D initial;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
@@ -144,5 +144,64 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DDividingGenerator::generate(const
     mesh->setOptimalIterationOrder();
     return mesh;
 }
+
+
+
+
+
+
+template <typename GeneratorT>
+static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader)
+{
+    reader.requireTagEnd();
+    return make_shared<GeneratorT>();
+}
+
+
+static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader& reader)
+{
+    auto result = make_shared<RectilinearMesh2DDivideGenerator>();
+
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "prediv") {
+            std::vector<std::string> divs; divs.reserve(2);
+            std::string text = reader.requireAttribute("value");
+            boost::split(divs, text, boost::is_any_of(", \n"), boost::token_compress_on);
+            if (divs.size() == 1) result->setPreDivision(boost::lexical_cast<size_t>(divs[0]));
+            else if (divs.size() == 2) result->setPreDivision(boost::lexical_cast<size_t>(divs[0]), boost::lexical_cast<size_t>(divs[1]));
+            else throw XMLUnexpectedElementException("one or two integers");
+            reader.requireTagEnd();
+        } else if (reader.getNodeName() == "postdiv") {
+            std::vector<std::string> divs; divs.reserve(2);
+            std::string text = reader.requireAttribute("value");
+            boost::split(divs, text, boost::is_any_of(", \n"), boost::token_compress_on);
+            if (divs.size() == 1) result->setPostDivision(boost::lexical_cast<size_t>(divs[0]));
+            else if (divs.size() == 2) result->setPostDivision(boost::lexical_cast<size_t>(divs[0]), boost::lexical_cast<size_t>(divs[1]));
+            else throw XMLUnexpectedElementException("one or two integers");
+            reader.requireTagEnd();
+        } else if (reader.getNodeName() == "limit_change") {
+            result->limit_change = reader.getAttribute<bool>("value", true);
+            reader.requireTagEnd();
+        } else if (reader.getNodeName() == "warn_none") {
+            result->warn_none = reader.getAttribute<bool>("value", true);
+            reader.requireTagEnd();
+        } else if (reader.getNodeName() == "warn_multiple") {
+            result->warn_multiple = reader.getAttribute<bool>("value", true);
+            reader.requireTagEnd();
+        } else if (reader.getNodeName() == "warn_outside") {
+            result->warn_outside = reader.getAttribute<bool>("value", true);
+            reader.requireTagEnd();
+        } else if (reader.getNodeName() == "refinements") {
+            //TODO
+        } else throw XMLUnexpectedElementException("'divide' generator configuration");
+    }
+    return result;
+}
+
+static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
+
+static RegisterMeshGeneratorReader rectilinearmesh2d_dividinggenerator_reader("rectilinear2d.divide", readRectilinearMesh2DDivideGenerator);
+
 
 } // namespace plask

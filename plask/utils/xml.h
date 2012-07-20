@@ -6,8 +6,11 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/algorithm/string.hpp>
 #include <vector>
 #include <unordered_set>
+
+#include "../exceptions.h"
 
 namespace plask {
 
@@ -42,7 +45,7 @@ private:
     std::vector<std::string> path;
 
     /// attribiutes which was read
-    std::unordered_set<std::string> read_attribiutes;
+    std::unordered_set<std::string> read_attributes;
 
 public:
 
@@ -97,7 +100,7 @@ public:
     NodeType getNodeType() const { return currentNodeType; }
 
     /** Reads forward to the next xml node.
-        @return @c false only if there was no further node.
+        @return @c false only if there is no further node.
     */
     bool read();
 
@@ -189,8 +192,8 @@ public:
      * Get value of attribiute with given @p name, or @p default_value if attribiute with given @p name is not defined in current node.
      * @param name name of attribiute
      * @param default_value default value which will be return when attribiute with given @p name is not defined
-     * @return attribiute with given @p name, or @p default_value if attribiute with given @p name is not defined in current node
-     * @tparem required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
+     * @return attribute with given @p name, or @p default_value if attribiute with given @p name is not defined in current node
+     * @tparam T required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
      */
     template <typename T>
     inline T getAttribute(const std::string& name, T&& default_value) const {
@@ -208,15 +211,24 @@ public:
         return boost::lexical_cast<T>(attr_str);
     }
 
+    /**
+     * Require the attribute with given \p name.
+     * \return its value
+     */
     std::string requireAttribute(const std::string& attr_name) const;
 
+    /**
+     * Require the attribute with given \p name.
+     * \return its value
+     * \tparam T required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
+     */
     template <typename T>
     inline T requireAttribute(const std::string& name) const {
         return boost::lexical_cast<T>(requireAttribute(name));
     }
 
     /**
-     * Call read(), one or more time skipping comments.
+     * Call read(), one or more times skipping comments.
      * @throw XMLUnexpectedEndException if there is no next element
      */
     void requireNext();
@@ -227,11 +239,29 @@ public:
     void requireTag();
 
     /**
+     * Call requireNext() and next check if current element is tag opening.
+     * Throw exception if it's not or if it name is not \p name.
+     */
+    void requireTag(const std::string& name);
+
+    /**
+     * Call requireNext() and next check if current element is tag opening or closing of tag
+     * Throw exception if it's not.
+     * \return true if the next tag was opened
+     */
+    bool requireTagOrEnd();
+
+    /**
      * Call requireNext() and next check if current element is tag closing. Throw exception if it's not.
      */
     void requireTagEnd();
 
-    //void requireTagEndOrEmptyTag(const std::string& tag);
+    /**
+     * Call requireNext() and next check if current element is text. Throw exception if it's not.
+     * \return read text
+     */
+    std::string requireText();
+
 
     /**
      * Skip XML comments.
@@ -239,6 +269,7 @@ public:
      */
     bool skipComments();
 };
+
 
 }   // namespace plask
 

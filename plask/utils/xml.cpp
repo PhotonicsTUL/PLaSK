@@ -1,7 +1,5 @@
 #include "xml.h"
 
-#include "../exceptions.h"
-
 namespace plask {
 
 ///Allow to read XML from standard C++ input stream (std::istream).
@@ -54,7 +52,7 @@ XMLReader::XMLReader(XMLReader &&to_move)
     : irrReader(to_move.irrReader),
       currentNodeType(to_move.currentNodeType),
       path(std::move(to_move.path)),
-      read_attribiutes(std::move(to_move.read_attribiutes))
+      read_attributes(std::move(to_move.read_attributes))
 {
     to_move.irrReader = 0;
 }
@@ -71,28 +69,28 @@ void XMLReader::swap(XMLReader &to_swap)
     std::swap(irrReader, to_swap.irrReader);
     std::swap(currentNodeType, to_swap.currentNodeType);
     std::swap(path, to_swap.path);
-    std::swap(read_attribiutes, to_swap.read_attribiutes);
+    std::swap(read_attributes, to_swap.read_attributes);
 }
 
 bool XMLReader::read() {
     if (currentNodeType == NODE_ELEMENT) {
-        if (std::size_t(getAttributeCount()) != read_attribiutes.size()) {
+        if (std::size_t(getAttributeCount()) != read_attributes.size()) {
             std::string attr;
             for (int i = 0; i < irrReader->getAttributeCount(); ++i)
-                if (read_attribiutes.find(irrReader->getAttributeName(i)) == read_attribiutes.end()) {
+                if (read_attributes.find(irrReader->getAttributeName(i)) == read_attributes.end()) {
                     if (!attr.empty()) attr += ", ";
                     attr += irrReader->getAttributeName(i);
                 }
             throw Exception("Following attributes are unexpected in XML tag \"%1%\": %2%", getNodeName(), attr);
         }
-        read_attribiutes.clear();
+        read_attributes.clear();
     }
 
     if (currentNodeType == NODE_ELEMENT && irrReader->isEmptyElement())
         currentNodeType = NODE_ELEMENT_END;
     else {
         if (!irrReader->read()) {
-            if (!path.empty()) throw std::runtime_error("unexpected end of XML input, some tags was not closed");
+            if (!path.empty()) throw Exception("Unexpected end of XML input, some tags were not closed");
             return false;
         }
         currentNodeType = NodeType(irrReader->getNodeType());
@@ -105,9 +103,9 @@ bool XMLReader::read() {
 
         case NODE_ELEMENT_END:
             if (path.empty())
-                throw Exception("unexpected closing of XML tag \"%1%\"", getNodeName());
+                throw Exception("Unexpected closing of XML tag \"%1%\"", getNodeName());
             if (path.back() != getNodeName())
-                throw Exception("expected closing of %1% tag, but obtained closing of \"%2%\" tag", path.back(), getNodeName());
+                throw Exception("Expected closing of \"%1%\" tag, but obtained closing of \"%2%\" tag", path.back(), getNodeName());
             path.pop_back();
 
         default:    //just for compiler warning
@@ -119,13 +117,46 @@ bool XMLReader::read() {
 
 const char *XMLReader::getAttributeValueC(const std::string &name) const {
      const char * result = irrReader->getAttributeValue(name.c_str());
-     if (result) const_cast<std::unordered_set<std::string>&>(read_attribiutes).insert(name);
+     if (result) const_cast<std::unordered_set<std::string>&>(read_attributes).insert(name);
      return result;
 }
 
 boost::optional<std::string> XMLReader::getAttribute(const std::string& name) const {
     const char* v = getAttributeValueC(name);
     return v != nullptr ? boost::optional<std::string>(v) : boost::optional<std::string>();
+}
+
+template <>
+inline bool XMLReader::getAttribute<bool>(const std::string& name, bool&& default_value) const {
+    const char* cstr = getAttributeValueC(name);
+    if (cstr != nullptr) {
+        std::string str(cstr);
+        boost::algorithm::to_lower(str);
+        if (str == "yes" || str == "true" || str == "1") return true;
+        else if (str == "no" || str == "false" || str == "0") return false;
+        else throw XMLBadAttrException(getNodeName(), name, str);
+    }
+    return default_value;
+}
+
+template <>
+boost::optional<bool> XMLReader::getAttribute<bool>(const std::string& name) const {
+    const char* cstr = getAttributeValueC(name);
+    if (cstr != nullptr) {
+        std::string str(cstr);
+        boost::algorithm::to_lower(str);
+        if (str == "yes" || str == "true" || str == "1") return true;
+        else if (str == "no" || str == "false" || str == "0") return false;
+        else throw XMLBadAttrException(getNodeName(), name, str);
+    }
+    return boost::optional<bool>();
+}
+
+template <>
+inline bool XMLReader::requireAttribute<bool>(const std::string& name) const {
+    boost::optional<bool> result = getAttribute<bool>(name);
+    if (!result) throw XMLNoAttrException(getNodeName(), name);
+    return *result;
 }
 
 std::string XMLReader::requireAttribute(const std::string& attr_name) const {
@@ -147,10 +178,23 @@ void XMLReader::requireTag() {
         throw XMLUnexpectedElementException("begin of tag");
 }
 
+void XMLReader::requireTag(const std::string& name) {
+    requireNext();
+    if (getNodeType() != NODE_ELEMENT || getNodeName() != name)
+        throw XMLUnexpectedElementException("begin of tag \"" + name + "\"");
+}
+
+bool XMLReader::requireTagOrEnd() {
+    requireNext();
+    if (getNodeType() != NODE_ELEMENT && getNodeType() != NODE_ELEMENT_END)
+        throw XMLUnexpectedElementException("begin of new tag of end of tag \"" + path.back() + "\"");
+    return getNodeType() == NODE_ELEMENT;
+}
+
 void XMLReader::requireTagEnd() {
     requireNext();
     if (getNodeType() != NODE_ELEMENT_END)
-        throw XMLUnexpectedElementException("end of tag \"" +path.back() + "\"");
+        throw XMLUnexpectedElementException("end of tag \"" + path.back() + "\"");
 }
 
 /*void requireTagEndOrEmptyTag(XMLReader& reader, const std::string& tag) {
@@ -159,10 +203,19 @@ void XMLReader::requireTagEnd() {
     requireTagEnd(reader, tag);
 }*/
 
+std::string XMLReader::requireText() {
+    requireNext();
+    if (getNodeType() != NODE_TEXT)
+        throw XMLUnexpectedElementException("text");
+    return std::string(getNodeDataC());
+}
+
+
 bool XMLReader::skipComments() {
     bool result = true;
     while (getNodeType() == NODE_COMMENT && (result = read()));
     return result;
 }
+
 
 } // namespace plask

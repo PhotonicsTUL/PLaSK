@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(mesh) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(Mesh) {
 
-    struct OnePoint3DMesh: public plask::Mesh<3> {
+    struct OnePoint3DMesh: public plask::MeshD<3> {
 
         //Held point:
         plask::Vec<3, double> point;
@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
         : point(point) {}
 
         //Iterator:
-        struct IteratorImpl: public Mesh<3>::IteratorImpl {
+        struct IteratorImpl: public MeshD<3>::IteratorImpl {
 
             //point to mesh or is equal to nullptr for end iterator
             const OnePoint3DMesh* mesh_ptr;
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
                 mesh_ptr = nullptr; //we iterate only over one point, so next state is end
             }
 
-            virtual bool equal(const typename Mesh<3>::IteratorImpl& other) const {
+            virtual bool equal(const typename MeshD<3>::IteratorImpl& other) const {
                 return mesh_ptr == static_cast<const IteratorImpl&>(other).mesh_ptr;
             }
 
@@ -46,18 +46,18 @@ BOOST_AUTO_TEST_CASE(Mesh) {
 
         };
 
-        //plask::Mesh<plask::space::Cartesian3D> methods implementation:
+        //plask::MeshD<plask::space::Cartesian3D> methods implementation:
 
         virtual std::size_t size() const {
             return 1;
         }
 
-        virtual typename Mesh<3>::Iterator begin() const {
-            return Mesh<3>::Iterator(new IteratorImpl(this));
+        virtual typename MeshD<3>::Iterator begin() const {
+            return MeshD<3>::Iterator(new IteratorImpl(this));
         }
 
-        virtual typename Mesh<3>::Iterator end() const {
-            return Mesh<3>::Iterator(new IteratorImpl(nullptr));
+        virtual typename MeshD<3>::Iterator end() const {
+            return MeshD<3>::Iterator(new IteratorImpl(nullptr));
         }
 
     };

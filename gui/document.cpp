@@ -7,6 +7,6 @@ Document::Document(QtAbstractPropertyBrowser& browser): treeModel(*this), proper
 void Document::open(const QString &fileName) {
     undoStack.clear();
     //TODO support file names with non-asci char
-    manager.loadGeometryFromFile(fileName.toStdString(), &NameOnlyMaterial::getInstance);
+    manager.loadFromFile(fileName.toStdString(), &NameOnlyMaterial::getInstance);
     treeModel.refresh(*this);
 }

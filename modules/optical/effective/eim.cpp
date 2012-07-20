@@ -284,7 +284,7 @@ dcomplex EffectiveIndex2DModule::detS(const dcomplex& x)
 
 
 
-const DataVector<double> EffectiveIndex2DModule::getLightIntenisty(const Mesh<2>& dst_mesh, InterpolationMethod)
+const DataVector<double> EffectiveIndex2DModule::getLightIntenisty(const MeshD<2>& dst_mesh, InterpolationMethod)
 {
     if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
 
@@ -432,7 +432,7 @@ const DataVector<double> EffectiveIndex2DModule::getLightIntenisty(const Mesh<2>
 }
 
 template <typename MeshT>
-bool EffectiveIndex2DModule::getLightIntenisty_Efficient(const plask::Mesh<2>& dst_mesh, DataVector<double>& results,
+bool EffectiveIndex2DModule::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
                                                          const std::vector<dcomplex>& betax, const std::vector<dcomplex>& betay)
 {
     if (dynamic_cast<const MeshT*>(&dst_mesh)) {
