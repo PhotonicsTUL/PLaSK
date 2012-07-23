@@ -16,8 +16,8 @@ static shared_ptr<Mesh> readRegularMesh2D(XMLReader& reader)
         reader.requireTag();
         std::string node = reader.getNodeName();
 
-        if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException("<axis0> or <axis1>");
-        if (axes.find(node) != axes.end()) XMLUnexpectedElementException("non-repeated axis");
+        if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
+        if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
         double start = reader.requireAttribute<double>("start");
         double end = reader.requireAttribute<double>("end");
@@ -40,8 +40,8 @@ static shared_ptr<Mesh> readRegularMesh3D(XMLReader& reader)
         reader.requireTag();
         std::string node = reader.getNodeName();
 
-        if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException("<axis0>, <axis1>, or <axis2>");
-        if (axes.find(node) != axes.end()) XMLUnexpectedElementException("non-repeated axis");
+        if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
+        if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
         double start = reader.requireAttribute<double>("start");
         double end = reader.requireAttribute<double>("end");

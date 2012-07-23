@@ -86,13 +86,13 @@ void Manager::loadFromFile(const std::string &fileName, const GeometryReader::Ma
 
 void Manager::loadGeometry(GeometryReader& greader) {
     if (greader.source.getNodeType() != XMLReader::NODE_ELEMENT || greader.source.getNodeName() != std::string("geometry"))
-        throw XMLUnexpectedElementException("<geometry> tag");
+        throw XMLUnexpectedElementException(greader.source, "<geometry>");
     GeometryReader::ReadAxisNames read_axis_tag(greader);
     while(greader.source.read()) {
         switch (greader.source.getNodeType()) {
             case XMLReader::NODE_ELEMENT_END:
                 if (greader.source.getNodeName() != std::string("geometry"))
-                    throw XMLUnexpectedElementException("end of \"geometry\" tag");
+                    throw XMLUnexpectedElementException(greader.source, "</geometry>");
                 return;  //end of geometry
             case XMLReader::NODE_ELEMENT:
                 roots.push_back(greader.readGeometry());
@@ -100,22 +100,22 @@ void Manager::loadGeometry(GeometryReader& greader) {
             case XMLReader::NODE_COMMENT:
                 break;   //just ignore
             default:
-                throw XMLUnexpectedElementException("begin of geometry element tag or </geometry>");
+                throw XMLUnexpectedElementException(greader.source, "begin of geometry element tag or </geometry>");
         }
     }
-    throw XMLUnexpectedEndException();
+    throw XMLUnexpectedEndException(greader.source);
 }
 
 
 void Manager::loadGrids(XMLReader &reader)
 {
     if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("grids"))
-        throw XMLUnexpectedElementException("<grids> tag");
+        throw XMLUnexpectedElementException(reader, "<grids>");
     while(reader.read()) {
         switch (reader.getNodeType()) {
             case XMLReader::NODE_ELEMENT_END:
                 if (reader.getNodeName() != std::string("grids"))
-                    throw XMLUnexpectedElementException("end of \"grids\" tag");
+                    throw XMLUnexpectedElementException(reader, "</grids>");
                 return;  //end of grids
             case XMLReader::NODE_ELEMENT:
                 if (reader.getNodeName() == "mesh") {
@@ -135,15 +135,15 @@ void Manager::loadGrids(XMLReader &reader)
                     shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader, *this);
                     generators[name] = generator;
                 } else
-                    throw XMLUnexpectedElementException("<mesh...>, <generator...>, or </grids>");
+                    throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");
                 break;
             case XMLReader::NODE_COMMENT:
                 break;   //just ignore
             default:
-                throw XMLUnexpectedElementException("<mesh...>, <generator...>, or </grids>");
+                throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");
         }
     }
-    throw XMLUnexpectedEndException();
+    throw XMLUnexpectedEndException(reader);
 }
 
 void Manager::loadModules(XMLReader &reader)

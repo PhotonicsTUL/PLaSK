@@ -100,7 +100,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
 //         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 //         result = make_shared<Geometry3D>(readExactlyOneChild<GeometryElementD<3>>());
     } else
-        throw XMLUnexpectedElementException("geometry tag (\"cartesian2d\", \"cartesian3d\", or \"cylindrical\")");
+        throw XMLUnexpectedElementException(source, "geometry tag (<cartesian2d>, <cartesian3d>, or <cylindrical>)");
 
     result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
 

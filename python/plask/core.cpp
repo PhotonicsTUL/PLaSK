@@ -92,6 +92,7 @@ BOOST_PYTHON_MODULE(plaskcore)
 
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
     register_exception<plask::NoSuchMaterial>(PyExc_ValueError);
+    register_exception<plask::NoSuchGeometryElementType>(PyExc_TypeError);
     register_exception<plask::BadInput>(PyExc_ValueError);
     register_exception<plask::NoValue>(PyExc_ValueError);
     register_exception<plask::NoProvider>(PyExc_TypeError);
@@ -103,6 +104,10 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_exception<plask::python::AttributeError>(PyExc_AttributeError);
     register_exception<plask::python::StopIteration>(PyExc_StopIteration);
     register_exception<plask::python::IOError>(PyExc_IOError);
+
+    PyObject* xml_error = PyErr_NewExceptionWithDoc((char*)"plask.XMLError", (char*)"Error in XML file.", NULL, NULL);
+    register_exception<plask::XMLException>(xml_error);
+    py::scope().attr("XMLError") = py::handle<>(py::incref(xml_error));
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

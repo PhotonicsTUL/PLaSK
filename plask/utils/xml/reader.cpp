@@ -1,4 +1,4 @@
-#include "xml.h"
+#include "reader.h"
 
 namespace plask {
 
@@ -37,7 +37,7 @@ int StreamReaderCallback::read(void *buffer, int sizeToRead) {
 }
 
 XMLReader::XMLReader(const char* file_name): irrReader(irr::io::createIrrXMLReader(file_name)), currentNodeType(NODE_NONE) {
-    if (irrReader == nullptr) throw Exception("Can't read from file \"%1%\"", file_name);
+    if (irrReader == nullptr) throw XMLException("Can't read from file \"" + std::string(file_name) +"\"");
 }
 
 XMLReader::XMLReader(std::istream& input)
@@ -81,7 +81,7 @@ bool XMLReader::read() {
                     if (!attr.empty()) attr += ", ";
                     attr += irrReader->getAttributeName(i);
                 }
-            throw Exception("Following attributes are unexpected in XML tag \"%1%\": %2%", getNodeName(), attr);
+            throw XMLUnexpectedAttrException(*this, attr);
         }
         read_attributes.clear();
     }
@@ -90,7 +90,7 @@ bool XMLReader::read() {
         currentNodeType = NODE_ELEMENT_END;
     else {
         if (!irrReader->read()) {
-            if (!path.empty()) throw Exception("Unexpected end of XML input, some tags were not closed");
+            if (!path.empty()) throw XMLUnexpectedEndException(*this);
             return false;
         }
         currentNodeType = NodeType(irrReader->getNodeType());
@@ -103,9 +103,9 @@ bool XMLReader::read() {
 
         case NODE_ELEMENT_END:
             if (path.empty())
-                throw Exception("Unexpected closing of XML tag \"%1%\"", getNodeName());
+                throw XMLUnexpectedElementException(*this, "opening of a new tag or end of file", "closing of tag <" + getNodeName() +">");
             if (path.back() != getNodeName())
-                throw Exception("Expected closing of \"%1%\" tag, but obtained closing of \"%2%\" tag", path.back(), getNodeName());
+                throw XMLUnexpectedElementException(*this, "closing of tag <" + path.back() +">", "end of tag <" + getNodeName() +">");
             path.pop_back();
 
         default:    //just for compiler warning
@@ -129,39 +129,39 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
 std::string XMLReader::requireAttribute(const std::string& attr_name) const {
     const char* result = getAttributeValueC(attr_name);
     if (result == nullptr)
-        throw XMLNoAttrException(getNodeName(), attr_name);
+        throw XMLNoAttrException(*this, attr_name);
     return result;
 }
 
 void XMLReader::requireNext() {
     do {
-        if (!read()) throw XMLUnexpectedEndException();
+        if (!read()) throw XMLUnexpectedEndException(*this);
     } while (getNodeType() == NODE_COMMENT);
 }
 
 void XMLReader::requireTag() {
     requireNext();
     if (getNodeType() != NODE_ELEMENT)
-        throw XMLUnexpectedElementException("begin of tag");
+        throw XMLUnexpectedElementException(*this, "begin of a new tag");
 }
 
 void XMLReader::requireTag(const std::string& name) {
     requireNext();
     if (getNodeType() != NODE_ELEMENT || getNodeName() != name)
-        throw XMLUnexpectedElementException("begin of tag \"" + name + "\"");
+        throw XMLUnexpectedElementException(*this, "begin of tag <" + name + ">");
 }
 
 bool XMLReader::requireTagOrEnd() {
     requireNext();
     if (getNodeType() != NODE_ELEMENT && getNodeType() != NODE_ELEMENT_END)
-        throw XMLUnexpectedElementException("begin of new tag of end of tag \"" + path.back() + "\"");
+        throw XMLUnexpectedElementException(*this, "begin of a new tag or </" + path.back() + ">");
     return getNodeType() == NODE_ELEMENT;
 }
 
 void XMLReader::requireTagEnd() {
     requireNext();
     if (getNodeType() != NODE_ELEMENT_END)
-        throw XMLUnexpectedElementException("end of tag \"" + path.back() + "\"");
+        throw XMLUnexpectedElementException(*this, "</" + path.back() + ">");
 }
 
 /*void requireTagEndOrEmptyTag(XMLReader& reader, const std::string& tag) {
@@ -173,7 +173,7 @@ void XMLReader::requireTagEnd() {
 std::string XMLReader::requireText() {
     requireNext();
     if (getNodeType() != NODE_TEXT)
-        throw XMLUnexpectedElementException("text");
+        throw XMLUnexpectedElementException(*this, "text");
     return std::string(getNodeDataC());
 }
 

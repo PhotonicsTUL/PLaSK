@@ -1,5 +1,5 @@
-#ifndef PLASK__UTILS_XML_H
-#define PLASK__UTILS_XML_H
+#ifndef PLASK__UTILS_XML_READER_H
+#define PLASK__UTILS_XML_READER_H
 
 #include <irrxml/irrXML.h>
 
@@ -10,18 +10,19 @@
 #include <vector>
 #include <unordered_set>
 
-#include "../exceptions.h"
+#include "exceptions.h"
 
 namespace plask {
 
 /**
  * XML pull parser.
  *
- * It makes some checks while reading and throw exeptions when XML document is valid:
+ * It makes some checks while reading and throw exceptions when XML document is valid:
  * - it check open/close tags,
- * - it checks if all attribiutes was read.
+ * - it checks if all attributes was read.
  */
-struct XMLReader {
+class XMLReader {
+public:
 
     /// Enumeration for all xml nodes which are parsed by XMLReader
     enum NodeType {
@@ -44,7 +45,7 @@ private:
     /// path from root to current tag
     std::vector<std::string> path;
 
-    /// attribiutes which was read
+    /// attributes which was read
     std::unordered_set<std::string> read_attributes;
 
 public:
@@ -143,8 +144,8 @@ public:
     const char* getAttributeValueC(const std::string& name) const;
 
     /**
-     * Mark argument with given name as read, so parser not throw an exeption if this attribiute will be not read.
-     * @param name name of attribiute to ignore
+     * Mark argument with given name as read, so parser not throw an exeption if this attribute will be not read.
+     * @param name name of attribute to ignore
      */
     void ignoreAttribute(const std::string& name) { getAttributeValueC(name); }
 
@@ -159,9 +160,9 @@ public:
     //bool hasAttribute(const char* name) const { return getAttributeValueC(name) != 0; }
 
     /**
-     * Check if current node has attribiute with given @p name.
-     * @param name attribiute name
-     * @return @c true only if current node has attribiute with given @p name
+     * Check if current node has attribute with given @p name.
+     * @param name attribute name
+     * @return @c true only if current node has attribute with given @p name
      */
     bool hasAttribute(const std::string& name) const { return getAttributeValueC(name) != 0; }
 
@@ -189,10 +190,10 @@ public:
     const char* getNodeDataC() const { return irrReader->getNodeData(); }
 
     /**
-     * Get value of attribiute with given @p name, or @p default_value if attribiute with given @p name is not defined in current node.
-     * @param name name of attribiute
-     * @param default_value default value which will be return when attribiute with given @p name is not defined
-     * @return attribute with given @p name, or @p default_value if attribiute with given @p name is not defined in current node
+     * Get value of attribute with given @p name, or @p default_value if attribute with given @p name is not defined in current node.
+     * @param name name of attribute
+     * @param default_value default value which will be return when attribute with given @p name is not defined
+     * @return attribute with given @p name, or @p default_value if attribute with given @p name is not defined in current node
      * @tparam T required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
      */
     template <typename T>
@@ -279,7 +280,7 @@ inline bool XMLReader::getAttribute<bool>(const std::string& name, bool&& defaul
         boost::algorithm::to_lower(str);
         if (str == "yes" || str == "true" || str == "1") return true;
         else if (str == "no" || str == "false" || str == "0") return false;
-        else throw XMLBadAttrException(getNodeName(), name, str);
+        else throw XMLBadAttrException(*this, name, str);
     }
     return default_value;
 }
@@ -292,7 +293,7 @@ inline boost::optional<bool> XMLReader::getAttribute<bool>(const std::string& na
         boost::algorithm::to_lower(str);
         if (str == "yes" || str == "true" || str == "1") return true;
         else if (str == "no" || str == "false" || str == "0") return false;
-        else throw XMLBadAttrException(getNodeName(), name, str);
+        else throw XMLBadAttrException(*this, name, str);
     }
     return boost::optional<bool>();
 }
@@ -300,7 +301,7 @@ inline boost::optional<bool> XMLReader::getAttribute<bool>(const std::string& na
 template <>
 inline bool XMLReader::requireAttribute<bool>(const std::string& name) const {
     boost::optional<bool> result = getAttribute<bool>(name);
-    if (!result) throw XMLNoAttrException(getNodeName(), name);
+    if (!result) throw XMLNoAttrException(*this, name);
     return *result;
 }
 
@@ -312,4 +313,4 @@ namespace std {
 inline void swap(plask::XMLReader& a, plask::XMLReader& b) { a.swap(b); }
 }   // namespace std
 
-#endif // PLASK__UTILS_XML_H
+#endif // PLASK__UTILS_XML_READER_H

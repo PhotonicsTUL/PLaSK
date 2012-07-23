@@ -59,11 +59,11 @@ static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
         reader.requireTag();
         std::string node = reader.getNodeName();
 
-        if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException("<axis0> or <axis1>");
-        if (axes.find(node) != axes.end()) XMLUnexpectedElementException("non-repeated axis");
+        if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
+        if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
         reader.read();
-        if (reader.getNodeType() != XMLReader::NODE_TEXT) throw XMLUnexpectedElementException("axis specification");
+        if (reader.getNodeType() != XMLReader::NODE_TEXT) throw XMLUnexpectedElementException(reader, "axis specification");
 
         std::deque<std::string> points;
         const char* data = reader.getNodeDataC();
@@ -87,11 +87,11 @@ static shared_ptr<Mesh> readRectilinearMesh3D(XMLReader& reader)
         reader.requireTag();
         std::string node = reader.getNodeName();
 
-        if (node != "axis0" && node != "axis1" && node != "axis2") throw XMLUnexpectedElementException("<axis0>, <axis1>, or <axis2>");
-        if (axes.find(node) != axes.end()) XMLUnexpectedElementException("non-repeated axis");
+        if (node != "axis0" && node != "axis1" && node != "axis2") throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
+        if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
         reader.read();
-        if (reader.getNodeType() != XMLReader::NODE_TEXT) throw XMLUnexpectedElementException("axis specification");
+        if (reader.getNodeType() != XMLReader::NODE_TEXT) throw XMLUnexpectedElementException(reader, "axis specification");
 
         std::deque<std::string> points;
         const char* data = reader.getNodeDataC();

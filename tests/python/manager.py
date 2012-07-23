@@ -69,10 +69,55 @@ class Manager(unittest.TestCase):
         self.assertEqual( list(self.manager.msh["reg"].axis0) , [10, 20, 30] )
 
     def testGenerators(self):
-        self.assertEqual( self.manager.msg.test.prediv, (4, 4) )
-        self.assertEqual( self.manager.msg.test.postdiv, (2, 3) )
+        self.assertEqual( self.manager.msg.test.prediv, (4,4) )
+        self.assertEqual( self.manager.msg.test.postdiv, (2,3) )
         self.assertEqual( self.manager.msg.test.warn_missing, False )
 
         mesh = self.manager.msg.refined.generate(self.manager.gel.Stack_2)
         self.assertEqual( mesh.axis1, [0., 2., 3., 4.] )
         self.assertEqual( mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0] )
+
+    def testException(self):
+        manager = plask.Manager()
+        with self.assertRaises(plask.XMLError):
+            manager.read('''
+                <geometry>
+                    <cartesian2d name="Space 1" axes="xy">
+                        <stack name="Stack 2">
+                            <child path="Path 4"><rectangle name="Block 3" x="5" y="2" material="GaN" /></child>
+                            <ref name="Block 3"/>
+                    </cartesian2d>
+                </geometry>
+            ''')
+        with self.assertRaises(plask.XMLError):
+            manager.read('''
+                <grids>
+                    <mesh type="rectilinear2d" name="lin">
+                        <axis0>1, 2, 3</axis0>
+                        <axis0>10 20 30</axis0>
+                    </mesh>
+                </grids>
+            ''')
+        with self.assertRaises(plask.XMLError):
+            manager.read('''
+                <grids>
+                    <generator type="rectilinear2d" method="divide" name="test">
+                        <postdiv by="4" hor_by="2" vert_by="3"/>
+                    </generator>
+                </grids>
+            ''')
+        with self.assertRaises(plask.XMLError):
+            manager.read('''
+                <grids>
+                    <generator type="rectilinear2d" method="divide" name="test">
+                        <postdiv bye="4"/>
+                    </generator>
+                </grids>
+            ''')
+        with self.assertRaises(plask.XMLError):
+            manager.read('''
+                <geometry>
+                    <cartesian2d name="Space 2" axes="xy">
+                        <rectangle x="5" y="2" material="GaN" />
+                    </cartesian2d>
+            ''')

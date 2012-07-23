@@ -2,7 +2,7 @@
 #define PLASK__EXCEPTIONS_H
 
 /** @file
-This file includes definitions of all exceptions classes which are used in PLaSK.
+This file includes definitions of most exceptions classes which are used in PLaSK.
 */
 
 #include <stdexcept>
@@ -239,74 +239,6 @@ public:
               material1name_with_components, material2name_with_components, common_dopant.empty() ? "" : ':' + common_dopant)
               {}
 
-};
-
-//-------------- Connected with XML: -----------------------
-/**
- * Exceptions of this class are thrown when the required attribute is not found in XML tag.
- */
-struct XMLNoAttrException: public Exception {
-    /**
-     * @param where where (typically in which tag) there are no required attribiute
-     * @param attr_name name of required attribiute
-     */
-    XMLNoAttrException(const std::string& where, const std::string& attr_name): Exception(where + ": XML tag has no required attribute \"" + attr_name + "\"") {}
-};
-
-/**
- * Exceptions of this class are thrown when the attribute has wrong value.
- */
-struct XMLBadAttrException: public Exception {
-    /**
-     * @param where where (typically in which tag) there is bad value for atribiute
-     * @param attr_name name of attribiute
-     * @param attr_value illegal value of attribiute
-     */
-    XMLBadAttrException(const std::string& where, const std::string& attr_name, const std::string& attr_value):
-        Exception(where + ": XML tag attribute \"" + attr_name + "\" has bad value \"" + attr_value + "\"") {}
-};
-
-/**
- * Exceptions of this class are thrownwhen XML file/data stream unexpected end.
- */
-struct XMLUnexpectedEndException: public Exception {
-    XMLUnexpectedEndException(): Exception("Unexpected end of XML data") {}
-};
-
-/**
- * Exceptions of this class are thrownwhen the type of XML element is different than expected.
- */
-struct XMLUnexpectedElementException: public Exception {
-    /**
-     * @param what_is_expected what is expected (typically tag with name, etc.)
-     */
-    XMLUnexpectedElementException(const std::string& what_is_expected): Exception("Expected " + what_is_expected + " in XML") {}
-};
-
-/**
- * Exceptions of this class are thrown when the value of an XML attribute is different than expected.
- */
-struct XMLUnexpectedAttributeValueException: public Exception {
-    /**
-     * @param element element name
-     * @param attr attribute name
-     * @param value unexpected value
-     */
-    XMLUnexpectedAttributeValueException(const std::string& element, const std::string& attr, const std::string& value)
-    : Exception("Attribute '%2%' for element '%1%' has unexpected value '%3%'", element, attr, value) {}
-};
-
-/**
- * Exceptions of this class are thown if two optional attributes in XML conflict with each other.
- */
-struct XMLConflictingAttributesException: public Exception {
-    /**
-     * @param element element name
-     * @param attr1 first attribute name
-     * @param attr2 second attribute name
-     */
-    XMLConflictingAttributesException(const std::string& element, const std::string& attr1, const std::string& attr2)
-    : Exception("Conflicting attributes '%2%' and '%3%' in element %1%", element, attr1, attr2) {}
 };
 
 

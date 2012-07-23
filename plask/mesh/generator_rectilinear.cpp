@@ -166,20 +166,24 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
     std::set<std::string> read;
     while (reader.requireTagOrEnd()) {
         if (read.find(reader.getNodeName()) != read.end())
-            throw XMLUnexpectedElementException("tag \""+reader.getNodeName()+"\" to appear only once for a single generator specification");
+            throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "prediv") {
             boost::optional<size_t> into = reader.getAttribute<size_t>("by");
-            if (into)
+            if (into) {
+                if (reader.hasAttribute("hor_by")) throw XMLConflictingAttributesException(reader, "by", "hor_by");
+                if (reader.hasAttribute("vert_by")) throw XMLConflictingAttributesException(reader, "by", "vert_by");
                 result->setPreDivision(*into);
-            else
+            } else
                 result->setPreDivision(reader.getAttribute<size_t>("hor_by", 1), reader.getAttribute<size_t>("vert_by", 1));
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
             boost::optional<size_t> into = reader.getAttribute<size_t>("by");
-            if (into)
+            if (into) {
+                if (reader.hasAttribute("hor_by")) throw XMLConflictingAttributesException(reader, "by", "hor_by");
+                if (reader.hasAttribute("vert_by")) throw XMLConflictingAttributesException(reader, "by", "vert_by");
                 result->setPostDivision(*into);
-            else
+            } else
                 result->setPostDivision(reader.getAttribute<size_t>("hor_by", 1), reader.getAttribute<size_t>("vert_by", 1));
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "dont_limit_change") {
@@ -193,7 +197,7 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
         } else if (reader.getNodeName() == "refinements") {
             while (reader.requireTagOrEnd()) {
                 if (reader.getNodeName() != "horizontal" && reader.getNodeName() != "vertical")
-                    throw XMLUnexpectedElementException("<horizontal ...> of <vertical ...> tag");
+                    throw XMLUnexpectedElementException(reader, "<horizontal ...> of <vertical ...>");
                 auto direction = (reader.getNodeName()=="horizontal")? Primitive<2>::DIRECTION_TRAN : Primitive<2>::DIRECTION_UP;
                 weak_ptr<GeometryElementD<2>> element =
                     manager.requireGeometryElement<GeometryElementD<2>>(reader.requireAttribute("element"));
@@ -203,7 +207,7 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
                 else result->addRefinement(direction, element, pos);
                 reader.requireTagEnd();
             }
-        } else throw XMLUnexpectedElementException("'divide' generator configuration");
+        } else throw XMLUnexpectedElementException(reader, "proper 'divide' generator configuration tag");
     }
     return result;
 }

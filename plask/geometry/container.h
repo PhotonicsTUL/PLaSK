@@ -306,7 +306,7 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
 
             case XMLReader::NODE_ELEMENT_END:
                 if (reader.source.getNodeName() != container_tag_name)
-                    throw XMLUnexpectedElementException("end of \"" + container_tag_name + "\" tag");
+                    throw XMLUnexpectedElementException(reader.source, "</" + container_tag_name + ">");
                 return; // container has been read
 
             case XMLReader::NODE_ELEMENT:
@@ -328,10 +328,10 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
                 break;  //skip comments
 
             default:
-                throw XMLUnexpectedElementException("<child> or geometry element tag");
+                throw XMLUnexpectedElementException(reader.source, "<child> or geometry element tag");
         }
     }
-    throw XMLUnexpectedEndException();
+    throw XMLUnexpectedEndException(reader.source);
 }
 
 
