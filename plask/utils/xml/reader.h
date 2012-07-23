@@ -22,7 +22,7 @@ namespace plask {
  * - it checks if all attributes was read.
  */
 class XMLReader {
-public:
+  public:
 
     /// Enumeration for all xml nodes which are parsed by XMLReader
     enum NodeType {
@@ -35,7 +35,7 @@ public:
             NODE_UNKNOWN = irr::io::EXN_UNKNOWN             ///< Unknown element
     };
 
-private:
+  private:
     /// xml reader, low level
     irr::io::IrrXMLReader* irrReader;
 
@@ -48,7 +48,7 @@ private:
     /// attributes which was read
     std::unordered_set<std::string> read_attributes;
 
-public:
+  public:
 
     /**
      * Construct XML reader to read XML from given file.
@@ -80,10 +80,10 @@ public:
     XMLReader(const XMLReader& to_copy) = delete;
     XMLReader& operator=(const XMLReader& to_copy) = delete;
 #else
-private:
+  private:
     XMLReader(const XMLReader&) {}
     XMLReader& operator=(const XMLReader&) { return *this; }
-public:
+  public:
 #endif
 
     ~XMLReader() { delete irrReader; }  //if irrReader is not nullptr throw exception if path is not empty

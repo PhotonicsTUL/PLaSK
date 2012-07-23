@@ -3,8 +3,9 @@
 
 #include <string>
 #include <iostream>
-#include <cassert>
-#include <boost/lexical_cast.hpp>
+
+#include "exceptions.h"
+#include "../format.h"
 
 namespace plask {
 
@@ -17,15 +18,15 @@ namespace plask {
  * @code
  * XMLWriter w(some_out_stream);
  * w.writeHeader();
- * w.element("a").attr("x", 1).attr("y", 2); //\<a x="1" y="2"/>
+ * w.addElement("a").attr("x", 1).attr("y", 2); // \<a x="1" y="2"/>
  * {
- *  XMLWriter::Element outer(w, "o"); //or XMLWriter::Element outer = w.element("o");
+ *  XMLWriter::Element outer(w, "o"); // or XMLWriter::Element outer = w.addElement("o");
  *  outer.attr("o_attr", "v");
- *  w.element("i").content("inner content");
- *  //here outer.attr(...) is not allowed and will throw an exception
- * }    //\<o o_attr="v">\<i>inner content\</i>\</o>
- * w.element("o").element("i1").attr("a", 1).element("i2");  //\<o>\<i1 a="1">\<i2/>\</i1>\</o>
- * w.element("o").element("i1").attr("a", 1).end().element("i2");    //<o><i1 a="1"/><i2/></o>
+ *  w.element("i").writeText("inner content");
+ *  // here outer.attr(...) is not allowed and will throw an exception
+ * }    // \<o o_attr="v">\<i>inner content\</i>\</o>
+ * w.addElement("o").addElement("i1").attr("a", 1).addElement("i2");  // \<o>\<i1 a="1">\<i2/>\</i1>\</o>
+ * w.addElement("o").addElement("i1").attr("a", 1).end().addElement("i2");    // \<o>\<i1 a="1"/>\<i2/>\</o>
  * @endcode
  */
 struct XMLWriter {
@@ -47,7 +48,7 @@ struct XMLWriter {
         Element* parent;
 
         /// @c true only if this tag is open and allow to append atribiutes
-        bool attribiutesStillAlowed;
+        bool attributesStillAlowed;
 
         /**
          * Construct element with given @p name, write to steam openning of element tag.
@@ -98,58 +99,58 @@ struct XMLWriter {
         std::size_t getLevel() const;
 
         /**
-         * Append attribiute to this element.
-         * @param attr_name name of attribiute to append
-         * @param attr_value value of attribiute to append
+         * Append attribute to this element.
+         * @param attr_name name of attribute to append
+         * @param attr_value value of attribute to append
          */
         Element& attr(const std::string& attr_name, const std::string& attr_value);
 
         /**
-         * Append attribiute to this element.
-         * @param attr_name name of attribiute to append
-         * @param attr_value value of attribiute to append, will be change to string using boost::lexical_cast
+         * Append attribute to this element.
+         * @param attr_name name of attribute to append
+         * @param attr_value value of attribute to append, will be change to string using boost::lexical_cast
          */
         template <typename ValueT>
-        Element& attr(const std::string& attr_name, ValueT&& attr_value) {
-            return attr(attr_name, boost::lexical_cast<std::string>(std::forward<ValueT>(attr_value)));
+        Element& attr(const std::string& attr_name, const ValueT& attr_value) {
+            return attr(attr_name, str(attr_value));
         }
 
         /**
          * Append text content to this element.
          * @param str content to append
          */
-        Element& content(const char* str);
+        Element& writeText(const char* str);
 
         /**
          * Append text content to this element.
          * @param str content to append
          */
-        Element& content(const std::string& str) { return content(str.c_str()); }
+        Element& writeText(const std::string& str) { return writeText(str.c_str()); }
 
         /**
          * Append text content to this element.
          * @param value content to append, will be change to string using boost::lexical_cast
          */
         template <class T>
-        Element& content(T&& value) {
-            return content(boost::lexical_cast<std::string>(std::forward<T>(value)));
+        Element& writeText(const T& value) {
+            return writeText(str(std::forward<T>(value)));
         }
 
-        Element& cdata(const std::string& str);
+        Element& writeCDATA(const std::string& str);
 
         /**
          * Create sub-element of this.
          * @return sub-element of this
          */
         template <typename name_t>
-        Element element(name_t&& name) { return XMLElement(*this, std::forward<name_t>(name)); }
+        Element addElement(name_t&& name) { return Element(*this, std::forward<name_t>(name)); }
 
         /**
          * Create sub-element of this.
          * @return sub-element of this
          */
         template <typename name_t>
-        Element tag(name_t&& name) { return XMLElement(*this, std::forward<name_t>(name)); }
+        Element addTag(name_t&& name) { return Element(*this, std::forward<name_t>(name)); }
 
         /**
          * Close this element.
@@ -162,7 +163,7 @@ struct XMLWriter {
 
         void writeClosing();    /// called by destructor, write element closing and set parent of this as current
 
-        void disallowAttribiutes(); /// set attribiutesStillAlowed to false, and put '>' in out if neccessary
+        void disallowAttributes(); /// set attributesStillAlowed to false, and put '>' in out if necessary
 
         void ensureIsCurrent(); /// throw excpetion if this is not current element
     };
@@ -199,19 +200,36 @@ public:
     /**
      * Append element/tag to stream.
      * @param name tag name
-     * @return object which allow to set details of element (attribiutes, content, etc.)
+     * @return object which allow to set details of element (attributes, content, etc.)
      */
     template <typename name_t>
-    Element element(name_t&& name) { return XMLElement(*this, std::forward<name_t>(name)); }
+    Element addElement(name_t&& name) { return Element(*this, std::forward<name_t>(name)); }
 
     /**
      * Append element/tag to stream.
      * @param name tag name
-     * @return object which allow to set details of element (attribiutes, content, etc.)
+     * @return object which allow to set details of element (attributes, content, etc.)
      */
     template <typename name_t>
-    Element tag(name_t&& name) { return XMLElement(*this, std::forward<name_t>(name)); }
+    Element addTag(name_t&& name) { return Element(*this, std::forward<name_t>(name)); }
 
+    /**
+     * Write text content for the current element
+     * \param text text to write
+     */
+    void writeText(const std::string& text) {
+        if (!current) throw XMLWriterException("No tag is open");
+        current->writeText(text);
+    }
+
+    /**
+     * Write CDATA for the current element
+     * \param cdata data to write
+     */
+    void writeCDATA(const std::string& cdata) {
+        if (!current) throw XMLWriterException("No tag is open");
+        current->writeCDATA(cdata);
+    }
 };
 
 }   // namespace plask

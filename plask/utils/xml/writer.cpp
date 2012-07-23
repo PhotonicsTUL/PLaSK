@@ -1,6 +1,6 @@
 #include "writer.h"
 
-#include "../../exceptions.h"
+#include "exceptions.h"
 
 namespace plask {
 
@@ -27,7 +27,7 @@ XMLWriter::Element::Element(XMLWriter::Element &parent, std::string&& name)
 }
 
 XMLWriter::Element::Element(XMLWriter::Element&& to_move)
-    : name(std::move(to_move.name)), writer(to_move.writer), parent(to_move.parent), attribiutesStillAlowed(to_move.attribiutesStillAlowed) {
+    : name(std::move(to_move.name)), writer(to_move.writer), parent(to_move.parent), attributesStillAlowed(to_move.attributesStillAlowed) {
     to_move.writer = 0;
 }
 
@@ -35,7 +35,7 @@ XMLWriter::Element &XMLWriter::Element::operator=(XMLWriter::Element && to_move)
     name = std::move(to_move.name);
     writer = to_move.writer;
     parent = to_move.parent;
-    attribiutesStillAlowed = to_move.attribiutesStillAlowed;
+    attributesStillAlowed = to_move.attributesStillAlowed;
     to_move.writer = 0;
     return *this;
 }
@@ -52,8 +52,8 @@ std::size_t XMLWriter::Element::getLevel() const {
 }
 
 XMLWriter::Element &XMLWriter::Element::attr(const std::string &attr_name, const std::string &attr_value) {
-    if (!attribiutesStillAlowed)
-        throw plask::Exception("Can't append attribiute \"%2%\" to \"%1%\" XML element becouse this element has already non-empty content.", name, attr_name);
+    if (!attributesStillAlowed)
+        throw plask::XMLWriterException(format("Can't append attribute \"%2%\" to \"%1%\" XML element because this element has already non-empty content.", name, attr_name));
     writer->out.put(' ');
     writer->appendStr(attr_name);
     writer->out.write("=\"", 2);
@@ -62,16 +62,16 @@ XMLWriter::Element &XMLWriter::Element::attr(const std::string &attr_name, const
     return *this;
 }
 
-XMLWriter::Element &XMLWriter::Element::content(const char *str) {
+XMLWriter::Element &XMLWriter::Element::writeText(const char *str) {
     ensureIsCurrent();
-    disallowAttribiutes();
+    disallowAttributes();
     writer->appendStrQuoted(str);
     return *this;
 }
 
-XMLWriter::Element &XMLWriter::Element::cdata(const std::string& str) {
+XMLWriter::Element &XMLWriter::Element::writeCDATA(const std::string& str) {
     ensureIsCurrent();
-    disallowAttribiutes();
+    disallowAttributes();
     writer->out.write("<![CDATA[", 9);
     writer->appendStr(str);
     writer->out.write("]]>", 3);
@@ -87,9 +87,9 @@ XMLWriter::Element &XMLWriter::Element::end() {
 }
 
 void XMLWriter::Element::writeOpening() {
-    attribiutesStillAlowed = true;
+    attributesStillAlowed = true;
     parent = writer->current;
-    if (writer->current) writer->current->disallowAttribiutes();
+    if (writer->current) writer->current->disallowAttributes();
     writer->current = this;
     std::size_t l = getLevel();
     while (l > 0) { writer->out.put(' '); --l; }
@@ -99,7 +99,7 @@ void XMLWriter::Element::writeOpening() {
 
 void XMLWriter::Element::writeClosing()
 {
-    if (attribiutesStillAlowed) {   //empty tag?
+    if (attributesStillAlowed) {   //empty tag?
         writer->out.write("/>", 2);
     } else {
         writer->out.write("</", 2);
@@ -110,17 +110,17 @@ void XMLWriter::Element::writeClosing()
     writer->current = this->parent;
 }
 
-void XMLWriter::Element::disallowAttribiutes() {
-    if (attribiutesStillAlowed) {
+void XMLWriter::Element::disallowAttributes() {
+    if (attributesStillAlowed) {
         writer->out.put('>');
         writer->out << std::endl;
-        writer->current->attribiutesStillAlowed = false;
+        writer->current->attributesStillAlowed = false;
     }
 }
 
 void XMLWriter::Element::ensureIsCurrent() {
     if (this != writer->current)
-        throw Exception("Operation is not permited to not last XML element \"%1%\".", name);
+        throw XMLWriterException("Operation is not permitted as the XML element \""+ name +"\" is not the last one in the stack");
 }
 
 void XMLWriter::appendStrQuoted(const char *s) {

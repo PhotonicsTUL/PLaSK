@@ -133,6 +133,15 @@ struct XMLConflictingAttributesException: public XMLException {
     : XMLException(reader, "conflicting attributes '" + attr1 + "' and '" + attr2 + "'") {}
 };
 
+/**
+ * Exceptions of this type are thrown by XMLWriter class
+ */
+struct XMLWriterException: public std::runtime_error {
+    /**
+     * \param msg error message
+     */
+    XMLWriterException(const std::string& msg): std::runtime_error(msg) {}
+};
 
 
 } // namespace plask
