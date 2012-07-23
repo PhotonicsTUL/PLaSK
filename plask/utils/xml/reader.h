@@ -17,7 +17,7 @@ namespace plask {
 /**
  * XML pull parser.
  *
- * It makes some checks while reading and throw exceptions when XML document is valid:
+ * It makes some checks while reading and throw exeptions when XML document not is valid:
  * - it check open/close tags,
  * - it checks if all attributes was read.
  */

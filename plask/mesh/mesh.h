@@ -126,7 +126,7 @@ You should also implement interpolation algorithms for your mesh, see @ref inter
 #include "../geometry/element.h"
 #include "../utils/iterators.h"
 #include "../utils/cache.h"
-#include "../utils/xml.h"
+#include "../utils/xml/reader.h"
 
 #include <boost/signals2.hpp>
 #include "../utils/event.h"

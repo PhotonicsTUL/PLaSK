@@ -10,7 +10,7 @@ This file includes:
 #include <map>
 #include <set>
 
-#include "utils/xml.h"
+#include "utils/xml/reader.h"
 
 #include "mesh/mesh.h"
 #include "material/db.h"

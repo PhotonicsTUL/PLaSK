@@ -1,7 +1,7 @@
 #ifndef PLASK__GEOMETRY_READER_H
 #define PLASK__GEOMETRY_READER_H
 
-#include "../utils/xml.h"
+#include "../utils/xml/reader.h"
 #include "../axes.h"
 #include "../material/db.h"
 #include "space.h"

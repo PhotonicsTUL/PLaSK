@@ -1,5 +1,4 @@
 #include "mesh.h"
-#include "../utils/xml.h"
 
 namespace plask {
 
