@@ -1,6 +1,6 @@
-#include "xmlwriter.h"
+#include "writer.h"
 
-#include "../exceptions.h"
+#include "../../exceptions.h"
 
 namespace plask {
 
