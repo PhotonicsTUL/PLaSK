@@ -12,6 +12,21 @@ namespace plask {
  * Object of this class help produce valid XML documents.
  *
  * It hold std output stream and helps format valid XML data written to this stream.
+ *
+ * Example:
+ * @code
+ * XMLWriter w(some_out_stream);
+ * w.writeHeader();
+ * w.element("a").attr("x", 1).attr("y", 2); //\<a x="1" y="2"/>
+ * {
+ *  XMLWriter::Element outer(w, "o"); //or XMLWriter::Element outer = w.element("o");
+ *  outer.attr("o_attr", "v");
+ *  w.element("i").content("inner content");
+ *  //here outer.attr(...) is not allowed and will throw an exception
+ * }    //\<o o_attr="v">\<i>inner content\</i>\</o>
+ * w.element("o").element("i1").attr("a", 1).element("i2");  //\<o>\<i1 a="1">\<i2/>\</i1>\</o>
+ * w.element("o").element("i1").attr("a", 1).end().element("i2");    //<o><i1 a="1"/><i2/></o>
+ * @endcode
  */
 struct XMLWriter {
 
@@ -35,18 +50,32 @@ struct XMLWriter {
         bool attribiutesStillAlowed;
 
         /**
-         * Construct element with given name, write to steam openning of element tag.
+         * Construct element with given @p name, write to steam openning of element tag.
          * @param writer XML writer where element should be append
          * @param name name of elements tag
          */
         Element(XMLWriter& writer, const std::string& name);
 
         /**
-         * Construct element with given name, write to steam openning of element tag.
+         * Construct element with given @p name, write to steam openning of element tag.
          * @param writer XML writer where element should be append
          * @param name name of elements tag
          */
         Element(XMLWriter& writer, std::string&& name);
+
+        /**
+         * Construct element with given @p name, write to steam openning of element tag.
+         * @param parent parent element, must by recently added, not closed one
+         * @param name name of elements tag
+         */
+        Element(Element& parent, const std::string& name);
+
+        /**
+         * Construct element with given @p name, write to steam openning of element tag.
+         * @param parent parent element, must by recently added, not closed one
+         * @param name name of elements tag
+         */
+        Element(Element& parent, std::string&& name);
 
         /// Disallow to copy element.
         Element(const Element&) = delete;
@@ -63,6 +92,9 @@ struct XMLWriter {
         /// Close element tag.
         ~Element();
 
+        /**
+         * @return 0 for root, 1 for child of root, and so on
+         */
         std::size_t getLevel() const;
 
         /**
@@ -105,8 +137,30 @@ struct XMLWriter {
 
         Element& cdata(const std::string& str);
 
+        /**
+         * Create sub-element of this.
+         * @return sub-element of this
+         */
+        template <typename name_t>
+        Element element(name_t&& name) { return XMLElement(*this, std::forward<name_t>(name)); }
+
+        /**
+         * Create sub-element of this.
+         * @return sub-element of this
+         */
+        template <typename name_t>
+        Element tag(name_t&& name) { return XMLElement(*this, std::forward<name_t>(name)); }
+
+        /**
+         * Close this element.
+         * @return parent of this element or invalid element which can only be delete if this represents the root element
+         */
+        Element& end();
+
     private:
-        void writeOpening();    /// called only by constructors, wirte element opening and set this as current
+        void writeOpening();    /// called only by constructors, write element opening and set this as current
+
+        void writeClosing();    /// called by destructor, write element closing and set parent of this as current
 
         void disallowAttribiutes(); /// set attribiutesStillAlowed to false, and put '>' in out if neccessary
 
@@ -139,7 +193,7 @@ public:
 
     /// Append to stream XML document header.
     void writeHeader() {
-        out << "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+        out << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << std::endl;
     }
 
     /**

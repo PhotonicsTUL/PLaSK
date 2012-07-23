@@ -14,6 +14,18 @@ XMLWriter::Element::Element(XMLWriter &writer, std::string &&name)
     writeOpening();
 }
 
+XMLWriter::Element::Element(XMLWriter::Element &parent, const std::string &name)
+: name(name), writer(parent.writer) {
+    parent.ensureIsCurrent();
+    writeOpening();
+}
+
+XMLWriter::Element::Element(XMLWriter::Element &parent, std::string&& name)
+: name(std::move(name)), writer(parent.writer) {
+    parent.ensureIsCurrent();
+    writeOpening();
+}
+
 XMLWriter::Element::Element(XMLWriter::Element&& to_move)
     : name(std::move(to_move.name)), writer(to_move.writer), parent(to_move.parent), attribiutesStillAlowed(to_move.attribiutesStillAlowed) {
     to_move.writer = 0;
@@ -30,15 +42,7 @@ XMLWriter::Element &XMLWriter::Element::operator=(XMLWriter::Element && to_move)
 
 XMLWriter::Element::~Element() {
     if (!writer) return;    // element already moved
-    if (attribiutesStillAlowed) {   //empty tag?
-        writer->out.write("/>", 2);
-    } else {
-        writer->out.write("</", 2);
-        writer->appendStr(name);
-        writer->out.put('>');
-    }
-    writer->out << std::endl;
-    writer->current = this->parent;
+    writeClosing();
 }
 
 std::size_t XMLWriter::Element::getLevel() const {
@@ -74,6 +78,14 @@ XMLWriter::Element &XMLWriter::Element::cdata(const std::string& str) {
     return *this;
 }
 
+XMLWriter::Element &XMLWriter::Element::end() {
+    ensureIsCurrent();
+    writeClosing();
+    Element* current = writer->current; //new current tag, parent of this
+    this->writer = 0;   // to not close a tag by destructor
+    return current ? *current : *this;
+}
+
 void XMLWriter::Element::writeOpening() {
     attribiutesStillAlowed = true;
     parent = writer->current;
@@ -83,6 +95,19 @@ void XMLWriter::Element::writeOpening() {
     while (l > 0) { writer->out.put(' '); --l; }
     writer->out.put('<');
     writer->out.write(name.data(), name.size());
+}
+
+void XMLWriter::Element::writeClosing()
+{
+    if (attribiutesStillAlowed) {   //empty tag?
+        writer->out.write("/>", 2);
+    } else {
+        writer->out.write("</", 2);
+        writer->appendStr(name);
+        writer->out.put('>');
+    }
+    writer->out << std::endl;
+    writer->current = this->parent;
 }
 
 void XMLWriter::Element::disallowAttribiutes() {
