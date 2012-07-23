@@ -163,6 +163,26 @@ class RectangularMesh2D: public MeshD<2> {
      */
     const Mesh1D& rad_z() const { return c1; }
 
+    /**
+     * Get numbered axis
+     * \param no
+     */
+    Mesh1D& axis(size_t n) {
+        if (n == 0) return c0;
+        else if (n != 1) throw Exception("Bad axis number");
+        return c1;
+    }
+
+    /**
+     * Get numbered axis
+     * \param no
+     */
+    const Mesh1D& axis(size_t n) const {
+        if (n == 0) return c0;
+        else if (n != 1) throw Exception("Bad axis number");
+        return c1;
+    }
+
     /// \return major (changing slowest) axis
     const Mesh1D& majorAxis() const {
         if (getIterationOrder() == NORMAL_ORDER) return c1;
@@ -220,6 +240,12 @@ class RectangularMesh2D: public MeshD<2> {
      * @return number of points in mesh
      */
     std::size_t size() const { return c0.size() * c1.size(); }
+
+    /**
+     * Serialize mesh to XMLReader
+     * \param writer XML writer to write to
+     */
+    virtual void serialize(XMLWriter& writer, const std::string name) const;
 
     /// @return true only if there are no points in mesh
     bool empty() const { return c0.empty() || c1.empty(); }

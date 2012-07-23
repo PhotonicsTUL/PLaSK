@@ -49,6 +49,36 @@ RectilinearMesh3D RectilinearMesh3D::getMidpointsMesh() const {
     return RectilinearMesh3D(line0, line1, line2, getIterationOrder());
 }
 
+template <>
+void RectilinearMesh2D::serialize(XMLWriter& writer, const std::string name) const {
+    auto mesh = writer.addTag("mesh");
+    mesh.attr("type", "rectilinear2d").attr("name", name);
+    for (size_t n = 0; n != 2; ++n) {
+        auto axis = mesh.addTag("axis"+boost::lexical_cast<std::string>(n));
+        axis.indent();
+        for (auto x: this->axis(n)) {
+            axis.writeText(x);
+            axis.writeText(" ");
+        }
+        axis.writeText("\n");
+    }
+}
+
+template <>
+void RectilinearMesh3D::serialize(XMLWriter& writer, const std::string name) const {
+    auto mesh = writer.addTag("mesh");
+    mesh.attr("type", "rectilinear3d").attr("name", name);
+    for (size_t n = 0; n != 3; ++n) {
+        auto axis = mesh.addTag("axis"+boost::lexical_cast<std::string>(n));
+        axis.indent();
+        for (auto x: this->axis(n)) {
+            axis.writeText(x);
+            axis.writeText(" ");
+        }
+        axis.writeText("\n");
+    }
+}
+
 
 
 static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)

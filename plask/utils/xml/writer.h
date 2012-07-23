@@ -49,7 +49,7 @@ struct XMLWriter {
 
         /// @c true only if this tag is open and allow to append atribiutes
         bool attributesStillAlowed;
-        
+
      public:
 
         /**
@@ -134,11 +134,16 @@ struct XMLWriter {
          * @param value content to append, will be change to string using boost::lexical_cast
          */
         template <class T>
-        Element& writeText(T&& value) {
-            return writeText(str(std::forward<T>(value)));
+        Element& writeText(const T& value) {
+            return writeText(str(value));
         }
 
         Element& writeCDATA(const std::string& str);
+
+        /**
+         * Write spaces to the current indentation level
+         */
+        void indent ();
 
         /**
          * Create sub-element of this.
@@ -159,37 +164,37 @@ struct XMLWriter {
          * @return parent of this element or invalid element which can only be delete if this represents the root element
          */
         Element& end();
-        
+
         /**
          * Check if tag attributes still can be append
          * @return @c true if attributes can still be append to this element
          */
         bool canAppendAttribiutes() const { return this->attributesStillAlowed; }
-        
+
         /**
          * Check if this is current element.
          * @return @c true only if this is current element
          */
         bool isCurrent() const { return writer->current == this; }
-        
+
         /**
          * Check if this was ended or moved, and can't be used any more
          * @return @c true only if this was ended or moved
          */
         bool isEnded() const { return writer != 0; }
-        
+
         /**
          * Get name of this element.
          * @return name of this
          */
         const std::string& getName() const { return name; }
-        
+
         /**
          * Get writter used by this.
          * @return writter used by this
          */
         XMLWriter* getWriter() const { return writer; }
-        
+
         /**
          * Get parent of this element.
          * @return parent of this element, @c nullptr if this represent the root
@@ -220,13 +225,16 @@ private:
     /// Current element.
     Element* current;
 
+    /// Indentation for each tag level
+    size_t indentation;
+
 public:
 
     /**
      * Construct XML writer which will write content to given @p out stream.
      * @param out ouptut stream which will be used as destination to XML content
      */
-    XMLWriter(std::ostream& out): out(out), current(0) {}
+    XMLWriter(std::ostream& out, size_t indentation=2): out(out), current(0), indentation(indentation) {}
 
     ~XMLWriter() { assert(current == 0); }
 
@@ -270,6 +278,14 @@ public:
         if (!current) throw XMLWriterException("No tag is open");
         current->writeCDATA(std::forward<text_t>(cdata));
     }
+
+    /**
+     * Write spaces to the current indentation level
+    */
+    void indent () {
+        if (current) current->indent();
+    }
+
 };
 
 }   // namespace plask

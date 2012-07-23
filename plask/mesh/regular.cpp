@@ -8,6 +8,42 @@ namespace plask {
 template class RectangularMesh2D<RegularMesh1D>;
 template class RectangularMesh3D<RegularMesh1D>;
 
+template<>
+RegularMesh2D RegularMesh2D::getMidpointsMesh() const {
+    return RegularMesh2D(
+        RegularMesh1D(c0.getFirst() + 0.5*c0.getStep(), c0.getLast() - 0.5*c0.getStep(), c0.size()-1),
+        RegularMesh1D(c1.getFirst() + 0.5*c1.getStep(), c1.getLast() - 0.5*c1.getStep(), c1.size()-1)
+    );
+}
+
+template<>
+RegularMesh3D RegularMesh3D::getMidpointsMesh() const {
+    return RegularMesh3D(
+        RegularMesh1D(c0.getFirst() + 0.5*c0.getStep(), c0.getLast() - 0.5*c0.getStep(), c0.size()-1),
+        RegularMesh1D(c1.getFirst() + 0.5*c1.getStep(), c1.getLast() - 0.5*c1.getStep(), c1.size()-1),
+        RegularMesh1D(c2.getFirst() + 0.5*c2.getStep(), c2.getLast() - 0.5*c2.getStep(), c2.size()-1)
+    );
+}
+
+
+template <>
+void RegularMesh2D::serialize(XMLWriter& writer, const std::string name) const {
+    auto mesh = writer.addTag("mesh");
+    mesh.attr("type", "regular2d").attr("name", name);
+    mesh.addTag("axis0").attr("start", c0.getFirst()).attr("end", c0.getLast()).attr("count", c0.size());
+    mesh.addTag("axis1").attr("start", c1.getFirst()).attr("end", c1.getLast()).attr("count", c1.size());
+}
+
+template <>
+void RegularMesh3D::serialize(XMLWriter& writer, const std::string name) const {
+    auto mesh = writer.addTag("mesh");
+    mesh.attr("type", "regular3d").attr("name", name);
+    mesh.addTag("axis0").attr("start", c0.getFirst()).attr("end", c0.getLast()).attr("count", c0.size());
+    mesh.addTag("axis1").attr("start", c1.getFirst()).attr("end", c1.getLast()).attr("count", c1.size());
+    mesh.addTag("axis2").attr("start", c2.getFirst()).attr("end", c2.getLast()).attr("count", c2.size());
+}
+
+
 static shared_ptr<Mesh> readRegularMesh2D(XMLReader& reader)
 {
     std::map<std::string,std::tuple<double,double,size_t>> axes;

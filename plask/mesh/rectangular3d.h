@@ -215,6 +215,29 @@ class RectangularMesh3D: public MeshD<3> {
         return c2;
     }
 
+    /**
+     * Get numbered axis
+     * \param no
+     */
+    Mesh1D& axis(size_t n) {
+        if (n == 0) return c0;
+        else if (n == 1) return c1;
+        else if (n != 2) throw Exception("Bad axis number");
+        return c2;
+    }
+
+    /**
+     * Get numbered axis
+     * \param no
+     */
+    const Mesh1D& axis(size_t n) const {
+        if (n == 0) return c0;
+        else if (n == 1) return c1;
+        else if (n != 2) throw Exception("Bad axis number");
+        return c2;
+    }
+
+
     /// \return major (changing slowest) axis
     Mesh1D& majorAxis() {
         switch (getIterationOrder()) {
@@ -313,6 +336,12 @@ class RectangularMesh3D: public MeshD<3> {
      * @return number of points in the mesh
      */
     virtual std::size_t size() const { return c0.size() * c1.size() * c2.size(); }
+
+    /**
+     * Serialize mesh to XMLReader
+     * \param writer XML writer to write to
+     */
+    virtual void serialize(XMLWriter& writer, const std::string name) const;
 
     /// @return true only if there are no points in mesh
     bool empty() const { return c0.empty() || c1.empty() || c2.empty(); }

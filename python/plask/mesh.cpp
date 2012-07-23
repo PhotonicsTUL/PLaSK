@@ -22,14 +22,13 @@ void register_mesh()
     py::scope scope = mesh_module;
 
     py::class_<Mesh, shared_ptr<Mesh>, boost::noncopyable>("Mesh2D", "Base class for all meshes", py::no_init)
+        .def("__len__", &Mesh::size)
     ;
 
     py::class_<MeshD<2>, shared_ptr<MeshD<2>>, py::bases<Mesh>, boost::noncopyable>("Mesh2D", "Base class for every two-dimensional mesh", py::no_init)
-        .def("__len__", &MeshD<2>::size)
     ;
 
     py::class_<MeshD<3>, shared_ptr<MeshD<3>>, py::bases<Mesh>, boost::noncopyable>("Mesh3D", "Base class for every two-dimensional mesh", py::no_init)
-        .def("__len__", &MeshD<3>::size)
     ;
 
     py::class_<MeshGenerator, shared_ptr<MeshGenerator>, boost::noncopyable>("MeshGenerator", "Base class for all mesh generators", py::no_init)

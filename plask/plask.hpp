@@ -93,4 +93,6 @@ You should start reading from section \ref modules "How to implement an own modu
 #include "provider/temperature.h"
 #include "provider/optical.h"
 
+#include "utils/xml.h"
+
 #endif // PLASK__PLASK_HPP

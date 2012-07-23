@@ -78,6 +78,12 @@ XMLWriter::Element &XMLWriter::Element::writeCDATA(const std::string& str) {
     return *this;
 }
 
+void XMLWriter::Element::indent () {
+    disallowAttributes();
+    std::size_t l = (getLevel() + 1) * writer->indentation;
+    while (l > 0) { writer->out.put(' '); --l; }
+}
+
 XMLWriter::Element &XMLWriter::Element::end() {
     ensureIsCurrent();
     writeClosing();
@@ -91,7 +97,7 @@ void XMLWriter::Element::writeOpening() {
     parent = writer->current;
     if (writer->current) writer->current->disallowAttributes();
     writer->current = this;
-    std::size_t l = getLevel();
+    std::size_t l = getLevel() * writer->indentation;
     while (l > 0) { writer->out.put(' '); --l; }
     writer->out.put('<');
     writer->out.write(name.data(), name.size());
@@ -102,6 +108,8 @@ void XMLWriter::Element::writeClosing()
     if (attributesStillAlowed) {   //empty tag?
         writer->out.write("/>", 2);
     } else {
+        std::size_t l = getLevel() * writer->indentation;
+        while (l > 0) { writer->out.put(' '); --l; }
         writer->out.write("</", 2);
         writer->appendStr(name);
         writer->out.put('>');

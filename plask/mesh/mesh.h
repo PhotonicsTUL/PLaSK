@@ -55,6 +55,7 @@ You are required to:
   - writing @ref plask::Mesh::begin "begin()" and @ref plask::Mesh::end "end()" methods, typically this methods only returns:
     @code plask::Mesh::Iterator(new YourIteratorImpl(...)) @endcode
   - see also: MeshIteratorWrapperImpl and makeMeshIterator
+- implement the serialize method, which writes the mesh to XML
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3d space):
 @code
@@ -126,7 +127,7 @@ You should also implement interpolation algorithms for your mesh, see @ref inter
 #include "../geometry/element.h"
 #include "../utils/iterators.h"
 #include "../utils/cache.h"
-#include "../utils/xml/reader.h"
+#include "../utils/xml.h"
 
 #include <boost/signals2.hpp>
 #include "../utils/event.h"
@@ -145,6 +146,18 @@ namespace plask {
  */
 
 struct Mesh {
+    /// @return number of points in mesh
+    virtual std::size_t size() const = 0;
+
+    /**
+     * Serialize mesh to XMLReader
+     * \param writer XML writer to write to
+     * \param name mesh name
+     */
+    virtual void serialize(XMLWriter& writer, const std::string name) const {
+        throw NotImplemented("Mesh::serialize");
+    }
+
     virtual ~Mesh() {}
 };
 
@@ -156,9 +169,6 @@ struct MeshD: public Mesh {
 
     /// Number of dimensions
     static const int dim = dimension;
-
-    /// @return number of points in mesh
-    virtual std::size_t size() const = 0;
 
     ///@return true only if there are no points in mesh
     bool empty() const { return size() == 0; }
