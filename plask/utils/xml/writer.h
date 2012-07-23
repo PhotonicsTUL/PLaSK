@@ -36,7 +36,7 @@ struct XMLWriter {
      *
      * Constructor put in stream opening tag and destructor closing one.
      */
-    struct Element {
+    class Element {
 
         /// Tag name.
         std::string name;
@@ -49,6 +49,8 @@ struct XMLWriter {
 
         /// @c true only if this tag is open and allow to append atribiutes
         bool attributesStillAlowed;
+        
+     public:
 
         /**
          * Construct element with given @p name, write to steam openning of element tag.
@@ -132,7 +134,7 @@ struct XMLWriter {
          * @param value content to append, will be change to string using boost::lexical_cast
          */
         template <class T>
-        Element& writeText(const T& value) {
+        Element& writeText(T&& value) {
             return writeText(str(std::forward<T>(value)));
         }
 
@@ -157,15 +159,51 @@ struct XMLWriter {
          * @return parent of this element or invalid element which can only be delete if this represents the root element
          */
         Element& end();
+        
+        /**
+         * Check if tag attributes still can be append
+         * @return @c true if attributes can still be append to this element
+         */
+        bool canAppendAttribiutes() const { return this->attributesStillAlowed; }
+        
+        /**
+         * Check if this is current element.
+         * @return @c true only if this is current element
+         */
+        bool isCurrent() const { return writer->current == this; }
+        
+        /**
+         * Check if this was ended or moved, and can't be used any more
+         * @return @c true only if this was ended or moved
+         */
+        bool isEnded() const { return writer != 0; }
+        
+        /**
+         * Get name of this element.
+         * @return name of this
+         */
+        const std::string& getName() const { return name; }
+        
+        /**
+         * Get writter used by this.
+         * @return writter used by this
+         */
+        XMLWriter* getWriter() const { return writer; }
+        
+        /**
+         * Get parent of this element.
+         * @return parent of this element, @c nullptr if this represent the root
+         */
+        Element* getParent() const { return parent; }
 
     private:
-        void writeOpening();    /// called only by constructors, write element opening and set this as current
+        void writeOpening();    ///< called only by constructors, write element opening and set this as current
 
-        void writeClosing();    /// called by destructor, write element closing and set parent of this as current
+        void writeClosing();    ///< called by destructor, write element closing and set parent of this as current
 
-        void disallowAttributes(); /// set attributesStillAlowed to false, and put '>' in out if necessary
+        void disallowAttributes(); ///< set attributesStillAlowed to false, and put '>' in out if necessary
 
-        void ensureIsCurrent(); /// throw excpetion if this is not current element
+        void ensureIsCurrent(); ///< throw excpetion if this is not current element
     };
 
 private:
@@ -217,18 +255,20 @@ public:
      * Write text content for the current element
      * \param text text to write
      */
-    void writeText(const std::string& text) {
+    template <typename text_t>
+    void writeText(text_t&& text) {
         if (!current) throw XMLWriterException("No tag is open");
-        current->writeText(text);
+        current->writeText(std::forward<text_t>(text));
     }
 
     /**
      * Write CDATA for the current element
      * \param cdata data to write
      */
-    void writeCDATA(const std::string& cdata) {
+    template <typename text_t>
+    void writeCDATA(text_t&& cdata) {
         if (!current) throw XMLWriterException("No tag is open");
-        current->writeCDATA(cdata);
+        current->writeCDATA(std::forward<text_t>(cdata));
     }
 };
 
