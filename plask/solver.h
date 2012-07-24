@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_H
-#define PLASK__MODULE_H
+#ifndef PLASK__SOLVER_H
+#define PLASK__SOLVER_H
 
 /** @file
 This file includes base class for solvers.
@@ -78,7 +78,7 @@ like this (In the below example all comments are skipped):
 include(${CMAKE_SOURCE_DIR}/cmake/solvers.cmake)
 
 find_package(LAPACK)
-set(MODULE_LINK_LIBRARIES ${LAPACK_LIBRARIES})
+set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
 make_default()
 \endverbatim
@@ -93,8 +93,8 @@ Now we assume that our solver uses rectilinear mesh provided by the user, so we 
 \a finite_differences.h should begin as follows:
 
 \code
-#ifndef PLASK__MODULES__OPTICAL__FINITE_DIFFERENCES_H
-#define PLASK__MODULES__OPTICAL__FINITE_DIFFERENCES_H
+#ifndef PLASK__SOLVERS__OPTICAL__FINITE_DIFFERENCES_H
+#define PLASK__SOLVERS__OPTICAL__FINITE_DIFFERENCES_H
 
 #include <plask/plask.hpp>
 
@@ -269,7 +269,7 @@ You can now finish your class definition:
 
 }}} // namespace plask::solvers::optical_finite_differences
 
-#endif // PLASK__MODULES__OPTICAL_FINITE_DIFFERENCES_H
+#endif // PLASK__SOLVERS__OPTICAL_FINITE_DIFFERENCES_H
 \endcode
 
 
@@ -630,4 +630,4 @@ class SolverWithMesh: public SolverOver<SpaceT> {
 
 }       //namespace plask
 
-#endif // PLASK__MODULE_H
+#endif // PLASK__SOLVER_H
