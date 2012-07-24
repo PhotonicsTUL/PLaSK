@@ -350,7 +350,7 @@ struct Receiver: public Provider::Listener {
      * @param constProviderConstructorArgs parameters passed to ProviderT::ConstProviderT constructor
      */
     template <typename ...ConstProviderConstructorArgs>
-    void setValue(ConstProviderConstructorArgs&&... constProviderConstructorArgs) {
+    void setConstValue(ConstProviderConstructorArgs&&... constProviderConstructorArgs) {
         setProvider(new typename ProviderT::ConstProviderT(std::forward<ConstProviderConstructorArgs>(constProviderConstructorArgs)...), true);
     }
 
@@ -673,8 +673,18 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::
      * @return *this
      */
     ReceiverFor<PropertyT, SpaceT>& operator=(const typename PropertyT::ValueType& v) {
-        this->setValue(v);
+        this->setConstValue(v);
         return *this;
+    }
+
+    /**
+     * Set provider for this to provider of given field.
+     */
+    template <typename MeshPtrT>
+    void setValue(DataVector<typename PropertyT::ValueType> data, MeshPtrT&& mesh) {
+        setProvider(new typename ProviderFor<PropertyTag, SpaceType>::
+                    template WithValue<MeshPtrT>(data,
+                                        std::forward<MeshPtrT>(mesh)), true);
     }
 
     static_assert(!(std::is_same<SpaceT, void>::value && (PropertyT::propertyType == FIELD_PROPERTY || PropertyT::propertyType == INTERPOLATED_FIELD_PROPERTY)),
