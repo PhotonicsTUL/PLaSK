@@ -65,9 +65,18 @@ namespace detail {
     template <typename Class, typename ReceiverT>
     struct ReceiverSetter
     {
+        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
+
         ReceiverSetter(ReceiverT Class::* field) : field(field) {}
-        void operator()(Class& self, typename ReceiverT::PropertyTag::ValueType const& value) {
-            self.*field = value;
+
+        void operator()(Class& self, py::object obj) {
+            try {
+                ValueT value = py::extract<ValueT>(obj);
+                self.*field = value;
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType>::setValue(self.*field, obj);
+            }
         }
 
       private:
@@ -106,7 +115,8 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         this->add_property(name, py::make_getter(field),
                            py::make_function(detail::ReceiverSetter<Class,ReceiverT>(field),
                                              py::default_call_policies(),
-                                             boost::mpl::vector3<void, Class&, typename ReceiverT::PropertyTag::ValueType const&>()
+//                                              boost::mpl::vector3<void, Class&, typename ReceiverT::PropertyTag::ValueType const&>()
+                                             boost::mpl::vector3<void, Class&, py::object>()
                                             ),
                            help
                           );

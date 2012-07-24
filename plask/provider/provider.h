@@ -682,9 +682,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::
      */
     template <typename MeshPtrT>
     void setValue(DataVector<typename PropertyT::ValueType> data, MeshPtrT&& mesh) {
-        setProvider(new typename ProviderFor<PropertyTag, SpaceType>::
-                    template WithValue<MeshPtrT>(data,
-                                        std::forward<MeshPtrT>(mesh)), true);
+        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshPtrT>(data, std::forward<MeshPtrT>(mesh)), true);
     }
 
     static_assert(!(std::is_same<SpaceT, void>::value && (PropertyT::propertyType == FIELD_PROPERTY || PropertyT::propertyType == INTERPOLATED_FIELD_PROPERTY)),
@@ -889,7 +887,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in .");
 
-    ///Type of provided value.
+    /// Type of provided value.
     typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
 
     /**
@@ -975,6 +973,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const {
             ensureHasValue();
             return interpolate(mesh(), values, dst_mesh, method);
+            //return interpolate(*meshPtr, values, dst_mesh, method);
         }
     };
 

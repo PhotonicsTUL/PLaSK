@@ -14,7 +14,7 @@ namespace plask {
 
     template <typename DataT>    //for any data type
     struct InterpolationAlgorithm<DummyMesh, DataT, plask::INTERPOLATION_LINEAR> {
-        static void interpolate(DummyMesh& src_mesh, const DataVector<DataT>& src_vec,
+        static void interpolate(const DummyMesh& src_mesh, const DataVector<DataT>& src_vec,
                                 const plask::MeshD<DummyMesh::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
             dst_vec[0] = src_vec[0] + 10;
         }

@@ -104,7 +104,7 @@ static const char* interpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE",
 template <typename SrcMeshT, typename DataT, InterpolationMethod method>
 struct InterpolationAlgorithm
 {
-    static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec, const MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec, const MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec) {
         std::string msg = "interpolate (source mesh type: ";
         msg += typeid(src_mesh).name();
         msg += ", interpolation method: ";
@@ -120,8 +120,8 @@ struct InterpolationAlgorithm
 template <typename SrcMeshT, typename DataT, int iter>
 struct __InterpolateMeta__
 {
-    inline static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
+    inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
+                const MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
         if (int(method) == iter)
             InterpolationAlgorithm<SrcMeshT, DataT, (InterpolationMethod)iter>::interpolate(src_mesh, src_vec, dst_mesh, dst_vec);
         else
@@ -131,8 +131,8 @@ struct __InterpolateMeta__
 template <typename SrcMeshT, typename DataT>
 struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
 {
-    inline static void interpolate(SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
+    inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
+                const MeshD<SrcMeshT::dim>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
         throw CriticalException("no such interpolation method");
     }
 };
@@ -154,8 +154,8 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  */
 template <typename SrcMeshT, typename DataT>
 inline const DataVector<DataT>
-interpolate(SrcMeshT& src_mesh, const DataVector<DataT> src_vec_ptr,
-            MeshD<SrcMeshT::dim>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
+interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec_ptr,
+            const MeshD<SrcMeshT::dim>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
 {
     if (&src_mesh == &dst_mesh) return src_vec_ptr; // meshes are identical, so just return src_vec
 

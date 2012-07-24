@@ -5,6 +5,8 @@
 
 #include "python_globals.h"
 #include <plask/provider/provider.h>
+#include <plask/mesh/rectilinear.h>
+#include <plask/mesh/regular.h>
 
 namespace plask { namespace python {
 
@@ -64,6 +66,7 @@ namespace detail {
     {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
         static ValueT __call__(ReceiverT& self) { return self(); }
+        static void setValue(ReceiverT& self, const py::object& obj) { throw TypeError("Operation not allowed for single value receiver"); }
         RegisterReceiverImpl() {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider");
         }
@@ -77,6 +80,7 @@ namespace detail {
         static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<MeshD<dim>>& mesh) {
             return DataVectorWrap<ValueT,dim>(self(*mesh), mesh);
         }
+        static void setValue(ReceiverT& self, const py::object& obj) { throw TypeError("Operation not allowed for non-interpolated field receiver"); }
         RegisterReceiverImpl() {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", (py::arg("mesh")));
         }
@@ -89,9 +93,18 @@ namespace detail {
         static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<MeshD<dim>>& mesh, InterpolationMethod method) {
             return DataVectorWrap<ValueT,dim>(self(*mesh, method), mesh);
         }
+
+        static void setValue(ReceiverT& self, const py::object& obj) {
+            DataVectorWrap<ValueT,dim> data = py::extract<DataVectorWrap<ValueT,dim>>(obj);
+            if (dim == 2) {
+                auto rectilinear_mesh = dynamic_pointer_cast<RectilinearMesh2D>(data.mesh);
+                if (rectilinear_mesh) { self.setValue(data, rectilinear_mesh); return; }
+            }
+        }
+
         RegisterReceiverImpl() {
-            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider",
-                                     (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
+            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
+            this->receiver_class.def("setValue", &setValue, "Set previously obtained value", (py::arg("data")));
         }
     };
 

@@ -323,7 +323,7 @@ class RectangularMesh2D: public MeshD<2> {
      * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
-    auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) -> typename std::remove_reference<decltype(data[0])>::type {
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) const -> typename std::remove_reference<decltype(data[0])>::type {
         return interpolateLinear2D(
             [&] (std::size_t i0, std::size_t i1) { return data[this->index(i0, i1)]; },
             point.c0, point.c1, c0, c1, c0.findIndex(point.c0), c1.findIndex(point.c1)
@@ -584,7 +584,8 @@ public:
  * @tparam DataGetter2D functor
  */
 template <typename DataGetter2D, typename Mesh1D>
-auto interpolateLinear2D(DataGetter2D data, const double& point_c0, const double& point_c1, const Mesh1D& c0, const Mesh1D& c1, std::size_t index0, std::size_t index1) -> typename std::remove_reference<decltype(data(0, 0))>::type {
+auto interpolateLinear2D(DataGetter2D data, const double& point_c0, const double& point_c1, const Mesh1D& c0, const Mesh1D& c1, std::size_t index0, std::size_t index1)
+  -> typename std::remove_reference<decltype(data(0, 0))>::type {
     if (index0 == 0) {
         if (index1 == 0) return data(0, 0);
         if (index1 == c1.size()) return data(0, index1-1);
@@ -618,7 +619,7 @@ auto interpolateLinear2D(DataGetter2D data, const double& point_c0, const double
 
 template <typename Mesh1D, typename DataT>    // for any data type
 struct InterpolationAlgorithm<RectangularMesh2D<Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(RectangularMesh2D<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(const RectangularMesh2D<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
             *dst++ = src_mesh.interpolateLinear(src_vec, p);

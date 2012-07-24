@@ -441,7 +441,7 @@ class RectangularMesh3D: public MeshD<3> {
      * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
-    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) -> typename std::remove_reference<decltype(data[0])>::type {
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) const -> typename std::remove_reference<decltype(data[0])>::type {
         std::size_t index0 = c0.findIndex(point.c0);
         std::size_t index1 = c1.findIndex(point.c1);
         std::size_t index2 = c2.findIndex(point.c2);
@@ -515,7 +515,7 @@ class RectangularMesh3D: public MeshD<3> {
 
 template <typename Mesh1D,typename DataT>    //for any data type
 struct InterpolationAlgorithm<RectangularMesh3D<Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(RectangularMesh3D<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(const RectangularMesh3D<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
             *dst++ = src_mesh.interpolateLinear(src_vec, p);
