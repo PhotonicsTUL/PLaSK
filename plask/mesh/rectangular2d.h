@@ -88,8 +88,19 @@ class RectangularMesh2D: public MeshD<2> {
      * @param mesh1 mesh for the second coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh2D(const Mesh1D& mesh0, const Mesh1D& mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
-        c0(mesh0), c1(mesh1) { setIterationOrder(iterationOrder); }
+    RectangularMesh2D(Mesh1D mesh0, Mesh1D mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
+        c0(std::move(mesh0)), c1(std::move(mesh1)) { setIterationOrder(iterationOrder); }
+
+    /*
+     * Construct mesh with is based on given 1D meshes
+     *
+     * @param mesh0 mesh for the first coordinate, or constructor argument for the first coordinate mesh
+     * @param mesh1 mesh for the second coordinate, or constructor argument for the second coordinate mesh
+     * @param iterationOrder iteration order
+     */
+    /*template <typename Mesh0CtorArg, typename Mesh1CtorArg>
+    RectangularMesh2D(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
+        c0(std::forward<Mesh0CtorArg>(mesh0)), c1(std::forward<Mesh1CtorArg>(mesh1)) { setIterationOrder(iterationOrder); }*/
 
     /**
      * Get first coordinate of points in this mesh.

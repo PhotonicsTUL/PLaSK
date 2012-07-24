@@ -82,17 +82,31 @@ class RectangularMesh3D: public MeshD<3> {
     void setOptimalIterationOrder();
 
     /**
-     * Construct mesh with based on gived 1D meshes
+     * Construct mesh with is based on given 1D meshes
      *
      * @param mesh0 mesh for the first coordinate
      * @param mesh1 mesh for the second coordinate
      * @param mesh2 mesh for the third coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh3D(const Mesh1D& mesh0, const Mesh1D& mesh1, const Mesh1D& mesh2, IterationOrder iterationOrder=ORDER_210)
-        : c0(mesh0), c1(mesh1), c2(mesh2) {
-            setIterationOrder(iterationOrder);
-    }
+    RectangularMesh3D(Mesh1D mesh0, Mesh1D mesh1, Mesh1D mesh2, IterationOrder iterationOrder = ORDER_210) :
+        c0(std::move(mesh0)),
+        c1(std::move(mesh1)),
+        c2(std::move(mesh2)) { setIterationOrder(iterationOrder); }
+
+    /*
+     * Construct mesh with is based on given 1D meshes
+     *
+     * @param mesh0 mesh for the first coordinate, or constructor argument for the first coordinate mesh
+     * @param mesh1 mesh for the second coordinate, or constructor argument for the second coordinate mesh
+     * @param mesh2 mesh for the third coordinate, or constructor argument for the third coordinate mesh
+     * @param iterationOrder iteration order
+     */
+    /*template <typename Mesh0CtorArg, typename Mesh1CtorArg, typename Mesh2CtorArg>
+    RectangularMesh3D(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, Mesh2CtorArg&& mesh2, IterationOrder iterationOrder = ORDER_210) :
+        c0(std::forward<Mesh0CtorArg>(mesh0)),
+        c1(std::forward<Mesh1CtorArg>(mesh1)),
+        c2(std::forward<Mesh2CtorArg>(mesh2)) { setIterationOrder(iterationOrder); }*/
 
     /**
      * Get first coordinate of points in this mesh.
