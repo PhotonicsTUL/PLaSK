@@ -24,14 +24,19 @@ Typically, you should call @c MeshType static methods to obtain value for @ref p
 Example:
 @code
 using namespace plask;
+
 RectilinearMesh2D::Boundary boundary;   // stores boundary for mesh of type RectilinearMesh2D
 boundary = RectilinearMesh2D::getLeftBoundary();
+
 // now boundary represents condition which choose indexes of points on left boundary of any RectilinearMesh2D instance
+
 //...
 RectilinearMesh2D mesh;
 //... (add some points to mesh)
+
 Boundary<RectilinearMesh2D>::WithMesh bwm = boundary.get(mesh); //or boundary(mesh);
 // bwm represent set of points indexes which lies on left boundary of mesh
+
 std::cout << "Does point with index 0 lies on left boundary? Answer: " << bwm.includes(0) << std::endl;
 
 for (std::size_t index: bwm) {  //iterate over boundary points (indexes)
@@ -64,7 +69,7 @@ PLaSK includes some universal @ref plask::BoundaryImpl "BoundaryImpl\<MeshType\>
 #include "../utils/iterators.h"
 #include "../memory.h"
 
-#include "../utils/metaprog.h"   //for is_callable
+#include "../utils/metaprog.h"   // for is_callable
 
 namespace plask {
 
@@ -125,10 +130,10 @@ struct BoundaryImpl {
         /// iterator over indexes of mesh
         typedef BoundaryImpl<MeshType>::iterator iterator;
 
-        /// Logic of hold boundary.
+        /// Logic of held boundary.
         const BoundaryImpl<MeshType>& boundary;
 
-        /// Hold mesh.
+        /// Held mesh.
         const MeshType& mesh;
 
         /**
@@ -141,15 +146,15 @@ struct BoundaryImpl {
 
         /**
          * Check if boundary includes point with given index.
-         * @param mesh_index valid index of point in hold mesh
-         * @return @c true only if point with index @p mesh_index in hold mesh lies on boundary
+         * @param mesh_index valid index of point in held mesh
+         * @return @c true only if point with index @p mesh_index in held mesh lies on boundary
          */
         bool includes(std::size_t mesh_index) const {
             return boundary.includes(mesh, mesh_index);
         }
 
         /**
-         * Get begin iterator over boundary points (which are defined by indexes in hold mesh).
+         * Get begin iterator over boundary points (which are defined by indexes in held mesh).
          * @return begin iterator over boundary points
          */
         const_iterator begin() const {
@@ -157,7 +162,7 @@ struct BoundaryImpl {
         }
 
         /**
-         * Get end iterator over boundary points (which are defined by indexes in hold mesh).
+         * Get end iterator over boundary points (which are defined by indexes in held mesh).
          * @return end iterator over boundary points
          */
         const_iterator end() const {
@@ -219,14 +224,14 @@ struct Boundary: public HolderRef< const BoundaryImpl<MeshType> > {
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh operator()(const MeshType& mesh) const { return this->hold->get(mesh); }
+    WithMesh operator()(const MeshType& mesh) const { return this->held->get(mesh); }
 
     /**
      * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh get(const MeshType& mesh) const { return this->hold->get(mesh); }
+    WithMesh get(const MeshType& mesh) const { return this->held->get(mesh); }
 
     /**
      * Check if boundary includes point with given index.
@@ -235,7 +240,7 @@ struct Boundary: public HolderRef< const BoundaryImpl<MeshType> > {
      * @return @c true only if point with index @p mesh_index in @p mesh lies on boundary
      */
     bool includes(const MeshType& mesh, std::size_t mesh_index) const {
-        return this->hold->includes(mesh, mesh_index);
+        return this->held->includes(mesh, mesh_index);
     }
 };
 

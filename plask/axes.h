@@ -11,7 +11,7 @@ This file includes utils connected with names of axes.
 namespace plask {
 
 /**
- * Hold names of axises.
+ * Held names of axises.
  *
  * Can change: axis number (from 0 to 2) <-> axis name (string)
  */

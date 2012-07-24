@@ -457,7 +457,7 @@ template<typename _Signature> struct DelegateProvider;
 template<typename _Res, typename... _ArgTypes>
 struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
 
-    /// Hold external functor.
+    /// Held external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
 
     /**
@@ -470,9 +470,9 @@ struct DelegateProvider<_Res(_ArgTypes...)>: public Provider {
     }
 
     /**
-     * Call functor hold by valueGetter.
-     * @param params parameters for functor hold by valueGetter
-     * @return value returned by functor hold by valueGetter
+     * Call functor held by valueGetter.
+     * @param params parameters for functor held by valueGetter
+     * @return value returned by functor held by valueGetter
      */
     virtual _Res operator()(_ArgTypes&&... params) const {
         return valueGetter(std::forward<_ArgTypes>(params)...);
@@ -491,7 +491,7 @@ template<typename _BaseClass, typename _Signature> struct PolymorphicDelegatePro
 template<typename _BaseClass, typename _Res, typename... _ArgTypes>
 struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _BaseClass {
 
-    /// Hold external functor.
+    /// Held external functor.
     std::function<_Res(_ArgTypes...)> valueGetter;
 
     /**
@@ -526,9 +526,9 @@ struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _Base
     }
 
     /**
-     * Call functor hold by valueGetter.
-     * @param params parameters for functor hold by valueGetter
-     * @return value returned by functor hold by valueGetter
+     * Call functor held by valueGetter.
+     * @param params parameters for functor held by valueGetter
+     * @return value returned by functor held by valueGetter
      */
     _Res operator()(_ArgTypes... params) const {
         return valueGetter(std::forward<_ArgTypes>(params)...);
@@ -713,7 +713,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
     typedef typename SingleValueProvider<ValueT>::ProvidedValueType ProvidedValueType;
 
     /**
-     * Implementation of one value provider class which holds value inside (in value field) and operator() returns this hold value.
+     * Implementation of one value provider class which holds value inside (in value field) and operator() returns its held value.
      */
     struct WithDefaultValue: public ProviderFor<PropertyT, SpaceT> {
 
@@ -751,7 +751,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
     };
 
     /**
-     * Implementation of one value provider class which holds value inside (in value field) and operator() return this hold value.
+     * Implementation of one value provider class which holds value inside (in value field) and operator() return its held value.
      */
     struct WithValue: public ProviderFor<PropertyT, SpaceT> {
 

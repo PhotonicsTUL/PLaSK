@@ -123,7 +123,7 @@ struct MaterialInfo {
 
     public:
 
-        ///returned by getArgumentRange if there is no range for given argument, hold two NaNs
+        /// returned by getArgumentRange if there is no range for given argument, hold two NaNs
         static const ArgumentRange NO_RANGE;
 
         PropertyInfo& setSource(const std::string& new_source) { this->_source = new_source; return *this; }
@@ -188,9 +188,9 @@ struct MaterialInfo {
      * Helper which allow to add (do this in constructor) information about material to default material meta-info database.
      */
     class Register {
-        
+
         void set(PropertyInfo&) {}
-        
+
         template <typename Setter1, typename ...Setters>
         void set(PropertyInfo& i, const Setter1& setter1, const Setters&... setters) {
             setter1.set(i);
@@ -201,7 +201,7 @@ struct MaterialInfo {
         Register(const std::string& materialName, const std::string& parentMaterial) {
             MaterialInfo::DB::getDefault().add(materialName, parentMaterial);
         }
-        
+
         template <typename ...PropertySetters>
         Register(const std::string& materialName, const std::string& parentMaterial, PROPERTY_NAME property, const PropertySetters&... propertySetters) {
             set(MaterialInfo::DB::getDefault().add(materialName, parentMaterial)(property), propertySetters...);
@@ -210,7 +210,7 @@ struct MaterialInfo {
         Register(const std::string& materialName) {
             MaterialInfo::DB::getDefault().add(materialName);
         }
-        
+
         template <typename ...PropertySetters>
         Register(const std::string& materialName, PROPERTY_NAME property, const PropertySetters&... propertySetters) {
             set(MaterialInfo::DB::getDefault().add(materialName)(property), propertySetters...);

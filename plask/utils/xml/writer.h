@@ -13,7 +13,7 @@ namespace plask {
 /**
  * Object of this class help produce valid XML documents.
  *
- * It hold std output stream and helps format valid XML data written to this stream.
+ * It holds std output stream and helps format valid XML data written to this stream.
  *
  * Example:
  * @code

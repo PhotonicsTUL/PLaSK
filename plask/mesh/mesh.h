@@ -8,14 +8,14 @@ This file includes base classes for meshes.
 
 /** @page meshes Meshes
 @section meshes_about About meshes
-The mesh represents (ordered) set of points in 2d or 3d space. All meshes in PLaSK implements (inherits from)
+The mesh represents (ordered) set of points in 2D or 3D space. All meshes in PLaSK implements (inherits from)
 instantiation of plask::Mesh template interface.
 
 Typically, there is some data associated with points in mesh.
 In PLaSK, all this data is not stored in the mesh class, hence they must be stored separately.
 As the points in the mesh are ordered and each one have unique index in a range from <code>0</code>
 to <code>plask::Mesh::size()-1</code>,
-you can store data in any indexed structure, like an array (1d) or std::vector (which is recommended),
+you can store data in any indexed structure, like an array (1D) or std::vector (which is recommended),
 storing the data value for the i-th point in the mesh under the i-th index.
 
 @see @ref interpolation @ref boundaries
@@ -45,35 +45,36 @@ and also can have extra methods for your internal use (for calculation).
 Adapter templates currently available in PLaSK (see its description for more details and examples):
 - plask::SimpleMeshAdapter
 
-@subsection meshes_write_direct Direct implementation of plask::Mesh\<DIM\>
-To implement a new mesh directly you have to write class inherited from the plask::Mesh\<DIM\>, where DIM (is equal 2 or 3) is a number of dimension of space your mesh is defined over.
+@subsection meshes_write_direct Direct implementation of \p plask::MeshD\<DIM\>
+To implement a new mesh directly you have to write class inherited from the \p plask::MeshD\<DIM\>, where DIM (is equal 2 or 3) is a number of dimension of space your mesh is defined over.
 
 You are required to:
 - implement the @ref plask::Mesh::size size method;
 - implement the iterator over the mesh points, which required to:
   - writing class inherited from plask::Mesh::IteratorImpl (and implement all its abstract methods),
-  - writing @ref plask::Mesh::begin "begin()" and @ref plask::Mesh::end "end()" methods, typically this methods only returns:
+  - writing @ref plask::MeshD::begin "begin()" and @ref plask::MeshD::end "end()" methods, typically this methods only returns:
     @code plask::Mesh::Iterator(new YourIteratorImpl(...)) @endcode
   - see also: MeshIteratorWrapperImpl and makeMeshIterator
-- implement the serialize method, which writes the mesh to XML
+- implement the \ref plask::MeshD::serialize method, which writes the mesh to XML
+- write and register the reading function which reads the mesh from XML
 
-Example implementation of singleton mesh (mesh which represent set with only one point in 3d space):
+Example implementation of singleton mesh (mesh which represent set with only one point in 3D space):
 @code
 struct OnePoint3DMesh: public plask::MeshD<3> {
 
-    //Held point:
+    // Held point:
     plask::Vec<3, double> point;
 
     OnePoint3DMesh(const plask::Vec<3, double>& point)
     : point(point) {}
 
-    //Iterator:
+    // Iterator:
     struct IteratorImpl: public MeshD<plask::space::Cartesian3D>::IteratorImpl {
 
-        //point to mesh or is equal to nullptr for end iterator
+        // point to mesh or is equal to nullptr for end iterator
         const OnePoint3DMesh* mesh_ptr;
 
-        //mesh == nullptr for end iterator
+        // mesh == nullptr for end iterator
         IteratorImpl(const OnePoint3DMesh* mesh)
         : mesh_ptr(mesh) {}
 
@@ -99,7 +100,7 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
 
     };
 
-    //plask::MeshD<3> methods implementation:
+    // plask::MeshD<3> methods implementation:
 
     virtual std::size_t size() const {
         return 1;
@@ -113,7 +114,37 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
         return MeshD<3>::Iterator(new IteratorImpl(nullptr));
     }
 
+    virtual void serialize(plask::XMLWriter& writer, const std::string name) {
+        auto mesh = writer.addTag("mesh");                  // This is the main mesh tag
+        mesh.attr("type", "point3d").attr("name", name);    // These are necessary attributes for the <mesh> tag
+        mesh.addTag("point")
+            .attr("c0", point.c0)
+            .attr("c1", point.c1)
+            .attr("c2", point.c2)                           // Store this point coordinates in attributes of tag <point>
+        ;
+    }
+
 };
+
+// Now write reading function (when it is called, the current tag is the <mesh> tag):
+
+static shared_ptr<Mesh> readOnePoint3DMesh(plask::XMLReader& reader) {
+    reader.requireTag("point");
+    double c0 = reader.requireAttribute<double>("c0");
+    double c1 = reader.requireAttribute<double>("c1");
+    double c2 = reader.requireAttribute<double>("c1");
+    reader.requireTagEnd();   // this is necessary to make sure the tag <point> is closed
+    // Now create the mesh into a shared pointer and return it:
+    return make_shared<OnePoint3DMesh>(plask::Vec<3,double>(c0, c1, c2));
+}
+
+// Declare global variable of type RegisterMeshReader in order to register the reader:
+//   the first argument must be the same string which was written in 'type' attribute in OnePoint3DMesh::serialize() method
+//   the second one is the address of your reading function
+//   variable name does not matter
+
+static RegisterMeshReader onepoint3dmesh_reader("point3d", &readOnePoint3DMesh);
+
 @endcode
 You should also implement interpolation algorithms for your mesh, see @ref interpolation_write for more details.
 */

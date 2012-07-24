@@ -43,10 +43,10 @@ namespace plask {
 
 namespace plask {
 /**
- * Template for base class of object holder. It allow to hold polymorphic class inside one type.
+ * Template for base class of object holder. It allows to hold polymorphic class inside one type.
  *
- * Typically, subclasses adds some delegates methods to hold object.
- * Hold object is stored by pointer, so it can store class derived from T.
+ * Typically, subclasses adds some delegates methods to held object.
+ * Held object is stored by pointer, so it can store class derived from T.
  * Stored object is deleted in destructor.
  * Holder has all assign and copy constructors which use stored object clone() method.
  * @tparam T type of class to hold, must have clone() method which make a copy of object
@@ -56,68 +56,68 @@ struct Holder {
 
     protected:
 
-    /// Hold object. Typically can be nullptr only after move assigment.
-    T* hold;
+    /// Held object. Typically can be nullptr only after move assigment.
+    T* held;
 
     public:
 
     /**
-     * @brief Construct a holder with given @p hold object.
-     * @param hold object to hold, should be not nullptr
+     * @brief Construct a holder with given @p held object.
+     * @param held object to hold, should be not nullptr
      */
-    Holder(T* hold): hold(hold) {}
+    Holder(T* held): held(held) {}
 
     /**
-     * @brief Construct a holder with given @p hold object.
-     * @param hold object to hold, should be not nullptr
+     * @brief Construct a holder with given @p held object.
+     * @param held object to hold, should be not nullptr
      */
-    Holder(T& hold): hold(&hold) {}
+    Holder(T& held): held(&held) {}
 
     /**
-     * @brief Copy constructor. Use hold->clone().
+     * @brief Copy constructor. Use held->clone().
      * @param to_copy object to copy
      */
-    Holder(const Holder<T>& to_copy): hold(to_copy.hold->clone()) {}
+    Holder(const Holder<T>& to_copy): held(to_copy.held->clone()) {}
 
     /**
      * @brief Move constructor.
      *
-     * It doesn't call hold.clone().
+     * It doesn't call held.clone().
      * @param to_move object to move
      */
-    Holder(Holder<T>&& to_move): hold(to_move.hold) { to_move.hold = nullptr; }
+    Holder(Holder<T>&& to_move): held(to_move.held) { to_move.held = nullptr; }
 
     /**
-     * @brief Copy operator. Use hold->clone().
+     * @brief Copy operator. Use held->clone().
      * @param to_copy object to copy
      */
     Holder<T>& operator=(const Holder& to_copy) {
-        if (hold == to_copy.hold) return;   //self-assigment protection
-        delete hold;
-        hold = to_copy.hold->clone();
+        if (held == to_copy.held) return;   //self-assigment protection
+        delete held;
+        held = to_copy.held->clone();
         return *this;
     }
 
     /**
      * @brief Move operator.
      *
-     * It doesn't call hold.clone().
+     * It doesn't call held.clone().
      * @param to_move object to move
      */
     Holder<T>& operator=(Holder&& to_move) {
-        std::swap(hold, to_move.hold);  //to_move destructor will delete this old hold for a moment
+        std::swap(held, to_move.held);  // to_move destructor will delete this old held for a moment
         return *this;
     }
 
-    /// Delete hold object using delete.
-    ~Holder() { delete hold; }
+    /// Delete held object using delete.
+    ~Holder() { delete held; }
 
 };
 
 /**
- * Template for base class of object holder. It allow to hold polymorphic class inside one type and use reference counting to delete hold object in proper time.
+ * Template for base class of object holder. It allow to hold polymorphic class inside one type and use reference counting to delete held object in proper time.
  *
- * Typically, subclasses adds some delegates methods to hold object.
+ * Typically, subclasses adds some delegates methods to held object.
  * Hold object is stored by pointer, so it can store class derived from T.
  * Stored object is deleted in destructor when last reference to it is lost.
  * @tparam T type of class to hold
@@ -128,15 +128,15 @@ struct HolderRef {
     protected:
 
     /// Hold object. Typically can be nullptr only after move assigment.
-    shared_ptr<T> hold;
+    shared_ptr<T> held;
 
     public:
 
     /**
-     * @brief Construct a holder with given @p hold object.
-     * @param hold object to hold
+     * @brief Construct a holder with given @p held object.
+     * @param held object to hold
      */
-    HolderRef(T* hold): hold(hold) {}
+    HolderRef(T* held): held(held) {}
 
 };
 

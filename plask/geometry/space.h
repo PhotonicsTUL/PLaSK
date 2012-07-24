@@ -130,8 +130,8 @@ struct Geometry: public GeometryElement {
     virtual Type getType() const { return TYPE_GEOMETRY; }
 
     /**
-     * Get 3D element holded by this geometry (which has type Extrusion or Revolution for 2d geometries).
-     * @param 3D geometry element holded by this geometry
+     * Get 3D element held by this geometry (which has type Extrusion or Revolution for 2d geometries).
+     * @param 3D geometry element held by this geometry
      */
     virtual shared_ptr< GeometryElementD<3> > getElement3D() const = 0;
 

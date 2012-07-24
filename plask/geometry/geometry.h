@@ -14,7 +14,7 @@ PLaSK uses terminology inhrtited from the tree theory i.e. element C is a child 
 and then P is called the parent of C).
 
 Each vertex is represented by an object of class inherited from the plask::GeometryElement type.
-Each such object must be hold by plask::shared_ptr (which automatically deletes it in the proper time).
+Each such object must be held by plask::shared_ptr (which automatically deletes it in the proper time).
 
 There are following types of geometry elements / vertices (see also plask::GeometryElementType):
 - \b leafs (terminal nodes) : don't have children and store information about material;

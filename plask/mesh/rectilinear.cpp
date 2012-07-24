@@ -100,7 +100,7 @@ static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
     }
     reader.requireTagEnd();
 
-    return make_shared<RectilinearMesh2D>(axes["axis0"], axes["axis1"]);
+    return make_shared<RectilinearMesh2D>(std::move(axes["axis0"]), std::move(axes["axis1"]));
 }
 
 static shared_ptr<Mesh> readRectilinearMesh3D(XMLReader& reader)
@@ -122,7 +122,7 @@ static shared_ptr<Mesh> readRectilinearMesh3D(XMLReader& reader)
     }
     reader.requireTagEnd();
 
-    return make_shared<RectilinearMesh3D>(axes["axis0"], axes["axis1"], axes["axis2"]);
+    return make_shared<RectilinearMesh3D>(std::move(axes["axis0"]), std::move(axes["axis1"]), std::move(axes["axis2"]));
 }
 
 static RegisterMeshReader rectilinearmesh2d_reader("rectilinear2d", readRectilinearMesh2D);

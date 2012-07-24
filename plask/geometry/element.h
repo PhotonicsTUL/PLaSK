@@ -213,7 +213,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     };
 
     /**
-     * Geometry changer which hold vector of changers and try to apply this changers sequently.
+     * Geometry changer which holds vector of changers and try to apply this changers sequently.
      *
      * Its apply method call: changers[0].apply(to_change, translation), changers[1].apply(to_change, translation), ...
      * up to time when one of this call returns @c true (and then it returns @c true) or
@@ -236,7 +236,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         CompositeChanger& operator()(const Changer* changer);
 
-        /// Delete all hold changers (using delete operator).
+        /// Delete all held changers (using delete operator).
         ~CompositeChanger();
 
         virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;

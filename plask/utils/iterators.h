@@ -119,7 +119,7 @@ struct PolymorphicForwardIterator:
     public:
 
     /**
-     * Construct iterator which hold given implementation object.
+     * Construct iterator which holds given implementation object.
      * @param impl Implementation object. It will be delete by constructor of this.
      *             If it is @c nullptr you should not call any methods of this before assign.
      */
@@ -169,7 +169,7 @@ template <typename ImplT>
 struct PolymorphicForwardIteratorWithIndex: public PolymorphicForwardIterator<ImplT> {
 
     /**
-     * Construct iterator which hold given implementation object.
+     * Construct iterator which holds given implementation object.
      * @param impl Implementation object. It will be delete by constructor of this.
      *             If it is @c nullptr you should not call any methods of this before assign.
      */
@@ -331,7 +331,7 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
     template <typename OtherT>
     std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
 
-    Reference dereference() const { return functor(index); }    
+    Reference dereference() const { return functor(index); }
 
 };
 
