@@ -76,9 +76,9 @@ namespace detail {
     struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT>
     {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
-        static const int dim = ReceiverT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<MeshD<dim>>& mesh) {
-            return DataVectorWrap<ValueT,dim>(self(*mesh), mesh);
+        static const int DIMS = ReceiverT::SpaceType::DIMS;
+        static DataVectorWrap<ValueT,DIMS> __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh) {
+            return DataVectorWrap<ValueT,DIMS>(self(*mesh), mesh);
         }
         static void setValue(ReceiverT& self, const py::object& obj) { throw TypeError("Operation not allowed for non-interpolated field receiver"); }
         RegisterReceiverImpl() {
@@ -86,28 +86,33 @@ namespace detail {
         }
     };
 
+    template <int DIMS, typename ReceiverT> struct TrySettingValueForMeshes {};
+
     template <typename ReceiverT>
     struct RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT> {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
-        static const int dim = ReceiverT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,dim> __call__(ReceiverT& self, const shared_ptr<MeshD<dim>>& mesh, InterpolationMethod method) {
-            return DataVectorWrap<ValueT,dim>(self(*mesh, method), mesh);
+        static const int DIMS = ReceiverT::SpaceType::DIMS;
+        typedef DataVectorWrap<typename ReceiverT::PropertyTag::ValueType, DIMS> DataT;
+        static DataT __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, InterpolationMethod method) {
+            return DataT(self(*mesh, method), mesh);
         }
-
         static void setValue(ReceiverT& self, const py::object& obj) {
-            DataVectorWrap<ValueT,dim> data = py::extract<DataVectorWrap<ValueT,dim>>(obj);
-            if (dim == 2) {
-                auto rectilinear_mesh = dynamic_pointer_cast<RectilinearMesh2D>(data.mesh);
-                if (rectilinear_mesh) { self.setValue(data, rectilinear_mesh); return; }
-            }
+            DataT data = py::extract<DataT>(obj);
+            TrySettingValueForMeshes<DIMS, ReceiverT>::call(self, data);
         }
-
         RegisterReceiverImpl() {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
             this->receiver_class.def("setValue", &setValue, "Set previously obtained value", (py::arg("data")));
         }
+      private:
+        template <typename MeshT>
+        static inline bool setValueForMesh(ReceiverT& self, const DataT& data) {
+            shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(data.mesh);
+            if (mesh) { self.setValue(data, mesh); return true; }
+            return false;
+        }
+        friend struct TrySettingValueForMeshes<DIMS, ReceiverT>;
     };
-
 
     template <typename ProviderT>
     struct RegisterProviderBase
@@ -142,9 +147,9 @@ namespace detail {
     struct RegisterProviderImpl<ProviderT, FIELD_PROPERTY> : public RegisterProviderBase<ProviderT>
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
-        static const int dim = ProviderT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,dim> __call__(ProviderT& self, const shared_ptr<MeshD<dim>>& mesh) {
-            return DataVectorWrap<ValueT,dim>(self(*mesh), mesh);
+        static const int DIMS = ProviderT::SpaceType::DIMS;
+        static DataVectorWrap<ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh) {
+            return DataVectorWrap<ValueT,DIMS>(self(*mesh), mesh);
         }
         RegisterProviderImpl() {
             this->provider_class.def("__call__", &__call__, "Get value from the provider", (py::arg("mesh")));
@@ -155,12 +160,34 @@ namespace detail {
     struct RegisterProviderImpl<ProviderT, INTERPOLATED_FIELD_PROPERTY> : public RegisterProviderBase<ProviderT>
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
-        static const int dim = ProviderT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,dim> __call__(ProviderT& self, const shared_ptr<MeshD<dim>>& mesh, InterpolationMethod method) {
-            return DataVectorWrap<ValueT,dim>(self(*mesh, method), mesh);
+        static const int DIMS = ProviderT::SpaceType::DIMS;
+        static DataVectorWrap<ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, InterpolationMethod method) {
+            return DataVectorWrap<ValueT,DIMS>(self(*mesh, method), mesh);
         }
         RegisterProviderImpl() {
             this->provider_class.def("__call__", &__call__, "Get value from the provider", (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
+        }
+    };
+
+    // Here add new mesh types that should be able to be provided in DataVector to receivers:
+
+    // 2D meshes:
+    template <typename ReceiverT> struct TrySettingValueForMeshes<2, ReceiverT> {
+        typedef RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> RegisterT;
+        static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
+            if (RegisterT::template setValueForMesh<RectilinearMesh2D>(self, data)) return;
+            if (RegisterT::template setValueForMesh<RegularMesh2D>(self, data)) return;
+            throw TypeError("Data on wrong mesh type for this operation");
+        }
+    };
+
+    // 3D meshes:
+    template <typename ReceiverT> struct TrySettingValueForMeshes<3, ReceiverT> {
+        typedef RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> RegisterT;
+        static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
+            if (RegisterT::template setValueForMesh<RectilinearMesh3D>(self, data)) return;
+            if (RegisterT::template setValueForMesh<RegularMesh3D>(self, data)) return;
+            throw TypeError("Data on wrong mesh type for this operation");
         }
     };
 
