@@ -9,7 +9,7 @@ This file includes templates of base classes for mesh's boundaries.
 /** @page boundaries Boundaries
 @section boundaries_about About boundaries
 Boundaries represent some conditions which allow to choose a subset of points (strictly: indexes of points) from mesh.
-Boundaries are typically used by modules to show points for boundaries conditions.
+Boundaries are typically used by solvers to show points for boundaries conditions.
 
 @section boundaries_use How to use boundaries?
 Boundaries are specific for given type of mesh.
@@ -41,14 +41,14 @@ for (std::size_t index: bwm) {  //iterate over boundary points (indexes)
 }
 @endcode
 
-@section boundaries_modules How to use boundaries in modules?
-Modules hold @ref plask::BoundaryCondition "boundary conditions" which are pairs of:
-boundary (described by plask::Boundary) and condidion (description depends from type of condition, can be module specific).
+@section boundaries_solvers How to use boundaries in solvers?
+Solvers hold @ref plask::BoundaryCondition "boundary conditions" which are pairs of:
+boundary (described by plask::Boundary) and condidion (description depends from type of condition, can be solver specific).
 Class plask::BoundaryConditions is container template of such pairs (it depends from both types: mesh and condition).
-So, typically, modules have one or more public fields of type @ref plask::BoundaryConditions "BoundaryConditions\<MeshType, ConditionType>".
-User of module can call this fields methods to @ref plask::BoundaryConditions::add "add" boundary condition, and module can iterate over this boundary conditions.
+So, typically, solvers have one or more public fields of type @ref plask::BoundaryConditions "BoundaryConditions\<MeshType, ConditionType>".
+User of solver can call this fields methods to @ref plask::BoundaryConditions::add "add" boundary condition, and solver can iterate over this boundary conditions.
 
-See also @ref modules_writing_details.
+See also @ref solvers_writing_details.
 
 @section boundaries_impl Boundaries implementations.
 Instance of @ref plask::Boundary "Boundary\<MeshType\>" in fact is only a holder which includes pointer to abstract class @ref plask::BoundaryImpl "BoundaryImpl\<MeshType\>".

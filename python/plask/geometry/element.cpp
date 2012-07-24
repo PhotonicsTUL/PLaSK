@@ -69,9 +69,9 @@ std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self) {
     try {
         py::object obj(self);
         py::object cls = obj.attr("__class__");
-        std::string module = py::extract<std::string>(cls.attr("__module__"));
+        std::string solver = py::extract<std::string>(cls.attr("__module__"));
         std::string name = py::extract<std::string>(cls.attr("__name__"));
-        out << "<" << module << "." << name << " object at (" << self << ")>";
+        out << "<" << solver << "." << name << " object at (" << self << ")>";
     } catch (py::error_already_set) {
         PyErr_Clear();
         out << "<Unrecognized plask.geometry.GeometryElement subclass object at (" << self << ")>";

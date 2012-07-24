@@ -94,7 +94,7 @@ struct BadInput: public Exception {
 };
 
 /**
- * This exception shoulb be thrown by modules in case of error in computations.
+ * This exception shoulb be thrown by solvers in case of error in computations.
  */
 struct ComputationError: public Exception {
 
@@ -245,7 +245,7 @@ public:
 //-------------- Connected with geometry: -----------------------
 
 /**
- * Exceptions of this class are thrown when modules don't have geometry set
+ * Exceptions of this class are thrown when solvers don't have geometry set
  */
 struct NoGeometryException: public Exception {
     NoGeometryException(const std::string& where): Exception("$1$: No geometry specified", where) {}
@@ -355,7 +355,7 @@ struct NoSuchAxisNames: public Exception {
 //-------------- Connected with meshes: -----------------------
 
 /**
- * Exceptions of this class are thrown when modules don't have mesh set
+ * Exceptions of this class are thrown when solvers don't have mesh set
  */
 struct NoMeshException: public Exception {
     NoMeshException(const std::string& where): Exception("$1$: No mesh specified", where) {}

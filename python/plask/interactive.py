@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Module launching interactive session.
+Solver launching interactive session.
 
 Based on the sympy session.py:
 

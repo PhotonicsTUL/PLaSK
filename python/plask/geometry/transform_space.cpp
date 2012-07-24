@@ -32,7 +32,7 @@ void register_geometry_changespace()
 
     py::class_<Extrusion, shared_ptr<Extrusion>, py::bases<GeometryElementTransformSpace<3,2>>, boost::noncopyable>("Extrusion",
         "Extrusion in the longitudinal direction of the 2D object into a 3D one."
-        "Objects of this type can be supplied to 2D Cartesian modules or they can be used\n"
+        "Objects of this type can be supplied to 2D Cartesian solvers or they can be used\n"
         "as a part of the 3D geometry tree.\n\n"
         "Extrusion(child, length=infinity)\n    Create new extrusion of given length with provided child",
         py::init<shared_ptr<GeometryElementD<2>>,double>((py::arg("child"), py::arg("length")=INFINITY)))
@@ -41,7 +41,7 @@ void register_geometry_changespace()
 
     py::class_<Revolution, shared_ptr<Revolution>, py::bases<GeometryElementTransformSpace<3,2>>, boost::noncopyable>("Revolution",
         "Revolution around the vertical axis of the 2D object into a 3D one."
-        "Objects of this type can be supplied to 2D cylindrical modules or they can be used\n"
+        "Objects of this type can be supplied to 2D cylindrical solvers or they can be used\n"
         "as a part of the 3D geometry tree.\n\n"
         "Revolution(child)\n    Create new revolution with provided child",
         py::init<shared_ptr<GeometryElementD<2>>>((py::arg("child"))))

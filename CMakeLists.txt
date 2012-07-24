@@ -12,8 +12,8 @@ set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works
 add_definitions(-Wall)         # all warnings
 add_definitions(-std=c++0x)     # C++0x (C++11) standard
 
-include_directories(.)          # modules can include plask using <plask/plask.hpp>
-include_directories(python)     # modules can also include <plask/python.hpp>
+include_directories(.)          # solvers can include plask using <plask/plask.hpp>
+include_directories(python)     # solvers can also include <plask/python.hpp>
 include_directories(extlib)     # place for local external libraries
 include_directories(${CMAKE_BINARY_DIR}/include) # for include config.h
 
@@ -41,7 +41,7 @@ message(STATUS "PLaSK version ${VERSION}")
 # ---------- Configurable options --------------------------------------------
 include(CMakeDependentOption)
 
-option(BUILD_SHARED_MODULE_LIBS "Build shared libraries for modules." OFF)
+option(BUILD_SHARED_SOLVER_LIBS "Build shared libraries for solvers." OFF)
 
 option(BUILD_GUI "Build GUI program (require QT)" OFF) # FIXME: install QT for windows users
 
@@ -244,42 +244,42 @@ macro(add_python_test test test_file)
     endif()
 endmacro()
 
-# ----------===== modules =====--------------------------------------------
+# ----------===== Solvers =====--------------------------------------------
 
-macro(mod_option mod opt)
-    string(REPLACE "/" "_" ${opt} ${mod})
-    string(TOUPPER "BUILD_MODULE_${${opt}}" ${opt})
+macro(solv_option solv opt)
+    string(REPLACE "/" "_" ${opt} ${solv})
+    string(TOUPPER "BUILD_SOLVER_${${opt}}" ${opt})
 endmacro()
 
-# Automagically get list of available module and set options to turn on/off building particular modules
-file(GLOB_RECURSE module_lists RELATIVE  ${CMAKE_SOURCE_DIR}/modules modules/*CMakeLists.txt)
-list(REMOVE_ITEM module_lists modules/skel/CMakeLists.txt)
-message(STATUS "Will build the following modules (in case of error disable the offending module and try again):")
-foreach(mod ${module_lists})
-    string(REPLACE "/CMakeLists.txt" "" mod ${mod})
-    if (NOT ${mod} STREQUAL skel)
-        list(APPEND modules ${mod})
-        mod_option(${mod} opt)
-        option(${opt} "Build module '${mod}'" ON)
+# Automagically get list of available solvers and set options to turn on/off building particular solvers
+file(GLOB_RECURSE solver_lists RELATIVE  ${CMAKE_SOURCE_DIR}/solvers solvers/*CMakeLists.txt)
+list(REMOVE_ITEM solver_lists solvers/skel/CMakeLists.txt)
+message(STATUS "Will build the following solvers (in case of error disable the offending solver and try again):")
+foreach(solv ${solver_lists})
+    string(REPLACE "/CMakeLists.txt" "" solv ${solv})
+    if (NOT ${solv} STREQUAL skel)
+        list(APPEND solvers ${solv})
+        solv_option(${solv} opt)
+        option(${opt} "Build solver '${solv}'" ON)
         if (${opt})
-            message(STATUS "  ${mod}: YES")
+            message(STATUS "  ${solv}: YES")
         else()
-            message(STATUS "  ${mod}: NO")
+            message(STATUS "  ${solv}: NO")
         endif()
     endif()
 endforeach()
 
-# Build modules
-set(modules_test_targets "")
-foreach(mod ${modules})
-    mod_option(${mod} opt)
-    option(${opt} "Build module '${mod}'" ON)
+# Build solvers
+set(solvers_test_targets "")
+foreach(solv ${solvers})
+    solv_option(${solv} opt)
+    option(${opt} "Build solver '${solv}'" ON)
     if (${opt})
         if(BUILD_TESTING)
-            string(REGEX REPLACE "/|_" "" modtarget ${mod})
-            list(APPEND modules_test_targets "module-${modtarget}-test")
+            string(REGEX REPLACE "/|_" "" solvtarget ${solv})
+            list(APPEND solvers_test_targets "solver-${solvtarget}-test")
         endif()
-        add_subdirectory(modules/${mod})
+        add_subdirectory(solvers/${solv})
     endif()
 endforeach()
 
@@ -341,9 +341,9 @@ if(BUILD_TESTING)
     endif()
 
     if (RUN_TESTS)
-        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${modules_test_targets})
+        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${solvers_test_targets})
     else()
-        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${modules_test_targets})
+        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${solvers_test_targets})
     endif()
 
 endif(BUILD_TESTING)

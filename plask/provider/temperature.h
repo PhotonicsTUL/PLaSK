@@ -15,8 +15,8 @@ namespace plask {
  *
  * Example:
  * @code
- * // module calculating temperature in Cartesian 2d space:
- * struct PModule1: plask::ModuleOver<plask::Geometry2DCartesian> {
+ * // solver calculating temperature in Cartesian 2d space:
+ * struct PSolver1: plask::SolverOver<plask::Geometry2DCartesian> {
  *      plask::ProviderFor<Temperature, plask::Cartesian2D>::WithValue<SomeMeshType> outTemperature;
  *      // outTemperature.value stores temperature values in points pointed by outTemperature.mesh
  *      // outTemperature.value has type plask::shared_ptr< std::vector<double> >
@@ -24,8 +24,8 @@ namespace plask {
  *      // ...
  * };
  *
- * // another module which calculates temperature in Cartesian 2d space:
- * struct PModule2: plask::ModuleWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D> {
+ * // another solver which calculates temperature in Cartesian 2d space:
+ * struct PSolver2: plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D> {
  *      plask::ProviderFor<Temperature, plask::Cartesian2D>::Delegate outTemperature;
  *
  *      plask::DataVector<double> my_temperature;
@@ -34,24 +34,24 @@ namespace plask {
  *          return interpolate(*mesh, my_temperature, dst_mesh, method);
  *      }
  *      // ...
- *      PModule1(): outTemperature(this, &PModule2::getTemperature) {}
+ *      PSolver1(): outTemperature(this, &PSolver2::getTemperature) {}
  * };
  *
  * // needs temperature in Cartesian 2d space:
- * struct RModule {
+ * struct RSolver {
  *      plask::ReceiverFor<Temperature, plask::Cartesian2D> inTemperature;
  *      // ...
  * };
  *
  * //... in program:
- * PModule1 m1;
- * PModule2 m2;
- * RModule r;
+ * PSolver1 m1;
+ * PSolver2 m2;
+ * RSolver r;
  * r.inTemperature << m1.outTemperature;   //connect
  * r.inTemperature << m2.outTemperature;   //change data source of r from m1 to m2
  * @endcode
  *
- * @see @ref modules_writing; @ref providers; plask::ProviderFor
+ * @see @ref solvers_writing; @ref providers; plask::ProviderFor
  */
 struct Temperature: public ScalarFieldProperty {
     static constexpr const char* NAME = "temperature"; // mind lower case here

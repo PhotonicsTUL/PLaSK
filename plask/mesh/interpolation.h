@@ -19,16 +19,16 @@ plask::interpolate method calculates and returns @a dst_vec for a given
 plask::interpolate can return a newly created vector or the @a src_vec if @a src_mesh and @a dst_mesh are the same.
 Furthermore, the lifespan of both source and destination data cannot be determined in advance.
 For this reason @a src_vec is passed and @a dst_vec is returned through a DataVector class,
-which is responsible for deleting the data in the proper time (i.e. when all the existing modules delete their copies
+which is responsible for deleting the data in the proper time (i.e. when all the existing solvers delete their copies
 of the pointer, indicating they are not going to use this data any more). However, for this mechanism to work
-efficiently, all the modules should allocate the data using DataVector, as described in
-@ref modules.
+efficiently, all the solvers should allocate the data using DataVector, as described in
+@ref solvers.
 
 Typically, plask::interpolate is called inside providers of the fields of scalars or vectors (see @ref providers).
-Note that the exact @a src_mesh type must be known at the compile time by the module providing the data
-(usually this is the native mesh of the module). Interpolation algorithms depend on this type. On the other hand
+Note that the exact @a src_mesh type must be known at the compile time by the solver providing the data
+(usually this is the native mesh of the solver). Interpolation algorithms depend on this type. On the other hand
 the @a dst_mesh can be very generic and needs only to provide the iterator over its points. This mechanism allows
-to connect the module providing some particular data with any module requesting it, regardless of its mesh.
+to connect the solver providing some particular data with any solver requesting it, regardless of its mesh.
 
 
 @section interpolation_write How to write a new interpolation algorithm?

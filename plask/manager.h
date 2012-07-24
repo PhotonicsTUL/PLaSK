@@ -52,7 +52,7 @@ class Manager {
     /// Meshe generators by name.
     std::map< std::string, shared_ptr<MeshGenerator> > generators;
 
-    //TODO modules map
+    //TODO solvers map
     //TODO boundaries map (Boundary top class - probably empty, with virtual destructor)
 
     /**
@@ -148,15 +148,15 @@ class Manager {
 
     /**
      * Load meshes and mesh generators using reader.
-     * @param reader reader to read from, should point to @c \<module> tag, after read it will be point to @c \</module> tag
+     * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
     void loadGrids(XMLReader& reader);
 
     /**
-     * Load modules using reader.
-     * @param reader reader to read from, should point to @c \<module> tag, after read it will be point to @c \</module> tag
+     * Load solvers using reader.
+     * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
-    void loadModules(XMLReader& reader);
+    void loadSolvers(XMLReader& reader);
 
     /**
      * Load geometry using XML reader.

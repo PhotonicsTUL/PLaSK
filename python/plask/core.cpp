@@ -6,7 +6,7 @@
 #include <plask/version.h>
 #include <plask/exceptions.h>
 #include <plask/mesh/interpolation.h>
-#include <plask/module.h>
+#include <plask/solver.h>
 
 using namespace plask::python;
 
@@ -79,12 +79,12 @@ BOOST_PYTHON_MODULE(plaskcore)
     // Data vector
     register_data_vectors();
 
-    // Modules
-    py::class_<plask::Module, plask::shared_ptr<plask::Module>, boost::noncopyable>("Module", "Base class for all modules", py::no_init)
-        .add_property("name", &plask::Module::getName, "Full name of the module")
-        .add_property("description", &plask::Module::getDescription, "Short description of the module")
-        .add_property("initialized", &plask::Module::isInitialized, "True if the module has been initialized")
-        .def("invalidate", &plask::Module::invalidate, "Set module back to uninitialized state")
+    // Solvers
+    py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>("Solver", "Base class for all solvers", py::no_init)
+        .add_property("name", &plask::Solver::getName, "Full name of the solver")
+        .add_property("description", &plask::Solver::getDescription, "Short description of the solver")
+        .add_property("initialized", &plask::Solver::isInitialized, "True if the solver has been initialized")
+        .def("invalidate", &plask::Solver::invalidate, "Set solver back to uninitialized state")
     ;
 
     // Exceptions

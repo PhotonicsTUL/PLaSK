@@ -13,7 +13,7 @@
 namespace plask {
 
 /**
- * Base class for all geometry trunks. Modules can do calculation in calculation space with specific type.
+ * Base class for all geometry trunks. Solvers can do calculation in calculation space with specific type.
  *
  * Almost all GeometryElement methods are delegate to child of this.
  */

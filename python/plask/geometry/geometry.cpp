@@ -34,7 +34,7 @@ void initGeometry() {
     py::scope scope = geometry_module;
 
     scope.attr("__doc__") =
-        "This module provides 2D and 3D geometry elements, necessary to describe the structure "
+        "This solver provides 2D and 3D geometry elements, necessary to describe the structure "
         "of analyzed device."; //TODO maybe more extensive description
 
     // This must be the first one

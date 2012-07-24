@@ -155,14 +155,14 @@ void Manager::loadGrids(XMLReader &reader)
     throw XMLUnexpectedEndException(reader);
 }
 
-void Manager::loadModules(XMLReader &reader)
+void Manager::loadSolvers(XMLReader &reader)
 {
     /*TODO
-    - read module name
-    - load module library from file
-    - call module = createModule(...) from library
-    - call module.loadConfiguration(reader)
-    - add module to modules map
+    - read solver name
+    - load solver library from file
+    - call solver = createSolver(...) from library
+    - call solver.loadConfiguration(reader)
+    - add solver to solvers map
     */
 }
 
@@ -183,8 +183,8 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource)
         if (!reader.read()) return;
     }
 
-    if (reader.getNodeName() == "modules") {
-        loadModules(reader);
+    if (reader.getNodeName() == "solvers") {
+        loadSolvers(reader);
         if (!reader.read()) return;
     }
 }

@@ -76,7 +76,7 @@ void register_geometry_aligners()
     py::scope scope = align_module;
 
     scope.attr("__doc__") =
-        "This module lists available aligners for geometry containers."; //TODO maybe more extensive description
+        "This solver lists available aligners for geometry containers."; //TODO maybe more extensive description
 
     py::class_<A2, shared_ptr<A2>, boost::noncopyable>("Aligner2D", "Base for all 2D aligners", py::no_init)
             .def(py::self & py::other<A2l>())

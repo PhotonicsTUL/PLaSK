@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 '''
-This is a very simple module for making basic plots in PLaSK using Matplotlib.
+This is a very simple solver for making basic plots in PLaSK using Matplotlib.
 
-In future this module will either be exended or totally removed in favour of GUI.
+In future this solver will either be exended or totally removed in favour of GUI.
 '''
 
 import pylab

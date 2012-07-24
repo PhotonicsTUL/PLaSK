@@ -9,7 +9,7 @@ This file includes base classes and templates which allow to generate providers 
 @page providers Providers and receivers
 
 @section providers_about About provider-receiver mechanism
-This page describe providers and receivers mechanism, which allow for data exchange between modules.
+This page describe providers and receivers mechanism, which allow for data exchange between solvers.
 
 Provider is an object which has type derived from plask::Provider and provide some value(s)
 (has operator() which return provided value(s)).
@@ -22,15 +22,15 @@ with provider and allow for reading value(s) provided by it
 Each type of provider has corresponding type of receiver (see plask::Receiver),
 and only provider and receiver witch corresponding types can be connected.
 
-@section providers_in_modules Using providers and receivers in modules
-Each module should have one provider class field for each physical property which it want to make
-available for other modules and reports and it also should have one receiver field for each physical
+@section providers_in_solvers Using providers and receivers in solvers
+Each solver should have one provider class field for each physical property which it want to make
+available for other solvers and reports and it also should have one receiver field for each physical
 property which value it wants to know (needs for calculations).
 Most providers are classes obtain by using plask::ProviderFor template.
 
-See @ref modules_writing for more details and examples.
+See @ref solvers_writing for more details and examples.
 
-An example of using providers and receivers in modules can be found in description of plask::Temperature.
+An example of using providers and receivers in solvers can be found in description of plask::Temperature.
 
 @section providers_writing Writing new providers and receivers types
 
@@ -57,8 +57,8 @@ You can choose from the following options:
   It can be assigned a value just like any class member field.
 - \b WithDefaultValue (available only for plask::SingleValueProperty) — similar to \b WithValue, however it always has some value.
   Use it if there is always some sensible default value for the provided quantity, even before any calculations have been performed.
-- \b Delegate (available for all properties) — the module needs to contain the method that computes the provided value (field or scalar) on demand.
-  This provider requires the pointer to both the module containing it and the this method as its constructor arguments. See \ref modules_writing_details
+- \b Delegate (available for all properties) — the solver needs to contain the method that computes the provided value (field or scalar) on demand.
+  This provider requires the pointer to both the solver containing it and the this method as its constructor arguments. See \ref solvers_writing_details
   for an example.
 
 Example:

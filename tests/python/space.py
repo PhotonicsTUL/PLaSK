@@ -41,11 +41,11 @@ class Geometrys(unittest.TestCase):
         v2 = subspace.getLeafsPositions(h2)
         self.assertEqual( space.getLeafsPositions(h2)[0], subspace.getLeafsPositions(h2)[0] )
 
-    def testModule(self):
-        module = plasktest.SpaceTest()
+    def testSolver(self):
+        solver = plasktest.SpaceTest()
         r = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
         s = plask.geometry.Cartesian2D(r)
-        module.geometry = s
-        self.assertEqual( module.geometry, s )
+        solver.geometry = s
+        self.assertEqual( solver.geometry, s )
         with self.assertRaises(AttributeError):
-            print(module.mesh)
+            print(solver.mesh)

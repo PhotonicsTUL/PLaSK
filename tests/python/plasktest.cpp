@@ -84,16 +84,16 @@ py::list testBoundary(const plask::RectilinearMesh2D& mesh, const typename plask
 }
 
 
-//// Module with space /////////////////////////////////////////////////////////////////////////////////////////////////////////
+//// Solver with space /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct SpaceTest : plask::ModuleOver<plask::Geometry2DCartesian> {
+struct SpaceTest : plask::SolverOver<plask::Geometry2DCartesian> {
     virtual std::string getName() const { return "Space Test"; }
 };
 
 
 //// Provider & Receiver /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct ReceiverTest : plask::Module {
+struct ReceiverTest : plask::Solver {
     virtual std::string getName() const { return "Receiver Test"; }
     plask::ReceiverFor<plask::EffectiveIndex> inNeff;
 };
@@ -121,10 +121,10 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("testBoundary", &testBoundary);
 
-    plask::python::ExportModule<ReceiverTest>("ReceiverTest")
+    plask::python::ExportSolver<ReceiverTest>("ReceiverTest")
         .add_receiver("inNeff", &ReceiverTest::inNeff, "Test receiver")
     ;
 
-    plask::python::ExportModule<SpaceTest>("SpaceTest");
+    plask::python::ExportSolver<SpaceTest>("SpaceTest");
 
 }

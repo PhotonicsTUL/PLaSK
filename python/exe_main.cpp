@@ -23,9 +23,9 @@ extern "C"
 #endif
 
 // Initialize the binary modules and load the package from disc
-static py::object initPlaskModule(int argc, const char* argv[])
+static py::object initPlaskSolver(int argc, const char* argv[])
 {
-    // Initialize the module plask
+    // Initialize the plask module
     if (PyImport_AppendInittab("plaskcore", &PLASK_MODULE) != 0) throw plask::CriticalException("No plaskcore module");
 
     // Initialize Python
@@ -90,7 +90,7 @@ int main(int argc, const char *argv[])
 
     // Initalize python and load the plask module
     try {
-        initPlaskModule(argc-1, argv+1);
+        initPlaskSolver(argc-1, argv+1);
     } catch (plask::CriticalException) {
         std::cerr << "CriticalError: Cannot import plask builtin module.\n";
         return 101;
