@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <cstdio>
 
 #include "exceptions.h"
 #include "../format.h"
@@ -30,6 +31,39 @@ namespace plask {
  * @endcode
  */
 struct XMLWriter {
+
+    /**
+     * Base class for output (stream).
+     */
+    struct Output {
+
+        /**
+         * Write @n bytes from @b buffer.
+         * @param buffer buffer with data with size @p n or more
+         * @param n number of bytes to write
+         */
+        virtual void write(const char* buffer, std::size_t n) = 0;
+
+        /**
+         * Write @p n - 1 bytes from @p str.
+         *
+         * Usefull to writing const char[] literals.
+         * @param str string, typicaly const char[] literal
+         */
+        template <int n>
+        void puts(const char (&str)[n]) { write(str, n-1); }
+
+        /**
+         * Write one character @p c.
+         *
+         * Default implementation calls: <code>write(&c, 1);</code>
+         * @param c character to write
+         */
+        virtual void put(char c) { write(&c, 1); }
+
+        void newline() { put('\n'); }
+
+    };
 
     /**
      * Represent single XML element connected with writer.
@@ -214,9 +248,9 @@ struct XMLWriter {
 private:
 
     /// Output, destination stream
-    std::ostream& out;
+    Output* out;
 
-    void appendStr(const std::string& s) { out.write(s.data(), s.size()); }
+    void appendStr(const std::string& s) { out->write(s.data(), s.size()); }
 
     void appendStrQuoted(const char* s);
 
@@ -226,21 +260,47 @@ private:
     Element* current;
 
     /// Indentation for each tag level
-    size_t indentation;
+    std::size_t indentation;
 
 public:
 
     /**
      * Construct XML writer which will write content to given @p out stream.
-     * @param out ouptut stream which will be used as destination to XML content
+     * @param out ouptut stream which will be used as destination to XML content, will be not closed by this writer
+     * @param indentation indentation for each tag level
      */
-    XMLWriter(std::ostream& out, size_t indentation=2): out(out), current(0), indentation(indentation) {}
+    XMLWriter(std::ostream& out, std::size_t indentation=2);
 
-    ~XMLWriter() { assert(current == 0); }
+    /**
+     * Construct XML writer which will write content to file with given name.
+     * @param file_name name of file which will be used as destination to XML content
+     * @param indentation indentation for each tag level
+     */
+    XMLWriter(const std::string& file_name, std::size_t indentation=2);
+
+    /**
+     * Construct XML writer which will write content to given C file.
+     *
+     * Writter will not close given descriptor.
+     * @param cfile opened, C file descriptor, writter will not close it
+     * @param indentation indentation for each tag level
+     */
+    XMLWriter(std::FILE* cfile, std::size_t indentation=2);
+
+    /**
+     * Construct XML writer which will write content to given @p out.
+     * @param out ouptut which will be used as destination to XML content, will be delete (with @c delete operator) by writer destructor
+     * @param indentation indentation for each tag level
+     */
+    XMLWriter(Output* out, std::size_t indentation=2);
+
+    /// Delete output object.
+    ~XMLWriter() { delete out; assert(current == 0); }
 
     /// Append to stream XML document header.
     void writeHeader() {
-        out << "<?xml version=\"1.0\" encoding=\"utf-8\"?>" << std::endl;
+        out->puts("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        out->newline();
     }
 
     /**
@@ -281,9 +341,17 @@ public:
 
     /**
      * Write spaces to the current indentation level
-    */
+     */
     void indent () {
         if (current) current->indent();
+    }
+
+    /**
+     * Get current element.
+     * @return current elment or @p nullptr if there are no elements (root was not open jet or was already closed)
+     */
+    Element* getCurrent() {
+        return current;
     }
 
 };

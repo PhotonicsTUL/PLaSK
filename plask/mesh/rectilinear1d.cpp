@@ -2,19 +2,29 @@
 
 namespace plask {
 
-RectilinearMesh1D::RectilinearMesh1D(std::initializer_list<PointType> points) : points(points) {
+void RectilinearMesh1D::sortPointsAndRemoveNonUnique()
+{
     std::sort(this->points.begin(), this->points.end());
     this->points.erase(std::unique(this->points.begin(), this->points.end()), this->points.end());
 }
 
-RectilinearMesh1D::RectilinearMesh1D(std::vector<PointType> points) : points(points) {
-    std::sort(this->points.begin(), this->points.end());
-    this->points.erase(std::unique(this->points.begin(), this->points.end()), this->points.end());
+RectilinearMesh1D::RectilinearMesh1D(std::initializer_list<PointType> points) : points(points) {
+    sortPointsAndRemoveNonUnique();
+}
+
+RectilinearMesh1D::RectilinearMesh1D(std::vector<PointType> &&points): points(std::move(points)) {
+    sortPointsAndRemoveNonUnique();
+}
+
+RectilinearMesh1D::RectilinearMesh1D(const std::vector<PointType> &points) : points(points) {
+    sortPointsAndRemoveNonUnique();
 }
 
 bool RectilinearMesh1D::operator==(const plask::RectilinearMesh1D& to_compare) const {
     return points == to_compare.points;
 }
+
+
 
 RectilinearMesh1D::const_iterator RectilinearMesh1D::find(double to_find) const {
     return std::lower_bound(points.begin(), points.end(), to_find);

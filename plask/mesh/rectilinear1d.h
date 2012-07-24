@@ -23,6 +23,8 @@ class RectilinearMesh1D {
     /// Points coordinates in ascending order.
     std::vector<double> points;
 
+    void sortPointsAndRemoveNonUnique();
+
 public:
 
     /// Type of points in this mesh.
@@ -79,7 +81,14 @@ public:
      * It use algorithm which has logarithmic time complexity pew point in @p points.
      * @param points points, in any order
      */
-    RectilinearMesh1D(std::vector<PointType> points);
+    RectilinearMesh1D(const std::vector<PointType>& points);
+
+    /**
+     * Construct mesh with points given in a vector.
+     * It use algorithm which has logarithmic time complexity pew point in @p points.
+     * @param points points, in any order
+     */
+    RectilinearMesh1D(std::vector<PointType>&& points);
 
     /**
      * Compares meshes
