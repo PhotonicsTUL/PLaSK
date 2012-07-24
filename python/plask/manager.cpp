@@ -20,24 +20,25 @@ struct PythonManager: public Manager {
     PythonManager(MaterialsDB* db=nullptr) : materialsDB(db? db : &MaterialsDB::getDefault()) {}
 
     void read(py::object src) {
-        std::string str;
         try {
-            str = py::extract<std::string>(src);
-            if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) { // str is not XML (a filename probably)
-                std::ifstream file;
-                file.open(str);
-                if (!file.is_open()) throw IOError("No such file: '%1%'", str);
-                file >> str;
-            }
+            std::string str = py::extract<std::string>(src);
+            if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) // str is not XML (a filename probably)
+                Py_BEGIN_ALLOW_THREADS
+                    loadFromFile(str, *materialsDB);
+                Py_END_ALLOW_THREADS
+            else
+                loadFromXMLString(str, *materialsDB);
         } catch (py::error_already_set) {
             PyErr_Clear();
-            try {
-                str = py::extract<std::string>(src.attr("read")());
-            } catch (py::error_already_set) {
-                throw TypeError("argument is neither string nor a proper file-like object");
-            }
+            if (!PyFile_Check(src.ptr())) throw TypeError("argument is neither string nor a proper file-like object");
+            PyFileObject* pfile = (PyFileObject*)src.ptr();
+            auto file = PyFile_AsFile(src.ptr());
+            PyFile_IncUseCount(pfile);
+            Py_BEGIN_ALLOW_THREADS
+                loadFromFILE(file);
+            Py_END_ALLOW_THREADS
+            PyFile_DecUseCount(pfile);
         }
-        loadFromXMLString(str, *materialsDB);
     }
 
     static void export_dict(py::object self, py::dict dict) {

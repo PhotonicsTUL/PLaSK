@@ -57,6 +57,12 @@ class XMLReader {
     XMLReader(const char* file_name);
 
     /**
+     * Construct XML reader to read XML from given @p file FILE*.
+     * @param input input stream
+     */
+    XMLReader(FILE* file);
+
+    /**
      * Construct XML reader to read XML from given @p input stream.
      * @param input input stream
      */

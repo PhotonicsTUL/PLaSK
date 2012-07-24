@@ -177,14 +177,14 @@ class Manager {
      * @param input stream to read from, with XML content
      * @param materialsDB materials database, used to get materials by name for leafs
      */
-    void loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    void loadFromStream(std::istream &input, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content
      * @param materialsSource source of materials, used to get materials by name for leafs
      */
-    void loadFromXMLStream(std::istream &input, const GeometryReader::MaterialsSource& materialsSource);
+    void loadFromStream(std::istream &input, const GeometryReader::MaterialsSource& materialsSource);
 
     /**
      * Load geometry from string which consist of XML.
@@ -223,6 +223,20 @@ class Manager {
      * @param materialsSource source of materials, used to get materials by name for leafs
      */
     void loadFromFile(const std::string& fileName, const GeometryReader::MaterialsSource& materialsSource);
+
+    /**
+     * Load geometry from C file object.
+     * @param file open file object
+     * @param materialsDB materials database, used to get materials by name for leafs
+     */
+    void loadFromFILE(FILE* file, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
+    /**
+     * Load geometry from C file object.
+     * @param file open file object
+     * @param materialsSource source of materials, used to get materials by name for leafs
+     */
+    void loadFromFILE(FILE* file, const GeometryReader::MaterialsSource& materialsSource);
 };
 
 // Specialization for most types

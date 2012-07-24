@@ -2,7 +2,7 @@
 
 namespace plask {
 
-///Allow to read XML from standard C++ input stream (std::istream).
+/// Allow to read XML from standard C++ input stream (std::istream).
 struct StreamReaderCallback: public irr::io::IFileReadCallBack {
 
     ///Stream to read from.
@@ -45,6 +45,10 @@ XMLReader::XMLReader(std::istream& input)
 {
     StreamReaderCallback cb(input);
     irrReader = irr::io::createIrrXMLReader(&cb);
+}
+
+XMLReader::XMLReader(FILE* file): irrReader(irr::io::createIrrXMLReader(file)), currentNodeType(NODE_NONE) {
+    if (irrReader == nullptr) throw XMLException("Can't read from file");
 }
 
 #if __cplusplus >= 201103L

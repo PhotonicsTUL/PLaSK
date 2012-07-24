@@ -52,27 +52,26 @@ void Manager::loadFromReader(XMLReader &reader, const GeometryReader::MaterialsS
     load(reader, materialsSource);
 }
 
-void Manager::loadFromXMLStream(std::istream &input, const MaterialsDB& materialsDB) {
+void Manager::loadFromStream(std::istream &input, const MaterialsDB& materialsDB) {
     XMLReader reader(input);
     loadFromReader(reader, materialsDB);
 }
 
-void Manager::loadFromXMLStream(std::istream &input, const GeometryReader::MaterialsSource &materialsSource) {
+void Manager::loadFromStream(std::istream &input, const GeometryReader::MaterialsSource &materialsSource) {
     XMLReader reader(input);
     loadFromReader(reader, materialsSource);
 }
 
 void Manager::loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB) {
     std::istringstream stream(input_XML_str);
-    loadFromXMLStream(stream, materialsDB);
+    loadFromStream(stream, materialsDB);
 }
 
 void Manager::loadFromXMLString(const std::string &input_XML_str, const GeometryReader::MaterialsSource &materialsSource) {
     std::istringstream stream(input_XML_str);
-    loadFromXMLStream(stream, materialsSource);
+    loadFromStream(stream, materialsSource);
 }
 
-//TODO skip geometry elements ends (why?)
 void Manager::loadFromFile(const std::string &fileName, const MaterialsDB& materialsDB) {
     XMLReader reader(fileName.c_str());
     loadFromReader(reader, materialsDB);
@@ -80,6 +79,16 @@ void Manager::loadFromFile(const std::string &fileName, const MaterialsDB& mater
 
 void Manager::loadFromFile(const std::string &fileName, const GeometryReader::MaterialsSource &materialsSource) {
     XMLReader reader(fileName.c_str());
+    loadFromReader(reader, materialsSource);
+}
+
+void Manager::loadFromFILE(FILE* file, const MaterialsDB& materialsDB) {
+    XMLReader reader(file);
+    loadFromReader(reader, materialsDB);
+}
+
+void Manager::loadFromFILE(FILE* file, const GeometryReader::MaterialsSource &materialsSource) {
+    XMLReader reader(file);
     loadFromReader(reader, materialsSource);
 }
 

@@ -208,7 +208,7 @@ struct XMLWriter {
 
         void disallowAttributes(); ///< set attributesStillAlowed to false, and put '>' in out if necessary
 
-        void ensureIsCurrent(); ///< throw excpetion if this is not current element
+        void ensureIsCurrent(); ///< throw exception if this is not current element
     };
 
 private:
