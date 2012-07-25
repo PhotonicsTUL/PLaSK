@@ -101,7 +101,12 @@ public:
      * @param symbol_name name of symbol to get
      * @return symbol with given name, or @c nullptr if there is no symbol with given name
      */
-    void* operator[](const std::string &symbol_name);
+    void* getSymbol(const std::string &symbol_name) const;
+
+    /// Same as getSymbol(const std::string &symbol_name)
+    void* operator[](const std::string &symbol_name) const {
+        return getSymbol(symbol_name);
+    }
 
     /**
      * Get symbol from library.
@@ -110,7 +115,7 @@ public:
      * @param symbol_name name of symbol to get
      * @return symbol with given name
      */
-    void* requireSymbol(const std::string &symbol_name);
+    void* requireSymbol(const std::string &symbol_name) const;
 
     /**
      * Check if library is already open.

@@ -1,7 +1,7 @@
-#include "plugin.h"
+#include "loader.h"
 
 #include <iostream>
-#include "../exceptions.h"
+#include "../../exceptions.h"
 
 namespace plask {
 
@@ -42,7 +42,7 @@ void DynamicLibrary::close() {
     handler = 0;
 }
 
-void * DynamicLibrary::operator [](const std::string &symbol_name) {
+void * DynamicLibrary::getSymbol(const std::string &symbol_name) const {
     if (!handler)
         throw plask::Exception("Trying to get symbol from dynamic library which is not opened.");
 
@@ -54,8 +54,8 @@ void * DynamicLibrary::operator [](const std::string &symbol_name) {
 #endif
 }
 
-void *DynamicLibrary::requireSymbol(const std::string &symbol_name) {
-    void* result = operator[](symbol_name);
+void *DynamicLibrary::requireSymbol(const std::string &symbol_name) const {
+    void* result = getSymbol(symbol_name);
     if (!result)
         throw plask::Exception("There is no symbol \"%1%\" in dynamic library.", symbol_name);
     return result;
