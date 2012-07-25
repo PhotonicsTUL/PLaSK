@@ -143,7 +143,7 @@ struct VecAttr {
 
 // Register vector class to python
 template <int dim, typename T>
-inline static py::class_<Vec<dim,T>>* register_vector_class(std::string name="vector")
+inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vector")
 {
     typedef Vec<dim,T> V;
     typedef Vec<dim,double> VR;
@@ -154,13 +154,13 @@ inline static py::class_<Vec<dim,T>>* register_vector_class(std::string name="ve
 
     V (*c)(const V&) = &plask::conj<T>;
 
-    py::class_<V>* vec_class = new py::class_<V>(name.c_str(),
+    py::class_<V> vec_class = py::class_<V>(name.c_str(),
         "PLaSK vector.\n\n"
         "See Also\n"
         "--------\n"
         "vector\t:\tcreate a new vector.\n"
         , py::no_init);
-    (*vec_class)
+    vec_class
         .def("__getattr__", &VecAttr<dim,T>::get)
         .def("__setattr__", &VecAttr<dim,T>::set)
         .def("__getitem__", &vec__getitem__<dim,T>)
@@ -203,7 +203,7 @@ inline static py::class_<Vec<dim,T>>* register_vector_class(std::string name="ve
         .def("__array__", &vec_list__array__<dim,T>)
     ;
 
-    py::scope vec_scope = *vec_class;
+    py::scope vec_scope = vec_class;
 
     py::class_<Vec_iterator<dim,T>>("_Iterator", py::no_init)
         .def("__iter__", &Vec_iterator<dim,T>::__iter__, py::return_self<>())
@@ -341,10 +341,10 @@ static inline bool plask_import_array() {
     return true;
 }
 
-py::class_<Vec<2,double>>* vector2fClass;
-py::class_<Vec<2,dcomplex>>* vector2cClass;
-py::class_<Vec<3,double>>* vector3fClass;
-py::class_<Vec<3,dcomplex>>* vector3cClass;
+py::object vector2fClass;
+py::object vector2cClass;
+py::object vector3fClass;
+py::object vector3cClass;
 
 void register_vectors()
 {

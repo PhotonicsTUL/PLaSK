@@ -22,23 +22,46 @@ namespace plask {
  * So both of this operations are very fast.
  */
 template <typename T>
-class DataVector {
+struct DataVector {
+
+    /**
+     * Base class for optional data destructor.
+     * You can derive its \c destruct method to decide wheter destroy data.
+     * When the reference count reaches 0, destructor is deleted in any case.
+     */
+    struct Destructor {
+        virtual ~Destructor() {}
+        /**
+         * Method calles when data is to be descructed. Should be overriden in derived class.
+         * \return true if the data can be destructed by garbage-colector (if false, you need to take care of it yourself)
+         */
+        virtual bool destruct() = 0;
+    };
+
+  private:
+
+    struct Gc {
+        unsigned count;
+        Destructor* destructor;
+        Gc(unsigned initial) : count(initial), destructor(nullptr) {}
+    };
 
     std::size_t size_;                  ///< size of the stored data
-    unsigned* gc_;                      ///< the reference count for the garbage collector
+    Gc* gc_;                            ///< the reference count for the garbage collector and optional destructor
     T* data_;                           ///< The data of the matrix
 
     /// Decrease GC counter and free memory if necessary.
     void dec_ref() {
-        if (gc_ && --(*gc_) == 0) {
+        if (gc_ && --(gc_->count) == 0) {
+            if (gc_->destructor == nullptr) delete[] data_;
+            else { if (gc_->destructor->destruct()) delete[] data_; delete gc_->destructor; }
             delete gc_;
-            delete[] data_;
         }
     }
 
     /// Increace GC counter.
     void inc_ref() {
-        if (gc_) ++(*gc_);
+        if (gc_) ++(gc_->count);
     }
 
   public:
@@ -57,14 +80,14 @@ class DataVector {
      * Reserve memory using new T[size] call.
      * @param size total size of the data
      */
-    DataVector(std::size_t size) : size_(size), gc_(new unsigned(1)), data_(new T[size]) {}
+    DataVector(std::size_t size) : size_(size), gc_(new Gc(1)), data_(new T[size]) {}
 
     /**
      * Create data vector with given @p size and fill all its' cells with given @p value.
      * @param size size of vector
      * @param value initial value for each cell
      */
-    DataVector(std::size_t size, const T& value): size_(size), gc_(new unsigned(1)), data_(new T[size]) {
+    DataVector(std::size_t size, const T& value): size_(size), gc_(new Gc(1)), data_(new T[size]) {
         std::fill(begin(), end(), value);
     }
 
@@ -103,11 +126,6 @@ class DataVector {
      * @return *this
      */
     DataVector<T>& operator=(DataVector&& src) {
-        /*this->dec_ref();
-        size_ = src.size_;
-        data_ = src.data_;
-        gc_ = src.gc_;
-        src.gc_ = nullptr;*/
         swap(src);
         return *this;
     }
@@ -119,13 +137,13 @@ class DataVector {
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
     DataVector(T* existing_data, std::size_t size, bool manage = false)
-        : size_(size), gc_(manage ? new unsigned(1) : nullptr), data_(existing_data) {}
+        : size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
 
     /**
      * Create data vector and fill it with data from initializer list.
      * @param init initializer list with data
      */
-    DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new unsigned(1)), data_(new T[size_]) {
+    DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new Gc(1)), data_(new T[size_]) {
         std::copy(init.begin(), init.end(), data_);
     }
 
@@ -134,7 +152,7 @@ class DataVector {
      * @param begin, end range of data to copy
      */
     template <typename InIterT>
-    DataVector(InIterT begin, InIterT end): size_(std::distance(begin, end)), gc_(new unsigned(1)), data_(new T[size_]) {
+    DataVector(InIterT begin, InIterT end): size_(std::distance(begin, end)), gc_(new Gc(1)), data_(new T[size_]) {
         std::copy(begin, end, data_);
     }
 
@@ -149,7 +167,7 @@ class DataVector {
     void reset() {
         dec_ref();
         size_ = 0;
-        gc_ = 0;
+        gc_ = nullptr;
         data_ = nullptr;
     }
 
@@ -162,12 +180,12 @@ class DataVector {
     void reset(T* existing_data, std::size_t size, bool manage = false) {
         dec_ref();
         size_ = size;
-        gc_ = manage ? new unsigned(1) : nullptr;
+        gc_ = manage ? new Gc(1) : nullptr;
         data_ = existing_data;
     }
 
     /**
-     * Chenge data of this data vector to unitilized data with given @p size.
+     * Change data of this data vector to unitilized data with given @p size.
      *
      * Reserve memory using new T[size] call.
      *
@@ -177,7 +195,7 @@ class DataVector {
     void reset(std::size_t size) {
         dec_ref();
         size_ = size;
-        gc_ = new unsigned(1);
+        gc_ = new Gc(1);
         data_ = new T[size];
     }
 
@@ -191,7 +209,7 @@ class DataVector {
     void reset(std::size_t size, const T& value) {
         dec_ref();
         size_ = size;
-        gc_ = new unsigned(1);
+        gc_ = new Gc(1);
         data_ = new T[size];
         std::fill(begin(), end(), value);
     }
@@ -205,9 +223,18 @@ class DataVector {
     template <typename InIterT>
     void reset(InIterT begin, InIterT end) {
         size_ = std::distance(begin, end);
-        gc_ = new unsigned(1);
+        gc_ = new Gc(1);
         data_ = new T[size_];
         std::copy(begin, end, data_);
+    }
+
+    /**
+     * Attach some destructor object to this data, so its deletion can be taken over manually.
+     * \param destructor pointer do destructor object created on heap
+     */
+    void attach_destructor(Destructor* destructor) {
+        if (gc_) gc_->destructor = destructor;
+        else delete destructor; // avoid memory leaks
     }
 
     /**
@@ -270,7 +297,7 @@ class DataVector {
      * @return @c true only if this is the only one owner of data
      */
     bool unique() const {
-        return (gc_ != nullptr) && (*gc_ == 1);
+        return (gc_ != nullptr) && (gc_->count == 1);
     }
 
     /**

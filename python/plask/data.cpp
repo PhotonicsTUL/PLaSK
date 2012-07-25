@@ -51,18 +51,18 @@ static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std
 template <typename T, int dim>
 static bool DataVectorWrap_contains(const DataVectorWrap<T,dim>& self, const T& key) { return std::find(self.begin(), self.end(), key) != self.end(); }
 
-extern py::class_<Vec<2,double>>* vector2fClass;
-extern py::class_<Vec<2,dcomplex>>* vector2cClass;
-extern py::class_<Vec<3,double>>* vector3fClass;
-extern py::class_<Vec<3,dcomplex>>* vector3cClass;
+extern py::class_<Vec<2,double>> vector2fClass;
+extern py::class_<Vec<2,dcomplex>> vector2cClass;
+extern py::class_<Vec<3,double>> vector3fClass;
+extern py::class_<Vec<3,dcomplex>> vector3cClass;
 
 // dtype
 inline static py::handle<> dtype(const double&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyFloat_Type))); }
-inline static py::handle<> dtype(const Vec<2,double>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2fClass->ptr()))); }
-inline static py::handle<> dtype(const Vec<3,double>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2cClass->ptr()))); }
+inline static py::handle<> dtype(const Vec<2,double>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2fClass.ptr()))); }
+inline static py::handle<> dtype(const Vec<3,double>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2cClass.ptr()))); }
 inline static py::handle<> dtype(const dcomplex&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyComplex_Type))); }
-inline static py::handle<> dtype(const Vec<2,dcomplex>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3fClass->ptr()))); }
-inline static py::handle<> dtype(const Vec<3,dcomplex>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3cClass->ptr()))); }
+inline static py::handle<> dtype(const Vec<2,dcomplex>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3fClass.ptr()))); }
+inline static py::handle<> dtype(const Vec<3,dcomplex>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3cClass.ptr()))); }
 
 template <typename T, int dim>
 py::handle<> DataVector_dtype() {
@@ -218,6 +218,16 @@ static size_t checkMeshAndArray(PyArrayObject* arr, const MeshT& mesh) {
     return mesh.size();
 }
 
+template <typename T>
+struct NumpyDataDestructor: public DataVector<T>::Destructor {
+    PyArrayObject* arr;
+    NumpyDataDestructor(PyArrayObject* arr) : arr(arr) {
+        Py_XINCREF(arr);
+    }
+    virtual ~NumpyDataDestructor() { Py_XDECREF(arr); }
+    virtual bool destruct() { return false; }
+};
+
 template <typename T, int dim>
 static py::object makeDataVector(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
 
@@ -237,8 +247,10 @@ static py::object makeDataVector(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh
 
     if (size != mesh->size()) throw ValueError("Sizes of data (%1%) and mesh (%2%) do not match", size, mesh->size());
 
-    // copying here is necessary as we have no way to synchronize data lifetime with Python :(
-    return py::object(make_shared<DataVectorWrap<T,dim>>(DataVector<T>((T*)PyArray_DATA(arr), size).copy(), mesh));
+    auto data = make_shared<DataVectorWrap<T,dim>>(DataVector<T>((T*)PyArray_DATA(arr), size), mesh);
+    data->attach_destructor(new NumpyDataDestructor<T>(arr));
+
+    return py::object(data);
 }
 
 py::object Data(PyObject* obj, py::object omesh) {

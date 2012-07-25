@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import unittest
 
 import plask.mesh
@@ -30,7 +31,10 @@ class ReceiverTest(unittest.TestCase):
 
     def testExternalData(self):
         v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]])
+        self.assertEqual( sys.getrefcount(v), 2 )
         self.assertEqual( v.dtype, plask.vector2f )
         self.solver.inVectors = plask.Data(v, self.mesh2)
         self.assertEqual( self.solver.showVectors(), "[1, 5]: [1, 10]\n[3, 5]: [2, 20]\n[1, 15]: [3, 30]\n[3, 15]: [4, 40]\n" )
-
+        self.assertEqual( sys.getrefcount(v), 3 )
+        self.solver.inVectors.disconnect()
+        self.assertEqual( sys.getrefcount(v), 2 )
