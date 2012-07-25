@@ -42,9 +42,9 @@ Physical property tag class is an class which only has static fields and typedef
 physical property. It can be easy obtain by subclass instantiation of one of templates:
 - plask::Property — allows to obtain all possible physical properties tags classes, but require many parameters (not recommended);
 - plask::SingleValueProperty — allows to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
-- plask::FieldProperty — allows to obtain tags for properties described by values in points described by mesh (doesn't use interpolation), require only one parameter - type of provided value;
-- plask::InterpolatedFieldProperty — allows to obtain tags for properties described by values in points described by mesh and use interpolation, require only one parameter - type of provided value;
-- plask::ScalarFieldProperty — equals to plask::InterpolatedFieldProperty\<double\>, doesn't require any parameters.
+- plask::OnMeshProperty — allows to obtain tags for properties described by values in points described by mesh (doesn't use interpolation), require only one parameter - type of provided value;
+- plask::FieldProperty — allows to obtain tags for properties described by values in points described by mesh and use interpolation, require only one parameter - type of provided value;
+- plask::ScalarFieldProperty — equals to plask::FieldProperty\<double\>, doesn't require any parameters.
 
 Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters:
 - first is physical property tag and it's required,
@@ -126,6 +126,7 @@ assert(sr(3.0) == 6.0); // test the received value
 #include <type_traits>  // std::is_same
 #include <boost/optional.hpp>
 #include <boost/signals2.hpp>
+#include <qvarlengtharray.h>
 
 #include "../exceptions.h"
 #include "../mesh/mesh.h"
@@ -541,8 +542,8 @@ struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _Base
  */
 enum PropertyType {
     SINGLE_VALUE_PROPERTY = 0,	        ///< Single value property
-    FIELD_PROPERTY = 1,			///< Property for field of values which can't be interpolated
-    INTERPOLATED_FIELD_PROPERTY = 2	///< Property for field of values which can be interpolated
+    ON_MESH_PROPERTY = 1,			///< Property for field of values which can't be interpolated
+    FIELD_PROPERTY = 2	///< Property for field of values which can be interpolated
 };	//TODO change this to empty classes(?)
 
 template <PropertyType prop_type>
@@ -556,12 +557,12 @@ struct PropertyTypeToProviderName<SINGLE_VALUE_PROPERTY> {
 };
 
 template <>
-struct PropertyTypeToProviderName<FIELD_PROPERTY> {
+struct PropertyTypeToProviderName<ON_MESH_PROPERTY> {
     static constexpr const char* value = "undefined field";
 };
 
 template <>
-struct PropertyTypeToProviderName<INTERPOLATED_FIELD_PROPERTY> {
+struct PropertyTypeToProviderName<FIELD_PROPERTY> {
     static constexpr const char* value = "undefined field";
 };
 
@@ -599,7 +600,7 @@ struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueT> {};
  * (tag class for each property must by separate class - always use different types for different properties).
  */
 template<typename ValueT>
-struct FieldProperty: public Property<FIELD_PROPERTY, ValueT> {};
+struct OnMeshProperty: public Property<ON_MESH_PROPERTY, ValueT> {};
 
 /**
  * Helper class which makes easiest to define property tags class for possible to interpolate fields.
@@ -608,7 +609,7 @@ struct FieldProperty: public Property<FIELD_PROPERTY, ValueT> {};
  * (tag class for each property must by separate class - always use different types for different properties).
  */
 template<typename ValueT = double>
-struct InterpolatedFieldProperty: public Property<INTERPOLATED_FIELD_PROPERTY, ValueT> {};
+struct FieldProperty: public Property<FIELD_PROPERTY, ValueT> {};
 
 /**
  * Helper class which makes easiest to define property tags class for scalar fields (fields of doubles).
@@ -616,7 +617,7 @@ struct InterpolatedFieldProperty: public Property<INTERPOLATED_FIELD_PROPERTY, V
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  */
-typedef InterpolatedFieldProperty<double> ScalarFieldProperty;
+typedef FieldProperty<double> ScalarFieldProperty;
 
 /**
  * Specializations of this class are implementations of providers for given property tag class and this tag properties.
@@ -681,12 +682,14 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::
      * Set provider for this to provider of given field.
      */
     template <typename MeshPtrT>
-    void setValue(DataVector<typename PropertyT::ValueType> data, MeshPtrT&& mesh) {
-        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshPtrT>(data, std::forward<MeshPtrT>(mesh)), true);
+    void setValue(DataVector<typename PropertyT::ValueType> data, const MeshPtrT& mesh) {
+        if (data.size() != mesh->size())
+            throw BadMesh("ReceiverFor::setValue()", "Mesh size (%2%) and data size (%1%) do not match", data.size(), mesh->size());
+        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshPtrT>(data, mesh), true);
     }
 
-    static_assert(!(std::is_same<SpaceT, void>::value && (PropertyT::propertyType == FIELD_PROPERTY || PropertyT::propertyType == INTERPOLATED_FIELD_PROPERTY)),
-                  "Receivers for fields properties require SpaceT. Use ReceiverFor<propertyTag, SpaceT>, where SpaceT is one of the classes defined in .");
+    static_assert(!(std::is_same<SpaceT, void>::value && (PropertyT::propertyType == ON_MESH_PROPERTY || PropertyT::propertyType == FIELD_PROPERTY)),
+                  "Receivers for fields properties require SpaceT. Use ReceiverFor<propertyTag, SpaceT>, where SpaceT is one of the classes defined in <plask/geometry/space.h>.");
     static_assert(!(!std::is_same<SpaceT, void>::value && (PropertyT::propertyType == SINGLE_VALUE_PROPERTY)),
                   "Receivers for single value properties doesn't need SpaceT. Use ReceiverFor<propertyTag> (without second template parameter).");
 
@@ -836,7 +839,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
  * and don't use interpolation.
  */
 template <typename PropertyT, typename ValueT, typename SpaceT>
-struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshProvider<ValueT, SpaceT> {
+struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT>: public OnMeshProvider<ValueT, SpaceT> {
 
     static constexpr const char* NAME = PropertyT::NAME;
 
@@ -858,7 +861,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshPro
      */
     struct ConstProviderT: public ProviderFor<PropertyT, SpaceT> {
 
-        typedef ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
+        typedef ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
 
         ValueT value;
 
@@ -880,7 +883,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshPro
  * Specialization which implements provider class which provides values in mesh points and uses interpolation.
  */
 template <typename PropertyT, typename ValueT, typename SpaceT>
-struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: public OnMeshProviderWithInterpolation<ValueT, SpaceT> {
+struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshProviderWithInterpolation<ValueT, SpaceT> {
 
     static constexpr const char* NAME = PropertyT::NAME;
 
@@ -902,31 +905,48 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
         typedef MeshPtrType MeshPointerType;
 
         /// Type of provided value.
-        typedef ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
+        typedef ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
 
-        /// Provided value. Values in points describe by this->mesh.
+        /// Provided value. Values in points described by this->mesh.
         ProvidedValueType values;
 
+      protected:
+
         /// Mesh which describes in which points there are this->values.
-        MeshPtrType meshPtr;
+        MeshPtrType mesh_ptr;
+
+        /// Default interpolation method
+        InterpolationMethod default_interpolation;
+
+      public:
 
         /**
          * Get mesh.
-         * @return @c *meshPtr
+         * @return @c *mesh_ptr
          */
-        auto mesh() -> decltype(*meshPtr) { return *meshPtr; }
+        auto getMesh() -> decltype(*mesh_ptr) { return *mesh_ptr; }
 
         /**
          * Get mesh (const).
-         * @return @c *meshPtr
+         * @return @c *mesh_ptr
          */
-        auto mesh() const -> decltype(*meshPtr) { return *meshPtr; }
+        auto getMesh() const -> decltype(*mesh_ptr) { return *mesh_ptr; }
 
-        /// Reset values to uninitilized state (nullptr data).
+        /**
+         * Set a new Mesh.
+         * \param mesh_p pointer to the new mesh
+         */
+        void setMesh(MeshPtrType mesh_p) {
+            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::WithValue<MeshPtrType>::onMeshChange);
+            mesh_ptr = mesh_p;
+            mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::WithValue<MeshPtrType>::onMeshChange);
+        }
+
+        /// Reset values to uninitialized state (nullptr data).
         void invalidate() { values.reset(); }
 
         /// Reserve memory in values using mesh size.
-        void allocate() { values.reset(mesh().size()); }
+        void allocate() { values.reset(mesh_ptr->size); }
 
         /**
          * Check if this has value / is initialized.
@@ -934,46 +954,84 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
          */
         bool hasValue() const { return values.data() != nullptr; }
 
-        /// Throw NoValue exception if value is not initialized.
+        /// Throw NoValue exception if value is not initialized
         void ensureHasValue() const {
             if (!hasValue()) throw NoValue(NAME);
         }
 
         /**
+         * Check if this has value of the right size.
+         * @return @c true only if this is initialized (has value)
+         */
+        bool hasCorrectValue() const { return hasValue() && values.size() == mesh_ptr->size(); }
+
+        /// Throw NoValue exception if value is not initialized and BadMesh exception if the mesh and values sizes mismatch
+        void ensureHasCorrectValue() const {
+            if (!hasValue()) throw NoValue(NAME);
+            if (values.size() != mesh_ptr->size())
+                throw BadMesh("Provider::WithValue", "Mesh size (%2%) and values size (%1%) do not match", values.size(), mesh_ptr->size());
+        }
+
+        /**
+         * This method is called when mesh was changed.
+         * It's just call invalidate()
+         * @param evt information about mesh changes
+         */
+        void onMeshChange(const Mesh::Event& evt) {
+            this->invalidate();
+        }
+
+
+        /**
          * @param values provided value, values in points describe by this->mesh.
-         * @param meshPtr pointer to mesh which describes in which points there are this->values
+         * @param mesh_ptr pointer to mesh which describes in which points there are this->values
+         * @param default_interpolation default interpolation method for this provider
          */
-        explicit WithValue(ProvidedValueType values, MeshPtrType meshPtr = nullptr)
-            : values(values), meshPtr(meshPtr) {}
+        explicit WithValue(ProvidedValueType values, const MeshPtrType& mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
+            : values(values), mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::WithValue<MeshPtrType>::onMeshChange);
+        }
 
         /**
-         * @param meshPtr pointer to mesh which describes in which points there are this->values
+         * @param mesh_ptr pointer to mesh which describes in which points there are this->values
          */
-        explicit WithValue(MeshPtrType meshPtr = nullptr)
-            : meshPtr(meshPtr) {}
+        explicit WithValue(MeshPtrType mesh_ptr = nullptr, const InterpolationMethod& default_interpolation = INTERPOLATION_LINEAR)
+            : mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::WithValue<MeshPtrType>::onMeshChange);
+        }
+
+        ~WithValue() {
+            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::WithValue<MeshPtrType>::onMeshChange);
+        }
 
         /**
-         * Get provided value in points describe by this->mesh.
-         * @return provided value in points describe by this->mesh
+         * Get provided value in points described by this->mesh.
+         * @return provided value in points described by this->mesh
          */
-        ProvidedValueType& operator()() { return values; }
+        ProvidedValueType& operator()() {
+            ensureHasCorrectValue();
+            return values;
+        }
 
         /**
-         * Get provided value in points describe by this->mesh.
-         * @return provided value in points describe by this->mesh
+         * Get provided value in points described by this->mesh.
+         * @return provided value in points described by this->mesh
          */
-        const ProvidedValueType& operator()() const { return values; }
+        const ProvidedValueType& operator()() const {
+            ensureHasCorrectValue();
+            return values;
+        }
 
         /**
          * Calculate interpolated values using plask::interpolate.
          * @param dst_mesh set of requested points
          * @param method method which should be use to do interpolation
-         * @return values in points describe by mesh @a dst_mesh
+         * @return values in points described by mesh @a dst_mesh
          */
-        virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, InterpolationMethod method) const {
-            ensureHasValue();
-            return interpolate(mesh(), values, dst_mesh, method);
-            //return interpolate(*meshPtr, values, dst_mesh, method);
+        virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+            ensureHasCorrectValue();
+            if (method == DEFAULT_INTERPOLATION) method = default_interpolation;
+            return interpolate(*mesh_ptr, values, dst_mesh, method);
         }
     };
 
@@ -989,7 +1047,7 @@ struct ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>: pub
      */
     struct ConstProviderT: public ProviderFor<PropertyT, SpaceT> {
 
-        typedef ProviderImpl<PropertyT, ValueT, INTERPOLATED_FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
+        typedef ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
 
         /// Provided value
         ValueT value;

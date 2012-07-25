@@ -138,7 +138,7 @@ static shared_ptr<Mesh> readOnePoint3DMesh(plask::XMLReader& reader) {
 }
 
 // Declare global variable of type RegisterMeshReader in order to register the reader:
-//   the first argument must be the same string which was written in 'type' attribute in OnePoint3DMesh::writeXML() method
+//   the first argument must be the same string which has been written intos 'type' attribute in OnePoint3DMesh::writeXML() method
 //   the second one is the address of your reading function
 //   variable name does not matter
 
@@ -176,6 +176,49 @@ namespace plask {
  */
 
 struct Mesh {
+
+
+    /**
+     * Store information about event connected with mesh.
+     *
+     * Subclasses of this can includes additional information about specific type of event.
+     */
+    struct Event: public EventWithSourceAndFlags<Mesh> {
+
+        /// Event flags (which describes event properties).
+        enum Flags {
+            DELETE = 1,             ///< is deleted
+            RESIZE = 1<<1,          ///< size could be changed (points added or deleted)
+            USER_DEFINED = 1<<2     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
+        };
+
+        /**
+         * Check if given @p flag is set.
+         * @param flag flag to check
+         * @return @c true only if @p flag is set
+         */
+        bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
+
+        /**
+         * Check if DELETE flag is set, which mean that source of event is deleted.
+         * @return @c true only if DELETE flag is set
+         */
+        bool isDelete() const { return hasFlag(DELETE); }
+
+        /**
+         * Check if RESIZE flag is set, which mean that source of event could be resized.
+         * @return @c true only if RESIZE flag is set
+         */
+        bool isResize() const { return hasFlag(RESIZE); }
+
+        /**
+         * Construct event.
+         * @param source source of event
+         * @param flags flags which describes event's properties
+         */
+        explicit Event(Mesh& source, unsigned char flags = 0):  EventWithSourceAndFlags<Mesh>(source, flags) {}
+    };
+
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
 
@@ -220,47 +263,6 @@ struct MeshD: public Mesh {
 
     /// @return iterator just after last point
     virtual Iterator end() const = 0;
-
-    /**
-     * Store information about event connected with geometry element.
-     *
-     * Subclasses of this can includes additional information about specific type of event.
-     */
-    struct Event: public EventWithSourceAndFlags< MeshD<dimension> > {
-
-        /// Event flags (which describes event properties).
-        enum Flags {
-            DELETE = 1,             ///< is deleted
-            RESIZE = 1<<1,          ///< size could be changed (points added or deleted)
-            USER_DEFINED = 1<<2     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
-        };
-
-        /**
-         * Check if given @p flag is set.
-         * @param flag flag to check
-         * @return @c true only if @p flag is set
-         */
-        bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
-
-        /**
-         * Check if DELETE flag is set, which mean that source of event is deleted.
-         * @return @c true only if DELETE flag is set
-         */
-        bool isDelete() const { return hasFlag(DELETE); }
-
-        /**
-         * Check if RESIZE flag is set, which mean that source of event could be resized.
-         * @return @c true only if RESIZE flag is set
-         */
-        bool isResize() const { return hasFlag(RESIZE); }
-
-        /**
-         * Construct event.
-         * @param source source of event
-         * @param flags flags which describes event's properties
-         */
-        explicit Event(MeshD<dimension>& source, unsigned char flags = 0):  EventWithSourceAndFlags< MeshD<dimension> >(source, flags) {}
-    };
 
     /// Changed signal, fired when space was changed.
     boost::signals2::signal<void(Event&)> changed;

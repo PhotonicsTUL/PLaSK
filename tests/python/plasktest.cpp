@@ -93,9 +93,17 @@ struct SpaceTest : plask::SolverOver<plask::Geometry2DCartesian> {
 
 //// Provider & Receiver /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct ReceiverTest : plask::Solver {
-    virtual std::string getName() const { return "Receiver Test"; }
-    plask::ReceiverFor<plask::EffectiveIndex> inNeff;
+struct SimpleSolver : plask::Solver {
+    virtual std::string getName() const { return "Provider and Receiver Test"; }
+    plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> inTemperature;
+    plask::ProviderFor<plask::OpticalIntensity, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RegularMesh2D>> outIntensity;
+    SimpleSolver() : outIntensity( plask::make_shared<plask::RegularMesh2D>(plask::RegularMesh1D(0., 4., 3), plask::RegularMesh1D(0., 20., 3)) ) {
+        plask::DataVector<double> data(9);
+        data[0] = 100.; data[1] = 100.; data[2] = 100.;
+        data[3] = 300.; data[4] = 300.; data[5] = 300.;
+        data[6] = 500.; data[7] = 500.; data[8] = 500.;
+        outIntensity.values = data;
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,10 +129,11 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("testBoundary", &testBoundary);
 
-    plask::python::ExportSolver<ReceiverTest>("ReceiverTest")
-        .add_receiver("inNeff", &ReceiverTest::inNeff, "Test receiver")
-    ;
-
     plask::python::ExportSolver<SpaceTest>("SpaceTest");
+
+    plask::python::ExportSolver<SimpleSolver>("SimpleSolver")
+        .add_receiver("inTemperature", &SimpleSolver::inTemperature, "Test receiver")
+        .add_provider("outIntensity", &SimpleSolver::outIntensity, "Test provider")
+    ;
 
 }

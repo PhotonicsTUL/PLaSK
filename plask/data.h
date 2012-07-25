@@ -69,18 +69,18 @@ class DataVector {
     }
 
     /**
-     * Copy constructor. Only makes shallow copy (doesn't copy data).
+     * Copy constructor. Only makes a shallow copy (doesn't copy data).
      * @param src data source
      */
     DataVector(const DataVector& src): size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
 
     /**
-     * Assign operator. Only makes shallow copy (doesn't copy data).
+     * Assign operator. Only makes a shallow copy (doesn't copy data).
      * @param M data source
      * @return *this
      */
     DataVector<T>& operator=(const DataVector<T>& M) {
-        if (this == &M) return;
+        if (this == &M) return *this;
         this->dec_ref();
         size_ = M.size_;
         data_ = M.data_;

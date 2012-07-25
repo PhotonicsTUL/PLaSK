@@ -23,7 +23,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
     ProviderFor<SomeSingleValueProperty>::WithValue outSingleValue;
 
     /// Sample provider for field (it's better to use delegate here).
-    ProviderFor<SomeFieldProperty, Space2DCartesian>::Delegate outSomeField;
+    ProviderFor<SomeOnMeshProperty, Space2DCartesian>::Delegate outSomeField;
 
     YourSolver():
         outDelegateProvider(this, getDelegated) // getDelegated will be called whether provider value is requested

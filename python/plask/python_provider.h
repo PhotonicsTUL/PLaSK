@@ -73,7 +73,7 @@ namespace detail {
     };
 
     template <typename ReceiverT>
-    struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT>
+    struct RegisterReceiverImpl<ReceiverT, ON_MESH_PROPERTY> : public RegisterReceiverBase<ReceiverT>
     {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIMS;
@@ -89,16 +89,16 @@ namespace detail {
     template <int DIMS, typename ReceiverT> struct ReceiverSetValueForMeshes {};
 
     template <typename ReceiverT>
-    struct RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT> {
+    struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT> {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIMS;
         typedef DataVectorWrap<typename ReceiverT::PropertyTag::ValueType, DIMS> DataT;
-        static DataT __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, InterpolationMethod method) {
-            return DataT(self(*mesh, method), mesh);
-        }
         static void setValue(ReceiverT& self, const py::object& obj) {
             DataT data = py::extract<DataT>(obj);
             ReceiverSetValueForMeshes<DIMS, ReceiverT>::call(self, data);
+        }
+        static DataT __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, InterpolationMethod method) {
+            return DataT(self(*mesh, method), mesh);
         }
         RegisterReceiverImpl() {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
@@ -144,7 +144,7 @@ namespace detail {
     };
 
     template <typename ProviderT>
-    struct RegisterProviderImpl<ProviderT, FIELD_PROPERTY> : public RegisterProviderBase<ProviderT>
+    struct RegisterProviderImpl<ProviderT, ON_MESH_PROPERTY> : public RegisterProviderBase<ProviderT>
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static const int DIMS = ProviderT::SpaceType::DIMS;
@@ -157,7 +157,7 @@ namespace detail {
     };
 
     template <typename ProviderT>
-    struct RegisterProviderImpl<ProviderT, INTERPOLATED_FIELD_PROPERTY> : public RegisterProviderBase<ProviderT>
+    struct RegisterProviderImpl<ProviderT, FIELD_PROPERTY> : public RegisterProviderBase<ProviderT>
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static const int DIMS = ProviderT::SpaceType::DIMS;
@@ -173,7 +173,7 @@ namespace detail {
 
     // 2D meshes:
     template <typename ReceiverT> struct ReceiverSetValueForMeshes<2, ReceiverT> {
-        typedef RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> RegisterT;
+        typedef RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY> RegisterT;
         static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
 
             if (RegisterT::template setValueForMesh< RectilinearMesh2D >(self, data)) return;
@@ -185,7 +185,7 @@ namespace detail {
 
     // 3D meshes:
     template <typename ReceiverT> struct ReceiverSetValueForMeshes<3, ReceiverT> {
-        typedef RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> RegisterT;
+        typedef RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY> RegisterT;
         static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
 
             if (RegisterT::template setValueForMesh< RectilinearMesh3D >(self, data)) return;

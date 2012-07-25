@@ -25,7 +25,7 @@ struct YourSolver: public SolverWithMesh<ForExample_Geometry2DCartesian, ForExam
     ProviderFor<SomeFieldProperty, Geometry2DCartesian>::Delegate outSomeField;
 
     YourSolver():
-        outDelegateProvider(this, getDelegated) // getDelegated will be called whether provider value is requested
+        outSomeField(this, getDelegated) // getDelegated will be called whether provider value is requested
     {
         inTemperature = 300.; // temperature receiver has some sensible value
     }
