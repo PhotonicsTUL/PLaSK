@@ -10,7 +10,7 @@ This file includes rectilinear mesh for 3d space.
 namespace plask {
 
 /**
- * Rectilinear mesh in 3d space.
+ * Rectilinear mesh in 3D space.
  *
  * Includes three 1d rectilinear meshes:
  * - c0 (alternative names: lon(), ee_z(), r())
@@ -20,13 +20,13 @@ namespace plask {
  */
 //TODO methods which call fireResize() when points are adding, etc.
 template <typename Mesh1D>
-class RectangularMesh3D: public MeshD<3> {
+class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
     static_assert(std::is_floating_point< typename std::remove_reference<decltype(std::declval<Mesh1D>().operator[](0))>::type >::value,
                   "Mesh1d must have operator[](std::size_t index) which returns floating-point value");
 
-    typedef std::size_t index_ft(const RectangularMesh3D* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index);
-    typedef std::size_t index012_ft(const RectangularMesh3D* mesh, std::size_t mesh_index);
+    typedef std::size_t index_ft(const RectangularMesh* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index);
+    typedef std::size_t index012_ft(const RectangularMesh* mesh, std::size_t mesh_index);
 
     // our own virtual table, changeable in run-time:
     index_ft* index_f;
@@ -37,7 +37,7 @@ class RectangularMesh3D: public MeshD<3> {
   public:
 
     /// Boundary type.
-    typedef ::plask::Boundary<RectangularMesh3D<Mesh1D>> Boundary;
+    typedef ::plask::Boundary<RectangularMesh<3,Mesh1D>> Boundary;
 
     /// First coordinate of points in this mesh.
     Mesh1D c0;
@@ -58,7 +58,7 @@ class RectangularMesh3D: public MeshD<3> {
     enum IterationOrder { ORDER_012, ORDER_021, ORDER_102, ORDER_120, ORDER_201, ORDER_210 };
 
     /// Construct an empty mesh
-    RectangularMesh3D(IterationOrder iterationOrder=ORDER_210) {
+    RectangularMesh(IterationOrder iterationOrder=ORDER_210) {
         setIterationOrder(iterationOrder);
     }
 
@@ -89,7 +89,7 @@ class RectangularMesh3D: public MeshD<3> {
      * @param mesh2 mesh for the third coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh3D(Mesh1D mesh0, Mesh1D mesh1, Mesh1D mesh2, IterationOrder iterationOrder = ORDER_210) :
+    RectangularMesh(Mesh1D mesh0, Mesh1D mesh1, Mesh1D mesh2, IterationOrder iterationOrder = ORDER_210) :
         c0(std::move(mesh0)),
         c1(std::move(mesh1)),
         c2(std::move(mesh2)) { setIterationOrder(iterationOrder); }
@@ -103,7 +103,7 @@ class RectangularMesh3D: public MeshD<3> {
      * @param iterationOrder iteration order
      */
     /*template <typename Mesh0CtorArg, typename Mesh1CtorArg, typename Mesh2CtorArg>
-    RectangularMesh3D(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, Mesh2CtorArg&& mesh2, IterationOrder iterationOrder = ORDER_210) :
+    RectangularMesh(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, Mesh2CtorArg&& mesh2, IterationOrder iterationOrder = ORDER_210) :
         c0(std::forward<Mesh0CtorArg>(mesh0)),
         c1(std::forward<Mesh1CtorArg>(mesh1)),
         c2(std::forward<Mesh2CtorArg>(mesh2)) { setIterationOrder(iterationOrder); }*/
@@ -324,7 +324,7 @@ class RectangularMesh3D: public MeshD<3> {
      * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].
      * This iterator type is indexed, which mean that it have (read-write) index field equal to 0 for begin() and growing up to size() for end().
      */
-    typedef IndexedIterator< const RectangularMesh3D, PointType > const_iterator;
+    typedef IndexedIterator< const RectangularMesh, PointType > const_iterator;
 
     ///@return iterator referring to the first point in this mesh
     const_iterator begin_fast() const { return const_iterator(this, 0); }
@@ -341,7 +341,7 @@ class RectangularMesh3D: public MeshD<3> {
       * @param to_compare mesh to compare
       * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
       */
-    bool operator==(const RectangularMesh3D<Mesh1D>& to_compare) {
+    bool operator==(const RectangularMesh<3,Mesh1D>& to_compare) {
         return c0 == to_compare.c0 && c1 == to_compare.c1 && c2 == to_compare.c2;
     }
 
@@ -352,10 +352,11 @@ class RectangularMesh3D: public MeshD<3> {
     virtual std::size_t size() const { return c0.size() * c1.size() * c2.size(); }
 
     /**
-     * Serialize mesh to XMLReader
-     * \param writer XML writer to write to
+     * Write mesh to XML
+     * \param element XML element to write to
      */
-    virtual void serialize(XMLWriter& writer, const std::string name) const;
+    virtual void writeXML(XMLElement& element) const;
+
 
     /// @return true only if there are no points in mesh
     bool empty() const { return c0.empty() || c1.empty() || c2.empty(); }
@@ -432,7 +433,7 @@ class RectangularMesh3D: public MeshD<3> {
      * Return a mesh that enables iterating over middle points of the rectangles
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
-    RectangularMesh3D getMidpointsMesh() const;
+    RectangularMesh getMidpointsMesh() const;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
@@ -514,8 +515,8 @@ class RectangularMesh3D: public MeshD<3> {
 };
 
 template <typename Mesh1D,typename DataT>    //for any data type
-struct InterpolationAlgorithm<RectangularMesh3D<Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(const RectangularMesh3D<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
+struct InterpolationAlgorithm<RectangularMesh<3,Mesh1D>, DataT, INTERPOLATION_LINEAR> {
+    static void interpolate(const RectangularMesh<3,Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
             *dst++ = src_mesh.interpolateLinear(src_vec, p);
@@ -527,12 +528,12 @@ struct InterpolationAlgorithm<RectangularMesh3D<Mesh1D>, DataT, INTERPOLATION_LI
 namespace std { //use fast iterator if know mesh type at compile time:
 
     template <typename Mesh1D>
-    inline auto begin(const plask::RectangularMesh3D<Mesh1D>& m) -> decltype(m.begin_fast()) {
+    inline auto begin(const plask::RectangularMesh<3,Mesh1D>& m) -> decltype(m.begin_fast()) {
       return m.begin_fast();
     }
 
     template <typename Mesh1D>
-    inline auto end(const plask::RectangularMesh3D<Mesh1D>& m) -> decltype(m.end_fast()) {
+    inline auto end(const plask::RectangularMesh<3,Mesh1D>& m) -> decltype(m.end_fast()) {
       return m.begin_fast();
     }
 

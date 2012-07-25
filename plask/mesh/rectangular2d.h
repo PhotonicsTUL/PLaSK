@@ -5,16 +5,17 @@
 This file includes rectilinear mesh for 2d space.
 */
 
+#include <iterator>
+
 #include "mesh.h"
 #include "boundary.h"
 #include "interpolation.h"
 #include "../geometry/element.h"
-#include <iterator>
 
 namespace plask {
 
 /**
- * Rectilinear mesh in 2d space.
+ * Rectilinear mesh in 2D space.
  *
  * Includes two 1D rectilinear meshes:
  * - c0 (alternative names: tran(), ee_x(), r())
@@ -23,13 +24,13 @@ namespace plask {
  */
 //TODO methods which call fireChanged() when points are added, etc.
 template <typename Mesh1D>
-class RectangularMesh2D: public MeshD<2> {
+class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     static_assert(std::is_floating_point< typename std::remove_reference<decltype(std::declval<Mesh1D>().operator[](0))>::type >::value,
                   "Mesh1d must have operator[](std::size_t index) which returns floating-point value");
 
-    typedef std::size_t index_ft(const RectangularMesh2D<Mesh1D>* mesh, std::size_t c0_index, std::size_t c1_index);
-    typedef std::size_t index01_ft(const RectangularMesh2D<Mesh1D>* mesh, std::size_t mesh_index);
+    typedef std::size_t index_ft(const RectangularMesh<2,Mesh1D>* mesh, std::size_t c0_index, std::size_t c1_index);
+    typedef std::size_t index01_ft(const RectangularMesh<2,Mesh1D>* mesh, std::size_t mesh_index);
 
     // Our own virtual table, changeable in run-time:
     index_ft* index_f;
@@ -39,7 +40,7 @@ class RectangularMesh2D: public MeshD<2> {
   public:
 
     /// Boundary type.
-    typedef ::plask::Boundary<RectangularMesh2D<Mesh1D>> Boundary;
+    typedef ::plask::Boundary<RectangularMesh<2,Mesh1D>> Boundary;
 
     /// First coordinate of points in this mesh.
     Mesh1D c0;
@@ -79,7 +80,7 @@ class RectangularMesh2D: public MeshD<2> {
     }
 
     /// Construct an empty mesh
-    RectangularMesh2D(IterationOrder iterationOrder = NORMAL_ORDER) { setIterationOrder(iterationOrder); }
+    RectangularMesh(IterationOrder iterationOrder = NORMAL_ORDER) { setIterationOrder(iterationOrder); }
 
     /**
      * Construct mesh with is based on given 1D meshes
@@ -88,7 +89,7 @@ class RectangularMesh2D: public MeshD<2> {
      * @param mesh1 mesh for the second coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh2D(Mesh1D mesh0, Mesh1D mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
+    RectangularMesh(Mesh1D mesh0, Mesh1D mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
         c0(std::move(mesh0)), c1(std::move(mesh1)) { setIterationOrder(iterationOrder); }
 
     /*
@@ -99,7 +100,7 @@ class RectangularMesh2D: public MeshD<2> {
      * @param iterationOrder iteration order
      */
     /*template <typename Mesh0CtorArg, typename Mesh1CtorArg>
-    RectangularMesh2D(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
+    RectangularMesh(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
         c0(std::forward<Mesh0CtorArg>(mesh0)), c1(std::forward<Mesh1CtorArg>(mesh1)) { setIterationOrder(iterationOrder); }*/
 
     /**
@@ -225,7 +226,7 @@ class RectangularMesh2D: public MeshD<2> {
      * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].
      * This iterator type is indexed, which mean that it have (read-write) index field equal to 0 for begin() and growing up to size() for end().
      */
-    typedef IndexedIterator< const RectangularMesh2D, PointType > const_iterator;
+    typedef IndexedIterator< const RectangularMesh, PointType > const_iterator;
 
     /// @return iterator referring to the first point in this mesh
     const_iterator begin_fast() const { return const_iterator(this, 0); }
@@ -242,7 +243,7 @@ class RectangularMesh2D: public MeshD<2> {
       * @param to_compare mesh to compare
       * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
       */
-    bool operator==(const RectangularMesh2D<Mesh1D>& to_compare) {
+    bool operator==(const RectangularMesh<2,Mesh1D>& to_compare) {
         return c0 == to_compare.c0 && c1 == to_compare.c1;
     }
 
@@ -253,10 +254,10 @@ class RectangularMesh2D: public MeshD<2> {
     std::size_t size() const { return c0.size() * c1.size(); }
 
     /**
-     * Serialize mesh to XMLReader
-     * \param writer XML writer to write to
+     * Write mesh to XML
+     * \param element XML element to write to
      */
-    virtual void serialize(XMLWriter& writer, const std::string name) const;
+    virtual void writeXML(XMLElement& element) const;
 
     /// @return true only if there are no points in mesh
     bool empty() const { return c0.empty() || c1.empty(); }
@@ -399,149 +400,149 @@ class RectangularMesh2D: public MeshD<2> {
      * Return a mesh that enables iterating over middle points of the rectangles
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
-    RectangularMesh2D getMidpointsMesh() const;
+    RectangularMesh getMidpointsMesh() const;
 
 private:
 
     // Common code for: left, right, bottom, top boundries:
-    struct BoundaryIteratorImpl: public BoundaryImpl<RectangularMesh2D>::IteratorImpl {
+    struct BoundaryIteratorImpl: public BoundaryImpl<RectangularMesh>::IteratorImpl {
 
-        const RectangularMesh2D &mesh;
+        const RectangularMesh &mesh;
 
         std::size_t index;
 
-        BoundaryIteratorImpl(const RectangularMesh2D& mesh, std::size_t index): mesh(mesh), index(index) {}
+        BoundaryIteratorImpl(const RectangularMesh& mesh, std::size_t index): mesh(mesh), index(index) {}
 
         virtual void increment() { ++index; }
 
-        virtual bool equal(const typename BoundaryImpl<RectangularMesh2D>::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryImpl<RectangularMesh>::IteratorImpl& other) const {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
     };
 
-    struct LeftBoundary: public BoundaryImpl<RectangularMesh2D<Mesh1D>> {
+    struct LeftBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
-            IteratorImpl(const RectangularMesh2D<Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
+            IteratorImpl(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
             virtual std::size_t dereference() const { return this->mesh.index(0, index); }
 
-            virtual typename BoundaryImpl<RectangularMesh2D>::IteratorImpl* clone() const {
+            virtual typename BoundaryImpl<RectangularMesh>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
 
-        typedef typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool includes(const RectangularMesh2D<Mesh1D> &mesh, std::size_t mesh_index) const {
+        bool includes(const RectangularMesh<2,Mesh1D> &mesh, std::size_t mesh_index) const {
             return mesh.index0(mesh_index) == 0;
         }
 
-        Iterator begin(const RectangularMesh2D<Mesh1D> &mesh) const {
+        Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
             return Iterator(new IteratorImpl(mesh, 0));
         }
 
-        Iterator end(const RectangularMesh2D<Mesh1D> &mesh) const {
+        Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
             return Iterator(new IteratorImpl(mesh, mesh.c1.size()));
         }
 
     };
 
-    struct RightBoundary: public BoundaryImpl<RectangularMesh2D<Mesh1D>> {
+    struct RightBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
-            IteratorImpl(const RectangularMesh2D<Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
+            IteratorImpl(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
             virtual std::size_t dereference() const { return this->mesh.index(this->mesh.c0.size()-1, index); }
 
-            virtual typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::IteratorImpl* clone() const {
+            virtual typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
 
-        typedef typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
 
         //virtual RightBoundary* clone() const { return new RightBoundary(); }
 
-        bool includes(const RectangularMesh2D<Mesh1D> &mesh, std::size_t mesh_index) const {
+        bool includes(const RectangularMesh<2,Mesh1D> &mesh, std::size_t mesh_index) const {
             return mesh.index0(mesh_index) == mesh.c0.size()-1;
         }
 
-        Iterator begin(const RectangularMesh2D<Mesh1D> &mesh) const {
+        Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
             return Iterator(new IteratorImpl(mesh, 0));
         }
 
-        Iterator end(const RectangularMesh2D<Mesh1D> &mesh) const {
+        Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
             return Iterator(new IteratorImpl(mesh, mesh.c1.size()));
         }
 
     };
 
-    struct TopBoundary: public BoundaryImpl<RectangularMesh2D<Mesh1D>> {
+    struct TopBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
-            IteratorImpl(const RectangularMesh2D<Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
+            IteratorImpl(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
             virtual std::size_t dereference() const { return this->mesh.index(index, 0); }
 
-            virtual typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::IteratorImpl* clone() const {
+            virtual typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
 
-        typedef typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
 
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
-        bool includes(const RectangularMesh2D<Mesh1D> &mesh, std::size_t mesh_index) const {
+        bool includes(const RectangularMesh<2,Mesh1D> &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == 0;
         }
 
-        Iterator begin(const RectangularMesh2D<Mesh1D> &mesh) const {
+        Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
             return Iterator(new IteratorImpl(mesh, 0));
         }
 
-        Iterator end(const RectangularMesh2D<Mesh1D> &mesh) const {
+        Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
             return Iterator(new IteratorImpl(mesh, mesh.c0.size()));
         }
     };
 
-    struct BottomBoundary: public BoundaryImpl<RectangularMesh2D<Mesh1D>> {
+    struct BottomBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
-            IteratorImpl(const RectangularMesh2D<Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
+            IteratorImpl(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
             virtual std::size_t dereference() const { return this->mesh.index(index, this->mesh.c1.size()-1); }
 
-            virtual typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::IteratorImpl* clone() const {
+            virtual typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
 
-        typedef typename BoundaryImpl<RectangularMesh2D<Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
 
         //virtual BottomBoundary* clone() const { return new BottomBoundary(); }
 
-        bool includes(const RectangularMesh2D &mesh, std::size_t mesh_index) const {
+        bool includes(const RectangularMesh &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == mesh.c1.size()-1;
         }
 
-        Iterator begin(const RectangularMesh2D<Mesh1D> &mesh) const {
+        Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
             return Iterator(new IteratorImpl(mesh, 0));
         }
 
-        Iterator end(const RectangularMesh2D<Mesh1D> &mesh) const {
+        Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
             return Iterator(new IteratorImpl(mesh, mesh.c0.size()));
         }
 
@@ -552,7 +553,7 @@ public:
 
     template <typename Predicate>
     static Boundary getBoundary(Predicate predicate) {
-        return Boundary(new PredicateBoundary<RectangularMesh2D<Mesh1D>, Predicate>(predicate));
+        return Boundary(new PredicateBoundary<RectangularMesh<2,Mesh1D>, Predicate>(predicate));
     }
 
     static Boundary getLeftBoundary() {
@@ -618,8 +619,8 @@ auto interpolateLinear2D(DataGetter2D data, const double& point_c0, const double
 
 
 template <typename Mesh1D, typename DataT>    // for any data type
-struct InterpolationAlgorithm<RectangularMesh2D<Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(const RectangularMesh2D<Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DataT>& dst_vec) {
+struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, DataT, INTERPOLATION_LINEAR> {
+    static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
             *dst++ = src_mesh.interpolateLinear(src_vec, p);
@@ -631,12 +632,12 @@ struct InterpolationAlgorithm<RectangularMesh2D<Mesh1D>, DataT, INTERPOLATION_LI
 namespace std { // use fast iterator if we know mesh type at compile time:
 
     template <typename Mesh1D>
-    inline auto begin(const plask::RectangularMesh2D<Mesh1D>& m) -> decltype(m.begin_fast()) {
+    inline auto begin(const plask::RectangularMesh<2,Mesh1D>& m) -> decltype(m.begin_fast()) {
         return m.begin_fast();
     }
 
     template <typename Mesh1D>
-    inline auto end(const plask::RectangularMesh2D<Mesh1D>& m) -> decltype(m.end_fast()) {
+    inline auto end(const plask::RectangularMesh<2,Mesh1D>& m) -> decltype(m.end_fast()) {
         return m.end_fast();
     }
 

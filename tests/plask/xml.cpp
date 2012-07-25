@@ -98,20 +98,20 @@ BOOST_AUTO_TEST_CASE(mesh) {
     auto grids = writer.addTag("grids");
 
     auto mesh2 = plask::RegularMesh2D(plask::RegularMesh1D(1,5,3), plask::RegularMesh1D(10, 40, 4));
-    mesh2.serialize(writer, "reg");
+    mesh2.writeXML(writer.addTag("mesh").attr("name", "reg"));
 
     auto mesh3 = plask::RectilinearMesh3D({1,2,3}, {20,50}, {10});
-    mesh3.serialize(writer, "rec");
+    mesh3.writeXML(writer.addTag("mesh").attr("name", "rec"));
 
     grids.end();
 
     BOOST_CHECK_EQUAL(ss.str(), HEADER
         "<grids>\n"
-        "  <mesh type=\"regular2d\" name=\"reg\">\n"
+        "  <mesh name=\"reg\" type=\"regular2d\">\n"
         "    <axis0 start=\"1\" end=\"5\" count=\"3\"/>\n"
         "    <axis1 start=\"10\" end=\"40\" count=\"4\"/>\n"
         "  </mesh>\n"
-        "  <mesh type=\"rectilinear3d\" name=\"rec\">\n"
+        "  <mesh name=\"rec\" type=\"rectilinear3d\">\n"
         "    <axis0>\n"
         "      1 2 3 \n"
         "    </axis0>\n"

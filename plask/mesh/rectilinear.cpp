@@ -8,8 +8,8 @@
 
 namespace plask {
 
-template class RectangularMesh2D<RectilinearMesh1D>;
-template class RectangularMesh3D<RectilinearMesh1D>;
+template class RectangularMesh<2,RectilinearMesh1D>;
+template class RectangularMesh<3,RectilinearMesh1D>;
 
 
 
@@ -50,11 +50,10 @@ RectilinearMesh3D RectilinearMesh3D::getMidpointsMesh() const {
 }
 
 template <>
-void RectilinearMesh2D::serialize(XMLWriter& writer, const std::string name) const {
-    auto mesh = writer.addTag("mesh");
-    mesh.attr("type", "rectilinear2d").attr("name", name);
+void RectilinearMesh2D::writeXML(XMLElement& element) const {
+    element.attr("type", "rectilinear2d");
     for (size_t n = 0; n != 2; ++n) {
-        auto axis = mesh.addTag("axis"+boost::lexical_cast<std::string>(n));
+        auto axis = element.addTag("axis"+boost::lexical_cast<std::string>(n));
         axis.indent();
         for (auto x: this->axis(n)) {
             axis.writeText(x);
@@ -65,11 +64,10 @@ void RectilinearMesh2D::serialize(XMLWriter& writer, const std::string name) con
 }
 
 template <>
-void RectilinearMesh3D::serialize(XMLWriter& writer, const std::string name) const {
-    auto mesh = writer.addTag("mesh");
-    mesh.attr("type", "rectilinear3d").attr("name", name);
+void RectilinearMesh3D::writeXML(XMLElement& element) const {
+    element.attr("type", "rectilinear3d");
     for (size_t n = 0; n != 3; ++n) {
-        auto axis = mesh.addTag("axis"+boost::lexical_cast<std::string>(n));
+        auto axis = element.addTag("axis"+boost::lexical_cast<std::string>(n));
         axis.indent();
         for (auto x: this->axis(n)) {
             axis.writeText(x);

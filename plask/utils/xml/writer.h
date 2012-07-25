@@ -356,6 +356,9 @@ public:
 
 };
 
+/// Easier access to XML element type
+typedef XMLWriter::Element XMLElement;
+
 }   // namespace plask
 
 #endif // PLASK__UTILS_XMLWRITER_H

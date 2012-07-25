@@ -45,8 +45,8 @@ and also can have extra methods for your internal use (for calculation).
 Adapter templates currently available in PLaSK (see its description for more details and examples):
 - plask::SimpleMeshAdapter
 
-@subsection meshes_write_direct Direct implementation of \p plask::MeshD\<DIM\>
-To implement a new mesh directly you have to write class inherited from the \p plask::MeshD\<DIM\>, where DIM (is equal 2 or 3) is a number of dimension of space your mesh is defined over.
+@subsection meshes_write_direct Direct implementation of plask::MeshD\<DIM\>
+To implement a new mesh directly you have to write class inherited from the \c plask::MeshD\<DIM\>, where DIM (is equal 2 or 3) is a number of dimension of space your mesh is defined over.
 
 You are required to:
 - implement the @ref plask::Mesh::size size method;
@@ -55,7 +55,7 @@ You are required to:
   - writing @ref plask::MeshD::begin "begin()" and @ref plask::MeshD::end "end()" methods, typically this methods only returns:
     @code plask::Mesh::Iterator(new YourIteratorImpl(...)) @endcode
   - see also: MeshIteratorWrapperImpl and makeMeshIterator
-- implement the \ref plask::MeshD::serialize method, which writes the mesh to XML
+- implement the \ref plask::MeshD::writeXML method, which writes the mesh to XML
 - write and register the reading function which reads the mesh from XML
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3D space):
@@ -71,7 +71,7 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
     // Iterator:
     struct IteratorImpl: public MeshD<plask::space::Cartesian3D>::IteratorImpl {
 
-        // point to mesh or is equal to nullptr for end iterator
+        // Pointer to mesh or is equal to nullptr for end iterator
         const OnePoint3DMesh* mesh_ptr;
 
         // mesh == nullptr for end iterator
@@ -83,7 +83,7 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
         }
 
         virtual void increment() {
-            mesh_ptr = nullptr; //we iterate only over one point, so next state is end
+            mesh_ptr = nullptr; // we iterate only over one point, so next state is end
         }
 
         virtual bool equal(const typename MeshD<plask::space::Cartesian3D>::IteratorImpl& other) const {
@@ -114,13 +114,12 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
         return MeshD<3>::Iterator(new IteratorImpl(nullptr));
     }
 
-    virtual void serialize(plask::XMLWriter& writer, const std::string name) {
-        auto mesh = writer.addTag("mesh");                  // This is the main mesh tag
-        mesh.attr("type", "point3d").attr("name", name);    // These are necessary attributes for the <mesh> tag
-        mesh.addTag("point")
-            .attr("c0", point.c0)
-            .attr("c1", point.c1)
-            .attr("c2", point.c2)                           // Store this point coordinates in attributes of tag <point>
+    virtual void writeXML(XMLElement& element) const;
+        element.attr("type", "point3d"); // these is required attribute for the provided element
+        element.addTag("point")
+               .attr("c0", point.c0)
+               .attr("c1", point.c1)
+               .attr("c2", point.c2)     // store this point coordinates in attributes of the tag <point>
         ;
     }
 
@@ -139,7 +138,7 @@ static shared_ptr<Mesh> readOnePoint3DMesh(plask::XMLReader& reader) {
 }
 
 // Declare global variable of type RegisterMeshReader in order to register the reader:
-//   the first argument must be the same string which was written in 'type' attribute in OnePoint3DMesh::serialize() method
+//   the first argument must be the same string which was written in 'type' attribute in OnePoint3DMesh::writeXML() method
 //   the second one is the address of your reading function
 //   variable name does not matter
 
@@ -181,12 +180,11 @@ struct Mesh {
     virtual std::size_t size() const = 0;
 
     /**
-     * Serialize mesh to XMLReader
-     * \param writer XML writer to write to
-     * \param name mesh name
+     * Write mesh to XML
+     * \param element XML element to write to
      */
-    virtual void serialize(XMLWriter& writer, const std::string name) const {
-        throw NotImplemented("Mesh::serialize");
+    virtual void writeXML(XMLElement& element) const {
+        throw NotImplemented("Mesh::writeXML()");
     }
 
     virtual ~Mesh() {}
@@ -417,6 +415,11 @@ struct SimpleMeshAdapter: public MeshD<dim> {
     virtual typename MeshD<dim>::Iterator end() const { return makeMeshIterator(internal.end()); }
 
 };
+
+/** Base template for rectangular mesh of any dimension */
+template <int dim, typename Mesh1D>
+class RectangularMesh {};
+
 
 /** Base class for every mesh generator */
 class MeshGenerator {

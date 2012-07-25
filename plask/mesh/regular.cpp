@@ -5,8 +5,8 @@
 
 namespace plask {
 
-template class RectangularMesh2D<RegularMesh1D>;
-template class RectangularMesh3D<RegularMesh1D>;
+template class RectangularMesh<2,RegularMesh1D>;
+template class RectangularMesh<3,RegularMesh1D>;
 
 template<>
 RegularMesh2D RegularMesh2D::getMidpointsMesh() const {
@@ -27,20 +27,18 @@ RegularMesh3D RegularMesh3D::getMidpointsMesh() const {
 
 
 template <>
-void RegularMesh2D::serialize(XMLWriter& writer, const std::string name) const {
-    auto mesh = writer.addTag("mesh");
-    mesh.attr("type", "regular2d").attr("name", name);
-    mesh.addTag("axis0").attr("start", c0.getFirst()).attr("end", c0.getLast()).attr("count", c0.size());
-    mesh.addTag("axis1").attr("start", c1.getFirst()).attr("end", c1.getLast()).attr("count", c1.size());
+void RegularMesh2D::writeXML(XMLElement& element) const {
+    element.attr("type", "regular2d");
+    element.addTag("axis0").attr("start", c0.getFirst()).attr("end", c0.getLast()).attr("count", c0.size());
+    element.addTag("axis1").attr("start", c1.getFirst()).attr("end", c1.getLast()).attr("count", c1.size());
 }
 
 template <>
-void RegularMesh3D::serialize(XMLWriter& writer, const std::string name) const {
-    auto mesh = writer.addTag("mesh");
-    mesh.attr("type", "regular3d").attr("name", name);
-    mesh.addTag("axis0").attr("start", c0.getFirst()).attr("end", c0.getLast()).attr("count", c0.size());
-    mesh.addTag("axis1").attr("start", c1.getFirst()).attr("end", c1.getLast()).attr("count", c1.size());
-    mesh.addTag("axis2").attr("start", c2.getFirst()).attr("end", c2.getLast()).attr("count", c2.size());
+void RegularMesh3D::writeXML(XMLElement& element) const {
+    element.attr("type", "regular3d");
+    element.addTag("axis0").attr("start", c0.getFirst()).attr("end", c0.getLast()).attr("count", c0.size());
+    element.addTag("axis1").attr("start", c1.getFirst()).attr("end", c1.getLast()).attr("count", c1.size());
+    element.addTag("axis2").attr("start", c2.getFirst()).attr("end", c2.getLast()).attr("count", c2.size());
 }
 
 

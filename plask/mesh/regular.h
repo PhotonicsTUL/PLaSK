@@ -13,10 +13,10 @@ This file includes rectilinear meshes for 1d, 2d, and 3d spaces.
 namespace plask {
 
 /// Two-dimensional rectilinear mesh type
-typedef RectangularMesh2D<RegularMesh1D> RegularMesh2D;
+typedef RectangularMesh<2,RegularMesh1D> RegularMesh2D;
 
 /// Three-dimensional rectilinear mesh type
-typedef RectangularMesh3D<RegularMesh1D> RegularMesh3D;
+typedef RectangularMesh<3,RegularMesh1D> RegularMesh3D;
 
 } // namespace plask
 

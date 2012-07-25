@@ -86,7 +86,7 @@ namespace detail {
         }
     };
 
-    template <int DIMS, typename ReceiverT> struct TrySettingValueForMeshes {};
+    template <int DIMS, typename ReceiverT> struct ReceiverSetValueForMeshes {};
 
     template <typename ReceiverT>
     struct RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> : public RegisterReceiverBase<ReceiverT> {
@@ -98,7 +98,7 @@ namespace detail {
         }
         static void setValue(ReceiverT& self, const py::object& obj) {
             DataT data = py::extract<DataT>(obj);
-            TrySettingValueForMeshes<DIMS, ReceiverT>::call(self, data);
+            ReceiverSetValueForMeshes<DIMS, ReceiverT>::call(self, data);
         }
         RegisterReceiverImpl() {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", (py::arg("mesh"), py::arg("interpolation")=DEFAULT_INTERPOLATION));
@@ -111,7 +111,7 @@ namespace detail {
             if (mesh) { self.setValue(data, mesh); return true; }
             return false;
         }
-        friend struct TrySettingValueForMeshes<DIMS, ReceiverT>;
+        friend struct ReceiverSetValueForMeshes<DIMS, ReceiverT>;
     };
 
     template <typename ProviderT>
@@ -172,21 +172,25 @@ namespace detail {
     // Here add new mesh types that should be able to be provided in DataVector to receivers:
 
     // 2D meshes:
-    template <typename ReceiverT> struct TrySettingValueForMeshes<2, ReceiverT> {
+    template <typename ReceiverT> struct ReceiverSetValueForMeshes<2, ReceiverT> {
         typedef RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> RegisterT;
         static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
-            if (RegisterT::template setValueForMesh<RectilinearMesh2D>(self, data)) return;
-            if (RegisterT::template setValueForMesh<RegularMesh2D>(self, data)) return;
+
+            if (RegisterT::template setValueForMesh< RectilinearMesh2D >(self, data)) return;
+            if (RegisterT::template setValueForMesh< RegularMesh2D >(self, data)) return;
+
             throw TypeError("Data on wrong mesh type for this operation");
         }
     };
 
     // 3D meshes:
-    template <typename ReceiverT> struct TrySettingValueForMeshes<3, ReceiverT> {
+    template <typename ReceiverT> struct ReceiverSetValueForMeshes<3, ReceiverT> {
         typedef RegisterReceiverImpl<ReceiverT, INTERPOLATED_FIELD_PROPERTY> RegisterT;
         static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
-            if (RegisterT::template setValueForMesh<RectilinearMesh3D>(self, data)) return;
-            if (RegisterT::template setValueForMesh<RegularMesh3D>(self, data)) return;
+
+            if (RegisterT::template setValueForMesh< RectilinearMesh3D >(self, data)) return;
+            if (RegisterT::template setValueForMesh< RegularMesh3D >(self, data)) return;
+
             throw TypeError("Data on wrong mesh type for this operation");
         }
     };
