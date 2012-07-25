@@ -94,10 +94,29 @@ struct SpaceTest : plask::SolverOver<plask::Geometry2DCartesian> {
 //// Provider & Receiver /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct SimpleSolver : plask::Solver {
+    struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {};
+
     virtual std::string getName() const { return "Provider and Receiver Test"; }
+
     plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> inTemperature;
+
     plask::ProviderFor<plask::OpticalIntensity, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RegularMesh2D>> outIntensity;
-    SimpleSolver() : outIntensity( plask::make_shared<plask::RegularMesh2D>(plask::RegularMesh1D(0., 4., 3), plask::RegularMesh1D(0., 20., 3)) ) {
+
+    plask::ReceiverFor<VectorialField, plask::Geometry2DCartesian> inVectors;
+
+    std::string showVectors() {
+        plask::RegularMesh2D mesh(plask::RegularMesh1D(1., 3., 2), plask::RegularMesh1D(5., 15., 2));
+        auto data = inVectors(mesh);
+        std::stringstream str;
+        for (size_t i = 0; i != 4; i++) {
+            str << mesh[i] << ": " << data[i] << "\n";
+        }
+        return str.str();
+    }
+
+    SimpleSolver() :
+        outIntensity( plask::make_shared<plask::RegularMesh2D>(plask::RegularMesh1D(0., 4., 3), plask::RegularMesh1D(0., 20., 3)) )
+    {
         plask::DataVector<double> data(9);
         data[0] = 100.; data[1] = 100.; data[2] = 100.;
         data[3] = 300.; data[4] = 300.; data[5] = 300.;
@@ -134,6 +153,8 @@ BOOST_PYTHON_MODULE(plasktest)
     plask::python::ExportSolver<SimpleSolver>("SimpleSolver")
         .add_receiver("inTemperature", &SimpleSolver::inTemperature, "Test receiver")
         .add_provider("outIntensity", &SimpleSolver::outIntensity, "Test provider")
+        .add_receiver("inVectors", &SimpleSolver::inVectors, "Test provider")
+        .def("showVectors", &SimpleSolver::showVectors)
     ;
 
 }

@@ -95,7 +95,7 @@ template <> inline py::handle<> plain_vec_dtype<double>() {
 template <> inline py::handle<> plain_vec_dtype<dcomplex>() {
     return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyComplex_Type)));
 }
-template <int dim, typename T> py::handle<> vec_dtype(const Vec<dim,T>&) { return plain_vec_dtype<T>(); }
+template <int dim, typename T> py::handle<> vec_dtype() { return plain_vec_dtype<T>(); }
 
 // vector.__array__
 template <int dim, typename T>  py::object vec__array__(py::object self) {
@@ -143,7 +143,7 @@ struct VecAttr {
 
 // Register vector class to python
 template <int dim, typename T>
-inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vector")
+inline static py::class_<Vec<dim,T>>* register_vector_class(std::string name="vector")
 {
     typedef Vec<dim,T> V;
     typedef Vec<dim,double> VR;
@@ -154,12 +154,13 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
 
     V (*c)(const V&) = &plask::conj<T>;
 
-    py::class_<V> vec_class = py::class_<V>(name.c_str(),
+    py::class_<V>* vec_class = new py::class_<V>(name.c_str(),
         "PLaSK vector.\n\n"
         "See Also\n"
         "--------\n"
         "vector\t:\tcreate a new vector.\n"
-        , py::no_init)
+        , py::no_init);
+    (*vec_class)
         .def("__getattr__", &VecAttr<dim,T>::get)
         .def("__setattr__", &VecAttr<dim,T>::set)
         .def("__getitem__", &vec__getitem__<dim,T>)
@@ -194,7 +195,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def("abs", (double (*)(const Vec<dim,T>&))&abs<dim,T>, "Vector magnitue")
         .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>, "Vector magnitue")
         .def("copy", &copy_vec<dim,T>)
-        .add_property("dtype", &vec_dtype<dim,T>)
+        .add_static_property("dtype", &vec_dtype<dim,T>)
         .def("__array__", &vec__array__<dim,T>)
     ;
 
@@ -202,7 +203,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def("__array__", &vec_list__array__<dim,T>)
     ;
 
-    py::scope vec_scope = vec_class;
+    py::scope vec_scope = *vec_class;
 
     py::class_<Vec_iterator<dim,T>>("_Iterator", py::no_init)
         .def("__iter__", &Vec_iterator<dim,T>::__iter__, py::return_self<>())
@@ -340,15 +341,20 @@ static inline bool plask_import_array() {
     return true;
 }
 
+py::class_<Vec<2,double>>* vector2fClass;
+py::class_<Vec<2,dcomplex>>* vector2cClass;
+py::class_<Vec<3,double>>* vector3fClass;
+py::class_<Vec<3,dcomplex>>* vector3cClass;
+
 void register_vectors()
 {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-    register_vector_class<2,double>("vector2f");
-    register_vector_class<2,dcomplex>("vector2fc");
-    register_vector_class<3,double>("vector3f");
-    register_vector_class<3,dcomplex>("vector2c");
+    vector2fClass = register_vector_class<2,double>("vector2f");
+    vector2cClass = register_vector_class<2,dcomplex>("vector2fc");
+    vector3fClass = register_vector_class<3,double>("vector3f");
+    vector3cClass = register_vector_class<3,dcomplex>("vector2c");
 
     py::implicitly_convertible<Vec<2,double>,Vec<2,dcomplex>>();
     py::implicitly_convertible<Vec<3,double>,Vec<3,dcomplex>>();

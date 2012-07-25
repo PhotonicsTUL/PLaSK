@@ -27,3 +27,10 @@ class ReceiverTest(unittest.TestCase):
         self.mesh1.setOrdering("01")
         with self.assertRaises(ValueError):
             print(list(self.solver.inTemperature(self.mesh2)))
+
+    def testExternalData(self):
+        v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]])
+        self.assertEqual( v.dtype, plask.vector2f )
+        self.solver.inVectors = plask.Data(v, self.mesh2)
+        self.assertEqual( self.solver.showVectors(), "[1, 5]: [1, 10]\n[3, 5]: [2, 20]\n[1, 15]: [3, 30]\n[3, 15]: [4, 40]\n" )
+

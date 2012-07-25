@@ -104,6 +104,9 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
     template <typename ProviderT>
     ExportSolver& add_provider(const char* name, ProviderT Class::* field, const char* help) {
+
+        static_assert(std::is_base_of<Provider, ProviderT>::value, "Add_provider called for non-provider type");
+
         RegisterProvider<ProviderT>();
         this->def_readonly(name, field, help);
         return *this;
@@ -111,11 +114,13 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
     template <typename ReceiverT>
     ExportSolver& add_receiver(const char* name, ReceiverT Class::* field, const char* help) {
+
+        static_assert(std::is_base_of<Receiver<typename ReceiverT::ProviderType>, ReceiverT>::value, "Add_receiver called for non-receiver type");
+
         RegisterReceiver<ReceiverT>();
         this->add_property(name, py::make_getter(field),
                            py::make_function(detail::ReceiverSetter<Class,ReceiverT>(field),
                                              py::default_call_policies(),
-//                                              boost::mpl::vector3<void, Class&, typename ReceiverT::PropertyTag::ValueType const&>()
                                              boost::mpl::vector3<void, Class&, py::object>()
                                             ),
                            help

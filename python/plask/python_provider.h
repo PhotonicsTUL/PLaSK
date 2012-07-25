@@ -19,7 +19,13 @@ struct DataVectorWrap : public DataVector<T> {
         mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
     }
 
+    DataVectorWrap(DataVector<T>&& src, const shared_ptr<MeshD<dim>>& mesh) : DataVector<T>(std::forward<DataVector<T>>(src)), mesh(mesh), mesh_changed(false) {
+        mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+    }
+
     DataVectorWrap(const DataVector<T>& src) : DataVector<T>(src) {}
+
+    DataVectorWrap(DataVector<T>&& src) : DataVector<T>(std::forward<DataVector<T>>(src)) {}
 
     DataVectorWrap() = default;
     DataVectorWrap(const DataVectorWrap<T,dim>& src) : DataVector<T>(src), mesh(src.mesh), mesh_changed(src.mesh_changed) {

@@ -51,8 +51,23 @@ static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std
 template <typename T, int dim>
 static bool DataVectorWrap_contains(const DataVectorWrap<T,dim>& self, const T& key) { return std::find(self.begin(), self.end(), key) != self.end(); }
 
+extern py::class_<Vec<2,double>>* vector2fClass;
+extern py::class_<Vec<2,dcomplex>>* vector2cClass;
+extern py::class_<Vec<3,double>>* vector3fClass;
+extern py::class_<Vec<3,dcomplex>>* vector3cClass;
 
+// dtype
+inline static py::handle<> dtype(const double&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyFloat_Type))); }
+inline static py::handle<> dtype(const Vec<2,double>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2fClass->ptr()))); }
+inline static py::handle<> dtype(const Vec<3,double>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2cClass->ptr()))); }
+inline static py::handle<> dtype(const dcomplex&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyComplex_Type))); }
+inline static py::handle<> dtype(const Vec<2,dcomplex>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3fClass->ptr()))); }
+inline static py::handle<> dtype(const Vec<3,dcomplex>&) { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3cClass->ptr()))); }
 
+template <typename T, int dim>
+py::handle<> DataVector_dtype() {
+    return dtype(T());
+}
 
 
 inline std::vector<npy_intp> get_meshdims(const RectilinearMesh2D& mesh) { return { mesh.c1.size(), mesh.c0.size() }; }
@@ -141,7 +156,7 @@ static PyObject* DataVectorWrap_ArrayImpl(const DataVectorWrap<T,dim>* self) {
                                 0,
                                 NULL);
 
-    if (arr == nullptr) throw plask::CriticalException("cannot create array from data");
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
     return arr;
 }
 
@@ -150,7 +165,7 @@ template <typename T, int dim>
 static py::object DataVectorWrap_Array(py::object oself) {
     const DataVectorWrap<T,dim>* self = py::extract<const DataVectorWrap<T,dim>*>(oself);
 
-    if (self->mesh_changed) throw Exception("cannot create array, mesh changed since data retrieval");
+    if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
 
     PyObject* arr = DataVectorWrap_ArrayImpl<T, RectilinearMesh2D>(self);
     if (!arr) arr = DataVectorWrap_ArrayImpl<T, RectilinearMesh3D>(self);
@@ -158,7 +173,24 @@ static py::object DataVectorWrap_Array(py::object oself) {
     if (!arr) arr = DataVectorWrap_ArrayImpl<T, RegularMesh3D>(self);
 
 
-    if (arr == nullptr) throw TypeError("cannot create array for data on this mesh type");
+    if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for %1%)",
+                                        (dim == 2)? "mesh.RegularMesh2D or mesh.RectilinearMesh2D" : "mesh.RegularMesh3D or mesh.RectilinearMesh3D");
+
+    py::incref(oself.ptr()); PyArray_BASE(arr) = oself.ptr(); // Make sure the data vector stays alive as long as the array
+    return py::object(py::handle<>(arr));
+}
+
+
+template <typename T, int dim>
+static py::object DataVectorWrap__array__(py::object oself) {
+    const DataVectorWrap<T,dim>* self = py::extract<const DataVectorWrap<T,dim>*>(oself);
+
+    if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
+
+    npy_intp dims[] = { self->mesh->size() * get_dim<T>() };
+
+    PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::get_typenum<T>(), (void*)self->data());
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
 
     py::incref(oself.ptr()); PyArray_BASE(arr) = oself.ptr(); // Make sure the data vector stays alive as long as the array
     return py::object(py::handle<>(arr));
@@ -166,22 +198,133 @@ static py::object DataVectorWrap_Array(py::object oself) {
 
 
 
+
+template <typename T, typename MeshT>
+static size_t checkMeshAndArray(PyArrayObject* arr, const MeshT& mesh) {
+    auto mesh_dims = get_meshdims(mesh);
+    if (get_dim<T>() != 1)  mesh_dims.push_back(get_dim<T>());
+
+    if ((size_t)PyArray_NDIM(arr) != mesh_dims.size()) throw ValueError("Provided array must have either 1 or %1% dimensions", MeshT::DIM);
+
+    for (size_t i = 0; i != mesh_dims.size(); ++i)
+        if (mesh_dims[i] != PyArray_DIMS(arr)[i])
+            throw ValueError("Dimension %1% for the array (%3%) does not match with the mesh (%2%)", i, mesh_dims[i], PyArray_DIMS(arr)[i]);
+
+    auto mesh_strides = get_meshstrides<T>(mesh, mesh_dims.size());
+    for (size_t i = 0; i != mesh_dims.size(); ++i)
+        if (mesh_strides[i] != PyArray_STRIDES(arr)[i])
+            throw ValueError("Stride %1% for the array do not correspond to the current mesh ordering", i);
+
+    return mesh.size();
+}
+
+template <typename T, int dim>
+static py::object makeDataVector(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
+
+    size_t size;
+
+    auto regular = dynamic_pointer_cast<RectangularMesh<dim,RegularMesh1D>>(mesh);
+    auto rectilinear = dynamic_pointer_cast<RectangularMesh<dim,RectilinearMesh1D>>(mesh);
+
+    if (PyArray_NDIM(arr) != 1) {
+
+        if (regular) size = checkMeshAndArray<T, RectangularMesh<dim,RegularMesh1D>>(arr, *regular);
+        else if (rectilinear) size = checkMeshAndArray<T, RectangularMesh<dim,RectilinearMesh1D>>(arr, *rectilinear);
+        else throw TypeError("For this mesh type only one-dimensional array is allowed");
+
+    } else
+        size = PyArray_DIMS(arr)[0] / get_dim<T>();
+
+    if (size != mesh->size()) throw ValueError("Sizes of data (%1%) and mesh (%2%) do not match", size, mesh->size());
+
+    // copying here is necessary as we have no way to synchronize data lifetime with Python :(
+    return py::object(make_shared<DataVectorWrap<T,dim>>(DataVector<T>((T*)PyArray_DATA(arr), size).copy(), mesh));
+}
+
+py::object Data(PyObject* obj, py::object omesh) {
+    if (!PyArray_Check(obj)) throw TypeError("data needs to be array object");
+
+    PyArrayObject* arr = (PyArrayObject*)obj;
+
+    size_t ndim = PyArray_NDIM(arr);
+    size_t last_dim = PyArray_DIMS(arr)[ndim-1];
+
+    try {
+        shared_ptr<MeshD<2>> mesh = py::extract<shared_ptr<MeshD<2>>>(omesh);
+
+        switch (PyArray_TYPE(arr)) {
+            case NPY_DOUBLE:
+                if (ndim == 3) {
+                    if (last_dim == 2) return makeDataVector<Vec<2,double>, 2>(arr, mesh);
+                    else if (last_dim == 3) return makeDataVector<Vec<2,double>, 2>(arr, mesh);
+                } else if (ndim == 1) {
+                    if (last_dim == 2 * mesh->size()) return makeDataVector<Vec<2,double>, 2>(arr, mesh);
+                    else if (last_dim == 3 * mesh->size()) return makeDataVector<Vec<3,double>, 2>(arr, mesh);
+                }
+                return makeDataVector<double, 2>(arr, mesh);
+            case NPY_CDOUBLE:
+                if (ndim == 3) {
+                    if (last_dim == 2) return makeDataVector<Vec<2,dcomplex>, 2>(arr, mesh);
+                    else if (last_dim == 3) return makeDataVector<Vec<2,dcomplex>, 2>(arr, mesh);
+                } else if (ndim == 1) {
+                    if (last_dim == 2 * mesh->size()) return makeDataVector<Vec<2,dcomplex>, 2>(arr, mesh);
+                    else if (last_dim == 3 * mesh->size()) return makeDataVector<Vec<3,dcomplex>, 2>(arr, mesh);
+                }
+                return makeDataVector<dcomplex, 2>(arr, mesh);
+            default:
+                throw TypeError("array has wrong dtype (only float and complex allowed)");
+        }
+
+    } catch (py::error_already_set) { PyErr_Clear(); try {
+        shared_ptr<MeshD<3>> mesh = py::extract<shared_ptr<MeshD<3>>>(omesh);
+
+        switch (PyArray_TYPE(arr)) {
+            case NPY_DOUBLE:
+                if (ndim == 4) {
+                    if (last_dim == 2) return makeDataVector<Vec<2,double>, 3>(arr, mesh);
+                    else if (last_dim == 3) return makeDataVector<Vec<2,double>, 3>(arr, mesh);
+                } else if (ndim == 1) {
+                    if (last_dim == 2 * mesh->size()) return makeDataVector<Vec<2,double>, 3>(arr, mesh);
+                    else if (last_dim == 3 * mesh->size()) return makeDataVector<Vec<3,double>, 3>(arr, mesh);
+                }
+                return makeDataVector<double, 3>(arr, mesh);
+            case NPY_CDOUBLE:
+                if (ndim == 4) {
+                    if (last_dim == 2) return makeDataVector<Vec<2,dcomplex>, 3>(arr, mesh);
+                    else if (last_dim == 3) return makeDataVector<Vec<2,dcomplex>, 3>(arr, mesh);
+                } else if (ndim == 1) {
+                    if (last_dim == 2 * mesh->size()) return makeDataVector<Vec<2,dcomplex>, 3>(arr, mesh);
+                    else if (last_dim == 3 * mesh->size()) return makeDataVector<Vec<3,dcomplex>, 3>(arr, mesh);
+                }
+                return makeDataVector<dcomplex, 3>(arr, mesh);
+            default:
+                throw TypeError("array has wrong dtype (only float and complex allowed)");
+        }
+
+    } catch (py::error_already_set) {
+        throw TypeError("mesh must be a proper mesh object");
+    }}
+
+    return py::object();
+}
+
+
 template <typename T, int dim>
 void register_data_vector() {
 
-    py::class_<DataVectorWrap<T,dim>, shared_ptr<DataVectorWrap<T,dim>>>("DataVector", "Data returned by field providers", py::no_init)
+    py::class_<DataVectorWrap<T,dim>, shared_ptr<DataVectorWrap<T,dim>>>("Data", "Data returned by field providers", py::no_init)
         .def_readonly("mesh", &DataVectorWrap<T,dim>::mesh)
         .def("__len__", &DataVectorWrap<T,dim>::size)
         .def("__getitem__", &DataVectorWrap_getitem<T,dim>)
         .def("__getslice__", &DataVectorWrap_getslice<T,dim>)
         .def("__contains__", &DataVectorWrap_contains<T,dim>)
         .def("__iter__", py::range(&DataVectorWrap_begin<T,dim>, &DataVectorWrap_end<T,dim>))
-        .add_property("array", &DataVectorWrap_Array<T,dim>)
+        .def("__array__", &DataVectorWrap__array__<T,dim>)
+        .add_static_property("dtype", &DataVector_dtype<T,dim>, "Type of the held values")
+        .add_property("array", &DataVectorWrap_Array<T,dim>, "Array formatted by the mesh")
     ;
 
-    // TODO Podłączenie do receivera
-    // serializacja?
-
+    py::def("Data", &Data, (py::arg("array"), "mesh"), "Create new data from array and mesh");
 }
 
 static inline bool plask_import_array() {

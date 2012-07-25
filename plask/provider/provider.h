@@ -230,6 +230,9 @@ struct Receiver: public Provider::Listener {
     Receiver & operator=(const Receiver&) = delete;
     Receiver(const Receiver&) = delete;
 
+    /// Type of the corresponding provider
+    typedef ProviderT ProviderType;
+
     /// Pointer to connected provider. Can be nullptr if no provider is connected.
     ProviderT* provider;
 

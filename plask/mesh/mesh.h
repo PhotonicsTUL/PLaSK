@@ -240,13 +240,13 @@ template <int dimension>
 struct MeshD: public Mesh {
 
     /// Number of dimensions
-    static const int dim = dimension;
+    enum { DIM = dimension };
 
     ///@return true only if there are no points in mesh
     bool empty() const { return size() == 0; }
 
     /// Type of vector representing coordinates in local space
-    typedef Vec<dim, double> LocalCoords;
+    typedef Vec<DIM, double> LocalCoords;
 
     /// Base class for mesh iterator implementation.
     typedef PolymorphicForwardIteratorWithIndexImpl<LocalCoords, const LocalCoords> IteratorImpl;
@@ -445,7 +445,7 @@ class MeshGeneratorOf: public MeshGenerator
      * \param geometry on which the mesh should be generated
      * \return new generated mesh
      */
-    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryElementD<MeshT::dim>>& geometry) = 0;
+    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryElementD<MeshT::DIM>>& geometry) = 0;
 
     /**
      * Clear the cache of generated meshes.
@@ -456,7 +456,7 @@ class MeshGeneratorOf: public MeshGenerator
     }
 
     /// Get generated mesh if it is cached or create a new one
-    shared_ptr<MeshT> operator()(const shared_ptr<GeometryElementD<MeshT::dim>>& geometry) {
+    shared_ptr<MeshT> operator()(const shared_ptr<GeometryElementD<MeshT::DIM>>& geometry) {
         if (auto res = cache.get(geometry))
             return res;
         else
