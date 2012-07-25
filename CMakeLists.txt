@@ -139,6 +139,11 @@ file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 # ---------- plask library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
+if(WIN32)
+target_link_libraries(libplask kernel32)
+else(WIN32)
+target_link_libraries(libplask dl)
+endif(WIN32)
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
 
