@@ -10,6 +10,10 @@ void DynamicLibraries::close(const DynamicLibrary &to_close) {
     loaded.erase(to_close);
 }
 
+void DynamicLibraries::closeAll() {
+    loaded.clear();
+}
+
 DynamicLibraries &DynamicLibraries::defaultSet()
 {
     static DynamicLibraries default_set;
