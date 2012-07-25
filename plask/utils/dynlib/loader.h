@@ -104,6 +104,19 @@ public:
      */
     void* getSymbol(const std::string &symbol_name) const;
 
+    /**
+     * Get symbol from library and cast it to given type.
+     *
+     * Throw excpetion if library is not opened.
+     * @param symbol_name name of symbol to get
+     * @return symbol with given name casted to given type, or @c nullptr if there is no symbol with given name
+     * @tparam SymbolType required type to which symbol will be casted
+     */
+    template <typename SymbolType>
+    SymbolType getSymbol(const std::string &symbol_name) const {
+        return reinterpret_cast<SymbolType>(getSymbol(symbol_name));
+    }
+
     /// Same as getSymbol(const std::string &symbol_name)
     void* operator[](const std::string &symbol_name) const {
         return getSymbol(symbol_name);
@@ -119,10 +132,23 @@ public:
     void* requireSymbol(const std::string &symbol_name) const;
 
     /**
+     * Get symbol from library and cast it to given type.
+     *
+     * Throw excpetion if library is not opened or if there is no symbol with given name.
+     * @param symbol_name name of symbol to get
+     * @return symbol with given name, casted to given type
+     * @tparam SymbolType required type to which symbol will be casted
+     */
+    template <typename SymbolType>
+    SymbolType requireSymbol(const std::string &symbol_name) const {
+        return reinterpret_cast<SymbolType>(requireSymbol(symbol_name));
+    }
+
+    /**
      * Check if library is already open.
      * @return @c true only if library is already open
      */
-    bool isOpened() const { return handler != 0; }
+    bool isOpen() const { return handler != 0; }
 
     /**
      * Get system handler.

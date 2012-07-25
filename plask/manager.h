@@ -18,6 +18,8 @@ This file includes:
 #include "geometry/space.h"
 #include "geometry/reader.h"
 
+#include "solver.h"
+
 namespace plask {
 
 /**
@@ -49,8 +51,11 @@ class Manager {
     /// Meshes by name.
     std::map< std::string, shared_ptr<Mesh> > meshes;
 
-    /// Meshe generators by name.
+    /// Meshes generators by name.
     std::map< std::string, shared_ptr<MeshGenerator> > generators;
+
+    /// Solvers by name.
+    std::map< std::string, shared_ptr<Solver> > solvers;
 
     //TODO solvers map
     //TODO boundaries map (Boundary top class - probably empty, with virtual destructor)
@@ -156,7 +161,7 @@ class Manager {
      * Load solvers using reader.
      * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
-    void loadSolvers(XMLReader& reader);
+    void loadSolvers(GeometryReader& greader);
 
     /**
      * Load geometry using XML reader.

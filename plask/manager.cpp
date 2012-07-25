@@ -3,6 +3,8 @@
 #include "utils/stl.h"
 #include "geometry/reader.h"
 
+#include "utils/dynlib/manager.h"
+
 namespace plask {
 
 PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
@@ -97,22 +99,8 @@ void Manager::loadGeometry(GeometryReader& greader) {
     if (greader.source.getNodeType() != XMLReader::NODE_ELEMENT || greader.source.getNodeName() != std::string("geometry"))
         throw XMLUnexpectedElementException(greader.source, "<geometry>");
     GeometryReader::ReadAxisNames read_axis_tag(greader);
-    while(greader.source.read()) {
-        switch (greader.source.getNodeType()) {
-            case XMLReader::NODE_ELEMENT_END:
-                if (greader.source.getNodeName() != std::string("geometry"))
-                    throw XMLUnexpectedElementException(greader.source, "</geometry>");
-                return;  //end of geometry
-            case XMLReader::NODE_ELEMENT:
-                roots.push_back(greader.readGeometry());
-                break;
-            case XMLReader::NODE_COMMENT:
-                break;   //just ignore
-            default:
-                throw XMLUnexpectedElementException(greader.source, "begin of geometry element tag or </geometry>");
-        }
-    }
-    throw XMLUnexpectedEndException(greader.source);
+    while(greader.source.requireTagOrEnd())
+        roots.push_back(greader.readGeometry());
 }
 
 
@@ -120,50 +108,38 @@ void Manager::loadGrids(XMLReader &reader)
 {
     if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("grids"))
         throw XMLUnexpectedElementException(reader, "<grids>");
-    while(reader.read()) {
-        switch (reader.getNodeType()) {
-            case XMLReader::NODE_ELEMENT_END:
-                if (reader.getNodeName() != std::string("grids"))
-                    throw XMLUnexpectedElementException(reader, "</grids>");
-                return;  //end of grids
-            case XMLReader::NODE_ELEMENT:
-                if (reader.getNodeName() == "mesh") {
-                    std::string type = reader.requireAttribute("type");
-                    std::string name = reader.requireAttribute("name");
-                    if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
-                        throw NotUniqueElementException("Duplicated mesh name");
-                    shared_ptr<Mesh> mesh = RegisterMeshReader::getReader(type)(reader);
-                    meshes[name] = mesh;
-                } else if (reader.getNodeName() == "generator") {
-                    std::string type = reader.requireAttribute("type");
-                    std::string method = reader.requireAttribute("method");
-                    std::string name = reader.requireAttribute("name");
-                    std::string key = type + "." + method;
-                    if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
-                        throw NamesConflictException("Mesh or mesh generator", name);
-                    shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader, *this);
-                    generators[name] = generator;
-                } else
-                    throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");
-                break;
-            case XMLReader::NODE_COMMENT:
-                break;   //just ignore
-            default:
-                throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");
-        }
+    while(reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "mesh") {
+            std::string type = reader.requireAttribute("type");
+            std::string name = reader.requireAttribute("name");
+            if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
+                throw NamesConflictException("Mesh or mesh generator", name);
+            shared_ptr<Mesh> mesh = RegisterMeshReader::getReader(type)(reader);
+            meshes[name] = mesh;
+        } else if (reader.getNodeName() == "generator") {
+            std::string type = reader.requireAttribute("type");
+            std::string method = reader.requireAttribute("method");
+            std::string name = reader.requireAttribute("name");
+            std::string key = type + "." + method;
+            if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
+                throw NamesConflictException("Mesh or mesh generator", name);
+            shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader, *this);
+            generators[name] = generator;
+        } else
+            throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");
     }
-    throw XMLUnexpectedEndException(reader);
 }
 
-void Manager::loadSolvers(XMLReader &reader)
-{
-    /*TODO
-    - read solver name
-    - load solver library from file
-    - call solver = createSolver(...) from library
-    - call solver.loadConfiguration(reader)
-    - add solver to solvers map
-    */
+void Manager::loadSolvers(GeometryReader& greader) {
+    if (greader.source.getNodeType() != XMLReader::NODE_ELEMENT || greader.source.getNodeName() != std::string("solvers"))
+        throw XMLUnexpectedElementException(greader.source, "<solvers>");
+    while (greader.source.requireTagOrEnd()) {
+        std::string name = greader.source.requireAttribute("name");
+        shared_ptr<Solver> solver(DynamicLibraries::defaultLoad(greader.source.getNodeName()).requireSymbol<solver_construct_f*>(SOLVER_CONSTRUCT_FUNCTION_NAME)());
+        solver->loadConfiguration(greader);
+        if (!greader.manager.solvers.insert(std::make_pair(name, solver)).second)
+            throw NamesConflictException("Solver", name);
+    }
 }
 
 template <typename MaterialsSource>
@@ -184,7 +160,8 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource)
     }
 
     if (reader.getNodeName() == "solvers") {
-        loadSolvers(reader);
+        GeometryReader greader(*this, reader, materialsSource);
+        loadSolvers(greader);
         if (!reader.read()) return;
     }
 }

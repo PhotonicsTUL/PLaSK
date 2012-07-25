@@ -389,17 +389,19 @@ class Solver {
 
   protected:
 
-    /// true only if solver is initialized
+    /// @c true only if solver is initialized
     bool initialized;
 
     /**
      * Initialize the solver.
+     *
      * Default implementation just does nothing, however it is a good idea to overwrite it in subclasses and put initialization code in it.
      */
     virtual void onInitialize() {}
 
     /**
      * Begin calculations.
+     *
      * This method is called ALWAYS from initCalculation(). You can put some code common for all your calculation methods here
      * \param fresh indicates whether the solver has been just switched from uninitialized state
      */
@@ -507,6 +509,9 @@ class Solver {
     void writelog(LogLevel level, std::string msg, Args&&... params) { plask::writelog(level, getId() + ": " + msg, std::forward<Args>(params)...); }
 
 };
+
+#define SOLVER_CONSTRUCT_FUNCTION_NAME "construct_solver"
+extern "C" typedef Solver* solver_construct_f();
 
 /**
  * Base class for all solvers operating on specified space

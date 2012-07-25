@@ -259,11 +259,14 @@ struct NoChildException: public Exception {
 };
 
 /**
- * Exceptions of this class are thrown by some geometry element classes when there is no required child.
+ * Exceptions of this class are thrown by some geometry element classes
  */
 struct NotUniqueElementException: public Exception {
     NotUniqueElementException(): Exception("Unique element instance required") {}
     NotUniqueElementException(const std::string msg): Exception(msg) {}
+
+    template <typename... T>
+    NotUniqueElementException(const std::string& msg, const T&... args): Exception(msg, args...) {}
 };
 
 /**
@@ -295,7 +298,7 @@ struct NamesConflictException: public Exception {
      * @param element_name name of element which is already exists
      */
     NamesConflictException(const std::string& what, const std::string& element_name):
-        Exception(what + " with name \"" + element_name + "\" already exists") {}
+        Exception(what + " with name \"" + element_name + "\" already exists.") {}
 };
 
 /**

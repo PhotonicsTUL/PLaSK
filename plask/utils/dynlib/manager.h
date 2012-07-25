@@ -42,13 +42,13 @@ public:
      * @param name of file with library to load
      * @return loaded library
      */
-    const DynamicLibrary& defaultLoad(const std::string& file_name) { return defaultSet().load(file_name); }
+    static const DynamicLibrary& defaultLoad(const std::string& file_name) { return defaultSet().load(file_name); }
 
     /**
      * Close given library if it is in default set.
      * @param to_close library to close
      */
-    const void defaultClose(const DynamicLibrary& to_close) { defaultSet().close(to_close); }
+    static const void defaultClose(const DynamicLibrary& to_close) { defaultSet().close(to_close); }
 
 };
 
