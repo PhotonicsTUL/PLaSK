@@ -1,5 +1,5 @@
-#ifndef PLASK__UTILS_PLUGIN_H
-#define PLASK__UTILS_PLUGIN_H
+#ifndef PLASK__UTILS_DYNLIB_LOADER_H
+#define PLASK__UTILS_DYNLIB_LOADER_H
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #define PLASK__UTILS_PLUGIN_WINAPI
@@ -10,6 +10,7 @@
 #endif
 
 #include <string>
+#include <functional>   //std::hash
 
 namespace plask {
 
@@ -137,13 +138,34 @@ public:
      */
     handler_t release();
 
+    /**
+     * Compare operator, defined to allow store dynamic libriaries in standard containers which require this.
+     */
+    bool operator<(const DynamicLibrary& other) const {
+        return this->handler < other.handler;
+    }
+
 };
 
 }   // namespace plask
 
 namespace std {
+
 /// std::swap implementation for dynamic libraries
 inline void swap(plask::DynamicLibrary& a, plask::DynamicLibrary& b) { a.swap(b); }
+
+/// hash method, allow to store dynamic libraries in hash maps
+template<>
+class hash<plask::DynamicLibrary> {
+    std::hash<plask::DynamicLibrary::handler_t> h;
+public:
+    size_t operator()(const plask::DynamicLibrary &s) const {
+        return h(s.getSystemHandler());
+    }
+};
+
+
+
 }
 
-#endif // PLASK__UTILS_PLUGIN_H
+#endif // PLASK__UTILS_DYNLIB_LOADER_H
