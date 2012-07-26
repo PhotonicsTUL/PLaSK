@@ -88,20 +88,14 @@ static Vec<dim,T> copy_vec(const Vec<dim,T>& v) {
 }
 
 // dtype
-template <typename T> inline static py::handle<> plain_vec_dtype() { return py::handle<>(); }
-template <> inline py::handle<> plain_vec_dtype<double>() {
-    return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyFloat_Type)));
-}
-template <> inline py::handle<> plain_vec_dtype<dcomplex>() {
-    return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyComplex_Type)));
-}
-template <int dim, typename T> py::handle<> vec_dtype() { return plain_vec_dtype<T>(); }
+template <int dim, typename T> inline static py::handle<> vec_dtype() { return detail::dtype<T>(); }
+
 
 // vector.__array__
 template <int dim, typename T>  py::object vec__array__(py::object self) {
     Vec<dim,T>* vec = py::extract<Vec<dim,T>*>(self);
     npy_intp dims[] = { dim };
-    PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::get_typenum<T>(), (void*)vec->components);
+    PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::typenum<T>(), (void*)vec->components);
     if (arr == nullptr) throw plask::CriticalException("cannot create array from vector");
     py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the vector stays alive as long as the array
     return py::object(py::handle<>(arr));
@@ -111,7 +105,7 @@ template <int dim, typename T>  py::object vec__array__(py::object self) {
 template <int dim, typename T>  py::object vec_list__array__(py::object self) {
     std::vector<Vec<dim,T>>* list = py::extract<std::vector<Vec<dim,T>>*>(self);
     npy_intp dims[] = { (npy_int)list->size(), dim };
-    PyObject* arr = PyArray_SimpleNewFromData(2, dims, detail::get_typenum<T>(), (void*)(&(*list)[0].components));
+    PyObject* arr = PyArray_SimpleNewFromData(2, dims, detail::typenum<T>(), (void*)(&(*list)[0].components));
     if (arr == nullptr) throw plask::CriticalException("cannot create array from vector list");
     py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the vector list stays alive as long as the array
     return py::object(py::handle<>(arr));
@@ -341,20 +335,22 @@ static inline bool plask_import_array() {
     return true;
 }
 
-py::object vector2fClass;
-py::object vector2cClass;
-py::object vector3fClass;
-py::object vector3cClass;
+namespace detail {
+    py::object vector2fClass;
+    py::object vector2cClass;
+    py::object vector3fClass;
+    py::object vector3cClass;
+}
 
 void register_vectors()
 {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-    vector2fClass = register_vector_class<2,double>("vector2f");
-    vector2cClass = register_vector_class<2,dcomplex>("vector2fc");
-    vector3fClass = register_vector_class<3,double>("vector3f");
-    vector3cClass = register_vector_class<3,dcomplex>("vector2c");
+    detail::vector2fClass = register_vector_class<2,double>("vector2f");
+    detail::vector2cClass = register_vector_class<2,dcomplex>("vector2fc");
+    detail::vector3fClass = register_vector_class<3,double>("vector3f");
+    detail::vector3cClass = register_vector_class<3,dcomplex>("vector2c");
 
     py::implicitly_convertible<Vec<2,double>,Vec<2,dcomplex>>();
     py::implicitly_convertible<Vec<3,double>,Vec<3,dcomplex>>();

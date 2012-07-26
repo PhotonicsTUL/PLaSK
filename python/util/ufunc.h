@@ -12,8 +12,8 @@ py::object UFUNC(F f, py::object input) {
     } catch (py::error_already_set) {
         PyErr_Clear();
 
-        PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(input.ptr(), detail::get_typenum<T>());
-        if (inarr == NULL || PyArray_TYPE(inarr) != detail::get_typenum<T>()) {
+        PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(input.ptr(), detail::typenum<T>());
+        if (inarr == NULL || PyArray_TYPE(inarr) != detail::typenum<T>()) {
             Py_XDECREF(inarr);
             throw TypeError("Cannot convert input array to required type");
         }

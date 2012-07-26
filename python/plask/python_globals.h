@@ -121,15 +121,34 @@ inline std::string pyformat<dcomplex>(const dcomplex& v) { return format("(%g%+g
 // ----------------------------------------------------------------------------------------------------------------------
 // Get numpy typenums for some types
 namespace detail {
-    template <typename T> static inline constexpr int get_typenum();
-    template <> inline constexpr int get_typenum<double>() { return NPY_DOUBLE; }
-    template <> inline constexpr int get_typenum<dcomplex>() { return NPY_CDOUBLE; }
-    template <> constexpr inline int get_typenum<Vec<2,double>>() { return NPY_DOUBLE; }
-    template <> constexpr inline int get_typenum<Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
-    template <> constexpr inline int get_typenum<Vec<3,double>>() { return NPY_DOUBLE; }
-    template <> constexpr inline int get_typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
+    template <typename T> static inline constexpr int typenum();
+    template <> inline constexpr int typenum<double>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<dcomplex>() { return NPY_CDOUBLE; }
+    template <> constexpr inline int typenum<Vec<2,double>>() { return NPY_DOUBLE; }
+    template <> constexpr inline int typenum<Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> constexpr inline int typenum<Vec<3,double>>() { return NPY_DOUBLE; }
+    template <> constexpr inline int typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
 }
 
+// ----------------------------------------------------------------------------------------------------------------------
+// Get dtype for data
+namespace detail {
+    extern py::object vector2fClass;
+    extern py::object vector2cClass;
+    extern py::object vector3fClass;
+    extern py::object vector3cClass;
+
+    template <typename T> inline static py::handle<> dtype();
+    template<> inline py::handle<> dtype<double>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyFloat_Type))); }
+    template<> inline py::handle<> dtype<Vec<2,double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2fClass.ptr()))); }
+    template<> inline py::handle<> dtype<Vec<3,double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2cClass.ptr()))); }
+    template<> inline py::handle<> dtype<dcomplex>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyComplex_Type))); }
+    template<> inline py::handle<> dtype<Vec<2,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3fClass.ptr()))); }
+    template<> inline py::handle<> dtype<Vec<3,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3cClass.ptr()))); }
+}
+
+
+// ----------------------------------------------------------------------------------------------------------------------
 // Register vectors of something
 template <typename T>
 static std::string str__vector_of(const std::vector<T>& self) {
