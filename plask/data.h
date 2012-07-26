@@ -26,16 +26,16 @@ struct DataVector {
 
     /**
      * Base class for optional data destructor.
-     * You can derive its \c destruct method to decide wheter destroy data.
-     * When the reference count reaches 0, destructor is deleted in any case.
+     * When the reference count reaches 0 then if there is a destructor set, its \c destruct method is called,
+     * which can delete vector data (it will not be deleted automatically). Afterwards the destructor object is deleted.
      */
     struct Destructor {
         virtual ~Destructor() {}
         /**
-         * Method calles when data is to be descructed. Should be overriden in derived class.
-         * \return true if the data can be destructed by garbage-colector (if false, you need to take care of it yourself)
+         * Method calles when data is to be destructed. Should be overriden in derived class.
+         * \param data vector data to delete
          */
-        virtual bool destruct() = 0;
+        virtual void destruct(T* data) = 0;
     };
 
   private:
@@ -54,19 +54,19 @@ struct DataVector {
     void dec_ref() {
         if (gc_ && --(gc_->count) == 0) {
             if (gc_->destructor == nullptr) delete[] data_;
-            else { if (gc_->destructor->destruct()) delete[] data_; delete gc_->destructor; }
+            else { gc_->destructor->destruct(data_); delete gc_->destructor; }
             delete gc_;
         }
     }
 
-    /// Increace GC counter.
+    /// Increase GC counter.
     void inc_ref() {
         if (gc_) ++(gc_->count);
     }
 
   public:
 
-    typedef T value_type;                     ///< type of the stored data
+    typedef T value_type;               ///< type of the stored data
 
     typedef T* iterator;                ///< iterator type for the array
     typedef const T* const_iterator;    ///< constant iterator type for the array
@@ -228,14 +228,21 @@ struct DataVector {
         std::copy(begin, end, data_);
     }
 
+#ifndef DOXYGEN // Advanced method skipped from documentation
     /**
-     * Attach some destructor object to this data, so its deletion can be taken over manually.
-     * \param destructor pointer do destructor object created on heap
+     * Set some destructor object for this data, so its deletion can be taken over manually.
+     * If the data was not managed, start managing it.
+     * \param destructor pointer do destructor object created on heap (it will be deleted automatically)
      */
-    void attach_destructor(Destructor* destructor) {
-        if (gc_) gc_->destructor = destructor;
-        else delete destructor; // avoid memory leaks
+    void setDataDestructor(Destructor* destructor) {
+        if (gc_) {
+            if (gc_->destructor) delete gc_->destructor;
+        } else {
+            gc_ = new Gc(1);
+        }
+        gc_->destructor = destructor;
     }
+#endif // DOXYGEN
 
     /**
      * Get iterator referring to the first element in data vector.

@@ -81,34 +81,34 @@ struct XMLWriter {
         /// Parent element.
         Element* parent;
 
-        /// @c true only if this tag is open and allow to append atribiutes
+        /// @c true only if this tag is open and allow to append attributes
         bool attributesStillAlowed;
 
      public:
 
         /**
-         * Construct element with given @p name, write to steam openning of element tag.
+         * Construct element with given @p name, write to steam opening of element tag.
          * @param writer XML writer where element should be append
          * @param name name of elements tag
          */
         Element(XMLWriter& writer, const std::string& name);
 
         /**
-         * Construct element with given @p name, write to steam openning of element tag.
+         * Construct element with given @p name, write to steam opening of element tag.
          * @param writer XML writer where element should be append
          * @param name name of elements tag
          */
         Element(XMLWriter& writer, std::string&& name);
 
         /**
-         * Construct element with given @p name, write to steam openning of element tag.
+         * Construct element with given @p name, write to steam opening of element tag.
          * @param parent parent element, must by recently added, not closed one
          * @param name name of elements tag
          */
         Element(Element& parent, const std::string& name);
 
         /**
-         * Construct element with given @p name, write to steam openning of element tag.
+         * Construct element with given @p name, write to steam opening of element tag.
          * @param parent parent element, must by recently added, not closed one
          * @param name name of elements tag
          */
@@ -200,10 +200,10 @@ struct XMLWriter {
         Element& end();
 
         /**
-         * Check if tag attributes still can be append
+         * Check if tag attributes still can be appended
          * @return @c true if attributes can still be append to this element
          */
-        bool canAppendAttribiutes() const { return this->attributesStillAlowed; }
+        bool canAppendAttributes() const { return this->attributesStillAlowed; }
 
         /**
          * Check if this is current element.
@@ -282,7 +282,7 @@ public:
      * Construct XML writer which will write content to given C file.
      *
      * Writter will not close given descriptor.
-     * @param cfile opened, C file descriptor, writter will not close it
+     * @param cfile opened, C file descriptor, writer will not close it
      * @param indentation indentation for each tag level
      */
     XMLWriter(std::FILE* cfile, std::size_t indentation=2);

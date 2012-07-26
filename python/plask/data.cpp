@@ -221,11 +221,9 @@ static size_t checkMeshAndArray(PyArrayObject* arr, const MeshT& mesh) {
 template <typename T>
 struct NumpyDataDestructor: public DataVector<T>::Destructor {
     PyArrayObject* arr;
-    NumpyDataDestructor(PyArrayObject* arr) : arr(arr) {
-        Py_XINCREF(arr);
-    }
+    NumpyDataDestructor(PyArrayObject* arr) : arr(arr) { Py_XINCREF(arr); }
     virtual ~NumpyDataDestructor() { Py_XDECREF(arr); }
-    virtual bool destruct() { return false; }
+    virtual void destruct(T* data) {}
 };
 
 template <typename T, int dim>
@@ -248,7 +246,7 @@ static py::object makeDataVector(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh
     if (size != mesh->size()) throw ValueError("Sizes of data (%1%) and mesh (%2%) do not match", size, mesh->size());
 
     auto data = make_shared<DataVectorWrap<T,dim>>(DataVector<T>((T*)PyArray_DATA(arr), size), mesh);
-    data->attach_destructor(new NumpyDataDestructor<T>(arr));
+    data->setDataDestructor(new NumpyDataDestructor<T>(arr));
 
     return py::object(data);
 }
