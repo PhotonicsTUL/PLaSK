@@ -70,6 +70,10 @@ namespace detail {
         ReceiverSetter(ReceiverT Class::* field) : field(field) {}
 
         void operator()(Class& self, py::object obj) {
+            if (obj == py::object()) {
+                (self.*field).setProvider(nullptr);
+                return;
+            }
             try {
                 ValueT value = py::extract<ValueT>(obj);
                 self.*field = value;
@@ -105,7 +109,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
     template <typename ProviderT>
     ExportSolver& add_provider(const char* name, ProviderT Class::* field, const char* help) {
 
-        static_assert(std::is_base_of<Provider, ProviderT>::value, "Add_provider called for non-provider type");
+        static_assert(std::is_base_of<Provider, ProviderT>::value, "add_provider used for non-provider type");
 
         RegisterProvider<ProviderT>();
         this->def_readonly(name, field, help);
@@ -115,7 +119,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
     template <typename ReceiverT>
     ExportSolver& add_receiver(const char* name, ReceiverT Class::* field, const char* help) {
 
-        static_assert(std::is_base_of<Receiver<typename ReceiverT::ProviderType>, ReceiverT>::value, "Add_receiver called for non-receiver type");
+        static_assert(std::is_base_of<Provider::Receiver, ReceiverT>::value, "add_receiver used for non-receiver type");
 
         RegisterReceiver<ReceiverT>();
         this->add_property(name, py::make_getter(field),

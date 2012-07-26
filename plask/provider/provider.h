@@ -156,7 +156,7 @@ struct Provider {
      * Provider listener (observer). Can react to Provider changes.
      */
     struct Listener {
-        ///Called when provider value was changed.
+        /// Called when provider value was changed.
         virtual void onChange() = 0;
 
         /**
@@ -168,10 +168,13 @@ struct Provider {
         virtual ~Listener() {}
     };
 
-    ///Set of added (registered) listeners. This provider can call methods of listeners included in this set.
+    /// Base non-template class for all receivers
+    struct Receiver: public Listener {};
+
+    /// Set of added (registered) listeners. This provider can call methods of listeners included in this set.
     std::set<Listener*> listeners;
 
-    ///Call onDisconnect for all lighteners in listeners set.
+    /// Call onDisconnect for all lighteners in listeners set.
     virtual ~Provider() {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
             (*i)->onDisconnect(this);
@@ -219,7 +222,7 @@ struct Provider {
  * @see @ref providers
  */
 template <typename ProviderT>
-struct Receiver: public Provider::Listener {
+struct Receiver: public Provider::Receiver {
 
     /// Name of provider.
     static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
