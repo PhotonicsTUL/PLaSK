@@ -3,8 +3,8 @@
 
 namespace plask {
 
-void Solver::loadConfiguration(GeometryReader &conf) {
-    conf.source.requireTagEnd();  //require empty configuration
+void Solver::loadConfiguration(XMLReader& reader, Manager&) {
+    reader.requireTagEnd();  //require empty configuration
 }
 
 std::string Solver::getId() const {

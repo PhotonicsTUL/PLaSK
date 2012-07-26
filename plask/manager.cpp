@@ -130,14 +130,14 @@ void Manager::loadGrids(XMLReader &reader)
     }
 }
 
-void Manager::loadSolvers(GeometryReader& greader) {
-    if (greader.source.getNodeType() != XMLReader::NODE_ELEMENT || greader.source.getNodeName() != std::string("solvers"))
-        throw XMLUnexpectedElementException(greader.source, "<solvers>");
-    while (greader.source.requireTagOrEnd()) {
-        std::string name = greader.source.requireAttribute("name");
-        shared_ptr<Solver> solver(DynamicLibraries::defaultLoad(greader.source.getNodeName()).requireSymbol<solver_construct_f*>(SOLVER_CONSTRUCT_FUNCTION_NAME)());
-        solver->loadConfiguration(greader);
-        if (!greader.manager.solvers.insert(std::make_pair(name, solver)).second)
+void Manager::loadSolvers(XMLReader& reader) {
+    if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("solvers"))
+        throw XMLUnexpectedElementException(reader, "<solvers>");
+    while (reader.requireTagOrEnd()) {
+        std::string name = reader.requireAttribute("name");
+        shared_ptr<Solver> solver(DynamicLibraries::defaultLoad(reader.getNodeName()).requireSymbol<solver_construct_f*>(SOLVER_CONSTRUCT_FUNCTION_NAME)());
+        solver->loadConfiguration(reader, *this);
+        if (!this->solvers.insert(std::make_pair(name, solver)).second)
             throw NamesConflictException("Solver", name);
     }
 }
@@ -160,8 +160,7 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource)
     }
 
     if (reader.getNodeName() == "solvers") {
-        GeometryReader greader(*this, reader, materialsSource);
-        loadSolvers(greader);
+        loadSolvers(reader);
         if (!reader.read()) return;
     }
 }

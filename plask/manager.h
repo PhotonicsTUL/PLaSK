@@ -161,7 +161,7 @@ class Manager {
      * Load solvers using reader.
      * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
-    void loadSolvers(GeometryReader& greader);
+    void loadSolvers(XMLReader& greader);
 
     /**
      * Load geometry using XML reader.
@@ -242,6 +242,16 @@ class Manager {
      * @param materialsSource source of materials, used to get materials by name for leafs
      */
     void loadFromFILE(FILE* file, const GeometryReader::MaterialsSource& materialsSource);
+
+    /**
+     * Read boundary conditions from current tag and move parser to end of current tag.
+     *
+     * Use MeshT static methods to read boundaries, and boost::lexical_cast<ConditionT> to parse values of conditions.
+     * @param reader source of XML data
+     * @param dest place to append read conditions
+     */
+    template <typename MeshT, typename ConditionT>
+    void readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest);
 };
 
 // Specialization for most types
@@ -280,6 +290,11 @@ inline shared_ptr<RequiredCalcSpaceType> Manager::getGeometry(const std::string&
 template <>
 inline shared_ptr<Geometry> Manager::getGeometry<Geometry>(const std::string& name) const {
     return getGeometry(name);
+}
+
+template <typename MeshT, typename ConditionT>
+inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest) {
+    //TODO
 }
 
 }	// namespace plask

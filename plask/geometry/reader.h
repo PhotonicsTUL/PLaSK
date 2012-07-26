@@ -202,15 +202,6 @@ struct GeometryReader {
      */
     shared_ptr<Geometry> readGeometry();
 
-    /**
-     * Read boundary conditions from current tag and move parser to end of current tag.
-     *
-     * Use MeshT static methods to read boundaries, and boost::lexical_cast<ConditionT> to parse values of conditions.
-     * @param dest place to append read conditions
-     */
-    template <typename MeshT, typename ConditionT>
-    void readBoundaryConditions(BoundaryConditions<MeshT, ConditionT>& dest);
-
 };
 
 // specialization for most types
@@ -251,11 +242,6 @@ inline void GeometryReader::readAllElements(XMLReader& source, FunctorType funct
         }
     }
 }*/
-
-template <typename MeshT, typename ConditionT>
-void GeometryReader::readBoundaryConditions(BoundaryConditions<MeshT, ConditionT>& dest) {
-
-}
 
 }   // namespace plask
 

@@ -43,7 +43,8 @@ struct DataVector {
     struct Gc {
         unsigned count;
         Destructor* destructor;
-        Gc(unsigned initial) : count(initial), destructor(nullptr) {}
+        explicit Gc(unsigned initial) : count(initial), destructor(nullptr) {}
+        ~Gc() { delete destructor; }
     };
 
     std::size_t size_;                  ///< size of the stored data
@@ -54,7 +55,7 @@ struct DataVector {
     void dec_ref() {
         if (gc_ && --(gc_->count) == 0) {
             if (gc_->destructor == nullptr) delete[] data_;
-            else { gc_->destructor->destruct(data_); delete gc_->destructor; }
+            else { gc_->destructor->destruct(data_); }
             delete gc_;
         }
     }

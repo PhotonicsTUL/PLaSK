@@ -438,15 +438,16 @@ class Solver {
     virtual ~Solver() {}
 
     /**
-     * Load configuration from given @p config.
+     * Load configuration from given @p source.
      *
-     * XML reader (source field) of @p config point to opening of @c this solver tag and
+     * XML reader (@p source) point to opening of @c this solver tag and
      * after return from this method should point to this solver closing tag.
      *
      * Default implementation require empty configuration (just call <code>conf.source.requireTagEnd();</code>).
-     * @param config source of configuration
+     * @param source source of configuration
+     * @param manager manager from which information about geometry, meshes, materials, and so on can be get if needed
      */
-    virtual void loadConfiguration(GeometryReader& source);
+    virtual void loadConfiguration(XMLReader& source, Manager& manager);
 
     /**
      * Check if solver is already initialized.
