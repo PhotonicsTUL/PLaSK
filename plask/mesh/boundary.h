@@ -67,6 +67,7 @@ PLaSK includes some universal @ref plask::BoundaryImpl "BoundaryImpl\<MeshType\>
 */
 
 #include "../utils/iterators.h"
+#include "../utils/xml/reader.h"
 #include "../memory.h"
 
 #include "../utils/metaprog.h"   // for is_callable
@@ -351,6 +352,18 @@ template <typename MeshType, typename Predicate>
 inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
     return typename MeshType::Boundary(new PredicateBoundary<MeshType, Predicate>(predicate));
 }
+
+/**
+ * Parse boundary from string.
+ */
+template <typename MeshType>
+inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc) { return Boundary<MeshType>(); }
+
+/**
+ * Parse boundary from XML reader.
+ */
+template <typename MeshType>
+inline Boundary<MeshType> parseBoundary(XMLReader& boundary_desc) { return Boundary<MeshType>(); }
 
 }   // namespace plask
 

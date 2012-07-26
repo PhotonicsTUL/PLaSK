@@ -125,6 +125,12 @@ const char *XMLReader::getAttributeValueC(const std::string &name) const {
      return result;
 }
 
+std::string XMLReader::getTextContent() const {
+    if (getNodeType() != NODE_TEXT)
+        throw XMLUnexpectedElementException(*this, "text");
+    return getNodeDataC();
+}
+
 boost::optional<std::string> XMLReader::getAttribute(const std::string& name) const {
     const char* v = getAttributeValueC(name);
     return v != nullptr ? boost::optional<std::string>(v) : boost::optional<std::string>();
@@ -162,6 +168,15 @@ bool XMLReader::requireTagOrEnd() {
     return getNodeType() == NODE_ELEMENT;
 }
 
+bool XMLReader::requireTagOrEnd(const std::string& name) {
+    if (requireTagOrEnd()) {
+        if (getNodeName() != name)
+            throw XMLUnexpectedElementException(*this, "begin of tag <" + name + ">");
+        return true;
+    } else
+        return false;
+}
+
 void XMLReader::requireTagEnd() {
     requireNext();
     if (getNodeType() != NODE_ELEMENT_END)
@@ -176,9 +191,7 @@ void XMLReader::requireTagEnd() {
 
 std::string XMLReader::requireText() {
     requireNext();
-    if (getNodeType() != NODE_TEXT)
-        throw XMLUnexpectedElementException(*this, "text");
-    return std::string(getNodeDataC());
+    return getTextContent();
 }
 
 

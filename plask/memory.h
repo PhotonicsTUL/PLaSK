@@ -138,6 +138,10 @@ struct HolderRef {
      */
     HolderRef(T* held): held(held) {}
 
+    bool isNotNull() const { return held; }
+
+    bool isNull() const { return !held; }
+
 };
 
 /**

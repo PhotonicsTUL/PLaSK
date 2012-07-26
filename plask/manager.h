@@ -58,7 +58,10 @@ class Manager {
     std::map< std::string, shared_ptr<Solver> > solvers;
 
     //TODO solvers map
-    //TODO boundaries map (Boundary top class - probably empty, with virtual destructor)
+
+    /// Boundaries places by name.
+    //TODO? move to special modules reader class to have more local scope?
+    std::map< std::string, boost::any > boundaries;
 
     /**
      * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
@@ -247,9 +250,25 @@ class Manager {
      * Read boundary conditions from current tag and move parser to end of current tag.
      *
      * Use MeshT static methods to read boundaries, and boost::lexical_cast<ConditionT> to parse values of conditions.
+     *
+     * Require format (one or more tag as below):
+     * @code
+     * \<condition [place="mesh type related place description"] [placename="name of this place"] [placeref="name of earlier stored place"] [value="condition value"]>
+     *  [\<place [name="name of this place"] [mesh-type related]>
+     *     ...mesh type related place description...
+     *   \</place>]
+     *  [\<value>condition value\</value>]
+     * \</condition>
+     * @endcode
+     * With restrictions:
+     * - place must be given exactly once (as attribute or tag), and only in case if placeref was not given;
+     * - place name can be given only if placeref was not given;
+     * - value must be given exaclty once (as attribute or tag);
+     * - place name must be unique for all places in XML, and must be given before any placeref which refer to it.
      * @param reader source of XML data
      * @param dest place to append read conditions
      */
+    //TODO moves to modules reader (with names map)
     template <typename MeshT, typename ConditionT>
     void readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest);
 };
@@ -294,7 +313,40 @@ inline shared_ptr<Geometry> Manager::getGeometry<Geometry>(const std::string& na
 
 template <typename MeshT, typename ConditionT>
 inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest) {
-    //TODO
+    while (reader.requireTagOrEnd("condition")) {
+        Boundary<MeshT> boundary;
+        boost::optional<std::string> place = reader.getAttribute("place");
+        boost::optional<std::string> placename = reader.getAttribute("placename");
+        boost::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
+        if (place) {
+            boundary = parseBoundary<MeshT>(*place);
+            if (boundary.isNull()) throw Exception("Can't parse boundary place from string \"%1%\".", *place);
+        } else {
+            place = reader.getAttribute("placeref");
+            if (place) {
+                auto p = this->boundaries.find(*place);
+                if (p == this->boundaries.end())
+                    throw Exception("Can't find boundary (place) with given name \"%1%\".", *place);
+                boundary = boost::any_cast<Boundary<MeshT>>(p->second);
+            } else {
+                reader.requireTag("place");
+                if (!placename) placename = reader.getAttribute("name");
+                boundary = parseBoundary<MeshT>(reader);
+                if (boundary.isNull()) throw Exception("Can't parse boundary place from XML.", *place);
+            }
+        }
+        if (!value) {   //value still doesn't known, must be read from tag <value>...</value>
+            reader.requireTag("value");
+            *value = reader.requireText<ConditionT>();
+            reader.requireTagEnd();
+        }
+        if (placename) {
+            if (!this->boundaries.insert(std::make_pair(*placename, boost::any(boundary))).second)
+                throw NamesConflictException("Place (boundary)", *placename);
+        }
+        dest.add(std::move(boundary), std::move(*value));
+        reader.requireTagEnd(); //</condition>
+    }
 }
 
 }	// namespace plask

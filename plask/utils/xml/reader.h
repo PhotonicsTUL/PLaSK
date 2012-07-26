@@ -196,6 +196,21 @@ class XMLReader {
     const char* getNodeDataC() const { return irrReader->getNodeData(); }
 
     /**
+     * Check if current node is NODE_TEXT (throw excpetion if it's not) and get node data (text content).
+     * @return data of the current node
+     */
+    std::string getTextContent() const;
+
+    /**
+     * Check if current node is NODE_TEXT (throw excpetion if it's not) and get node data (text content).
+     * @return data of the current node casted (by lexical_cast) to given type T
+     */
+    template <typename T>
+    inline T getTextContent() const {
+        return boost::lexical_cast<T>(getTextContent());
+    }
+
+    /**
      * Get value of attribute with given @p name, or @p default_value if attribute with given @p name is not defined in current node.
      * @param name name of attribute
      * @param default_value default value which will be return when attribute with given @p name is not defined
@@ -252,11 +267,19 @@ class XMLReader {
     void requireTag(const std::string& name);
 
     /**
-     * Call requireNext() and next check if current element is tag opening or closing of tag
+     * Call requireNext() and next check if current element is tag opening or closing of tag.
      * Throw exception if it's not.
      * \return true if the next tag was opened
      */
     bool requireTagOrEnd();
+
+    /**
+     * Call requireNext() and next check if current element is tag opening (in such case it also check if it has name equal to given @p name) or closing of tag.
+     * Throw exception if it's not.
+     * @param name required name of opening tag
+     * @return true if the next tag was opened
+     */
+    bool requireTagOrEnd(const std::string &name);
 
     /**
      * Call requireNext() and next check if current element is tag closing. Throw exception if it's not.
@@ -269,6 +292,14 @@ class XMLReader {
      */
     std::string requireText();
 
+    /**
+     * Call requireNext() and next check if current element is text. Throw exception if it's not.
+     * \return read text casted (by lexical_cast) to givent type T
+     */
+    template <typename T>
+    inline T requireText() const {
+        return boost::lexical_cast<T>(requireText());
+    }
 
     /**
      * Skip XML comments.
