@@ -317,25 +317,6 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         return c2;
     }
 
-    ///Type of points in this mesh.
-    typedef Vec<3, double> PointType;
-
-    /**
-     * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].
-     * This iterator type is indexed, which mean that it have (read-write) index field equal to 0 for begin() and growing up to size() for end().
-     */
-    typedef IndexedIterator< const RectangularMesh, PointType > const_iterator;
-
-    ///@return iterator referring to the first point in this mesh
-    const_iterator begin_fast() const { return const_iterator(this, 0); }
-
-    ///@return iterator referring to the past-the-end point in this mesh
-    const_iterator end_fast() const { return const_iterator(this, size()); }
-
-    // implement MeshD<3> polymorphic iterators:
-    virtual typename MeshD<3>::Iterator begin() const { return makeMeshIterator(begin_fast()); }
-    virtual typename MeshD<3>::Iterator end() const { return makeMeshIterator(end_fast()); }
-
     /**
       * Compare meshes
       * @param to_compare mesh to compare
@@ -397,6 +378,15 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      */
     inline std::size_t index2(std::size_t mesh_index) const {
         return index2_f(this, mesh_index);
+    }
+
+    /**
+     * Get point with given mesh index.
+     * @param index index of point, from 0 to size()-1
+     * @return point with given @p index
+     */
+    virtual Vec<3, double> at(std::size_t index) const {
+        return operator() (index0(index), index1(index), index2(index));
     }
 
     /**

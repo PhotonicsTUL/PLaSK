@@ -20,26 +20,4 @@ typedef RectangularMesh<3,RectilinearMesh1D> RectilinearMesh3D;
 
 } // namespace  plask
 
-namespace std { // use fast iterator if we know mesh type at compile time:
-
-    inline auto begin(const plask::RectilinearMesh2D& m) -> decltype(m.begin_fast()) {
-        return m.begin_fast();
-    }
-
-    inline auto end(const plask::RectilinearMesh2D& m) -> decltype(m.end_fast()) {
-        return m.end_fast();
-    }
-
-    inline auto begin(const plask::RectilinearMesh3D& m) -> decltype(m.begin_fast()) {
-        return m.begin_fast();
-    }
-
-    inline auto end(const plask::RectilinearMesh3D& m) -> decltype(m.end_fast()) {
-        return m.end_fast();
-    }
-
-} // namespace std
-
-
-
 #endif // PLASK__RECTILINEAR_H

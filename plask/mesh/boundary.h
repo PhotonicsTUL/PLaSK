@@ -355,12 +355,31 @@ inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
 
 /**
  * Parse boundary from string.
+ *
+ * For given mesh type (MyMeshType) specialization of this function:
+ * @code
+ * template <> inline Boundary<MyMeshType> parseBoundary<MyMeshType>(const std::string& boundary_desc) { ... }
+ * @endcode
+ * are responsible to parse boundary from string for this mesh type.
+ * @param boundary_desc boundary description, depends from type of mesh
+ * @return parsed boundary or Boundary<MeshType>() if can't parse given string
  */
 template <typename MeshType>
 inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc) { return Boundary<MeshType>(); }
 
+
 /**
  * Parse boundary from XML reader.
+ *
+ * It starts from tag which beggining is pointed by reader and (in case of successful parse) move reader to end of this tag.
+ *
+ * For given mesh type (MyMeshType) specialization of this function:
+ * @code
+ * template <> inline Boundary<MyMeshType> parseBoundary<MyMeshType>(XMLReader& boundary_desc) { ... }
+ * @endcode
+ * are responsible to parse boundary from XML for this mesh type.
+ * @param boundary_desc boundary description, depends from type of mesh
+ * @return parsed boundary or Boundary<MeshType>() if can't parse given tag
  */
 template <typename MeshType>
 inline Boundary<MeshType> parseBoundary(XMLReader& boundary_desc) { return Boundary<MeshType>(); }

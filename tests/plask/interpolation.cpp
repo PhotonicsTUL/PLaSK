@@ -8,8 +8,7 @@
 namespace plask {
     struct DummyMesh: public plask::MeshD<2> {
         virtual std::size_t size() const { return 1; }
-        virtual plask::MeshD<2>::Iterator begin() const { plask::MeshD<2>::Iterator i; return i; }
-        virtual plask::MeshD<2>::Iterator end() const {  plask::MeshD<2>::Iterator i; return i; }
+        virtual plask::Vec<2, double> at(std::size_t) const { return plask::vec(0.0, 0.0); }
     };
 
     template <typename DataT>    //for any data type

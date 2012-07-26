@@ -263,8 +263,8 @@ class Manager {
      * With restrictions:
      * - place must be given exactly once (as attribute or tag), and only in case if placeref was not given;
      * - place name can be given only if placeref was not given;
-     * - value must be given exaclty once (as attribute or tag);
-     * - place name must be unique for all places in XML, and must be given before any placeref which refer to it.
+     * - place name must be unique for all places in XML, and must be given before any placeref which refer to it;
+     * - condition value must be given exaclty once (as attribute or in value tag).
      * @param reader source of XML data
      * @param dest place to append read conditions
      */

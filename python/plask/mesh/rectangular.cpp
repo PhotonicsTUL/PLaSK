@@ -454,7 +454,8 @@ void register_mesh_rectangular()
         .add_static_property("topBoundary", &RectilinearMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
         .add_static_property("bottomBoundary", &RectilinearMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
         .def(py::self == py::self)
-        .def("__iter__", py::range((auto (*)(const plask::RectilinearMesh2D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RectilinearMesh2D& m)->decltype(m.end_fast()))&std::end))
+            //TODO:
+        //.def("__iter__", py::range((auto (*)(const plask::RectilinearMesh2D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RectilinearMesh2D& m)->decltype(m.end_fast()))&std::end))
     ;
     ExportBoundary<RectilinearMesh2D>("Rectilinear2D");
 
@@ -488,7 +489,7 @@ void register_mesh_rectangular()
         .def("setOrdering", &RectangularMesh3D__setOrdering<RectilinearMesh3D>, "Set desired ordering of the points in this mesh", (py::arg("order")))
         .def("getMidpointsMesh", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of elements described by this mesh")
         .def(py::self == py::self)
-        .def("__iter__", py::range((auto (*)(const plask::RectilinearMesh3D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RectilinearMesh3D& m)->decltype(m.end_fast()))&std::end))
+        //TODO .def("__iter__", py::range((auto (*)(const plask::RectilinearMesh3D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RectilinearMesh3D& m)->decltype(m.end_fast()))&std::end))
     ;
 
 
@@ -541,7 +542,7 @@ void register_mesh_rectangular()
         .add_static_property("topBoundary", &RegularMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
         .add_static_property("bottomBoundary", &RegularMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
         .def(py::self == py::self)
-        .def("__iter__", py::range((auto (*)(const plask::RegularMesh2D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RegularMesh2D& m)->decltype(m.end_fast()))&std::end))
+        //TODO .def("__iter__", py::range((auto (*)(const plask::RegularMesh2D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RegularMesh2D& m)->decltype(m.end_fast()))&std::end))
     ;
     ExportBoundary<RegularMesh2D>("Regular2D");
 
@@ -573,7 +574,7 @@ void register_mesh_rectangular()
         .def("setOrdering", &RectangularMesh3D__setOrdering<RegularMesh3D>, "Set desired ordering of the points in this mesh", (py::arg("order")))
         .def("getMidpointsMesh", &RegularMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of elements described by this mesh")
         .def(py::self == py::self)
-        .def("__iter__", py::range((auto (*)(const plask::RegularMesh3D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RegularMesh3D& m)->decltype(m.end_fast()))&std::end))
+        //TODO .def("__iter__", py::range((auto (*)(const plask::RegularMesh3D& m)->decltype(m.begin_fast()))&std::begin, (auto (*)(const plask::RegularMesh3D& m)->decltype(m.end_fast()))&std::end))
     ;
 
     ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");

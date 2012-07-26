@@ -49,14 +49,9 @@ Adapter templates currently available in PLaSK (see its description for more det
 To implement a new mesh directly you have to write class inherited from the \c plask::MeshD\<DIM\>, where DIM (is equal 2 or 3) is a number of dimension of space your mesh is defined over.
 
 You are required to:
-- implement the @ref plask::Mesh::size size method;
-- implement the iterator over the mesh points, which required to:
-  - writing class inherited from plask::Mesh::IteratorImpl (and implement all its abstract methods),
-  - writing @ref plask::MeshD::begin "begin()" and @ref plask::MeshD::end "end()" methods, typically this methods only returns:
-    @code plask::Mesh::Iterator(new YourIteratorImpl(...)) @endcode
-  - see also: MeshIteratorWrapperImpl and makeMeshIterator
-- implement the \ref plask::MeshD::writeXML method, which writes the mesh to XML
-- write and register the reading function which reads the mesh from XML
+- implement the @ref plask::Mesh::size size and @ref plask::MeshD::at at methods which allow to access to meshes points;
+- implement the \ref plask::MeshD::writeXML method, which writes the mesh to XML;
+- write and register the reading function which reads the mesh from XML.
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3D space):
 @code
@@ -68,50 +63,14 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
     OnePoint3DMesh(const plask::Vec<3, double>& point)
     : point(point) {}
 
-    // Iterator:
-    struct IteratorImpl: public MeshD<plask::space::Cartesian3D>::IteratorImpl {
-
-        // Pointer to mesh or is equal to nullptr for end iterator
-        const OnePoint3DMesh* mesh_ptr;
-
-        // mesh == nullptr for end iterator
-        IteratorImpl(const OnePoint3DMesh* mesh)
-        : mesh_ptr(mesh) {}
-
-        virtual const plask::Vec<3, double> dereference() const {
-            return mesh_ptr->point;
-        }
-
-        virtual void increment() {
-            mesh_ptr = nullptr; // we iterate only over one point, so next state is end
-        }
-
-        virtual bool equal(const typename MeshD<plask::space::Cartesian3D>::IteratorImpl& other) const {
-            return mesh_ptr == static_cast<const IteratorImpl&>(other).mesh_ptr;
-        }
-
-        virtual IteratorImpl* clone() const {
-            return new IteratorImpl(mesh_ptr);
-        }
-
-        virtual std::size_t getIndex() const {
-            return 0;
-        }
-
-    };
-
     // plask::MeshD<3> methods implementation:
 
     virtual std::size_t size() const {
         return 1;
     }
 
-    virtual typename MeshD<plask::space::Cartesian3D>::Iterator begin() const {
-        return MeshD<3>::Iterator(new IteratorImpl(this));
-    }
-
-    virtual typename MeshD<plask::space::Cartesian3D>::Iterator end() const {
-        return MeshD<3>::Iterator(new IteratorImpl(nullptr));
+    plask::Vec<3, double> at(std::size_t index) const {
+        return point;
     }
 
     virtual void writeXML(XMLElement& element) const;
@@ -248,21 +207,33 @@ struct MeshD: public Mesh {
     /// Type of vector representing coordinates in local space
     typedef Vec<DIM, double> LocalCoords;
 
-    /// Base class for mesh iterator implementation.
-    typedef PolymorphicForwardIteratorWithIndexImpl<LocalCoords, const LocalCoords> IteratorImpl;
+    /**
+     * Get point with given mesh index.
+     * @param index index of point, from 0 to size()-1
+     * @return point with given @p index
+     */
+    virtual LocalCoords at(std::size_t index) const = 0;
 
-    /// Mesh iterator type.
-    typedef PolymorphicForwardIteratorWithIndex<IteratorImpl> Iterator;
+    /**
+     * Get point with given mesh index.
+     * @param index index of point, from 0 to size()-1
+     * @return point with given @p index
+     */
+    const LocalCoords operator[](std::size_t index) const { return at(index); }
 
-    // To be more compatibile with STL:
-    typedef Iterator iterator;
-    typedef const Iterator const_iterator;
+    /**
+     * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].
+     * This iterator type is indexed, which mean that it have (read-write) index field equal to 0 for begin() and growing up to size() for end().
+     */
+    typedef IndexedIterator< const MeshD<dimension>, LocalCoords > const_iterator;
+    typedef const_iterator iterator;
+    typedef const_iterator Iterator;
 
-    /// @return iterator at first point
-    virtual Iterator begin() const = 0;
+    /// @return iterator referring to the first point in this mesh
+    const_iterator begin() const { return const_iterator(this, 0); }
 
-    /// @return iterator just after last point
-    virtual Iterator end() const = 0;
+    /// @return iterator referring to the past-the-end point in this mesh
+    const_iterator end() const { return const_iterator(this, size()); }
 
     /// Changed signal, fired when space was changed.
     boost::signals2::signal<void(Event&)> changed;
