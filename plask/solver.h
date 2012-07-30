@@ -604,6 +604,14 @@ class SolverWithMesh: public SolverOver<SpaceT> {
         this->invalidate();
     }
 
+	/**
+     * Get current module mesh.
+     *
+     * It doesn't check if mesh is non-null.
+     * @return current module mesh, dereferenced
+     */
+    inline MeshT& mesh() const { return *_mesh; }
+
     /**
      * Get current solver mesh.
      * @return current solver mesh
