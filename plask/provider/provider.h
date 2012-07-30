@@ -126,7 +126,6 @@ assert(sr(3.0) == 6.0); // test the received value
 #include <type_traits>  // std::is_same
 #include <boost/optional.hpp>
 #include <boost/signals2.hpp>
-#include <qvarlengtharray.h>
 
 #include "../exceptions.h"
 #include "../mesh/mesh.h"

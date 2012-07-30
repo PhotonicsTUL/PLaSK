@@ -577,14 +577,14 @@ template <typename SpaceT, typename MeshT>
 class SolverWithMesh: public SolverOver<SpaceT> {
 
     void diconnectMesh() {
-        if (this->mesh)
-            this->mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+        if (this->_mesh)
+            this->_mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
     }
 
   protected:
 
     /// Mesh over which the calculations are performed
-    shared_ptr<MeshT> mesh;
+    shared_ptr<MeshT> _mesh;
 
   public:
 
@@ -616,19 +616,19 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * Get current solver mesh.
      * @return current solver mesh
      */
-    inline shared_ptr<MeshT> getMesh() const { return mesh; }
+    inline shared_ptr<MeshT> getMesh() const { return _mesh; }
 
     /**
      * Set new mesh for the solver
      * @param mesh new mesh
      */
     void setMesh(const shared_ptr<MeshT>& mesh) {
-        if (mesh == this->mesh) return;
+        if (mesh == this->_mesh) return;
         this->writelog(LOG_INFO, "Attaching mesh to the solver");
         diconnectMesh();
-        this->mesh = mesh;
-        if (this->mesh)
-            this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+        this->_mesh = mesh;
+        if (this->_mesh)
+            this->_mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
         this->initialized = false;
     }
 

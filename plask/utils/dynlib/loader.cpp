@@ -47,7 +47,7 @@ void * DynamicLibrary::getSymbol(const std::string &symbol_name) const {
         throw plask::Exception("Trying to get symbol from dynamic library which is not opened.");
 
     return
-#if PLASK__UTILS_PLUGIN_WINAPI
+#ifdef PLASK__UTILS_PLUGIN_WINAPI
         (void*) GetProcAddress(handler, symbol_name.c_str());
 #else
         dlsym(handler, symbol_name.c_str());
