@@ -235,6 +235,18 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     std::size_t size() const { return c0.size() * c1.size(); }
 
     /**
+     * Get maximum of sizes c0 and c1
+     * @return maximum of sizes c0 and c1
+     */
+    std::size_t getMaxSize() const { return std::max(c0.size(), c1.size()); }
+
+    /**
+     * Get minimum of sizes c0 and c1
+     * @return minimum of sizes c0 and c1
+     */
+    std::size_t getMinSize() const { return std::min(c0.size(), c1.size()); }
+
+    /**
      * Write mesh to XML
      * \param element XML element to write to
      */
