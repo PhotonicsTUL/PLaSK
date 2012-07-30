@@ -35,6 +35,7 @@ protected:
 
     /// ?? For top level items like extrusion it is a geometry in which element is included, for rest this is nullptr.
     plask::shared_ptr<plask::Geometry> geometry;
+    //TODO ElementWrapper to geometry must be store somewhere, else it will be delete, plask::shared_ptr<ElementWrapper>
 
     /// Cache for miniature
     QPixmap miniature;
