@@ -96,9 +96,9 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = make_shared<Geometry2DCylindrical>(readExactlyOneChild<GeometryElementD<2>>());
-//     } else if (nodeName == "3d" || nodeName == "cartesian3d") {
-//         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-//         result = make_shared<Geometry3D>(readExactlyOneChild<GeometryElementD<3>>());
+    } else if (nodeName == "3d" || nodeName == "cartesian3d") {
+        SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+        result = make_shared<Geometry3D>(readExactlyOneChild<GeometryElementD<3>>());
     } else
         throw XMLUnexpectedElementException(source, "geometry tag (<cartesian2d>, <cartesian3d>, or <cylindrical>)");
 

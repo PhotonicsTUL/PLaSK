@@ -740,6 +740,8 @@ public:
 
     virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const;
 
+    virtual Geometry3D* getSubspace(const shared_ptr<GeometryElementD<3>>& element, const PathHints* path=nullptr, bool copyBorders=false) const;
+
 };
 
 

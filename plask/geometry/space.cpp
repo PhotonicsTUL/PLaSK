@@ -270,6 +270,18 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
     return getMaterialOrDefault(r);
 }
 
-
+Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryElementD<3>>& element, const PathHints* path, bool copyBorders) const {
+    auto new_child = getChild()->getElementInThisCoordinates(element, path);
+    if (!new_child) {
+        new_child = element->requireElementInThisCoordinates(getChild(), path);
+        new_child->translation = - new_child->translation;
+    }
+    if (copyBorders) {
+        std::unique_ptr<Geometry3D> result(new Geometry3D(*this));
+        result->child = new_child;
+        return result.release();
+    } else
+        return new Geometry3D(new_child);
+}
 
 }   // namespace plask
