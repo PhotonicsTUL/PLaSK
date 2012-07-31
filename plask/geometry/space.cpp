@@ -1,6 +1,7 @@
 #include "space.h"
 
 #include <memory>
+#include <cassert>
 
 namespace plask {
 
@@ -203,5 +204,72 @@ const border::Strategy& Geometry2DCylindrical::getBorder(DIRECTION direction, bo
     ensureBoundDirIsProper(direction, higher);
     return (direction == DIRECTION_TRAN) ? outer.getStrategy() : bottomup.get(higher);
 }
+
+void Geometry3D::setBorders(DIRECTION direction, const border::Strategy &border_lo, const border::Strategy &border_hi) {
+    switch (direction) {
+        case DIRECTION_LON: backfront.setStrategies(border_lo, border_hi); break;
+        case DIRECTION_TRAN: leftright.setStrategies(border_lo, border_hi); break;
+        case DIRECTION_UP: bottomup.setStrategies(border_lo, border_hi); break;
+    }
+    fireChanged(Event::BORDERS);
+}
+
+void Geometry3D::setBorders(DIRECTION direction, const border::Strategy &border_to_set) {
+    switch (direction) {
+        case DIRECTION_LON: backfront.setBoth(border_to_set); break;
+        case DIRECTION_TRAN: leftright.setBoth(border_to_set); break;
+        case DIRECTION_UP: bottomup.setBoth(border_to_set); break;
+    }
+    fireChanged(Event::BORDERS);
+}
+
+void Geometry3D::setBorder(DIRECTION direction, bool higher, const border::Strategy &border_to_set) {
+    switch (direction) {
+        case DIRECTION_LON: backfront.set(higher, border_to_set); break;
+        case DIRECTION_TRAN: leftright.set(higher, border_to_set); break;
+        case DIRECTION_UP: bottomup.set(higher, border_to_set); break;
+    }
+    fireChanged(Event::BORDERS);
+}
+
+const border::Strategy &Geometry3D::getBorder(DIRECTION direction, bool higher) const {
+    switch (direction) {
+        case DIRECTION_LON: return backfront.get(higher);
+        case DIRECTION_TRAN: return leftright.get(higher);
+        case DIRECTION_UP: return bottomup.get(higher);
+    }
+    assert(0);
+}
+
+Geometry3D::Geometry3D(shared_ptr<GeometryElementD<3>> child)
+: child(child) {
+    if (child) init();
+}
+
+shared_ptr<GeometryElementD<3> > Geometry3D::getChild() const {
+    return child;
+}
+
+shared_ptr<GeometryElementD<3> > Geometry3D::getElement3D() const {
+    return child;
+}
+
+shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
+    Vec<3, double> r = p;
+    shared_ptr<Material> material;
+
+    bottomup.apply(cachedBoundingBox, r, material);
+    if (material) return material;
+
+    leftright.apply(cachedBoundingBox, r, material);
+    if (material) return material;
+
+    backfront.apply(cachedBoundingBox, r, material);
+    if (material) return material;
+
+    return getMaterialOrDefault(r);
+}
+
+
 
 }   // namespace plask

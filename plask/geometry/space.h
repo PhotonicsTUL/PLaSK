@@ -637,6 +637,109 @@ public:
  * Geometry trunk in 3D space
  */
 class Geometry3D: public GeometryD<3> {
+
+    shared_ptr< GeometryElementD<3> > child;
+
+    border::StrategyPairHolder<Primitive<3>::DIRECTION_LON> backfront;
+    border::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
+    border::StrategyPairHolder<Primitive<3>::DIRECTION_UP> bottomup;
+
+public:
+
+    /**
+     * Set strategy for the left border.
+     * @param newValue new strategy for the left border
+     */
+    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::BORDERS); }
+
+    /**
+     * Get left border strategy.
+     * @return left border strategy
+     */
+    const border::Strategy& getLeftBorder() { return leftright.getLo(); }
+
+    /**
+     * Set strategy for the right border.
+     * @param newValue new strategy for the right border
+     */
+    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::BORDERS); }
+
+    /**
+     * Get right border strategy.
+     * @return right border strategy
+     */
+    const border::Strategy& getRightBorder() { return leftright.getHi(); }
+
+    /**
+     * Set strategy for the bottom border.
+     * @param newValue new strategy for the bottom border
+     */
+    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::BORDERS); }
+
+    /**
+     * Get bottom border strategy.
+     * @return bottom border strategy
+     */
+    const border::Strategy& getBottomBorder() { return bottomup.getLo(); }
+
+    /**
+     * Set strategy for the top border.
+     * @param newValue new strategy for the top border
+     */
+    void setTopBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::BORDERS); }
+
+    /**
+     * Get top border strategy.
+     * @return top border strategy
+     */
+    const border::Strategy& getTopBorder() { return bottomup.getHi(); }
+
+    /**
+     * Set strategies for both borders in specified direction
+     * \param direction direction of the borders
+     * \param border_lo new strategy for the border with lower coordinate
+     * \param border_hi new strategy for the border with higher coordinate
+     */
+    void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+
+    void setBorders(DIRECTION direction, const border::Strategy& border_to_set);
+
+    /**
+     * Set strategies for a border in specified direction
+     * \param direction direction of the borders
+     * \param higher indicates whether higher- or lower-coordinate border is to be set
+     * \param border_to_set new strategy for the border with higher coordinate
+     */
+    void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
+
+    const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
+
+    /**
+     * Construct geometry over given 3D @p child element.
+     * @param child child, of equal to nullptr (default) you should call setChild before use this geometry
+     */
+    Geometry3D(shared_ptr<GeometryElementD<3>> child = shared_ptr<GeometryElementD<3>>());
+
+    /**
+     * Get child element used by this geometry.
+     * @return child element
+     */
+    virtual shared_ptr< GeometryElementD<3> > getChild() const;
+
+    /**
+     * Set child element used by this geometry.
+     * @param child child element
+     */
+    void getChild(shared_ptr< GeometryElementD<3> > child) { this->child = child; }
+
+    /**
+     * Get child element used by this geometry.
+     * @return child element
+     */
+    virtual shared_ptr< GeometryElementD<3> > getElement3D() const;
+
+    virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const;
+
 };
 
 
