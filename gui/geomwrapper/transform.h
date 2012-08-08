@@ -13,6 +13,11 @@
 template <int dim>
 struct TranslationWrapper: public ElementWrapperFor< plask::Translation<dim> > {
 
+    /**
+     * Names of path hints, used only if this translation is inside container.
+     */
+    std::vector<std::string> pathHintsNames;
+    
     virtual QString toStr() const;
 
     virtual void draw(QPainter& painter) const;
