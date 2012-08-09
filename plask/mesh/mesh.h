@@ -405,7 +405,7 @@ template <typename MeshT>
 class MeshGeneratorOf: public MeshGenerator
 {
   protected:
-    Cache<GeometryElement, MeshT, CacheRemoveOnEachChange> cache;
+    WeakCache<GeometryElement, MeshT, CacheRemoveOnEachChange> cache;
 
   public:
     // Type of generated mesh
