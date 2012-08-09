@@ -28,6 +28,7 @@ struct Register {
     std::unordered_map<std::type_index, construct_element_wrapper_t*> wrappersConstructors;
 
     /// Constructed wrappers for geometry elements, map: geometry element -> wrapper for key element.
+    //TODO GeometryElement -> shared_ptr<ElementWrapper>, ElementWrapper should hold weak_ptr or raw ptr.
     plask::Cache<plask::GeometryElement, ElementWrapper> constructed;
 
     /// Construct geometry element wrapper using wrappersConstructors. Doesn't change constructed map.
