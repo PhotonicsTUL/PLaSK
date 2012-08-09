@@ -132,9 +132,9 @@ QRectF ElementViewer::itemRect(const QModelIndex &index) const
 {
     if (index.isValid() && index.parent() == rootIndex()) {
         GeometryTreeItem* i = model()->toItem(index);
-        plask::shared_ptr<plask::GeometryElement> e = i->element->wrappedElement;
+        auto e = i->element->wrappedElement;
         if (e->getDimensionsCount() == 2) {
-            plask::Box2D b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
+            plask::Box2D b = static_cast< plask::GeometryElementD<2>* >(e)->getBoundingBox();
             return toQt(b);
         }
     }
@@ -232,9 +232,9 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
        // QModelIndex current = selectionModel()->getcurrentIndex();
         if (current.isValid() && current.parent() == rootIndex()) {
             GeometryTreeItem* i = model()->toItem(current);
-            plask::shared_ptr<plask::GeometryElement> e = i->element->wrappedElement;
+            plask::GeometryElement* e = i->element->wrappedElement;
             if (e->getDimensionsCount() == 2) {
-                plask::Box2D b = plask::static_pointer_cast<plask::GeometryElementD<2> >(e)->getBoundingBox();
+                plask::Box2D b = static_cast<plask::GeometryElementD<2>*>(e)->getBoundingBox();
                 QRectF r = toQt(b);
                 painter.fillRect(r, QColor(50, 20, 120, 70));
                 painter.setPen(QPen(QColor(90, 40, 230, 170), 0.0, Qt::DashLine));

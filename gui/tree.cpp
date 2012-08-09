@@ -29,7 +29,7 @@ void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::
 
 void GeometryTreeItem::appendChildrenItems() {
     if (auto e = getLowerWrappedElement()) {
-        appendChildrenItemsHelper(e->wrappedElement);
+        appendChildrenItemsHelper(e->wrappedElement->shared_from_this());
     }
 }
 

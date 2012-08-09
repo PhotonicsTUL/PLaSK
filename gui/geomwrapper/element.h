@@ -33,14 +33,14 @@ struct ElementWrapper {
 
     typedef plask::GeometryElement WrappedType;
 
-    plask::shared_ptr<plask::GeometryElement> wrappedElement;
+    plask::GeometryElement* wrappedElement;
 
     QString name;
 
     /// This is typically called once, just after constructor
     virtual void setWrappedElement(plask::shared_ptr<plask::GeometryElement> plaskElement) {
         if (this->wrappedElement) this->wrappedElement->changedDisconnectMethod(this, &ElementWrapper::onWrappedChange);
-        this->wrappedElement = plaskElement;
+        this->wrappedElement = plaskElement.get();
         if (this->wrappedElement) this->wrappedElement->changedConnectMethod(this, &ElementWrapper::onWrappedChange);
     }
 
@@ -65,7 +65,7 @@ struct ElementWrapper {
          * @return element wrapped by source of event
          */
         plask::shared_ptr<plask::GeometryElement> wrappedElement() {
-            return this->source().wrappedElement;
+            return this->source().wrappedElement->shared_from_this();
         }
 
         /**
@@ -150,6 +150,7 @@ struct ElementWrapper {
 protected:
     void onWrappedChange(plask::GeometryElement::Event& evt) {
         fireChanged(evt);
+        if (evt.isDelete()) wrappedElement = nullptr;
     }
 
 public:

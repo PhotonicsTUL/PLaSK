@@ -269,7 +269,7 @@ struct StrongCache: public CacheBase<Key, plask::shared_ptr<Value>, DeleteStrate
      */
     plask::shared_ptr<Value> get(Key* index) const {
         auto iter = this->map.find(index);
-        return iter != this->map.end() ? *iter : plask::shared_ptr<Value>();
+        return iter != this->map.end() ? iter->second : plask::shared_ptr<Value>();
     }
 
     /**

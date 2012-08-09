@@ -29,7 +29,7 @@ struct Register {
 
     /// Constructed wrappers for geometry elements, map: geometry element -> wrapper for key element.
     //TODO GeometryElement -> shared_ptr<ElementWrapper>, ElementWrapper should hold weak_ptr or raw ptr.
-    plask::WeakCache<plask::GeometryElement, ElementWrapper> constructed;
+    plask::StrongCache<plask::GeometryElement, ElementWrapper> constructed;
 
     /// Construct geometry element wrapper using wrappersConstructors. Doesn't change constructed map.
     ElementWrapper* construct(plask::shared_ptr<plask::GeometryElement> el) {
