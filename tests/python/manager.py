@@ -54,7 +54,7 @@ class Manager(unittest.TestCase):
         with self.assertRaises(KeyError): self.manager.elements["nonexistent"]
 
     def testDictionaries(self):
-        self.assertEqual( list(self.manager.gel), ["Block 3", "Stack 2"] )
+        self.assertEqual( list(self.manager.ele), ["Block 3", "Stack 2"] )
 
     def testExport(self):
         self.manager.export(globals())
@@ -73,7 +73,7 @@ class Manager(unittest.TestCase):
         self.assertEqual( self.manager.msg.test.postdiv, (2,3) )
         self.assertEqual( self.manager.msg.test.warn_missing, False )
 
-        mesh = self.manager.msg.refined.generate(self.manager.gel.Stack_2)
+        mesh = self.manager.msg.refined.generate(self.manager.ele.Stack_2)
         self.assertEqual( mesh.axis1, [0., 2., 3., 4.] )
         self.assertEqual( mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0] )
 

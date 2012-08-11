@@ -30,6 +30,7 @@ struct PythonManager: public Manager {
                 loadFromXMLString(str, *materialsDB);
         } catch (py::error_already_set) {
             PyErr_Clear();
+#if PY_VERSION_HEX < 0x03000000
             if (!PyFile_Check(src.ptr())) throw TypeError("argument is neither string nor a proper file-like object");
             PyFileObject* pfile = (PyFileObject*)src.ptr();
             auto file = PyFile_AsFile(src.ptr());
@@ -38,11 +39,16 @@ struct PythonManager: public Manager {
                 loadFromFILE(file);
             Py_END_ALLOW_THREADS
             PyFile_DecUseCount(pfile);
+#else
+            // TODO choose better solution if XML parser is changed from irrXML to something more robust
+            if (!PyObject_HasAttrString(src.ptr(),"read")) throw TypeError("argument is neither string nor a proper file-like object");
+            loadFromXMLString(py::extract<std::string>(src.attr("read")()));
+#endif
         }
     }
 
     static void export_dict(py::object self, py::dict dict) {
-        dict["GEL"] = self.attr("gel");
+        dict["ELE"] = self.attr("ele");
         dict["PTH"] = self.attr("pth");
         dict["GEO"] = self.attr("geo");
         dict["MSH"] = self.attr("msh");
@@ -214,7 +220,7 @@ void register_manager() {
         .def_readonly("mesh_generators", &PythonManager::generators, "Dictionary of all named mesh generators")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
-    manager.attr("gel") = manager.attr("elements");
+    manager.attr("ele") = manager.attr("elements");
     manager.attr("pth") = manager.attr("paths");
     manager.attr("geo") = manager.attr("geometries");
     manager.attr("msh") = manager.attr("meshes");

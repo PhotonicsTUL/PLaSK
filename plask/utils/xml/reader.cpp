@@ -5,10 +5,10 @@ namespace plask {
 /// Allow to read XML from standard C++ input stream (std::istream).
 struct StreamReaderCallback: public irr::io::IFileReadCallBack {
 
-    ///Stream to read from.
+    /// Stream to read from.
     std::istream& input;
 
-    ///Size of stream, number of bytes to read.
+    /// Size of stream, number of bytes to read.
     int size;
 
     /**

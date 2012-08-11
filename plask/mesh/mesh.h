@@ -223,7 +223,7 @@ struct MeshD: public Mesh {
 
     /**
      * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].
-     * This iterator type is indexed, which mean that it have (read-write) index field equal to 0 for begin() and growing up to size() for end().
+     * This iterator type is indexed, which means that it have (read-write) index field equal to 0 for begin() and growing up to size() for end().
      */
     typedef IndexedIterator< const MeshD<dimension>, LocalCoords > const_iterator;
     typedef const_iterator iterator;
