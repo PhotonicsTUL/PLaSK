@@ -61,6 +61,9 @@ struct XMLWriter {
          */
         virtual void put(char c) { write(&c, 1); }
 
+        /**
+         * Write new line character (end-line) to this output.
+         */
         void newline() { put('\n'); }
 
     };

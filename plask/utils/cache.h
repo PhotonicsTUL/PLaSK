@@ -10,6 +10,15 @@ This file includes cache map indexed by objects which can emit events, like Geom
 
 namespace plask {
 
+/**
+ * Base class for strategy of removing from cache.
+ *
+ * Sublass should has method:
+ * <code>void onEvent(typename Key::Event& evt)</code>
+ * which eventualy (depends from event details) removes from map a source of event.
+ *
+ * Used by @ref WeakCache and @ref StrongCache.
+ */
 template <typename Key, typename ValuePtr>
 struct CacheRemoveStrategyBase {
 
@@ -18,6 +27,11 @@ struct CacheRemoveStrategyBase {
 
 };
 
+/**
+ * Strategy of removing from cache which removes key only when it is deleted.
+ *
+ * Used by @ref WeakCache and @ref StrongCache.
+ */
 template <typename Key, typename ValuePtr>
 struct CacheRemoveOnlyWhenDeleted: public CacheRemoveStrategyBase<Key, ValuePtr> {
 
@@ -28,6 +42,11 @@ struct CacheRemoveOnlyWhenDeleted: public CacheRemoveStrategyBase<Key, ValuePtr>
 
 };
 
+/**
+ * Strategy of removing from cache which removes key always when it is changed.
+ *
+ * Used by @ref WeakCache and @ref StrongCache.
+ */
 template <typename Key, typename ValuePtr>
 struct CacheRemoveOnEachChange: public CacheRemoveStrategyBase<Key, ValuePtr> {
 

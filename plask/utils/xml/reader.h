@@ -144,9 +144,11 @@ class XMLReader {
      @return Value of the attribute, 0 if an attribute with this index does not exist. */
     //const char* getAttributeValueC(int idx) const { return irrReader->getAttributeValue(idx); }
 
-    //! Returns the value of an attribute.
-    /** @param name: Name of the attribute.
-    @return Value of the attribute, 0 if an attribute with this name does not exist. */
+    /**
+     * Returns the value of an attribute.
+     * @param name: Name of the attribute.
+     * @return Value of the attribute, 0 if an attribute with this name does not exist.
+     */
     const char* getAttributeValueC(const std::string& name) const;
 
     /**
@@ -224,8 +226,21 @@ class XMLReader {
         return boost::lexical_cast<T>(attr_str);
     }
 
+    /**
+     * Get value of attribute with given @p name.
+     * @param name name of attribute to get
+     * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribiute with given @p name
+     */
     boost::optional<std::string> getAttribute(const std::string& name) const;
 
+    /**
+     * Get value of attribute with given @p name.
+     *
+     * Throws exception if value of attribute given @p name can't be casted to required type T.
+     * @param name name of attribute to get
+     * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribiute with given @p name
+     * @tparam T required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
+     */
     template <typename T>
     inline boost::optional<T> getAttribute(const std::string& name) const {
         const char* attr_str = getAttributeValueC(name);
@@ -235,12 +250,16 @@ class XMLReader {
 
     /**
      * Require the attribute with given \p name.
+     *
+     * Throws exception if there is no attribute with given \p name.
      * \return its value
      */
     std::string requireAttribute(const std::string& attr_name) const;
 
     /**
      * Require the attribute with given \p name.
+     *
+     * Throws exception if there is no attribute with given \p name.
      * \return its value
      * \tparam T required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
      */
