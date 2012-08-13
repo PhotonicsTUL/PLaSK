@@ -25,6 +25,37 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver() :
 }
 
 
+void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager&) {
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "polarization") {
+            auto pols = reader.requireText();
+            if (pols == "TE") polarization = TE;
+            else if (pols == "TM") polarization = TM;
+            else throw BadInput(getId(), "Wrong polarization specification in XML");
+            reader.requireTagEnd();
+        } else if (reader.getNodeName() == "symmetry") {
+            auto sym = reader.requireText();
+            if (sym == "0" || sym == "none" ) {
+                symmetry = NO_SYMMETRY; return;
+            }
+            else if (sym == "positive" || sym == "pos" || sym == "symmeric" || sym == "+" || sym == "+1") {
+                symmetry = SYMMETRY_POSITIVE; return;
+            }
+            else if (sym == "negative" || sym == "neg" || sym == "anti-symmeric" || sym == "antisymmeric" || sym == "-" || sym == "-1") {
+                symmetry = SYMMETRY_NEGATIVE; return;
+            } else throw BadInput(getId(), "Wrong symmetry specification in XML");
+        } else if (reader.getNodeName() == "root") {
+                tolx = reader.getAttribute<double>("tolx", tolx);
+                tolf_min = reader.getAttribute<double>("tolf_min", tolf_min);
+                tolf_max = reader.getAttribute<double>("tolf_max", tolf_max);
+                maxstep = reader.getAttribute<double>("maxstep", maxstep);
+        } else if (reader.getNodeName() == "outer") {
+                outer_distance = reader.requireAttribute<double>("distance");
+        } else
+            throw XMLUnexpectedElementException(reader, "<polarization>, <symmetry>, <root>, or <outer>", reader.getNodeName());
+    }
+}
+
 dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
 {
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));

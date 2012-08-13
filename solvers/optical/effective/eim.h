@@ -89,6 +89,8 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
                "in Cartesian two-dimensional space.";
     }
 
+    virtual void loadConfiguration(XMLReader& source, Manager& manager);
+
     /**
      * Set the simple mesh based on the geometry bounding boxes.
      **/

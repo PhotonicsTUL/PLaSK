@@ -220,9 +220,9 @@ class XMLReader {
      * @tparam T required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
      */
     template <typename T>
-    inline T getAttribute(const std::string& name, T&& default_value) const {
+    inline T getAttribute(const std::string& name, const T& default_value) const {
         const char* attr_str = getAttributeValueC(name);
-        if (attr_str == nullptr) return std::forward<T>(default_value);
+        if (attr_str == nullptr) return default_value;
         return boost::lexical_cast<T>(attr_str);
     }
 
@@ -329,7 +329,7 @@ class XMLReader {
 
 
 template <>
-inline bool XMLReader::getAttribute<bool>(const std::string& name, bool&& default_value) const {
+inline bool XMLReader::getAttribute<bool>(const std::string& name, const bool& default_value) const {
     const char* cstr = getAttributeValueC(name);
     if (cstr != nullptr) {
         std::string str(cstr);

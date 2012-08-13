@@ -42,7 +42,7 @@ static void EffectiveIndex2DSolver_setSymmetry(EffectiveIndex2DSolver& self, py:
             else if (sym == -1) { self.symmetry = EffectiveIndex2DSolver::SYMMETRY_NEGATIVE; return; }
             throw py::error_already_set();
         } catch (py::error_already_set) {
-            throw ValueError("wrong symmetry specification");
+            throw ValueError("Wrong symmetry specification.");
         }
     }
 }

@@ -335,7 +335,7 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
                 if (boundary.isNull()) throw Exception("Can't parse boundary place from XML.", *place);
             }
         }
-        if (!value) {   //value still doesn't known, must be read from tag <value>...</value>
+        if (!value) {   // value still not known, must be read from tag <value>...</value>
             reader.requireTag("value");
             *value = reader.requireText<ConditionT>();
             reader.requireTagEnd();

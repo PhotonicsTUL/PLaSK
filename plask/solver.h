@@ -49,6 +49,7 @@ Once you have your source tree set up, do the following:
     - note that most providers are classes obtained by using plask::ProviderFor template,
     - more details can be found in @ref providers.
 -# If you need boundary conditions, place in your class public plask::BoundaryConditions fields which are containers of boundary-condition pairs.
+-# Implement loadConfiguration method, which loads configuration of your solver from XML reader.
 -# Typically, implement calculation method. This method is a place for your calculation code.
    You don't have to implement it if you don't need to do any calculations. You can also write more methods performing
    different calculations, however, you need to clearly document them. Each calculation method must call plask::Solver::initCalculation()
