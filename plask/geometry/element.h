@@ -307,8 +307,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     /// Connect a method to changed signal
     template <typename ClassT, typename methodT>
-    boost::signals2::connection changedConnectMethod(ClassT* obj, methodT method) {
-        return changed.connect(boost::bind(method, obj, _1));
+    boost::signals2::connection changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
+        return changed.connect(boost::bind(method, obj, _1), at);
     }
 
     /// Disconnect a method from changed signal

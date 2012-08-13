@@ -76,7 +76,8 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
      */
     void append(Key* index, ValuePtr value) {
         this->map[index] = value;
-        index->changedConnectMethod(this, &DeleteStrategy<Key, ValuePtr>::onEvent);
+       // index->changed.at_front(boost::bind(method, obj, _1));
+        index->changedConnectMethod(this, &DeleteStrategy<Key, ValuePtr>::onEvent, boost::signals2::at_front);
     }
 
     /**

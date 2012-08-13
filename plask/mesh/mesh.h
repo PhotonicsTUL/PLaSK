@@ -239,8 +239,8 @@ struct MeshD: public Mesh {
     boost::signals2::signal<void(Event&)> changed;
 
     template <typename ClassT, typename methodT>
-    void changedConnectMethod(ClassT* obj, methodT method) {
-        changed.connect(boost::bind(method, obj, _1));
+    void changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
+        changed.connect(boost::bind(method, obj, _1), at);
     }
 
     template <typename ClassT, typename methodT>
