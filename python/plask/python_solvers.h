@@ -46,8 +46,8 @@ namespace detail {
             } catch (py::error_already_set) {
                 PyErr_Clear();
                 try {
-                    MeshGeneratorOf<typename SolverT::MeshType>* mesh = py::extract<MeshGeneratorOf<typename SolverT::MeshType>*>(omesh);
-                    self.setMesh(*mesh);
+                    shared_ptr<MeshGeneratorOf<typename SolverT::MeshType>> meshg = py::extract<shared_ptr<MeshGeneratorOf<typename SolverT::MeshType>>>(omesh);
+                    self.setMesh(meshg);
                 } catch (py::error_already_set) {
                     throw TypeError("Cannot convert argument to proper mesh type.");
                 }
@@ -57,7 +57,8 @@ namespace detail {
         template <typename PySolver>
         static auto init(PySolver& solver) -> PySolver& {
             solver.add_property("geometry", &SolverT::getGeometry, &SolverT::setGeometry, "Geometry provided to the solver");
-            solver.add_property("mesh", &SolverT::getMesh, Solver_setMesh, "Mesh provided to the solver");
+            solver.add_property("mesh", &SolverT::getMesh, &Solver_setMesh, "Mesh provided to the solver");
+            solver.def("setMesh", &Solver_setMesh, "Set mesh or mesh generator for the solver");
             return solver;
         }
     };

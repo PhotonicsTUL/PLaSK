@@ -61,14 +61,14 @@ struct CacheRemoveOnEachChange: public CacheRemoveStrategyBase<Key, ValuePtr> {
 
 template <typename Key, typename ValuePtr, template<typename Key, typename ValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
 struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
-    
+
     typedef typename ValuePtr::element_type Value;
-    
+
     /// Clear cache.
     ~CacheBase() {
         clear();
     }
-    
+
     /**
      * Append entry to cache.
      * @param index key of entry
@@ -87,9 +87,9 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
     void append(plask::shared_ptr<Key> index, ValuePtr value) {
         append(index.get(), value);
     }
-    
+
     /**
-     * Construct shared pointer to value and append cache entry which consist of given index and constructed shared pointer.
+     * Construct shared pointer to value and append cache entry which consists of given index and constructed shared pointer.
      *
      * This is usefull in methods which wants to append new value to cache and return it:
      * @code
@@ -110,7 +110,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
     }
 
     /**
-     * Append cache entry which consist of given index and value and return value.
+     * Append cache entry which consists of given index and value and return value.
      *
      * This is usefull in methods which wants to append new value to cache and return it:
      * @code
@@ -130,7 +130,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
     }
 
     /**
-     * Construct shared pointer to value and append cache entry which consist of given index and constructed shared pointer.
+     * Construct shared pointer to value and append cache entry which consists of given index and constructed shared pointer.
      *
      * This is usefull in methods which wants to append new value to cache and return it:
      * @code
@@ -151,7 +151,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
     }
 
     /**
-     * Construct shared pointer to value and append cache entry which consist of given index and constructed shared pointer.
+     * Construct shared pointer to value and append cache entry which consists of given index and constructed shared pointer.
      *
      * This is usefull in methods which wants to append new value to cache and return it:
      * @code
@@ -169,7 +169,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
         this->append(index, value);
         return value;
     }
-    
+
     /**
      * Remove all entries from this cache.
      */
@@ -178,7 +178,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
             i.first->changedDisconnectMethod(this, &DeleteStrategy<Key, ValuePtr>::onEvent);
         this->map.clear();
     }
-    
+
 };
 
 /**
@@ -191,7 +191,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
  * @tparam deleteStrategy when cache entries should be deleted:
  * - CacheRemoveOnlyWhenDeleted - when key is deleted (default),
  * - CacheRemoveOnEachChange - when key is changed,
- * - other class template which derive from plask::CacheRemoveStrategyBase and have void onEvent(typename Key::Event& evt) method - custom.
+ * - other class template which derives from plask::CacheRemoveStrategyBase and have void onEvent(typename Key::Event& evt) method - custom.
  */
 template <typename Key, typename Value, template<typename Key, typename ValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
 struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> {
@@ -276,7 +276,7 @@ struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> 
  * @tparam deleteStrategy when cache entries should be deleted:
  * - CacheRemoveOnlyWhenDeleted - when key is deleted (default),
  * - CacheRemoveOnEachChange - when key is changed,
- * - other class template which derive from plask::CacheRemoveStrategyBase and have void onEvent(typename Key::Event& evt) method - custom.
+ * - other class template which derives from plask::CacheRemoveStrategyBase and have void onEvent(typename Key::Event& evt) method - custom.
  */
 template <typename Key, typename Value, template<typename Key, typename ValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
 struct StrongCache: public CacheBase<Key, plask::shared_ptr<Value>, DeleteStrategy> {

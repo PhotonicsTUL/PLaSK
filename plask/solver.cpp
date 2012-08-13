@@ -4,7 +4,7 @@
 namespace plask {
 
 void Solver::loadConfiguration(XMLReader& reader, Manager&) {
-    reader.requireTagEnd();  //require empty configuration
+    reader.requireTagEnd();  // require empty configuration
 }
 
 std::string Solver::getId() const {

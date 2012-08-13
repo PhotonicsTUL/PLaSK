@@ -47,5 +47,3 @@ class Geometrys(unittest.TestCase):
         s = plask.geometry.Cartesian2D(r)
         solver.geometry = s
         self.assertEqual( solver.geometry, s )
-        with self.assertRaises(AttributeError):
-            print(solver.mesh)

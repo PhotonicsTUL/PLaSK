@@ -511,8 +511,14 @@ class Solver {
 
 };
 
+/*
+ * Function constructing solver on library loadConfiguration
+ */
 #define SOLVER_CONSTRUCT_FUNCTION_NAME "construct_solver"
 extern "C" typedef Solver* solver_construct_f();
+
+
+template <typename, typename> class SolverWithMesh;
 
 /**
  * Base class for all solvers operating on specified space
@@ -522,8 +528,18 @@ class SolverOver: public Solver {
 
     void diconnectGeometry() {
         if (this->geometry)
-            this->geometry->changedDisconnectMethod(this, &SolverOver<SpaceT>::onGeometryChange);
+            this->geometry->changedDisconnectMethod(this, &SolverOver<SpaceT>::onGeometryChangeInternal);
     }
+
+    void onGeometryChangeInternal(const Geometry::Event& evt) {
+        this->onGeometryChange(evt);
+        this->regenerateMesh();
+    }
+
+    // By default this class does not have the mesh, so do nothing
+    virtual void regenerateMesh() {}
+
+    template <typename, typename> friend class SolverWithMesh;
 
   protected:
 
@@ -541,8 +557,8 @@ class SolverOver: public Solver {
 
     /**
      * This method is called when calculation space (geometry) was changed.
-     * It's just call invalidate(); but subclasses can customize it.
-     * @param evt information about calculation space changes
+     * It just calls invalidate(); but subclasses can customize it.
+     * @param evt information about geometry changes
      */
     virtual void onGeometryChange(const Geometry::Event& evt) {
         this->invalidate();
@@ -565,7 +581,8 @@ class SolverOver: public Solver {
         diconnectGeometry();
         this->geometry = geometry;
         if (this->geometry)
-            this->geometry->changedConnectMethod(this, &SolverOver<SpaceT>::onGeometryChange);
+            this->geometry->changedConnectMethod(this, &SolverOver<SpaceT>::onGeometryChangeInternal);
+        regenerateMesh();
         initialized = false;
     }
 };
@@ -576,9 +593,19 @@ class SolverOver: public Solver {
 template <typename SpaceT, typename MeshT>
 class SolverWithMesh: public SolverOver<SpaceT> {
 
+    shared_ptr<MeshGeneratorOf<MeshT>> mesh_generator;
+
     void diconnectMesh() {
         if (this->mesh)
-            this->mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+            this->mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChangeInternal);
+    }
+
+    virtual void regenerateMesh() {
+        if (this->mesh_generator && this->geometry) setMesh((*mesh_generator)(this->geometry->getChild()));
+    }
+
+    void onMeshChangeInternal(const typename MeshT::Event& evt) {
+        this->onMeshChange(evt);
     }
 
   protected:
@@ -597,7 +624,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
 
     /**
      * This method is called when mesh was changed.
-     * It's just call invalidate(); but subclasses can customize it.
+     * It just calls invalidate(); but subclasses can customize it.
      * @param evt information about mesh changes
      */
     virtual void onMeshChange(const typename MeshT::Event& evt) {
@@ -623,12 +650,13 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * @param mesh new mesh
      */
     void setMesh(const shared_ptr<MeshT>& mesh) {
+        mesh_generator.reset();
         if (mesh == this->mesh) return;
         this->writelog(LOG_INFO, "Attaching mesh to the solver");
         diconnectMesh();
         this->mesh = mesh;
         if (this->mesh)
-            this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+            this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChangeInternal);
         this->initialized = false;
     }
 
@@ -636,8 +664,9 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * Set new mesh got from generator
      * \param generator mesh generator
      */
-    void setMesh(MeshGeneratorOf<MeshT>& generator) {
-        setMesh(generator(this->geometry->getChild()));
+    void setMesh(const shared_ptr<MeshGeneratorOf<MeshT>>& generator) {
+        mesh_generator = generator;
+        regenerateMesh();
     }
 };
 
