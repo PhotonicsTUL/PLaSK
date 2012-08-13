@@ -76,6 +76,8 @@ protected:
 
 public:
 
+    void getExistsSubtreeIndexes(QModelIndexList& dst);
+
     virtual plask::shared_ptr<ElementWrapper> getLowerWrappedElement() {
         return element;
     }

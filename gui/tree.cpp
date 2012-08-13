@@ -4,6 +4,10 @@
 #include "geomwrapper/register.h"
 #include "modelext/text.h"
 
+GeometryTreeItem::~GeometryTreeItem() {
+    disconnectOnChanged(element);
+}
+
 void GeometryTreeItem::ensureInitialized() {
     if (!childrenInitialized) {
         constructChildrenItems();
@@ -40,8 +44,26 @@ void GeometryTreeItem::constructChildrenItems() {
 
 void GeometryTreeItem::deinitializeChildren()
 {
+    emit model->layoutAboutToBeChanged();
+    QModelIndexList indexes;
+    for (auto& c: childItems)
+        c->getExistsSubtreeIndexes(indexes);
+    //getExistsSubtreeIndexes(indexes);
     childItems.clear();
     childrenInitialized = false;
+    miniatureInitialized = false;
+    //QModelIndexList invalid;
+    //for (auto i = childItems.size(); i > 0; --i) invalid.append(QModelIndex());
+    //model->changePersistentIndexList(indexes, invalid);
+    for (auto& c: indexes) model->changePersistentIndex(c, QModelIndex());
+    emit model->layoutChanged();
+}
+
+void GeometryTreeItem::getExistsSubtreeIndexes(QModelIndexList &dst)
+{
+    for (auto& c: childItems)
+        c->getExistsSubtreeIndexes(dst);
+    dst.append(getIndex());
 }
 
 plask::shared_ptr<ElementWrapper> GeometryTreeItem::parent() {
@@ -70,10 +92,6 @@ GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::G
 : model(model), childrenInitialized(true), miniatureInitialized(true), parentItem(0)/*, inParentIndex(0)*/ {
     for (std::size_t i = 0; i < rootElements.size(); ++i)
         childItems.emplace_back(new GeometryTreeItem(this, ext(rootElements[i]), i));
-}
-
-GeometryTreeItem::~GeometryTreeItem() {
-    disconnectOnChanged(element);
 }
 
 GeometryTreeItem * GeometryTreeItem::child(std::size_t index) {
@@ -113,10 +131,11 @@ QModelIndex GeometryTreeItem::getIndex() {
 }
 
 void GeometryTreeItem::onChanged(const ElementWrapper::Event& evt) {
+    if (evt.isDelete()) return;
     auto index = getIndex();
     miniatureInitialized = false;
     if (evt.hasChangedChildrenList()) {
-        //deinitializeChildren();   //TODO
+        deinitializeChildren();   //TODO
     }
     emit model->dataChanged(index, index);  //TODO czy ten sygnał jest wystarczający jeśli lista dzieci się zmieniła?
 }
@@ -132,8 +151,8 @@ void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<ElementWrappe
 bool GeometryTreeItem::removeRange(std::size_t begin_index, std::size_t end_index) {
     if (auto e = getLowerWrappedElement()) {
         if (e->wrappedElement->removeRange(begin_index, end_index)) {
-            childItems.erase(childItems.begin() + begin_index, childItems.begin() + end_index);
-            //deinitializeChildren();
+            //childItems.erase(childItems.begin() + begin_index, childItems.begin() + end_index);
+            deinitializeChildren();
             return true;
         }
     }
@@ -143,8 +162,9 @@ bool GeometryTreeItem::removeRange(std::size_t begin_index, std::size_t end_inde
 bool GeometryTreeItem::tryInsert(plask::shared_ptr<plask::GeometryElement> element, int index) {
     auto this_elem = getLowerWrappedElement();
     if (this_elem->tryInsert(element, index)) {
-        childItems.emplace(childItems.begin() + index,
-                          new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
+       // childItems.emplace(childItems.begin() + index,
+       //                   new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
+        deinitializeChildren();
         return true;
     } else
         return false;
@@ -160,8 +180,9 @@ int GeometryTreeItem::tryInsertRow2D(const GeometryElementCreator &to_insert, co
     auto this_elem = getLowerWrappedElement();
     int index = this_elem->tryInsertNearPoint2D(to_insert, point);
     if (index >= 0) {
-        childItems.emplace(childItems.begin() + index,
-                          new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
+       // childItems.emplace(childItems.begin() + index,
+       //                   new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
+        deinitializeChildren();
     }
     return index;
 }
@@ -292,16 +313,16 @@ QVariant GeometryTreeModel::headerData(int section, Qt::Orientation orientation,
 }
 
 bool GeometryTreeModel::removeRows(int position, int rows, const QModelIndex &parent) {
-    beginRemoveRows(parent, position, position + rows - 1);
+ //   beginRemoveRows(parent, position, position + rows - 1);
     bool result = toItem(parent)->remove(position, rows);
-    endRemoveRows();
+ //   endRemoveRows();
     return result;
 }
 
 bool GeometryTreeModel::insertRow(plask::shared_ptr<plask::GeometryElement> to_insert, const QModelIndex &parent, int position) {
-    beginInsertRows(parent, position, position);
+   // beginInsertRows(parent, position, position);
     bool result = toItem(parent)->tryInsert(to_insert, position);
-    endInsertRows();
+   // endInsertRows();
     return result;
 }
 
@@ -309,9 +330,9 @@ int GeometryTreeModel::insertRow2D(const GeometryElementCreator &to_insert, cons
     GeometryTreeItem* item = toItem(parent);
     int p = item->getInsertionIndexForPoint(point);
     if (p == -1) return -1;
-    beginInsertRows(parent, p, p);
+ //   beginInsertRows(parent, p, p);
     p = item->tryInsertRow2D(to_insert, point);
-    endInsertRows();
+ //   endInsertRows();
     return p;
 }
 
