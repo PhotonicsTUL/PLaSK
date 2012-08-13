@@ -95,25 +95,25 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertEqual( list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )
 
 
-    def testRegeneration(self):
+    def testRegenerationInSolver(self):
         stack = plask.geometry.Stack2D()
         rect = plask.geometry.Rectangle(2, 2, None)
         stack.append(rect)
-
-        solver = plasktest.SpaceTest()
-        solver.geometry = plask.geometry.Cartesian2D(stack)
-
         generator = plask.mesh.Rectilinear2D.SimpleGenerator()
 
+        solver = plasktest.SpaceTest()
+
+        solver.mesh = generator
         self.assertFalse(solver.mesh_changed)
-        solver.setMesh(generator)
+
+        solver.geometry = plask.geometry.Cartesian2D(stack)
         self.assertTrue(solver.mesh_changed)
 
-        solver.initialize()
+        self.assertEqual( list(solver.mesh.axis1), [0., 2.] )
 
-        self.assertEqual( list(solver.mesh.axis1), list(generator(stack).axis1) )
+        solver.initialize()
         self.assertTrue(solver.initialized)
 
         stack.append(rect)
         self.assertFalse(solver.initialized)
-        self.assertEqual( list(solver.mesh.axis1), list(generator(stack).axis1) )
+        self.assertEqual( list(solver.mesh.axis1), [0., 2., 4.] )
