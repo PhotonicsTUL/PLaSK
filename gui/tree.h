@@ -224,7 +224,10 @@ private:
     void initLowerElement() {
         std::size_t chCount = element->wrappedElement->getRealChildrenCount();
         if (chCount == 0) lowerElement = plask::shared_ptr<ElementWrapper>();
-        else lowerElement = ext(element->wrappedElement->getRealChildAt(0));
+        else {
+            lowerElement = ext(element->wrappedElement->getRealChildAt(0));
+            connectOnChanged(lowerElement);
+        }
     }
 public:
 

@@ -152,7 +152,7 @@ bool GeometryTreeItem::removeRange(std::size_t begin_index, std::size_t end_inde
     if (auto e = getLowerWrappedElement()) {
         if (e->wrappedElement->removeRange(begin_index, end_index)) {
             //childItems.erase(childItems.begin() + begin_index, childItems.begin() + end_index);
-            deinitializeChildren();
+            //deinitializeChildren();
             return true;
         }
     }
@@ -164,7 +164,7 @@ bool GeometryTreeItem::tryInsert(plask::shared_ptr<plask::GeometryElement> eleme
     if (this_elem->tryInsert(element, index)) {
        // childItems.emplace(childItems.begin() + index,
        //                   new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
-        deinitializeChildren();
+        //deinitializeChildren();
         return true;
     } else
         return false;
@@ -182,7 +182,7 @@ int GeometryTreeItem::tryInsertRow2D(const GeometryElementCreator &to_insert, co
     if (index >= 0) {
        // childItems.emplace(childItems.begin() + index,
        //                   new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
-        deinitializeChildren();
+     //   deinitializeChildren();
     }
     return index;
 }
