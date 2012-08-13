@@ -87,9 +87,14 @@ py::list testBoundary(const plask::RectilinearMesh2D& mesh, const typename plask
 //// Solver with space /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D> {
+    bool mesh_changed;
+    SpaceTest() : mesh_changed(false) {}
     virtual std::string getName() const { return "Space Test"; }
     void initialize() {
         initCalculation();
+    }
+    virtual void onMeshChange(const typename plask::RectilinearMesh2D::Event& evt) {
+        mesh_changed = true;
     }
 };
 
@@ -153,6 +158,7 @@ BOOST_PYTHON_MODULE(plasktest)
 
     plask::python::ExportSolver<SpaceTest>("SpaceTest")
         .def("initialize", &SpaceTest::initialize)
+        .def_readonly("mesh_changed", &SpaceTest::mesh_changed)
     ;
 
     plask::python::ExportSolver<SimpleSolver>("SimpleSolver")

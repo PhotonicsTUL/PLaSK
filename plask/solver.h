@@ -582,8 +582,7 @@ class SolverOver: public Solver {
         this->geometry = geometry;
         if (this->geometry)
             this->geometry->changedConnectMethod(this, &SolverOver<SpaceT>::onGeometryChangeInternal);
-        regenerateMesh();
-        initialized = false;
+        onGeometryChangeInternal(Geometry::Event(*geometry, 0));
     }
 };
 
@@ -597,15 +596,15 @@ class SolverWithMesh: public SolverOver<SpaceT> {
 
     void diconnectMesh() {
         if (this->mesh)
-            this->mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChangeInternal);
+            this->mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
     }
 
     virtual void regenerateMesh() {
-        if (this->mesh_generator && this->geometry) setMesh((*mesh_generator)(this->geometry->getChild()));
-    }
-
-    void onMeshChangeInternal(const typename MeshT::Event& evt) {
-        this->onMeshChange(evt);
+        if (this->mesh_generator && this->geometry) {
+            auto gen = mesh_generator; // setMesh will reset generator
+            setMesh((*mesh_generator)(this->geometry->getChild()));
+            mesh_generator = gen;
+        }
     }
 
   protected:
@@ -656,8 +655,9 @@ class SolverWithMesh: public SolverOver<SpaceT> {
         diconnectMesh();
         this->mesh = mesh;
         if (this->mesh)
-            this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChangeInternal);
-        this->initialized = false;
+            this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+        typename MeshT::Event event (*mesh, 0);
+        onMeshChange(event);
     }
 
     /**

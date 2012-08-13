@@ -144,7 +144,7 @@ struct Mesh {
      */
     struct Event: public EventWithSourceAndFlags<Mesh> {
 
-        /// Event flags (which describes event properties).
+        /// Event flags (which describe event properties).
         enum Flags {
             DELETE = 1,             ///< is deleted
             RESIZE = 1<<1,          ///< size could be changed (points added or deleted)
@@ -159,19 +159,19 @@ struct Mesh {
         bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
 
         /**
-         * Check if DELETE flag is set, which mean that source of event is deleted.
+         * Check if DELETE flag is set, which mean that source of event is being deleted.
          * @return @c true only if DELETE flag is set
          */
         bool isDelete() const { return hasFlag(DELETE); }
 
         /**
-         * Check if RESIZE flag is set, which mean that source of event could be resized.
+         * Check if RESIZE flag is set, which mean that source of event could have been resized.
          * @return @c true only if RESIZE flag is set
          */
         bool isResize() const { return hasFlag(RESIZE); }
 
         /**
-         * Construct event.
+         * Construct the event.
          * @param source source of event
          * @param flags flags which describes event's properties
          */

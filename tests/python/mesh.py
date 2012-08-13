@@ -102,13 +102,18 @@ class RectilinearMeshes(unittest.TestCase):
 
         solver = plasktest.SpaceTest()
         solver.geometry = plask.geometry.Cartesian2D(stack)
-        solver.setMesh(plask.mesh.Rectilinear2D.SimpleGenerator())
+
+        generator = plask.mesh.Rectilinear2D.SimpleGenerator()
+
+        self.assertFalse(solver.mesh_changed)
+        solver.setMesh(generator)
+        self.assertTrue(solver.mesh_changed)
 
         solver.initialize()
 
-        self.assertEqual( list(solver.mesh.axis1), [0., 2.] )
+        self.assertEqual( list(solver.mesh.axis1), list(generator(stack).axis1) )
         self.assertTrue(solver.initialized)
 
         stack.append(rect)
         self.assertFalse(solver.initialized)
-        self.assertEqual( list(solver.mesh.axis1), [0., 2., 4.] )
+        self.assertEqual( list(solver.mesh.axis1), list(generator(stack).axis1) )
