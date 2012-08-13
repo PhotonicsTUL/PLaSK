@@ -334,7 +334,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         children.push_back(trans_geom);
         stackHeights.push_back(next_height);
         aligners.push_back(aligner.cloneUnique());
-        this->fireChildrenChanged();
+        this->fireChildrenInserted(children.size()-1, children.size());
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
 
@@ -534,7 +534,7 @@ class MultiStackContainer: public StackContainer<dim> {
     void setRepeatCount(unsigned new_repeat_count) {
         if (repeat_count == new_repeat_count) return;
         repeat_count = new_repeat_count;
-        this->fireChildrenChanged();
+        this->fireChildrenChanged();    //TODO should this be called? or simple change?
     }
 
 };

@@ -271,7 +271,7 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
         shared_ptr<TranslationT> trans_geom(new TranslationT(el, translation));
         this->connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
-        this->fireChildrenChanged();
+        this->fireChildrenInserted(children.size()-1, children.size());
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
 

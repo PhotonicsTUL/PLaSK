@@ -12,7 +12,9 @@ void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBase
         children[i-1]->translation.components[growingDirection] += diff;
         //children[i-1]->fireChanged(GeometryElement::Event::RESIZE);
     }
-    this->fireChanged(GeometryElement::Event::RESIZE|GeometryElement::Event::CHILD_LIST);
+    this->fireChildrenChanged();    //TODO should this be called? children was moved but not removed/inserted
+    //this->fireChanged(GeometryElement::Event::RESIZE);
+    //TODO: block connection to not react on children changed, call children[i]->fireChanged(GeometryElement::Event::RESIZE); for each child, call this->fireChanged(GeometryElement::Event::RESIZE delegate;
 }
 
 template <int dim, int growingDirection>
@@ -76,7 +78,7 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
         children[i]->translation.up += delta;
     }
     stackHeights.back() += delta;
-    this->fireChildrenChanged();
+    this->fireChildrenInserted(pos, pos+1);
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
@@ -142,7 +144,7 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
     connectOnChildChanged(*trans_geom);
     children.push_back(trans_geom);
     stackHeights.push_back(next_height);
-    this->fireChildrenChanged();
+    this->fireChildrenInserted(children.size()-1, children.size());
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
@@ -158,7 +160,7 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
         children[i]->translation.tran += delta;
     }
     stackHeights.back() += delta;
-    this->fireChildrenChanged();
+    this->fireChildrenInserted(pos, pos+1);
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 

@@ -103,7 +103,7 @@ struct ElementWrapper {
          * Check if CHILD_LIST flag is set, which mean that children list of source could be changed.
          * @return @c true only if CHILD_LIST flag is set
          */
-        bool hasChangedChildrenList() const { return hasFlag(plask::GeometryElement::Event::CHILD_LIST); }
+        bool hasChangedChildrenList() const { return hasAnyFlag(plask::GeometryElement::Event::CHILDREN_GENERIC | plask::GeometryElement::Event::CHILDREN_INSERT | plask::GeometryElement::Event::CHILDREN_REMOVE); }
 
         /**
          * Construct event.

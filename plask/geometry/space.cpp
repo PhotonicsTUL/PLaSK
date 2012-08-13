@@ -86,7 +86,7 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
     if (this->extrusion == extrusion) return;
     this->extrusion = extrusion;
     cachedBoundingBox = getChild()->getBoundingBox();
-    fireChanged(Event::RESIZE | Event::CHILD_LIST);
+    fireChildrenChanged();
 }
 
 Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path, bool copyBorders) const {
@@ -158,7 +158,7 @@ shared_ptr<Material> Geometry2DCylindrical::getMaterial(const Vec<2, double> &p)
 void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
     if (this->revolution == revolution) return;
     this->revolution = revolution;
-    fireChanged(Event::RESIZE | Event::CHILD_LIST);
+    fireChildrenChanged();
 }
 
 Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {

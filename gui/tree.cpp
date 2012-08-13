@@ -42,28 +42,23 @@ void GeometryTreeItem::constructChildrenItems() {
     appendChildrenItems();
 }
 
-void GeometryTreeItem::deinitializeChildren()
-{
+void GeometryTreeItem::deinitializeChildren() {
     emit model->layoutAboutToBeChanged();
     QModelIndexList indexes;
     for (auto& c: childItems)
         c->getExistsSubtreeIndexes(indexes);
-    //getExistsSubtreeIndexes(indexes);
     childItems.clear();
     childrenInitialized = false;
     miniatureInitialized = false;
-    //QModelIndexList invalid;
-    //for (auto i = childItems.size(); i > 0; --i) invalid.append(QModelIndex());
-    //model->changePersistentIndexList(indexes, invalid);
     for (auto& c: indexes) model->changePersistentIndex(c, QModelIndex());
     emit model->layoutChanged();
 }
 
-void GeometryTreeItem::getExistsSubtreeIndexes(QModelIndexList &dst)
+void GeometryTreeItem::getExistsSubtreeIndexes(QModelIndexList &dst, std::size_t indexInParent)
 {
-    for (auto& c: childItems)
-        c->getExistsSubtreeIndexes(dst);
-    dst.append(getIndex());
+    for (std::size_t i = 0; i < childItems.size(); ++i)
+        childItems[i]->getExistsSubtreeIndexes(dst, i);
+    dst.append(model->createIndex(indexInParent, 0, this));
 }
 
 plask::shared_ptr<ElementWrapper> GeometryTreeItem::parent() {
@@ -132,12 +127,29 @@ QModelIndex GeometryTreeItem::getIndex() {
 
 void GeometryTreeItem::onChanged(const ElementWrapper::Event& evt) {
     if (evt.isDelete()) return;
-    auto index = getIndex();
     miniatureInitialized = false;
-    if (evt.hasChangedChildrenList()) {
-        deinitializeChildren();   //TODO
-    }
-    emit model->dataChanged(index, index);  //TODO czy ten sygnał jest wystarczający jeśli lista dzieci się zmieniła?
+ /*   if (childrenInitialized && evt.hasChangedChildrenList()) {
+        if (evt.isDelgatedFromWrappedElement() &&
+          evt.delegatedEvent->hasAnyFlag(plask::GeometryElement::Event::CHILDREN_REMOVE | plask::GeometryElement::Event::CHILDREN_INSERT)) {
+            plask::GeometryElement::ChildrenListChangedEvent* details =
+                    static_cast<plask::GeometryElement::ChildrenListChangedEvent*>(evt.delegatedEvent);
+            if (details->hasFlag(plask::GeometryElement::Event::CHILDREN_REMOVE)) {
+                model->beginRemoveRows(getIndex(), details->beginIndex, details->endIndex-1);
+                childItems.erase(childItems.begin() + details->beginIndex, childItems.begin() + details->endIndex);
+                model->endRemoveRows();
+            } else {
+                //model->beginInsertRows(parent(), details->beginIndex, details->endIndex-1);
+                //...
+                //model->endInsertRows();
+                deinitializeChildren();
+            }
+        } else
+            deinitializeChildren();
+    }*/
+    if (/*childrenInitialized &&*/ evt.hasChangedChildrenList())
+        deinitializeChildren();
+    auto index = getIndex();
+    emit model->dataChanged(index, index);
 }
 
 void GeometryTreeItem::connectOnChanged(const plask::shared_ptr<ElementWrapper>& el) {

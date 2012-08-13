@@ -72,11 +72,13 @@ protected:
     /**
      * Delete children cache and childrenInitialized to @c false.
      */
-    void deinitializeChildren();    //TODO can't be used, to remove
+    void deinitializeChildren();
 
 public:
 
-    void getExistsSubtreeIndexes(QModelIndexList& dst);
+    void getExistsSubtreeIndexes(QModelIndexList& dst, std::size_t indexInParent);
+    
+    void getExistsSubtreeIndexes(QModelIndexList& dst) { getExistsSubtreeIndexes(dst, indexInParent()); }
 
     virtual plask::shared_ptr<ElementWrapper> getLowerWrappedElement() {
         return element;
