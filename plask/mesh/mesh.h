@@ -238,6 +238,13 @@ struct MeshD: public Mesh {
     /// Changed signal, fired when space was changed.
     boost::signals2::signal<void(Event&)> changed;
 
+    /**
+     * Connect a method to changed signal.
+     * @param obj, method slot to connect, object and it's method
+     * @param at specifies where the slot should be connected:
+     *  - boost::signals2::at_front indicates that the slot will be connected at the front of the list or group of slots
+     *  - boost::signals2::at_back (default) indicates that the slot will be connected at the back of the list or group of slots
+     */
     template <typename ClassT, typename methodT>
     void changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
         changed.connect(boost::bind(method, obj, _1), at);
