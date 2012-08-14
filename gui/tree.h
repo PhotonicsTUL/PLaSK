@@ -73,14 +73,23 @@ protected:
     void constructChildrenItems();
 
     /**
-     * Delete children cache and childrenInitialized to @c false.
+     * Delete children cache and childrenInitialized to @c false. Invalidates all indexes in subtree.
      */
     void deinitializeChildren();
 
 public:
 
+    /**
+     * Get indexes for all cached nodes in subtree with this in root.
+     * @param[out] dst place to add indexes
+     * @param[in] index of this in parent
+     */
     void getExistsSubtreeIndexes(QModelIndexList& dst, std::size_t indexInParent);
     
+    /**
+     * Get indexes for all cached nodes in subtree with this in root.
+     * @param[out] dst place to add indexes
+     */
     void getExistsSubtreeIndexes(QModelIndexList& dst) { getExistsSubtreeIndexes(dst, indexInParent()); }
 
     virtual plask::shared_ptr<ElementWrapper> getLowerWrappedElement() {
