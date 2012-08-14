@@ -178,7 +178,7 @@ class PythonSimpleMaterialConstructor: public MaterialsDB::MaterialConstructor
         py::dict kwargs;
         // Doping information
         if (doping_amount_type !=  Material::NO_DOPING) {
-            kwargs["dopant"] = dopant;
+            kwargs["dp"] = dopant;
             kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
         }
         return py::extract<shared_ptr<Material>>(material_class(*args, **kwargs));
@@ -208,7 +208,7 @@ class PythonComplexMaterialConstructor : public MaterialsDB::MaterialConstructor
         for (auto c : composition) kwargs[c.first] = c.second;
         // Doping information
         if (doping_amount_type !=  Material::NO_DOPING) {
-            kwargs["dopant"] = dopant;
+            kwargs["dp"] = dopant;
             kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
         }
 
@@ -290,7 +290,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     std::string dopant = "";
     int doping_keys = 0;
     try {
-        dopant = py::extract<std::string>(kwargs["dopant"]);
+        dopant = py::extract<std::string>(kwargs["dp"]);
         doping = true;
         ++doping_keys;
     } catch (py::error_already_set) {
@@ -355,7 +355,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     // test if only correct elements are given
     for (int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
-        if (k != "dopant" && k != "dc" && k != "cc" && std::find(elements.begin(), elements.end(), k) == elements.end()) {
+        if (k != "dp" && k != "dc" && k != "cc" && std::find(elements.begin(), elements.end(), k) == elements.end()) {
             throw KeyError("%s not allowed in material %s", k, name);
         }
     }
@@ -411,7 +411,7 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
     py::object none;
     for(int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
-        if (k != "dopant" && k != "dc" && k != "cc") {
+        if (k != "dp" && k != "dc" && k != "cc") {
             py::object s = src[keys[i]];
             comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
         }

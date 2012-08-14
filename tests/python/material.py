@@ -82,7 +82,7 @@ class Material(unittest.TestCase):
         with(self.assertRaisesRegexp(KeyError, 'N not allowed in material AlGaAs:Dp')): m = Material.AlGaAsDp(Al=0.2, N=0.9)
 
         AlGaAs = lambda **kwargs: plask.materialdb.get("AlGaAs", **kwargs)
-        m = AlGaAs(Al=0.2, dopant="Dp", dc=5.0)
+        m = AlGaAs(Al=0.2, dp="Dp", dc=5.0)
         self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VBO(), 1500.0 )
         correct = dict(Al=0.2, Ga=0.8, As=1.0)
@@ -101,7 +101,7 @@ class Material(unittest.TestCase):
     def testDefaultMaterials(self):
         self.assertIn( "GaN", plask.materialdb )
         self.assertEqual( str(plask.material.AlGaN(Al=0.2)), "Al(0.2)GaN" )
-        self.assertRegexpMatches( str(plask.material.AlGaN(Ga=0.8, dopant="Si", dc=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
+        self.assertRegexpMatches( str(plask.material.AlGaN(Ga=0.8, dp="Si", dc=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
         self.assertEqual( ptest.materialTypeId(plask.material.Material("GaN")), ptest.materialTypeId(plask.materialdb.get("GaN")) )
 
     def testExistingMaterial(self):
