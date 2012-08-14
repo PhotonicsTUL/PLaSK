@@ -34,6 +34,13 @@ private:
 
 public:
 
+    static constexpr const char* DEFAULT_EXTENSION =
+#ifdef PLASK__UTILS_PLUGIN_WINAPI
+            ".dll";
+#else
+            ".so";
+#endif
+
     /**
      * Open library from file with given name @p filename.
      * @param filename name of file with library to load

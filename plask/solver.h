@@ -515,7 +515,7 @@ class Solver {
 /*
  * Function constructing solver on library loadConfiguration
  */
-#define SOLVER_CONSTRUCT_FUNCTION_NAME "construct_solver"
+#define SOLVER_CONSTRUCT_FUNCTION_SUFFIX "_solver_factory"
 extern "C" typedef Solver* solver_construct_f();
 
 

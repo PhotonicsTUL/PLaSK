@@ -33,21 +33,24 @@ protected:
     /// Children of this item.
     std::vector< std::unique_ptr<GeometryTreeItem> > childItems;
 
-    /// Cache for miniature
+    /// Cache for miniature, valid when miniatureInitialized is @c true, see @ref ensureInitialized().
     QPixmap miniature;
 
     /**
-     * True only if this item was initialized. Its children are on childItems list, etc.
+     * True only if children of this item was initialized, see @ref ensureInitialized().
      */
     bool childrenInitialized;
 
     /**
-     * True only if this item miniature was initialized.
+     * True only if this item miniature was initialized, see @ref ensureInitialized().
      */
     bool miniatureInitialized;
 
     /**
      * Ensure that this item is initialized (initialize it if its not).
+     *
+     * This can require filling children list and construct a miniature.
+     * Set both childrenInitialized and miniatureInitialized to @c true.
      */
     void ensureInitialized();
 
@@ -249,6 +252,10 @@ public:
     InContainerTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper>& element, std::size_t index)
         : GeometryTreeItem(parentItem, element, index) {
         initLowerElement();
+    }
+
+    ~InContainerTreeItem() {
+        disconnectOnChanged(lowerElement);
     }
 
     //virtual void appendChildrenItems();

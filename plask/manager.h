@@ -34,6 +34,9 @@ class Manager {
     template <typename MaterialsSource>
     void load(XMLReader& XMLreader, const MaterialsSource& materialsSource);
 
+  protected:
+    shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name);
+
   public:
 
     /// Allow to access path hints by name.
