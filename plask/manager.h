@@ -35,9 +35,22 @@ class Manager {
     void load(XMLReader& XMLreader, const MaterialsSource& materialsSource);
 
   protected:
-    shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name);
+
+    /**
+     * Load solver from file.
+     * @param category, lib, solver_name solver parameters
+     * @return loaded solver
+     */
+    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name);
 
   public:
+
+    /**
+     * Get path to files (shared libraries) with solvers in given @p category.
+     * @param category name of solvers category
+     * @return path (with rearmost '/' or '\\')
+     */
+    static std::string getSolversPath(const std::string& category);
 
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;
