@@ -1,12 +1,6 @@
 #include "regular.h"
 
-#include "rectangular2d_impl.h"
-#include "rectangular3d_impl.h"
-
 namespace plask {
-
-template class RectangularMesh<2,RegularMesh1D>;
-template class RectangularMesh<3,RegularMesh1D>;
 
 template<>
 RegularMesh2D RegularMesh2D::getMidpointsMesh() const {

@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from plask.optical.effective import EffectiveIndex2D
+from optical.effective import EffectiveIndex2D
 
 @material.simple
 class LowContrastMaterial(material.Material):

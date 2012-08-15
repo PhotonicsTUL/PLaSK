@@ -10,6 +10,7 @@ This file includes rectilinear mesh for 2d space.
 #include "mesh.h"
 #include "boundary.h"
 #include "interpolation.h"
+#include "../utils/interpolation.h"
 #include "../geometry/element.h"
 
 namespace plask {

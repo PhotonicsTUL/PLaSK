@@ -30,7 +30,13 @@ std::string exePathAndName() {
 std::string exePath() {
     std::string full = exePathAndName();
     std::string::size_type last_sep = full.find_last_of(FILE_PATH_SEPARATOR);
-    return last_sep == std::string::npos ? full : full.substr(0, last_sep+1);
+    return last_sep == std::string::npos ? full : full.substr(0, last_sep);
+}
+
+std::string prefixPath() {
+    std::string full = exePath();
+    std::string::size_type last_sep = full.find_last_of(FILE_PATH_SEPARATOR);
+    return last_sep == std::string::npos ? full : full.substr(0, last_sep);
 }
 
 }   //namespace plask

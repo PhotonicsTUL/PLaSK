@@ -157,10 +157,10 @@ def interact(ipython=None, argv=[]):
 
     if not in_ipython:
         mainloop(banner)
-        sys.exit('Exiting ...')
+        sys.exit('PLaSK exiting...')
     else:
         ip.write(banner)
-        ip.set_hook('shutdown_hook', lambda ip: ip.write("Exiting ...\n"))
+        ip.set_hook('shutdown_hook', lambda ip: ip.write("PLaSK exiting...\n"))
 
 if __name__ == "__main__":
     import sys

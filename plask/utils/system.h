@@ -27,6 +27,12 @@ std::string exePathAndName();
  */
 std::string exePath();
 
+/**
+ * Get path one step above the current program executable file.
+ * @return path to program executable
+ */
+std::string prefixPath();
+
 }
 
 #endif // SYSTEM_H

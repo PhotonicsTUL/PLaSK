@@ -3,15 +3,7 @@
 
 #include "rectilinear.h"
 
-#include "rectangular2d_impl.h"
-#include "rectangular3d_impl.h"
-
 namespace plask {
-
-template class RectangularMesh<2,RectilinearMesh1D>;
-template class RectangularMesh<3,RectilinearMesh1D>;
-
-
 
 template<>
 RectilinearMesh2D RectilinearMesh2D::getMidpointsMesh() const {

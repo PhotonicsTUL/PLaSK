@@ -1,5 +1,8 @@
 #include "rectangular2d.h"
 
+#include "regular1d.h"
+#include "rectilinear1d.h"
+
 namespace plask {
 
 template <typename Mesh1D>
@@ -46,5 +49,9 @@ template <typename Mesh1D>
 typename RectangularMesh<2,Mesh1D>::IterationOrder RectangularMesh<2,Mesh1D>::getIterationOrder() const {
     return (index_f == &transposed_index<Mesh1D>)? TRANSPOSED_ORDER : NORMAL_ORDER;
 }
+
+// Particular instantations
+template class RectangularMesh<2,RectilinearMesh1D>;
+template class RectangularMesh<2,RegularMesh1D>;
 
 } // namespace plask

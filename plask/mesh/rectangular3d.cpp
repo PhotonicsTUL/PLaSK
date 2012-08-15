@@ -1,5 +1,8 @@
 #include "rectangular3d.h"
 
+#include "regular1d.h"
+#include "rectilinear1d.h"
+
 namespace plask {
 
 #define RECTANGULAR_MESH_3D_DECLARE_ITERATION_ORDER(first, second, third) \
@@ -70,7 +73,9 @@ void RectangularMesh<3,Mesh1D>::setOptimalIterationOrder() {
 }
 
 
-
+// Particular instantations
+template class RectangularMesh<3,RegularMesh1D>;
+template class RectangularMesh<3,RectilinearMesh1D>;
 
 
 } // namespace plask

@@ -27,9 +27,7 @@ shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::s
 }
 
 std::string Manager::getSolversPath(const std::string &category) {
-    std::string result = exePath();
-    result += "..";
-    result += FILE_PATH_SEPARATOR;
+    std::string result = prefixPath();
     result += "lib";
     result += FILE_PATH_SEPARATOR;
     result += "plask";

@@ -8,6 +8,7 @@ namespace py = boost::python;
 #include <string>
 
 #include <plask/exceptions.h>
+#include <plask/utils/system.h>
 
 //******************************************************************************
 #ifdef __cplusplus
@@ -36,9 +37,12 @@ static py::object initPlaskSolver(int argc, const char* argv[])
     py::object sys = py::import("sys");
     sys.attr("modules")["plask.plaskcore"] = plaskcore;
 
-    // Add "." to the search path
+    // Add search paths
     py::list path = py::list(sys.attr("path"));
-    path.insert(0, ".");
+    path.insert(0, "." );
+    std::string plask_path = plask::prefixPath() + plask::FILE_PATH_SEPARATOR + "lib" + plask::FILE_PATH_SEPARATOR + "plask";
+    path.insert(1, plask_path + plask::FILE_PATH_SEPARATOR + "python" );
+    path.insert(2, plask_path + plask::FILE_PATH_SEPARATOR + "solvers" );
     sys.attr("path") = path;
 
     // Add program arguments to sys.argv

@@ -27,11 +27,14 @@ def updateFactories():
 material.updateFactories = updateFactories
 del updateFactories
 
+#TODO do it in C++
 def importLibrary(name):
+    import os.path
+    dirname = os.path.dirname(os.path.realpath(__file__))
     from ctypes import cdll
-    for lib in ["lib"+name+".so", "lib"+name, name+".so", name]:
+    for lib in [name+".so", name]:
         try:
-            cdll.LoadLibrary(lib)
+            cdll.LoadLibrary(os.path.join(dirname, "..", "..", "materials", lib))
         except OSError:
             pass
         else:
@@ -44,7 +47,7 @@ del importLibrary
 material.air = materialdb.get("air")
 material.Air = lambda: material.air
 
-material.importLibrary("plask_materialsdefault")
+material.importLibrary("default")
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''

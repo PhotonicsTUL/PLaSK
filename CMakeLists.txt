@@ -6,7 +6,6 @@ project (plask)
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
 set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
 # set(VERSION_REVISION 1)       # REVISION number (leave undefined unless really needed, it's normally set to svn revision)
-
 # ---------- common options --------------------------------------------
 
 add_definitions(-Wall)         # all warnings
@@ -20,6 +19,7 @@ include_directories(${CMAKE_BINARY_DIR}/include) # for include config.h
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
+set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/plask")
 
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -41,15 +41,11 @@ message(STATUS "PLaSK version ${VERSION}")
 # ---------- Configurable options --------------------------------------------
 include(CMakeDependentOption)
 
-option(BUILD_SHARED_SOLVER_LIBS "Build shared libraries for solvers." OFF)
-
 option(BUILD_GUI "Build GUI program (require QT)" OFF) # FIXME: install QT for windows users
 
 option(BUILD_DOCUMENTATION "Build doxygen documentation." OFF)
 
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
-cmake_dependent_option(BUILD_PYTHON_MODULE "Build importable python module." OFF "BUILD_PYTHON" OFF)
-cmake_dependent_option(BUILD_PYTHON_EXECUTABLE "Build executable with embedded Python interpreter." ON "BUILD_PYTHON" OFF)
 
 option(BUILD_TESTING "Build unit tests." ON)
 cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
@@ -60,13 +56,13 @@ set(PYTHON_VERSION "" CACHE STRING "Python version to use")
 
 # ---------- External libraries --------------------------------------------
 if(BUILD_PYTHON)
-     if(NOT "${PYTHON_VERSION}" STREQUAL "${previous_user_python_version}")
-        unset(PYTHON_EXECUTABLE CACHE)
-        unset(PYTHON_LIBRARY CACHE)
+    set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
+
+    if(NOT "${PYTHON_VERSION}" STREQUAL "${previous_user_python_version}")
         unset(PYTHON_INCLUDE_DIR CACHE)
         unset(PYTHON_INCLUDE_PATH CACHE)
         set(previous_user_python_version ${PYTHON_VERSION} CACHE INTERNAL "Python version previously chosen by the user (to detect change)")
-     endif()
+    endif()
 
     find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
     find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
@@ -112,7 +108,7 @@ endif()
 #endif()
 
 
-# ----------===== Build =====--------------------------------------------
+# ----------===== Build and Install =====--------------------------------------------
 
 file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp)
 
@@ -134,6 +130,10 @@ file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 
 
+# ---------- headers --------------------------------------------
+
+install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
+install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 
 
 # ---------- plask library --------------------------------------------
@@ -141,65 +141,57 @@ file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
 if(WIN32)
     target_link_libraries(libplask kernel32)
+    install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
+                             ARCHIVE DESTINATION lib COMPONENT dev)
 else(WIN32)
     target_link_libraries(libplask dl)
+    install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
 endif(WIN32)
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
 
 # ---------- default materials --------------------------------------------
 
-add_library(materials_default SHARED ${materials_src})
-set_target_properties(materials_default PROPERTIES OUTPUT_NAME plask_materialsdefault)
+if (WIN32)
+    add_library(materials_default SHARED ${materials_src})
+    install(TARGETS materials_default RUNTIME DESTINATION lib/plask/materials COMPONENT core
+                                      ARCHIVE DESTINATION lib/plask/materials COMPONENT dev)
+else()
+    add_library(materials_default MODULE ${materials_src})
+    install(TARGETS materials_default LIBRARY DESTINATION lib/plask/materials COMPONENT core)
+endif()
+set_target_properties(materials_default PROPERTIES OUTPUT_NAME default PREFIX ""
+                      LIBRARY_OUTPUT_DIRECTORY ${PLASK_PATH}/materials RUNTIME_OUTPUT_DIRECTORY ${PLASK_PATH}/materials)
 target_link_libraries(materials_default libplask)
 
 
 # ---------- Python --------------------------------------------
 
 if(BUILD_PYTHON)
-    set(plask_PYTHONPATH "${CMAKE_BINARY_DIR}/lib.python")
-
-    # Determine directory to install *.py files to
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py "from distutils import sysconfig\nprint(sysconfig.get_python_lib(False, prefix='${CMAKE_INSTALL_PREFIX}')+'/plask')")
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonInstallPath.py" OUTPUT_VARIABLE PYTHON_INSTALL_DIR)
-    string(STRIP ${PYTHON_INSTALL_DIR} PYTHON_INSTALL_DIR)
-    # Determine directory to install binary Python modules to
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py "from distutils import sysconfig\nprint(sysconfig.get_python_lib(True, prefix='${CMAKE_INSTALL_PREFIX}')+'/plask')")
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/DeterminePythonModuleInstallPath.py" OUTPUT_VARIABLE PYTHON_MODULE_INSTALL_DIR)
-    string(STRIP ${PYTHON_MODULE_INSTALL_DIR} PYTHON_MODULE_INSTALL_DIR)
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
-    if (BUILD_PYTHON_MODULE)
-        if(WIN32)
-            add_library(plaskcore SHARED ${python_plask_src})
-            set_target_properties(plaskcore PROPERTIES SUFFIX ".pyd" RUNTIME_OUTPUT_DIRECTORY "${plask_PYTHONPATH}/plask")
-        else()
-            add_library(plaskcore MODULE ${python_plask_src})
-        endif()
-        set_target_properties(plaskcore PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY "${plask_PYTHONPATH}/plask")
-        target_link_libraries(plaskcore ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
-    endif(BUILD_PYTHON_MODULE)
-
-    if (BUILD_PYTHON_EXECUTABLE)
-        add_executable(plask python/exe_main.cpp ${python_plask_src})
-                if (WIN32)
-                        # For some reason MinGW wants to create import library for executable,
-                        # which overwrites libplask.dll.a. With this hack we name this useless
-                        # stuff libplask.exe.dll.a
-                        set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
-                endif()
-        target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
-    endif(BUILD_PYTHON_EXECUTABLE)
+    add_executable(plask python/exe_main.cpp ${python_plask_src})
+            if (WIN32)
+                    # For some reason MinGW wants to create import library for executable,
+                    # which overwrites libplask.dll.a. With this hack we name this useless
+                    # stuff libplask.exe.dll.a
+                    set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
+            endif()
+    target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
 
     foreach(py_file ${python_plask_py})
         get_filename_component(py_file_base ${py_file} NAME)
-        list(APPEND python_plask_py_copied ${plask_PYTHONPATH}/plask/${py_file_base})
-        add_custom_command(OUTPUT ${plask_PYTHONPATH}/plask/${py_file_base}
-                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${plask_PYTHONPATH}/plask/${py_file_base}
+        list(APPEND python_plask_py_copied ${PLASK_PYTHON_PATH}/${py_file_base})
+        add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}/${py_file_base}
+                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}/${py_file_base}
                            DEPENDS ${py_file})
     endforeach()
     add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
+
+    install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
+    install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
+    install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
 
 endif(BUILD_PYTHON)
 
@@ -223,6 +215,9 @@ if(BUILD_GUI)
     qt4_wrap_cpp(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS})
     add_executable(plaskgui ${plaskgui_src} ${property_browser_src} ${PLASK_GUI_MOC_SRCS} ${PLASK_GUI_RC_SRCS} ) # ${PLASK_GUI_UI_HDRS}
     target_link_libraries(plaskgui libplask ${QT_LIBRARIES} qtpropertybrowser)
+
+    install(TARGETS plaskgui RUNTIME DESTINATION bin COMPONENT GUI)
+
 endif(BUILD_GUI)
 
 
@@ -231,22 +226,15 @@ if(WIN32)
     set(ENV_PATH $ENV{PATH})
     string(REPLACE ";" "\;" ENV_PATH "${ENV_PATH}")
     string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/bin")
-    set(plask_test_env "PYTHONPATH=${plask_PYTHONPATH};PATH=${ENV_PATH}\;${plask_bin_path}")
-else()
-    set(plask_test_env "PYTHONPATH=${plask_PYTHONPATH};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
+#     set(plask_test_env "PYTHONPATH=${PLASK_PATH};PATH=${ENV_PATH}\;${plask_bin_path}")
+# else()
+#     set(plask_test_env "PYTHONPATH=${PLASK_PATH};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
 endif()
 
 macro(add_python_test test test_file)
-    if(BUILD_PYTHON_EXECUTABLE)
-        add_test(NAME python-builtin/${test}
-                 COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
-        set_tests_properties(python-builtin/${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
-    endif()
-    if(BUILD_PYTHON_MODULE)
-        add_test(NAME python-module/${test}
-                 COMMAND "${PYTHON_EXECUTABLE}" -B ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
-        set_tests_properties(python-module/${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
-    endif()
+    add_test(NAME python/${test}
+             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
+    set_tests_properties(python/${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
 endmacro()
 
 # ----------===== Solvers =====--------------------------------------------
@@ -298,7 +286,7 @@ if(BUILD_TESTING)
         file(GLOB_RECURSE plask-test_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
         add_executable(plask-test ${plask-test_src})
         set_target_properties(plask-test PROPERTIES OUTPUT_NAME test_plask)
-        target_link_libraries(plask-test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask materials_default)
+        target_link_libraries(plask-test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
         set(plask_test_depends ${plask_test_depends} plask-test)
         file(GLOB_RECURSE plask_tests RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/plask FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.cxx)
         list(REMOVE_ITEM plask_tests main.cpp)
@@ -313,21 +301,17 @@ if(BUILD_TESTING)
     if(BUILD_PYTHON)
         file(GLOB_RECURSE python_tests_module_src FOLLOW_SYMLINKS tests/python/*.cpp)
 
-        if(BUILD_PYTHON_EXECUTABLE)
-            set(plask_test_depends ${plask_test_depends} plask)
-        endif()
-        if(BUILD_PYTHON_MODULE)
-            set(plask_test_depends ${plask_test_depends} plaskcore)
-        endif()
+        set(plask_test_depends ${plask_test_depends} plask)
 
         if(WIN32)
             add_library(plask-test-python SHARED ${python_tests_module_src})
-            set_target_properties(plask-test-python PROPERTIES SUFFIX ".pyd" RUNTIME_OUTPUT_DIRECTORY "${plask_PYTHONPATH}")
+            set_target_properties(plask-test-python PROPERTIES SUFFIX ".pyd" RUNTIME_OUTPUT_DIRECTORY "${PLASK_PATH}/python")
         else()
             add_library(plask-test-python MODULE ${python_tests_module_src})
+            set_target_properties(plask-test-python PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PLASK_PATH}/python")
         endif()
-        set_target_properties(plask-test-python PROPERTIES OUTPUT_NAME plasktest PREFIX "" LIBRARY_OUTPUT_DIRECTORY "${plask_PYTHONPATH}")
-        if (BUILD_PYTHON_MODULE OR WIN32)
+        set_target_properties(plask-test-python PROPERTIES OUTPUT_NAME plasktest PREFIX "")
+        if (WIN32)
             target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
         else()
             target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
@@ -358,8 +342,10 @@ find_package(Doxygen)
 
 if(BUILD_DOCUMENTATION)
     if(DOXYGEN_FOUND)
-        file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+        file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_BINARY_DIR})
         add_custom_target(doc ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
+        install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION share COMPONENT dev-doc
+                PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
     else()
         message("Doxygen not found. Building without documentation.")
     endif()
@@ -369,57 +355,6 @@ else(BUILD_DOCUMENTATION)
     endif()
 endif(BUILD_DOCUMENTATION)
 
-# ----------===== install =====--------------------------------------------
-if(WIN32)
-    install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
-                             ARCHIVE DESTINATION lib COMPONENT dev)
-    install(TARGETS materials_default RUNTIME DESTINATION bin COMPONENT core
-                                      ARCHIVE DESTINATION lib COMPONENT dev)
-else()
-    install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
-    install(TARGETS materials_default LIBRARY DESTINATION lib COMPONENT core)
-endif()
-
-install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
-
-if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
-    install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION share COMPONENT dev-doc
-            PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
-endif()
-
-if(BUILD_PYTHON)
-    install(FILES ${python_plask_py_copied} DESTINATION ${PYTHON_INSTALL_DIR} COMPONENT core)
-    if(BUILD_PYTHON_EXECUTABLE)
-        install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
-    endif()
-    if(BUILD_PYTHON_MODULE)
-        if(WIN32)
-            install(TARGETS plaskcore RUNTIME DESTINATION ${PYTHON_MODULE_INSTALL_DIR} COMPONENT core)
-        else()
-            install(TARGETS plaskcore LIBRARY DESTINATION ${PYTHON_MODULE_INSTALL_DIR} COMPONENT core)
-        endif()
-    endif()
-    install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-endif()
-
-if(BUILD_GUI)
-    install(TARGETS plaskgui RUNTIME DESTINATION bin COMPONENT GUI)
-endif()
-
-# ----------===== Debug helpers =====--------------------------------------------
-if (BUILD_PYTHON_EXECUTABLE)
-    if(NOT WIN32)
-        file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask
-            "PYTHONPATH=${plask_PYTHONPATH} ${CMAKE_BINARY_DIR}/bin/plask $@\n")
-        file(COPY ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/plask DESTINATION ${CMAKE_BINARY_DIR}
-            FILE_PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE OWNER_WRITE)
-    else()
-        string(REPLACE "/" "\\" plask_exe "${CMAKE_BINARY_DIR}/bin/plask.exe")
-        file(WRITE ${CMAKE_BINARY_DIR}/plask.bat
-            "set PYTHONPATH=${plask_PYTHONPATH}\n${plask_exe} %*")
-    endif()
-endif()
 
 # ----------===== packaging =====--------------------------------------------
 
