@@ -52,6 +52,7 @@ enable_testing()
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #set(SOLVER_TEST_DEPENDS mytest)
 #add_test(solvers/foo/bar mytest)
+add_python_test(solvers/loading ${CMAKE_CURRENT_SOURCE_DIR}/tests/loading.py)
 add_python_test(solvers/optical/effective ${CMAKE_CURRENT_SOURCE_DIR}/tests/effective.py)
 
 

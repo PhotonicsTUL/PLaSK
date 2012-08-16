@@ -43,6 +43,14 @@ struct PythonManager: public Manager {
         }
     }
 
+    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name) {
+        std::string module_name = category + "." + lib;
+        py::object module = py::import(module_name.c_str());
+        py::object solver = module.attr(solver_name.c_str())();
+        return py::extract<shared_ptr<Solver>>(solver);
+    }
+
+
     static void export_dict(py::object self, py::dict dict) {
         dict["ELE"] = self.attr("ele");
         dict["PTH"] = self.attr("pth");
@@ -50,7 +58,11 @@ struct PythonManager: public Manager {
         dict["MSH"] = self.attr("msh");
         dict["MSG"] = self.attr("msg");
 
-        //dict["SLV"] = self.attr("slv");
+        PythonManager* ths = py::extract<PythonManager*>(self);
+
+        for (auto thesolver: ths->solvers) {
+            dict[thesolver.first] = py::object(thesolver.second);
+        }
     }
 };
 
@@ -58,6 +70,7 @@ template <typename T> static const std::string item_name() { return ""; }
 template <> const std::string item_name<shared_ptr<GeometryElement>>() { return "geometry element"; }
 template <> const std::string item_name<shared_ptr<Geometry>>() { return "geometry"; }
 template <> const std::string item_name<PathHints>() { return "path"; }
+template <> const std::string item_name<shared_ptr<Solver>>() { return "solver"; }
 
 template <typename T>
 static py::object dict__getitem__(const std::map<std::string,T>& self, std::string key) {
@@ -214,6 +227,7 @@ void register_manager() {
         .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")
         .def_readonly("meshes", &PythonManager::meshes, "Dictionary of all named meshes")
         .def_readonly("mesh_generators", &PythonManager::generators, "Dictionary of all named mesh generators")
+        .def_readonly("solvers", &PythonManager::solvers, "Dictionary of all named solvers")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
     manager.attr("ele") = manager.attr("elements");
@@ -221,13 +235,14 @@ void register_manager() {
     manager.attr("geo") = manager.attr("geometries");
     manager.attr("msh") = manager.attr("meshes");
     manager.attr("msg") = manager.attr("mesh_generators");
-    //manager.attr("slv") = manager.attr("solvers");
+    manager.attr("slv") = manager.attr("solvers");
 
     register_manager_dict<shared_ptr<GeometryElement>>("GeometryElements");
     register_manager_dict<shared_ptr<Geometry>>("Geometries");
     register_manager_dict<PathHints>("PathHintses");
     register_manager_dict<shared_ptr<Mesh>>("Meshes");
     register_manager_dict<shared_ptr<MeshGenerator>>("MeshGenerators");
+    register_manager_dict<shared_ptr<Solver>>("Solvers");
 }
 
 }} // namespace plask::python
