@@ -79,7 +79,7 @@ class Material(unittest.TestCase):
         self.assertEqual( m.VBO(1.0), 3.0 )
         self.assertAlmostEqual( m.CBO(1.0), 0.8 )
 
-        with(self.assertRaisesRegexp(KeyError, 'N not allowed in material AlGaAs:Dp')): m = Material.AlGaAsDp(Al=0.2, N=0.9)
+        with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")): m = Material.AlGaAsDp(Al=0.2, N=0.9)
 
         AlGaAs = lambda **kwargs: plask.materialdb.get("AlGaAs", **kwargs)
         m = AlGaAs(Al=0.2, dp="Dp", dc=5.0)

@@ -37,6 +37,8 @@ struct XMLWriter {
      */
     struct Output {
 
+        virtual ~Output() {}
+
         /**
          * Write @n bytes from @b buffer.
          * @param buffer buffer with data with size @p n or more

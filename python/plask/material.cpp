@@ -356,7 +356,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     for (int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
         if (k != "dp" && k != "dc" && k != "cc" && std::find(elements.begin(), elements.end(), k) == elements.end()) {
-            throw KeyError("%s not allowed in material %s", k, name);
+            throw TypeError("'%s' not allowed in material %s", k, name);
         }
     }
     // make composition map
@@ -421,7 +421,7 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
         std::vector<std::string> elements = Material::parseElementsNames(basename);
         for (auto c: comp) {
             if (std::find(elements.begin(), elements.end(), c.first) == elements.end()) {
-                throw KeyError("%s not allowed in material %s", c.first, name);
+                throw TypeError("'%s' not allowed in material %s", c.first, name);
             }
         }
     }

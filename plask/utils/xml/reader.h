@@ -316,7 +316,7 @@ class XMLReader {
      * \return read text casted (by lexical_cast) to givent type T
      */
     template <typename T>
-    inline T requireText() const {
+    inline T requireText() {
         return boost::lexical_cast<T>(requireText());
     }
 

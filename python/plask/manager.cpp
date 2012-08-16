@@ -23,21 +23,17 @@ struct PythonManager: public Manager {
         try {
             std::string str = py::extract<std::string>(src);
             if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) // str is not XML (a filename probably)
-                Py_BEGIN_ALLOW_THREADS
-                    loadFromFile(str, *materialsDB);
-                Py_END_ALLOW_THREADS
+                loadFromFile(str, *materialsDB);
             else
                 loadFromXMLString(str, *materialsDB);
         } catch (py::error_already_set) {
             PyErr_Clear();
-#if PY_VERSION_HEX < 0x03000000
+#if PY_VERSION_HEX < 0x03000000 && !defined(__MINGW32__)
             if (!PyFile_Check(src.ptr())) throw TypeError("argument is neither string nor a proper file-like object");
             PyFileObject* pfile = (PyFileObject*)src.ptr();
             auto file = PyFile_AsFile(src.ptr());
             PyFile_IncUseCount(pfile);
-            Py_BEGIN_ALLOW_THREADS
-                loadFromFILE(file);
-            Py_END_ALLOW_THREADS
+            loadFromFILE(file);
             PyFile_DecUseCount(pfile);
 #else
             // TODO choose better solution if XML parser is changed from irrXML to something more robust

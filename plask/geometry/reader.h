@@ -10,7 +10,7 @@
 
 namespace plask {
 
-struct Manager;
+class Manager;
 
 /// Value for expected suffix for names of 2d elements types, see GeometryReader::expectedSuffix.
 #define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D "2d"

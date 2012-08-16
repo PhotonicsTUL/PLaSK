@@ -59,7 +59,7 @@ struct CacheRemoveOnEachChange: public CacheRemoveStrategyBase<Key, ValuePtr> {
 
 };
 
-template <typename Key, typename ValuePtr, template<typename Key, typename ValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
+template <typename Key, typename ValuePtr, template<typename SKey, typename SValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
 struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
 
     typedef typename ValuePtr::element_type Value;
@@ -194,7 +194,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
  * - CacheRemoveOnEachChange - when key is changed,
  * - other class template which derives from plask::CacheRemoveStrategyBase and have void onEvent(typename Key::Event& evt) method - custom.
  */
-template <typename Key, typename Value, template<typename Key, typename ValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
+template <typename Key, typename Value, template<typename SKey, typename SValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
 struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> {
 
     /**
@@ -279,7 +279,7 @@ struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> 
  * - CacheRemoveOnEachChange - when key is changed,
  * - other class template which derives from plask::CacheRemoveStrategyBase and have void onEvent(typename Key::Event& evt) method - custom.
  */
-template <typename Key, typename Value, template<typename Key, typename ValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
+template <typename Key, typename Value, template<typename SKey, typename SValuePtr> class DeleteStrategy = CacheRemoveOnlyWhenDeleted >
 struct StrongCache: public CacheBase<Key, plask::shared_ptr<Value>, DeleteStrategy> {
 
     /**

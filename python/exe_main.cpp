@@ -120,18 +120,20 @@ int main(int argc, const char *argv[])
         try {
             const char* f = argv[1];
 #           if PY_VERSION_HEX >= 0x03000000
-                // For Python3 "from __future__ import division" flag is not necessary
-                py::exec_file(f, globals);
+                PyObject* pf = PyUnicode_FromString(f);
+                FILE* fs = _Py_fopen(pf, "r+");
+                PyObject* result = PyRun_File(fs, f, Py_file_input, globals.ptr(), globals.ptr());
 #           else
                 // We dont use py::exec_file, as we want to set "from __future__ import division" flag
-                PyObject *pyfile = PyFile_FromString(const_cast<char*>(f), const_cast<char*>("r"));
-                if (!pyfile) throw std::invalid_argument("No such file: " + std::string(f));
-                py::handle<> file(pyfile);
-                FILE *fs = PyFile_AsFile(file.get());
+                PyObject *pf = PyFile_FromString(const_cast<char*>(f), const_cast<char*>("r"));
+                if (!pf) throw std::invalid_argument("No such file: " + std::string(f));
+                FILE *fs = PyFile_AsFile(pf);
                 PyCompilerFlags flags { CO_FUTURE_DIVISION };
                 PyObject* result = PyRun_FileFlags(fs, f, Py_file_input, globals.ptr(), globals.ptr(), &flags);
-                if (!result) py::throw_error_already_set();
 #           endif
+            Py_DECREF(pf);
+            if (!result) py::throw_error_already_set();
+            else Py_DECREF(result);
         } catch (std::invalid_argument err) {
             std::cerr << err.what() << "\n";
             return 100;
