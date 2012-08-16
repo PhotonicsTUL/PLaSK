@@ -18,8 +18,6 @@ class Document
 
 public:
 
-    plask::Manager manager;
-
     GeometryTreeModel treeModel;
 
     BrowserWithManagers propertiesBrowser;

@@ -67,6 +67,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     /**
      * Set new child.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after setting the new child.
+     * It also doesn't call change signal.
      * @param child new child
      */
     void setChildUnsafe(const shared_ptr<ChildType>& child) {
@@ -77,15 +78,17 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     }
 
     /**
-     * Set new child.
+     * Set new child. Call change signal to inform observer about it.
      * @param child new child
      * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
      * @throw NoChildException if child is an empty pointer
      */
     void setChild(const shared_ptr<ChildType>& child) {
         if (!child) throw NoChildException();
+        if (child == _child) return;
         this->ensureCanHaveAsChild(*child);
         setChildUnsafe(child);
+        this->fireChildrenChanged();
     }
 
     /**
@@ -94,7 +97,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     bool hasChild() const { return _child != nullptr; }
 
     /**
-     * Throw NoChildException if child is not set.
+     * Throws NoChildException if child is not set.
      */
     virtual void validate() const {
         if (!hasChild()) throw NoChildException();

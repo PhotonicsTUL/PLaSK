@@ -5,8 +5,12 @@ Document::Document(QtAbstractPropertyBrowser& browser): propertiesBrowser(browse
 }
 
 void Document::open(const QString &fileName) {
+    plask::Manager manager;
     undoStack.clear();
     //TODO support file names with non-asci char
     manager.loadFromFile(fileName.toStdString(), &NameOnlyMaterial::getInstance);
-    treeModel.refresh(this->manager.roots);
+    for (auto& element: manager.namedElements) {
+        ext(element.second)->setName(QString(element.first.c_str()));
+    }
+    treeModel.refresh(manager.roots);
 }
