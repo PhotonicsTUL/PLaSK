@@ -38,12 +38,12 @@ BANNER = '''\
 You are entering interactive mode of PLaSK.
 Package 'plask' is already imported'''
 
-preexec_source = '''\
-from __future__ import division
-from numpy import *
-import plask
-plask._globals_ = globals()
-'''
+preexec_lines = [
+'from __future__ import division',
+'from numpy import *',
+'import plask',
+'plask._globals_ = globals()'
+]
 
 no_ipython = """\
 Couldn't locate IPython. Having IPython installed is greatly recommended.
@@ -56,17 +56,14 @@ _import_all = False
 def _init_ipython_session(argv=[]):
     """Construct new IPython session. """
     import IPython
-    if IPython.__version__ >= '0.11':
-        from IPython.frontend.terminal import ipapp
-        app = ipapp.TerminalIPythonApp()
-        app.display_banner = False
-        app.initialize(argv)
-        return app.shell
-    else:
-        from IPython.Shell import make_IPython
-        return make_IPython(argv)
+    from IPython.frontend.terminal import ipapp
+    app = ipapp.TerminalIPythonApp()
+    app.display_banner = False
+    app.exec_lines = preexec_lines
+    app.initialize(argv)
+    return app.shell
 
-def _init_python_session():
+def _init_python_session(argv=[]):
     """Construct new Python session. """
     from code import InteractiveConsole
 
@@ -96,16 +93,26 @@ def _init_python_session():
 
                     atexit.register(readline.write_history_file, history)
 
-    return PythonConsole()
+    console =  PythonConsole()
+
+    for line in preexec_lines:
+        console.runsource(line)
+
+    import sys
+    sys.argv = argv
+    if argv and argv != ['']:
+        console.runsource(open(argv[0]).read(), argv[0], 'exec')
+
+    return console
 
 def interact(ipython=None, argv=[]):
     """Initialize an embedded IPython or Python session. """
     import sys
     sys.argv = argv
-    global preexec_source
+    global preexec_lines
 
     if _import_all_:
-        preexec_source += "from plask import *\n"
+        preexec_lines.append('from plask import *')
         banner = BANNER + " into global namespace.\n"
     else:
         banner = BANNER + ".\n";
@@ -113,47 +120,32 @@ def interact(ipython=None, argv=[]):
     in_ipython = False
 
     if ipython is False:
-        ip = _init_python_session()
+        ip = _init_python_session(argv)
         mainloop = ip.interact
     else:
         try:
             import IPython
+            if IPython.__version__ < '0.11': raise ImportError
         except ImportError:
             if ipython is not True:
                 print (no_ipython)
-                ip = _init_python_session()
+                ip = _init_python_session(argv)
                 mainloop = ip.interact
             else:
-                raise RuntimeError("IPython is not available on this system")
+                raise RuntimeError("IPython 0.11 or newer is not available on this system")
         else:
             ipython = True
-            if IPython.__version__ >= '0.11':
-                try:
-                    ip = get_ipython()
-                except NameError:
-                    ip = None
-            else:
-                ip = IPython.ipapi.get()
-                if ip:
-                    ip = ip.IP
+            try:
+                ip = get_ipython()
+            except NameError:
+                ip = None
 
             if ip is not None:
                 in_ipython = True
             else:
                 ip = _init_ipython_session(argv)
 
-            if IPython.__version__ >= '0.11':
-                # runsource is gone, use run_cell instead, which doesn't
-                # take a symbol arg.  The second arg is `store_history`,
-                # and False means don't add the line to IPython's history.
-                ip.runsource = lambda src, symbol='exec': ip.run_cell(src, False)
-                mainloop = ip.mainloop
-            else:
-                mainloop = ip.interact
-
-    _preexec_source = preexec_source
-
-    ip.runsource(_preexec_source, symbol='exec')
+            mainloop = ip.mainloop
 
     if not in_ipython:
         mainloop(banner)
