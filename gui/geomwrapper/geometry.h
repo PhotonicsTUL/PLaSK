@@ -16,7 +16,6 @@ struct GeometryWrapper: public ElementWrapperFor< plask::GeometryD<dim> > {
 
     virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
-
     // delegate to child:
 
     virtual void draw(QPainter& painter) const;

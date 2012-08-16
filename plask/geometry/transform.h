@@ -89,7 +89,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     }
 
     /**
-     * @return @c true only if child is set (not null)
+     * @return @c true only if child is set (is not @c nullptr)
      */
     bool hasChild() const { return _child != nullptr; }
 

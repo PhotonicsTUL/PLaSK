@@ -83,6 +83,11 @@ GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::sh
     //constructChildrenItems(element);
 }
 
+GeometryTreeItem::GeometryTreeItem(GeometryTreeModel *model, const plask::shared_ptr<ElementWrapper> &element, std::size_t index)
+: model(model), childrenInitialized(false), miniatureInitialized(false), parentItem(nullptr), element(element)/*, inParentIndex(index)*/ {
+    connectOnChanged(element);
+}
+
 GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::Geometry> >& rootElements, GeometryTreeModel* model)
 : model(model), childrenInitialized(true), miniatureInitialized(true), parentItem(0)/*, inParentIndex(0)*/ {
     for (std::size_t i = 0; i < rootElements.size(); ++i)
@@ -237,19 +242,14 @@ void InContainerTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
 
 // ----------- GeometryTreeModel ------------
 
-GeometryTreeModel::GeometryTreeModel(Document& document, QObject *parent)
-    : QAbstractItemModel(parent), rootItem(0) {
-    refresh(document);
+GeometryTreeModel::GeometryTreeModel(QObject *parent)
+    : QAbstractItemModel(parent) {
 }
 
-GeometryTreeModel::~GeometryTreeModel() {
-    delete rootItem;
-}
-
-void GeometryTreeModel::refresh(Document& document) {
-    delete rootItem;
-    //TODO
-    rootItem = new GeometryTreeItem(document.manager.roots, this);
+void GeometryTreeModel::refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots) {
+    rootItems.clear();
+    for (std::size_t i = 0; i < roots.size(); ++i)
+        rootItems.emplace_back(new RootItem(this, roots[i], i));
     reset();
 }
 
@@ -257,14 +257,11 @@ QModelIndex GeometryTreeModel::index(int row, int column, const QModelIndex &par
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    GeometryTreeItem* parentItem = parent.isValid() ?
-                static_cast<GeometryTreeItem*>(parent.internalPointer()) :
-                rootItem;
+    if (!parent.isValid())  //root
+        return createIndex(row, column, rootItems[row].get());
 
-    GeometryTreeItem *childItem = parentItem->child(row);
-
-    if (childItem)
-        return createIndex(row, column, childItem);
+    GeometryTreeItem* parentItem = toItem(parent);
+    GeometryTreeItem* childItem = parentItem->child(row);
 
     return childItem ?
         createIndex(row, column, childItem) :
@@ -278,8 +275,7 @@ QModelIndex GeometryTreeModel::parent(const QModelIndex &index) const {
     GeometryTreeItem *childItem = static_cast<GeometryTreeItem*>(index.internalPointer());
     GeometryTreeItem *parentItem = childItem->parentItem;
 
-    if (parentItem == rootItem)
-        return QModelIndex();
+    if (parentItem == nullptr) return QModelIndex();
 
     return createIndex(parentItem->indexInParent(), 0, parentItem);
 }
@@ -287,11 +283,11 @@ QModelIndex GeometryTreeModel::parent(const QModelIndex &index) const {
 int GeometryTreeModel::rowCount(const QModelIndex &parent) const {
     if (parent.column() > 0)    //TODO
         return 0;
-    return toItem(parent)->childCount();
+    return parent.isValid() ? toItem(parent)->childCount() : rootItems.size();
 }
 
 int GeometryTreeModel::columnCount(const QModelIndex &parent) const {
-    return toItem(parent)->columnCount();
+    return parent.isValid() ? toItem(parent)->columnCount() : 1;
 }
 
 QVariant GeometryTreeModel::data(const QModelIndex &index, int role) const {
@@ -325,13 +321,20 @@ QVariant GeometryTreeModel::headerData(int section, Qt::Orientation orientation,
 }
 
 bool GeometryTreeModel::removeRows(int position, int rows, const QModelIndex &parent) {
- //   beginRemoveRows(parent, position, position + rows - 1);
-    bool result = toItem(parent)->remove(position, rows);
- //   endRemoveRows();
-    return result;
+    if (rows == 0) return true;
+    if (parent.isValid()) {
+        return toItem(parent)->remove(position, rows);
+    } else {
+        beginRemoveRows(parent, position, position + rows - 1);
+        rootItems.erase(rootItems.begin() + position, rootItems.begin() + position + rows);
+        endRemoveRows();
+        return true;
+    }
 }
 
 bool GeometryTreeModel::insertRow(plask::shared_ptr<plask::GeometryElement> to_insert, const QModelIndex &parent, int position) {
+    if (!parent.isValid()) return false;
+
    // beginInsertRows(parent, position, position);
     bool result = toItem(parent)->tryInsert(to_insert, position);
    // endInsertRows();
@@ -339,6 +342,8 @@ bool GeometryTreeModel::insertRow(plask::shared_ptr<plask::GeometryElement> to_i
 }
 
 int GeometryTreeModel::insertRow2D(const GeometryElementCreator &to_insert, const QModelIndex &parent, const plask::Vec<2, double> &point) {
+    if (!parent.isValid()) return -1;
+
     GeometryTreeItem* item = toItem(parent);
     int p = item->getInsertionIndexForPoint(point);
     if (p == -1) return -1;

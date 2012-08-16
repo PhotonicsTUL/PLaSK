@@ -127,11 +127,19 @@ public:
 
     /**
      * Construct item.
-     * @param parentItem parent item
+     * @param parentItem parent item, can't be nullpre
      * @param element wrapped element
      * @param index (future) index of this in parent childItems
      */
     GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper>& element, std::size_t index);
+
+    /**
+     * Construct root item (with nullptr as parentItem).
+     * @param parentItem parent item, can't be nullpre
+     * @param element wrapped element
+     * @param index (future) index of this in parent childItems
+     */
+    GeometryTreeItem(GeometryTreeModel* model, const plask::shared_ptr<ElementWrapper>& element, std::size_t index);
 
     /**
      * Construct root item (with parentItem = nullptr).
@@ -284,8 +292,16 @@ class GeometryTreeModel: public QAbstractItemModel {
 
     Q_OBJECT
 
-    /// Root of tree, not wraps real geometry element but its children do that.
-    GeometryTreeItem *rootItem;
+    struct RootItem {
+        GeometryTreeItem treeItem;
+        plask::shared_ptr<plask::Geometry> geometry;
+
+        RootItem(GeometryTreeModel* model, plask::shared_ptr<plask::Geometry> geometry, std::size_t index)
+            : treeItem(model, ext(geometry), index), geometry(geometry) {}
+    };
+
+    /// Root of tree, wraps geometries
+    std::vector< std::unique_ptr<RootItem> > rootItems;
 
 public:
 
@@ -293,27 +309,22 @@ public:
 
     /**
      * Refresh all tree content.
-     * @param document document from which new content will be read
+     * @param roots new roots elements
      */
-    void refresh(Document& document);
+    void refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots);
 
     /**
      * @param document document from which tree content will be read
      * @param parent
      */
-    GeometryTreeModel(Document& document, QObject *parent = 0);
-
-    /// Delete rootItem.
-    ~GeometryTreeModel();
+    GeometryTreeModel(QObject *parent = 0);
 
     /**
      * Get item from index.
      * @return item from index if index.isValid(), rootItem in another case
      */
-    GeometryTreeItem* toItem(const QModelIndex &index) const {
-        return index.isValid() ?
-               static_cast<GeometryTreeItem*>(index.internalPointer()) :
-               rootItem;
+    static GeometryTreeItem* toItem(const QModelIndex &index) {
+        return static_cast<GeometryTreeItem*>(index.internalPointer());
     }
 
     // ---------- implementation of QAbstractItemModel methods: --------

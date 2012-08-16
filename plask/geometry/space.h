@@ -256,12 +256,12 @@ public:
     }
 
     virtual std::size_t getChildrenCount() const {
-        return 1;
+        return getChild() ? 1 : 0;
     }
 
     virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
         //if (!hasChild() || child_nr > 0) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
-        if (child_nr > 0) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
+        if (child_nr >= getChildrenCount()) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
         return getChild();
     }
 
@@ -482,6 +482,8 @@ public:
      */
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
+    void removeAtUnsafe(std::size_t) { extrusion->setChildUnsafe(shared_ptr< GeometryElementD<2> >()); }
+
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
     /**
@@ -588,6 +590,8 @@ public:
      */
     virtual shared_ptr< GeometryElementD<2> > getChild() const;
 
+    void removeAtUnsafe(std::size_t) { revolution->setChildUnsafe(shared_ptr< GeometryElementD<2> >()); }
+
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
     /**
@@ -643,6 +647,27 @@ class Geometry3D: public GeometryD<3> {
     border::StrategyPairHolder<Primitive<3>::DIRECTION_LON> backfront;
     border::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
     border::StrategyPairHolder<Primitive<3>::DIRECTION_UP> bottomup;
+
+    /// Delegate event from child
+    virtual void onChildChanged(const GeometryElement::Event& evt) {
+        this->fireChanged(evt.flagsForParent());
+    }
+
+    /// Connect onChildChanged to current child change signal
+    void connectOnChildChanged() {
+        if (child)
+            child->changed.connect(
+                boost::bind(&Geometry3D::onChildChanged, this, _1)
+            );
+    }
+
+    /// Disconnect onChildChanged from current child change signal
+    void disconnectOnChildChanged() {
+        if (child)
+            child->changed.disconnect(
+                boost::bind(&Geometry3D::onChildChanged, this, _1)
+            );
+    }
 
 public:
 
@@ -727,10 +752,36 @@ public:
     virtual shared_ptr< GeometryElementD<3> > getChild() const;
 
     /**
-     * Set child element used by this geometry.
-     * @param child child element
+     * Set new child.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after setting the new child.
+     * It also not inform observers about change.
+     * @param child new child
      */
-    void getChild(shared_ptr< GeometryElementD<3> > child) { this->child = child; }
+    void setChildUnsafe(shared_ptr< GeometryElementD<3> > child) {
+        if (child == this->child) return;
+        disconnectOnChildChanged();
+        this->child = child;
+        connectOnChildChanged();
+    }
+
+    /**
+     * Set new child.
+     * @param child new child
+     * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
+     * @throw NoChildException if child is an empty pointer
+     */
+    void setChild(shared_ptr< GeometryElementD<3> > child) {
+        this->ensureCanHaveAsChild(*child);
+        setChildUnsafe(child);
+        fireChildrenChanged();
+    }
+
+    /**
+     * @return @c true only if child is set (is not @c nullptr)
+     */
+    bool hasChild() const { return this->child != nullptr; }
+
+    void removeAtUnsafe(std::size_t) { setChildUnsafe(shared_ptr< GeometryElementD<3> >()); }
 
     /**
      * Get child element used by this geometry.

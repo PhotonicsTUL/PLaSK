@@ -22,7 +22,11 @@ DynamicLibrary::~DynamicLibrary() {
 void DynamicLibrary::open(const std::string &filename) {
     close();    // close if something is already open
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-    handler = LoadLibrary(filename.c_str());
+    //const int length = MultiByteToWideChar(CP_UTF8, 0, filename.data(), filename.size(), 0, 0);
+    //std::unique_ptr<wchar_t> output_buffer(new wchar_t [length]);
+    //MultiByteToWideChar(CP_UTF8, 0, filename.data(), filename.size(), output_buffer.get(), length);
+    //handler = LoadLibraryW(output_buffer->get());
+    handler = LoadLibraryA(filename.c_str());
 #else
     handler = dlopen(filename.c_str(), RTLD_NOW);
 #endif
