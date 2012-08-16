@@ -8,6 +8,7 @@ This file includes classes which can hold (or points to) datas.
 #include <iterator>
 #include <algorithm>
 #include <initializer_list>
+#include <atomic>
 
 namespace plask {
 
@@ -41,7 +42,8 @@ struct DataVector {
   private:
 
     struct Gc {
-        unsigned count;
+        //count is atomic so many threads can increment and decrement it at same time, if it will be 0 it means that there was only one DataVector object, so probably one thread use it
+        std::atomic<unsigned> count;
         Destructor* destructor;
         explicit Gc(unsigned initial) : count(initial), destructor(nullptr) {}
         ~Gc() { delete destructor; }
@@ -232,7 +234,7 @@ struct DataVector {
 #ifndef DOXYGEN // Advanced method skipped from documentation
     /**
      * Set some destructor object for this data, so its deletion can be taken over manually.
-     * If the data was not managed, start managing it.
+     * If the data was not managed, start managing it, supposing that this is the only one owner of data (reference counter is initialized to 1).
      * \param destructor pointer do destructor object created on heap (it will be deleted automatically)
      */
     void setDataDestructor(Destructor* destructor) {
