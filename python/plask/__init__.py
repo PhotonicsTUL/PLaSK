@@ -43,11 +43,11 @@ def importLibrary(name):
     raise OSError("Cannot import library '%s'" % name)
 material.importLibrary = importLibrary
 del importLibrary
+material.importLibrary("nitrides")
+#end of code to replace and mode to C++
 
 material.air = materialdb.get("air")
 material.Air = lambda: material.air
-
-material.importLibrary("default")
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''

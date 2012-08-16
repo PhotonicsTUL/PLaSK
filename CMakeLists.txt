@@ -1,7 +1,7 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 2.8)
-project (plask)
+project(plask)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
 set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
@@ -114,9 +114,6 @@ file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp)
 
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp)
 
-# default material database
-file(GLOB_RECURSE materials_src FOLLOW_SYMLINKS materials/*.cpp materials/*.h)
-
 # Python sources and files
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp)
 file(GLOB_RECURSE python_plask_headers FOLLOW_SYMLINKS python/plask/*.h FOLLOW_SYMLINKS python/plask/*.hpp)
@@ -128,12 +125,6 @@ file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 # external libs which are compiled by us:
 #   irrXML
 file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
-
-
-# ---------- headers --------------------------------------------
-
-install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 
 
 # ---------- plask library --------------------------------------------
@@ -149,21 +140,14 @@ else(WIN32)
 endif(WIN32)
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
+install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
+install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
+
+set(PLaSK_LIBRARIES libplask)
 
 # ---------- default materials --------------------------------------------
 
-if (WIN32)
-    add_library(materials_default SHARED ${materials_src})
-    install(TARGETS materials_default RUNTIME DESTINATION lib/plask/materials COMPONENT core
-                                      ARCHIVE DESTINATION lib/plask/materials COMPONENT dev)
-else()
-    add_library(materials_default MODULE ${materials_src})
-    install(TARGETS materials_default LIBRARY DESTINATION lib/plask/materials COMPONENT core)
-endif()
-set_target_properties(materials_default PROPERTIES OUTPUT_NAME default PREFIX ""
-                      LIBRARY_OUTPUT_DIRECTORY ${PLASK_PATH}/materials RUNTIME_OUTPUT_DIRECTORY ${PLASK_PATH}/materials)
-target_link_libraries(materials_default libplask)
-
+add_subdirectory(materials)
 
 # ---------- Python --------------------------------------------
 
@@ -226,9 +210,6 @@ if(WIN32)
     set(ENV_PATH $ENV{PATH})
     string(REPLACE ";" "\;" ENV_PATH "${ENV_PATH}")
     string(REPLACE "/" "\\" plask_bin_path "${CMAKE_BINARY_DIR}/bin")
-#     set(plask_test_env "PYTHONPATH=${PLASK_PATH};PATH=${ENV_PATH}\;${plask_bin_path}")
-# else()
-#     set(plask_test_env "PYTHONPATH=${PLASK_PATH};LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
 endif()
 
 macro(add_python_test test test_file)
@@ -279,7 +260,7 @@ endforeach()
 # ----------===== unit tests =====--------------------------------------------
 if(BUILD_TESTING)
 
-    set(plask_test_depends materials_default) # we need materials for testing
+    set(plask_test_depends ${material_targets}) # we need materials for testing
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)

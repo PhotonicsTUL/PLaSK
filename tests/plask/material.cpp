@@ -1,7 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <plask/material/db.h>
 #include "common/dumb_material.h"
-#include "../../materials/init.h"
 
 BOOST_AUTO_TEST_SUITE(material) // MUST be the same as the file name
 
