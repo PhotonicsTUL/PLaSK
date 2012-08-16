@@ -35,6 +35,7 @@ DAMAGE.
 """
 
 BANNER = '''\
+
 You are entering interactive mode of PLaSK.
 Package 'plask' is already imported'''
 
@@ -144,6 +145,8 @@ def interact(ipython=None, argv=[]):
                 in_ipython = True
             else:
                 ip = _init_ipython_session(argv)
+                if not ip:
+                    raise RuntimeError("Cannot initialize IPython shell")
 
             mainloop = ip.mainloop
 
