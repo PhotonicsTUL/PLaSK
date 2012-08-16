@@ -27,16 +27,48 @@ std::string exePathAndName() {
 #endif
 }
 
+/**
+ * Remove from @p dir last path separator and all after.
+ * @param dir to changed
+ * @return changed @p dir or @p dir if @p dir doesn't include path separator
+ */
+static std::string dirUp(const std::string& dir) {
+    std::string::size_type last_sep = dir.find_last_of(FILE_PATH_SEPARATOR);
+    return last_sep == std::string::npos ? dir : dir.substr(0, last_sep);
+}
+
 std::string exePath() {
-    std::string full = exePathAndName();
-    std::string::size_type last_sep = full.find_last_of(FILE_PATH_SEPARATOR);
-    return last_sep == std::string::npos ? full : full.substr(0, last_sep);
+    return dirUp(exePathAndName());
 }
 
 std::string prefixPath() {
-    std::string full = exePath();
-    std::string::size_type last_sep = full.find_last_of(FILE_PATH_SEPARATOR);
-    return last_sep == std::string::npos ? full : full.substr(0, last_sep);
+    return dirUp(exePath());
+}
+
+std::string plaskLibPath() {
+    std::string result = prefixPath();
+    result += FILE_PATH_SEPARATOR;
+    result += "lib";
+    result += FILE_PATH_SEPARATOR;
+    result += "plask";
+    result += FILE_PATH_SEPARATOR;
+    return result;
+}
+
+std::string plaskSolversPath(const std::string &category) {
+    std::string result = plaskLibPath();
+    result += "solvers";
+    result += FILE_PATH_SEPARATOR;
+    result += category;
+    result += FILE_PATH_SEPARATOR;
+    return result;
+}
+
+std::string plaskMaterialsPath() {
+    std::string result = plaskLibPath();
+    result += "materials";
+    result += FILE_PATH_SEPARATOR;
+    return result;
 }
 
 }   //namespace plask

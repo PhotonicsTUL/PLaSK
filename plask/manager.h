@@ -45,13 +45,6 @@ class Manager {
 
   public:
 
-    /**
-     * Get path to files (shared libraries) with solvers in given @p category.
-     * @param category name of solvers category
-     * @return path (with rearmost '/' or '\\')
-     */
-    static std::string getSolversPath(const std::string& category);
-
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;
 

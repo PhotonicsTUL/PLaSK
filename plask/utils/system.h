@@ -29,9 +29,26 @@ std::string exePath();
 
 /**
  * Get path one step above the current program executable file.
- * @return path to program executable
+ * @return path one step above from program executable
  */
 std::string prefixPath();
+
+/**
+ * Get path to plask library files (shared libraries).
+ *
+ * This directory includes subdirectories: solvers (see @ref getSolversPath), materials (see @ref getMaterialsPath).
+ * @return path to plask library files (with rearmost '/' or '\\')
+ */
+std::string plaskLibPath();
+
+/**
+ * Get path to files (shared libraries) with solvers in given @p category.
+ * @param category name of solvers category
+ * @return path (with rearmost '/' or '\\')
+ */
+std::string plaskSolversPath(const std::string &category);
+
+std::string plaskMaterialsPath();
 
 }
 

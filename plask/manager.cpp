@@ -16,7 +16,7 @@ PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
 }
 
 shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::string &lib, const std::string &solver_name) {
-    std::string lib_file_name = getSolversPath(category);
+    std::string lib_file_name = plaskSolversPath(category);
     lib_file_name += "lib";
     lib_file_name += lib;
     lib_file_name += DynamicLibrary::DEFAULT_EXTENSION;
@@ -24,19 +24,6 @@ shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::s
                 DynamicLibraries::defaultLoad(lib_file_name)
                     .requireSymbol<solver_construct_f*>(solver_name + SOLVER_CONSTRUCT_FUNCTION_SUFFIX)()
                 );
-}
-
-std::string Manager::getSolversPath(const std::string &category) {
-    std::string result = prefixPath();
-    result += "lib";
-    result += FILE_PATH_SEPARATOR;
-    result += "plask";
-    result += FILE_PATH_SEPARATOR;
-    result += "solvers";
-    result += FILE_PATH_SEPARATOR;
-    result += category;
-    result += FILE_PATH_SEPARATOR;
-    return result;
 }
 
 const PathHints& Manager::requirePathHints(const std::string& path_hints_name) const {
