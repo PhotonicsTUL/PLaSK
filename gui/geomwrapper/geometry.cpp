@@ -45,10 +45,26 @@ template class GeometryWrapper<2>;
 template class GeometryWrapper<3>;
 
 QString Geometry2DCartesianWrapper::toStr() const {
-    return QString(QObject::tr("Cartesian geometry 2d%1")).arg(this->name.isEmpty() ? "" : ("\n\"" + this->name + "\""));
+    QString res = QString(QObject::tr("Cartesian geometry 2d%1")).arg(this->name.isEmpty() ? "" : ("\n\"" + this->name + "\""));
+    if (c().getElement3D()) {
+        auto ch = ext(c().getElement3D());
+        if (!ch->name.isEmpty()) {
+            res += '\n';
+            res += QString(QObject::tr("Extrusion name \"%1\"")).arg(ch->name);
+        }
+    }
+    return res;
 }
 
 QString Geometry2DCylindricalWrapper::toStr() const
 {
-    return QString(QObject::tr("Cylindrical geometry 2d%1")).arg(this->name.isEmpty() ? "" : ("\n\"" + this->name + "\""));
+    QString res = QString(QObject::tr("Cylindrical geometry 2d%1")).arg(this->name.isEmpty() ? "" : ("\n\"" + this->name + "\""));
+    if (c().getElement3D()) {
+        auto ch = ext(c().getElement3D());
+        if (!ch->name.isEmpty()) {
+            res += '\n';
+            res += QString(QObject::tr("Revolution name \"%1\"")).arg(ch->name);
+        }
+    }
+    return res;
 }
