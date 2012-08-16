@@ -121,8 +121,9 @@ int main(int argc, const char *argv[])
             const char* f = argv[1];
 #           if PY_VERSION_HEX >= 0x03000000
                 PyObject* pf = PyUnicode_FromString(f);
-                FILE* fs = _Py_fopen(pf, "r+");
+                FILE* fs = _Py_fopen(pf, "r");
                 PyObject* result = PyRun_File(fs, f, Py_file_input, globals.ptr(), globals.ptr());
+                fclose(fs);
 #           else
                 // We dont use py::exec_file, as we want to set "from __future__ import division" flag
                 PyObject *pf = PyFile_FromString(const_cast<char*>(f), const_cast<char*>("r"));

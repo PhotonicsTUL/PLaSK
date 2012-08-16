@@ -459,6 +459,10 @@ void initMaterials() {
         ); materialsDB
         .def("getDefault", &MaterialsDB::getDefault, "Get default database", py::return_value_policy<py::reference_existing_object>())
         .staticmethod("getDefault")
+        .def("load", &MaterialsDB::loadToDefault, "Load materials from library lib to default database", py::arg("lib"))
+        .staticmethod("load") // TODO make it non-static
+        .def("loadAll", &MaterialsDB::loadAllToDefault, "Load all materials from specified directory to default database", py::arg("directory")=plaskMaterialsPath())
+        .staticmethod("loadAll") // TODO make it non-static
         .def("get", py::raw_function(&MaterialsDB_get), "Get material of given name and doping")
         .add_property("all", &MaterialsDB_list, "List of all materials in database")
         .def("__iter__", &MaterialsDB_iter)

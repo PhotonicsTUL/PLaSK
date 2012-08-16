@@ -34,7 +34,7 @@ struct MaterialsDB {
     static void loadAllToDefault(const std::string& dir = plaskMaterialsPath());
 
     /**
-     * Helper which call getDefault().add<MaterialType>([name]) in constructor.
+     * Helper which calls getDefault().add<MaterialType>([name]) in constructor.
      *
      * Creating global objects of this type allow to fill the default database.
      */

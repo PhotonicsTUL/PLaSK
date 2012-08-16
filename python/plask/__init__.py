@@ -27,27 +27,11 @@ def updateFactories():
 material.updateFactories = updateFactories
 del updateFactories
 
-#TODO do it in C++
-def importLibrary(name):
-    import os.path
-    dirname = os.path.dirname(os.path.realpath(__file__))
-    from ctypes import cdll
-    for lib in [name+".so", name]:
-        try:
-            cdll.LoadLibrary(os.path.join(dirname, "..", "..", "materials", lib))
-        except OSError:
-            pass
-        else:
-            material.updateFactories()
-            return
-    raise OSError("Cannot import library '%s'" % name)
-material.importLibrary = importLibrary
-del importLibrary
-material.importLibrary("nitrides")
-#end of code to replace and mode to C++
-
 material.air = materialdb.get("air")
 material.Air = lambda: material.air
+
+materialdb.loadAll()
+material.updateFactories()
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''
