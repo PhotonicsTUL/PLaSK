@@ -1,6 +1,9 @@
 #include "db.h"
 
 #include "../utils/string.h"
+#include "../utils/dynlib/manager.h"
+
+#include <boost/filesystem.hpp>
 
 namespace plask {
 
@@ -90,6 +93,21 @@ std::string dbKey(const std::string& fullComplexName) {
 MaterialsDB& MaterialsDB::getDefault() {
     static MaterialsDB defaultDb;
     return defaultDb;
+}
+
+void MaterialsDB::loadToDefault(const std::string &fileName_mainpart) {
+    DynamicLibraries::defaultLoad(plaskMaterialsPath() + "lib" + fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION);
+}
+
+void MaterialsDB::loadAllToDefault(const std::string& dir) {
+    boost::filesystem::directory_iterator iter(dir);
+    boost::filesystem::directory_iterator end;
+    while (iter != end) {
+        boost::filesystem::path p = iter->path();
+        if (boost::filesystem::is_regular_file(p))
+            DynamicLibraries::defaultLoad(p.string());
+        ++iter;
+    }
 }
 
 void MaterialsDB::ensureCompositionIsNotEmpty(const Material::Composition &composition) {

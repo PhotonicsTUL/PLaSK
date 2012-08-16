@@ -4,6 +4,7 @@
 #include "material.h"
 
 #include <boost/iterator/transform_iterator.hpp>
+#include "../utils/system.h"
 
 namespace plask {
 
@@ -19,6 +20,18 @@ struct MaterialsDB {
      * @return default material database
      */
     static MaterialsDB& getDefault();
+
+    /**
+     * Load materials from file (dynamic library which is in plask directory with materials) to default database.
+     * @param fileName_mainpart main part of file name (filename without lib prefix and extension)
+     */
+    static void loadToDefault(const std::string& fileName_mainpart);
+
+    /**
+     * Load all materials from given @p dir (plask materials directory by default) to default database.
+     * @param dir directory with materials shared libraries (all files from this dir will be loaded)
+     */
+    static void loadAllToDefault(const std::string& dir = plaskMaterialsPath());
 
     /**
      * Helper which call getDefault().add<MaterialType>([name]) in constructor.

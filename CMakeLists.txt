@@ -77,7 +77,7 @@ endif(BUILD_PYTHON)
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
-set(boost_components unit_test_framework)
+set(boost_components unit_test_framework system filesystem)
 
 if(BUILD_PYTHON)
     find_package(Boost QUIET COMPONENTS "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
@@ -130,6 +130,7 @@ file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 # ---------- plask library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
+target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
 if(WIN32)
     target_link_libraries(libplask kernel32)
     install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core

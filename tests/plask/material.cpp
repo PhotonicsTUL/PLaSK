@@ -16,8 +16,7 @@ BOOST_AUTO_TEST_SUITE(material) // MUST be the same as the file name
     }
 
     BOOST_AUTO_TEST_CASE(defaultMaterialDB) {
-//         TODO load materials dynamically
-//         plask::initDefaultMaterials();
+        plask::MaterialsDB::loadAllToDefault();
         plask::MaterialsDB& db = plask::MaterialsDB::getDefault();
         BOOST_CHECK_EQUAL(db.get("GaN")->name(), "GaN");
     }

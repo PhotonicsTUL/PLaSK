@@ -113,9 +113,11 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
     }
 
     BOOST_AUTO_TEST_CASE(path_from_vector) {
+        plask::MaterialsDB materialsDB;
+        initDumbMaterialDb(materialsDB);
         plask::shared_ptr<plask::StackContainer<2>> stack1( new plask::StackContainer<2> );
         plask::shared_ptr<plask::StackContainer<2>> stack2( new plask::StackContainer<2> );
-        plask::shared_ptr<plask::Rectangle> element( new plask::Rectangle(plask::vec(1,2), plask::MaterialsDB::getDefault().get("GaN")) );
+        plask::shared_ptr<plask::Rectangle> element( new plask::Rectangle(plask::vec(1,2), materialsDB.get("Al")) );
         stack2->add(element);
         stack1->add(stack2);
 
