@@ -96,11 +96,8 @@ BOOST_PYTHON_MODULE(effective)
         __solver__.add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, &EffectiveIndex2DSolver_setSymmetry, "Symmetry of the searched modes");
         __solver__.add_property("polarization", &EffectiveIndex2DSolver_getPolarization, &EffectiveIndex2DSolver_setPolarization, "Polarization of the searched modes");
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
-        RW_FIELD(tolx, "Absolute tolerance on the argument");
-        RW_FIELD(tolf_min, "Sufficient tolerance on the function value");
-        RW_FIELD(tolf_max, "Required tolerance on the function value");
-        RW_FIELD(maxstep, "Maximum step in one iteration");
-        RW_FIELD(maxiterations, "Maximum number of iterations");
+        RO_FIELD(root, "Configuration of the global rootdigger");
+        RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
         METHOD(setSimpleMesh, "Set simple mesh based on the geometry elements bounding boxes");
         METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry elements bounding boxes", "points");
         METHOD(computeMode, "Find the mode near the specified effective index", "neff");
@@ -114,5 +111,15 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         PROVIDER(outNeff, "Effective index of the last computed mode");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
+
+        py::scope scope = __solver__;
+        py::class_<RootDigger::Params>("Params")
+            .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument")
+            .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value")
+            .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value")
+            .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration")
+            .def_readwrite("maxiterations", &RootDigger::Params::maxiterations, "Maximum number of iterations")
+        ;
+
     }
 }

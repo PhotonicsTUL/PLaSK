@@ -74,22 +74,19 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     double outer_distance; ///< Distance outside outer borders where material is sampled
 
     // Parameters for rootdigger
-    double tolx,        ///< Absolute tolerance on the argument
-           tolf_min,    ///< Sufficient tolerance on the function value
-           tolf_max,    ///< Required tolerance on the function value
-           maxstep;     ///< Maximum step in one iteration
-    int maxiterations;  ///< Maximum number of iterations
+    RootDigger::Params root;
+    RootDigger::Params striperoot;
 
-    EffectiveIndex2DSolver();
+    EffectiveIndex2DSolver(const std::string& name="");
 
-    virtual std::string getName() const { return "Effective Index Method 2D"; }
+    virtual std::string getClassName() const { return "EffectiveIndex2D"; }
 
-    virtual std::string getDescription() const {
+    virtual std::string getClassDescription() const {
         return "Calculate optical modes and optical field distribution using the effective index method "
                "in Cartesian two-dimensional space.";
     }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager);
+    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager);
 
     /**
      * Set the simple mesh based on the geometry bounding boxes.

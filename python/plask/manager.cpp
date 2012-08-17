@@ -43,10 +43,10 @@ struct PythonManager: public Manager {
         }
     }
 
-    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name) {
+    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) {
         std::string module_name = category + "." + lib;
         py::object module = py::import(module_name.c_str());
-        py::object solver = module.attr(solver_name.c_str())();
+        py::object solver = module.attr(solver_name.c_str())(name);
         return py::extract<shared_ptr<Solver>>(solver);
     }
 

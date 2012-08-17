@@ -6,7 +6,8 @@ using plask::dcomplex;
 
 namespace plask { namespace solvers { namespace effective {
 
-EffectiveIndex2DSolver::EffectiveIndex2DSolver() :
+EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
+    SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
     log_stripe(dataLog<dcomplex, dcomplex>(getId(), "neff", "det")),
     log_value(dataLog<dcomplex, dcomplex>(getId(), "Neff", "det")),
     have_stripeNeffs(false),
@@ -15,52 +16,64 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver() :
     polarization(TE),
     symmetry(NO_SYMMETRY),
     outer_distance(0.1),
-    tolx(1.0e-07),
-    tolf_min(1.0e-8),
-    tolf_max(1.0e-6),
-    maxstep(0.1),
-    maxiterations(500),
     outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty) {
     inTemperature = 300.;
+    root.tolx = 1.0e-7;
+    root.tolf_min = 1.0e-8;
+    root.tolf_max = 1.0e-6;
+    root.maxstep = 0.1;
+    root.maxiterations = 500;
+    striperoot.tolx = 1.0e-5;
+    striperoot.tolf_min = 1.0e-7;
+    striperoot.tolf_max = 1.0e-6;
+    striperoot.maxstep = 0.5;
+    striperoot.maxiterations = 500;
 }
 
 
-void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager&) {
-    while (reader.requireTagOrEnd()) {
-        if (reader.getNodeName() == "polarization") {
-            auto pols = reader.requireText();
-            if (pols == "TE") polarization = TE;
-            else if (pols == "TM") polarization = TM;
-            else throw BadInput(getId(), "Wrong polarization specification in XML");
-            reader.requireTagEnd();
-        } else if (reader.getNodeName() == "symmetry") {
-            auto sym = reader.requireText();
-            if (sym == "0" || sym == "none" ) {
-                symmetry = NO_SYMMETRY; return;
+void EffectiveIndex2DSolver::loadParam(const std::string& param, XMLReader& reader, Manager&) {
+    if (param == "mode") {
+        auto pol = reader.getAttribute("polarization");
+        if (pol) {
+            if (*pol == "TE") polarization = TE;
+            else if (*pol == "TM") polarization = TM;
+            else throw BadInput(getId(), "Wrong polarization specification '%1%' in XML", *pol);
+        }
+        auto sym = reader.getAttribute("symmetry");
+        if (sym) {
+            if (*sym == "0" || *sym == "none" ) {
+                symmetry = NO_SYMMETRY;
             }
-            else if (sym == "positive" || sym == "pos" || sym == "symmeric" || sym == "+" || sym == "+1") {
-                symmetry = SYMMETRY_POSITIVE; return;
+            else if (*sym == "positive" || *sym == "pos" || *sym == "symmeric" || *sym == "+" || *sym == "+1") {
+                symmetry = SYMMETRY_POSITIVE;;
             }
-            else if (sym == "negative" || sym == "neg" || sym == "anti-symmeric" || sym == "antisymmeric" || sym == "-" || sym == "-1") {
-                symmetry = SYMMETRY_NEGATIVE; return;
-            } else throw BadInput(getId(), "Wrong symmetry specification in XML");
-        } else if (reader.getNodeName() == "root") {
-                tolx = reader.getAttribute<double>("tolx", tolx);
-                tolf_min = reader.getAttribute<double>("tolf_min", tolf_min);
-                tolf_max = reader.getAttribute<double>("tolf_max", tolf_max);
-                maxstep = reader.getAttribute<double>("maxstep", maxstep);
-        } else if (reader.getNodeName() == "outer") {
-                outer_distance = reader.requireAttribute<double>("distance");
-        } else
-            throw XMLUnexpectedElementException(reader, "<polarization>, <symmetry>, <root>, or <outer>", reader.getNodeName());
-    }
+            else if (*sym == "negative" || *sym == "neg" || *sym == "anti-symmeric" || *sym == "antisymmeric" || *sym == "-" || *sym == "-1") {
+                symmetry = SYMMETRY_NEGATIVE;
+            } else throw BadInput(getId(), "Wrong symmetry specification '%1%' in XML", *sym);
+        }
+    } else if (param == "root") {
+            root.tolx = reader.getAttribute<double>("tolx", root.tolx);
+            root.tolf_min = reader.getAttribute<double>("tolf_min", root.tolf_min);
+            root.tolf_max = reader.getAttribute<double>("tolf_max", root.tolf_max);
+            root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
+            root.maxiterations = reader.getAttribute<int>("maxiterations", root.maxstep);
+    } else if (param == "striperoot") {
+            striperoot.tolx = reader.getAttribute<double>("tolx", striperoot.tolx);
+            striperoot.tolf_min = reader.getAttribute<double>("tolf_min", striperoot.tolf_min);
+            striperoot.tolf_max = reader.getAttribute<double>("tolf_max", striperoot.tolf_max);
+            striperoot.maxstep = reader.getAttribute<double>("maxstep", striperoot.maxstep);
+            striperoot.maxiterations = reader.getAttribute<int>("maxiterations", striperoot.maxiterations);
+    } else if (param == "outer") {
+            outer_distance = reader.requireAttribute<double>("distance");
+    } else
+        throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <mode>, <striperoot>, <root>, or <outer>", param);
 }
 
 dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
 {
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
-    dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, tolx, tolf_min, tolf_max, maxstep, maxiterations).getSolution(neff);
+    dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root).getSolution(neff);
     outNeff = result;
     outNeff.fireChanged();
     outIntensity.fireChanged();
@@ -74,7 +87,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex
 {
     writelog(LOG_INFO, "Searching for the modes for Neff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
-    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, tolx, tolf_min, tolf_max, maxstep, maxiterations)
+    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
             .searchSolutions(neff1, neff2, steps, 0, nummodes);
 }
 
@@ -91,7 +104,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModesMap(dcomplex neff1, dcomp
         rpoints[i] = rneff1 + rdneff * i / steps1;
     }
 
-    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, tolf_min, tolf_max, maxstep, maxiterations)
+    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
             .findMap(neff1, neff2, steps, 0);
 }
 
@@ -103,7 +116,7 @@ void EffectiveIndex2DSolver::setMode(dcomplex neff)
         stageOne();
     }
     double det = abs(detS(neff));
-    if (det > tolf_max) throw BadInput(getId(), "Provided effective index does not correspond to any mode (det = %1%)", det);
+    if (det > root.tolf_max) throw BadInput(getId(), "Provided effective index does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting current mode to %1%", str(neff));
     outNeff = neff;
     outNeff.fireChanged();
@@ -207,7 +220,7 @@ void EffectiveIndex2DSolver::stageOne()
             if (all_the_same) {
                 stripeNeffs[i] = same_val;
             } else {
-                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, 1e-5, 1e-7, 1e-6, 0.5, maxiterations);
+                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, striperoot);
                 dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
                 stripeNeffs[i] = rootdigger.getSolution(0.999999*maxn);
                 // dcomplex minn = *std::min_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );

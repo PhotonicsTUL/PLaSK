@@ -195,7 +195,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
     bool first = true;
 
     while(true) {
-        if (lambda < lambda_min) {              // we have (possible) convergence of x
+        if (lambda < par.lambda_min) {              // we have (possible) convergence of x
             x = x0; f = f0;
             return false;
         }
@@ -206,7 +206,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
         f = 0.5 * (real(F)*real(F) + imag(F)*imag(F));
         if (std::isnan(f)) throw ComputationError(solver.getId(), "Computed value is NaN");
 
-        if (f < f0 + alpha*lambda*slope) {      // sufficient function decrease
+        if (f < f0 + par.alpha*lambda*slope) {      // sufficient function decrease
             log_value.count(x, F);
             return true;
         }
@@ -252,7 +252,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     dcomplex F = val_function(x);
     double absF = abs(F);
     log_value.count(x, F);
-    if (absF < tolf_min) return x;
+    if (absF < par.tolf_min) return x;
 
     bool restart = true;                    // do we have to recompute Jacobian?
     bool trueJacobian;                      // did we recently update Jacobian?
@@ -263,7 +263,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     dcomplex oldx, oldF;
 
     // Main loop
-    for (int i = 0; i < maxiterations; i++) {
+    for (int i = 0; i < par.maxiterations; i++) {
         oldx = x; oldF = F;
 
         if (restart) {                      // compute Broyden matrix as a Jacobian
@@ -287,13 +287,13 @@ dcomplex RootDigger::Broyden(dcomplex x) const
         dcomplex p = - dcomplex(real(F)*imag(Bi)-imag(F)*real(Bi), real(Br)*imag(F)-imag(Br)*real(F)) / M;
 
         // find the right step
-        if (lnsearch(x, F, g, p, maxstep)) {   // found sufficient functional decrease
+        if (lnsearch(x, F, g, p, par.maxstep)) {   // found sufficient functional decrease
             dx = x - oldx;
             dF = F - oldF;
-            if ((abs(dx) < tolx && abs(F) < tolf_max) || abs(F) < tolf_min)
+            if ((abs(dx) < par.tolx && abs(F) < par.tolf_max) || abs(F) < par.tolf_min)
                 return x;                       // convergence!
         } else {
-            if (abs(F) < tolf_max)       // convergence!
+            if (abs(F) < par.tolf_max)       // convergence!
                 return x;
             else if (!trueJacobian) {           // first try reinitializing the Jacobian
                  solver.writelog(LOG_DETAIL, "Reinitializing Jacobian");

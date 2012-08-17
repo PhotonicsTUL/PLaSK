@@ -15,10 +15,13 @@ class LowContrastMaterial(material.Material):
 class EffectiveIndex2D_Test(unittest.TestCase):
 
     def setUp(self):
-        self.solver = EffectiveIndex2D()
+        self.solver = EffectiveIndex2D("test_solver")
         rect = geometry.Rectangle(0.75, 0.5, LowContrastMaterial())
         space = geometry.Cartesian2D(rect, left="mirror")
         self.solver.geometry = space
+
+    def testBasic(self):
+        self.assertEqual( self.solver.id, "EffectiveIndex2D:test_solver" )
 
     def testExceptions(self):
         with self.assertRaisesRegexp(TypeError, r"^No wavelength set nor its provider connected$"):

@@ -3,12 +3,15 @@
 
 namespace plask {
 
-void Solver::loadConfiguration(XMLReader& reader, Manager&) {
-    reader.requireTagEnd();  // require empty configuration
+void Solver::loadConfiguration(XMLReader& reader, Manager& manager) {
+    while (reader.requireTagOrEnd()) {
+        loadParam(reader.getNodeName(), reader, manager);
+        reader.requireTagEnd();
+    }
 }
 
-std::string Solver::getId() const {
-    return replaceChars(getName(), [](char in) { return isspace(in) ? '_' : in; });
+void Solver::loadParam(const std::string& param, XMLReader& reader, Manager& manager) {
+    throw XMLUnexpectedElementException(reader, "no additional configuration for this solver");
 }
 
 }   // namespace plask

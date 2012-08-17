@@ -2,7 +2,8 @@
 
 namespace plask { namespace solvers { namespace finiteT {
 
-FiniteElementMethodThermal2DSolver::FiniteElementMethodThermal2DSolver() :
+FiniteElementMethodThermal2DSolver::FiniteElementMethodThermal2DSolver(const std::string& name) :
+    SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
     maxiterations(10)
 {
 }

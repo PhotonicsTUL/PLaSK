@@ -15,14 +15,14 @@ PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
     return result_it->second;
 }
 
-shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::string &lib, const std::string &solver_name) {
+shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::string &lib, const std::string &solver_name, const std::string& name) {
     std::string lib_file_name = plaskSolversPath(category);
     lib_file_name += "lib";
     lib_file_name += lib;
     lib_file_name += DynamicLibrary::DEFAULT_EXTENSION;
     return shared_ptr<Solver>(
                 DynamicLibraries::defaultLoad(lib_file_name)
-                    .requireSymbol<solver_construct_f*>(solver_name + SOLVER_CONSTRUCT_FUNCTION_SUFFIX)()
+                    .requireSymbol<solver_construct_f*>(solver_name + SOLVER_CONSTRUCT_FUNCTION_SUFFIX)(name)
                 );
 }
 
@@ -150,7 +150,7 @@ void Manager::loadSolvers(XMLReader& reader) {
         const std::string name = reader.requireAttribute("name");
         const boost::optional<std::string> lib = reader.getAttribute("lib");
         const std::string solver_name = reader.requireAttribute("solver");
-        shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), lib ? *lib : solver_name, solver_name);
+        shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), lib ? *lib : solver_name, solver_name, name);
         solver->loadConfiguration(reader, *this);
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
             throw NamesConflictException("Solver", name);

@@ -81,8 +81,9 @@ BOOST_PYTHON_MODULE(plaskcore)
 
     // Solvers
     py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>("Solver", "Base class for all solvers", py::no_init)
-        .add_property("name", &plask::Solver::getName, "Full name of the solver")
-        .add_property("description", &plask::Solver::getDescription, "Short description of the solver")
+        .add_property("name", &plask::Solver::getName, "Name of the solver object")
+        .add_property("id", &plask::Solver::getId, "Id of the solver object")
+        .add_property("description", &plask::Solver::getClassDescription, "Short description of the solver")
         .add_property("initialized", &plask::Solver::isInitialized, "True if the solver has been initialized")
         .def("invalidate", &plask::Solver::invalidate, "Set solver back to uninitialized state")
     ;

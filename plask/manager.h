@@ -41,7 +41,7 @@ class Manager {
      * @param category, lib, solver_name solver parameters
      * @return loaded solver
      */
-    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name);
+    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name);
 
   public:
 
@@ -358,6 +358,64 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
     }
 }
 
-}	// namespace plask
+
+template <typename SpaceT>
+void SolverOver<SpaceT>::loadConfiguration(XMLReader& reader, Manager& manager) {
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "geometry") {
+            auto found = manager.geometries.find(reader.requireAttribute("ref"));
+            if (found == manager.geometries.end())
+                throw BadInput(this->getId(), "Geometry '%1%' not found.", reader.requireAttribute("ref"));
+            else {
+                auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
+                if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
+                this->setGeometry(geometry);
+            }
+        } else {
+            this->loadParam(reader.getNodeName(), reader, manager);
+        }
+        reader.requireTagEnd();
+    }
+}
+
+template <typename SpaceT, typename MeshT>
+void SolverWithMesh<SpaceT,MeshT>::loadConfiguration(XMLReader& reader, Manager& manager) {
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "geometry") {
+            auto found = manager.geometries.find(reader.requireAttribute("ref"));
+            if (found == manager.geometries.end())
+                throw BadInput(this->getId(), "Geometry '%1%' not found.", reader.requireAttribute("ref"));
+            else {
+                auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
+                if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
+                this->setGeometry(geometry);
+            }
+        }
+        else if (reader.getNodeName() == "mesh") {
+            std::string name = reader.requireAttribute("ref");
+            auto found = manager.meshes.find(name);
+            if (found != manager.meshes.end()) {
+                auto mesh = dynamic_pointer_cast<MeshT>(found->second);
+                if (!mesh) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
+                this->setMesh(mesh);
+            }
+            else {
+                auto found = manager.generators.find(name);
+                if (found != manager.generators.end()) {
+                    auto generator = dynamic_pointer_cast<MeshGeneratorOf<MeshT>>(found->second);
+                    if (!generator) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
+                    this->setMesh(generator);
+                } else
+                    throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found.", name);
+            }
+        } else {
+            this->loadParam(reader.getNodeName(), reader, manager);
+        }
+        reader.requireTagEnd();
+    }
+}
+
+
+} // namespace plask
 
 #endif // PLASK__GEOMETRY_MANAGER_H

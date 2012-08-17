@@ -8,6 +8,7 @@ This file includes base class for solvers.
 
 /** @page solvers Solvers
 
+
 @section solvers_about About solvers
 Solvers in PLaSK are calculations units. Each is represented by subclass of plask::Solver.
 
@@ -39,7 +40,7 @@ Once you have your source tree set up, do the following:
    SPACE_TYPE should be one of Geometry2DCartesian, Geometry2DCylindrical, or Geometry3D and should indicate in what space your solver
    is doing calculations. If you want to allow user to specify a mesh for your solver, inherit from plask::SolverWithMesh<SPACE_TYPE, MESH_TYPE>,
    where MESH_TYPE is the type of your mesh.
--# Implement plask::Solver::getName method. This method should just return name of your solver.
+-# Implement plask::Solver::getClassName method. This method should just return the pretty name of your solver class (the same you use in Python and XML).
 -# Implement plask::Solver::onInitialize and optionally plask::Solver::onInvalidate methods.
 -# Place in your class public providers and receivers fields:
     - provider fields allow your solver to provide results to another solvers or to reports,
@@ -49,12 +50,12 @@ Once you have your source tree set up, do the following:
     - note that most providers are classes obtained by using plask::ProviderFor template,
     - more details can be found in @ref providers.
 -# If you need boundary conditions, place in your class public plask::BoundaryConditions fields which are containers of boundary-condition pairs.
--# Implement loadConfiguration method, which loads configuration of your solver from XML reader.
+-# Implement loadParam method, which loads configuration of your solver from XML reader.
 -# Typically, implement calculation method. This method is a place for your calculation code.
    You don't have to implement it if you don't need to do any calculations. You can also write more methods performing
    different calculations, however, you need to clearly document them. Each calculation method must call plask::Solver::initCalculation()
    as the first operation.
--# Optionally implement plask::Solver::getDescription method. This method should just return description of your solver.
+-# Optionally implement plask::Solver::getClassDescription method. This method should just return description of your solver.
 -# Write the Python interface to your class using Boost Python. See the Boos Python documentation or take a look into
    solvers/skel/python/solver.cpp (for your convenience we have provided some macros that will faciliate creation
    of Python interface).
@@ -149,17 +150,24 @@ for shared memory management between the solvers). So we declare the private fie
     plask::DataVector<double> computed_light_intensity;
 \endcode
 
-Now, you can write the constructor to your class. By convention this constructor should take no arguments as all the solver configuration
-parameters must be able to be set by the user afterwards (in future you might want to create a configuration window for your solver for GUI).
+Now, you can write the constructor to your class. By convention this constructor should take no configuration arguments as all the solver
+configuration parameters must be able to be set by the user afterwards (in future you might want to create a configuration window for your
+solver for GUI). The only constructor parameter is the name, which can be provided by user, and which should be passed to the parent class.
+In addition, you should write getClassName method, which returns the name of your solver class as seen by the end user (it does not need
+to be the same as your real class name, but it should match the Python class name and solver name in XML file).
 
 \code
   public:
 
-    FiniteDifferencesSolver():
+    FiniteDifferencesSolver(const std::string name& name=""):
+        plask::SolverWithMesh<plask::Geometry2DCartesian,plask::RectilinearMesh2D>(name),
         outIntensity(this, &FiniteDifferencesSolver::getIntensity) // attach the method returning the light intensity to delegate provider
     {
         inTemperature = 300.;                                      // set default value for input temperature
     }
+
+    virtual std::string getClassName() const { return "FiniteDifferencesCartesian2D"; }
+
 \endcode
 
 In the above illustration, we initialize the \c outIntensity provider with the pointer to the solver itself and the address of the method
@@ -381,12 +389,17 @@ This concludes our short tutorial. Now you can go on and write your own calculat
 
 namespace plask {
 
+class Manager;
+
 /**
  * Base class for all solvers.
  *
  * @see @ref solvers
  */
 class Solver {
+
+    /// Id of the instance of this solver
+    std::string solver_name;
 
   protected:
 
@@ -433,7 +446,7 @@ class Solver {
 
   public:
 
-    Solver(): initialized(false) {}
+    Solver(const std::string& name=""): solver_name(name), initialized(false) {}
 
     /// Virtual destructor (for subclassing). Do nothing.
     virtual ~Solver() {}
@@ -444,11 +457,27 @@ class Solver {
      * XML reader (@p source) point to opening of @c this solver tag and
      * after return from this method should point to this solver closing tag.
      *
+     * Overload this method only if you really need it. Otherwise, overload \p loadParam method.
+     *
      * Default implementation require empty configuration (just call <code>conf.source.requireTagEnd();</code>).
      * @param source source of configuration
      * @param manager manager from which information about geometry, meshes, materials, and so on can be get if needed
      */
     virtual void loadConfiguration(XMLReader& source, Manager& manager);
+
+    /**
+     * Load single parameter from given \p source.
+     *
+     * This method is called by \p loadConfiguration, to read configuration of particular parameter.
+     *
+     * Default implementation require empty configuration (just call <code>conf.source.requireTagEnd();</code>).
+     * \param param configuration parameter to read
+     * \param source source of configuration
+     * \param manager manager from which information about geometry, meshes, materials, and so on can be get if needed
+     *
+     * \throw XMLUnexpectedElementException if the parameter is not recognized
+     */
+    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager);
 
     /**
      * Check if solver is already initialized.
@@ -474,21 +503,28 @@ class Solver {
      * Get name of solver.
      * @return name of this solver
      */
-    virtual std::string getName() const = 0;
+    virtual std::string getClassName() const = 0;
 
     /**
-     * Get solver id (short name without white characters).
-     *
-     * Default implementation return the same as getName() but with all white characters replaced by '_'.
-     * @return id of this solver
+     * Get solver id
+     * \return id of this solver
      */
-    virtual std::string getId() const;
+    inline std::string getId() const {
+        std::string result = getClassName();
+        if (solver_name != "") {
+            result += ":"; result += solver_name;
+        }
+        return result;
+    }
+
+    /// \return solver name
+    inline std::string getName() const { return solver_name; }
 
     /**
      * Get a description of this solver.
      * @return description of this solver (empty string by default)
      */
-    virtual std::string getDescription() const { return ""; }
+    virtual std::string getClassDescription() const { return ""; }
 
     template<typename ArgT = double, typename ValT = double>
     Data2DLog<ArgT, ValT> dataLog(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
@@ -516,7 +552,7 @@ class Solver {
  * Function constructing solver on library loadConfiguration
  */
 #define SOLVER_CONSTRUCT_FUNCTION_SUFFIX "_solver_factory"
-extern "C" typedef Solver* solver_construct_f();
+extern "C" typedef Solver* solver_construct_f(const std::string& name);
 
 
 template <typename, typename> class SolverWithMesh;
@@ -552,9 +588,13 @@ class SolverOver: public Solver {
     /// of the space for this solver
     typedef SpaceT SpaceType;
 
+    SolverOver(const std::string& name="") : Solver(name) {}
+
     ~SolverOver() {
         diconnectGeometry();
     }
+
+    virtual void loadConfiguration(XMLReader& source, Manager& manager);
 
     /**
      * This method is called when calculation space (geometry) was changed.
@@ -618,9 +658,13 @@ class SolverWithMesh: public SolverOver<SpaceT> {
     /// Type of the mesh for this solver
     typedef MeshT MeshType;
 
+    SolverWithMesh(const std::string& name="") : SolverOver<SpaceT>(name) {}
+
     ~SolverWithMesh() {
         diconnectMesh();
     }
+
+    virtual void loadConfiguration(XMLReader& source, Manager& manager);
 
     /**
      * This method is called when mesh was changed.
@@ -671,7 +715,8 @@ class SolverWithMesh: public SolverOver<SpaceT> {
     }
 };
 
-
 }       //namespace plask
+
+#include "manager.h" // Just in case module author includes only "solver.h"
 
 #endif // PLASK__SOLVER_H

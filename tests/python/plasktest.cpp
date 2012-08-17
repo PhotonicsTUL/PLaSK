@@ -89,7 +89,7 @@ py::list testBoundary(const plask::RectilinearMesh2D& mesh, const typename plask
 struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D> {
     bool mesh_changed;
     SpaceTest() : mesh_changed(false) {}
-    virtual std::string getName() const { return "Space Test"; }
+    virtual std::string getClassName() const { return "SpaceTest"; }
     void initialize() {
         initCalculation();
     }
@@ -104,7 +104,7 @@ struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::Rect
 struct SimpleSolver : plask::Solver {
     struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {};
 
-    virtual std::string getName() const { return "Provider and Receiver Test"; }
+    virtual std::string getClassName() const { return "SimpleSolver"; }
 
     plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> inTemperature;
 

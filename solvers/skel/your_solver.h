@@ -24,15 +24,15 @@ struct YourSolver: public SolverWithMesh<ForExample_Geometry2DCartesian, ForExam
     /// Sample provider for field (it's better to use delegate here).
     ProviderFor<SomeFieldProperty, Geometry2DCartesian>::Delegate outSomeField;
 
-    YourSolver():
+    YourSolver(const std::string& name=""): SolverWithMesh<ForExample_Geometry2DCartesian, ForExample_RectilinearMesh2D>(name),
         outSomeField(this, getDelegated) // getDelegated will be called whether provider value is requested
     {
         inTemperature = 300.; // temperature receiver has some sensible value
     }
 
-    virtual std::string getName() const { return "Name of your solver"; }
+    virtual std::string getClassName() const { return "Name of your solver"; }
 
-    virtual std::string getDescription() const {
+    virtual std::string getClassDescription() const {
         return "This solver does this and that. And this description can be e.g. shown as a hng in GUI.";
     }
 

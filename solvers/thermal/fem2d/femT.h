@@ -31,9 +31,9 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
         inTemperature = 300.; // temperature receiver has some sensible value
     }
 
-    virtual std::string getName() const { return "Name of your solver"; }
+    virtual std::string getClassName() const { return "Name of your solver"; }
 
-    virtual std::string getDescription() const {
+    virtual std::string getClassDescription() const {
         return "This solver does this and that. And this description can be e.g. shown as a hng in GUI.";
     }*/
 
@@ -105,7 +105,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
     // Parameters for rootdigger
     int maxiterations;  ///< Maximum number of iterations
 
-    FiniteElementMethodThermal2DSolver();
+    FiniteElementMethodThermal2DSolver(const std::string& name="");
 
     ~FiniteElementMethodThermal2DSolver();
 };

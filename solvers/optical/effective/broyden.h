@@ -12,6 +12,20 @@ struct RootDigger {
 
     typedef std::function<dcomplex(const dcomplex&)> function_type;
 
+    struct Params {
+        double tolx,        ///< Absolute tolerance on the argument
+            tolf_min,       ///< Sufficient tolerance on the function value
+            tolf_max,       ///< Required tolerance on the function value
+            maxstep;        ///< Maximum step in one iteration
+        int maxiterations;  ///< Maximum number of iterations
+        double alpha,       ///< Ensures sufficient decrease of charval in each step
+            lambda_min;     ///< Minimum decreased ratio of the step (lambda)
+
+        Params() :
+            tolx(1.0e-07), tolf_min(1.0e-10), tolf_max(1.0e-8), maxstep(0.1), maxiterations(500),
+            alpha(1.0e-6), lambda_min(1.0e-7) {}
+    };
+
   private:
 
     // Solver
@@ -38,28 +52,14 @@ struct RootDigger {
 
   public:
 
-    double tolx,        ///< Absolute tolerance on the argument
-           tolf_min,    ///< Sufficient tolerance on the function value
-           tolf_max,    ///< Required tolerance on the function value
-           maxstep;     ///< Maximum step in one iteration
-    int maxiterations;  ///< Maximum number of iterations
-    double alpha,       ///< Ensures sufficient decrease of charval in each step
-           lambda_min;  ///< Minimum decreased ratio of the step (lambda)
+    Params par;
 
     // Constructor
     RootDigger(EffectiveIndex2DSolver& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
-               double tolx=1.0e-07, double tolf_min=1.0e-10, double tolf_max=1.0e-8, double maxstep=0.1, int maxiterations=500,
-               double alpha=1.0e-6, double lambda_min=1.0e-7) :
+               const Params& par) :
         solver(solver),
         val_function(val_fun),
-        log_value(log_value),
-        tolx(tolx),
-        tolf_min(tolf_min),
-        tolf_max(1.0e-8),
-        maxstep(maxstep),
-        maxiterations(maxiterations),
-        alpha(alpha),
-        lambda_min(lambda_min)
+        log_value(log_value)
     {};
 
     /**
