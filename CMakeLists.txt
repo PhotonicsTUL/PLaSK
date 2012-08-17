@@ -1,7 +1,7 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 2.8)
-project(plask)
+project(plask CXX)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
 set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
