@@ -27,7 +27,6 @@ class EffectiveIndex2D_Test(unittest.TestCase):
                 <generator type="rectilinear2d" method="divide" name="div">
                     <prediv by="4"/>
                     <postdiv hor_by="2" vert_by="3"/>
-                    <warnings missing="false"/>
                 </generator>
             </grids>
             <solvers>
@@ -49,8 +48,8 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def testLoadConfigurations(self):
         self.assertEqual( self.solver1.id, "EffectiveIndex2D:eff1" )
 
-        self.assertEqual( str(self.solver1.geometry.child), str(self.manager.geo.Space_1.child) )
-        self.assertEqual( str(self.solver2.geometry.child), str(self.manager.ele.Stack_2) )
+        self.assertEqual( self.solver1.geometry, self.manager.geo.Space_1 )
+        self.assertEqual( self.solver2.geometry.child, self.manager.ele.Stack_2 )
 
         self.assertEqual( self.solver1.mesh, self.manager.msh.lin )
         self.assertEqual( self.solver2.mesh, self.manager.msg.div(self.manager.geo.Space_1.child) )

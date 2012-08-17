@@ -234,6 +234,7 @@ void register_calculation_spaces() {
 
     py::class_<Geometry, shared_ptr<Geometry>, boost::noncopyable>("Geometry",
         "Base class for all geometries", py::no_init)
+        .def("__eq__", __is__<Geometry>)
     ;
 
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",

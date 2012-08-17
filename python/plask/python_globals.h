@@ -108,6 +108,12 @@ struct Config
 };
 extern Config config;
 
+// ----------------------------------------------------------------------------------------------------------------------
+// Compare shared pointes
+template <typename T>
+bool __is__(const shared_ptr<T>& a, const shared_ptr<T>& b) {
+    return a == b;
+}
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Format complex numbers in Python way

@@ -134,6 +134,7 @@ void register_geometry_element()
         .add_property("type", &GeometryElement::getType)
         .def("validate", &GeometryElement::validate, "Check if the element is compete and ready for calculations")
         .def("__repr__", &GeometryElement__repr__)
+        .def("__eq__", __is__<GeometryElement>)
     ;
 
     register_vector_of<shared_ptr<GeometryElement>>("GeometryElement");
