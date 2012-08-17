@@ -1,5 +1,6 @@
 #include "../python_globals.h"
 #include <boost/python/stl_iterator.hpp>
+#include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
 #include "../../util/raw_constructor.h"
 
@@ -175,13 +176,47 @@ static void Space_setBorders(Geometry& self, py::dict borders) {
     _Space_setBorders(self, borders, parsed, "unexpected border name '%s'");
 }
 
+struct BordersProxy : public std::map<std::string, py::object> {
+    void __setitem__(const std::string&, const py::object&) {
+        throw TypeError("Borders do not support item assignment");
+    }
+    std::string __repr__() const {
+        std::string result;
+        std::string sep = "{'";
+        for(auto i: *this) {
+            result += sep; result += i.first; result += "': ";
+            if (i.second != py::object()) result += "'";
+            result += py::extract<std::string>(py::str(i.second));
+            if (i.second != py::object()) result += "'";
+            sep = ", '";
+        }
+        result += "}";
+        return result;
+    }
+    py::list keys() const {
+        py::list result;
+        for(auto i: *this) {
+            result.append(i.first);
+        }
+        return result;
+    }
+    py::list items() const {
+        py::list result;
+        for(auto i: *this) {
+            result.append(py::make_tuple(i.first, i.second));
+        }
+        return result;
+    }
+};
+
+
 inline static py::object _border(const Geometry& self, Geometry::DIRECTION direction, bool higher) {
     auto str = self.getBorder(direction, higher).str();
     return (str=="null") ? py::object() : py::object(str);
 }
 
-static py::dict Geometry2DCartesian_getBorders(const Geometry2DCartesian& self) {
-    py::dict borders;
+static BordersProxy Geometry2DCartesian_getBorders(const Geometry2DCartesian& self) {
+    BordersProxy borders;
     borders["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
     borders["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
     borders["top"] = _border(self, Geometry::DIRECTION_UP, true);
@@ -189,8 +224,8 @@ static py::dict Geometry2DCartesian_getBorders(const Geometry2DCartesian& self) 
     return borders;
 }
 
-static py::dict Geometry2DCylindrical_getBorders(const Geometry2DCylindrical& self) {
-    py::dict borders;
+static BordersProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical& self) {
+    BordersProxy borders;
     borders["inner"] = _border(self, Geometry::DIRECTION_TRAN, false);
     borders["outer"] = _border(self, Geometry::DIRECTION_TRAN, true);
     borders["top"] = _border(self, Geometry::DIRECTION_UP, true);
@@ -235,6 +270,14 @@ void register_calculation_spaces() {
     py::class_<Geometry, shared_ptr<Geometry>, boost::noncopyable>("Geometry",
         "Base class for all geometries", py::no_init)
         .def("__eq__", __is__<Geometry>)
+    ;
+
+    py::class_<BordersProxy>("BordersProxy")
+        .def(py::map_indexing_suite<BordersProxy, true>())
+        .def("__setitem__", &BordersProxy::__setitem__)
+        .def("__repr__", &BordersProxy::__repr__)
+        .def("keys", &BordersProxy::keys)
+        .def("items", &BordersProxy::items)
     ;
 
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",

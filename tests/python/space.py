@@ -21,7 +21,7 @@ class Geometrys(unittest.TestCase):
         r = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
         s = plask.geometry.Cartesian2D(r, x_lo="mirror" , right="AlN", top="GaN")
         print(s.bbox)
-        self.assertEqual( s.borders, {'left': "mirror", 'right': "AlN", 'top': "GaN", 'bottom': None} )
+        self.assertEqual( dict(s.borders.items()), {'left': "mirror", 'right': "AlN", 'top': "GaN", 'bottom': None} )
         self.assertEqual( str(s.getMaterial(-1.5, 0.5)), "Al(0.2)GaN" )
         self.assertEqual( str(s.getMaterial(3., 0.5)), "AlN" )
         self.assertEqual( str(s.getMaterial(-3., 0.5)), "AlN" )

@@ -77,8 +77,9 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     boost::optional<std::string> name = source.getAttribute("name");
     if (name) BadId::throwIfBad("geometry", *name, ' ');
 //    std::string src = source.requireAttribute("over");
+    // TODO read subspaces from XML
     shared_ptr<Geometry> result;
-    if (nodeName == "cartesian2d") {    //TODO register with space names(?)
+    if (nodeName == "cartesian2d") {    // TODO read borders
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         boost::optional<double> l = source.getAttribute<double>("length");
         if (l) {

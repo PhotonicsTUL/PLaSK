@@ -137,7 +137,7 @@ shared_ptr<GeometryElement> read_TranslationContainer2D(GeometryReader& reader) 
     read_children<TranslationContainer<2>>(reader,
         [&]() {
             TranslationContainer<2>::DVec translation;
-            translation.tran = reader.source.getAttribute(reader.getAxisLonName(), 0.0);
+            translation.tran = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
             translation.up = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
             return result->add(reader.readExactlyOneChild< typename TranslationContainer<2>::ChildType >(), translation);
         },

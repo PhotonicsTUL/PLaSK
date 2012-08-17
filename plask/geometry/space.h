@@ -94,7 +94,7 @@ struct Geometry: public GeometryElement {
     //void setBorders(const std::function< std::unique_ptr<border::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
 
     /**
-     * Set borders using string value which get from @p borderValuesGetter.
+     * Set borders using string value which is gotten from @p borderValuesGetter.
      * @param borderValuesGetter optionaly return border strategy string for direction(s) given in argument,
      *   argument can be one of: "borders", "planar", "<axis_name>", "<axis_name>-lo", "<axis_name>-hi"
      * @param axesNames name of axes, use to create arguments for @p borderValuesGetter
