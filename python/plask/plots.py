@@ -11,13 +11,20 @@ import matplotlib.lines
 
 import plask
 
-def plotGeometry2D(geometry, axes=None, color='k', width=3.0, set_limits=False, zorder=2):
+def plotGeometry2D(geometry, axes=None, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):
     if axes is None: axes = pylab.gca()
     for leaf,box in zip(geometry.getLeafsAsTranslations(), geometry.getLeafsBBoxes()):
-        if leaf.getMaterial(0.,0.) != plask.material.air:
-            axes.add_patch(matplotlib.patches.Rectangle([box.lower[0], box.lower[1]],
-                                                        box.upper[0]-box.lower[0], box.upper[1]-box.lower[1],
-                                                        ec=color, lw=width, fill=False, zorder=zorder))
+        def add_path(bottom):
+            lefts = [box.lower[0]]
+            if mirror and (geometry.borders['left'] == 'mirror' or geometry.borders['right']): lefts.append(-box.upper[0])
+            for left in lefts:
+                axes.add_patch(matplotlib.patches.Rectangle([left, bottom],
+                                                            box.upper[0]-box.lower[0], box.upper[1]-box.lower[1],
+                                                            ec=color, lw=width, fill=False, zorder=zorder))
+        add_path(box.lower[1])
+        if mirror and (geometry.borders['top'] == 'bottom' or geometry.borders['right']):
+            add_path(-box.upper[1])
+
     if set_limits:
         box = geometry.bbox
         axes.set_xlim(box.lower[0], box.upper[0])

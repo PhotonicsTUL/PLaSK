@@ -231,7 +231,7 @@ void EffectiveIndex2DSolver::stageOne()
         if (xbegin == 1) stripeNeffs[0] = stripeNeffs[1];
 
         std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
-        writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str()/*.substr(1)*/);
+        writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
 
         have_stripeNeffs = true;
     }

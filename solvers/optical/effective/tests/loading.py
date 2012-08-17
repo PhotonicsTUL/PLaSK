@@ -46,7 +46,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.solver2 = self.manager.slv.eff2
 
     def testLoadConfigurations(self):
-        self.assertEqual( self.solver1.id, "EffectiveIndex2D:eff1" )
+        self.assertEqual( self.solver1.id, "eff1:EffectiveIndex2D" )
 
         self.assertEqual( self.solver1.geometry, self.manager.geo.Space_1 )
         self.assertEqual( self.solver2.geometry.child, self.manager.ele.Stack_2 )

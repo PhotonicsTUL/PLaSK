@@ -510,11 +510,11 @@ class Solver {
      * \return id of this solver
      */
     inline std::string getId() const {
-        std::string result = getClassName();
+        std::string name = "";
         if (solver_name != "") {
-            result += ":"; result += solver_name;
+            name += solver_name; name += ":";
         }
-        return result;
+        return name + getClassName();
     }
 
     /// \return solver name
