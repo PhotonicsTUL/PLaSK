@@ -36,9 +36,10 @@ To write solver you should:
    \b your_solver/python.
 
 Once you have your source tree set up, do the following:
--# Write new class which inherit from plask::SolverOver<SPACE_TYPE> or plask::SolverWithMesh<SPACE_TYPE, MESH_TYPE>.
-   SPACE_TYPE should be one of Geometry2DCartesian, Geometry2DCylindrical, or Geometry3D and should indicate in what space your solver
-   is doing calculations. If you want to allow user to specify a mesh for your solver, inherit from plask::SolverWithMesh<SPACE_TYPE, MESH_TYPE>,
+-# Write new class which inherit from \link plask::SolverOver plask::SolverOver<SPACE_TYPE>\endlink or
+   \link plask::SolverWithMesh plask::SolverWithMesh<SPACE_TYPE, MESH_TYPE>\endlink. SPACE_TYPE should be one of Geometry2DCartesian,
+   Geometry2DCylindrical, or Geometry3D and should indicate in what space your solver is doing calculations. If you want to allow
+   user to specify a mesh for your solver, inherit from \link plask::SolverWithMesh plask::SolverWithMesh<SPACE_TYPE, MESH_TYPE>\endlink,
    where MESH_TYPE is the type of your mesh.
 -# Implement plask::Solver::getClassName method. This method should just return the pretty name of your solver class (the same you use in Python and XML).
 -# Implement plask::Solver::onInitialize and optionally plask::Solver::onInvalidate methods.
@@ -57,7 +58,7 @@ Once you have your source tree set up, do the following:
    as the first operation.
 -# Optionally implement plask::Solver::getClassDescription method. This method should just return description of your solver.
 -# Write the Python interface to your class using Boost Python. See the Boos Python documentation or take a look into
-   solvers/skel/python/solver.cpp (for your convenience we have provided some macros that will faciliate creation
+   \b solvers/skel/python/solver.cpp (for your convenience we have provided some macros that will faciliate creation
    of Python interface).
 -# (TODO: in future do something to make the solver available in GUI)
 -# Finally write a good user manual for your solver ;)
