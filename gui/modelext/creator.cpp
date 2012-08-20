@@ -78,7 +78,7 @@ const std::vector<const GeometryElementCreator*>& getCreators(int dim) {
     return empty_vec;
 }
 
-GeometryElementCreator* fromMimeData(const QMimeData * data) {
+GeometryElementCreator* GeometryElementCreator::fromMimeData(const QMimeData * data) {
     QByteArray ptrData = data->data(MIME_PTR_TO_CREATOR);
     QDataStream stream(&ptrData, QIODevice::ReadOnly);
 

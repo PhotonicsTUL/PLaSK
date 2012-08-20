@@ -29,6 +29,20 @@ void TranslationWrapper<3>::draw(QPainter& painter) const {
     //TODO 3d
 }
 
+template <int dim>
+bool TranslationWrapper<dim>::canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
+    return index == 0 &&
+           !this->c().hasChild() &&
+            this->c().canHasAsChild(*to_insert);
+}
+
+template <int dim>
+bool TranslationWrapper<dim>::tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+    if (!this->canInsert(to_insert, index)) return false;
+    this->c().setChild(plask::static_pointer_cast< plask::GeometryElementD<dim> >(to_insert));
+    return true;
+}
+
 template class TranslationWrapper<2>;
 template class TranslationWrapper<3>;
 

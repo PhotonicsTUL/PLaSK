@@ -40,6 +40,8 @@ struct GeometryElementCreator {
     }
 
     //TODO icons? Qt actions?
+
+    static GeometryElementCreator* fromMimeData(const QMimeData * data);
 };
 
 const std::vector<const GeometryElementCreator*>& getCreators();
@@ -49,6 +51,6 @@ const std::vector<const GeometryElementCreator*>& getCreators(int dim);
 
 #define MIME_PTR_TO_CREATOR "data/pointer-to-element-creator"
 
-GeometryElementCreator* fromMimeData(const QMimeData * data);
+
 
 #endif // PLASK_GUI_MODEL_EXT_CREATOR_H

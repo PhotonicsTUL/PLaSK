@@ -22,6 +22,10 @@ struct TranslationWrapper: public ElementWrapperFor< plask::Translation<dim> > {
 
     virtual void draw(QPainter& painter) const;
 
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const;
+
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index);
+
 };
 
 struct ExtrusionWrapper: public ElementWrapperFor< plask::Extrusion > {

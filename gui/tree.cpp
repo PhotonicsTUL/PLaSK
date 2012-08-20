@@ -187,6 +187,10 @@ bool GeometryTreeItem::tryInsert(plask::shared_ptr<plask::GeometryElement> eleme
         return false;
 }
 
+bool GeometryTreeItem::tryInsert(const GeometryElementCreator& element_creator, int index) {
+    return getLowerWrappedElement()->tryInsert(element_creator, index);
+}
+
 int GeometryTreeItem::getInsertionIndexForPoint(const plask::Vec<2, double> &point)
 {
     return getLowerWrappedElement()->getInsertionIndexForPoint(point);
@@ -306,10 +310,17 @@ QVariant GeometryTreeModel::data(const QModelIndex &index, int role) const {
 
 Qt::ItemFlags GeometryTreeModel::flags(const QModelIndex &index) const
 {
-    if (!index.isValid())
+    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+
+    if (index.isValid())
+        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+    else
+        return Qt::ItemIsDropEnabled | defaultFlags;
+
+    /*if (!index.isValid())
         return 0;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable; //| Qt::ItemIsEditable;
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;*/ //| Qt::ItemIsEditable;
 }
 
 QVariant GeometryTreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
@@ -355,4 +366,31 @@ int GeometryTreeModel::insertRow2D(const GeometryElementCreator &to_insert, cons
 
 plask::Box2D GeometryTreeModel::insertPlace2D(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point) {
     return toItem(parent)->getInsertPlace2D(to_insert, point);
+}
+
+bool GeometryTreeModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) {
+    if (action == Qt::IgnoreAction)
+        return true;
+
+    if (data->hasFormat(MIME_PTR_TO_CREATOR)) {
+
+        //for now we doesn't support creating top-level geometries by creators
+        if (!parent.isValid()) return false;
+
+        toItem(parent)->tryInsert(*GeometryElementCreator::fromMimeData(data), row >= 0 ? row : 0);
+
+        return true;
+    }
+
+    return false;
+}
+
+QStringList GeometryTreeModel::mimeTypes() const
+{
+    //TODO append to list also type for internal copy/moves
+    return QStringList() << MIME_PTR_TO_CREATOR;
+}
+
+Qt::DropActions GeometryTreeModel::supportedDropActions() const {
+    return Qt::CopyAction | Qt::MoveAction;
 }

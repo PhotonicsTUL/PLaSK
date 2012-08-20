@@ -23,6 +23,8 @@ struct GeometryWrapper: public ElementWrapperFor< plask::GeometryD<dim> > {
     virtual void drawMiniature(QPainter& painter, qreal w, qreal h) const;
 
     virtual void drawReal(QPainter& painter) const;
+
+    //TODO for insertion impl. see translation
 };
 
 struct Geometry2DCartesianWrapper: public GeometryWrapper<2> {

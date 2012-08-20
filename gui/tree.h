@@ -226,6 +226,8 @@ public:
 
     bool tryInsert(plask::shared_ptr<plask::GeometryElement> element, int index);
 
+    bool tryInsert(const GeometryElementCreator &element_creator, int index);
+
     int getInsertionIndexForPoint(const plask::Vec<2, double>& point);
 
     int tryInsertRow2D(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point);
@@ -350,6 +352,15 @@ public:
     int insertRow2D(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point);
 
     plask::Box2D insertPlace2D(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point);
+
+    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent);
+
+    //virtual QMimeData *	mimeData ( const QModelIndexList & indexes ) const;
+
+    QStringList mimeTypes() const;
+
+    Qt::DropActions supportedDropActions() const;
+
 };
 
 #endif // PLASK_GUI_TREE_H

@@ -249,7 +249,7 @@ public:
         return wrappedElement->isContainer() &&
                 index <= wrappedElement->getRealChildrenCount() &&
                 to_insert->getDimensionsCount() == getChildrenDimensionsCount() &&
-                wrappedElement->canHasAsChild(*to_insert);;
+                wrappedElement->canHasAsChild(*to_insert);
     }
 
     virtual bool canInsert(const GeometryElementCreator& to_insert, std::size_t index) const {

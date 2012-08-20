@@ -236,6 +236,12 @@ void MainWindow::createDockWindows() {
     treeView->addAction(treeRemoveAct);
     treeView->addAction(treeAddBlockAct);
     treeView->setModel(&document.treeModel);
+    //treeView->setDragEnabled(true);
+    //treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    treeView->setDragEnabled(true);
+    treeView->setAcceptDrops(true);
+    treeView->setDropIndicatorShown(true);
+    treeView->setDragDropMode(QAbstractItemView::DragDrop);
     //treeView->selectionModel()->
     QObject::connect(treeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
                      this, SLOT(treeSelectionChanged(const QItemSelection &, const QItemSelection &)));

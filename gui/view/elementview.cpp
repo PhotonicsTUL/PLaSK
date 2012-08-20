@@ -44,7 +44,7 @@ void ElementViewer::dragMoveEvent(QDragMoveEvent *event)
     if (event->source() != 0 && event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
         /*&& findPiece(targetSquare(event->pos())) == -1*/) {
 
-        GeometryElementCreator* creator = fromMimeData(event->mimeData());
+        GeometryElementCreator* creator = GeometryElementCreator::fromMimeData(event->mimeData());
         highlightedRect = toQt(model()->insertPlace2D(*creator, rootIndex(), fromQt(viewToModel().map(QPointF(event->pos())))));
 
         event->setDropAction(Qt::MoveAction);
@@ -65,7 +65,7 @@ void ElementViewer::dropEvent(QDropEvent *event)
         event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
         /*&& findPiece(targetSquare(event->pos())) == -1*/) {
 
-        GeometryElementCreator* creator = fromMimeData(event->mimeData());
+        GeometryElementCreator* creator = GeometryElementCreator::fromMimeData(event->mimeData());
 
         highlightedRect = QRect();
         viewport()->update();
