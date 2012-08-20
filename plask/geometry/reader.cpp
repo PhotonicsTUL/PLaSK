@@ -79,31 +79,39 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
 //    std::string src = source.requireAttribute("over");
     // TODO read subspaces from XML
     shared_ptr<Geometry> result;
-    if (nodeName == "cartesian2d") {    // TODO read borders
+    if (nodeName == "cartesian2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         boost::optional<double> l = source.getAttribute<double>("length");
+        shared_ptr<Geometry2DCartesian> cartesian2d = make_shared<Geometry2DCartesian>();   //result with oryginal type
+        result = cartesian2d;
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
         if (l) {
-            result = make_shared<Geometry2DCartesian>(readExactlyOneChild<GeometryElementD<2>>(), *l);
+            cartesian2d->setExtrusion(make_shared<Extrusion>(readExactlyOneChild<GeometryElementD<2>>(), *l));
         } else {
             auto child = readExactlyOneChild<GeometryElement>();
-            auto extrusion = dynamic_pointer_cast<Extrusion>(child);
-            if (extrusion) {
-                result = make_shared<Geometry2DCartesian>(extrusion);
+            auto child_as_extrusion = dynamic_pointer_cast<Extrusion>(child);
+            if (child_as_extrusion) {
+                cartesian2d->setExtrusion(child_as_extrusion);
             } else {
-                result = make_shared<Geometry2DCartesian>(dynamic_pointer_cast<GeometryElementD<2>>(child), INFINITY);
-                if (!result) throw UnexpectedGeometryElementTypeException();
+                auto child_as_2d = dynamic_pointer_cast<GeometryElementD<2>>(child);
+                if (!child_as_2d) throw UnexpectedGeometryElementTypeException();
+                cartesian2d->setExtrusion(make_shared<Extrusion>(child_as_2d, INFINITY));
             }
         }
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-        result = make_shared<Geometry2DCylindrical>(readExactlyOneChild<GeometryElementD<2>>());
+        result = make_shared<Geometry2DCylindrical>();
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
+        static_pointer_cast<Geometry2DCylindrical>(result)->
+            setRevolution(make_shared<Revolution>(readExactlyOneChild<GeometryElementD<2>>()));
     } else if (nodeName == "3d" || nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-        result = make_shared<Geometry3D>(readExactlyOneChild<GeometryElementD<3>>());
+        result = make_shared<Geometry3D>();
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
+        static_pointer_cast<Geometry3D>(result)->setChildUnsafe(
+            readExactlyOneChild<GeometryElementD<3>>());
     } else
         throw XMLUnexpectedElementException(source, "geometry tag (<cartesian2d>, <cartesian3d>, or <cylindrical>)");
-
-    result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
 
     if (name) manager.geometries[*name] = result;
     return result;
