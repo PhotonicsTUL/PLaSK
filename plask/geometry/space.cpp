@@ -56,13 +56,13 @@ void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
 Geometry2DCartesian::Geometry2DCartesian(shared_ptr<Extrusion> extrusion)
     : extrusion(extrusion)
 {
-    if (extrusion) init();
+    initNewChild();
 }
 
 Geometry2DCartesian::Geometry2DCartesian(shared_ptr<GeometryElementD<2>> childGeometry, double length)
     : extrusion(make_shared<Extrusion>(childGeometry, length))
 {
-   init();
+   initNewChild();
 }
 
 shared_ptr< GeometryElementD<2> > Geometry2DCartesian::getChild() const {
@@ -85,7 +85,7 @@ shared_ptr<Material> Geometry2DCartesian::getMaterial(const Vec<2, double> &p) c
 void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
     if (this->extrusion == extrusion) return;
     this->extrusion = extrusion;
-    cachedBoundingBox = getChild()->getBoundingBox();
+    this->initNewChild();
     fireChildrenChanged();
 }
 
@@ -129,13 +129,13 @@ const border::Strategy& Geometry2DCartesian::getBorder(DIRECTION direction, bool
 Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<Revolution> revolution)
     : revolution(revolution)
 {
-    if (revolution) init();
+    initNewChild();
 }
 
 Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<GeometryElementD<2>> childGeometry)
     : revolution(make_shared<Revolution>(childGeometry))
 {
-   init();
+   initNewChild();
 }
 
 shared_ptr< GeometryElementD<2> > Geometry2DCylindrical::getChild() const {
@@ -158,6 +158,7 @@ shared_ptr<Material> Geometry2DCylindrical::getMaterial(const Vec<2, double> &p)
 void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
     if (this->revolution == revolution) return;
     this->revolution = revolution;
+    this->initNewChild();
     fireChildrenChanged();
 }
 
@@ -243,7 +244,7 @@ const border::Strategy &Geometry3D::getBorder(DIRECTION direction, bool higher) 
 
 Geometry3D::Geometry3D(shared_ptr<GeometryElementD<3>> child)
 : child(child) {
-    if (child) init();
+    initNewChild();
 }
 
 shared_ptr<GeometryElementD<3> > Geometry3D::getChild() const {

@@ -197,17 +197,30 @@ class GeometryD: public Geometry {
         fireChanged(evt.flagsForParent());
     }
 
+    /// Disconnect onChildChanged from current child change signal
+    void disconnectOnChildChanged() {
+        //if (getChild())
+        connection_with_child.disconnect();
+    }
+
     /**
-     * Initialize bounding box cache.
-     * Subclasses should call this from it's constructors (can't be moved to constructor because it uses virtual method getChild).
+     * Initialize bounding box cache and onChange connection.
+     *
+     * Subclasses should call this from it's constructors (can't be moved to constructor because it uses virtual method getChild)
+     * and after changing child.
      */
-    void init() {
-        connection_with_child = getChild()->changedConnectMethod(this, &GeometryD<dim>::onChildChanged);
-        cachedBoundingBox = getChild()->getBoundingBox();
+    void initNewChild() {
+        disconnectOnChildChanged(); //disconnect old child, if any
+        auto c3d = getElement3D();
+        if (c3d) {
+            if (c3d) connection_with_child = c3d->changedConnectMethod(this, &GeometryD<dim>::onChildChanged);
+            auto c = getChild();
+            if (c) cachedBoundingBox = c->getBoundingBox();
+        }
     }
 
     virtual ~GeometryD() {
-        connection_with_child.disconnect();
+        disconnectOnChildChanged();
     }
 
 public:
@@ -648,27 +661,6 @@ class Geometry3D: public GeometryD<3> {
     border::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
     border::StrategyPairHolder<Primitive<3>::DIRECTION_UP> bottomup;
 
-    /// Delegate event from child
-    virtual void onChildChanged(const GeometryElement::Event& evt) {
-        this->fireChanged(evt.flagsForParent());
-    }
-
-    /// Connect onChildChanged to current child change signal
-    void connectOnChildChanged() {
-        if (child)
-            child->changed.connect(
-                boost::bind(&Geometry3D::onChildChanged, this, _1)
-            );
-    }
-
-    /// Disconnect onChildChanged from current child change signal
-    void disconnectOnChildChanged() {
-        if (child)
-            child->changed.disconnect(
-                boost::bind(&Geometry3D::onChildChanged, this, _1)
-            );
-    }
-
 public:
 
     /**
@@ -753,25 +745,21 @@ public:
 
     /**
      * Set new child.
-     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after setting the new child.
-     * It also not inform observers about change.
+     * This method doesn't inform observers about change.
      * @param child new child
      */
     void setChildUnsafe(shared_ptr< GeometryElementD<3> > child) {
         if (child == this->child) return;
-        disconnectOnChildChanged();
         this->child = child;
-        connectOnChildChanged();
+        this->initNewChild();
     }
 
     /**
-     * Set new child.
+     * Set new child. Informs observers about change.
      * @param child new child
-     * @throw CyclicReferenceException if set new child cause inception of cycle in geometry graph
-     * @throw NoChildException if child is an empty pointer
      */
     void setChild(shared_ptr< GeometryElementD<3> > child) {
-        this->ensureCanHaveAsChild(*child);
+        //this->ensureCanHaveAsChild(*child);
         setChildUnsafe(child);
         fireChildrenChanged();
     }
