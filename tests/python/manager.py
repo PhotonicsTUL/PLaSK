@@ -11,6 +11,7 @@ class Manager(unittest.TestCase):
     def setUp(self):
         self.manager = plask.Manager()
         self.manager.read('''
+        <plask>
             <geometry>
                 <cartesian2d name="Space 1" axes="xy">
                     <stack name="Stack 2">
@@ -42,6 +43,7 @@ class Manager(unittest.TestCase):
                     </refinements>
                 </generator>
             </grids>
+        </plask>
         ''')
 
     def testGeometry(self):
@@ -81,6 +83,7 @@ class Manager(unittest.TestCase):
         manager = plask.Manager()
         with self.assertRaises(plask.XMLError):
             manager.read('''
+            <plask>
                 <geometry>
                     <cartesian2d name="Space 1" axes="xy">
                         <stack name="Stack 2">
@@ -88,36 +91,62 @@ class Manager(unittest.TestCase):
                             <ref name="Block 3"/>
                     </cartesian2d>
                 </geometry>
+            </plask>
             ''')
         with self.assertRaises(plask.XMLError):
             manager.read('''
+            <plask>
                 <grids>
                     <mesh type="rectilinear2d" name="lin">
                         <axis0>1, 2, 3</axis0>
                         <axis0>10 20 30</axis0>
                     </mesh>
                 </grids>
+            <plask>
             ''')
         with self.assertRaises(plask.XMLError):
             manager.read('''
+            <plask>
                 <grids>
                     <generator type="rectilinear2d" method="divide" name="test">
                         <postdiv by="4" hor_by="2" vert_by="3"/>
                     </generator>
                 </grids>
+            </plask>
             ''')
         with self.assertRaises(plask.XMLError):
             manager.read('''
+            <plask>
                 <grids>
                     <generator type="rectilinear2d" method="divide" name="test">
                         <postdiv bye="4"/>
                     </generator>
                 </grids>
+            </plask>
             ''')
         with self.assertRaises(plask.XMLError):
             manager.read('''
+            <plask>
                 <geometry>
                     <cartesian2d name="Space 2" axes="xy">
                         <rectangle x="5" y="2" material="GaN" />
                     </cartesian2d>
+            </plask>
             ''')
+
+
+    def testSolverConnections(self):
+        manager = plask.Manager()
+        manager.read('''
+        <plask>
+            <solvers>
+                <plasktest lib="solvers" solver="InOut" name="output"/>
+                <plasktest lib="solvers" solver="InOut" name="input"/>
+            </solvers>
+            <relations>
+                <connect out="output.outWavelength" in="input.inWavelength"/>
+            </relations>
+        </plask>
+        ''')
+        self.assertEqual( manager.solvers.output.inWavelength(), 2 )
+        self.assertEqual( manager.solvers.input.inWavelength(), 5 )

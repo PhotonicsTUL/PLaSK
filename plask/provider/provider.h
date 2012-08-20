@@ -216,7 +216,7 @@ struct Provider {
  * For most providers types, Receiver type can be defined as: <code>Receiver<ProviderClass>;</code>
  * (where <code>ProviderClass</code> is type of provider class)
  *
- * @tparam ProviderT type of provider, can has defined ProviderT::ConstProviderT to reciver setConst method work.
+ * @tparam ProviderT type of provider, can has defined ProviderT::ConstProviderType to reciver setConst method work.
  *
  * @see @ref providers
  */
@@ -352,12 +352,12 @@ struct Receiver: public Provider::Receiver {
     /**
      * Set provider for this to provider of constant.
      *
-     * Use ProviderT::ConstProviderT as provider of const type.
-     * @param constProviderConstructorArgs parameters passed to ProviderT::ConstProviderT constructor
+     * Use ProviderT::ConstProviderType as provider of const type.
+     * @param constProviderConstructorArgs parameters passed to ProviderT::ConstProviderType constructor
      */
     template <typename ...ConstProviderConstructorArgs>
     void setConstValue(ConstProviderConstructorArgs&&... constProviderConstructorArgs) {
-        setProvider(new typename ProviderT::ConstProviderT(std::forward<ConstProviderConstructorArgs>(constProviderConstructorArgs)...), true);
+        setProvider(new typename ProviderT::ConstProviderType(std::forward<ConstProviderConstructorArgs>(constProviderConstructorArgs)...), true);
     }
 
 protected:
@@ -546,10 +546,10 @@ struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _Base
  * @see @ref providers
  */
 enum PropertyType {
-    SINGLE_VALUE_PROPERTY = 0,	        ///< Single value property
-    ON_MESH_PROPERTY = 1,			///< Property for field of values which can't be interpolated
-    FIELD_PROPERTY = 2	///< Property for field of values which can be interpolated
-};	//TODO change this to empty classes(?)
+    SINGLE_VALUE_PROPERTY = 0,          ///< Single value property
+    ON_MESH_PROPERTY = 1,               ///< Property for field of values which can't be interpolated
+    FIELD_PROPERTY = 2                  ///< Property for field of values which can be interpolated
+};  //TODO change this to empty classes(?)
 
 template <PropertyType prop_type>
 struct PropertyTypeToProviderName {
@@ -581,9 +581,9 @@ struct PropertyTypeToProviderName<FIELD_PROPERTY> {
  */
 template <PropertyType _propertyType, typename _ValueType>
 struct Property {
-    ///Type of property.
+    /// Type of property.
     static const PropertyType propertyType = _propertyType;
-    ///Type of provided value.
+    /// Type of provided value.
     typedef _ValueType ValueType;
 
     static constexpr const char* NAME = PropertyTypeToProviderName<_propertyType>::value;
@@ -674,7 +674,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::
     /**
      * Set provider for this to provider of constant.
      *
-     * Use ProviderT::ConstProviderT as provider of const type.
+     * Use ProviderT::ConstProviderType as provider of const type.
      * @param v value which should be provided for this receiver
      * @return *this
      */
@@ -684,13 +684,24 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::
     }
 
     /**
-     * Set provider for this to provider of given field.
+     * Set provider to internal to provider of given field.
+     * \param data data with field values in mesh points
+     * \param mesh mesh value
      */
-    template <typename MeshPtrT>
-    void setValue(DataVector<typename PropertyT::ValueType> data, const MeshPtrT& mesh) {
+    template <typename MeshPtrT, PropertyType propertyType = PropertyTag::propertyType>
+    typename std::enable_if<propertyType == FIELD_PROPERTY>::type setValue(DataVector<typename PropertyT::ValueType> data, const MeshPtrT& mesh) {
         if (data.size() != mesh->size())
             throw BadMesh("ReceiverFor::setValue()", "Mesh size (%2%) and data size (%1%) do not match", data.size(), mesh->size());
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshPtrT>(data, mesh), true);
+    }
+
+    /**
+     * Set provider to internal provider of some value.
+     * \param value value to set
+     */
+    template <typename... Args, PropertyType propertyType = PropertyTag::propertyType>
+    typename std::enable_if<propertyType == SINGLE_VALUE_PROPERTY>::type setValue(Args&&... value) {
+        this->setProvider(new typename ProviderFor<PropertyTag>::WithValue(std::forward<Args>(value)...), true);
     }
 
     static_assert(!(std::is_same<SpaceT, void>::value && (PropertyT::propertyType == ON_MESH_PROPERTY || PropertyT::propertyType == FIELD_PROPERTY)),
@@ -791,9 +802,11 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
             if (!hasValue()) throw NoValue(NAME);
         }
 
-        /// Delegate all constructors to value.
-        template<typename ...Args>
-        WithValue(Args&&... params): value(ProvidedValueType(std::forward<Args>(params)...)) {}
+        /// Construct value
+        WithValue(const ProvidedValueType& value): value(value) {}
+
+        /// Construct value
+        WithValue(ProvidedValueType&& value): value(value) {}
 
         /// Create empty boost::optional value.
         WithValue() {}
@@ -835,7 +848,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT>: public Si
     typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedValueType()> Delegate;
 
     /// Used by receivers as const value provider, see Receiver::setConst
-    typedef WithValue ConstProviderT;
+    typedef WithValue ConstProviderType;
 
 };
 
@@ -864,16 +877,16 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT>: public OnMeshP
      *
      * Used by receivers as const value provider, see Receiver::setConst
      */
-    struct ConstProviderT: public ProviderFor<PropertyT, SpaceT> {
+    struct ConstProviderType: public ProviderFor<PropertyT, SpaceT> {
 
         typedef ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
 
         ValueT value;
 
-        //ConstProviderT(const ValueT& value): value(value) {}
+        //ConstProviderType(const ValueT& value): value(value) {}
 
         template<typename ...Args>
-        ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
+        ConstProviderType(Args&&... params): value(std::forward<Args>(params)...) {}
 
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh) const {
             //return copy of value for each point in dst_mesh
@@ -1050,21 +1063,21 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>: public OnMeshPro
      *
      * Used by receivers as const value provider, see Receiver::setConst
      */
-    struct ConstProviderT: public ProviderFor<PropertyT, SpaceT> {
+    struct ConstProviderType: public ProviderFor<PropertyT, SpaceT> {
 
         typedef ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT>::ProvidedValueType ProvidedValueType;
 
         /// Provided value
         ValueT value;
 
-        //ConstProviderT(const ValueT& value): value(value) {}
+        //ConstProviderType(const ValueT& value): value(value) {}
 
         /**
          * Constructor which delegate all parameters to value constructor.
          * @param params ValueT constructor parameters, forwarded to value
          */
         template<typename ...Args>
-        ConstProviderT(Args&&... params): value(std::forward<Args>(params)...) {}
+        ConstProviderType(Args&&... params): value(std::forward<Args>(params)...) {}
 
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method

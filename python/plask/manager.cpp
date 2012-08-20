@@ -3,7 +3,7 @@
 #include "python_globals.h"
 #include <numpy/arrayobject.h>
 
-#include <plask/manager.h>
+#include "python_manager.h"
 
 #if PY_VERSION_HEX >= 0x03000000
 #   define NEXT "__next__"
@@ -13,58 +13,89 @@
 
 namespace plask { namespace python {
 
-struct PythonManager: public Manager {
-
-    MaterialsDB* materialsDB;
-
-    PythonManager(MaterialsDB* db=nullptr) : materialsDB(db? db : &MaterialsDB::getDefault()) {}
-
-    void read(py::object src) {
-        try {
-            std::string str = py::extract<std::string>(src);
-            if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) // str is not XML (a filename probably)
-                loadFromFile(str, *materialsDB);
-            else
-                loadFromXMLString(str, *materialsDB);
-        } catch (py::error_already_set) {
-            PyErr_Clear();
-#if PY_VERSION_HEX < 0x03000000 && !defined(__MINGW32__)
+void PythonManager::read(py::object src) {
+    std::string str;
+    try {
+        str = py::extract<std::string>(src);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+#       if PY_VERSION_HEX < 0x03000000 && !defined(__MINGW32__)
             if (!PyFile_Check(src.ptr())) throw TypeError("argument is neither string nor a proper file-like object");
             PyFileObject* pfile = (PyFileObject*)src.ptr();
             auto file = PyFile_AsFile(src.ptr());
             PyFile_IncUseCount(pfile);
             loadFromFILE(file);
             PyFile_DecUseCount(pfile);
-#else
+#       else
             // TODO choose better solution if XML parser is changed from irrXML to something more robust
             if (!PyObject_HasAttrString(src.ptr(),"read")) throw TypeError("argument is neither string nor a proper file-like object");
             loadFromXMLString(py::extract<std::string>(src.attr("read")()));
-#endif
+#       endif
+        return;
+    }
+    if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) // str is not XML (a filename probably)
+        loadFromFile(str, *materialsDB);
+    else
+        loadFromXMLString(str, *materialsDB);
+}
+
+shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) {
+    std::string module_name = category + "." + lib;
+    py::object module = py::import(module_name.c_str());
+    py::object solver = module.attr(solver_name.c_str())(name);
+    return py::extract<shared_ptr<Solver>>(solver);
+}
+
+void PythonManager::loadRelations(XMLReader& reader) {
+    while(reader.requireTagOrEnd()) {
+        if (reader.getNodeName() != "connect") throw XMLUnexpectedElementException(reader, "<connect>", reader.getNodeName());
+        auto out = splitString2(reader.requireAttribute("out"), '.');
+        auto in = splitString2(reader.requireAttribute("in"), '.');
+
+        py::object py_in, py_out, provider, receiver;
+
+        auto out_solver = solvers.find(out.first);
+        if (out_solver == solvers.end()) throw ValueError("Cannot find (out) solver with name '%1%'.", out.first);
+        try { py_out = py::object(out_solver->second); }
+        catch (py::error_already_set) { throw TypeError("Cannot convert solver '%1%' to python object.", out.first); }
+
+        auto in_solver = solvers.find(in.first);
+        if (in_solver == solvers.end()) throw ValueError("Cannot find (in) solver with name '%1%'.", in.first);
+        try { py_in = py::object(in_solver->second); }
+        catch (py::error_already_set) { throw TypeError("Cannot convert solver '%1%' to python object.", in.first); }
+
+        try { provider = py_out.attr(out.second.c_str()); }
+        catch (py::error_already_set) { throw AttributeError("Solver '%1%' does not have attribute '%2%.", out.first, out.second); }
+
+        try { receiver = py_in.attr(in.second.c_str()); }
+        catch (py::error_already_set) { throw AttributeError("Solver '%1%' does not have attribute '%2%.", in.first, in.second); }
+
+        try {
+            receiver << provider;
+        } catch (py::error_already_set) {
+            throw TypeError("Cannot connect '%1%.%2%' to '%3%.'%4%'.", out.first, out.second, in.first, in.second);
         }
+
+        reader.requireTagEnd();
+    }
+}
+
+void PythonManager::export_dict(py::object self, py::dict dict) {
+    dict["ELE"] = self.attr("ele");
+    dict["PTH"] = self.attr("pth");
+    dict["GEO"] = self.attr("geo");
+    dict["MSH"] = self.attr("msh");
+    dict["MSG"] = self.attr("msg");
+
+    PythonManager* ths = py::extract<PythonManager*>(self);
+
+    for (auto thesolver: ths->solvers) {
+        dict[thesolver.first] = py::object(thesolver.second);
     }
 
-    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) {
-        std::string module_name = category + "." + lib;
-        py::object module = py::import(module_name.c_str());
-        py::object solver = module.attr(solver_name.c_str())(name);
-        return py::extract<shared_ptr<Solver>>(solver);
-    }
+    if (ths->script != "") dict["__script__"] = ths->script;
+}
 
-
-    static void export_dict(py::object self, py::dict dict) {
-        dict["ELE"] = self.attr("ele");
-        dict["PTH"] = self.attr("pth");
-        dict["GEO"] = self.attr("geo");
-        dict["MSH"] = self.attr("msh");
-        dict["MSG"] = self.attr("msg");
-
-        PythonManager* ths = py::extract<PythonManager*>(self);
-
-        for (auto thesolver: ths->solvers) {
-            dict[thesolver.first] = py::object(thesolver.second);
-        }
-    }
-};
 
 template <typename T> static const std::string item_name() { return ""; }
 template <> const std::string item_name<shared_ptr<GeometryElement>>() { return "geometry element"; }
@@ -215,7 +246,7 @@ static void register_manager_dict(const std::string name) {
 
 
 void register_manager() {
-    py::class_<PythonManager, boost::noncopyable> manager("Manager",
+    py::class_<PythonManager, shared_ptr<PythonManager>, boost::noncopyable> manager("Manager",
         "Main input manager. It provides methods to read the XML file and fetch geometry elements, pathes,"
         "meshes, and generators by name.\n\n"
         "GeometryReader(materials=None)\n"
@@ -228,6 +259,7 @@ void register_manager() {
         .def_readonly("meshes", &PythonManager::meshes, "Dictionary of all named meshes")
         .def_readonly("mesh_generators", &PythonManager::generators, "Dictionary of all named mesh generators")
         .def_readonly("solvers", &PythonManager::solvers, "Dictionary of all named solvers")
+        .def_readonly("script", &PythonManager::script, "Script read from XML file")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
     manager.attr("ele") = manager.attr("elements");

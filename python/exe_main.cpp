@@ -9,6 +9,7 @@ namespace py = boost::python;
 
 #include <plask/exceptions.h>
 #include <plask/utils/system.h>
+#include "plask/python_manager.h"
 
 //******************************************************************************
 #ifdef __cplusplus
@@ -121,23 +122,72 @@ int main(int argc, const char *argv[])
         }
 
         try {
-            const char* f = argv[1];
-#           if PY_VERSION_HEX >= 0x03000000
-                PyObject* pf = PyUnicode_FromString(f);
-                FILE* fs = _Py_fopen(pf, "r");
-                PyObject* result = PyRun_File(fs, f, Py_file_input, globals.ptr(), globals.ptr());
-                fclose(fs);
-#           else
-                // We dont use py::exec_file, as we want to set "from __future__ import division" flag
-                PyObject *pf = PyFile_FromString(const_cast<char*>(f), const_cast<char*>("r"));
-                if (!pf) throw std::invalid_argument("No such file: " + std::string(f));
-                FILE *fs = PyFile_AsFile(pf);
-                PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                PyObject* result = PyRun_FileFlags(fs, f, Py_file_input, globals.ptr(), globals.ptr(), &flags);
-#           endif
-            Py_DECREF(pf);
-            if (!result) py::throw_error_already_set();
-            else Py_DECREF(result);
+            std::string filename = argv[1];
+            boost::optional<bool> xml_input;
+
+            // Detect if the file is Python script or PLaSK input
+
+            // check file extension
+            std::string ext = filename.substr(filename.length()-4);
+            if (ext == ".xpl") xml_input.reset(true);
+            else if (ext == ".xml") xml_input.reset(true);
+            else if (ext.substr(2) == ".py") xml_input.reset(false);
+
+            if (!xml_input) {
+                // check first char (should be '<' in XML)
+                FILE* file = std::fopen(filename.c_str(), "r");
+                if (!file) throw std::invalid_argument("No such file: " + filename);
+                int c;
+                while ((c = std::getc(file))) {
+                    if (!std::isspace(c) || c == EOF) break;
+                }
+                std::fclose(file);
+                if (c == '<') xml_input.reset(true);
+                else xml_input.reset(false);
+            }
+
+            if (*xml_input) {
+
+                auto manager = plask::make_shared<plask::python::PythonManager>();
+                globals["__manager__"] = py::object(manager);
+                FILE* file = std::fopen(filename.c_str(), "r");
+                if (!file) throw std::invalid_argument("No such file: " + filename);
+                manager->loadFromFILE(file);
+                std::fclose(file);
+                plask::python::PythonManager::export_dict(globals["__manager__"], globals);
+#               if PY_VERSION_HEX >= 0x03000000
+                    PyCodeObject* code = Py_CompileString(manager->script.c_str(), (filename+"\", tag \"<script>").c_str(), Py_file_input);
+#               else
+                    PyCompilerFlags flags { CO_FUTURE_DIVISION };
+                    PyObject* code = Py_CompileStringFlags(manager->script.c_str(), (filename+"\", tag \"<script>").c_str(), Py_file_input, &flags);
+#               endif
+                PyObject* result = NULL;
+                if (code)
+                    result = PyEval_EvalCode((PyCodeObject*)code, globals.ptr(), globals.ptr());
+                Py_XDECREF(code);
+                if (!result) py::throw_error_already_set();
+                else Py_DECREF(result);
+
+            } else {
+
+#               if PY_VERSION_HEX >= 0x03000000
+                    PyObject* pyfile = PyUnicode_FromString(filename.c_str());
+                    FILE* file = _Py_fopen(pf, "r");
+                    PyObject* result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
+                    fclose(file);
+#               else
+                    // We want to set "from __future__ import division" flag
+                    PyObject *pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
+                    if (!pyfile) throw std::invalid_argument("No such file: " + filename);
+                    FILE* file = PyFile_AsFile(pyfile);
+                    PyCompilerFlags flags { CO_FUTURE_DIVISION };
+                    PyObject* result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
+#               endif
+                Py_DECREF(pyfile);
+                if (!result) py::throw_error_already_set();
+                else Py_DECREF(result);
+
+            }
         } catch (std::invalid_argument err) {
             std::cerr << err.what() << "\n";
             return 100;

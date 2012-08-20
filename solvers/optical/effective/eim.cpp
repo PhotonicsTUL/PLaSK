@@ -51,6 +51,8 @@ void EffectiveIndex2DSolver::loadParam(const std::string& param, XMLReader& read
                 symmetry = SYMMETRY_NEGATIVE;
             } else throw BadInput(getId(), "Wrong symmetry specification '%1%' in XML", *sym);
         }
+        auto wavelength = reader.getAttribute<double>("wavelength");
+        if (wavelength) inWavelength.setValue(*wavelength);
     } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
             root.tolf_min = reader.getAttribute<double>("tolf_min", root.tolf_min);

@@ -22,7 +22,7 @@ namespace plask {
  * @param splitter splitter character
  * @return two strings, @a to_split after split
  */
-std::tuple<std::string, std::string> splitString2(const std::string& to_split, char splitter);
+std::pair<std::string, std::string> splitString2(const std::string& to_split, char splitter);
 
 /**
  * Calculate copy of string @p str without some characters.

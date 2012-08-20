@@ -228,7 +228,7 @@ class PythonComplexMaterialConstructor : public MaterialsDB::MaterialConstructor
  */
 void registerSimpleMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
 {
-    std::string dopant = std::get<1>(splitString2(name, ':'));
+    std::string dopant = splitString2(name, ':').second;
     db.addSimple(new PythonSimpleMaterialConstructor(name, material_class, dopant));
 }
 
@@ -239,7 +239,7 @@ void registerSimpleMaterial(const std::string& name, py::object material_class, 
  */
 void registerComplexMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
 {
-    std::string dopant = std::get<1>(splitString2(name, ':'));
+    std::string dopant = splitString2(name, ':').second;
     db.addComplex(new PythonComplexMaterialConstructor(name, material_class, dopant));
 }
 
@@ -417,7 +417,7 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
         }
     }
     if (name != "") {
-        std::string basename = std::get<0>(splitString2(name, ':'));
+        std::string basename = splitString2(name, ':').first;
         std::vector<std::string> elements = Material::parseElementsNames(basename);
         for (auto c: comp) {
             if (std::find(elements.begin(), elements.end(), c.first) == elements.end()) {

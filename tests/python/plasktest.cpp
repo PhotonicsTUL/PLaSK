@@ -133,6 +133,21 @@ struct SimpleSolver : plask::Solver {
     }
 };
 
+struct InOutSolver : plask::Solver {
+    struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {};
+
+    virtual std::string getClassName() const { return "InOut"; }
+
+    plask::ReceiverFor<plask::Wavelength> inWavelength;
+    plask::ProviderFor<plask::Wavelength>::WithValue outWavelength;
+
+    InOutSolver(const std::string& name="") : Solver(name) {
+        inWavelength = 2.;
+        outWavelength = 5.;
+    }
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
@@ -168,4 +183,15 @@ BOOST_PYTHON_MODULE(plasktest)
         .def("showVectors", &SimpleSolver::showVectors)
     ;
 
+    {
+        py::object module { py::handle<>(py::borrowed(PyImport_AddModule("plasktest.solvers"))) };
+        py::scope().attr("solvers") = module;
+        py::scope scope = module;
+
+        plask::python::ExportSolver<InOutSolver>("InOut", py::init<std::string>())
+            .add_receiver("inWavelength", &InOutSolver::inWavelength, "Input Wavelength")
+            .add_provider("outWavelength", &InOutSolver::outWavelength, "Output Wavelength")
+    ;
+
+    }
 }

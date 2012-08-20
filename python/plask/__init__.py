@@ -76,7 +76,11 @@ def read(source, destination=None):
         except NameError:
             import __main__
             destination = __main__.__dict__
-    manager = Manager()
+    try:
+        manager = destination['manager']
+    except KeyError:
+        manager = Manager()
+        destination['manager'] = manager
     manager.read(source)
     manager.export(destination)
 

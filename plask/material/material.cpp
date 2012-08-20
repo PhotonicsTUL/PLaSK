@@ -261,9 +261,9 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
         throw MaterialParseException("expected space or '=' but found '%1%' instead", *name_end);
     do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
     auto p = splitString2(std::string(name_end, end), '=');
-    //TODO check std::get<0>(p) if is p/n compatibile with dopant_elem_name
+    //TODO check p.first if is p/n compatibile with dopant_elem_name
     doping_amount_type = Material::CARRIER_CONCENTRATION;
-    doping_amount = toDouble(std::get<1>(p));
+    doping_amount = toDouble(p.second);
 }
 
 void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, Material::DopingAmountType &doping_amount_type, double &doping_amount) {

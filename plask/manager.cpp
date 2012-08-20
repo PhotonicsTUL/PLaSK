@@ -157,26 +157,50 @@ void Manager::loadSolvers(XMLReader& reader) {
     }
 }
 
+void Manager::loadRelations(XMLReader& reader)
+{
+    throw NotImplemented("Loading relations only possible from Python interface.");
+}
+
+void Manager::loadScript(XMLReader& reader)
+{
+    if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("script"))
+        throw XMLUnexpectedElementException(reader, "<script>");
+    script = reader.requireText();
+    reader.requireTagEnd();
+}
+
+
 template <typename MaterialsSource>
 void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource)
 {
-    //TODO: maybe some external tag or XML header?
-
+    reader.requireTag("plask");
     reader.requireTag();
+
     if (reader.getNodeName() == "geometry") {
         GeometryReader greader(*this, reader, materialsSource);
         loadGeometry(greader);
-        if (!reader.read()) return;
+        if (!reader.requireTagOrEnd()) return;
     }
 
     if (reader.getNodeName() == "grids") {
         loadGrids(reader);
-        if (!reader.read()) return;
+        if (!reader.requireTagOrEnd()) return;
     }
 
     if (reader.getNodeName() == "solvers") {
         loadSolvers(reader);
-        if (!reader.read()) return;
+        if (!reader.requireTagOrEnd()) return;
+    }
+
+    if (reader.getNodeName() == "relations") {
+        loadRelations(reader);
+        if (!reader.requireTagOrEnd()) return;
+    }
+
+    if (reader.getNodeName() == "script") {
+        loadScript(reader);
+        if (!reader.requireTagOrEnd()) return;
     }
 }
 

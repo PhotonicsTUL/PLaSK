@@ -11,6 +11,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def setUp(self):
         self.manager = Manager()
         self.manager.read("""
+        <plask>
             <geometry>
                 <cartesian2d name="Space 1" axes="xy">
                     <stack name="Stack 2">
@@ -41,6 +42,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
                     <mesh ref="div"/>
                 </optical>
             </solvers>
+        </plask>
         """)
         self.solver1 = self.manager.slv.eff1
         self.solver2 = self.manager.slv.eff2

@@ -66,11 +66,12 @@ class Manager {
     /// Solvers by name.
     std::map< std::string, shared_ptr<Solver> > solvers;
 
-    //TODO solvers map
-
     /// Boundaries places by name.
     //TODO? move to special modules reader class to have more local scope?
     std::map< std::string, boost::any > boundaries;
+
+    /// Script read from file
+    std::string script;
 
     /**
      * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
@@ -174,6 +175,19 @@ class Manager {
      * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
     void loadSolvers(XMLReader& greader);
+
+    /**
+     * Load solvers relations from the file.
+     * \param reader XMLreader to load from
+     */
+    virtual void loadRelations(XMLReader& reader);
+
+    /**
+     * Load script from the file. Do not execute it.
+     * \param reader XMLreader to load from
+     * \return read script
+     */
+    void loadScript(XMLReader& reader);
 
     /**
      * Load geometry using XML reader.

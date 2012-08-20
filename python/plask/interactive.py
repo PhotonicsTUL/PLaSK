@@ -56,9 +56,9 @@ _import_all = False
 
 def _init_ipython_session(argv=[]):
     """Construct new IPython session. """
-    import IPython
     from IPython.frontend.terminal import ipapp
     app = ipapp.TerminalIPythonApp()
+    app.profile = "plask"
     app.display_banner = False
     app.exec_lines = preexec_lines
     app.initialize(argv)

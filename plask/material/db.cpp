@@ -65,9 +65,8 @@ std::string dbKey(const std::string& name, const std::string& dopant_name) {
 }
 
 std::string dbKey(const std::string& fullComplexName) {
-    std::string name, dopant;
-    std::tie(name, dopant) = splitString2(fullComplexName, ':');
-    return dbKey(name, dopant);
+    auto name_dopant = splitString2(fullComplexName, ':');
+    return dbKey(name_dopant.first, name_dopant.second);
 }
 
 /*std::string dbKey(std::vector<std::string> elemenNames, const std::string& dopant_name = "") {
@@ -173,7 +172,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components,
 
 shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     auto pair = splitString2(full_name, ':');
-    return get(std::get<0>(pair), std::get<1>(pair));
+    return get(pair.first, pair.second);
 }
 
 MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
