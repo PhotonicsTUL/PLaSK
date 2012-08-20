@@ -1,6 +1,6 @@
 #include "femT.h"
 
-namespace plask { namespace solvers { namespace finiteT {
+namespace plask { namespace solvers { namespace thermal {
 
 FiniteElementMethodThermal2DSolver::FiniteElementMethodThermal2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
@@ -42,7 +42,7 @@ void FiniteElementMethodThermal2DSolver::setMatrixData()
 
     size_t tNoOfElements = (tNoOfNodesX -1) * (tNoOfNodesY -1); // number of elements (all)
 
-    getMesh()->setOptimalIterationOrder();
+    //getMesh()->setOptimalIterationOrder();
 /*
     size_t tN = 1; // TODO: TU MUSI WEJSC NR PIERWSZEGO ELEMENTU (O ILE S� W OG�LE NUMEROWANE, JE�LI NIE TO DA� 1)
     size_t tE = 1; // first element
@@ -133,10 +133,6 @@ void FiniteElementMethodThermal2DSolver::setMatrixData()
             //ipA->at(tSize*(ttN->getNr()-1)) += cRun::BigNum; // 1D2D
 
 */
-
-
-
-
 }
 
 void FiniteElementMethodThermal2DSolver::findNewVectorOfTemp()

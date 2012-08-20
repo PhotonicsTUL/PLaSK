@@ -1,4 +1,4 @@
-#include <solvers/thermal/finiteT/femT.h>
+#include <solvers/thermal/fem2d/femT.h>
 
 int main() {
 
