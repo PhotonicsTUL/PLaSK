@@ -290,6 +290,7 @@ class Document;
 /**
  * Implementation of QAbstractItemModel which holds and use GeometryTreeItem.
  */
+//TODO geometry 2d not inform that children list was changed if only child of extrusion changed
 class GeometryTreeModel: public QAbstractItemModel {
 
     Q_OBJECT

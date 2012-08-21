@@ -56,6 +56,48 @@ QString Geometry2DCartesianWrapper::toStr() const {
     return res;
 }
 
+plask::shared_ptr<plask::Extrusion> Geometry2DCartesianWrapper::getExtrusion() const {
+    return plask::static_pointer_cast<plask::Extrusion>(c().getElement3D());
+}
+
+plask::Geometry2DCartesian &Geometry2DCartesianWrapper::getCartesian2D() const
+{
+    return static_cast<plask::Geometry2DCartesian&>(c());
+}
+
+bool Geometry2DCartesianWrapper::canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
+    return index == 0 && c().getElement3D()->getRealChildrenCount() == 0 &&
+            (to_insert->getDimensionsCount() == 2 || plask::dynamic_pointer_cast<plask::Extrusion>(to_insert));
+}
+
+bool Geometry2DCartesianWrapper::canInsert(const GeometryElementCreator &to_insert, std::size_t index) const  {
+    if (index != 0) return false;
+    if (to_insert.supportDimensionsCount(2)) return true;
+    return plask::dynamic_pointer_cast<plask::Extrusion>(to_insert.getElement(3));  //if is 3d must allow to create extrusion
+    
+    if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
+    return canInsert(to_insert.getElement(getChildrenDimensionsCount()), index);
+}
+
+bool Geometry2DCartesianWrapper::tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+    if (!canInsert(to_insert, index)) return false;
+    if (to_insert->getDimensionsCount() == 2) {
+        getExtrusion()->setChild(to_insert->asD<2>());
+    } else {
+        getCartesian2D().setExtrusion(plask::static_pointer_cast<plask::Extrusion>(to_insert));
+    }
+    return true;
+}
+
+bool Geometry2DCartesianWrapper::tryInsert(const GeometryElementCreator& to_insert, std::size_t index) {
+    if (to_insert.supportDimensionsCount(2))
+        return tryInsert(to_insert.getElement(2), index);
+    else
+        return tryInsert(to_insert.getElement(3), index);
+}
+
+
+
 QString Geometry2DCylindricalWrapper::toStr() const
 {
     QString res = QString(QObject::tr("Cylindrical geometry 2d%1")).arg(this->name.isEmpty() ? "" : ("\n\"" + this->name + "\""));

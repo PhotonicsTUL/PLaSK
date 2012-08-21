@@ -189,12 +189,13 @@ class GeometryD: public Geometry {
     typename Primitive<dim>::Box cachedBoundingBox;
 
     /**
-     * Refresh bounding box cache. Called by childrenChanged signal.
+     * Refresh bounding box cache. Called by childrenChanged signal. Delegate this signal.
      * @param evt
      */
     void onChildChanged(const GeometryElement::Event& evt) {
         if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
-        fireChanged(evt.flagsForParent());
+        //comipler should optimized out dim == 2 condition checking
+        fireChanged(dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
     }
 
     /// Disconnect onChildChanged from current child change signal

@@ -32,6 +32,18 @@ struct Geometry2DCartesianWrapper: public GeometryWrapper<2> {
     typedef plask::Geometry2DCartesian WrappedType;
 
     virtual QString toStr() const;
+    
+    plask::shared_ptr<plask::Extrusion> getExtrusion() const;
+    
+    plask::Geometry2DCartesian& getCartesian2D() const;
+    
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const;
+    
+    virtual bool canInsert(const GeometryElementCreator& to_insert, std::size_t index) const;
+    
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index);
+    
+    virtual bool tryInsert(const GeometryElementCreator& to_insert, std::size_t index);
 
 };
 
