@@ -176,6 +176,14 @@ class PythonEvalMaterial : public Material
     std::string _name;
     Material::Kind _kind;
 
+    template <typename RETURN>
+    RETURN call(PyCodeObject* fun, const py::dict& locals) const {
+        py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
+        PyObject* result = PyEval_EvalCode(fun, globals.ptr(), locals.ptr());
+        if (!result) throw py::error_already_set();
+        return py::extract<RETURN>(result);
+    }
+
   public:
     PyCodeObject* _lattC;
     PyCodeObject* _Eg;
@@ -292,53 +300,72 @@ class PythonEvalMaterial : public Material
     virtual std::string name() const { return _name; }
     virtual Material::Kind kind() const { return _kind; }
 
-    virtual double lattC(double T, char x) const { py::dict l; l["T"]=T; l["x"]=x; return py::extract<double>(PyEval_EvalCode(_lattC, NULL, l.ptr())); }
-    virtual double Eg(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Eg, NULL, l.ptr())); }
-    virtual double CBO(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_CBO, NULL, l.ptr())); }
-    virtual double VBO(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_VBO, NULL, l.ptr())); }
-    virtual double Dso(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_Dso, NULL, l.ptr())); }
-    virtual double Mso(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_Mso, NULL, l.ptr())); }
-    virtual double Me(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Me, NULL, l.ptr())); }
-    virtual double Me_v(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Me_v, NULL, l.ptr())); }
-    virtual double Me_l(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Me_l, NULL, l.ptr())); }
-    virtual double Mhh(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mhh, NULL, l.ptr())); }
-    virtual double Mhh_v(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mhh_v, NULL, l.ptr())); }
-    virtual double Mhh_l(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mhh_l, NULL, l.ptr())); }
-    virtual double Mlh(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mlh, NULL, l.ptr())); }
-    virtual double Mlh_v(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mlh_v, NULL, l.ptr())); }
-    virtual double Mlh_l(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mlh_l, NULL, l.ptr())); }
-    virtual double Mh(double T, char EqType) const { py::dict l; l["T"]=T; l["EqType"]=EqType; return py::extract<double>(PyEval_EvalCode(_Mh, NULL, l.ptr())); }
-    virtual double Mh_v(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mh_v, NULL, l.ptr())); }
-    virtual double Mh_l(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mh_l, NULL, l.ptr())); }
-    virtual double eps(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_eps, NULL, l.ptr())); }
-    virtual double chi(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_chi, NULL, l.ptr())); }
-    virtual double Nc(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Nc, NULL, l.ptr())); }
-    virtual double Ni(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_Ni, NULL, l.ptr())); }
-    virtual double Nf(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_Nf, NULL, l.ptr())); }
-    virtual double EactD(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_EactD, NULL, l.ptr())); }
-    virtual double EactA(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_EactA, NULL, l.ptr())); }
-    virtual double mob(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_mob, NULL, l.ptr())); }
-    virtual double cond(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_cond, NULL, l.ptr())); }
-    virtual double cond_v(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_cond_v, NULL, l.ptr())); }
-    virtual double cond_l(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_cond_l, NULL, l.ptr())); }
-    virtual double res(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_res, NULL, l.ptr())); }
-    virtual double res_v(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_res_v, NULL, l.ptr())); }
-    virtual double res_l(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_res_l, NULL, l.ptr())); }
-    virtual double A(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_A, NULL, l.ptr())); }
-    virtual double B(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_B, NULL, l.ptr())); }
-    virtual double C(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_C, NULL, l.ptr())); }
-    virtual double D(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_D, NULL, l.ptr())); }
-    virtual double condT(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_condT, NULL, l.ptr())); }
-    virtual double condT(double T, double t)  const { py::dict l; l["T"]=T; l["t"]=t; return py::extract<double>(PyEval_EvalCode(_condT_t, NULL, l.ptr())); }
-    virtual double condT_v(double T, double t) const { py::dict l; l["T"]=T; l["t"]=t; return py::extract<double>(PyEval_EvalCode(_condT_v, NULL, l.ptr())); }
-    virtual double condT_l(double T, double t) const { py::dict l; l["T"]=T; l["t"]=t; return py::extract<double>(PyEval_EvalCode(_condT_l, NULL, l.ptr())); }
-    virtual double dens(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_dens, NULL, l.ptr())); }
-    virtual double specHeat(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_specHeat, NULL, l.ptr())); }
-    virtual double nr(double wl, double T) const { py::dict l; l["wl"]=wl; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_nr, NULL, l.ptr())); }
-    virtual double absp(double wl, double T) const { py::dict l; l["wl"]=wl; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_absp, NULL, l.ptr())); }
+#   define PYTHON_EVAL_CALL_1(rtype, fun, arg1) \
+        if (_##fun == NULL) return base->fun(arg1); \
+        py::dict locals; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; \
+        return call<rtype>(_##fun, locals);
+
+#   define PYTHON_EVAL_CALL_2(rtype, fun, arg1, arg2) \
+        if (_##fun == NULL) return base->fun(arg1, arg2); \
+        py::dict locals; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
+        return call<rtype>(_##fun, locals);
+
+    virtual double lattC(double T, char x) const { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
+    virtual double Eg(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Eg, T, Point) }
+    virtual double CBO(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, CBO, T, Point) }
+    virtual double VBO(double T) const { PYTHON_EVAL_CALL_1(double, VBO, T) }
+    virtual double Dso(double T) const { PYTHON_EVAL_CALL_1(double, Dso, T) }
+    virtual double Mso(double T) const { PYTHON_EVAL_CALL_1(double, Mso, T) }
+    virtual double Me(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Me, T, Point) }
+    virtual double Me_v(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Me_v, T, Point) }
+    virtual double Me_l(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Me_l, T, Point) }
+    virtual double Mhh(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mhh, T, Point) }
+    virtual double Mhh_v(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mhh_v, T, Point) }
+    virtual double Mhh_l(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mhh_l, T, Point) }
+    virtual double Mlh(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mlh, T, Point) }
+    virtual double Mlh_v(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mlh_v, T, Point) }
+    virtual double Mlh_l(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mlh_l, T, Point) }
+    virtual double Mh(double T, char EqType) const { PYTHON_EVAL_CALL_2(double, Mh, T, EqType) }
+    virtual double Mh_v(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mh_v, T, Point) }
+    virtual double Mh_l(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mh_l, T, Point) }
+    virtual double eps(double T) const { PYTHON_EVAL_CALL_1(double, eps, T) }
+    virtual double chi(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, chi, T, Point) }
+    virtual double Nc(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Nc, T, Point) }
+    virtual double Ni(double T) const { PYTHON_EVAL_CALL_1(double, Ni, T) }
+    virtual double Nf(double T) const { PYTHON_EVAL_CALL_1(double, Nf, T) }
+    virtual double EactD(double T) const { PYTHON_EVAL_CALL_1(double, EactD, T) }
+    virtual double EactA(double T) const { PYTHON_EVAL_CALL_1(double, EactA, T) }
+    virtual double mob(double T) const { PYTHON_EVAL_CALL_1(double, mob, T) }
+    virtual double cond(double T) const { PYTHON_EVAL_CALL_1(double, cond, T) }
+    virtual double cond_v(double T) const { PYTHON_EVAL_CALL_1(double, cond_v, T) }
+    virtual double cond_l(double T) const { PYTHON_EVAL_CALL_1(double, cond_l, T) }
+    virtual double res(double T) const { PYTHON_EVAL_CALL_1(double, res, T) }
+    virtual double res_v(double T) const { PYTHON_EVAL_CALL_1(double, res_v, T) }
+    virtual double res_l(double T) const { PYTHON_EVAL_CALL_1(double, res_l, T) }
+    virtual double A(double T) const { PYTHON_EVAL_CALL_1(double, A, T) }
+    virtual double B(double T) const { PYTHON_EVAL_CALL_1(double, B, T) }
+    virtual double C(double T) const { PYTHON_EVAL_CALL_1(double, C, T) }
+    virtual double D(double T) const { PYTHON_EVAL_CALL_1(double, D, T) }
+    virtual double condT(double T) const { PYTHON_EVAL_CALL_1(double, condT, T) }
+    virtual double condT(double T, double t)  const {
+        if (_condT == NULL) return base->condT(T, t);
+        py::dict locals; locals["T"] = T; locals["t"] = t;
+        return call<double>(_condT_t, locals);
+    }
+    virtual double condT_v(double T, double t) const { PYTHON_EVAL_CALL_2(double, condT_v, T, t) }
+    virtual double condT_l(double T, double t) const { PYTHON_EVAL_CALL_2(double, condT_l, T, t) }
+    virtual double dens(double T) const { PYTHON_EVAL_CALL_1(double, dens, T) }
+    virtual double specHeat(double T) const { PYTHON_EVAL_CALL_1(double, specHeat, T) }
+    virtual double nr(double wl, double T) const { PYTHON_EVAL_CALL_2(double, nr, wl, T) }
+    virtual double absp(double wl, double T) const { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
     virtual dcomplex Nr(double wl, double T) const {
-        py::dict l; l["wl"] = wl; l["T"] = T;
-        if (_Nr != NULL) return py::extract<dcomplex>(PyEval_EvalCode(_Nr, NULL, l.ptr()));
+        py::dict locals; locals["wl"] = wl; locals["T"] = T;
+        py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
+        if (_Nr != NULL) {
+            PyObject* result = PyEval_EvalCode(_Nr, globals.ptr(), locals.ptr());
+            if (!result) throw py::error_already_set();
+            return py::extract<dcomplex>(result);
+        }
         else return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T));
     }
 
