@@ -74,9 +74,6 @@ bool Geometry2DCartesianWrapper::canInsert(const GeometryElementCreator &to_inse
     if (index != 0) return false;
     if (to_insert.supportDimensionsCount(2)) return true;
     return plask::dynamic_pointer_cast<plask::Extrusion>(to_insert.getElement(3));  //if is 3d must allow to create extrusion
-    
-    if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
-    return canInsert(to_insert.getElement(getChildrenDimensionsCount()), index);
 }
 
 bool Geometry2DCartesianWrapper::tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
@@ -109,4 +106,41 @@ QString Geometry2DCylindricalWrapper::toStr() const
         }
     }
     return res;
+}
+
+plask::shared_ptr<plask::Revolution> Geometry2DCylindricalWrapper::getRevolution() const {
+    return plask::static_pointer_cast<plask::Revolution>(c().getElement3D());
+}
+
+plask::Geometry2DCylindrical &Geometry2DCylindricalWrapper::getCylindrical2D() const
+{
+    return static_cast<plask::Geometry2DCylindrical&>(c());
+}
+
+bool Geometry2DCylindricalWrapper::canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
+    return index == 0 && c().getElement3D()->getRealChildrenCount() == 0 &&
+            (to_insert->getDimensionsCount() == 2 || plask::dynamic_pointer_cast<plask::Revolution>(to_insert));
+}
+
+bool Geometry2DCylindricalWrapper::canInsert(const GeometryElementCreator &to_insert, std::size_t index) const  {
+    if (index != 0) return false;
+    if (to_insert.supportDimensionsCount(2)) return true;
+    return plask::dynamic_pointer_cast<plask::Revolution>(to_insert.getElement(3));  //if is 3d must allow to create extrusion
+}
+
+bool Geometry2DCylindricalWrapper::tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+    if (!canInsert(to_insert, index)) return false;
+    if (to_insert->getDimensionsCount() == 2) {
+        getRevolution()->setChild(to_insert->asD<2>());
+    } else {
+        getCylindrical2D().setRevolution(plask::static_pointer_cast<plask::Revolution>(to_insert));
+    }
+    return true;
+}
+
+bool Geometry2DCylindricalWrapper::tryInsert(const GeometryElementCreator& to_insert, std::size_t index) {
+    if (to_insert.supportDimensionsCount(2))
+        return tryInsert(to_insert.getElement(2), index);
+    else
+        return tryInsert(to_insert.getElement(3), index);
 }
