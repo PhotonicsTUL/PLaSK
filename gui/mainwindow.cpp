@@ -5,6 +5,7 @@
 
 #include "utils/draw.h"
 #include <plask/geometry/leaf.h>
+#include <plask/geometry/space.h>
 
 MainWindow::MainWindow()
     : propertyTree(new QtTreePropertyBrowser(this)), document(*propertyTree)
@@ -116,6 +117,18 @@ void MainWindow::treeRemoveSelected() {
     document.treeModel.removeRow(s[0].row(), s[0].parent());
 }
 
+void MainWindow::treeAddCartesian2d() {
+    document.treeModel.appendGeometry(plask::make_shared<plask::Geometry2DCartesian>(plask::make_shared<plask::Extrusion>()));
+}
+
+void MainWindow::treeAddCartesian3d() {
+        document.treeModel.appendGeometry(plask::make_shared<plask::Geometry3D>());
+}
+
+void MainWindow::treeAddCylindric() {
+        document.treeModel.appendGeometry(plask::make_shared<plask::Geometry2DCylindrical>(plask::make_shared<plask::Revolution>()));
+}
+
 void MainWindow::treeAddBlock2D() {
     QModelIndexList s = treeView->selectionModel()->selectedRows();
     if (s.empty()) return;
@@ -166,10 +179,24 @@ void MainWindow::createActions()
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
     connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
+    //tree actions:
+    
     treeRemoveAct = new QAction(tr("&Remove"), this);
     treeRemoveAct->setToolTip(tr("Remove selected element from geometry tree"));
     connect(treeRemoveAct, SIGNAL(triggered()), this, SLOT(treeRemoveSelected()));
+    
+    treeAddCartesian2dAct = new QAction(tr("&New 2D cartesian geometry"), this);
+    treeAddCartesian2dAct->setToolTip(tr("Create new, top-level, 2D cartesian geometry"));
+    connect(treeAddCartesian2dAct, SIGNAL(triggered()), this, SLOT(treeAddCartesian2d()));
+    
+    treeAddCartesian3dAct = new QAction(tr("&New 3D cartesian geometry"), this);
+    treeAddCartesian3dAct->setToolTip(tr("Create new, top-level, 3D cartesian geometry"));
+    connect(treeAddCartesian3dAct, SIGNAL(triggered()), this, SLOT(treeAddCartesian3d()));
 
+    treeAddCylindricAct = new QAction(tr("&New 2D cylindrical geometry"), this);
+    treeAddCylindricAct->setToolTip(tr("Create new, top-level, 2D cylindric geometry"));
+    connect(treeAddCylindricAct, SIGNAL(triggered()), this, SLOT(treeAddCylindric()));
+    
     treeAddBlockAct = new QAction(tr("Add &Block2D"), this);
     connect(treeAddBlockAct, SIGNAL(triggered()), this, SLOT(treeAddBlock2D()));
 
@@ -195,6 +222,14 @@ void MainWindow::createMenus()
     editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAct);
     editMenu->addAction(editSelectedAct);
+    
+    geometryMenu = menuBar()->addMenu(tr("&Geometry"));
+    geometryMenu->addAction(treeAddCartesian2dAct);
+    geometryMenu->addAction(treeAddCylindricAct);
+    geometryMenu->addAction(treeAddCartesian3dAct);
+    geometryMenu->addSeparator();
+    geometryMenu->addAction(treeRemoveAct);
+    
 
     viewMenu = menuBar()->addMenu(tr("&View"));
 

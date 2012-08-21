@@ -24,10 +24,10 @@ void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::
     std::size_t chCount = elem->getRealChildrenCount();
     if (elem->isContainer()) {
         for (std::size_t i = 0; i < chCount; ++i)
-            childItems.emplace_back(new InContainerTreeItem(this, ext(elem->getRealChildAt(i)), i));
+            childItems.emplace_back(new InContainerTreeItem(this, ext(elem->getRealChildAt(i))));
     } else {
         for (std::size_t i = 0; i < chCount; ++i)   //should be 0 or 1 child here
-            childItems.emplace_back(new GeometryTreeItem(this, ext(elem->getRealChildAt(i)), i));
+            childItems.emplace_back(new GeometryTreeItem(this, ext(elem->getRealChildAt(i))));
     }
 }
 
@@ -77,13 +77,13 @@ GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, std::size_t ind
     }
 }
 
-GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper> &element, std::size_t index)
+GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper> &element/*, std::size_t index*/)
 : model(parentItem->model), childrenInitialized(false), miniatureInitialized(false), parentItem(parentItem), element(element)/*, inParentIndex(index)*/ {
     connectOnChanged(element);
     //constructChildrenItems(element);
 }
 
-GeometryTreeItem::GeometryTreeItem(GeometryTreeModel *model, const plask::shared_ptr<ElementWrapper> &element, std::size_t index)
+GeometryTreeItem::GeometryTreeItem(GeometryTreeModel *model, const plask::shared_ptr<ElementWrapper> &element)
 : model(model), childrenInitialized(false), miniatureInitialized(false), parentItem(nullptr), element(element)/*, inParentIndex(index)*/ {
     connectOnChanged(element);
 }
@@ -91,7 +91,7 @@ GeometryTreeItem::GeometryTreeItem(GeometryTreeModel *model, const plask::shared
 GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::Geometry> >& rootElements, GeometryTreeModel* model)
 : model(model), childrenInitialized(true), miniatureInitialized(true), parentItem(0)/*, inParentIndex(0)*/ {
     for (std::size_t i = 0; i < rootElements.size(); ++i)
-        childItems.emplace_back(new GeometryTreeItem(this, ext(rootElements[i]), i));
+        childItems.emplace_back(new GeometryTreeItem(this, ext(rootElements[i])));
 }
 
 GeometryTreeItem * GeometryTreeItem::child(std::size_t index) {
@@ -253,7 +253,7 @@ GeometryTreeModel::GeometryTreeModel(QObject *parent)
 void GeometryTreeModel::refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots) {
     rootItems.clear();
     for (std::size_t i = 0; i < roots.size(); ++i)
-        rootItems.emplace_back(new RootItem(this, roots[i], i));
+        rootItems.emplace_back(new RootItem(this, roots[i]));
     reset();
 }
 
@@ -393,4 +393,11 @@ QStringList GeometryTreeModel::mimeTypes() const
 
 Qt::DropActions GeometryTreeModel::supportedDropActions() const {
     return Qt::CopyAction | Qt::MoveAction;
+}
+
+
+void GeometryTreeModel::appendGeometry(plask::shared_ptr<plask::Geometry> geometry) {
+    beginInsertRows(QModelIndex(), rootItems.size(), rootItems.size());
+    rootItems.emplace_back(new RootItem(this, geometry));
+    endInsertRows();
 }

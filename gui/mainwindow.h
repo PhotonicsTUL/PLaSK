@@ -81,6 +81,9 @@ private slots:
     void about();
     void treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
     void treeRemoveSelected();
+    void treeAddCartesian2d();
+    void treeAddCartesian3d();
+    void treeAddCylindric();
     void treeAddBlock2D();
 
 private:
@@ -101,6 +104,7 @@ private:
 
     QMenu *fileMenu;
     QMenu *editMenu;
+    QMenu *geometryMenu;
     QMenu *viewMenu;
     QMenu *helpMenu;
     QToolBar *fileToolBar;
@@ -117,10 +121,16 @@ private:
     QAction *quitAct;
 
     QAction *treeRemoveAct;
+    QAction *treeAddCartesian2dAct;
+    QAction *treeAddCylindricAct;
+    QAction *treeAddCartesian3dAct;
     QAction *treeAddBlockAct;
+
 
     QAction *zoomInAct;
     QAction *zoomOutAct;
+    
+
 };
 
 #endif  // PLASK_GUI_MAINWINDOW_H

@@ -131,7 +131,7 @@ public:
      * @param element wrapped element
      * @param index (future) index of this in parent childItems
      */
-    GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper>& element, std::size_t index);
+    GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper>& element/*, std::size_t index*/);
 
     /**
      * Construct root item (with nullptr as parentItem).
@@ -139,7 +139,7 @@ public:
      * @param element wrapped element
      * @param index (future) index of this in parent childItems
      */
-    GeometryTreeItem(GeometryTreeModel* model, const plask::shared_ptr<ElementWrapper>& element, std::size_t index);
+    GeometryTreeItem(GeometryTreeModel* model, const plask::shared_ptr<ElementWrapper>& element);
 
     /**
      * Construct root item (with parentItem = nullptr).
@@ -268,8 +268,8 @@ public:
         initLowerElement();
     }
 
-    InContainerTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper>& element, std::size_t index)
-        : GeometryTreeItem(parentItem, element, index) {
+    InContainerTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper>& element)
+        : GeometryTreeItem(parentItem, element) {
         initLowerElement();
     }
 
@@ -298,14 +298,16 @@ class GeometryTreeModel: public QAbstractItemModel {
         GeometryTreeItem treeItem;
         plask::shared_ptr<plask::Geometry> geometry;
 
-        RootItem(GeometryTreeModel* model, plask::shared_ptr<plask::Geometry> geometry, std::size_t index)
-            : treeItem(model, ext(geometry), index), geometry(geometry) {}
+        RootItem(GeometryTreeModel* model, plask::shared_ptr<plask::Geometry> geometry/*, std::size_t index*/)
+            : treeItem(model, ext(geometry)/*, index*/), geometry(geometry) {}
     };
 
     /// Root of tree, wraps geometries
     std::vector< std::unique_ptr<RootItem> > rootItems;
 
 public:
+    
+    void appendGeometry(plask::shared_ptr<plask::Geometry> geometry);
 
     friend class GeometryTreeItem;
 
