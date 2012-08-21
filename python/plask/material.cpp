@@ -5,12 +5,19 @@
 
 #include <plask/config.h>
 #include <plask/utils/string.h>
+#include <plask/utils/xml/reader.h>
 #include <plask/exceptions.h>
 #include <plask/material/db.h>
 
 #include "../util/raw_constructor.h"
 
 namespace plask { namespace python {
+
+
+struct EmptyBase : public Material {
+    virtual std::string name() const { return ""; }
+    virtual Material::Kind kind() const { return Material::NONE; }
+};
 
 /**
  * Wrapper for Material class.
@@ -48,11 +55,6 @@ class MaterialWrap : public Material
         return ((*base).*f)(args...);
     }
 
-    struct EmptyBase : public Material {
-        virtual std::string name() const { return ""; }
-        virtual Material::Kind kind() const { return Material::NONE; }
-    };
-
   public:
     MaterialWrap () : base(new EmptyBase) {}
     MaterialWrap (shared_ptr<Material> base) : base(base) {}
@@ -64,11 +66,6 @@ class MaterialWrap : public Material
         MaterialWrap* ptr;
         int len = py::len(args);
         if (len == 2) {
-            if (args[0].attr("__class__").attr("__name__") == "Material" &&
-                args[0].attr("__module__") == "plask.material") {
-                //TODO maybe there is a better way to compare class objects
-                return MaterialsDB::getDefault().get(py::extract<std::string>(args[1]));
-            }
             shared_ptr<Material> base = py::extract<shared_ptr<Material>>(args[1]);
             ptr = new MaterialWrap(base);
         } else if (len == 1) {
@@ -155,6 +152,288 @@ class MaterialWrap : public Material
     // End of overriden methods
 
 };
+
+
+/**
+ * Wrapper for Material read from XML of type eval
+ * For all virtual functions it calls Python derivatives
+ */
+class PythonEvalMaterial;
+
+struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
+
+    shared_ptr<PythonEvalMaterial> material;
+
+    PythonEvalMaterialConstructor(const std::string& name) : MaterialsDB::MaterialConstructor(name) {}
+
+    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const;
+};
+
+class PythonEvalMaterial : public Material
+{
+    shared_ptr<Material> base;
+
+    std::string _name;
+    Material::Kind _kind;
+
+  public:
+    PyCodeObject* _lattC;
+    PyCodeObject* _Eg;
+    PyCodeObject* _CBO;
+    PyCodeObject* _VBO;
+    PyCodeObject* _Dso;
+    PyCodeObject* _Mso;
+    PyCodeObject* _Me;
+    PyCodeObject* _Me_v;
+    PyCodeObject* _Me_l;
+    PyCodeObject* _Mhh;
+    PyCodeObject* _Mhh_v;
+    PyCodeObject* _Mhh_l;
+    PyCodeObject* _Mlh;
+    PyCodeObject* _Mlh_v;
+    PyCodeObject* _Mlh_l;
+    PyCodeObject* _Mh;
+    PyCodeObject* _Mh_v;
+    PyCodeObject* _Mh_l;
+    PyCodeObject* _eps;
+    PyCodeObject* _chi;
+    PyCodeObject* _Nc;
+    PyCodeObject* _Ni;
+    PyCodeObject* _Nf;
+    PyCodeObject* _EactD;
+    PyCodeObject* _EactA;
+    PyCodeObject* _mob;
+    PyCodeObject* _cond;
+    PyCodeObject* _cond_v;
+    PyCodeObject* _cond_l;
+    PyCodeObject* _res;
+    PyCodeObject* _res_v;
+    PyCodeObject* _res_l;
+    PyCodeObject* _A;
+    PyCodeObject* _B;
+    PyCodeObject* _C;
+    PyCodeObject* _D;
+    PyCodeObject* _condT;
+    PyCodeObject* _condT_t;
+    PyCodeObject* _condT_v;
+    PyCodeObject* _condT_l;
+    PyCodeObject* _dens;
+    PyCodeObject* _specHeat;
+    PyCodeObject* _nr;
+    PyCodeObject* _absp;
+    PyCodeObject* _Nr;
+
+    PythonEvalMaterial (const std::string& name, Material::Kind kind) : base(new EmptyBase), _name(name), _kind(kind),
+        _lattC(NULL), _Eg(NULL), _CBO(NULL), _VBO(NULL), _Dso(NULL), _Mso(NULL), _Me(NULL), _Me_v(NULL), _Me_l(NULL),
+        _Mhh(NULL), _Mhh_v(NULL), _Mhh_l(NULL), _Mlh(NULL), _Mlh_v(NULL), _Mlh_l(NULL), _Mh(NULL), _Mh_v(NULL), _Mh_l(NULL),
+        _eps(NULL), _chi(NULL), _Nc(NULL), _Ni(NULL), _Nf(NULL), _EactD(NULL), _EactA(NULL), _mob(NULL), _cond(NULL),
+        _cond_v(NULL), _cond_l(NULL), _res(NULL), _res_v(NULL), _res_l(NULL), _A(NULL), _B(NULL), _C(NULL), _D(NULL),
+        _condT(NULL), _condT_t(NULL), _condT_v(NULL), _condT_l(NULL), _dens(NULL), _specHeat(NULL), _nr(NULL), _absp(NULL),
+        _Nr(NULL) {}
+
+    PythonEvalMaterial (const std::string& name, shared_ptr<Material> base) : base(base), _name(name), _kind(base->kind()),
+        _lattC(NULL), _Eg(NULL), _CBO(NULL), _VBO(NULL), _Dso(NULL), _Mso(NULL), _Me(NULL), _Me_v(NULL), _Me_l(NULL),
+        _Mhh(NULL), _Mhh_v(NULL), _Mhh_l(NULL), _Mlh(NULL), _Mlh_v(NULL), _Mlh_l(NULL), _Mh(NULL), _Mh_v(NULL), _Mh_l(NULL),
+        _eps(NULL), _chi(NULL), _Nc(NULL), _Ni(NULL), _Nf(NULL), _EactD(NULL), _EactA(NULL), _mob(NULL), _cond(NULL),
+        _cond_v(NULL), _cond_l(NULL), _res(NULL), _res_v(NULL), _res_l(NULL), _A(NULL), _B(NULL), _C(NULL), _D(NULL),
+        _condT(NULL), _condT_t(NULL), _condT_v(NULL), _condT_l(NULL), _dens(NULL), _specHeat(NULL), _nr(NULL), _absp(NULL),
+        _Nr(NULL) {}
+
+    virtual ~PythonEvalMaterial() {
+        Py_XDECREF(_lattC);
+        Py_XDECREF(_Eg);
+        Py_XDECREF(_CBO);
+        Py_XDECREF(_VBO);
+        Py_XDECREF(_Dso);
+        Py_XDECREF(_Mso);
+        Py_XDECREF(_Me);
+        Py_XDECREF(_Me_v);
+        Py_XDECREF(_Me_l);
+        Py_XDECREF(_Mhh);
+        Py_XDECREF(_Mhh_v);
+        Py_XDECREF(_Mhh_l);
+        Py_XDECREF(_Mlh);
+        Py_XDECREF(_Mlh_v);
+        Py_XDECREF(_Mlh_l);
+        Py_XDECREF(_Mh);
+        Py_XDECREF(_Mh_v);
+        Py_XDECREF(_Mh_l);
+        Py_XDECREF(_eps);
+        Py_XDECREF(_chi);
+        Py_XDECREF(_Nc);
+        Py_XDECREF(_Ni);
+        Py_XDECREF(_Nf);
+        Py_XDECREF(_EactD);
+        Py_XDECREF(_EactA);
+        Py_XDECREF(_mob);
+        Py_XDECREF(_cond);
+        Py_XDECREF(_cond_v);
+        Py_XDECREF(_cond_l);
+        Py_XDECREF(_res);
+        Py_XDECREF(_res_v);
+        Py_XDECREF(_res_l);
+        Py_XDECREF(_A);
+        Py_XDECREF(_B);
+        Py_XDECREF(_C);
+        Py_XDECREF(_D);
+        Py_XDECREF(_condT);
+        Py_XDECREF(_condT_t);
+        Py_XDECREF(_condT_v);
+        Py_XDECREF(_condT_l);
+        Py_XDECREF(_dens);
+        Py_XDECREF(_specHeat);
+        Py_XDECREF(_nr);
+        Py_XDECREF(_absp);
+        Py_XDECREF(_Nr);
+    }
+
+    // Here there are overridden methods from Material class
+
+    virtual std::string name() const { return _name; }
+    virtual Material::Kind kind() const { return _kind; }
+
+    virtual double lattC(double T, char x) const { py::dict l; l["T"]=T; l["x"]=x; return py::extract<double>(PyEval_EvalCode(_lattC, NULL, l.ptr())); }
+    virtual double Eg(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Eg, NULL, l.ptr())); }
+    virtual double CBO(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_CBO, NULL, l.ptr())); }
+    virtual double VBO(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_VBO, NULL, l.ptr())); }
+    virtual double Dso(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_Dso, NULL, l.ptr())); }
+    virtual double Mso(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_Mso, NULL, l.ptr())); }
+    virtual double Me(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Me, NULL, l.ptr())); }
+    virtual double Me_v(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Me_v, NULL, l.ptr())); }
+    virtual double Me_l(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Me_l, NULL, l.ptr())); }
+    virtual double Mhh(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mhh, NULL, l.ptr())); }
+    virtual double Mhh_v(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mhh_v, NULL, l.ptr())); }
+    virtual double Mhh_l(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mhh_l, NULL, l.ptr())); }
+    virtual double Mlh(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mlh, NULL, l.ptr())); }
+    virtual double Mlh_v(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mlh_v, NULL, l.ptr())); }
+    virtual double Mlh_l(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mlh_l, NULL, l.ptr())); }
+    virtual double Mh(double T, char EqType) const { py::dict l; l["T"]=T; l["EqType"]=EqType; return py::extract<double>(PyEval_EvalCode(_Mh, NULL, l.ptr())); }
+    virtual double Mh_v(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mh_v, NULL, l.ptr())); }
+    virtual double Mh_l(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Mh_l, NULL, l.ptr())); }
+    virtual double eps(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_eps, NULL, l.ptr())); }
+    virtual double chi(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_chi, NULL, l.ptr())); }
+    virtual double Nc(double T, const char Point) const { py::dict l; l["T"]=T; l["Point"]=Point; return py::extract<double>(PyEval_EvalCode(_Nc, NULL, l.ptr())); }
+    virtual double Ni(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_Ni, NULL, l.ptr())); }
+    virtual double Nf(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_Nf, NULL, l.ptr())); }
+    virtual double EactD(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_EactD, NULL, l.ptr())); }
+    virtual double EactA(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_EactA, NULL, l.ptr())); }
+    virtual double mob(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_mob, NULL, l.ptr())); }
+    virtual double cond(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_cond, NULL, l.ptr())); }
+    virtual double cond_v(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_cond_v, NULL, l.ptr())); }
+    virtual double cond_l(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_cond_l, NULL, l.ptr())); }
+    virtual double res(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_res, NULL, l.ptr())); }
+    virtual double res_v(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_res_v, NULL, l.ptr())); }
+    virtual double res_l(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_res_l, NULL, l.ptr())); }
+    virtual double A(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_A, NULL, l.ptr())); }
+    virtual double B(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_B, NULL, l.ptr())); }
+    virtual double C(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_C, NULL, l.ptr())); }
+    virtual double D(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_D, NULL, l.ptr())); }
+    virtual double condT(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_condT, NULL, l.ptr())); }
+    virtual double condT(double T, double t)  const { py::dict l; l["T"]=T; l["t"]=t; return py::extract<double>(PyEval_EvalCode(_condT_t, NULL, l.ptr())); }
+    virtual double condT_v(double T, double t) const { py::dict l; l["T"]=T; l["t"]=t; return py::extract<double>(PyEval_EvalCode(_condT_v, NULL, l.ptr())); }
+    virtual double condT_l(double T, double t) const { py::dict l; l["T"]=T; l["t"]=t; return py::extract<double>(PyEval_EvalCode(_condT_l, NULL, l.ptr())); }
+    virtual double dens(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_dens, NULL, l.ptr())); }
+    virtual double specHeat(double T) const { py::dict l; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_specHeat, NULL, l.ptr())); }
+    virtual double nr(double wl, double T) const { py::dict l; l["wl"]=wl; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_nr, NULL, l.ptr())); }
+    virtual double absp(double wl, double T) const { py::dict l; l["wl"]=wl; l["T"]=T; return py::extract<double>(PyEval_EvalCode(_absp, NULL, l.ptr())); }
+    virtual dcomplex Nr(double wl, double T) const {
+        py::dict l; l["wl"] = wl; l["T"] = T;
+        if (_Nr != NULL) return py::extract<dcomplex>(PyEval_EvalCode(_Nr, NULL, l.ptr()));
+        else return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T));
+    }
+
+    // End of overriden methods
+
+};
+
+inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
+    return material;
+}
+
+void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {
+    std::string name = reader.requireAttribute("name");
+    auto basename = reader.getAttribute("base");
+    auto constructor = new PythonEvalMaterialConstructor(name);
+    if (basename)
+        constructor->material = make_shared<PythonEvalMaterial>(name, materialsDB.get(*basename));
+    else {
+        std::string kindname = reader.requireAttribute("kind");
+        Material::Kind kind =  (kindname == "semiconductor" || kindname == "SEMICONDUCTOR")? Material::SEMICONDUCTOR :
+                                (kindname == "oxide" || kindname == "OXIDE")? Material::OXIDE :
+                                (kindname == "dielectric" || kindname == "DIELECTRIC")? Material::DIELECTRIC :
+                                (kindname == "metal" || kindname == "METAL")? Material::METAL :
+                                (kindname == "liquid crystal" || kindname == "LIQUID_CRYSTAL" || kindname == "LC")? Material::LIQUID_CRYSTAL :
+                                Material::NONE;
+        if (kind == Material::NONE) throw XMLBadAttrException(reader, "kind", kindname);
+        constructor->material = make_shared<PythonEvalMaterial>(name, kind);
+    }
+
+#   ifdef PY_VERSION_HEX >= 0x03000000
+#       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
+        else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
+            constructor->material->_##func = (PyCodeObject*)Py_CompileString(reader.requireText().c_str(), BOOST_PP_STRINGIZE(func), Py_eval_input);
+#   else
+        PyCompilerFlags flags { CO_FUTURE_DIVISION };
+#       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
+        else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
+            constructor->material->_##func = (PyCodeObject*)Py_CompileStringFlags(reader.requireText().c_str(), BOOST_PP_STRINGIZE(func), Py_eval_input, flags);
+#   endif
+    while (reader.requireTagOrEnd()) {
+        if (false);
+        COMPILE_PYTHON_MATERIAL_FUNCTION(lattC)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Eg)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(CBO)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(VBO)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Dso)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mso)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Me)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Me_v)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Me_l)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh_v)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh_l)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh_v)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh_l)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mh)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mh_v)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Mh_l)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(eps)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(chi)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Nc)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Ni)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Nf)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(EactD)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(EactA)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(mob)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(cond)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(cond_v)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(cond_l)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(res)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(res_v)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(res_l)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(A)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(B)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(C)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(D)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(condT)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(condT_t)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(condT_v)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(condT_l)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(dens)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(specHeat)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(nr)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Nr)
+        else throw XMLUnexpectedElementException(reader, "material parameter tag");
+
+        reader.requireTagEnd();
+    }
+
+    materialsDB.addSimple(constructor);
+}
+
+
 
 /**
  * Object constructing custom simple Python material when read from XML file
@@ -537,6 +816,7 @@ void initMaterials() {
         .value("NONE", Material::NONE)
         .value("SEMICONDUCTOR", Material::SEMICONDUCTOR)
         .value("OXIDE", Material::OXIDE)
+        .value("DIELECTRIC", Material::DIELECTRIC)
         .value("METAL", Material::METAL)
         .value("LIQUID_CRYSTAL", Material::LIQUID_CRYSTAL)
         .value("MIXED", Material::MIXED)

@@ -18,7 +18,11 @@ struct PythonManager: public Manager {
 
     virtual void loadRelations(XMLReader& reader);
 
+    virtual void loadMaterials(XMLReader& reader, MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
     static void export_dict(py::object self, py::dict dict);
+
+    // static std::string removeSpaces(const std::string& source);
 };
 
 }} // namespace plask::python

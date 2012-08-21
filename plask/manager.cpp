@@ -116,6 +116,14 @@ void Manager::loadGeometry(GeometryReader& greader) {
         roots.push_back(greader.readGeometry());
 }
 
+void Manager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
+{
+//     TODO
+//     while (reader.requireTagOrEnd()) {
+//         if (reader.getNodeName() == "linear") LinearMaterial::loadFromXML(reader, materialsDB);
+//     }
+    throw NotImplemented("Loading matrials from C++ not implemented");
+}
 
 void Manager::loadGrids(XMLReader &reader)
 {
@@ -172,10 +180,25 @@ void Manager::loadScript(XMLReader& reader)
 
 
 template <typename MaterialsSource>
+static inline MaterialsDB& getMaterialsDBfromSource(const MaterialsSource& materialsSource) {
+    return MaterialsDB::getDefault();
+}
+
+template <>
+inline MaterialsDB& getMaterialsDBfromSource<MaterialsDB>(const MaterialsDB& materialsSource) {
+    return const_cast<MaterialsDB&>(materialsSource);
+}
+
+template <typename MaterialsSource>
 void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource)
 {
     reader.requireTag("plask");
     reader.requireTag();
+
+    if (reader.getNodeName() == "materials") {
+        loadMaterials(reader, getMaterialsDBfromSource(materialsSource));
+        if (!reader.requireTagOrEnd()) return;
+    }
 
     if (reader.getNodeName() == "geometry") {
         GeometryReader greader(*this, reader, materialsSource);

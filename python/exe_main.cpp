@@ -154,7 +154,9 @@ int main(int argc, const char *argv[])
                 if (!file) throw std::invalid_argument("No such file: " + filename);
                 manager->loadFromFILE(file);
                 std::fclose(file);
+                // manager->script = plask::python::PythonManager::removeSpaces(manager->script);
                 plask::python::PythonManager::export_dict(globals["__manager__"], globals);
+
 #               if PY_VERSION_HEX >= 0x03000000
                     PyCodeObject* code = Py_CompileString(manager->script.c_str(), (filename+"\", tag \"<script>").c_str(), Py_file_input);
 #               else
@@ -190,10 +192,16 @@ int main(int argc, const char *argv[])
             }
         } catch (std::invalid_argument err) {
             std::cerr << err.what() << "\n";
-            return 100;
+            return 1;
+        } catch (plask::Exception err) {
+            std::cerr << err.what() << "\n";
+            return 2;
+        } catch (plask::XMLException err) {
+            std::cerr << err.what() << "\n";
+            return 3;
         } catch (py::error_already_set) {
             PyErr_Print();
-            return 103;
+            return 100;
         }
 
     } else { // start the interactive console

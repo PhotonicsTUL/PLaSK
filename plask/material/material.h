@@ -44,6 +44,7 @@ struct Material {
         NONE,           ///< no material or air
         SEMICONDUCTOR,  ///< semiconductor
         OXIDE,          ///< oxide
+        DIELECTRIC,     ///< other dielectric
         METAL,          ///< metal
         LIQUID_CRYSTAL, ///< liquid crystal
         MIXED           ///< artificial mix of several materials with averaged properties

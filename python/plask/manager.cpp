@@ -1,4 +1,4 @@
-#include <fstream>
+#include <boost/algorithm/string.hpp>
 
 #include "python_globals.h"
 #include <numpy/arrayobject.h>
@@ -80,6 +80,20 @@ void PythonManager::loadRelations(XMLReader& reader) {
     }
 }
 
+void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB);
+
+void PythonManager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
+{
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "eval") {
+            PythonEvalMaterialLoadFromXML(reader, materialsDB);
+        }
+//         else if (reader.getNodeName() == "linear") LinearMaterial::loadFromXML(reader, materialsDB);
+    }
+}
+
+
+
 void PythonManager::export_dict(py::object self, py::dict dict) {
     dict["ELE"] = self.attr("ele");
     dict["PTH"] = self.attr("pth");
@@ -95,6 +109,37 @@ void PythonManager::export_dict(py::object self, py::dict dict) {
 
     if (ths->script != "") dict["__script__"] = ths->script;
 }
+
+
+// std::string PythonManager::removeSpaces(const std::string& source) {
+//     auto line =  boost::make_split_iterator(source, boost::token_finder(boost::is_any_of("\n"), boost::token_compress_off));
+//     size_t strip;
+//     for (auto c = line->begin(); c != line->end(); ++c) if (!std::isspace(*c)) throw Exception("There must be a newline after <script>");
+//     auto firstline = ++line;
+//     auto beg = line->begin();
+//     do { // Search for the first non-empty line to get initial indentation
+//         strip = 0;
+//         for (; beg != line->end() && (*beg == ' ' || *beg == '\t'); ++beg) {
+//             if (*beg == ' ') ++strip;
+//             else { strip += 8; strip -= strip % 8; } // add to closest full tab-stop
+//         }
+//     } while (beg == line->end());
+//     std::string result;
+//     line = firstline;
+//     for (size_t lineno = 1; line != decltype(line)(); ++line, ++lineno) { // Indent all lines
+//         size_t pos = 0;
+//         for (beg = line->begin(); beg != line->end() && (pos < strip); ++beg) {
+//             if (*beg == ' ') ++pos;
+//             else if (*beg == '\t') { pos += 8; pos -= pos % 8; } // add to closest full tab-stop
+//             else throw Exception("Line %1% in <script> section indented less than the first one", lineno);
+//         }
+//         result += std::string(beg, line->end());
+//         result += "\n";
+//     }
+//     return result;
+// }
+
+
 
 
 template <typename T> static const std::string item_name() { return ""; }

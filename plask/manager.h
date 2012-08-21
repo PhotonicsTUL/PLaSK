@@ -165,6 +165,13 @@ class Manager {
     void loadGeometry(GeometryReader& reader);
 
     /**
+     * Load materials using geometry reader.
+     * \param reader reader to read from, should point to @c \<materials> tag, after read it will be point to @c \</materials> tag
+     * \param materialsDB materials database
+     */
+    virtual void loadMaterials(XMLReader& reader, MaterialsDB& materialsDB = MaterialsDB::getDefault());
+
+    /**
      * Load meshes and mesh generators using reader.
      * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
