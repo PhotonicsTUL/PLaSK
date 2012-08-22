@@ -150,3 +150,21 @@ class Manager(unittest.TestCase):
         ''')
         self.assertEqual( manager.solvers.output.inWavelength(), 2 )
         self.assertEqual( manager.solvers.input.inWavelength(), 5 )
+
+
+    def testMaterials(self):
+        manager = plask.Manager()
+        manager.read('''
+        <plask>
+            <materials>
+                <eval name="FromXML" kind="dielectric">
+                    <nr>1. + 0.001*T + 0.0001*wl</nr>
+                    <absp>1.</absp>
+                </eval>
+            </materials>
+        </plask>
+        ''')
+        material.updateFactories()
+        mat = plask.material.FromXML()
+        self.assertAlmostEqual( mat.nr(900, 300), 1.39 )
+        self.assertAlmostEqual( mat.Nr(900, 300), 1.39-7.95774715459e-09j )

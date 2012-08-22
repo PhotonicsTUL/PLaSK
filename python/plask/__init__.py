@@ -83,5 +83,6 @@ def read(source, destination=None):
         destination['manager'] = manager
     manager.read(source)
     manager.export(destination)
+    material.updateFactories() # There might have been some materials in the source file
 
 ## ##  ## ##

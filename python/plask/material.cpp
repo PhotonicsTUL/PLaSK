@@ -684,12 +684,11 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
  * Converter for Python string to material using default database.
  * Allows to create geometry elements as \c rectange(2,1,"GaAs")
  */
-struct Material_from_Python_string
-{
+struct Material_from_Python_string {
+
     Material_from_Python_string() {
         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<shared_ptr<Material>>());
     }
-
 
     // Determine if obj_ptr can be converted into Material
     static void* convertible(PyObject* obj_ptr) {

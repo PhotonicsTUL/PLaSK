@@ -265,21 +265,21 @@ private:
         if (p == end)
             return false;
 
-        // Here, we now there is at least one no whitespace character
-        // the string begins at its position
-        start = p;
-
-        // now, we can suppress those at the end of the string
-
-        for (p = end-1; p != start-1; --p)
-        {
-            if (!isWhiteSpace(*p))
-            break;
-        }
-        // Normally, it's impossible that p==start here, but it's good to verify that...
-        if (p == start-1)
-            return false;
-        end = p + 1;
+        // // Here, we now there is at least one no whitespace character
+        // // the string begins at its position
+        // start = p;
+        //
+        // // now, we can suppress those at the end of the string
+        //
+        // for (p = end-1; p != start-1; --p)
+        // {
+        //     if (!isWhiteSpace(*p))
+        //     break;
+        // }
+        // // Normally, it's impossible that p==start here, but it's good to verify that...
+        // if (p == start-1)
+        //     return false;
+        // end = p + 1;
         // !!! End of modification !!!
 
 

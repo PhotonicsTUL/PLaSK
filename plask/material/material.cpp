@@ -50,7 +50,7 @@ std::string Material::str() const {
 
 double Material::A(double T) const { throwNotImplemented("A(double T)"); return 0; }
 
-double Material::absp(double wl, double T) const { throwNotImplemented("absp(double wl, double T)"); return 0; }
+double Material::absp(double wl, double T) const { return 0.; }
 
 double Material::B(double T) const { throwNotImplemented("B(double T)"); return 0; }
 

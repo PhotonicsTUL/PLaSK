@@ -10,7 +10,7 @@ namespace plask {
  * Intensity of optical E field. It is calculated as abs(E), providing that E is electric field vector.
  *
  * This property should be provided by every optical solver as it has a nice advantage that does not depend on
- * the internal representation of field (whether it is scalar or vectorial one).
+ * the internal representation of the field (whether it is scalar or vectorial one).
  */
 struct OpticalIntensity : public ScalarFieldProperty {
     static constexpr const char* NAME = "light intensity";
