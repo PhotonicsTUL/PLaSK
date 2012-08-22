@@ -173,7 +173,7 @@ to be the same as your real class name, but it should match the Python class nam
 
 In the above illustration, we initialize the \c outIntensity provider with the pointer to the solver itself and the address of the method
 computing the light intensity (we write this method \ref solver_delegate_provider_method "later"). Also, we set the default value of the
-temperature to 300&nbsp;K in the whole structure. As there is not default value for inWavelenght, the user will have to provide it
+temperature to 300&nbsp;K in the whole structure. As there is not default value for inWavelength, the user will have to provide it
 (either manually or from some wavelength provider) or the exception will be raised when we try to retrieve the wavelength value in our
 computation method.
 
@@ -232,7 +232,7 @@ of your providers, to notify the connected receivers about the change. Here is t
           computed_light_intensity.reset(); // clear the previously computed light intensity (if any)
 
           DataVector<double> temperature = inTemperature(*mesh); // gets temperature computed by some other solver
-          double wavelenght = inWavelenght();                    // gets the wavelength
+          double wavelenght = inWavelength();                    // gets the wavelength
 
           // [...] perform your calculations
 
@@ -271,6 +271,39 @@ For interpolated fields they will look like in the following example:
 The important elements of the above method are the first and the last lines. In the former one, we check if the computations have been performed
 and are up-to-date (remember, we have cleared the value of \c outNeff in \c onInvalidate()). Otherwise we throw an exception. In the last line
 we use plask::interpolate function to interpolate our data to the receiver mesh (which is provided as \c destination_mesh argument).
+
+Our solver can perform computations now. However, if it has any configuration to load, we can read it from XML file. To do this, we shoud
+reimplement \c loadParam method. It reads the configuration from the current XML tag named \c param using plask::XMLReader class. Below you have
+an example:
+
+\code
+    void loadParam(const std::string& param, XMLReader& reader, Manager&) {
+        if (param == "newton") {
+            newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
+            newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
+            newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
+        } else if (param == "wavelength") {
+            std::string = reader.requireText();
+            inWavelength.setValue(boost::lexical_cast<double>(wavelength));
+        }
+    }
+\endcode
+
+In the above example we assume that we have some local \p struct with parameters of Newton algorithm: \c tolx, \c tolf, and \c maxstep.
+They are read from the corresponding attributes of a &lt;newton&gt; tag, with default value equal to the current value of the corresponding
+parameter. Furthermore, user can optionally specify a wavelength, which we set as a specified input value of the inWavelength receiver
+(single-value receivers can be connected to providers, however thay can also have assigned value as normal variables, although in any case
+to read their values you must remember about using parenthesis, e.g. <tt>w&nbsp;=&nbsp;inWavelength()</tt>).
+
+The XML file to read by the above method can look as follows (although you should rather use XML attributes to set simple parameters,
+in order to make the XML file consistent for all the solvers).:
+
+\verbatim
+<optical lib="finite_diff" solver="FiniteDifferencesCartesian2D">
+    <newton tolx="0.0001" tolf="1e-9" maxstep="500" />
+    <wavelenght>1000</wavelength>
+</optical>
+\endverbatim
 
 You can now finish your class definition:
 
