@@ -130,7 +130,7 @@ bool ElementViewer::isIndexHidden(const QModelIndex & /*index*/) const
 
 QRectF ElementViewer::itemRect(const QModelIndex &index) const
 {
-    if (index.isValid() && index.parent() == rootIndex()) {
+    if (rootIndex().isValid() && index.isValid() && index.parent() == rootIndex()) {
         GeometryTreeItem* i = model()->toItem(index);
         auto e = i->element->wrappedElement;
         if (e->getDimensionsCount() == 2) {
@@ -330,11 +330,14 @@ void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::Selecti
     QModelIndexList indexes;
 
     plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
-    const std::size_t ch_count = e->getRealChildrenCount();
-    for (std::size_t i = 0; i < ch_count; ++i) {
-        plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
-        if (ch && ch->getBoundingBox().intersect(model_sel))
-            indexes.append(model()->index(i, 0, rootIndex()));
+    
+    if (e) {
+        const std::size_t ch_count = e->getRealChildrenCount();
+        for (std::size_t i = 0; i < ch_count; ++i) {
+            plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
+            if (ch && ch->getBoundingBox().intersect(model_sel))
+                indexes.append(model()->index(i, 0, rootIndex()));
+        }
     }
 
     if (indexes.size() > 0) {

@@ -276,7 +276,7 @@ QModelIndex GeometryTreeModel::parent(const QModelIndex &index) const {
     if (!index.isValid())
         return QModelIndex();
 
-    GeometryTreeItem *childItem = static_cast<GeometryTreeItem*>(index.internalPointer());
+    GeometryTreeItem *childItem = toItem(index);
     GeometryTreeItem *parentItem = childItem->parentItem;
 
     if (parentItem == nullptr) return QModelIndex();
@@ -298,7 +298,7 @@ QVariant GeometryTreeModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid())
         return QVariant();
 
-    GeometryTreeItem* item = static_cast<GeometryTreeItem*>(index.internalPointer());
+    GeometryTreeItem* item = toItem(index);
 
     switch (role) {
         case Qt::DecorationRole: return item->icon();
