@@ -61,6 +61,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
     /// Main Matrix
     double **mpA;
     int mAWidth, mAHeight;
+    std::vector<double> mTcorr;
 
     /// Vector of nodes
     std::vector<Node2D> mNodes;
@@ -68,7 +69,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
     /// Vector of elements
     std::vector<Element2D> mElements;
 
-    /// Set 0-vectors
+    /// Set matrix
     void setSolver();
 
     /// Del vectors
@@ -77,9 +78,6 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
     /// Set stiffness matrix + load vector
     void setMatrix();
 
-    /// Find max correction for temperature
-    double findMaxCorr();
-
     /// Update nodes
     void updNodes();
 
@@ -87,7 +85,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
     void updElements();
 
     /// Matrix solver
-    int solve3Diag(double **a, long n, long SZER_PASMA);
+    int solve3Diag(double **ipA, long iN, long iBandWidth);
 
 /*
     /// Initialize the solver
@@ -123,9 +121,9 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
     void runCalc();
 
     // Parameters for rootdigger
-    int mLoopLim;  ///< Loop no -> end of calculations
-    int mCorrLim;  ///< Correction -> end of calculations
-    double mBigNum;   ///< for the first boundary condtion
+    int mLoopLim; // Loop no - stops the calculations
+    int mCorrLim; // Correction - stops the calculations
+    double mBigNum; // for the first boundary condtion
 
     FiniteElementMethodThermal2DSolver(const std::string& name="");
 

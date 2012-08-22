@@ -2,42 +2,19 @@
 
 namespace plask { namespace solvers { namespace thermal {
 
-//CONSTRUCTORS-----------------------------------------------------------------------------------------------------------
-//Constructor - set Numer, Coordinates Pointers, Layer Pointer or NULL if Boundary, Temperature (Const)
-Node2D::Node2D(int iNo, const double* ipX, const double* ipY, /*const Layer* ipLayer,*/ double iT,  bool ifTConst):
-mNo(iNo), mpX(ipX), mpY(ipY), /*mpLayer(ipLayer),*/ mT(iT), mfTConst(ifTConst)
+Node2D::Node2D(int iNo, const double* ipX, const double* ipY, double iT,  bool ifTConst):
+mNo(iNo), mpX(ipX), mpY(ipY), mT(iT), mfTConst(ifTConst)
 {
 }
 
+int Node2D::getNo() const { return mNo; }
+double Node2D::getX() const { return *mpX; }
+double Node2D::getY() const { return *mpY; }
+double Node2D::getT() const { return mT; }
+bool Node2D::ifTConst() const { return mfTConst; }
+const double* Node2D::getXPtr() const { return mpX; }
+const double* Node2D::getYPtr() const { return mpY; }
 
-//GETTERS----------------------------------------------------------------------------------------------------------------
-int Node2D::getNo() const  { return mNo; } //Return Numer
-//const Layer* Node2D::getLayerPtr() const  { return mpLayer; } //Return Layer Pointer or NULL if Boundary
-double Node2D::getX() const  { return *mpX; } //Return X Coordinate
-double Node2D::getY() const  { return *mpY; } //Return Y Coordinate
-const double* Node2D::getXPtr() const  { return mpX; } //Return X Coordinate Pointer
-const double* Node2D::getYPtr() const  { return mpY; } //Return Y Coordinate Pointer
-double Node2D::getT() const   { return mT; } //Return Temperature
-bool Node2D::ifTConst() const  { return mfTConst; } //Check if Constant Temperature
-
-//Return Settings
-/*std::string Node2D::getSetUp()
-{
-	return ( (boost::format("%.0f") % mNr).str() + " \t" + (mpLayer ? mpLayer->getName() : "boundary") + " \t" +
-			  mVolContSide + " \t" + (mfTConst ? "true" : "false") + " \t" + (boost::format("%.4f") % (*mpX)).str() + " \t" +
-			 (boost::format("%.4f") % (*mpY)).str() + " \t" );
-}
-
-//Return Data
-std::string Node2D::getData()
-{
-	return ( (boost::format("%.0f") % mNr).str() + " \t" + (boost::format("%.6e") % mT).str() + " \t" +
-			 (boost::format("%.6e") % mPsi).str() + " \t" + (boost::format("%.6e") % mFn).str() + " \t" +
-			 (boost::format("%.6e") % mFp).str() + " \t" );
-}*/
-
-
-//SETTERS----------------------------------------------------------------------------------------------------------------
-void Node2D::setT(double iT)  { if (!mfTConst)  mT = iT; } //Set Temperature
+void Node2D::setT(double iT)  { if (!mfTConst)  mT = iT; }
 
 }}} // namespace plask::solvers::thermal

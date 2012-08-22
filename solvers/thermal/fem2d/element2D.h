@@ -2,41 +2,35 @@
 #define PLASK__MODULE_THERMAL_ELEMENT2D_H
 
 #include <string>
-
 #include "node2D.h"
 
 namespace plask { namespace solvers { namespace thermal {
 
-class Element2D //Element of Finite Element Model
+class Element2D // 2D element in finite element method
 {
 public:
-	//Constructor - set Numer, Layer Pointer and Four Nodes Pointers
-    Element2D(int iNo, /*const Layer* ipL,*/ const Node2D* ipNLoLeft, const Node2D* ipNLoRight, const Node2D* ipNUpLeft, const Node2D* ipNUpRight, double iT);
+    Element2D(int iNo, const Node2D* ipNLoLeft, const Node2D* ipNLoRight, const Node2D* ipNUpLeft, const Node2D* ipNUpRight, double iT); // constructor (set no, nodes pointers)
 
-    //Getters
-    int getNo() const; //Return Numer
-    const Node2D* getNLoLeftPtr() const; //Return Lower Left Node Pointer
-    const Node2D* getNLoRightPtr() const; //Return Lower Right Node Pointer
-    const Node2D* getNUpLeftPtr() const; //Return Upper Left Node Pointer
-    const Node2D* getNUpRightPtr() const; //Return Upper Right Node Pointer
-    //const Layer* getLPtr() const; //Return Layer Pointer
-	double getWidth() const; //Return Width
-	double getHeight() const; //Return Hight
-	double getT() const; //Return Temperature
-    //std::string getSetUp(); //Return Set-Up
+    // getters
+    int getNo() const; // return number
+    const Node2D* getNLoLeftPtr() const; // return pointer to bottom-left node
+    const Node2D* getNLoRightPtr() const; // return pointer to bottom-right node
+    const Node2D* getNUpLeftPtr() const; // return pointer to top-left node
+    const Node2D* getNUpRightPtr() const; // return pointer to top-right node
+    double getWidth() const; // return width
+    double getHeight() const; // return height
+    double getT() const; // return temperature
 
-	//Setters
-    void setT(); //Set Temperature From Nodes
+    // setters
+    void setT(); // set temperature (from nodes)
 
 protected:
-	//Members
-    int mNo; //Number
-    //const Layer *mpL; //Pointer to Layer
-    const Node2D *mpNLoLeft, //Pointer to Lower Left Node
-		       *mpNLoRight, //Pointer to Lower Right Node
-			   *mpNUpLeft, //Pointer to Upper Left Node
-			   *mpNUpRight; //Pointer to Upper Right Node
-    double mT; //Average Temperature From Nodes
+    int mNo; // number
+    const Node2D *mpNLoLeft, // pointer to bottom-left node
+               *mpNLoRight, // pointer to bottom-right node
+               *mpNUpLeft, // pointer to top-left node
+               *mpNUpRight; // pointer to top-right nodeRight Node
+    double mT; // average temperature
 };
 
 }}} // namespace plask::solvers::thermal
