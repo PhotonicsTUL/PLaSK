@@ -323,6 +323,8 @@ public:
      * @param parent
      */
     GeometryTreeModel(QObject *parent = 0);
+    
+    ~GeometryTreeModel();
 
     /**
      * Get item from index.

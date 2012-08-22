@@ -101,11 +101,11 @@ bool ElementViewer::edit(const QModelIndex &index, EditTrigger trigger, QEvent *
 
 QModelIndex ElementViewer::indexAt(const QPoint &point) const
 {
-    if (!rootIndex().isValid()) return QModelIndex();   //model not set
+    plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
+    if (!e) return QModelIndex();
 
     plask::Vec<2, double> model_point = fromQt(viewToModel().map(QPointF(point)));
-
-    plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
+    
     const std::size_t ch_count = e->getRealChildrenCount();
     for (std::size_t i = 0; i < ch_count; ++i) {
         plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
@@ -119,7 +119,7 @@ QModelIndex ElementViewer::indexAt(const QPoint &point) const
 plask::shared_ptr<ElementWrapper> ElementViewer::getElementWrapper() const
 {
     QModelIndex toDrawIndex = rootIndex();
-    if (!toDrawIndex.isValid()) return plask::shared_ptr<ElementWrapper>();    //we don't work on root
+    if (!toDrawIndex.isValid()) return plask::shared_ptr<ElementWrapper>();    //root or invalidate (deleted) index
     return model()->toItem(toDrawIndex)->getLowerWrappedElement();
 }
 

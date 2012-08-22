@@ -5,6 +5,7 @@
 #include "modelext/text.h"
 
 GeometryTreeItem::~GeometryTreeItem() {
+    //model->changePersistentIndex(this, QModelIndex());    //good, if will store index
     disconnectOnChanged(element);
 }
 
@@ -250,11 +251,18 @@ GeometryTreeModel::GeometryTreeModel(QObject *parent)
     : QAbstractItemModel(parent) {
 }
 
+GeometryTreeModel::~GeometryTreeModel() {
+    beginResetModel();
+    rootItems.clear();
+    endResetModel();
+}
+
 void GeometryTreeModel::refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots) {
+    beginResetModel();
     rootItems.clear();
     for (std::size_t i = 0; i < roots.size(); ++i)
         rootItems.emplace_back(new RootItem(this, roots[i]));
-    reset();
+    endResetModel();
 }
 
 QModelIndex GeometryTreeModel::index(int row, int column, const QModelIndex &parent) const {
