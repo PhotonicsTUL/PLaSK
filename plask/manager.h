@@ -184,10 +184,10 @@ class Manager {
     void loadSolvers(XMLReader& greader);
 
     /**
-     * Load solvers relations from the file.
+     * Load solvers intrconnects from the file.
      * \param reader XMLreader to load from
      */
-    virtual void loadRelations(XMLReader& reader);
+    virtual void loadConnects(XMLReader& reader);
 
     /**
      * Load script from the file. Do not execute it.

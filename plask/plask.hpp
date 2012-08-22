@@ -60,6 +60,17 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "axes.h"
 #include "manager.h"
 
+#include "material/material.h"
+#include "material/db.h"
+#include "material/info.h"
+#include "material/air.h"
+
+#include "log/log.h"
+#include "log/data.h"
+#include "log/id.h"
+
+#include "utils/xml.h"
+
 #include "geometry/space.h"
 #include "geometry/geometry.h"
 #include "geometry/primitives.h"
@@ -72,16 +83,6 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "geometry/reader.h"
 #include "geometry/border.h"
 
-#include "material/material.h"
-#include "material/db.h"
-#include "material/info.h"
-#include "material/air.h"
-
-#include "log/log.h"
-#include "log/data.h"
-#include "log/id.h"
-
-
 #include "mesh/mesh.h"
 #include "mesh/interpolation.h"
 #include "mesh/boundary_conditions.h"
@@ -92,7 +93,6 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "provider/provider.h"
 #include "provider/temperature.h"
 #include "provider/optical.h"
-
-#include "utils/xml.h"
+#include "provider/gain.h"
 
 #endif // PLASK__PLASK_HPP

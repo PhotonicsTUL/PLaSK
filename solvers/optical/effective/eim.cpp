@@ -18,6 +18,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     outer_distance(0.1),
     outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty) {
     inTemperature = 300.;
+    inGain = NAN;
     root.tolx = 1.0e-7;
     root.tolf_min = 1.0e-8;
     root.tolf_max = 1.0e-6;
@@ -172,6 +173,8 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
     size_t xsize = mesh->tran().size() + 1;
     size_t ysize = mesh->up().size() + 1;
 
+    //TODO consider gain here
+
     if (fresh || inTemperature.changed || inWavelength.changed || polarization != old_polarization) { // We need to update something
 
         old_polarization = polarization;
@@ -181,6 +184,8 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto temp = inTemperature(*mesh);
+        auto midmesh = mesh->getMidpointsMesh();
+        auto gain = inGain(midmesh);
         for (size_t i = xbegin; i != xsize; ++i) {
             size_t tx0, tx1;
             double x0, x1;
@@ -189,11 +194,13 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
             for (size_t j = 0; j != ysize; ++j) {
                 size_t ty0, ty1;
                 double y0, y1;
+                double g = (i == 0 || i == xsize-1 || j == 0 || j == ysize-1)? NAN : gain[midmesh.index(i-1, j-1)];
                 if (j > 0) { ty0 = j-1; y0 = mesh->c1[ty0]; } else { ty0 = 0; y0 = mesh->c1[ty0] - outer_distance; }
                 if (j < ysize-1) { ty1 = j; y1 = mesh->c1[ty1]; } else { ty1 = ysize-2; y1 = mesh->c1[ty1] + outer_distance; }
                 double T = 0.25 * ( temp[mesh->index(tx0,ty0)] + temp[mesh->index(tx0,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
-                nrCache[i][j] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->Nr(w, T);
+                nrCache[i][j] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->Nr(w, T)
+                              + dcomplex(0., std::isnan(g)? 0. : g*w*7.95774715459e-09);
             }
         }
         if (xbegin == 1) nrCache[0] = nrCache[1];

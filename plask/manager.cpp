@@ -165,9 +165,9 @@ void Manager::loadSolvers(XMLReader& reader) {
     }
 }
 
-void Manager::loadRelations(XMLReader& reader)
+void Manager::loadConnects(XMLReader& reader)
 {
-    throw NotImplemented("Loading relations only possible from Python interface.");
+    throw NotImplemented("Loading interconnects only possible from Python interface.");
 }
 
 void Manager::loadScript(XMLReader& reader)
@@ -216,8 +216,8 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource)
         if (!reader.requireTagOrEnd()) return;
     }
 
-    if (reader.getNodeName() == "relations") {
-        loadRelations(reader);
+    if (reader.getNodeName() == "connects") {
+        loadConnects(reader);
         if (!reader.requireTagOrEnd()) return;
     }
 

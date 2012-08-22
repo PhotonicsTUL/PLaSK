@@ -143,9 +143,9 @@ class Manager(unittest.TestCase):
                 <plasktest lib="solvers" solver="InOut" name="output"/>
                 <plasktest lib="solvers" solver="InOut" name="input"/>
             </solvers>
-            <relations>
+            <connects>
                 <connect out="output.outWavelength" in="input.inWavelength"/>
-            </relations>
+            </connects>
         </plask>
         ''')
         self.assertEqual( manager.solvers.output.inWavelength(), 2 )

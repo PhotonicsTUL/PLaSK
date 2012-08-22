@@ -46,7 +46,7 @@ shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const 
     return py::extract<shared_ptr<Solver>>(solver);
 }
 
-void PythonManager::loadRelations(XMLReader& reader) {
+void PythonManager::loadConnects(XMLReader& reader) {
     while(reader.requireTagOrEnd()) {
         if (reader.getNodeName() != "connect") throw XMLUnexpectedElementException(reader, "<connect>", reader.getNodeName());
         auto out = splitString2(reader.requireAttribute("out"), '.');
