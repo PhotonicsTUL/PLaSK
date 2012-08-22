@@ -6,8 +6,9 @@
 #define PLASK__MODULE_THERMAL_FINITET_H
 
 #include <plask/plask.hpp>
-//#include "node.h"
-//#include "element.h"
+#include "node2D.h"
+#include "element2D.h"
+#include "constants.h"
 
 namespace plask { namespace solvers { namespace thermal {
 
@@ -57,8 +58,15 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
 
   protected:
 
-    /// Stiffness matrix + load vector
-    std::vector<double> *mA, *mB;
+    /// Main Matrix
+    double **mpA;
+    int mAWidth, mAHeight;
+
+    /// Vector of nodes
+    std::vector<Node2D> mNodes;
+
+    /// Vector of elements
+    std::vector<Element2D> mElements;
 
     /// Set 0-vectors
     void setSolver();
@@ -67,10 +75,20 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
     void delSolver();
 
     /// Set stiffness matrix + load vector
-    void setMatrixData();
+    void setMatrix();
 
-    /// Run single temperature calculations
-    void findNewVectorOfTemp();
+    /// Find max correction for temperature
+    double findMaxCorr();
+
+    /// Update nodes
+    void updNodes();
+
+    /// Update elements
+    void updElements();
+
+    /// Matrix solver
+    int solve3Diag(double **a, long n, long SZER_PASMA);
+
 /*
     /// Initialize the solver
     virtual void onInitialize() { // In this function check if geometry and mesh are set
@@ -100,10 +118,14 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DCarte
      * Find new temperature distribution.
      *
      **/
-      void calculateT();
+
+    /// Run temperature calculations
+    void runCalc();
 
     // Parameters for rootdigger
-    int maxiterations;  ///< Maximum number of iterations
+    int mLoopLim;  ///< Loop no -> end of calculations
+    int mCorrLim;  ///< Correction -> end of calculations
+    double mBigNum;   ///< for the first boundary condtion
 
     FiniteElementMethodThermal2DSolver(const std::string& name="");
 
