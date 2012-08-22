@@ -317,6 +317,11 @@ public:
      * @param roots new roots elements
      */
     void refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots);
+    
+    /**
+     * Clear whole geometry tree.
+     */
+    void clear();
 
     /**
      * @param document document from which tree content will be read

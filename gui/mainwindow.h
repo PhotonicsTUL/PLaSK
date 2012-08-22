@@ -72,7 +72,7 @@ public:
     MainWindow();
 
 private slots:
-    void newDocument() {}
+    void newDocument();
     void open();
     void save();
     void print();

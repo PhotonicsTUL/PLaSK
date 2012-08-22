@@ -29,6 +29,10 @@ MainWindow::MainWindow()
     setUnifiedTitleAndToolBarOnMac(true);
 }
 
+void MainWindow::newDocument() {
+    document.clear();
+}
+
 void MainWindow::print()
 {
 #ifndef QT_NO_PRINTDIALOG
@@ -61,14 +65,14 @@ void MainWindow::open() {
 
 void MainWindow::save()
 {
-    /*QString fileName = QFileDialog::getSaveFileName(this,
+    QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Choose a file name"), ".",
-                        tr("HTML (*.html *.htm)"));
+                        tr("XPML (*.xpml *.xpl)"));
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("Dock Widgets"),
+        QMessageBox::warning(this, tr("PLaSK GUI"),
                              tr("Cannot write file %1:\n%2.")
                              .arg(fileName)
                              .arg(file.errorString()));
@@ -77,10 +81,10 @@ void MainWindow::save()
 
     QTextStream out(&file);
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    out << textEdit->toHtml();
+    //out << textEdit->toHtml();
     QApplication::restoreOverrideCursor();
 
-    statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);*/
+    statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);
 }
 
 void MainWindow::undo()

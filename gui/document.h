@@ -33,6 +33,8 @@ public:
         if (treeItem == 0) return;
         treeItem->fillPropertyBrowser(propertiesBrowser);
     }
+    
+    void clear();
 };
 
 #endif // PLASK_GUI_DOCUMENT_H

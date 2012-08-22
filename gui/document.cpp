@@ -4,6 +4,11 @@
 Document::Document(QtAbstractPropertyBrowser& browser): propertiesBrowser(browser) {
 }
 
+void Document::clear() {
+    treeModel.clear();
+    undoStack.clear();
+}
+
 void Document::open(const QString &fileName) {
     plask::Manager manager;
     undoStack.clear();

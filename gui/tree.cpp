@@ -252,9 +252,7 @@ GeometryTreeModel::GeometryTreeModel(QObject *parent)
 }
 
 GeometryTreeModel::~GeometryTreeModel() {
-    beginResetModel();
-    rootItems.clear();
-    endResetModel();
+    clear();    //this is becouse crash on application exit
 }
 
 void GeometryTreeModel::refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots) {
@@ -262,6 +260,12 @@ void GeometryTreeModel::refresh(const std::vector< plask::shared_ptr<plask::Geom
     rootItems.clear();
     for (std::size_t i = 0; i < roots.size(); ++i)
         rootItems.emplace_back(new RootItem(this, roots[i]));
+    endResetModel();
+}
+
+void GeometryTreeModel::clear() {
+    beginResetModel();
+    rootItems.clear();
     endResetModel();
 }
 
