@@ -3,9 +3,12 @@
 #include <boost/python/stl_iterator.hpp>
 namespace py = boost::python;
 
+#include <frameobject.h> // For Python traceback
+
 #include <iostream>
 #include <vector>
 #include <string>
+#include <stack>
 
 #include <plask/exceptions.h>
 #include <plask/utils/system.h>
@@ -81,6 +84,72 @@ static void from_import_all(const char* name, py::dict globals)
 }
 
 //******************************************************************************
+int handlePythonException() {
+    if (PyErr_ExceptionMatches(PyExc_SystemExit)) return 0; // Normal exit of the program
+
+    // Use our logging system to print exception
+    PyObject* value;
+    PyTypeObject* type;
+    PyTracebackObject* original_traceback;
+
+    PyErr_Fetch((PyObject**)&type, (PyObject**)&value, (PyObject**)&original_traceback);
+    PyErr_NormalizeException((PyObject**)&type, (PyObject**)&value, (PyObject**)&original_traceback);
+
+    PyObject* pmessage = PyObject_Str(value);
+#   if PY_VERSION_HEX >= 0x03000000
+        const char* message = py::extract<const char*>(pmessage);
+#   else
+        const char* message = PyString_AsString(pmessage);
+#   endif
+
+    std::string error_name = type->tp_name;
+    if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
+
+    if (original_traceback) {
+        std::stack<PyTracebackObject*> tb_stack;
+
+        PyTracebackObject* traceback = original_traceback;
+        while (traceback->tb_next != NULL) {
+            tb_stack.push(traceback);
+            traceback = traceback->tb_next;
+        }
+
+        int lineno = traceback->tb_lineno;
+#       if PY_VERSION_HEX >= 0x03000000
+            const char* filename = py::extract<const char*>(traceback->tb_frame->f_code->co_filename);
+            const char* funcname = py::extract<const char*>(traceback->tb_frame->f_code->co_name);
+#       else
+            const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
+            const char* funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
+#       endif
+        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
+
+        while (!tb_stack.empty()) {
+            traceback = tb_stack.top();
+            tb_stack.pop();
+            int lineno = traceback->tb_lineno;
+#           if PY_VERSION_HEX >= 0x03000000
+                const char* filename = py::extract<const char*>(traceback->tb_frame->f_code->co_filename);
+                const char* funcname = py::extract<const char*>(traceback->tb_frame->f_code->co_name);
+#           else
+                const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
+                const char* funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
+#           endif
+            plask::writelog(plask::LOG_DETAIL, "called from: %1%, line %2%, function '%3%'", filename, lineno, funcname);
+        }
+
+    } else {
+        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+    }
+
+    Py_XDECREF(type);
+    Py_XDECREF(value);
+    Py_XDECREF(pmessage);
+    Py_XDECREF(original_traceback);
+    return 100;
+}
+
+//******************************************************************************
 int main(int argc, const char *argv[])
 {
     // Test if we want to import plask into global namespace
@@ -136,7 +205,7 @@ int main(int argc, const char *argv[])
             if (!xml_input) {
                 // check first char (should be '<' in XML)
                 FILE* file = std::fopen(filename.c_str(), "r");
-                if (!file) throw std::invalid_argument("No such file: " + filename);
+                if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
                 int c;
                 while ((c = std::getc(file))) {
                     if (!std::isspace(c) || c == EOF) break;
@@ -157,15 +226,17 @@ int main(int argc, const char *argv[])
                 // manager->script = plask::python::PythonManager::removeSpaces(manager->script);
                 plask::python::PythonManager::export_dict(globals["__manager__"], globals);
 
+                PyObject* result = NULL;
 #               if PY_VERSION_HEX >= 0x03000000
-                    PyCodeObject* code = Py_CompileString(manager->script.c_str(), (filename+"\", tag \"<script>").c_str(), Py_file_input);
+                    PyObject* code = Py_CompileString(manager->script.c_str(), (filename+", tag <script>").c_str(), Py_file_input);
+                    if (code)
+                        result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
 #               else
                     PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                    PyObject* code = Py_CompileStringFlags(manager->script.c_str(), (filename+"\", tag \"<script>").c_str(), Py_file_input, &flags);
+                    PyObject* code = Py_CompileStringFlags(manager->script.c_str(), (filename+", tag <script>").c_str(), Py_file_input, &flags);
+                    if (code)
+                        result = PyEval_EvalCode((PyCodeObject*)code, globals.ptr(), globals.ptr());
 #               endif
-                PyObject* result = NULL;
-                if (code)
-                    result = PyEval_EvalCode((PyCodeObject*)code, globals.ptr(), globals.ptr());
                 Py_XDECREF(code);
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);
@@ -174,13 +245,13 @@ int main(int argc, const char *argv[])
 
 #               if PY_VERSION_HEX >= 0x03000000
                     PyObject* pyfile = PyUnicode_FromString(filename.c_str());
-                    FILE* file = _Py_fopen(pf, "r");
+                    FILE* file = _Py_fopen(pyfile, "r");
                     PyObject* result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
                     fclose(file);
 #               else
                     // We want to set "from __future__ import division" flag
                     PyObject *pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
-                    if (!pyfile) throw std::invalid_argument("No such file: " + filename);
+                    if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
                     FILE* file = PyFile_AsFile(pyfile);
                     PyCompilerFlags flags { CO_FUTURE_DIVISION };
                     PyObject* result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
@@ -191,17 +262,16 @@ int main(int argc, const char *argv[])
 
             }
         } catch (std::invalid_argument err) {
-            std::cerr << err.what() << "\n";
+            plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
             return 1;
         } catch (plask::Exception err) {
-            std::cerr << err.what() << "\n";
+            plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
             return 2;
         } catch (plask::XMLException err) {
-            std::cerr << err.what() << "\n";
+            plask::writelog(plask::LOG_CRITICAL_ERROR, "'%1%': %2%", argv[1], err.what());
             return 3;
         } catch (py::error_already_set) {
-            PyErr_Print();
-            return 100;
+            return handlePythonException();
         }
 
     } else { // start the interactive console

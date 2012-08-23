@@ -175,6 +175,12 @@ void Manager::loadScript(XMLReader& reader)
     if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("script"))
         throw XMLUnexpectedElementException(reader, "<script>");
     script = reader.requireText();
+    size_t start;
+    for (start = 0; script[start] != '\n'; ++start) {
+        if (!std::isspace(script[start]))
+            throw XMLException(reader, "Script must begin from new line after <script>");
+    }
+    script = script.substr(start+1);
     reader.requireTagEnd();
 }
 

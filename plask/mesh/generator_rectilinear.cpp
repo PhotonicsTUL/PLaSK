@@ -75,7 +75,7 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
         }
     }
 
-    // First divide each element
+    // Next divide each element
     double x = *result.begin();
     std::vector<double> points; points.reserve((pre_divisions[dir]-1)*(result.size()-1));
     for (auto i = result.begin()+1; i!= result.end(); ++i) {

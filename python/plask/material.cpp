@@ -13,6 +13,11 @@
 
 namespace plask { namespace python {
 
+#if PY_VERSION_HEX >= 0x03000000
+#       define PLASK_PyCodeObject PyObject
+#else
+#       define PLASK_PyCodeObject PyCodeObject
+#endif
 
 struct EmptyBase : public Material {
     virtual std::string name() const { return ""; }
@@ -177,7 +182,7 @@ class PythonEvalMaterial : public Material
     Material::Kind _kind;
 
     template <typename RETURN>
-    RETURN call(PyCodeObject* fun, const py::dict& locals) const {
+    RETURN call(PLASK_PyCodeObject* fun, const py::dict& locals) const {
         py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
         PyObject* result = PyEval_EvalCode(fun, globals.ptr(), locals.ptr());
         if (!result) throw py::error_already_set();
@@ -185,51 +190,51 @@ class PythonEvalMaterial : public Material
     }
 
   public:
-    PyCodeObject* _lattC;
-    PyCodeObject* _Eg;
-    PyCodeObject* _CBO;
-    PyCodeObject* _VBO;
-    PyCodeObject* _Dso;
-    PyCodeObject* _Mso;
-    PyCodeObject* _Me;
-    PyCodeObject* _Me_v;
-    PyCodeObject* _Me_l;
-    PyCodeObject* _Mhh;
-    PyCodeObject* _Mhh_v;
-    PyCodeObject* _Mhh_l;
-    PyCodeObject* _Mlh;
-    PyCodeObject* _Mlh_v;
-    PyCodeObject* _Mlh_l;
-    PyCodeObject* _Mh;
-    PyCodeObject* _Mh_v;
-    PyCodeObject* _Mh_l;
-    PyCodeObject* _eps;
-    PyCodeObject* _chi;
-    PyCodeObject* _Nc;
-    PyCodeObject* _Ni;
-    PyCodeObject* _Nf;
-    PyCodeObject* _EactD;
-    PyCodeObject* _EactA;
-    PyCodeObject* _mob;
-    PyCodeObject* _cond;
-    PyCodeObject* _cond_v;
-    PyCodeObject* _cond_l;
-    PyCodeObject* _res;
-    PyCodeObject* _res_v;
-    PyCodeObject* _res_l;
-    PyCodeObject* _A;
-    PyCodeObject* _B;
-    PyCodeObject* _C;
-    PyCodeObject* _D;
-    PyCodeObject* _condT;
-    PyCodeObject* _condT_t;
-    PyCodeObject* _condT_v;
-    PyCodeObject* _condT_l;
-    PyCodeObject* _dens;
-    PyCodeObject* _specHeat;
-    PyCodeObject* _nr;
-    PyCodeObject* _absp;
-    PyCodeObject* _Nr;
+    PLASK_PyCodeObject* _lattC;
+    PLASK_PyCodeObject* _Eg;
+    PLASK_PyCodeObject* _CBO;
+    PLASK_PyCodeObject* _VBO;
+    PLASK_PyCodeObject* _Dso;
+    PLASK_PyCodeObject* _Mso;
+    PLASK_PyCodeObject* _Me;
+    PLASK_PyCodeObject* _Me_v;
+    PLASK_PyCodeObject* _Me_l;
+    PLASK_PyCodeObject* _Mhh;
+    PLASK_PyCodeObject* _Mhh_v;
+    PLASK_PyCodeObject* _Mhh_l;
+    PLASK_PyCodeObject* _Mlh;
+    PLASK_PyCodeObject* _Mlh_v;
+    PLASK_PyCodeObject* _Mlh_l;
+    PLASK_PyCodeObject* _Mh;
+    PLASK_PyCodeObject* _Mh_v;
+    PLASK_PyCodeObject* _Mh_l;
+    PLASK_PyCodeObject* _eps;
+    PLASK_PyCodeObject* _chi;
+    PLASK_PyCodeObject* _Nc;
+    PLASK_PyCodeObject* _Ni;
+    PLASK_PyCodeObject* _Nf;
+    PLASK_PyCodeObject* _EactD;
+    PLASK_PyCodeObject* _EactA;
+    PLASK_PyCodeObject* _mob;
+    PLASK_PyCodeObject* _cond;
+    PLASK_PyCodeObject* _cond_v;
+    PLASK_PyCodeObject* _cond_l;
+    PLASK_PyCodeObject* _res;
+    PLASK_PyCodeObject* _res_v;
+    PLASK_PyCodeObject* _res_l;
+    PLASK_PyCodeObject* _A;
+    PLASK_PyCodeObject* _B;
+    PLASK_PyCodeObject* _C;
+    PLASK_PyCodeObject* _D;
+    PLASK_PyCodeObject* _condT;
+    PLASK_PyCodeObject* _condT_t;
+    PLASK_PyCodeObject* _condT_v;
+    PLASK_PyCodeObject* _condT_l;
+    PLASK_PyCodeObject* _dens;
+    PLASK_PyCodeObject* _specHeat;
+    PLASK_PyCodeObject* _nr;
+    PLASK_PyCodeObject* _absp;
+    PLASK_PyCodeObject* _Nr;
 
     PythonEvalMaterial (const std::string& name, Material::Kind kind) : base(new EmptyBase), _name(name), _kind(kind),
         _lattC(NULL), _Eg(NULL), _CBO(NULL), _VBO(NULL), _Dso(NULL), _Mso(NULL), _Me(NULL), _Me_v(NULL), _Me_l(NULL),
@@ -395,15 +400,15 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         constructor->material = make_shared<PythonEvalMaterial>(name, kind);
     }
 
-#   ifdef PY_VERSION_HEX >= 0x03000000
+#   if PY_VERSION_HEX >= 0x03000000
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
         else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
-            constructor->material->_##func = (PyCodeObject*)Py_CompileString(reader.requireText().c_str(), BOOST_PP_STRINGIZE(func), Py_eval_input);
+            constructor->material->_##func = (PLASK_PyCodeObject*)Py_CompileString(reader.requireText().c_str(), BOOST_PP_STRINGIZE(func), Py_eval_input);
 #   else
         PyCompilerFlags flags { CO_FUTURE_DIVISION };
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
         else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
-            constructor->material->_##func = (PyCodeObject*)Py_CompileStringFlags(reader.requireText().c_str(), BOOST_PP_STRINGIZE(func), Py_eval_input, flags);
+            constructor->material->_##func = (PLASK_PyCodeObject*)Py_CompileStringFlags(reader.requireText().c_str(), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
 #   endif
     while (reader.requireTagOrEnd()) {
         if (false);

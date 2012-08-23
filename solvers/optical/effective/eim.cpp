@@ -173,8 +173,6 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
     size_t xsize = mesh->tran().size() + 1;
     size_t ysize = mesh->up().size() + 1;
 
-    //TODO consider gain here
-
     if (fresh || inTemperature.changed || inWavelength.changed || polarization != old_polarization) { // We need to update something
 
         old_polarization = polarization;
