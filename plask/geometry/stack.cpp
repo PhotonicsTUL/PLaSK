@@ -1,5 +1,9 @@
 #include "stack.h"
 
+#define baseH_attr "from"
+#define repeat_attr "repeat"
+#define require_equal_heights_attr "flat"
+
 namespace plask {
 
 template <int dim, int growingDirection>
@@ -39,6 +43,11 @@ void StackContainerBaseImpl<dim, growingDirection>::removeAtUnsafe(std::size_t i
     GeometryElementContainer<dim>::removeAtUnsafe(index);
     stackHeights.pop_back();
     updateAllHeights(index);
+}
+
+template <int dim, int growingDirection>
+void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &) const {
+    dest_xml_element.attr(baseH_attr, getBaseHeight());
 }
 
 template <int dim, int growingDirection>
@@ -123,11 +132,27 @@ void StackContainer<dim>::removeAtUnsafe(std::size_t index) {
 }
 
 template <int dim>
-void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames parent_axes) const
-{
-    //TODO
+void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
+    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
+    this->writeXMLAttr(container_tag, axes);
+    for (int i = children.size()-1; i > 0; --i) {   //children are written in reverse order
+        XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
+        writeXMLChildAttr(child_tag, i, axes);
+        children[i]->getChild()->writeXML(child_tag, write_cb, axes);
+    }
 }
 
+template <>
+void StackContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
+    dest_xml_child_tag.attr(axes.getNameForLon(), aligners[child_index]->str());
+}
+
+template <>
+void StackContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
+    //TODO
+    //dest_xml_child_tag.attr(axes.getNameForLon(), aligners[child_index]->str());
+    //dest_xml_child_tag.attr(axes.getNameForTran(), aligners[child_index]->str());
+}
 
 template class StackContainer<2>;
 template class StackContainer<3>;
@@ -168,11 +193,6 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
     stackHeights.back() += delta;
     this->fireChildrenInserted(pos, pos+1);
     return PathHints::Hint(shared_from_this(), trans_geom);
-}
-
-void ShelfContainer2D::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames parent_axes) const
-{
-    //TODO
 }
 
 
@@ -281,14 +301,10 @@ shared_ptr<GeometryElement> MultiStackContainer<dim>::getChildAt(std::size_t chi
 }
 
 template <int dim>
-void MultiStackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames parent_axes) const {
-    //TODO
+void MultiStackContainer<dim>::writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const {
+    StackContainer<dim>::writeXMLAttr(dest_xml_element, axes);
+    dest_xml_element.attr(repeat_attr, repeat_count);
 }
-
-
-#define baseH_attr "from"
-#define repeat_attr "repeat"
-#define require_equal_heights_attr "flat"
 
 shared_ptr<GeometryElement> read_StackContainer2D(GeometryReader& reader) {
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);

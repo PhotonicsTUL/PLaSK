@@ -165,7 +165,7 @@ struct Block: public GeometryElementLeaf<dim> {
         return this->getBoundingBox().intersect(area);
     }
     
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
 
 };
 

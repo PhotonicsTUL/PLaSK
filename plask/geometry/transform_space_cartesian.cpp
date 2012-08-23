@@ -49,10 +49,8 @@ GeometryElement::Subtree Extrusion::getPathsTo(const DVec& point) const {
     return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
 }
 
-void Extrusion::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
-    tag.attr("length", length);
-    if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
+void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const {
+    dest_xml_element.attr("length", length);
 }
 
 shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {

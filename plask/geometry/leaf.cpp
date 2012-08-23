@@ -19,18 +19,16 @@ inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
 }
 
 template <>
-void Block<2>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
-    write_cb.makeTag(parent_xml_element, *this, axes)
-            .attr(axes.getNameForTran(), size.tran)
-            .attr(axes.getNameForUp(), size.up);
+void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
+    dest_xml_element.attr(axes.getNameForTran(), size.tran)
+                    .attr(axes.getNameForUp(), size.up);
 }
 
 template <>
-void Block<3>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
-    write_cb.makeTag(parent_xml_element, *this, axes)
-            .attr(axes.getNameForLon(), size.lon)
-            .attr(axes.getNameForTran(), size.tran)
-            .attr(axes.getNameForUp(), size.up);
+void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
+    dest_xml_element.attr(axes.getNameForLon(), size.lon)
+                    .attr(axes.getNameForTran(), size.tran)
+                    .attr(axes.getNameForUp(), size.up);
 }
 
 template class Block<2>;

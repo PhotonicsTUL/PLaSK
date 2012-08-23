@@ -446,18 +446,23 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     virtual ~GeometryElement();
     
     /**
-     * Get name of element type (like: "block2d", "shelf", "stack3d", etc.)
+     * Get name of element type (like: "block2d", "shelf", "stack3d", etc.).
+     *
+     * This name is used as tag name when element is serialized to XML.
      * @return name of element type
      */
     virtual std::string getTypeName() const = 0;
-
+    
     /**
      * Write geometry tree branch rooted by this to XML.
+     *
+     * Default implementation write XML tag for this (with eventual name and axes attribiutes) call writeXMLAttr to append extra atribiutes, and write all real children.
+     * Typically you should overwrite only writeXMLAttr method.
      * @param parent_xml_element destination, parent XML element
      * @param write_cb write callback, used to get names for elements and paths
      * @param parent_axes names of axes (typically used by parent of this)
      */
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames parent_axes) const = 0;
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames parent_axes) const;
     
     /**
      * Write geometry tree branch rooted by this to XML.
@@ -712,6 +717,15 @@ public:
 
 protected:
 
+    /**
+     * Append XML attribiutes of this to @p dest_xml_element.
+     *
+     * By default do nothing.
+     * @param dest_xml_element XML tag where attribiutes should be append
+     * @param axes choosen name of axes
+     */
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
+    
     /**
      * Check if given @p index is valid child index and throw exception of it is not.
      * @param child_nr index to check

@@ -37,11 +37,6 @@ GeometryElement::Subtree Revolution::getPathsTo(const DVec& point) const {
     return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
 }
 
-void Revolution::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
-    if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
-}
-
 Box2D Revolution::childBox(const plask::Box3D& r) {
     Box2D result(childVec(r.lower), childVec(r.upper));
     result.fix();

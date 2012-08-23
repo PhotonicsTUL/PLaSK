@@ -138,11 +138,13 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         updateAllHeights(first_child_index);
     }
 
+    void writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const;
 };
 
 /**
  * Horizontal stack.
  */
+//TODO it is not possible to save flat requiment to XML!
 struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
     ShelfContainer2D(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
@@ -235,7 +237,6 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
         return push_front_Unsafe(el);
     }
     
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 };
 
 
@@ -418,8 +419,12 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
     virtual void removeAtUnsafe(std::size_t index);
     
+    //add in reverse order
     virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
+protected:
+    void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
+    
 };
 
 template <int dim>
@@ -551,7 +556,8 @@ class MultiStackContainer: public StackContainer<dim> {
         this->fireChildrenChanged();    //TODO should this be called? or simple change?
     }
     
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
+protected:
+    void writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const;
 
 };
 

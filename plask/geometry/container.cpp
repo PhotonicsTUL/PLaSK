@@ -4,6 +4,22 @@
 namespace plask {
 
 template <int dim>
+void GeometryElementContainer<dim>::writeXMLChildAttr(XMLWriter::Element&, std::size_t, const AxisNames&) const {
+    // do nothing
+}
+
+template <int dim>
+void GeometryElementContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
+    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
+    this->writeXMLAttr(container_tag, axes);
+    for (std::size_t i = 0; i < children.size(); ++i) {
+        XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
+        writeXMLChildAttr(child_tag, i, axes);
+        children[i]->getChild()->writeXML(child_tag, write_cb, axes);
+    }
+}
+
+template <int dim>
 typename GeometryElementContainer<dim>::Box GeometryElementContainer<dim>::getBoundingBox() const {
     if (children.empty()) return Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     Box result = children[0]->getBoundingBox();
@@ -130,28 +146,18 @@ template class GeometryElementContainer<2>;
 template class GeometryElementContainer<3>;
 
 template <>
-void TranslationContainer<2>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
-    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
-    for (std::size_t i = 0; i < children.size(); ++i) {
-        shared_ptr<Translation<2>> child_tran = children[i];
-        XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
-        if (child_tran->translation.tran) child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
-        if (child_tran->translation.up) child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
-        child_tran->getChild()->writeXML(child_tag, write_cb, axes);
-    }
+void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
+    shared_ptr<Translation<2>> child_tran = children[child_index];
+    if (child_tran->translation.tran) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
+    if (child_tran->translation.up) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
 }
 
 template <>
-void TranslationContainer<3>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
-    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
-    for (std::size_t i = 0; i < children.size(); ++i) {
-        shared_ptr<Translation<3>> child_tran = children[i];
-        XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
-        if (child_tran->translation.lon) child_tag.attr(axes.getNameForTran(), child_tran->translation.lon);
-        if (child_tran->translation.tran) child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
-        if (child_tran->translation.up) child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
-        child_tran->getChild()->writeXML(child_tag, write_cb, axes);
-    }
+void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
+    shared_ptr<Translation<3>> child_tran = children[child_index];
+    if (child_tran->translation.lon) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.lon);
+    if (child_tran->translation.tran) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
+    if (child_tran->translation.up) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
 }
 
 template class TranslationContainer<2>;

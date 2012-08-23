@@ -67,6 +67,14 @@ GeometryElement::~GeometryElement() {
     fireChanged(Event::DELETE);
 }
 
+void GeometryElement::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
+    writeXMLAttr(tag, axes);
+    const std::size_t child_count = getRealChildrenCount();
+    for (std::size_t i = 0; i < child_count; ++i)
+        getRealChildAt(i)->writeXML(tag, write_cb, axes);
+}
+
 template<int DIMS>
 shared_ptr< GeometryElementD<DIMS> > GeometryElement::asD() {
     if (getDimensionsCount() != DIMS || isGeometry()) return shared_ptr< GeometryElementD<DIMS> >();
@@ -138,6 +146,10 @@ return result;
 void GeometryElement::ensureCanHasAsParent(const GeometryElement& potential_parent) const {
     if (isInSubtree(potential_parent))
         throw CyclicReferenceException();
+}
+
+void GeometryElement::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
+    //do nothing
 }
 
 std::size_t GeometryElement::getRealChildrenCount() const {

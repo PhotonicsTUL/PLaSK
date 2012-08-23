@@ -43,20 +43,16 @@ shared_ptr<const GeometryElement> Translation<dim>::changedVersion(const Geometr
 }
 
 template <>
-void Translation<2>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
-    if (translation.tran != 0.0) tag.attr(axes.getNameForTran(), translation.tran);
-    if (translation.up != 0.0) tag.attr(axes.getNameForUp(), translation.up);
-    if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
+void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
+    if (translation.tran != 0.0) dest_xml_element.attr(axes.getNameForTran(), translation.tran);
+    if (translation.up != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up);
 }
 
 template <>
-void Translation<3>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
-    if (translation.lon != 0.0) tag.attr(axes.getNameForLon(), translation.lon);
-    if (translation.tran != 0.0) tag.attr(axes.getNameForTran(), translation.tran);
-    if (translation.up != 0.0) tag.attr(axes.getNameForUp(), translation.up);
-    if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
+void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
+    if (translation.lon != 0.0) dest_xml_element.attr(axes.getNameForLon(), translation.lon);
+    if (translation.tran != 0.0) dest_xml_element.attr(axes.getNameForTran(), translation.tran);
+    if (translation.up != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up);
 }
 
 template class Translation<2>;

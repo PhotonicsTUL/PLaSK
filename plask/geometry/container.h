@@ -44,9 +44,27 @@ struct GeometryElementContainer: public GeometryElementD<dim> {
 
 protected:
     TranslationVector children;
+    
+    /**
+     * Add attributes to child tag.
+     *
+     * Default implementation do nothing.
+     * @param dest_xml_child_tag destination, child tag
+     * @param child_index index of child
+     * @param axes names of axes
+     */
+    virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
 public:
-
+    
+    /**
+     * Call writeXMLAttr for this container attribute and writeXMLChildAttr for each child tag.
+     * @param parent_xml_element
+     * @param write_cb
+     * @param axes
+     */
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const;
+    
     // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
 
     /// Disconnect onChildChanged from current child change signal
@@ -293,7 +311,7 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
         return addUnsafe(el, translation);
     }
     
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
+    virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
 };
 
