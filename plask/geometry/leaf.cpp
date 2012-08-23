@@ -18,6 +18,24 @@ inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
     setupLeaf(reader, block);
 }
 
+template <>
+void Block<2>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
+    write_cb.makeTag(parent_xml_element, *this, "block2d", axes)
+            .attr(axes.getNameForTran(), size.tran)
+            .attr(axes.getNameForUp(), size.up);
+}
+
+template <>
+void Block<3>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
+    write_cb.makeTag(parent_xml_element, *this, "block3d", axes)
+            .attr(axes.getNameForLon(), size.lon)
+            .attr(axes.getNameForTran(), size.tran)
+            .attr(axes.getNameForUp(), size.up);
+}
+
+template class Block<2>;
+template class Block<3>;
+
 shared_ptr<GeometryElement> read_block2D(GeometryReader& reader) {
     shared_ptr< Block<2> > block(new Block<2>());
     setupBlock2D3D(reader, *block);

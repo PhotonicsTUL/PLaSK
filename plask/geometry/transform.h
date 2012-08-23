@@ -285,6 +285,8 @@ struct Translation: public GeometryElementTransform<dim> {
     shared_ptr<Translation<dim>> copyShallow(const DVec& new_translation) const {
         return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), new_translation));
     }
+    
+   void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
 };
 

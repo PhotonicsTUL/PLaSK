@@ -526,6 +526,7 @@ public:
         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(element, path, borders, axesNames);
     }
 
+    void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const;
 
 };
 
@@ -641,6 +642,8 @@ public:
     void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
 
     const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
+    
+    void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const;
 
   protected:
 
@@ -782,6 +785,7 @@ public:
 
     virtual Geometry3D* getSubspace(const shared_ptr<GeometryElementD<3>>& element, const PathHints* path=nullptr, bool copyBorders=false) const;
 
+    void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const;
 };
 
 

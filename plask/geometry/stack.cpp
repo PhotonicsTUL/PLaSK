@@ -122,6 +122,12 @@ void StackContainer<dim>::removeAtUnsafe(std::size_t index) {
     this->updateAllHeights(index);
 }
 
+template <int dim>
+void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames parent_axes) const
+{
+    //TODO
+}
+
 
 template class StackContainer<2>;
 template class StackContainer<3>;
@@ -162,6 +168,11 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
     stackHeights.back() += delta;
     this->fireChildrenInserted(pos, pos+1);
     return PathHints::Hint(shared_from_this(), trans_geom);
+}
+
+void ShelfContainer2D::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames parent_axes) const
+{
+    //TODO
 }
 
 
@@ -267,6 +278,11 @@ shared_ptr<GeometryElement> MultiStackContainer<dim>::getChildAt(std::size_t chi
     auto result = children[child_nr % children.size()]->copyShallow();
     result->translation.up += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
     return result;
+}
+
+template <int dim>
+void MultiStackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames parent_axes) const {
+    //TODO
 }
 
 

@@ -32,6 +32,8 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
     using GeometryElementTransformSpace<3, 2>::getPathsTo;
 
     virtual GeometryElement::Subtree getPathsTo(const DVec& point) const;
+    
+    void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const;
 
 private:
 

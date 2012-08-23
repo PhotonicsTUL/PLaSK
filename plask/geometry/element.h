@@ -18,6 +18,9 @@ This file includes base class for geometries elements.
 #include <boost/signals2.hpp>
 #include "../utils/event.h"
 
+#include "../axes.h"
+#include "../utils/xml/writer.h"
+
 namespace plask {
 
 struct PathHints;
@@ -334,6 +337,51 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         PredicateIsA(const shared_ptr<const GeometryElement>& elementToBeEqual): elementToBeEqual(*elementToBeEqual) {}
         bool operator()(const GeometryElement& el) const { return &el == &elementToBeEqual; }
     };
+    
+    /**
+     * Base class for callbacks used by save() method to get names of elements and paths.
+     *
+     * Default implementation just returns empty names and list of names.
+     * It is enaught to save geometry tree without any names.
+     */
+    struct WriteXMLCallback {
+        
+        /**
+         * Get name of given @p element.
+         * @param[in] element
+         * @param[in, out] axesNames axes names which was used when saved parent of @p element, this can assign to it new value to use in branch rooted by @p element
+         * @return name of @p element or empty string if @p element has no name
+         */
+        virtual std::string getName(const GeometryElement& element, AxisNames& axesNames) const;
+        
+        /**
+         * Get names of path fragment from @p parent to @p child.
+         * @param[in] parent container which includes @p child
+         * @param[in] child element from a @p parent container
+         * @param[in] index_of_child_in_parent index of @p child in @p parent real childrent list
+         * @return names of path fragment from @p parent to @p child (can be empty)
+         */
+        virtual std::vector<std::string> getPathNames(const GeometryElement& parent, const GeometryElement& child, std::size_t index_of_child_in_parent) const;
+        
+        /**
+         * Append to XML tag, with optional name (obtain by getName), and axes attribiute.
+         * @param parent_tag parent XML tag
+         * @param element element to write
+         * @param element_type_name name of @p element type used in XML
+         * @param[in, out] axesNames axis names which was used when saved parent of @p element, this can assign to it new value to use in branch rooted by @p element
+         *  (assigned pointer must be valid while branch will be saved, typically it is a pointer to object in register)
+         * @return opened XML tag ready to add extra atribiutes of @p element
+         */
+        XMLElement makeTag(XMLElement& parent_tag, const GeometryElement& element, const std::string& element_type_name, AxisNames& axesNames) const;
+        
+        template <typename ElementType>
+        XMLElement makeTag(XMLElement& parent_tag, const ElementType& element, AxisNames& axesNames) const {
+            return makeTag(parent_tag, element, ElementType::NAME, axesNames);
+        }
+        
+        XMLElement makeChildTag(XMLElement& container_tag, const GeometryElement& container, std::size_t index_of_child_in_parent) const;
+        
+    };
 
     /// Changed signal, fired when element was changed.
     boost::signals2::signal<void(Event&)> changed;
@@ -396,6 +444,26 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     virtual ~GeometryElement();
 
+    /**
+     * Write geometry tree branch rooted by this to XML.
+     * @param parent_xml_element destination, parent XML element
+     * @param write_cb write callback, used to get names for elements and paths
+     * @param parent_axes names of axes (typically used by parent of this)
+     */
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames parent_axes) const = 0;
+    
+    /**
+     * Write geometry tree branch rooted by this to XML.
+     *
+     * Provides good default parameters.
+     * @param parent_xml_element destination, parent XML element
+     * @param write_cb write callback, used to get names for elements and paths
+     */
+    void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb = WriteXMLCallback()) const {
+        writeXML(parent_xml_element, write_cb, AxisNames::getAbsoluteNames());
+    }
+    
+    
     /**
      * Cast this to GeometryElementD<DIMS>.
      * @return this casted to GeometryElementD<DIMS> or nullptr if casting is not possible.

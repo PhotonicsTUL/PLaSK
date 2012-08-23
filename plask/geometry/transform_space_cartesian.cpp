@@ -49,9 +49,14 @@ GeometryElement::Subtree Extrusion::getPathsTo(const DVec& point) const {
     return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
 }
 
+void Extrusion::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, "extrusion", axes);
+    tag.attr("length", length);
+    if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
+}
+
 shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {
     double length = reader.source.requireAttribute<double>("length");
-    //TODO read space size
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     return make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(), length);
 }

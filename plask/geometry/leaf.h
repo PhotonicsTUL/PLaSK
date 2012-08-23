@@ -158,6 +158,8 @@ struct Block: public GeometryElementLeaf<dim> {
     virtual bool intersect(const Box& area) const {
         return this->getBoundingBox().intersect(area);
     }
+    
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
 };
 

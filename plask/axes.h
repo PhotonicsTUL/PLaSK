@@ -8,6 +8,8 @@
 This file includes utils connected with names of axes.
 */
 
+#include "vector/3d.h"
+
 namespace plask {
 
 /**
@@ -86,11 +88,13 @@ struct AxisNames {
     /// Register of standard axis names.
     static Register axisNamesRegister;
 
+    /// Get absolute names.
+    static const AxisNames& getAbsoluteNames();
 
     ///Name of axises (by index).
     std::string byIndex[3];
 
-    ///Construct uninitialized object. Do nothing.
+    ///Construct uninitialized object, with empty names of axes.
     AxisNames() {}
 
     AxisNames(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name);
@@ -111,7 +115,26 @@ struct AxisNames {
 
     /// \return string representation of the axes for the register
     std::string str() const;
+    
+    std::string getNameForLon() const { return operator [](axis::lon_index); }
+    
+    std::string getNameForTran() const { return operator [](axis::tran_index); }
+    
+    std::string getNameForUp() const { return operator [](axis::up_index); }
 
+    /**
+     * Check if this and @p to_compare have equals names of all axes.
+     * @param to_compare element to compare to @c this
+     * @return @c true only if @c this and @p to_compar are equals
+     */
+    bool operator==(const AxisNames& to_compare) const;
+    
+    /**
+     * Check if this and @p to_compare have not equals names of all axes.
+     * @param to_compare element to compare to @c this
+     * @return @c true only if @c this and @p to_compar are not equals
+     */
+    bool operator!=(const AxisNames& to_compare) const { return !(*this == to_compare); }
 };
 
 

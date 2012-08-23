@@ -230,6 +230,8 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
         this->ensureCanHaveAsChild(*el);
         return push_front_Unsafe(el);
     }
+    
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 };
 
 
@@ -405,6 +407,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
 
     virtual void removeAtUnsafe(std::size_t index);
+    
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
 };
 
@@ -536,6 +540,8 @@ class MultiStackContainer: public StackContainer<dim> {
         repeat_count = new_repeat_count;
         this->fireChildrenChanged();    //TODO should this be called? or simple change?
     }
+    
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
 };
 

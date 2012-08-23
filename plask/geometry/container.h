@@ -286,6 +286,8 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, translation);
     }
+    
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
 };
 

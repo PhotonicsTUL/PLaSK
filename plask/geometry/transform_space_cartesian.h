@@ -46,6 +46,8 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
     using GeometryElementTransformSpace<3, 2>::getPathsTo;
 
     GeometryElement::Subtree getPathsTo(const DVec& point) const;
+    
+    void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const;
 
 private:
     /// @return true only if p can be inside this, false if for sure its not inside

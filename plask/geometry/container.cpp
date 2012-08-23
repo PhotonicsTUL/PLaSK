@@ -129,6 +129,35 @@ bool GeometryElementContainer<dim>::removeIfT(const std::function<bool(const sha
 template class GeometryElementContainer<2>;
 template class GeometryElementContainer<3>;
 
+template <>
+void TranslationContainer<2>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
+    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, "container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, axes);
+    for (std::size_t i = 0; i < children.size(); ++i) {
+        shared_ptr<Translation<2>> child_tran = children[i];
+        XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
+        if (child_tran->translation.tran) child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
+        if (child_tran->translation.up) child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
+        child_tran->getChild()->writeXML(child_tag, write_cb, axes);
+    }
+}
+
+template <>
+void TranslationContainer<3>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
+    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, "container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, axes);
+    for (std::size_t i = 0; i < children.size(); ++i) {
+        shared_ptr<Translation<3>> child_tran = children[i];
+        XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
+        if (child_tran->translation.lon) child_tag.attr(axes.getNameForTran(), child_tran->translation.lon);
+        if (child_tran->translation.tran) child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
+        if (child_tran->translation.up) child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
+        child_tran->getChild()->writeXML(child_tag, write_cb, axes);
+    }
+}
+
+template class TranslationContainer<2>;
+template class TranslationContainer<3>;
+
+
 // ---- containers readers: ----
 
 shared_ptr<GeometryElement> read_TranslationContainer2D(GeometryReader& reader) {
@@ -170,6 +199,5 @@ shared_ptr<GeometryElement> read_TranslationContainer3D(GeometryReader& reader) 
 
 static GeometryReader::RegisterElementReader container2D_reader("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_TranslationContainer2D);
 static GeometryReader::RegisterElementReader container3D_reader("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_TranslationContainer3D);
-
 
 } // namespace plask

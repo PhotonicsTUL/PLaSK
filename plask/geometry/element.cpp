@@ -37,6 +37,32 @@ GeometryElement::ToBlockChanger::ToBlockChanger(const shared_ptr<const GeometryE
     to = changeToBlock(material, from, translation);
 }
 
+std::string GeometryElement::WriteXMLCallback::getName(const GeometryElement&, AxisNames&) const {
+    return std::string();
+}
+
+std::vector<std::string> GeometryElement::WriteXMLCallback::getPathNames(const GeometryElement&, const GeometryElement&, std::size_t) const {
+    return std::vector<std::string>();
+}
+
+XMLElement GeometryElement::WriteXMLCallback::makeTag(XMLElement &parent_tag, const GeometryElement &element, const std::string &element_type_name, AxisNames &axesNames) const {
+    XMLElement tag(parent_tag, element_type_name);
+    AxisNames newAxesNames = axesNames;
+    std::string name = getName(element, newAxesNames);
+    if (!name.empty()) tag.attr("name", name);
+    if (axesNames != newAxesNames) {
+        axesNames = std::move(newAxesNames);
+        tag.attr("axes", axesNames.str());
+    }
+    return tag;
+}
+
+XMLElement GeometryElement::WriteXMLCallback::makeChildTag(XMLElement& container_tag, const GeometryElement& container, std::size_t index_of_child_in_parent) const {
+    XMLElement tag(container_tag, "child");
+    //TODO get paths
+    return tag;
+}
+
 GeometryElement::~GeometryElement() {
     fireChanged(Event::DELETE);
 }

@@ -27,15 +27,23 @@ const AxisNames& AxisNames::Register::get(const std::string &name) const {
     return i->second;
 }
 
-AxisNames::Register AxisNames::axisNamesRegister(
+AxisNames::Register AxisNames::axisNamesRegister =
         //c0, c1, c2, axis names:
         AxisNames::Register
         ("x", "y", "z", "yz", "se", "z_up")
         ("z", "x", "y", "xy", "ee", "y_up")
         ("p", "r", "z", "rz", "rad")
-        ("lon", "tran", "up", "absolute", "abs")
-);
+        ("lon", "tran", "up", "absolute", "abs");
 
+const AxisNames& AxisNames::getAbsoluteNames() {
+    return axisNamesRegister.get("abs");
+}
 
+bool AxisNames::operator ==(const AxisNames &to_compare) const {
+    return
+        this->byIndex[0] == to_compare.byIndex[0] &&
+        this->byIndex[1] == to_compare.byIndex[1] &&
+        this->byIndex[2] == to_compare.byIndex[2];
+}
 
 } // namespace plask
