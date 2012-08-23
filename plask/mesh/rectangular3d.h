@@ -381,6 +381,33 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     }
 
     /**
+     * Calculate index of major axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of major axis, from 0 to majorAxis.size()-1
+     */
+    inline std::size_t majorIndex(std::size_t mesh_index) const {
+        return mesh_index / minorAxis().size() / middleAxis().size();
+    }
+
+    /**
+     * Calculate index of middle axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of middle axis, from 0 to middleAxis.size()-1
+     */
+    inline std::size_t middleIndex(std::size_t mesh_index) const {
+        return (mesh_index / minorAxis().size()) % middleAxis().size();
+    }
+
+    /**
+     * Calculate index of minor axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of minor axis, from 0 to minorAxis.size()-1
+     */
+    inline std::size_t minorIndex(std::size_t mesh_index) const {
+        return mesh_index % minorAxis().size();
+    }
+
+    /**
      * Get point with given mesh index.
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index

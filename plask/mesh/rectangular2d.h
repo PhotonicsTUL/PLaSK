@@ -276,7 +276,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /**
-     * Calculate index of y using this mesh index.
+     * Calculate index of y using given mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of c1, from 0 to c1.size()-1
      */
@@ -284,10 +284,32 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         return index1_f(this, mesh_index);
     }
 
+    /**
+     * Calculate index of minor axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of major axis, from 0 to majorAxis.size()-1
+     */
+    inline std::size_t majorIndex(std::size_t mesh_index) const {
+        return mesh_index / minorAxis().size();
+    }
+
+    /**
+     * Calculate index of minor axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of minor axis, from 0 to minorAxis.size()-1
+     */
+    inline std::size_t minorIndex(std::size_t mesh_index) const {
+        return mesh_index % minorAxis().size();
+    }
+
+    /**
+     * Get point with given mesh index.
+     * @param index index of point, from 0 to size()-1
+     * @return point with given @p index
+     */
     virtual Vec<2, double> at(std::size_t index) const {
         return Vec<2, double>(c0[index0(index)], c1[index1(index)]);
     }
-
 
     /**
      * Get point with given mesh index.
