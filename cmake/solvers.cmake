@@ -24,6 +24,8 @@ set(PLASK_SOLVER_PATH "${PLASK_PATH}/solvers/${SOLVER_PATH}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH})
 
+set(SOLVER_INSTALL_PATH lib/plask/solvers/${SOLVER_PATH})
+
 # Automatically set sources from the current directory
 file(GLOB solver_src *.cpp *.hpp *.h)
 file(GLOB interface_src python/*.cpp)
@@ -46,10 +48,10 @@ macro(make_default)
     endif()
 
     if(WIN32)
-        install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION lib/plask/solvers/${SOLVER_PATH} COMPONENT solvers
-                                       ARCHIVE DESTINATION lib/plask/solvers/${SOLVER_PATH} COMPONENT solvers-dev)
+        install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
+                                       ARCHIVE DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
     else()
-        install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION lib/plask/solvers/${SOLVER_PATH} COMPONENT solvers)
+        install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
     endif()
 
     if(BUILD_PYTHON)
@@ -76,12 +78,12 @@ macro(make_default)
                                   RUNTIME_OUTPUT_DIRECTORY "${PLASK_SOLVER_PATH}"
                                   OUTPUT_NAME "${SOLVER_NAME}.pyd"  # again workaround CMake/GCC bug with creating import library
                                   SUFFIX "")
-            install(TARGETS ${PYTHON_TARGET_NAME} RUNTIME DESTINATION lib/plask/solvers/${SOLVER_PATH} COMPONENT solvers
-                                                  LIBRARY DESTINATION lib/plask/solvers/${SOLVER_PATH} COMPONENT solvers-dev)
+            install(TARGETS ${PYTHON_TARGET_NAME} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
+                                                  LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
         else()
             set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                                   OUTPUT_NAME ${SOLVER_NAME})
-            install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION lib/plask/solvers/${SOLVER_PATH} COMPONENT solvers)
+            install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
         endif()
     endif()
 

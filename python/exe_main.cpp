@@ -122,7 +122,7 @@ int handlePythonException() {
             const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
             const char* funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
 #       endif
-        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
+        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, function '%3%', line %2%: %4%: %5%", filename, lineno, funcname, error_name, message);
 
         while (!tb_stack.empty()) {
             traceback = tb_stack.top();
@@ -135,7 +135,7 @@ int handlePythonException() {
                 const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
                 const char* funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
 #           endif
-            plask::writelog(plask::LOG_DETAIL, "called from: %1%, line %2%, function '%3%'", filename, lineno, funcname);
+            plask::writelog(plask::LOG_DETAIL, "called from: %1%, function '%3%', line %2%", filename, lineno, funcname);
         }
 
     } else {
