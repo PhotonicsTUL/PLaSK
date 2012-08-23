@@ -12,12 +12,6 @@ namespace plask {
 
 class Manager;
 
-/// Value for expected suffix for names of 2d elements types, see GeometryReader::expectedSuffix.
-#define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D "2d"
-
-/// Value for expected suffix for names of 3d elements types, see GeometryReader::expectedSuffix.
-#define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D "3d"
-
 /**
  * Allow to read geometry from XML.
  *

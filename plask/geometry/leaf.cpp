@@ -20,14 +20,14 @@ inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
 
 template <>
 void Block<2>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
-    write_cb.makeTag(parent_xml_element, *this, "block2d", axes)
+    write_cb.makeTag(parent_xml_element, *this, axes)
             .attr(axes.getNameForTran(), size.tran)
             .attr(axes.getNameForUp(), size.up);
 }
 
 template <>
 void Block<3>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
-    write_cb.makeTag(parent_xml_element, *this, "block3d", axes)
+    write_cb.makeTag(parent_xml_element, *this, axes)
             .attr(axes.getNameForLon(), size.lon)
             .attr(axes.getNameForTran(), size.tran)
             .attr(axes.getNameForUp(), size.up);
@@ -49,9 +49,9 @@ shared_ptr<GeometryElement> read_block3D(GeometryReader& reader) {
     return block;
 }
 
-static GeometryReader::RegisterElementReader block2D_reader("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_block2D);
+static GeometryReader::RegisterElementReader block2D_reader(Block<2>::NAME, read_block2D);
 static GeometryReader::RegisterElementReader rectangle_reader("rectangle", read_block2D);
-static GeometryReader::RegisterElementReader block3D_reader("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_block3D);
+static GeometryReader::RegisterElementReader block3D_reader(Block<3>::NAME, read_block3D);
 static GeometryReader::RegisterElementReader cuboid_reader("cuboid", read_block3D);
 
 shared_ptr<GeometryElement> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryElement>& to_change, Vec<3, double>& translation) {

@@ -131,7 +131,7 @@ template class GeometryElementContainer<3>;
 
 template <>
 void TranslationContainer<2>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
-    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, "container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, axes);
+    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
     for (std::size_t i = 0; i < children.size(); ++i) {
         shared_ptr<Translation<2>> child_tran = children[i];
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
@@ -143,7 +143,7 @@ void TranslationContainer<2>::writeXML(XMLWriter::Element &parent_xml_element, c
 
 template <>
 void TranslationContainer<3>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
-    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, "container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, axes);
+    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
     for (std::size_t i = 0; i < children.size(); ++i) {
         shared_ptr<Translation<3>> child_tran = children[i];
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
@@ -197,7 +197,7 @@ shared_ptr<GeometryElement> read_TranslationContainer3D(GeometryReader& reader) 
 
 
 
-static GeometryReader::RegisterElementReader container2D_reader("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_TranslationContainer2D);
-static GeometryReader::RegisterElementReader container3D_reader("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_TranslationContainer3D);
+static GeometryReader::RegisterElementReader container2D_reader(TranslationContainer<2>::NAME, read_TranslationContainer2D);
+static GeometryReader::RegisterElementReader container3D_reader(TranslationContainer<3>::NAME, read_TranslationContainer3D);
 
 } // namespace plask

@@ -146,6 +146,10 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
     ShelfContainer2D(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
+    
+    static constexpr const char* NAME = "shelf";
+    
+    virtual std::string getTypeName() const { return NAME; }
 
     /**
      * Check if all children have the same heights.
@@ -254,6 +258,12 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     using StackContainerBaseImpl<dim>::shared_from_this;
     using StackContainerBaseImpl<dim>::children;
     using StackContainerBaseImpl<dim>::stackHeights;
+    
+    static constexpr const char* NAME = dim == 2 ?
+                ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+                ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    
+    virtual std::string getTypeName() const { return NAME; }
 
   private:
     std::vector< std::unique_ptr<Aligner> > aligners;

@@ -2,9 +2,6 @@
 
 #include "reader.h"
 
-#define PLASK_TRANSLATION_2D_NAME ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
-#define PLASK_TRANSLATION_3D_NAME ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
-
 namespace plask {
 
 template <int dim>
@@ -47,7 +44,7 @@ shared_ptr<const GeometryElement> Translation<dim>::changedVersion(const Geometr
 
 template <>
 void Translation<2>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, PLASK_TRANSLATION_2D_NAME, axes);
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
     if (translation.tran != 0.0) tag.attr(axes.getNameForTran(), translation.tran);
     if (translation.up != 0.0) tag.attr(axes.getNameForUp(), translation.up);
     if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
@@ -55,7 +52,7 @@ void Translation<2>::writeXML(XMLWriter::Element& parent_xml_element, const Geom
 
 template <>
 void Translation<3>::writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, PLASK_TRANSLATION_3D_NAME, axes);
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
     if (translation.lon != 0.0) tag.attr(axes.getNameForLon(), translation.lon);
     if (translation.tran != 0.0) tag.attr(axes.getNameForTran(), translation.tran);
     if (translation.up != 0.0) tag.attr(axes.getNameForUp(), translation.up);
@@ -87,7 +84,7 @@ shared_ptr<GeometryElement> read_translation3D(GeometryReader& reader) {
     return translation;
 }
 
-static GeometryReader::RegisterElementReader translation2D_reader(PLASK_TRANSLATION_2D_NAME, read_translation2D);
-static GeometryReader::RegisterElementReader translation3D_reader(PLASK_TRANSLATION_3D_NAME, read_translation3D);
+static GeometryReader::RegisterElementReader translation2D_reader(Translation<2>::NAME, read_translation2D);
+static GeometryReader::RegisterElementReader translation3D_reader(Translation<3>::NAME, read_translation3D);
 
 }   // namespace plask

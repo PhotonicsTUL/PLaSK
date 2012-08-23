@@ -115,6 +115,12 @@ struct Block: public GeometryElementLeaf<dim> {
 
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryElementLeaf<dim>::Box Box;
+    
+    static constexpr const char* NAME = dim == 2 ?
+                ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+                ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    
+    virtual std::string getTypeName() const { return NAME; }
 
     /**
      * Size and upper corner of block. Lower corner is zeroed vector.

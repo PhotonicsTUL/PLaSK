@@ -391,7 +391,11 @@ class Geometry2DCartesian: public GeometryD<2> {
     shared_ptr<Material> backMaterial;
 
 public:
+    
+    static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D;
 
+    virtual std::string getTypeName() const { return NAME; }
+    
     /**
      * Set strategy for the left border.
      * @param newValue new strategy for the left border
@@ -548,6 +552,10 @@ class Geometry2DCylindrical: public GeometryD<2> {
     }
 
 public:
+    
+    static constexpr const char* NAME = "cylindrical";
+    
+    virtual std::string getTypeName() const { return NAME; }
 
     /**
      * Set strategy for outer border.
@@ -666,6 +674,10 @@ class Geometry3D: public GeometryD<3> {
     border::StrategyPairHolder<Primitive<3>::DIRECTION_UP> bottomup;
 
 public:
+    
+    static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D;
+    
+    virtual std::string getTypeName() const { return NAME; }
 
     /**
      * Set strategy for the left border.

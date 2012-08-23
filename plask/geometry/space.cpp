@@ -127,7 +127,7 @@ const border::Strategy& Geometry2DCartesian::getBorder(DIRECTION direction, bool
 }
 
 void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, "cartesian2d", axes);
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
     //TODO borders
     if (auto c = getExtrusion()) c->writeXML(tag, write_cb, axes);
 }
@@ -213,7 +213,7 @@ const border::Strategy& Geometry2DCylindrical::getBorder(DIRECTION direction, bo
 }
 
 void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, "cylindrical2d", axes);
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
     //TODO borders
     if (auto c = getRevolution()) c->writeXML(tag, write_cb, axes);
 }
@@ -298,7 +298,7 @@ Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryElementD<3>>& eleme
 }
 
 void Geometry3D::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, "cartesian3d", axes);
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
     //TODO borders
     if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
 }

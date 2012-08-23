@@ -342,8 +342,8 @@ shared_ptr<GeometryElement> read_StackContainer3D(GeometryReader& reader) {
     return result;
 }
 
-static GeometryReader::RegisterElementReader stack2D_reader("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_StackContainer2D);
-static GeometryReader::RegisterElementReader stack3D_reader("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D, read_StackContainer3D);
+static GeometryReader::RegisterElementReader stack2D_reader(StackContainer<2>::NAME, read_StackContainer2D);
+static GeometryReader::RegisterElementReader stack3D_reader(StackContainer<3>::NAME, read_StackContainer3D);
 
 shared_ptr<GeometryElement> read_ShelfContainer2D(GeometryReader& reader) {
     shared_ptr< ShelfContainer2D > result(new ShelfContainer2D(reader.source.getAttribute(baseH_attr, 0.0)));
@@ -361,7 +361,7 @@ shared_ptr<GeometryElement> read_ShelfContainer2D(GeometryReader& reader) {
     return result;
 }
 
+static GeometryReader::RegisterElementReader horizontalstack_reader(ShelfContainer2D::NAME, read_ShelfContainer2D);
 static GeometryReader::RegisterElementReader horizontalstack2D_reader("shelf" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_ShelfContainer2D);
-static GeometryReader::RegisterElementReader horizontalstack_reader("shelf", read_ShelfContainer2D);
 
 }   // namespace plask

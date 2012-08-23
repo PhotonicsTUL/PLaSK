@@ -50,7 +50,7 @@ GeometryElement::Subtree Extrusion::getPathsTo(const DVec& point) const {
 }
 
 void Extrusion::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, "extrusion", axes);
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
     tag.attr("length", length);
     if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
 }
@@ -61,6 +61,6 @@ shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {
     return make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(), length);
 }
 
-static GeometryReader::RegisterElementReader cartesianExtend2D_reader("extrusion", read_cartesianExtend);
+static GeometryReader::RegisterElementReader cartesianExtend2D_reader(Extrusion::NAME, read_cartesianExtend);
 
 }   // namespace plask

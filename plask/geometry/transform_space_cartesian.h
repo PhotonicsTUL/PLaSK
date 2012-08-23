@@ -21,6 +21,10 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
 
     explicit Extrusion(double length = 0.0/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
+    static constexpr const char* NAME = "extrusion";
+    
+    virtual std::string getTypeName() const { return NAME; }
+    
     /**
      * Set length and inform observers.
      * @param new_length new length

@@ -21,6 +21,12 @@ This file includes base class for geometries elements.
 #include "../axes.h"
 #include "../utils/xml/writer.h"
 
+/// Value for expected suffix for names of 2D elements types, see GeometryReader::expectedSuffix.
+#define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D "2d"
+
+/// Value for expected suffix for names of 3D elements types, see GeometryReader::expectedSuffix.
+#define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D "3d"
+
 namespace plask {
 
 struct PathHints;
@@ -372,12 +378,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          *  (assigned pointer must be valid while branch will be saved, typically it is a pointer to object in register)
          * @return opened XML tag ready to add extra atribiutes of @p element
          */
-        XMLElement makeTag(XMLElement& parent_tag, const GeometryElement& element, const std::string& element_type_name, AxisNames& axesNames) const;
-        
-        template <typename ElementType>
-        XMLElement makeTag(XMLElement& parent_tag, const ElementType& element, AxisNames& axesNames) const {
-            return makeTag(parent_tag, element, ElementType::NAME, axesNames);
-        }
+        XMLElement makeTag(XMLElement& parent_tag, const GeometryElement& element, AxisNames& axesNames) const;
         
         XMLElement makeChildTag(XMLElement& container_tag, const GeometryElement& container, std::size_t index_of_child_in_parent) const;
         
@@ -443,6 +444,12 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Virtual destructor. Inform all change listeners.
      */
     virtual ~GeometryElement();
+    
+    /**
+     * Get name of element type (like: "block2d", "shelf", "stack3d", etc.)
+     * @return name of element type
+     */
+    virtual std::string getTypeName() const = 0;
 
     /**
      * Write geometry tree branch rooted by this to XML.

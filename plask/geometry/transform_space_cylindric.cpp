@@ -38,7 +38,7 @@ GeometryElement::Subtree Revolution::getPathsTo(const DVec& point) const {
 }
 
 void Revolution::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, "revolution", axes);
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
     if (auto c = getChild()) c->writeXML(tag, write_cb, axes);
 }
 
@@ -60,6 +60,6 @@ shared_ptr<GeometryElement> read_revolution(GeometryReader& reader) {
     return make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>());
 }
 
-static GeometryReader::RegisterElementReader revolution_reader("revolution", read_revolution);
+static GeometryReader::RegisterElementReader revolution_reader(Revolution::NAME, read_revolution);
 
 }   // namespace plask

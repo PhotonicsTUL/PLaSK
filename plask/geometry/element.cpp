@@ -45,8 +45,8 @@ std::vector<std::string> GeometryElement::WriteXMLCallback::getPathNames(const G
     return std::vector<std::string>();
 }
 
-XMLElement GeometryElement::WriteXMLCallback::makeTag(XMLElement &parent_tag, const GeometryElement &element, const std::string &element_type_name, AxisNames &axesNames) const {
-    XMLElement tag(parent_tag, element_type_name);
+XMLElement GeometryElement::WriteXMLCallback::makeTag(XMLElement &parent_tag, const GeometryElement &element, AxisNames &axesNames) const {
+    XMLElement tag(parent_tag, element.getTypeName());
     AxisNames newAxesNames = axesNames;
     std::string name = getName(element, newAxesNames);
     if (!name.empty()) tag.attr("name", name);

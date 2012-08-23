@@ -259,6 +259,12 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
 
     using GeometryElementContainer<dim>::children;
     using GeometryElementContainer<dim>::shared_from_this;
+    
+    static constexpr const char* NAME = dim == 2 ?
+                ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+                ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    
+    virtual std::string getTypeName() const { return NAME; }
 
     /**
      * Add new child (translated) to end of children vector.

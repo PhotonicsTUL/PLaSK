@@ -16,6 +16,10 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
      * @param child element to revolve, must have getBoundingBox().lower.tran >= 0
      */
     Revolution(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransformSpace<3, 2>(child) {}
+    
+    static constexpr const char* NAME = "revolution";
+    
+    virtual std::string getTypeName() const { return NAME; }
 
     virtual bool include(const DVec& p) const;
 

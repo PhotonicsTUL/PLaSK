@@ -195,6 +195,12 @@ struct GeometryElementTransformSpace: public GeometryElementTransform<this_dim, 
  */
 template <int dim>
 struct Translation: public GeometryElementTransform<dim> {
+    
+    static constexpr const char* NAME = dim == 2 ?
+                ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+                ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    
+    virtual std::string getTypeName() const { return NAME; }
 
     typedef typename GeometryElementTransform<dim>::ChildType ChildType;
 
