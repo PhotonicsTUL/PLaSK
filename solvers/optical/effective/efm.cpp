@@ -172,22 +172,25 @@ void EffectiveFrequency2DSolver::onBeginCalculation(bool fresh)
             for (size_t iy = 0; iy != zsize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
-                double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh.index(ix, iy-1)];
                 if (iy > 0) { ty0 = iy-1; y0 = mesh->c1[ty0]; } else { ty0 = 0; y0 = mesh->c1[ty0] - 2.*outer_distance; }
                 if (iy < zsize-1) { ty1 = iy; y1 = mesh->c1[ty1]; } else { ty1 = zsize-2; y1 = mesh->c1[ty1] + 2.*outer_distance; }
+
                 double T = 0.25 * ( temp[mesh->index(ix,ty0)] + temp[mesh->index(ix,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
+
                 auto point = 0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1));
 
-                nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T) + dcomplex(0., std::isnan(g)? 0. : w * g * 7.95774715459e-09);
-
-                // Ng = Nr - w * dN/dw
+                // N = nr + 1/(4π) λ g
+                // Ng = Nr - λ * dN/dλ = Nr - w dn/dλ - 1/(4π) w^2 dg/dλ
+                nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
                 ngCache[ix][iy] = nrCache[ix][iy] - w * (geometry->getMaterial(point)->Nr(w2, T) - geometry->getMaterial(point)->Nr(w1, T)) / (2*h);
-
-                if (gain_slope) { // N = nr + 1/4pi w g  =>  w * dN/dw = w * dn/dw + 1/4pi w (g + w dg/dw)
+                double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh.index(ix, iy-1)];
+                if (gain_slope) {
                     double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : (*gain_slope)[midmesh.index(ix, iy-1)];
-                    ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs) || std::isnan(g))? 0. : w * (g + w*gs) * 7.95774715459e-09);
+                    ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs))? 0. : w*w * gs * 7.95774715459e-09);
                 }
+                nrCache[ix][iy] += dcomplex(0., std::isnan(g)? 0. : w * g * 7.95774715459e-09);
+
             }
         }
 
@@ -214,7 +217,7 @@ void EffectiveFrequency2DSolver::stageOne()
             bool all_the_same = true;
             for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
             if (all_the_same) {
-                veffs[i] = 1.; // TODO make sure this is so?
+                veffs[i] = 1.; // TODO make sure this is so!
             } else {
                 RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, striperoot);
                 dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
@@ -237,7 +240,7 @@ dcomplex EffectiveFrequency2DSolver::detS1(const dcomplex& x, const std::vector<
     std::vector<dcomplex> beta(N);
     for (size_t i = 0; i < N; ++i) {
         beta[i] = k0 * sqrt(NR[i]*NR[i] - x * NR[i]*NG[i]);
-        if (real(beta[i]) < 0.) beta[i] = -beta[i];
+        if (real(beta[i]) < 0.) beta[i] = -beta[i];  // TODO verify this condition; in general it should consider really outgoing waves
     }
 
     auto fresnel = [&](size_t i) -> Matrix2cd {
