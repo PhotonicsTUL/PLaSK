@@ -85,8 +85,6 @@ static void from_import_all(const char* name, py::dict globals)
 
 //******************************************************************************
 int handlePythonException() {
-    if (PyErr_ExceptionMatches(PyExc_SystemExit)) return 0; // Normal exit of the program
-
     // Use our logging system to print exception
     PyObject* value;
     PyTypeObject* type;
@@ -94,6 +92,25 @@ int handlePythonException() {
 
     PyErr_Fetch((PyObject**)&type, (PyObject**)&value, (PyObject**)&original_traceback);
     PyErr_NormalizeException((PyObject**)&type, (PyObject**)&value, (PyObject**)&original_traceback);
+
+    if ((PyObject*)type == PyExc_SystemExit) {
+        int exitcode;
+        if (PyExceptionInstance_Check(value)) {
+            PyObject* code = PyObject_GetAttrString(value, "code");
+            if (code) { Py_DECREF(value); value = code; }
+        }
+        if (PyInt_Check(value))
+            exitcode = (int)PyInt_AsLong(value);
+        else {
+            PyObject_Print(value, stderr, Py_PRINT_RAW);
+            PySys_WriteStderr("\n");
+            exitcode = 1;
+        }
+        Py_XDECREF(type);
+        Py_XDECREF(value);
+        Py_XDECREF(original_traceback);
+        return exitcode;
+    }
 
     PyObject* pmessage = PyObject_Str(value);
 #   if PY_VERSION_HEX >= 0x03000000
@@ -142,11 +159,11 @@ int handlePythonException() {
         plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
     }
 
+    Py_XDECREF(pmessage);
     Py_XDECREF(type);
     Py_XDECREF(value);
-    Py_XDECREF(pmessage);
     Py_XDECREF(original_traceback);
-    return 100;
+    return 1;
 }
 
 //******************************************************************************
@@ -263,12 +280,12 @@ int main(int argc, const char *argv[])
             }
         } catch (std::invalid_argument err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
-            return 1;
-        } catch (plask::Exception err) {
-            plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
-            return 2;
+            return -1;
         } catch (plask::XMLException err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, "'%1%': %2%", argv[1], err.what());
+            return 2;
+        } catch (plask::Exception err) {
+            plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
             return 3;
         } catch (py::error_already_set) {
             return handlePythonException();

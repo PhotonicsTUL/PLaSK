@@ -21,15 +21,18 @@ class RectilinearMeshes(unittest.TestCase):
 
         self.assertEqual( [list(i) for i in m], [[1,10], [2,10], [3,10], [1,20], [2,20], [3,20]] )
 
-        m.setOrdering("01")
+        m.ordering = '01'
         self.assertEqual( [list(i) for i in m], [[1,10], [1,20], [2,10], [2,20], [3,10], [3,20]] )
         self.assertEqual( m.minor_axis, m.axis1 )
         self.assertEqual( m.major_axis, m.axis0 )
+        for i in range(len(m)):
+            self.assertEqual( m.minor_index(i), m.index1(i) )
+            self.assertEqual( m.major_index(i), m.index0(i) )
 
-        m.setOrdering("10")
+        m.ordering = '10'
         self.assertEqual( [list(i) for i in m], [[1,10], [2,10], [3,10], [1,20], [2,20], [3,20]] )
 
-        m.setOptimalOrdering()
+        m.ordering = 'best'
         self.assertEqual( [list(i) for i in m], [[1,10], [1,20], [2,10], [2,20], [3,10], [3,20]] )
 
         for i in range(len(m)):
@@ -43,7 +46,7 @@ class RectilinearMeshes(unittest.TestCase):
 
         self.assertEqual( [list(i) for i in m], [[1,10,100], [2,10,100], [3,10,100], [1,20,100], [2,20,100], [3,20,100],
                                                  [1,10,200], [2,10,200], [3,10,200], [1,20,200], [2,20,200], [3,20,200]] )
-        m.setOrdering('201')
+        m.ordering = '201'
         self.assertEqual( [list(i) for i in m], [[1,10,100], [1,20,100], [2,10,100], [2,20,100], [3,10,100], [3,20,100],
                                                  [1,10,200], [1,20,200], [2,10,200], [2,20,200], [3,10,200], [3,20,200]] )
 
@@ -53,16 +56,22 @@ class RectilinearMeshes(unittest.TestCase):
             i2 = m.index2(i)
             self.assertEqual( m.index(i0, i1, i2), i )
 
-        m.setOptimalOrdering()
+        m.ordering = 'best'
         self.assertEqual( [list(i) for i in m], [[1,10,100], [1,10,200], [1,20,100], [1,20,200],
                                                 [2,10,100], [2,10,200], [2,20,100], [2,20,200],
                                                 [3,10,100], [3,10,200], [3,20,100], [3,20,200]] )
         self.assertEqual( m.minor_axis,  m.axis2 )
         self.assertEqual( m.middle_axis, m.axis1 )
         self.assertEqual( m.major_axis,  m.axis0 )
+        for i in range(len(m)):
+            self.assertEqual( m.minor_index(i),  m.index2(i) )
+            self.assertEqual( m.middle_index(i), m.index1(i) )
+            self.assertEqual( m.major_index(i),  m.index0(i) )
+        plask.mesh.Rectilinear2D([1,3,2,1], array([10,20], float))
+
 
     def testBoundary(self):
-        self.mesh2.setOrdering("10")
+        self.mesh2.ordering = "10"
         b = plask.mesh.Rectilinear2D.leftBoundary(self.mesh2)
         self.assertIn(0, b)
         self.assertNotIn(1, b)

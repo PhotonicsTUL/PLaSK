@@ -37,6 +37,8 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     index_ft* index_f;
     index01_ft* index0_f;
     index01_ft* index1_f;
+    Mesh1D* minor_axis;
+    Mesh1D* major_axis;
 
   public:
 
@@ -197,27 +199,23 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /// \return major (changing slowest) axis
-    const Mesh1D& majorAxis() const {
-        if (getIterationOrder() == NORMAL_ORDER) return c1;
-        else return c0;
+    inline const Mesh1D& majorAxis() const {
+        return *major_axis;
     }
 
     /// \return major (changing slowest) axis
-    Mesh1D& majorAxis() {
-        if (getIterationOrder() == NORMAL_ORDER) return c1;
-        else return c0;
+    inline Mesh1D& majorAxis() {
+        return *major_axis;
     }
 
     /// \return minor (changing fastes) axis
-    const Mesh1D& minorAxis() const {
-        if (getIterationOrder() == NORMAL_ORDER) return c0;
-        else return c1;
+    inline const Mesh1D& minorAxis() const {
+        return *minor_axis;
     }
 
     /// \return minor (changing fastes) axis
-    Mesh1D& minorAxis() {
-        if (getIterationOrder() == NORMAL_ORDER) return c0;
-        else return c1;
+    inline Mesh1D& minorAxis() {
+        return *minor_axis;
     }
 
     /**

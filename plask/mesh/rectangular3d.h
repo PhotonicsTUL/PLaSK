@@ -33,6 +33,9 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     index012_ft* index0_f;
     index012_ft* index1_f;
     index012_ft* index2_f;
+    Mesh1D* minor_axis;
+    Mesh1D* middle_axis;
+    Mesh1D* major_axis;
 
   public:
 
@@ -216,19 +219,6 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      */
     const Mesh1D& rad_z() const { return c1; }
 
-    /// \return major (changing slowest) axis
-    const Mesh1D& majorAxis() const {
-        switch (getIterationOrder()) {
-            case ORDER_012:
-            case ORDER_021: return c0;
-            case ORDER_102:
-            case ORDER_120: return c1;
-            case ORDER_201:
-            case ORDER_210: ;
-        }
-        return c2;
-    }
-
     /**
      * Get numbered axis
      * \param no
@@ -251,70 +241,34 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         return c2;
     }
 
+    /// \return major (changing slowest) axis
+    inline Mesh1D& majorAxis() {
+        return *major_axis;
+    }
 
     /// \return major (changing slowest) axis
-    Mesh1D& majorAxis() {
-        switch (getIterationOrder()) {
-            case ORDER_012:
-            case ORDER_021: return c0;
-            case ORDER_102:
-            case ORDER_120: return c1;
-            case ORDER_201:
-            case ORDER_210: ;
-        }
-        return c2;
+    inline const Mesh1D& majorAxis() const {
+        return *major_axis;
     }
 
-    /// \return middle (in change order) axis
-    const Mesh1D& middleAxis() const {
-        switch (getIterationOrder()) {
-            case ORDER_102:
-            case ORDER_201: return c0;
-            case ORDER_012:
-            case ORDER_210: return c1;
-            case ORDER_021:
-            case ORDER_120: ;
-        }
-        return c2;
+    /// \return middle (between major and minor) axis
+    inline const Mesh1D& middleAxis() const {
+        return *middle_axis;
     }
 
-    /// \return middle (in change order) axis
-    Mesh1D& middleAxis() {
-        switch (getIterationOrder()) {
-            case ORDER_102:
-            case ORDER_201: return c0;
-            case ORDER_012:
-            case ORDER_210: return c1;
-            case ORDER_021:
-            case ORDER_120: ;
-        }
-        return c2;
+    /// \return middle (between major and minor) axis
+    inline Mesh1D& middleAxis() {
+        return *middle_axis;
     }
 
     /// \return minor (changing fastes) axis
-    const Mesh1D& minorAxis() const {
-        switch (getIterationOrder()) {
-            case ORDER_120:
-            case ORDER_210: return c0;
-            case ORDER_021:
-            case ORDER_201: return c1;
-            case ORDER_012:
-            case ORDER_102: ;
-        }
-        return c2;
+    inline const Mesh1D& minorAxis() const {
+        return *minor_axis;
     }
 
     /// \return minor (changing fastes) axis
-    Mesh1D& minorAxis() {
-        switch (getIterationOrder()) {
-            case ORDER_120:
-            case ORDER_210: return c0;
-            case ORDER_021:
-            case ORDER_201: return c1;
-            case ORDER_012:
-            case ORDER_102: ;
-        }
-        return c2;
+    inline Mesh1D& minorAxis() {
+        return *minor_axis;
     }
 
     /**

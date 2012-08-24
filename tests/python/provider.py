@@ -25,7 +25,7 @@ class ReceiverTest(unittest.TestCase):
         self.solver.inTemperature = data
         self.assertEqual( list(self.solver.inTemperature(self.mesh2)), [200., 200., 400., 400.] )
 
-        self.mesh1.setOrdering("01")
+        self.mesh1.ordering = '01'
         with self.assertRaises(ValueError):
             print(list(self.solver.inTemperature(self.mesh2)))
 

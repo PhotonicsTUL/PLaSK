@@ -37,12 +37,16 @@ void RectangularMesh<2,Mesh1D>::setIterationOrder(IterationOrder iterationOrder)
         index_f = transposed_index<Mesh1D>;
         index0_f = transposed_index0<Mesh1D>;
         index1_f = transposed_index1<Mesh1D>;
+        minor_axis = &c1;
+        major_axis = &c0;
     } else {
         index_f = normal_index<Mesh1D>;
         index0_f = normal_index0<Mesh1D>;
         index1_f = normal_index1<Mesh1D>;
+        minor_axis = &c0;
+        major_axis = &c1;
     }
-    fireChanged();
+    this->fireChanged();
 }
 
 template <typename Mesh1D>

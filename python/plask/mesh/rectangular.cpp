@@ -157,10 +157,11 @@ static void RegularMesh1D_setLast(RegularMesh1D& self, double last) {
 
 template <typename MeshT>
 static void RectangularMesh2D__setOrdering(MeshT& self, std::string order) {
-    if (order == "10") self.setIterationOrder(MeshT::NORMAL_ORDER);
+    if (order == "best" || order == "optimal") self.setOptimalIterationOrder();
+    else if (order == "10") self.setIterationOrder(MeshT::NORMAL_ORDER);
     else if (order == "01") self.setIterationOrder(MeshT::TRANSPOSED_ORDER);
     else {
-        throw ValueError("order must be either '01' or '10'");
+        throw ValueError("order must be '01', '10' or 'best'");
     }
 }
 
@@ -206,15 +207,29 @@ static std::string RectangularMesh2D__getOrdering(MeshT& self) {
 
 template <typename MeshT>
 void RectangularMesh3D__setOrdering(MeshT& self, std::string order) {
-    if (order == "012") self.setIterationOrder(MeshT::ORDER_012);
+    if (order == "best" || order == "optimal") self.setOptimalIterationOrder();
+    else if (order == "012") self.setIterationOrder(MeshT::ORDER_012);
     else if (order == "021") self.setIterationOrder(MeshT::ORDER_021);
     else if (order == "102") self.setIterationOrder(MeshT::ORDER_102);
     else if (order == "120") self.setIterationOrder(MeshT::ORDER_120);
     else if (order == "201") self.setIterationOrder(MeshT::ORDER_201);
     else if (order == "210") self.setIterationOrder(MeshT::ORDER_210);
     else {
-        throw ValueError("order must be any permutation of '012'");
+        throw ValueError("order must be any permutation of '012' or 'best'");
     }
+}
+
+template <typename MeshT>
+std::string RectangularMesh3D__getOrdering(MeshT& self) {
+    switch (self.getIterationOrder()) {
+        case MeshT::ORDER_012: return "012";
+        case MeshT::ORDER_021: return "021";
+        case MeshT::ORDER_102: return "102";
+        case MeshT::ORDER_120: return "120";
+        case MeshT::ORDER_201: return "201";
+        case MeshT::ORDER_210: return "210";
+    }
+    return "unknown";
 }
 
 template <typename MeshT>
@@ -427,9 +442,9 @@ void register_mesh_rectangular()
 
     py::class_<RectilinearMesh2D, shared_ptr<RectilinearMesh2D>, py::bases<MeshD<2>>> rectilinear2d("Rectilinear2D",
         "Two-dimensional mesh\n\n"
-        "Rectilinear2D(ordering='01')\n    create empty mesh\n\n"
-        "Rectilinear2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
-        "Rectilinear2D(geometry, ordering='01')\n    create coarse mesh based on bounding boxes of geometry elements\n\n"
+        "Rectilinear2D(ordering='10')\n    create empty mesh\n\n"
+        "Rectilinear2D(axis0, axis1, ordering='10')\n    create mesh with axes supplied as sequences of numbers\n\n"
+        "Rectilinear2D(geometry, ordering='10')\n    create coarse mesh based on bounding boxes of geometry elements\n\n"
         "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
         py::no_init
         ); rectilinear2d
@@ -446,10 +461,10 @@ void register_mesh_rectangular()
         .def("index", &RectilinearMesh2D::index, "Return single index of the point indexed with index0 and index1", (py::arg("index0"), py::arg("index1")))
         .def("index0", &RectilinearMesh2D::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RectilinearMesh2D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
-        .def("majorIndex", &RectilinearMesh2D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
-        .def("minorIndex", &RectilinearMesh2D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
+        .def("major_index", &RectilinearMesh2D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
+        .def("minor_index", &RectilinearMesh2D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("setOptimalOrdering", &RectilinearMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
-        .def("setOrdering", &RectangularMesh2D__setOrdering<RectilinearMesh2D>, "Set desired ordering of the points in this mesh", (py::arg("ordering")))
+        .add_property("ordering", &RectangularMesh2D__getOrdering<RectilinearMesh2D>, &RectangularMesh2D__setOrdering<RectilinearMesh2D>, "Ordering of the points in this mesh")
         .def("getMidpointsMesh", &RectilinearMesh2D::getMidpointsMesh, "Get new mesh with points in the middles of elements described by this mesh")
         .add_static_property("leftBoundary", &RectilinearMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions")
         .add_static_property("rightBoundary", &RectilinearMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
@@ -485,11 +500,11 @@ void register_mesh_rectangular()
         .def("index0", &RectilinearMesh3D::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RectilinearMesh3D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
         .def("index2", &RectilinearMesh3D::index2, "Return index in the third axis of the point with given index", (py::arg("index")))
-        .def("majorIndex", &RectilinearMesh3D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
-        .def("middleIndex", &RectilinearMesh3D::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
-        .def("minorIndex", &RectilinearMesh3D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
+        .def("major_index", &RectilinearMesh3D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
+        .def("middle_index", &RectilinearMesh3D::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
+        .def("minor_index", &RectilinearMesh3D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("setOptimalOrdering", &RectilinearMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
-        .def("setOrdering", &RectangularMesh3D__setOrdering<RectilinearMesh3D>, "Set desired ordering of the points in this mesh", (py::arg("order")))
+        .add_property("ordering", &RectangularMesh3D__getOrdering<RectilinearMesh3D>, &RectangularMesh3D__setOrdering<RectilinearMesh3D>, "Ordering of the points in this mesh")
         .def("getMidpointsMesh", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of elements described by this mesh")
         .def(py::self == py::self)
     ;
@@ -518,8 +533,8 @@ void register_mesh_rectangular()
 
     py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>>("Regular2D",
         "Two-dimensional mesh\n\n"
-        "Regular2D(ordering='01')\n    create empty mesh\n\n"
-        "Regular2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
+        "Regular2D(ordering='10')\n    create empty mesh\n\n"
+        "Regular2D(axis0, axis1, ordering='10')\n    create mesh with axes supplied as sequences of numbers\n\n"
         "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
         py::no_init
         )
@@ -535,10 +550,10 @@ void register_mesh_rectangular()
         .def("index", &RegularMesh2D::index, "Return single index of the point indexed with index0 and index1", (py::arg("index0"), py::arg("index1")))
         .def("index0", &RegularMesh2D::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RegularMesh2D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
-        .def("majorIndex", &RegularMesh2D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
-        .def("minorIndex", &RegularMesh2D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
+        .def("major_index", &RegularMesh2D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
+        .def("minor_index", &RegularMesh2D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("setOptimalOrdering", &RegularMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
-        .def("setOrdering", &RectangularMesh2D__setOrdering<RegularMesh2D>, "Set desired ordering of the points in this mesh", (py::arg("ordering")))
+        .add_property("ordering", &RectangularMesh2D__getOrdering<RegularMesh2D>, &RectangularMesh2D__setOrdering<RegularMesh2D>, "Ordering of the points in this mesh")
         .def("getMidpointsMesh", &RegularMesh2D::getMidpointsMesh, "Get new mesh with points in the middles of elements described by this mesh")
         .add_static_property("leftBoundary", &RegularMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions")
         .add_static_property("rightBoundary", &RegularMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
@@ -572,11 +587,11 @@ void register_mesh_rectangular()
         .def("index0", &RegularMesh3D::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RegularMesh3D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
         .def("index2", &RegularMesh3D::index2, "Return index in the third axis of the point with given index", (py::arg("index")))
-        .def("majorIndex", &RegularMesh3D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
-        .def("middleIndex", &RegularMesh3D::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
-        .def("minorIndex", &RegularMesh3D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
+        .def("major_index", &RegularMesh3D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
+        .def("middle_index", &RegularMesh3D::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
+        .def("minor_index", &RegularMesh3D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("setOptimalOrdering", &RegularMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
-        .def("setOrdering", &RectangularMesh3D__setOrdering<RegularMesh3D>, "Set desired ordering of the points in this mesh", (py::arg("order")))
+        .add_property("ordering", &RectangularMesh3D__getOrdering<RegularMesh3D>, &RectangularMesh3D__setOrdering<RegularMesh3D>, "Ordering of the points in this mesh")
         .def("getMidpointsMesh", &RegularMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of elements described by this mesh")
         .def(py::self == py::self)
     ;

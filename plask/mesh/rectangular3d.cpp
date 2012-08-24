@@ -33,16 +33,22 @@ RECTANGULAR_MESH_3D_DECLARE_ITERATION_ORDER(2,1,0)
 
 template <typename Mesh1D>
 void RectangularMesh<3,Mesh1D>::setIterationOrder(IterationOrder iterationOrder) {
-#   define RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(order) \
-        case ORDER_##order: index_f = index_##order; index0_f = index0_##order;  index1_f = index1_##order; index2_f = index2_##order; break;
+#   define RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(o1,o2,o3) \
+        case ORDER_##o1##o2##o3: \
+            index_f = index_##o1##o2##o3; index0_f = index0_##o1##o2##o3; \
+            index1_f = index1_##o1##o2##o3; index2_f = index2_##o1##o2##o3; \
+            major_axis = &c##o1; middle_axis = &c##o2; minor_axis = &c##o3; \
+            break;
     switch (iterationOrder) {
-        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(021)
-        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(102)
-        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(120)
-        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(201)
-        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(210)
+        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(0,1,2)
+        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(0,2,1)
+        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(1,0,2)
+        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(1,2,0)
+        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(2,0,1)
+        RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(2,1,0)
         default:
-            index_f = index_012; index0_f = index0_012;  index1_f = index1_012; index2_f = index2_012; break;
+            index_f = index_210; index0_f = index0_210;  index1_f = index1_210; index2_f = index2_210;
+            major_axis = &c2; middle_axis = &c1; minor_axis = &c0;
     }
     this->fireChanged();
 }
@@ -55,7 +61,7 @@ typename RectangularMesh<3,Mesh1D>::IterationOrder RectangularMesh<3,Mesh1D>::ge
            this->index_f == decltype(this->index_f)(index_102) ? ORDER_102 :
            this->index_f == decltype(this->index_f)(index_120) ? ORDER_120 :
            this->index_f == decltype(this->index_f)(index_201) ? ORDER_201 :
-                                        ORDER_210;
+                                                                 ORDER_210;
 }
 
 template <typename Mesh1D>
