@@ -1,7 +1,5 @@
 #include "eim.h"
 
-#include <plask/mesh/regular.h>
-
 using plask::dcomplex;
 
 namespace plask { namespace solvers { namespace effective {
@@ -173,7 +171,7 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
     size_t xsize = mesh->tran().size() + 1;
     size_t ysize = mesh->up().size() + 1;
 
-    if (fresh || inTemperature.changed || inWavelength.changed || polarization != old_polarization) { // We need to update something
+    if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed || polarization != old_polarization) { // We need to update something
 
         old_polarization = polarization;
 
@@ -184,21 +182,21 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
         auto temp = inTemperature(*mesh);
         auto midmesh = mesh->getMidpointsMesh();
         auto gain = inGain(midmesh);
-        for (size_t i = xbegin; i != xsize; ++i) {
+        for (size_t ix = xbegin; ix != xsize; ++ix) {
             size_t tx0, tx1;
             double x0, x1;
-            if (i > 0) { tx0 = i-1; x0 = mesh->c0[tx0]; } else { tx0 = 0; x0 = mesh->c0[tx0] - outer_distance; }
-            if (i < xsize-1) { tx1 = i; x1 = mesh->c0[tx1]; } else { tx1 = xsize-2; x1 = mesh->c0[tx1] + outer_distance; }
-            for (size_t j = 0; j != ysize; ++j) {
+            if (ix > 0) { tx0 = ix-1; x0 = mesh->c0[tx0]; } else { tx0 = 0; x0 = mesh->c0[tx0] - 2.*outer_distance; }
+            if (ix < xsize-1) { tx1 = ix; x1 = mesh->c0[tx1]; } else { tx1 = xsize-2; x1 = mesh->c0[tx1] + 2.*outer_distance; }
+            for (size_t iy = 0; iy != ysize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
-                double g = (i == 0 || i == xsize-1 || j == 0 || j == ysize-1)? NAN : gain[midmesh.index(i-1, j-1)];
-                if (j > 0) { ty0 = j-1; y0 = mesh->c1[ty0]; } else { ty0 = 0; y0 = mesh->c1[ty0] - outer_distance; }
-                if (j < ysize-1) { ty1 = j; y1 = mesh->c1[ty1]; } else { ty1 = ysize-2; y1 = mesh->c1[ty1] + outer_distance; }
+                double g = (ix == 0 || ix == xsize-1 || iy == 0 || iy == ysize-1)? NAN : gain[midmesh.index(ix-1, iy-1)];
+                if (iy > 0) { ty0 = iy-1; y0 = mesh->c1[ty0]; } else { ty0 = 0; y0 = mesh->c1[ty0] - 2.*outer_distance; }
+                if (iy < ysize-1) { ty1 = iy; y1 = mesh->c1[ty1]; } else { ty1 = ysize-2; y1 = mesh->c1[ty1] + 2.*outer_distance; }
                 double T = 0.25 * ( temp[mesh->index(tx0,ty0)] + temp[mesh->index(tx0,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
-                nrCache[i][j] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->Nr(w, T)
-                              + dcomplex(0., std::isnan(g)? 0. : g*w*7.95774715459e-09);
+                nrCache[ix][iy] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->Nr(w, T)
+                              + dcomplex(0., std::isnan(g)? 0. : w * g * 7.95774715459e-09);
             }
         }
         if (xbegin == 1) nrCache[0] = nrCache[1];

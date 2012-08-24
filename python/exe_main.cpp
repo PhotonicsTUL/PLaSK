@@ -22,6 +22,10 @@ extern "C"
 #if PY_VERSION_HEX >= 0x03000000
     PyObject* PyInit_plaskcore(void);
 #   define PLASK_MODULE PyInit_plaskcore
+    inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
+    inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
+    inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
+    inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
 #else
     void initplaskcore(void);
 #   define PLASK_MODULE initplaskcore
@@ -132,27 +136,17 @@ int handlePythonException() {
         }
 
         int lineno = traceback->tb_lineno;
-#       if PY_VERSION_HEX >= 0x03000000
-            const char* filename = py::extract<const char*>(traceback->tb_frame->f_code->co_filename);
-            const char* funcname = py::extract<const char*>(traceback->tb_frame->f_code->co_name);
-#       else
-            const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-            const char* funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
-#       endif
-        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, function '%3%', line %2%: %4%: %5%", filename, lineno, funcname, error_name, message);
+        const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
+        const char* funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
+        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
 
         while (!tb_stack.empty()) {
             traceback = tb_stack.top();
             tb_stack.pop();
             int lineno = traceback->tb_lineno;
-#           if PY_VERSION_HEX >= 0x03000000
-                const char* filename = py::extract<const char*>(traceback->tb_frame->f_code->co_filename);
-                const char* funcname = py::extract<const char*>(traceback->tb_frame->f_code->co_name);
-#           else
-                const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-                const char* funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
-#           endif
-            plask::writelog(plask::LOG_DETAIL, "called from: %1%, function '%3%', line %2%", filename, lineno, funcname);
+            const char* filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
+            const char* funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
+            plask::writelog(plask::LOG_DETAIL, "called from: %1%, line %2%, function '%3%'", filename, lineno, funcname);
         }
 
     } else {

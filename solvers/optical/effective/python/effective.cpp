@@ -8,6 +8,7 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../eim.h"
+#include "../efm.h"
 using namespace plask::solvers::effective;
 
 static py::object EffectiveIndex2DSolver_getSymmetry(const EffectiveIndex2DSolver& self) {
@@ -60,18 +61,34 @@ static void EffectiveIndex2DSolver_setPolarization(EffectiveIndex2DSolver& self,
     }
 }
 
-static py::object EffectiveIndex2DSolver_getStripeDeterminant(EffectiveIndex2DSolver& self, int stripe, py::object neffs)
+template <typename T>
+static py::object getStripeDeterminant(T& self, int stripe, py::object val);
+
+
+template <>
+py::object getStripeDeterminant<EffectiveIndex2DSolver>(EffectiveIndex2DSolver& self, int stripe, py::object val)
 {
     if (!self.getMesh()) self.setSimpleMesh();
     if (stripe < 0) stripe = self.getMesh()->tran().size() + 1 + stripe;
-    if (stripe < 0) throw IndexError("wrong stripe number");
+    if (stripe < 0 || size_t(stripe) >= self.getMesh()->tran().size() + 1) throw IndexError("wrong stripe number");
 
-    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, neffs);
+    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
 }
 
-static py::object EffectiveIndex2DSolver_getDeterminant(EffectiveIndex2DSolver& self, py::object neffs)
+template <>
+py::object getStripeDeterminant<EffectiveFrequency2DSolver>(EffectiveFrequency2DSolver& self, int stripe, py::object val)
 {
-   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, neffs);
+    if (!self.getMesh()) self.setSimpleMesh();
+    if (stripe < 0) stripe = self.getMesh()->tran().size() + stripe;
+    if (stripe < 0 || size_t(stripe) >= self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
+
+    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
+}
+
+template <typename T>
+static py::object getDeterminant(T& self, py::object val)
+{
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, val);
 }
 
 static inline bool plask_import_array() {
@@ -92,7 +109,7 @@ BOOST_PYTHON_MODULE(effective)
 
     {CLASS(EffectiveIndex2DSolver, "EffectiveIndex2D",
         "Calculate optical modes and optical field distribution using the effective index\n"
-        "method in Cartesian two-dimensional space.")
+        "method in two-dimensional Cartesian space.")
         __solver__.add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, &EffectiveIndex2DSolver_setSymmetry, "Symmetry of the searched modes");
         __solver__.add_property("polarization", &EffectiveIndex2DSolver_getPolarization, &EffectiveIndex2DSolver_setPolarization, "Polarization of the searched modes");
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
@@ -104,22 +121,44 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
         METHOD(setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by findModes.", "neff");
-        __solver__.def("getStripeDeterminant", &EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
+        __solver__.def("getStripeDeterminant", &getStripeDeterminant<EffectiveIndex2DSolver>, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "neff"));
-        __solver__.def("getDeterminant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant for debugging purposes", (py::arg("neff")));
+        __solver__.def("getDeterminant", &getDeterminant<EffectiveIndex2DSolver>, "Get modal determinant for debugging purposes", (py::arg("neff")));
         RECEIVER(inWavelength, "Wavelength of the light");
         RECEIVER(inTemperature, "Temperature distribution in the structure");
+        RECEIVER(inGain, "Optical gain in the active region");
         PROVIDER(outNeff, "Effective index of the last computed mode");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
-
-        py::scope scope = __solver__;
-        py::class_<RootDigger::Params>("Params")
-            .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument")
-            .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value")
-            .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value")
-            .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration")
-            .def_readwrite("maxiterations", &RootDigger::Params::maxiterations, "Maximum number of iterations")
-        ;
-
     }
+
+    {CLASS(EffectiveFrequency2DSolver, "EffectiveFrequency2D",
+        "Calculate optical modes and optical field distribution using the effective frequency\n"
+        "method in two-dimensional cylindrical space.")
+        RW_FIELD(l, "Radial mode number");
+        RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
+        RO_FIELD(root, "Configuration of the global rootdigger");
+        RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
+        METHOD(setSimpleMesh, "Set simple mesh based on the geometry elements bounding boxes");
+        METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry elements bounding boxes", "points");
+        METHOD(computeMode, "Find the mode near the specified effective index", "wavelength");
+        METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
+        METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
+        METHOD(setMode, "Set the current mode the specified wavelength.\nwavelength can be a value returned e.g. by findModes.", "wavelength");
+        __solver__.def("getStripeDeterminant", &getStripeDeterminant<EffectiveFrequency2DSolver>, "Get single stripe modal determinant for debugging purposes",
+                       (py::arg("stripe"), "wavelength"));
+        __solver__.def("getDeterminant", &getDeterminant<EffectiveFrequency2DSolver>, "Get modal determinant for debugging purposes", (py::arg("wavelength")));
+        RECEIVER(inTemperature, "Temperature distribution in the structure");
+        RECEIVER(inGain, "Optical gain in the active region");
+        RECEIVER(inGainSlope, "Slope of the optical gain in the active region with respect to the wavelength");
+        PROVIDER(outWavelength, "Wavelength of the last computed mode");
+        PROVIDER(outIntensity, "Light intensity of the last computed mode");
+    }
+
+    py::class_<RootDigger::Params, boost::noncopyable>("RootdiggerParams", py::no_init)
+        .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument")
+        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value")
+        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value")
+        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration")
+        .def_readwrite("maxiterations", &RootDigger::Params::maxiterations, "Maximum number of iterations")
+    ;
 }

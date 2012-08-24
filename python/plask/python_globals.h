@@ -76,6 +76,8 @@ struct IOError: public Exception {
 #if PY_VERSION_HEX >= 0x03000000
     inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
     inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
+    inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
+    inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
 #endif
 
 // ----------------------------------------------------------------------------------------------------------------------

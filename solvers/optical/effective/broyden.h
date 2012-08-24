@@ -6,8 +6,6 @@
 
 namespace plask { namespace solvers { namespace effective {
 
-class EffectiveIndex2DSolver;
-
 struct RootDigger {
 
     typedef std::function<dcomplex(const dcomplex&)> function_type;
@@ -29,7 +27,7 @@ struct RootDigger {
   private:
 
     // Solver
-    EffectiveIndex2DSolver& solver;
+    Solver& solver;
 
     // Solver method computing the value to zero
     function_type val_function;
@@ -55,7 +53,7 @@ struct RootDigger {
     Params par;
 
     // Constructor
-    RootDigger(EffectiveIndex2DSolver& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
+    RootDigger(Solver& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
                const Params& par) :
         solver(solver),
         val_function(val_fun),

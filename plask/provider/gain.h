@@ -24,6 +24,19 @@ struct MaterialGain : public ScalarFieldProperty {
     static constexpr const char* NAME = "material gain";
 };
 
+
+/**
+ * Gain slope [1/(cm*nm)].
+ *
+ * This is the gain slope property. It is simple a derivative of a gain over
+ * the wavelength. It can be computed by some providers in order to better account
+ * for gain change with the wavelength.
+ */
+struct GainSlope : public ScalarFieldProperty {
+    static constexpr const char* NAME = "gain slope";
+};
+
+
 } // namespace plask
 
 #endif // PLASK__GAIN_H
