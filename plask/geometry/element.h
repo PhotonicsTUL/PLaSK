@@ -359,7 +359,11 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         std::map<const GeometryElement*, std::string> names_of_saved;
         
+        //std::map<const GeometryElement*, unsigned> counts;   //to count elements
+        
         public:
+        
+        //void prerareToAutonaming   fill counts
         
         /**
          * Get name of given @p element.

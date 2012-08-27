@@ -74,15 +74,19 @@ XMLWriter::Element::Element(XMLWriter::Element &parent, std::string&& name)
 
 XMLWriter::Element::Element(XMLWriter::Element&& to_move)
     : name(std::move(to_move.name)), writer(to_move.writer), parent(to_move.parent), attributesStillAlowed(to_move.attributesStillAlowed) {
+    to_move.ensureIsCurrent();
     to_move.writer = 0;
+    this->writer->current = this;
 }
 
 XMLWriter::Element &XMLWriter::Element::operator=(XMLWriter::Element && to_move) {
+    to_move.ensureIsCurrent();
     name = std::move(to_move.name);
     writer = to_move.writer;
     parent = to_move.parent;
     attributesStillAlowed = to_move.attributesStillAlowed;
     to_move.writer = 0;
+    this->writer->current = this;
     return *this;
 }
 
