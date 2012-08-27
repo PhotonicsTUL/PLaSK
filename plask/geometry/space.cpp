@@ -130,8 +130,9 @@ void Geometry2DCartesian::writeXMLAttr(XMLWriter::Element& dest_xml_element, con
     //TODO borders
 }
 
-void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
+void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const {
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
+    if (WriteXMLCallback::isRef(tag)) return;
     writeXMLAttr(tag, axes);
     if (auto c = getExtrusion()) c->writeXML(tag, write_cb, axes);
 }
@@ -220,8 +221,9 @@ void Geometry2DCylindrical::writeXMLAttr(XMLWriter::Element& dest_xml_element, c
     //TODO borders
 }
 
-void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
+void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const {
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
+    if (WriteXMLCallback::isRef(tag)) return;
     writeXMLAttr(tag, axes);
     if (auto c = getRevolution()) c->writeXML(tag, write_cb, axes);
 }

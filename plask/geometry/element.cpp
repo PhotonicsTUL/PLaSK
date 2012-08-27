@@ -45,11 +45,20 @@ std::vector<std::string> GeometryElement::WriteXMLCallback::getPathNames(const G
     return std::vector<std::string>();
 }
 
-XMLElement GeometryElement::WriteXMLCallback::makeTag(XMLElement &parent_tag, const GeometryElement &element, AxisNames &axesNames) const {
-    XMLElement tag(parent_tag, element.getTypeName());
+XMLWriter::Element GeometryElement::WriteXMLCallback::makeTag(XMLElement &parent_tag, const GeometryElement &element, AxisNames &axesNames) {
+    auto saved_name = names_of_saved.find(&element);
+    if (saved_name != names_of_saved.end()) {
+        XMLWriter::Element ref(parent_tag, "ref");
+        ref.attr("name", saved_name->second);
+        return ref;
+    }
+    XMLWriter::Element tag(parent_tag, element.getTypeName());
     AxisNames newAxesNames = axesNames;
     std::string name = getName(element, newAxesNames);
-    if (!name.empty()) tag.attr("name", name);
+    if (!name.empty()) {
+        tag.attr("name", name);
+        names_of_saved[&element] = name;
+    }
     if (axesNames != newAxesNames) {
         axesNames = std::move(newAxesNames);
         tag.attr("axes", axesNames.str());
@@ -67,7 +76,7 @@ GeometryElement::~GeometryElement() {
     fireChanged(Event::DELETE);
 }
 
-void GeometryElement::writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const {
+void GeometryElement::writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const {
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
     writeXMLAttr(tag, axes);
     const std::size_t child_count = getRealChildrenCount();

@@ -350,7 +350,16 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Default implementation just returns empty names and list of names.
      * It is enaught to save geometry tree without any names.
      */
-    struct WriteXMLCallback {
+    class WriteXMLCallback {
+        
+        /**
+         * Names of already saved elements.
+         *
+         * Used to contruct \<ref ...> tags.
+         */
+        std::map<const GeometryElement*, std::string> names_of_saved;
+        
+        public:
         
         /**
          * Get name of given @p element.
@@ -371,16 +380,25 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         
         /**
          * Append to XML tag, with optional name (obtain by getName), and axes attribiute.
+         *
+         * It is also possible that this creates a reference tag, and this case should be checked by @ref isRef method.
          * @param parent_tag parent XML tag
          * @param element element to write
          * @param element_type_name name of @p element type used in XML
          * @param[in, out] axesNames axis names which was used when saved parent of @p element, this can assign to it new value to use in branch rooted by @p element
          *  (assigned pointer must be valid while branch will be saved, typically it is a pointer to object in register)
-         * @return opened XML tag ready to add extra atribiutes of @p element
+         * @return opened XML tag ready to add extra atribiutes of @p element or reference tag.
          */
-        XMLElement makeTag(XMLElement& parent_tag, const GeometryElement& element, AxisNames& axesNames) const;
+        XMLWriter::Element makeTag(XMLElement& parent_tag, const GeometryElement& element, AxisNames& axesNames);
         
         XMLElement makeChildTag(XMLElement& container_tag, const GeometryElement& container, std::size_t index_of_child_in_parent) const;
+        
+        /**
+         * Check if given XML element represents a reference to another geometry element.
+         * @param el XML element
+         * @return @c true only if @p el represents a reference
+         */
+        static bool isRef(const XMLElement& el) { return el.getName() == "ref"; }
         
     };
 
@@ -462,7 +480,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @param write_cb write callback, used to get names for elements and paths
      * @param parent_axes names of axes (typically used by parent of this)
      */
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames parent_axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames parent_axes) const;
     
     /**
      * Write geometry tree branch rooted by this to XML.
@@ -471,7 +489,18 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @param parent_xml_element destination, parent XML element
      * @param write_cb write callback, used to get names for elements and paths
      */
-    void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb = WriteXMLCallback()) const {
+    void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb) const {
+        writeXML(parent_xml_element, write_cb, AxisNames::getAbsoluteNames());
+    }
+    
+    /**
+     * Write geometry tree branch rooted by this to XML.
+     *
+     * Provides good default parameters.
+     * @param parent_xml_element destination, parent XML element
+     */
+    void writeXML(XMLWriter::Element& parent_xml_element) const {
+        WriteXMLCallback write_cb;
         writeXML(parent_xml_element, write_cb, AxisNames::getAbsoluteNames());
     }
     

@@ -132,8 +132,9 @@ void StackContainer<dim>::removeAtUnsafe(std::size_t index) {
 }
 
 template <int dim>
-void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
+void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
     XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
+    if (GeometryElement::WriteXMLCallback::isRef(container_tag)) return;
     this->writeXMLAttr(container_tag, axes);
     for (int i = children.size()-1; i > 0; --i) {   //children are written in reverse order
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);

@@ -9,8 +9,9 @@ void GeometryElementContainer<dim>::writeXMLChildAttr(XMLWriter::Element&, std::
 }
 
 template <int dim>
-void GeometryElementContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, const GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
+void GeometryElementContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
     XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
+    if (GeometryElement::WriteXMLCallback::isRef(container_tag)) return;
     this->writeXMLAttr(container_tag, axes);
     for (std::size_t i = 0; i < children.size(); ++i) {
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
@@ -148,16 +149,16 @@ template class GeometryElementContainer<3>;
 template <>
 void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     shared_ptr<Translation<2>> child_tran = children[child_index];
-    if (child_tran->translation.tran) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
-    if (child_tran->translation.up) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
+    if (child_tran->translation.tran != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
+    if (child_tran->translation.up != 0.0) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
 }
 
 template <>
 void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     shared_ptr<Translation<3>> child_tran = children[child_index];
-    if (child_tran->translation.lon) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.lon);
-    if (child_tran->translation.tran) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
-    if (child_tran->translation.up) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
+    if (child_tran->translation.lon != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.lon);
+    if (child_tran->translation.tran != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran);
+    if (child_tran->translation.up != 0.0) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
 }
 
 template class TranslationContainer<2>;

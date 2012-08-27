@@ -63,7 +63,7 @@ public:
      * @param write_cb
      * @param axes
      */
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const;
     
     // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
 

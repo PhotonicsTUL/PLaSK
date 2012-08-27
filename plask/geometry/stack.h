@@ -420,7 +420,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     virtual void removeAtUnsafe(std::size_t index);
     
     //add in reverse order
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
 protected:
     void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;

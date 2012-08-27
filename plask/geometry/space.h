@@ -532,7 +532,7 @@ public:
     
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
 
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const;
 
 };
 
@@ -655,7 +655,7 @@ public:
     
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
     
-    void writeXML(XMLWriter::Element& parent_xml_element, const WriteXMLCallback& write_cb, AxisNames axes) const;
+    void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const;
 
   protected:
 
