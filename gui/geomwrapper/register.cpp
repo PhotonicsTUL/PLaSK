@@ -75,3 +75,17 @@ Register geom_register;
 plask::shared_ptr<ElementWrapper> ext(plask::shared_ptr<plask::GeometryElement> el) {
     return geom_register.get(el);
 }
+
+plask::shared_ptr<ElementWrapper> ext(const plask::GeometryElement& el) {
+    return ext(const_cast<plask::GeometryElement&>(el).shared_from_this());
+}
+
+
+std::string NamesFromExtensions::getName(const plask::GeometryElement &element, plask::AxisNames &axesNames) const {
+    return ext(element)->getName();
+}
+
+std::vector<std::string> NamesFromExtensions::getPathNames(const plask::GeometryElement &parent, const plask::GeometryElement &child, std::size_t index_of_child_in_parent) const {
+    //TODO
+    return std::vector<std::string>();
+}

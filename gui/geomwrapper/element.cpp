@@ -101,7 +101,7 @@ QString ElementWrapper::toStr() const {
 
 void ElementWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
     QtProperty *nameProp = managers.string.addProperty("name");
-    managers.string.setValue(nameProp, getName());
+    managers.string.setValue(nameProp, getNameQt());
     dst.addProperty(nameProp);
     managers.connectString(nameProp, [this](const QString& v) {
         this->setName(v);

@@ -12,7 +12,7 @@ QString GeometryWrapper<dim>::toStr() const {
 template <int dim>
 void GeometryWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers &managers, QtAbstractPropertyBrowser &dst) {
     QtProperty *nameProp = managers.string.addProperty("geometry name");
-    managers.string.setValue(nameProp, this->getName());
+    managers.string.setValue(nameProp, this->getNameQt());
     dst.addProperty(nameProp);
     managers.connectString(nameProp, [this](const QString& v) {
         this->setName(v);

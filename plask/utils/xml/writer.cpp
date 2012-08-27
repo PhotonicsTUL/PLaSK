@@ -11,9 +11,14 @@ struct OStreamOutput: public XMLWriter::Output {
 
     ostream_t ostream;
 
+    OStreamOutput(ostream_t& stream_ref): ostream(stream_ref) {
+    }
+    
     template <typename... StreamCtorArgT>
-    OStreamOutput(StreamCtorArgT&&... stream_ctor_arg)
-        : ostream(std::forward<StreamCtorArgT>(stream_ctor_arg)...) {}
+    OStreamOutput(StreamCtorArgT&&... stream_open_arg) {
+        ostream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        ostream.open(std::forward<StreamCtorArgT>(stream_open_arg)...);
+    }
 
     void write(const char *buffer, std::size_t n) {
         ostream.write(buffer, n);

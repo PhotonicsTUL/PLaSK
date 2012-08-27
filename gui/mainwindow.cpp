@@ -70,7 +70,19 @@ void MainWindow::save()
                         tr("XPML (*.xpml *.xpl)"));
     if (fileName.isEmpty())
         return;
-    QFile file(fileName);
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    try {
+        document.save(fileName.toStdString());
+        statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);
+    } catch (std::exception& exp) {
+        QMessageBox::warning(this, tr("PLaSK GUI"),
+                             tr("Cannot write file %1:\n%2")
+                             .arg(fileName).arg(exp.what()));
+    }
+    QApplication::restoreOverrideCursor();
+    
+   /* QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("PLaSK GUI"),
                              tr("Cannot write file %1:\n%2.")
@@ -84,7 +96,7 @@ void MainWindow::save()
     //out << textEdit->toHtml();
     QApplication::restoreOverrideCursor();
 
-    statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);
+    statusBar()->showMessage(tr("Saved '%1'").arg(fileName), 2000);*/
 }
 
 void MainWindow::undo()

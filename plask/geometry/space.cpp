@@ -259,6 +259,7 @@ const border::Strategy &Geometry3D::getBorder(DIRECTION direction, bool higher) 
         case DIRECTION_TRAN: return leftright.get(higher);
         case DIRECTION_UP: return bottomup.get(higher);
     }
+    assert(0);
 }
 
 Geometry3D::Geometry3D(shared_ptr<GeometryElementD<3>> child)

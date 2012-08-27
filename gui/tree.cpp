@@ -255,6 +255,13 @@ GeometryTreeModel::~GeometryTreeModel() {
     clear();    //this is becouse crash on application exit
 }
 
+void GeometryTreeModel::save(plask::XMLWriter::Element &root_element) {
+    plask::XMLWriter::Element geometry_element(root_element, plask::Manager::TAG_NAME_GEOMETRY);
+    NamesFromExtensions writerCB;
+    for (std::unique_ptr<RootItem>& to_save: rootItems)
+        to_save->geometry->writeXML(geometry_element, writerCB);
+}
+
 void GeometryTreeModel::refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots) {
     beginResetModel();
     rootItems.clear();

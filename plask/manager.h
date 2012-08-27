@@ -44,6 +44,14 @@ class Manager {
     virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name);
 
   public:
+    
+    static constexpr const char* TAG_NAME_ROOT = "plask";           ///< name of root XML tag
+    static constexpr const char* TAG_NAME_MATERIALS = "materials";  ///< name of XML tag of section with materials
+    static constexpr const char* TAG_NAME_GEOMETRY = "geometry";    ///< name of XML tag of section with geometry
+    static constexpr const char* TAG_NAME_GRIDS = "grids";          ///< name of XML tag of section with grids (meshes and generators)
+    static constexpr const char* TAG_NAME_SOVERS = "solvers";       ///< name of XML tag of section with solvers
+    static constexpr const char* TAG_NAME_CONNECTS = "connects";    ///< name of XML tag of section with provides-receiver connections
+    static constexpr const char* TAG_NAME_SCRIPT = "script";        ///< name of XML tag of section with (python) script
 
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;

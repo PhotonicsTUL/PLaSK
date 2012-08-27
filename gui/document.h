@@ -9,6 +9,8 @@
 
 #include "utils/propbrowser.h"
 
+#include <plask/utils/xml/writer.h>
+
 /**
  * Represent document with experiment description.
  * Includes geometry.
@@ -35,6 +37,10 @@ public:
     }
     
     void clear();
+    
+    void save(plask::XMLWriter& dest);
+    
+    void save(const std::string& filename);
 };
 
 #endif // PLASK_GUI_DOCUMENT_H

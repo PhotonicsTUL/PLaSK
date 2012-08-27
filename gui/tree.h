@@ -330,6 +330,12 @@ public:
     GeometryTreeModel(QObject *parent = 0);
     
     ~GeometryTreeModel();
+    
+    /**
+     * Save geometry to file.
+     * @param root_element parent (root) element
+     */
+    void save(plask::XMLWriter::Element& root_element);
 
     /**
      * Get item from index.

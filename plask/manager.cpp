@@ -198,36 +198,36 @@ inline MaterialsDB& getMaterialsDBfromSource<MaterialsDB>(const MaterialsDB& mat
 template <typename MaterialsSource>
 void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource)
 {
-    reader.requireTag("plask");
+    reader.requireTag(TAG_NAME_ROOT);
     reader.requireTag();
 
-    if (reader.getNodeName() == "materials") {
+    if (reader.getNodeName() == TAG_NAME_MATERIALS) {
         loadMaterials(reader, getMaterialsDBfromSource(materialsSource));
         if (!reader.requireTagOrEnd()) return;
     }
 
-    if (reader.getNodeName() == "geometry") {
+    if (reader.getNodeName() == TAG_NAME_GEOMETRY) {
         GeometryReader greader(*this, reader, materialsSource);
         loadGeometry(greader);
         if (!reader.requireTagOrEnd()) return;
     }
 
-    if (reader.getNodeName() == "grids") {
+    if (reader.getNodeName() == TAG_NAME_GRIDS) {
         loadGrids(reader);
         if (!reader.requireTagOrEnd()) return;
     }
 
-    if (reader.getNodeName() == "solvers") {
+    if (reader.getNodeName() == TAG_NAME_SOVERS) {
         loadSolvers(reader);
         if (!reader.requireTagOrEnd()) return;
     }
 
-    if (reader.getNodeName() == "connects") {
+    if (reader.getNodeName() == TAG_NAME_CONNECTS) {
         loadConnects(reader);
         if (!reader.requireTagOrEnd()) return;
     }
 
-    if (reader.getNodeName() == "script") {
+    if (reader.getNodeName() == TAG_NAME_SCRIPT) {
         loadScript(reader);
         if (!reader.requireTagOrEnd()) return;
     }

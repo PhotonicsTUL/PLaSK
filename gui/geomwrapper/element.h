@@ -177,12 +177,16 @@ public:
         fireChanged();
     }
 
-    QString& getName() {
+    QString& getNameQt() {
         return name;
     }
 
-    const QString& getName() const {
+    const QString& getNameQt() const {
         return name;
+    }
+    
+    std::string getName() const {
+        return name.toStdString();
     }
 
     /**
