@@ -145,7 +145,7 @@ void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, Geome
 
 template <>
 void StackContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
-    dest_xml_child_tag.attr(axes.getNameForLon(), aligners[child_index]->str());
+    dest_xml_child_tag.attr(axes.getNameForTran(), aligners[child_index]->str());
 }
 
 template <>
