@@ -136,7 +136,7 @@ void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, Geome
     XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
     if (GeometryElement::WriteXMLCallback::isRef(container_tag)) return;
     this->writeXMLAttr(container_tag, axes);
-    for (int i = children.size()-1; i > 0; --i) {   //children are written in reverse order
+    for (int i = children.size()-1; i >= 0; --i) {   //children are written in reverse order
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
         writeXMLChildAttr(child_tag, i, axes);
         children[i]->getChild()->writeXML(child_tag, write_cb, axes);

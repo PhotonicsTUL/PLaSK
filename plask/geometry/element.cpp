@@ -78,6 +78,7 @@ GeometryElement::~GeometryElement() {
 
 void GeometryElement::writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const {
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
+    if (WriteXMLCallback::isRef(tag)) return;
     writeXMLAttr(tag, axes);
     const std::size_t child_count = getRealChildrenCount();
     for (std::size_t i = 0; i < child_count; ++i)
