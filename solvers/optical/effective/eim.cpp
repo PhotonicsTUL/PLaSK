@@ -160,8 +160,8 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
     if (symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) {
         if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
             if (fresh) // Make sure we have only positive points
-                for (auto x: mesh->c0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
-            if (mesh->c0[0] == 0.) xbegin = 1;
+                for (auto x: mesh->axis0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
+            if (mesh->axis0[0] == 0.) xbegin = 1;
         } else {
             writelog(LOG_WARNING, "Symmetry reset to NO_SYMMETRY for non-symmetric geometry.");
             symmetry = NO_SYMMETRY;
@@ -185,14 +185,14 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
         for (size_t ix = xbegin; ix != xsize; ++ix) {
             size_t tx0, tx1;
             double x0, x1;
-            if (ix > 0) { tx0 = ix-1; x0 = mesh->c0[tx0]; } else { tx0 = 0; x0 = mesh->c0[tx0] - 2.*outer_distance; }
-            if (ix < xsize-1) { tx1 = ix; x1 = mesh->c0[tx1]; } else { tx1 = xsize-2; x1 = mesh->c0[tx1] + 2.*outer_distance; }
+            if (ix > 0) { tx0 = ix-1; x0 = mesh->axis0[tx0]; } else { tx0 = 0; x0 = mesh->axis0[tx0] - 2.*outer_distance; }
+            if (ix < xsize-1) { tx1 = ix; x1 = mesh->axis0[tx1]; } else { tx1 = xsize-2; x1 = mesh->axis0[tx1] + 2.*outer_distance; }
             for (size_t iy = 0; iy != ysize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
                 double g = (ix == 0 || ix == xsize-1 || iy == 0 || iy == ysize-1)? NAN : gain[midmesh.index(ix-1, iy-1)];
-                if (iy > 0) { ty0 = iy-1; y0 = mesh->c1[ty0]; } else { ty0 = 0; y0 = mesh->c1[ty0] - 2.*outer_distance; }
-                if (iy < ysize-1) { ty1 = iy; y1 = mesh->c1[ty1]; } else { ty1 = ysize-2; y1 = mesh->c1[ty1] + 2.*outer_distance; }
+                if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outer_distance; }
+                if (iy < ysize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = ysize-2; y1 = mesh->axis1[ty1] + 2.*outer_distance; }
                 double T = 0.25 * ( temp[mesh->index(tx0,ty0)] + temp[mesh->index(tx0,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
                 nrCache[ix][iy] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->Nr(w, T)
@@ -265,7 +265,7 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
     E = fresnel(0) * E;
 
     for (size_t i = 1; i < N-1; ++i) {
-        double d = mesh->c1[i] - mesh->c1[i-1];
+        double d = mesh->axis1[i] - mesh->axis1[i-1];
         dcomplex phas = exp(-I * beta[i] * d);
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;
@@ -302,14 +302,14 @@ Matrix2cd EffectiveIndex2DSolver::getMatrix(dcomplex neff)
     Matrix2cd T = fresnel(xbegin);
 
     if (symmetry != NO_SYMMETRY) { // we have symmetry, so begin of the transfer matrix is at the axis
-        dcomplex phas = exp(-I * beta[xbegin] * mesh->c0[xbegin]);
+        dcomplex phas = exp(-I * beta[xbegin] * mesh->axis0[xbegin]);
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;
         T = T * P;
     }
 
     for (size_t i = xbegin+1; i < N-1; ++i) {
-        double d = mesh->c0[i] - mesh->c0[i-1];
+        double d = mesh->axis0[i] - mesh->axis0[i-1];
         dcomplex phas = exp(- I * beta[i] * d);
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;

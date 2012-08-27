@@ -14,8 +14,8 @@ BOOST_AUTO_TEST_CASE(boundary_conditions) {
     BOOST_CHECK_EQUAL(conditions[0].condition, 1.0);
 
     plask::RectilinearMesh2D mesh;
-    mesh.c0.addPointsLinear(1.0, 3.0, 3);   //1.0, 2.0, 3.0
-    mesh.c1.addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
+    mesh.axis0.addPointsLinear(1.0, 3.0, 3);   //1.0, 2.0, 3.0
+    mesh.axis1.addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
     BOOST_CHECK(conditions.includes(mesh, 0) == conditions.begin());
 
 }

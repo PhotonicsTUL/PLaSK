@@ -50,8 +50,11 @@ struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, 
     /// Did we compute fields for current Neff?
     bool have_fields;
 
-    /// Computed effective indices for each stripe
+    /// Computed effective frequencies for each stripe
     std::vector<dcomplex> veffs;
+
+    /// Computed weighted indices for each stripe
+    std::vector<dcomplex> ngg;
 
     /// Old value of the l number (to detect changes)
     unsigned short old_l;

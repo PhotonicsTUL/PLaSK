@@ -19,9 +19,9 @@ namespace plask {
  * Rectilinear mesh in 2D space.
  *
  * Includes two 1D rectilinear meshes:
- * - c0 (alternative names: tran(), ee_x(), r())
- * - c1 (alternative names: up(), ee_y(), z())
- * Represent all points (x, y) such that x is in c0 and y is in c1.
+ * - axis0 (alternative names: tran(), ee_x(), r())
+ * - axis1 (alternative names: up(), ee_y(), z())
+ * Represent all points (x, y) such that x is in axis0 and y is in axis1.
  */
 //TODO methods which call fireChanged() when points are added, etc.
 template <typename Mesh1D>
@@ -30,7 +30,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     static_assert(std::is_floating_point< typename std::remove_reference<decltype(std::declval<Mesh1D>().operator[](0))>::type >::value,
                   "Mesh1d must have operator[](std::size_t index) which returns floating-point value");
 
-    typedef std::size_t index_ft(const RectangularMesh<2,Mesh1D>* mesh, std::size_t c0_index, std::size_t c1_index);
+    typedef std::size_t index_ft(const RectangularMesh<2,Mesh1D>* mesh, std::size_t axis0_index, std::size_t axis1_index);
     typedef std::size_t index01_ft(const RectangularMesh<2,Mesh1D>* mesh, std::size_t mesh_index);
 
     // Our own virtual table, changeable in run-time:
@@ -46,17 +46,17 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     typedef ::plask::Boundary<RectangularMesh<2,Mesh1D>> Boundary;
 
     /// First coordinate of points in this mesh.
-    Mesh1D c0;
+    Mesh1D axis0;
 
     /// Second coordinate of points in this mesh.
-    Mesh1D c1;
+    Mesh1D axis1;
 
     /**
      * Iteration orders:
      * - normal iteration order (NORMAL_ORDER) is:
-     * (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
+     * (axis0[0], axis1[0]), (axis0[1], axis1[0]), ..., (axis0[axis0.size-1], axis1[0]), (axis0[0], axis1[1]), ..., (axis0[axis0.size()-1], axis1[axis1.size()-1])
      * - transposed iteration order (TRANSPOSED_ORDER) is:
-     * (c0[0], c1[0]), (c0[0], c1[1]), ..., (c0[0], y[c1.size-1]), (c0[1], c1[0]), ..., (c0[c0.size()-1], c1[c1.size()-1])
+     * (axis0[0], axis1[0]), (axis0[0], axis1[1]), ..., (axis0[0], y[axis1.size-1]), (axis0[1], axis1[0]), ..., (axis0[axis0.size()-1], axis1[axis1.size()-1])
      * @see setIterationOrder, getIterationOrder, setOptimalIterationOrder
      */
     enum IterationOrder { NORMAL_ORDER, TRANSPOSED_ORDER };
@@ -79,7 +79,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * Set iteration order to the shortest axis changes fastest.
      */
     void setOptimalIterationOrder() {
-        setIterationOrder(c0.size() > c1.size() ? TRANSPOSED_ORDER : NORMAL_ORDER);
+        setIterationOrder(axis0.size() > axis1.size() ? TRANSPOSED_ORDER : NORMAL_ORDER);
     }
 
     /// Construct an empty mesh
@@ -93,7 +93,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @param iterationOrder iteration order
      */
     RectangularMesh(Mesh1D mesh0, Mesh1D mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
-        c0(std::move(mesh0)), c1(std::move(mesh1)) { setIterationOrder(iterationOrder); }
+        axis0(std::move(mesh0)), axis1(std::move(mesh1)) { setIterationOrder(iterationOrder); }
 
     /*
      * Construct mesh with is based on given 1D meshes
@@ -104,88 +104,88 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      */
     /*template <typename Mesh0CtorArg, typename Mesh1CtorArg>
     RectangularMesh(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
-        c0(std::forward<Mesh0CtorArg>(mesh0)), c1(std::forward<Mesh1CtorArg>(mesh1)) { setIterationOrder(iterationOrder); }*/
+        axis0(std::forward<Mesh0CtorArg>(mesh0)), axis1(std::forward<Mesh1CtorArg>(mesh1)) { setIterationOrder(iterationOrder); }*/
 
     /**
      * Get first coordinate of points in this mesh.
-     * @return c0
+     * @return axis0
      */
-    Mesh1D& tran() { return c0; }
+    Mesh1D& tran() { return axis0; }
 
     /**
      * Get first coordinate of points in this mesh.
-     * @return c0
+     * @return axis0
      */
-    const Mesh1D& tran() const { return c0; }
+    const Mesh1D& tran() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
-     * @return c1
+     * @return axis1
      */
-    Mesh1D& up() { return c1; }
+    Mesh1D& up() { return axis1; }
 
     /**
      * Get second coordinate of points in this mesh.
-     * @return c1
+     * @return axis1
      */
-    const Mesh1D& up() const { return c1; }
+    const Mesh1D& up() const { return axis1; }
 
     /**
      * Get first coordinate of points in this mesh.
-     * @return c0
+     * @return axis0
      */
-    Mesh1D& ee_x() { return c0; }
+    Mesh1D& ee_x() { return axis0; }
 
     /**
      * Get first coordinate of points in this mesh.
-     * @return c0
+     * @return axis0
      */
-    const Mesh1D& ee_x() const { return c0; }
+    const Mesh1D& ee_x() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
-     * @return c1
+     * @return axis1
      */
-    Mesh1D& ee_y() { return c1; }
+    Mesh1D& ee_y() { return axis1; }
 
     /**
      * Get second coordinate of points in this mesh.
-     * @return c1
+     * @return axis1
      */
-    const Mesh1D& ee_y() const { return c1; }
+    const Mesh1D& ee_y() const { return axis1; }
 
     /**
      * Get first coordinate of points in this mesh.
-     * @return c0
+     * @return axis0
      */
-    Mesh1D& rad_r() { return c0; }
+    Mesh1D& rad_r() { return axis0; }
 
     /**
      * Get first coordinate of points in this mesh.
-     * @return c0
+     * @return axis0
      */
-    const Mesh1D& rad_r() const { return c0; }
+    const Mesh1D& rad_r() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
-     * @return c1
+     * @return axis1
      */
-    Mesh1D& rad_z() { return c1; }
+    Mesh1D& rad_z() { return axis1; }
 
     /**
      * Get second coordinate of points in this mesh.
-     * @return c1
+     * @return axis1
      */
-    const Mesh1D& rad_z() const { return c1; }
+    const Mesh1D& rad_z() const { return axis1; }
 
     /**
      * Get numbered axis
      * \param no
      */
     Mesh1D& axis(size_t n) {
-        if (n == 0) return c0;
+        if (n == 0) return axis0;
         else if (n != 1) throw Exception("Bad axis number");
-        return c1;
+        return axis1;
     }
 
     /**
@@ -193,9 +193,9 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * \param no
      */
     const Mesh1D& axis(size_t n) const {
-        if (n == 0) return c0;
+        if (n == 0) return axis0;
         else if (n != 1) throw Exception("Bad axis number");
-        return c1;
+        return axis1;
     }
 
     /// \return major (changing slowest) axis
@@ -224,26 +224,26 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
       * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
       */
     bool operator==(const RectangularMesh<2,Mesh1D>& to_compare) {
-        return c0 == to_compare.c0 && c1 == to_compare.c1;
+        return axis0 == to_compare.axis0 && axis1 == to_compare.axis1;
     }
 
     /**
      * Get number of points in mesh.
      * @return number of points in mesh
      */
-    std::size_t size() const { return c0.size() * c1.size(); }
+    std::size_t size() const { return axis0.size() * axis1.size(); }
 
     /**
-     * Get maximum of sizes c0 and c1
-     * @return maximum of sizes c0 and c1
+     * Get maximum of sizes axis0 and axis1
+     * @return maximum of sizes axis0 and axis1
      */
-    std::size_t getMaxSize() const { return std::max(c0.size(), c1.size()); }
+    std::size_t getMaxSize() const { return std::max(axis0.size(), axis1.size()); }
 
     /**
-     * Get minimum of sizes c0 and c1
-     * @return minimum of sizes c0 and c1
+     * Get minimum of sizes axis0 and axis1
+     * @return minimum of sizes axis0 and axis1
      */
-    std::size_t getMinSize() const { return std::min(c0.size(), c1.size()); }
+    std::size_t getMinSize() const { return std::min(axis0.size(), axis1.size()); }
 
     /**
      * Write mesh to XML
@@ -252,22 +252,22 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     virtual void writeXML(XMLElement& element) const;
 
     /// @return true only if there are no points in mesh
-    bool empty() const { return c0.empty() || c1.empty(); }
+    bool empty() const { return axis0.empty() || axis1.empty(); }
 
     /**
-     * Calculate this mesh index using indexes of c0 and c1.
-     * @param c0_index index of c0, from 0 to c0.size()-1
-     * @param c1_index index of c1, from 0 to c1.size()-1
+     * Calculate this mesh index using indexes of axis0 and axis1.
+     * @param axis0_index index of axis0, from 0 to axis0.size()-1
+     * @param axis1_index index of axis1, from 0 to axis1.size()-1
      * @return this mesh index, from 0 to size()-1
      */
-    inline std::size_t index(std::size_t c0_index, std::size_t c1_index) const {
-        return index_f(this, c0_index, c1_index);
+    inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
+        return index_f(this, axis0_index, axis1_index);
     }
 
     /**
-     * Calculate index of c0 using this mesh index.
+     * Calculate index of axis0 using this mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of c0, from 0 to c0.size()-1
+     * @return index of axis0, from 0 to axis0.size()-1
      */
     inline std::size_t index0(std::size_t mesh_index) const {
         return index0_f(this, mesh_index);
@@ -276,7 +276,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     /**
      * Calculate index of y using given mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of c1, from 0 to c1.size()-1
+     * @return index of axis1, from 0 to axis1.size()-1
      */
     inline std::size_t index1(std::size_t mesh_index) const {
         return index1_f(this, mesh_index);
@@ -306,7 +306,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return point with given @p index
      */
     virtual Vec<2, double> at(std::size_t index) const {
-        return Vec<2, double>(c0[index0(index)], c1[index1(index)]);
+        return Vec<2, double>(axis0[index0(index)], axis1[index1(index)]);
     }
 
     /**
@@ -316,25 +316,25 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @see IterationOrder
      */
     inline Vec<2,double> operator[](std::size_t index) const {
-        return Vec<2, double>(c0[index0(index)], c1[index1(index)]);
+        return Vec<2, double>(axis0[index0(index)], axis1[index1(index)]);
     }
 
     /**
      * Get point with given x and y indexes.
-     * @param c0_index index of c0, from 0 to c0.size()-1
-     * @param c1_index index of c1, from 0 to c1.size()-1
-     * @return point with given c0 and c1 indexes
+     * @param axis0_index index of axis0, from 0 to axis0.size()-1
+     * @param axis1_index index of axis1, from 0 to axis1.size()-1
+     * @return point with given axis0 and axis1 indexes
      */
-    inline Vec<2,double> operator()(std::size_t c0_index, std::size_t c1_index) const {
-        return Vec<2, double>(c0[c0_index], c1[c1_index]);
+    inline Vec<2,double> operator()(std::size_t axis0_index, std::size_t axis1_index) const {
+        return Vec<2, double>(axis0[axis0_index], axis1[axis1_index]);
     }
 
     /**
      * Remove all points from mesh.
      */
     void clear() {
-        c0.clear();
-        c1.clear();
+        axis0.clear();
+        axis1.clear();
     }
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
@@ -346,24 +346,24 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) const -> typename std::remove_reference<decltype(data[0])>::type {
         return interpolateLinear2D(
             [&] (std::size_t i0, std::size_t i1) { return data[this->index(i0, i1)]; },
-            point.c0, point.c1, c0, c1, c0.findIndex(point.c0), c1.findIndex(point.c1)
+            point.c0, point.c1, axis0, axis1, axis0.findIndex(point.c0), axis1.findIndex(point.c1)
         );
     }
 
     /**
      * Get number of elements (for FEM method) in the first direction.
-     * @return number of elements in this mesh in the first direction (c0 direction).
+     * @return number of elements in this mesh in the first direction (axis0 direction).
      */
     std::size_t getElementsCount0() const {
-        return std::max(int(c0.size())-1, 0);
+        return std::max(int(axis0.size())-1, 0);
     }
 
     /**
      * Get number of elements (for FEM method) in the second direction.
-     * @return number of elements in this mesh in the second direction (c1 direction).
+     * @return number of elements in this mesh in the second direction (axis1 direction).
      */
     std::size_t getElementsCount1() const {
-        return std::max(int(c1.size())-1, 0);
+        return std::max(int(axis1.size())-1, 0);
     }
 
     /**
@@ -371,48 +371,48 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return number of elements in this mesh
      */
     std::size_t getElementsCount() const {
-        return std::max((int(c0.size())-1) * (int(c1.size())-1), 0);
+        return std::max((int(axis0.size())-1) * (int(axis1.size())-1), 0);
     }
 
     /**
      * Get area of given element.
-     * @param c0index, c1index index of element
+     * @param index0, index1 index of element
      * @return area of element with given index
      */
-    double getElementArea(std::size_t c0index, std::size_t c1index) const {
-        return (c0[c0index+1] - c0[c0index])*(c1[c1index+1] - c1[c1index]);
+    double getElementArea(std::size_t index0, std::size_t index1) const {
+        return (axis0[index0+1] - axis0[index0])*(axis1[index1+1] - axis1[index1]);
     }
 
     /**
      * Get first coordinate of point in center of element.
-     * @param c0index index of element (c0 index)
+     * @param index0 index of element (axis0 index)
      * @return first coordinate of point point in center of element with given index
      */
-    double getElementCenter0(std::size_t c0index) const { return (c0[c0index+1] + c0[c0index]) / 2.0; }
+    double getElementCenter0(std::size_t index0) const { return (axis0[index0+1] + axis0[index0]) / 2.0; }
 
     /**
      * Get second coordinate of point in center of element.
-     * @param c1index index of element (c1 index)
+     * @param index1 index of element (axis1 index)
      * @return second coordinate of point point in center of element with given index
      */
-    double getElementCenter1(std::size_t c1index) const { return (c1[c1index+1] + c1[c1index]) / 2.0; }
+    double getElementCenter1(std::size_t index1) const { return (axis1[index1+1] + axis1[index1]) / 2.0; }
 
     /**
      * Get point in center of element.
-     * @param c0index, c1index index of element
+     * @param index0, index1 index of element
      * @return point in center of element with given index
      */
-    Vec<2, double> getElementCenter(std::size_t c0index, std::size_t c1index) const {
-        return vec(getElementCenter0(c0index), getElementCenter1(c1index));
+    Vec<2, double> getElementCenter(std::size_t index0, std::size_t index1) const {
+        return vec(getElementCenter0(index0), getElementCenter1(index1));
     }
 
     /**
      * Get element (as rectangle).
-     * @param c0index, c1index index of element
+     * @param index0, index1 index of element
      * @return element with given index
      */
-    Box2D getElement(std::size_t c0index, std::size_t c1index) const {
-        return Box2D(c0[c0index], c1[c1index], c0[c0index+1], c1[c1index+1]);
+    Box2D getElement(std::size_t index0, std::size_t index1) const {
+        return Box2D(axis0[index0], axis1[index1], axis0[index0+1], axis1[index1+1]);
     }
 
     /**
@@ -467,7 +467,7 @@ private:
         }
 
         Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, mesh.c1.size()));
+            return Iterator(new IteratorImpl(mesh, mesh.axis1.size()));
         }
 
     };
@@ -478,7 +478,7 @@ private:
 
             IteratorImpl(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
-            virtual std::size_t dereference() const { return this->mesh.index(this->mesh.c0.size()-1, index); }
+            virtual std::size_t dereference() const { return this->mesh.index(this->mesh.axis0.size()-1, index); }
 
             virtual typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
@@ -491,7 +491,7 @@ private:
         //virtual RightBoundary* clone() const { return new RightBoundary(); }
 
         bool includes(const RectangularMesh<2,Mesh1D> &mesh, std::size_t mesh_index) const {
-            return mesh.index0(mesh_index) == mesh.c0.size()-1;
+            return mesh.index0(mesh_index) == mesh.axis0.size()-1;
         }
 
         Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
@@ -499,7 +499,7 @@ private:
         }
 
         Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, mesh.c1.size()));
+            return Iterator(new IteratorImpl(mesh, mesh.axis1.size()));
         }
 
     };
@@ -531,7 +531,7 @@ private:
         }
 
         Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, mesh.c0.size()));
+            return Iterator(new IteratorImpl(mesh, mesh.axis0.size()));
         }
     };
 
@@ -541,7 +541,7 @@ private:
 
             IteratorImpl(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index): BoundaryIteratorImpl(mesh, index) {}
 
-            virtual std::size_t dereference() const { return this->mesh.index(index, this->mesh.c1.size()-1); }
+            virtual std::size_t dereference() const { return this->mesh.index(index, this->mesh.axis1.size()-1); }
 
             virtual typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
@@ -554,7 +554,7 @@ private:
         //virtual BottomBoundary* clone() const { return new BottomBoundary(); }
 
         bool includes(const RectangularMesh &mesh, std::size_t mesh_index) const {
-            return mesh.index1(mesh_index) == mesh.c1.size()-1;
+            return mesh.index1(mesh_index) == mesh.axis1.size()-1;
         }
 
         Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
@@ -562,7 +562,7 @@ private:
         }
 
         Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, mesh.c0.size()));
+            return Iterator(new IteratorImpl(mesh, mesh.axis0.size()));
         }
 
     };
@@ -594,46 +594,46 @@ public:
 
 /**
  * Do linear 2d interpolation with checking bounds variants.
- * @param data 2d data source, data(i0, i1) should return data in point (c0[i0], c1[i1])
- * @param point_c0,point_c1 requested point coordinates
- * @param c0 first coordinates of points
- * @param c1 second coordinates of points
- * @param index0 should be equal to c0.findIndex(point_c0)
- * @param index1 should be equal to c1.findIndex(point_c1)
- * @return value in point point_c0, point_c1
+ * @param data 2d data source, data(i0, i1) should return data in point (axis0[i0], axis1[i1])
+ * @param point_axis0,point_axis1 requested point coordinates
+ * @param axis0 first coordinates of points
+ * @param axis1 second coordinates of points
+ * @param index0 should be equal to axis0.findIndex(point_axis0)
+ * @param index1 should be equal to axis1.findIndex(point_axis1)
+ * @return value in point point_axis0, point_axis1
  * @tparam DataGetter2D functor
  */
 template <typename DataGetter2D, typename Mesh1D>
-auto interpolateLinear2D(DataGetter2D data, const double& point_c0, const double& point_c1, const Mesh1D& c0, const Mesh1D& c1, std::size_t index0, std::size_t index1)
+auto interpolateLinear2D(DataGetter2D data, const double& point_axis0, const double& point_axis1, const Mesh1D& axis0, const Mesh1D& axis1, std::size_t index0, std::size_t index1)
   -> typename std::remove_reference<decltype(data(0, 0))>::type {
     if (index0 == 0) {
         if (index1 == 0) return data(0, 0);
-        if (index1 == c1.size()) return data(0, index1-1);
-        return interpolation::linear(c1[index1-1], data(0, index1-1), c1[index1], data(0, index1), point_c1);
+        if (index1 == axis1.size()) return data(0, index1-1);
+        return interpolation::linear(axis1[index1-1], data(0, index1-1), axis1[index1], data(0, index1), point_axis1);
     }
 
-    if (index0 == c0.size()) {
+    if (index0 == axis0.size()) {
         --index0;
         if (index1 == 0) return data(index0, 0);
-        if (index1 == c1.size()) return data(index0, index1-1);
-        return interpolation::linear(c1[index1-1], data(index0, index1-1), c1[index1], data(index0, index1), point_c1);
+        if (index1 == axis1.size()) return data(index0, index1-1);
+        return interpolation::linear(axis1[index1-1], data(index0, index1-1), axis1[index1], data(index0, index1), point_axis1);
     }
 
     if (index1 == 0)
-        return interpolation::linear(c0[index0-1], data(index0-1, 0), c0[index0], data(index0, 0), point_c0);
+        return interpolation::linear(axis0[index0-1], data(index0-1, 0), axis0[index0], data(index0, 0), point_axis0);
 
-    if (index1 == c1.size()) {
+    if (index1 == axis1.size()) {
         --index1;
-        return interpolation::linear(c0[index0-1], data(index0-1, index1), c0[index0], data(index0, index1), point_c0);
+        return interpolation::linear(axis0[index0-1], data(index0-1, index1), axis0[index0], data(index0, index1), point_axis0);
     }
 
-    return interpolation::bilinear(c0[index0-1], c0[index0],
-                                   c1[index1-1], c1[index1],
+    return interpolation::bilinear(axis0[index0-1], axis0[index0],
+                                   axis1[index1-1], axis1[index1],
                                    data(index0-1, index1-1),
                                    data(index0,   index1-1),
                                    data(index0,   index1  ),
                                    data(index0-1, index1  ),
-                                   point_c0, point_c1);
+                                   point_axis0, point_axis1);
 }
 
 

@@ -9,8 +9,8 @@ include(${CMAKE_SOURCE_DIR}/cmake/solvers.cmake)
 # Some libraries, that you can find using find_package command are:
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB, Eigen3
 #
-# find_package(GSL)
-# set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
+#find_package(Boost REQUIRED COMPONENTS math_tr1)
+#set(SOLVER_LINK_LIBRARIES ${Boost_MATH_TR1_LIBRARIES})
 
 # Uncomment and edit the line below if you need some special include directories.
 # If you use external libraries, you can use the variables returned by find_package.
@@ -19,6 +19,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/solvers.cmake)
 #
 find_package(Eigen3)
 set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
+
 
 # Uncomment and edit the line below if you need some special linker flags.
 #

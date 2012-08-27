@@ -5,17 +5,17 @@ namespace plask {
 template<>
 RegularMesh2D RegularMesh2D::getMidpointsMesh() const {
     return RegularMesh2D(
-        RegularMesh1D(c0.getFirst() + 0.5*c0.getStep(), c0.getLast() - 0.5*c0.getStep(), c0.size()-1),
-        RegularMesh1D(c1.getFirst() + 0.5*c1.getStep(), c1.getLast() - 0.5*c1.getStep(), c1.size()-1)
+        RegularMesh1D(axis0.getFirst() + 0.5*axis0.getStep(), axis0.getLast() - 0.5*axis0.getStep(), axis0.size()-1),
+        RegularMesh1D(axis1.getFirst() + 0.5*axis1.getStep(), axis1.getLast() - 0.5*axis1.getStep(), axis1.size()-1)
     );
 }
 
 template<>
 RegularMesh3D RegularMesh3D::getMidpointsMesh() const {
     return RegularMesh3D(
-        RegularMesh1D(c0.getFirst() + 0.5*c0.getStep(), c0.getLast() - 0.5*c0.getStep(), c0.size()-1),
-        RegularMesh1D(c1.getFirst() + 0.5*c1.getStep(), c1.getLast() - 0.5*c1.getStep(), c1.size()-1),
-        RegularMesh1D(c2.getFirst() + 0.5*c2.getStep(), c2.getLast() - 0.5*c2.getStep(), c2.size()-1)
+        RegularMesh1D(axis0.getFirst() + 0.5*axis0.getStep(), axis0.getLast() - 0.5*axis0.getStep(), axis0.size()-1),
+        RegularMesh1D(axis1.getFirst() + 0.5*axis1.getStep(), axis1.getLast() - 0.5*axis1.getStep(), axis1.size()-1),
+        RegularMesh1D(axis2.getFirst() + 0.5*axis2.getStep(), axis2.getLast() - 0.5*axis2.getStep(), axis2.size()-1)
     );
 }
 
@@ -23,16 +23,16 @@ RegularMesh3D RegularMesh3D::getMidpointsMesh() const {
 template <>
 void RegularMesh2D::writeXML(XMLElement& element) const {
     element.attr("type", "regular2d");
-    element.addTag("axis0").attr("start", c0.getFirst()).attr("end", c0.getLast()).attr("count", c0.size());
-    element.addTag("axis1").attr("start", c1.getFirst()).attr("end", c1.getLast()).attr("count", c1.size());
+    element.addTag("axis0").attr("start", axis0.getFirst()).attr("end", axis0.getLast()).attr("count", axis0.size());
+    element.addTag("axis1").attr("start", axis1.getFirst()).attr("end", axis1.getLast()).attr("count", axis1.size());
 }
 
 template <>
 void RegularMesh3D::writeXML(XMLElement& element) const {
     element.attr("type", "regular3d");
-    element.addTag("axis0").attr("start", c0.getFirst()).attr("end", c0.getLast()).attr("count", c0.size());
-    element.addTag("axis1").attr("start", c1.getFirst()).attr("end", c1.getLast()).attr("count", c1.size());
-    element.addTag("axis2").attr("start", c2.getFirst()).attr("end", c2.getLast()).attr("count", c2.size());
+    element.addTag("axis0").attr("start", axis0.getFirst()).attr("end", axis0.getLast()).attr("count", axis0.size());
+    element.addTag("axis1").attr("start", axis1.getFirst()).attr("end", axis1.getLast()).attr("count", axis1.size());
+    element.addTag("axis2").attr("start", axis2.getFirst()).attr("end", axis2.getLast()).attr("count", axis2.size());
 }
 
 

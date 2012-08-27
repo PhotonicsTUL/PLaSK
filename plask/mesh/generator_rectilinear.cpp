@@ -13,10 +13,10 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
 
     for (auto& box: boxes) {
-        mesh->c0.addPoint(box.lower.c0);
-        mesh->c0.addPoint(box.upper.c0);
-        mesh->c1.addPoint(box.lower.c1);
-        mesh->c1.addPoint(box.upper.c1);
+        mesh->axis0.addPoint(box.lower.c0);
+        mesh->axis0.addPoint(box.upper.c0);
+        mesh->axis1.addPoint(box.lower.c1);
+        mesh->axis1.addPoint(box.upper.c1);
     }
 
     mesh->setOptimalIterationOrder();
@@ -31,12 +31,12 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
 
     for (auto& box: boxes) {
-        mesh->c0.addPoint(box.lower.c0);
-        mesh->c0.addPoint(box.upper.c0);
-        mesh->c1.addPoint(box.lower.c1);
-        mesh->c1.addPoint(box.upper.c1);
-        mesh->c2.addPoint(box.lower.c2);
-        mesh->c2.addPoint(box.upper.c2);
+        mesh->axis0.addPoint(box.lower.c0);
+        mesh->axis0.addPoint(box.upper.c0);
+        mesh->axis1.addPoint(box.lower.c1);
+        mesh->axis1.addPoint(box.upper.c1);
+        mesh->axis2.addPoint(box.lower.c2);
+        mesh->axis2.addPoint(box.upper.c2);
     }
 
     mesh->setOptimalIterationOrder();
@@ -132,15 +132,15 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const s
     RectilinearMesh2D initial;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes) {
-        initial.c0.addPoint(box.lower.c0);
-        initial.c0.addPoint(box.upper.c0);
-        initial.c1.addPoint(box.lower.c1);
-        initial.c1.addPoint(box.upper.c1);
+        initial.axis0.addPoint(box.lower.c0);
+        initial.axis0.addPoint(box.upper.c0);
+        initial.axis1.addPoint(box.lower.c1);
+        initial.axis1.addPoint(box.upper.c1);
     }
 
     auto mesh = make_shared<RectilinearMesh2D>();
-    mesh->c0 = get1DMesh(initial.c0, geometry, 0);
-    mesh->c1 = get1DMesh(initial.c1, geometry, 1);
+    mesh->axis0 = get1DMesh(initial.axis0, geometry, 0);
+    mesh->axis1 = get1DMesh(initial.axis1, geometry, 1);
 
     mesh->setOptimalIterationOrder();
     return mesh;

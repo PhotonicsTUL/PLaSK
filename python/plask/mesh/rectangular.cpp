@@ -188,14 +188,14 @@ static Vec<2,double> RectangularMesh2D__getitem__(const MeshT& self, py::object 
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);
-    if (index0 < 0) index0 = self.c0.size() - index0;
-    if (index0 < 0 || index0 >= int(self.c0.size())) {
-        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.c0.size());
+    if (index0 < 0) index0 = self.axis0.size() - index0;
+    if (index0 < 0 || index0 >= int(self.axis0.size())) {
+        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.axis0.size());
     }
     int index1 = py::extract<int>(index[1]);
-    if (index1 < 0) index1 = self.c1.size() - index1;
-    if (index1 < 0 || index1 >= int(self.c1.size())) {
-        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.c1.size());
+    if (index1 < 0) index1 = self.axis1.size() - index1;
+    if (index1 < 0 || index1 >= int(self.axis1.size())) {
+        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.axis1.size());
     }
     return self(index0, index1);
 }
@@ -255,19 +255,19 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);
-    if (index0 < 0) index0 = self.c0.size() - index0;
-    if (index0 < 0 || index0 >= int(self.c0.size())) {
-        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.c0.size());
+    if (index0 < 0) index0 = self.axis0.size() - index0;
+    if (index0 < 0 || index0 >= int(self.axis0.size())) {
+        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.axis0.size());
     }
     int index1 = py::extract<int>(index[1]);
-    if (index1 < 0) index1 = self.c1.size() - index1;
-    if (index1 < 0 || index1 >= int(self.c1.size())) {
-        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.c1.size());
+    if (index1 < 0) index1 = self.axis1.size() - index1;
+    if (index1 < 0 || index1 >= int(self.axis1.size())) {
+        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.axis1.size());
     }
     int index2 = py::extract<int>(index[2]);
-    if (index2 < 0) index2 = self.c2.size() - index2;
-    if (index2 < 0 || index2 >= int(self.c2.size())) {
-        throw IndexError("third mesh index (%1%) out of range (0<=index<%2%)", index2, self.c2.size());
+    if (index2 < 0) index2 = self.axis2.size() - index2;
+    if (index2 < 0 || index2 >= int(self.axis2.size())) {
+        throw IndexError("third mesh index (%1%) out of range (0<=index<%2%)", index2, self.axis2.size());
     }
     return self(index0, index1, index2);
 }
@@ -451,8 +451,8 @@ void register_mesh_rectangular()
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RectilinearMesh2D>, py::default_call_policies(), (py::arg("ordering")="10")))
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RectilinearMesh2D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="10")))
         .def("__init__", py::make_constructor(&RectilinearMesh2D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="10")))
-        .def_readwrite("axis0", &RectilinearMesh2D::c0, "The first (transverse) axis of the mesh")
-        .def_readwrite("axis1", &RectilinearMesh2D::c1, "The second (vertical) axis of the mesh")
+        .def_readwrite("axis0", &RectilinearMesh2D::axis0, "The first (transverse) axis of the mesh")
+        .def_readwrite("axis1", &RectilinearMesh2D::axis1, "The second (vertical) axis of the mesh")
         .add_property("major_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh2D::*)())&RectilinearMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
         .add_property("minor_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh2D::*)())&RectilinearMesh2D::minorAxis, py::return_internal_reference<>()), "The quicker changing axis")
         .def("__nonzero__", &__nonempty__<RectilinearMesh2D>, "Return True if the mesh is empty")
@@ -486,9 +486,9 @@ void register_mesh_rectangular()
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RectilinearMesh3D>, py::default_call_policies(), (py::arg("ordering")="210")))
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="210")))
         .def("__init__", py::make_constructor(&RectilinearMesh3D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="210")))
-        .def_readwrite("axis0", &RectilinearMesh3D::c0, "The first (longitudinal) axis of the mesh")
-        .def_readwrite("axis1", &RectilinearMesh3D::c1, "The second (transverse) axis of the mesh")
-        .def_readwrite("axis2", &RectilinearMesh3D::c2, "The third (vertical) axis of the mesh")
+        .def_readwrite("axis0", &RectilinearMesh3D::axis0, "The first (longitudinal) axis of the mesh")
+        .def_readwrite("axis1", &RectilinearMesh3D::axis1, "The second (transverse) axis of the mesh")
+        .def_readwrite("axis2", &RectilinearMesh3D::axis2, "The third (vertical) axis of the mesh")
         .add_property("major_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh3D::*)())&RectilinearMesh3D::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
         .add_property("middle_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh3D::*)())&RectilinearMesh3D::middleAxis, py::return_internal_reference<>()), "The middle changing axis")
         .add_property("minor_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh3D::*)())&RectilinearMesh3D::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")
@@ -540,8 +540,8 @@ void register_mesh_rectangular()
         )
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RegularMesh2D>, py::default_call_policies(), (py::arg("ordering")="10")))
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="10")))
-        .def_readwrite("axis0", &RegularMesh2D::c0, "The first (transverse) axis of the mesh")
-        .def_readwrite("axis1", &RegularMesh2D::c1, "The second (vertical) axis of the mesh")
+        .def_readwrite("axis0", &RegularMesh2D::axis0, "The first (transverse) axis of the mesh")
+        .def_readwrite("axis1", &RegularMesh2D::axis1, "The second (vertical) axis of the mesh")
         .add_property("major_axis", py::make_function((RegularMesh1D&(RegularMesh2D::*)())&RegularMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
         .add_property("minor_axis", py::make_function((RegularMesh1D&(RegularMesh2D::*)())&RegularMesh2D::minorAxis, py::return_internal_reference<>()), "The quicker changing axis")
         .def("__nonzero__", &__nonempty__<RegularMesh2D>)
@@ -573,9 +573,9 @@ void register_mesh_rectangular()
         )
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RegularMesh3D>, py::default_call_policies(), (py::arg("ordering")="210")))
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="210")))
-        .def_readwrite("axis0", &RegularMesh3D::c0, "The first (longitudinal) axis of the mesh")
-        .def_readwrite("axis1", &RegularMesh3D::c1, "The second (transverse) axis of the mesh")
-        .def_readwrite("axis2", &RegularMesh3D::c2, "The third (vertical) axis of the mesh")
+        .def_readwrite("axis0", &RegularMesh3D::axis0, "The first (longitudinal) axis of the mesh")
+        .def_readwrite("axis1", &RegularMesh3D::axis1, "The second (transverse) axis of the mesh")
+        .def_readwrite("axis2", &RegularMesh3D::axis2, "The third (vertical) axis of the mesh")
         .add_property("major_axis", py::make_function((RegularMesh1D&(RegularMesh3D::*)())&RegularMesh3D::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
         .add_property("middle_axis", py::make_function((RegularMesh1D&(RegularMesh3D::*)())&RegularMesh3D::middleAxis, py::return_internal_reference<>()), "The middle changing axis")
         .add_property("minor_axis", py::make_function((RegularMesh1D&(RegularMesh3D::*)())&RegularMesh3D::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")

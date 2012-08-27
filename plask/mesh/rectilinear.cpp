@@ -8,14 +8,14 @@ namespace plask {
 template<>
 RectilinearMesh2D RectilinearMesh2D::getMidpointsMesh() const {
 
-    if (c0.size() < 2 || c1.size() < 2) throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
+    if (axis0.size() < 2 || axis1.size() < 2) throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
 
     RectilinearMesh1D line0;
-    for (auto a = c0.begin(), b = c0.begin()+1; b != c0.end(); ++a, ++b)
+    for (auto a = axis0.begin(), b = axis0.begin()+1; b != axis0.end(); ++a, ++b)
         line0.addPoint(0.5 * (*a + *b));
 
     RectilinearMesh1D line1;
-    for (auto a = c1.begin(), b = c1.begin()+1; b != c1.end(); ++a, ++b)
+    for (auto a = axis1.begin(), b = axis1.begin()+1; b != axis1.end(); ++a, ++b)
         line1.addPoint(0.5 * (*a + *b));
 
     return RectilinearMesh2D(line0, line1, getIterationOrder());
@@ -24,18 +24,18 @@ RectilinearMesh2D RectilinearMesh2D::getMidpointsMesh() const {
 template<>
 RectilinearMesh3D RectilinearMesh3D::getMidpointsMesh() const {
 
-    if (c0.size() < 2 || c1.size() < 2 || c2.size() < 2) throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
+    if (axis0.size() < 2 || axis1.size() < 2 || axis2.size() < 2) throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
 
     RectilinearMesh1D line0;
-    for (auto a = c0.begin(), b = c0.begin()+1; b != c0.end(); ++a, ++b)
+    for (auto a = axis0.begin(), b = axis0.begin()+1; b != axis0.end(); ++a, ++b)
         line0.addPoint(0.5 * (*a + *b));
 
     RectilinearMesh1D line1;
-    for (auto a = c1.begin(), b = c1.begin()+1; b != c1.end(); ++a, ++b)
+    for (auto a = axis1.begin(), b = axis1.begin()+1; b != axis1.end(); ++a, ++b)
         line1.addPoint(0.5 * (*a + *b));
 
     RectilinearMesh1D line2;
-    for (auto a = c2.begin(), b = c2.begin()+1; b != c2.end(); ++a, ++b)
+    for (auto a = axis2.begin(), b = axis2.begin()+1; b != axis2.end(); ++a, ++b)
         line2.addPoint(0.5 * (*a + *b));
 
     return RectilinearMesh3D(line0, line1, line2, getIterationOrder());

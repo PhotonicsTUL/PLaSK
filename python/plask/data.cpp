@@ -22,10 +22,10 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<Vec<3,dcomplex>>() { return 3; }
 
 
-    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.c1.size(), mesh.c0.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh3D& mesh) { return { mesh.c2.size(), mesh.c1.size(), mesh.c0.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RegularMesh2D& mesh) { return { mesh.c1.size(), mesh.c0.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RegularMesh3D& mesh) { return { mesh.c2.size(), mesh.c1.size(), mesh.c0.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.axis1.size(), mesh.axis0.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh3D& mesh) { return { mesh.axis2.size(), mesh.axis1.size(), mesh.axis0.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RegularMesh2D& mesh) { return { mesh.axis1.size(), mesh.axis0.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RegularMesh3D& mesh) { return { mesh.axis2.size(), mesh.axis1.size(), mesh.axis0.size() }; }
 
 
     template <typename T>
@@ -33,11 +33,11 @@ namespace detail {
         std::vector<npy_intp> strides(nd);
         strides.back() = sizeof(T) / type_dim<T>();
         if (mesh.getIterationOrder() == RectilinearMesh2D::NORMAL_ORDER) {
-            strides[0] = mesh.c0.size() * sizeof(T);
+            strides[0] = mesh.axis0.size() * sizeof(T);
             strides[1] = sizeof(T);
         } else {
             strides[0] = sizeof(T);
-            strides[1] = mesh.c1.size() * sizeof(T);
+            strides[1] = mesh.axis1.size() * sizeof(T);
         }
         return strides;
     }
@@ -47,19 +47,19 @@ namespace detail {
         std::vector<npy_intp> strides(nd);
         strides.back() = sizeof(T) / type_dim<T>();
         if (mesh.getIterationOrder() == RegularMesh2D::NORMAL_ORDER) {
-            strides[0] = mesh.c0.size() * sizeof(T);
+            strides[0] = mesh.axis0.size() * sizeof(T);
             strides[1] = sizeof(T);
         } else {
             strides[0] = sizeof(T);
-            strides[1] = mesh.c1.size() * sizeof(T);
+            strides[1] = mesh.axis1.size() * sizeof(T);
         }
         return strides;
     }
 
     #define ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(MeshT, first, second, third) \
         case MeshT::ORDER_##first##second##third: \
-            strides[2-first] = mesh.c##second.size() * mesh.c##third.size() * sizeof(T); \
-            strides[2-second] = mesh.c##third.size() * sizeof(T); \
+            strides[2-first] = mesh.axis##second.size() * mesh.axis##third.size() * sizeof(T); \
+            strides[2-second] = mesh.axis##third.size() * sizeof(T); \
             strides[2-third] = sizeof(T); \
             break;
 

@@ -116,6 +116,7 @@ void EffectiveFrequency2DSolver::onInitialize()
     nrCache.assign(mesh->tran().size(), std::vector<dcomplex>(mesh->up().size()+1));
     ngCache.assign(mesh->tran().size(), std::vector<dcomplex>(mesh->up().size()+1));
     veffs.resize(mesh->tran().size());
+    ngg.resize(mesh->tran().size());
 }
 
 
@@ -137,7 +138,7 @@ void EffectiveFrequency2DSolver::onBeginCalculation(bool fresh)
 {
     // Some additional checks
     bool have_zero = false;
-    for (auto x: mesh->c0) {
+    for (auto x: mesh->axis0) {
         if (x < 0.) throw BadMesh(getId(), "for cylindrical geometry no radial points can be negative");
         else if (abs(x) < SMALL) { x = 0.; have_zero = true; }
     }
@@ -152,7 +153,7 @@ void EffectiveFrequency2DSolver::onBeginCalculation(bool fresh)
 
         old_l = l;
 
-        double w = real(2e3*M_PI / k0);
+        double lam = real(2e3*M_PI / k0);
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto temp = inTemperature(*mesh);
@@ -161,35 +162,35 @@ void EffectiveFrequency2DSolver::onBeginCalculation(bool fresh)
         auto gain = inGain(midmesh);
         auto gain_slope = inGainSlope.optional(midmesh);
 
-        double h = w * 1e6*SMALL;
-        double w1 = w - h, w2 = w + h;
+        double h = lam * 1e6*SMALL;
+        double lam1 = lam - h, lam2 = lam + h;
 
         for (size_t ix = 0; ix != rsize; ++ix) {
             size_t tx1;
             double x0, x1;
-            x0 = mesh->c0[ix];
-            if (ix < rsize-1) { tx1 = ix+1; x1 = mesh->c0[tx1]; } else { tx1 = rsize-1; x1 = mesh->c0[tx1] + 2.*outer_distance; }
+            x0 = mesh->axis0[ix];
+            if (ix < rsize-1) { tx1 = ix+1; x1 = mesh->axis0[tx1]; } else { tx1 = rsize-1; x1 = mesh->axis0[tx1] + 2.*outer_distance; }
             for (size_t iy = 0; iy != zsize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
-                if (iy > 0) { ty0 = iy-1; y0 = mesh->c1[ty0]; } else { ty0 = 0; y0 = mesh->c1[ty0] - 2.*outer_distance; }
-                if (iy < zsize-1) { ty1 = iy; y1 = mesh->c1[ty1]; } else { ty1 = zsize-2; y1 = mesh->c1[ty1] + 2.*outer_distance; }
+                if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outer_distance; }
+                if (iy < zsize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = zsize-2; y1 = mesh->axis1[ty1] + 2.*outer_distance; }
 
                 double T = 0.25 * ( temp[mesh->index(ix,ty0)] + temp[mesh->index(ix,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
 
-                auto point = 0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1));
+                auto material = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)));
 
-                // N = nr + 1/(4π) λ g
-                // Ng = Nr - λ * dN/dλ = Nr - w dn/dλ - 1/(4π) w^2 dg/dλ
-                nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
-                ngCache[ix][iy] = nrCache[ix][iy] - w * (geometry->getMaterial(point)->Nr(w2, T) - geometry->getMaterial(point)->Nr(w1, T)) / (2*h);
+                // Nr = nr + 1/(4π) λ g
+                // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - 1/(4π) λ^2 dg/dλ
+                nrCache[ix][iy] = material->Nr(lam, T);
+                ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) / (2*h);
                 double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh.index(ix, iy-1)];
                 if (gain_slope) {
                     double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : (*gain_slope)[midmesh.index(ix, iy-1)];
-                    ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs))? 0. : w*w * gs * 7.95774715459e-09);
+                    ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs))? 0. : lam*lam * gs * 7.95774715459e-09);
                 }
-                nrCache[ix][iy] += dcomplex(0., std::isnan(g)? 0. : w * g * 7.95774715459e-09);
+                nrCache[ix][iy] += dcomplex(0., std::isnan(g)? 0. : lam * g * 7.95774715459e-09);
 
             }
         }
@@ -254,7 +255,7 @@ dcomplex EffectiveFrequency2DSolver::detS1(const dcomplex& x, const std::vector<
     E = fresnel(0) * E;
 
     for (size_t i = 1; i < N-1; ++i) {
-        double d = mesh->c1[i] - mesh->c1[i-1];
+        double d = mesh->axis1[i] - mesh->axis1[i-1];
         dcomplex phas = exp(-I * beta[i] * d);
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;
@@ -291,14 +292,14 @@ Matrix2cd EffectiveFrequency2DSolver::getMatrix(dcomplex lambda)
 //     Matrix2cd T = fresnel(xbegin);
 //
 //     if (symmetry != NO_SYMMETRY) { // we have symmetry, so begin of the transfer matrix is at the axis
-//         dcomplex phas = exp(-I * beta[xbegin] * mesh->c0[xbegin]);
+//         dcomplex phas = exp(-I * beta[xbegin] * mesh->axis0[xbegin]);
 //         DiagonalMatrix<dcomplex, 2> P;
 //         P.diagonal() << phas, 1./phas;
 //         T = T * P;
 //     }
 //
 //     for (size_t i = xbegin+1; i < N-1; ++i) {
-//         double d = mesh->c0[i] - mesh->c0[i-1];
+//         double d = mesh->axis0[i] - mesh->axis0[i-1];
 //         dcomplex phas = exp(- I * beta[i] * d);
 //         DiagonalMatrix<dcomplex, 2> P;
 //         P.diagonal() << phas, 1./phas;

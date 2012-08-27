@@ -49,7 +49,7 @@ Adapter templates currently available in PLaSK (see its description for more det
 To implement a new mesh directly you have to write class inherited from the \c plask::MeshD\<DIM\>, where DIM (is equal 2 or 3) is a number of dimension of space your mesh is defined over.
 
 You are required to:
-- implement the @ref plask::Mesh::size size and @ref plask::MeshD::at at methods which allow to access to meshes points;
+- implement the @ref plask::Mesh::size size and @ref plask::MeshD::at at methods which allow to access to mesh points;
 - implement the \ref plask::MeshD::writeXML method, which writes the mesh to XML;
 - write and register the reading function which reads the mesh from XML.
 
@@ -74,7 +74,7 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
     }
 
     virtual void writeXML(XMLElement& element) const;
-        element.attr("type", "point3d"); // these is required attribute for the provided element
+        element.attr("type", "point3d"); // this is required attribute for the provided element
         element.addTag("point")
                .attr("c0", point.c0)
                .attr("c1", point.c1)
@@ -97,9 +97,9 @@ static shared_ptr<Mesh> readOnePoint3DMesh(plask::XMLReader& reader) {
 }
 
 // Declare global variable of type RegisterMeshReader in order to register the reader:
-//   the first argument must be the same string which has been written intos 'type' attribute in OnePoint3DMesh::writeXML() method
-//   the second one is the address of your reading function
-//   variable name does not matter
+//   the first argument must be the same string which has been written into 'type' attribute in OnePoint3DMesh::writeXML() method,
+//   the second one is the address of your reading function,
+//   variable name does not matter.
 
 static RegisterMeshReader onepoint3dmesh_reader("point3d", &readOnePoint3DMesh);
 
