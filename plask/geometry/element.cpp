@@ -32,7 +32,7 @@ bool GeometryElement::ReplaceChanger::apply(shared_ptr<const GeometryElement>& t
     return true;
 }
 
-GeometryElement::ToBlockChanger::ToBlockChanger(const shared_ptr<const GeometryElement>& toChange, const shared_ptr<Material> &material) {
+GeometryElement::ToBlockChanger::ToBlockChanger(shared_ptr<const GeometryElement> toChange, shared_ptr<Material> material) {
     from = toChange;
     to = changeToBlock(material, from, translation);
 }

@@ -50,7 +50,7 @@ void MainWindow::print()
 }
 
 void MainWindow::open() {
-    QString loadName = QFileDialog::getOpenFileName(this, tr("Choose name of experiment file to open"), ".", tr("XPML (*.xpml *.xpl)"));
+    QString loadName = QFileDialog::getOpenFileName(this, tr("Choose name of experiment file to open"), ".", tr("XPL (*.xpl)"));
     if (loadName.isEmpty()) return;
     document.open(loadName);
     view->setRootIndex(document.treeModel.index(0, 0));
@@ -67,7 +67,7 @@ void MainWindow::save()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
                         tr("Choose a file name"), ".",
-                        tr("XPML (*.xpml *.xpl)"));
+                        tr("XPL (*.xpl)"));
     if (fileName.isEmpty())
         return;
 

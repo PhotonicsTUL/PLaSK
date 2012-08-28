@@ -201,6 +201,14 @@ public:
      */
     shared_ptr<Geometry> readGeometry();
 
+    /**
+     * Get named elements. It support boths: named elements (from manager) and auto-named elements.
+     * @param name element name (can be auto-generated: in form '#'+number)
+     * @return element with given name
+     * @throw NoSuchGeometryElement if element was not found
+     */
+    shared_ptr<GeometryElement> requireElementWithName(const std::string& name) const;
+
 };
 
 // specialization for most types

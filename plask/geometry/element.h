@@ -267,7 +267,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
         /**
          * Construct CompositeChanger and append @p changer to its changers list.
-         * @param changer changer to append
+         * @param changer changer to append, will be deleted by destructor of @c this
          */
         CompositeChanger(const Changer* changer);
 
@@ -277,6 +277,18 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @return @c *this
          */
         CompositeChanger& operator()(const Changer* changer);
+
+        /**
+         * Append @p changer to changers list.
+         * @param changer changer to append
+         * @return @c *this
+         */
+        CompositeChanger& append(const Changer* changer) { return operator ()(changer); }
+
+        /**
+         * Construct empty composit changer.
+         */
+        CompositeChanger() {}
 
         /// Delete all held changers (using delete operator).
         ~CompositeChanger();
@@ -302,7 +314,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * Construct changer which change @p from to @p to and return given @p translation.
          * @param from, to, translation changer parameters
          */
-        ReplaceChanger(const shared_ptr<const GeometryElement>& from, const shared_ptr<const GeometryElement>& to, Vec<3, double> translation)
+        ReplaceChanger(shared_ptr<const GeometryElement> from, shared_ptr<const GeometryElement> to, Vec<3, double> translation)
             : from(from), to(to), translation(translation) {}
 
         /**
@@ -325,7 +337,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     struct ToBlockChanger: public ReplaceChanger {
 
-        ToBlockChanger(const shared_ptr<const GeometryElement>& toChange, const shared_ptr<Material>& material);
+        ToBlockChanger(shared_ptr<const GeometryElement> toChange, shared_ptr<Material> material);
 
     };
 
@@ -758,7 +770,7 @@ public:
     /**
      * Get this or copy of this with some changes in subtree.
      * @param[in] changer changer which will be aplied to subtree with this in root
-     * @param[out] translation recommended translation of this after change
+     * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
      * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
      */
     virtual shared_ptr<const GeometryElement> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const = 0;
