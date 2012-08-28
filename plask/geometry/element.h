@@ -348,7 +348,20 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Base class for callbacks used by save() method to get names of elements and paths.
      *
      * Default implementation just returns empty names and list of names.
-     * It is enaught to save geometry tree without any names.
+     * It is enaught to save geometry tree without any names or with all names auto-generated (see @ref prerareToAutonaming).
+     *
+     * Example (save vector of elements to dest XML in "geometry" section):
+     * @code
+     * //std::vector<const plask::GeomtryElement*> to_save; //root of trees to save
+     * //XMLWriter dest;               //destination, output XML
+     * WriteXMLCallback namer;         //or subclass of WriteXMLCallback
+     * //this is required only if elments should have auto-generated names:
+     * for (auto e: to_save) namer.prerareToAutonaming(*e);
+     * //writting:
+     * XMLWriter::Element geom_section(dest, "geometry");   //section tag
+     * for (auto e: to_save)                                //all roots
+     *  e->writeXML(geom_section, namer);
+     * @endcode
      */
     class WriteXMLCallback {
         
@@ -359,11 +372,20 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         std::map<const GeometryElement*, std::string> names_of_saved;
         
-        //std::map<const GeometryElement*, unsigned> counts;   //to count elements
+        std::map<const GeometryElement*, unsigned> counts;   ///< allow to count elements (used by auto-naming)
+
+        unsigned nextAutoName;
         
         public:
+
+        WriteXMLCallback(): nextAutoName(0) {}
         
-        //void prerareToAutonaming   fill counts
+        /**
+         * Calling of this method allows for automatic name generation when saving some subtrees using this.
+         *
+         * This method must be called exactly once for root of each subtree which will be write to XML before any writes.
+         */
+        void prerareToAutonaming(const GeometryElement& subtree_root);
         
         /**
          * Get name of given @p element.
@@ -703,6 +725,14 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         fireChildrenRemoved(index_begin, index_end);
         return true;
     }
+
+    /**
+     * Call a @p callback for each element in subtree with @c this in root.
+     *
+     * Visit tree in pre-order.
+     * @param callback call-back to call, should return @c true only if descendants of element given as parameter should be visited
+     */
+    virtual void forEachRealElementInSubtree(std::function<bool(const GeometryElement &)> callback) const;
 
 private:
     struct ChildGetter {    //used by begin(), end()

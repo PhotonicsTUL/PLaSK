@@ -259,6 +259,8 @@ void GeometryTreeModel::save(plask::XMLWriter::Element &root_element) {
     plask::XMLWriter::Element geometry_element(root_element, plask::Manager::TAG_NAME_GEOMETRY);
     NamesFromExtensions writerCB;
     for (std::unique_ptr<RootItem>& to_save: rootItems)
+        writerCB.prerareToAutonaming(*to_save->geometry);
+    for (std::unique_ptr<RootItem>& to_save: rootItems)
         to_save->geometry->writeXML(geometry_element, writerCB);
 }
 

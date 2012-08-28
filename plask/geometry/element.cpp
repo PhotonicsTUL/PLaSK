@@ -37,6 +37,10 @@ GeometryElement::ToBlockChanger::ToBlockChanger(const shared_ptr<const GeometryE
     to = changeToBlock(material, from, translation);
 }
 
+void GeometryElement::WriteXMLCallback::prerareToAutonaming(const GeometryElement &subtree_root) {
+    subtree_root.forEachRealElementInSubtree([&](const GeometryElement& e) { return ++this->counts[&e] == 1; });
+}
+
 std::string GeometryElement::WriteXMLCallback::getName(const GeometryElement&, AxisNames&) const {
     return std::string();
 }
@@ -55,6 +59,14 @@ XMLWriter::Element GeometryElement::WriteXMLCallback::makeTag(XMLElement &parent
     XMLWriter::Element tag(parent_tag, element.getTypeName());
     AxisNames newAxesNames = axesNames;
     std::string name = getName(element, newAxesNames);
+    if (name.empty()) { //check if auto-name should be constructed
+        auto c = counts.find(&element);
+        if (c != counts.end() && c->second > 1) { //only for non-unique elements
+            name += "unnamed";
+            name += boost::lexical_cast<std::string>(nextAutoName);
+            ++nextAutoName;
+        }
+    }
     if (!name.empty()) {
         tag.attr("name", name);
         names_of_saved[&element] = name;
@@ -172,6 +184,12 @@ shared_ptr<GeometryElement> GeometryElement::getRealChildAt(std::size_t child_nr
 
 void GeometryElement::removeAtUnsafe(std::size_t) {
     throw NotImplemented("removeAtUnsafe(std::size_t)");
+}
+
+void GeometryElement::forEachRealElementInSubtree(std::function<bool (const GeometryElement &)> callback) const {
+    if (!callback(*this)) return;
+    std::size_t size = getRealChildrenCount();
+    for (std::size_t i = 0; i < size; ++i) getRealChildAt(i)->forEachRealElementInSubtree(callback);
 }
 
 // --- GeometryElementD ---
