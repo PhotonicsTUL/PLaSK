@@ -38,10 +38,19 @@ GeometryReader::GeometryReader(Manager &manager, XMLReader &source, const Geomet
     axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
 }
 
+inline bool isAutoName(const std::string& name) { return !name.empty() && name[0] == '#'; }
+
 shared_ptr<GeometryElement> GeometryReader::readElement() {
     std::string nodeName = source.getNodeName();
     if (nodeName == "ref") {
-        shared_ptr<GeometryElement> result = manager.requireGeometryElement(source.requireAttribute("name"));
+        std::string name = source.requireAttribute("name");
+        shared_ptr<GeometryElement> result;
+        if (isAutoName(name)) {
+            auto it = autoNamedElements.find(name);
+            if (it == autoNamedElements.end()) throw NoSuchGeometryElement(name);
+            result = it->second;
+        }
+            else result = manager.requireGeometryElement(name);
         source.requireTagEnd();
         return result;
     }
@@ -55,11 +64,16 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
             throw NoSuchGeometryElementType(nodeName + "[" + expectedSuffix + "]");
     }
     boost::optional<std::string> name = source.getAttribute("name");    //read name
-    if (name) BadId::throwIfBad("geometry element", *name, ' ');
+    if (name && !isAutoName(*name)) BadId::throwIfBad("geometry element", *name, ' ');
     shared_ptr<GeometryElement> new_element = reader_it->second(*this); //and rest (but while reading this subtree, name is not registred yet)
     if (name) { //if have name, register it (add it to map of names)
-        if (!manager.namedElements.insert(std::map<std::string, shared_ptr<GeometryElement> >::value_type(*name, new_element)).second)
-            throw NamesConflictException("Geometry element", *name);
+        if (isAutoName(*name)) {
+            if (!autoNamedElements.insert(std::map<std::string, shared_ptr<GeometryElement> >::value_type(*name, new_element)).second)
+                throw NamesConflictException("Auto-named geometry element", *name);
+        } else {    //normal name
+            if (!manager.namedElements.insert(std::map<std::string, shared_ptr<GeometryElement> >::value_type(*name, new_element)).second)
+                throw NamesConflictException("Geometry element", *name);
+        }
     }
     return new_element;
 }

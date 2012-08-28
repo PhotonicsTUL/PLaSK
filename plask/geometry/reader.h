@@ -18,7 +18,12 @@ class Manager;
  * Have references to both: XML data source reader and geometry manager.
  * Manage names of axis while reading.
  */
-struct GeometryReader {
+class GeometryReader {
+
+    /// Allow to access elements by auto-name (beggined with '#').
+    std::map<std::string, shared_ptr<GeometryElement> > autoNamedElements;
+
+public:
 
     /**
      * Create new geometry element with parameters reading from XML source.

@@ -62,7 +62,7 @@ XMLWriter::Element GeometryElement::WriteXMLCallback::makeTag(XMLElement &parent
     if (name.empty()) { //check if auto-name should be constructed
         auto c = counts.find(&element);
         if (c != counts.end() && c->second > 1) { //only for non-unique elements
-            name += "unnamed";
+            name += "#";
             name += boost::lexical_cast<std::string>(nextAutoName);
             ++nextAutoName;
         }
