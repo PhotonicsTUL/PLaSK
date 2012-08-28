@@ -79,7 +79,7 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
                 changers.append(new GeometryElement::ToBlockChanger(op_from, blockMaterial));
                 source.requireTagEnd();
             } else {
-                throw Exception("\"%1%\" is not proper name of copy operation and it is not alowed in <copy> tag.", operation_name);
+                throw Exception("\"%1%\" is not proper name of copy operation and so it is not alowed in <copy> tag.", operation_name);
             }
         }
         new_element = const_pointer_cast<GeometryElement>(from->changedVersion(changers));
