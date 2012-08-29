@@ -157,14 +157,22 @@ class Manager(unittest.TestCase):
         manager.read('''
         <plask>
             <materials>
-                <material name="FromXML" kind="dielectric">
+                <material name="XmlMat" kind="dielectric">
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
                     <absp>1.</absp>
+                </material>
+                <material name="XmlMat:Mg" from="GaN:Mg">
+                    <nr>1. + 0.001*T + 0.0001*wl</nr>
+                    <absp>T * dc</absp>
                 </material>
             </materials>
         </plask>
         ''')
         material.updateFactories()
-        mat = plask.material.FromXML()
+        mat = plask.material.XmlMat()
         self.assertAlmostEqual( mat.nr(900, 300), 1.39 )
         self.assertAlmostEqual( mat.Nr(900, 300), 1.39-7.95774715459e-09j )
+
+        mad = plask.material.XmlMat(dp="Mg", dc=1e18)
+        self.assertEqual( mad.cond(300), material.GaN(dp="Mg", dc=1e18).cond(300) )
+        self.assertEqual( mad.absp(900, 300), 300 * 1e18 )

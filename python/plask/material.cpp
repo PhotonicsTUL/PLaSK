@@ -312,7 +312,7 @@ class PythonEvalMaterial : public Material
 
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     shared_ptr<Material> base_obj;
-    if (base != "") base_obj = db->get(base);
+    if (base != "") base_obj = this->db->get(base, doping_amount_type, doping_amount);
     else base_obj = make_shared<EmptyBase>();
     py::dict params;
     if (doping_amount_type == Material::DOPANT_CONCENTRATION) params["dc"] = doping_amount;
@@ -323,7 +323,7 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {
     shared_ptr<PythonEvalMaterialConstructor> constructor;
     std::string name = reader.requireAttribute("name");
-    auto base = reader.getAttribute("base");
+    auto base = reader.getAttribute("from");
     if (base)
         constructor = make_shared<PythonEvalMaterialConstructor>(name, *base);
     else {
@@ -594,10 +594,8 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 
     // Test if kwargs contains only doping information
     if (py::len(keys) == doping_keys) {
-        std::string full_name;
-        if (doping_type == Material::DOPANT_CONCENTRATION) full_name = format("%s:%s=%g", name, dopant, concentration);
-        else full_name = format("%s:%s n=%g", name, dopant, concentration);;
-        return  DB->get(full_name);
+        std::string full_name = name; full_name += ":"; full_name += dopant;
+        return DB->get(full_name, std::vector<double>(), doping_type, concentration);
     }
 
     // So, kwargs contains compostion

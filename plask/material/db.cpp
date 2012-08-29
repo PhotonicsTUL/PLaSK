@@ -141,19 +141,30 @@ shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, 
     return get(dbKey(composition, dopant_name), composition, dopant_name, doping_amount_type, doping_amount);
 }
 
-shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_donor, const std::vector<double>& composition,
+shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition,
                                                Material::DopingAmountType doping_amount_type, double doping_amount) const {
     std::string name, dopant;
-    std::tie(name, dopant) = splitString2(parsed_name_with_donor, ':');
+    std::tie(name, dopant) = splitString2(parsed_name_with_dopant, ':');
     if (composition.empty())
-        return get(parsed_name_with_donor, Material::Composition(), dopant, doping_amount_type, doping_amount);
+        return get(parsed_name_with_dopant, Material::Composition(), dopant, doping_amount_type, doping_amount);
     std::vector<std::string> elements = Material::parseElementsNames(name);
     if (composition.size() > elements.size())
-        throw plask::Exception("Too long composition vector (longer than number of elements in \"%1%\")", parsed_name_with_donor);
+        throw plask::Exception("Too long composition vector (longer than number of elements in \"%1%\")", parsed_name_with_dopant);
     Material::Composition comp;
     for (std::size_t i = 0; i < composition.size(); ++i) comp[elements[i]] = composition[i];
     for (std::size_t i = composition.size(); i < elements.size(); ++i) comp[elements[i]] = std::numeric_limits<double>::quiet_NaN();
     return get(Material::completeComposition(comp), dopant, doping_amount_type, doping_amount);
+}
+
+shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const {
+    std::string name_with_components, dopant_name;
+    std::tie(name_with_components, dopant_name) = splitString2(name_with_dopant, ':');
+    if (name_with_components.find('(') == std::string::npos) {  //simple case, without parsing composition
+        std::string dbKey = name_with_components;
+        appendDopant(dbKey, dopant_name);
+        return get(dbKey, Material::Composition(), dopant_name, doping_amount_type, doping_amount);
+    } else // parse composition:
+        return get(Material::parseComposition(name_with_components), dopant_name, doping_amount_type, doping_amount);
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components, const std::string& doping_descr) const {

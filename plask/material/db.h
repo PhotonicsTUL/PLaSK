@@ -302,13 +302,23 @@ public:
     /**
      * Create material object.
      * @param parsed_name_with_dopant material name with dopant name in format material_name[:dopant_name], for example: "AlGaN" or "AlGaN:Mg"
-     * @param composition amounts of elements, with NaN for each element for composition was not written
+     * @param composition amounts of elements, with NaN for each element for which composition was not given
      * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
      * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      */
     shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+
+    /**
+     * Create material object.
+     * @param name_with_dopant material name with dopant name in format material[:dopant_name], for example: "Al(0.2)GaN" or "Al(0.2)GaN:Mg"
+     * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
+     * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
+     * @return constructed material
+     * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
+     */
+    shared_ptr<Material> get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const;
 
     /**
      * Create material object.
