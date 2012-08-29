@@ -1,3 +1,5 @@
+#include "solver.h"
+
 #ifndef PLASK__GEOMETRY_MANAGER_H
 #define PLASK__GEOMETRY_MANAGER_H
 
@@ -17,8 +19,6 @@ This file includes:
 #include "geometry/path.h"
 #include "geometry/space.h"
 #include "geometry/reader.h"
-
-#include "solver.h"
 
 namespace plask {
 
@@ -384,67 +384,6 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
         }
         dest.add(std::move(boundary), std::move(*value));
         reader.requireTagEnd(); //</condition>
-    }
-}
-
-
-template <typename SpaceT>
-void SolverOver<SpaceT>::loadConfiguration(XMLReader& reader, Manager& manager) {
-    while (reader.requireTagOrEnd()) {
-        if (reader.getNodeName() == "geometry") {
-            auto name = reader.getAttribute("ref");
-            if (!name) name.reset(reader.requireText());
-            auto found = manager.geometries.find(*name);
-            if (found == manager.geometries.end())
-                throw BadInput(this->getId(), "Geometry '%1%' not found.", *name);
-            else {
-                auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
-                if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
-                this->setGeometry(geometry);
-            }
-        } else {
-            this->loadParam(reader.getNodeName(), reader, manager);
-        }
-        reader.requireTagEnd();
-    }
-}
-
-template <typename SpaceT, typename MeshT>
-void SolverWithMesh<SpaceT,MeshT>::loadConfiguration(XMLReader& reader, Manager& manager) {
-    while (reader.requireTagOrEnd()) {
-        if (reader.getNodeName() == "geometry") {
-            auto name = reader.getAttribute("ref");
-            if (!name) name.reset(reader.requireText());
-            auto found = manager.geometries.find(*name);
-            if (found == manager.geometries.end())
-                throw BadInput(this->getId(), "Geometry '%1%' not found.", *name);
-            else {
-                auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
-                if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
-                this->setGeometry(geometry);
-            }
-        }
-        else if (reader.getNodeName() == "mesh") {
-            auto name = reader.getAttribute("ref");
-            auto found = manager.meshes.find(*name);
-            if (found != manager.meshes.end()) {
-                auto mesh = dynamic_pointer_cast<MeshT>(found->second);
-                if (!mesh) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
-                this->setMesh(mesh);
-            }
-            else {
-                auto found = manager.generators.find(*name);
-                if (found != manager.generators.end()) {
-                    auto generator = dynamic_pointer_cast<MeshGeneratorOf<MeshT>>(found->second);
-                    if (!generator) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
-                    this->setMesh(generator);
-                } else
-                    throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found.", *name);
-            }
-        } else {
-            this->loadParam(reader.getNodeName(), reader, manager);
-        }
-        reader.requireTagEnd();
     }
 }
 
