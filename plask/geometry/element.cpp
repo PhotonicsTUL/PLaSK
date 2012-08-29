@@ -37,6 +37,12 @@ GeometryElement::ToBlockChanger::ToBlockChanger(shared_ptr<const GeometryElement
     to = changeToBlock(material, from, translation);
 }
 
+bool GeometryElement::DeleteChanger::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
+    if (to_change != toDel) return false;
+    to_change = shared_ptr<const GeometryElement>();
+    return true;
+}
+
 void GeometryElement::WriteXMLCallback::prerareToAutonaming(const GeometryElement &subtree_root) {
     subtree_root.forEachRealElementInSubtree([&](const GeometryElement& e) { return ++this->counts[&e] == 1; });
 }

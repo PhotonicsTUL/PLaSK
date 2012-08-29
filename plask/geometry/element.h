@@ -341,6 +341,16 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
     };
 
+    struct DeleteChanger: public Changer {
+
+        shared_ptr<const GeometryElement> toDel;
+
+        DeleteChanger(shared_ptr<const GeometryElement> toDel): toDel(toDel) {}
+
+        virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
+
+    };
+
     /// Predicate on GeometryElement
     typedef std::function<bool(const GeometryElement&)> Predicate;
 
