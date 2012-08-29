@@ -472,7 +472,7 @@ void register_mesh_rectangular()
         .add_static_property("bottomBoundary", &RectilinearMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RectilinearMesh2D>("Rectilinear2D");
+    ExportBoundary<RectilinearMesh2D> rect2dbound(rectilinear2d);
 
     py::class_<RectilinearMesh3D, shared_ptr<RectilinearMesh3D>, py::bases<MeshD<3>>> rectilinear3d("Rectilinear3D",
         "Two-dimensional mesh\n\n"
@@ -508,7 +508,7 @@ void register_mesh_rectangular()
         .def("getMidpointsMesh", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of elements described by this mesh")
         .def(py::self == py::self)
     ;
-
+    ExportBoundary<RectilinearMesh3D> rect3dbound(rectilinear3d);
 
     py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>>("Regular1D",
         "Regular mesh axis\n\n"
@@ -531,13 +531,13 @@ void register_mesh_rectangular()
     ;
     Regular1D_from_Sequence();
 
-    py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>>("Regular2D",
+    py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>> regular2d("Regular2D",
         "Two-dimensional mesh\n\n"
         "Regular2D(ordering='10')\n    create empty mesh\n\n"
         "Regular2D(axis0, axis1, ordering='10')\n    create mesh with axes supplied as sequences of numbers\n\n"
         "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
         py::no_init
-        )
+        ); regular2d
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RegularMesh2D>, py::default_call_policies(), (py::arg("ordering")="10")))
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="10")))
         .def_readwrite("axis0", &RegularMesh2D::axis0, "The first (transverse) axis of the mesh")
@@ -561,16 +561,16 @@ void register_mesh_rectangular()
         .add_static_property("bottomBoundary", &RegularMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RegularMesh2D>("Regular2D");
+    ExportBoundary<RegularMesh2D> reg2dbound(regular2d);
 
-    py::class_<RegularMesh3D, shared_ptr<RegularMesh3D>, py::bases<MeshD<3>>>("Regular3D",
+    py::class_<RegularMesh3D, shared_ptr<RegularMesh3D>, py::bases<MeshD<3>>>regular3d("Regular3D",
         "Two-dimensional mesh\n\n"
         "Regular3D(ordering='210')\n    create empty mesh\n\n"
         "Regular3D(axis0, axis1, axis2, ordering='210')\n    create mesh with axes supplied as mesh.Regular1D\n\n"
         "ordering can be any a string containing any permutation of and specifies ordering of the\n"
         "mesh points (last index changing fastest).",
         py::no_init
-        )
+        ); regular3d
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RegularMesh3D>, py::default_call_policies(), (py::arg("ordering")="210")))
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="210")))
         .def_readwrite("axis0", &RegularMesh3D::axis0, "The first (longitudinal) axis of the mesh")
@@ -595,6 +595,7 @@ void register_mesh_rectangular()
         .def("getMidpointsMesh", &RegularMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of elements described by this mesh")
         .def(py::self == py::self)
     ;
+    ExportBoundary<RegularMesh3D> reg3dbound(regular3d);
 
     ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");
     {

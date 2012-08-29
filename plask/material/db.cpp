@@ -230,8 +230,16 @@ void MaterialsDB::addSimple(const MaterialConstructor* constructor) {
     constructors[constructor->materialName] = shared_ptr<const MaterialConstructor>(constructor);
 }
 
+void MaterialsDB::addSimple(const shared_ptr<MaterialConstructor>& constructor) {
+    constructors[constructor->materialName] = constructor;
+}
+
 void MaterialsDB::addComplex(const MaterialConstructor* constructor) {
     constructors[dbKey(constructor->materialName)] = shared_ptr<const MaterialConstructor>(constructor);
+}
+
+void MaterialsDB::addComplex(const shared_ptr<MaterialConstructor>& constructor) {
+    constructors[dbKey(constructor->materialName)] = constructor;
 }
 
 void MaterialsDB::removeSimple(const std::string& name) {

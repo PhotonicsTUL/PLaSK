@@ -7,5 +7,11 @@
 // Math library to use
 #define PLASK_MATH_STD
 
+#cmakedefine CMAKE_Fortran_COMPILER_WORKS
+#ifdef CMAKE_Fortran_COMPILER_WORKS
+    // Fortran name mangling scheme
+#   include "f77.h"
+#endif
+
 #endif // PLASK__CONFIG_H
 // kate: syntax c++;

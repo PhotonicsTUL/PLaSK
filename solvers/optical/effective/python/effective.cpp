@@ -143,7 +143,6 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(computeMode, "Find the mode near the specified effective index", "wavelength");
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
-        METHOD(setMode, "Set the current mode the specified wavelength.\nwavelength can be a value returned e.g. by findModes.", "wavelength");
         __solver__.def("getStripeDeterminant", &getStripeDeterminant<EffectiveFrequency2DSolver>, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "wavelength"));
         __solver__.def("getDeterminant", &getDeterminant<EffectiveFrequency2DSolver>, "Get modal determinant for debugging purposes", (py::arg("wavelength")));

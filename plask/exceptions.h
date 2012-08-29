@@ -248,7 +248,7 @@ public:
  * Exceptions of this class are thrown when solvers don't have geometry set
  */
 struct NoGeometryException: public Exception {
-    NoGeometryException(const std::string& where): Exception("$1$: No geometry specified", where) {}
+    NoGeometryException(const std::string& where): Exception("%1%: No geometry specified", where) {}
 };
 
 /**

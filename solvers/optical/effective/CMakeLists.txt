@@ -39,9 +39,9 @@ endif()
 # the following lines. If you don't do it, your solver directory will be scanned
 # automatically for solver_src and the 'python' subdirectory for interface_src.
 #
-#set(solver_src file1.cpp file2.cpp file3.h file4.hpp)
-#set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
-
+#set(solver_src eim.cpp eim.h efm.cpp efm.h broyden.cpp broyden.h bessel.h)
+#set(interface_src python/effective.cpp)
+file(GLOB solver_src *.cpp *.hpp *.h bessel/*.cpp bessel/*.h)
 
 # To add unit tests to your project create appropriate targets (binary executables
 # or Python scripts) and register them using CMake command add_test for binaries

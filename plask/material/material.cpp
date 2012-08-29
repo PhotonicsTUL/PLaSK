@@ -63,8 +63,8 @@ double Material::chi(double T, char point) const { throwNotImplemented("chi(doub
 double Material::chi(char point) const { return chi(300., point); }
 
 double Material::cond(double T) const { throwNotImplemented("cond(double T)"); return 0; }
-double Material::cond_l(double T) const { throwNotImplemented("cond_l(double T)"); return 0; }
-double Material::cond_v(double T) const { throwNotImplemented("cond_v(double T)"); return 0; }
+double Material::cond_l(double T) const { return cond(T); }
+double Material::cond_v(double T) const { return cond(T); }
 
 double Material::D(double T) const { throwNotImplemented("D(double T)"); return 0; }
 
@@ -85,7 +85,7 @@ double Material::Me(double T, char point) const { throwNotImplemented("Me(double
 double Material::Me_l(double T, char point) const { throwNotImplemented("Me_l(double T, char point)"); return 0; }
 double Material::Me_v(double T, char point) const { throwNotImplemented("Me_v(double T, char point)"); return 0; }
 
-double Material::Mh(double T, char EqType) const { throwNotImplemented("Mh(double T, char EqType)"); return 0; }
+double Material::Mh(double T, char point) const { throwNotImplemented("Mh(double T, char point)"); return 0; }
 double Material::Mh_l(double T, char point) const { throwNotImplemented("Mh_l(double T, char point)"); return 0; }
 double Material::Mh_v(double T, char point) const { throwNotImplemented("Mh_v(double T, char point)"); return 0; }
 
@@ -93,9 +93,9 @@ double Material::Mhh(double T, char point) const { throwNotImplemented("Mhh(doub
 double Material::Mhh_l(double T, char point) const { throwNotImplemented("Mhh_l(double T, char point)"); return 0; }
 double Material::Mhh_v(double T, char point) const { throwNotImplemented("Mhh_v(double T, char point)"); return 0; }
 
-double Material::Mlh(double T, char point) const { throwNotImplemented("B(double T)"); return 0; }
-double Material::Mlh_l(double T, char point) const { throwNotImplemented("B(double T)"); return 0; }
-double Material::Mlh_v(double T, char point) const { throwNotImplemented("B(double T)"); return 0; }
+double Material::Mlh(double T, char point) const { throwNotImplemented("Mlh(double T, char point)"); return 0; }
+double Material::Mlh_l(double T, char point) const { throwNotImplemented("Mlh_l(double T, char point)"); return 0; }
+double Material::Mlh_v(double T, char point) const { throwNotImplemented("Mlh_v(double T, char point)"); return 0; }
 
 double Material::mob(double T) const { throwNotImplemented("mob(double T)"); return 0; }
 

@@ -61,6 +61,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     /// Get initial division of the smallest element in the mesh
     inline std::pair<size_t,size_t> getPreDivision() const { return std::pair<size_t,size_t>(pre_divisions[0], pre_divisions[1]); }
+
     /// Set initial division of the smallest element in the mesh
     inline void setPreDivision(size_t div0, size_t div1=0) {
         pre_divisions[0] = div0;
@@ -70,6 +71,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     /// Get final division of the smallest element in the mesh
     inline std::pair<size_t,size_t> getPostDivision() const { return std::pair<size_t,size_t>(post_divisions[0], post_divisions[1]); }
+
     /// Set final division of the smallest element in the mesh
     inline void setPostDivision(size_t div0, size_t div1=0) {
         post_divisions[0] = div0;

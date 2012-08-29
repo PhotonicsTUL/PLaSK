@@ -54,10 +54,10 @@ struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, 
     std::vector<dcomplex> veffs;
 
     /// Computed weighted indices for each stripe
-    std::vector<dcomplex> ngg;
+    std::vector<dcomplex> nng;
 
     /// Old value of the l number (to detect changes)
-    unsigned short old_l;
+    int old_l;
 
     /// Current value of reference normalized frequency
     dcomplex k0;
@@ -65,7 +65,7 @@ struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, 
   public:
 
     /// Number of the LP_lm mode describing angular dependence
-    unsigned short l;
+    int l;
 
     double outer_distance; ///< Distance outside outer borders where material is sampled
 
@@ -148,14 +148,6 @@ struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, 
     std::vector<dcomplex> findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps=100);
 
     /**
-     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
-     * If it is not proper mode, exception is throw
-     *
-     * \param lambda effective index of the mode
-     */
-    void setMode(dcomplex lambda);
-
-    /**
      * Compute determinant for a single stripe
      * \param stripe index of stripe
      * \param lambda effective index to use
@@ -204,11 +196,14 @@ struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, 
     /// Return S matrix determinant for one stripe
     dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR, const std::vector<dcomplex>& NG);
 
-    /// Return the  effective index of the whole structure, optionally also computing fields
-    Eigen::Matrix2cd getMatrix(dcomplex lambda);
+    /// Return S matrix determinant for one stripe
+    void computeStripeNNg(std::size_t stripe);
+
+    /// Get matrix transforming amplitudes of J and Y from (i-1)-th layer to i-th one
+    Eigen::Matrix2cd getMatrix(plask::dcomplex v, std::size_t i);
 
     /// Return S matrix determinant for the whole structure
-    dcomplex detS(const dcomplex& x);
+    dcomplex detS(const plask::dcomplex& v);
 
     /// Method computing the distribution of light intensity
     const DataVector<double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);

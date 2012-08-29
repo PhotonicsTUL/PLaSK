@@ -64,16 +64,20 @@ struct ExportBoundary {
         return self(mesh);
     }
 
-    ExportBoundary(const std::string& name) {
+    ExportBoundary(py::object mesh_class) {
 
-        py::class_<typename MeshType::Boundary::WithMesh, shared_ptr<typename MeshType::Boundary::WithMesh>>((name+"BoundaryInstance").c_str(),
+        py::scope scope = mesh_class;
+
+        std::string name = py::extract<std::string>(mesh_class.attr("__name__"));
+
+        py::class_<typename MeshType::Boundary::WithMesh, shared_ptr<typename MeshType::Boundary::WithMesh>>("BoundaryInstance",
             ("Boundary specification for particular "+name+" mesh object").c_str(), py::no_init)
             .def("__contains__", &MeshType::Boundary::WithMesh::includes)
             .def("__iter__", py::range(&MeshType::Boundary::WithMesh::begin, &MeshType::Boundary::WithMesh::end))
         ;
 
-        py::class_<typename MeshType::Boundary, shared_ptr<typename MeshType::Boundary>>((name+"Boundary").c_str(),
-            ("Generic boundary specification for "+name+"mesh").c_str(), py::no_init)
+        py::class_<typename MeshType::Boundary, shared_ptr<typename MeshType::Boundary>>("Boundary",
+            ("Generic boundary specification for "+name+" mesh").c_str(), py::no_init)
             .def("__call__", &Boundary__call__, py::arg("mesh"), "Get boundary instance for particular mesh",
                  py::with_custodian_and_ward_postcall<0,1,
                  py::with_custodian_and_ward_postcall<0,2>>())
@@ -81,7 +85,6 @@ struct ExportBoundary {
 
         boost::python::converter::registry::push_back(&PythonPredicate::convertible, &PythonPredicate::construct, boost::python::type_id<typename MeshType::Boundary>());
     }
-
 };
 
 }} // namespace plask::python

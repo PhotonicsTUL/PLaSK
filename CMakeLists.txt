@@ -1,15 +1,15 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 2.8)
-project(plask CXX)
+project(plask)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
 set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
 # set(VERSION_REVISION 1)       # REVISION number (leave undefined unless really needed, it's normally set to svn revision)
 # ---------- common options --------------------------------------------
 
-add_definitions(-Wall)         # all warnings
-add_definitions(-std=c++0x)     # C++0x (C++11) standard
+add_definitions(-Wall)                                  # all warnings
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")    # C++0x (C++11) standard
 
 include_directories(.)          # solvers can include plask using <plask/plask.hpp>
 include_directories(python)     # solvers can also include <plask/python.hpp>
@@ -99,13 +99,13 @@ if(MINGW)
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------
-#enable_language(Fortran OPTIONAL)
-#if (CMAKE_Fortran_COMPILER_WORKS)
-#   include(FortranCInterface)
-#   FortranCInterface_HEADER("F77.h" MACRO_NAMESPACE "F77_")
-#else ()
-#   message(SEND_ERROR "Fortran compiler not found! Unable to automatically determine the name mangling scheme.")
-#endif()
+enable_language(Fortran OPTIONAL)
+if (CMAKE_Fortran_COMPILER_WORKS)
+  include(FortranCInterface)
+  FortranCInterface_HEADER("${CMAKE_BINARY_DIR}/include/plask/f77.h" MACRO_NAMESPACE "F77_")
+else ()
+  message(WARNING "Fortran compiler not found! Unable to automatically determine the name mangling scheme.")
+endif()
 
 
 # ----------===== Build and Install =====--------------------------------------------

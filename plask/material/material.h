@@ -360,7 +360,7 @@ struct Material {
      * @param EqType equation type [-]
      * @return hole effective mass Mh [\f$m_0\f$]
      */
-    virtual double Mh(double T, char EqType) const;
+    virtual double Mh(double T, char point) const;
 
     /**
      * Get hole effective mass Me in vertical direction [\f$m_0\f$].

@@ -85,10 +85,10 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB);
 void PythonManager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
 {
     while (reader.requireTagOrEnd()) {
-        if (reader.getNodeName() == "eval") {
+        if (reader.getNodeName() == "material")
             PythonEvalMaterialLoadFromXML(reader, materialsDB);
-        }
-//         else if (reader.getNodeName() == "linear") LinearMaterial::loadFromXML(reader, materialsDB);
+        else
+            throw XMLUnexpectedElementException(reader, "<material>");
     }
 }
 

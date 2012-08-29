@@ -118,11 +118,7 @@ void Manager::loadGeometry(GeometryReader& greader) {
 
 void Manager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
 {
-//     TODO
-//     while (reader.requireTagOrEnd()) {
-//         if (reader.getNodeName() == "linear") LinearMaterial::loadFromXML(reader, materialsDB);
-//     }
-    throw NotImplemented("Loading matrials from C++ not implemented");
+    throw NotImplemented("Loading materials from C++ not implemented");
 }
 
 void Manager::loadGrids(XMLReader &reader)

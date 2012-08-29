@@ -157,10 +157,10 @@ class Manager(unittest.TestCase):
         manager.read('''
         <plask>
             <materials>
-                <eval name="FromXML" kind="dielectric">
+                <material name="FromXML" kind="dielectric">
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
                     <absp>1.</absp>
-                </eval>
+                </material>
             </materials>
         </plask>
         ''')

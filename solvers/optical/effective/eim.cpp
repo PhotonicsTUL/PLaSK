@@ -68,6 +68,7 @@ void EffectiveIndex2DSolver::loadParam(const std::string& param, XMLReader& read
             outer_distance = reader.requireAttribute<double>("distance");
     } else
         throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <mode>, <striperoot>, <root>, or <outer>", param);
+    reader.requireTagEnd();
 }
 
 dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
@@ -96,14 +97,6 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModesMap(dcomplex neff1, dcomp
 {
     writelog(LOG_INFO, "Searching for the approximate modes for Neff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
-
-    double rdneff = real(neff2 - neff1);
-    double rneff1 = real(neff1);
-    double steps1 = steps + 1;
-    std::vector<double> rpoints(steps+1);
-    for (unsigned i = 0; i <= steps; ++i) {
-        rpoints[i] = rneff1 + rdneff * i / steps1;
-    }
 
     return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
             .findMap(neff1, neff2, steps, 0);
