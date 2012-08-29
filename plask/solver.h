@@ -493,7 +493,7 @@ class Solver {
      *
      * Overload this method only if you really need it. Otherwise, overload \p loadParam method.
      *
-     * Default implementation require empty configuration (just call <code>conf.source.requireTagEnd();</code>).
+     * Default implementation call loadParam for each read tag.
      * @param source source of configuration
      * @param manager manager from which information about geometry, meshes, materials, and so on can be get if needed
      */
@@ -502,12 +502,15 @@ class Solver {
     /**
      * Load single parameter from given \p source.
      *
+     * Move @p source reader to end of current (parameter) tag.
+     * (Note that you must call source.requireTagEnd() in subclass if you require empty tag.)
+     *
      * This method is called by \p loadConfiguration, to read configuration of particular parameter.
      *
-     * Default implementation require empty configuration (just call <code>conf.source.requireTagEnd();</code>).
-     * \param param configuration parameter to read
-     * \param source source of configuration
-     * \param manager manager from which information about geometry, meshes, materials, and so on can be get if needed
+     * Default implementation just throws an exception (no parmaters are supported by default).
+     * \param[in] param configuration parameter to read (same as source.getNodeName())
+     * \param[in, out] source source of configuration which point to opening of paramter tag
+     * \param[in, out] manager manager from which information about geometry, meshes, materials, and so on can be get if needed
      *
      * \throw XMLUnexpectedElementException if the parameter is not recognized
      */
