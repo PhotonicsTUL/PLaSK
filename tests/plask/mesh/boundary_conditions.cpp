@@ -2,6 +2,8 @@
 
 #include <plask/mesh/rectilinear.h>
 #include <plask/mesh/boundary_conditions.h>
+#include <plask/manager.h>
+#include <plask/utils/xml.h>
 
 BOOST_AUTO_TEST_SUITE(boundary_conditions) // MUST be the same as the file name
 
@@ -18,6 +20,19 @@ BOOST_AUTO_TEST_CASE(boundary_conditions) {
     mesh.axis1.addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
     BOOST_CHECK(conditions.includes(mesh, 0) == conditions.begin());
 
+}
+
+BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {
+    plask::BoundaryConditions<plask::RectilinearMesh2D, double> conditions;
+    plask::Manager manager;
+    std::string xml_content = "<cond><condition place=\"bottom\" value=\"123\"/><condition place=\"left\" value=\"234\"/></cond>";
+    std::stringstream xml_ss(xml_content);
+    plask::XMLReader reader(xml_ss);
+    BOOST_CHECK_NO_THROW(reader.requireTag("cond"));
+    manager.readBoundaryConditions(reader, conditions);
+    BOOST_CHECK_EQUAL(conditions.size(), 2);
+    BOOST_CHECK_EQUAL(conditions[0].condition, 123.0);
+    BOOST_CHECK_EQUAL(conditions[1].condition, 234.0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

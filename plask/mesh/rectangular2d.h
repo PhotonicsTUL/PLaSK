@@ -590,6 +590,14 @@ public:
     static Boundary getBottomBoundary() {
         return Boundary(new BottomBoundary());
     }
+
+    static Boundary getBoundary(const std::string& boundary_desc) {
+        if (boundary_desc == "bottom") return getBottomBoundary();
+        if (boundary_desc == "left") return getLeftBoundary();
+        if (boundary_desc == "right") return getRightBoundary();
+        if (boundary_desc == "top") return getTopBoundary();
+        return Boundary();
+    }
 };
 
 /**
