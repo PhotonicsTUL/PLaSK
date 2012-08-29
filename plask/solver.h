@@ -769,10 +769,10 @@ void SolverOver<SpaceT>::loadConfiguration(XMLReader& reader, Manager& manager) 
                 if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
                 this->setGeometry(geometry);
             }
+            reader.requireTagEnd();
         } else {
             this->loadParam(reader.getNodeName(), reader, manager);
         }
-        reader.requireTagEnd();
     }
 }
 
@@ -790,6 +790,7 @@ void SolverWithMesh<SpaceT, MeshT>::loadConfiguration(XMLReader& reader, Manager
                 if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
                 this->setGeometry(geometry);
             }
+            reader.requireTagEnd();
         }
         else if (reader.getNodeName() == "mesh") {
             auto name = reader.getAttribute("ref");
@@ -808,10 +809,10 @@ void SolverWithMesh<SpaceT, MeshT>::loadConfiguration(XMLReader& reader, Manager
                 } else
                     throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found.", *name);
             }
+            reader.requireTagEnd();
         } else {
             this->loadParam(reader.getNodeName(), reader, manager);
         }
-        reader.requireTagEnd();
     }
 }
 
