@@ -161,7 +161,7 @@ class Manager(unittest.TestCase):
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
                     <absp>1.</absp>
                 </material>
-                <material name="XmlMat:Mg" from="GaN:Mg">
+                <material name="XmlMat:Mg" base="GaN:Mg">
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
                     <absp>T * dc</absp>
                 </material>
