@@ -13,10 +13,10 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.manager.read("""
         <plask>
             <geometry>
-                <cartesian2d name="Space 1" axes="xy">
-                    <stack name="Stack 2">
-                        <child path="Path 4"><rectangle name="Block 3" x="5" y="2" material="GaN" /></child>
-                        <ref name="Block 3"/>
+                <cartesian2d name="Space-1" axes="xy">
+                    <stack name="Stack-2">
+                        <child path="Path-4"><rectangle name="Block-3" x="5" y="2" material="GaN" /></child>
+                        <ref name="Block-3"/>
                     </stack>
                 </cartesian2d>
             </geometry>
@@ -32,13 +32,13 @@ class EffectiveIndex2D_Test(unittest.TestCase):
             </grids>
             <solvers>
                 <optical lib="effective" solver="EffectiveIndex2D" name="eff1">
-                    <geometry ref="Space 1"/>
+                    <geometry ref="Space-1"/>
                     <mesh ref="lin"/>
                     <mode polarization="TM"/>
                     <root tolx="0.1"/>
                 </optical>
                 <optical lib="effective" solver="EffectiveIndex2D" name="eff2">
-                    <geometry ref="Space 1"/>
+                    <geometry ref="Space-1"/>
                     <mesh ref="div"/>
                 </optical>
             </solvers>

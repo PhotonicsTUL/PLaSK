@@ -89,7 +89,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
             if (hasAnyFlag(CHILDREN_INSERT | CHILDREN_REMOVE | CHILDREN_GENERIC)) result |= CHILDREN_GENERIC;
             return result;
         }
-        
+
         /**
          * Check if given @p flag is set.
          * @param flag flag to check
@@ -134,23 +134,23 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         explicit Event(GeometryElement& source, unsigned char flags = 0): EventWithSourceAndFlags<GeometryElement>(source, flags) {}
     };
-    
+
     /**
      * Event class for events types: CHILDREN_INSERT and CHILDREN_REMOVE.
-     * 
+     *
      * Provides extra information about changes: first and last index.
      */
     struct ChildrenListChangedEvent: public Event {
-        
+
         ChildrenListChangedEvent(GeometryElement& source, unsigned char flags, const std::size_t beginIndex, const std::size_t endIndex)
             : Event(source, flags), beginIndex(beginIndex), endIndex(endIndex) {}
-        
+
         /// Index of first child which was changed.
         const std::size_t beginIndex;
-        
+
         /// Index of last children which was changed incremented by 1.
         const std::size_t endIndex;
-        
+
     };
 
     /**
@@ -365,50 +365,50 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         PredicateIsA(const shared_ptr<const GeometryElement>& elementToBeEqual): elementToBeEqual(*elementToBeEqual) {}
         bool operator()(const GeometryElement& el) const { return &el == &elementToBeEqual; }
     };
-    
+
     /**
      * Base class for callbacks used by save() method to get names of elements and paths.
      *
      * Default implementation just returns empty names and list of names.
-     * It is enaught to save geometry tree without any names or with all names auto-generated (see @ref prerareToAutonaming).
+     * It is enought to save geometry tree without any names or with all names auto-generated (see @ref prerareToAutonaming).
      *
      * Example (save vector of elements to dest XML in "geometry" section):
      * @code
-     * //std::vector<const plask::GeomtryElement*> to_save; //root of trees to save
-     * //XMLWriter dest;               //destination, output XML
-     * WriteXMLCallback namer;         //or subclass of WriteXMLCallback
-     * //this is required only if elments should have auto-generated names:
+     * // std::vector<const plask::GeomtryElement*> to_save; //root of trees to save
+     * // XMLWriter dest;               // destination, output XML
+     * WriteXMLCallback namer;          // or subclass of WriteXMLCallback
+     * // this is required only if elments should have auto-generated names:
      * for (auto e: to_save) namer.prerareToAutonaming(*e);
-     * //writting:
-     * XMLWriter::Element geom_section(dest, "geometry");   //section tag
-     * for (auto e: to_save)                                //all roots
-     *  e->writeXML(geom_section, namer);
+     * // writting:
+     * XMLWriter::Element geom_section(dest, "geometry");   // section tag
+     * for (auto e: to_save)                                // all roots
+     *   e->writeXML(geom_section, namer);
      * @endcode
      */
     class WriteXMLCallback {
-        
+
         /**
          * Names of already saved elements.
          *
          * Used to contruct \<ref ...> tags.
          */
         std::map<const GeometryElement*, std::string> names_of_saved;
-        
+
         std::map<const GeometryElement*, unsigned> counts;   ///< allow to count elements (used by auto-naming)
 
         unsigned nextAutoName;
-        
+
         public:
 
         WriteXMLCallback(): nextAutoName(0) {}
-        
+
         /**
          * Calling of this method allows for automatic name generation when saving some subtrees using this.
          *
          * This method must be called exactly once for root of each subtree which will be write to XML before any writes.
          */
         void prerareToAutonaming(const GeometryElement& subtree_root);
-        
+
         /**
          * Get name of given @p element.
          * @param[in] element
@@ -416,7 +416,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @return name of @p element or empty string if @p element has no name
          */
         virtual std::string getName(const GeometryElement& element, AxisNames& axesNames) const;
-        
+
         /**
          * Get names of path fragment from @p parent to @p child.
          * @param[in] parent container which includes @p child
@@ -425,7 +425,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @return names of path fragment from @p parent to @p child (can be empty)
          */
         virtual std::vector<std::string> getPathNames(const GeometryElement& parent, const GeometryElement& child, std::size_t index_of_child_in_parent) const;
-        
+
         /**
          * Append to XML tag, with optional name (obtain by getName), and axes attribiute.
          *
@@ -438,16 +438,16 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * @return opened XML tag ready to add extra atribiutes of @p element or reference tag.
          */
         XMLWriter::Element makeTag(XMLElement& parent_tag, const GeometryElement& element, AxisNames& axesNames);
-        
+
         XMLElement makeChildTag(XMLElement& container_tag, const GeometryElement& container, std::size_t index_of_child_in_parent) const;
-        
+
         /**
          * Check if given XML element represents a reference to another geometry element.
          * @param el XML element
          * @return @c true only if @p el represents a reference
          */
         static bool isRef(const XMLElement& el) { return el.getName() == "ref"; }
-        
+
     };
 
     /// Changed signal, fired when element was changed.
@@ -510,7 +510,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * Virtual destructor. Inform all change listeners.
      */
     virtual ~GeometryElement();
-    
+
     /**
      * Get name of element type (like: "block2d", "shelf", "stack3d", etc.).
      *
@@ -518,7 +518,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @return name of element type
      */
     virtual std::string getTypeName() const = 0;
-    
+
     /**
      * Write geometry tree branch rooted by this to XML.
      *
@@ -529,7 +529,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      * @param parent_axes names of axes (typically used by parent of this)
      */
     virtual void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames parent_axes) const;
-    
+
     /**
      * Write geometry tree branch rooted by this to XML.
      *
@@ -540,7 +540,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
     void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb) const {
         writeXML(parent_xml_element, write_cb, AxisNames::getAbsoluteNames());
     }
-    
+
     /**
      * Write geometry tree branch rooted by this to XML.
      *
@@ -551,8 +551,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         WriteXMLCallback write_cb;
         writeXML(parent_xml_element, write_cb, AxisNames::getAbsoluteNames());
     }
-    
-    
+
+
     /**
      * Cast this to GeometryElementD<DIMS>.
      * @return this casted to GeometryElementD<DIMS> or nullptr if casting is not possible.
@@ -810,7 +810,7 @@ protected:
      * @param axes choosen name of axes
      */
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
-    
+
     /**
      * Check if given @p index is valid child index and throw exception of it is not.
      * @param child_nr index to check
@@ -828,11 +828,11 @@ protected:
     void fireChildrenChanged() {
         this->fireChanged(GeometryElement::Event::RESIZE | GeometryElement::Event::CHILDREN_GENERIC);
     }
-    
+
     void fireChildrenRemoved(std::size_t beginIndex, std::size_t endIndex) {
         this->fireChanged<ChildrenListChangedEvent>(GeometryElement::Event::RESIZE | GeometryElement::Event::CHILDREN_REMOVE, beginIndex, endIndex);
     }
-    
+
     void fireChildrenInserted(std::size_t beginIndex, std::size_t endIndex) {
         this->fireChanged<ChildrenListChangedEvent>(GeometryElement::Event::RESIZE | GeometryElement::Event::CHILDREN_INSERT, beginIndex, endIndex);
     }

@@ -184,7 +184,7 @@ public:
     const QString& getNameQt() const {
         return name;
     }
-    
+
     std::string getName() const {
         return name.toStdString();
     }

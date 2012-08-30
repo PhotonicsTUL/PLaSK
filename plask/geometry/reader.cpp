@@ -51,7 +51,7 @@ shared_ptr<GeometryElement> GeometryReader::readElement() {
 
     boost::optional<std::string> name = source.getAttribute("name");    //read name
     if (name && !isAutoName(*name))
-        BadId::throwIfBad("geometry element", *name, ' ');
+        BadId::throwIfBad("geometry element", *name, '-');
 
     shared_ptr<GeometryElement> new_element;    //new element will be constructed
 
@@ -119,7 +119,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     std::string nodeName = source.getNodeName();
     boost::optional<std::string> name = source.getAttribute("name");
-    if (name) BadId::throwIfBad("geometry", *name, ' ');
+    if (name) BadId::throwIfBad("geometry", *name, '-');
 //    std::string src = source.requireAttribute("over");
     // TODO read subspaces from XML
     shared_ptr<Geometry> result;

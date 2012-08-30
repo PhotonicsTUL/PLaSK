@@ -44,7 +44,7 @@ struct GeometryElementContainer: public GeometryElementD<dim> {
 
 protected:
     TranslationVector children;
-    
+
     /**
      * Add attributes to child tag.
      *
@@ -56,7 +56,7 @@ protected:
     virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
 public:
-    
+
     /**
      * Call writeXMLAttr for this container attribute and writeXMLChildAttr for each child tag.
      * @param parent_xml_element
@@ -64,7 +64,7 @@ public:
      * @param axes
      */
     virtual void writeXML(XMLWriter::Element& parent_xml_element, GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const;
-    
+
     // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
 
     /// Disconnect onChildChanged from current child change signal
@@ -277,11 +277,11 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
 
     using GeometryElementContainer<dim>::children;
     using GeometryElementContainer<dim>::shared_from_this;
-    
+
     static constexpr const char* NAME = dim == 2 ?
                 ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    
+
     virtual std::string getTypeName() const { return NAME; }
 
     /**
@@ -310,7 +310,7 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, translation);
     }
-    
+
     virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
 };
@@ -342,7 +342,7 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
                     if (paths_str) {
                         auto paths = splitEscIterator(*paths_str, ',');
                         for (auto& path: paths) {
-                            BadId::throwIfBad("path", path, ' ');
+                            BadId::throwIfBad("path", path, '-');
                             reader.manager.pathHints[path].addHint(hint);
                         }
                     }

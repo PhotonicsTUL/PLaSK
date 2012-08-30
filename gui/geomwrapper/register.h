@@ -14,9 +14,9 @@ plask::shared_ptr<ElementWrapper> ext(const plask::GeometryElement& el);
 
 /// Implementation of plask::GeometryElement::WriteXMLCallback which read all data from elements extensions
 struct NamesFromExtensions: public plask::GeometryElement::WriteXMLCallback {
-    
+
     std::string getName(const plask::GeometryElement &element, plask::AxisNames &axesNames) const;
-    
+
     std::vector<std::string> getPathNames(const plask::GeometryElement &parent, const plask::GeometryElement &child, std::size_t index_of_child_in_parent) const;
 };
 

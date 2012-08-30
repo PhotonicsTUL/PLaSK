@@ -13,10 +13,10 @@ class Manager(unittest.TestCase):
         self.manager.read('''
         <plask>
             <geometry>
-                <cartesian2d name="Space 1" axes="xy">
-                    <stack name="Stack 2">
-                        <child path="Path 4"><rectangle name="Block 3" x="5" y="2" material="GaN" /></child>
-                        <ref name="Block 3"/>
+                <cartesian2d name="Space-1" axes="xy">
+                    <stack name="Stack-2">
+                        <child path="Path-4"><rectangle name="Block-3" x="5" y="2" material="GaN" /></child>
+                        <ref name="Block-3"/>
                     </stack>
                 </cartesian2d>
             </geometry>
@@ -38,8 +38,8 @@ class Manager(unittest.TestCase):
                     <postdiv hor_by="2"/>
                     <warnings multiple="no"/>
                     <refinements>
-                        <vertical element="Block 3" path="Path 4" pos="1.0"/>
-                        <horizontal element="Block 3" pos="1.0"/>
+                        <vertical element="Block-3" path="Path-4" pos="1.0"/>
+                        <horizontal element="Block-3" pos="1.0"/>
                     </refinements>
                 </generator>
             </grids>
@@ -48,19 +48,19 @@ class Manager(unittest.TestCase):
 
     def testGeometry(self):
         self.assertEqual( len(self.manager.elements), 2 )
-        self.assertEqual( type(self.manager.elements["Block 3"]), plask.geometry.Block2D )
-        self.assertEqual( list(self.manager.elements["Stack 2"].getLeafsBBoxes()),
+        self.assertEqual( type(self.manager.elements["Block-3"]), plask.geometry.Block2D )
+        self.assertEqual( list(self.manager.elements["Stack-2"].getLeafsBBoxes()),
             [plask.geometry.Box2D(0,0,5,2), plask.geometry.Box2D(0,2,5,4)] )
         self.assertEqual( type(self.manager.geometries.Space_1), plask.geometry.Cartesian2D )
         self.assertEqual( len(self.manager.pth), 1 )
         with self.assertRaises(KeyError): self.manager.elements["nonexistent"]
 
     def testDictionaries(self):
-        self.assertEqual( list(self.manager.ele), ["Block 3", "Stack 2"] )
+        self.assertEqual( list(self.manager.ele), ["Block-3", "Stack-2"] )
 
     def testExport(self):
         self.manager.export(globals())
-        self.assertIn( "Space 1", GEO )
+        self.assertIn( "Space-1", GEO )
         self.assertEqual( type(GEO.Space_1), plask.geometry.Cartesian2D )
 
     def testMesh(self):
@@ -85,10 +85,10 @@ class Manager(unittest.TestCase):
             manager.read('''
             <plask>
                 <geometry>
-                    <cartesian2d name="Space 1" axes="xy">
-                        <stack name="Stack 2">
-                            <child path="Path 4"><rectangle name="Block 3" x="5" y="2" material="GaN" /></child>
-                            <ref name="Block 3"/>
+                    <cartesian2d name="Space-1" axes="xy">
+                        <stack name="Stack-2">
+                            <child path="Path-4"><rectangle name="Block-3" x="5" y="2" material="GaN" /></child>
+                            <ref name="Block-3"/>
                     </cartesian2d>
                 </geometry>
             </plask>
@@ -128,7 +128,7 @@ class Manager(unittest.TestCase):
             manager.read('''
             <plask>
                 <geometry>
-                    <cartesian2d name="Space 2" axes="xy">
+                    <cartesian2d name="Space-2" axes="xy">
                         <rectangle x="5" y="2" material="GaN" />
                     </cartesian2d>
             </plask>

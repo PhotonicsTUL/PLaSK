@@ -207,7 +207,7 @@ static py::list dict_items(const std::map<std::string,T>& self) {
 template <typename T>
 static py::object dict__getattr__(const std::map<std::string,T>& self, const std::string& attr) {
     std::string key = attr;
-    std::replace(key.begin(), key.end(), '_', ' ');
+    std::replace(key.begin(), key.end(), '_', '-');
     auto found = self.find(key);
     if (found == self.end()) {
         throw AttributeError("No " + item_name<T>() + " with id '%1%'", attr);
@@ -218,7 +218,7 @@ static py::object dict__getattr__(const std::map<std::string,T>& self, const std
 template <typename T>
 static void dict__setattr__(std::map<std::string,T>& self, const std::string& attr, const T& value) {
     std::string key = attr;
-    std::replace(key.begin(), key.end(), '_', ' ');
+    std::replace(key.begin(), key.end(), '_', '-');
     self[key] = value;
 }
 
@@ -253,7 +253,7 @@ namespace detail {
                 boost::python::throw_error_already_set();
             }
             std::string key = (i++)->first;
-            if (is_attr) std::replace(key.begin(), key.end(), '_', ' ');
+            if (is_attr) std::replace(key.begin(), key.end(), '_', '-');
             return key;
         }
     };

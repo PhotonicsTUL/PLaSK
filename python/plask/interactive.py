@@ -94,7 +94,7 @@ def _init_python_session(argv=[]):
 
                     atexit.register(readline.write_history_file, history)
 
-    console =  PythonConsole()
+    console = PythonConsole()
 
     for line in preexec_lines:
         console.runsource(line)
