@@ -72,7 +72,7 @@ material.complex = lambda mat, **kwargs: material.register_material(mat, complex
 def read(source, destination=None):
     if destination is None:
         try:
-            destination = _globals_
+            destination = __globals
         except NameError:
             import __main__
             destination = __main__.__dict__

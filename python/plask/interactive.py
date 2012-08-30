@@ -43,7 +43,7 @@ preexec_lines = [
 'from __future__ import division',
 'from numpy import *',
 'import plask',
-'plask._globals_ = globals()'
+'plask.__globals = globals()'
 ]
 
 no_ipython = """\
@@ -62,7 +62,7 @@ def _init_ipython_session(argv=[]):
     app.display_banner = False
     app.exec_lines = preexec_lines
     app.initialize(argv)
-    return app.shell
+    return app
 
 def _init_python_session(argv=[]):
     """Construct new Python session. """
@@ -110,7 +110,7 @@ def interact(ipython=None, argv=[]):
     """Initialize an embedded IPython or Python session. """
     import sys
     sys.argv = argv
-    global preexec_lines
+    global preexec_lines, banner
 
     if _import_all_:
         preexec_lines.append('from plask import *')
@@ -148,10 +148,15 @@ def interact(ipython=None, argv=[]):
                 if not ip:
                     raise RuntimeError("Cannot initialize IPython shell")
 
-            mainloop = ip.mainloop
+            try:
+                if ip.shell is None: raise AttributeError
+            except AttributeError:
+                mainloop = ip.start
+            else:
+                mainloop = lambda: ip.shell.mainloop(banner)
 
     if not in_ipython:
-        mainloop(banner)
+        mainloop()
         sys.exit('PLaSK exiting...')
     else:
         ip.write(banner)
