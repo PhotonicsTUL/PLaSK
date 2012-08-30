@@ -1,0 +1,151 @@
+﻿start = element plask {
+	materials?,
+	geometry?,
+	grids?,
+	solvers?,
+	connects?,
+	script?
+}
+
+
+# ------------ materials section -------------------
+
+materials = element materials {
+(
+	include_attr |
+	element material {
+		attribute name { text },
+		(attribute base { text } | attribute kind { text }),
+		element (lattC|Eg|CBO|VBO|Dso|Mso|Me|Me_v|Me_l|Mhh|Mhh_v|Mhh_l|Mlh|Mlh_v|Mlh_l|Mh|Mh_v|Mh_l|eps|chi|Nc|Ni|Nf|EactD|EactA|mob|cond|cond_v|cond_l|res|res_v|res_l|A|B|C|D|condT|condT_v|condT_l|dens|specHeat|nr|absp|Nr|Nr_tensor) { text }*
+	}*
+)
+}
+
+
+# ------------ geometry section -------------------
+
+geometry = element geometry {
+(
+include_attr |
+	(
+	element cartesian2d {
+		name_attr?,
+		(  (length_attr?, geometry_element2d) | extrusion  )
+	} |
+	element (cylindrical|cylindrical2d) { name_attr?, geometry_element2d } |
+	element cartesian3d { name_attr?, geometry_element3d }
+	)*
+)
+}
+
+geom_elem_common.attlist = name_attr?, attribute axes { text }?	#TODO enumerate values
+geom_child_common.attlist = attribute path { text }?
+length_attr = attribute length { xsd:double }
+anyAxes_double_attr = attribute (x|y|z|p|r|lon|tran|up) { xsd:double }
+tranAxes_text_attr = attribute (y|x|r|tran) { text }
+lonTranAxes_text_attr = attribute (y|x|r|tran|z|p|lon) { text }
+material_attr = attribute material { text }
+
+extrusion = element extrusion { geom_elem_common.attlist, length_attr, geometry_element2d }
+revolution = element revolution { geom_elem_common.attlist, geometry_element2d }
+
+block.attlist = geom_elem_common.attlist, material_attr, anyAxes_double_attr*
+block2d = element (block2d|rectangle) { block.attlist }
+block_as_2d = element (block|block2d|rectangle) { block.attlist }
+block3d = element (block3d|cuboid) { block.attlist }
+block_as_3d = element (block|block3d|cuboid) { block.attlist }
+
+translation.attlist = geom_elem_common.attlist, anyAxes_double_attr*
+translation2d.content = translation.attlist, geometry_element2d
+translation2d = element translation2d { translation2d.content }
+translation_as_2d = element (translation|translation2d) { translation2d.content }
+translation3d.content = translation.attlist, geometry_element3d
+translation3d = element translation3d { translation3d.content }
+translation_as_3d = element (translation|translation3d) { translation3d.content }
+
+container2d.content = geom_elem_common.attlist,
+	(   element child { geom_child_common.attlist, anyAxes_double_attr*, geometry_element2d } | geometry_element2d   )*
+container2d = element (container2d) { container2d.content }
+container_as_2d = element (container|container2d) { container2d.content }
+container3d.content = geom_elem_common.attlist,
+	(   element child { geom_child_common.attlist, anyAxes_double_attr*, geometry_element3d } | geometry_element3d   )*
+container3d = element (container3d) { container3d.content }
+container_as_3d = element (container|container3d) { container3d.content }
+
+geom_anystack_common.attlist = geom_elem_common.attlist, attribute from { xsd:double }?
+
+geom_stack_common.attlist = geom_anystack_common.attlist, attribute repeat { xsd:integer }?
+stack2d.content = geom_stack_common.attlist,
+	(   element child {geom_child_common.attlist, tranAxes_text_attr?, geometry_element2d} | geometry_element2d   )
+stack2d = element (stack2d) { stack2d.content }
+stack_as_2d = element (stack|stack2d) { stack2d.content }
+stack3d.content = geom_stack_common.attlist,
+	(   element child {geom_child_common.attlist, lonTranAxes_text_attr?, geometry_element3d} | geometry_element3d   )
+stack3d = element (stack3d) { stack3d.content }
+stack_as_3d = element (stack|stack3d) { stack3d.content }
+
+shelf = element (shelf|shelf2d) { geom_anystack_common.attlist, attribute flat { xsd:boolean }?,
+	(   element child {geom_child_common.attlist, geometry_element2d} | geometry_element2d   )
+}
+
+geometry_element2d = (block_as_2d|translation_as_2d|container_as_2d|stack_as_2d|shelf)
+geometry_element3d = (block_as_3d|translation_as_3d|container_as_3d|stack_as_3d|extrusion|revolution)
+geometry_element = (block2d|block3d|translation2d|translation3d|container2d|container3d|stack2d|stack3d|shelf|extrusion|revolution)	#unused now
+
+
+# ------------ grids section -------------------
+
+grids = element grids {
+(
+	include_attr | (generator | mesh)*
+)
+}
+
+generator = element generator {
+	name_attr, type_attr, anyAttribute*, anyElement*
+	
+}
+
+mesh = element mesh {
+	name_attr, type_attr, anyAttribute*, anyElement*
+}
+
+
+# ------------ solvers section -------------------
+
+solvers = element solvers {
+(
+	include_attr |
+	element * {
+		name_attr, attribute solver { text }, attribute lib { text }?, anyAttribute, anyElement
+	}
+)
+}
+
+
+# ------------ connects section -------------------
+
+connects = element connects {
+(
+	include_attr |
+	element connect { attribute in {text}, attribute out {text} }*
+)
+}
+
+
+# ------------ script section -------------------
+
+script = element script { (include_attr | text) }
+
+
+# ------------ utils, commons -------------------
+
+anyElement = element * {
+	(anyAttribute | text | anyElement)*
+}
+
+anyAttribute = attribute * { text }
+
+name_attr = attribute name { text }
+type_attr = attribute type { text }
+include_attr = attribute from { text }

@@ -148,7 +148,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
         static_pointer_cast<Geometry2DCylindrical>(result)->
             setRevolution(make_shared<Revolution>(readExactlyOneChild<GeometryElementD<2>>()));
-    } else if (nodeName == "3d" || nodeName == "cartesian3d") {
+    } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
         result = make_shared<Geometry3D>();
         result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
