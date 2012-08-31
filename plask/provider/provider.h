@@ -346,10 +346,10 @@ struct Receiver: public Provider::Receiver {
      */
     template<typename ...Args> auto
     optional(Args&&... params) -> boost::optional<decltype((*provider)(std::forward<Args>(params)...))> {
-        if (hasProvider())
+        try {
             return boost::optional<decltype((*provider)(std::forward<Args>(params)...))>(this->operator()(std::forward<Args>(params)...));
-        else {
-            changed = false;
+        } catch (std::exception&) {
+            changed = false; // unless anything changes, next call to optional will return the same
             return boost::optional<decltype((*provider)(std::forward<Args>(params)...))>();
         }
     }
