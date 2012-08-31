@@ -41,9 +41,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Computed horizontal fields
     std::vector<Eigen::Vector2cd> fieldR, fieldZ;
 
-    /// Field confinement weights in stripes
-    std::vector<double> fieldWeights;
-
     /// Did we computed veffs?
     bool have_veffs;
 
@@ -64,6 +61,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Old value of k0 to detect changes
     dcomplex old_k0;
+
+    /// Stored vertical propagation constants for field calculations
+    std::vector<dcomplex> betaz;
 
   public:
 
@@ -223,9 +223,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
   private:
     template <typename MeshT>
-    bool getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& result,
-                                     const std::vector<dcomplex>& betax, const std::vector<dcomplex>& betay);
-
+    bool getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, plask::DataVector<double>& results, plask::dcomplex v);
 };
 
 

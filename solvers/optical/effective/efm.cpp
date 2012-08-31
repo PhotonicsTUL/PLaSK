@@ -100,10 +100,10 @@ void EffectiveFrequencyCylSolver::onInitialize()
     if (!mesh) setSimpleMesh();
 
     // Assign space for refractive indices cache and stripe effective indices
-    nrCache.assign(mesh->tran().size(), std::vector<dcomplex>(mesh->up().size()+1));
-    ngCache.assign(mesh->tran().size(), std::vector<dcomplex>(mesh->up().size()+1));
-    veffs.resize(mesh->tran().size());
-    nng.resize(mesh->tran().size());
+    nrCache.assign(mesh->axis0.size(), std::vector<dcomplex>(mesh->axis1.size()+1));
+    ngCache.assign(mesh->axis0.size(), std::vector<dcomplex>(mesh->axis1.size()+1));
+    veffs.resize(mesh->axis0.size());
+    nng.resize(mesh->axis0.size());
 }
 
 
@@ -129,8 +129,8 @@ void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
     }
     if (abs(mesh->axis0[0]) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
-    size_t rsize = mesh->tran().size();
-    size_t zsize = mesh->up().size() + 1;
+    size_t rsize = mesh->axis0.size();
+    size_t zsize = mesh->axis1.size() + 1;
 
     if (fresh || inTemperature.changed || inGain.changed || inGainSlope.changed || l != old_l) { // We need to update something
 
@@ -225,13 +225,13 @@ void EffectiveFrequencyCylSolver::stageOne()
 }
 
 
-dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& x, const std::vector<dcomplex>& NR, const std::vector<dcomplex>& NG)
+dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector<dcomplex>& NR, const std::vector<dcomplex>& NG)
 {
     size_t N = NR.size();
 
     std::vector<dcomplex> beta(N);
     for (size_t i = 0; i < N; ++i) {
-        beta[i] = k0 * sqrt(NR[i]*NR[i] - x * NR[i]*NG[i]);
+        beta[i] = k0 * sqrt(NR[i]*NR[i] - v * NR[i]*NG[i]);
         if (real(beta[i]) < 0.) beta[i] = -beta[i];  // TODO verify this condition; in general it should consider really outgoing waves
     }
 
@@ -263,7 +263,7 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
     dcomplex veff = veffs[stripe];
 
     nng[stripe] = 0.;
-    double sum = 0.;
+    dcomplex sum = 0.;
 
     std::vector<dcomplex> beta(N);
     for (size_t i = 0; i < N; ++i) {
@@ -287,7 +287,8 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;
         E = P * E;
-        double f = real(E[0] * conj(E[0])) + real(E[1] * conj(E[1]));
+        // double f = real(E[0]*conj(E[0])) + real(E[1]*conj(E[1]));
+        dcomplex f = E[0]*E[0] + E[1]*E[1];
         nng[stripe] += f * nrCache[stripe][i] * ngCache[stripe][i];
         sum += f;
         E = fresnel(i) * E;
@@ -340,207 +341,151 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
     // In the innermost area there must not be any infinity, so Y = 0.
     E << 1., 0.;
 
-    for (size_t i = 1; i < veffs.size(); ++i) {
+    for (size_t i = veffs.size()-1; i > 0; --i) {
         E = getMatrix(v, i) * E;
     }
 
-    // In the outmost layer, there is only an outgoing wave, so the solution is a Hankel function.
+    // In the outmost layer, there is only an outgoing wave, so the solution is a Hankel function H = J + iY.
     // So E = a J + b Y = a H = a (J + iY). Then a + ib = 0.
-    return E[0] + I*E[1];
+    return E[0] + I * E[1];
 }
 
 
 
 const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const MeshD<2>& dst_mesh, InterpolationMethod)
 {
-//     if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
-//
-//     dcomplex lambda = outNeff();
-//
-//     writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(lambda));
-//
-//     size_t Nx = mesh->tran().size()+1;
-//     std::vector<dcomplex> betax(Nx);
-//     for (size_t i = 0; i < Nx; ++i) {
-//         betax[i] = k0 * sqrt(veffs[i]*veffs[i] - lambda*lambda);
-//         if (imag(betax[i]) > 0.) betax[i] = -betax[i];
-//     }
-//     if (!have_fields) {
-//         auto fresnelX = [&](size_t i) -> Matrix2cd {
-//             dcomplex f =  (polarization==TE)? veffs[i]/veffs[i+1] :  1.;
-//             dcomplex n = 0.5 * betax[i+1]/betax[i] * f*f;
-//             Matrix2cd M; M << (0.5+n), (0.5-n),
-//                             (0.5-n), (0.5+n);
-//             return M;
-//         };
-//         fieldR.resize(Nx);
-//         fieldR[Nx-1] << 1., 0;
-//         fieldWeights.resize(Nx);
-//         fieldWeights[Nx-1] = 0.;
-//         for (ptrdiff_t i = Nx-2; i >= 0; --i) {
-//             fieldR[i].noalias() = fresnelX(i) * fieldR[i+1];
-//             double d = (symmetry == NO_SYMMETRY)? mesh->tran()[i] - mesh->tran()[max(int(i)-1, 0)] :
-//                        (i == 0)? mesh->tran()[0] : mesh->tran()[i] - mesh->tran()[i-1];
-//             dcomplex b = betax[i];
-//             dcomplex phas = exp(- I * b * d);
-//             DiagonalMatrix<dcomplex, 2> P;
-//             P.diagonal() << 1./phas, phas;  // we propagate backward
-//             fieldR[i] = P * fieldR[i];
-//             // Compute density of the field is stored in the i-th layer
-//             dcomplex w_ff, w_bb, w_fb, w_bf;
-//             if (d != 0.) {
-//                 if (imag(b) != 0) { dcomplex bb = b - conj(b);
-//                     w_ff = (exp(-I*d*bb) - 1.) / bb;
-//                     w_bb = (exp(+I*d*bb) - 1.) / bb;
-//                 } else w_ff = w_bb = dcomplex(0., -d);
-//                 if (real(b) != 0) { dcomplex bb = b + conj(b);
-//                     w_fb = (exp(-I*d*bb) - 1.) / bb;
-//                     w_bf = (exp(+I*d*bb) - 1.) / bb;
-//                 } else w_ff = w_bb = dcomplex(0., -d);
-//                 fieldWeights[i] = -imag(  fieldR[i][0] * conj(fieldR[i][0]) * w_ff
-//                                         - fieldR[i][1] * conj(fieldR[i][1]) * w_bb
-//                                         + fieldR[i][0] * conj(fieldR[i][1]) * w_fb
-//                                         - fieldR[i][1] * conj(fieldR[i][0]) * w_bb);
-//             } else {
-//                 fieldWeights[i] = 0.;
-//             }
-//         }
-//         double sumw = 0; for (const double& w: fieldWeights) sumw += w;
-//         double factor = 1./sumw; for (double& w: fieldWeights) w *= factor;
-//         std::stringstream weightss; for (size_t i = xbegin; i < Nx; ++i) weightss << ", " << str(fieldWeights[i]);
-//         writelog(LOG_DEBUG, "field confinement in stripes = [%1% ]", weightss.str().substr(1));
-//     }
-//
-//     size_t Ny = mesh->up().size()+1;
-//     size_t mid_x = std::max_element(fieldWeights.begin(), fieldWeights.end()) - fieldWeights.begin();
-//     // double max_val = 0.;
-//     // for (size_t i = 1; i != Nx; ++i) { // Find stripe with maximum weight that has non-constant refractive indices
-//     //     if (fieldWeights[i] > max_val) {
-//     //         dcomplex same_val = nrCache[i].front(); bool all_the_same = true;
-//     //         for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
-//     //         if (!all_the_same) {
-//     //             max_val = fieldWeights[i];
-//     //             mid_x = i;
-//     //         }
-//     //     }
-//     // }
-//     writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", mid_x-xbegin);
-//     std::vector<dcomplex> betay(Ny);
-//     bool all_the_same = true; dcomplex same_n = nrCache[mid_x][0];
-//     for (const dcomplex& n: nrCache[mid_x]) if (n != same_n) { all_the_same = false; break; }
-//     if (all_the_same) {
-//         betay.assign(Ny, 0.);
-//     } else {
-//         for (size_t i = 0; i < Ny; ++i) {
-//             betay[i] = k0 * sqrt(nrCache[mid_x][i]*nrCache[mid_x][i] - veffs[mid_x]*veffs[mid_x]);
-//             if (imag(betay[i]) > 0.) betay[i] = -betay[i];
-//         }
-//     }
-//     if (!have_fields) {
-//         if (all_the_same) {
-//             fieldZ.assign(Ny, 0.5 * Vector2cd::Ones(2));
-//         } else {
-//             auto fresnelY = [&](size_t i) -> Matrix2cd {
-//                 dcomplex f =  (polarization==TM)? nrCache[mid_x][i]/nrCache[mid_x][i+1] :  1.;
-//                 dcomplex n = 0.5 * betay[i+1]/betay[i] * f*f;
-//                 Matrix2cd M; M << (0.5+n), (0.5-n),
-//                                 (0.5-n), (0.5+n);
-//                 return M;
-//             };
-//             fieldZ.resize(Ny);
-//             fieldZ[Ny-1] << 1., 0;
-//             for (ptrdiff_t i = Ny-2; i >= 0; --i) {
-//                 fieldZ[i].noalias() = fresnelY(i) * fieldZ[i+1];
-//                 double d = mesh->up()[i] - mesh->up()[max(int(i)-1, 0)];
-//                 dcomplex phas = exp(- I * betay[i] * d);
-//                 DiagonalMatrix<dcomplex, 2> P;
-//                 P.diagonal() << 1./phas, phas;  // we propagate backward
-//                 fieldZ[i] = P * fieldZ[i];
-//             }
-//         }
-//     }
-//
-//     DataVector<double> results(dst_mesh.size());
-//     size_t idx = 0;
-//
-//     if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, betax, betay) &&
-//         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, betax, betay)) {
-//
-//         for (auto point: dst_mesh) {
-//             double x = point.tran;
-//             double y = point.up;
-//
-//             bool negate = false;
-//             if (x < 0. && symmetry != NO_SYMMETRY) {
-//                 x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
-//             }
-//             size_t ix = mesh->tran().findIndex(x);
-//             if (ix != 0) x -= mesh->tran()[ix-1];
-//             else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
-//             dcomplex phasx = exp(- I * betax[ix] * x);
-//             dcomplex val = fieldR[ix][0] * phasx + fieldR[ix][1] / phasx;
-//             if (negate) val = - val;
-//
-//             size_t iy = mesh->up().findIndex(y);
-//             y -= mesh->up()[max(int(iy)-1, 0)];
-//             dcomplex phasy = exp(- I * betay[iy] * y);
-//             val *= fieldZ[iy][0] * phasy + fieldZ[iy][1] / phasy;
-//
-//             results[idx++] = real(abs2(val));
-//         }
-//
-//     }
-//
-//     // Normalize results to make maximum value equal to one
-//     double factor = 1. / *std::max_element(results.begin(), results.end());
-//     for (double& val: results) val *= factor;
-//
-//     return results;
+    if (!outWavelength.hasValue() || k0 != old_k0 || l != old_l) throw NoValue(OpticalIntensity::NAME);
+    dcomplex v = 2. * (k0 - 2e3*M_PI/outWavelength()) / k0;
+
+    if (!have_fields) {
+        fieldR.resize(mesh->axis0.size());
+        fieldR[0] << 1., 0;
+
+        writelog(LOG_INFO, "Computing field distribution for wavelength = %1%", str(outWavelength()));
+
+        // Compute horizontal part
+        for (size_t i = 1; i < mesh->axis0.size(); ++i) {
+                fieldR[i].noalias() = getMatrix(v, i) * fieldR[i-1];
+        }
+
+        size_t stripe = 0;
+        // Look for the innermost stripe with not constant refractive index
+        bool all_the_same = true;
+        while (all_the_same) {
+            dcomplex same_nr = nrCache[stripe].front();
+            dcomplex same_ng = ngCache[stripe].front();
+            for (auto nr = nrCache[stripe].begin(), ng = ngCache[stripe].begin(); nr != nrCache[stripe].end(); ++nr, ++ng)
+                if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
+            if (all_the_same) ++ stripe;
+        }
+        writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
+
+        // Compute vertical part
+        std::vector<dcomplex>& NR = nrCache[stripe];
+        std::vector<dcomplex>& NG = ngCache[stripe];
+        betaz.resize(NR.size());
+        for (size_t i = 0; i < NR.size(); ++i) {
+            betaz[i] = k0 * sqrt(NR[i]*NR[i] - v * NR[i]*NG[i]);
+            if (real(betaz[i]) < 0.) betaz[i] = -betaz[i];  // TODO verify this condition; in general it should consider really outgoing waves
+        }
+        auto fresnel = [&](size_t i) -> Matrix2cd {
+            dcomplex n = 0.5 * betaz[i]/betaz[i+1];
+            Matrix2cd M; M << (0.5+n), (0.5-n),
+                              (0.5-n), (0.5+n);
+            return M;
+        };
+        fieldZ.resize(NR.size());
+        fieldZ[0] << 0., 1.;
+        fieldZ[1].noalias() = fresnel(0) * fieldZ[0];
+        for (size_t i = 1; i < NR.size()-1; ++i) {
+            double d = mesh->axis1[i] - mesh->axis1[i-1];
+            dcomplex phas = exp(-I * betaz[i] * d);
+            DiagonalMatrix<dcomplex, 2> P;
+            P.diagonal() << phas, 1./phas;
+            fieldZ[i] = P * fieldZ[i];
+            fieldZ[i+1].noalias() = fresnel(i) * fieldZ[i];
+        }
+    }
+
+    DataVector<double> results(dst_mesh.size());
+    size_t id = 0;
+
+    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, v) &&
+        !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, v)) {
+
+        int ln;
+        dcomplex Js[l+1], Ys[l+1], dJs[l+1], dYs[l+1];
+
+        for (auto point: dst_mesh) {
+            double r = point.c0;
+            double z = point.c1;
+            if (r < 0) r = -r;
+
+            size_t ir = mesh->axis0.findIndex(r);
+            dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
+            if (real(x) < 0.) x = -x;
+            if (bessel::cbessjyna(l, x ,ln, Js, Ys, dJs, dYs) || ln != l)
+                throw ComputationError(getId(), "Could not compute Bessel functions");
+            dcomplex val = fieldR[ir][0] * Js[l] + fieldR[ir][1] * Ys[l];
+            size_t iy = mesh->axis1.findIndex(z);
+            z -= mesh->axis1[max(int(iy)-1, 0)];
+            dcomplex phasy = exp(- I * betaz[iy] * z);
+            val *= fieldZ[iy][0] * phasy + fieldZ[iy][1] / phasy;
+
+            results[id++] = real(abs2(val));
+        }
+
+    }
+
+    // Normalize results to make maximum value equal to one
+    double factor = 1. / *std::max_element(results.begin(), results.end());
+    for (double& val: results) val *= factor;
+
+    return results;
 }
 
 template <typename MeshT>
-bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
-                                                         const std::vector<dcomplex>& betax, const std::vector<dcomplex>& betay)
+bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, plask::DataVector<double>& results, dcomplex v)
 {
-//     if (dynamic_cast<const MeshT*>(&dst_mesh)) {
-//
-//         const MeshT& rect_mesh = dynamic_cast<const MeshT&>(dst_mesh);
-//
-//         std::vector<dcomplex> valx(rect_mesh.tran().size());
-//         std::vector<dcomplex> valy(rect_mesh.up().size());
-//         size_t idx = 0, idy = 0;
-//
-//         for (auto x: rect_mesh.tran()) {
-//             bool negate = false;
-//             if (x < 0. && symmetry != NO_SYMMETRY) {
-//                 x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
-//             }
-//             size_t ix = mesh->tran().findIndex(x);
-//             if (ix != 0) x -= mesh->tran()[ix-1];
-//             else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
-//             dcomplex phasx = exp(- I * betax[ix] * x);
-//             dcomplex val = fieldR[ix][0] * phasx + fieldR[ix][1] / phasx;
-//             if (negate) val = - val;
-//             valx[idx++] = val;
-//         }
-//
-//         for (auto y: rect_mesh.up()) {
-//             size_t iy = mesh->up().findIndex(y);
-//             y -= mesh->up()[max(int(iy)-1, 0)];
-//             dcomplex phasy = exp(- I * betay[iy] * y);
-//             valy[idy++] = fieldZ[iy][0] * phasy + fieldZ[iy][1] / phasy;
-//         }
-//
-//         for (size_t i = 0; i != rect_mesh.size(); ++i) {
-//             dcomplex f = valx[rect_mesh.index0(i)] * valy[rect_mesh.index1(i)];
-//             results[i] = real(abs2(f));
-//         }
-//
-//         return true;
-//     }
-//
-//     return false;
+    if (dynamic_cast<const MeshT*>(&dst_mesh)) {
+
+        const MeshT& rect_mesh = dynamic_cast<const MeshT&>(dst_mesh);
+
+        std::vector<dcomplex> valr(rect_mesh.axis0.size());
+        std::vector<dcomplex> valz(rect_mesh.axis1.size());
+        size_t idr = 0, idz = 0;
+
+        int ln;
+        dcomplex Js[l+1], Ys[l+1], dJs[l+1], dYs[l+1];
+
+        for (double r: rect_mesh.axis0) {
+            if (r < 0.) r = -r;
+            size_t ir = mesh->axis0.findIndex(r);
+            dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
+            if (real(x) < 0.) x = -x;
+            if (bessel::cbessjyna(l, x ,ln, Js, Ys, dJs, dYs) || ln != l)
+                throw ComputationError(getId(), "Could not compute Bessel functions");
+            valr[idr++] = fieldR[ir][0] * Js[l] + fieldR[ir][1] * Ys[l];
+        }
+
+        for (auto z: rect_mesh.axis1) {
+            size_t iy = mesh->axis1.findIndex(z);
+            z -= mesh->axis1[max(int(iy)-1, 0)];
+            dcomplex phasy = exp(- I * betaz[iy] * z);
+            valz[idz++] = fieldZ[iy][0] * phasy + fieldZ[iy][1] / phasy;
+        }
+
+        for (size_t i = 0; i != rect_mesh.size(); ++i) {
+            dcomplex f = valr[rect_mesh.index0(i)] * valz[rect_mesh.index1(i)];
+            results[i] = real(abs2(f));
+        }
+
+        return true;
+    }
+
+    return false;
 }
+
 
 
 }}} // namespace plask::solvers::effective
