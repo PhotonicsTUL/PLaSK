@@ -8,7 +8,7 @@ namespace plask { namespace solvers { namespace effective {
 EffectiveFrequency2DSolver::EffectiveFrequency2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
     log_stripe(dataLog<dcomplex, dcomplex>(getId(), "veff", "det")),
-    log_value(dataLog<dcomplex, dcomplex>(getId(), "wavelength", "det")),
+    log_value(dataLog<dcomplex, dcomplex>(getId(), "v", "det")),
     have_veffs(false),
     have_fields(false),
     l(0),
@@ -57,6 +57,7 @@ dcomplex EffectiveFrequency2DSolver::computeMode(dcomplex lambda)
     k0 = 2e3*M_PI / lambda;
     stageOne();
     dcomplex result = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root).getSolution(0.);
+    result = 2e3*M_PI / k0 / (1. - result/2.); // get wavelength back from frequency parameter
     outWavelength = result;
     outWavelength.fireChanged();
     outIntensity.fireChanged();
@@ -73,8 +74,10 @@ std::vector<dcomplex> EffectiveFrequency2DSolver::findModes(dcomplex lambda1, dc
     stageOne();
     dcomplex v1 = (k0 - (2e3*M_PI/lambda1)) / k0;
     dcomplex v2 = (k0 - (2e3*M_PI/lambda2)) / k0;
-    return RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)
-            .searchSolutions(v1, v2, steps, 0, nummodes);
+    auto results = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)
+                       .searchSolutions(v1, v2, steps, 0, nummodes);
+    for (auto res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
+    return results;
 }
 
 std::vector<dcomplex> EffectiveFrequency2DSolver::findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps)
@@ -84,8 +87,10 @@ std::vector<dcomplex> EffectiveFrequency2DSolver::findModesMap(dcomplex lambda1,
     stageOne();
     dcomplex v1 = (k0 - (2e3*M_PI/lambda1)) / k0;
     dcomplex v2 = (k0 - (2e3*M_PI/lambda2)) / k0;
-    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
-            .findMap(v1, v2, steps, 0);
+    auto results =  RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
+                        .findMap(v1, v2, steps, 0);
+    for (auto res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
+    return results;
 }
 
 
@@ -159,16 +164,16 @@ void EffectiveFrequency2DSolver::onBeginCalculation(bool fresh)
 
                 auto material = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)));
 
-                // Nr = nr + 1/(4π) λ g
-                // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - 1/(4π) λ^2 dg/dλ
+                // Nr = nr + i/(4π) λ g
+                // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - i/(4π) λ^2 dg/dλ
                 nrCache[ix][iy] = material->Nr(lam, T);
                 ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) / (2*h);
                 double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh.index(ix, iy-1)];
                 if (gain_slope) {
                     double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : (*gain_slope)[midmesh.index(ix, iy-1)];
-                    ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs))? 0. : lam*lam * gs * 7.95774715459e-09);
+                    ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs))? 0. : 7.95774715459e-09 * lam*lam * gs);
                 }
-                nrCache[ix][iy] += dcomplex(0., std::isnan(g)? 0. : lam * g * 7.95774715459e-09);
+                nrCache[ix][iy] += dcomplex(0., std::isnan(g)? 0. : 7.95774715459e-09 * lam * g);
 
             }
         }
@@ -207,8 +212,11 @@ void EffectiveFrequency2DSolver::stageOne()
             }
         }
 
-        std::stringstream nrs; for (size_t i = 0; i < veffs.size(); ++i) nrs << ", " << str(veffs[i]);
-        writelog(LOG_DEBUG, "stripes veff = [%1% ]", nrs.str().substr(1));
+        std::stringstream strv; for (size_t i = 0; i < veffs.size(); ++i) strv << ", " << str(veffs[i]);
+        writelog(LOG_DEBUG, "stripes veffs = [%1% ]", strv.str().substr(1));
+
+        std::stringstream strn; for (size_t i = 0; i < nng.size(); ++i) strn << ", " << str(nng[i]);
+        writelog(LOG_DEBUG, "stripes <ngg> = [%1% ]", strn.str().substr(1));
 
         have_veffs = true;
     }
@@ -278,7 +286,7 @@ void EffectiveFrequency2DSolver::computeStripeNNg(size_t stripe)
         P.diagonal() << phas, 1./phas;
         E = P * E;
         double f = real(E[0] * conj(E[0])) + real(E[1] * conj(E[1]));
-        nng[stripe] = f * nrCache[stripe][i] * ngCache[stripe][i];
+        nng[stripe] += f * nrCache[stripe][i] * ngCache[stripe][i];
         sum += f;
         E = fresnel(i) * E;
     }
@@ -299,14 +307,25 @@ Matrix2cd EffectiveFrequency2DSolver::getMatrix(dcomplex v, size_t i)
 
     Matrix2cd A, B;
 
-//     dcomplex J1 = BesselJ(l, x1), H1 = BesselH(l, x1), J1p = BesselJ(l+1, x1), H1p = BesselH(l+1, x1);
-//     dcomplex J2 = BesselJ(l, x2), H2 = BesselH(l, x2), J2p = BesselJ(l+1, x2), H2p = BesselH(l+1, x2);
-//
-//     A << J1,                   H1,
-//          l * J1 - x1 * J1p,    l * J1 - x1 * J1p;
-//
-//     B << J2,                   H2,
-//          l * J2 - x2 * J2p,    l * J2 - x2 * J2p;
+    dcomplex J1, Y1, dJ1, dY1, J2, Y2, dJ2, dY2;
+
+    // Compute Bessel functions and their derivatives
+    int ln;
+    dcomplex Js[l+1], Ys[l+1], dJs[l+1], dYs[l+1];
+
+    if (bessel::cbessjyna(l, x1 ,ln, Js, Ys, dJs, dYs) || ln != l)
+        throw ComputationError(getId(), "Could not compute Bessel functions");
+    J1 = Js[l]; Y1 = Ys[l]; dJ1 = dJs[l]; dY1 = dYs[l];
+
+    if (bessel::cbessjyna(l, x2 ,ln, Js, Ys, dJs, dYs) || ln != l)
+        throw ComputationError(getId(), "Could not compute Bessel functions");
+    J2 = Js[l]; Y2 = Ys[l]; dJ2 = dJs[l]; dY2 = dYs[l];
+
+    A << J1,         Y1,
+         x1 * dJ1,   x1 * dY1;
+
+    B << J2,         Y2,
+         x2 * dJ2,   x2 * dY2;
 
     return B.inverse() * A;
 }
@@ -314,12 +333,18 @@ Matrix2cd EffectiveFrequency2DSolver::getMatrix(dcomplex v, size_t i)
 
 dcomplex EffectiveFrequency2DSolver::detS(const dcomplex& v)
 {
-//     Matrix2cd T = getMatrix(x);
-//     // Rn = | T00 T01 | R0
-//     // Ln = | T10 T11 | L0
-//     if (symmetry == SYMMETRY_POSITIVE) return T(1,0) + T(1,1);      // R0 = L0   Ln = 0
-//     else if (symmetry == SYMMETRY_NEGATIVE) return T(1,0) - T(1,1); // R0 = -L0  Ln = 0
-//     else return T(1,1);                                             // R0 = 0    Ln = 0
+    Vector2cd E;
+
+    // In the innermost area there must not be any infinity, so Y = 0.
+    E << 1., 0.;
+
+    for (size_t i = 1; i < veffs.size(); ++i) {
+        E = getMatrix(v, i) * E;
+    }
+
+    // In the outmost layer, there is only an outgoing wave, so the solution is a Hankel function.
+    // So E = a J + b Y = a H = a (J + iY). Then a + ib = 0.
+    return E[0] + I*E[1];
 }
 
 

@@ -254,6 +254,7 @@ int main(int argc, const char *argv[])
 
             } else {
 
+                globals["__file__"] = filename;
 #               if PY_VERSION_HEX >= 0x03000000
                     PyObject* pyfile = PyUnicode_FromString(filename.c_str());
                     FILE* file = _Py_fopen(pyfile, "r");

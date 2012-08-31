@@ -368,10 +368,10 @@ shared_ptr<GeometryElement> read_ShelfContainer2D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children<StackContainer<2>>(reader,
             [&]() {
-                return result->push_front(reader.readExactlyOneChild< typename ShelfContainer2D::ChildType >());
+                return result->push_back(reader.readExactlyOneChild< typename ShelfContainer2D::ChildType >());
             },
             [&](const shared_ptr<typename ShelfContainer2D::ChildType>& child) {
-                result->push_front(child);
+                result->push_back(child);
             }
     );
     if (requireEqHeights) result->ensureFlat();

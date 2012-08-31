@@ -10,6 +10,9 @@
 
 namespace plask { namespace solvers { namespace effective { namespace bessel {
 
+int msta1(double x,int mp);
+int msta2(double x,int n,int mp);
+
 #define eps 1e-15
 #define el 0.5772156649015329
 
