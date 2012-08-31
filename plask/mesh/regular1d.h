@@ -7,6 +7,7 @@ This file defines regular mesh for 1d space.
 
 #include "../utils/iterators.h"
 #include "../utils/interpolation.h"
+#include "../utils/stl.h"
 
 #include "../math.h"
 
@@ -146,16 +147,7 @@ class RegularMesh1D {
       * @return position pos for which abs(*pos-to_find) is minimal
       */
      const_iterator findNearest(double to_find) const {
-         if (size() < 2) return begin();
-         const_iterator candidate = find(to_find);
-         if (candidate == begin()) return candidate; //before first
-         if (candidate == end()) return candidate-1; //after last
-         const_iterator lo_candidate = candidate - 1;
-         //now: *lo_candidate <= to_find < *candidate
-         if (to_find - *lo_candidate <= *candidate - to_find) //nearest to *lo_candidate?
-             return lo_candidate;
-         else
-             return candidate;
+         return find_nearest_using_lower_bound(begin(), end(), to_find, find(to_find));
      }
      
      /**
