@@ -57,9 +57,9 @@ include(${CMAKE_SOURCE_DIR}/cmake/solvers.cmake)
 #add_test(solvers/foo/bar mytest)
 #add_python_test(solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
 
-file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS testy/*.cpp testy/*.h)
-add_executable(femtest ${femtest_src})
-target_link_libraries(femtest libplask ${TARGET_NAME})
+#file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS tests/*.cpp tests/*.h)
+#add_executable(femtest ${femtest_src})
+#target_link_libraries(femtest libplask ${TARGET_NAME})
 
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!

@@ -504,7 +504,7 @@ private:
 
     };
 
-    struct TopBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
+    struct BottomBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -535,7 +535,7 @@ private:
         }
     };
 
-    struct BottomBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
+    struct TopBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 

@@ -9,7 +9,7 @@ namespace plask { namespace solvers { namespace thermal {
 class Element2D // 2D element in finite element method
 {
 public:
-    Element2D(int iNo, const Node2D* ipNLoLeft, const Node2D* ipNLoRight, const Node2D* ipNUpLeft, const Node2D* ipNUpRight, double iT); // constructor (set no, nodes pointers)
+    Element2D(int iNo, const Node2D* ipNLoLeft, const Node2D* ipNLoRight, const Node2D* ipNUpLeft, const Node2D* ipNUpRight); // constructor (set no, nodes pointers)
 
     // getters
     int getNo() const; // return number

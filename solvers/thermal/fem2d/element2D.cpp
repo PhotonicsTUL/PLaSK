@@ -2,8 +2,8 @@
 
 namespace plask { namespace solvers { namespace thermal {
 
-Element2D::Element2D(int iNo, const Node2D* ipNLoLeft, const Node2D* ipNLoRight, const Node2D* ipNUpLeft, const Node2D* ipNUpRight, double iT):
-mNo(iNo), mpNLoLeft(ipNLoLeft), mpNLoRight(ipNLoRight), mpNUpLeft(ipNUpLeft), mpNUpRight(ipNUpRight), mT(iT)
+Element2D::Element2D(int iNo, const Node2D* ipNLoLeft, const Node2D* ipNLoRight, const Node2D* ipNUpLeft, const Node2D* ipNUpRight):
+mNo(iNo), mpNLoLeft(ipNLoLeft), mpNLoRight(ipNLoRight), mpNUpLeft(ipNUpLeft), mpNUpRight(ipNUpRight)
 {
 }
 
