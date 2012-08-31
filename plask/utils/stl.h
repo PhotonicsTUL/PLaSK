@@ -37,9 +37,9 @@ inline const typename map_t::mapped_type map_find(const map_t& map, const typena
 
 /**
  * Find position in ascending ordered, radnom access, seqence [begin, end) of floats or doubles nearest to @p to_find.
- * @param begin, end ordered, radnom access, seqence [begin, end)
- * @param lower_bound must be equal to std::lower_bound(begin, end, to_find)
+ * @param begin, end ordered, radnom access, seqence [begin, end), can't be empty
  * @param to_find value to which nearest one should be found
+ * @param lower_bound must be equal to std::lower_bound(begin, end, to_find)
  * @return first position pos for which abs(*pos-to_find) is minimal
  */
 template <typename Iter, typename Val>
@@ -56,7 +56,7 @@ inline Iter find_nearest_using_lower_bound(Iter begin, Iter end, const Val& to_f
 
 /**
  * Find position in ascending ordered, radnom access, seqence [begin, end) of floats or doubles nearest to @p to_find.
- * @param begin, end ordered, radnom access, seqence [begin, end)
+ * @param begin, end ordered, radnom access, seqence [begin, end), can't be empty
  * @param to_find value to which nearest one should be found
  * @return first position pos for which abs(*pos-to_find) is minimal
  */
