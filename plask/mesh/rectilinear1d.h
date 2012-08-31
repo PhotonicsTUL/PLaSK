@@ -60,6 +60,20 @@ public:
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
     std::size_t findIndex(double to_find) const { return find(to_find) - begin(); }
+    
+    /**
+     * Find position nearest to @p to_find.
+     * @param to_find
+     * @return position pos for which abs(*pos-to_find) is minimal
+     */
+    const_iterator findNearest(double to_find) const;
+    
+    /**
+     * Find index nearest to @p to_find.
+     * @param to_find
+     * @return index i for which abs((*this)[i]-to_find) is minimal
+     */
+    std::size_t findNearestIndex(double to_find) const { return findNearest(to_find) - begin(); }
 
     //should we allow for non-const iterators?
     /*typedef std::vector<double>::iterator iterator;

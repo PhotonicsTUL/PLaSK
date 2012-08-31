@@ -139,6 +139,31 @@ class RegularMesh1D {
      const_iterator find(double to_find) const {
          return begin() + findIndex(to_find);
      }
+     
+     /**
+      * Find position nearest to @p to_find.
+      * @param to_find
+      * @return position pos for which abs(*pos-to_find) is minimal
+      */
+     const_iterator findNearest(double to_find) const {
+         if (size() < 2) return begin();
+         const_iterator candidate = find(to_find);
+         if (candidate == begin()) return candidate; //before first
+         if (candidate == end()) return candidate-1; //after last
+         const_iterator lo_candidate = candidate - 1;
+         //now: *lo_candidate <= to_find < *candidate
+         if (to_find - *lo_candidate <= *candidate - to_find) //nearest to *lo_candidate?
+             return lo_candidate;
+         else
+             return candidate;
+     }
+     
+     /**
+      * Find index nearest to @p to_find.
+      * @param to_find
+      * @return index i for which abs((*this)[i]-to_find) is minimal
+      */
+     std::size_t findNearestIndex(double to_find) const { return findNearest(to_find) - begin(); }
 
      /**
       * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.

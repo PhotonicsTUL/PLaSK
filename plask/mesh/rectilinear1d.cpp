@@ -30,6 +30,19 @@ RectilinearMesh1D::const_iterator RectilinearMesh1D::find(double to_find) const 
     return std::lower_bound(points.begin(), points.end(), to_find);
 }
 
+RectilinearMesh1D::const_iterator RectilinearMesh1D::findNearest(double to_find) const {
+    if (size() < 2) return begin();
+    RectilinearMesh1D::const_iterator candidate = find(to_find);
+    if (candidate == begin()) return candidate; //before first
+    if (candidate == end()) return candidate-1; //after last
+    RectilinearMesh1D::const_iterator lo_candidate = candidate - 1;
+    //now: *lo_candidate <= to_find < *candidate
+    if (to_find - *lo_candidate <= *candidate - to_find) //nearest to *lo_candidate?
+        return lo_candidate;
+    else
+        return candidate;
+}
+
 void RectilinearMesh1D::addPoint(double new_node_cord) {
     auto where = std::lower_bound(points.begin(), points.end(), new_node_cord);
     if (where == points.end())
