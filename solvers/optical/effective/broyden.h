@@ -57,7 +57,8 @@ struct RootDigger {
                const Params& par) :
         solver(solver),
         val_function(val_fun),
-        log_value(log_value)
+        log_value(log_value),
+        par(par)
     {};
 
     /**

@@ -5,7 +5,7 @@ using plask::dcomplex;
 
 namespace plask { namespace solvers { namespace effective {
 
-EffectiveFrequency2DSolver::EffectiveFrequency2DSolver(const std::string& name) :
+EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
     log_stripe(dataLog<dcomplex, dcomplex>(getId(), "veff", "det")),
     log_value(dataLog<dcomplex, dcomplex>(getId(), "v", "det")),
@@ -13,7 +13,7 @@ EffectiveFrequency2DSolver::EffectiveFrequency2DSolver(const std::string& name) 
     have_fields(false),
     l(0),
     outer_distance(0.1),
-    outIntensity(this, &EffectiveFrequency2DSolver::getLightIntenisty) {
+    outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty) {
     inTemperature = 300.;
     inGain = NAN;
     root.tolx = 1.0e-7;
@@ -29,7 +29,7 @@ EffectiveFrequency2DSolver::EffectiveFrequency2DSolver(const std::string& name) 
 }
 
 
-void EffectiveFrequency2DSolver::loadParam(const std::string& param, XMLReader& reader, Manager&) {
+void EffectiveFrequencyCylSolver::loadParam(const std::string& param, XMLReader& reader, Manager&) {
     if (param == "mode") {
         l = reader.getAttribute<unsigned short>("l", l);
     } else if (param == "root") {
@@ -51,7 +51,7 @@ void EffectiveFrequency2DSolver::loadParam(const std::string& param, XMLReader& 
     reader.requireTagEnd();
 }
 
-dcomplex EffectiveFrequency2DSolver::computeMode(dcomplex lambda)
+dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
     k0 = 2e3*M_PI / lambda;
@@ -67,7 +67,7 @@ dcomplex EffectiveFrequency2DSolver::computeMode(dcomplex lambda)
 
 
 
-std::vector<dcomplex> EffectiveFrequency2DSolver::findModes(dcomplex lambda1, dcomplex lambda2, unsigned steps, unsigned nummodes)
+std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, unsigned steps, unsigned nummodes)
 {
     writelog(LOG_INFO, "Searching for the modes for wavelength between %1% and %2%", str(lambda1), str(lambda2));
     k0 = 4e3*M_PI / (lambda1 + lambda2);
@@ -80,7 +80,7 @@ std::vector<dcomplex> EffectiveFrequency2DSolver::findModes(dcomplex lambda1, dc
     return results;
 }
 
-std::vector<dcomplex> EffectiveFrequency2DSolver::findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps)
+std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps)
 {
     writelog(LOG_INFO, "Searching for the approximate modes for wavelength between %1% and %2%", str(lambda1), str(lambda2));
     k0 = 4e3*M_PI / (lambda1 + lambda2);
@@ -94,7 +94,7 @@ std::vector<dcomplex> EffectiveFrequency2DSolver::findModesMap(dcomplex lambda1,
 }
 
 
-void EffectiveFrequency2DSolver::onInitialize()
+void EffectiveFrequencyCylSolver::onInitialize()
 {
     // Set default mesh
     if (!mesh) setSimpleMesh();
@@ -107,7 +107,7 @@ void EffectiveFrequency2DSolver::onInitialize()
 }
 
 
-void EffectiveFrequency2DSolver::onInvalidate()
+void EffectiveFrequencyCylSolver::onInvalidate()
 {
     outWavelength.invalidate();
     have_fields = false;
@@ -121,7 +121,7 @@ void EffectiveFrequency2DSolver::onInvalidate()
 
 using namespace Eigen;
 
-void EffectiveFrequency2DSolver::onBeginCalculation(bool fresh)
+void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
 {
     // Some additional checks
     for (auto x: mesh->axis0) {
@@ -182,11 +182,13 @@ void EffectiveFrequency2DSolver::onBeginCalculation(bool fresh)
     }
 }
 
-void EffectiveFrequency2DSolver::stageOne()
+void EffectiveFrequencyCylSolver::stageOne()
 {
     initCalculation();
 
-    if (!have_veffs) {
+    if (!have_veffs || k0 != old_k0) {
+
+        old_k0 = k0;
 
         // Compute effective indices for all stripes
         // TODO: start form the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
@@ -223,7 +225,7 @@ void EffectiveFrequency2DSolver::stageOne()
 }
 
 
-dcomplex EffectiveFrequency2DSolver::detS1(const dcomplex& x, const std::vector<dcomplex>& NR, const std::vector<dcomplex>& NG)
+dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& x, const std::vector<dcomplex>& NR, const std::vector<dcomplex>& NG)
 {
     size_t N = NR.size();
 
@@ -255,7 +257,7 @@ dcomplex EffectiveFrequency2DSolver::detS1(const dcomplex& x, const std::vector<
     return E[1];
 }
 
-void EffectiveFrequency2DSolver::computeStripeNNg(size_t stripe)
+void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
 {
     size_t N = nrCache[stripe].size();
     dcomplex veff = veffs[stripe];
@@ -295,7 +297,7 @@ void EffectiveFrequency2DSolver::computeStripeNNg(size_t stripe)
 }
 
 
-Matrix2cd EffectiveFrequency2DSolver::getMatrix(dcomplex v, size_t i)
+Matrix2cd EffectiveFrequencyCylSolver::getMatrix(dcomplex v, size_t i)
 {
     double r = mesh->axis0[i];
 
@@ -331,7 +333,7 @@ Matrix2cd EffectiveFrequency2DSolver::getMatrix(dcomplex v, size_t i)
 }
 
 
-dcomplex EffectiveFrequency2DSolver::detS(const dcomplex& v)
+dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 {
     Vector2cd E;
 
@@ -349,7 +351,7 @@ dcomplex EffectiveFrequency2DSolver::detS(const dcomplex& v)
 
 
 
-const DataVector<double> EffectiveFrequency2DSolver::getLightIntenisty(const MeshD<2>& dst_mesh, InterpolationMethod)
+const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const MeshD<2>& dst_mesh, InterpolationMethod)
 {
 //     if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
 //
@@ -497,7 +499,7 @@ const DataVector<double> EffectiveFrequency2DSolver::getLightIntenisty(const Mes
 }
 
 template <typename MeshT>
-bool EffectiveFrequency2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
+bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
                                                          const std::vector<dcomplex>& betax, const std::vector<dcomplex>& betay)
 {
 //     if (dynamic_cast<const MeshT*>(&dst_mesh)) {

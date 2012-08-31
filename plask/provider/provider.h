@@ -316,7 +316,12 @@ struct Receiver: public Provider::Receiver {
         }
     }
 
-    ///@throw NoProvider when provider is not available
+    /// \return true if there is any provider connected
+    bool hasProvider() {
+        return provider;
+    }
+
+    /// @throw NoProvider when provider is not available
     void ensureHasProvider() {
         if (!provider) throw NoProvider(PROVIDER_NAME);
     }
@@ -341,9 +346,10 @@ struct Receiver: public Provider::Receiver {
      */
     template<typename ...Args> auto
     optional(Args&&... params) -> boost::optional<decltype((*provider)(std::forward<Args>(params)...))> {
-        try {
+        if (hasProvider())
             return boost::optional<decltype((*provider)(std::forward<Args>(params)...))>(this->operator()(std::forward<Args>(params)...));
-        } catch (std::exception&) {
+        else {
+            changed = false;
             return boost::optional<decltype((*provider)(std::forward<Args>(params)...))>();
         }
     }

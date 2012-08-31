@@ -61,12 +61,7 @@ static void EffectiveIndex2DSolver_setPolarization(EffectiveIndex2DSolver& self,
     }
 }
 
-template <typename T>
-static py::object getStripeDeterminant(T& self, int stripe, py::object val);
-
-
-template <>
-py::object getStripeDeterminant<EffectiveIndex2DSolver>(EffectiveIndex2DSolver& self, int stripe, py::object val)
+py::object EffectiveIndex2DSolver_getStripeDeterminant(EffectiveIndex2DSolver& self, int stripe, py::object val)
 {
     if (!self.getMesh()) self.setSimpleMesh();
     if (stripe < 0) stripe = self.getMesh()->tran().size() + 1 + stripe;
@@ -75,20 +70,23 @@ py::object getStripeDeterminant<EffectiveIndex2DSolver>(EffectiveIndex2DSolver& 
     return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
 }
 
-template <>
-py::object getStripeDeterminant<EffectiveFrequency2DSolver>(EffectiveFrequency2DSolver& self, int stripe, py::object val)
+py::object EffectiveFrequencyCylSolver_getStripeDeterminant(EffectiveFrequencyCylSolver& self, int stripe, dcomplex lambda0, py::object val)
 {
     if (!self.getMesh()) self.setSimpleMesh();
     if (stripe < 0) stripe = self.getMesh()->tran().size() + stripe;
     if (stripe < 0 || size_t(stripe) >= self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
 
-    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
+    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, lambda0, x);}, val);
 }
 
-template <typename T>
-static py::object getDeterminant(T& self, py::object val)
+static py::object EffectiveIndex2DSolver_getDeterminant(EffectiveIndex2DSolver& self, py::object val)
 {
    return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, val);
+}
+
+static py::object EffectiveFrequencyCylSolver_getDeterminant(EffectiveFrequencyCylSolver& self, dcomplex lambda0, py::object val)
+{
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(lambda0, x);}, val);
 }
 
 static inline bool plask_import_array() {
@@ -121,9 +119,9 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
         METHOD(setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by findModes.", "neff");
-        __solver__.def("getStripeDeterminant", &getStripeDeterminant<EffectiveIndex2DSolver>, "Get single stripe modal determinant for debugging purposes",
+        __solver__.def("getStripeDeterminant", &EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "neff"));
-        __solver__.def("getDeterminant", &getDeterminant<EffectiveIndex2DSolver>, "Get modal determinant for debugging purposes", (py::arg("neff")));
+        __solver__.def("getDeterminant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant for debugging purposes", (py::arg("neff")));
         RECEIVER(inWavelength, "Wavelength of the light");
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain in the active region");
@@ -131,7 +129,7 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
     }
 
-    {CLASS(EffectiveFrequency2DSolver, "EffectiveFrequency2D",
+    {CLASS(EffectiveFrequencyCylSolver, "EffectiveFrequencyCyl",
         "Calculate optical modes and optical field distribution using the effective frequency\n"
         "method in two-dimensional cylindrical space.")
         RW_FIELD(l, "Radial mode number");
@@ -143,9 +141,9 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(computeMode, "Find the mode near the specified effective index", "wavelength");
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
-        __solver__.def("getStripeDeterminant", &getStripeDeterminant<EffectiveFrequency2DSolver>, "Get single stripe modal determinant for debugging purposes",
-                       (py::arg("stripe"), "wavelength"));
-        __solver__.def("getDeterminant", &getDeterminant<EffectiveFrequency2DSolver>, "Get modal determinant for debugging purposes", (py::arg("wavelength")));
+        __solver__.def("getStripeDeterminant", &EffectiveFrequencyCylSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
+                       (py::arg("stripe"), "wavelength", "veff"));
+        __solver__.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant for debugging purposes", (py::arg("wavelength"), "v"));
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain in the active region");
         RECEIVER(inGainSlope, "Slope of the optical gain in the active region with respect to the wavelength");

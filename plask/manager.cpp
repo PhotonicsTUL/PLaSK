@@ -129,6 +129,7 @@ void Manager::loadGrids(XMLReader &reader)
         if (reader.getNodeName() == "mesh") {
             std::string type = reader.requireAttribute("type");
             std::string name = reader.requireAttribute("name");
+            BadId::throwIfBad("mesh", name, '-');
             if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
                 throw NamesConflictException("Mesh or mesh generator", name);
             shared_ptr<Mesh> mesh = RegisterMeshReader::getReader(type)(reader);
@@ -137,6 +138,7 @@ void Manager::loadGrids(XMLReader &reader)
             std::string type = reader.requireAttribute("type");
             std::string method = reader.requireAttribute("method");
             std::string name = reader.requireAttribute("name");
+            BadId::throwIfBad("generator", name, '-');
             std::string key = type + "." + method;
             if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
                 throw NamesConflictException("Mesh or mesh generator", name);
@@ -152,6 +154,7 @@ void Manager::loadSolvers(XMLReader& reader) {
         throw XMLUnexpectedElementException(reader, "<solvers>");
     while (reader.requireTagOrEnd()) {
         const std::string name = reader.requireAttribute("name");
+        BadId::throwIfBad("solver", name);
         const boost::optional<std::string> lib = reader.getAttribute("lib");
         const std::string solver_name = reader.requireAttribute("solver");
         shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), lib ? *lib : solver_name, solver_name, name);

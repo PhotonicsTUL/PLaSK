@@ -20,7 +20,7 @@ namespace plask { namespace solvers { namespace effective {
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D> {
+struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D> {
 
   protected:
 
@@ -62,6 +62,9 @@ struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, 
     /// Current value of reference normalized frequency
     dcomplex k0;
 
+    /// Old value of k0 to detect changes
+    dcomplex old_k0;
+
   public:
 
     /// Number of the LP_lm mode describing angular dependence
@@ -73,9 +76,9 @@ struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, 
     RootDigger::Params root;
     RootDigger::Params striperoot;
 
-    EffectiveFrequency2DSolver(const std::string& name="");
+    EffectiveFrequencyCylSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "EffectiveFrequency2D"; }
+    virtual std::string getClassName() const { return "EffectiveFrequencyCyl"; }
 
     virtual std::string getClassDescription() const {
         return "Calculate optical modes and optical field distribution using the effective index method "
@@ -150,15 +153,25 @@ struct EffectiveFrequency2DSolver: public SolverWithMesh<Geometry2DCylindrical, 
     /**
      * Compute determinant for a single stripe
      * \param stripe index of stripe
-     * \param lambda effective index to use
+     * \param lambda0 reference wavelength
+     * \param veff stripe effective frequency to use
      */
-    dcomplex getStripeDeterminant(size_t stripe, dcomplex lambda) { initCalculation(); return detS1(lambda, nrCache[stripe], ngCache[stripe]); }
+    dcomplex getStripeDeterminant(size_t stripe, dcomplex lambda0, dcomplex veff) {
+        k0 = 2*M_PI / lambda0;
+        initCalculation();
+        return detS1(veff, nrCache[stripe], ngCache[stripe]);
+    }
 
     /**
      * Compute modal determinant for the whole matrix
-     * \param lambda effective index to use
+     * \param lambda0 reference wavelength
+     * \param v frequency parameter
      */
-    dcomplex getDeterminant(dcomplex lambda) { stageOne(); return detS(lambda); }
+    dcomplex getDeterminant(dcomplex lambda0, dcomplex v) {
+        k0 = 2e3*M_PI / lambda0;
+        stageOne();
+        return detS(v);
+    }
 
 
     /// Receiver for the temperature
