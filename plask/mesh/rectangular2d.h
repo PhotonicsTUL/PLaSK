@@ -566,6 +566,16 @@ private:
         }
 
     };
+    
+    //TODO
+    struct HorizontalLineBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
+      
+        double height;
+        
+        bool includes(const RectangularMesh &mesh, std::size_t mesh_index) const {
+            return mesh.index1(mesh_index) == mesh.axis1.findNearestIndex(height);
+        }
+    };
 
 public:
     // boundaries:
