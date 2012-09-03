@@ -13,8 +13,8 @@ std::string InN::name() const { return NAME; }
 MI_PROPERTY(InN, condT,
             MISource("H. Tong et al., Proc. SPIE 7602 (2010) 76020U")
             )
-double InN::condT(double T) const {
-    return( 126. );
+std::pair<double,double> InN::condT(double T) const {
+    return(std::make_pair(126., 126.));
  }
 
 MI_PROPERTY(InN, lattC,
@@ -43,84 +43,37 @@ MI_PROPERTY(InN, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double InN::Me(double T, char point) const {
-    double tMe(0.);
-    if (point == 'G') tMe = 0.048;
+std::pair<double,double> InN::Me(double T, char point) const {
+    std::pair<double,double> tMe(0.,0.);
+    if (point == 'G') {
+        tMe.first = 0.065;
+        tMe.second = 0.068;
+    }
     return (tMe);
-}
-
-MI_PROPERTY(InN, Me_v,
-            MISource("Yan et al., Sem. Sci. Technol. 26 (2011) 014037"),
-            MIComment("only for Gamma point"),
-            MIComment("no temperature dependence")
-            )
-double InN::Me_v(double T, char point) const {
-    double tMe_v(0.);
-    if (point == 'G') tMe_v = 0.068;
-    return (tMe_v);
-}
-
-MI_PROPERTY(InN, Me_l,
-            MISeeClass<InN>(MaterialInfo::Me_v)
-            )
-double InN::Me_l(double T, char point) const {
-    double tMe_l(0.);
-    if (point == 'G') tMe_l = 0.065;
-    return (tMe_l);
 }
 
 MI_PROPERTY(InN, Mhh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-double InN::Mhh(double T, char point) const {
-    double tMhh(0.);
-    if (point == 'G') tMhh = 2.631;
+std::pair<double,double> InN::Mhh(double T, char point) const {
+    std::pair<double,double> tMhh(0.,0.);
+    if (point == 'G') {
+        tMhh.first = 1.8116;
+        tMhh.second = 1.7007;
+    }
     return (tMhh);
-}
-
-MI_PROPERTY(InN, Mhh_v,
-            MISeeClass<InN>(MaterialInfo::Me_v)
-            )
-double InN::Mhh_v(double T, char point) const {
-    double tMhh_v(0.);
-    if (point == 'G') tMhh_v = 1.7007;
-    return (tMhh_v);
-}
-
-MI_PROPERTY(InN, Mhh_l,
-            MISeeClass<InN>(MaterialInfo::Me_v)
-            )
-double InN::Mhh_l(double T, char point) const {
-    double tMhh_l(0.);
-    if (point == 'G') tMhh_l = 1.8116;
-    return (tMhh_l);
 }
 
 MI_PROPERTY(InN, Mlh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-double InN::Mlh(double T, char point) const {
-    double tMlh(0.);
-    if (point == 'G') tMlh = 2.631;
+std::pair<double,double> InN::Mlh(double T, char point) const {
+    std::pair<double,double> tMlh(0.,0.);
+    if (point == 'G') {
+        tMlh.first = 1.8116;
+        tMlh.second = 0.0348;
+    }
     return (tMlh);
-}
-
-MI_PROPERTY(InN, Mlh_v,
-            MISeeClass<InN>(MaterialInfo::Me_v)
-            )
-double InN::Mlh_v(double T, char point) const {
-    double tMlh_v(0.);
-    if (point == 'G') tMlh_v = 0.0348;
-    return (tMlh_v);
-}
-
-MI_PROPERTY(InN, Mlh_l,
-            MISeeClass<InN>(MaterialInfo::Me_v)
-            )
-double InN::Mlh_l(double T, char point) const {
-    double Mlh_l(0.);
-    if (point == 'G') Mlh_l = 1.8116;
-    return (Mlh_l);
 }
 
 MaterialsDB::Register<InN> materialDB_register_InN;

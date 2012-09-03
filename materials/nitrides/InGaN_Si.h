@@ -22,11 +22,11 @@ struct InGaN_Si: public InGaN {
     InGaN_Si(const Material::Composition& Comp, DopingAmountType Type, double Val);
     virtual std::string name() const;
     virtual std::string str() const;
-    virtual double mob(double T) const;
+    virtual std::pair<double,double> mob(double T) const;
     virtual double Nf(double T) const;
     virtual double Dop() const;
-    virtual double cond(double T) const;
-    virtual double condT(double T, double t) const;
+    virtual std::pair<double,double> cond(double T) const;
+    virtual std::pair<double,double> condT(double T, double t) const;
     virtual double absp(double wl, double T) const;
 
 protected:

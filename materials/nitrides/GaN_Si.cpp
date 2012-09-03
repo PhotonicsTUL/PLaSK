@@ -30,8 +30,9 @@ MI_PROPERTY(GaN_Si, mob,
             MIArgumentRange(MaterialInfo::T, 270, 400),
             MIComment("based on 7 papers (1996-2007): undoped/Si-doped GaN/c-sapphire")
             )
-double GaN_Si::mob(double T) const {
-    return ( mob_RT*(1.486-T*0.00162) );
+std::pair<double,double> GaN_Si::mob(double T) const {
+    double tMob = mob_RT*(1.486-T*0.00162);
+    return (std::make_pair(tMob,tMob));
 }
 
 MI_PROPERTY(GaN_Si, Nf,
@@ -51,8 +52,8 @@ double GaN_Si::Dop() const {
 MI_PROPERTY(GaN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
-double GaN_Si::cond(double T) const {
-	return ( 1.602E-17*Nf(T)*mob(T) );
+std::pair<double,double> GaN_Si::cond(double T) const {
+    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
 MI_PROPERTY(GaN_Si, condT,
@@ -60,9 +61,10 @@ MI_PROPERTY(GaN_Si, condT,
             MISource("Y. Oshima et al., Phys. Status Solidi C 4 (2007) 2215"),
             MIComment("Nf: 1e18 - 1e19 cm^-3")
             )
-double GaN_Si::condT(double T, double t) const {
-	double fun_Nf = 2.18*pow(Nf_RT,-0.022);
-    return( GaN::condT(T,t)*fun_Nf );
+std::pair<double,double> GaN_Si::condT(double T, double t) const {
+    double fun_Nf = 2.18*pow(Nf_RT,-0.022),
+           tCondT = GaN::condT(T,t)*fun_Nf;
+    return(std::make_pair(tCondT, tCondT));
  }
 
 MI_PROPERTY(GaN_Si, absp,

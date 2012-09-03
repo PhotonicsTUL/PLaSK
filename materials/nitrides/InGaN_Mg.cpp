@@ -24,8 +24,10 @@ MI_PROPERTY(InGaN_Mg, mob,
             MISource("B. N. Pantha et al., Applied Physics Letters 95 (2009) 261904"),
             MISource("K. Aryal et al., Applied Physics Letters 96 (2010) 052110")
             )
-double InGaN_Mg::mob(double T) const {
-    return ( 1/(In/mInN_Mg.mob(T) + Ga/mGaN_Mg.mob(T) + In*Ga*(7.256E-19*Nf(T)+0.377)) );
+std::pair<double,double> InGaN_Mg::mob(double T) const {
+    double lMob = 1/(In/mInN_Mg.mob(T).first + Ga/mGaN_Mg.mob(T).first + In*Ga*(7.256E-19*Nf(T)+0.377)),
+           vMob = 1/(In/mInN_Mg.mob(T).second + Ga/mGaN_Mg.mob(T).second + In*Ga*(7.256E-19*Nf(T)+0.377));
+    return (std::make_pair(lMob, vMob));
 }
 
 MI_PROPERTY(InGaN_Mg, Nf,
@@ -40,7 +42,7 @@ double InGaN_Mg::Dop() const {
 }
 
 double InGaN_Mg::cond(double T) const {
-    return ( 1.602E-17*Nf(T)*mob(T) );
+    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
 MI_PROPERTY(InGaN_Mg, absp,

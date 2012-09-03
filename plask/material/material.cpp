@@ -62,9 +62,7 @@ double Material::chi(double T, char point) const { throwNotImplemented("chi(doub
 
 double Material::chi(char point) const { return chi(300., point); }
 
-double Material::cond(double T) const { throwNotImplemented("cond(double T)"); return 0; }
-double Material::cond_l(double T) const { return cond(T); }
-double Material::cond_v(double T) const { return cond(T); }
+std::pair<double,double> Material::cond(double T) const { throwNotImplemented("cond(double T)"); return std::make_pair(0.,0.); }
 
 double Material::D(double T) const { throwNotImplemented("D(double T)"); return 0; }
 
@@ -81,23 +79,12 @@ double Material::eps(double T) const { throwNotImplemented("eps(double T)"); ret
 
 double Material::lattC(double T, char x) const { throwNotImplemented("lattC(double T, char x)"); return 0; }
 
-double Material::Me(double T, char point) const { throwNotImplemented("Me(double T, char point)"); return 0; }
-double Material::Me_l(double T, char point) const { throwNotImplemented("Me_l(double T, char point)"); return 0; }
-double Material::Me_v(double T, char point) const { throwNotImplemented("Me_v(double T, char point)"); return 0; }
+std::pair<double,double> Material::Me(double T, char point) const { throwNotImplemented("Me(double T, char point)"); return std::make_pair(0.,0.); }
+std::pair<double,double> Material::Mh(double T, char point) const { throwNotImplemented("Mh(double T, char point)"); return std::make_pair(0.,0.); }
+std::pair<double,double> Material::Mhh(double T, char point) const { throwNotImplemented("Mhh(double T, char point)"); return std::make_pair(0.,0.); }
+std::pair<double,double> Material::Mlh(double T, char point) const { throwNotImplemented("Mlh(double T, char point)"); return std::make_pair(0.,0.); }
 
-double Material::Mh(double T, char point) const { throwNotImplemented("Mh(double T, char point)"); return 0; }
-double Material::Mh_l(double T, char point) const { throwNotImplemented("Mh_l(double T, char point)"); return 0; }
-double Material::Mh_v(double T, char point) const { throwNotImplemented("Mh_v(double T, char point)"); return 0; }
-
-double Material::Mhh(double T, char point) const { throwNotImplemented("Mhh(double T, char point)"); return 0; }
-double Material::Mhh_l(double T, char point) const { throwNotImplemented("Mhh_l(double T, char point)"); return 0; }
-double Material::Mhh_v(double T, char point) const { throwNotImplemented("Mhh_v(double T, char point)"); return 0; }
-
-double Material::Mlh(double T, char point) const { throwNotImplemented("Mlh(double T, char point)"); return 0; }
-double Material::Mlh_l(double T, char point) const { throwNotImplemented("Mlh_l(double T, char point)"); return 0; }
-double Material::Mlh_v(double T, char point) const { throwNotImplemented("Mlh_v(double T, char point)"); return 0; }
-
-double Material::mob(double T) const { throwNotImplemented("mob(double T)"); return 0; }
+std::pair<double,double> Material::mob(double T) const { throwNotImplemented("mob(double T)"); return std::make_pair(0.,0.); }
 
 double Material::Mso(double T) const { throwNotImplemented("Mso(double T)"); return 0; }
 
@@ -117,16 +104,12 @@ std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Material::Nr_tensor
     return std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex>(n, n, n, 0., 0.);
 }
 
-double Material::res(double T) const { throwNotImplemented("res(double T)"); return 0; }
-double Material::res_l(double T) const { throwNotImplemented("res_l(double T)"); return 0; }
-double Material::res_v(double T) const { throwNotImplemented("res_v(double T)"); return 0; }
+std::pair<double,double> Material::res(double T) const { throwNotImplemented("res(double T)"); return std::make_pair(0.,0.); }
 
 double Material::specHeat(double T) const { throwNotImplemented("specHeat(double T)"); return 0; }
 
-double Material::condT(double T) const { throwNotImplemented("condT(double T)"); return 0; }
-double Material::condT(double T, double thickness) const { throwNotImplemented("condT(double T, double t)"); return 0; }
-double Material::condT_l(double T, double thickness) const { throwNotImplemented("condT_l(double T, double thickness)"); return 0; }
-double Material::condT_v(double T, double thickness) const { throwNotImplemented("condT_v(double T, double thickness)"); return 0; }
+std::pair<double,double> Material::condT(double T) const { throwNotImplemented("condT(double T)"); return std::make_pair(0.,0.); }
+std::pair<double,double> Material::condT(double T, double thickness) const { throwNotImplemented("condT(double T, double t)"); return std::make_pair(0.,0.); }
 
 double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); return 0; }
 
@@ -355,14 +338,15 @@ double MixedMaterial::chi(char point) const {
     return avg([&](const Material& m) { return m.chi(point); });
 }
 
-double MixedMaterial::cond(double T) const {
-    return avg([&](const Material& m) { return m.cond(T); });
-}
-double MixedMaterial::cond_l(double T) const {
-    return avg([&](const Material& m) { return m.cond_l(T); });
-}
-double MixedMaterial::cond_v(double T) const {
-    return avg([&](const Material& m) { return m.cond_v(T); });
+std::pair<double,double> MixedMaterial::cond(double T) const {
+    //return avg([&](const Material& m) { return m.cond(T); });
+    std::pair<double,double> w_sum(0.,0.);
+    for (auto& p: materials) {
+        std::pair<double,double> m = std::get<0>(p)->cond(T);
+        w_sum.first += std::get<1>(p) * m.first;
+        w_sum.second += std::get<1>(p) * m.second;
+    }
+    return w_sum;
 }
 
 double MixedMaterial::D(double T) const {
@@ -396,46 +380,23 @@ double MixedMaterial::lattC(double T, char x) const {
     return avg([&](const Material& m) { return m.lattC(T, x); });
 }
 
-double MixedMaterial::Me(double T, char point) const {
+std::pair<double,double> MixedMaterial::Me(double T, char point) const {
     return avg([&](const Material& m) { return m.Me(T, point); });
 }
-double MixedMaterial::Me_l(double T, char point) const {
-    return avg([&](const Material& m) { return m.Me_l(T, point); });
-}
-double MixedMaterial::Me_v(double T, char point) const {
-    return avg([&](const Material& m) { return m.Me_v(T, point); });
-}
 
-double MixedMaterial::Mh(double T, char EqType) const {
+std::pair<double,double> MixedMaterial::Mh(double T, char EqType) const {
     return avg([&](const Material& m) { return m.Mh(T, EqType); });
 }
-double MixedMaterial::Mh_l(double T, char point) const {
-    return avg([&](const Material& m) { return m.Mh_l(T, point); });
-}
-double MixedMaterial::Mh_v(double T, char point) const {
-    return avg([&](const Material& m) { return m.Mh_v(T, point); });
-}
-double MixedMaterial::Mhh(double T, char point) const {
+
+std::pair<double,double> MixedMaterial::Mhh(double T, char point) const {
     return avg([&](const Material& m) { return m.Mhh(T, point); });
 }
-double MixedMaterial::Mhh_l(double T, char point) const  {
-    return avg([&](const Material& m) { return m.Mhh_l(T, point); });
-}
-double MixedMaterial::Mhh_v(double T, char point) const  {
-    return avg([&](const Material& m) { return m.Mhh_v(T, point); });
-}
 
-double MixedMaterial::Mlh(double T, char point) const  {
+std::pair<double,double> MixedMaterial::Mlh(double T, char point) const  {
     return avg([&](const Material& m) { return m.Mlh(T, point); });
 }
-double MixedMaterial::Mlh_l(double T, char point) const {
-    return avg([&](const Material& m) { return m.Mlh_l(T, point); });
-}
-double MixedMaterial::Mlh_v(double T, char point) const {
-    return avg([&](const Material& m) { return m.Mlh_v(T, point); });
-}
 
-double MixedMaterial::mob(double T) const {
+std::pair<double,double> MixedMaterial::mob(double T) const {
     return avg([&](const Material& m) { return m.mob(T); });
 }
 
@@ -476,31 +437,19 @@ std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> MixedMaterial::Nr_t
     return result;
 }
 
-double MixedMaterial::res(double T) const {
+std::pair<double,double> MixedMaterial::res(double T) const {
     return avg([&](const Material& m) { return m.res(T); });
-}
-double MixedMaterial::res_l(double T) const {
-    return avg([&](const Material& m) { return m.res_l(T); });
-}
-double MixedMaterial::res_v(double T) const {
-    return avg([&](const Material& m) { return m.res_v(T); });
 }
 
 double MixedMaterial::specHeat(double T) const {
     return avg([&](const Material& m) { return m.specHeat(T); });
 }
 
-double MixedMaterial::condT(double T) const {
+std::pair<double,double> MixedMaterial::condT(double T) const {
     return avg([&](const Material& m) { return m.condT(T); });
 }
-double MixedMaterial::condT(double T, double thickness) const {
+std::pair<double,double> MixedMaterial::condT(double T, double thickness) const {
     return avg([&](const Material& m) { return m.condT(T, thickness); });
-}
-double MixedMaterial::condT_l(double T, double thickness) const  {
-    return avg([&](const Material& m) { return m.condT_l(T, thickness); });
-}
-double MixedMaterial::condT_v(double T, double thickness) const  {
-    return avg([&](const Material& m) { return m.condT_v(T, thickness); });
 }
 
 double MixedMaterial::VBO(double T) const  {

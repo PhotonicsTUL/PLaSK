@@ -12,9 +12,10 @@ MI_PROPERTY(AlN, condT,
             MISource("G. A. Slack, J. Phys. Chem. Sol. 48 (1987) 641"),
             MISource("Bondokov R T, J. Crystal Growth 310 (2008) 4020"),
             MIComment("based on Si-doped GaN and AlN data to estimate thickness dependence"))
-double AlN::condT(double T, double t) const {
-	double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12);
-    return( 285*fun_t*pow((T/300.),-1.25) );
+std::pair<double,double> AlN::condT(double T, double t) const {
+    double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12),
+           tCondT = 285*fun_t*pow((T/300.),-1.25);
+    return(std::make_pair(tCondT,tCondT));
  }
 
 MI_PROPERTY(AlN, absp,
@@ -63,28 +64,13 @@ MI_PROPERTY(AlN, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double AlN::Me(double T, char point) const {
-    double tMe(0.);
-    if (point == 'G') tMe = 0.29;
+std::pair<double,double> AlN::Me(double T, char point) const {
+    std::pair<double,double> tMe(0.,0.);
+    if (point == 'G') {
+        tMe.first = 0.30;
+        tMe.second = 0.29
+    }
     return (tMe);
-}
-
-MI_PROPERTY(AlN, Me_v,
-            MISeeClass<AlN>(MaterialInfo::Me)
-            )
-double AlN::Me_v(double T, char point) const {
-    double tMe_v(0.);
-    if (point == 'G') tMe_v = 0.29;
-    return (tMe_v);
-}
-
-MI_PROPERTY(AlN, Me_l,
-            MISeeClass<AlN>(MaterialInfo::Me)
-            )
-double AlN::Me_l(double T, char point) const {
-    double tMe_l(0.);
-    if (point == 'G') tMe_l = 0.30;
-    return (tMe_l);
 }
 
 static MaterialsDB::Register<AlN> materialDB_register_AlN;

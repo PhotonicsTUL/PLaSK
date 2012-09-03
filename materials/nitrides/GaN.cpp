@@ -13,17 +13,19 @@ MI_PROPERTY(GaN, cond,
             MISource("G. Koblmuller et al., Appl. Phys. Lett. 91 (2007) 221905"),
             MIArgumentRange(MaterialInfo::T, 270, 400)
             )
-double GaN::cond(double T) const {
-    return ( 255*pow((T/300.),-0.18) );
+std::pair<double,double> GaN::cond(double T) const {
+    double tCond = 255*pow((T/300.),-0.18);
+    return (std::make_pair(tCond,tCond));
 }
 
 MI_PROPERTY(GaN, condT,
             MISource("C. Mion et al., App. Phys. Lett. 89 (2006) 092123"),
             MIArgumentRange(MaterialInfo::T, 300, 450)
             )
-double GaN::condT(double T, double t) const {
-	double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12);
-    return( 230*fun_t*pow((T/300.),-1.43) );
+std::pair<double,double> GaN::condT(double T, double t) const {
+    double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12),
+           tCondT = 230*fun_t*pow((T/300.),-1.43);
+    return(std::make_pair(tCondT,tCondT));
  }
 
 MI_PROPERTY(GaN, absp,
@@ -72,84 +74,37 @@ MI_PROPERTY(GaN, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double GaN::Me(double T, char point) const {
-    double tMe(0.);
-    if (point == 'G') tMe = 0.2;
+std::pair<double,double> GaN::Me(double T, char point) const {
+    std::pair<double,double> tMe(0.,0.);
+    if (point == 'G') {
+        tMe.first = 0.186;
+        tMe.second = 0.209;
+    }
     return (tMe);
-}
-
-MI_PROPERTY(GaN, Me_v,
-            MISource("Yan et al., Sem. Sci. Technol. 26 (2011) 014037"),
-            MIComment("only for Gamma point"),
-            MIComment("no temperature dependence")
-            )
-double GaN::Me_v(double T, char point) const {
-    double tMe_v(0.);
-    if (point == 'G') tMe_v = 0.209;
-    return (tMe_v);
-}
-
-MI_PROPERTY(GaN, Me_l,
-            MISeeClass<GaN>(MaterialInfo::Me_v)
-            )
-double GaN::Me_l(double T, char point) const {
-    double tMe_l(0.);
-    if (point == 'G') tMe_l = 0.186;
-    return (tMe_l);
 }
 
 MI_PROPERTY(GaN, Mhh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-double GaN::Mhh(double T, char point) const {
-    double tMhh(0.);
-    if (point == 'G') tMhh = 1.887;
+std::pair<double,double> GaN::Mhh(double T, char point) const {
+    std::pair<double,double> tMhh(0.,0.);
+    if (point == 'G') {
+        tMhh.first = 1.886;
+        tMhh.second = 1.887;
+    }
     return (tMhh);
-}
-
-MI_PROPERTY(GaN, Mhh_v,
-            MISeeClass<GaN>(MaterialInfo::Me_v)
-            )
-double GaN::Mhh_v(double T, char point) const {
-    double tMhh_v(0.);
-    if (point == 'G') tMhh_v = 1.887;
-    return (tMhh_v);
-}
-
-MI_PROPERTY(GaN, Mhh_l,
-            MISeeClass<GaN>(MaterialInfo::Me_v)
-            )
-double GaN::Mhh_l(double T, char point) const {
-    double tMhh_l(0.);
-    if (point == 'G') tMhh_l = 1.876;
-    return (tMhh_l);
 }
 
 MI_PROPERTY(GaN, Mlh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-double GaN::Mlh(double T, char point) const {
-    double tMlh(0.);
-    if (point == 'G') tMlh = 1.887;
+std::pair<double,double> GaN::Mlh(double T, char point) const {
+    std::pair<double,double> tMlh(0.,0.);
+    if (point == 'G') {
+        tMlh.first = 1.887;
+        tMlh.second = 0.1086;
+    }
     return (tMlh);
-}
-
-MI_PROPERTY(GaN, Mlh_v,
-            MISeeClass<GaN>(MaterialInfo::Me_v)
-            )
-double GaN::Mlh_v(double T, char point) const {
-    double tMlh_v(0.);
-    if (point == 'G') tMlh_v = 0.1086;
-    return (tMlh_v);
-}
-
-MI_PROPERTY(GaN, Mlh_l,
-            MISeeClass<GaN>(MaterialInfo::Me_v)
-            )
-double GaN::Mlh_l(double T, char point) const {
-    double Mlh_l(0.);
-    if (point == 'G') Mlh_l = 1.876;
-    return (Mlh_l);
 }
 
 static MaterialsDB::Register<GaN> materialDB_register_GaN;

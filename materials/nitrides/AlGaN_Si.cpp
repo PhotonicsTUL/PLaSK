@@ -24,8 +24,10 @@ MI_PROPERTY(AlGaN_Si, mob,
             MISource("based on 11 papers 1997-2008 about Si-doped AlGaN"),
             MISource("based on Si-doped GaN and AlN")
             )
-double AlGaN_Si::mob(double T) const {
-    return ( Al*mAlN_Si.mob(T) + pow(Ga,1.415+19.63*exp(-5.456*Al))*mGaN_Si.mob(T) );
+std::pair<double,double> AlGaN_Si::mob(double T) const {
+    double lMob = Al*mAlN_Si.mob(T).first + pow(Ga,1.415+19.63*exp(-5.456*Al))*mGaN_Si.mob(T).first,
+           vMob = Al*mAlN_Si.mob(T).second + pow(Ga,1.415+19.63*exp(-5.456*Al))*mGaN_Si.mob(T).second;
+    return (std::make_pair(lMob, vMob));
 }
 
 MI_PROPERTY(AlGaN_Si, Nf,
@@ -39,16 +41,18 @@ double AlGaN_Si::Dop() const {
     return ND;
 }
 
-double AlGaN_Si::cond(double T) const {
-    return ( 1.602E-17*Nf(T)*mob(T) );
+std::pair<double,double> AlGaN_Si::cond(double T) const {
+    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
 MI_PROPERTY(AlGaN_Si, condT,
             MISeeClass<AlGaN>(MaterialInfo::condT),
             MIComment("Si doping dependence for GaN")
             )
-double AlGaN_Si::condT(double T, double t) const {
-    return( 1/(Al/mAlN_Si.condT(T,t) + Ga/mGaN_Si.condT(T,t) + Al*Ga*0.4) );
+std::pair<double,double> AlGaN_Si::condT(double T, double t) const {
+    double lCondT = 1/(Al/mAlN_Si.condT(T,t).first + Ga/mGaN_Si.condT(T,t).first + Al*Ga*0.4),
+           vCondT = 1/(Al/mAlN_Si.condT(T,t).second + Ga/mGaN_Si.condT(T,t).second + Al*Ga*0.4);
+    return(std::make_pair(lCondT, vCondT));
  }
 
 MI_PROPERTY(AlGaN_Si, absp,

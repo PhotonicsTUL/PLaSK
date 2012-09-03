@@ -20,8 +20,10 @@ MI_PROPERTY(InGaN, condT,
             MISource("B. N. Pantha et al., Applied Physics Letters 92 (2008) 042112"),
             MIComment("based on data for In: 16% - 36%")
             )
-double InGaN::condT(double T, double t) const {
-    return( 1/(In/mInN.condT(T) + Ga/mGaN.condT(T,t) + In*Ga*0.215*exp(7.913*In)) );
+std::pair<double,double> InGaN::condT(double T, double t) const {
+    double lCondT = 1/(In/mInN.condT(T).first + Ga/mGaN.condT(T,t).first + In*Ga*0.215*exp(7.913*In)),
+           vCondT = 1/(In/mInN.condT(T).second + Ga/mGaN.condT(T,t).second + In*Ga*0.215*exp(7.913*In));
+    return(std::make_pair(lCondT,vCondT));
  }
 
 MI_PROPERTY(InGaN, absp,

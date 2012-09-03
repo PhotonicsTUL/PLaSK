@@ -23,8 +23,9 @@ MI_PROPERTY(InN_Si, mob,
             MIArgumentRange(MaterialInfo::T, 300, 400),
             MIComment("based on 6 papers (2005-2010): undoped/Si-doped InN/c-sapphire")
             )
-double InN_Si::mob(double T) const {
-    return ( mob_RT*(T*T*5.174E-6 -T*5.241E-3 +2.107) );
+std::pair<double,double> InN_Si::mob(double T) const {
+    double tMob = mob_RT*(T*T*5.174E-6 -T*5.241E-3 +2.107);
+    return (std::make_pair(tMob, tMob));
 }
 
 MI_PROPERTY(InN_Si, Nf,
@@ -43,8 +44,8 @@ double InN_Si::Dop() const {
 MI_PROPERTY(InN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
-double InN_Si::cond(double T) const {
-	return ( 1.602E-17*Nf(T)*mob(T) );
+std::pair<double,double> InN_Si::cond(double T) const {
+    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
 MaterialsDB::Register<InN_Si> materialDB_register_InN_Si;

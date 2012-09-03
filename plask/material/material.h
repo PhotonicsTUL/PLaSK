@@ -247,6 +247,7 @@ struct Material {
     virtual double lattC(double T, char x) const;
 
     /**
+     * Get energy gap Eg [eV]
      * @param T temperature [K]
      * @param point point in the Brillouin zone [-]
      * @return energy gap Eg [eV]
@@ -283,100 +284,36 @@ struct Material {
     virtual double Mso(double T) const;
 
     /**
-     * Get electron effective mass Me [\f$m_0\f$].
+     * Get electron effective mass Me in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
      * @param point point in Brillouin zone [-]
-     * @return split-off mass Mso [\f$m_0\f$]
+     * @return electron effective mass Me [\f$m_0\f$]
      */
-    virtual double Me(double T, char point) const;
+    virtual std::pair<double,double> Me(double T, char point) const;
 
     /**
-     * Get electron effective mass Me in vertical direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param point point in Brillouin zone [-]
-     * @return electron effective mass Me in vertical direction [\f$m_0\f$]
-     */
-    virtual double Me_v(double T, char point) const;
-
-    /**
-     * Get electron effective mass Me in lateral direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param point point in Brillouin zone [-]
-     * @return electron effective mass Me in lateral direction [\f$m_0\f$]
-     */
-    virtual double Me_l(double T, char point) const;
-
-    /**
-     * Get heavy hole effective mass Mhh [\f$m_0\f$].
+     * Get heavy hole effective mass Mhh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
      * @param point point in Brillouin zone [-]
      * @return heavy hole effective mass Mhh [\f$m_0\f$]
      */
-    virtual double Mhh(double T, char point) const;
+    virtual std::pair<double,double> Mhh(double T, char point) const;
 
     /**
-     * Get heavy hole effective mass Me in vertical direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param point point in Brillouin zone [-]
-     * @return heavy hole effective mass Mhh [\f$m_0\f$]
-     */
-    virtual double Mhh_v(double T, char point) const;
-
-    /**
-     * Get heavy hole effective mass Me in lateral direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param point point in Brillouin zone [-]
-     * @return heavy hole effective mass Me in lateral direction [\f$m_0\f$]
-     */
-    virtual double Mhh_l(double T, char point) const;
-
-    /**
-     * Get light hole effective mass Mlh [\f$m_0\f$].
+     * Get light hole effective mass Mlh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
      * @param point point in Brillouin zone [-]
      * @return light hole effective mass Mlh [\f$m_0\f$]
      */
-    virtual double Mlh(double T, char point) const;
+    virtual std::pair<double,double> Mlh(double T, char point) const;
 
     /**
-     * Get light hole effective mass Me in vertical direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param point point in Brillouin zone [-]
-     * @return light hole effective mass Me in vertical direction [\f$m_0\f$]
-     */
-    virtual double Mlh_v(double T, char point) const;
-
-    /**
-     * Get light hole effective mass Me in lateral direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param point point in Brillouin zone [-]
-     * @return light hole effective mass Me in lateral direction [\f$m_0\f$]
-     */
-    virtual double Mlh_l(double T, char point) const;
-
-    /**
-     * Get hole effective mass Mh [\f$m_0\f$].
+     * Get hole effective mass Mh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
      * @param EqType equation type [-]
      * @return hole effective mass Mh [\f$m_0\f$]
      */
-    virtual double Mh(double T, char point) const;
-
-    /**
-     * Get hole effective mass Me in vertical direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param point point in Brillouin zone [-]
-     * @return hole effective mass Me in vertical direction [\f$m_0\f$]
-     */
-    virtual double Mh_v(double T, char point) const;
-
-    /**
-     * Get hole effective mass Me in lateral direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param point point in Brillouin zone [-]
-     * @return hole effective mass Me in lateral direction [\f$m_0\f$]
-     */
-    virtual double Mh_l(double T, char point) const;
+    virtual std::pair<double,double> Mh(double T, char point) const;
 
     /**
      * Get dielectric constant EpsR [-].
@@ -439,53 +376,25 @@ struct Material {
     virtual double EactA(double T) const;
 
     /**
-     * Get mobility [m^2/(V*s)].
+     * Get mobility in-plane (lateral) and cross-plane (vertical) direction [m^2/(V*s)].
      * @param T temperature [K]
      * @return mobility [m^2/(V*s)]
      */
-    virtual double mob(double T) const;
+    virtual std::pair<double,double> mob(double T) const;
 
     /**
-     * Get electrical conductivity sigma [S/m].
+     * Get electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
      * @param T temperature [K]
      * @return electrical conductivity sigma [S/m]
      */
-    virtual double cond(double T) const;
+    virtual std::pair<double,double> cond(double T) const;
 
     /**
-     * Get electrical conductivity in vertical direction sigma [S/m].
-     * @param T temperature [K]
-     * @return electrical conductivity in vertical direction sigma [S/m]
-     */
-    virtual double cond_v(double T) const;
-
-    /**
-     * Get electrical conductivity in lateral direction sigma [S/m].
-     * @param T temperature [K]
-     * @return electrical conductivity in lateral direction Sigma[S/m]
-     */
-    virtual double cond_l(double T) const;
-
-    /**
-     * Get electrical resistivity [Ohm*m].
+     * Get electrical resistivity in in-plane (lateral) and cross-plane (vertical) direction [Ohm*m].
      * @param T temperature [K]
      * @return electrical resistivity [Ohm*m]
      */
-    virtual double res(double T) const;
-
-    /**
-     * Get electrical resistivity in vertical direction [Ohm*m].
-     * @param T temperature [K]
-     * @return electrical resistivity in vertical direction [Ohm*m]
-     */
-    virtual double res_v(double T) const;
-
-    /**
-     * Get electrical resistivity in lateral direction [Ohm*m].
-     * @param T temperature [K]
-     * @return electrical resistivity in vertical direction [Ohm*m]
-     */
-    virtual double res_l(double T) const;
+    virtual std::pair<double,double> res(double T) const;
 
     /**
      * Get monomolecular recombination coefficient A [1/s].
@@ -516,35 +425,19 @@ struct Material {
     virtual double D(double T) const;
 
     /**
-     * Get thermal conductivity k[W/(m*K)].
+     * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
      * @param T temperature [K]
-     * @return ambipolar diffusion coefficient D[m^2/s]
+     * @return thermal conductivity k[W/(m*K)]
      */
-    virtual double condT(double T) const;
+    virtual std::pair<double,double> condT(double T) const;
 
     /**
-     * Get thermal conductivity k[W/(m*K)].
+     * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
      * @param T temperature [K]
      * @param thickness thickness [m]
-     * @return ambipolar diffusion coefficient D[m^2/s]
+     * @return thermal conductivity k[W/(m*K)]
      */
-    virtual double condT(double T, double thickness) const;
-
-    /**
-     * Get thermal conductivity in vertical direction k [W/(m*K)].
-     * @param T temperature [K]
-     * @param thickness thickness [m]
-     * @return thermal conductivity in vertical direction k [W/(m*K)]
-     */
-    virtual double condT_v(double T, double thickness) const;
-
-    /**
-     * Get thermal conductivity in lateral direction k [W/(m*K)].
-     * @param T temperature [K]
-     * @param thickness thickness [m]
-     * @return thermal conductivity in lateral direction k [W/(m*K)]
-     */
-    virtual double condT_l(double T, double thickness) const;
+    virtual std::pair<double,double> condT(double T, double thickness) const;
 
     /**
      * Get density [kg/m^3].
@@ -685,29 +578,13 @@ struct MixedMaterial: public Material {
 
     virtual double Mso(double T) const;
 
-    virtual double Me(double T, char point) const;
+    virtual std::pair<double,double> Me(double T, char point) const;
 
-    virtual double Me_v(double T, char point) const;
+    virtual std::pair<double,double> Mhh(double T, char point) const;
 
-    virtual double Me_l(double T, char point) const;
+    virtual std::pair<double,double> Mlh(double T, char point) const;
 
-    virtual double Mhh(double T, char point) const;
-
-    virtual double Mhh_v(double T, char point) const;
-
-    virtual double Mhh_l(double T, char point) const;
-
-    virtual double Mlh(double T, char point) const;
-
-    virtual double Mlh_v(double T, char point) const;
-
-    virtual double Mlh_l(double T, char point) const;
-
-    virtual double Mh(double T, char EqType) const;
-
-    virtual double Mh_v(double T, char point) const;
-
-    virtual double Mh_l(double T, char point) const;
+    virtual std::pair<double,double> Mh(double T, char EqType) const;
 
     virtual double eps(double T) const;
 
@@ -727,19 +604,11 @@ struct MixedMaterial: public Material {
 
     virtual double EactA(double T) const;
 
-    virtual double mob(double T) const;
+    virtual std::pair<double,double> mob(double T) const;
 
-    virtual double cond(double T) const;
+    virtual std::pair<double,double> cond(double T) const;
 
-    virtual double cond_v(double T) const;
-
-    virtual double cond_l(double T) const;
-
-    virtual double res(double T) const;
-
-    virtual double res_v(double T) const;
-
-    virtual double res_l(double T) const;
+    virtual std::pair<double,double> res(double T) const;
 
     virtual double A(double T) const;
 
@@ -749,13 +618,9 @@ struct MixedMaterial: public Material {
 
     virtual double D(double T) const;
 
-    virtual double condT(double T) const;
+    virtual std::pair<double,double> condT(double T) const;
 
-    virtual double condT(double T, double thickness) const;
-
-    virtual double condT_v(double T, double thickness) const;
-
-    virtual double condT_l(double T, double thickness) const;
+    virtual std::pair<double,double> condT(double T, double thickness) const;
 
     virtual double dens(double T) const;
 

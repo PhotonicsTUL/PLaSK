@@ -24,8 +24,10 @@ MI_PROPERTY(InGaN_Si, mob,
             MISource("based on 3 papers 2007-2009 about Si-doped InGaN/GaN/c-sapphire"),
             MISource("based on Si-doped GaN and InN")
             )
-double InGaN_Si::mob(double T) const {
-    return ( 1/(In/mInN_Si.mob(T) + Ga/mGaN_Si.mob(T) + In*Ga*(-4.615E-21*Nf(T)+0.549)) );
+std::pair<double,double> InGaN_Si::mob(double T) const {
+    double lMob = 1/(In/mInN_Si.mob(T).first + Ga/mGaN_Si.mob(T).first + In*Ga*(-4.615E-21*Nf(T)+0.549)),
+           vMob = 1/(In/mInN_Si.mob(T).second + Ga/mGaN_Si.mob(T).second + In*Ga*(-4.615E-21*Nf(T)+0.549));
+    return (std::make_pair(lMob, vMob));
 }
 
 MI_PROPERTY(InGaN_Si, Nf,
@@ -40,15 +42,17 @@ double InGaN_Si::Dop() const {
 }
 
 double InGaN_Si::cond(double T) const {
-    return ( 1.602E-17*Nf(T)*mob(T) );
+    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
 MI_PROPERTY(InGaN_Si, condT,
             MISeeClass<InGaN>(MaterialInfo::condT),
             MIComment("Si doping dependence for GaN")
             )
-double InGaN_Si::condT(double T, double t) const {
-    return( 1/(In/mInN_Si.condT(T) + Ga/mGaN_Si.condT(T,t) + In*Ga*0.215*exp(7.913*In)) );
+std::pair<double,double> InGaN_Si::condT(double T, double t) const {
+    double lCondT = 1/(In/mInN_Si.condT(T).first + Ga/mGaN_Si.condT(T,t).first + In*Ga*0.215*exp(7.913*In)),
+           vCondT = 1/(In/mInN_Si.condT(T).second + Ga/mGaN_Si.condT(T,t).second + In*Ga*0.215*exp(7.913*In));
+    return(std::make_pair(lCondT, vCondT));
  }
 
 MI_PROPERTY(InGaN_Si, absp,

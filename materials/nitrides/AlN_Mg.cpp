@@ -29,8 +29,9 @@ MI_PROPERTY(AlN_Mg, mob,
             MISource("Y. Taniyasu et al., Nature Letters 44 (2006) 325"),
             MIArgumentRange(MaterialInfo::T, 300, 400)
 			)
-double AlN_Mg::mob(double T) const {
-    return ( 5.377e3*pow(mob_RT,-1.506) );
+std::pair<double,double> AlN_Mg::mob(double T) const {
+    double tMob = 5.377e3*pow(mob_RT,-1.506);
+    return (std::make_pair(tMob,tMob));
 }
 
 MI_PROPERTY(AlN_Mg, Nf,
@@ -48,8 +49,8 @@ double AlN_Mg::Dop() const {
 MI_PROPERTY(AlN_Mg, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
-double AlN_Mg::cond(double T) const {
-	return ( 1.602E-17*Nf(T)*mob(T) );
+std::pair<double,double> AlN_Mg::cond(double T) const {
+    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
 MI_PROPERTY(AlN_Mg, absp,

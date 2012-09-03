@@ -30,8 +30,9 @@ MI_PROPERTY(AlN_Si, mob,
             MIArgumentRange(MaterialInfo::T, 270, 400),
             MIComment("based on 4 papers (2004-2008): Si-doped AlN")
 			)
-double AlN_Si::mob(double T) const {
-    return ( mob_RT * (1.486 -T*0.00162) );
+std::pair<double,double> AlN_Si::mob(double T) const {
+    double tMob = mob_RT * (1.486 -T*0.00162);
+    return (std::make_pair(tMob,tMob));
 }
 
 MI_PROPERTY(AlN_Si, Nf,
@@ -50,8 +51,8 @@ double AlN_Si::Dop() const {
 MI_PROPERTY(AlN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
-double AlN_Si::cond(double T) const {
-	return ( 1.602E-17*Nf(T)*mob(T) );
+std::pair<double,double> AlN_Si::cond(double T) const {
+    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
 MI_PROPERTY(AlN_Si, absp,

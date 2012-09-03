@@ -17,14 +17,12 @@ struct AlN: public Semiconductor {
     static constexpr const char* NAME = "AlN";
 
 	virtual std::string name() const;
-    virtual double condT(double T, double t) const;
+    virtual std::pair<double,double> condT(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
     virtual double lattC(double T, char x) const;
     virtual double Eg(double T, char point) const;
-    virtual double Me(double T, char point) const;
-    virtual double Me_v(double T, char point) const;
-    virtual double Me_l(double T, char point) const;
+    virtual std::pair<double,double> Me(double T, char point) const;
 /*TODO
     virtual double Mhh(double T, char point) const;
     virtual double Mhh_l(double T, char point) const;

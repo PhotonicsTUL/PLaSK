@@ -20,8 +20,10 @@ MI_PROPERTY(AlGaN, condT,
             MISource("B. C. Daly et al., Journal of Applied Physics 92 (2002) 3820"),
             MIComment("based on data for Al = 0.2, 0.45")
             )
-double AlGaN::condT(double T, double t) const {
-    return( 1/(Al/mAlN.condT(T,t) + Ga/mGaN.condT(T,t) + Al*Ga*0.4) );
+std::pair<double,double> AlGaN::condT(double T, double t) const {
+    double lCondT = 1/(Al/mAlN.condT(T,t).first + Ga/mGaN.condT(T,t).first + Al*Ga*0.4),
+           vCondT = 1/(Al/mAlN.condT(T,t).second + Ga/mGaN.condT(T,t).second + Al*Ga*0.4);
+    return(std::make_pair(lCondT,vCondT));
  }
 
 MI_PROPERTY(AlGaN, absp,

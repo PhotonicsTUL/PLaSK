@@ -18,18 +18,12 @@ struct InN: public Semiconductor {
     static constexpr const char* NAME = "InN";
 
     virtual std::string name() const;
-    virtual double condT(double T) const;
+    virtual std::pair<double,double> condT(double T) const;
     virtual double lattC(double T, char x) const;
     virtual double Eg(double T, char point) const;
-    virtual double Me(double T, char point) const;
-    virtual double Me_v(double T, char point) const;
-    virtual double Me_l(double T, char point) const;
-    virtual double Mhh(double T, char point) const;
-    virtual double Mhh_l(double T, char point) const;
-    virtual double Mhh_v(double T, char point) const;
-    virtual double Mlh(double T, char point) const;
-    virtual double Mlh_l(double T, char point) const;
-    virtual double Mlh_v(double T, char point) const;
+    virtual std::pair<double,double> Me(double T, char point) const;
+    virtual std::pair<double,double> Mhh(double T, char point) const;
+    virtual std::pair<double,double> Mlh(double T, char point) const;
 
 };
 

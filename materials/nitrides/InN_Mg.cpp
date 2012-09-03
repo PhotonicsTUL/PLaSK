@@ -29,8 +29,8 @@ MI_PROPERTY(InN_Mg, mob,
             MISource("based on 4 papers (2006-2010): MBE-grown Mg-doped InN"),
             MIComment("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
             )
-double InN_Mg::mob(double T) const {
-    return ( mob_RT );
+std::pair<double,double> InN_Mg::mob(double T) const {
+    return (std::make_pair(mob_RT,mob_RT));
 }
 
 MI_PROPERTY(InN_Mg, Nf,
@@ -48,8 +48,8 @@ double InN_Mg::Dop() const {
 MI_PROPERTY(InN_Mg, cond,
             MIComment("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
             )
-double InN_Mg::cond(double T) const {
-	return ( cond_RT );
+std::pair<double,double> InN_Mg::cond(double T) const {
+    return (std::make_pair(cond_RT,cond_RT));
 }
 
 MaterialsDB::Register<InN_Mg> materialDB_register_InN_Mg;

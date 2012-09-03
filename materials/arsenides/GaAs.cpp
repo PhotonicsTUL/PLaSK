@@ -13,16 +13,16 @@ MI_PROPERTY(GaAs, cond,
 			MIComment("fit to n-GaAs:Si (based on 8 papers 1982 - 2003)"),
 			MIComment("no temperature dependence")
             )
-double GaAs::cond(double T) const {
-    return ( 940 );
+std::pair<double,double> GaAs::cond(double T) const {
+    return (std::make_pair(940.,940.));
 }
 
 MI_PROPERTY(GaAs, condT,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-double GaAs::condT(double T, double t) const {
-    return( 45 );
+std::pair<double,double> GaAs::condT(double T, double t) const {
+    return(std::make_pair(45.,45.));
  }
 
 MI_PROPERTY(GaAs, absp,
@@ -65,68 +65,27 @@ MI_PROPERTY(GaAs, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double GaAs::Me(double T, char point) const {
-    double tMe(0.);
-    if (point == 'G') tMe = 0.067;
+std::pair<double,double> GaAs::Me(double T, char point) const {
+    std::pair<double,double> tMe(0.,0.);
+    if (point == 'G') {
+        tMe = 0.067;
+        tMe = 0.067;
+    }
     return (tMe);
-}
-
-MI_PROPERTY(GaAs, Me_v,
-            MISource(""),
-            MIComment("")
-            )
-double GaAs::Me_v(double T, char point) const {
-    return (0);
-}
-
-MI_PROPERTY(GaAs, Me_l,
-            MISource(""),
-            MIComment("")
-            )
-double GaAs::Me_l(double T, char point) const {
-    return (0);
 }
 
 MI_PROPERTY(GaAs, Mhh,
             MISource("")
             )
-double GaAs::Mhh(double T, char point) const {
-    return (0);
-}
-
-MI_PROPERTY(GaAs, Mhh_v,
-            MISource("")
-            )
-double GaAs::Mhh_v(double T, char point) const {
-    return (0);
-}
-
-MI_PROPERTY(GaAs, Mhh_l,
-            MISource("")
-            )
-double GaAs::Mhh_l(double T, char point) const {
-	return (0);
+std::pair<double,double> GaAs::Mhh(double T, char point) const {
+    return (std::make_pair(0.,0.));
 }
 
 MI_PROPERTY(GaAs, Mlh,
             MISource("")
             )
-double GaAs::Mlh(double T, char point) const {
-	return (0);
-}
-
-MI_PROPERTY(GaAs, Mlh_v,
-            MISource("")
-            )
-double GaAs::Mlh_v(double T, char point) const {
-	return (0);
-}
-
-MI_PROPERTY(GaAs, Mlh_l,
-            MISource("")
-            )
-double GaAs::Mlh_l(double T, char point) const {
-	return (0);
+std::pair<double,double> GaAs::Mlh(double T, char point) const {
+    return (std::make_pair(0.,0.));
 }
 
 static MaterialsDB::Register<GaAs> materialDB_register_GaAs;
