@@ -10,7 +10,7 @@ std::string GaN::name() const { return NAME; }
 
 MI_PROPERTY(GaN, cond,
             MISource("K. Kusakabe et al., Physica B 376-377 (2006) 520"),
-            MISource("G. Koblmďż˝ller et al., Appl. Phys. Lett. 91 (2007) 221905"),
+            MISource("G. Koblmuller et al., Appl. Phys. Lett. 91 (2007) 221905"),
             MIArgumentRange(MaterialInfo::T, 270, 400)
             )
 double GaN::cond(double T) const {
