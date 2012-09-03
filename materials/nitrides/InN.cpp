@@ -18,7 +18,7 @@ double InN::condT(double T) const {
  }
 
 MI_PROPERTY(InN, lattC,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009")
             )
 double InN::lattC(double T, char x) const {
     double tLattC(0.);

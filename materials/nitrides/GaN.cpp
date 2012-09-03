@@ -10,7 +10,7 @@ std::string GaN::name() const { return NAME; }
 
 MI_PROPERTY(GaN, cond,
             MISource("K. Kusakabe et al., Physica B 376-377 (2006) 520"),
-            MISource("G. Koblm�ller et al., Appl. Phys. Lett. 91 (2007) 221905"),
+            MISource("G. Koblmďż˝ller et al., Appl. Phys. Lett. 91 (2007) 221905"),
             MIArgumentRange(MaterialInfo::T, 270, 400)
             )
 double GaN::cond(double T) const {
@@ -47,7 +47,7 @@ double GaN::nr(double wl, double T) const {
 }
 
 MI_PROPERTY(GaN, lattC,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III�V and II�VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009")
             )
 double GaN::lattC(double T, char x) const {
     double tLattC(0.);

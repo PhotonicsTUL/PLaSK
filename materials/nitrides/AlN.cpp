@@ -38,7 +38,7 @@ double AlN::nr(double wl, double T) const {
 }
 
 MI_PROPERTY(AlN, lattC,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009")
             )
 double AlN::lattC(double T, char x) const {
     double tLattC(0.);
@@ -59,7 +59,7 @@ double AlN::Eg(double T, char point) const {
 }
 
 MI_PROPERTY(AlN, Me,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
+            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009"),
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
