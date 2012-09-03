@@ -4,6 +4,16 @@ namespace plask {
 
 static std::string logLevelHead(LogLevel level) {
     switch (level) {
+#     ifdef WIN32
+        case LOG_ERROR:         return "ERROR         ";
+        case LOG_CRITICAL_ERROR:return "CRITICAL ERROR";
+        case LOG_WARNING:       return "WARNING       ";
+        case LOG_INFO:          return "INFO          ";
+        case LOG_RESULT:        return "RESULT        ";
+        case LOG_DATA:          return "DATA          ";
+        case LOG_DETAIL:        return "DETAIL        ";
+        case LOG_DEBUG:         return "DEBUG         ";
+#     else
         case LOG_CRITICAL_ERROR:return "\033[41;37;01mCRITICAL ERROR";
         case LOG_ERROR:         return "\033[31;01mERROR         ";
         case LOG_WARNING:       return "\033[31mWARNING       ";
@@ -12,14 +22,7 @@ static std::string logLevelHead(LogLevel level) {
         case LOG_DATA:          return "\033[33mDATA          ";
         case LOG_DETAIL:        return "\033[30mDETAIL        ";
         case LOG_DEBUG:         return "\033[37mDEBUG         ";
-        // case LOG_CRITICAL_ERROR:return "CRITICAL ERROR";
-        // case LOG_ERROR:         return "ERROR         ";
-        // case LOG_WARNING:       return "WARNING       ";
-        // case LOG_INFO:          return "INFO          ";
-        // case LOG_RESULT:        return "RESULT        ";
-        // case LOG_DATA:          return "DATA          ";
-        // case LOG_DETAIL:        return "DETAIL        ";
-        // case LOG_DEBUG:         return "DEBUG         ";
+#     endif
     }
     return "";
 }
