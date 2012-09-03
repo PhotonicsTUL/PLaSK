@@ -424,7 +424,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 private:
 
     // Common code for: left, right, bottom, top boundries:
-    struct BoundaryIteratorImpl: public BoundaryImpl<RectangularMesh>::IteratorImpl {
+    struct BoundaryIteratorImpl: public BoundaryLogicImpl<RectangularMesh>::IteratorImpl {
 
         const RectangularMesh &mesh;
 
@@ -434,13 +434,13 @@ private:
 
         virtual void increment() { ++index; }
 
-        virtual bool equal(const typename BoundaryImpl<RectangularMesh>::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryLogicImpl<RectangularMesh>::IteratorImpl& other) const {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
     };
 
-    struct LeftBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
+    struct LeftBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -448,31 +448,33 @@ private:
 
             virtual std::size_t dereference() const { return this->mesh.index(0, index); }
 
-            virtual typename BoundaryImpl<RectangularMesh>::IteratorImpl* clone() const {
+            virtual typename BoundaryLogicImpl<RectangularMesh>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
 
-        typedef typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+
+        LeftBoundary(const RectangularMesh<2,Mesh1D>& mesh): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh) {}
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool includes(const RectangularMesh<2,Mesh1D> &mesh, std::size_t mesh_index) const {
-            return mesh.index0(mesh_index) == 0;
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index0(mesh_index) == 0;
         }
 
-        Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, 0));
+        Iterator begin() const {
+            return Iterator(new IteratorImpl(this->mesh, 0));
         }
 
-        Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, mesh.axis1.size()));
+        Iterator end() const {
+            return Iterator(new IteratorImpl(this->mesh, this->mesh.axis1.size()));
         }
 
     };
 
-    struct RightBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
+    struct RightBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -480,31 +482,33 @@ private:
 
             virtual std::size_t dereference() const { return this->mesh.index(this->mesh.axis0.size()-1, index); }
 
-            virtual typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
+            virtual typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
 
-        typedef typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+
+        RightBoundary(const RectangularMesh<2,Mesh1D>& mesh): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh) {}
 
         //virtual RightBoundary* clone() const { return new RightBoundary(); }
 
-        bool includes(const RectangularMesh<2,Mesh1D> &mesh, std::size_t mesh_index) const {
-            return mesh.index0(mesh_index) == mesh.axis0.size()-1;
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index0(mesh_index) == this->mesh.axis0.size()-1;
         }
 
-        Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, 0));
+        Iterator begin() const {
+            return Iterator(new IteratorImpl(this->mesh, 0));
         }
 
-        Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, mesh.axis1.size()));
+        Iterator end() const {
+            return Iterator(new IteratorImpl(this->mesh, this->mesh.axis1.size()));
         }
 
     };
 
-    struct BottomBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
+    struct BottomBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -512,30 +516,32 @@ private:
 
             virtual std::size_t dereference() const { return this->mesh.index(index, 0); }
 
-            virtual typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
+            virtual typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
 
-        typedef typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+
+        BottomBoundary(const RectangularMesh<2,Mesh1D>& mesh): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh) {}
 
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
-        bool includes(const RectangularMesh<2,Mesh1D> &mesh, std::size_t mesh_index) const {
-            return mesh.index1(mesh_index) == 0;
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index1(mesh_index) == 0;
         }
 
-        Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, 0));
+        Iterator begin() const {
+            return Iterator(new IteratorImpl(this->mesh, 0));
         }
 
-        Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, mesh.axis0.size()));
+        Iterator end() const {
+            return Iterator(new IteratorImpl(this->mesh, this->mesh.axis0.size()));
         }
     };
 
-    struct TopBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
+    struct TopBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         struct IteratorImpl: public BoundaryIteratorImpl {
 
@@ -543,32 +549,34 @@ private:
 
             virtual std::size_t dereference() const { return this->mesh.index(index, this->mesh.axis1.size()-1); }
 
-            virtual typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
+            virtual typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::IteratorImpl* clone() const {
                 return new IteratorImpl(*this);
             }
 
         };
 
-        typedef typename BoundaryImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+
+        TopBoundary(const RectangularMesh<2,Mesh1D>& mesh): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh) {}
 
         //virtual BottomBoundary* clone() const { return new BottomBoundary(); }
 
-        bool includes(const RectangularMesh &mesh, std::size_t mesh_index) const {
-            return mesh.index1(mesh_index) == mesh.axis1.size()-1;
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index1(mesh_index) == this->mesh.axis1.size()-1;
         }
 
-        Iterator begin(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, 0));
+        Iterator begin() const {
+            return Iterator(new IteratorImpl(this->mesh, 0));
         }
 
-        Iterator end(const RectangularMesh<2,Mesh1D> &mesh) const {
-            return Iterator(new IteratorImpl(mesh, mesh.axis0.size()));
+        Iterator end() const {
+            return Iterator(new IteratorImpl(this->mesh, this->mesh.axis0.size()));
         }
 
     };
     
     //TODO
-    struct HorizontalLineBoundary: public BoundaryImpl<RectangularMesh<2,Mesh1D>> {
+    struct HorizontalLineBoundary: public BoundaryLogicImpl<RectangularMesh<2,Mesh1D>> {
       
         double height;
         
@@ -586,19 +594,19 @@ public:
     }
 
     static Boundary getLeftBoundary() {
-        return Boundary(new LeftBoundary());
+        return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new LeftBoundary(mesh);} );
     }
 
     static Boundary getRightBoundary() {
-        return Boundary(new RightBoundary());
+        return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new RightBoundary(mesh);} );
     }
 
     static Boundary getTopBoundary() {
-        return Boundary(new TopBoundary());
+        return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new TopBoundary(mesh);} );
     }
 
     static Boundary getBottomBoundary() {
-        return Boundary(new BottomBoundary());
+        return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new BottomBoundary(mesh);} );
     }
 
     static Boundary getBoundary(const std::string& boundary_desc) {

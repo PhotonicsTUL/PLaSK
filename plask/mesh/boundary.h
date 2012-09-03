@@ -56,12 +56,12 @@ User of solver can call this fields methods to @ref plask::BoundaryConditions::a
 See also @ref solvers_writing_details.
 
 @section boundaries_impl Boundaries implementations.
-Instance of @ref plask::Boundary "Boundary\<MeshType\>" in fact is only a holder which includes pointer to abstract class @ref plask::BoundaryImpl "BoundaryImpl\<MeshType\>".
-It points to subclass of @ref plask::BoundaryImpl "BoundaryImpl\<MeshType\>" which implements all boundary logic (all calls of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" methods are delegete to it).
+Instance of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" in fact is only a holder which includes pointer to abstract class @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>".
+It points to subclass of @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" which implements all boundary logic (all calls of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" methods are delegete to it).
 
 So, writing new boundary for given type of mesh @c MeshType is writing subclass of @ref plask::BoundaryImpl "BoundaryImpl\<MeshType\>".
 
-PLaSK includes some universal @ref plask::BoundaryImpl "BoundaryImpl\<MeshType\>" implementation:
+PLaSK includes some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" implementation:
 - @ref plask::PredicateBoundary "PredicateBoundary\<MeshType\>" is implementation which holds and uses predicate (given in constructor) to check which points lies on boundary.
 
 */
@@ -80,7 +80,7 @@ namespace plask {
  * @ref boundaries
  */
 template <typename MeshType>
-struct BoundaryImpl {
+struct BoundaryLogicImpl {
 
     /// Base class for boundary iterator implementation.
     typedef PolymorphicForwardIteratorImpl<std::size_t, std::size_t> IteratorImpl;
@@ -92,110 +92,68 @@ struct BoundaryImpl {
     typedef Iterator const_iterator;
     typedef const_iterator iterator;
 
-    virtual ~BoundaryImpl() {}
-
-    //virtual BoundaryImpl<MeshType>* clone() const = 0;
+    virtual ~BoundaryLogicImpl() {}
 
     /**
      * Check if boundary includes point with given index.
-     * @param mesh mesh
      * @param mesh_index valid index of point in @p mesh
      * @return @c true only if point with index @p mesh_index in @p mesh lies on boundary
      */
-    virtual bool includes(const MeshType& mesh, std::size_t mesh_index) const = 0;
+    virtual bool includes(std::size_t mesh_index) const = 0;
 
     /**
      * Get begin iterator over boundary points (which are defined by indexes in @p mesh).
-     * @param mesh mesh
      * @return begin iterator over boundary points
      */
-    virtual const_iterator begin(const MeshType& mesh) const = 0;
+    virtual const_iterator begin() const = 0;
 
     /**
      * Get end iterator over boundary points (which are defined by indexes in @p mesh).
      * @param mesh mesh
      * @return end iterator over boundary points
      */
-    virtual const_iterator end(const MeshType& mesh) const = 0;
+    virtual const_iterator end() const = 0;
+
+};
+
+/**
+ * Template of base class for boundaries of mesh with given type which store reference to mesh.
+ * @tparam MeshType type of mesh
+ * @ref boundaries
+ */
+template <typename MeshType>
+struct BoundaryWithMeshLogicImpl: public BoundaryLogicImpl<MeshType> {
+
+    /// iterator over indexes of mesh
+    typedef typename BoundaryLogicImpl<MeshType>::const_iterator const_iterator;
+
+    /// iterator over indexes of mesh
+    typedef typename BoundaryLogicImpl<MeshType>::iterator iterator;
+
+    /// Held mesh.
+    const MeshType& mesh;
 
     /**
-     * Thin wrapper over boundary and mesh pair. It shows points described by boundary in particular mesh.
-     *
-     * Each its method call BoundaryImpl method with the same name passing wrapped mesh as first argument.
+     * Construct object which holds reference to given @p mesh.
+     * @param mesh mesh to hold
      */
-    struct WithMesh {
-
-        /// iterator over indexes of mesh
-        typedef BoundaryImpl<MeshType>::const_iterator const_iterator;
-
-        /// iterator over indexes of mesh
-        typedef BoundaryImpl<MeshType>::iterator iterator;
-
-        /// Logic of held boundary.
-        const BoundaryImpl<MeshType>& boundary;
-
-        /// Held mesh.
-        const MeshType& mesh;
-
-        /**
-         * Construct object which holds given @p boundary and @p mesh.
-         * @param boundary boundary to hold
-         * @param mesh mesh to hold
-         */
-        WithMesh(const BoundaryImpl<MeshType>& boundary, const MeshType& mesh)
-            : boundary(boundary), mesh(mesh) {}
-
-        /**
-         * Check if boundary includes point with given index.
-         * @param mesh_index valid index of point in held mesh
-         * @return @c true only if point with index @p mesh_index in held mesh lies on boundary
-         */
-        bool includes(std::size_t mesh_index) const {
-            return boundary.includes(mesh, mesh_index);
-        }
-
-        /**
-         * Get begin iterator over boundary points (which are defined by indexes in held mesh).
-         * @return begin iterator over boundary points
-         */
-        const_iterator begin() const {
-            return boundary.begin(mesh);
-        }
-
-        /**
-         * Get end iterator over boundary points (which are defined by indexes in held mesh).
-         * @return end iterator over boundary points
-         */
-        const_iterator end() const {
-            return boundary.end(mesh);
-        }
-
-    };
-
-    /**
-     * Get boundary with mesh wrapper.
-     * It allows for easier calling of this boundaring methods.
-     * @param mesh mesh which should be passed by returnet object as first parameter for each calling to boundaries method
-     * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
-     */
-    WithMesh get(const MeshType& mesh) const {
-        return WithMesh(*this, mesh);
-    }
+    BoundaryWithMeshLogicImpl(const MeshType& mesh)
+        : mesh(mesh) {}
 
     /**
      * Base class for boundary iterator implementation which includes reference to boundary.
      *
      * Should not be used directly, but can save some work when implementing own BoundaryImpl and Iterator.
      */
-    struct IteratorWithMeshImpl: public IteratorImpl {
+    struct IteratorWithMeshImpl: public BoundaryLogicImpl<MeshType>::IteratorImpl {
 
-        WithMesh boundaryWithMesh;
+        const BoundaryWithMeshLogicImpl<MeshType>& boundaryWithMesh;
 
-        const BoundaryImpl<MeshType>& getBoundary() const { return boundaryWithMesh.boundary; }
+        const BoundaryWithMeshLogicImpl<MeshType>& getBoundary() const { return boundaryWithMesh; }
         const MeshType& getMesh() const { return boundaryWithMesh.mesh; }
 
-        IteratorWithMeshImpl(const BoundaryImpl<MeshType>& boundary, const MeshType& mesh)
-            : boundaryWithMesh(boundary, mesh) {}
+        IteratorWithMeshImpl(const BoundaryWithMeshLogicImpl<MeshType>& boundaryImpl)
+            : boundaryWithMesh(boundaryImpl) {}
     };
 
 };
@@ -204,44 +162,96 @@ struct BoundaryImpl {
  * Instance of this class represents some conditions which allow to choose a subset of points (strictly: indexes of points) from mesh.
  * This mesh must be a specific type @p MeshType.
  *
- * In fact Boundary is only a holder which includes pointer to abstract class @c BoundaryImpl\<MeshType\> which implements boundary logic.
+ * In fact Boundary is factory of Boundary::WithMesh which is a holder which includes pointer to abstract class @c BoundaryImpl\<MeshType\> which implements boundary logic.
  * @tparam MeshType type of mesh
  * @ref boundaries
  */
 template <typename MeshType>
-struct Boundary: public HolderRef< const BoundaryImpl<MeshType> > {
+struct Boundary {
 
-    /// Type of boundary-mesh pair which shows points described by boundary in particular mesh.
-    typedef typename BoundaryImpl<MeshType>::WithMesh WithMesh;
+    struct WithMesh: public HolderRef< const BoundaryLogicImpl<MeshType> > {
 
-    /**
-     * Construct a boundary which holds given boundary logic.
-     * @param to_hold pointer to object which describe boundary logic
-     */
-    Boundary(const BoundaryImpl<MeshType>* to_hold = nullptr): HolderRef< const BoundaryImpl<MeshType> >(to_hold) {}
+        typedef typename BoundaryLogicImpl<MeshType>::const_iterator const_iterator;
+        typedef typename BoundaryLogicImpl<MeshType>::iterator iterator;
+
+        /**
+         * Construct a boundary which holds given boundary logic.
+         * @param to_hold pointer to object which describe boundary logic
+         */
+        WithMesh(const BoundaryLogicImpl<MeshType>* to_hold = nullptr): HolderRef< const BoundaryLogicImpl<MeshType> >(to_hold) {}
+
+        /**
+         * Check if boundary includes point with given index.
+         * @param mesh_index valid index of point in @p mesh
+         * @return @c true only if point with index @p mesh_index in @p mesh lies on boundary
+         */
+        bool includes(std::size_t mesh_index) const {
+            return this->held->includes(mesh_index);
+        }
+
+        /**
+         * Get begin iterator over boundary points (which are defined by indexes in @p mesh).
+         * @return begin iterator over boundary points
+         */
+        const_iterator begin() const {
+            return this->held->begin();
+        }
+
+        /**
+         * Get end iterator over boundary points (which are defined by indexes in @p mesh).
+         * @param mesh mesh
+         * @return end iterator over boundary points
+         */
+        const_iterator end() const {
+            return this->held->end();
+        }
+
+    };
+
+protected:
+    std::function< const BoundaryLogicImpl<MeshType>*(const MeshType& mesh) > create;
+
+public:
+
+    //template <typename... T>
+    //Boundary(T&&... args): create(std::forward<T>(args)...) {}
+
+    Boundary(std::function< const BoundaryLogicImpl<MeshType>*(const MeshType& mesh) > create_fun): create(create_fun) {}
+
+    Boundary() = default;
+
+    //Boundary(const Boundary<MeshType>&) = default;
+    //Boundary(Boundary<MeshType>&&) = default;
 
     /**
      * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh operator()(const MeshType& mesh) const { return this->held->get(mesh); }
+    WithMesh operator()(const MeshType& mesh) const { return WithMesh(this->create(mesh)); }
 
     /**
      * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh get(const MeshType& mesh) const { return this->held->get(mesh); }
+    WithMesh get(const MeshType& mesh) const { return WithMesh(this->create(mesh)); }
 
     /**
      * Check if boundary includes point with given index.
+     *
+     * Note: if you want call includes for more than one point using the same mesh, it is much more effective to call get first
+     *      and next call includes on returned object.
      * @param mesh mesh
      * @param mesh_index valid index of point in @p mesh
      * @return @c true only if point with index @p mesh_index in @p mesh lies on boundary
      */
     bool includes(const MeshType& mesh, std::size_t mesh_index) const {
-        return this->held->includes(mesh, mesh_index);
+        return get(mesh).includes(mesh_index);
+    }
+
+    bool isNull() const {
+        return !create;
     }
 };
 
@@ -257,22 +267,20 @@ struct Boundary: public HolderRef< const BoundaryImpl<MeshType> > {
  */
 //TODO predykat powinien być na iterator po siatce
 template <typename MeshType, typename Predicate>
-struct PredicateBoundary: public BoundaryImpl<MeshType> {
+struct PredicateBoundary: public BoundaryWithMeshLogicImpl<MeshType> {
 
-    struct PredicateIteratorImpl: public BoundaryImpl<MeshType>::IteratorWithMeshImpl {
+    struct PredicateIteratorImpl: public BoundaryWithMeshLogicImpl<MeshType>::IteratorWithMeshImpl {
 
        typedef decltype(std::begin(std::declval<MeshType>())) MeshBeginIterator;
        typedef decltype(std::end(std::declval<MeshType>())) MeshEndIterator;
 
        MeshBeginIterator meshIterator;
        MeshEndIterator meshIteratorEnd;
-       std::size_t index;
 
-       PredicateIteratorImpl(const BoundaryImpl<MeshType>& boundary, const MeshType& mesh,
-                              MeshBeginIterator meshIterator):
-            BoundaryImpl<MeshType>::IteratorWithMeshImpl(boundary, mesh),
+       PredicateIteratorImpl(const BoundaryWithMeshLogicImpl<MeshType>& boundary, MeshBeginIterator meshIterator):
+            BoundaryWithMeshLogicImpl<MeshType>::IteratorWithMeshImpl(boundary),
             meshIterator(meshIterator),
-            meshIteratorEnd(std::end(mesh)) {
+            meshIteratorEnd(std::end(boundary.mesh)) {
            while (this->meshIterator != meshIteratorEnd && !check_predicate())
                ++this->meshIterator;  //go to first element which fulfill predicate
        }
@@ -294,11 +302,11 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
             } while (meshIterator != meshIteratorEnd && !check_predicate());
         }
 
-        virtual bool equal(const typename BoundaryImpl<MeshType>::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryLogicImpl<MeshType>::IteratorImpl& other) const {
             return meshIterator == static_cast<const PredicateIteratorImpl&>(other).meshIterator;
         }
 
-        virtual typename BoundaryImpl<MeshType>::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl<MeshType>::IteratorImpl* clone() const {
             return new PredicateIteratorImpl(*this);
         }
 
@@ -311,27 +319,27 @@ struct PredicateBoundary: public BoundaryImpl<MeshType> {
      * Construct predicate boundary which use given @p predicate.
      * @param predicate predicate which check if given point is in boundary
      */
-    PredicateBoundary(Predicate predicate): predicate(predicate) {}
+    PredicateBoundary(const MeshType& mesh, Predicate predicate): BoundaryWithMeshLogicImpl<MeshType>(mesh), predicate(predicate) {}
 
     //virtual PredicateBoundary<MeshType, Predicate>* clone() const { return new PredicateBoundary<MeshType, Predicate>(predicate); }
 
 private:
-    bool check_predicate(const MeshType& mesh, std::size_t mesh_index) const {
-        return predicate(mesh, mesh_index);
+    bool check_predicate(std::size_t mesh_index) const {
+        return predicate(this->mesh, mesh_index);
     }
 
 public:
 
-    virtual bool includes(const MeshType& mesh, std::size_t mesh_index) const {
-        return this->check_predicate(mesh, mesh_index);
+    virtual bool includes(std::size_t mesh_index) const {
+        return this->check_predicate(mesh_index);
     }
 
-    typename BoundaryImpl<MeshType>::Iterator begin(const MeshType &mesh) const {
-        return typename BoundaryImpl<MeshType>::Iterator(new PredicateIteratorImpl(*this, mesh, std::begin(mesh)));
+    typename BoundaryLogicImpl<MeshType>::Iterator begin() const {
+        return typename BoundaryLogicImpl<MeshType>::Iterator(new PredicateIteratorImpl(*this, std::begin(this->mesh)));
     }
 
-    typename BoundaryImpl<MeshType>::Iterator end(const MeshType &mesh) const {
-        return typename BoundaryImpl<MeshType>::Iterator(new PredicateIteratorImpl(*this, mesh, std::end(mesh)));
+    typename BoundaryLogicImpl<MeshType>::Iterator end() const {
+        return typename BoundaryLogicImpl<MeshType>::Iterator(new PredicateIteratorImpl(*this, std::end(this->mesh)));
     }
 
 };
@@ -350,7 +358,7 @@ public:
  */
 template <typename MeshType, typename Predicate>
 inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
-    return typename MeshType::Boundary(new PredicateBoundary<MeshType, Predicate>(predicate));
+    return typename MeshType::Boundary( [=](const MeshType& mesh) { return new PredicateBoundary<MeshType, Predicate>(mesh, predicate); } );
 }
 
 /**
