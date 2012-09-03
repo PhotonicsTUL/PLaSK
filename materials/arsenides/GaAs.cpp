@@ -68,8 +68,8 @@ MI_PROPERTY(GaAs, Me,
 std::pair<double,double> GaAs::Me(double T, char point) const {
     std::pair<double,double> tMe(0.,0.);
     if (point == 'G') {
-        tMe = 0.067;
-        tMe = 0.067;
+        tMe.first = 0.067;
+        tMe.second = 0.067;
     }
     return (tMe);
 }

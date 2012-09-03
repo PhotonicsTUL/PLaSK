@@ -68,7 +68,7 @@ std::pair<double,double> AlN::Me(double T, char point) const {
     std::pair<double,double> tMe(0.,0.);
     if (point == 'G') {
         tMe.first = 0.30;
-        tMe.second = 0.29
+        tMe.second = 0.29;
     }
     return (tMe);
 }

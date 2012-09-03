@@ -41,7 +41,7 @@ double InGaN_Si::Dop() const {
     return ND;
 }
 
-double InGaN_Si::cond(double T) const {
+std::pair<double,double> InGaN_Si::cond(double T) const {
     return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 

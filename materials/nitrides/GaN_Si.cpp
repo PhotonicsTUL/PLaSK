@@ -63,8 +63,9 @@ MI_PROPERTY(GaN_Si, condT,
             )
 std::pair<double,double> GaN_Si::condT(double T, double t) const {
     double fun_Nf = 2.18*pow(Nf_RT,-0.022),
-           tCondT = GaN::condT(T,t)*fun_Nf;
-    return(std::make_pair(tCondT, tCondT));
+           lCondT = GaN::condT(T,t).first*fun_Nf,
+           vCondT = GaN::condT(T,t).second*fun_Nf;
+    return(std::make_pair(lCondT, vCondT));
  }
 
 MI_PROPERTY(GaN_Si, absp,
