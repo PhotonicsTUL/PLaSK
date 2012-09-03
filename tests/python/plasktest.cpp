@@ -73,6 +73,10 @@ std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
     return typeid(*material).name();
 }
 
+std::tuple<plask::dcomplex,plask::dcomplex,plask::dcomplex,plask::dcomplex,plask::dcomplex> NrTensor(plask::shared_ptr<plask::Material> material) {
+    return material->Nr_tensor(1000., 300.);
+}
+
 //// Boundary conditions /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 py::list testBoundary(const plask::RectilinearMesh2D& mesh, const typename plask::RectilinearMesh2D::Boundary& boundary) {
@@ -168,6 +172,8 @@ BOOST_PYTHON_MODULE(plasktest)
     py::def("isEmpty", &isEmpy);
 
     py::def("materialTypeId", &materialTypeId);
+
+    py::def("NrTensor", &NrTensor);
 
     py::def("testBoundary", &testBoundary);
 

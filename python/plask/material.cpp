@@ -24,6 +24,83 @@ struct EmptyBase : public Material {
     virtual Material::Kind kind() const { return Material::NONE; }
 };
 
+typedef std::pair<double,double> DDPair;
+typedef std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> NrTensorT;
+
+struct DDpair_fromto_Python
+{
+    DDpair_fromto_Python() {
+        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<DDPair>());
+        boost::python::to_python_converter<DDPair, DDpair_fromto_Python>();
+    }
+
+    static void* convertible(PyObject* obj_ptr) {
+        if (!PySequence_Check(obj_ptr) && !PyFloat_Check(obj_ptr) && !PyInt_Check(obj_ptr)) return NULL;
+        return obj_ptr;
+    }
+
+    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<DDPair>*)data)->storage.bytes;
+        double first, second;
+        if (PyFloat_Check(obj_ptr) || PyInt_Check(obj_ptr)) {
+            first = second = py::extract<double>(obj_ptr);
+        } else if (PySequence_Length(obj_ptr) == 2) {
+            auto src = py::object(py::handle<>(py::borrowed(obj_ptr)));
+            auto ofirst = src[0];
+            auto osecond = src[1];
+            first = py::extract<double>(ofirst);
+            second = py::extract<double>(osecond);
+        } else {
+            throw TypeError("float or sequence of exactly two floats required");
+        }
+        new(storage) DDPair(first, second);
+        data->convertible = storage;
+    }
+
+    static PyObject* convert(const DDPair& pair)  {
+        py::tuple tuple = py::make_tuple(pair.first, pair.second);
+        return boost::python::incref(tuple.ptr());
+    }
+};
+
+
+struct ComplexTensor_fromto_Python
+{
+    ComplexTensor_fromto_Python() {
+        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<NrTensorT>());
+        boost::python::to_python_converter<NrTensorT, ComplexTensor_fromto_Python>();
+    }
+
+    static void* convertible(PyObject* obj_ptr) {
+        if (!PySequence_Check(obj_ptr)) return NULL;
+        return obj_ptr;
+    }
+
+    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        py::object src = py::object(py::handle<>(py::borrowed(obj_ptr)));
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<NrTensorT>*)data)->storage.bytes;
+        dcomplex vals[5];
+        int idx[5] = { 0, 1, 2, 3, 4 };
+        auto seq = py::object(py::handle<>(py::borrowed(obj_ptr)));
+        if (py::len(seq) == 2) { idx[2] = 1; idx[3] = idx[4] = -1; }
+        else if (py::len(seq) == 3) { idx[3] = idx[4] = -1; }
+        else if (py::len(seq) != 5)
+            throw TypeError("float or sequence of exactly 2, 3, or 5 complex required");
+        for (int i = 0; i < 5; ++i) {
+            if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
+            else vals[i] = 0.;
+        }
+        new(storage) NrTensorT(vals[0], vals[1], vals[2], vals[3], vals[4]);
+        data->convertible = storage;
+    }
+
+    static PyObject* convert(const NrTensorT& src)  {
+        py::tuple tuple = py::make_tuple(std::get<0>(src), std::get<1>(src), std::get<2>(src), std::get<3>(src), std::get<4>(src));
+        return boost::python::incref(tuple.ptr());
+    }
+};
+
+
 /**
  * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
@@ -110,18 +187,10 @@ class MaterialWrap : public Material
     virtual double VBO(double T) const { return override<double>("VBO", &Material::VBO, T); }
     virtual double Dso(double T) const { return override<double>("Dso", &Material::Dso, T); }
     virtual double Mso(double T) const { return override<double>("Mso", &Material::Mso, T); }
-    virtual double Me(double T, const char Point) const { return override<double>("Me", &Material::Me, T, Point); }
-    virtual double Me_v(double T, const char Point) const { return override<double>("Me_v", &Material::Me_v, T, Point); }
-    virtual double Me_l(double T, const char Point) const { return override<double>("Me_l", &Material::Me_l, T, Point); }
-    virtual double Mhh(double T, const char Point) const { return override<double>("Mhh", &Material::Mhh, T, Point); }
-    virtual double Mhh_v(double T, const char Point) const { return override<double>("Mhh_v", &Material::Mhh_v, T, Point); }
-    virtual double Mhh_l(double T, const char Point) const { return override<double>("Mhh_l", &Material::Mhh_l, T, Point); }
-    virtual double Mlh(double T, const char Point) const { return override<double>("Mlh", &Material::Mlh, T, Point); }
-    virtual double Mlh_v(double T, const char Point) const { return override<double>("Mlh_v", &Material::Mlh_v, T, Point); }
-    virtual double Mlh_l(double T, const char Point) const { return override<double>("Mlh_l", &Material::Mlh_l, T, Point); }
-    virtual double Mh(double T, char EqType) const { return override<double>("Mh", &Material::Mh, T, EqType); }
-    virtual double Mh_v(double T, const char Point) const { return override<double>("Mh_v", &Material::Mh_v, T, Point); }
-    virtual double Mh_l(double T, const char Point) const { return override<double>("Mh_l", &Material::Mh_l, T, Point); }
+    virtual DDPair Me(double T, const char Point) const { return override<DDPair>("Me", &Material::Me, T, Point); }
+    virtual DDPair Mhh(double T, const char Point) const { return override<DDPair>("Mhh", &Material::Mhh, T, Point); }
+    virtual DDPair Mlh(double T, const char Point) const { return override<DDPair>("Mlh", &Material::Mlh, T, Point); }
+    virtual DDPair Mh(double T, char EqType) const { return override<DDPair>("Mh", &Material::Mh, T, EqType); }
     virtual double eps(double T) const { return override<double>("eps", &Material::eps, T); }
     virtual double chi(double T, const char Point) const { return override<double>("chi", (double (Material::*)(double, char) const) &Material::chi, T, Point); }
     virtual double Nc(double T, const char Point) const { return override<double>("Nc", (double (Material::*)(double, char) const) &Material::Nc, T, Point); }
@@ -129,29 +198,27 @@ class MaterialWrap : public Material
     virtual double Nf(double T) const { return override<double>("Nf", &Material::Nf, T); }
     virtual double EactD(double T) const { return override<double>("EactD", &Material::EactD, T); }
     virtual double EactA(double T) const { return override<double>("EactA", &Material::EactA, T); }
-    virtual double mob(double T) const { return override<double>("mob", &Material::mob, T); }
-    virtual double cond(double T) const { return override<double>("cond", &Material::cond, T); }
-    virtual double cond_v(double T) const { return override<double>("cond_v", &Material::cond_v, T); }
-    virtual double cond_l(double T) const { return override<double>("cond_l", &Material::cond_l, T); }
-    virtual double res(double T) const { return override<double>("res", &Material::res, T); }
-    virtual double res_v(double T) const { return override<double>("res_v", &Material::res_v, T); }
-    virtual double res_l(double T) const { return override<double>("res_l", &Material::res_l, T); }
+    virtual DDPair mob(double T) const { return override<DDPair>("mob", &Material::mob, T); }
+    virtual DDPair cond(double T) const { return override<DDPair>("cond", &Material::cond, T); }
+    virtual DDPair res(double T) const { return override<DDPair>("res", &Material::res, T); }
     virtual double A(double T) const { return override<double>("A", &Material::A, T); }
     virtual double B(double T) const { return override<double>("B", &Material::B, T); }
     virtual double C(double T) const { return override<double>("C", &Material::C, T); }
     virtual double D(double T) const { return override<double>("D", &Material::D, T); }
-    virtual double condT(double T) const { return override<double>("condT", (double (Material::*)(double) const) &Material::condT, T); }
-    virtual double condT(double T, double t) const { return override<double>("condT", (double (Material::*)(double, double) const) &Material::condT, T, t); }
-    virtual double condT_v(double T, double t) const { return override<double>("condT_v", &Material::condT_v, T, t); }
-    virtual double condT_l(double T, double t) const { return override<double>("condT_l", &Material::condT_l, T, t); }
+    virtual DDPair condT(double T) const { return override<DDPair>("condT", (DDPair (Material::*)(double) const) &Material::condT, T); }
+    virtual DDPair condT(double T, double t) const { return override<DDPair>("condT", (DDPair (Material::*)(double, double) const) &Material::condT, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
     virtual double specHeat(double T) const { return override<double>("specHeat", &Material::specHeat, T); }
     virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
     virtual double absp(double wl, double T) const { return override<double>("absp", &Material::absp, wl, T); }
     virtual dcomplex Nr(double wl, double T) const {
         if (overriden("Nr")) return py::call_method<dcomplex>(self, "Nr", wl, T);
-        else return dcomplex(override<double>("nr", &Material::nr, wl, T),
-                             -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+        return dcomplex(override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+    }
+    virtual NrTensorT Nr_tensor(double wl, double T) const {
+        if (overriden("Nr_tensor")) return py::call_method<NrTensorT>(self, "Nr_tensor", wl, T);
+        dcomplex n (override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+        return NrTensorT(n, n, n, 0., 0.);
     }
 
     // End of overriden methods
@@ -174,37 +241,32 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     Material::Kind kind;
 
     PLASK_PyCodeObject
-        *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Me_v, *Me_l, *Mhh, *Mhh_v, *Mhh_l, *Mlh, *Mlh_v, *Mlh_l, *Mh, *Mh_v, *Mh_l,
-        *eps, *chi, *Nc, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *cond_v, *cond_l, *res, *res_v, *res_l, *A, *B, *C, *D,
-        *condT, *condT_t, *condT_v, *condT_l, *dens, *specHeat, *nr, *absp, *Nr;
+        *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *eps, *chi,
+        *Nc, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *res, *A, *B, *C, *D,
+        *condT, *condT_t, *dens, *specHeat, *nr, *absp, *Nr, *Nr_tensor;
 
     PythonEvalMaterialConstructor(const std::string& name, Material::Kind kind) :
         MaterialsDB::MaterialConstructor(name), base(""), kind(kind),
-        lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL), Me_v(NULL), Me_l(NULL),
-        Mhh(NULL), Mhh_v(NULL), Mhh_l(NULL), Mlh(NULL), Mlh_v(NULL), Mlh_l(NULL), Mh(NULL), Mh_v(NULL), Mh_l(NULL),
-        eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL), EactD(NULL), EactA(NULL), mob(NULL), cond(NULL),
-        cond_v(NULL), cond_l(NULL), res(NULL), res_v(NULL), res_l(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        condT(NULL), condT_t(NULL), condT_v(NULL), condT_l(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL),
-        Nr(NULL) {}
+        lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
+        Mhh(NULL), Mlh(NULL), Mh(NULL), eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL),
+        EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), res(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
+        condT(NULL), condT_t(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL), Nr(NULL), Nr_tensor(NULL) {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE),
-        lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL), Me_v(NULL), Me_l(NULL),
-        Mhh(NULL), Mhh_v(NULL), Mhh_l(NULL), Mlh(NULL), Mlh_v(NULL), Mlh_l(NULL), Mh(NULL), Mh_v(NULL), Mh_l(NULL),
-        eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL), EactD(NULL), EactA(NULL), mob(NULL), cond(NULL),
-        cond_v(NULL), cond_l(NULL), res(NULL), res_v(NULL), res_l(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        condT(NULL), condT_t(NULL), condT_v(NULL), condT_l(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL),
-        Nr(NULL) {}
+        lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
+        Mhh(NULL), Mlh(NULL), Mh(NULL), eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL),
+        EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), res(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
+        condT(NULL), condT_t(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL), Nr(NULL), Nr_tensor(NULL) {}
 
 
     virtual ~PythonEvalMaterialConstructor() {
         Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CBO); Py_XDECREF(VBO); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
-        Py_XDECREF(Me_v); Py_XDECREF(Me_l); Py_XDECREF(Mhh); Py_XDECREF(Mhh_v); Py_XDECREF(Mhh_l); Py_XDECREF(Mlh); Py_XDECREF(Mlh_v);
-        Py_XDECREF(Mlh_l); Py_XDECREF(Mh); Py_XDECREF(Mh_v); Py_XDECREF(Mh_l); Py_XDECREF(eps); Py_XDECREF(chi); Py_XDECREF(Nc);
-        Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA); Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(cond_v);
-        Py_XDECREF(cond_l); Py_XDECREF(res); Py_XDECREF(res_v); Py_XDECREF(res_l); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C);
-        Py_XDECREF(D); Py_XDECREF(condT); Py_XDECREF(condT_t); Py_XDECREF(condT_v); Py_XDECREF(condT_l); Py_XDECREF(dens);
-        Py_XDECREF(specHeat); Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(Nr);
+        Py_XDECREF(Mhh); Py_XDECREF(Mlh); Py_XDECREF(Mh); Py_XDECREF(eps); Py_XDECREF(chi);
+        Py_XDECREF(Nc); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
+        Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(res); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C); Py_XDECREF(D);
+        Py_XDECREF(condT); Py_XDECREF(condT_t); Py_XDECREF(dens); Py_XDECREF(specHeat);
+        Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(Nr); Py_XDECREF(Nr_tensor);
     }
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const;
@@ -253,18 +315,10 @@ class PythonEvalMaterial : public Material
     virtual double VBO(double T) const { PYTHON_EVAL_CALL_1(double, VBO, T) }
     virtual double Dso(double T) const { PYTHON_EVAL_CALL_1(double, Dso, T) }
     virtual double Mso(double T) const { PYTHON_EVAL_CALL_1(double, Mso, T) }
-    virtual double Me(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Me, T, Point) }
-    virtual double Me_v(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Me_v, T, Point) }
-    virtual double Me_l(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Me_l, T, Point) }
-    virtual double Mhh(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mhh, T, Point) }
-    virtual double Mhh_v(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mhh_v, T, Point) }
-    virtual double Mhh_l(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mhh_l, T, Point) }
-    virtual double Mlh(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mlh, T, Point) }
-    virtual double Mlh_v(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mlh_v, T, Point) }
-    virtual double Mlh_l(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mlh_l, T, Point) }
-    virtual double Mh(double T, char EqType) const { PYTHON_EVAL_CALL_2(double, Mh, T, EqType) }
-    virtual double Mh_v(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mh_v, T, Point) }
-    virtual double Mh_l(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Mh_l, T, Point) }
+    virtual DDPair Me(double T, const char Point) const { PYTHON_EVAL_CALL_2(DDPair, Me, T, Point) }
+    virtual DDPair Mhh(double T, const char Point) const { PYTHON_EVAL_CALL_2(DDPair, Mhh, T, Point) }
+    virtual DDPair Mlh(double T, const char Point) const { PYTHON_EVAL_CALL_2(DDPair, Mlh, T, Point) }
+    virtual DDPair Mh(double T, char EqType) const { PYTHON_EVAL_CALL_2(DDPair, Mh, T, EqType) }
     virtual double eps(double T) const { PYTHON_EVAL_CALL_1(double, eps, T) }
     virtual double chi(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, chi, T, Point) }
     virtual double Nc(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Nc, T, Point) }
@@ -272,25 +326,19 @@ class PythonEvalMaterial : public Material
     virtual double Nf(double T) const { PYTHON_EVAL_CALL_1(double, Nf, T) }
     virtual double EactD(double T) const { PYTHON_EVAL_CALL_1(double, EactD, T) }
     virtual double EactA(double T) const { PYTHON_EVAL_CALL_1(double, EactA, T) }
-    virtual double mob(double T) const { PYTHON_EVAL_CALL_1(double, mob, T) }
-    virtual double cond(double T) const { PYTHON_EVAL_CALL_1(double, cond, T) }
-    virtual double cond_v(double T) const { PYTHON_EVAL_CALL_1(double, cond_v, T) }
-    virtual double cond_l(double T) const { PYTHON_EVAL_CALL_1(double, cond_l, T) }
-    virtual double res(double T) const { PYTHON_EVAL_CALL_1(double, res, T) }
-    virtual double res_v(double T) const { PYTHON_EVAL_CALL_1(double, res_v, T) }
-    virtual double res_l(double T) const { PYTHON_EVAL_CALL_1(double, res_l, T) }
+    virtual DDPair mob(double T) const { PYTHON_EVAL_CALL_1(DDPair, mob, T) }
+    virtual DDPair cond(double T) const { PYTHON_EVAL_CALL_1(DDPair, cond, T) }
+    virtual DDPair res(double T) const { PYTHON_EVAL_CALL_1(DDPair, res, T) }
     virtual double A(double T) const { PYTHON_EVAL_CALL_1(double, A, T) }
     virtual double B(double T) const { PYTHON_EVAL_CALL_1(double, B, T) }
     virtual double C(double T) const { PYTHON_EVAL_CALL_1(double, C, T) }
     virtual double D(double T) const { PYTHON_EVAL_CALL_1(double, D, T) }
-    virtual double condT(double T) const { PYTHON_EVAL_CALL_1(double, condT, T) }
-    virtual double condT(double T, double t)  const {
+    virtual DDPair condT(double T) const { PYTHON_EVAL_CALL_1(DDPair, condT, T) }
+    virtual DDPair condT(double T, double t)  const {
         if (cls->condT == NULL) return base->condT(T, t);
         py::dict locals; locals["T"] = T; locals["t"] = t;
-        return call<double>(cls->condT_t, locals);
+        return call<DDPair>(cls->condT_t, locals);
     }
-    virtual double condT_v(double T, double t) const { PYTHON_EVAL_CALL_2(double, condT_v, T, t) }
-    virtual double condT_l(double T, double t) const { PYTHON_EVAL_CALL_2(double, condT_l, T, t) }
     virtual double dens(double T) const { PYTHON_EVAL_CALL_1(double, dens, T) }
     virtual double specHeat(double T) const { PYTHON_EVAL_CALL_1(double, specHeat, T) }
     virtual double nr(double wl, double T) const { PYTHON_EVAL_CALL_2(double, nr, wl, T) }
@@ -303,9 +351,20 @@ class PythonEvalMaterial : public Material
             if (!result) throw py::error_already_set();
             return py::extract<dcomplex>(result);
         }
-        else return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T));
+        else return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
     }
-
+    virtual NrTensorT Nr_tensor(double wl, double T) const {
+        py::dict locals; locals["wl"] = wl; locals["T"] = T;
+        py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
+        if (cls->Nr != NULL) {
+            PyObject* result = PyEval_EvalCode(cls->Nr_tensor, globals.ptr(), locals.ptr());
+            if (!result) throw py::error_already_set();
+            return py::extract<NrTensorT>(result);
+        } else {
+            dcomplex n = Nr(wl, T);
+            return NrTensorT(n, n, n, 0., 0.);
+        }
+    }
     // End of overridden methods
 
 };
@@ -373,17 +432,9 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         COMPILE_PYTHON_MATERIAL_FUNCTION(Dso)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Mso)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Me)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Me_v)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Me_l)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh_v)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh_l)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh_v)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh_l)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Mh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mh_v)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mh_l)
         COMPILE_PYTHON_MATERIAL_FUNCTION(eps)
         COMPILE_PYTHON_MATERIAL_FUNCTION(chi)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nc)
@@ -393,24 +444,19 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         COMPILE_PYTHON_MATERIAL_FUNCTION(EactA)
         COMPILE_PYTHON_MATERIAL_FUNCTION(mob)
         COMPILE_PYTHON_MATERIAL_FUNCTION(cond)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(cond_v)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(cond_l)
         COMPILE_PYTHON_MATERIAL_FUNCTION(res)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(res_v)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(res_l)
         COMPILE_PYTHON_MATERIAL_FUNCTION(A)
         COMPILE_PYTHON_MATERIAL_FUNCTION(B)
         COMPILE_PYTHON_MATERIAL_FUNCTION(C)
         COMPILE_PYTHON_MATERIAL_FUNCTION(D)
         COMPILE_PYTHON_MATERIAL_FUNCTION(condT)
         COMPILE_PYTHON_MATERIAL_FUNCTION(condT_t)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(condT_v)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(condT_l)
         COMPILE_PYTHON_MATERIAL_FUNCTION(dens)
         COMPILE_PYTHON_MATERIAL_FUNCTION(specHeat)
         COMPILE_PYTHON_MATERIAL_FUNCTION(nr)
         COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nr)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Nr_tensor)
         else throw XMLUnexpectedElementException(reader, "material parameter tag");
 
         reader.requireTagEnd();
@@ -750,17 +796,9 @@ void initMaterials() {
         .def("Dso", &Material::Dso, (py::arg("T")=300.), "Get split-off energy Dso [eV]")
         .def("Mso", &Material::Mso, (py::arg("T")=300.), "Get split-off mass Mso [m0]")
         .def("Me", &Material::Me, (py::arg("T")=300., py::arg("point")='G'), "Get split-off mass Mso [m0]")
-        .def("Me_v", &Material::Me_v, (py::arg("T")=300., py::arg("point")='G'), "Get electron effective mass Me in vertical direction [m0]")
-        .def("Me_l", &Material::Me_l, (py::arg("T")=300., py::arg("point")='G'), "Get electron effective mass Me in lateral direction [m0]")
         .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("point")='G'), "Get heavy hole effective mass Mhh [m0]")
-        .def("Mhh_v", &Material::Mhh_v, (py::arg("T")=300., py::arg("point")='G'), "Get heavy hole effective mass Mhh [m0]")
-        .def("Mhh_l", &Material::Mhh_l, (py::arg("T")=300., py::arg("point")='G'), "Get heavy hole effective mass Me in lateral direction [m0]")
         .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("point")='G'), "Get light hole effective mass Mlh [m0]")
-        .def("Mlh_v", &Material::Mlh_v, (py::arg("T")=300., py::arg("point")='G'), "Get light hole effective mass Me in vertical direction [m0]")
-        .def("Mlh_l", &Material::Mlh_l, (py::arg("T")=300., py::arg("point")='G'), "Get light hole effective mass Me in lateral direction [m0]")
         .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("eq")/*='G'*/), "Get hole effective mass Mh [m0]")
-        .def("Mh_v", &Material::Mh_v, (py::arg("T")=300., py::arg("point")='G'), "Get hole effective mass Me in vertical direction [m0]")
-        .def("Mh_l", &Material::Mh_l, (py::arg("T")=300., py::arg("point")='G'), "Get hole effective mass Me in lateral direction [m0]")
         .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
         .def("chi", (double (Material::*)(double, char) const)&Material::chi, (py::arg("T")=300., py::arg("point")='G'), "Get electron affinity Chi [eV]")
         .def("Nc", (double (Material::*)(double, char) const)&Material::Nc, (py::arg("T")=300., py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")
@@ -770,30 +808,28 @@ void initMaterials() {
         .def("EactA", &Material::EactA, (py::arg("T")=300.), "Get acceptor ionisation energy EactA [eV]")
         .def("mob", &Material::mob, (py::arg("T")=300.), "Get mobility [m**2/(V*s)]")
         .def("cond", &Material::cond, (py::arg("T")=300.), "Get electrical conductivity Sigma [S/m]")
-        .def("cond_v", &Material::cond_v, (py::arg("T")=300.), "Get electrical conductivity in vertical direction Sigma [S/m]")
-        .def("cond_l", &Material::cond_l, (py::arg("T")=300.), "Get electrical conductivity in lateral direction Sigma [S/m]")
         .def("res", &Material::res, (py::arg("T")=300.), "Get electrical resistivity [Ohm*m]")
-        .def("res_v", &Material::res_v, (py::arg("T")=300.), "Get electrical resistivity in vertical direction [Ohm*m]")
-        .def("res_l", &Material::res_l, (py::arg("T")=300.), "Get electrical resistivity in vertical direction [Ohm*m]")
         .def("A", &Material::A, (py::arg("T")=300.), "Get monomolecular recombination coefficient A [1/s]")
         .def("B", &Material::B, (py::arg("T")=300.), "Get radiative recombination coefficient B [m**3/s]")
         .def("C", &Material::C, (py::arg("T")=300.), "Get Auger recombination coefficient C [m**6/s]")
         .def("D", &Material::D, (py::arg("T")=300.), "Get ambipolar diffusion coefficient D [m**2/s]")
-        .def("condT", (double (Material::*)(double) const)&Material::condT, (py::arg("T")=300.), "Get thermal conductivity [W/(m*K)]")
-        .def("condT", (double (Material::*)(double, double) const)&Material::condT, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity [W/(m*K)]")
-        .def("condT_v", &Material::condT_v, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity in vertical direction k [W/(m*K)]")
-        .def("condT_l", &Material::condT_l, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity in lateral direction k [W/(m*K)]")
+        .def("condT", (DDPair (Material::*)(double) const)&Material::condT, (py::arg("T")=300.), "Get thermal conductivity [W/(m*K)]")
+        .def("condT", (DDPair (Material::*)(double, double) const)&Material::condT, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity [W/(m*K)]")
         .def("dens", &Material::dens, (py::arg("T")=300.), "Get density [kg/m**3]")
         .def("specHeat", &Material::specHeat, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
-        .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nR")
+        .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nr")
         .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.), "Get absorption coefficient alpha")
-        .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nR")
-
+        .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index nR")
+        .def("Nr_tensor", &Material::Nr_tensor, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index tensor nR")
     ;
 
     Material_from_Python_string();
     register_exception<NoSuchMaterial>(PyExc_ValueError);
     register_exception<MaterialMethodNotApplicable>(PyExc_TypeError);
+
+    // Make std::pair<double,double> and std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> understandable
+    DDpair_fromto_Python();
+    ComplexTensor_fromto_Python();
 
     py::enum_<Material::Kind> MaterialKind("kind"); MaterialKind
         .value("NONE", Material::NONE)

@@ -29,12 +29,11 @@ struct Rectilinear1D_from_Sequence
 
     static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
     {
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<RectilinearMesh1D>>*)data)->storage.bytes;
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<RectilinearMesh1D>*)data)->storage.bytes;
         py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj_ptr)))), end;
         new(storage) RectilinearMesh1D(std::vector<double>(begin, end));
         data->convertible = storage;
     }
-
 };
 
 static py::object Rectilinear1D__array__(py::object self) {
@@ -98,7 +97,7 @@ struct Regular1D_from_Tuple
 
     static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
     {
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<RegularMesh1D>>*)data)->storage.bytes;
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularMesh1D>*)data)->storage.bytes;
         auto tuple = py::object(py::handle<>(py::borrowed(obj_ptr)));
         try {
             if (py::len(tuple) != 3) throw py::error_already_set();

@@ -14,7 +14,8 @@ static std::string logLevelHead(LogLevel level) {
         case LOG_DETAIL:        return "DETAIL        ";
         case LOG_DEBUG:         return "DEBUG         ";
 #     else
-        case LOG_CRITICAL_ERROR:return "\033[41;37;01mCRITICAL ERROR";
+        // case LOG_CRITICAL_ERROR:return "\033[41;37;01mCRITICAL ERROR";
+        case LOG_CRITICAL_ERROR:return "\033[31;01mCRITICAL ERROR";
         case LOG_ERROR:         return "\033[31;01mERROR         ";
         case LOG_WARNING:       return "\033[31mWARNING       ";
         case LOG_INFO:          return "\033[34mINFO          ";

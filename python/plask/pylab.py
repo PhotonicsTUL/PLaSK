@@ -21,19 +21,18 @@ __doc__ += matplotlib.pylab.__doc__
 
 import plask
 
-def plotField2D(field, axes=None, **kwargs):
+def plotField2D(field, **kwargs):
     '''Plot scalar real fields using pylab.imshow.'''
     #TODO documentation
-    if axes is None: axes = matplotlib.pylab.gca()
-    return axes.imshow(field.array, origin='lower', extent=[field.mesh.axis0[0], field.mesh.axis0[-1], field.mesh.axis1[0], field.mesh.axis1[-1]], **kwargs)
+    return imshow(field.array, origin='lower', extent=[field.mesh.axis0[0], field.mesh.axis0[-1], field.mesh.axis1[0], field.mesh.axis1[-1]], **kwargs)
 
 
-def plotGeometry2D(geometry, axes=None, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):
+def plotGeometry2D(geometry, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):
     '''Plot two-dimensional geometry.'''
     #TODO documentation
 
     import matplotlib.patches
-    if axes is None: axes = matplotlib.pylab.gca()
+    axes = matplotlib.pylab.gca()
 
     patches = []
     for leaf,box in zip(geometry.getLeafsAsTranslations(), geometry.getLeafsBBoxes()):
@@ -56,15 +55,14 @@ def plotGeometry2D(geometry, axes=None, color='k', width=1.0, set_limits=False, 
         box = geometry.bbox
         axes.set_xlim(box.lower[0], box.upper[0])
         axes.set_ylim(box.lower[1], box.upper[1])
-    return patches
 
 
-def plotMesh2D(mesh, axes=None, color='0.5', width=1.0, set_limits=False, zorder=2):
+def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
     '''Plot two-dimensional rectilinear mesh.'''
     #TODO documentation
 
     import matplotlib.lines
-    if axes is None: axes = matplotlib.pylab.gca()
+    axes = matplotlib.pylab.gca()
 
     lines = []
     if type(mesh) in [plask.mesh.Regular2D, plask.mesh.Rectilinear2D]:
@@ -82,5 +80,20 @@ def plotMesh2D(mesh, axes=None, color='0.5', width=1.0, set_limits=False, zorder
         axes.set_xlim(x_min, x_max)
         axes.set_ylim(y_min, y_max)
 
-    return lines
 
+def plotMaterialParam2D(geometry, param, axes=None, **kwargs):
+    '''Plot selected material parameter as color map'''
+    #TODO documentation
+
+    if axes is None: axes = matplotlib.pylab.gca()
+
+    if type(param) == str:
+        param = eval('lambda m: m.' + param)
+
+    #TODO for different shapes of leafs, plot the somehow better
+    grid = plask.mesh.Rectilinear2D.SimpleGenerator()(geometry.child)
+    grid.ordering = '10'
+    points = grid.getMidpointsMesh()
+    data = array([ param(geometry.getMaterial(p)) for p in points ]).reshape((len(points.axis1), len(points.axis0)))
+
+    pcolor(array(grid.axis0), array(grid.axis1), data, **kwargs)

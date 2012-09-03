@@ -165,13 +165,19 @@ class Manager(unittest.TestCase):
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
                     <absp>T * dc</absp>
                 </material>
+                <material name="XmlMatSimple" kind="dielectric">
+                    <nr>3.5</nr>
+                    <absp>0.</absp>
+                </material>
             </materials>
         </plask>
         ''')
         material.updateFactories()
         mat = plask.material.XmlMat()
         self.assertAlmostEqual( mat.nr(900, 300), 1.39 )
-        self.assertAlmostEqual( mat.Nr(900, 300), 1.39-7.95774715459e-09j )
+        self.assertAlmostEqual( mat.Nr(900, 300), 1.39-7.16197244e-06j )
+        self.assertEqual( plask.material.XmlMatSimple().Nr_tensor(900, 300), (3.5, 3.5, 3.5, 0., 0.) )
+
 
         mad = plask.material.XmlMat(dp="Mg", dc=1e18)
         self.assertEqual( mad.cond(300), material.GaN(dp="Mg", dc=1e18).cond(300) )

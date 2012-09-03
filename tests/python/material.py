@@ -20,6 +20,10 @@ class Material(unittest.TestCase):
             ptest.print_ptr(self)
         def VBO(self, T=300.):
             return 2.*T
+        def nr(self, wl, T):
+            return 3.5
+        def absp(self, wl, T):
+            return 0.
 
     @plask.material.complex
     class AlGaAsDp(plask.material.Material):
@@ -37,6 +41,8 @@ class Material(unittest.TestCase):
             return self.kwargs['dc'] * T
         def CBO(self, T=300.):
             return self.composition['Ga'] * T
+        def Nr_tensor(self, wl, T):
+            return (3.5, 3.6, 3.7, 0.1, 0.2)
 
     @plask.material.simple
     class WithChar(plask.material.Material):
@@ -64,6 +70,8 @@ class Material(unittest.TestCase):
         m = Material.AlGaAs()
         self.assertEqual(m.name, "AlGaAs")
         self.assertEqual( m.VBO(1.0), 2.0 )
+        self.assertEqual( m.nr(980., 300.), 3.5 )
+        self.assertEqual( m.Nr_tensor(980., 300.), (3.5, 3.5, 3.5, 0., 0.) )
         del m
 
         self.assertEqual( ptest.materialName("Al(0.2)GaAs", plask.materialdb), "AlGaAs" )
@@ -78,6 +86,7 @@ class Material(unittest.TestCase):
         self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VBO(1.0), 3.0 )
         self.assertAlmostEqual( m.CBO(1.0), 0.8 )
+        self.assertEqual( ptest.NrTensor(m), (3.5, 3.6, 3.7, 0.1, 0.2) )
 
         with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")): m = Material.AlGaAsDp(Al=0.2, N=0.9)
 
