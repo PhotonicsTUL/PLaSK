@@ -213,6 +213,9 @@ public:
 
     /**
      * Check if any boundary includes a @p mesh_index for given @p mesh.
+     *
+     * Note: if you whish to call includes for more than one point using the same mesh, it is much more effective to call get first
+     *      and next call includes on returned object.
      * @param mesh mesh
      * @param mesh_index index in @p mesh
      * @return element which boundary includes @p mesh_index for given @p mesh or @ref end() if there is no such element
@@ -221,6 +224,24 @@ public:
         auto i = begin();
         while (i != end() && !i->boundary.includes(mesh, mesh_index)) ++i;
         return i;
+    }
+
+    /**
+     * Get Boundary<MeshT>::WithMesh for sum of boundaries in this.
+     * @param mesh mesh
+     */
+    typename Boundary::WithMesh get(const MeshType& mesh) const {
+        SumBoundaryImpl<MeshType>* impl = new SumBoundaryImpl<MeshType>;
+        for (auto& b: container) impl->push_back(b(mesh));
+        return typename Boundary::WithMesh(impl);
+    }
+
+    /**
+     * Get Boundary<MeshT>::WithMesh for sum of boundaries in this.
+     * @param mesh mesh
+     */
+    typename Boundary::WithMesh operator()(const MeshType& mesh) const {
+        return get(mesh);
     }
 };
 

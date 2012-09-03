@@ -71,6 +71,7 @@ PLaSK includes some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<
 #include "../memory.h"
 
 #include "../utils/metaprog.h"   // for is_callable
+#include <vector>
 
 namespace plask {
 
@@ -240,7 +241,7 @@ public:
     /**
      * Check if boundary includes point with given index.
      *
-     * Note: if you want call includes for more than one point using the same mesh, it is much more effective to call get first
+     * Note: if you whish to call includes for more than one point using the same mesh, it is much more effective to call get first
      *      and next call includes on returned object.
      * @param mesh mesh
      * @param mesh_index valid index of point in @p mesh
@@ -253,6 +254,85 @@ public:
     bool isNull() const {
         return !create;
     }
+};
+
+/**
+ * This logic holds a list of boundaries and represent a set of index which is a sum of sets from this boundaries.
+ */
+template <typename MeshType>
+struct SumBoundaryImpl: public BoundaryLogicImpl<MeshType> {
+
+    typedef std::vector< typename Boundary<MeshType>::WithMesh > BoundariesVec;
+    BoundariesVec boundaries;
+
+    struct IteratorImpl: public BoundaryLogicImpl<MeshType>::IteratorImpl {
+
+        typename BoundariesVec::const_iterator current_boundary;
+        typename BoundariesVec::const_iterator current_boundary_end;
+        typename Boundary<MeshType>::const_iterator in_boundary;
+        typename Boundary<MeshType>::const_iterator in_boundary_end;
+
+        void fixCurrentBoundary() {
+            while (in_boundary == in_boundary_end) {
+                ++current_boundary;
+                if (current_boundary != current_boundary_end) return;
+                in_boundary = current_boundary.begin();
+                in_boundary_end = current_boundary.end();
+            }
+        }
+
+        //special version for begin
+        IteratorImpl(typename BoundariesVec::const_iterator current_boundary, typename BoundariesVec::const_iterator current_boundary_end)
+            : current_boundary(current_boundary), current_boundary_end(current_boundary_end), in_boundary(current_boundary->begin()), in_boundary_end(current_boundary->end()) {
+            if (current_boundary != current_boundary_end) fixCurrentBoundary();
+        }
+
+        //special version for end
+        IteratorImpl(typename BoundariesVec::const_iterator current_boundary)
+            : current_boundary(current_boundary), current_boundary_end(current_boundary_end)
+        {}
+
+        bool equal(const typename BoundaryLogicImpl<MeshType>::IteratorImpl &other) const {
+            const IteratorImpl& o = static_cast<const IteratorImpl&>(other);
+            if (current_boundary != current_boundary_end && o.current_boundary == current_boundary_end) return true;    //both are ends
+            return current_boundary == o.current_boundary && in_boundary == o.in_boundary;
+        }
+
+        virtual IteratorImpl* clone() const {
+            return new IteratorImpl(current_boundary, current_boundary_end, in_boundary);
+        }
+
+        virtual std::size_t dereference() const {
+            return *in_boundary;
+        }
+
+        virtual void increment() {
+            if (current_boundary != current_boundary_end) return;
+            ++in_boundary;
+            fixCurrentBoundary();
+        }
+
+    };
+
+    virtual bool includes(std::size_t mesh_index) const {
+        for (auto& b: boundaries)
+            if (b.includes(mesh_index)) return true;
+        return false;
+    }
+
+    typename BoundaryLogicImpl<MeshType>::Iterator begin() const {
+        if (boundaries.empty()) return typename BoundaryLogicImpl<MeshType>::Iterator(new IteratorImpl(boundaries.begin()));
+        return typename BoundaryLogicImpl<MeshType>::Iterator(new IteratorImpl(boundaries.begin(), boundaries.end()));
+    }
+
+    typename BoundaryLogicImpl<MeshType>::Iterator end() const {
+        return typename BoundaryLogicImpl<MeshType>::Iterator(new IteratorImpl(boundaries.begin()));
+    }
+
+    void push_back(const typename Boundary<MeshType>::WithMesh& to_append) { boundaries.push_back(to_append); }
+
+    void push_back(typename Boundary<MeshType>::WithMesh&& to_append) { boundaries.push_back(to_append); }
+
 };
 
 /**
