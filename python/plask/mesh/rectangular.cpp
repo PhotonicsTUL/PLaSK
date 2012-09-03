@@ -85,14 +85,14 @@ static void Rectilinear1D_extend(RectilinearMesh1D& self, py::object sequence) {
 }
 
 
-struct Regular1D_from_Sequence
+struct Regular1D_from_Tuple
 {
-    Regular1D_from_Sequence() {
+    Regular1D_from_Tuple() {
         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RegularMesh1D>());
     }
 
     static void* convertible(PyObject* obj_ptr) {
-        if (!PySequence_Check(obj_ptr)) return NULL;
+        if (!PyTuple_Check(obj_ptr)) return NULL;
         return obj_ptr;
     }
 
@@ -105,7 +105,7 @@ struct Regular1D_from_Sequence
             new(storage) RegularMesh1D(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
             data->convertible = storage;
         } catch (py::error_already_set) {
-            throw TypeError("Must provide either mesh.Regular1D or '[first, last, count]'");
+            throw TypeError("Must provide either mesh.Regular1D or a tuple (first, last, count)");
         }
     }
 
@@ -529,7 +529,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
         .def("__iter__", py::range(&RegularMesh1D::begin, &RegularMesh1D::end))
     ;
-    Regular1D_from_Sequence();
+    Regular1D_from_Tuple();
 
     py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>> regular2d("Regular2D",
         "Two-dimensional mesh\n\n"

@@ -13,7 +13,7 @@ class ReceiverTest(unittest.TestCase):
 
     def setUp(self):
         self.solver = plasktest.SimpleSolver()
-        self.mesh1 = plask.mesh.Regular2D([0., 4., 3], [0., 20., 3])
+        self.mesh1 = plask.mesh.Regular2D((0., 4., 3), (0., 20., 3))
         self.mesh2 = self.mesh1.getMidpointsMesh();
 
     def testReceiverWithConstant(self):
