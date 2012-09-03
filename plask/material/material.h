@@ -651,6 +651,23 @@ private:
         return w_sum;
     }
 
+    /**
+     * Calulate weighted sums of materials (from materials vector) properties.
+     * @param f functore which calculate property value for given material
+     * @return calculated sum, with the same type which return functor
+     * @tparam Functor type of functor which can take const Material& argument, and return something which can be multiple by scalar, added, and assigned
+     */
+    template <typename Functor>
+    auto avg_pairs(Functor f) const -> std::pair<double, double> {
+        std::pair<double,double> w_sum(0., 0.);
+        for (auto& p: materials) {
+            std::pair<double,double> m = f(*std::get<0>(p));
+            w_sum.first += std::get<1>(p) * m.first;
+            w_sum.second += std::get<1>(p) * m.second;
+        }
+        return w_sum;
+    }
+
 };
 
 /**

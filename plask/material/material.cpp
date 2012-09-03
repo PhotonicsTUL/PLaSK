@@ -339,14 +339,7 @@ double MixedMaterial::chi(char point) const {
 }
 
 std::pair<double,double> MixedMaterial::cond(double T) const {
-    //return avg([&](const Material& m) { return m.cond(T); });
-    std::pair<double,double> w_sum(0.,0.);
-    for (auto& p: materials) {
-        std::pair<double,double> m = std::get<0>(p)->cond(T);
-        w_sum.first += std::get<1>(p) * m.first;
-        w_sum.second += std::get<1>(p) * m.second;
-    }
-    return w_sum;
+    return avg_pairs([&](const Material& m) { return m.cond(T); });
 }
 
 double MixedMaterial::D(double T) const {
@@ -381,23 +374,23 @@ double MixedMaterial::lattC(double T, char x) const {
 }
 
 std::pair<double,double> MixedMaterial::Me(double T, char point) const {
-    return avg([&](const Material& m) { return m.Me(T, point); });
+    return avg_pairs([&](const Material& m) { return m.Me(T, point); });
 }
 
 std::pair<double,double> MixedMaterial::Mh(double T, char EqType) const {
-    return avg([&](const Material& m) { return m.Mh(T, EqType); });
+    return avg_pairs([&](const Material& m) { return m.Mh(T, EqType); });
 }
 
 std::pair<double,double> MixedMaterial::Mhh(double T, char point) const {
-    return avg([&](const Material& m) { return m.Mhh(T, point); });
+    return avg_pairs([&](const Material& m) { return m.Mhh(T, point); });
 }
 
 std::pair<double,double> MixedMaterial::Mlh(double T, char point) const  {
-    return avg([&](const Material& m) { return m.Mlh(T, point); });
+    return avg_pairs([&](const Material& m) { return m.Mlh(T, point); });
 }
 
 std::pair<double,double> MixedMaterial::mob(double T) const {
-    return avg([&](const Material& m) { return m.mob(T); });
+    return avg_pairs([&](const Material& m) { return m.mob(T); });
 }
 
 double MixedMaterial::Mso(double T) const {
@@ -438,7 +431,7 @@ std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> MixedMaterial::Nr_t
 }
 
 std::pair<double,double> MixedMaterial::res(double T) const {
-    return avg([&](const Material& m) { return m.res(T); });
+    return avg_pairs([&](const Material& m) { return m.res(T); });
 }
 
 double MixedMaterial::specHeat(double T) const {
@@ -446,10 +439,10 @@ double MixedMaterial::specHeat(double T) const {
 }
 
 std::pair<double,double> MixedMaterial::condT(double T) const {
-    return avg([&](const Material& m) { return m.condT(T); });
+    return avg_pairs([&](const Material& m) { return m.condT(T); });
 }
 std::pair<double,double> MixedMaterial::condT(double T, double thickness) const {
-    return avg([&](const Material& m) { return m.condT(T, thickness); });
+    return avg_pairs([&](const Material& m) { return m.condT(T, thickness); });
 }
 
 double MixedMaterial::VBO(double T) const  {
