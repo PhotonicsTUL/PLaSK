@@ -21,7 +21,7 @@ __doc__ += matplotlib.pylab.__doc__
 
 import plask
 
-def plotField(field, axes=None, **kwargs):
+def plotField2D(field, axes=None, **kwargs):
     '''Plot scalar real fields using pylab.imshow.'''
     #TODO documentation
     if axes is None: axes = matplotlib.pylab.gca()
