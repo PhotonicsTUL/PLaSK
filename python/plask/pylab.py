@@ -90,7 +90,7 @@ def plotMaterialParam2D(geometry, param, axes=None, **kwargs):
     if type(param) == str:
         param = eval('lambda m: m.' + param)
 
-    #TODO for different shapes of leafs, plot the somehow better
+    #TODO for different shapes of leafs, plot it somehow better (how? make patches instead of pcolor?)
     grid = plask.mesh.Rectilinear2D.SimpleGenerator()(geometry.child)
     grid.ordering = '10'
     points = grid.getMidpointsMesh()

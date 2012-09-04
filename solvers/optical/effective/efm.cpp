@@ -310,25 +310,22 @@ Matrix2cd EffectiveFrequencyCylSolver::getMatrix(dcomplex v, size_t i)
 
     Matrix2cd A, B;
 
-    dcomplex J1, Y1, dJ1, dY1, J2, Y2, dJ2, dY2;
-
     // Compute Bessel functions and their derivatives
+    dcomplex J1, Y1, dJ1, dY1, J2, Y2, dJ2, dY2;
     int ln;
     dcomplex Js[l+1], Ys[l+1], dJs[l+1], dYs[l+1];
-
     if (bessel::cbessjyna(l, x1 ,ln, Js, Ys, dJs, dYs) || ln != l)
-        throw ComputationError(getId(), "Could not compute Bessel functions");
+       throw ComputationError(getId(), "Could not compute Bessel functions");
     J1 = Js[l]; Y1 = Ys[l]; dJ1 = dJs[l]; dY1 = dYs[l];
-
     if (bessel::cbessjyna(l, x2 ,ln, Js, Ys, dJs, dYs) || ln != l)
-        throw ComputationError(getId(), "Could not compute Bessel functions");
+       throw ComputationError(getId(), "Could not compute Bessel functions");
     J2 = Js[l]; Y2 = Ys[l]; dJ2 = dJs[l]; dY2 = dYs[l];
 
     A << J1,         Y1,
-         x1 * dJ1,   x1 * dY1;
+           x1 * dJ1,   x1 * dY1;
 
     B << J2,         Y2,
-         x2 * dJ2,   x2 * dY2;
+           x2 * dJ2,   x2 * dY2;
 
     return B.inverse() * A;
 }
@@ -341,13 +338,13 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
     // In the innermost area there must not be any infinity, so Y = 0.
     E << 1., 0.;
 
-    for (size_t i = veffs.size()-1; i > 0; --i) {
+    for (size_t i = 1; i < veffs.size(); ++i) {
         E = getMatrix(v, i) * E;
     }
 
     // In the outmost layer, there is only an outgoing wave, so the solution is a Hankel function H = J + iY.
     // So E = a J + b Y = a H = a (J + iY). Then a + ib = 0.
-    return E[0] + I * E[1];
+    return E[0] - I * E[1];
 }
 
 
@@ -365,7 +362,7 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
 
         // Compute horizontal part
         for (size_t i = 1; i < mesh->axis0.size(); ++i) {
-                fieldR[i].noalias() = getMatrix(v, i) * fieldR[i-1];
+            fieldR[i].noalias() = getMatrix(v, i) * fieldR[i-1];
         }
 
         size_t stripe = 0;
@@ -383,9 +380,10 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
         // Compute vertical part
         std::vector<dcomplex>& NR = nrCache[stripe];
         std::vector<dcomplex>& NG = ngCache[stripe];
+        dcomplex veff = veffs[stripe];
         betaz.resize(NR.size());
         for (size_t i = 0; i < NR.size(); ++i) {
-            betaz[i] = k0 * sqrt(NR[i]*NR[i] - v * NR[i]*NG[i]);
+            betaz[i] = k0 * sqrt(NR[i]*NR[i] - veff * NR[i]*NG[i]);
             if (real(betaz[i]) < 0.) betaz[i] = -betaz[i];  // TODO verify this condition; in general it should consider really outgoing waves
         }
         auto fresnel = [&](size_t i) -> Matrix2cd {
@@ -402,8 +400,8 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
             dcomplex phas = exp(-I * betaz[i] * d);
             DiagonalMatrix<dcomplex, 2> P;
             P.diagonal() << phas, 1./phas;
-            fieldZ[i] = P * fieldZ[i];
-            fieldZ[i+1].noalias() = fresnel(i) * fieldZ[i];
+            fieldZ[i+1].noalias() = P * fieldZ[i];
+            fieldZ[i+1] = fresnel(i) * fieldZ[i+1];
         }
     }
 
@@ -421,16 +419,16 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
             double z = point.c1;
             if (r < 0) r = -r;
 
-            size_t ir = mesh->axis0.findIndex(r);
-            dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
+            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;
+            dcomplex x = r * k0 * sqrt(nng[ir-1] * (veffs[ir-1]-v));
             if (real(x) < 0.) x = -x;
             if (bessel::cbessjyna(l, x ,ln, Js, Ys, dJs, dYs) || ln != l)
                 throw ComputationError(getId(), "Could not compute Bessel functions");
             dcomplex val = fieldR[ir][0] * Js[l] + fieldR[ir][1] * Ys[l];
             size_t iy = mesh->axis1.findIndex(z);
             z -= mesh->axis1[max(int(iy)-1, 0)];
-            dcomplex phasy = exp(- I * betaz[iy] * z);
-            val *= fieldZ[iy][0] * phasy + fieldZ[iy][1] / phasy;
+            dcomplex phasz = exp(- I * betaz[iy] * z);
+            val *= fieldZ[iy][0] * phasz + fieldZ[iy][1] / phasz;
 
             results[id++] = real(abs2(val));
         }
@@ -460,7 +458,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
 
         for (double r: rect_mesh.axis0) {
             if (r < 0.) r = -r;
-            size_t ir = mesh->axis0.findIndex(r);
+            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;
             dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
             if (real(x) < 0.) x = -x;
             if (bessel::cbessjyna(l, x ,ln, Js, Ys, dJs, dYs) || ln != l)
@@ -469,10 +467,10 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
         }
 
         for (auto z: rect_mesh.axis1) {
-            size_t iy = mesh->axis1.findIndex(z);
-            z -= mesh->axis1[max(int(iy)-1, 0)];
-            dcomplex phasy = exp(- I * betaz[iy] * z);
-            valz[idz++] = fieldZ[iy][0] * phasy + fieldZ[iy][1] / phasy;
+            size_t iz = mesh->axis1.findIndex(z);
+            z -= mesh->axis1[max(int(iz)-1, 0)];
+            dcomplex phasz = exp(- I * betaz[iz] * z);
+            valz[idz++] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
         }
 
         for (size_t i = 0; i != rect_mesh.size(); ++i) {
