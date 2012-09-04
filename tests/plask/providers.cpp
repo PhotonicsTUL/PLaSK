@@ -47,13 +47,24 @@ BOOST_AUTO_TEST_CASE(single_value) {
     BOOST_CHECK_THROW(receiver(), plask::NoValue);
 }
 
-BOOST_AUTO_TEST_CASE(delegate_to_member) {
+BOOST_AUTO_TEST_CASE(single_value_with_param) {
+    struct OneDoubleWithParam: public plask::SingleValueProperty<double, int> {};
+    plask::ProviderFor<OneDoubleWithParam>::Delegate provider([](int i) { return 2.0*i; });
+    plask::ReceiverFor<OneDoubleWithParam> receiver;
+    receiver.setProvider(provider);
+    //BOOST_CHECK_EQUAL(receiver(3), 6.0);
+}
+
+BOOST_AUTO_TEST_CASE(single_value_delegate) {
     struct Obj { double member() { return 1.0; } } obj;
     struct OneDouble: public plask::SingleValueProperty<double> {};
-    plask::ProviderFor<OneDouble>::Delegate provider(&obj, &Obj::member);
+    plask::ProviderFor<OneDouble>::Delegate provider_member(&obj, &Obj::member);
     plask::ReceiverFor<OneDouble> receiver;
-    receiver << provider;
+    receiver << provider_member;
     BOOST_CHECK_EQUAL(receiver(), 1.0);
+    plask::ProviderFor<OneDouble>::Delegate provider_lambda([] { return 2.0; });
+    receiver << provider_lambda;
+    BOOST_CHECK_EQUAL(receiver(), 2.0);
 }
 
 BOOST_AUTO_TEST_CASE(polymorphic_receivers) {

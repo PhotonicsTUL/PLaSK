@@ -4,7 +4,7 @@
 #include <type_traits>  // std::is_same
 
 #include "python_globals.h"
-#include <plask/provider/provider.h>
+#include <plask/provider/providerfor.h>
 #include <plask/mesh/rectilinear.h>
 #include <plask/mesh/regular.h>
 

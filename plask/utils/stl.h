@@ -65,6 +65,9 @@ inline Iter find_nearest_binary(Iter begin, Iter end, const Val& to_find) {
     return find_nearest_using_lower_bound(begin, end, to_find, std::lower_bound(begin, end, to_find));
 }
 
+template <typename... Types>
+struct VariadicTemplateTypesHolder {};
+
 } // namespace plask
 
 #endif // PLASK__STL_H

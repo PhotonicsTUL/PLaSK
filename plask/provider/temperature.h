@@ -1,7 +1,7 @@
 #ifndef PLASK__TEMPERATURE_H
 #define PLASK__TEMPERATURE_H
 
-#include "provider.h"
+#include "providerfor.h"
 
 namespace plask {
 
