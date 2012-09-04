@@ -67,8 +67,7 @@ struct YourSolver: public SolverWithMesh<ForExample_Geometry2DCartesian, ForExam
     const DataVector<double> getDelegated(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod method=DEFAULT_INTERPOLATION) {
         if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
             throw NoValue(SomeSingleValueProperty::NAME);
-        if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-        return interpolate(*mesh, my_data, dst_mesh, method); // interpolate your data to the requested mesh
+        return interpolate(*mesh, my_data, dst_mesh, defInterpolation<INTERPOLATION_LINEAR>(method)); // interpolate your data to the requested mesh
     }
 
 };

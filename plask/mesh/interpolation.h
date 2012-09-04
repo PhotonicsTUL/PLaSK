@@ -97,6 +97,14 @@ enum InterpolationMethod {
 static const char* interpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE", "COSINE", "FOURIER" /*attach new interpolation algoritm names here*/};
 
 /**
+ * Helper utility that replaces DEFAULT_INTERPOLATION with particular method.
+ */
+template <InterpolationMethod default_method>
+inline InterpolationMethod defInterpolation(InterpolationMethod method) {
+    return (method == DEFAULT_INTERPOLATION)? default_method : method;
+}
+
+/**
  * Specialization of this class are used for interpolation and can depend on source mesh type,
  * data type and the interpolation method.
  * @see @ref interpolation_write
@@ -112,6 +120,18 @@ struct InterpolationAlgorithm
         msg += ")";
         throw NotImplemented(msg);
         //TODO iterate over dst_mesh and call InterpolationAlgorithmForPoint
+    }
+};
+
+/**
+ * Specilization of InterpolationAlgorithm showing elegant message if alogorithm default is used.
+ */
+template <typename SrcMeshT, typename DataT>
+struct InterpolationAlgorithm<SrcMeshT, DataT, DEFAULT_INTERPOLATION>
+{
+    static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
+        throw CriticalException("interpolate(...) called for DEFAULT_INTERPOLATION method. "
+                                "To avoid it use 'defInterpolation<YOUR_DEFAULT_METHOD>(interpolation_method) in your provider.");
     }
 };
 

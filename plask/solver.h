@@ -260,11 +260,11 @@ For interpolated fields they will look like in the following example:
         if (computed_light_intensity.size() == 0)    // we need to compute the light intensity
         {
             computed_light_intensity.reset(mesh.size()); // allocate space for the light intensity
-            /// [...] compute light intensity
+            // [...] compute the light intensity
         }
 
-        if (interpolation_method == DEFAULT_INTERPOLATION) interpolation_method = INTERPOLATION_LINEAR;
-        return interpolate(*mesh, computed_light_intensity, destination_mesh, interpolation_method); // interpolate your data to the requested mesh
+        return interpolate(*mesh, computed_light_intensity, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
+            // interpolate your data to the requested mesh
     }
 \endcode
 
