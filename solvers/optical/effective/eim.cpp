@@ -120,6 +120,8 @@ void EffectiveIndex2DSolver::setMode(dcomplex neff)
 
 void EffectiveIndex2DSolver::onInitialize()
 {
+    if (!geometry) throw NoGeometryException(getId());
+
     // Set default mesh
     if (!mesh) setSimpleMesh();
 
@@ -174,7 +176,7 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto temp = inTemperature(*mesh);
         auto midmesh = mesh->getMidpointsMesh();
-        auto gain = inGain(midmesh);
+        auto gain = inGain(midmesh, w);
         for (size_t ix = xbegin; ix != xsize; ++ix) {
             size_t tx0, tx1;
             double x0, x1;
@@ -506,9 +508,20 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             valy[idy++] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
         }
 
-        for (size_t i = 0; i != rect_mesh.size(); ++i) {
-            dcomplex f = valx[rect_mesh.index0(i)] * valy[rect_mesh.index1(i)];
-            results[i] = real(abs2(f));
+        if (rect_mesh.getIterationOrder() == RectilinearMesh2D::NORMAL_ORDER) {
+            for (size_t i1 = 0, i = 0; i1 != rect_mesh.axis1.size(); ++i1) {
+                for (size_t i0 = 0; i0 != rect_mesh.axis0.size(); ++i0, ++i) {
+                    dcomplex f = valx[i0] * valy[i1];
+                    results[i] = abs2(f);
+                }
+            }
+        } else {
+            for (size_t i0 = 0, i = 0; i0 != rect_mesh.axis0.size(); ++i0) {
+                for (size_t i1 = 0; i1 != rect_mesh.axis1.size(); ++i1, ++i) {
+                    dcomplex f = valx[i0] * valy[i1];
+                    results[i] = abs2(f);
+                }
+            }
         }
 
         return true;

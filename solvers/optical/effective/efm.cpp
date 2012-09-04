@@ -96,14 +96,22 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1
 
 void EffectiveFrequencyCylSolver::onInitialize()
 {
+    if (!geometry) throw NoGeometryException(getId());
+
     // Set default mesh
     if (!mesh) setSimpleMesh();
 
     // Assign space for refractive indices cache and stripe effective indices
-    nrCache.assign(mesh->axis0.size(), std::vector<dcomplex>(mesh->axis1.size()+1));
-    ngCache.assign(mesh->axis0.size(), std::vector<dcomplex>(mesh->axis1.size()+1));
-    veffs.resize(mesh->axis0.size());
-    nng.resize(mesh->axis0.size());
+    size_t rsize = mesh->axis0.size();
+
+    if (geometry->getBorder(Geometry::DIRECTION_TRAN, true).type() == border::Strategy::EXTEND &&
+        abs(mesh->axis0[mesh->axis0.size()-1] - geometry->getChild()->getBoundingBox().upper[0]) < SMALL)
+        --rsize;
+
+    nrCache.assign(rsize, std::vector<dcomplex>(mesh->axis1.size()+1));
+    ngCache.assign(rsize, std::vector<dcomplex>(mesh->axis1.size()+1));
+    veffs.resize(rsize);
+    nng.resize(rsize);
 }
 
 
@@ -130,10 +138,10 @@ void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
     }
     if (abs(mesh->axis0[0]) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
-    size_t rsize = mesh->axis0.size();
+    size_t rsize = veffs.size();
     size_t zsize = mesh->axis1.size() + 1;
 
-    if (fresh || inTemperature.changed || inGain.changed || inGainSlope.changed || l != old_l) { // We need to update something
+    if (fresh || inTemperature.changed || inGain.changed || l != old_l) { // We need to update something
 
         old_l = l;
 
@@ -142,18 +150,22 @@ void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto temp = inTemperature(*mesh);
 
-        auto midmesh = mesh->getMidpointsMesh();
-        auto gain = inGain(midmesh);
-        auto gain_slope = inGainSlope.optional(midmesh);
-
         double h = lam * 1e6*SMALL;
         double lam1 = lam - h, lam2 = lam + h;
+        double ih2 = 0.5 / h;
+
+        auto midmesh = mesh->getMidpointsMesh();
+        auto gain = inGain(midmesh, lam1);
+        auto gain_slope = inGain(midmesh, lam2);
+        for (auto g1 = gain_slope.begin(), g2 = gain.begin(); g1 != gain_slope.end(); ++g1, ++g2)
+            *g1 = (*g2 - *g1) * ih2;
+        gain = inGain(midmesh, lam);
 
         for (size_t ix = 0; ix != rsize; ++ix) {
             size_t tx1;
             double x0, x1;
             x0 = mesh->axis0[ix];
-            if (ix < rsize-1) { tx1 = ix+1; x1 = mesh->axis0[tx1]; } else { tx1 = rsize-1; x1 = mesh->axis0[tx1] + 2.*outer_distance; }
+            if (ix < mesh->axis0.size()-1) { tx1 = ix+1; x1 = mesh->axis0[tx1]; } else { tx1 = mesh->axis0.size()-1; x1 = mesh->axis0[tx1] + 2.*outer_distance; }
             for (size_t iy = 0; iy != zsize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
@@ -168,12 +180,10 @@ void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
                 // Nr = nr + i/(4π) λ g
                 // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - i/(4π) λ^2 dg/dλ
                 nrCache[ix][iy] = material->Nr(lam, T);
-                ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) / (2*h);
+                ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
                 double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh.index(ix, iy-1)];
-                if (gain_slope) {
-                    double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : (*gain_slope)[midmesh.index(ix, iy-1)];
-                    ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs))? 0. : 7.95774715459e-09 * lam*lam * gs);
-                }
+                double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain_slope[midmesh.index(ix, iy-1)];
+                ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs))? 0. : 7.95774715459e-09 * lam*lam * gs);
                 nrCache[ix][iy] += dcomplex(0., std::isnan(g)? 0. : 7.95774715459e-09 * lam * g);
 
             }
@@ -427,7 +437,7 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
             double z = point.c1;
             if (r < 0) r = -r;
 
-            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;
+            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir >= veffs.size()-1;
             dcomplex x = r * k0 * sqrt(nng[ir-1] * (veffs[ir-1]-v));
             if (real(x) < 0.) x = -x;
             F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
@@ -473,7 +483,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
 
         for (double r: rect_mesh.axis0) {
             if (r < 0.) r = -r;
-            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;
+            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;  if (ir >= veffs.size()) ir >= veffs.size()-1;
             dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
             if (real(x) < 0.) x = -x;
             F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
@@ -494,9 +504,20 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
             valz[idz++] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
         }
 
-        for (size_t i = 0; i != rect_mesh.size(); ++i) {
-            dcomplex f = valr[rect_mesh.index0(i)] * valz[rect_mesh.index1(i)];
-            results[i] = real(abs2(f));
+        if (rect_mesh.getIterationOrder() == RectilinearMesh2D::NORMAL_ORDER) {
+            for (size_t i1 = 0, i = 0; i1 != rect_mesh.axis1.size(); ++i1) {
+                for (size_t i0 = 0; i0 != rect_mesh.axis0.size(); ++i0, ++i) {
+                    dcomplex f = valr[i0] * valz[i1];
+                    results[i] = abs2(f);
+                }
+            }
+        } else {
+            for (size_t i0 = 0, i = 0; i0 != rect_mesh.axis0.size(); ++i0) {
+                for (size_t i1 = 0; i1 != rect_mesh.axis1.size(); ++i1, ++i) {
+                    dcomplex f = valr[i0] * valz[i1];
+                    results[i] = abs2(f);
+                }
+            }
         }
 
         return true;

@@ -180,9 +180,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Receiver for the gain
     ReceiverFor<MaterialGain, Geometry2DCartesian> inGain;
 
-    /// Receiver for the gain slope
-    ReceiverFor<GainSlope, Geometry2DCartesian> inGainSlope;
-
     /// Provider for computed resonant wavelength
     ProviderFor<Wavelength>::WithValue outWavelength;
 

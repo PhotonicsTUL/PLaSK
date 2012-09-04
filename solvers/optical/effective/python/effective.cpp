@@ -146,7 +146,6 @@ BOOST_PYTHON_MODULE(effective)
         __solver__.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant for debugging purposes", (py::arg("wavelength"), "v"));
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain in the active region");
-        RECEIVER(inGainSlope, "Slope of the optical gain in the active region with respect to the wavelength");
         PROVIDER(outWavelength, "Wavelength of the last computed mode");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
     }

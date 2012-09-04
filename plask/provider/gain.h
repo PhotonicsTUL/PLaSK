@@ -19,21 +19,12 @@ namespace plask {
  * the threshold gain as a constant, which should be added to it in order to
  * obtain the zero modal gain (threshold). The regions where it is NaN should
  * not be affected.
- */
-struct MaterialGain : public ScalarFieldProperty {
-    static constexpr const char* NAME = "material gain";
-};
-
-
-/**
- * Gain slope [1/(cm*nm)].
  *
- * This is the gain slope property. It is simple a derivative of a gain over
- * the wavelength. It can be computed by some providers in order to better account
- * for gain change with the wavelength.
+ * Providers of material gain should accept additional parameter,
+ * which is the wavelength for which the gain should be computed.
  */
-struct GainSlope : public ScalarFieldProperty {
-    static constexpr const char* NAME = "gain slope";
+struct MaterialGain : public FieldProperty<double, double> {
+    static constexpr const char* NAME = "material gain";
 };
 
 

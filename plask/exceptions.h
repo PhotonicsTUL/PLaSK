@@ -101,9 +101,11 @@ struct ComputationError: public Exception {
     /**
      * @param where name of class/function/operation doing the computations
      * @param msg error message
+     * @param params formating parmeters for msg
      */
-    ComputationError(const std::string& where, const std::string& msg)
-        : Exception("%1%: %2%", where, msg) {};
+    template <typename... Params>
+    ComputationError(const std::string& where, const std::string& msg, Params... params)
+        : Exception("%1%: %2%", where, format(msg, params...)) {};
 };
 
 /**
