@@ -11,6 +11,8 @@ include(${CMAKE_SOURCE_DIR}/cmake/solvers.cmake)
 #
 #find_package(Boost REQUIRED COMPONENTS math_tr1)
 #set(SOLVER_LINK_LIBRARIES ${Boost_MATH_TR1_LIBRARIES})
+#find_package(BLAS)
+#set(SOLVER_LINK_LIBRARIES ${BLAS_LIBRARIES})
 
 # Uncomment and edit the line below if you need some special include directories.
 # If you use external libraries, you can use the variables returned by find_package.
@@ -41,7 +43,7 @@ endif()
 #
 #set(solver_src eim.cpp eim.h efm.cpp efm.h broyden.cpp broyden.h bessel.h)
 #set(interface_src python/effective.cpp)
-file(GLOB solver_src *.cpp *.hpp *.h bessel/*.cpp bessel/*.h)
+file(GLOB solver_src *.cpp *.hpp *.h amos/*.f amos/*.h)
 
 # To add unit tests to your project create appropriate targets (binary executables
 # or Python scripts) and register them using CMake command add_test for binaries
