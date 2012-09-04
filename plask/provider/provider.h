@@ -57,9 +57,10 @@ plask::ProviderFor class cannot be used directly, but one must declare it using 
 E.g. \b plask::ProviderFor<MyProperty>::WithValue. The specialized class \b WithValue specifies how the provided values can be obtained.
 You can choose from the following options:
 - \b WithValue (available only for plask::SingleValueProperty) — the value is stored in the provider itself.
-  It can be assigned a value just like any class member field.
+  It can be assigned a value just like any class member field. Mind that the additional property parameters are ignored by this provider!
 - \b WithDefaultValue (available only for plask::SingleValueProperty) — similar to \b WithValue, however it always has some value.
   Use it if there is always some sensible default value for the provided quantity, even before any calculations have been performed.
+  Again, the additional property parameters are ignored by this provider!
 - \b Delegate (available for all properties) — the solver needs to contain the method that computes the provided value (field or scalar) on demand.
   This provider requires the pointer to both the solver containing it and the this method as its constructor arguments. See \ref solvers_writing_details
   for an example.
@@ -84,6 +85,21 @@ MyPropertyReceiver receiver;
 receiver << provider;       // connect
 provider = 2.0;             // set some value to provider
 assert(receiver() == 2.0);  // test the received value
+
+// .........
+
+// Physical property tag with additional parameter of type 'int'.
+struct ParamProperty: public plask::SingleValueProperty<double, int> {
+    static constexpr const char* NAME = "property with parameter"; // use lowercase here
+};
+
+// ...
+// Usage example:
+plask::ProviderFor<ParamProperty>::Delegate provider2([](int i) { return 2.0*i; });
+plask::ReceiverFor<ParamProperty> receiver2;
+receiver2 << provider2;      // connect
+assert(receiver2(3) == 6.0); // test the received value
+
 @endcode
 
 
