@@ -88,9 +88,17 @@ shelf = element (shelf|shelf2d) { geom_anystack_common.attlist, attribute flat {
 	(   element child {geom_child_common.attlist, geometry_element2d} | geometry_element2d   )
 }
 
-geometry_element2d = (block_as_2d|translation_as_2d|container_as_2d|stack_as_2d|shelf)
-geometry_element3d = (block_as_3d|translation_as_3d|container_as_3d|stack_as_3d|extrusion|revolution)
-geometry_element = (block2d|block3d|translation2d|translation3d|container2d|container3d|stack2d|stack3d|shelf|extrusion|revolution)	#unused now
+element_attr = attribute element { text }
+copy = element copy {
+	name_attr?, attribute from { text },
+	(element toblock {element_attr, material_attr} |
+	 element replace {element_attr, (attribute to { text } | geometry_element)} |
+	 element delete {element_attr})*
+}
+
+geometry_element2d = (block_as_2d|translation_as_2d|container_as_2d|stack_as_2d|shelf|copy)
+geometry_element3d = (block_as_3d|translation_as_3d|container_as_3d|stack_as_3d|extrusion|revolution|copy)
+geometry_element = (block2d|block3d|translation2d|translation3d|container2d|container3d|stack2d|stack3d|shelf|extrusion|revolution|copy)
 
 
 # ------------ grids section -------------------
