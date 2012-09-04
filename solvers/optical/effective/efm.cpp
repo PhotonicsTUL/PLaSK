@@ -1,5 +1,5 @@
 #include "efm.h"
-#include "bessel/bessel.h"
+#include "amos/amos.h"
 
 using plask::dcomplex;
 
@@ -117,7 +117,8 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 
 /********* Here are the computations *********/
 
-/* It would probably be better to use S-matrix method, but for simplicity we use T-matrix */
+static const int mh = 2; // Hankel function type (1 or 2)
+
 
 using namespace Eigen;
 
@@ -311,21 +312,29 @@ Matrix2cd EffectiveFrequencyCylSolver::getMatrix(dcomplex v, size_t i)
     Matrix2cd A, B;
 
     // Compute Bessel functions and their derivatives
-    dcomplex J1, Y1, dJ1, dY1, J2, Y2, dJ2, dY2;
-    int ln;
-    dcomplex Js[l+1], Ys[l+1], dJs[l+1], dYs[l+1];
-    if (bessel::cbessjyna(l, x1 ,ln, Js, Ys, dJs, dYs) || ln != l)
-       throw ComputationError(getId(), "Could not compute Bessel functions");
-    J1 = Js[l]; Y1 = Ys[l]; dJ1 = dJs[l]; dY1 = dYs[l];
-    if (bessel::cbessjyna(l, x2 ,ln, Js, Ys, dJs, dYs) || ln != l)
-       throw ComputationError(getId(), "Could not compute Bessel functions");
-    J2 = Js[l]; Y2 = Ys[l]; dJ2 = dJs[l]; dY2 = dYs[l];
+    dcomplex J1[2], H1[2];
+    dcomplex J2[2], H2[2];
+    double Jr[2], Ji[2], Hr[2], Hi[2];
+    int nz, ierr;
 
-    A << J1,         Y1,
-           x1 * dJ1,   x1 * dY1;
+    F77_GLOBAL(zbesj,ZBESJ)(x1.real(), x1.imag(), l, 1, 2, Jr, Ji, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, x1);
+    F77_GLOBAL(zbesh,ZBESH)(x1.real(), x1.imag(), l, 1, mh, 2, Jr, Ji, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, x1);
+    for (int i = 0; i < 2; ++i) { J1[i] = dcomplex(Jr[i], Ji[i]); H1[i] = dcomplex(Hr[i], Hi[i]); }
 
-    B << J2,         Y2,
-           x2 * dJ2,   x2 * dY2;
+    F77_GLOBAL(zbesj,ZBESJ)(x2.real(), x2.imag(), l, 1, 2, Jr, Ji, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, x1);
+    F77_GLOBAL(zbesh,ZBESH)(x2.real(), x2.imag(), l, 1, mh, 2, Jr, Ji, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, x1);
+    for (int i = 0; i < 2; ++i) { J2[i] = dcomplex(Jr[i], Ji[i]); H2[i] = dcomplex(Hr[i], Hi[i]); }
+
+
+    A <<   J1[0],                 H1[0],
+         l*J1[0] - x1*J1[1],    l*H1[0] - x1*H1[1];
+
+    B <<   J2[0],                 H2[0],
+         l*J2[0] - x2*J2[1],    l*H2[0] - x1*H2[1];
 
     return B.inverse() * A;
 }
@@ -344,7 +353,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 
     // In the outmost layer, there is only an outgoing wave, so the solution is a Hankel function H = J + iY.
     // So E = a J + b Y = a H = a (J + iY). Then a + ib = 0.
-    return E[0] - I * E[1];
+    return E[0];
 }
 
 
@@ -411,8 +420,8 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
     if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, v) &&
         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, v)) {
 
-        int ln;
-        dcomplex Js[l+1], Ys[l+1], dJs[l+1], dYs[l+1];
+        double Jr, Ji, Hr, Hi;
+        int nz, ierr;
 
         for (auto point: dst_mesh) {
             double r = point.c0;
@@ -422,9 +431,12 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
             size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;
             dcomplex x = r * k0 * sqrt(nng[ir-1] * (veffs[ir-1]-v));
             if (real(x) < 0.) x = -x;
-            if (bessel::cbessjyna(l, x ,ln, Js, Ys, dJs, dYs) || ln != l)
-                throw ComputationError(getId(), "Could not compute Bessel functions");
-            dcomplex val = fieldR[ir][0] * Js[l] + fieldR[ir][1] * Ys[l];
+            F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
+            if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, x);
+            F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Jr, &Ji, nz, ierr);
+            if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, x);
+            dcomplex val = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
+
             size_t iy = mesh->axis1.findIndex(z);
             z -= mesh->axis1[max(int(iy)-1, 0)];
             dcomplex phasz = exp(- I * betaz[iy] * z);
@@ -453,17 +465,19 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
         std::vector<dcomplex> valz(rect_mesh.axis1.size());
         size_t idr = 0, idz = 0;
 
-        int ln;
-        dcomplex Js[l+1], Ys[l+1], dJs[l+1], dYs[l+1];
+        double Jr, Ji, Hr, Hi;
+        int nz, ierr;
 
         for (double r: rect_mesh.axis0) {
             if (r < 0.) r = -r;
             size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;
             dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
             if (real(x) < 0.) x = -x;
-            if (bessel::cbessjyna(l, x ,ln, Js, Ys, dJs, dYs) || ln != l)
-                throw ComputationError(getId(), "Could not compute Bessel functions");
-            valr[idr++] = fieldR[ir][0] * Js[l] + fieldR[ir][1] * Ys[l];
+            F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
+            if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, x);
+            F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Jr, &Ji, nz, ierr);
+            if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, x);
+            valr[idr++] = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
         }
 
         for (auto z: rect_mesh.axis1) {
