@@ -318,15 +318,15 @@ Matrix2cd EffectiveFrequencyCylSolver::getMatrix(dcomplex v, size_t i)
     int nz, ierr;
 
     F77_GLOBAL(zbesj,ZBESJ)(x1.real(), x1.imag(), l, 1, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, x1);
-    F77_GLOBAL(zbesh,ZBESH)(x1.real(), x1.imag(), l, 1, mh, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, x1);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, str(x1));
+    F77_GLOBAL(zbesh,ZBESH)(x1.real(), x1.imag(), l, 1, mh, 2, Hr, Hi, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, str(x1));
     for (int i = 0; i < 2; ++i) { J1[i] = dcomplex(Jr[i], Ji[i]); H1[i] = dcomplex(Hr[i], Hi[i]); }
 
     F77_GLOBAL(zbesj,ZBESJ)(x2.real(), x2.imag(), l, 1, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, x1);
-    F77_GLOBAL(zbesh,ZBESH)(x2.real(), x2.imag(), l, 1, mh, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, x1);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, str(x2));
+    F77_GLOBAL(zbesh,ZBESH)(x2.real(), x2.imag(), l, 1, mh, 2, Hr, Hi, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, str(x2));
     for (int i = 0; i < 2; ++i) { J2[i] = dcomplex(Jr[i], Ji[i]); H2[i] = dcomplex(Hr[i], Hi[i]); }
 
 
@@ -334,9 +334,9 @@ Matrix2cd EffectiveFrequencyCylSolver::getMatrix(dcomplex v, size_t i)
          l*J1[0] - x1*J1[1],    l*H1[0] - x1*H1[1];
 
     B <<   J2[0],                 H2[0],
-         l*J2[0] - x2*J2[1],    l*H2[0] - x1*H2[1];
+         l*J2[0] - x2*J2[1],    l*H2[0] - x2*H2[1];
 
-    return B.inverse() * A;
+    return A.inverse() * B;
 }
 
 
@@ -344,16 +344,15 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 {
     Vector2cd E;
 
-    // In the innermost area there must not be any infinity, so Y = 0.
-    E << 1., 0.;
+    // In the outmost layer, there is only an outgoing wave, so the solution is only the Hankel function
+    E << 0., 1.;
 
-    for (size_t i = 1; i < veffs.size(); ++i) {
+    for (size_t i = veffs.size()-1; i > 0; --i) {
         E = getMatrix(v, i) * E;
     }
 
-    // In the outmost layer, there is only an outgoing wave, so the solution is a Hankel function H = J + iY.
-    // So E = a J + b Y = a H = a (J + iY). Then a + ib = 0.
-    return E[0];
+    // In the innermost area there must not be any infinity, so H = 0.
+    return E[1];
 }
 
 
@@ -364,14 +363,14 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
     dcomplex v = 2. * (k0 - 2e3*M_PI/outWavelength()) / k0;
 
     if (!have_fields) {
-        fieldR.resize(mesh->axis0.size());
-        fieldR[0] << 1., 0;
+        fieldR.resize(veffs.size());
+        fieldR[veffs.size()-1] << 0., 1.;
 
         writelog(LOG_INFO, "Computing field distribution for wavelength = %1%", str(outWavelength()));
 
         // Compute horizontal part
-        for (size_t i = 1; i < mesh->axis0.size(); ++i) {
-            fieldR[i].noalias() = getMatrix(v, i) * fieldR[i-1];
+        for (size_t i = veffs.size()-1; i > 0; --i) {
+            fieldR[i-1].noalias() = getMatrix(v, i) * fieldR[i];
         }
 
         size_t stripe = 0;
@@ -432,9 +431,13 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
             dcomplex x = r * k0 * sqrt(nng[ir-1] * (veffs[ir-1]-v));
             if (real(x) < 0.) x = -x;
             F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
-            if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, x);
-            F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Jr, &Ji, nz, ierr);
-            if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, x);
+            if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, str(x));
+            if (ir == 0) {
+                Hr = Hi = 0.;
+            } else {
+                F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Hr, &Hi, nz, ierr);
+                if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, str(x));
+            }
             dcomplex val = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
 
             size_t iy = mesh->axis1.findIndex(z);
@@ -474,9 +477,13 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
             dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
             if (real(x) < 0.) x = -x;
             F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
-            if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, x);
-            F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Jr, &Ji, nz, ierr);
-            if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, x);
+            if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, str(x));
+            if (ir == 0) {
+                Hr = Hi = 0.;
+            } else {
+                F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Hr, &Hi, nz, ierr);
+                if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, str(x));
+            }
             valr[idr++] = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
         }
 

@@ -43,7 +43,7 @@ endif()
 #
 #set(solver_src eim.cpp eim.h efm.cpp efm.h broyden.cpp broyden.h bessel.h)
 #set(interface_src python/effective.cpp)
-file(GLOB solver_src *.cpp *.hpp *.h amos/*.f amos/*.h bessel/*.cpp bessel/*.h)
+file(GLOB solver_src *.cpp *.hpp *.h amos/*.f amos/*.h)
 
 # To add unit tests to your project create appropriate targets (binary executables
 # or Python scripts) and register them using CMake command add_test for binaries
