@@ -437,7 +437,7 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
             double z = point.c1;
             if (r < 0) r = -r;
 
-            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir >= veffs.size()-1;
+            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
             dcomplex x = r * k0 * sqrt(nng[ir-1] * (veffs[ir-1]-v));
             if (real(x) < 0.) x = -x;
             F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
@@ -483,7 +483,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
 
         for (double r: rect_mesh.axis0) {
             if (r < 0.) r = -r;
-            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;  if (ir >= veffs.size()) ir >= veffs.size()-1;
+            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;  if (ir >= veffs.size()) ir = veffs.size()-1;
             dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
             if (real(x) < 0.) x = -x;
             F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
@@ -504,7 +504,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
             valz[idz++] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
         }
 
-        if (rect_mesh.getIterationOrder() == RectilinearMesh2D::NORMAL_ORDER) {
+        if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
             for (size_t i1 = 0, i = 0; i1 != rect_mesh.axis1.size(); ++i1) {
                 for (size_t i0 = 0; i0 != rect_mesh.axis0.size(); ++i0, ++i) {
                     dcomplex f = valr[i0] * valz[i1];

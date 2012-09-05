@@ -508,7 +508,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             valy[idy++] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
         }
 
-        if (rect_mesh.getIterationOrder() == RectilinearMesh2D::NORMAL_ORDER) {
+        if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
             for (size_t i1 = 0, i = 0; i1 != rect_mesh.axis1.size(); ++i1) {
                 for (size_t i0 = 0; i0 != rect_mesh.axis0.size(); ++i0, ++i) {
                     dcomplex f = valx[i0] * valy[i1];

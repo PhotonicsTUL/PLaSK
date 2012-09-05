@@ -66,6 +66,8 @@ struct MaterialsDB {
          */
         MaterialConstructor(const std::string& materialName): materialName(materialName) {}
 
+        virtual ~MaterialConstructor() {}
+
         /**
          * Create material.
          * @param composition parsed amounts of elements, can be not completed (see Material::completeComposition), empty composition in case of simple materials

@@ -4,7 +4,7 @@ namespace plask {
 
 static std::string logLevelHead(LogLevel level) {
     switch (level) {
-#     ifdef WIN32
+#     if defined(WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
         case LOG_ERROR:         return "ERROR         ";
         case LOG_CRITICAL_ERROR:return "CRITICAL ERROR";
         case LOG_WARNING:       return "WARNING       ";

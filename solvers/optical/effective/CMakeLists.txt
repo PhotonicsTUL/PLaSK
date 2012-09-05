@@ -1,5 +1,9 @@
-## Setup everything necessary
-include(${CMAKE_SOURCE_DIR}/cmake/solvers.cmake)
+# Set the project name in the style: plask/solvergroup/solverlib
+project(plask/optical/effective)
+
+# Do not change thew following two lines
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake)
+find_package(PLaSK)
 
 
 # Uncomment and edit the line below if you need to link some external libraries.
