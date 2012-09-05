@@ -17,7 +17,7 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
     }
 }
 
-MaterialsDB::MixedCompositionOnlyFactory::MixedCompositionOnlyFactory(const shared_ptr<const MaterialConstructor>& constructor, const Material::Composition& material1composition, const Material::Composition& material2composition)
+MaterialsDB::MixedCompositionOnlyFactory::MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition)
     : MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(constructor), material1composition(material1composition), material2composition(material2composition) {
     //check if compositions are fine and simillar:
     checkCompositionSimilarity(material1composition, material2composition);
@@ -237,19 +237,19 @@ MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string&
     return getFactory(m1comp, m2comp, m1_dop_name, m1_dop_type, m1_dop_am, m2_dop_am);
 }
 
-void MaterialsDB::addSimple(const MaterialConstructor* constructor) {
+/*void MaterialsDB::addSimple(const MaterialConstructor* constructor) {
     constructors[constructor->materialName] = shared_ptr<const MaterialConstructor>(constructor);
-}
+}*/
 
-void MaterialsDB::addSimple(const shared_ptr<const MaterialConstructor>& constructor) {
+void MaterialsDB::addSimple(shared_ptr<MaterialConstructor> constructor) {
     constructors[constructor->materialName] = constructor;
 }
 
-void MaterialsDB::addComplex(const MaterialConstructor* constructor) {
+/*void MaterialsDB::addComplex(const MaterialConstructor* constructor) {
     constructors[dbKey(constructor->materialName)] = shared_ptr<const MaterialConstructor>(constructor);
-}
+}*/
 
-void MaterialsDB::addComplex(const shared_ptr<const MaterialConstructor>& constructor) {
+void MaterialsDB::addComplex(shared_ptr<MaterialConstructor> constructor) {
     constructors[dbKey(constructor->materialName)] = constructor;
 }
 

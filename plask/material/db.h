@@ -44,7 +44,7 @@ struct MaterialsDB {
         Register() { getDefault().add<MaterialType>(); }
     };
 
-    /// Same as Register but for materials without static field NAME.
+    ///Same as Register but for materials without static field NAME.
     template <typename MaterialType>
     struct RegisterN {
         RegisterN(const std::string& name) { getDefault().add<MaterialType>(name); }
@@ -66,8 +66,6 @@ struct MaterialsDB {
          */
         MaterialConstructor(const std::string& materialName): materialName(materialName) {}
 
-//         virtual ~MaterialConstructor() {} FIXME!
-
         /**
          * Create material.
          * @param composition parsed amounts of elements, can be not completed (see Material::completeComposition), empty composition in case of simple materials
@@ -76,6 +74,8 @@ struct MaterialsDB {
          * @return created material
          */
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double dopant_amount) const = 0;
+        
+        virtual ~MaterialConstructor() {} //TODO cause crash
     };
 
     /**
@@ -92,7 +92,7 @@ struct MaterialsDB {
          * Construct MixedCompositionFactory for given material constructor and two compositions for this constructor.
          * @param constructor material constructor
          */
-        MixedCompositionFactory(const shared_ptr<const MaterialConstructor>& constructor): constructor(constructor) {}
+        MixedCompositionFactory(shared_ptr<const MaterialConstructor> constructor): constructor(constructor) {}
 
         /**
          * Construct material.
@@ -128,7 +128,7 @@ struct MaterialsDB {
          * @param material1composition incomplate composition of first material
          * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
          */
-        MixedCompositionOnlyFactory(const shared_ptr<const MaterialConstructor>& constructor, const Material::Composition& material1composition, const Material::Composition& material2composition);
+        MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition);
 
         /**
          * Construct material.
@@ -159,7 +159,7 @@ struct MaterialsDB {
          * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
          */
-        MixedCompositionAndDopantFactory(const shared_ptr<const MaterialConstructor>& constructor, const Material::Composition& material1composition, const Material::Composition& material2composition,
+        MixedCompositionAndDopantFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition,
                                          Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
             : MixedCompositionOnlyFactory(constructor, material1composition, material2composition), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
 
@@ -187,7 +187,7 @@ struct MaterialsDB {
          * @param dopAmountType type of doping amounts, common for both materials
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
          */
-        MixedDopantFactory(const shared_ptr<const MaterialConstructor>& constructor, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
+        MixedDopantFactory(shared_ptr<const MaterialConstructor> constructor, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
             : MixedCompositionFactory(constructor), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
 
         /**
@@ -244,15 +244,15 @@ public:
     /**
      * Specialization of this implements MaterialConstructor.
      *
-     * operator() delegates call to Material constructor, eventualy ignoring (depending from requiresComposition and requiresDopant) some arguments.
+     * operator() delegates call to Material constructor, eventualy ignoring (depending from requireComposition and requireDopant) some arguments.
      * @tparam MaterialType type of material
-     * @tparam requiresComposition if @c true ensure if comosition is not empty, material composition will be completed and passed to constructor,
+     * @tparam requireComposition if @c true ensure if comosition is not empty, material composition will be completed and passed to constructor,
      *                              if @c false composition will be ignored
-     * @tparam requiresDopant if @c true dopant information will be passed to constructor, if @c false dopant information will be ignored
+     * @tparam requireDopant if @c true dopant information will be passed to constructor, if @c false dopant information will be ignored
      */
     template <typename MaterialType,
-              bool requiresComposition = Material::is_with_composition<MaterialType>::value,
-              bool requiresDopant = Material::is_with_dopant<MaterialType>::value >
+              bool requireComposition = Material::is_with_composition<MaterialType>::value,
+              bool requireDopant = Material::is_with_dopant<MaterialType>::value >
     struct DelegateMaterialConstructor;
 
     template <typename MaterialType>
@@ -381,43 +381,43 @@ public:
      */
     MixedCompositionFactory* getFactory(const std::string& material1_fullname, const std::string& material2_fullname);
 
-//     /**
-//      * Add simple material (which does not require composition parsing) to DB. Replace existing material if there is one already in DB.
-//      * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
-//      */
-//     void addSimple(const MaterialConstructor* constructor);
-//     /**
-//      * Add simple material (which does not require composition parsing) to DB. Replace existing material if there is one already in DB.
-//      * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
-//      */
-//     void addSimple(const shared_ptr<const MaterialConstructor>& constructor);
-//
-//     /**
-//      * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
-//      * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
-//      */
-//     void addComplex(const MaterialConstructor* constructor);
-//
-//     /**
-//      * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
-//      * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
-//      */
-//     void addComplex(const boost::shared_ptr<const MaterialConstructor>& constructor);
-//
-//     /**
-//      * Add material to DB. Replace existing material if there is one already in DB.
-//      *
-//      * Use DelegateMaterialConstructor as material construction object.
-//      * @param name material name (with dopant after ':')
-//      * @tparam MaterialType, requiresComposition, requiresDopant see DelegateMaterialConstructor
-//      */
-//     template <typename MaterialType, bool requiresComposition, bool requiresDopant>
-//     void add(const std::string& name) {
-//         if (requiresComposition)
-//             addComplex(new DelegateMaterialConstructor<MaterialType, requiresComposition, requiresDopant>(name));
-//         else
-//             addSimple(new DelegateMaterialConstructor<MaterialType, requiresComposition, requiresDopant>(name));
-//     }
+    /**
+     * Add simple material (which does snot require composition parsing) to DB. Replace existing material if there is one already in DB.
+     * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
+     */
+   // void addSimple(const MaterialConstructor* constructor);
+    /**
+     * Add simple material (which does snot require composition parsing) to DB. Replace existing material if there is one already in DB.
+     * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
+     */
+    void addSimple(shared_ptr<MaterialConstructor> constructor);
+
+    /**
+     * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
+     * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
+     */
+    //void addComplex(const MaterialConstructor* constructor);
+
+    /**
+     * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
+     * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
+     */
+    void addComplex(shared_ptr<MaterialConstructor> constructor);
+
+    /**
+     * Add material to DB. Replace existing material if there is one already in DB.
+     *
+     * Use DelegateMaterialConstructor as material construction object.
+     * @param name material name (with dopant after ':')
+     * @tparam MaterialType, requireComposition, requireDopant see DelegateMaterialConstructor
+     */
+    template <typename MaterialType, bool requireComposition, bool requireDopant>
+    void add(const std::string& name) {
+        if (requireComposition)
+            addComplex(make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
+        else
+            addSimple(make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
+    }
 
     /**
      * Add material to DB. Replace existing material if there is one already in DB.
@@ -488,7 +488,7 @@ private:
      * @param composition elements composition, empty composition for simple materials
      * @param dopant_name name of dopant (if any)
      */
-    shared_ptr<const MaterialsDB::MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& dopant_name = "") const;
+    shared_ptr<const MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& dopant_name = "") const;
 
     /**
      * Get material constructor object.

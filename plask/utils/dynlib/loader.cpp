@@ -28,7 +28,7 @@ void DynamicLibrary::open(const std::string &filename) {
     //handler = LoadLibraryW(output_buffer->get());
     handler = LoadLibraryA(filename.c_str());
 #else
-    handler = dlopen(filename.c_str(), RTLD_NOW);
+    handler = dlopen(filename.c_str(), RTLD_NOW /*| RTLD_NODELETE*/);   //TODO remove RTLD_NODELETE
 #endif
     if (!handler)
         throw plask::Exception("Could not open dynamic library from file \"%1%\".", filename);

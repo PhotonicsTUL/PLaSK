@@ -540,7 +540,7 @@ class PythonComplexMaterialConstructor : public MaterialsDB::MaterialConstructor
 void registerSimpleMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
 {
     std::string dopant = splitString2(name, ':').second;
-    db.addSimple(new PythonSimpleMaterialConstructor(name, material_class, dopant));
+    db.addSimple(make_shared<PythonSimpleMaterialConstructor>(name, material_class, dopant));
 }
 
 /**
@@ -551,7 +551,7 @@ void registerSimpleMaterial(const std::string& name, py::object material_class, 
 void registerComplexMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
 {
     std::string dopant = splitString2(name, ':').second;
-    db.addComplex(new PythonComplexMaterialConstructor(name, material_class, dopant));
+    db.addComplex(make_shared<PythonComplexMaterialConstructor>(name, material_class, dopant));
 }
 
 /**
