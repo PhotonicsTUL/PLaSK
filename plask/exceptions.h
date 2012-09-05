@@ -265,7 +265,7 @@ struct NoChildException: public Exception {
  */
 struct NotUniqueElementException: public Exception {
     NotUniqueElementException(): Exception("Unique element instance required") {}
-    NotUniqueElementException(const std::string msg): Exception(msg) {}
+    NotUniqueElementException(const std::string& msg): Exception(msg) {}
 
     template <typename... T>
     NotUniqueElementException(const std::string& msg, const T&... args): Exception(msg, args...) {}

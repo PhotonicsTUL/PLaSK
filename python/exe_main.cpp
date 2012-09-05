@@ -273,13 +273,13 @@ int main(int argc, const char *argv[])
                 else Py_DECREF(result);
 
             }
-        } catch (std::invalid_argument err) {
+        } catch (std::invalid_argument& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
             return -1;
-        } catch (plask::XMLException err) {
+        } catch (plask::XMLException& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, "'%1%': %2%", argv[1], err.what());
             return 2;
-        } catch (plask::Exception err) {
+        } catch (plask::Exception& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
             return 3;
         } catch (py::error_already_set) {

@@ -56,7 +56,7 @@ class RegularMesh1D {
     void reset(double first, double last, std::size_t points_count) {
         lo = first;
         step = (last - first) / (points_count-1);
-        points_count = points_count;
+        this->points_count = points_count;
     }
 
     /**
