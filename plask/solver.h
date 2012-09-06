@@ -465,16 +465,19 @@ class Solver {
 
     /**
      * This should be called on beginning of each calculation method to ensure that solver will be initialized.
-     * It's does nothing if solver is already initialized and calls init() if it's not.
+     * It's does nothing if solver is already initialized and calls onInitialize() if it's not.
+     * @return @c true only if solver was already initialized (before calling initCalculation)
      */
-    void initCalculation() {
+    bool initCalculation() {
         if (!initialized) {
             writelog(LOG_INFO, "Initializing solver");
             onInitialize();
             initialized = true;
             onBeginCalculation(true);
+            return false;
         } else {
             onBeginCalculation(false);
+            return true;
         }
     }
 

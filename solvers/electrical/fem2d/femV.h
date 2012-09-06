@@ -2,20 +2,20 @@
  * \file
  * Sample solver header for your solver
  */
-#ifndef PLASK__MODULE_THERMAL_FINITET_H
-#define PLASK__MODULE_THERMAL_FINITET_H
+#ifndef PLASK__MODULE_ELECTRICAL_FINITEV_H
+#define PLASK__MODULE_ELECTRICAL_FINITEV_H
 
 #include <plask/plask.hpp>
 #include "node2D.h"
 #include "element2D.h"
 #include "constants.h"
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace solvers { namespace electrical {
 
 /**
  * Solver performing calculations in 2D Cartesian space using finite element method
  */
-struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D> {
+struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D> {
 /*
     /// Sample receiver for temperature.
     ReceiverFor<Temperature, Space2DCartesian> inTemperature;
@@ -59,10 +59,8 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     /// Main Matrix
     double **mpA;
     int mAWidth, mAHeight;
-    std::vector<double> mTCorr; // LP
-    double mTAmb;
-    DataVector<double> mTemperatures;
-    DataVector<double> mHeats; // LP
+    std::vector<double> mVcorr;
+    std::vector<double> mPotentials;
 
     /// Vector of nodes
     std::vector<Node2D> mNodes;
@@ -97,17 +95,17 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     /// Show info for all elements
     void showElements();
 
-    /// Create vector with calculated temperatures
-    void saveTemp();
+    /// Create vector with calculated potentials
+    void savePote();
 
-    /// Show vector with calculated temperatures (node numbers for info only)
-    void showTemp();
+    /// Show vector with calculated potentials (node numbers for info only)
+    void showPote();
 
     /// Matrix solver
     int solveMatrix(double **ipA, long iN, long iBandWidth);
 
     /// Boundary conditions
-    BoundaryConditions<RectilinearMesh2D,double> mTConst; // LP
+    BoundaryConditions<RectilinearMesh2D,double> mVconst;
 
 /*
     /// Initialize the solver
@@ -134,33 +132,28 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     }*/
     public:
 
-    ProviderFor<Temperature, Geometry2DCartesian>::Delegate outTemperature;
-
-    ReceiverFor<Heats, Geometry2DCartesian> inHeats;
-
-    DataVector<double> getTemp(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    //ProviderFor<Temperature, RectilinearMesh2D>::WithValue Delegate outTemperature;
 
     /**
-     * Find new temperature distribution.
+     * Find new potential distribution.
      *
      **/
 
-    /// Run temperature calculations
+    /// Run potential calculations
     void runCalc();
 
     virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
     // Parameters for rootdigger
-    int mLoopLim; // number of loops - stops the calculations // LP
-    double mTCorrLim; // small-enough correction - stops the calculations // LP
-    double mTBigCorr; // big-enough correction for the temperature // LP
-    double mBigNum; // for the first boundary condtion (see: set Matrix) // LP
+    int mLoopLim; // number of loops - stops the calculations
+    int mCorrLim; // small-enough correction - stops the calculations
+    double mBigNum; // for the first boundary condtion (see: set Matrix)
 
-    FiniteElementMethodThermalCartesian2DSolver(const std::string& name="");
+    FiniteElementMethodElectricalCartesian2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "CartesianFEM"; }
+    virtual std::string getClassName() const { return "CartesianFEM2"; } //TODO: is it correct?
 
-    ~FiniteElementMethodThermalCartesian2DSolver();
+    ~FiniteElementMethodElectricalCartesian2DSolver();
 };
 
 

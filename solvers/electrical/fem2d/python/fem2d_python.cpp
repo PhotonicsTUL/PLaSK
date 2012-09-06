@@ -3,8 +3,8 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../femT.h"
-using namespace plask::solvers::thermal;
+#include "../femV.h"
+using namespace plask::solvers::electrical;
 
 /**
  * Initialization of your solver class to Python
@@ -14,10 +14,8 @@ using namespace plask::solvers::thermal;
  */
 BOOST_PYTHON_MODULE(fem2d)
 {
-    {CLASS(FiniteElementMethodThermalCartesian2DSolver, "CartesianFEM", "Finite Element thermal solver for 2D Cartesian Geometry.")
-        METHOD(runCalc, "Run thermal calculations");
-        RECEIVER(inHeats, "Heats"); // receiver in the solver
-        PROVIDER(outTemperature, "Temperatures"); // provider in the solver
+    {CLASS(FiniteElementMethodElectricalCartesian2DSolver, "CartesianFEM2", "Finite Element electrical solver for 2D Cartesian Geometry.")
+        METHOD(runCalc, "Run electrical calculations");
 /*
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
         RO_FIELD(field_name, "Short documentation"); // read-only field

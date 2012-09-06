@@ -1,26 +1,24 @@
-#include "femT.h"
+#include "femV.h"
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace solvers { namespace electrical {
 
-FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian2DSolver(const std::string& name) :
+FiniteElementMethodElectricalCartesian2DSolver::FiniteElementMethodElectricalCartesian2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
-    outTemperature(this, &FiniteElementMethodThermalCartesian2DSolver::getTemp), mLoopLim(5), mTCorrLim(0.1), mTBigCorr(1e5), mBigNum(1e15) // TODO: it should be loaded from file  // LP
+    mLoopLim(5), mCorrLim(0.1), mBigNum(1e15) // TODO: it should be loaded from file
 {
     mNodes.clear();
     mElements.clear();
-    mTemperatures.reset(0);
-    mHeats.reset(0);
-
+    mPotentials.clear();
 }
 
-FiniteElementMethodThermalCartesian2DSolver::~FiniteElementMethodThermalCartesian2DSolver()
+FiniteElementMethodElectricalCartesian2DSolver::~FiniteElementMethodElectricalCartesian2DSolver()
 {
     for (int i = 0; i < mAHeight; i++)
         delete [] mpA[i];
     delete [] mpA;
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setNodes()
+void FiniteElementMethodElectricalCartesian2DSolver::setNodes()
 {   
     std::cout << "Setting nodes...\n" << std::endl;
 
@@ -34,23 +32,20 @@ void FiniteElementMethodThermalCartesian2DSolver::setNodes()
         double y = vec_it->ee.y;
 
         std::size_t i = vec_it.getIndex();
-        auto it = mTConst.includes(*mesh, i); // LP
-        if (it != mTConst.end()) // LP
+        auto it = mVconst.includes(*mesh, i);
+        if (it != mVconst.end())
             tpN = new Node2D(tNo, x, y, it->condition, true);
         else
-            tpN = new Node2D(tNo, x, y, mTAmb, false);
+            tpN = new Node2D(tNo, x, y, 0., false);
 
         mNodes.push_back(*tpN);
-        //mHeats.push_back(0.); // LP
 
         delete tpN;
         tNo++;
     }
-    mHeats = inHeats(mesh->getMidpointsMesh());
-    std::cout << "Heats" << mHeats.size() << "\n";
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setElements()
+void FiniteElementMethodElectricalCartesian2DSolver::setElements()
 {
     std::cout << "Setting elememts...\n" << std::endl;
 
@@ -68,7 +63,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setElements()
                 tpE = new Element2D(tNo, &(*ttN), &(*(ttN+1)), &(*(ttN+(mesh->minorAxis().size()))), &(*(ttN+(mesh->minorAxis().size()+1))));
             else // (mesh->getIterationOrder() == 1)
                 tpE = new Element2D(tNo, &(*ttN), &(*(ttN+(mesh->minorAxis().size()))), &(*(ttN+1)), &(*(ttN+(mesh->minorAxis().size()+1))));
-            tpE->setT();
+            //tpE->setT();
             mElements.push_back(*tpE);
 
             delete tpE;
@@ -79,7 +74,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setElements()
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setSolver()
+void FiniteElementMethodElectricalCartesian2DSolver::setSolver()
 {
     std::cout << "Setting solver...\n" << std::endl;
 
@@ -107,15 +102,15 @@ void FiniteElementMethodThermalCartesian2DSolver::setSolver()
     mpA = new double*[mAHeight];
     for(int i = 0; i < mAHeight; i++)
         mpA[i] = new double[mAWidth];
-    mTCorr.clear();  // LP
+    mVcorr.clear();
     for(int i = 0; i < mAHeight; i++)
-        mTCorr.push_back(mTBigCorr); //LP
+        mVcorr.push_back(0.);
 
     std::cout << "Main matrix width: " << mAWidth << std::endl; // TEST
     std::cout << "Main matrix height: " << mAHeight << std::endl; // TEST
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::delSolver()
+void FiniteElementMethodElectricalCartesian2DSolver::delSolver()
 {
     std::cout << "Deleting solver...\n" << std::endl;
 
@@ -126,10 +121,10 @@ void FiniteElementMethodThermalCartesian2DSolver::delSolver()
 
     mElements.clear();
     mNodes.clear();
-    mTCorr.clear(); // LP
+    mVcorr.clear();
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
+void FiniteElementMethodElectricalCartesian2DSolver::setMatrix()
 {
     std::cout << "Setting matrix...\n" << std::endl;
 
@@ -161,16 +156,16 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
 
         // set assistant values
-        double tElemX = 0.5 * (ttE->getNLoLeftPtr()->getX() + ttE->getNLoRightPtr()->getX());
-        double tElemY = 0.5 * (ttE->getNLoLeftPtr()->getY() + ttE->getNUpLeftPtr()->getY());
+        //double tX = 5.;
+        //double tY = 5.;
         //double tT = 300.;
         //this->geometry->getMaterial(vec(tX, tY))->condT(tT);
-        tKXAssist = 44.0;//geometry->getMaterial(vec(tElemX, tElemY))->condT(tT); //!!! // TODO: call to database
-        tKYAssist = 44.0; //!!! // TODO: call to database
+        tKXAssist = /*geometry->getMaterial*/44.0; //!!! // TODO: call to database
+        tKYAssist = 50000.0; //!!! // TODO: call to database (electrical conductivity)
 
         // set sources
-        double tHeat = 0.; // heat per unit volume / heat rate per unit volume [W/(m^3)]
-        tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * tHeat; // -- give + // = 0 (If no heat-sources) // 1e-12 -> to transform um*um into m*m
+        double tSource = 0.;
+        tF = 0.25 * tElemWidth * tElemHeight * 1e24 * (cPhys::q) * (tSource); // -- give + // = 0 (If no heat-sources) //TODO: what should be here for real?
 
         // set symetric matrix components
         tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
@@ -207,29 +202,23 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         mpA[tLoRightNo-1][mAWidth-1] += tF;
         mpA[tUpRightNo-1][mAWidth-1] += tF;
         mpA[tUpLeftNo-1][mAWidth-1]  += tF;
+
     }
     // boundary conditions are taken into account
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        if ( ttN->ifTConst() ) // TODO: Th night
+        if ( ttN->ifVConst() ) // TODO: Th night
         {
+            //mpA[ttN->getNo()-1][mAWidth-2] += mBigNum; // this line is for the case when only corrections (dV for example) are calculated (used in DDM)
             mpA[ttN->getNo()-1][mAWidth-2] += mBigNum; // TODO: Th night
-            mpA[ttN->getNo()-1][mAWidth-1] += ttN->getT()*mBigNum; // TODO: Th night
+            mpA[ttN->getNo()-1][mAWidth-1] += ttN->getV()*mBigNum; // TODO: Th night
         }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::runCalc()
+void FiniteElementMethodElectricalCartesian2DSolver::runCalc()
 {
-    //if (!isInitialized()) std::cout << "First calc.\n";
-    ///else "Cont. calc.\n";
+    std::cout << "\nIt is time for Electrical Model!\n" << std::endl;
 
-    //initCalculation();
-
-
-    if (!inHeats.changed) return;
-
-    std::cout << "\nIt is time for Thermal Model!\n" << std::endl;
-
-    //writelog(LOG_INFO, "It is time for Thermal Model!");
+    //writelog(LOG_INFO, "It is time for Electrical Model!");
 
     //delSolver();
     setNodes();
@@ -238,11 +227,11 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
 
     std::cout << "Running solver...\n" << std::endl;
 
-    std::vector<double>::const_iterator ttTCorr; // LP
-    int tLoop = 1, tInfo = 1; // LP
-    double tTCorr = mTBigCorr; // much bigger than calculated corrections  //LP
+    std::vector<double>::const_iterator ttVcorr;
+    int tLoop = mLoopLim, tInfo = 1;
+    double tVcorr = 1e5; // much bigger than calculated corrections
 
-    while ( (tLoop <= mLoopLim) && (tTCorr > mTCorrLim) ) // LP
+    while (tLoop /*&& tVcorr > mCorrLim*/)
     {
         setMatrix();
 
@@ -257,46 +246,40 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
             std::vector<double> tB(mAHeight, 0.);
 
             for (int i = 0; i < mAHeight; i++)
-                tB.at(i) = mpA[i][mAWidth-1]; // mpA[i][mAWidth-1] - here are new values of temperature
+                tB.at(i) = mpA[i][mAWidth-1]; // mpA[i][mAWidth-1] - here are new values of potential
 
-            ttTCorr = std::max_element(mTCorr.begin(), mTCorr.end());  // LP
+            //ttVcorr = std::max_element(mVcorr.begin(), mVcorr.end());
 
-            tTCorr = *ttTCorr;  // LP
+            //tVcorr = *ttVcorr;
 
             // show max correction
-            std::cout << "Loop no: " << tLoop << ", max. corr. for T: " << tTCorr << " " << mTCorrLim << "\n"; // LP
-            tLoop++;  // LP
+            //std::cout << "Max corr. = " << tVcorr << "\n";
+            --tLoop;
         }
         else if (tInfo < 0)
-            std::cout << "Wrong value of new T.\n";
+            std::cout << "Wrong value of new V.\n";
         else
             std::cout << "Wrong solver matrix.\n";
     }
 
     showNodes();
 
-    saveTemp();
+    savePote();
 
-    showTemp();
+    showPote();
 
     delSolver();
 
-    std::cout << "Temperature calculations completed\n" << std::endl;
-
-    outTemperature.fireChanged();
+    std::cout << "Potential calculations completed\n" << std::endl;
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::loadParam(const std::string &param, XMLReader &source, Manager &manager)
+void FiniteElementMethodElectricalCartesian2DSolver::loadParam(const std::string &param, XMLReader &source, Manager &manager)
 {
-    if (param == "Tconst")
-        manager.readBoundaryConditions(source,mTConst); // LP
-    if (param == "Tamb") {
-        mTAmb = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
+    if (param == "Vconst")
+        manager.readBoundaryConditions(source,mVconst);
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::updNodes()
+void FiniteElementMethodElectricalCartesian2DSolver::updNodes()
 {
     std::cout << "Updating nodes...\n" << std::endl;
 
@@ -304,32 +287,32 @@ void FiniteElementMethodThermalCartesian2DSolver::updNodes()
 
     while (ttN != mNodes.end())
     {
-        mTCorr[ttN->getNo()-1] = fabs( ttN->getT() - mpA[ttN->getNo()-1][mAWidth-1] ); // calculate corrections // LP
-        if (!ttN->ifTConst())
-            ttN->setT( mpA[ttN->getNo()-1][mAWidth-1] ); // mpA[ttN->getNo()-1][mAWidth-1] - here are new values of temperature
+        mVcorr[ttN->getNo()-1] = fabs( ttN->getV() - mpA[ttN->getNo()-1][mAWidth-1] ); // calculate corrections
+        if (!ttN->ifVConst())
+            ttN->setV( mpA[ttN->getNo()-1][mAWidth-1] ); // mpA[ttN->getNo()-1][mAWidth-1] - here are new values of potential
         ttN++;
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::updElements()
+void FiniteElementMethodElectricalCartesian2DSolver::updElements()
 {
     std::cout << "Updating elements...\n" << std::endl;
 
-    for (std::vector<Element2D>::iterator ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
-        ttE->setT();
+    //for (std::vector<Element2D>::iterator ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
+    //    ttE->setT(); // TODO
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::showNodes()
+void FiniteElementMethodElectricalCartesian2DSolver::showNodes()
 {
     std::cout << "Showing nodes...\n" << std::endl;
 
     std::vector<Node2D>::const_iterator ttN;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        std::cout << "Node no: " << ttN->getNo() << ", x: " << ttN->getX() << ", y: " << ttN->getY() << ", T: " << ttN->getT() << std::endl; // TEST
+        std::cout << "Node no: " << ttN->getNo() << ", x: " << ttN->getX() << ", y: " << ttN->getY() << ", T: " << ttN->getV() << std::endl; // TEST
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::showElements()
+void FiniteElementMethodElectricalCartesian2DSolver::showElements()
 {
     std::cout << "Showing elements...\n" << std::endl;
 
@@ -344,30 +327,27 @@ void FiniteElementMethodThermalCartesian2DSolver::showElements()
                      << std::endl; // TEST
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::saveTemp()
+void FiniteElementMethodElectricalCartesian2DSolver::savePote()
 {
-    std::cout << "Saving temperatures...\n" << std::endl;
-
-    std::vector<Node2D>::const_iterator ttN;
-
-    mTemperatures.reset(mNodes.size());
-    std::size_t place = 0;
-
-    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        mTemperatures[place++] = ttN->getT();
-}
-
-void FiniteElementMethodThermalCartesian2DSolver::showTemp()
-{
-    std::cout << "Showing temperatures...\n" << std::endl;
+    std::cout << "Saving potentials...\n" << std::endl;
 
     std::vector<Node2D>::const_iterator ttN;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        std::cout << "Node no: " << ttN->getNo() << ", T: " << mTemperatures[ttN->getNo()-1] << std::endl;
+        mPotentials.push_back(ttN->getV());
 }
 
-int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long iN, long iBandWidth)
+void FiniteElementMethodElectricalCartesian2DSolver::showPote()
+{
+    std::cout << "Showing potentials...\n" << std::endl;
+
+    std::vector<Node2D>::const_iterator ttN;
+
+    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
+        std::cout << "Node no: " << ttN->getNo() << ", V: " << mPotentials[ttN->getNo()-1] << std::endl;
+}
+
+int FiniteElementMethodElectricalCartesian2DSolver::solveMatrix(double **ipA, long iN, long iBandWidth)
 {
     std::cout << "Solving matrix...\n" << std::endl;
 
@@ -440,9 +420,4 @@ int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long 
     return 0;
 }
 
-DataVector<double> FiniteElementMethodThermalCartesian2DSolver::getTemp(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-    return interpolate(*mesh, mTemperatures, dst_mesh, method);
-}
-
-}}} // namespace plask::solvers::finiteT
+}}} // namespace plask::solvers::eletrical

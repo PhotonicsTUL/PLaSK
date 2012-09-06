@@ -94,5 +94,6 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "provider/temperature.h"
 #include "provider/optical.h"
 #include "provider/gain.h"
+#include "provider/heats.h"
 
 #endif // PLASK__PLASK_HPP
