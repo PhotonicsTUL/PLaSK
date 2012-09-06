@@ -51,7 +51,7 @@ XMLReader::XMLReader(FILE* file): irrReader(irr::io::createIrrXMLReader(file)), 
     if (irrReader == nullptr) throw XMLException("Can't read from file");
 }
 
-#if __cplusplus >= 201103L
+#if (__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X__)
 XMLReader::XMLReader(XMLReader &&to_move)
     : irrReader(to_move.irrReader),
       currentNodeType(to_move.currentNodeType),
@@ -76,9 +76,9 @@ void XMLReader::swap(XMLReader &to_swap)
     std::swap(read_attributes, to_swap.read_attributes);
 }
 
-bool XMLReader::read() {
+bool XMLReader::read(bool check_if_all_attributes_was_read) {
     if (currentNodeType == NODE_ELEMENT) {
-        if (std::size_t(getAttributeCount()) != read_attributes.size()) {
+        if (check_if_all_attributes_was_read && (std::size_t(getAttributeCount()) != read_attributes.size())) {
             std::string attr;
             for (int i = 0; i < irrReader->getAttributeCount(); ++i)
                 if (read_attributes.find(irrReader->getAttributeName(i)) == read_attributes.end()) {
@@ -199,6 +199,18 @@ bool XMLReader::skipComments() {
     bool result = true;
     while (getNodeType() == NODE_COMMENT && (result = read()));
     return result;
+}
+
+bool XMLReader::gotoNextOnLevel(std::size_t required_level, NodeType required_type)
+{
+    while (read(false))
+        if (getLevel() == required_level && getNodeType() == required_type)
+            return true;
+    return false;
+}
+
+bool XMLReader::gotoNextTagOnCurrentLevel() {
+    return gotoNextOnLevel(getLevel());
 }
 
 

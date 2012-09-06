@@ -31,9 +31,9 @@ struct DynamicLibrary {
 private:
     /// System shared library handler
     handler_t handler;
-//#ifdef PLASK__UTILS_PLUGIN_WINAPI
-//    bool unload;    // TODO true if lib. should be unload, destructor just don't call FreeLibrary if this is false
-//#endif
+#ifdef PLASK__UTILS_PLUGIN_WINAPI
+    bool unload;    // true if lib. should be unload, destructor just don't call FreeLibrary if this is false
+#endif
 
 public:
 

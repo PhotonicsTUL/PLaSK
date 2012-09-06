@@ -68,7 +68,7 @@ class XMLReader {
      */
     XMLReader(std::istream& input);
 
-#if __cplusplus >= 201103L
+#if (__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X__)
     /**
      * Move constructor.
      * @param to_move object to move from, should not be used but only delete after move
@@ -106,10 +106,12 @@ class XMLReader {
      */
     NodeType getNodeType() const { return currentNodeType; }
 
-    /** Reads forward to the next xml node.
-        @return @c false only if there is no further node.
+    /**
+     * Reads forward to the next xml node.
+     * @param check_if_all_attributes_was_read if @c true (default) and current tag is NODE_ELEMENT, parser will check if all attributes was read from it and throw excpetion if it was not
+     * @return @c false only if there is no further node.
     */
-    bool read();
+    bool read(bool check_if_all_attributes_was_read = true);
 
     /**
      * Check if node is empty, like \<foo /\>.
@@ -125,6 +127,12 @@ class XMLReader {
      * @return vector of names of all opened tags, first is root, last is current tag
      */
     const std::vector<std::string> getPath() const { return path; }
+    
+    /**
+     * Get level of current node. Root has level 0, children of root have level 1, and so on.
+     * @return level of current node which is equal to size of path returned by getPath()
+     */
+    std::size_t getLevel() const { return path.size(); }
 
     /**
      * Returns attribute count of the current XML node.
@@ -325,6 +333,20 @@ class XMLReader {
      * @return @c true if read non-comment or @c false if XML data end
      */
     bool skipComments();
+    
+    /**
+     * Skip everything up to element with required type on required level.
+     * @param required_level level on which required element should be
+     * @param required_type type of required element
+     * @return @c true if reader is on required element or @c false if XML data end
+     */
+    bool gotoNextOnLevel(std::size_t required_level, NodeType required_type = NODE_ELEMENT);
+    
+    /**
+     * Skip everything up to next tag element on current level.
+     * @return @c true if reader is on required element or @c false if XML data end
+     */
+    bool gotoNextTagOnCurrentLevel();
 };
 
 

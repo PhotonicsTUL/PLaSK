@@ -195,7 +195,7 @@ inline MaterialsDB& getMaterialsDBfromSource<MaterialsDB>(const MaterialsDB& mat
 }
 
 template <typename MaterialsSource>
-void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource)
+void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource, std::function<XMLReader(const std::string& url)> load_from)
 {
     reader.requireTag(TAG_NAME_ROOT);
     reader.requireTag();

@@ -29,10 +29,21 @@ namespace plask {
  *
  * @see @ref geometry
  */
-class Manager {
+struct Manager {
 
+    /// Throw exception with information that loading from external sources is not supported or disallowed.
+    static XMLReader disallowExternalSources(const std::string& u) { throw Exception("Can't load section from \"%1%\". Loading from external sources is not supported or disallowed.", u); }
+    
+private:
+    /**
+     * Load XML content.
+     * @param XMLreader XML data source, to load
+     * @param materialsSource source of materials, typically materials database
+     * @param load_from callback called to open external location, allow loading some section from another sources,
+     *  this callback should open and return external XML source pointed by url (typically name of file) or throw exception
+     */
     template <typename MaterialsSource>
-    void load(XMLReader& XMLreader, const MaterialsSource& materialsSource);
+    void load(XMLReader& XMLreader, const MaterialsSource& materialsSource, std::function<XMLReader(const std::string& url)> load_from = &disallowExternalSources);
 
   protected:
 
