@@ -157,12 +157,12 @@ if(BUILD_PYTHON)
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
     add_executable(plask python/exe_main.cpp ${python_plask_src})
-            if (WIN32)
-                    # For some reason MinGW wants to create import library for executable,
-                    # which overwrites libplask.dll.a. With this hack we name this useless
-                    # stuff libplask.exe.dll.a
-                    set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
-            endif()
+    if (WIN32)
+            # For some reason MinGW wants to create import library for executable,
+            # which overwrites libplask.dll.a. With this hack we name this useless
+            # stuff libplask.exe.dll.a
+            set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
+    endif()
     target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
 
     foreach(py_file ${python_plask_py})

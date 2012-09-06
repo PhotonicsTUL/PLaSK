@@ -29,7 +29,12 @@ static std::string logLevelHead(LogLevel level) {
 }
 
 void writelog(LogLevel level, const std::string& msg) {
-    std::cerr << logLevelHead(level) << ": " <<  msg << "\033[0m" "\n";
+    std::cerr << logLevelHead(level) << ": " <<  msg;
+#   if defined(WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
+        std::cerr << "\n";
+#   else
+        std::cerr << "\033[0m\n";
+#   endif
 }
 
 } // namspace plask

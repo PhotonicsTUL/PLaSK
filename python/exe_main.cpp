@@ -88,6 +88,21 @@ static void from_import_all(const char* name, py::dict globals)
 }
 
 //******************************************************************************
+// This functions closes all matplotlib windows in order to avoid the annoying
+// 'Fatal Python error: PyEval_RestoreThread: NULL tstate' bug on Windows.
+void fixMatplotlibBug() {
+    py::object modules = py::import("sys").attr("modules");
+    if (py::dict(modules).has_key("matplotlib")) {
+        try {
+            py::object pylab = py::import("pylab");
+            pylab.attr("close")("all");
+        } catch (py::error_already_set) {
+            PyErr_Clear(); // silently ignore errors here
+        }
+    }
+}
+
+//******************************************************************************
 int handlePythonException() {
     // Use our logging system to print exception
     PyObject* value;
@@ -106,6 +121,8 @@ int handlePythonException() {
         if (PyInt_Check(value))
             exitcode = (int)PyInt_AsLong(value);
         else {
+            std::cerr.flush();
+            std::cout.flush();
             PyObject_Print(value, stderr, Py_PRINT_RAW);
             PySys_WriteStderr("\n");
             exitcode = 1;
@@ -113,15 +130,12 @@ int handlePythonException() {
         Py_XDECREF(type);
         Py_XDECREF(value);
         Py_XDECREF(original_traceback);
+        PyErr_Clear();
         return exitcode;
     }
 
     PyObject* pmessage = PyObject_Str(value);
-#   if PY_VERSION_HEX >= 0x03000000
-        const char* message = py::extract<const char*>(pmessage);
-#   else
-        const char* message = PyString_AsString(pmessage);
-#   endif
+    const char* message = py::extract<const char*>(pmessage);
 
     std::string error_name = type->tp_name;
     if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
@@ -152,7 +166,6 @@ int handlePythonException() {
     } else {
         plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
     }
-
     Py_XDECREF(pmessage);
     Py_XDECREF(type);
     Py_XDECREF(value);
@@ -256,17 +269,17 @@ int main(int argc, const char *argv[])
 
                 globals["__file__"] = filename;
 #               if PY_VERSION_HEX >= 0x03000000
-                    PyObject* pyfile = PyUnicode_FromString(filename.c_str());
-                    FILE* file = _Py_fopen(pyfile, "r");
-                    PyObject* result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
-                    fclose(file);
+                PyObject* pyfile = PyUnicode_FromString(filename.c_str());
+                FILE* file = _Py_fopen(pyfile, "r");
+                PyObject* result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
+                fclose(file);
 #               else
-                    // We want to set "from __future__ import division" flag
-                    PyObject *pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
-                    if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
-                    FILE* file = PyFile_AsFile(pyfile);
-                    PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                    PyObject* result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
+                // We want to set "from __future__ import division" flag
+                PyObject *pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
+                if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
+                FILE* file = PyFile_AsFile(pyfile);
+                PyCompilerFlags flags { CO_FUTURE_DIVISION };
+                PyObject* result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
 #               endif
                 Py_DECREF(pyfile);
                 if (!result) py::throw_error_already_set();
@@ -275,15 +288,20 @@ int main(int argc, const char *argv[])
             }
         } catch (std::invalid_argument& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+            fixMatplotlibBug();
             return -1;
         } catch (plask::XMLException& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, "'%1%': %2%", argv[1], err.what());
+            fixMatplotlibBug();
             return 2;
         } catch (plask::Exception& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+            fixMatplotlibBug();
             return 3;
         } catch (py::error_already_set) {
-            return handlePythonException();
+            int exitcode = handlePythonException();
+            fixMatplotlibBug();
+            return exitcode;
         }
 
     } else { // start the interactive console
@@ -295,12 +313,14 @@ int main(int argc, const char *argv[])
             if (argc == 1) sys_argv.append("");
             for (int i = 1; i < argc; i++) sys_argv.append(argv[i]);
             interactive.attr("interact")(py::object(), sys_argv);
-        } catch (py::error_already_set) {
-            PyErr_Print();
-            return 104;
+        } catch (py::error_already_set) { // This should not happen
+            int exitcode = handlePythonException();
+            fixMatplotlibBug();
+            return exitcode;
         }
     }
 
     // Close the Python interpreter and exit
+    fixMatplotlibBug();
     return 0;
 }

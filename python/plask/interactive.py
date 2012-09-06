@@ -49,8 +49,7 @@ preexec_lines = [
 no_ipython = """\
 Couldn't locate IPython. Having IPython installed is greatly recommended.
 See http://ipython.scipy.org for more details. If you use Debian/Ubuntu,
-just install the 'ipython' package and start plask again.
-"""
+just install the 'ipython' package and start plask again."""
 
 _import_all = False
 
@@ -122,7 +121,7 @@ def interact(ipython=None, argv=[]):
 
     if ipython is False:
         ip = _init_python_session(argv)
-        mainloop = ip.interact
+        mainloop = lambda: ip.interact(banner)
     else:
         try:
             import IPython
@@ -131,7 +130,7 @@ def interact(ipython=None, argv=[]):
             if ipython is not True:
                 print (no_ipython)
                 ip = _init_python_session(argv)
-                mainloop = ip.interact
+                mainloop = lambda: ip.interact(banner)
             else:
                 raise RuntimeError("IPython 0.11 or newer is not available on this system")
         else:
