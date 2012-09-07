@@ -59,10 +59,12 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     /// Main Matrix
     double **mpA;
     int mAWidth, mAHeight;
-    std::vector<double> mTCorr; // LP
+    std::vector<double> mTCorr;
     double mTAmb;
+    bool mfHeats;
     DataVector<double> mTemperatures;
-    DataVector<double> mHeats; // LP
+    DataVector<double> mHeatFluxes;
+    DataVector<double> mHeats;
 
     /// Vector of nodes
     std::vector<Node2D> mNodes;
@@ -75,6 +77,9 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
 
     /// Set elements
     void setElements();
+
+    /// Set heats
+    void setHeats();
 
     /// Set matrix
     void setSolver();
@@ -107,24 +112,14 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     int solveMatrix(double **ipA, long iN, long iBandWidth);
 
     /// Boundary conditions
-    BoundaryConditions<RectilinearMesh2D,double> mTConst; // LP
+    BoundaryConditions<RectilinearMesh2D,double> mTConst;
 
-/*
     /// Initialize the solver
-    virtual void onInitialize() { // In this function check if geometry and mesh are set
-        if (!geometry) throw NoGeometryException(getId());
-        if (!mesh) throw NoMeshException(getId());
-        my_data.reset(mesh->size()); // and e.g. allocate memory
-    }
+    virtual void onInitialize();
 
     /// Invalidate the data
-    virtual void onInvalidate() { // This will be called when e.g. geometry or mesh changes and your results become outdated
-        outSingleValue.invalidate(); // clear the value
-        my_data.reset();
-        // Make sure that no provider returns any value.
-        // If this method has been called, before next computations, onInitialize will be called.
-   }
-
+    virtual void onInvalidate();
+/*
     /// Method computing the value for the delegate provider
     const DataVector<double> getDelegated(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod method=DEFAULT_INTERPOLATION) {
         if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
