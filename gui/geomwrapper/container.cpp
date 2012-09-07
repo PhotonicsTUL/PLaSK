@@ -81,8 +81,8 @@ plask::Box2D StackWrapper<2>::getInsertPlace2D(const GeometryElementCreator &, c
 
 }
 
-template class StackWrapper<2>;
-template class StackWrapper<3>;
+template struct StackWrapper<2>;
+template struct StackWrapper<3>;
 
 // ------------------- MultiStackWrapper --------------------------
 
@@ -114,8 +114,8 @@ void MultiStackWrapper<dim>::setupPropertiesBrowserForChild(std::size_t index, B
     StackWrapper<dim>::setupPropertiesBrowserForChild(index, managers, dst);
 }*/
 
-template class MultiStackWrapper<2>;
-template class MultiStackWrapper<3>;
+template struct MultiStackWrapper<2>;
+template struct MultiStackWrapper<3>;
 
 QString ShelfWrapper::toStr() const
 {

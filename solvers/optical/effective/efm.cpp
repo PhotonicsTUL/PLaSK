@@ -76,7 +76,7 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, d
     dcomplex v2 = (k0 - (2e3*M_PI/lambda2)) / k0;
     auto results = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)
                        .searchSolutions(v1, v2, steps, 0, nummodes);
-    for (auto res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
+    for (auto& res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
     return results;
 }
 
@@ -89,7 +89,7 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1
     dcomplex v2 = (k0 - (2e3*M_PI/lambda2)) / k0;
     auto results =  RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
                         .findMap(v1, v2, steps, 0);
-    for (auto res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
+    for (auto& res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
     return results;
 }
 

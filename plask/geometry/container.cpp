@@ -143,8 +143,8 @@ bool GeometryElementContainer<dim>::removeIfT(const std::function<bool(const sha
         return false;
 }
 
-template class GeometryElementContainer<2>;
-template class GeometryElementContainer<3>;
+template struct GeometryElementContainer<2>;
+template struct GeometryElementContainer<3>;
 
 template <>
 void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
@@ -161,8 +161,8 @@ void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_chi
     if (child_tran->translation.up != 0.0) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up);
 }
 
-template class TranslationContainer<2>;
-template class TranslationContainer<3>;
+template struct TranslationContainer<2>;
+template struct TranslationContainer<3>;
 
 
 // ---- containers readers: ----

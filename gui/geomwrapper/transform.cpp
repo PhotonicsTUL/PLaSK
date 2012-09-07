@@ -43,8 +43,8 @@ bool TranslationWrapper<dim>::tryInsert(plask::shared_ptr<plask::GeometryElement
     return true;
 }
 
-template class TranslationWrapper<2>;
-template class TranslationWrapper<3>;
+template struct TranslationWrapper<2>;
+template struct TranslationWrapper<3>;
 
 QString ExtrusionWrapper::toStr() const {
     auto& el = this->c();

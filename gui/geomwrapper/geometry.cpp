@@ -41,8 +41,8 @@ void GeometryWrapper<dim>::drawReal(QPainter &painter) const
     if (child) ext(child)->drawReal(painter);
 }
 
-template class GeometryWrapper<2>;
-template class GeometryWrapper<3>;
+template struct GeometryWrapper<2>;
+template struct GeometryWrapper<3>;
 
 QString Geometry2DCartesianWrapper::toStr() const {
     QString res = QString(QObject::tr("Cartesian geometry 2d%1")).arg(this->name.isEmpty() ? "" : ("\n\"" + this->name + "\""));

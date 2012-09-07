@@ -209,8 +209,8 @@ GeometryElementD<dimensions>::getElementInThisCoordinates(const shared_ptr<Geome
     return make_shared<Translation<dimensions>>(element, trans_vec[0]);
 }
 
-template class GeometryElementD<2>;
-template class GeometryElementD<3>;
+template struct GeometryElementD<2>;
+template struct GeometryElementD<3>;
 
 
 }   // namespace plask

@@ -33,8 +33,8 @@ void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisName
                     .attr("material", material->str());
 }
 
-template class Block<2>;
-template class Block<3>;
+template struct Block<2>;
+template struct Block<3>;
 
 shared_ptr<GeometryElement> read_block2D(GeometryReader& reader) {
     shared_ptr< Block<2> > block(new Block<2>());

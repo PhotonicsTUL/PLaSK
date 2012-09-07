@@ -59,9 +59,9 @@ bool StackContainerBaseImpl<dim, growingDirection>::removeIfTUnsafe(const std::f
         return false;
 }
 
-template class StackContainerBaseImpl<2, Primitive<2>::DIRECTION_UP>;
-template class StackContainerBaseImpl<3, Primitive<3>::DIRECTION_UP>;
-template class StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
+template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_UP>;
+template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_UP>;
+template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
 
 /*template <int dim>    //this is fine but GeometryElements doesn't have copy constructors at all, becose signal doesn't have copy constructor
 StackContainer<dim>::StackContainer(const StackContainer& to_copy)
@@ -155,8 +155,8 @@ void StackContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag
     //dest_xml_child_tag.attr(axes.getNameForTran(), aligners[child_index]->str());
 }
 
-template class StackContainer<2>;
-template class StackContainer<3>;
+template struct StackContainer<2>;
+template struct StackContainer<3>;
 
 
 bool ShelfContainer2D::isFlat() const {

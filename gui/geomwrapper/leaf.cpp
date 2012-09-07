@@ -47,5 +47,5 @@ void BlockWrapper<3>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAb
     //TODO 3d
 }
 
-template class BlockWrapper<2>;
-template class BlockWrapper<3>;
+template struct BlockWrapper<2>;
+template struct BlockWrapper<3>;

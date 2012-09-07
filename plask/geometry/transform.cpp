@@ -55,8 +55,8 @@ void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const Ax
     if (translation.up != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up);
 }
 
-template class Translation<2>;
-template class Translation<3>;
+template struct Translation<2>;
+template struct Translation<3>;
 
 template <typename TranslationType>
 inline static void setupTranslation2D3D(GeometryReader& reader, TranslationType& translation) {
