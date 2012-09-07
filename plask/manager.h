@@ -35,15 +35,25 @@ struct Manager {
     static XMLReader disallowExternalSources(const std::string& u) { throw Exception("Can't load section from \"%1%\". Loading from external sources is not supported or disallowed.", u); }
     
 private:
+    
+    /// @return @c true
+    static bool acceptAllSections(const std::string&) { return true; }
+    
+    template <typename MaterialsSource>
+    bool tryLoadFromExternal(XMLReader& reader, const MaterialsSource& materialsSource, const std::function<XMLReader(const std::string& url)>& load_from);
+    
     /**
      * Load XML content.
      * @param XMLreader XML data source, to load
      * @param materialsSource source of materials, typically materials database
-     * @param load_from callback called to open external location, allow loading some section from another sources,
+     * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should open and return external XML source pointed by url (typically name of file) or throw exception
+     * @param section_filter predicate which returns @c true only if given section should be read, by default it always return @c true
      */
     template <typename MaterialsSource>
-    void load(XMLReader& XMLreader, const MaterialsSource& materialsSource, std::function<XMLReader(const std::string& url)> load_from = &disallowExternalSources);
+    void load(XMLReader& XMLreader, const MaterialsSource& materialsSource,
+              const std::function<XMLReader(const std::string& url)>& load_from_cb = &disallowExternalSources,
+              const std::function<bool(const std::string& section_name)>& section_filter = &acceptAllSections);
 
   protected:
 

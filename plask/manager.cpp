@@ -15,6 +15,16 @@ PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
     return result_it->second;
 }
 
+template <typename MaterialsSource>
+bool Manager::tryLoadFromExternal(XMLReader& reader, const MaterialsSource& materialsSource, const std::function<XMLReader(const std::string& url)>& load_from) {
+    boost::optional<std::string> from_attr = reader.getAttribute("from");
+    if (!from_attr) return false;
+    std::string section_to_load = reader.getNodeName();
+    XMLReader new_reader = load_from(*from_attr);
+    load(new_reader, materialsSource, &disallowExternalSources, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
+    return true;
+}
+
 shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::string &lib, const std::string &solver_name, const std::string& name) {
     std::string lib_file_name = plaskSolversPath(category);
     lib_file_name += "lib";
@@ -195,39 +205,61 @@ inline MaterialsDB& getMaterialsDBfromSource<MaterialsDB>(const MaterialsDB& mat
 }
 
 template <typename MaterialsSource>
-void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource, std::function<XMLReader(const std::string& url)> load_from)
+void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
+                   const std::function<XMLReader(const std::string& url)>& load_from,
+                   const std::function<bool(const std::string& section_name)>& section_filter)
 {
     reader.requireTag(TAG_NAME_ROOT);
     reader.requireTag();
 
     if (reader.getNodeName() == TAG_NAME_MATERIALS) {
-        loadMaterials(reader, getMaterialsDBfromSource(materialsSource));
+        if (section_filter(TAG_NAME_MATERIALS)) {
+            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadMaterials(reader, getMaterialsDBfromSource(materialsSource));
+        } else
+            reader.gotoEndOfCurrentTag();
         if (!reader.requireTagOrEnd()) return;
     }
 
     if (reader.getNodeName() == TAG_NAME_GEOMETRY) {
-        GeometryReader greader(*this, reader, materialsSource);
-        loadGeometry(greader);
+        if (section_filter(TAG_NAME_GEOMETRY)) {
+            if (!tryLoadFromExternal(reader, materialsSource, load_from)) {
+                GeometryReader greader(*this, reader, materialsSource);
+                loadGeometry(greader);
+            }
+        } else
+            reader.gotoEndOfCurrentTag();
         if (!reader.requireTagOrEnd()) return;
     }
 
     if (reader.getNodeName() == TAG_NAME_GRIDS) {
-        loadGrids(reader);
+        if (section_filter(TAG_NAME_GRIDS)) {
+            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadGrids(reader);
+        } else
+            reader.gotoEndOfCurrentTag();
         if (!reader.requireTagOrEnd()) return;
     }
 
     if (reader.getNodeName() == TAG_NAME_SOVERS) {
-        loadSolvers(reader);
+        if (section_filter(TAG_NAME_SOVERS)) {
+            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadSolvers(reader);
+        } else
+            reader.gotoEndOfCurrentTag();
         if (!reader.requireTagOrEnd()) return;
     }
 
     if (reader.getNodeName() == TAG_NAME_CONNECTS) {
-        loadConnects(reader);
+        if (section_filter(TAG_NAME_CONNECTS)) {
+            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadConnects(reader);
+        } else
+            reader.gotoEndOfCurrentTag();
         if (!reader.requireTagOrEnd()) return;
     }
 
     if (reader.getNodeName() == TAG_NAME_SCRIPT) {
-        loadScript(reader);
+        if (section_filter(TAG_NAME_SCRIPT)) {
+            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadScript(reader);
+        } else
+            reader.gotoEndOfCurrentTag();
         if (!reader.requireTagOrEnd()) return;
     }
 }

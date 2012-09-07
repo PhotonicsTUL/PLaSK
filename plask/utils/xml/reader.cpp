@@ -213,5 +213,9 @@ bool XMLReader::gotoNextTagOnCurrentLevel() {
     return gotoNextOnLevel(getLevel());
 }
 
+void XMLReader::gotoEndOfCurrentTag() {
+    gotoNextOnLevel(getLevel(), NODE_ELEMENT_END);
+}
+
 
 } // namespace plask

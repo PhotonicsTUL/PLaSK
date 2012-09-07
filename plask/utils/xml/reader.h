@@ -347,6 +347,11 @@ class XMLReader {
      * @return @c true if reader is on required element or @c false if XML data end
      */
     bool gotoNextTagOnCurrentLevel();
+    
+    /**
+     * Skip everything up to end of current tag.
+     */
+    void gotoEndOfCurrentTag();
 };
 
 
