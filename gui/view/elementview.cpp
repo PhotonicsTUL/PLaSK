@@ -109,7 +109,7 @@ QModelIndex ElementViewer::indexAt(const QPoint &point) const
     const std::size_t ch_count = e->getRealChildrenCount();
     for (std::size_t i = 0; i < ch_count; ++i) {
         plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
-        if (ch && ch->getBoundingBox().include(model_point))
+        if (ch && ch->getBoundingBox().includes(model_point))
             return model()->index(i, 0, rootIndex());
     }
 
@@ -335,7 +335,7 @@ void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::Selecti
         const std::size_t ch_count = e->getRealChildrenCount();
         for (std::size_t i = 0; i < ch_count; ++i) {
             plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
-            if (ch && ch->getBoundingBox().intersect(model_sel))
+            if (ch && ch->getBoundingBox().intersects(model_sel))
                 indexes.append(model()->index(i, 0, rootIndex()));
         }
     }

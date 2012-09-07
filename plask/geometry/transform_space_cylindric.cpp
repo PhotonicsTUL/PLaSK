@@ -3,12 +3,12 @@
 
 namespace plask {
 
-bool Revolution::include(const GeometryElementD< 3 >::DVec& p) const {
-    return getChild()->include(childVec(p));
+bool Revolution::includes(const GeometryElementD< 3 >::DVec& p) const {
+    return getChild()->includes(childVec(p));
 }
 
-bool Revolution::intersect(const Box& area) const {
-    return getChild()->intersect(childBox(area));
+bool Revolution::intersects(const Box& area) const {
+    return getChild()->intersects(childBox(area));
 }
 
 Revolution::Box Revolution::getBoundingBox() const {

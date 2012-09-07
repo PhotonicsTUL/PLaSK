@@ -56,11 +56,11 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Old value of the l number (to detect changes)
     int old_l;
 
-    /// Current value of reference normalized frequency
-    dcomplex k0;
-
     /// Old value of k0 to detect changes
     dcomplex old_k0;
+
+    /// Stored frequency parameter for field calculations
+    dcomplex v;
 
     /// Stored vertical propagation constants for field calculations
     std::vector<dcomplex> betaz;
@@ -69,6 +69,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Number of the LP_lm mode describing angular dependence
     int l;
+
+    /// Current value of reference normalized frequency
+    dcomplex k0;
 
     double outer_distance; ///< Distance outside outer borders where material is sampled
 
@@ -153,22 +156,18 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /**
      * Compute determinant for a single stripe
      * \param stripe index of stripe
-     * \param lambda0 reference wavelength
      * \param veff stripe effective frequency to use
      */
-    dcomplex getStripeDeterminant(size_t stripe, dcomplex lambda0, dcomplex veff) {
-        k0 = 2*M_PI / lambda0;
+    dcomplex getStripeDeterminant(size_t stripe, dcomplex veff) {
         initCalculation();
         return detS1(veff, nrCache[stripe], ngCache[stripe]);
     }
 
     /**
      * Compute modal determinant for the whole matrix
-     * \param lambda0 reference wavelength
      * \param v frequency parameter
      */
-    dcomplex getDeterminant(dcomplex lambda0, dcomplex v) {
-        k0 = 2e3*M_PI / lambda0;
+    dcomplex getDeterminant(dcomplex v) {
         stageOne();
         return detS(v);
     }
@@ -178,7 +177,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
 
     /// Receiver for the gain
-    ReceiverFor<MaterialGain, Geometry2DCartesian> inGain;
+    ReceiverFor<Gain, Geometry2DCartesian> inGain;
 
     /// Provider for computed resonant wavelength
     ProviderFor<Wavelength>::WithValue outWavelength;
@@ -220,7 +219,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
   private:
     template <typename MeshT>
-    bool getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, plask::DataVector<double>& results, plask::dcomplex v);
+    bool getLightIntenisty_Efficient(const MeshD<2>& dst_mesh, DataVector<double>& results);
 };
 
 

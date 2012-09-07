@@ -70,13 +70,13 @@ py::object EffectiveIndex2DSolver_getStripeDeterminant(EffectiveIndex2DSolver& s
     return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
 }
 
-py::object EffectiveFrequencyCylSolver_getStripeDeterminant(EffectiveFrequencyCylSolver& self, int stripe, dcomplex lambda0, py::object val)
+py::object EffectiveFrequencyCylSolver_getStripeDeterminant(EffectiveFrequencyCylSolver& self, int stripe, py::object val)
 {
     if (!self.getMesh()) self.setSimpleMesh();
     if (stripe < 0) stripe = self.getMesh()->tran().size() + stripe;
     if (stripe < 0 || size_t(stripe) >= self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
 
-    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, lambda0, x);}, val);
+    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
 }
 
 static py::object EffectiveIndex2DSolver_getDeterminant(EffectiveIndex2DSolver& self, py::object val)
@@ -84,14 +84,22 @@ static py::object EffectiveIndex2DSolver_getDeterminant(EffectiveIndex2DSolver& 
    return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, val);
 }
 
-static py::object EffectiveFrequencyCylSolver_getDeterminant(EffectiveFrequencyCylSolver& self, dcomplex lambda0, py::object val)
+static py::object EffectiveFrequencyCylSolver_getDeterminant(EffectiveFrequencyCylSolver& self, py::object val)
 {
-   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(lambda0, x);}, val);
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, val);
 }
 
 static inline bool plask_import_array() {
     import_array1(false);
     return true;
+}
+
+dcomplex EffectiveFrequencyCylSolver_getLambda0(const EffectiveFrequencyCylSolver& self) {
+    return 2e3*M_PI / self.k0;
+}
+
+void EffectiveFrequencyCylSolver_setLambda0(EffectiveFrequencyCylSolver& self, dcomplex lambda0) {
+    self.k0 = 2e3*M_PI / lambda0;
 }
 
 
@@ -133,6 +141,8 @@ BOOST_PYTHON_MODULE(effective)
         "Calculate optical modes and optical field distribution using the effective frequency\n"
         "method in two-dimensional cylindrical space.")
         RW_FIELD(l, "Radial mode number");
+        RW_FIELD(k0, "Reference normalized frequency");
+        __solver__.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_getLambda0, "Reference wavelength");
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
@@ -142,8 +152,8 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
         __solver__.def("getStripeDeterminant", &EffectiveFrequencyCylSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
-                       (py::arg("stripe"), "wavelength", "veff"));
-        __solver__.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant for debugging purposes", (py::arg("wavelength"), "v"));
+                       (py::arg("stripe"), "veff"));
+        __solver__.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant for debugging purposes", py::arg("v"));
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain in the active region");
         PROVIDER(outWavelength, "Wavelength of the last computed mode");

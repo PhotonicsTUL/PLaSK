@@ -7,15 +7,15 @@
 namespace plask { namespace python {
 
 // Some helpful wrappers
-template <int dim> struct GeometryElementD_include {};
-template <> struct GeometryElementD_include<2> {
+template <int dim> struct GeometryElementD_includes {};
+template <> struct GeometryElementD_includes<2> {
     static inline bool call(const GeometryElementD<2>& self, double c0, double c1) {
-        return self.include(Vec<2,double>(c0, c1));
+        return self.includes(Vec<2,double>(c0, c1));
     }
 };
-template <> struct GeometryElementD_include<3> {
+template <> struct GeometryElementD_includes<3> {
     static inline bool call(const GeometryElementD<3>& self, double c0, double c1, double c2) {
-        return self.include(Vec<3,double>(c0, c1, c2));
+        return self.includes(Vec<3,double>(c0, c1, c2));
     }
 };
 
@@ -85,11 +85,11 @@ template<> const py::detail::keywords<2> GeometryElementD_vector_args<2>::args =
 template<> const py::detail::keywords<3> GeometryElementD_vector_args<3>::args = (py::arg("c0"), py::arg("c1"), py::arg("c2"));
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class for "," geometry elements") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementD, GeometryElement)
-        .def("include", &GeometryElementD<dim>::include, (py::arg("point")),
+        .def("includes", &GeometryElementD<dim>::includes, (py::arg("point")),
              "Return True if the geometry element includes a point (in local coordinates)")
-        .def("include", &GeometryElementD_include<dim>::call, GeometryElementD_vector_args<dim>::args,
+        .def("includes", &GeometryElementD_includes<dim>::call, GeometryElementD_vector_args<dim>::args,
              "Return True if the geometry element includes a point (in local coordinates)")
-        .def("intersect", &GeometryElementD<dim>::intersect, (py::arg("area")),
+        .def("intersects", &GeometryElementD<dim>::intersects, (py::arg("area")),
              "Return True if the geometry element has common points (in local coordinates) with an area")
         .def("getMaterial", &GeometryElementD<dim>::getMaterial, (py::arg("point")),
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")

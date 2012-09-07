@@ -58,9 +58,9 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      */
     const shared_ptr<TranslationT> getChildForHeight(double height) const;
 
-    virtual bool include(const DVec& p) const {
+    virtual bool includes(const DVec& p) const {
         const shared_ptr<TranslationT> c = getChildForHeight(p.components[growingDirection]);
-        return c ? c->include(p) : false;
+        return c ? c->includes(p) : false;
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
@@ -491,7 +491,7 @@ class MultiStackContainer: public StackContainer<dim> {
         return UpperClass::getChildForHeight(height);
     }*/
 
-    virtual bool intersect(const Box& area) const;
+    virtual bool intersects(const Box& area) const;
 
     virtual Box getBoundingBox() const {
         Box result = UpperClass::getBoundingBox();
@@ -526,10 +526,10 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual GeometryElement::Subtree getPathsTo(const DVec& point) const;
 
-    virtual bool include(const DVec& p) const {
+    virtual bool includes(const DVec& p) const {
         DVec p_reduced = p;
         if (!reduceHeight(p_reduced.up)) return false;
-        return UpperClass::include(p_reduced);
+        return UpperClass::includes(p_reduced);
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {

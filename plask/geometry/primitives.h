@@ -77,14 +77,14 @@ struct Box2D {
      * @param p point
      * @return true only if point is inside this box
      */
-    bool include(const Vec<2,double>& p) const;
+    bool includes(const Vec<2,double>& p) const;
 
     /**
      * Check if this and other boxes have common points.
      * @param other box
      * @return true only if this and other have common points
      */
-    bool intersect(const Box2D& other) const;
+    bool intersects(const Box2D& other) const;
 
     /**
      * Make this box, the minimal one which include @c this and given point @p p.
@@ -230,14 +230,14 @@ struct Box3D {
      * @param p point
      * @return true only if point is inside this box
      */
-    bool include(const Vec<3,double>& p) const;
+    bool includes(const Vec<3,double>& p) const;
 
     /**
      * Check if this and other boxes have common points.
      * @param other box
      * @return true only if this and other have common points
      */
-    bool intersect(const Box3D& other) const;
+    bool intersects(const Box3D& other) const;
 
     /**
      * Make this box, the minimal one which include @c this and given point @p p.

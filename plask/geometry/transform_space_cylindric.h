@@ -21,9 +21,9 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
     
     virtual std::string getTypeName() const { return NAME; }
 
-    virtual bool include(const DVec& p) const;
+    virtual bool includes(const DVec& p) const;
 
-    virtual bool intersect(const Box& area) const;
+    virtual bool intersects(const Box& area) const;
 
     virtual Box getBoundingBox() const;
 

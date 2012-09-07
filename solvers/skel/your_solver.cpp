@@ -2,6 +2,22 @@
 
 namespace plask { namespace solvers { namespace your_solver {
 
+void YourSolver::loadParam(const std::string& param, XMLReader& reader, Manager&) {
+    // Load a configuration parameter from XML.
+    // Below you have an example
+    if (param == "newton") {
+        newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
+        newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
+        newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
+    } else if (param == "wavelength") {
+        std::string = reader.requireText();
+        inWavelength.setValue(boost::lexical_cast<double>(wavelength));
+    } else
+        throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <newton>, or <wavelength>", param);
+    reader.requireTagEnd();
+}
+
+
 void YourSolver::compute(double parameter) {
     // Below we show some key elements of the computational methods
     initCalculation(); // This must be called before any calculation!

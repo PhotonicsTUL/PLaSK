@@ -23,7 +23,7 @@ namespace plask {
  * Providers of material gain should accept additional parameter,
  * which is the wavelength for which the gain should be computed.
  */
-struct MaterialGain : public FieldProperty<double, double> {
+struct Gain : public FieldProperty<double, double> {
     static constexpr const char* NAME = "material gain";
 };
 

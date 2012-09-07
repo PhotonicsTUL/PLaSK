@@ -208,10 +208,10 @@ const bool MultiStackContainer<dim>::reduceHeight(double& height) const {
 }
 
 template <int dim>
-bool MultiStackContainer<dim>::intersect(const Box& area) const {
+bool MultiStackContainer<dim>::intersects(const Box& area) const {
     const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
     for (unsigned r = 0; r < repeat_count; ++r)
-        if (UpperClass::intersect(area.translatedUp(minusZeroBasedStackHeight*r)))
+        if (UpperClass::intersects(area.translatedUp(minusZeroBasedStackHeight*r)))
             return true;
     return false;
 }

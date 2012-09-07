@@ -33,7 +33,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_LEAF; }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return this->include(p) ? material : shared_ptr<Material>();
+        return this->includes(p) ? material : shared_ptr<Material>();
     }
 
     virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const {
@@ -82,7 +82,7 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
     }
 
     virtual GeometryElement::Subtree getPathsTo(const DVec& point) const {
-        return GeometryElement::Subtree( this->include(point) ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
+        return GeometryElement::Subtree( this->includes(point) ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
     }
 
     virtual std::size_t getChildrenCount() const { return 0; }
@@ -157,12 +157,12 @@ struct Block: public GeometryElementLeaf<dim> {
         return Box(Primitive<dim>::ZERO_VEC, size);
     }
 
-    virtual bool include(const DVec& p) const {
-        return this->getBoundingBox().include(p);
+    virtual bool includes(const DVec& p) const {
+        return this->getBoundingBox().includes(p);
     }
 
-    virtual bool intersect(const Box& area) const {
-        return this->getBoundingBox().intersect(area);
+    virtual bool intersects(const Box& area) const {
+        return this->getBoundingBox().intersects(area);
     }
     
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;

@@ -31,9 +31,9 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
      */
     void setLength(double new_length);
 
-    virtual bool include(const DVec& p) const;
+    virtual bool includes(const DVec& p) const;
 
-    virtual bool intersect(const Box& area) const;
+    virtual bool intersects(const Box& area) const;
 
     virtual Box getBoundingBox() const;
 
@@ -57,7 +57,7 @@ private:
     /// @return true only if p can be inside this, false if for sure its not inside
     bool canBeInside(const DVec& p) const { return 0.0 <= p.lon || p.lon <= length; }
 
-    /// @return true only if area can intersect this, false if for sure its not intersect
+    /// @return true only if area can intersects this, false if for sure its not intersects
     bool canIntersect(const Box& area) const { return !(area.lower.lon > length || area.upper.lon < 0.0); }
 
     /**

@@ -9,19 +9,23 @@ from plask import material, geometry, mesh
 from optical.effective import EffectiveIndex2D
 
 @material.simple
-class LowContrastMaterial(material.Material):
+class Glass(material.Material):
     def Nr(self, wl, T): return 1.3
+
+@material.simple
+class LowConstrast(material.Material):
+    def Nr(self, wl, T): return 1.05
 
 class EffectiveIndex2D_Test(unittest.TestCase):
 
     def setUp(self):
-        self.solver = EffectiveIndex2D("test_solver")
-        rect = geometry.Rectangle(0.75, 0.5, LowContrastMaterial())
+        self.solver = EffectiveIndex2D("test_eim")
+        rect = geometry.Rectangle(0.75, 0.5, Glass())
         space = geometry.Cartesian2D(rect, left="mirror")
         self.solver.geometry = space
 
     def testBasic(self):
-        self.assertEqual( self.solver.id, "test_solver:EffectiveIndex2D" )
+        self.assertEqual( self.solver.id, "test_eim:EffectiveIndex2D" )
 
     def testExceptions(self):
         with self.assertRaisesRegexp(TypeError, r"^No wavelength set nor its provider connected$"):
@@ -57,3 +61,17 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
     def testMesh(self):
         mesh = self.solver.mesh
+
+
+class EffectiveFrequencyCyl_Test(unittest.TestCase):
+
+    def setUp(self):
+        self.solver = EffectiveIndex2D("test_efm")
+        R = 1.0
+        rect = geometry.Rectangle(R, 3.0, LowConstrast())
+        self.solver.geometry = geometry.Cartesian2D(rect)
+        self.solver.mesh = mesh.Rectilinear2D([0., R], [1.0, 2.0])
+
+    #def testBessel(self):
+
+

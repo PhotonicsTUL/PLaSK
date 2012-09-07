@@ -215,7 +215,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
 
     /// Receiver for the gain
-    ReceiverFor<MaterialGain, Geometry2DCartesian> inGain;
+    ReceiverFor<Gain, Geometry2DCartesian> inGain;
 
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::WithValue outNeff;

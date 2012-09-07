@@ -98,13 +98,13 @@ public:
     /// @return GE_TYPE_CONTAINER
     virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_CONTAINER; }
 
-    virtual bool include(const DVec& p) const {
-        for (auto child: children) if (child->include(p)) return true;
+    virtual bool includes(const DVec& p) const {
+        for (auto child: children) if (child->includes(p)) return true;
         return false;
     }
 
-    virtual bool intersect(const Box& area) const {
-        for (auto child: children) if (child->intersect(area)) return true;
+    virtual bool intersects(const Box& area) const {
+        for (auto child: children) if (child->intersects(area)) return true;
         return false;
     }
 

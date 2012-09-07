@@ -73,12 +73,17 @@ Assume that we want to write a solver computing a waveguide effective index and 
 The solver performs its computation using finite differences method. Hence, we name it \b FiniteDifferencesSolver.
 
 To start we create a subdirectory \a solvers/optical/finite_diff under the PLaSK trunk write a file \a finite_differences.h to it.
-Also we need to copy the \a CMakeLists.txt file from \a solvers/skel to our directory. In most cases we will not need to edit this
-file, unless our solvers uses some external libraries. If for example, our solver uses LAPACK, the \a CMakeLists.txt should look
-like this (In the below example all comments are skipped):
+Also we need to copy the \a CMakeLists.txt file from \a solvers/skel to our directory. In most cases we will only need to edit
+the line whith the command \c project in this file, unless our solvers uses some external libraries. If for example, our solver
+uses LAPACK, the \a CMakeLists.txt should look like this (In the below example all comments are skipped):
+
+The project name should math the pattern \a plask/solvergroup/solverlib, so in our case it will look like \a plask/optical/finite_diff.
 
 \verbatim
-include(${CMAKE_SOURCE_DIR}/cmake/solvers.cmake)
+project(plask/optical/finite_diff)
+
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake)
+find_package(PLaSK)
 
 find_package(LAPACK)
 set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
@@ -273,8 +278,8 @@ and are up-to-date (remember, we have cleared the value of \c outNeff in \c onIn
 we use plask::interpolate function to interpolate our data to the receiver mesh (which is provided as \c destination_mesh argument).
 
 Our solver can perform computations now. However, if it has any configuration to load, we can read it from XML file. To do this, we shoud
-reimplement \c loadParam method. It reads the configuration from the current XML tag named \c param using plask::XMLReader class. Below you have
-an example:
+reimplement \c loadParam method. It reads the configuration from the current XML tag named \c param using plask::XMLReader class and must
+require the closing of the tag. Below you have an example:
 
 \code
     void loadParam(const std::string& param, XMLReader& reader, Manager&) {
@@ -285,7 +290,9 @@ an example:
         } else if (param == "wavelength") {
             std::string = reader.requireText();
             inWavelength.setValue(boost::lexical_cast<double>(wavelength));
-        }
+        } else
+            throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <newton>, or <wavelength>", param);
+        reader.requireTagEnd();
     }
 \endcode
 

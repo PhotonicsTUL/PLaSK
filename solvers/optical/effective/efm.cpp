@@ -12,18 +12,19 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     have_veffs(false),
     have_fields(false),
     l(0),
+    k0(NAN),
     outer_distance(0.1),
     outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty) {
     inTemperature = 300.;
     inGain = NAN;
-    root.tolx = 1.0e-7;
-    root.tolf_min = 1.0e-8;
-    root.tolf_max = 1.0e-6;
+    root.tolx = 1.0e-9;
+    root.tolf_min = 1.0e-12;
+    root.tolf_max = 1.0e-9;
     root.maxstep = 0.1;
     root.maxiterations = 500;
-    striperoot.tolx = 1.0e-5;
-    striperoot.tolf_min = 1.0e-7;
-    striperoot.tolf_max = 1.0e-6;
+    striperoot.tolx = 1.0e-9;
+    striperoot.tolf_min = 1.0e-12;
+    striperoot.tolf_max = 1.0e-9;
     striperoot.maxstep = 0.5;
     striperoot.maxiterations = 500;
 }
@@ -32,6 +33,12 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
 void EffectiveFrequencyCylSolver::loadParam(const std::string& param, XMLReader& reader, Manager&) {
     if (param == "mode") {
         l = reader.getAttribute<unsigned short>("l", l);
+        auto alam0 = reader.getAttribute<unsigned short>("lam0");
+        auto ak0 = reader.getAttribute<unsigned short>("k0");
+        if (alam0) {
+            if (ak0) throw XMLConflictingAttributesException(reader, "k0", "lam0");
+            k0 = 2e3*M_PI / *alam0;
+        } else if (ak0) k0 = *ak0;
     } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
             root.tolf_min = reader.getAttribute<double>("tolf_min", root.tolf_min);
@@ -54,15 +61,15 @@ void EffectiveFrequencyCylSolver::loadParam(const std::string& param, XMLReader&
 dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
-    k0 = 2e3*M_PI / lambda;
+    if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
     stageOne();
-    dcomplex result = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root).getSolution(0.);
-    result = 2e3*M_PI / k0 / (1. - result/2.); // get wavelength back from frequency parameter
-    outWavelength = result;
+    v = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root).getSolution(0.);
+    dcomplex lam = 2e3*M_PI / k0 / (1. - v/2.); // get wavelength back from frequency parameter
+    outWavelength = lam;
     outWavelength.fireChanged();
     outIntensity.fireChanged();
     have_fields = false;
-    return result;
+    return lam;
 }
 
 
@@ -70,10 +77,10 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
 std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, unsigned steps, unsigned nummodes)
 {
     writelog(LOG_INFO, "Searching for the modes for wavelength between %1% and %2%", str(lambda1), str(lambda2));
-    k0 = 4e3*M_PI / (lambda1 + lambda2);
+    if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
     stageOne();
-    dcomplex v1 = (k0 - (2e3*M_PI/lambda1)) / k0;
-    dcomplex v2 = (k0 - (2e3*M_PI/lambda2)) / k0;
+    dcomplex v1 = 2. * (k0 - (2e3*M_PI/lambda1)) / k0;
+    dcomplex v2 = 2. * (k0 - (2e3*M_PI/lambda2)) / k0;
     auto results = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)
                        .searchSolutions(v1, v2, steps, 0, nummodes);
     for (auto& res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
@@ -83,10 +90,10 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, d
 std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps)
 {
     writelog(LOG_INFO, "Searching for the approximate modes for wavelength between %1% and %2%", str(lambda1), str(lambda2));
-    k0 = 4e3*M_PI / (lambda1 + lambda2);
+    if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
     stageOne();
-    dcomplex v1 = (k0 - (2e3*M_PI/lambda1)) / k0;
-    dcomplex v2 = (k0 - (2e3*M_PI/lambda2)) / k0;
+    dcomplex v1 = 2. * (k0 - (2e3*M_PI/lambda1)) / k0;
+    dcomplex v2 = 2. * (k0 - (2e3*M_PI/lambda2)) / k0;
     auto results =  RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
                         .findMap(v1, v2, steps, 0);
     for (auto& res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
@@ -141,9 +148,10 @@ void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
     size_t rsize = veffs.size();
     size_t zsize = mesh->axis1.size() + 1;
 
-    if (fresh || inTemperature.changed || inGain.changed || l != old_l) { // We need to update something
+    if (fresh || inTemperature.changed || inGain.changed || l != old_l || k0 != old_k0) { // We need to update something
 
         old_l = l;
+        old_k0 = k0;
 
         double lam = real(2e3*M_PI / k0);
 
@@ -183,8 +191,8 @@ void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
                 ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
                 double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh.index(ix, iy-1)];
                 double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain_slope[midmesh.index(ix, iy-1)];
-                ngCache[ix][iy] -= dcomplex(0., (std::isnan(gs))? 0. : 7.95774715459e-09 * lam*lam * gs);
-                nrCache[ix][iy] += dcomplex(0., std::isnan(g)? 0. : 7.95774715459e-09 * lam * g);
+                ngCache[ix][iy] -= dcomplex(0., (isnan(gs))? 0. : 7.95774715459e-09 * lam*lam * gs);
+                nrCache[ix][iy] += dcomplex(0., isnan(g)? 0. : 7.95774715459e-09 * lam * g);
 
             }
         }
@@ -207,7 +215,7 @@ void EffectiveFrequencyCylSolver::stageOne()
 
             writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
             std::stringstream nrgs; for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
-                nrgs << ", " << str(*nr) << "/" << str(*ng);
+                nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
             writelog(LOG_DEBUG, "nR/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
 
             dcomplex same_nr = nrCache[i].front();
@@ -370,7 +378,6 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const MeshD<2>& dst_mesh, InterpolationMethod)
 {
     if (!outWavelength.hasValue() || k0 != old_k0 || l != old_l) throw NoValue(OpticalIntensity::NAME);
-    dcomplex v = 2. * (k0 - 2e3*M_PI/outWavelength()) / k0;
 
     if (!have_fields) {
         fieldR.resize(veffs.size());
@@ -382,6 +389,9 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
         for (size_t i = veffs.size()-1; i > 0; --i) {
             fieldR[i-1].noalias() = getMatrix(v, i) * fieldR[i];
         }
+
+        std::stringstream strf; for (size_t i = 0; i < fieldR.size(); ++i) strf << ", (" << str(fieldR[i][0]) << ")/(" << str(fieldR[i][1]) << ")";
+        writelog(LOG_DEBUG, "E=aY+bH: a/b = [%1% ]", strf.str().substr(1));
 
         size_t stripe = 0;
         // Look for the innermost stripe with not constant refractive index
@@ -426,8 +436,8 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
     DataVector<double> results(dst_mesh.size());
     size_t id = 0;
 
-    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, v) &&
-        !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, v)) {
+    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results) &&
+        !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results)) {
 
         double Jr, Ji, Hr, Hi;
         int nz, ierr;
@@ -468,7 +478,7 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
 }
 
 template <typename MeshT>
-bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, plask::DataVector<double>& results, dcomplex v)
+bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, plask::DataVector<double>& results)
 {
     if (dynamic_cast<const MeshT*>(&dst_mesh)) {
 

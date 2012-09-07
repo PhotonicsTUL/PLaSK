@@ -870,14 +870,14 @@ struct GeometryElementD: public GeometryElement {
      * @param p point
      * @return true only if this geometry includes point @a p
      */
-    virtual bool include(const DVec& p) const = 0;
+    virtual bool includes(const DVec& p) const = 0;
 
     /**
      * Check if geometry includes some point from given @a area.
      * @param area rectangular area
      * @return true only if this geometry includes some points from @a area
      */
-    virtual bool intersect(const Box& area) const = 0;
+    virtual bool intersects(const Box& area) const = 0;
 
     /**
      * Calculate minimal rectangle which includes all points of geometry element.

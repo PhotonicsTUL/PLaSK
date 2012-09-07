@@ -7,7 +7,7 @@ This file includes classes and templates which allow to generate providers and r
 */
 
 #include "provider.h"
-#include "../utils/stl.h"   //VariadicTemplateTypesHolder
+#include "../utils/stl.h"   // VariadicTemplateTypesHolder
 
 namespace plask {
 
@@ -61,7 +61,7 @@ struct Property {
     typedef _ValueType ValueType;
 
     static constexpr const char* NAME = PropertyTypeToProviderName<_propertyType>::value;
-    
+
     typedef VariadicTemplateTypesHolder<_ExtraParams...> ExtraParams;
 };
 

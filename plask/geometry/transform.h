@@ -238,12 +238,12 @@ struct Translation: public GeometryElementTransform<dim> {
         return getChild()->getMaterial(p-translation);
     }
 
-    virtual bool include(const DVec& p) const {
-        return getChild()->include(p-translation);
+    virtual bool includes(const DVec& p) const {
+        return getChild()->includes(p-translation);
     }
 
-    virtual bool intersect(const Box& area) const {
-        return getChild()->intersect(area.translated(-translation));
+    virtual bool intersects(const Box& area) const {
+        return getChild()->intersects(area.translated(-translation));
     }
 
     using GeometryElementTransform<dim>::getPathsTo;

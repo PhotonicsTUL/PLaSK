@@ -29,7 +29,7 @@ Typically, hints are returned by methods which adds new elements to containers.
 */
 struct PathHints {
 
-    ///Type for map: geometry element container -> element in container
+    /// Type for map: geometry element container -> element in container
 #ifdef PLASK_SHARED_PTR_STD
     typedef std::map<weak_ptr<GeometryElement>, std::set<weak_ptr<GeometryElement>, std::owner_less<weak_ptr<GeometryElement>>>,
                      std::owner_less<weak_ptr<GeometryElement>>> HintMap;
