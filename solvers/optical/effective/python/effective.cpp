@@ -142,7 +142,7 @@ BOOST_PYTHON_MODULE(effective)
         "method in two-dimensional cylindrical space.")
         RW_FIELD(l, "Radial mode number");
         RW_FIELD(k0, "Reference normalized frequency");
-        __solver__.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_getLambda0, "Reference wavelength");
+        __solver__.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_setLambda0, "Reference wavelength");
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");

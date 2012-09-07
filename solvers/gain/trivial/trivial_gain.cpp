@@ -26,12 +26,33 @@ void StepProfileGain<GeometryT>::setElement(const weak_ptr<const GeometryElement
 {
     this->element = element;
     this->hints = path;
+    this->outGain.fireChanged();
 }
 
 
 template <typename GeometryT>
-const DataVector<double> StepProfileGain<GeometryT>::getGain(const plask::MeshD<GeometryT::DIMS>& dst_mesh, double wavelength, plask::InterpolationMethod method)
+const DataVector<double> StepProfileGain<GeometryT>::getGainProfile(const plask::MeshD<GeometryT::DIMS>& dst_mesh, double wavelength, plask::InterpolationMethod method)
 {
+    if (!this->geometry) throw NoGeometryException(this->getId());
+
+    DataVector<double> result(dst_mesh.size());
+
+    auto el = this->element.lock();
+
+    if (el) {
+        auto positions = this->geometry->getElementPositions(el, hints);
+        size_t i = 0;
+        for (auto point: dst_mesh) {
+            result[i++] = NAN;
+            for (auto pos: positions)
+                if (el->includes(point-pos))
+                    result[i-1] = this->gain;
+        }
+    } else {
+        std::fill(result.begin(), result.end(), NAN);
+    }
+
+    return result;
 }
 
 

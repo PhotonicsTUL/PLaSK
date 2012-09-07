@@ -10,22 +10,28 @@ using namespace plask::python;
 using namespace plask::solvers::gain_trivial;
 
 template <typename GeometryT>
-void StepProfile_setElement(StepProfileGain<GeometryT>& self, shared_ptr<GeometryElementD<GeometryT::DIMS>> element, py::object path) {
+static void StepProfile_setElement(StepProfileGain<GeometryT>& self, const GeometryElementD<GeometryT::DIMS>* element, py::object path) {
+    auto shared = dynamic_pointer_cast<const GeometryElementD<GeometryT::DIMS>>(element->shared_from_this());
     if (path == py::object())
-        self.setElement(element);
+        self.setElement(shared);
     else
-        self.setElement(element, py::extract<PathHints>(path));
+        self.setElement(shared, py::extract<PathHints>(path));
 }
 
+template <typename GeometryT>
+static void registerStepProfile(const std::string& variant, const std::string& full_variant) {
+    CLASS(StepProfileGain<GeometryT>, ("StepProfileGain"+variant).c_str(),
+        ("Step-profile gain for "+full_variant+" geometry.").c_str())
+        __solver__.def("setElement", StepProfile_setElement<GeometryT>, "Set element on which there is a gain", (py::arg("element"), py::arg("path")=py::object()));
+        RW_PROPERTY(gain, getGain, setGain, "Gain value [1/cm]");
+        PROVIDER(outGain, "Gain distribution provider");
+        py::scope().attr(("StepProfile"+variant).c_str()) = __solver__;
+}
 
 BOOST_PYTHON_MODULE(trivial)
 {
-    {CLASS(StepProfileGain<Geometry2DCartesian>, "StepProfileGain2D", "Step-profile gain for 2D Cartesian geometry.")
-        __solver__.def("setElement", StepProfile_setElement<Geometry2DCartesian>, "Set element on which there is a gain", (py::arg("element"), py::arg("path")=py::object()));
-        RW_FIELD(gain, "Gain value [1/cm]");
-        PROVIDER(outGain, "Gain distribution provider");
-        py::scope().attr("StepProfile2D") = __solver__;
-    }
-
+    registerStepProfile<Geometry2DCartesian>("2D", "Cartesian 2D");
+    registerStepProfile<Geometry2DCylindrical>("Cyl", "Cylindrical");
+    registerStepProfile<Geometry3D>("3D", "3D");
 }
 

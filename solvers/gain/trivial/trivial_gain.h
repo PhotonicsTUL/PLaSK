@@ -19,19 +19,25 @@ class StepProfileGain: public SolverOver<GeometryT> {
     /// Element for which we specify the gain
     weak_ptr<const GeometryElementD<GeometryT::DIMS>> element;
 
-    ///
+    /// Hints specyfiing pointed element
     PathHints hints;
-
-  public:
 
     /// Gain value to return
     double gain;
+
+    virtual void onInvalidate() {
+        outGain.fireChanged();
+    }
+
+  public:
 
     /// Sample provider for field (it's better to use delegate here).
     typename ProviderFor<Gain, GeometryT>::Delegate outGain;
 
 
-    StepProfileGain(const std::string& name=""): SolverOver<GeometryT>(name)/*, outGain(this, &StepProfileGain<GeometryT>::getGain)*/ {}
+    StepProfileGain(const std::string& name=""): SolverOver<GeometryT>(name),
+        gain(NAN),
+        outGain(this, &StepProfileGain<GeometryT>::getGainProfile) {}
 
     virtual std::string getClassName() const;
 
@@ -40,6 +46,12 @@ class StepProfileGain: public SolverOver<GeometryT> {
     }
 
     virtual void loadParam(const std::string& param, XMLReader& reader, Manager& manager);
+
+    /// Return gain value
+    double getGain() const { return gain; }
+
+    /// Set gain value
+    void setGain(double g) { gain = g; outGain.fireChanged(); }
 
     /**
      * Set element, on which there is a gain.
@@ -51,7 +63,7 @@ class StepProfileGain: public SolverOver<GeometryT> {
   protected:
 
     /// Method computing the value for the delegate provider
-    const DataVector<double> getGain(const plask::MeshD<GeometryT::DIMS>& dst_mesh, double wavelength, plask::InterpolationMethod method=DEFAULT_INTERPOLATION);
+    const DataVector<double> getGainProfile(const plask::MeshD<GeometryT::DIMS>& dst_mesh, double wavelength, plask::InterpolationMethod method=DEFAULT_INTERPOLATION);
 
 };
 

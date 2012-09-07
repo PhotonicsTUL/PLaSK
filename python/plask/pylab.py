@@ -56,7 +56,8 @@ def plotGeometry2D(geometry, color='k', width=1.0, set_limits=False, zorder=3, m
         axes.set_xlim(box.lower[0], box.upper[0])
         axes.set_ylim(box.lower[1], box.upper[1])
 
-    return patches
+    # return patches
+
 
 def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
     '''Plot two-dimensional rectilinear mesh.'''
@@ -81,7 +82,8 @@ def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
         axes.set_xlim(x_min, x_max)
         axes.set_ylim(y_min, y_max)
 
-    return lines
+    # return lines
+
 
 def plotMaterialParam2D(geometry, param, axes=None, **kwargs):
     '''Plot selected material parameter as color map'''

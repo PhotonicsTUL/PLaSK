@@ -174,16 +174,16 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
 
     /// Receiver for the temperature
-    ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
+    ReceiverFor<Temperature, Geometry2DCylindrical> inTemperature;
 
     /// Receiver for the gain
-    ReceiverFor<Gain, Geometry2DCartesian> inGain;
+    ReceiverFor<Gain, Geometry2DCylindrical> inGain;
 
     /// Provider for computed resonant wavelength
     ProviderFor<Wavelength>::WithValue outWavelength;
 
     /// Provider of optical field
-    ProviderFor<OpticalIntensity, Geometry2DCartesian>::Delegate outIntensity;
+    ProviderFor<OpticalIntensity, Geometry2DCylindrical>::Delegate outIntensity;
 
   protected:
 
