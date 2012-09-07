@@ -23,7 +23,7 @@ BOOST_PYTHON_MODULE(trivial)
     {CLASS(StepProfileGain<Geometry2DCartesian>, "StepProfileGain2D", "Step-profile gain for 2D Cartesian geometry.")
         __solver__.def("setElement", StepProfile_setElement<Geometry2DCartesian>, "Set element on which there is a gain", (py::arg("element"), py::arg("path")=py::object()));
         RW_FIELD(gain, "Gain value [1/cm]");
-//         PROVIDER(outGain, "Gain distribution provider");
+        PROVIDER(outGain, "Gain distribution provider");
         py::scope().attr("StepProfile2D") = __solver__;
     }
 

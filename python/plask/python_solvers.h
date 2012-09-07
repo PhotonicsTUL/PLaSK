@@ -81,7 +81,7 @@ namespace detail {
                 self.*field = value;
             } catch (py::error_already_set) {
                 PyErr_Clear();
-                detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType>::setValue(self.*field, obj);
+                detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams>::setValue(self.*field, obj);
             }
         }
 
