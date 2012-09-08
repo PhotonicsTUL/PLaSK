@@ -19,12 +19,12 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     inGain = NAN;
     root.tolx = 1.0e-9;
     root.tolf_min = 1.0e-12;
-    root.tolf_max = 1.0e-9;
+    root.tolf_max = 1.0e-8;
     root.maxstep = 0.1;
     root.maxiterations = 500;
     striperoot.tolx = 1.0e-9;
     striperoot.tolf_min = 1.0e-12;
-    striperoot.tolf_max = 1.0e-9;
+    striperoot.tolf_max = 1.0e-8;
     striperoot.maxstep = 0.5;
     striperoot.maxiterations = 500;
 }

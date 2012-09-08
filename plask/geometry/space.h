@@ -391,11 +391,11 @@ class Geometry2DCartesian: public GeometryD<2> {
     shared_ptr<Material> backMaterial;
 
 public:
-    
+
     static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D;
 
     virtual std::string getTypeName() const { return NAME; }
-    
+
     /**
      * Set strategy for the left border.
      * @param newValue new strategy for the left border
@@ -529,7 +529,7 @@ public:
                                           const AxisNames& axesNames=AxisNames()) const {
         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(element, path, borders, axesNames);
     }
-    
+
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
 
     virtual void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const;
@@ -544,32 +544,42 @@ class Geometry2DCylindrical: public GeometryD<2> {
 
     shared_ptr<Revolution> revolution;
 
-    border::StrategyHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> outer;
+    border::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> innerouter;
     border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
 
     static void ensureBoundDirIsProper(DIRECTION direction, bool hi) {
         Primitive<3>::ensureIsValid2DDirection(direction);
-        if (direction == DIRECTION_TRAN && !hi)
-            throw BadInput("setBorders", "Geometry2DCylindrical: Lower bound is not allowed in the transverse direction.");
     }
 
 public:
-    
+
     static constexpr const char* NAME = "cylindrical";
-    
+
     virtual std::string getTypeName() const { return NAME; }
+
+    /**
+     * Set strategy for inner border.
+     * @param newValue new strategy for inner border
+     */
+    void setInnerBorder(const border::UniversalStrategy& newValue) { innerouter.setLo(newValue); fireChanged(Event::BORDERS); }
+
+    /**
+     * Get inner border strategy.
+     * @return inner border strategy
+     */
+    const border::UniversalStrategy& getInnerBorder() { return innerouter.getLo(); }
 
     /**
      * Set strategy for outer border.
      * @param newValue new strategy for outer border
      */
-    void setOuterBorder(const border::UniversalStrategy& newValue) { outer = newValue; fireChanged(Event::BORDERS); }
+    void setOuterBorder(const border::UniversalStrategy& newValue) { innerouter.setHi(newValue); fireChanged(Event::BORDERS); }
 
     /**
      * Get outer border strategy.
      * @return outer border strategy
      */
-    const border::UniversalStrategy& getOuterBorder() { return outer.getStrategy(); }
+    const border::UniversalStrategy& getOuterBorder() { return innerouter.getHi(); }
 
     /**
      * Set strategy for bottom border.
@@ -652,9 +662,9 @@ public:
     void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
 
     const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
-    
+
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
-    
+
     void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const;
 
   protected:
@@ -678,9 +688,9 @@ class Geometry3D: public GeometryD<3> {
     border::StrategyPairHolder<Primitive<3>::DIRECTION_UP> bottomup;
 
 public:
-    
+
     static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D;
-    
+
     virtual std::string getTypeName() const { return NAME; }
 
     /**

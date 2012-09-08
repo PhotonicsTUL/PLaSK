@@ -154,11 +154,19 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     std::vector<dcomplex> findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps=100);
 
     /**
+     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * If it is not proper mode, exception is throw
+     *
+     * \param neff effective index of the mode
+     */
+    void setMode(dcomplex neff);
+
+    /**
      * Compute determinant for a single stripe
      * \param stripe index of stripe
      * \param veff stripe effective frequency to use
      */
-    dcomplex getStripeDeterminant(size_t stripe, dcomplex veff) {
+    dcomplex getStripeDeterminantV(size_t stripe, dcomplex veff) {
         initCalculation();
         return detS1(veff, nrCache[stripe], ngCache[stripe]);
     }
@@ -167,7 +175,18 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      * Compute modal determinant for the whole matrix
      * \param v frequency parameter
      */
-    dcomplex getDeterminant(dcomplex v) {
+    dcomplex getDeterminantV(dcomplex v) {
+        stageOne();
+        return detS(v);
+    }
+
+    /**
+     * Compute modal determinant for the whole matrix
+     * \param lambda wavelength
+     */
+    dcomplex getDeterminant(dcomplex lambda) {
+        if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
+        dcomplex v =  2. - 4e3*M_PI / lambda / k0;
         stageOne();
         return detS(v);
     }

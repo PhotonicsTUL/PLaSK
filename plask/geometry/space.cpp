@@ -155,12 +155,14 @@ shared_ptr< GeometryElementD<2> > Geometry2DCylindrical::getChild() const {
 
 shared_ptr<Material> Geometry2DCylindrical::getMaterial(const Vec<2, double> &p) const {
     Vec<2, double> r = p;
+    if (r.c0 < 0) r.c0 = -r.c0;  // Structure is ALWAYS symmetric with respect to the axis
+
     shared_ptr<Material> material;
 
     bottomup.apply(cachedBoundingBox, r, material);
     if (material) return material;
 
-    outer.applyIfHi(cachedBoundingBox, r, material);
+    innerouter.apply(cachedBoundingBox, r, material);
     if (material) return material;
 
     return getMaterialOrDefault(r);
@@ -189,9 +191,13 @@ Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< Geom
 
 void Geometry2DCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
-    if (direction == DIRECTION_TRAN)
-        outer = castBorder<border::UniversalStrategy>(border_to_set);
-    else
+    if (direction == DIRECTION_TRAN) {
+        try {
+            innerouter.setBoth(dynamic_cast<const border::UniversalStrategy&>(border_to_set));
+        } catch (std::bad_cast) {
+            throw BadInput("setBorders", "Wrong border type for inner or outer border");
+        }
+    } else
         bottomup.setBoth(border_to_set);
     fireChanged(Event::BORDERS);
 }
@@ -206,7 +212,11 @@ void Geometry2DCylindrical::setBorders(DIRECTION direction, const border::Strate
 void Geometry2DCylindrical::setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) {
     ensureBoundDirIsProper(direction, higher);
     if (direction == DIRECTION_TRAN) {
-        outer = castBorder<border::UniversalStrategy>(border_to_set);
+        try {
+            innerouter.set(higher, dynamic_cast<const border::UniversalStrategy&>(border_to_set));
+        } catch (std::bad_cast) {
+            throw BadInput("setBorder", "Wrong border type for inner or outer border");
+        }
     } else
         bottomup.set(higher, border_to_set);
     fireChanged(Event::BORDERS);
@@ -214,7 +224,7 @@ void Geometry2DCylindrical::setBorder(DIRECTION direction, bool higher, const bo
 
 const border::Strategy& Geometry2DCylindrical::getBorder(DIRECTION direction, bool higher) const {
     ensureBoundDirIsProper(direction, higher);
-    return (direction == DIRECTION_TRAN) ? outer.getStrategy() : bottomup.get(higher);
+    return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
 
 void Geometry2DCylindrical::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {

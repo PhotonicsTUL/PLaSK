@@ -70,13 +70,13 @@ py::object EffectiveIndex2DSolver_getStripeDeterminant(EffectiveIndex2DSolver& s
     return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
 }
 
-py::object EffectiveFrequencyCylSolver_getStripeDeterminant(EffectiveFrequencyCylSolver& self, int stripe, py::object val)
+py::object EffectiveFrequencyCylSolver_getStripeDeterminantV(EffectiveFrequencyCylSolver& self, int stripe, py::object val)
 {
     if (!self.getMesh()) self.setSimpleMesh();
     if (stripe < 0) stripe = self.getMesh()->tran().size() + stripe;
     if (stripe < 0 || size_t(stripe) >= self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
 
-    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
+    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminantV(stripe, x);}, val);
 }
 
 static py::object EffectiveIndex2DSolver_getDeterminant(EffectiveIndex2DSolver& self, py::object val)
@@ -87,6 +87,11 @@ static py::object EffectiveIndex2DSolver_getDeterminant(EffectiveIndex2DSolver& 
 static py::object EffectiveFrequencyCylSolver_getDeterminant(EffectiveFrequencyCylSolver& self, py::object val)
 {
    return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, val);
+}
+
+static py::object EffectiveFrequencyCylSolver_getDeterminantV(EffectiveFrequencyCylSolver& self, py::object val)
+{
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminantV(x);}, val);
 }
 
 static inline bool plask_import_array() {
@@ -129,7 +134,7 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by findModes.", "neff");
         __solver__.def("getStripeDeterminant", &EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "neff"));
-        __solver__.def("getDeterminant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant for debugging purposes", (py::arg("neff")));
+        __solver__.def("getDeterminant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff")));
         RECEIVER(inWavelength, "Wavelength of the light");
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain in the active region");
@@ -151,11 +156,13 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(computeMode, "Find the mode near the specified effective index", "wavelength");
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
-        __solver__.def("getStripeDeterminant", &EffectiveFrequencyCylSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
+        METHOD(setMode, "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by findModes.", "lam");
+        __solver__.def("getStripeDeterminantV", &EffectiveFrequencyCylSolver_getStripeDeterminantV, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "veff"));
-        __solver__.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant for debugging purposes", py::arg("v"));
+        __solver__.def("getDeterminantV", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes", py::arg("v"));
+        __solver__.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", py::arg("lam"));
         RECEIVER(inTemperature, "Temperature distribution in the structure");
-        RECEIVER(inGain, "Optical gain in the active region");
+        RECEIVER(inGain, "Optical gain distribution in the active region");
         PROVIDER(outWavelength, "Wavelength of the last computed mode");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
     }

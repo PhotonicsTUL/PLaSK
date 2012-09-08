@@ -19,12 +19,12 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     inGain = NAN;
     root.tolx = 1.0e-9;
     root.tolf_min = 1.0e-12;
-    root.tolf_max = 1.0e-9;
+    root.tolf_max = 1.0e-8;
     root.maxstep = 0.1;
     root.maxiterations = 500;
     striperoot.tolx = 1.0e-9;
     striperoot.tolf_min = 1.0e-12;
-    striperoot.tolf_max = 1.0e-9;
+    striperoot.tolf_max = 1.0e-8;
     striperoot.maxstep = 0.5;
     striperoot.maxiterations = 500;
 }
@@ -98,6 +98,22 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1
                         .findMap(v1, v2, steps, 0);
     for (auto& res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
     return results;
+}
+
+void EffectiveFrequencyCylSolver::setMode(dcomplex lambda)
+{
+    if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
+    if (!initialized) {
+        writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
+        stageOne();
+    }
+    v =  2. - 4e3*M_PI / lambda / k0;
+    double det = abs(detS(v));
+    if (det > root.tolf_max) throw BadInput(getId(), "Provided wavelength does not correspond to any mode (det = %1%)", det);
+    writelog(LOG_INFO, "Setting current mode to %1%", str(lambda));
+    outWavelength = lambda;
+    outWavelength.fireChanged();
+    outIntensity.fireChanged();
 }
 
 
@@ -370,7 +386,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
     }
 
     // In the innermost area there must not be any infinity, so H = 0.
-    return E[1];
+    return E[1] / E[0];
 }
 
 
@@ -535,7 +551,6 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
 
     return false;
 }
-
 
 
 }}} // namespace plask::solvers::effective

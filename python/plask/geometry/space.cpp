@@ -226,7 +226,7 @@ static BordersProxy Geometry2DCartesian_getBorders(const Geometry2DCartesian& se
 
 static BordersProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical& self) {
     BordersProxy borders;
-    borders["inner"] = _border(self, Geometry::DIRECTION_TRAN, false);
+    // borders["inner"] = _border(self, Geometry::DIRECTION_TRAN, false);
     borders["outer"] = _border(self, Geometry::DIRECTION_TRAN, true);
     borders["top"] = _border(self, Geometry::DIRECTION_UP, true);
     borders["bottom"] = _border(self, Geometry::DIRECTION_UP, false);
