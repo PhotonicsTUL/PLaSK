@@ -61,12 +61,9 @@ def plotGeometry2D(geometry, color='k', width=1.0, set_limits=False, zorder=3, m
     # return patches
 
 
-def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, mirror=(False, False), zorder=2):
+def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
     '''Plot two-dimensional rectilinear mesh.'''
     #TODO documentation
-
-    mirx = mirror[0]
-    miry = mirror[1]
 
     import matplotlib.lines
     axes = matplotlib.pylab.gca()
@@ -74,18 +71,11 @@ def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, mirror=(False, Fa
     lines = []
     if type(mesh) in [plask.mesh.Regular2D, plask.mesh.Rectilinear2D]:
         y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
-        if miry:
-            y_min = -y_max
         for x in mesh.axis0:
             lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=width, zorder=zorder))
-            if mirx:
-                lines.append(matplotlib.lines.Line2D([-x,-x], [y_min,y_max], color=color, lw=width, zorder=zorder))
         x_min = mesh.axis0[0]; x_max = mesh.axis0[-1]
-        if mirx: x_min = -x_max
         for y in mesh.axis1:
             lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
-            if miry:
-                lines.append(matplotlib.lines.Line2D([x_min,x_max], [-y,-y], color=color, lw=width, zorder=zorder))
 
     for line in lines:
         axes.add_line(line)
