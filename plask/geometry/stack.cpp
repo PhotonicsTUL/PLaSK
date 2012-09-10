@@ -13,7 +13,7 @@ void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBase
     stackHeights.front() = newBaseHeight;
     for (std::size_t i = 1; i < stackHeights.size(); ++i) {
         stackHeights[i] += diff;
-        children[i-1]->translation.components[growingDirection] += diff;
+        children[i-1]->translation[growingDirection] += diff;
         //children[i-1]->fireChanged(GeometryElement::Event::RESIZE);
     }
     this->fireChildrenChanged();    //TODO should this be called? children was moved but not removed/inserted
@@ -76,15 +76,15 @@ StackContainer<dim>::StackContainer(const StackContainer& to_copy)
 template <int dim>
 PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner) {
     const auto bb = el->getBoundingBox();
-    shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.up, bb);
+    shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.up(), bb);
     this->connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
     aligners.insert(aligners.begin() + pos, aligner.cloneUnique());
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
-    const double delta = bb.upper.up - bb.lower.up;
+    const double delta = bb.upper.up() - bb.lower.up();
     for (std::size_t i = pos + 1; i < children.size(); ++i) {
         stackHeights[i] += delta;
-        children[i]->translation.up += delta;
+        children[i]->translation.up() += delta;
     }
     stackHeights.back() += delta;
     this->fireChildrenInserted(pos, pos+1);
@@ -161,9 +161,9 @@ template struct StackContainer<3>;
 
 bool ShelfContainer2D::isFlat() const {
     if (children.size() < 2) return true;
-    double height = children.front()->getBoundingBoxSize().up;
+    double height = children.front()->getBoundingBoxSize().up();
     for (std::size_t i = 1; i < children.size(); ++i)
-        if (height != children[i]->getBoundingBoxSize().up)
+        if (height != children[i]->getBoundingBoxSize().up())
             return false;
     return true;
 }
@@ -172,7 +172,7 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
     double el_translation, next_height;
     auto elBB = el->getBoundingBox();
     calcHeight(elBB, stackHeights.back(), el_translation, next_height);
-    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(el_translation, -elBB.lower.up));
+    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(el_translation, -elBB.lower.up()));
     connectOnChildChanged(*trans_geom);
     children.push_back(trans_geom);
     stackHeights.push_back(next_height);
@@ -182,14 +182,14 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
 
 PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos) {
     const auto bb = el->getBoundingBox();
-    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(stackHeights[pos] - bb.lower.tran, -bb.lower.up));
+    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(stackHeights[pos] - bb.lower.tran(), -bb.lower.up()));
     connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
-    const double delta = bb.upper.tran - bb.lower.tran;
+    const double delta = bb.upper.tran() - bb.lower.tran();
     for (std::size_t i = pos + 1; i < children.size(); ++i) {
         stackHeights[i] += delta;
-        children[i]->translation.tran += delta;
+        children[i]->translation.tran() += delta;
     }
     stackHeights.back() += delta;
     this->fireChildrenInserted(pos, pos+1);
@@ -261,7 +261,7 @@ void MultiStackContainer<dim>::getPositionsToVec(const GeometryElement::Predicat
     for (unsigned r = 1; r < repeat_count; ++r)
         for (std::size_t i = old_size; i < new_size; ++i) {
             dest.push_back(dest[i]);
-            dest.back().up += stackHeight * r;
+            dest.back().up() += stackHeight * r;
         }
 }
 
@@ -275,7 +275,7 @@ GeometryElement::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryElem
             for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
                 auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].element)));
                 shared_ptr<Translation<dim>> new_child = org_child.copyShallow();
-                new_child->translation.up += stackHeight;
+                new_child->translation.up() += stackHeight;
                 result.children.push_back(GeometryElement::Subtree(new_child, result.children[org_child_nr].children));
             }
     }
@@ -285,7 +285,7 @@ GeometryElement::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryElem
 template <int dim>
 GeometryElement::Subtree MultiStackContainer<dim>::getPathsTo(const MultiStackContainer::DVec &point) const {
     MultiStackContainer::DVec new_point = point;
-    new_point.up = reduceHeight(new_point.up);
+    new_point.up() = reduceHeight(new_point.up());
     return GeometryElementContainer<dim>::getPathsTo(new_point);
 }
 
@@ -297,7 +297,7 @@ shared_ptr<GeometryElement> MultiStackContainer<dim>::getChildAt(std::size_t chi
     if (child_nr >= getChildrenCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildrenCount()-1);
     if (child_nr < children.size()) return children[child_nr];
     auto result = children[child_nr % children.size()]->copyShallow();
-    result->translation.up += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
+    result->translation.up() += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
     return result;
 }
 

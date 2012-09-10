@@ -19,7 +19,7 @@ namespace plask {
  * Rectilinear mesh in 2D space.
  *
  * Includes two 1D rectilinear meshes:
- * - axis0 (alternative names: tran(), ee_x(), r())
+ * - axis0 (alternative names: tran, ee_x(), r())
  * - axis1 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y) such that x is in axis0 and y is in axis1.
  */
@@ -429,7 +429,7 @@ private:
         const RectangularMesh &mesh;
 
         std::size_t line;
-        
+
         std::size_t index;
 
         BoundaryIteratorImpl(const RectangularMesh& mesh, std::size_t line, std::size_t index): mesh(mesh), line(line), index(index) {}
@@ -441,26 +441,26 @@ private:
         }
 
     };
-    
+
     // iterator over vertical line (from bottom to top). for left and right boundaries
     struct VerticalIteratorImpl: public BoundaryIteratorImpl {
-        
+
         VerticalIteratorImpl(const RectangularMesh& mesh, std::size_t line, std::size_t index): BoundaryIteratorImpl(mesh, line, index) {}
-        
+
         virtual std::size_t dereference() const { return this->mesh.index(this->line, this->index); }
-        
+
         virtual typename BoundaryLogicImpl<RectangularMesh>::IteratorImpl* clone() const {
             return new VerticalIteratorImpl(*this);
         }
     };
-    
+
     // iterator over horizonstal line (from left to right), for bottom and top boundaries
     struct HorizontalIteratorImpl: public BoundaryIteratorImpl {
-        
+
         HorizontalIteratorImpl(const RectangularMesh& mesh, std::size_t line, std::size_t index): BoundaryIteratorImpl(mesh, line, index) {}
-        
+
         virtual std::size_t dereference() const { return this->mesh.index(this->index, this->line); }
-        
+
         virtual typename BoundaryLogicImpl<RectangularMesh>::IteratorImpl* clone() const {
             return new HorizontalIteratorImpl(*this);
         }
@@ -469,7 +469,7 @@ private:
     struct VerticalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
-		
+
 		std::size_t line;
 
         VerticalBoundary(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis0) {}
@@ -503,7 +503,7 @@ private:
         bool includes(std::size_t mesh_index) const {
             return this->mesh.index1(mesh_index) == line;
         }
-		
+
 		Iterator begin() const {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, 0));
         }
@@ -512,12 +512,12 @@ private:
 			return Iterator(new HorizontalIteratorImpl(this->mesh, line, this->mesh.axis0.size()));
         }
     };
-    
+
     //TODO
     struct HorizontalLineBoundary: public BoundaryLogicImpl<RectangularMesh<2,Mesh1D>> {
-      
+
         double height;
-        
+
         bool includes(const RectangularMesh &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == mesh.axis1.findNearestIndex(height);
         }
@@ -530,7 +530,7 @@ public:
     static Boundary getBoundary(Predicate predicate) {
         return Boundary(new PredicateBoundary<RectangularMesh<2,Mesh1D>, Predicate>(predicate));
     }
-	
+
 	/**
 	 * Get boundary which show one vertical (from bottom to top) line in mesh.
 	 * @param line_nr_axis0 number of vertical line, axis 0 index of mesh
@@ -539,7 +539,7 @@ public:
 	static Boundary getVerticalBoundaryAtLine(std::size_t line_nr_axis0) {
 		return Boundary( [line_nr_axis0](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, line_nr_axis0);} );
 	}
-	
+
 	/**
 	 * Get boundary which show one vertical (from bottom to top) line in mesh which lies nearest given coordinate.
 	 * @param axis0_coord axis 0 coordinate
@@ -564,7 +564,7 @@ public:
     static Boundary getRightBoundary() {
         return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.size()-1);} );
     }
-	
+
 	/**
 	 * Get boundary which show one horizontal (from left to right) line in mesh.
 	 * @param line_nr_axis1 number of horizontal line, axis 1 index of mesh
@@ -573,7 +573,7 @@ public:
 	static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1) {
 		return Boundary( [line_nr_axis1](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, line_nr_axis1);} );
 	}
-	
+
 	/**
 	 * Get boundary which show one horizontal (from left to right) line in mesh which lies nearest given coordinate.
 	 * @param axis1_coord axis 1 coordinate

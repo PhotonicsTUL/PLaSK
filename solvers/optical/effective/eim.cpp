@@ -439,8 +439,8 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, betax, betay)) {
 
         for (auto point: dst_mesh) {
-            double x = point.tran;
-            double y = point.up;
+            double x = point.tran();
+            double y = point.up();
 
             bool negate = false;
             if (x < 0. && symmetry != NO_SYMMETRY) {

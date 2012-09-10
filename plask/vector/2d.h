@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "../math.h"
+#include <plask/exceptions.h>
 
 namespace plask {
 
@@ -22,18 +23,44 @@ struct Vec<2, T> {
 
     static const int DIMS = 2;
 
-    union {
-        /// Allow to access to vector coordinates by index.
-        T components[2];
-        /// Allow to access to vector coordinates by names.
-        struct { T c0, c1; };
-        struct { T tran, up; };
-        struct { T r, z; } rad;     // radial coordinates
-        struct { T y, z; } se;      // for surface-emitting lasers (z-axis up)
-        struct { T y, z; } z_up;    // for surface-emitting lasers (z-axis up)
-        struct { T x, y; } ee;      // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
-        struct { T x, y; } y_up;    // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
-    };
+    T c0, c1;
+
+    T& tran() { return c0; }
+    const T& tran() const { return c0; }
+
+    T& up() { return c1; }
+    const T& up() const { return c1; }
+
+    // radial coordinates
+    T& rad_r() { return c0; }
+    const T& rad_r() const { return c0; }
+    T& rad_z() { return c1; }
+    const T& rad_z() const { return c1; }
+
+    // for surface-emitting lasers (z-axis up)
+    T& se_y() { return c0; }
+    const T& se_y() const { return c0; }
+    T& se_z() { return c1; }
+    const T& se_z() const { return c1; }
+
+    // for surface-emitting lasers (z-axis up)
+    T& zup_y() { return c0; }
+    const T& z_up_y() const { return c0; }
+    T& zup_z() { return c1; }
+    const T& z_up_z() const { return c1; }
+
+    // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
+    T& ee_x() { return c0; }
+    const T& ee_x() const { return c0; }
+    T& ee_y() { return c1; }
+    const T& ee_y() const { return c1; }
+
+    // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
+    T& yup_x() { return c0; }
+    const T& y_up_x() const { return c0; }
+    T& yup_y() { return c1; }
+    const T& y_up_y() const { return c1; }
+
 
     /**
      * Type of iterator over components.
@@ -85,25 +112,25 @@ struct Vec<2, T> {
      * Get begin iterator over components.
      * @return begin iterator over components
      */
-    iterator begin() { return components; }
+    iterator begin() { return &c0; }
 
     /**
      * Get begin const iterator over components.
      * @return begin const iterator over components
      */
-    const_iterator begin() const { return components; }
+    const_iterator begin() const { return &c0; }
 
     /**
      * Get end iterator over components.
      * @return end iterator over components
      */
-    iterator end() { return components + 2; }
+    iterator end() { return &c0 + 2; }
 
     /**
      * Get end const iterator over components.
      * @return end const iterator over components
      */
-    const_iterator end() const { return components + 2; }
+    const_iterator end() const { return &c0 + 2; }
 
     /**
      * Compare two vectors, this and @p p.
@@ -123,22 +150,28 @@ struct Vec<2, T> {
 
     /**
      * Get i-th component
-     * WARNING This function does not check if i is valid (for efficiency reasons)
      * @param i number of coordinate
      * @return i-th component
      */
     inline T& operator[](size_t i) {
-        return components[i];
+        switch (i) {
+            case 0: return c0;
+            case 1: return c1;
+        }
+        throw BadInput("Vec2", "Wrong index");
     }
 
     /**
      * Get i-th component
-     * WARNING This function does not check if i is valid (for efficiency reasons)
      * @param i number of coordinate
      * @return i-th component
      */
     inline const T& operator[](size_t i) const {
-        return components[i];
+        switch (i) {
+            case 0: return c0;
+            case 1: return c1;
+        }
+        throw BadInput("Vec2", "Wrong index");
     }
 
     /**

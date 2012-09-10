@@ -59,12 +59,12 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     const shared_ptr<TranslationT> getChildForHeight(double height) const;
 
     virtual bool includes(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p.components[growingDirection]);
+        const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection]);
         return c ? c->includes(p) : false;
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p.components[growingDirection]);
+        const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection]);
         return c ? c->getMaterial(p) : shared_ptr<Material>();
     }
 
@@ -94,8 +94,8 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
      * @param[out] next_height height of stack with an @a el on top (up to @a el)
      */
     void calcHeight(const Box& elBoudingBox, double prev_height, double& el_translation, double& next_height) {
-        el_translation = prev_height - elBoudingBox.lower.components[growingDirection];
-        next_height = elBoudingBox.upper.components[growingDirection] + el_translation;
+        el_translation = prev_height - elBoudingBox.lower[growingDirection];
+        next_height = elBoudingBox.upper[growingDirection] + el_translation;
     }
 
     /**
@@ -116,7 +116,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     void updateHeight(std::size_t child_index) {
         calcHeight(children[child_index]->getChild(),
                    stackHeights[child_index],
-                   children[child_index]->translation.components[growingDirection],
+                   children[child_index]->translation[growingDirection],
                    stackHeights[child_index+1]);
     }
 
@@ -148,9 +148,9 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
 struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
     ShelfContainer2D(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
-    
+
     static constexpr const char* NAME = "shelf";
-    
+
     virtual std::string getTypeName() const { return NAME; }
 
     /**
@@ -236,7 +236,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
         this->ensureCanHaveAsChild(*el);
         return push_front_Unsafe(el);
     }
-    
+
 };
 
 
@@ -259,11 +259,11 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     using StackContainerBaseImpl<dim>::shared_from_this;
     using StackContainerBaseImpl<dim>::children;
     using StackContainerBaseImpl<dim>::stackHeights;
-    
+
     static constexpr const char* NAME = dim == 2 ?
                 ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    
+
     virtual std::string getTypeName() const { return NAME; }
 
   private:
@@ -279,7 +279,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans, const Box& elBB) const {
         shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
-        result->translation.up = up_trans;
+        result->translation.up() = up_trans;
         aligner.align(*result, elBB);
         //el->fireChanged();    //??
         return result;
@@ -294,7 +294,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans) const {
         shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
-        result->translation.up = up_trans;
+        result->translation.up() = up_trans;
         aligner.align(*result);
         return result;
     }
@@ -418,13 +418,13 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
 
     virtual void removeAtUnsafe(std::size_t index);
-    
+
     //add in reverse order
     virtual void writeXML(XMLWriter::Element& parent_xml_element, GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
 protected:
     void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
-    
+
 };
 
 template <int dim>
@@ -495,7 +495,7 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual Box getBoundingBox() const {
         Box result = UpperClass::getBoundingBox();
-        result.upper.up += result.sizeUp() * (repeat_count-1);
+        result.upper.up() += result.sizeUp() * (repeat_count-1);
         return result;
     }
 
@@ -516,7 +516,7 @@ class MultiStackContainer: public StackContainer<dim> {
         for (unsigned r = 1; r < repeat_count; ++r) {
             for (std::size_t i = 0; i < size; ++i) {
                 result.push_back(result[i]);
-                std::get<1>(result.back()).up += stackHeight * r;
+                std::get<1>(result.back()).up() += stackHeight * r;
             }
         }
         return result;
@@ -528,13 +528,13 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual bool includes(const DVec& p) const {
         DVec p_reduced = p;
-        if (!reduceHeight(p_reduced.up)) return false;
+        if (!reduceHeight(p_reduced.up())) return false;
         return UpperClass::includes(p_reduced);
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         DVec p_reduced = p;
-        if (!reduceHeight(p_reduced.up)) return shared_ptr<Material>();
+        if (!reduceHeight(p_reduced.up())) return shared_ptr<Material>();
         return UpperClass::getMaterial(p_reduced);
     }
 
@@ -555,7 +555,7 @@ class MultiStackContainer: public StackContainer<dim> {
         repeat_count = new_repeat_count;
         this->fireChildrenChanged();    //TODO should this be called? or simple change?
     }
-    
+
 protected:
     void writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const;
 

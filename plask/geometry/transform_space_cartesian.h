@@ -22,9 +22,9 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
     explicit Extrusion(double length = 0.0/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
     static constexpr const char* NAME = "extrusion";
-    
+
     virtual std::string getTypeName() const { return NAME; }
-    
+
     /**
      * Set length and inform observers.
      * @param new_length new length
@@ -50,22 +50,22 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
     using GeometryElementTransformSpace<3, 2>::getPathsTo;
 
     GeometryElement::Subtree getPathsTo(const DVec& point) const;
-    
+
     void writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const;
 
 private:
     /// @return true only if p can be inside this, false if for sure its not inside
-    bool canBeInside(const DVec& p) const { return 0.0 <= p.lon || p.lon <= length; }
+    bool canBeInside(const DVec& p) const { return 0.0 <= p.lon() || p.lon() <= length; }
 
     /// @return true only if area can intersects this, false if for sure its not intersects
-    bool canIntersect(const Box& area) const { return !(area.lower.lon > length || area.upper.lon < 0.0); }
+    bool canIntersect(const Box& area) const { return !(area.lower.lon() > length || area.upper.lon() < 0.0); }
 
     /**
      * Convert vector from this space (3d) to child space (2d).
      * @param p vector in space of this (3d)
      * @return @p p without lon coordinate, vector in space of child (2d)
      */
-    static ChildVec childVec(const DVec& p) { return ChildVec(p.tran, p.up); }
+    static ChildVec childVec(const DVec& p) { return ChildVec(p.tran(), p.up()); }
 
     /**
      * Convert box from this space (3d) to child space (2d).
@@ -80,7 +80,7 @@ private:
      * @param lon lon coordinate
      * @return vector in space of this (3d)
      */
-    static DVec parentVec(const ChildVec& p, double lon) { return DVec(lon, p.tran, p.up); }
+    static DVec parentVec(const ChildVec& p, double lon) { return DVec(lon, p.tran(), p.up()); }
 
     /**
      * Convert box from child space (2d) to this space (3d).

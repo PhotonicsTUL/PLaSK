@@ -19,7 +19,7 @@ FiniteElementMethodElectricalCartesian2DSolver::~FiniteElementMethodElectricalCa
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::setNodes()
-{   
+{
     std::cout << "Setting nodes...\n" << std::endl;
 
     size_t tNo = 1; // node number
@@ -28,8 +28,8 @@ void FiniteElementMethodElectricalCartesian2DSolver::setNodes()
 
     for(plask::RectilinearMesh2D::iterator vec_it = mesh->begin(); vec_it != mesh->end(); ++vec_it) // loop through all nodes given in the correct iteration order
     {
-        double x = vec_it->ee.x;
-        double y = vec_it->ee.y;
+        double x = vec_it->ee_x();
+        double y = vec_it->ee_y();
 
         std::size_t i = vec_it.getIndex();
         auto it = mVconst.includes(*mesh, i);

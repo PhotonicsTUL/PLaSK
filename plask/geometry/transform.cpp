@@ -44,15 +44,15 @@ shared_ptr<const GeometryElement> Translation<dim>::changedVersion(const Geometr
 
 template <>
 void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
-    if (translation.tran != 0.0) dest_xml_element.attr(axes.getNameForTran(), translation.tran);
-    if (translation.up != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up);
+    if (translation.tran() != 0.0) dest_xml_element.attr(axes.getNameForTran(), translation.tran());
+    if (translation.up() != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up());
 }
 
 template <>
 void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
-    if (translation.lon != 0.0) dest_xml_element.attr(axes.getNameForLon(), translation.lon);
-    if (translation.tran != 0.0) dest_xml_element.attr(axes.getNameForTran(), translation.tran);
-    if (translation.up != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up);
+    if (translation.lon() != 0.0) dest_xml_element.attr(axes.getNameForLon(), translation.lon());
+    if (translation.tran() != 0.0) dest_xml_element.attr(axes.getNameForTran(), translation.tran());
+    if (translation.up() != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up());
 }
 
 template struct Translation<2>;
@@ -60,8 +60,8 @@ template struct Translation<3>;
 
 template <typename TranslationType>
 inline static void setupTranslation2D3D(GeometryReader& reader, TranslationType& translation) {
-    translation.translation.tran = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
-    translation.translation.up = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
+    translation.translation.tran() = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
+    translation.translation.up() = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
     translation.setChild(reader.readExactlyOneChild<typename TranslationType::ChildType>());
 }
 
@@ -75,7 +75,7 @@ shared_ptr<GeometryElement> read_translation2D(GeometryReader& reader) {
 shared_ptr<GeometryElement> read_translation3D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     shared_ptr< Translation<3> > translation(new Translation<3>());
-    translation->translation.lon = reader.source.getAttribute(reader.getAxisLonName(), 0.0);
+    translation->translation.lon() = reader.source.getAttribute(reader.getAxisLonName(), 0.0);
     setupTranslation2D3D(reader, *translation);
     return translation;
 }

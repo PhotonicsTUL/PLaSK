@@ -2,8 +2,10 @@
 #define PLASK__VECTORCART3D_H
 
 #include <iostream>
+#include <boost/concept_check.hpp>
 
 #include "../math.h"
+#include <plask/exceptions.h>
 
 namespace plask {
 
@@ -28,18 +30,67 @@ struct Vec<3, T> {
 
     static const int DIMS = 3;
 
-    union {
-        /// Allow to access to vector coordinates by index.
-        T components[3];
-        /// Allow to access to vector coordinates by name.
-        struct { T c0, c1, c2; };
-        struct { T lon, tran, up; };
-        struct { T p, r, z; } rad;    // radial coordinates
-        struct { T x, y, z; } se;       // for surface-emitting lasers (z-axis up)
-        struct { T x, y, z; } z_up;     // for surface-emitting lasers (z-axis up)
-        struct { T z, x, y; } ee;       // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
-        struct { T z, x, y; } y_up;     // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
-    };
+    /// Vector components
+    T c0, c1, c2;
+
+    T& lon() { return c0; }
+    const T& lon() const { return c0; }
+
+    T& tran() { return c1; }
+    const T& tran() const { return c1; }
+
+    T& up() { return c2; }
+    const T& up() const { return c2; }
+
+    // radial coordinates
+    T& rad_p() { return c0; }
+    const T& rad_p() const { return c0; }
+
+    T& rad_r() { return c1; }
+    const T& rad_r() const { return c1; }
+
+    T& rad_z() { return c2; }
+    const T& rad_z() const { return c2; };
+
+    // for surface-emitting lasers (z-axis up)
+    T& se_x() { return c0; }
+    const T& se_x() const { return c0; }
+
+    T& se_y() { return c1; }
+    const T& se_y() const { return c1; }
+
+    T& se_z() { return c2; }
+    const T& se_z() const { return c2; };
+
+    // for surface-emitting lasers (z-axis up)
+    T& zup_x() { return c0; }
+    const T& z_up_x() const { return c0; }
+
+    T& zup_y() { return c1; }
+    const T& z_up_y() const { return c1; }
+
+    T& zup_z() { return c2; }
+    const T& z_up_z() const { return c2; };
+
+    // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
+    T& ee_z() { return c0; }
+    const T& ee_z() const { return c0; }
+
+    T& ee_x() { return c1; }
+    const T& ee_x() const { return c1; }
+
+    T& ee_y() { return c2; }
+    const T& ee_y() const { return c2; };
+
+    // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
+    T& yup_z() { return c0; }
+    const T& y_up_z() const { return c0; }
+
+    T& yup_x() { return c1; }
+    const T& y_up_x() const { return c1; }
+
+    T& yup_y() { return c2; }
+    const T& y_up_y() const { return c2; };
 
     /**
      * Type of iterator over components.
@@ -89,25 +140,25 @@ struct Vec<3, T> {
      * Get begin iterator over components.
      * @return begin iterator over components
      */
-    iterator begin() { return components; }
+    iterator begin() { return &c0; }
 
     /**
      * Get begin const iterator over components.
      * @return begin const iterator over components
      */
-    const_iterator begin() const { return components; }
+    const_iterator begin() const { return &c0; }
 
     /**
      * Get end iterator over components.
      * @return end iterator over components
      */
-    iterator end() { return components + 3; }
+    iterator end() { return &c0 + 3; }
 
     /**
      * Get end const iterator over components.
      * @return end const iterator over components
      */
-    const_iterator end() const { return components + 3; }
+    const_iterator end() const { return &c0 + 3; }
 
     /**
      * Compare two vectors, @c this and @p p.
@@ -127,22 +178,30 @@ struct Vec<3, T> {
 
     /**
      * Get i-th component
-     * WARNING This function does not check if i is valid (for efficiency reasons)
      * @param i number of coordinate
      * @return i-th component
      */
     inline T& operator[](size_t i) {
-        return components[i];
+        switch (i) {
+            case 0: return c0;
+            case 1: return c1;
+            case 2: return c2;
+        }
+        throw BadInput("Vec3", "Wrong index");
     }
 
     /**
      * Get i-th component
-     * WARNING This function does not check if i is valid (for efficiency reasons)
      * @param i number of coordinate
      * @return i-th component
      */
     inline const T& operator[](size_t i) const {
-        return components[i];
+        switch (i) {
+            case 0: return c0;
+            case 1: return c1;
+            case 2: return c2;
+        }
+        throw BadInput("Vec3", "Wrong index");
     }
 
     /**

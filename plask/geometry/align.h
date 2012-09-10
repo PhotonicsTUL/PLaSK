@@ -53,7 +53,7 @@ struct Aligner2DBase {
      * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
      */
     virtual Aligner2D<direction>* clone() const = 0;
-    
+
     /**
      * Clone this aligner.
      * @return copy of this aligner, construted using operator @c new, and wrapped by std::unique_ptr
@@ -92,7 +92,7 @@ struct Aligner2D<DIRECTION_TRAN>: public Aligner2DBase<DIRECTION_TRAN> {
      * @param childBoundingBox bounding box of object to align
      */
     inline double align(Translation<2>& toAlign, const Box2D& childBoundingBox) const {
-        return toAlign.translation.tran = getAlign(childBoundingBox.lower.tran, childBoundingBox.upper.tran);
+        return toAlign.translation.tran() = getAlign(childBoundingBox.lower.tran(), childBoundingBox.upper.tran());
     }
 
     /**
@@ -105,7 +105,7 @@ struct Aligner2D<DIRECTION_TRAN>: public Aligner2DBase<DIRECTION_TRAN> {
         if (useBounds())
             return align(toAlign, toAlign.getChild()->getBoundingBox());
         else
-            return toAlign.translation.tran = getAlign(0.0, 0.0);
+            return toAlign.translation.tran() = getAlign(0.0, 0.0);
     }
 
 };
@@ -168,7 +168,7 @@ struct Aligner3D {
      * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
      */
     virtual Aligner3D<direction1, direction2>* clone() const = 0;
-    
+
     /**
      * Clone this aligner.
      * @return copy of this aligner, construted using operator @c new, and wrapped by std::unique_ptr
@@ -193,8 +193,8 @@ struct TranslationAligner3D: public Aligner3D<direction1, direction2> {
     }
 
     virtual void align(Translation<3>& toAlign) const {
-        toAlign.translation.components[direction1] = dir1translation;
-        toAlign.translation.components[direction2] = dir2translation;
+        toAlign.translation[direction1] = dir1translation;
+        toAlign.translation[direction2] = dir2translation;
     }
 
     virtual TranslationAligner3D<direction1, direction2>* clone() const {
@@ -238,18 +238,18 @@ public:
     ~ComposeAligner3D() { delete dir1aligner; delete dir2aligner; }
 
     virtual void align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
-         toAlign.translation.components[direction1] =
-                 dir1aligner->getAlign(childBoundingBox.lower.components[direction1], childBoundingBox.upper.components[direction1]);
-         toAlign.translation.components[direction2] =
-                 dir2aligner->getAlign(childBoundingBox.lower.components[direction2], childBoundingBox.upper.components[direction2]);
+         toAlign.translation[direction1] =
+                 dir1aligner->getAlign(childBoundingBox.lower[direction1], childBoundingBox.upper[direction1]);
+         toAlign.translation[direction2] =
+                 dir2aligner->getAlign(childBoundingBox.lower[direction2], childBoundingBox.upper[direction2]);
     }
 
     virtual void align(Translation<3>& toAlign) const {
         if (dir1aligner->useBounds() || dir2aligner->useBounds())
             align(toAlign, toAlign.getChild()->getBoundingBox());
         else {
-            toAlign.translation.components[direction1] = dir1aligner->getAlign(0.0, 0.0);
-            toAlign.translation.components[direction2] = dir2aligner->getAlign(0.0, 0.0);
+            toAlign.translation[direction1] = dir1aligner->getAlign(0.0, 0.0);
+            toAlign.translation[direction2] = dir2aligner->getAlign(0.0, 0.0);
         }
     }
 
@@ -298,8 +298,8 @@ template <DIRECTION direction1, alignStrategy strategy1, typename str_tag1, DIRE
 struct Aligner3DImpl: public Aligner3D<direction1, direction2> {
 
     virtual void align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
-        toAlign.translation.components[direction1] = strategy1(childBoundingBox.lower.components[direction1], childBoundingBox.upper.components[direction1]);
-        toAlign.translation.components[direction2] = strategy2(childBoundingBox.lower.components[direction2], childBoundingBox.upper.components[direction2]);
+        toAlign.translation[direction1] = strategy1(childBoundingBox.lower[direction1], childBoundingBox.upper[direction1]);
+        toAlign.translation[direction2] = strategy2(childBoundingBox.lower[direction2], childBoundingBox.upper[direction2]);
     }
 
     virtual Aligner3DImpl<direction1, strategy1, str_tag1, direction2, strategy2, str_tag2>* clone() const {

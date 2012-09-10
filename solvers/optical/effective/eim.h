@@ -143,7 +143,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     //     if (!mesh) setSimpleMesh();
     //     auto boxes = geometry->getLeafsBoundingBoxes(path);
     //     if (boxes.size() != 1) throw NotUniqueElementException();
-    //     interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].upper.up) - mesh->up().begin();
+    //     interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].upper.up()) - mesh->up().begin();
     //     if (interface >= mesh->up().size()) interface = mesh->up().size() - 1;
     //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->up()[interface], interface);
     // }

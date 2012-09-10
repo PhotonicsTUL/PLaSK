@@ -8,17 +8,17 @@ namespace plask {
 /**
  * Represent 3d geometry element which is an effect of revolving a 2d element (child) around the up axis.
  *
- * Child must have getBoundingBox().lower.tran >= 0.
+ * Child must have getBoundingBox().lower.tran() >= 0.
  */
 struct Revolution: public GeometryElementTransformSpace<3, 2> {
 
     /**
-     * @param child element to revolve, must have getBoundingBox().lower.tran >= 0
+     * @param child element to revolve, must have getBoundingBox().lower.tran() >= 0
      */
     Revolution(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransformSpace<3, 2>(child) {}
-    
+
     static constexpr const char* NAME = "revolution";
-    
+
     virtual std::string getTypeName() const { return NAME; }
 
     virtual bool includes(const DVec& p) const;
@@ -45,7 +45,7 @@ private:
      * @return vector in child space
      */
     static Vec<2, double> childVec(const Vec<3, double>& v) {
-        return vec(sqrt(v.lon*v.lon + v.tran*v.tran), v.up);
+        return vec(sqrt(v.lon()*v.lon() + v.tran()*v.tran()), v.up());
     }
 
     /**

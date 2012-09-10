@@ -32,9 +32,9 @@ struct Box2D {
 
     /**
      * Calculate size of this in up direction.
-     * @return upper.up - lower.up
+     * @return upper.up() - lower.up
      */
-    double sizeUp() const { return upper.up - lower.up; }
+    double sizeUp() const { return upper.up() - lower.up(); }
 
     ///Construct uninitialized .
     Box2D() {}
@@ -122,7 +122,7 @@ struct Box2D {
      * Translate this up by @p trasnalation_in_up_dir.
      * @param trasnalation_in_up_dir translation in up direction
      */
-    void translateUp(const double trasnalation_in_up_dir) { lower.up += trasnalation_in_up_dir; upper.up += trasnalation_in_up_dir; }
+    void translateUp(const double trasnalation_in_up_dir) { lower.up() += trasnalation_in_up_dir; upper.up() += trasnalation_in_up_dir; }
 
     /**
      * Translate a point to be inside the box by shifting to the closest edge.
@@ -187,9 +187,9 @@ struct Box3D {
 
     /**
      * Calculate size of this in up direction.
-     * @return upper.up - lower.up
+     * @return upper.up() - lower.up
      */
-    double sizeUp() const { return upper.up - lower.up; }
+    double sizeUp() const { return upper.up() - lower.up(); }
 
     /// Construct uninitialized .
     Box3D() {}
@@ -267,7 +267,7 @@ struct Box3D {
      * Translate this up by @p trasnalation_in_up_dir.
      * @param trasnalation_in_up_dir translation in up direction
      */
-    void translateUp(const double trasnalation_in_up_dir) { lower.up += trasnalation_in_up_dir; upper.up += trasnalation_in_up_dir; }
+    void translateUp(const double trasnalation_in_up_dir) { lower.up() += trasnalation_in_up_dir; upper.up() += trasnalation_in_up_dir; }
 
     /**
      * Translate a point to be inside the box by shifting to the closest edge.

@@ -15,11 +15,11 @@ This file includes convneters between qt and plask primitives.
 
 inline QRectF toQt(const plask::Box2D& box) {
     auto size = box.size();
-    return QRectF(box.lower.tran, box.lower.up, size.tran, size.up);
+    return QRectF(box.lower.tran(), box.lower.up(), size.tran(), size.up());
 }
 
 inline QSizeF toQtSize(const plask::Vec<2, double>& plask_size) {
-    return QSizeF(plask_size.tran, plask_size.up);
+    return QSizeF(plask_size.tran(), plask_size.up());
 }
 
 inline const plask::Box2D fromQt(const QRectF& r) {

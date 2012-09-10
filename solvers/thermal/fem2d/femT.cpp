@@ -40,7 +40,7 @@ void FiniteElementMethodThermalCartesian2DSolver::onInvalidate() // This will be
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::setNodes()
-{   
+{
     writelog(LOG_INFO, "Setting nodes...");
 
     size_t tNo = 1; // node number
@@ -49,8 +49,8 @@ void FiniteElementMethodThermalCartesian2DSolver::setNodes()
 
     for(plask::RectilinearMesh2D::iterator vec_it = mesh->begin(); vec_it != mesh->end(); ++vec_it) // loop through all nodes given in the correct iteration order
     {
-        double x = vec_it->ee.x;
-        double y = vec_it->ee.y;
+        double x = vec_it->ee_x();
+        double y = vec_it->ee_y();
 
         std::size_t i = vec_it.getIndex();
         auto it = mTConst.includes(*mesh, i);

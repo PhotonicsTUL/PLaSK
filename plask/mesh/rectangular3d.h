@@ -14,7 +14,7 @@ namespace plask {
  *
  * Includes three 1d rectilinear meshes:
  * - c0 (alternative names: lon(), ee_z(), r())
- * - c1 (alternative names: tran(), ee_x(), phi())
+ * - c1 (alternative names: tran, ee_x(), phi())
  * - c2 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y, z) such that x is in c0, y is in c1, z is in c2.
  */

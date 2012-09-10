@@ -49,7 +49,7 @@ void StackWrapper<dim>::setupPropertiesBrowserForChild(std::size_t index, Browse
 
 template <int dim>
 int StackWrapper<dim>::getInsertionIndexForPoint(const plask::Vec<2, double>& point) {
-    return std::min(this->c().getInsertionIndexForHeight(point.up), this->wrappedElement->getRealChildrenCount());
+    return std::min(this->c().getInsertionIndexForHeight(point.up()), this->wrappedElement->getRealChildrenCount());
 }
 
 template <>
@@ -66,18 +66,18 @@ plask::Box2D StackWrapper<2>::getInsertPlace2D(const GeometryElementCreator &, c
     std::size_t index = getInsertionIndexForPoint(point);
     if (index == 0) {
         plask::Box2D b = this->c().getTranslationOfRealChildAt(0)->getBoundingBox();
-        return plask::Box2D(b.lower.tran, b.lower.up - 1e-12, b.upper.tran, b.lower.up + 1e-12);    //lower edge of first
+        return plask::Box2D(b.lower.tran(), b.lower.up() - 1e-12, b.upper.tran(), b.lower.up() + 1e-12);    //lower edge of first
     } else if (index == this->wrappedElement->getRealChildrenCount()) {
         plask::Box2D b = this->c().getTranslationOfRealChildAt(index-1)->getBoundingBox();
-        return plask::Box2D(b.lower.tran, b.upper.up - 1e-12, b.upper.tran, b.upper.up + 1e-12);    //upper edge of last
+        return plask::Box2D(b.lower.tran(), b.upper.up() - 1e-12, b.upper.tran(), b.upper.up() + 1e-12);    //upper edge of last
     }
 
     plask::Box2D l = this->c().getTranslationOfRealChildAt(index-1)->getBoundingBox();
     plask::Box2D u = this->c().getTranslationOfRealChildAt(index)->getBoundingBox();
-    return plask::Box2D(std::min(l.lower.tran, u.lower.tran),
-                        u.lower.up - 1e-12,
-                        std::max(l.upper.tran, u.upper.tran),
-                        u.lower.up + 1e-12);    //upper edge of last
+    return plask::Box2D(std::min(l.lower.tran(), u.lower.tran()),
+                        u.lower.up() - 1e-12,
+                        std::max(l.upper.tran(), u.upper.tran()),
+                        u.lower.up() + 1e-12);    //upper edge of last
 
 }
 
@@ -127,7 +127,7 @@ QString ShelfWrapper::toStr() const
 
 int ShelfWrapper::getInsertionIndexForPoint(const plask::Vec<2, double> &point)
 {
-    return std::min(this->c().getInsertionIndexForHeight(point.tran), this->wrappedElement->getRealChildrenCount());
+    return std::min(this->c().getInsertionIndexForHeight(point.tran()), this->wrappedElement->getRealChildrenCount());
 }
 
 plask::Box2D ShelfWrapper::getInsertPlace2D(const GeometryElementCreator &, const plask::Vec<2, double> &point) {
@@ -137,17 +137,17 @@ plask::Box2D ShelfWrapper::getInsertPlace2D(const GeometryElementCreator &, cons
     std::size_t index = getInsertionIndexForPoint(point);
     if (index == 0) {
         plask::Box2D b = this->c().getTranslationOfRealChildAt(0)->getBoundingBox();
-        return plask::Box2D(b.lower.tran - 1e-12, b.lower.up, b.lower.tran + 1e-12, b.upper.up);    //lower edge of first
+        return plask::Box2D(b.lower.tran() - 1e-12, b.lower.up(), b.lower.tran() + 1e-12, b.upper.up());    //lower edge of first
     } else if (index == this->wrappedElement->getRealChildrenCount()) {
         plask::Box2D b = this->c().getTranslationOfRealChildAt(index-1)->getBoundingBox();
-        return plask::Box2D(b.upper.tran - 1e-12, b.lower.up, b.upper.tran + 1e-12, b.upper.up);    //upper edge of last
+        return plask::Box2D(b.upper.tran() - 1e-12, b.lower.up(), b.upper.tran() + 1e-12, b.upper.up());    //upper edge of last
     }
 
     plask::Box2D l = this->c().getTranslationOfRealChildAt(index-1)->getBoundingBox();
     plask::Box2D u = this->c().getTranslationOfRealChildAt(index)->getBoundingBox();
-    return plask::Box2D(u.lower.tran - 1e-12,
-                        std::min(l.lower.up, u.lower.up),
-                        u.lower.tran + 1e-12,
-                        std::max(l.upper.up, u.upper.up));    //upper edge of last
+    return plask::Box2D(u.lower.tran() - 1e-12,
+                        std::min(l.lower.up(), u.lower.up()),
+                        u.lower.tran() + 1e-12,
+                        std::max(l.upper.up(), u.upper.up()));    //upper edge of last
 
 }

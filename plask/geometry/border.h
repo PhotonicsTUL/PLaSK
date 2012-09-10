@@ -232,25 +232,25 @@ public:
 
     template <int dims>
     inline void applyLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
-        strategy->applyLo(bbox.lower.components[direction], bbox.upper.components[direction],
-              p.components[direction], result_material);
+        strategy->applyLo(bbox.lower[direction], bbox.upper[direction],
+              p[direction], result_material);
     }
 
     template <int dims>
     inline void applyHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
-        strategy->applyHi(bbox.lower.components[direction], bbox.upper.components[direction],
-              p.components[direction], result_material);
+        strategy->applyHi(bbox.lower[direction], bbox.upper[direction],
+              p[direction], result_material);
     }
 
     template <int dims>
     inline void applyIfLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
-        if (p.components[direction] < bbox.lower.components[direction])
+        if (p[direction] < bbox.lower[direction])
             applyLo(bbox, p, result_material);
     }
 
     template <int dims>
     inline void applyIfHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
-        if (p.components[direction] > bbox.upper.components[direction])
+        if (p[direction] > bbox.upper[direction])
             applyHi(bbox, p, result_material);
     }
 
