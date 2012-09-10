@@ -363,7 +363,7 @@ template<class T> inline
 bool operator<= ( DataVector<T> const& a, DataVector<T> const& b) { return !(b < a); }
 
 template<class T> inline
-bool operator>= ( DataVector<T> const& a, DataVector<T> const& b) { return b <= a; }
+bool operator>= ( DataVector<T> const& a, DataVector<T> const& b) { return !(a < b); }
 
 /**
  * Print data vector to stream.
