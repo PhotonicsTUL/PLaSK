@@ -75,6 +75,9 @@ macro(make_default)
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
                               PREFIX "")
+        if (DEFINED no_strict_aliasing_flag)
+            set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
+        endif()
         if(WIN32)
             set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                                   RUNTIME_OUTPUT_DIRECTORY "${PLASK_SOLVER_PATH}"

@@ -27,79 +27,80 @@ struct EmptyBase : public Material {
 typedef std::pair<double,double> DDPair;
 typedef std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> NrTensorT;
 
-struct DDpair_fromto_Python
-{
-    DDpair_fromto_Python() {
-        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<DDPair>());
-        boost::python::to_python_converter<DDPair, DDpair_fromto_Python>();
-    }
-
-    static void* convertible(PyObject* obj_ptr) {
-        if (!PySequence_Check(obj_ptr) && !PyFloat_Check(obj_ptr) && !PyInt_Check(obj_ptr)) return NULL;
-        return obj_ptr;
-    }
-
-    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<DDPair>*)data)->storage.bytes;
-        double first, second;
-        if (PyFloat_Check(obj_ptr) || PyInt_Check(obj_ptr)) {
-            first = second = py::extract<double>(obj_ptr);
-        } else if (PySequence_Length(obj_ptr) == 2) {
-            auto src = py::object(py::handle<>(py::borrowed(obj_ptr)));
-            auto ofirst = src[0];
-            auto osecond = src[1];
-            first = py::extract<double>(ofirst);
-            second = py::extract<double>(osecond);
-        } else {
-            throw TypeError("float or sequence of exactly two floats required");
+namespace detail {
+    struct DDpair_fromto_Python
+    {
+        DDpair_fromto_Python() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<DDPair>());
+            boost::python::to_python_converter<DDPair, DDpair_fromto_Python>();
         }
-        new(storage) DDPair(first, second);
-        data->convertible = storage;
-    }
 
-    static PyObject* convert(const DDPair& pair)  {
-        py::tuple tuple = py::make_tuple(pair.first, pair.second);
-        return boost::python::incref(tuple.ptr());
-    }
-};
-
-
-struct ComplexTensor_fromto_Python
-{
-    ComplexTensor_fromto_Python() {
-        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<NrTensorT>());
-        boost::python::to_python_converter<NrTensorT, ComplexTensor_fromto_Python>();
-    }
-
-    static void* convertible(PyObject* obj_ptr) {
-        if (!PySequence_Check(obj_ptr)) return NULL;
-        return obj_ptr;
-    }
-
-    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        py::object src = py::object(py::handle<>(py::borrowed(obj_ptr)));
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<NrTensorT>*)data)->storage.bytes;
-        dcomplex vals[5];
-        int idx[5] = { 0, 1, 2, 3, 4 };
-        auto seq = py::object(py::handle<>(py::borrowed(obj_ptr)));
-        if (py::len(seq) == 2) { idx[2] = 1; idx[3] = idx[4] = -1; }
-        else if (py::len(seq) == 3) { idx[3] = idx[4] = -1; }
-        else if (py::len(seq) != 5)
-            throw TypeError("float or sequence of exactly 2, 3, or 5 complex required");
-        for (int i = 0; i < 5; ++i) {
-            if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
-            else vals[i] = 0.;
+        static void* convertible(PyObject* obj_ptr) {
+            if (!PySequence_Check(obj_ptr) && !PyFloat_Check(obj_ptr) && !PyInt_Check(obj_ptr)) return NULL;
+            return obj_ptr;
         }
-        new(storage) NrTensorT(vals[0], vals[1], vals[2], vals[3], vals[4]);
-        data->convertible = storage;
-    }
 
-    static PyObject* convert(const NrTensorT& src)  {
-        py::tuple tuple = py::make_tuple(std::get<0>(src), std::get<1>(src), std::get<2>(src), std::get<3>(src), std::get<4>(src));
-        return boost::python::incref(tuple.ptr());
-    }
-};
+        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<DDPair>*)data)->storage.bytes;
+            double first, second;
+            if (PyFloat_Check(obj_ptr) || PyInt_Check(obj_ptr)) {
+                first = second = py::extract<double>(obj_ptr);
+            } else if (PySequence_Length(obj_ptr) == 2) {
+                auto src = py::object(py::handle<>(py::borrowed(obj_ptr)));
+                auto ofirst = src[0];
+                auto osecond = src[1];
+                first = py::extract<double>(ofirst);
+                second = py::extract<double>(osecond);
+            } else {
+                throw TypeError("float or sequence of exactly two floats required");
+            }
+            new(storage) DDPair(first, second);
+            data->convertible = storage;
+        }
 
+        static PyObject* convert(const DDPair& pair)  {
+            py::tuple tuple = py::make_tuple(pair.first, pair.second);
+            return boost::python::incref(tuple.ptr());
+        }
+    };
+
+
+    struct ComplexTensor_fromto_Python
+    {
+        ComplexTensor_fromto_Python() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<NrTensorT>());
+            boost::python::to_python_converter<NrTensorT, ComplexTensor_fromto_Python>();
+        }
+
+        static void* convertible(PyObject* obj_ptr) {
+            if (!PySequence_Check(obj_ptr)) return NULL;
+            return obj_ptr;
+        }
+
+        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            py::object src = py::object(py::handle<>(py::borrowed(obj_ptr)));
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<NrTensorT>*)data)->storage.bytes;
+            dcomplex vals[5];
+            int idx[5] = { 0, 1, 2, 3, 4 };
+            auto seq = py::object(py::handle<>(py::borrowed(obj_ptr)));
+            if (py::len(seq) == 2) { idx[2] = 1; idx[3] = idx[4] = -1; }
+            else if (py::len(seq) == 3) { idx[3] = idx[4] = -1; }
+            else if (py::len(seq) != 5)
+                throw TypeError("float or sequence of exactly 2, 3, or 5 complex required");
+            for (int i = 0; i < 5; ++i) {
+                if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
+                else vals[i] = 0.;
+            }
+            new(storage) NrTensorT(vals[0], vals[1], vals[2], vals[3], vals[4]);
+            data->convertible = storage;
+        }
+
+        static PyObject* convert(const NrTensorT& src)  {
+            py::tuple tuple = py::make_tuple(std::get<0>(src), std::get<1>(src), std::get<2>(src), std::get<3>(src), std::get<4>(src));
+            return boost::python::incref(tuple.ptr());
+        }
+    };
+}
 
 /**
  * Wrapper for Material class.
@@ -828,8 +829,8 @@ void initMaterials() {
     register_exception<MaterialMethodNotApplicable>(PyExc_TypeError);
 
     // Make std::pair<double,double> and std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> understandable
-    DDpair_fromto_Python();
-    ComplexTensor_fromto_Python();
+    detail::DDpair_fromto_Python();
+    detail::ComplexTensor_fromto_Python();
 
     py::enum_<Material::Kind> MaterialKind("kind"); MaterialKind
         .value("NONE", Material::NONE)

@@ -12,62 +12,63 @@ typedef align::Aligner2D<align::DIRECTION_TRAN> A2;
 typedef align::Aligner2D<align::DIRECTION_LON> A2l;
 typedef align::Aligner3D<align::DIRECTION_LON, align::DIRECTION_TRAN> A3;
 
-
-struct Aligners_from_Python
-{
-    Aligners_from_Python() {
-        boost::python::converter::registry::push_back(&convertible, &construct2, boost::python::type_id<A2>());
-        boost::python::converter::registry::push_back(&convertible, &construct3, boost::python::type_id<A3>());
-    }
-
-    // Determine if obj_ptr can be converted into an Aligner
-    static void* convertible(PyObject* obj_ptr) {
-        if (!PyString_Check(obj_ptr)) return 0;
-        return obj_ptr;
-    }
-
-    static void construct2(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        std::string str = PyString_AsString(obj_ptr);
-        boost::algorithm::to_lower(str);
-
-        // Grab pointer to memory into which to construct the new Aligner
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<A2>*)data)->storage.bytes;
-
-        if (str == "left" || str == "l") new(storage) align::Left();
-        else if (str == "right" || str == "r") new(storage) align::Right();
-        else if (str == "center" || str == "c") new(storage) align::Center();
-        else {
-            throw ValueError("wrong alignment specification");
+namespace detail {
+    struct Aligners_from_Python
+    {
+        Aligners_from_Python() {
+            boost::python::converter::registry::push_back(&convertible, &construct2, boost::python::type_id<A2>());
+            boost::python::converter::registry::push_back(&convertible, &construct3, boost::python::type_id<A3>());
         }
 
-        // Stash the memory chunk pointer for later use by boost.python
-        data->convertible = storage;
-    }
-
-    static void construct3(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        std::string str = PyString_AsString(obj_ptr);
-        boost::algorithm::to_lower(str);
-
-        // Grab pointer to memory into which to construct the new Aligner
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<A3>*)data)->storage.bytes;
-
-             if (str == "front left" || str == "fl" || str == "left front" || str == "lf") new(storage) align::FrontLeft();
-        else if (str == "center left" || str == "cl" || str == "left center" || str == "lc") new(storage) align::CenterLeft();
-        else if (str == "back left" || str == "bl" || str == "left back" || str == "lb") new(storage) align::BackLeft();
-        else if (str == "front center" || str == "fc" || str == "center front" || str == "lf") new(storage) align::FrontCenter();
-        else if (str == "center center" || str == "cc" || str == "center" || str == "c") new(storage) align::CenterCenter();
-        else if (str == "back center" || str == "bl" || str == "center back" || str == "lb") new(storage) align::BackCenter();
-        else if (str == "front right" || str == "fr" || str == "right front" || str == "rf") new(storage) align::FrontRight();
-        else if (str == "center right" || str == "cr" || str == "right center" || str == "rc") new(storage) align::CenterRight();
-        else if (str == "back right" || str == "br" || str == "right back" || str == "rb") new(storage) align::BackRight();
-        else {
-            throw ValueError("wrong alignment specification");
+        // Determine if obj_ptr can be converted into an Aligner
+        static void* convertible(PyObject* obj_ptr) {
+            if (!PyString_Check(obj_ptr)) return 0;
+            return obj_ptr;
         }
 
-        // Stash the memory chunk pointer for later use by boost.python
-        data->convertible = storage;
-    }
-};
+        static void construct2(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            std::string str = PyString_AsString(obj_ptr);
+            boost::algorithm::to_lower(str);
+
+            // Grab pointer to memory into which to construct the new Aligner
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<A2>*)data)->storage.bytes;
+
+            if (str == "left" || str == "l") new(storage) align::Left();
+            else if (str == "right" || str == "r") new(storage) align::Right();
+            else if (str == "center" || str == "c") new(storage) align::Center();
+            else {
+                throw ValueError("wrong alignment specification");
+            }
+
+            // Stash the memory chunk pointer for later use by boost.python
+            data->convertible = storage;
+        }
+
+        static void construct3(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            std::string str = PyString_AsString(obj_ptr);
+            boost::algorithm::to_lower(str);
+
+            // Grab pointer to memory into which to construct the new Aligner
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<A3>*)data)->storage.bytes;
+
+                if (str == "front left" || str == "fl" || str == "left front" || str == "lf") new(storage) align::FrontLeft();
+            else if (str == "center left" || str == "cl" || str == "left center" || str == "lc") new(storage) align::CenterLeft();
+            else if (str == "back left" || str == "bl" || str == "left back" || str == "lb") new(storage) align::BackLeft();
+            else if (str == "front center" || str == "fc" || str == "center front" || str == "lf") new(storage) align::FrontCenter();
+            else if (str == "center center" || str == "cc" || str == "center" || str == "c") new(storage) align::CenterCenter();
+            else if (str == "back center" || str == "bl" || str == "center back" || str == "lb") new(storage) align::BackCenter();
+            else if (str == "front right" || str == "fr" || str == "right front" || str == "rf") new(storage) align::FrontRight();
+            else if (str == "center right" || str == "cr" || str == "right center" || str == "rc") new(storage) align::CenterRight();
+            else if (str == "back right" || str == "br" || str == "right back" || str == "rb") new(storage) align::BackRight();
+            else {
+                throw ValueError("wrong alignment specification");
+            }
+
+            // Stash the memory chunk pointer for later use by boost.python
+            data->convertible = storage;
+        }
+    };
+}
 
 void register_geometry_aligners()
 {
@@ -134,7 +135,7 @@ void register_geometry_aligners()
     py::class_<align::CenterCenter, shared_ptr<align::CenterCenter>, py::bases<A3>>("CenterCenter", "Three-dimesional aligner: center");
 
     // Register string conventers
-    Aligners_from_Python();
+    detail::Aligners_from_Python();
 
 }
 

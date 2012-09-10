@@ -1143,7 +1143,7 @@ struct GeometryElementD: public GeometryElement {
      * @param element element to which instances translations should be found
      * @param path path fragments, optional
      */
-    void getElementPositionToVec(std::vector<DVec>& dest, const GeometryElement& element, const PathHints* path = 0) const {
+    void getElementPositionsToVec(std::vector<DVec>& dest, const GeometryElement& element, const PathHints* path = 0) const {
         getPositionsToVec(PredicateIsA(element), dest, path);
     }
 
@@ -1156,8 +1156,8 @@ struct GeometryElementD: public GeometryElement {
      * @param element element to which instances translations should be found
      * @param path path fragments
      */
-    void getElementPositionToVec(std::vector<DVec>& dest, const GeometryElement& element, const PathHints& path) const {
-        getElementPositionToVec(dest, element, &path);
+    void getElementPositionsToVec(std::vector<DVec>& dest, const GeometryElement& element, const PathHints& path) const {
+        getElementPositionsToVec(dest, element, &path);
     }
 
     /**

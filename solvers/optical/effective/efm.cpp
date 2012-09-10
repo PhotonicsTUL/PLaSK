@@ -365,7 +365,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 {
     Vector2cd E;
 
-    // In the outmost layer, there is only an outgoing wave, so the solution is only the Hankel function
+    // In the outermost layer, there is only an outgoing wave, so the solution is only the Hankel function
     E << 0., 1.;
 
     for (size_t i = veffs.size()-1; i > 0; --i) {
@@ -373,7 +373,8 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
     }
 
     // In the innermost area there must not be any infinity, so H = 0.
-    return E[1] / E[0];
+    //return E[1] / E[0]; // to stress the difference between J and H
+    return E[1];
 }
 
 

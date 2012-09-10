@@ -16,25 +16,27 @@ namespace plask { namespace python {
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
-struct Rectilinear1D_from_Sequence
-{
-    Rectilinear1D_from_Sequence() {
-        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RectilinearMesh1D>());
-    }
-
-    static void* convertible(PyObject* obj_ptr) {
-        if (!PySequence_Check(obj_ptr)) return NULL;
-        return obj_ptr;
-    }
-
-    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
+namespace detail {
+    struct Rectilinear1D_from_Sequence
     {
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<RectilinearMesh1D>*)data)->storage.bytes;
-        py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj_ptr)))), end;
-        new(storage) RectilinearMesh1D(std::vector<double>(begin, end));
-        data->convertible = storage;
-    }
-};
+        Rectilinear1D_from_Sequence() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RectilinearMesh1D>());
+        }
+
+        static void* convertible(PyObject* obj_ptr) {
+            if (!PySequence_Check(obj_ptr)) return NULL;
+            return obj_ptr;
+        }
+
+        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
+        {
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<RectilinearMesh1D>*)data)->storage.bytes;
+            py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj_ptr)))), end;
+            new(storage) RectilinearMesh1D(std::vector<double>(begin, end));
+            data->convertible = storage;
+        }
+    };
+}
 
 static py::object Rectilinear1D__array__(py::object self) {
     RectilinearMesh1D* mesh = py::extract<RectilinearMesh1D*>(self);
@@ -83,33 +85,32 @@ static void Rectilinear1D_extend(RectilinearMesh1D& self, py::object sequence) {
     self.addOrderedPoints(points.begin(), points.end());
 }
 
-
-struct Regular1D_from_Tuple
-{
-    Regular1D_from_Tuple() {
-        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RegularMesh1D>());
-    }
-
-    static void* convertible(PyObject* obj_ptr) {
-        if (!PyTuple_Check(obj_ptr)) return NULL;
-        return obj_ptr;
-    }
-
-    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
+namespace detail {
+    struct Regular1D_from_Tuple
     {
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularMesh1D>*)data)->storage.bytes;
-        auto tuple = py::object(py::handle<>(py::borrowed(obj_ptr)));
-        try {
-            if (py::len(tuple) != 3) throw py::error_already_set();
-            new(storage) RegularMesh1D(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
-            data->convertible = storage;
-        } catch (py::error_already_set) {
-            throw TypeError("Must provide either mesh.Regular1D or a tuple (first, last, count)");
+        Regular1D_from_Tuple() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RegularMesh1D>());
         }
-    }
 
-};
+        static void* convertible(PyObject* obj_ptr) {
+            if (!PyTuple_Check(obj_ptr)) return NULL;
+            return obj_ptr;
+        }
 
+        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
+        {
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularMesh1D>*)data)->storage.bytes;
+            auto tuple = py::object(py::handle<>(py::borrowed(obj_ptr)));
+            try {
+                if (py::len(tuple) != 3) throw py::error_already_set();
+                new(storage) RegularMesh1D(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
+                data->convertible = storage;
+            } catch (py::error_already_set) {
+                throw TypeError("Must provide either mesh.Regular1D or a tuple (first, last, count)");
+            }
+        }
+    };
+}
 
 shared_ptr<RegularMesh1D> Regular1D__init__empty() {
     return make_shared<RegularMesh1D>();
@@ -437,7 +438,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
         .def("__iter__", py::range(&RectilinearMesh1D::begin, &RectilinearMesh1D::end))
     ;
-    Rectilinear1D_from_Sequence();
+    detail::Rectilinear1D_from_Sequence();
 
     py::class_<RectilinearMesh2D, shared_ptr<RectilinearMesh2D>, py::bases<MeshD<2>>> rectilinear2d("Rectilinear2D",
         "Two-dimensional mesh\n\n"
@@ -528,7 +529,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
         .def("__iter__", py::range(&RegularMesh1D::begin, &RegularMesh1D::end))
     ;
-    Regular1D_from_Tuple();
+    detail::Regular1D_from_Tuple();
 
     py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>> regular2d("Regular2D",
         "Two-dimensional mesh\n\n"

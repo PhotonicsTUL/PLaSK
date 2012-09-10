@@ -11,6 +11,14 @@ set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works
 add_definitions(-Wall)                                  # all warnings
 set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")    # C++0x (C++11) standard
 
+# Turn-off strict aliasing for Python code
+if(CMAKE_COMPILER_IS_GNUCXX)
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GNUCXX_VERSION)
+    if (GNUCXX_VERSION VERSION_GREATER 4.7 OR GNUCXX_VERSION VERSION_EQUAL 4.7)
+        set(no_strict_aliasing_flag "-f-no-strict-aliasing")
+    endif()
+endif()
+
 include_directories(.)          # solvers can include plask using <plask/plask.hpp>
 include_directories(python)     # solvers can also include <plask/python.hpp>
 include_directories(extlib)     # place for local external libraries
@@ -20,7 +28,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 set(PLASK_PATH "${CMAKE_BINARY_DIR}/lib/plask")
-
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -164,6 +171,10 @@ if(BUILD_PYTHON)
             set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
     endif()
     target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+
+    if (DEFINED no_strict_aliasing_flag)
+        set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
+    endif()
 
     foreach(py_file ${python_plask_py})
         get_filename_component(py_file_base ${py_file} NAME)

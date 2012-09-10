@@ -149,6 +149,7 @@ using namespace Eigen;
 void EffectiveIndex2DSolver::stageOne()
 {
     bool fresh = !initCalculation();
+    bool recompute_neffs = false;
 
     xbegin = 0;
 
@@ -167,10 +168,8 @@ void EffectiveIndex2DSolver::stageOne()
     size_t xsize = mesh->tran().size() + 1;
     size_t ysize = mesh->up().size() + 1;
 
-    if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed || polarization != old_polarization) {
+    if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed) {
         // we need to update something
-
-        old_polarization = polarization;
 
         k0 = 2e3*M_PI / inWavelength();
         double w = real(inWavelength());
@@ -197,9 +196,15 @@ void EffectiveIndex2DSolver::stageOne()
             }
         }
         if (xbegin == 1) nrCache[0] = nrCache[1];
+        recompute_neffs = true;
+    }
+
+    if (recompute_neffs || polarization != old_polarization) {
+
+        old_polarization = polarization;
 
         // Compute effective indices for all stripes
-        // TODO: start form the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
+        // TODO: start from the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
         for (size_t i = xbegin; i != nrCache.size(); ++i) {
 
             writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");

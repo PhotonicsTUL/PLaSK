@@ -19,6 +19,66 @@
 
 namespace plask { namespace python {
 
+namespace detail {
+    template <int dim, typename T> struct MakeVecFromNumpyImpl;
+
+    template <int dim> struct MakeVecFromNumpyImpl<dim,double> {
+        static inline void call(void* storage, PyObject* obj) {
+            if (PyArray_DESCR(obj)->type_num == NPY_LONG) {
+                new(storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<long*>(PyArray_DATA(obj))));
+            } else if (PyArray_DESCR(obj)->type_num == NPY_DOUBLE)
+                new(storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<double*>(PyArray_DATA(obj))));
+            else
+                throw py::error_already_set();
+        }
+    };
+
+    template <int dim> struct MakeVecFromNumpyImpl<dim,dcomplex> {
+        static inline void call(void* storage, PyObject* obj) {
+            if (PyArray_DESCR(obj)->type_num == NPY_LONG) {
+                Vec<dim,dcomplex> *vec = new(storage) Vec<dim,dcomplex>; for (int i = 0; i < dim; ++i) (*vec)[i] = double( *(static_cast<long*>(PyArray_DATA(obj)) + i) );
+            } else if (PyArray_DESCR(obj)->type_num == NPY_DOUBLE)
+                new(storage) Vec<dim,dcomplex>(Vec<dim,dcomplex>::fromIterator(static_cast<double*>(PyArray_DATA(obj))));
+            else if (PyArray_DESCR(obj)->type_num == NPY_CDOUBLE)
+                new(storage) Vec<dim,dcomplex>(Vec<dim,dcomplex>::fromIterator(static_cast<dcomplex*>(PyArray_DATA(obj))));
+            else
+                throw py::error_already_set();
+        }
+    };
+
+    template <int dim, typename T>
+    struct Vec_from_Sequence {
+        Vec_from_Sequence() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<Vec<dim,T>>());
+        }
+
+        // Determine if obj can be converted into an Aligner
+        static void* convertible(PyObject* obj) {
+            if (!PyList_Check(obj) && !PyTuple_Check(obj) && !PyArray_Check(obj)) return NULL;
+            return obj;
+        }
+
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<Vec<dim,T>>*)data)->storage.bytes;
+            try {
+                if (PyArray_Check(obj)) {
+                    if (PyArray_NDIM(obj) != 1 || PyArray_DIMS(obj)[0] != dim) throw py::error_already_set();
+                    MakeVecFromNumpyImpl<dim,T>::call(storage, obj);
+                } else {
+                    auto seq = py::object(py::handle<>(py::borrowed(obj)));
+                    if (py::len(seq) != dim || (PyArray_Check(obj) && PyArray_NDIM(obj) != 1)) throw py::error_already_set();
+                    py::stl_input_iterator<T> begin(seq);
+                    new(storage) Vec<dim,T>(Vec<dim,T>::fromIterator(begin));
+                }
+                data->convertible = storage;
+            } catch (py::error_already_set) {
+                throw TypeError("Must provide either plask.vec or a sequence of length %1% of proper dtype", dim);
+            }
+        }
+    };
+}
+
+
 // v = vector[i]
 template <int dim, typename T>
 static T vec__getitem__(Vec<dim,T>& self, int i) {
@@ -192,6 +252,8 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .add_static_property("dtype", &vec_dtype<dim,T>)
         .def("__array__", &vec__array__<dim,T>)
     ;
+
+    detail::Vec_from_Sequence<dim,T>();
 
     register_vector_of<Vec<dim,T>>(name)
         .def("__array__", &vec_list__array__<dim,T>)
