@@ -93,6 +93,15 @@ template<typename ValueT = double, typename... _ExtraParams>
 struct FieldProperty: public Property<FIELD_PROPERTY, ValueT, _ExtraParams...> {};
 
 /**
+ * Helper class which makes easiest to define property tags class for possible to interpolate fields of vectors.
+ *
+ * Properties tag class can be subclass of this, but never should be typedefs to this
+ * (tag class for each property must by separate class - always use different types for different properties).
+ */
+template<int DIMS, typename ValueT = double, typename... _ExtraParams>
+struct VectorFieldProperty: public FieldProperty< Vec<DIMS, ValueT>, _ExtraParams... > {};
+
+/**
  * Helper class which makes easiest to define property tags class for scalar fields (fields of doubles).
  *
  * Properties tag class can be subclass of this, but never should be typedefs to this

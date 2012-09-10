@@ -32,15 +32,25 @@ namespace plask {
 struct Manager {
 
     /// Throw exception with information that loading from external sources is not supported or disallowed.
-    static XMLReader disallowExternalSources(const std::string& u) { throw Exception("Can't load section from \"%1%\". Loading from external sources is not supported or disallowed.", u); }
+    static void disallowExternalSources(const std::string& url, const std::string& section) {
+        throw Exception("Can't load section \"%1%\" from \"%2%\". Loading from external sources is not supported or disallowed.", section, url); }
     
 private:
     
     /// @return @c true
     static bool acceptAllSections(const std::string&) { return true; }
+
+    /*struct LoadFunCallbackT {
+        std::pair< XMLReader, std::unique_ptr<LoadFunCallbackT> > get(const std::string& url) const {
+            throw Exception("Can't load section from \"%1%\". Loading from external sources is not supported or disallowed.", url);
+        }
+    };*/
+
+    /// Load section from external url, throw excpetion in case of errors, takes as parameters: url and section name.
+    typedef std::function<void(const std::string&, const std::string&)> LoadFunCallbackT;
     
     template <typename MaterialsSource>
-    bool tryLoadFromExternal(XMLReader& reader, const MaterialsSource& materialsSource, const std::function<XMLReader(const std::string& url)>& load_from);
+    bool tryLoadFromExternal(XMLReader& reader, const MaterialsSource& materialsSource, const LoadFunCallbackT& load_from);
     
     /**
      * Load XML content.
@@ -52,7 +62,7 @@ private:
      */
     template <typename MaterialsSource>
     void load(XMLReader& XMLreader, const MaterialsSource& materialsSource,
-              const std::function<XMLReader(const std::string& url)>& load_from_cb = &disallowExternalSources,
+              const LoadFunCallbackT& load_from_cb = &disallowExternalSources,
               const std::function<bool(const std::string& section_name)>& section_filter = &acceptAllSections);
 
   protected:
@@ -330,6 +340,20 @@ private:
     //TODO moves to modules reader (with names map)
     template <typename MeshT, typename ConditionT>
     void readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest);
+
+    /**
+     * Load one section from XML content.
+     * @param XMLreader XML data source, to load
+     * @param section_to_load name of section to load
+     * @param materialsSource source of materials, typically materials database
+     * @param load_from_cb callback called to open external location, allow loading some section from another sources,
+     *  this callback should open and return external XML source pointed by url (typically name of file) or throw exception
+     */
+    template <typename MaterialsSource>
+    void loadSection(XMLReader& XMLreader, const std::string& section_to_load, const MaterialsSource& materialsSource,
+              const LoadFunCallbackT& load_from_cb = &disallowExternalSources) {
+        load(XMLreader, materialsSource, load_from_cb, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
+    }
 };
 
 // Specialization for most types
