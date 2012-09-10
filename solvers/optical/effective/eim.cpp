@@ -8,7 +8,6 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
     log_stripe(dataLog<dcomplex, dcomplex>(getId(), "neff", "det")),
     log_value(dataLog<dcomplex, dcomplex>(getId(), "Neff", "det")),
-    have_stripeNeffs(false),
     have_fields(false),
     old_polarization(TE),
     polarization(TE),
@@ -147,8 +146,10 @@ using namespace Eigen;
 
 
 
-void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
+void EffectiveIndex2DSolver::stageOne()
 {
+    bool fresh = !initCalculation();
+
     xbegin = 0;
 
     // Some additional checks
@@ -166,7 +167,8 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
     size_t xsize = mesh->tran().size() + 1;
     size_t ysize = mesh->up().size() + 1;
 
-    if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed || polarization != old_polarization) { // We need to update something
+    if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed || polarization != old_polarization) {
+        // we need to update something
 
         old_polarization = polarization;
 
@@ -196,16 +198,6 @@ void EffectiveIndex2DSolver::onBeginCalculation(bool fresh)
         }
         if (xbegin == 1) nrCache[0] = nrCache[1];
 
-        have_stripeNeffs = false;
-    }
-}
-
-void EffectiveIndex2DSolver::stageOne()
-{
-    initCalculation();
-
-    if (!have_stripeNeffs) {
-
         // Compute effective indices for all stripes
         // TODO: start form the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
         for (size_t i = xbegin; i != nrCache.size(); ++i) {
@@ -232,8 +224,6 @@ void EffectiveIndex2DSolver::stageOne()
 
         std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
         writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
-
-        have_stripeNeffs = true;
     }
 }
 

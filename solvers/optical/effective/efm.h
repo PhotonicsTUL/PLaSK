@@ -41,9 +41,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Computed horizontal fields
     std::vector<Eigen::Vector2cd> fieldR, fieldZ;
 
-    /// Did we computed veffs?
-    bool have_veffs;
-
     /// Did we compute fields for current Neff?
     bool have_fields;
 
@@ -211,9 +208,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Invalidate the data
     virtual void onInvalidate();
-
-    /// Update the refractive indices cache and do some checks
-    virtual void onBeginCalculation(bool fresh);
 
     /**
      * Fist stage of computations

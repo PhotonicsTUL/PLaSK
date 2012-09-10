@@ -455,14 +455,6 @@ class Solver {
     virtual void onInitialize() {}
 
     /**
-     * Begin calculations.
-     *
-     * This method is called ALWAYS from initCalculation(). You can put some code common for all your calculation methods here
-     * \param fresh indicates whether the solver has been just switched from uninitialized state
-     */
-    virtual void onBeginCalculation(bool fresh) {}
-
-    /**
      * This method is called by invalidate() to reset stored values.
      *
      * Default implementation does nothing.
@@ -480,10 +472,8 @@ class Solver {
             writelog(LOG_INFO, "Initializing solver");
             onInitialize();
             initialized = true;
-            onBeginCalculation(true);
             return false;
         } else {
-            onBeginCalculation(false);
             return true;
         }
     }

@@ -53,9 +53,6 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     /// Field confinement weights in stripes
     std::vector<double> fieldWeights;
 
-    /// Did we computed stripeNeffs?
-    bool have_stripeNeffs;
-
     /// Did we compute fields for current Neff?
     bool have_fields;
 
@@ -243,9 +240,6 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
                      R2 = abs((n-n2) / (n+n2));
         return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->length);
     }
-
-    /// Update the refractive indices cache and do some checks
-    virtual void onBeginCalculation(bool fresh);
 
     /**
      * Fist stage of computations

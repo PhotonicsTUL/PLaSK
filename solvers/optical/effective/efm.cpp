@@ -9,7 +9,6 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
     log_stripe(dataLog<dcomplex, dcomplex>(getId(), "veff", "det")),
     log_value(dataLog<dcomplex, dcomplex>(getId(), "v", "det")),
-    have_veffs(false),
     have_fields(false),
     l(0),
     k0(NAN),
@@ -150,11 +149,13 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 
 static const int mh = 2; // Hankel function type (1 or 2)
 
-
 using namespace Eigen;
 
-void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
+
+void EffectiveFrequencyCylSolver::stageOne()
 {
+    bool fresh = !initCalculation();
+
     // Some additional checks
     for (auto x: mesh->axis0) {
         if (x < 0.) throw BadMesh(getId(), "for cylindrical geometry no radial points can be negative");
@@ -164,7 +165,7 @@ void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
     size_t rsize = veffs.size();
     size_t zsize = mesh->axis1.size() + 1;
 
-    if (fresh || inTemperature.changed || inGain.changed || l != old_l || k0 != old_k0) { // We need to update something
+    if (fresh || inTemperature.changed || inGain.changed || l != old_l || k0 != old_k0) { // we need to update something
 
         old_l = l;
         old_k0 = k0;
@@ -213,18 +214,6 @@ void EffectiveFrequencyCylSolver::onBeginCalculation(bool fresh)
             }
         }
 
-        have_veffs = false;
-    }
-}
-
-void EffectiveFrequencyCylSolver::stageOne()
-{
-    initCalculation();
-
-    if (!have_veffs || k0 != old_k0) {
-
-        old_k0 = k0;
-
         // Compute effective indices for all stripes
         // TODO: start form the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
         for (size_t i = 0; i != nrCache.size(); ++i) {
@@ -254,8 +243,6 @@ void EffectiveFrequencyCylSolver::stageOne()
 
         std::stringstream strn; for (size_t i = 0; i < nng.size(); ++i) strn << ", " << str(nng[i]);
         writelog(LOG_DEBUG, "stripes <ngg> = [%1% ]", strn.str().substr(1));
-
-        have_veffs = true;
     }
 }
 
