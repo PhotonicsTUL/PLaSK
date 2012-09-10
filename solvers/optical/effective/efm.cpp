@@ -219,9 +219,9 @@ void EffectiveFrequencyCylSolver::stageOne()
         for (size_t i = 0; i != nrCache.size(); ++i) {
 
             writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
-            std::stringstream nrgs; for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
-                nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
-            writelog(LOG_DEBUG, "nR/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
+            // std::stringstream nrgs; for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
+            //     nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
+            // writelog(LOG_DEBUG, "nR/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
 
             dcomplex same_nr = nrCache[i].front();
             dcomplex same_ng = ngCache[i].front();
@@ -233,7 +233,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                 nng[i] = same_nr * same_ng;
             } else {
                 RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, striperoot);
-                veffs[i] = rootdigger.getSolution(0.);
+                veffs[i] = rootdigger.getSolution(1e-3);
                 computeStripeNNg(i);
             }
         }
@@ -242,7 +242,7 @@ void EffectiveFrequencyCylSolver::stageOne()
         writelog(LOG_DEBUG, "stripes veffs = [%1% ]", strv.str().substr(1));
 
         std::stringstream strn; for (size_t i = 0; i < nng.size(); ++i) strn << ", " << str(nng[i]);
-        writelog(LOG_DEBUG, "stripes <ngg> = [%1% ]", strn.str().substr(1));
+        writelog(LOG_DEBUG, "stripes <nng> = [%1% ]", strn.str().substr(1));
     }
 }
 
@@ -305,14 +305,14 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
 
     for (size_t i = 1; i < N-1; ++i) {
         double d = mesh->axis1[i] - mesh->axis1[i-1];
+        // double f = real(E[0]*conj(E[0])) + real(E[1]*conj(E[1]));
+        dcomplex f = E[0]*E[0] + E[1]*E[1]; //TODO
+        nng[stripe] += f * nrCache[stripe][i] * ngCache[stripe][i];
+        sum += f;
         dcomplex phas = exp(-I * beta[i] * d);
         DiagonalMatrix<dcomplex, 2> P;
         P.diagonal() << phas, 1./phas;
         E = P * E;
-        // double f = real(E[0]*conj(E[0])) + real(E[1]*conj(E[1]));
-        dcomplex f = E[0]*E[0] + E[1]*E[1];
-        nng[stripe] += f * nrCache[stripe][i] * ngCache[stripe][i];
-        sum += f;
         E = fresnel(i) * E;
     }
 

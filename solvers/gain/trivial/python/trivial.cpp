@@ -10,12 +10,9 @@ using namespace plask::python;
 using namespace plask::solvers::gain_trivial;
 
 template <typename GeometryT>
-static void StepProfile_setElement(StepProfileGain<GeometryT>& self, const GeometryElementD<GeometryT::DIMS>* element, py::object path) {
+static void StepProfile_setElement(StepProfileGain<GeometryT>& self, const GeometryElementD<GeometryT::DIMS>* element, const PathHints& path) {
     auto shared = dynamic_pointer_cast<const GeometryElementD<GeometryT::DIMS>>(element->shared_from_this());
-    if (path == py::object())
-        self.setElement(shared);
-    else
-        self.setElement(shared, py::extract<PathHints>(path));
+    self.setElement(shared, path);
 }
 
 template <typename GeometryT>

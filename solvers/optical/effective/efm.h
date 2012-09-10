@@ -41,7 +41,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Computed horizontal fields
     std::vector<Eigen::Vector2cd> fieldR, fieldZ;
 
-    /// Did we compute fields for current Neff?
+    /// Did we compute fields for current state?
     bool have_fields;
 
     /// Computed effective frequencies for each stripe
@@ -164,8 +164,10 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      * \param veff stripe effective frequency to use
      */
     dcomplex getStripeDeterminantV(size_t stripe, dcomplex veff) {
-        initCalculation();
-        return detS1(veff, nrCache[stripe], ngCache[stripe]);
+        bool invalid = !initCalculation();
+        dcomplex result = detS1(veff, nrCache[stripe], ngCache[stripe]);
+        if (invalid) invalidate();
+        return result;
     }
 
     /**
@@ -183,7 +185,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      */
     dcomplex getDeterminant(dcomplex lambda) {
         if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
-        dcomplex v =  2. - 4e3*M_PI / lambda / k0;
+        v =  2. - 4e3*M_PI / lambda / k0;
         stageOne();
         return detS(v);
     }

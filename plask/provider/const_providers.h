@@ -7,12 +7,12 @@
 namespace plask {
 
 /**
- * Provider which allow to define value in each geometry place pointed as geometry element.
+ * Provider which allows to define value in each geometry place pointed as geometry element.
  */
 template <int dims, typename ValueT>
-struct ConstByPlaceProviderImpl {
+struct ConstByPlaceProvider {
 
-    static constexpr DIMS = dims;
+    enum  { DIMS = dims };
 
     /// Element for which coordinates we specify the values
     weak_ptr<const GeometryElementD<DIMS>> rootGeometry;
@@ -21,7 +21,7 @@ struct ConstByPlaceProviderImpl {
         /// Element for which we specify the value
         weak_ptr<GeometryElementD<DIMS>> geometryElement;
 
-        /// Hints specyfiing pointed element
+        /// Hints specifying pointed element
         PathHints hints;
 
         /// Value
@@ -37,13 +37,13 @@ struct ConstByPlaceProviderImpl {
     /// Default value, provided for places where there is no other value
     ValueT defaultValue;
 
-    ConstByPlaceProvider(const ValueT& defaultValue = ValueT(), weak_ptr<const GeometryElementD<DIMS>> rootGeometry = weak_ptr<const GeometryElementD<DIMS>>())
+    ConstByPlaceProvider(weak_ptr<const GeometryElementD<DIMS>> rootGeometry = weak_ptr<const GeometryElementD<DIMS>>(), const ValueT& defaultValue = ValueT())
         : defaultValue(defaultValue), rootGeometry(rootGeometry) {}
 
     /**
      * Get values in places showed by @p dst_mesh.
      */
-    DataVector<ValueT> get(const plask::MeshD<GeometryT::DIMS>& dst_mesh) const {
+    DataVector<ValueT> get(const plask::MeshD<DIMS>& dst_mesh) const {
         shared_ptr<const GeometryElementD<DIMS>> geometry = rootGeometry.lock();
         if (geometry) return DataVector<ValueT>(dst_mesh.size(), defaultValue);
 
@@ -55,8 +55,8 @@ struct ConstByPlaceProviderImpl {
             for (ValueForPlace& place: values) {
                 auto place_geom = place.geometryElement.lock();
                 if (!place_geom) continue;
-                std::vector< shared_ptr< Translation<dimensions> > > regions = geometry->getElementInThisCoordinates(place_geom, place.hints);
-                for (shared_ptr< Translation<dimensions> > region: regions) {
+                std::vector< shared_ptr< Translation<DIMS> > > regions = geometry->getElementInThisCoordinates(place_geom, place.hints);
+                for (shared_ptr< Translation<DIMS> > region: regions) {
                     if (region && region->includes(point)) {
                         result[i] = place.value;
                         assigned = true;
