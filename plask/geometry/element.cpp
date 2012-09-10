@@ -201,12 +201,21 @@ void GeometryElement::forEachRealElementInSubtree(std::function<bool (const Geom
 // --- GeometryElementD ---
 
 template <int dimensions>
-shared_ptr<Translation<dimensions>>
+std::vector< shared_ptr< Translation<dimensions> > >
 GeometryElementD<dimensions>::getElementInThisCoordinates(const shared_ptr<GeometryElementD<dimensions>>& element, const PathHints* path) const {
     auto trans_vec = getElementPositions(*element, path);
-    if (trans_vec.size() != 1 || std::isnan(trans_vec[0].components[0]))
+    std::vector< shared_ptr< Translation<dimensions> > > result;
+    result.reserve(trans_vec.size());
+    for (auto t: trans_vec)
+        if (std::isnan(t.components[0]))
+            result.emplace_back();
+        else
+            result.push_back(make_shared<Translation<dimensions>>(element, t));
+    return result;
+
+    /*if (trans_vec.size() != 1 || std::isnan(trans_vec[0].components[0]))
         shared_ptr<Translation<dimensions>>();
-    return make_shared<Translation<dimensions>>(element, trans_vec[0]);
+    return make_shared<Translation<dimensions>>(element, trans_vec[0]);*/
 }
 
 template struct GeometryElementD<2>;

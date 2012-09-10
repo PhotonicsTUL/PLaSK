@@ -90,9 +90,9 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
 }
 
 Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getElementInThisCoordinates(element, path);
+    auto new_child = getChild()->getUniqueElementInThisCoordinates(element, path);
     if (!new_child) {
-        new_child = element->requireElementInThisCoordinates(getChild(), path);
+        new_child = element->requireUniqueElementInThisCoordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
@@ -176,9 +176,9 @@ void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
 }
 
 Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getElementInThisCoordinates(element, path);
+    auto new_child = getChild()->getUniqueElementInThisCoordinates(element, path);
     if (!new_child) {
-        new_child = element->requireElementInThisCoordinates(getChild(), path);
+        new_child = element->requireUniqueElementInThisCoordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
@@ -304,9 +304,9 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
 }
 
 Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryElementD<3>>& element, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getElementInThisCoordinates(element, path);
+    auto new_child = getChild()->getUniqueElementInThisCoordinates(element, path);
     if (!new_child) {
-        new_child = element->requireElementInThisCoordinates(getChild(), path);
+        new_child = element->requireUniqueElementInThisCoordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {

@@ -1187,13 +1187,36 @@ struct GeometryElementD: public GeometryElement {
     }
 
     /**
+     * Get all @p element instance wrapped with translation to be in coordinate space of this.
+     *
+     * @param element element which should be in subtree of this
+     * @param path path fragments
+     * @return for each instance: @p element wrapped with translation or shared_ptr< Translation<dimensions> >() if translation is not well-defined
+     */
+    std::vector< shared_ptr< Translation<dimensions> > > getElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints* path = 0) const;
+
+    /**
+     * Get all @p element instance wrapped with translation to be in coordinate space of this.
+     *
+     * @param element element which should be in subtree of this
+     * @param path path fragments
+     * @return for each instance: @p element wrapped with translation or shared_ptr< Translation<dimensions> >() if translation is not well-defined
+     */
+    std::vector< shared_ptr< Translation<dimensions> > > getElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints& path) const {
+        return getElementInThisCoordinates(element, &path);
+    }
+
+    /**
      * Get @p element wrapped with translation to be in coordinate space of this.
      *
      * @param element element which should be in subtree of this
      * @param path path fragments, optional
      * @return @p element wrapped with translation or shared_ptr< Translation<dimensions> >() if translation is not well-defined
      */
-    shared_ptr< Translation<dimensions> > getElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints* path = 0) const;
+    shared_ptr< Translation<dimensions> > getUniqueElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints* path = 0) const {
+        auto ev = getElementInThisCoordinates(element, path);
+        return ev.size() == 1 ? ev[0] : shared_ptr< Translation<dimensions> >();
+    }
 
     /**
      * Get @p element wrapped with translation to be in coordinate space of this.
@@ -1202,8 +1225,8 @@ struct GeometryElementD: public GeometryElement {
      * @param path path fragments
      * @return @p element wrapped with translation or shared_ptr< Translation<dimensions> >() if translation is not well-defined
      */
-    shared_ptr< Translation<dimensions> > getElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints& path) const {
-        return getElementInThisCoordinates(element, &path);
+    shared_ptr< Translation<dimensions> > getUniqueElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints& path) const {
+        return getUniqueElementInThisCoordinates(element, &path);
     }
 
     /**
@@ -1214,8 +1237,8 @@ struct GeometryElementD: public GeometryElement {
      * @param path path fragments, optional
      * @return @p element wrapped with translation
      */
-    shared_ptr< Translation<dimensions> > requireElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints* path = 0) const {
-        shared_ptr< Translation<dimensions> > result = getElementInThisCoordinates(element, path);
+    shared_ptr< Translation<dimensions> > requireUniqueElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints* path = 0) const {
+        shared_ptr< Translation<dimensions> > result = getUniqueElementInThisCoordinates(element, path);
         if (!result) throw Exception("Translation to element required in local coordinates is not well defined");
         return result;
     }
@@ -1228,8 +1251,8 @@ struct GeometryElementD: public GeometryElement {
      * @param path path fragments
      * @return @p element wrapped with translation
      */
-    shared_ptr< Translation<dimensions> > requireElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints& path) const {
-        return requireElementInThisCoordinates(element, &path);
+    shared_ptr< Translation<dimensions> > requireUniqueElementInThisCoordinates(const shared_ptr< GeometryElementD<dimensions> >& element, const PathHints& path) const {
+        return requireUniqueElementInThisCoordinates(element, &path);
     }
 
 };
