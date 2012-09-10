@@ -7,6 +7,7 @@ This file includes classes which can hold (or points to) datas.
 
 #include <iterator>
 #include <algorithm>
+#include <iostream>
 #include <initializer_list>
 #include <atomic>
 
@@ -329,6 +330,52 @@ struct DataVector {
     }
 };
 
+/**
+ * Check if two data vectors are equal.
+ * @param a, b vectors to compare
+ * @return @c true only if a is equal to b (a[0]==b[0], a[1]==b[1], ...)
+ */
+template<class T> inline
+bool operator == ( DataVector<T> const& a, DataVector<T> const& b)
+{ return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin()); }
+
+/**
+ * Check if two data vectors are not equal.
+ * @param a, b vectors to compare
+ * @return @c true only if a is not equal to b
+ */
+template<class T> inline
+bool operator != ( DataVector<T> const& a, DataVector<T> const& b) { return !(a==b); }
+
+/**
+ * A lexical comparison of two data vectors.
+ * @param a, b vectors to compare
+ * @return @c true only if @p a is smaller than the @p b
+ */
+template<class T> inline
+bool operator< ( DataVector<T> const& a, DataVector<T> const& b)
+{ return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()); }
+
+template<class T> inline
+bool operator> ( DataVector<T> const& a, DataVector<T> const& b) { return b < a; }
+
+template<class T> inline
+bool operator<= ( DataVector<T> const& a, DataVector<T> const& b) { return !(b < a); }
+
+template<class T> inline
+bool operator>= ( DataVector<T> const& a, DataVector<T> const& b) { return b <= a; }
+
+/**
+ * Print data vector to stream.
+ */
+template<class T>
+std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {
+    out << '[';
+    std::copy(to_print.begin(), to_print.end(), std::ostream_iterator<T>(out, ", "));
+    out << ']';
+    return out;
+}
+
 }   // namespace plask
 
 namespace std {
@@ -337,5 +384,7 @@ namespace std {
       s1.swap(s2);
     }
 }   // namespace std
+
+
 
 #endif // PLASK__DATA_H
