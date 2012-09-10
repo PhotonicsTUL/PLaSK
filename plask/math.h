@@ -28,6 +28,7 @@ using std::ptrdiff_t;
     using std::sinh; using std::cosh; using std::tanh;
     using std::asin; using std::acos; using std::atan; using std::atan2;
     using std::asinh; using std::acosh; using std::atanh;
+    using std::isnan;
     typedef complex<double> dcomplex;
     const dcomplex I(0.,1.);
 #endif // PLASK_MATH_STD
