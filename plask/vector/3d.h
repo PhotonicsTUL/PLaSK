@@ -178,30 +178,22 @@ struct Vec<3, T> {
 
     /**
      * Get i-th component
+     * WARNING This function does not check if i is valid (for efficiency reasons)
      * @param i number of coordinate
      * @return i-th component
      */
     inline T& operator[](size_t i) {
-        switch (i) {
-            case 0: return c0;
-            case 1: return c1;
-            case 2: return c2;
-        }
-        throw BadInput("Vec3", "Wrong index");
+        return *(&c0 + i);
     }
 
     /**
      * Get i-th component
+     * WARNING This function does not check if i is valid (for efficiency reasons)
      * @param i number of coordinate
      * @return i-th component
      */
     inline const T& operator[](size_t i) const {
-        switch (i) {
-            case 0: return c0;
-            case 1: return c1;
-            case 2: return c2;
-        }
-        throw BadInput("Vec3", "Wrong index");
+        return *(&c0 + i);
     }
 
     /**
