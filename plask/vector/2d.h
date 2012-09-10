@@ -80,19 +80,13 @@ struct Vec<2, T> {
      * @param p vector to copy from
      */
     template <typename OtherT>
-    Vec(const Vec<2,OtherT>& p) {
-        // In MinGW initnializer lists don't work for complex type :(
-        // probably because of the union
-        c0 = p.c0; c1 = p.c1;
-    }
+    Vec(const Vec<2,OtherT>& p): c0(p.c0), c1(p.c1) {}
 
     /**
      * Construct vector with given components.
      * @param c0__tran, c1__up components
      */
-    Vec(const T& c0__tran, const T& c1__up) {
-        c0 = c0__tran; c1 = c1__up;
-    }
+    Vec(const T& c0__tran, const T& c1__up): c0(c0__tran), c1(c1__up){}
 
     /**
      * Construct vector with components read from input iterator (including C array).

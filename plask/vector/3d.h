@@ -50,7 +50,7 @@ struct Vec<3, T> {
     const T& rad_r() const { return c1; }
 
     T& rad_z() { return c2; }
-    const T& rad_z() const { return c2; };
+    const T& rad_z() const { return c2; }
 
     // for surface-emitting lasers (z-axis up)
     T& se_x() { return c0; }
@@ -60,7 +60,7 @@ struct Vec<3, T> {
     const T& se_y() const { return c1; }
 
     T& se_z() { return c2; }
-    const T& se_z() const { return c2; };
+    const T& se_z() const { return c2; }
 
     // for surface-emitting lasers (z-axis up)
     T& zup_x() { return c0; }
@@ -70,7 +70,7 @@ struct Vec<3, T> {
     const T& z_up_y() const { return c1; }
 
     T& zup_z() { return c2; }
-    const T& z_up_z() const { return c2; };
+    const T& z_up_z() const { return c2; }
 
     // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
     T& ee_z() { return c0; }
@@ -80,7 +80,7 @@ struct Vec<3, T> {
     const T& ee_x() const { return c1; }
 
     T& ee_y() { return c2; }
-    const T& ee_y() const { return c2; };
+    const T& ee_y() const { return c2; }
 
     // for edge emitting lasers (y-axis up), we keep the coordinates right-handed
     T& yup_z() { return c0; }
@@ -90,7 +90,7 @@ struct Vec<3, T> {
     const T& y_up_x() const { return c1; }
 
     T& yup_y() { return c2; }
-    const T& y_up_y() const { return c2; };
+    const T& y_up_y() const { return c2; }
 
     /**
      * Type of iterator over components.
@@ -110,17 +110,13 @@ struct Vec<3, T> {
      * @param p vector to copy from
      */
     template <typename OtherT>
-    Vec(const Vec<3,OtherT>& p) {
-        c0 = p.c0; c1 = p.c1; c2 = p.c2;
-    }
+    Vec(const Vec<3,OtherT>& p): c0(p.c0), c1(p.c1), c2(p.c2) {}
 
     /**
      * Construct vector with given components.
      * @param c0__lon, c1__tran, c2__up components
      */
-    Vec(const T& c0__lon, const T& c1__tran, const T& c2__up) {
-        c0 = c0__lon; c1 = c1__tran; c2 = c2__up;
-    }
+    Vec(const T& c0__lon, const T& c1__tran, const T& c2__up): c0(c0__lon), c1(c1__tran), c2(c2__up) {}
 
     /**
      * Construct vector with components read from input iterator (including C array).

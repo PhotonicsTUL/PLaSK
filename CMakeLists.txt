@@ -6,13 +6,14 @@ project(plask)
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
 set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
 # set(VERSION_REVISION 1)       # REVISION number (leave undefined unless really needed, it's normally set to svn revision)
+
 # ---------- common options --------------------------------------------
 
 add_definitions(-Wall)                                  # all warnings
 set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")    # C++0x (C++11) standard
 
 # Turn-off strict aliasing for Python code
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GNUCXX_VERSION)
     if (GNUCXX_VERSION VERSION_GREATER 4.7 OR GNUCXX_VERSION VERSION_EQUAL 4.7)
         set(no_strict_aliasing_flag "-f-no-strict-aliasing")

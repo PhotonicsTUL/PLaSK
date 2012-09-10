@@ -274,7 +274,7 @@ const border::Strategy &Geometry3D::getBorder(DIRECTION direction, bool higher) 
     assert(0);
 }
 
-Geometry3D::Geometry3D(shared_ptr<GeometryElementD<3>> child)
+Geometry3D::Geometry3D(shared_ptr<GeometryElementD<3> > child)
 : child(child) {
     initNewChild();
 }
