@@ -91,6 +91,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "mesh/generator_rectilinear.h"
 
 #include "provider/providerfor.h"
+#include "provider/const_providers.h"
 #include "provider/temperature.h"
 #include "provider/optical.h"
 #include "provider/gain.h"
