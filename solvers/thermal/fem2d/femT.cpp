@@ -182,11 +182,8 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
 
         // set assistant values
-        double tElemX = 0.5 * (ttE->getNLoLeftPtr()->getX() + ttE->getNLoRightPtr()->getX());
-        double tElemY = 0.5 * (ttE->getNLoLeftPtr()->getY() + ttE->getNUpLeftPtr()->getY());
-
-        tKXAssist = geometry->getMaterial(vec(tElemX, tElemY))->condT(ttE->getT(),1e-6).first; // TODO
-        tKYAssist = geometry->getMaterial(vec(tElemX, tElemY))->condT(ttE->getT(),1e-6).second; // TODO
+        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(),1e-6).first; // TODO
+        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(),1e-6).second; // TODO
 
         // set load vector
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()]; // 1e-12 -> to transform um*um into m*m
@@ -392,6 +389,23 @@ void FiniteElementMethodThermalCartesian2DSolver::saveTemperatures()
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
         mTemperatures[place++] = ttN->getT();
+}
+
+void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
+{
+    writelog(LOG_INFO, "Saving heat fluxes...");
+
+    std::vector<Element2D>::const_iterator ttE;
+
+    mHeatFluxes.reset(mElements.size());
+    std::size_t place = 0;
+
+    for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
+    {
+        //mHeatFluxes[place] = - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(),1e-6).first) * ttE->getdTdx(); // TODO
+        //mHeatFluxes[place] = - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(),1e-6).second) * ttE->getdTdy(); // TODO
+        //place++;
+    }
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::showTemperatures()

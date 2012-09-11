@@ -104,6 +104,12 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     /// Create vector with calculated potentials
     void savePotentials();
 
+    /// Create 2D-vector with calculated current densities
+    void saveCurrentDensities();
+
+    /// Create vector with calculated heat densities
+    void saveHeatDensities();
+
     /// Show vector with calculated potentials (node numbers for info only)
     void showPotentials();
 

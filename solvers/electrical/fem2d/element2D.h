@@ -19,6 +19,10 @@ public:
     const Node2D* getNUpRightPtr() const; // return pointer to top-right node
     double getWidth() const; // return width
     double getHeight() const; // return height
+    double getX() const; // return x-coordinate
+    double getY() const; // return y-coordinate
+    double getdVdX() const; // return dV/dx
+    double getdVdY() const; // return dV/dy
     //double getT() const; // return temperature
 
     // setters

@@ -104,6 +104,9 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     /// Create vector with calculated temperatures
     void saveTemperatures();
 
+    /// Create 2D-vector with calculated heat fluxes
+    void saveHeatFluxes();
+
     /// Show vector with calculated temperatures (node numbers for info only)
     void showTemperatures();
 

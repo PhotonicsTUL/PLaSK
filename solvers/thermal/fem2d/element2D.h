@@ -20,6 +20,10 @@ public:
     double getWidth() const; // return width
     double getHeight() const; // return height
     double getT() const; // return temperature
+    double getX() const; // return x-coordinate
+    double getY() const; // return y-coordinate
+    double getdTdX() const; // return dT/dx
+    double getdTdY() const; // return dT/dy
 
     // setters
     void setT(); // set temperature (from nodes)
