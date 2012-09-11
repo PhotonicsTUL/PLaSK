@@ -37,7 +37,7 @@ struct ConstByPlaceProvider {
     /// Default value, provided for places where there is no other value
     ValueT defaultValue;
 
-    ConstByPlaceProvider(weak_ptr<const GeometryElementD<DIMS>> rootGeometry = weak_ptr<const GeometryElementD<DIMS>>(), const ValueT& defaultValue = ValueT())
+    ConstByPlaceProvider(const ValueT& defaultValue = ValueT(), weak_ptr<const GeometryElementD<DIMS>> rootGeometry = weak_ptr<const GeometryElementD<DIMS>>())
         : defaultValue(defaultValue), rootGeometry(rootGeometry) {}
 
     /**

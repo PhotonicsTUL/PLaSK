@@ -33,6 +33,14 @@ file(GLOB solver_src *.cpp *.hpp *.h)
 file(GLOB interface_src python/*.cpp)
 
 
+# Turn-off strict aliasing for Python code
+if(CMAKE_COMPILER_IS_GNUCXX)
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GNUCXX_VERSION)
+    if ((GNUCXX_VERSION VERSION_GREATER 4.7 OR GNUCXX_VERSION VERSION_EQUAL 4.7))
+        set(no_strict_aliasing_flag "-fno-strict-aliasing")
+    endif()
+endif()
+
 
 # This is macro that sets all the targets automagically
 macro(make_default)

@@ -12,6 +12,8 @@ struct PythonManager: public Manager {
 
     PythonManager(MaterialsDB* db=nullptr) : materialsDB(db? db : &MaterialsDB::getDefault()) {}
 
+    virtual ~PythonManager() {}
+
     void read(py::object src);
 
     virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name);

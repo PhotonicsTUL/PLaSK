@@ -42,7 +42,7 @@ class StepProfileGain: public SolverOver<GeometryT> {
     virtual std::string getClassName() const;
 
     virtual std::string getClassDescription() const {
-        return "It returns a giveen step-profile gain on a specified element";
+        return "It returns a given step-profile gain on a specified element";
     }
 
     virtual void loadParam(const std::string& param, XMLReader& reader, Manager& manager);
