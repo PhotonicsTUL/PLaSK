@@ -14,9 +14,9 @@ using namespace plask::solvers::thermal;
  */
 BOOST_PYTHON_MODULE(fem2d)
 {
-    {CLASS(FiniteElementMethodThermalCartesian2DSolver, "CartesianFEM", "Finite Element thermal solver for 2D Cartesian Geometry.")
+    {CLASS(FiniteElementMethodThermalCartesian2DSolver, "CartesianFEM", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(runCalc, "Run thermal calculations");
-        RECEIVER(inHeats, "Heats"); // receiver in the solver
+        RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
 /*
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);

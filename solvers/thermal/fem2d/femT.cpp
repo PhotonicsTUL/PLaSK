@@ -4,13 +4,16 @@ namespace plask { namespace solvers { namespace thermal {
 
 FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
-    outTemperature(this, &FiniteElementMethodThermalCartesian2DSolver::getTemp)/*, mLoopLim(5), mTCorrLim(0.1), mTBigCorr(1e5), mBigNum(1e15)*/ // TODO: it should be loaded from file  // LP
+    outTemperature(this, &FiniteElementMethodThermalCartesian2DSolver::getTemperatures),
+    outHeatFlux(this, &FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes)
 {
     mNodes.clear();
     mElements.clear();
     mTemperatures.reset(0);
     mHeatFluxes.reset(0);
-    mHeats.reset(0);
+    mHeatDensities.reset(0);
+
+    inHeatDensity = 0.;
 }
 
 FiniteElementMethodThermalCartesian2DSolver::~FiniteElementMethodThermalCartesian2DSolver()
@@ -25,7 +28,6 @@ void FiniteElementMethodThermalCartesian2DSolver::onInitialize() { // In this fu
     if (!mesh) throw NoMeshException(getId());
     setNodes();
     setElements();
-    mfHeats = false;
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
@@ -34,7 +36,7 @@ void FiniteElementMethodThermalCartesian2DSolver::onInvalidate() // This will be
     mElements.clear();
     mTemperatures.reset(0);
     mHeatFluxes.reset(0);
-    mHeats.reset(0);
+    mHeatDensities.reset(0);
     // Make sure that no provider returns any value.
     // If this method has been called, before next computations, onInitialize will be called.
 }
@@ -95,10 +97,9 @@ void FiniteElementMethodThermalCartesian2DSolver::setElements()
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setHeats()
+void FiniteElementMethodThermalCartesian2DSolver::setHeatDensities()
 {
-    mHeats = inHeats(mesh->getMidpointsMesh());
-    mfHeats = true;
+    mHeatDensities = inHeatDensity(mesh->getMidpointsMesh());
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::setSolver()
@@ -183,16 +184,12 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         // set assistant values
         double tElemX = 0.5 * (ttE->getNLoLeftPtr()->getX() + ttE->getNLoRightPtr()->getX());
         double tElemY = 0.5 * (ttE->getNLoLeftPtr()->getY() + ttE->getNUpLeftPtr()->getY());
-        //double tT = 300.;
-        //this->geometry->getMaterial(vec(tX, tY))->condT(tT);
-        tKXAssist = 44.0;//geometry->getMaterial(vec(tElemX, tElemY))->condT(tT); //!!! // TODO: call to database
-        tKYAssist = 44.0; //!!! // TODO: call to database
+
+        tKXAssist = geometry->getMaterial(vec(tElemX, tElemY))->condT(ttE->getT(),1e-6).first; // TODO
+        tKYAssist = geometry->getMaterial(vec(tElemX, tElemY))->condT(ttE->getT(),1e-6).second; // TODO
 
         // set load vector
-        if (!mfHeats)
-            tF = 0.; // no heat sources
-        else
-            tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeats[ttE->getNo()]; // 1e-12 -> to transform um*um into m*m
+        tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()]; // 1e-12 -> to transform um*um into m*m
         // heat per unit volume or heat rate per unit volume [W/(m^3)]
 
         // set symetric matrix components
@@ -251,6 +248,8 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
 
     setSolver();
 
+    setHeatDensities();
+
     writelog(LOG_INFO, "Running solver...");
 
     std::vector<double>::const_iterator ttTCorr;
@@ -279,8 +278,8 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
             tTCorr = *ttTCorr;
 
             // show max correction
-            //writelog(LOG_INFO, "Loop no: " << tLoop << ", max. corr. for T: " << tTCorr << " " << mTCorrLim);
-            std::cout << "Loop no: " << tLoop << ", max. corr. for T: " << tTCorr << " " << mTCorrLim << "\n";
+            writelog(LOG_INFO, "Loop no: %1%, max. corr. for T: %2%", tLoop, tTCorr);
+
             tLoop++;
         }
         else if (tInfo < 0)
@@ -291,15 +290,16 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
 
     //showNodes();
 
-    saveTemp();
+    saveTemperatures();
 
-    showTemp();
+    showTemperatures();
 
     delSolver();
 
     writelog(LOG_INFO, "Temperature calculations completed");
 
     outTemperature.fireChanged();
+    outHeatFlux.fireChanged();
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::loadParam(const std::string &param, XMLReader &source, Manager &manager)
@@ -381,7 +381,7 @@ void FiniteElementMethodThermalCartesian2DSolver::showElements()
                      << std::endl; // TEST
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::saveTemp()
+void FiniteElementMethodThermalCartesian2DSolver::saveTemperatures()
 {
     writelog(LOG_INFO, "Saving temperatures...");
 
@@ -394,7 +394,7 @@ void FiniteElementMethodThermalCartesian2DSolver::saveTemp()
         mTemperatures[place++] = ttN->getT();
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::showTemp()
+void FiniteElementMethodThermalCartesian2DSolver::showTemperatures()
 {
     writelog(LOG_INFO, "Showing temperatures...");
 
@@ -479,9 +479,14 @@ int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long 
     return 0;
 }
 
-DataVector<double> FiniteElementMethodThermalCartesian2DSolver::getTemp(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
+DataVector<double> FiniteElementMethodThermalCartesian2DSolver::getTemperatures(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mTemperatures, dst_mesh, method);
+}
+
+DataVector<Vec<2> > FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
+    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+    return interpolate(*mesh, mHeatFluxes, dst_mesh, method);
 }
 
 }}} // namespace plask::solvers::thermal

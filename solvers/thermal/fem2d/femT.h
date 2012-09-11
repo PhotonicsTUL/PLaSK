@@ -61,10 +61,9 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     int mAWidth, mAHeight;
     std::vector<double> mTCorr;
     double mTAmb;
-    bool mfHeats;
-    DataVector<double> mTemperatures;
-    DataVector<double> mHeatFluxes;
-    DataVector<double> mHeats;
+    DataVector<double> mTemperatures; // out
+    DataVector<Vec<2> > mHeatFluxes; // out
+    DataVector<double> mHeatDensities; // in
 
     /// Vector of nodes
     std::vector<Node2D> mNodes;
@@ -78,8 +77,8 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     /// Set elements
     void setElements();
 
-    /// Set heats
-    void setHeats();
+    /// Set heat densities
+    void setHeatDensities();
 
     /// Set matrix
     void setSolver();
@@ -103,10 +102,10 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     void showElements();
 
     /// Create vector with calculated temperatures
-    void saveTemp();
+    void saveTemperatures();
 
     /// Show vector with calculated temperatures (node numbers for info only)
-    void showTemp();
+    void showTemperatures();
 
     /// Matrix solver
     int solveMatrix(double **ipA, long iN, long iBandWidth);
@@ -131,9 +130,13 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
 
     ProviderFor<Temperature, Geometry2DCartesian>::Delegate outTemperature;
 
-    ReceiverFor<Heats, Geometry2DCartesian> inHeats;
+    ProviderFor<HeatFlux2D, Geometry2DCartesian>::Delegate outHeatFlux;
 
-    DataVector<double> getTemp(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    ReceiverFor<HeatDensity, Geometry2DCartesian> inHeatDensity;
+
+    DataVector<double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+
+    DataVector<Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
     /**
      * Find new temperature distribution.
@@ -146,10 +149,10 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
     // Parameters for rootdigger
-    int mLoopLim; // number of loops - stops the calculations // LP
-    double mTCorrLim; // small-enough correction - stops the calculations // LP
-    double mTBigCorr; // big-enough correction for the temperature // LP
-    double mBigNum; // for the first boundary condtion (see: set Matrix) // LP
+    int mLoopLim; // number of loops - stops the calculations
+    double mTCorrLim; // small-enough correction - stops the calculations
+    double mTBigCorr; // big-enough correction for the temperature
+    double mBigNum; // for the first boundary condtion (see: set Matrix)
 
     FiniteElementMethodThermalCartesian2DSolver(const std::string& name="");
 

@@ -22,7 +22,7 @@ public:
     //double getT() const; // return temperature
 
     // setters
-    //void setT(); // set temperature (from nodes)
+    //void setV(); // set potential (from nodes)
 
 protected:
     int mNo; // number

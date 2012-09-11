@@ -36,12 +36,12 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
         return "This solver does this and that. And this description can be e.g. shown as a hng in GUI.";
     }*/
 
-    /**
-     * This method performs the main computations.
-     * Add short description of every method in a comment like this.
-     * \param parameter some value to be provided by the user for computationsś
-     **/
-    /*void compute(double parameter) {
+/**
+    * This method performs the main computations.
+    * Add short description of every method in a comment like this.
+    * \param parameter some value to be provided by the user for computationsś
+    **/
+/*void compute(double parameter) {
         // The code of this method probably should be in cpp file...
         // But below we show some key elements
         initCalculation(); // This must be called before any calculation!
@@ -51,7 +51,7 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
         outSingleValue = new_computed_value;
         writelog(LOG_RESULT, "Found new value of something = $1$", new_computed_value);
         outSingleValue.fireChanged(); // Inform other solvers that you have computed a new value
-        outSomeField.fireChanged();
+         outSomeField.fireChanged();
     }*/
 
   protected:
@@ -60,7 +60,10 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     double **mpA;
     int mAWidth, mAHeight;
     std::vector<double> mVcorr;
-    std::vector<double> mPotentials;
+    DataVector<double> mPotentials; // out
+    DataVector<Vec<2> > mCurrentDensities; // out
+    DataVector<double> mHeatDensities; // out
+    DataVector<double> mTemperatures; // in
 
     /// Vector of nodes
     std::vector<Node2D> mNodes;
@@ -73,6 +76,9 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
 
     /// Set elements
     void setElements();
+
+    /// Set temperatures
+    void setTemperatures();
 
     /// Set matrix
     void setSolver();
@@ -96,10 +102,10 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     void showElements();
 
     /// Create vector with calculated potentials
-    void savePote();
+    void savePotentials();
 
     /// Show vector with calculated potentials (node numbers for info only)
-    void showPote();
+    void showPotentials();
 
     /// Matrix solver
     int solveMatrix(double **ipA, long iN, long iBandWidth);
@@ -107,22 +113,12 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     /// Boundary conditions
     BoundaryConditions<RectilinearMesh2D,double> mVconst;
 
-/*
     /// Initialize the solver
-    virtual void onInitialize() { // In this function check if geometry and mesh are set
-        if (!geometry) throw NoGeometryException(getId());
-        if (!mesh) throw NoMeshException(getId());
-        my_data.reset(mesh->size()); // and e.g. allocate memory
-    }
+    virtual void onInitialize();
 
     /// Invalidate the data
-    virtual void onInvalidate() { // This will be called when e.g. geometry or mesh changes and your results become outdated
-        outSingleValue.invalidate(); // clear the value
-        my_data.reset();
-        // Make sure that no provider returns any value.
-        // If this method has been called, before next computations, onInitialize will be called.
-   }
-
+    virtual void onInvalidate();
+/*
     /// Method computing the value for the delegate provider
     const DataVector<double> getDelegated(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod method=DEFAULT_INTERPOLATION) {
         if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
@@ -132,7 +128,19 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     }*/
     public:
 
-    //ProviderFor<Temperature, RectilinearMesh2D>::WithValue Delegate outTemperature;
+    ProviderFor<Potential, Geometry2DCartesian>::Delegate outPotential;
+
+    ProviderFor<CurrentDensity2D, Geometry2DCartesian>::Delegate outCurrentDensity;
+
+    ProviderFor<HeatDensity, Geometry2DCartesian>::Delegate outHeatDensity;
+
+    ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
+
+    DataVector<double> getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+
+    DataVector<double> getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+
+    DataVector<Vec<2> > getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
     /**
      * Find new potential distribution.
@@ -146,12 +154,13 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
 
     // Parameters for rootdigger
     int mLoopLim; // number of loops - stops the calculations
-    int mCorrLim; // small-enough correction - stops the calculations
+    double mVCorrLim; // small-enough correction - stops the calculations
+    double mVBigCorr; // big-enough correction for the potential
     double mBigNum; // for the first boundary condtion (see: set Matrix)
 
     FiniteElementMethodElectricalCartesian2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "CartesianFEM2"; } //TODO: is it correct?
+    virtual std::string getClassName() const { return "CartesianFEM"; }
 
     ~FiniteElementMethodElectricalCartesian2DSolver();
 };

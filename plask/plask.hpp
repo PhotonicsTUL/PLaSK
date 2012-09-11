@@ -92,9 +92,10 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "provider/providerfor.h"
 #include "provider/const_providers.h"
-#include "provider/temperature.h"
+#include "provider/thermal.h"
+#include "provider/electrical.h"
 #include "provider/optical.h"
 #include "provider/gain.h"
-#include "provider/heats.h"
+#include "provider/heatdensity.h"
 
 #endif // PLASK__PLASK_HPP

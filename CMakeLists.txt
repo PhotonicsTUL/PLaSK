@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")    # C++0x (C++11) standard
 # Turn-off strict aliasing for Python code
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT WIN32)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GNUCXX_VERSION)
-    if (GNUCXX_VERSION VERSION_GREATER 4.7 OR GNUCXX_VERSION VERSION_EQUAL 4.7)
+    if ((GNUCXX_VERSION VERSION_GREATER 4.7 OR GNUCXX_VERSION VERSION_EQUAL 4.7) AND NOT WIN32 )
         set(no_strict_aliasing_flag "-f-no-strict-aliasing")
     endif()
 endif()

@@ -57,6 +57,14 @@ struct Temperature: public ScalarFieldProperty {
     static constexpr const char* NAME = "temperature"; // mind lower case here
 };
 
+struct HeatFlux2D: public VectorFieldProperty<2> {
+    static constexpr const char* NAME = "heat flux 2D"; // mind lower case here
+};
+
+struct HeatFlux3D: public VectorFieldProperty<3> {
+    static constexpr const char* NAME = "heat flux 3D"; // mind lower case here
+};
+
 //TODO in gcc 4.7 can be done by new typedefs:
 
 /*

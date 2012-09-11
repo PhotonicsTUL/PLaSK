@@ -8,7 +8,7 @@ namespace plask {
 /**
  * Density of heat sources.
  */
-struct Heats: public ScalarFieldProperty {
+struct HeatDensity: public ScalarFieldProperty {
     static constexpr const char* NAME = "heat sources density"; // mind lower case here
 };
 
