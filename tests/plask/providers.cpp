@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <plask/provider/provider.h>
-#include <plask/provider/temperature.h>
+#include <plask/provider/thermal.h>
 #include <plask/geometry/space.h>
 #include <plask/mesh/rectilinear.h>
 #include <plask/mesh/regular.h>
@@ -66,12 +66,12 @@ BOOST_AUTO_TEST_CASE(single_value_delegate) {
     receiver << provider_lambda;
     BOOST_CHECK_EQUAL(receiver(), 2.0);
 }
-    
+
 BOOST_AUTO_TEST_CASE(vector_field) {
     struct Vector2DProp: public plask::VectorFieldProperty<2> {};
     plask::ProviderFor<Vector2DProp, plask::Geometry2DCartesian>::Delegate provider(
                 [](const plask::MeshD<2>& m, plask::InterpolationMethod) -> plask::DataVector<plask::Vec<2, double> > {
-                    return plask::DataVector<plask::Vec<2, double> >(m.size(), plask::vec(1.0, 2.0)); 
+                    return plask::DataVector<plask::Vec<2, double> >(m.size(), plask::vec(1.0, 2.0));
                 }
     );
     plask::ReceiverFor<Vector2DProp, plask::Geometry2DCartesian> receiver;
