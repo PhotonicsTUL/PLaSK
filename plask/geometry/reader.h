@@ -123,6 +123,15 @@ public:
 
     /// Type of material source, can return material with given name.
     typedef std::function<shared_ptr<Material>(const std::string& material_full_name)> MaterialsSource;
+    
+    /**
+     * Materials source functor which use materials database.
+     */
+    struct MaterialsDBSource {
+        const MaterialsDB& materialsDB;
+        MaterialsDBSource(const MaterialsDB& materialsDB): materialsDB(materialsDB) {}
+        shared_ptr<Material> operator()(const std::string& material_full_name) const { return materialsDB.get(material_full_name); }
+    };
 
     /// Source of materials, typically use material database.
     MaterialsSource materialSource;
