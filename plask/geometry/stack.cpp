@@ -198,7 +198,7 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
 
 
 template <int dim>
-const bool MultiStackContainer<dim>::reduceHeight(double& height) const {
+bool MultiStackContainer<dim>::reduceHeight(double& height) const {
     const double zeroBasedStackHeight = stackHeights.back() - stackHeights.front();
     const double zeroBasedRequestHeight = height - stackHeights.front();
     if (zeroBasedRequestHeight < 0.0 || zeroBasedRequestHeight > zeroBasedStackHeight * repeat_count)

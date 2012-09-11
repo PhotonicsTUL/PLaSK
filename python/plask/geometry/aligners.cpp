@@ -20,14 +20,14 @@ namespace detail {
             boost::python::converter::registry::push_back(&convertible, &construct3, boost::python::type_id<A3>());
         }
 
-        // Determine if obj_ptr can be converted into an Aligner
-        static void* convertible(PyObject* obj_ptr) {
-            if (!PyString_Check(obj_ptr)) return 0;
-            return obj_ptr;
+        // Determine if obj can be converted into an Aligner
+        static void* convertible(PyObject* obj) {
+            if (!PyString_Check(obj)) return 0;
+            return obj;
         }
 
-        static void construct2(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            std::string str = PyString_AsString(obj_ptr);
+        static void construct2(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            std::string str = PyString_AsString(obj);
             boost::algorithm::to_lower(str);
 
             // Grab pointer to memory into which to construct the new Aligner
@@ -44,8 +44,8 @@ namespace detail {
             data->convertible = storage;
         }
 
-        static void construct3(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            std::string str = PyString_AsString(obj_ptr);
+        static void construct3(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            std::string str = PyString_AsString(obj);
             boost::algorithm::to_lower(str);
 
             // Grab pointer to memory into which to construct the new Aligner

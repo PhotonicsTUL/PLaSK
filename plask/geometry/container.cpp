@@ -171,7 +171,7 @@ shared_ptr<GeometryElement> read_TranslationContainer2D(GeometryReader& reader) 
     shared_ptr< TranslationContainer<2> > result(new TranslationContainer<2>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children<TranslationContainer<2>>(reader,
-        [&]() {
+        [&]() -> PathHints::Hint {
             TranslationContainer<2>::DVec translation;
             translation.tran() = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
             translation.up() = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
@@ -188,7 +188,7 @@ shared_ptr<GeometryElement> read_TranslationContainer3D(GeometryReader& reader) 
     shared_ptr< TranslationContainer<3> > result(new TranslationContainer<3>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children<TranslationContainer<3>>(reader,
-        [&]() {
+        [&]() -> PathHints::Hint {
             TranslationContainer<3>::DVec translation;
             translation.c0 = reader.source.getAttribute(reader.getAxisName(0), 0.0);
             translation.c1 = reader.source.getAttribute(reader.getAxisName(1), 0.0);

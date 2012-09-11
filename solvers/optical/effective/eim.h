@@ -93,10 +93,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      **/
     void setSimpleMesh() {
         writelog(LOG_INFO, "Creating simple mesh");
-        if (!geometry) throw NoGeometryException(getId());
-        auto child = geometry->getChild();
-        if (!child) throw NoChildException();
-        setMesh(RectilinearMesh2DSimpleGenerator().generate(child));
+        setMesh(make_shared<RectilinearMesh2DSimpleGenerator>());
     }
 
     /**
@@ -202,7 +199,12 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * Compute modal determinant for the whole matrix
      * \param neff effective index to use
      */
-    dcomplex getDeterminant(dcomplex neff) { stageOne(); return detS(neff); }
+    dcomplex getDeterminant(dcomplex neff) {
+        stageOne();
+        dcomplex det = detS(neff);
+        log_value(neff, det);
+        return det;
+    }
 
 
     /// Receiver of the wavelength

@@ -24,6 +24,8 @@ namespace boost { namespace python {
 #include <plask/vec.h>
 #include <plask/axes.h>
 
+#include "python_enum.h"
+
 namespace plask { namespace python {
 
 namespace py = boost::python;
@@ -81,36 +83,6 @@ struct IOError: public Exception {
 #endif
 
 // ----------------------------------------------------------------------------------------------------------------------
-// Config
-
-struct Config
-{
-    // Current axis names
-    static AxisNames axes;
-
-    std::string axes_name() {
-        return axes.str();
-    }
-    void set_axes(std::string axis) {
-        axes = AxisNames::axisNamesRegister.get(axis);
-    }
-
-    std::string __str__() {
-        return std::string()
-            + "axes:   " + axes_name();
-        ;
-    }
-
-    std::string __repr__() {
-        return
-            format("config.axes = '%s'", axes_name())
-        ;
-    }
-
-};
-extern Config config;
-
-// ----------------------------------------------------------------------------------------------------------------------
 // Compare shared pointes
 template <typename T>
 bool __is__(const shared_ptr<T>& a, const shared_ptr<T>& b) {
@@ -124,6 +96,12 @@ inline std::string pyformat(const T& v) { std::stringstream s; s << v; return s.
 
 template <>
 inline std::string pyformat<dcomplex>(const dcomplex& v) { return format("(%g%+gj)", real(v), imag(v)); }
+
+// ----------------------------------------------------------------------------------------------------------------------
+// PLaSK str function for Python objects
+inline std::string str(py::object obj) {
+    return py::extract<std::string>(py::str(obj));
+}
 
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -177,6 +155,38 @@ static inline py::class_< std::vector<T>, shared_ptr<std::vector<T>> > register_
         .def("__str__", &str__vector_of<T>)
     ;
 }
+
+
+// ----------------------------------------------------------------------------------------------------------------------
+// Config
+
+struct Config
+{
+    // Current axis names
+    static AxisNames axes;
+
+    std::string axes_name() {
+        return axes.str();
+    }
+    void set_axes(std::string axis) {
+        axes = AxisNames::axisNamesRegister.get(axis);
+    }
+
+    std::string __str__() {
+        return std::string()
+            + "axes:   " + axes_name();
+        ;
+    }
+
+    std::string __repr__() {
+        return
+            format("config.axes = '%s'", axes_name())
+        ;
+    }
+
+};
+extern Config config;
+
 
 }} // namespace plask::python
 

@@ -19,6 +19,8 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
         mesh->axis1.addPoint(box.upper.c1);
     }
 
+    if (extend_to_zero) mesh->axis0.addPoint(0.);
+
     mesh->setOptimalIterationOrder();
     return mesh;
 }

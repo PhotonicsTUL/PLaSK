@@ -19,20 +19,20 @@ namespace detail {
 
         Element_List_from_Python();
 
-        static void* convertible(PyObject* obj_ptr) {
-            if (!PySequence_Check(obj_ptr)) return nullptr;
-            int n = PySequence_Size(obj_ptr);
+        static void* convertible(PyObject* obj) {
+            if (!PySequence_Check(obj)) return nullptr;
+            int n = PySequence_Size(obj);
             try {
-                for(int i = 0; i < n; i++) py::extract<shared_ptr<GeometryElement>>(PySequence_GetItem(obj_ptr, i));
+                for(int i = 0; i < n; i++) py::extract<shared_ptr<GeometryElement>>(PySequence_GetItem(obj, i));
             } catch (py::error_already_set) {
                 PyErr_Clear();
                 return nullptr;
             }
-            return obj_ptr;
+            return obj;
         }
 
-        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            int n = PySequence_Size(obj_ptr);
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            int n = PySequence_Size(obj);
 
             // Grab pointer to memory into which to construct the new QString
             void* storage = ((boost::python::converter::rvalue_from_python_storage<std::vector<shared_ptr<const GeometryElement>>>*)data)->storage.bytes;
@@ -41,7 +41,7 @@ namespace detail {
             vec->reserve(n);
 
             for(int i = 0; i < n; i++) {
-                shared_ptr<GeometryElement> p = py::extract<shared_ptr<GeometryElement>>(PySequence_GetItem(obj_ptr, i));
+                shared_ptr<GeometryElement> p = py::extract<shared_ptr<GeometryElement>>(PySequence_GetItem(obj, i));
                 vec->push_back(const_pointer_cast<const GeometryElement>(p));
             }
 
@@ -69,13 +69,13 @@ namespace detail {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<PathHints>());
         }
 
-        // Determine if obj_ptr can be converted into an Aligner
-        static void* convertible(PyObject* obj_ptr) {
-            if (obj_ptr != Py_None) return 0;
-            return obj_ptr;
+        // Determine if obj can be converted into an Aligner
+        static void* convertible(PyObject* obj) {
+            if (obj != Py_None) return 0;
+            return obj;
         }
 
-        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
             // Grab pointer to memory into which to construct the new Aligner
             void* storage = ((boost::python::converter::rvalue_from_python_storage<PathHints>*)data)->storage.bytes;
             new(storage) PathHints;

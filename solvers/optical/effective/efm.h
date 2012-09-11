@@ -92,12 +92,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      **/
     void setSimpleMesh() {
         writelog(LOG_INFO, "Creating simple mesh");
-        if (!geometry) throw NoGeometryException(getId());
-        auto child = geometry->getChild();
-        if (!child) throw NoChildException();
-        auto msh = RectilinearMesh2DSimpleGenerator().generate(child);
-        msh->rad_r().addPoint(0.);
-        setMesh(msh);
+        setMesh(make_shared<RectilinearMesh2DSimpleGenerator>(true)); // set generator forcing line at r = 0
     }
 
     /**
@@ -187,7 +182,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
         v =  2. - 4e3*M_PI / lambda / k0;
         stageOne();
-        return detS(v);
+        dcomplex det = detS(v);
+        log_value(v, det);
+        return det;
     }
 
 

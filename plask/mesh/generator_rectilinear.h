@@ -9,15 +9,22 @@ namespace plask {
 
 class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
+    /// Should we add horizontal line at zero
+    bool extend_to_zero;
+
   public:
+
+    /**
+     * Create generator
+     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     */
+    RectilinearMesh2DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryElementD<2>>& geometry);
 };
 
 
-class RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3D> {
-
-  public:
+struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3D> {
 
     virtual shared_ptr<RectilinearMesh3D> generate(const shared_ptr<GeometryElementD<3>>& geometry);
 };

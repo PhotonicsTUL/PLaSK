@@ -35,18 +35,18 @@ namespace detail {
             boost::python::to_python_converter<DDPair, DDpair_fromto_Python>();
         }
 
-        static void* convertible(PyObject* obj_ptr) {
-            if (!PySequence_Check(obj_ptr) && !PyFloat_Check(obj_ptr) && !PyInt_Check(obj_ptr)) return NULL;
-            return obj_ptr;
+        static void* convertible(PyObject* obj) {
+            if (!PySequence_Check(obj) && !PyFloat_Check(obj) && !PyInt_Check(obj)) return NULL;
+            return obj;
         }
 
-        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
             void* storage = ((boost::python::converter::rvalue_from_python_storage<DDPair>*)data)->storage.bytes;
             double first, second;
-            if (PyFloat_Check(obj_ptr) || PyInt_Check(obj_ptr)) {
-                first = second = py::extract<double>(obj_ptr);
-            } else if (PySequence_Length(obj_ptr) == 2) {
-                auto src = py::object(py::handle<>(py::borrowed(obj_ptr)));
+            if (PyFloat_Check(obj) || PyInt_Check(obj)) {
+                first = second = py::extract<double>(obj);
+            } else if (PySequence_Length(obj) == 2) {
+                auto src = py::object(py::handle<>(py::borrowed(obj)));
                 auto ofirst = src[0];
                 auto osecond = src[1];
                 first = py::extract<double>(ofirst);
@@ -72,17 +72,17 @@ namespace detail {
             boost::python::to_python_converter<NrTensorT, ComplexTensor_fromto_Python>();
         }
 
-        static void* convertible(PyObject* obj_ptr) {
-            if (!PySequence_Check(obj_ptr)) return NULL;
-            return obj_ptr;
+        static void* convertible(PyObject* obj) {
+            if (!PySequence_Check(obj)) return NULL;
+            return obj;
         }
 
-        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            py::object src = py::object(py::handle<>(py::borrowed(obj_ptr)));
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            py::object src = py::object(py::handle<>(py::borrowed(obj)));
             void* storage = ((boost::python::converter::rvalue_from_python_storage<NrTensorT>*)data)->storage.bytes;
             dcomplex vals[5];
             int idx[5] = { 0, 1, 2, 3, 4 };
-            auto seq = py::object(py::handle<>(py::borrowed(obj_ptr)));
+            auto seq = py::object(py::handle<>(py::borrowed(obj)));
             if (py::len(seq) == 2) { idx[2] = 1; idx[3] = idx[4] = -1; }
             else if (py::len(seq) == 3) { idx[3] = idx[4] = -1; }
             else if (py::len(seq) != 5)
@@ -694,14 +694,14 @@ struct Material_from_Python_string {
         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<shared_ptr<Material>>());
     }
 
-    // Determine if obj_ptr can be converted into Material
-    static void* convertible(PyObject* obj_ptr) {
-        if (!PyString_Check(obj_ptr)) return 0;
-        return obj_ptr;
+    // Determine if obj can be converted into Material
+    static void* convertible(PyObject* obj) {
+        if (!PyString_Check(obj)) return 0;
+        return obj;
     }
 
-    static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        std::string value = PyString_AsString(obj_ptr);
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        std::string value = PyString_AsString(obj);
 
         // Grab pointer to memory into which to construct the new Material
         void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<Material>>*)data)->storage.bytes;
@@ -832,7 +832,7 @@ void initMaterials() {
     detail::DDpair_fromto_Python();
     detail::ComplexTensor_fromto_Python();
 
-    py::enum_<Material::Kind> MaterialKind("kind"); MaterialKind
+    py_enum<Material::Kind> MaterialKind("kind", "Kind of the material"); MaterialKind
         .value("NONE", Material::NONE)
         .value("SEMICONDUCTOR", Material::SEMICONDUCTOR)
         .value("OXIDE", Material::OXIDE)

@@ -129,7 +129,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementD, "GeometryElement", "Base class fo
 
 void register_geometry_element()
 {
-    py::enum_<GeometryElement::Type>("ElementType")
+    py_enum<GeometryElement::Type>("ElementType")
         .value("LEAF", GeometryElement::TYPE_LEAF)
         .value("TRANSFORM", GeometryElement::TYPE_TRANSFORM)
         .value("SPACE_CHANGER", GeometryElement::TYPE_SPACE_CHANGER)

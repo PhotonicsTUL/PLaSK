@@ -23,15 +23,15 @@ namespace detail {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RectilinearMesh1D>());
         }
 
-        static void* convertible(PyObject* obj_ptr) {
-            if (!PySequence_Check(obj_ptr)) return NULL;
-            return obj_ptr;
+        static void* convertible(PyObject* obj) {
+            if (!PySequence_Check(obj)) return NULL;
+            return obj;
         }
 
-        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
         {
             void* storage = ((boost::python::converter::rvalue_from_python_storage<RectilinearMesh1D>*)data)->storage.bytes;
-            py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj_ptr)))), end;
+            py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj)))), end;
             new(storage) RectilinearMesh1D(std::vector<double>(begin, end));
             data->convertible = storage;
         }
@@ -92,15 +92,15 @@ namespace detail {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RegularMesh1D>());
         }
 
-        static void* convertible(PyObject* obj_ptr) {
-            if (!PyTuple_Check(obj_ptr)) return NULL;
-            return obj_ptr;
+        static void* convertible(PyObject* obj) {
+            if (!PyTuple_Check(obj)) return NULL;
+            return obj;
         }
 
-        static void construct(PyObject* obj_ptr, boost::python::converter::rvalue_from_python_stage1_data* data)
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
         {
             void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularMesh1D>*)data)->storage.bytes;
-            auto tuple = py::object(py::handle<>(py::borrowed(obj_ptr)));
+            auto tuple = py::object(py::handle<>(py::borrowed(obj)));
             try {
                 if (py::len(tuple) != 3) throw py::error_already_set();
                 new(storage) RegularMesh1D(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));

@@ -24,6 +24,8 @@ void register_providers();
 
 void register_data_vectors();
 
+void register_python_log();
+
 // Hack necessary as macro import_array wants to return some value
 static inline bool plask_import_array() {
     import_array1(false);
@@ -57,6 +59,9 @@ BOOST_PYTHON_MODULE(plaskcore)
 
     // Config
     register_config();
+
+    // Log
+    register_python_log();
 
     // Manager
     register_manager();

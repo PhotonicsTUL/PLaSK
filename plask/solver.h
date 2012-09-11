@@ -680,7 +680,9 @@ class SolverWithMesh: public SolverOver<SpaceT> {
     virtual void regenerateMesh() {
         if (this->mesh_generator && this->geometry) {
             auto gen = mesh_generator; // setMesh will reset generator
-            setMesh((*mesh_generator)(this->geometry->getChild()));
+            auto child = this->geometry->getChild();
+            if (!child) throw NoChildException();
+            setMesh((*mesh_generator)(child));
             mesh_generator = gen;
         }
     }

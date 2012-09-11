@@ -472,7 +472,7 @@ class MultiStackContainer: public StackContainer<dim> {
      * @param height to reduce
      * @return @c true only if height is inside this stack (only in such case @a height is reduced)
      */
-    const bool reduceHeight(double& height) const;
+    bool reduceHeight(double& height) const;
 
   public:
 
