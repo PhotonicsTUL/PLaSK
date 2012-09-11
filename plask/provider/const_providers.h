@@ -3,14 +3,15 @@
 
 #include "../geometry/element.h"
 #include "../data.h"
+#include "../geometry/path.h"
 
 namespace plask {
 
 /**
- * Provider which allows to define value in each geometry place pointed as geometry element.
+ * Helper class which allow to easy implementation of providers which allows to define value in each geometry place pointed as geometry element.
  */
 template <int dims, typename ValueT>
-struct ConstByPlaceProvider {
+struct ConstByPlaceProviderImpl {
 
     enum  { DIMS = dims };
 
@@ -37,11 +38,12 @@ struct ConstByPlaceProvider {
     /// Default value, provided for places where there is no other value
     ValueT defaultValue;
 
-    ConstByPlaceProvider(const ValueT& defaultValue = ValueT(), weak_ptr<const GeometryElementD<DIMS>> rootGeometry = weak_ptr<const GeometryElementD<DIMS>>())
+    ConstByPlaceProviderImpl(const ValueT& defaultValue = ValueT(), weak_ptr<const GeometryElementD<DIMS>> rootGeometry = weak_ptr<const GeometryElementD<DIMS>>())
         : defaultValue(defaultValue), rootGeometry(rootGeometry) {}
 
     /**
      * Get values in places showed by @p dst_mesh.
+     * @param dst_mesh mesh
      */
     DataVector<ValueT> get(const plask::MeshD<DIMS>& dst_mesh) const {
         shared_ptr<const GeometryElementD<DIMS>> geometry = rootGeometry.lock();

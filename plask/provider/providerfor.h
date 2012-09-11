@@ -8,6 +8,7 @@ This file includes classes and templates which allow to generate providers and r
 
 #include "provider.h"
 #include "../utils/stl.h"   // VariadicTemplateTypesHolder
+#include "const_providers.h"
 
 namespace plask {
 
@@ -354,7 +355,7 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplat
     static constexpr const char* NAME = PropertyT::NAME;
 
     static_assert(!std::is_same<SpaceT, void>::value,
-                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in .");
+                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
 
     /// Type of provided value.
     typedef typename OnMeshProvider<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
@@ -388,6 +389,19 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplat
             return ProvidedValueType(dst_mesh.size(), value);
         }
     };
+    
+    /**
+     * Provider which allows to define value in each geometry place pointed as geometry element.
+     *
+     * It ignors extra parameters.
+     */
+    struct ConstByPlace: public ProviderFor<PropertyT, SpaceT>, public ConstByPlaceProviderImpl<SpaceT::DIMS, ValueT> {
+        
+        virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams...) const {
+            return get(dst_mesh);
+        }
+        
+    };
 
 };
 
@@ -400,7 +414,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
     static constexpr const char* NAME = PropertyT::NAME;
 
     static_assert(!std::is_same<SpaceT, void>::value,
-                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in .");
+                  "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
 
     /// Type of provided value.
     typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
@@ -581,6 +595,19 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
             return ProvidedValueType(dst_mesh.size(), value);
         }
+    };
+    
+    /**
+     * Provider which allows to define value in each geometry place pointed as geometry element.
+     *
+     * It ignors extra parameters.
+     */
+    struct ConstByPlace: public ProviderFor<PropertyT, SpaceT>, public ConstByPlaceProviderImpl<SpaceT::DIMS, ValueT> {
+        
+        virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
+            return get(dst_mesh);
+        }
+        
     };
 
 };
