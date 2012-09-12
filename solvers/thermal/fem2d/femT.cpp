@@ -182,8 +182,18 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
 
         // set assistant values
-        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(),1e-6).first; // TODO
-        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(),1e-6).second; // TODO
+        std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
+        Vec<2, double> tSize;
+        for (Box2D tBox: tVecBox)
+        {
+            if (tBox.includes(vec(ttE->getX(), ttE->getY())))
+            {
+                tSize = tBox.size();
+                break;
+            }
+        }
+        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(), tSize.ee_x()).first; // TODO
+        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(), tSize.ee_y()).second; // TODO
 
         // set load vector
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()]; // 1e-12 -> to transform um*um into m*m
@@ -385,10 +395,10 @@ void FiniteElementMethodThermalCartesian2DSolver::saveTemperatures()
     std::vector<Node2D>::const_iterator ttN;
 
     mTemperatures.reset(mNodes.size());
-    std::size_t place = 0;
+    //std::size_t place = 0;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        mTemperatures[place++] = ttN->getT();
+        mTemperatures[/*place++*/ttN->getNo()-1] = ttN->getT();
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
@@ -398,13 +408,24 @@ void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
     std::vector<Element2D>::const_iterator ttE;
 
     mHeatFluxes.reset(mElements.size());
-    std::size_t place = 0;
+    //std::size_t place = 0;
+
+    std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
-        //mHeatFluxes[place] = - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(),1e-6).first) * ttE->getdTdx(); // TODO
-        //mHeatFluxes[place] = - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(),1e-6).second) * ttE->getdTdy(); // TODO
-        //place++;
+        Vec<2, double> tSize;
+        for (Box2D tBox: tVecBox)
+        {
+            if (tBox.includes(vec(ttE->getX(), ttE->getY())))
+            {
+                tSize = tBox.size();
+                break;
+            }
+        }
+        mHeatFluxes[/*place++*/ttE->getNo()-1] = vec(
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX(), // TODO
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() ); // TODO
     }
 }
 

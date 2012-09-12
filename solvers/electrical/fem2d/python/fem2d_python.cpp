@@ -14,7 +14,7 @@ using namespace plask::solvers::electrical;
  */
 BOOST_PYTHON_MODULE(fem2d)
 {
-    {CLASS(FiniteElementMethodElectricalCartesian2DSolver, "CartesianFEM2", "Finite Element electrical solver for 2D Cartesian Geometry.")
+    {CLASS(FiniteElementMethodElectricalCartesian2DSolver, "CartesianFEM", "Finite Element electrical solver for 2D Cartesian Geometry.")
         METHOD(runCalc, "Run electrical calculations");
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver
         PROVIDER(outHeatDensity, "HeatDensities"); // provider in the solver

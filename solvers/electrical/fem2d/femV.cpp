@@ -349,7 +349,7 @@ void FiniteElementMethodElectricalCartesian2DSolver::updElements()
     writelog(LOG_INFO, "Updating elements...");
 
     //for (std::vector<Element2D>::iterator ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
-    //    ttE->setT(); // TODO
+    //    ttE->setV(); // TODO
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::showNodes()
@@ -384,10 +384,10 @@ void FiniteElementMethodElectricalCartesian2DSolver::savePotentials()
     std::vector<Node2D>::const_iterator ttN;
 
     mPotentials.reset(mNodes.size());
-    std::size_t place = 0;
+    //size_t tI = 0;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        mPotentials[place++] = ttN->getV();
+        mPotentials[ttN->getNo()-1/*tI++*/] = ttN->getV();
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::saveCurrentDensities()
@@ -397,13 +397,13 @@ void FiniteElementMethodElectricalCartesian2DSolver::saveCurrentDensities()
     std::vector<Element2D>::const_iterator ttE;
 
     mCurrentDensities.reset(mElements.size());
-    std::size_t place = 0;
+    //size_t tI = 0;
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
-        //mCurrentDensities[place] = - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()]).first) * ttE->getdVdx(); // TODO
-        //mCurrentDensities[place] = - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()]).second) * ttE->getdVdy(); // TODO
-        //place++
+        mCurrentDensities[/*tI++*/ttE->getNo()-1] = vec(
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) * ttE->getdVdX(),
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second) * ttE->getdVdY() );
     }
 }
 
@@ -414,16 +414,15 @@ void FiniteElementMethodElectricalCartesian2DSolver::saveHeatDensities()
     std::vector<Element2D>::const_iterator ttE;
 
     mHeatDensities.reset(mElements.size());
-    std::size_t place = 0;
+    //std::size_t place = 0;
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
-        //mHeatDensities[place] = mCurrentDensities[place]) * mCurrentDensities[place]) / (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()]).first) +
-            //mCurrentDensities[place]) * mCurrentDensities[place]) / (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()]).second); // TODO
+        mHeatDensities[/*place*/ttE->getNo()-1] = (mCurrentDensities[/*place*/ttE->getNo()-1]).ee_x() * (mCurrentDensities[/*place*/ttE->getNo()-1]).ee_x() / (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) +
+            (mCurrentDensities[/*place*/ttE->getNo()-1]).ee_y() * (mCurrentDensities[/*place*/ttE->getNo()-1]).ee_y() / (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second);
         //place++;
     }
 }
-
 
 void FiniteElementMethodElectricalCartesian2DSolver::showPotentials()
 {
