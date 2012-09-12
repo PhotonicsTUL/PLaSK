@@ -159,7 +159,8 @@ template <int dim>
 shared_ptr<GeometryElement> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< StackContainer<dim> > result = make_shared< StackContainer<dim> >(this->getBaseHeight());
     for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
-        result->addUnsafe(children_after_change[child_nr].first, *this->aligners[child_nr]);
+        if (children_after_change[child_nr].first)
+            result->addUnsafe(children_after_change[child_nr].first, *this->aligners[child_nr]);
     return result;
 }
 
@@ -207,7 +208,8 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
 shared_ptr<GeometryElement> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< ShelfContainer2D > result = make_shared< ShelfContainer2D >(this->getBaseHeight());
     for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
-        result->addUnsafe(children_after_change[child_nr].first);
+        if (children_after_change[child_nr].first)
+            result->addUnsafe(children_after_change[child_nr].first);
     return result;
 }
 
@@ -326,7 +328,8 @@ template <int dim>
 shared_ptr<GeometryElement> MultiStackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< MultiStackContainer<dim> > result = make_shared< MultiStackContainer<dim> >(this->repeat_count, this->getBaseHeight());
     for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
-        result->addUnsafe(children_after_change[child_nr].first, this->getAlignerAt(child_nr));
+        if (children_after_change[child_nr].first)
+            result->addUnsafe(children_after_change[child_nr].first, this->getAlignerAt(child_nr));
     return result;
 }
 

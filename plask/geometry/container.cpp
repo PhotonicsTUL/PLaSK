@@ -187,7 +187,8 @@ shared_ptr<GeometryElement> TranslationContainer<dim>::changedVersionForChildren
         std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< TranslationContainer<dim> > result = make_shared< TranslationContainer<dim> >();
     for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
-        result->addUnsafe(children_after_change[child_nr].first, children[child_nr]->translation + vec<dim, double>(children_after_change[child_nr].second));
+        if (children_after_change[child_nr].first)
+            result->addUnsafe(children_after_change[child_nr].first, children[child_nr]->translation + vec<dim, double>(children_after_change[child_nr].second));
     return result;
 }
 
