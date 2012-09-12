@@ -16,6 +16,10 @@ set(TARGET_NAME solver-${TARGET_NAME})
 # Obtain default canonical solver name
 get_filename_component(SOLVER_NAME ${SOLVER_DIR} NAME)
 
+# Construct solver library name (category_solvername)
+get_filename_component(SOLVER_LIB_NAME ${SOLVER_DIR} PATH)
+set(SOLVER_LIB_NAME "${SOLVER_LIB_NAME}_${SOLVER_NAME}")
+
 # Obtain intermediate path list and to create necessary __init__.py files to mark packages
 get_filename_component(SOLVER_PATH ${SOLVER_DIR} PATH)
 if(NOT SOLVER_PATH STREQUAL "")
@@ -47,7 +51,7 @@ macro(make_default)
 
     # Build solver library
     add_library(${TARGET_NAME} SHARED ${solver_src})
-    set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME ${SOLVER_NAME})
+    set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME ${SOLVER_LIB_NAME})
     target_link_libraries(${TARGET_NAME} libplask ${SOLVER_LINK_LIBRARIES})
     include_directories(${SOLVER_INCLUDE_DIRECTORIES})
     if (DEFINED SOLVER_LINK_FLAGS)

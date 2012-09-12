@@ -45,6 +45,8 @@ bool Manager::tryLoadFromExternal(XMLReader& reader, const MaterialsSource& mate
 shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::string &lib, const std::string &solver_name, const std::string& name) {
     std::string lib_file_name = plaskSolversPath(category);
     lib_file_name += "lib";
+    lib_file_name += category;
+    lib_file_name += "_";
     lib_file_name += lib;
     lib_file_name += DynamicLibrary::DEFAULT_EXTENSION;
     return shared_ptr<Solver>(
