@@ -55,6 +55,14 @@ protected:
      */
     virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
+    /**
+     * This is called by changedVersion method to create new version of this container which consists with new children.
+     * @param[in] children_after_change vector of new children
+     * @param[out] recomended_translation optional, place to store recommended translation (if is not nullptr, it has all coordinates equals to 0.0)
+     * @return copy of this, with new children
+     */
+    virtual shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const = 0;
+
 public:
 
     /**
@@ -177,13 +185,7 @@ public:
         return children[child_nr];
     }
 
-    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
-        shared_ptr<const GeometryElement> result(this->shared_from_this());
-        if (changer.apply(result, translation) || children.empty()) return result;
-        //if (translation) *translation = vec(0.0, 0.0, 0.0); // we can't recommend nothing special
-        //TODO code... what with paths? add paths to changedVersion method
-        return result; //FIXME?
-    }
+    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const;
 
     /**
      * Remove all children which fulfil predicate.
@@ -312,6 +314,9 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
     }
 
     virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
+
+protected:
+    virtual shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
 
 };
 

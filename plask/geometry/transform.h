@@ -137,7 +137,7 @@ struct GeometryElementTransform: public GeometryElementD<dim> {
     }
 
     virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
-        shared_ptr<const GeometryElement> result(this->shared_from_this());
+        shared_ptr<GeometryElement> result(const_pointer_cast<GeometryElement>(this->shared_from_this()));
         if (changer.apply(result, translation) || !hasChild()) return result;
         shared_ptr<const GeometryElement> new_child = _child->changedVersion(changer, translation);
         if (!new_child) return shared_ptr<const GeometryElement>();  //child was deleted, so we also should be

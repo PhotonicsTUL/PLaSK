@@ -237,6 +237,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
         return push_front_Unsafe(el);
     }
 
+    virtual shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
 };
 
 
@@ -425,6 +426,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 protected:
     void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
+    shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+
 };
 
 template <int dim>
@@ -445,6 +448,9 @@ class MultiStackContainer: public StackContainer<dim> {
     using UpperClass::getChildForHeight;
     using UpperClass::stackHeights;
     using UpperClass::children;
+
+    typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
+    typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename UpperClass::DVec DVec;
@@ -558,6 +564,8 @@ class MultiStackContainer: public StackContainer<dim> {
 
 protected:
     void writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const;
+
+    shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
 
 };
 

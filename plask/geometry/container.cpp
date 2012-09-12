@@ -120,6 +120,27 @@ GeometryElement::Subtree GeometryElementContainer<dim>::getPathsTo(const Geometr
 }
 
 template <int dim>
+shared_ptr<const GeometryElement> GeometryElementContainer<dim>::changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation) const {
+    shared_ptr<GeometryElement> result(const_pointer_cast<GeometryElement>(this->shared_from_this()));
+    if (changer.apply(result, translation) || children.empty()) return result;
+
+    bool were_changes = false;    //any children was changed?
+    std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>> children_after_change;
+    for (const shared_ptr<TranslationT>& child_tran: children) {
+        //shared_ptr<const ChildType> new_child = child_tran->getChild();
+        shared_ptr<GeometryElement> new_child = child_tran->getChild();
+        Vec<3, double> trans_from_child;
+        if (changer.apply(new_child, &trans_from_child)) were_changes = true;
+        children_after_change.emplace_back(static_pointer_cast<ChildType>(new_child), trans_from_child);
+    }
+
+    if (translation) *translation = vec(0.0, 0.0, 0.0); // we can't recommend nothing special
+    if (were_changes) result = changedVersionForChildren(children_after_change, translation);
+
+    return result;
+}
+
+template <int dim>
 bool GeometryElementContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
     auto dst = children.begin();
     for (auto i: children)
@@ -159,6 +180,15 @@ void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_chi
     if (child_tran->translation.lon() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.lon());
     if (child_tran->translation.tran() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran());
     if (child_tran->translation.up() != 0.0) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up());
+}
+
+template <int dim>
+shared_ptr<GeometryElement> TranslationContainer<dim>::changedVersionForChildren(
+        std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+    shared_ptr< TranslationContainer<dim> > result = make_shared< TranslationContainer<dim> >();
+    for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
+        result->addUnsafe(children_after_change[child_nr].first, children[child_nr]->translation + vec<dim, double>(children_after_change[child_nr].second));
+    return result;
 }
 
 template struct TranslationContainer<2>;

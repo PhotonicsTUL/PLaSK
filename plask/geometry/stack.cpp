@@ -155,6 +155,14 @@ void StackContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag
     //dest_xml_child_tag.attr(axes.getNameForTran(), aligners[child_index]->str());
 }
 
+template <int dim>
+shared_ptr<GeometryElement> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+    shared_ptr< StackContainer<dim> > result = make_shared< StackContainer<dim> >(this->getBaseHeight());
+    for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
+        result->addUnsafe(children_after_change[child_nr].first, *this->aligners[child_nr]);
+    return result;
+}
+
 template struct StackContainer<2>;
 template struct StackContainer<3>;
 
@@ -194,6 +202,13 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
     stackHeights.back() += delta;
     this->fireChildrenInserted(pos, pos+1);
     return PathHints::Hint(shared_from_this(), trans_geom);
+}
+
+shared_ptr<GeometryElement> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+    shared_ptr< ShelfContainer2D > result = make_shared< ShelfContainer2D >(this->getBaseHeight());
+    for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
+        result->addUnsafe(children_after_change[child_nr].first);
+    return result;
 }
 
 
@@ -305,6 +320,14 @@ template <int dim>
 void MultiStackContainer<dim>::writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const {
     StackContainer<dim>::writeXMLAttr(dest_xml_element, axes);
     dest_xml_element.attr(repeat_attr, repeat_count);
+}
+
+template <int dim>
+shared_ptr<GeometryElement> MultiStackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+    shared_ptr< MultiStackContainer<dim> > result = make_shared< MultiStackContainer<dim> >(this->repeat_count, this->getBaseHeight());
+    for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
+        result->addUnsafe(children_after_change[child_nr].first, this->getAlignerAt(child_nr));
+    return result;
 }
 
 shared_ptr<GeometryElement> read_StackContainer2D(GeometryReader& reader) {

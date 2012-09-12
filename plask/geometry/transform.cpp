@@ -29,7 +29,7 @@ void Translation<dim>::getPositionsToVec(const GeometryElement::Predicate& predi
 
 template <int dim>
 shared_ptr<const GeometryElement> Translation<dim>::changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation) const {
-    shared_ptr<const GeometryElement> result(this->shared_from_this());
+    shared_ptr<GeometryElement> result(const_pointer_cast<GeometryElement>(this->shared_from_this()));
     if (changer.apply(result, translation) || !this->hasChild()) return result;
     Vec<3, double> returned_translation(0.0, 0.0, 0.0);
     shared_ptr<const GeometryElement> new_child = this->getChild()->changedVersion(changer, &returned_translation);

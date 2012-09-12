@@ -20,12 +20,12 @@ GeometryElement::CompositeChanger::~CompositeChanger() {
     for (auto c: changers) delete c;
 }
 
-bool GeometryElement::CompositeChanger::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
+bool GeometryElement::CompositeChanger::apply(shared_ptr<GeometryElement> &to_change, Vec<3, double>* translation) const {
     for (auto c: changers) if (c->apply(to_change, translation)) return true;
     return false;
 }
 
-bool GeometryElement::ReplaceChanger::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
+bool GeometryElement::ReplaceChanger::apply(shared_ptr<GeometryElement> &to_change, Vec<3, double>* translation) const {
     if (to_change != from) return false;
     to_change = to;
     if (translation) *translation = this->translation;
@@ -37,9 +37,9 @@ GeometryElement::ToBlockChanger::ToBlockChanger(shared_ptr<const GeometryElement
     to = changeToBlock(material, from, translation);
 }
 
-bool GeometryElement::DeleteChanger::apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation) const {
+bool GeometryElement::DeleteChanger::apply(shared_ptr<GeometryElement>& to_change, Vec<3, double>* translation) const {
     if (to_change != toDel) return false;
-    to_change = shared_ptr<const GeometryElement>();
+    to_change = shared_ptr<GeometryElement>();
     return true;
 }
 

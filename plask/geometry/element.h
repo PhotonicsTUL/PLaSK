@@ -86,7 +86,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          */
         unsigned char flagsForParentWithChildrenWasChangedInformation() const {
             unsigned char result = flagsForParent();
-            if (hasAnyFlag(CHILDREN_INSERT | CHILDREN_REMOVE | CHILDREN_GENERIC)) result |= CHILDREN_GENERIC;
+            if (hasAnyFlag(CHILDREN_INSERT | CHILDREN_REMOVE)) result |= CHILDREN_GENERIC;
             return result;
         }
 
@@ -242,15 +242,16 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     struct Changer {
 
+        /// Virtual destructor. Do nothing.
         virtual ~Changer() {}
 
         /**
          * Try to apply changes.
          * @param[in,out] to_change pointer to element which eventualy will be changed (in such case pointer after call can point to another geometry element)
-         * @param[out] translation optional, extra translation for element after change (in case of 2d object caller reads only \a tran and \a up components of this vector)
+         * @param[out] translation optional, extra translation for element after change (in case of 2d object caller reads only @a tran and @a up components of this vector)
          * @return @c true only if something was changed, @c false if nothing was changed (in such case changer doesn't change arguments)
          */
-        virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const = 0;
+        virtual bool apply(shared_ptr<GeometryElement>& to_change, Vec<3, double>* translation = 0) const = 0;
 
     };
 
@@ -293,7 +294,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
         /// Delete all held changers (using delete operator).
         ~CompositeChanger();
 
-        virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
+        virtual bool apply(shared_ptr<GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
 
     };
 
@@ -302,7 +303,8 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
      */
     struct ReplaceChanger: public Changer {
 
-        shared_ptr<const GeometryElement> from, to;
+        shared_ptr<const GeometryElement> from;
+        shared_ptr<GeometryElement> to;
 
         /// Translation to return by apply.
         Vec<3, double> translation;
@@ -314,7 +316,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
          * Construct changer which change @p from to @p to and return given @p translation.
          * @param from, to, translation changer parameters
          */
-        ReplaceChanger(shared_ptr<const GeometryElement> from, shared_ptr<const GeometryElement> to, Vec<3, double> translation)
+        ReplaceChanger(shared_ptr<const GeometryElement> from, shared_ptr<GeometryElement> to, Vec<3, double> translation)
             : from(from), to(to), translation(translation) {}
 
         /**
@@ -327,7 +329,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
             this->to = calc_replace(this->from);
         }
 
-        virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
+        virtual bool apply(shared_ptr<GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
 
     };
 
@@ -347,7 +349,7 @@ struct GeometryElement: public enable_shared_from_this<GeometryElement> {
 
         DeleteChanger(shared_ptr<const GeometryElement> toDel): toDel(toDel) {}
 
-        virtual bool apply(shared_ptr<const GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
+        virtual bool apply(shared_ptr<GeometryElement>& to_change, Vec<3, double>* translation = 0) const;
 
     };
 
