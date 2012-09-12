@@ -143,7 +143,7 @@ void Manager::loadGeometry(GeometryReader& greader) {
         roots.push_back(greader.readGeometry());
 }
 
-void Manager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
+void Manager::loadMaterials(XMLReader& reader, const MaterialsSource& materialsSource)
 {
     throw NotImplemented("Loading materials from C++ not implemented");
 }
@@ -211,10 +211,10 @@ void Manager::loadScript(XMLReader& reader)
 }
 
 
-static inline MaterialsDB& getMaterialsDBfromSource(const Manager::MaterialsSource& materialsSource) {
+/*static inline MaterialsDB& getMaterialsDBfromSource(const Manager::MaterialsSource& materialsSource) {
     const GeometryReader::MaterialsDBSource* src = materialsSource.target<const GeometryReader::MaterialsDBSource>();
     return src ? const_cast<MaterialsDB&>(src->materialsDB) : MaterialsDB::getDefault();
-}
+}*/
 
 void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
                    const LoadFunCallbackT& load_from,
@@ -225,7 +225,7 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
 
     if (reader.getNodeName() == TAG_NAME_MATERIALS) {
         if (section_filter(TAG_NAME_MATERIALS)) {
-            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadMaterials(reader, getMaterialsDBfromSource(materialsSource));
+            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadMaterials(reader, materialsSource);
         } else
             reader.gotoEndOfCurrentTag();
         if (!reader.requireTagOrEnd()) return;
@@ -273,6 +273,11 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
             reader.gotoEndOfCurrentTag();
         if (!reader.requireTagOrEnd()) return;
     }
+}
+
+const MaterialsDB *Manager::getMaterialsDBfromSource(const Manager::MaterialsSource &materialsSource) {
+    const GeometryReader::MaterialsDBSource* src = materialsSource.target<const GeometryReader::MaterialsDBSource>();
+    return src ? &src->materialsDB : nullptr;
 }
 
 

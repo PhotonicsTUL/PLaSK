@@ -239,10 +239,11 @@ private:
 
     /**
      * Load materials using geometry reader.
-     * \param reader reader to read from, should point to @c \<materials> tag, after read it will be point to @c \</materials> tag
-     * \param materialsDB materials database
+     * @param reader reader to read from, should point to @c \<materials> tag, after read it will be point to @c \</materials> tag
+     * @param materialsSource materials source, which was passed to load method
+     *  (in case of using material database, you can convert @p materialsSource back to MaterialsDB using Manager::getMaterialsDBfromSource)
      */
-    virtual void loadMaterials(XMLReader& reader, MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    virtual void loadMaterials(XMLReader& reader, const MaterialsSource& materialsSource);
 
     /**
      * Load meshes and mesh generators using reader.
@@ -415,6 +416,13 @@ private:
               const LoadFunCallbackT& load_from_cb = &disallowExternalSources) {
         load(XMLreader, materialsSource, load_from_cb, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
     }
+
+    /**
+     * Get material database wrapped by @p materialsSource.
+     * @param materialsSource source of materials, which can wrap material database
+     * @return pointer to wrapped material database or @c nullptr if materialsSource is not constructed using material database
+     */
+    static const MaterialsDB* getMaterialsDBfromSource(const Manager::MaterialsSource& materialsSource);
 };
 
 // Specialization for most types

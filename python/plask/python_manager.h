@@ -20,7 +20,7 @@ struct PythonManager: public Manager {
 
     virtual void loadConnects(XMLReader& reader);
 
-    virtual void loadMaterials(XMLReader& reader, MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    virtual void loadMaterials(XMLReader& reader, const Manager::MaterialsSource& materialsSource);
 
     static void export_dict(py::object self, py::dict dict);
 
