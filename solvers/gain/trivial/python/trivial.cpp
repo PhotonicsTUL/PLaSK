@@ -19,10 +19,10 @@ template <typename GeometryT>
 static void registerStepProfile(const std::string& variant, const std::string& full_variant) {
     CLASS(StepProfileGain<GeometryT>, ("StepProfileGain"+variant).c_str(),
         ("Step-profile gain for "+full_variant+" geometry.").c_str())
-        __solver__.def("setElement", StepProfile_setElement<GeometryT>, "Set element on which there is a gain", (py::arg("element"), py::arg("path")=py::object()));
+        solver.def("setElement", StepProfile_setElement<GeometryT>, "Set element on which there is a gain", (py::arg("element"), py::arg("path")=py::object()));
         RW_PROPERTY(gain, getGain, setGain, "Gain value [1/cm]");
         PROVIDER(outGain, "Gain distribution provider");
-        py::scope().attr(("StepProfile"+variant).c_str()) = __solver__;
+        py::scope().attr(("StepProfile"+variant).c_str()) = solver;
 }
 
 BOOST_PYTHON_MODULE(trivial)

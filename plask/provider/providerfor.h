@@ -58,10 +58,15 @@ template <PropertyType _propertyType, typename _ValueType, typename... _ExtraPar
 struct Property {
     /// Type of property.
     static const PropertyType propertyType = _propertyType;
+
     /// Type of provided value.
     typedef _ValueType ValueType;
 
+    /// Name of the property
     static constexpr const char* NAME = PropertyTypeToProviderName<_propertyType>::value;
+
+    /// Return default value of the property (usually zero)
+    static inline ValueType getDefaultValue() { return ValueType(); }
 
     typedef VariadicTemplateTypesHolder<_ExtraParams...> ExtraParams;
 };
@@ -389,20 +394,26 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplat
             return ProvidedValueType(dst_mesh.size(), value);
         }
     };
-    
+
     /**
      * Provider which allows to define value in each geometry place pointed as geometry element.
      *
-     * It ignors extra parameters.
+     * It ignores extra parameters.
      */
-    struct ConstByPlace: public ProviderFor<PropertyT, SpaceT>, public ConstByPlaceProviderImpl<SpaceT::DIMS, ValueT> {
-        
+    struct ConstByPlace: public ConstByPlaceProviderImpl<PropertyT, SpaceT> {
+
+        /**
+         * Create the provider
+         * \param root root geometry
+         * \param default_value default value returned in all not-specified places
+         */
+        ConstByPlace(weak_ptr<const GeometryElementD<SpaceT::DIMS>> root=weak_ptr<const GeometryElementD<SpaceT::DIMS>>(), const ValueT& default_value=ValueT()):
+            ConstByPlaceProviderImpl<PropertyT, SpaceT>(root, default_value) {}
+
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams...) const {
             return get(dst_mesh);
         }
-        
     };
-
 };
 
 /**
@@ -596,18 +607,25 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
             return ProvidedValueType(dst_mesh.size(), value);
         }
     };
-    
+
     /**
      * Provider which allows to define value in each geometry place pointed as geometry element.
      *
      * It ignors extra parameters.
      */
-    struct ConstByPlace: public ProviderFor<PropertyT, SpaceT>, public ConstByPlaceProviderImpl<SpaceT::DIMS, ValueT> {
-        
+    struct ConstByPlace: public ConstByPlaceProviderImpl<PropertyT, SpaceT> {
+
+        /**
+         * Create the provider
+         * \param root root geometry
+         * \param default_value default value returned in all not-specified places
+         */
+        ConstByPlace(weak_ptr<const GeometryElementD<SpaceT::DIMS>> root=weak_ptr<const GeometryElementD<SpaceT::DIMS>>(), const ValueT& default_value=ValueT()):
+            ConstByPlaceProviderImpl<PropertyT, SpaceT>(root, default_value) {}
+
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
             return get(dst_mesh);
         }
-        
     };
 
 };

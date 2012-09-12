@@ -23,6 +23,7 @@ namespace boost { namespace python {
 #include <plask/math.h>
 #include <plask/vec.h>
 #include <plask/axes.h>
+#include <plask/geometry/space.h>
 
 #include "python_enum.h"
 
@@ -73,6 +74,7 @@ struct IOError: public Exception {
     IOError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
 };
 
+
 // ----------------------------------------------------------------------------------------------------------------------
 // String functions for Python3
 #if PY_VERSION_HEX >= 0x03000000
@@ -82,12 +84,14 @@ struct IOError: public Exception {
     inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
 #endif
 
+
 // ----------------------------------------------------------------------------------------------------------------------
 // Compare shared pointes
 template <typename T>
 bool __is__(const shared_ptr<T>& a, const shared_ptr<T>& b) {
     return a == b;
 }
+
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Format complex numbers in Python way
@@ -96,6 +100,7 @@ inline std::string pyformat(const T& v) { std::stringstream s; s << v; return s.
 
 template <>
 inline std::string pyformat<dcomplex>(const dcomplex& v) { return format("(%g%+gj)", real(v), imag(v)); }
+
 
 // ----------------------------------------------------------------------------------------------------------------------
 // PLaSK str function for Python objects
@@ -115,6 +120,7 @@ namespace detail {
     template <> constexpr inline int typenum<Vec<3,double>>() { return NPY_DOUBLE; }
     template <> constexpr inline int typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
 }
+
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Get dtype for data
@@ -156,6 +162,18 @@ static inline py::class_< std::vector<T>, shared_ptr<std::vector<T>> > register_
     ;
 }
 
+
+// ----------------------------------------------------------------------------------------------------------------------
+// Get space names
+template <typename SpaceT> static inline std::string spaceName();
+template <> inline std::string spaceName<Geometry2DCartesian>() { return "Cartesian2D"; }
+template <> inline std::string spaceName<Geometry2DCylindrical>() { return "Cylindrical2D"; }
+template <> inline std::string spaceName<Geometry3D>() { return "Cartesian3D"; }
+
+template <typename SpaceT> static inline std::string spaceSuffix();
+template <> inline std::string spaceSuffix<Geometry2DCartesian>() { return "2D"; }
+template <> inline std::string spaceSuffix<Geometry2DCylindrical>() { return "Cyl"; }
+template <> inline std::string spaceSuffix<Geometry3D>() { return "3D"; }
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Config

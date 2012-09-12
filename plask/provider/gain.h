@@ -25,6 +25,7 @@ namespace plask {
  */
 struct Gain : public FieldProperty<double, double> {
     static constexpr const char* NAME = "material gain";
+    static inline double getDefaultValue() { return NAN; }
 };
 
 

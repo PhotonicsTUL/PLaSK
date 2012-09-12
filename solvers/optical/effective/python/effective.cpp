@@ -121,8 +121,8 @@ BOOST_PYTHON_MODULE(effective)
     {CLASS(EffectiveIndex2DSolver, "EffectiveIndex2D",
         "Calculate optical modes and optical field distribution using the effective index\n"
         "method in two-dimensional Cartesian space.")
-        __solver__.add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, &EffectiveIndex2DSolver_setSymmetry, "Symmetry of the searched modes");
-        __solver__.add_property("polarization", &EffectiveIndex2DSolver_getPolarization, &EffectiveIndex2DSolver_setPolarization, "Polarization of the searched modes");
+        solver.add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, &EffectiveIndex2DSolver_setSymmetry, "Symmetry of the searched modes");
+        solver.add_property("polarization", &EffectiveIndex2DSolver_getPolarization, &EffectiveIndex2DSolver_setPolarization, "Polarization of the searched modes");
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
@@ -132,9 +132,9 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
         METHOD(setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by findModes.", "neff");
-        __solver__.def("getStripeDeterminant", &EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
+        solver.def("getStripeDeterminant", &EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "neff"));
-        __solver__.def("getDeterminant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff")));
+        solver.def("getDeterminant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff")));
         RECEIVER(inWavelength, "Wavelength of the light");
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain in the active region");
@@ -147,7 +147,7 @@ BOOST_PYTHON_MODULE(effective)
         "method in two-dimensional cylindrical space.")
         RW_FIELD(l, "Radial mode number");
         RW_FIELD(k0, "Reference normalized frequency");
-        __solver__.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_setLambda0, "Reference wavelength");
+        solver.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_setLambda0, "Reference wavelength");
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
@@ -157,10 +157,10 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
         METHOD(setMode, "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by findModes.", "lam");
-        __solver__.def("getStripeDeterminantV", &EffectiveFrequencyCylSolver_getStripeDeterminantV, "Get single stripe modal determinant for debugging purposes",
+        solver.def("getStripeDeterminantV", &EffectiveFrequencyCylSolver_getStripeDeterminantV, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "veff"));
-        __solver__.def("getDeterminantV", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes", py::arg("v"));
-        __solver__.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", py::arg("lam"));
+        solver.def("getDeterminantV", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes", py::arg("v"));
+        solver.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", py::arg("lam"));
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain distribution in the active region");
         PROVIDER(outWavelength, "Wavelength of the last computed mode");

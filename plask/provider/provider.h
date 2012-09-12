@@ -192,7 +192,7 @@ struct Provider {
     /// Set of added (registered) listeners. This provider can call methods of listeners included in this set.
     std::set<Listener*> listeners;
 
-    /// Call onDisconnect for all lighteners in listeners set.
+    /// Call onDisconnect for all listeners in listeners set.
     virtual ~Provider() {
         for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
             (*i)->onDisconnect(this);

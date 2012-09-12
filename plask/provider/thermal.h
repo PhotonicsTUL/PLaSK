@@ -47,14 +47,15 @@ namespace plask {
  * PSolver1 m1;
  * PSolver2 m2;
  * RSolver r;
- * r.inTemperature << m1.outTemperature;   //connect
- * r.inTemperature << m2.outTemperature;   //change data source of r from m1 to m2
+ * r.inTemperature << m1.outTemperature;   // connect
+ * r.inTemperature << m2.outTemperature;   // change data source of r from m1 to m2
  * @endcode
  *
  * @see @ref solvers_writing; @ref providers; plask::ProviderFor
  */
 struct Temperature: public ScalarFieldProperty {
     static constexpr const char* NAME = "temperature"; // mind lower case here
+    static inline double getDefaultValue() { return 300.; }
 };
 
 struct HeatFlux2D: public VectorFieldProperty<2> {
@@ -68,12 +69,12 @@ struct HeatFlux3D: public VectorFieldProperty<3> {
 //TODO in gcc 4.7 can be done by new typedefs:
 
 /*
- * Provides temperature fields (temperature in points describe by given mesh).
+ * Provides temperature fields (temperature in points described by given mesh).
  */
 //typedef ProviderFor<Temperature> TemperatureProvider;
 
 /*
- * Receive temperature fields (temperature in points describe by given mesh).
+ * Receive temperature fields (temperature in points described by given mesh).
  */
 //typedef ReceiverFor<Temperature> TemperatureReceiver;
 

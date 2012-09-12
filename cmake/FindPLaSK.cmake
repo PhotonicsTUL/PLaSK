@@ -93,8 +93,7 @@ macro(make_default)
         if(WIN32)
             set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                                   RUNTIME_OUTPUT_DIRECTORY "${PLASK_SOLVER_PATH}"
-                                  OUTPUT_NAME "${SOLVER_NAME}.pyd"  # again workaround CMake/GCC bug with creating import library
-                                  SUFFIX "")
+                                  SUFFIX ".pyd")
             install(TARGETS ${PYTHON_TARGET_NAME} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
                                                   LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
         else()

@@ -139,14 +139,14 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
 // Here are some useful defines.
 // Note that if you use them to define methods, properties etc, you should also use MODULE
-#define CLASS(cls, name, help) typedef cls __Class__; ExportSolver<cls> __solver__(name, help, py::init<std::string>(py::arg("name")=""));
-#define METHOD(method, help, ...) __solver__.def(BOOST_PP_STRINGIZE(method), &__Class__::method, help, (py::arg("arg1") , ## __VA_ARGS__))
-#define RO_PROPERTY(name, get, help) __solver__.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, help)
-#define RW_PROPERTY(name, get, set, help) __solver__.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, &__Class__::set, help)
-#define RO_FIELD(name, help) __solver__.def_readonly(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
-#define RW_FIELD(name, help) __solver__.def_readwrite(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
-#define PROVIDER(name, help) __solver__.add_provider(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
-#define RECEIVER(name, help) __solver__.add_receiver(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
+#define CLASS(cls, name, help) typedef cls __Class__; ExportSolver<cls> solver(name, help, py::init<std::string>(py::arg("name")=""));
+#define METHOD(method, help, ...) solver.def(BOOST_PP_STRINGIZE(method), &__Class__::method, help, (py::arg("arg1") , ## __VA_ARGS__))
+#define RO_PROPERTY(name, get, help) solver.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, help)
+#define RW_PROPERTY(name, get, set, help) solver.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, &__Class__::set, help)
+#define RO_FIELD(name, help) solver.def_readonly(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
+#define RW_FIELD(name, help) solver.def_readwrite(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
+#define PROVIDER(name, help) solver.add_provider(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
+#define RECEIVER(name, help) solver.add_receiver(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 
 
 using py::arg; // for more convenient specification of default arguments
