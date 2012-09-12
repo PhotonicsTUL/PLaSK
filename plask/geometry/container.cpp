@@ -131,7 +131,7 @@ shared_ptr<const GeometryElement> GeometryElementContainer<dim>::changedVersion(
         shared_ptr<GeometryElement> new_child = child_tran->getChild();
         Vec<3, double> trans_from_child;
         if (changer.apply(new_child, &trans_from_child)) were_changes = true;
-        children_after_change.emplace_back(static_pointer_cast<ChildType>(new_child), trans_from_child);
+        children_after_change.emplace_back(dynamic_pointer_cast<ChildType>(new_child), trans_from_child);
     }
 
     if (translation) *translation = vec(0.0, 0.0, 0.0); // we can't recommend nothing special
