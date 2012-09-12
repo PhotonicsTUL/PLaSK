@@ -29,7 +29,7 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
             : element(element), hints(hints) {}
 
         bool operator<(const Place& other) const {
-            return (element < other.element) || ( !(other.element < element) && (hints < other.hints) );
+            return (element < other.element) || ( !(other.element < element) && (other.hints < hints) ); // most probably empty hints will be larger
         }
     };
 
@@ -72,6 +72,7 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
                         assigned = true;
                         break;
                     }
+                    if (assigned) break;
                 }
             }
             if (!assigned) result[i] = default_value;

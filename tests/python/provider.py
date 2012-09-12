@@ -61,12 +61,9 @@ class ReceiverTest(unittest.TestCase):
         self.assertEqual( list(self.solver.inTemperature(grid)), [100., 300., 100.])
         self.assertFalse( self.solver.inTemperature.changed )
 
+        del step[r1]
         step[r2] = 400.
         step[r1, h] = 200.
-        self.assertTrue( self.solver.inTemperature.changed )
-        self.assertEqual( list(self.solver.inTemperature(grid)), [200., 400., 100.])
-
-        del step[r1]
         self.assertTrue( self.solver.inTemperature.changed )
         self.assertEqual( list(self.solver.inTemperature(grid)), [200., 400., 300.])
 

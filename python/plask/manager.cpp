@@ -284,8 +284,11 @@ static void register_manager_dict(const std::string name) {
     py::object __getattr__ = c.attr("__getattr__");
     c.attr("__getattr__") = c.attr("__getattribute__");
     c.attr("__getattribute__") = __getattr__;
+    py::delattr(py::scope(), (name+"Dict").c_str());
 
-    py::class_<detail::dict_iterator<T>>((name+"DictIterator").c_str(), py::no_init)
+    py::scope scope = c;
+
+    py::class_<detail::dict_iterator<T>>("Iterator", py::no_init)
         .def("__iter__", &detail::dict_iterator<T>::__iter__, py::return_self<>())
         .def(NEXT, &detail::dict_iterator<T>::next)
     ;
@@ -318,7 +321,7 @@ void register_manager() {
 
     register_manager_dict<shared_ptr<GeometryElement>>("GeometryElements");
     register_manager_dict<shared_ptr<Geometry>>("Geometries");
-    register_manager_dict<PathHints>("PathHintses");
+    register_manager_dict<PathHints>("PathHints");
     register_manager_dict<shared_ptr<Mesh>>("Meshes");
     register_manager_dict<shared_ptr<MeshGenerator>>("MeshGenerators");
     register_manager_dict<shared_ptr<Solver>>("Solvers");
