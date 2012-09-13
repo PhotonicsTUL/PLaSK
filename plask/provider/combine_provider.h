@@ -29,13 +29,22 @@ protected:
     
 public:
     
+    /// Type of iterator over BaseProviderClass
     typedef boost::indirect_iterator<typename std::set<BaseProviderClass*>::iterator> iterator;
+    
+    /// Type of const iterator over BaseProviderClass
     typedef boost::indirect_iterator<typename std::set<BaseProviderClass*>::const_iterator> const_iterator;
     
+    /// @return begin iterator over BaseProviderClass
     iterator begin() { return providers.begin(); }
+    
+    /// @return past-the-end iterator over BaseProviderClass
     iterator end() { return providers.end(); }
     
+    /// @return const begin iterator over BaseProviderClass
     const_iterator begin() const { return providers.begin(); }
+    
+    /// @return const past-the-end iterator over BaseProviderClass
     const_iterator end() const { return providers.end(); }
     
     /// BaseProviderClass::Listener implementation, call fireChanged()
@@ -84,8 +93,23 @@ public:
         for (auto p: providers) disconnect(p);
     }
     
+    /**
+     * Check if providers set of this is empty.
+     * @return @c true if this not includes any provider
+     */
+    bool empty() const { return providers.empty(); }
+    
+    /**
+     * Get number of providers in set.
+     * @return number of providers
+     */
+    std::size_t size() const { return providers.size(); }
+    
+    /**
+     * Throw exception if providers set of this is empty.
+     */
     void ensureHasProviders() {
-        if (providers.empty()) throw Exception("Combinate \"%1%\" provider has empty set of providers and some are required.", BaseProviderClass::NAME);
+        if (providers.empty()) throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", BaseProviderClass::NAME);
     }
     
 };
