@@ -8,6 +8,8 @@
 This file includes templates and base classes for providers which combinates (for example: sum) values from other providers.
 */
 
+#include <boost/iterator/indirect_iterator.hpp>
+
 namespace plask {
 
 /**
@@ -27,8 +29,8 @@ protected:
     
 public:
     
-    typedef typename std::set<BaseProviderClass*>::iterator iterator;
-    typedef typename std::set<BaseProviderClass*>::const_iterator const_iterator;
+    typedef boost::indirect_iterator<typename std::set<BaseProviderClass*>::iterator> iterator;
+    typedef boost::indirect_iterator<typename std::set<BaseProviderClass*>::const_iterator> const_iterator;
     
     iterator begin() { return providers.begin(); }
     iterator end() { return providers.end(); }
@@ -97,12 +99,12 @@ struct SumOnMeshProviderWithInterpolation: public CombineProviderBase<BaseClass>
     virtual DataVector<ValueT> operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         this->ensureHasProviders();
         auto p = this->begin();
-        DataVector<ValueT> result = (**p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        DataVector<ValueT> result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         ++p;
         if (p == this->end()) return result;    //has one element
         result = result.claim();    //ensure has own memory
         do {
-            result += (**p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            result += (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
             ++p;
         } while (p != this->end());
         return result;
