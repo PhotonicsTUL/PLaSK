@@ -83,12 +83,12 @@ struct SumOnMeshProviderWithInterpolation: public CombinateProviderBase<BaseClas
         auto p = this->providers.begin();
         DataVector<ValueT> result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         ++p;
-        if (p == providers.end()) return result;    //has one element
+        if (p == this->providers.end()) return result;    //has one element
         result = result.claim();    //ensure has own memory
         do {
             result += (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
             ++p;
-        } while (p != providers.end());
+        } while (p != this->providers.end());
         return result;
     }
 };
