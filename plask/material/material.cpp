@@ -11,15 +11,15 @@ namespace plask {
 
 inline std::pair<std::string, int> el_g(const std::string& g, int p) { return std::pair<std::string, int>(g, p); }
 
-int elementGroup(const std::string& elementName) {
-    static const std::map<std::string, int> elementGroups =
+int objectGroup(const std::string& objectName) {
+    static const std::map<std::string, int> objectGroups =
         { el_g("Al", 3), el_g("Ga", 3), el_g("In", 3),
           el_g("N", 5), el_g("P", 5), el_g("As", 5) };
-    return map_find(elementGroups, elementName, 0);
+    return map_find(objectGroups, objectName, 0);
 }
 
-Material::StringBuilder& Material::StringBuilder::operator()(const std::string& elementName, double ammount) {
-    str << elementName;
+Material::StringBuilder& Material::StringBuilder::operator()(const std::string& objectName, double ammount) {
+    str << objectName;
     str << '(';
     str << ammount;
     str << ')';
@@ -129,7 +129,7 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
     for (auto i = begin; i != end; ++i) {
         if (std::isnan(i->second)) {
             if (no_info != end)
-                throw plask::MaterialParseException("more than one element in group (%1% in periodic table) have no information about composition amount.", group_nr);
+                throw plask::MaterialParseException("more than one object in group (%1% in periodic table) have no information about composition amount.", group_nr);
             else
                 no_info = i;
         } else {
@@ -150,8 +150,8 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
 Material::Composition Material::completeComposition(const Composition &composition) {
     std::map<int, std::vector< std::pair<std::string, double> > > by_group;
     for (auto c: composition) {
-        int group = elementGroup(c.first);
-        if (group == 0) throw plask::MaterialParseException("wrong element name \"%1%\".", c.first);
+        int group = objectGroup(c.first);
+        if (group == 0) throw plask::MaterialParseException("wrong object name \"%1%\".", c.first);
         by_group[group].push_back(c);
     }
     Material::Composition result;
@@ -162,7 +162,7 @@ Material::Composition Material::completeComposition(const Composition &compositi
     return result;
 }
 
-const char* getElementEnd(const char* begin, const char* end) {
+const char* getObjectEnd(const char* begin, const char* end) {
     if (!('A' <= *begin && *begin <= 'Z')) return begin;
     do { ++begin; } while (begin != end && 'a' <= *begin && *begin <= 'z');
     return begin;
@@ -182,19 +182,19 @@ double toDouble(const std::string& s) {
     }
 }
 
-std::pair<std::string, double> Material::getFirstCompositionElement(const char*& begin, const char* end) {
+std::pair<std::string, double> Material::getFirstCompositionObject(const char*& begin, const char* end) {
     std::pair<std::string, double> result;
-    const char* comp_end = getElementEnd(begin, end);
+    const char* comp_end = getObjectEnd(begin, end);
     if (comp_end == begin)
-        throw MaterialParseException(std::string("expected element but found character: ") + *begin);
+        throw MaterialParseException(std::string("expected object but found character: ") + *begin);
     result.first = std::string(begin, comp_end);
     const char* amount_end = getAmountEnd(comp_end, end);
-    if (amount_end == comp_end) {       //no amount info for this element
+    if (amount_end == comp_end) {       //no amount info for this object
         result.second = std::numeric_limits<double>::quiet_NaN();
         begin = amount_end;
     } else {
         if (amount_end == end)
-            throw MaterialParseException("unexpected end of input while reading amount of element. Couldn't find ')'");
+            throw MaterialParseException("unexpected end of input while reading amount of object. Couldn't find ')'");
         result.second = toDouble(std::string(comp_end+1, amount_end));
         begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
     }
@@ -208,11 +208,11 @@ Material::Composition Material::parseComposition(const char* begin, const char* 
     std::set<int> groups;
     int prev_g = -1;
     while (begin != end) {
-        auto c = getFirstCompositionElement(begin, end);
-        int g = elementGroup(c.first);
+        auto c = getFirstCompositionObject(begin, end);
+        int g = objectGroup(c.first);
         if (g != prev_g) {
             if (!groups.insert(g).second)
-                throw MaterialParseException("incorrect elements order in \"%1%\".", fullname);
+                throw MaterialParseException("incorrect objects order in \"%1%\".", fullname);
             prev_g = g;
         }
         result.insert(c);
@@ -226,7 +226,7 @@ Material::Composition Material::parseComposition(const std::string& str) {
 }
 
 void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, Material::DopingAmountType& doping_amount_type, double& doping_amount) {
-    const char* name_end = getElementEnd(begin, end);
+    const char* name_end = getObjectEnd(begin, end);
     if (name_end == begin)
          throw MaterialParseException("no dopant name");
     dopant_elem_name.assign(begin, name_end);
@@ -254,11 +254,11 @@ void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_n
     parseDopant(c, c + dopant.size(), dopant_elem_name, doping_amount_type, doping_amount);
 }
 
-std::vector<std::string> Material::parseElementsNames(const char *begin, const char *end) {
+std::vector<std::string> Material::parseObjectsNames(const char *begin, const char *end) {
     const char* full_name = begin;  //store for error msg. only
     std::vector<std::string> elemenNames;
     do {
-        const char* new_begin = getElementEnd(begin, end);
+        const char* new_begin = getObjectEnd(begin, end);
         if (new_begin == begin) throw MaterialParseException("ill-formated name \"%1%\".", std::string(full_name, end));
         elemenNames.push_back(std::string(begin, new_begin));
         begin = new_begin;
@@ -266,9 +266,9 @@ std::vector<std::string> Material::parseElementsNames(const char *begin, const c
     return elemenNames;
 }
 
-std::vector<std::string> Material::parseElementsNames(const std::string &allNames) {
+std::vector<std::string> Material::parseObjectsNames(const std::string &allNames) {
     const char* c = allNames.c_str();
-    return parseElementsNames(c, c + allNames.size());
+    return parseObjectsNames(c, c + allNames.size());
 }
 
 //------------ Different material kinds -------------------------

@@ -27,7 +27,7 @@ shared_ptr<Material> Extrusion::getMaterial(const DVec& p) const {
     return canBeInside(p) ? getChild()->getMaterial(childVec(p)) : shared_ptr<Material>();
 }
 
-void Extrusion::getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+void Extrusion::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
         return;
@@ -37,28 +37,28 @@ void Extrusion::getBoundingBoxesToVec(const GeometryElement::Predicate& predicat
                    [&](const ChildBox& r) { return parentBox(r); });
 }
 
-std::vector< plask::shared_ptr< const plask::GeometryElement > > Extrusion::getLeafs() const {
+std::vector< plask::shared_ptr< const plask::GeometryObject > > Extrusion::getLeafs() const {
     return getChild()->getLeafs();
 }
 
-shared_ptr<GeometryElementTransform<3, Extrusion::ChildType>> Extrusion::shallowCopy() const {
-    return shared_ptr<GeometryElementTransform<3, Extrusion::ChildType>>(new Extrusion(getChild(), length));
+shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>> Extrusion::shallowCopy() const {
+    return shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>>(new Extrusion(getChild(), length));
 }
 
-GeometryElement::Subtree Extrusion::getPathsTo(const DVec& point) const {
-    return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
+GeometryObject::Subtree Extrusion::getPathsTo(const DVec& point) const {
+    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
 }
 
-void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const {
-    dest_xml_element.attr("length", length);
+void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    dest_xml_object.attr("length", length);
 }
 
-shared_ptr<GeometryElement> read_cartesianExtend(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_cartesianExtend(GeometryReader& reader) {
     double length = reader.source.requireAttribute<double>("length");
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     return make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(), length);
 }
 
-static GeometryReader::RegisterElementReader cartesianExtend2D_reader(Extrusion::NAME, read_cartesianExtend);
+static GeometryReader::RegisterObjectReader cartesianExtend2D_reader(Extrusion::NAME, read_cartesianExtend);
 
 }   // namespace plask

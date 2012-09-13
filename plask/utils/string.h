@@ -63,7 +63,7 @@ std::string removedChars(const std::string& str, const std::string& chars_to_rem
 /**
  * Split @p input to sequence of tokens. White spaces on beginning and ending of each token are removed.
  * @param input input string
- * @param pred a predicate to identify separators, this predicate is supposed to return @c true only if a given element is a separator
+ * @param pred a predicate to identify separators, this predicate is supposed to return @c true only if a given object is a separator
  * @param eCompress if it is set to boost::algorithm::token_compress_on, adjacent separators are merged together, otherwise, every two separators delimit a token.
  * @return sequence of token
  */

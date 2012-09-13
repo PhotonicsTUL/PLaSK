@@ -42,10 +42,10 @@ RectilinearMesh3D RectilinearMesh3D::getMidpointsMesh() const {
 }
 
 template <>
-void RectilinearMesh2D::writeXML(XMLElement& element) const {
-    element.attr("type", "rectilinear2d");
+void RectilinearMesh2D::writeXML(XMLElement& object) const {
+    object.attr("type", "rectilinear2d");
     for (size_t n = 0; n != 2; ++n) {
-        auto axis = element.addTag("axis"+boost::lexical_cast<std::string>(n));
+        auto axis = object.addTag("axis"+boost::lexical_cast<std::string>(n));
         axis.indent();
         for (auto x: this->axis(n)) {
             axis.writeText(x);
@@ -56,10 +56,10 @@ void RectilinearMesh2D::writeXML(XMLElement& element) const {
 }
 
 template <>
-void RectilinearMesh3D::writeXML(XMLElement& element) const {
-    element.attr("type", "rectilinear3d");
+void RectilinearMesh3D::writeXML(XMLElement& object) const {
+    object.attr("type", "rectilinear3d");
     for (size_t n = 0; n != 3; ++n) {
-        auto axis = element.addTag("axis"+boost::lexical_cast<std::string>(n));
+        auto axis = object.addTag("axis"+boost::lexical_cast<std::string>(n));
         axis.indent();
         for (auto x: this->axis(n)) {
             axis.writeText(x);

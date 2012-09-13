@@ -51,7 +51,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.assertEqual( self.solver1.id, "eff1:EffectiveIndex2D" )
 
         self.assertEqual( self.solver1.geometry, self.manager.geo.Space_1 )
-        self.assertEqual( self.solver2.geometry.child, self.manager.ele.Stack_2 )
+        self.assertEqual( self.solver2.geometry.child, self.manager.obj.Stack_2 )
 
         self.assertEqual( self.solver1.mesh, self.manager.msh.lin )
         self.assertEqual( self.solver2.mesh, self.manager.msg.div(self.manager.geo.Space_1.child) )

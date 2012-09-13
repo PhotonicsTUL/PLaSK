@@ -13,27 +13,27 @@ namespace plask {
  * @tparam growingDirection direction in which stack growing
  */
 template <int dim, int growingDirection = Primitive<dim>::DIRECTION_UP>
-struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
+struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryElementContainer<dim>::DVec DVec;
+    typedef typename GeometryObjectContainer<dim>::DVec DVec;
 
     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryElementContainer<dim>::Box Box;
+    typedef typename GeometryObjectContainer<dim>::Box Box;
 
     /// Type of this child.
-    typedef typename GeometryElementContainer<dim>::ChildType ChildType;
+    typedef typename GeometryObjectContainer<dim>::ChildType ChildType;
 
     /// Type of translation geometry elment in space of this.
-    typedef typename GeometryElementContainer<dim>::TranslationT TranslationT;
+    typedef typename GeometryObjectContainer<dim>::TranslationT TranslationT;
 
     /// Type of the vector holiding container children
-    typedef typename GeometryElementContainer<dim>::TranslationVector TranslationVector;
+    typedef typename GeometryObjectContainer<dim>::TranslationVector TranslationVector;
 
-    using GeometryElementContainer<dim>::children;
+    using GeometryObjectContainer<dim>::children;
 
     /**
-     * @param baseHeight height where should start first element
+     * @param baseHeight height where should start first object
      */
     explicit StackContainerBaseImpl(const double baseHeight = 0.0) {
         stackHeights.push_back(baseHeight);
@@ -46,7 +46,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     double getBaseHeight() const { return stackHeights.front(); }
 
     /**
-     * Set height where should start first element. Call changed.
+     * Set height where should start first object. Call changed.
      */
     void setBaseHeight(double newBaseHeight);
 
@@ -73,7 +73,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     virtual void removeAtUnsafe(std::size_t index);
 
     /// Called by child.change signal, update heights call this change
-    void onChildChanged(const GeometryElement::Event& evt) {
+    void onChildChanged(const GeometryObject::Event& evt) {
         if (evt.isResize()) updateAllHeights(); //TODO optimization: find evt source index and update size from this index to back
         this->fireChanged(evt.flagsForParent());
     }
@@ -81,16 +81,16 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
   protected:
 
     /**
-     * stackHeights[x] is current stack heights with x first elements in it (sums of heights of first x elements),
+     * stackHeights[x] is current stack heights with x first objects in it (sums of heights of first x objects),
      * stackHeights.size() = children.size() + 1 and stackHeights[0] is a base height (typically 0.0)
      */
     std::vector<double> stackHeights;
 
     /**
-     * Calculate element up translation and height of stack with element @a el.
-     * @param[in] elBoudingBox bounding box of geometry element (typically: for element which is or will be in stack)
+     * Calculate object up translation and height of stack with object @a el.
+     * @param[in] elBoudingBox bounding box of geometry object (typically: for object which is or will be in stack)
      * @param[in] prev_height height of stack under an @a el
-     * @param[out] el_translation up translation which should element @a el have
+     * @param[out] el_translation up translation which should object @a el have
      * @param[out] next_height height of stack with an @a el on top (up to @a el)
      */
     void calcHeight(const Box& elBoudingBox, double prev_height, double& el_translation, double& next_height) {
@@ -99,10 +99,10 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
     }
 
     /**
-     * Calculate element up translation and height of stack with element @a el.
-     * @param[in] el geometry element (typically: which is or will be in stack)
+     * Calculate object up translation and height of stack with object @a el.
+     * @param[in] el geometry object (typically: which is or will be in stack)
      * @param[in] prev_height height of stack under an @a el
-     * @param[out] el_translation up translation which should element @a el have
+     * @param[out] el_translation up translation which should object @a el have
      * @param[out] next_height height of stack with an @a el on top (up to @a el)
      */
     void calcHeight(const shared_ptr<ChildType>& el, double prev_height, double& el_translation, double& next_height) {
@@ -138,7 +138,7 @@ struct StackContainerBaseImpl: public GeometryElementContainer<dim> {
         updateAllHeights(first_child_index);
     }
 
-    void writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const;
+    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 };
 
 /**
@@ -169,7 +169,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
 
     /**
      * Add children to shelf top.
-     * @param el element to add
+     * @param el object to add
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
@@ -180,7 +180,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
 
     /**
      * Add child to shelf top.
-     * @param el element to add
+     * @param el object to add
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
@@ -189,7 +189,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
     /**
      * Add children to shelf top.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to add
+     * @param el object to add
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el);
@@ -197,7 +197,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
     /**
      * Insert children to shelf at given position.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to insert
+     * @param el object to insert
      * @param pos position where (before which) child should be inserted
      * @return path hint, see @ref geometry_paths
      */
@@ -205,7 +205,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
 
     /**
      * Insert children to shelf at given position.
-     * @param el element to insert
+     * @param el object to insert
      * @param pos position where (before which) child should be inserted
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
@@ -218,7 +218,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
     /**
      * Add children to shelf begin, move all other children right.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to add
+     * @param el object to add
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el) {
@@ -228,7 +228,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
     /**
      * Add children to shelf begin, move all other children right.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to add
+     * @param el object to add
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
@@ -237,7 +237,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
         return push_front_Unsafe(el);
     }
 
-    virtual shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
 };
 
 
@@ -271,9 +271,9 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     std::vector< std::unique_ptr<Aligner> > aligners;
 
     /**
-     * Get translation element over given element @p el.
-     * @param el element to wrap
-     * @param aligner aligner for element
+     * Get translation object over given object @p el.
+     * @param el object to wrap
+     * @param aligner aligner for object
      * @param up_trans translation in growing direction
      * @param elBB bouding box of @p el
      * @return translation over @p el
@@ -287,9 +287,9 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     }
 
     /**
-     * Get translation element over given element @p el.
-     * @param el element to wrap
-     * @param aligner aligner for element
+     * Get translation object over given object @p el.
+     * @param el object to wrap
+     * @param aligner aligner for object
      * @param up_trans translation in growing direction
      * @return translation over @p el
      */
@@ -303,7 +303,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
   public:
 
     /**
-     * @param baseHeight height where the first element should start
+     * @param baseHeight height where the first object should start
      */
     explicit StackContainer(const double baseHeight = 0.0): StackContainerBaseImpl<dim>(baseHeight) {}
 
@@ -312,18 +312,18 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     /**
      * Insert children to stack at given position.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to insert
+     * @param el object to insert
      * @param pos position where (before which) child should be inserted
-     * @param aligner aligner which will be used to calculate horizontal translation of inserted element
+     * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner());
 
     /**
      * Insert children to stack at given position.
-     * @param el element to insert
+     * @param el object to insert
      * @param pos position where (before which) child should be inserted
-     * @param aligner aligner which will be used to calculate horizontal translation of inserted element
+     * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
@@ -335,8 +335,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     /**
      * Add children to stack top.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to add
-     * @param aligner aligner which will be used to calculate horizontal translation of inserted element
+     * @param el object to add
+     * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
@@ -354,8 +354,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
     /**
      * Add children to stack top.
-     * @param el element to add
-     * @param aligner aligner which will be used to calculate horizontal translation of inserted element
+     * @param el object to add
+     * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
@@ -366,8 +366,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
     /**
      * Add child to stack top.
-     * @param el element to add
-     * @param aligner aligner for horizontal translation of element
+     * @param el object to add
+     * @param aligner aligner for horizontal translation of object
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
@@ -376,8 +376,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     /**
      * Add children to stack bottom, move all other children up.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el element to add
-     * @param aligner aligner which describe horizontal translation of added element
+     * @param el object to add
+     * @param aligner aligner which describe horizontal translation of added object
      * @return path hint, see @ref geometry_paths
      */
     PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
@@ -386,8 +386,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
     /**
      * Add child to stack bottom, move all other children up.
-     * @param el element to add
-     * @param aligner aligner which describe horizontal translation of element
+     * @param el object to add
+     * @param aligner aligner which describe horizontal translation of object
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
@@ -413,7 +413,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         if (aligners[child_nr] == aligner) return; //protected for self assign
         aligners[child_nr] = aligner;
         aligners[child_nr]->align(*children[child_nr]);
-        this->fireChanged(GeometryElement::Event::RESIZE);
+        this->fireChanged(GeometryObject::Event::RESIZE);
     }*/
 
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
@@ -421,12 +421,12 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     virtual void removeAtUnsafe(std::size_t index);
 
     //add in reverse order
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, GeometryElement::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
 
 protected:
     void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
-    shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
 
 };
 
@@ -487,7 +487,7 @@ class MultiStackContainer: public StackContainer<dim> {
 
     /**
      * @param repeat_count how many times stack should be repeated, must be 1 or more
-     * @param baseHeight height where the first element should start
+     * @param baseHeight height where the first object should start
      */
     explicit MultiStackContainer(unsigned repeat_count = 1, const double baseHeight = 0.0): UpperClass(baseHeight), repeat_count(repeat_count) {}
 
@@ -509,14 +509,14 @@ class MultiStackContainer: public StackContainer<dim> {
         return UpperClass::getBoundingBox();
     }
 
-    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
-    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const;
+    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const;
 
-    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
 
-    /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
-        std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result = UpperClass::getLeafsWithTranslations();
+    /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
+        std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > result = UpperClass::getLeafsWithTranslations();
         std::size_t size = result.size();   //oryginal size
         const double stackHeight = stackHeights.back() - stackHeights.front();
         for (unsigned r = 1; r < repeat_count; ++r) {
@@ -528,9 +528,9 @@ class MultiStackContainer: public StackContainer<dim> {
         return result;
     }*/
 
-    virtual GeometryElement::Subtree getPathsTo(const GeometryElement& el, const PathHints* path = 0) const;
+    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const;
 
-    virtual GeometryElement::Subtree getPathsTo(const DVec& point) const;
+    virtual GeometryObject::Subtree getPathsTo(const DVec& point) const;
 
     virtual bool includes(const DVec& p) const {
         DVec p_reduced = p;
@@ -546,13 +546,13 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual std::size_t getChildrenCount() const { return children.size() * repeat_count; }
 
-    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const;
+    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const;
 
     virtual std::size_t getRealChildrenCount() const {
         return StackContainer<dim>::getChildrenCount();
     }
 
-    virtual shared_ptr<GeometryElement> getRealChildAt(std::size_t child_nr) const {
+    virtual shared_ptr<GeometryObject> getRealChildAt(std::size_t child_nr) const {
         return StackContainer<dim>::getChildAt(child_nr);
     }
 
@@ -563,9 +563,9 @@ class MultiStackContainer: public StackContainer<dim> {
     }
 
 protected:
-    void writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const;
+    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 
-    shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
 
 };
 

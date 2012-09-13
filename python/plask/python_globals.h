@@ -82,6 +82,7 @@ struct IOError: public Exception {
     inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
     inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
     inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
+#   define PyCodeObject PyObject
 #endif
 
 

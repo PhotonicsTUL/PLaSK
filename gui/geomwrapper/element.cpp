@@ -8,16 +8,16 @@
 
 #include "register.h"
 
-ElementWrapper::~ElementWrapper() {
-    if (this->wrappedElement) this->wrappedElement->changedDisconnectMethod(this, &ElementWrapper::onWrappedChange);
+ObjectWrapper::~ObjectWrapper() {
+    if (this->wrappedObject) this->wrappedObject->changedDisconnectMethod(this, &ObjectWrapper::onWrappedChange);
 }
 
-void ElementWrapper::draw(QPainter& painter) const {
-    plask::GeometryElement& toDraw = *wrappedElement;
+void ObjectWrapper::draw(QPainter& painter) const {
+    plask::GeometryObject& toDraw = *wrappedObject;
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
     if (toDraw.isLeaf()) {
-        auto bb = toQt(static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox());
+        auto bb = toQt(static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox());
         painter.fillRect(bb, QColor(150, 100, 100));
         //painter.setPen(QPen(QColor(0,0,0), 0.0));
         painter.drawRect(bb);
@@ -27,8 +27,8 @@ void ElementWrapper::draw(QPainter& painter) const {
     }
 }
 
-void ElementWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
-    plask::GeometryElement& toDraw = *wrappedElement;
+void ObjectWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
+    plask::GeometryObject& toDraw = *wrappedObject;
 
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
@@ -38,7 +38,7 @@ void ElementWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
     painter.setTransform(flipVertical);
     painter.translate(0.0, -h);
 
-    plask::Box2D bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
+    plask::Box2D bb = static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox();
 
     plask::Vec<2, double> s = bb.size();
     double scale = std::min(w / s.tran(), h / s.up());
@@ -51,9 +51,9 @@ void ElementWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
     painter.setTransform(transformBackup);
 }
 
-void ElementWrapper::drawReal(QPainter &painter) const
+void ObjectWrapper::drawReal(QPainter &painter) const
 {
-    plask::GeometryElement& toDraw = *wrappedElement;
+    plask::GeometryObject& toDraw = *wrappedObject;
     if (toDraw.isContainer()) {
         for (std::size_t i = 0; i < toDraw.getRealChildrenCount(); ++i)
             ext(toDraw.getRealChildAt(i))->draw(painter);
@@ -61,8 +61,8 @@ void ElementWrapper::drawReal(QPainter &painter) const
         draw(painter);
 }
 
-QPixmap ElementWrapper::getMiniature(qreal w, qreal h) const {
-    plask::GeometryElement& toDraw = *wrappedElement;
+QPixmap ObjectWrapper::getMiniature(qreal w, qreal h) const {
+    plask::GeometryObject& toDraw = *wrappedObject;
 
     if (toDraw.getDimensionsCount() != 2)
         return QPixmap(); //we draw 2d only at this moment
@@ -72,8 +72,8 @@ QPixmap ElementWrapper::getMiniature(qreal w, qreal h) const {
     if (toDraw.isGeometry())
         s = static_cast< const plask::GeometryD<2>& >(toDraw).getChildBoundingBox().size();
     else
-        s = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox().size();
-    //plask::Vec<2, double> s = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox().size();
+        s = static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox().size();
+    //plask::Vec<2, double> s = static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox().size();
 
     double obj_prop = s.tran() / s.up();
     if (obj_prop > w / h) { //obj. to wide
@@ -90,8 +90,8 @@ QPixmap ElementWrapper::getMiniature(qreal w, qreal h) const {
     return result;
 }
 
-QString ElementWrapper::toStr() const {
-    plask::GeometryElement& el = *wrappedElement;
+QString ObjectWrapper::toStr() const {
+    plask::GeometryObject& el = *wrappedObject;
     return QString(QObject::tr("%1%2d%3\n%4 children")
         .arg(::toStr(el.getType())))
         .arg(el.getDimensionsCount())
@@ -99,7 +99,7 @@ QString ElementWrapper::toStr() const {
         .arg(el.getChildrenCount());
 }
 
-void ElementWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
+void ObjectWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
     QtProperty *nameProp = managers.string.addProperty("name");
     managers.string.setValue(nameProp, getNameQt());
     dst.addProperty(nameProp);
@@ -108,14 +108,14 @@ void ElementWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbs
     });
 }
 
-void ElementWrapper::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
-    plask::shared_ptr<plask::GeometryElement> e = wrappedElement->getRealChildAt(index);
+void ObjectWrapper::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
+    plask::shared_ptr<plask::GeometryObject> e = wrappedObject->getRealChildAt(index);
     if (e->getRealChildrenCount() == 0) return;
     ext(e->getRealChildAt(0))->setupPropertiesBrowser(managers, dst);
 }
 
-/*QPixmap drawMiniature(const plask::GeometryElement& toDraw, qreal w, qreal h) {
+/*QPixmap drawMiniature(const plask::GeometryObject& toDraw, qreal w, qreal h) {
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
-    auto bb = static_cast< const plask::GeometryElementD<2>& >(toDraw).getBoundingBox();
+    auto bb = static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox();
 }*/

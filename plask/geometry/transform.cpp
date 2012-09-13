@@ -5,7 +5,7 @@
 namespace plask {
 
 template <int dim>
-void Translation<dim>::getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+void Translation<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
         return;
@@ -16,7 +16,7 @@ void Translation<dim>::getBoundingBoxesToVec(const GeometryElement::Predicate& p
 }
 
 template <int dim>
-void Translation<dim>::getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
+void Translation<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
@@ -28,31 +28,31 @@ void Translation<dim>::getPositionsToVec(const GeometryElement::Predicate& predi
 }
 
 template <int dim>
-shared_ptr<const GeometryElement> Translation<dim>::changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation) const {
-    shared_ptr<GeometryElement> result(const_pointer_cast<GeometryElement>(this->shared_from_this()));
+shared_ptr<const GeometryObject> Translation<dim>::changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation) const {
+    shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
     if (changer.apply(result, translation) || !this->hasChild()) return result;
     Vec<3, double> returned_translation(0.0, 0.0, 0.0);
-    shared_ptr<const GeometryElement> new_child = this->getChild()->changedVersion(changer, &returned_translation);
+    shared_ptr<const GeometryObject> new_child = this->getChild()->changedVersion(changer, &returned_translation);
     Vec<dim, double> translation_we_will_do = vec<dim, double>(returned_translation);
     if (new_child == getChild() && translation_we_will_do == Primitive<dim>::ZERO_VEC) return result;
     if (translation)    //we will change translation (partially if dim==2) internaly, so we recommend no extra translation
         *translation = returned_translation - vec<3, double>(translation_we_will_do); //still we can recommend translation in third direction
-    return shared_ptr<GeometryElement>(
+    return shared_ptr<GeometryObject>(
         new Translation<dim>(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)),
                              this->translation + translation_we_will_do) );
 }
 
 template <>
-void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
-    if (translation.tran() != 0.0) dest_xml_element.attr(axes.getNameForTran(), translation.tran());
-    if (translation.up() != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up());
+void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    if (translation.tran() != 0.0) dest_xml_object.attr(axes.getNameForTran(), translation.tran());
+    if (translation.up() != 0.0) dest_xml_object.attr(axes.getNameForUp(), translation.up());
 }
 
 template <>
-void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
-    if (translation.lon() != 0.0) dest_xml_element.attr(axes.getNameForLon(), translation.lon());
-    if (translation.tran() != 0.0) dest_xml_element.attr(axes.getNameForTran(), translation.tran());
-    if (translation.up() != 0.0) dest_xml_element.attr(axes.getNameForUp(), translation.up());
+void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    if (translation.lon() != 0.0) dest_xml_object.attr(axes.getNameForLon(), translation.lon());
+    if (translation.tran() != 0.0) dest_xml_object.attr(axes.getNameForTran(), translation.tran());
+    if (translation.up() != 0.0) dest_xml_object.attr(axes.getNameForUp(), translation.up());
 }
 
 template struct Translation<2>;
@@ -65,14 +65,14 @@ inline static void setupTranslation2D3D(GeometryReader& reader, TranslationType&
     translation.setChild(reader.readExactlyOneChild<typename TranslationType::ChildType>());
 }
 
-shared_ptr<GeometryElement> read_translation2D(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_translation2D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     shared_ptr< Translation<2> > translation(new Translation<2>());
     setupTranslation2D3D(reader, *translation);
     return translation;
 }
 
-shared_ptr<GeometryElement> read_translation3D(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_translation3D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     shared_ptr< Translation<3> > translation(new Translation<3>());
     translation->translation.lon() = reader.source.getAttribute(reader.getAxisLonName(), 0.0);
@@ -80,7 +80,7 @@ shared_ptr<GeometryElement> read_translation3D(GeometryReader& reader) {
     return translation;
 }
 
-static GeometryReader::RegisterElementReader translation2D_reader(Translation<2>::NAME, read_translation2D);
-static GeometryReader::RegisterElementReader translation3D_reader(Translation<3>::NAME, read_translation3D);
+static GeometryReader::RegisterObjectReader translation2D_reader(Translation<2>::NAME, read_translation2D);
+static GeometryReader::RegisterObjectReader translation3D_reader(Translation<3>::NAME, read_translation3D);
 
 }   // namespace plask

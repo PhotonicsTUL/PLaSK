@@ -68,7 +68,7 @@ struct MaterialsDB {
 
         /**
          * Create material.
-         * @param composition parsed amounts of elements, can be not completed (see Material::completeComposition), empty composition in case of simple materials
+         * @param composition parsed amounts of objects, can be not completed (see Material::completeComposition), empty composition in case of simple materials
          * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
          * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPANT
          * @return created material
@@ -126,7 +126,7 @@ struct MaterialsDB {
          * Construct MixedCompositionFactory for given material constructor and two compositions for this constructor.
          * @param constructor material constructor
          * @param material1composition incomplate composition of first material
-         * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
+         * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
          */
         MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition);
 
@@ -155,7 +155,7 @@ struct MaterialsDB {
          * Construct MixedCompositionAndDopantFactory for given material constructor, two compositions and dopings amounts for this constructor.
          * @param constructor material constructor
          * @param material1composition incomplate composition of first material
-         * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
+         * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
          * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
          */
@@ -291,7 +291,7 @@ public:
 
     /**
      * Create material object.
-     * @param composition complete elements composition
+     * @param composition complete objects composition
      * @param dopant_name name of dopant (if any)
      * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
      * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
@@ -304,7 +304,7 @@ public:
     /**
      * Create material object.
      * @param parsed_name_with_dopant material name with dopant name in format material_name[:dopant_name], for example: "AlGaN" or "AlGaN:Mg"
-     * @param composition amounts of elements, with NaN for each element for which composition was not given
+     * @param composition amounts of objects, with NaN for each object for which composition was not given
      * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
      * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
      * @return constructed material
@@ -324,8 +324,8 @@ public:
 
     /**
      * Create material object.
-     * @param name_with_components elements composition in format element1(amount1)...elementN(amountN), where some amounts are optional for example: "Al(0.7)GaN"
-     * @param doping_descr empty string if there is no doping or description of dopant in format elementname=amount or elementname p/n=amount, for example: "Mg=7e18" or "Mg p=7e18"
+     * @param name_with_components objects composition in format object1(amount1)...objectN(amountN), where some amounts are optional for example: "Al(0.7)GaN"
+     * @param doping_descr empty string if there is no doping or description of dopant in format objectname=amount or objectname p/n=amount, for example: "Mg=7e18" or "Mg p=7e18"
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      * @throw MaterialParseException if can't parse @p name_with_components or @p doping_descr
@@ -344,7 +344,7 @@ public:
     /**
      * Construct mixed material factory, for materials without dopant.
      * @param material1composition incomplate composition of first material
-     * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
+     * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
      * @return constructed factory created using new operator, should by delete by caller
      */
     MixedCompositionFactory* getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition);
@@ -352,7 +352,7 @@ public:
     /**
      * Construct mixed material factory.
      * @param material1composition incomplate composition of first material
-     * @param material2composition incomplate composition of second material, must be defined for the same elements as @p material1composition
+     * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
      * @param dopant_name name of dopant, empty if there is no dopant
      * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
@@ -364,7 +364,7 @@ public:
     /**
      * Construct mixed material factory.
      * @param material1_name_with_components composition of first material
-     * @param material2_name_with_components composition of second material, must be defined for the same elements as @p material1composition
+     * @param material2_name_with_components composition of second material, must be defined for the same objects as @p material1composition
      * @param dopant_name name of dopant, common for both materials, empty if there is no dopant
      * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
@@ -485,7 +485,7 @@ private:
 
     /**
      * Get material constructor object.
-     * @param composition elements composition, empty composition for simple materials
+     * @param composition objects composition, empty composition for simple materials
      * @param dopant_name name of dopant (if any)
      */
     shared_ptr<const MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& dopant_name = "") const;
@@ -493,7 +493,7 @@ private:
     /**
      * Get material constructor object.
      * @param dbKey key in database
-     * @param composition elements composition, empty composition for simple materials, use for error mesages
+     * @param composition objects composition, empty composition for simple materials, use for error mesages
      * @param dopant_name name of dopant (if any), use for error mesages
      */
     shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, const std::string& dopant_name = "") const;
@@ -501,7 +501,7 @@ private:
     /**
      * Create material object.
      * @param dbKey key in database
-     * @param composition elements composition, empty composition for simple materials
+     * @param composition objects composition, empty composition for simple materials
      * @param dopant_name name of dopant (if any)
      * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
      * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT

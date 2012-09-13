@@ -19,10 +19,10 @@ template <typename ValueT, typename ReferenceT = ValueT&>
 struct PolymorphicForwardIteratorImplBase {
     // some typedefs compatibile with stl:
 
-    /// Type of elements pointed by the iterator.
+    /// Type of objects pointed by the iterator.
     typedef ValueT value_type;
 
-    /// Type to represent a reference to an element pointed by the iterator.
+    /// Type to represent a reference to an object pointed by the iterator.
     typedef ReferenceT reference;
 
     ///@return current value
@@ -206,15 +206,15 @@ struct PolymorphicForwardIteratorWithIndex: public PolymorphicForwardIterator<Im
  *   iterator end() { return iterator(size()); } //size() is end index
  *   const_iterator end() const { return const_iterator(size()); } //size() is end index
  *
- *   //Methods to get element by index, etc.:
+ *   //Methods to get object by index, etc.:
  *   int& operator[](std::size_t index) {  //used by iterator
- *      //code which returns element with given index
+ *      //code which returns object with given index
  *   }
  *   const int& operator[](std::size_t index) const {  //used by const_iterator
- *      //code which returns element with given index
+ *      //code which returns object with given index
  *   }
  *   std::size_t size() const { //used by end()
- *      //code which returns number of elements
+ *      //code which returns number of objects
  *   }
  * };
  * @endcode

@@ -4,14 +4,14 @@
 namespace plask {
 
 template <int dim>
-void GeometryElementContainer<dim>::writeXMLChildAttr(XMLWriter::Element&, std::size_t, const AxisNames&) const {
+void GeometryObjectContainer<dim>::writeXMLChildAttr(XMLWriter::Element&, std::size_t, const AxisNames&) const {
     // do nothing
 }
 
 template <int dim>
-void GeometryElementContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
-    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
-    if (GeometryElement::WriteXMLCallback::isRef(container_tag)) return;
+void GeometryObjectContainer<dim>::writeXML(XMLWriter::Element &parent_xml_object, GeometryObject::WriteXMLCallback &write_cb, AxisNames axes) const {
+    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_object, *this, axes);
+    if (GeometryObject::WriteXMLCallback::isRef(container_tag)) return;
     this->writeXMLAttr(container_tag, axes);
     for (std::size_t i = 0; i < children.size(); ++i) {
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
@@ -21,7 +21,7 @@ void GeometryElementContainer<dim>::writeXML(XMLWriter::Element &parent_xml_elem
 }
 
 template <int dim>
-typename GeometryElementContainer<dim>::Box GeometryElementContainer<dim>::getBoundingBox() const {
+typename GeometryObjectContainer<dim>::Box GeometryObjectContainer<dim>::getBoundingBox() const {
     if (children.empty()) return Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     Box result = children[0]->getBoundingBox();
     for (std::size_t i = 1; i < children.size(); ++i)
@@ -30,7 +30,7 @@ typename GeometryElementContainer<dim>::Box GeometryElementContainer<dim>::getBo
 }
 
 template <int dim>
-shared_ptr<Material> GeometryElementContainer<dim>::getMaterial(const DVec& p) const {
+shared_ptr<Material> GeometryObjectContainer<dim>::getMaterial(const DVec& p) const {
     for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
         shared_ptr<Material> r = (*child_it)->getMaterial(p);
         if (r != nullptr) return r;
@@ -39,7 +39,7 @@ shared_ptr<Material> GeometryElementContainer<dim>::getMaterial(const DVec& p) c
 }
 
 template <int dim>
-void GeometryElementContainer<dim>::getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+void GeometryObjectContainer<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(this->getBoundingBox());
         return;
@@ -55,7 +55,7 @@ void GeometryElementContainer<dim>::getBoundingBoxesToVec(const GeometryElement:
 }
 
 template <int dim>
-void GeometryElementContainer<dim>::getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path) const {
+void GeometryObjectContainer<dim>::getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(this->shared_from_this());
         return;
@@ -63,15 +63,15 @@ void GeometryElementContainer<dim>::getElementsToVec(const GeometryElement::Pred
     if (path) {
         auto c = path->getTranslationChildren<dim>(*this);
         if (!c.empty()) {
-            for (auto child: c) child->getElementsToVec(predicate, dest, path);
+            for (auto child: c) child->getObjectsToVec(predicate, dest, path);
             return;
         }
     }
-    for (auto child: children) child->getElementsToVec(predicate, dest, path);
+    for (auto child: children) child->getObjectsToVec(predicate, dest, path);
 }
 
 template <int dim>
-void GeometryElementContainer<dim>::getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
+void GeometryObjectContainer<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
@@ -87,7 +87,7 @@ void GeometryElementContainer<dim>::getPositionsToVec(const GeometryElement::Pre
 }
 
 template <int dim>
-bool GeometryElementContainer<dim>::isInSubtree(const GeometryElement& el) const {
+bool GeometryObjectContainer<dim>::isInSubtree(const GeometryObject& el) const {
     if (&el == this) return true;
     for (auto child: children)
         if (child->isInSubtree(el))
@@ -96,7 +96,7 @@ bool GeometryElementContainer<dim>::isInSubtree(const GeometryElement& el) const
 }
 
 template <int dim>
-GeometryElement::Subtree GeometryElementContainer<dim>::getPathsTo(const GeometryElement& el, const PathHints* path) const {
+GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsTo(const GeometryObject& el, const PathHints* path) const {
     if (this == &el) return this->shared_from_this();
     if (path) {
         auto hintChildren = path->getTranslationChildren<dim>(*this);
@@ -107,28 +107,28 @@ GeometryElement::Subtree GeometryElementContainer<dim>::getPathsTo(const Geometr
 }
 
 template <int dim>
-GeometryElement::Subtree GeometryElementContainer<dim>::getPathsTo(const GeometryElementContainer::DVec &point) const {
-    GeometryElement::Subtree result;
+GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsTo(const GeometryObjectContainer::DVec &point) const {
+    GeometryObject::Subtree result;
     for (auto& child: children) {
-        GeometryElement::Subtree child_path = child->getPathsTo(point);
+        GeometryObject::Subtree child_path = child->getPathsTo(point);
         if (!child_path.empty())
             result.children.push_back(std::move(child_path));
     }
     if (!result.children.empty())
-        result.element = this->shared_from_this();
+        result.object = this->shared_from_this();
     return result;
 }
 
 template <int dim>
-shared_ptr<const GeometryElement> GeometryElementContainer<dim>::changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation) const {
-    shared_ptr<GeometryElement> result(const_pointer_cast<GeometryElement>(this->shared_from_this()));
+shared_ptr<const GeometryObject> GeometryObjectContainer<dim>::changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation) const {
+    shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
     if (changer.apply(result, translation) || children.empty()) return result;
 
     bool were_changes = false;    //any children was changed?
     std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>> children_after_change;
     for (const shared_ptr<TranslationT>& child_tran: children) {
         //shared_ptr<const ChildType> new_child = child_tran->getChild();
-        shared_ptr<GeometryElement> new_child = child_tran->getChild();
+        shared_ptr<GeometryObject> new_child = child_tran->getChild();
         Vec<3, double> trans_from_child;
         if (changer.apply(new_child, &trans_from_child)) were_changes = true;
         children_after_change.emplace_back(dynamic_pointer_cast<ChildType>(new_child), trans_from_child);
@@ -141,7 +141,7 @@ shared_ptr<const GeometryElement> GeometryElementContainer<dim>::changedVersion(
 }
 
 template <int dim>
-bool GeometryElementContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+bool GeometryObjectContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
     auto dst = children.begin();
     for (auto i: children)
         if (predicate(i))
@@ -156,7 +156,7 @@ bool GeometryElementContainer<dim>::removeIfTUnsafe(const std::function<bool(con
 }
 
 template <int dim>
-bool GeometryElementContainer<dim>::removeIfT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+bool GeometryObjectContainer<dim>::removeIfT(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
     if (removeIfTUnsafe(predicate)) {
         this->fireChildrenChanged();
         return true;
@@ -164,8 +164,8 @@ bool GeometryElementContainer<dim>::removeIfT(const std::function<bool(const sha
         return false;
 }
 
-template struct GeometryElementContainer<2>;
-template struct GeometryElementContainer<3>;
+template struct GeometryObjectContainer<2>;
+template struct GeometryObjectContainer<3>;
 
 template <>
 void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
@@ -183,7 +183,7 @@ void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_chi
 }
 
 template <int dim>
-shared_ptr<GeometryElement> TranslationContainer<dim>::changedVersionForChildren(
+shared_ptr<GeometryObject> TranslationContainer<dim>::changedVersionForChildren(
         std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< TranslationContainer<dim> > result = make_shared< TranslationContainer<dim> >();
     for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
@@ -198,7 +198,7 @@ template struct TranslationContainer<3>;
 
 // ---- containers readers: ----
 
-shared_ptr<GeometryElement> read_TranslationContainer2D(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_TranslationContainer2D(GeometryReader& reader) {
     shared_ptr< TranslationContainer<2> > result(new TranslationContainer<2>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children<TranslationContainer<2>>(reader,
@@ -215,7 +215,7 @@ shared_ptr<GeometryElement> read_TranslationContainer2D(GeometryReader& reader) 
     return result;
 }
 
-shared_ptr<GeometryElement> read_TranslationContainer3D(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_TranslationContainer3D(GeometryReader& reader) {
     shared_ptr< TranslationContainer<3> > result(new TranslationContainer<3>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children<TranslationContainer<3>>(reader,
@@ -235,7 +235,7 @@ shared_ptr<GeometryElement> read_TranslationContainer3D(GeometryReader& reader) 
 
 
 
-static GeometryReader::RegisterElementReader container2D_reader(TranslationContainer<2>::NAME, read_TranslationContainer2D);
-static GeometryReader::RegisterElementReader container3D_reader(TranslationContainer<3>::NAME, read_TranslationContainer3D);
+static GeometryReader::RegisterObjectReader container2D_reader(TranslationContainer<2>::NAME, read_TranslationContainer2D);
+static GeometryReader::RegisterObjectReader container3D_reader(TranslationContainer<3>::NAME, read_TranslationContainer3D);
 
 } // namespace plask

@@ -31,7 +31,7 @@ struct Strategy {
 
     /**
      * Apply strategy to given point @p p.
-     * @param[in] bbox_lo, bbox_hi coordinates of geometry element bounding box in startegy working direction
+     * @param[in] bbox_lo, bbox_hi coordinates of geometry object bounding box in startegy working direction
      * @param[in,out] p coordinate of point in startegy working direction, it's (must be) lower than @p bbox_lo, this method can move this point
      * @param[out] result_material optionaly, this method can assign to it material which should be used
      */
@@ -39,7 +39,7 @@ struct Strategy {
 
     /**
      * Apply strategy to given point @p p.
-     * @param[in] bbox_lo, bbox_hi coordinates of geometry element bounding box in startegy working direction
+     * @param[in] bbox_lo, bbox_hi coordinates of geometry object bounding box in startegy working direction
      * @param[in,out] p coordinate of point in startegy working direction, it's (must be) higher than @p bbox_hi, this method can move this point
      * @param[out] result_material optionaly, this method can assign to it material which should be used
      */

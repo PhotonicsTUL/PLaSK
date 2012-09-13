@@ -132,14 +132,14 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     // }
     //
     // /**
-    //  * Set the position of the matching interface at the top of the provided geometry element
+    //  * Set the position of the matching interface at the top of the provided geometry object
     //  *
-    //  * \param path path to the element in the geometry
+    //  * \param path path to the object in the geometry
     //  */
     // void setInterfaceOn(const PathHints& path) {
     //     if (!mesh) setSimpleMesh();
     //     auto boxes = geometry->getLeafsBoundingBoxes(path);
-    //     if (boxes.size() != 1) throw NotUniqueElementException();
+    //     if (boxes.size() != 1) throw NotUniqueObjectException();
     //     interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].upper.up()) - mesh->up().begin();
     //     if (interface >= mesh->up().size()) interface = mesh->up().size() - 1;
     //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->up()[interface], interface);

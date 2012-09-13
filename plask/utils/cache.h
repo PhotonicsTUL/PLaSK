@@ -2,7 +2,7 @@
 #define PLASK__UTILS_CACHE_H
 
 /** @file
-This file includes cache map indexed by objects which can emit events, like GeometryElements, Meshes, etc.
+This file includes cache map indexed by objects which can emit events, like GeometryObjects, Meshes, etc.
 */
 
 #include <map>
@@ -22,7 +22,7 @@ namespace plask {
 template <typename Key, typename ValuePtr>
 struct CacheRemoveStrategyBase {
 
-    /// Cached elements.
+    /// Cached objects.
     std::map<Key*, ValuePtr> map;
 
 };
@@ -198,10 +198,10 @@ template <typename Key, typename Value, template<typename SKey, typename SValueP
 struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> {
 
     /**
-     * Try get element from cache.
+     * Try get object from cache.
      *
      * Try also clean entry with @p el index if value for it is not still valid.
-     * @param index key of element
+     * @param index key of object
      * @return non-null value from cache stored for key or nullptr if there is no value for given index or value was not valid
      */
     plask::shared_ptr<Value> get(Key* index) {
@@ -218,10 +218,10 @@ struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> 
     }
 
     /**
-     * Try get element from cache.
+     * Try get object from cache.
      *
      * Try also clean entry with @p el index if value for it is not still valid.
-     * @param index key of element
+     * @param index key of object
      * @return non-null value from cache stored for key or nullptr if there is no value for given index or value was not valid
      */
     plask::shared_ptr<Value> get(plask::shared_ptr<Key> index) {
@@ -229,8 +229,8 @@ struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> 
     }
 
     /**
-     * Try get element from cache.
-     * @param index key of element
+     * Try get object from cache.
+     * @param index key of object
      * @return non-null value from cache stored for key or nullptr if there is no value for given index or value is not valid
      */
     plask::shared_ptr<Value> get(Key* index) const {
@@ -243,8 +243,8 @@ struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> 
     }
 
     /**
-     * Try get element from cache.
-     * @param index key of element
+     * Try get object from cache.
+     * @param index key of object
      * @return non-null value from cache stored for key or nullptr if there is no value for given index or value is not valid
      */
     plask::shared_ptr<Value> get(plask::shared_ptr<Key> index) const {
@@ -254,7 +254,7 @@ struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> 
     /**
      * Clean all entries for which values are already deleted.
      *
-     * This method has O(N+DlogN) time complexity, where N is number of elements in cache, and D is number of deleted elements.
+     * This method has O(N+DlogN) time complexity, where N is number of objects in cache, and D is number of deleted objects.
      */
     void cleanDeleted() {
         for(auto i = this->map.begin(); i != this->map.end(); )
@@ -283,8 +283,8 @@ template <typename Key, typename Value, template<typename SKey, typename SValueP
 struct StrongCache: public CacheBase<Key, plask::shared_ptr<Value>, DeleteStrategy> {
 
     /**
-     * Try get element from cache.
-     * @param index key of element
+     * Try get object from cache.
+     * @param index key of object
      * @return non-null value from cache stored for key or nullptr if there is no value for given index
      */
     plask::shared_ptr<Value> get(Key* index) const {
@@ -293,8 +293,8 @@ struct StrongCache: public CacheBase<Key, plask::shared_ptr<Value>, DeleteStrate
     }
 
     /**
-     * Try get element from cache.
-     * @param index key of element
+     * Try get object from cache.
+     * @param index key of object
      * @return non-null value from cache stored for key or nullptr if there is no value for given index
      */
     plask::shared_ptr<Value> get(plask::shared_ptr<Key> index) const {

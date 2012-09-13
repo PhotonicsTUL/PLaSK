@@ -2,10 +2,10 @@
 #define PLASK__GEOMETRY_LEAF_H
 
 /** @file
-This file includes geometry elements leafs classes.
+This file includes geometry objects leafs classes.
 */
 
-#include "element.h"
+#include "object.h"
 
 namespace plask {
 
@@ -14,33 +14,33 @@ namespace plask {
  * @tparam dim number of dimensions
  */
 template < int dim >
-struct GeometryElementLeaf: public GeometryElementD<dim> {
+struct GeometryObjectLeaf: public GeometryObjectD<dim> {
 
-    typedef typename GeometryElementD<dim>::DVec DVec;
-    typedef typename GeometryElementD<dim>::Box Box;
-    using GeometryElementD<dim>::getBoundingBox;
-    using GeometryElementD<dim>::shared_from_this;
+    typedef typename GeometryObjectD<dim>::DVec DVec;
+    typedef typename GeometryObjectD<dim>::Box Box;
+    using GeometryObjectD<dim>::getBoundingBox;
+    using GeometryObjectD<dim>::shared_from_this;
 
     shared_ptr<Material> material;
 
-    GeometryElementLeaf<dim>(shared_ptr<Material> material): material(material) {}
+    GeometryObjectLeaf<dim>(shared_ptr<Material> material): material(material) {}
 
     void setMaterial(shared_ptr<Material> new_material) {
         material = new_material;
         this->fireChanged();
     }
 
-    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_LEAF; }
+    virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_LEAF; }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         return this->includes(p) ? material : shared_ptr<Material>();
     }
 
-    virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const {
-        dest.push_back( std::tuple<shared_ptr<const GeometryElement>, Box, DVec>(this->shared_from_this(), this->getBoundingBox(), Primitive<dim>::ZERO_VEC) );
+    virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const {
+        dest.push_back( std::tuple<shared_ptr<const GeometryObject>, Box, DVec>(this->shared_from_this(), this->getBoundingBox(), Primitive<dim>::ZERO_VEC) );
     }
 
-    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
         if (predicate(*this))
             dest.push_back(this->getBoundingBox());
     }
@@ -53,46 +53,46 @@ struct GeometryElementLeaf: public GeometryElementD<dim> {
         return { this->getBoundingBox() };
     }
 
-    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
+    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
         if (predicate(*this)) dest.push_back(this->shared_from_this());
     }
 
-    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const {
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const {
         if (predicate(*this)) dest.push_back(Primitive<dim>::ZERO_VEC);
     }
 
-    inline void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+    inline void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest) const {
         dest.push_back(this->shared_from_this());
     }
 
-    inline std::vector< shared_ptr<const GeometryElement> > getLeafs() const {
+    inline std::vector< shared_ptr<const GeometryObject> > getLeafs() const {
         return { this->shared_from_this() };
     }
 
-    /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
+    /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
         return { std::make_pair(shared_from_this(), Primitive<dim>::ZERO_VEC) };
     }*/
 
-    virtual bool isInSubtree(const GeometryElement& el) const {
+    virtual bool isInSubtree(const GeometryObject& el) const {
         return &el == this;
     }
 
-    virtual GeometryElement::Subtree getPathsTo(const GeometryElement& el, const PathHints* path = 0) const {
-        return GeometryElement::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
+    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const {
+        return GeometryObject::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
     }
 
-    virtual GeometryElement::Subtree getPathsTo(const DVec& point) const {
-        return GeometryElement::Subtree( this->includes(point) ? this->shared_from_this() : shared_ptr<const GeometryElement>() );
+    virtual GeometryObject::Subtree getPathsTo(const DVec& point) const {
+        return GeometryObject::Subtree( this->includes(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
     }
 
     virtual std::size_t getChildrenCount() const { return 0; }
 
-    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
-        throw OutOfBoundException("GeometryElementLeaf::getChildAt", "child_nr");
+    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const {
+        throw OutOfBoundException("GeometryObjectLeaf::getChildAt", "child_nr");
     }
 
-    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const {
-        shared_ptr<GeometryElement> result(const_pointer_cast<GeometryElement>(this->shared_from_this()));
+    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const {
+        shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
         changer.apply(result, translation);
         return result;
     }
@@ -108,13 +108,13 @@ Block is filled with one material.
 @tparam dim number of dimensions
 */
 template <int dim>
-struct Block: public GeometryElementLeaf<dim> {
+struct Block: public GeometryObjectLeaf<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryElementLeaf<dim>::DVec DVec;
+    typedef typename GeometryObjectLeaf<dim>::DVec DVec;
 
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryElementLeaf<dim>::Box Box;
+    typedef typename GeometryObjectLeaf<dim>::Box Box;
     
     static constexpr const char* NAME = dim == 2 ?
                 ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
@@ -133,7 +133,7 @@ struct Block: public GeometryElementLeaf<dim> {
      */
     void setSize(DVec&& new_size) {
         size = new_size;
-        this->fireChanged(GeometryElement::Event::RESIZE);
+        this->fireChanged(GeometryObject::Event::RESIZE);
     }
 
     /**
@@ -151,7 +151,7 @@ struct Block: public GeometryElementLeaf<dim> {
      * @param material block material
      */
     explicit Block(const DVec& size = Primitive<dim>::ZERO_VEC, const shared_ptr<Material>& material = shared_ptr<Material>())
-        : GeometryElementLeaf<dim>(material), size(size) {}
+        : GeometryObjectLeaf<dim>(material), size(size) {}
 
     virtual Box getBoundingBox() const {
         return Box(Primitive<dim>::ZERO_VEC, size);
@@ -165,11 +165,11 @@ struct Block: public GeometryElementLeaf<dim> {
         return this->getBoundingBox().intersects(area);
     }
     
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
 };
 
-shared_ptr<GeometryElement> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryElement>& to_change, Vec<3, double>& translation);
+shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryObject>& to_change, Vec<3, double>& translation);
 
 typedef Block<2> Rectangle;
 typedef Block<3> Cuboid;

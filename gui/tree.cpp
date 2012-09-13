@@ -6,7 +6,7 @@
 
 GeometryTreeItem::~GeometryTreeItem() {
     //model->changePersistentIndex(this, QModelIndex());    //good, if will store index
-    disconnectOnChanged(element);
+    disconnectOnChanged(object);
 }
 
 void GeometryTreeItem::ensureInitialized() {
@@ -15,12 +15,12 @@ void GeometryTreeItem::ensureInitialized() {
         childrenInitialized = true;
     }
     if (!miniatureInitialized) {
-        miniature = element->getMiniature(50, 50);
+        miniature = object->getMiniature(50, 50);
         miniatureInitialized = true;
     }
 }
 
-void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::GeometryElement>& elem, bool reverse) {
+void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::GeometryObject>& elem, bool reverse) {
     //TODO reverse support
     std::size_t chCount = elem->getRealChildrenCount();
     if (elem->isContainer()) {
@@ -33,8 +33,8 @@ void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::
 }
 
 void GeometryTreeItem::appendChildrenItems() {
-    if (auto e = getLowerWrappedElement()) {
-        appendChildrenItemsHelper(e->wrappedElement->shared_from_this());
+    if (auto e = getLowerWrappedObject()) {
+        appendChildrenItemsHelper(e->wrappedObject->shared_from_this());
     }
 }
 
@@ -62,37 +62,37 @@ void GeometryTreeItem::getExistsSubtreeIndexes(QModelIndexList &dst, std::size_t
     dst.append(model->createIndex(indexInParent, 0, this));
 }
 
-plask::shared_ptr<ElementWrapper> GeometryTreeItem::parent() {
+plask::shared_ptr<ObjectWrapper> GeometryTreeItem::parent() {
     return parentItem ?
-        parentItem->getLowerWrappedElement() :
-        plask::shared_ptr<ElementWrapper>();
+        parentItem->getLowerWrappedObject() :
+        plask::shared_ptr<ObjectWrapper>();
 }
 
 GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, std::size_t index)
 : model(parentItem->model), childrenInitialized(false), miniatureInitialized(false), parentItem(parentItem)/*, inParentIndex(index)*/ {
     if (auto parent_ptr = parent()) {
-        auto child = ext(parent_ptr->wrappedElement->getRealChildAt(index));
-        element = child;
+        auto child = ext(parent_ptr->wrappedObject->getRealChildAt(index));
+        object = child;
         connectOnChanged(child);
         //constructChildrenItems(child);
     }
 }
 
-GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ElementWrapper> &element/*, std::size_t index*/)
-: model(parentItem->model), childrenInitialized(false), miniatureInitialized(false), parentItem(parentItem), element(element)/*, inParentIndex(index)*/ {
-    connectOnChanged(element);
-    //constructChildrenItems(element);
+GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, const plask::shared_ptr<ObjectWrapper> &object/*, std::size_t index*/)
+: model(parentItem->model), childrenInitialized(false), miniatureInitialized(false), parentItem(parentItem), object(object)/*, inParentIndex(index)*/ {
+    connectOnChanged(object);
+    //constructChildrenItems(object);
 }
 
-GeometryTreeItem::GeometryTreeItem(GeometryTreeModel *model, const plask::shared_ptr<ElementWrapper> &element)
-: model(model), childrenInitialized(false), miniatureInitialized(false), parentItem(nullptr), element(element)/*, inParentIndex(index)*/ {
-    connectOnChanged(element);
+GeometryTreeItem::GeometryTreeItem(GeometryTreeModel *model, const plask::shared_ptr<ObjectWrapper> &object)
+: model(model), childrenInitialized(false), miniatureInitialized(false), parentItem(nullptr), object(object)/*, inParentIndex(index)*/ {
+    connectOnChanged(object);
 }
 
-GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::Geometry> >& rootElements, GeometryTreeModel* model)
+GeometryTreeItem::GeometryTreeItem(const std::vector< plask::shared_ptr<plask::Geometry> >& rootObjects, GeometryTreeModel* model)
 : model(model), childrenInitialized(true), miniatureInitialized(true), parentItem(0)/*, inParentIndex(0)*/ {
-    for (std::size_t i = 0; i < rootElements.size(); ++i)
-        childItems.emplace_back(new GeometryTreeItem(this, ext(rootElements[i])));
+    for (std::size_t i = 0; i < rootObjects.size(); ++i)
+        childItems.emplace_back(new GeometryTreeItem(this, ext(rootObjects[i])));
 }
 
 GeometryTreeItem * GeometryTreeItem::child(std::size_t index) {
@@ -115,31 +115,31 @@ std::size_t GeometryTreeItem::indexInParent() const {
    // return inParentIndex;
 }
 
-QString GeometryTreeItem::elementText(plask::shared_ptr<ElementWrapper> element) const {
-    return element->toStr();
+QString GeometryTreeItem::objectText(plask::shared_ptr<ObjectWrapper> object) const {
+    return object->toStr();
 }
 
 QVariant GeometryTreeItem::data(int column) {
-    return elementText(element);
+    return objectText(object);
 }
 
 void GeometryTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
-    element->setupPropertiesBrowser(browser);
+    object->setupPropertiesBrowser(browser);
 }
 
 QModelIndex GeometryTreeItem::getIndex() {
     return model->createIndex(indexInParent(), 0, this);
 }
 
-void GeometryTreeItem::onChanged(const ElementWrapper::Event& evt) {
+void GeometryTreeItem::onChanged(const ObjectWrapper::Event& evt) {
     if (evt.isDelete()) return;
     miniatureInitialized = false;
  /*   if (childrenInitialized && evt.hasChangedChildrenList()) {
-        if (evt.isDelgatedFromWrappedElement() &&
-          evt.delegatedEvent->hasAnyFlag(plask::GeometryElement::Event::CHILDREN_REMOVE | plask::GeometryElement::Event::CHILDREN_INSERT)) {
-            plask::GeometryElement::ChildrenListChangedEvent* details =
-                    static_cast<plask::GeometryElement::ChildrenListChangedEvent*>(evt.delegatedEvent);
-            if (details->hasFlag(plask::GeometryElement::Event::CHILDREN_REMOVE)) {
+        if (evt.isDelgatedFromWrappedObject() &&
+          evt.delegatedEvent->hasAnyFlag(plask::GeometryObject::Event::CHILDREN_REMOVE | plask::GeometryObject::Event::CHILDREN_INSERT)) {
+            plask::GeometryObject::ChildrenListChangedEvent* details =
+                    static_cast<plask::GeometryObject::ChildrenListChangedEvent*>(evt.delegatedEvent);
+            if (details->hasFlag(plask::GeometryObject::Event::CHILDREN_REMOVE)) {
                 model->beginRemoveRows(getIndex(), details->beginIndex, details->endIndex-1);
                 childItems.erase(childItems.begin() + details->beginIndex, childItems.begin() + details->endIndex);
                 model->endRemoveRows();
@@ -158,17 +158,17 @@ void GeometryTreeItem::onChanged(const ElementWrapper::Event& evt) {
     emit model->dataChanged(index, index);
 }
 
-void GeometryTreeItem::connectOnChanged(const plask::shared_ptr<ElementWrapper>& el) {
+void GeometryTreeItem::connectOnChanged(const plask::shared_ptr<ObjectWrapper>& el) {
     if (el) el->changedConnectMethod(this, &GeometryTreeItem::onChanged);
 }
 
-void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<ElementWrapper> &el) {
+void GeometryTreeItem::disconnectOnChanged(const plask::shared_ptr<ObjectWrapper> &el) {
     if (el) el->changedDisconnectMethod(this, &GeometryTreeItem::onChanged);
 }
 
 bool GeometryTreeItem::removeRange(std::size_t begin_index, std::size_t end_index) {
-    if (auto e = getLowerWrappedElement()) {
-        if (e->wrappedElement->removeRange(begin_index, end_index)) {
+    if (auto e = getLowerWrappedObject()) {
+        if (e->wrappedObject->removeRange(begin_index, end_index)) {
             //childItems.erase(childItems.begin() + begin_index, childItems.begin() + end_index);
             //deinitializeChildren();
             return true;
@@ -177,61 +177,61 @@ bool GeometryTreeItem::removeRange(std::size_t begin_index, std::size_t end_inde
     return false;
 }
 
-bool GeometryTreeItem::tryInsert(plask::shared_ptr<plask::GeometryElement> element, int index) {
-    auto this_elem = getLowerWrappedElement();
-    if (this_elem->tryInsert(element, index)) {
+bool GeometryTreeItem::tryInsert(plask::shared_ptr<plask::GeometryObject> object, int index) {
+    auto this_elem = getLowerWrappedObject();
+    if (this_elem->tryInsert(object, index)) {
        // childItems.emplace(childItems.begin() + index,
-       //                   new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
+       //                   new InContainerTreeItem(this, ext(this_elem->wrappedObject->getRealChildAt(index)), index));
         //deinitializeChildren();
         return true;
     } else
         return false;
 }
 
-bool GeometryTreeItem::tryInsert(const GeometryElementCreator& element_creator, int index) {
-    return getLowerWrappedElement()->tryInsert(element_creator, index);
+bool GeometryTreeItem::tryInsert(const GeometryObjectCreator& object_creator, int index) {
+    return getLowerWrappedObject()->tryInsert(object_creator, index);
 }
 
 int GeometryTreeItem::getInsertionIndexForPoint(const plask::Vec<2, double> &point)
 {
-    return getLowerWrappedElement()->getInsertionIndexForPoint(point);
+    return getLowerWrappedObject()->getInsertionIndexForPoint(point);
 }
 
-int GeometryTreeItem::tryInsertRow2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point)
+int GeometryTreeItem::tryInsertRow2D(const GeometryObjectCreator &to_insert, const plask::Vec<2, double> &point)
 {
-    auto this_elem = getLowerWrappedElement();
+    auto this_elem = getLowerWrappedObject();
     int index = this_elem->tryInsertNearPoint2D(to_insert, point);
     if (index >= 0) {
        // childItems.emplace(childItems.begin() + index,
-       //                   new InContainerTreeItem(this, ext(this_elem->wrappedElement->getRealChildAt(index)), index));
+       //                   new InContainerTreeItem(this, ext(this_elem->wrappedObject->getRealChildAt(index)), index));
      //   deinitializeChildren();
     }
     return index;
 }
 
-plask::Box2D GeometryTreeItem::getInsertPlace2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point)
+plask::Box2D GeometryTreeItem::getInsertPlace2D(const GeometryObjectCreator &to_insert, const plask::Vec<2, double> &point)
 {
-    return getLowerWrappedElement()->getInsertPlace2D(to_insert, point);
+    return getLowerWrappedObject()->getInsertPlace2D(to_insert, point);
 }
 
 // ---------- InContainerTreeItem -----------
 
 /*void InContainerTreeItem::appendChildrenItems() {
-    if (auto elem = element.lock()) {
+    if (auto elem = object.lock()) {
         std::size_t chCount = elem->getRealChildrenCount();
         if (chCount == 0) return;
         appendChildrenItemsHelper(elem->getRealChildAt(0));
     }
 }*/
 
-QString InContainerTreeItem::elementText(plask::shared_ptr<ElementWrapper> element) const {
-    if (element->wrappedElement->getRealChildrenCount() == 0) return element->toStr();
-    QString result = ext(element->wrappedElement->getRealChildAt(0))->toStr();
+QString InContainerTreeItem::objectText(plask::shared_ptr<ObjectWrapper> object) const {
+    if (object->wrappedObject->getRealChildrenCount() == 0) return object->toStr();
+    QString result = ext(object->wrappedObject->getRealChildAt(0))->toStr();
     result += "\nat ";
-    if (element->wrappedElement->getDimensionsCount() == 2) {
-        result += toStr(static_cast<plask::Translation<2>&>(*element->wrappedElement).translation);
+    if (object->wrappedObject->getDimensionsCount() == 2) {
+        result += toStr(static_cast<plask::Translation<2>&>(*object->wrappedObject).translation);
     } else
-        result += toStr(static_cast<plask::Translation<3>&>(*element->wrappedElement).translation);
+        result += toStr(static_cast<plask::Translation<3>&>(*object->wrappedObject).translation);
     return result;
 }
 
@@ -240,8 +240,8 @@ void InContainerTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
     if (p) {
         p->setupPropertiesBrowserForChild(indexInParent(), browser);
     } else {
-        if (element->wrappedElement->getRealChildrenCount() == 0) return;
-        ext(element->wrappedElement->getRealChildAt(0))->setupPropertiesBrowser(browser);
+        if (object->wrappedObject->getRealChildrenCount() == 0) return;
+        ext(object->wrappedObject->getRealChildAt(0))->setupPropertiesBrowser(browser);
     }
 }
 
@@ -255,13 +255,13 @@ GeometryTreeModel::~GeometryTreeModel() {
     clear();    //this is becouse crash on application exit
 }
 
-void GeometryTreeModel::save(plask::XMLWriter::Element &root_element) {
-    plask::XMLWriter::Element geometry_element(root_element, plask::Manager::TAG_NAME_GEOMETRY);
+void GeometryTreeModel::save(plask::XMLWriter::Element &root_object) {
+    plask::XMLWriter::Element geometry_object(root_object, plask::Manager::TAG_NAME_GEOMETRY);
     NamesFromExtensions writerCB;
     for (std::unique_ptr<RootItem>& to_save: rootItems)
         writerCB.prerareToAutonaming(*to_save->geometry);
     for (std::unique_ptr<RootItem>& to_save: rootItems)
-        to_save->geometry->writeXML(geometry_element, writerCB);
+        to_save->geometry->writeXML(geometry_object, writerCB);
 }
 
 void GeometryTreeModel::refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots) {
@@ -364,7 +364,7 @@ bool GeometryTreeModel::removeRows(int position, int rows, const QModelIndex &pa
     }
 }
 
-bool GeometryTreeModel::insertRow(plask::shared_ptr<plask::GeometryElement> to_insert, const QModelIndex &parent, int position) {
+bool GeometryTreeModel::insertRow(plask::shared_ptr<plask::GeometryObject> to_insert, const QModelIndex &parent, int position) {
     if (!parent.isValid()) return false;
 
    // beginInsertRows(parent, position, position);
@@ -373,7 +373,7 @@ bool GeometryTreeModel::insertRow(plask::shared_ptr<plask::GeometryElement> to_i
     return result;
 }
 
-int GeometryTreeModel::insertRow2D(const GeometryElementCreator &to_insert, const QModelIndex &parent, const plask::Vec<2, double> &point) {
+int GeometryTreeModel::insertRow2D(const GeometryObjectCreator &to_insert, const QModelIndex &parent, const plask::Vec<2, double> &point) {
     if (!parent.isValid()) return -1;
 
     GeometryTreeItem* item = toItem(parent);
@@ -385,7 +385,7 @@ int GeometryTreeModel::insertRow2D(const GeometryElementCreator &to_insert, cons
     return p;
 }
 
-plask::Box2D GeometryTreeModel::insertPlace2D(const GeometryElementCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point) {
+plask::Box2D GeometryTreeModel::insertPlace2D(const GeometryObjectCreator& to_insert, const QModelIndex &parent, const plask::Vec<2, double>& point) {
     return toItem(parent)->getInsertPlace2D(to_insert, point);
 }
 
@@ -398,7 +398,7 @@ bool GeometryTreeModel::dropMimeData(const QMimeData *data, Qt::DropAction actio
         //for now we doesn't support creating top-level geometries by creators
         if (!parent.isValid()) return false;
 
-        toItem(parent)->tryInsert(*GeometryElementCreator::fromMimeData(data), row >= 0 ? row : 0);
+        toItem(parent)->tryInsert(*GeometryObjectCreator::fromMimeData(data), row >= 0 ? row : 0);
 
         return true;
     }

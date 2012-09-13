@@ -11,8 +11,8 @@ void Document::clear() {
 }
 
 void Document::save(plask::XMLWriter &dest) {
-    plask::XMLWriter::Element root_element(dest, plask::Manager::TAG_NAME_ROOT);
-    treeModel.save(root_element);
+    plask::XMLWriter::Element root_object(dest, plask::Manager::TAG_NAME_ROOT);
+    treeModel.save(root_object);
 }
 
 void Document::save(const std::string &filename) {
@@ -25,8 +25,8 @@ void Document::open(const QString &fileName) {
     undoStack.clear();
     //TODO support file names with non-asci char
     manager.loadFromFile(fileName.toStdString(), &NameOnlyMaterial::getInstance);
-    for (auto& element: manager.namedElements) {
-        ext(element.second)->setName(QString(element.first.c_str()));
+    for (auto& object: manager.namedObjects) {
+        ext(object.second)->setName(QString(object.first.c_str()));
     }
     treeModel.refresh(manager.roots);
 }

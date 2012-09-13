@@ -30,7 +30,7 @@ public:
 
     Document(QtAbstractPropertyBrowser& browser);
 
-    void selectElement(GeometryTreeItem* treeItem) {
+    void selectObject(GeometryTreeItem* treeItem) {
         propertiesBrowser.clear();
         if (treeItem == 0) return;
         treeItem->fillPropertyBrowser(propertiesBrowser);

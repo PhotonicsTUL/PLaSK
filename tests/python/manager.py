@@ -38,8 +38,8 @@ class Manager(unittest.TestCase):
                     <postdiv hor_by="2"/>
                     <warnings multiple="no"/>
                     <refinements>
-                        <vertical element="Block-3" path="Path-4" pos="1.0"/>
-                        <horizontal element="Block-3" pos="1.0"/>
+                        <vertical object="Block-3" path="Path-4" pos="1.0"/>
+                        <horizontal object="Block-3" pos="1.0"/>
                     </refinements>
                 </generator>
             </grids>
@@ -47,16 +47,16 @@ class Manager(unittest.TestCase):
         ''')
 
     def testGeometry(self):
-        self.assertEqual( len(self.manager.elements), 2 )
-        self.assertEqual( type(self.manager.elements["Block-3"]), plask.geometry.Block2D )
-        self.assertEqual( list(self.manager.elements["Stack-2"].getLeafsBBoxes()),
+        self.assertEqual( len(self.manager.objects), 2 )
+        self.assertEqual( type(self.manager.objects["Block-3"]), plask.geometry.Block2D )
+        self.assertEqual( list(self.manager.objects["Stack-2"].getLeafsBBoxes()),
             [plask.geometry.Box2D(0,0,5,2), plask.geometry.Box2D(0,2,5,4)] )
         self.assertEqual( type(self.manager.geometries.Space_1), plask.geometry.Cartesian2D )
         self.assertEqual( len(self.manager.pth), 1 )
-        with self.assertRaises(KeyError): self.manager.elements["nonexistent"]
+        with self.assertRaises(KeyError): self.manager.objects["nonexistent"]
 
     def testDictionaries(self):
-        self.assertEqual( list(self.manager.ele), ["Block-3", "Stack-2"] )
+        self.assertEqual( list(self.manager.obj), ["Block-3", "Stack-2"] )
 
     def testExport(self):
         self.manager.export(globals())
@@ -75,7 +75,7 @@ class Manager(unittest.TestCase):
         self.assertEqual( self.manager.msg.test.postdiv, (2,3) )
         self.assertEqual( self.manager.msg.test.warn_missing, False )
 
-        mesh = self.manager.msg.refined.generate(self.manager.ele.Stack_2)
+        mesh = self.manager.msg.refined.generate(self.manager.obj.Stack_2)
         self.assertEqual( mesh.axis1, [0., 2., 3., 4.] )
         self.assertEqual( mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0] )
 

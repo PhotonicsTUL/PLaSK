@@ -41,12 +41,12 @@ public boost::python::wrapper< std::set<KeyType> >  {
     py_set<KeyType> (const source_type& s )
         { this->insert(s.begin(), s.end()); }
 
-    // element access
+    // object access
     bool contains(const KeyType key) { return this->count(key)>0; }
     // we must define add() for it gets explicit argument types
     void add(const KeyType key) { this->insert(key); }
     void remove(const KeyType key) { // improve error handling here
-        if (!contains(key)) throw "element not in set"; erase(key);
+        if (!contains(key)) throw "object not in set"; erase(key);
     }
 
     std::string repr() {
@@ -101,9 +101,9 @@ export_set(const char* py_name) {
    boost::python::class_<set_T > (py_name, "Mutable set")
        .def("__len__", &set_T::size)
        .def("__contains__",&set_T::contains)
-       .def("add", &set_T::add, "add element")
+       .def("add", &set_T::add, "add object")
        .def("__delitem__", &set_T::remove)
-       .def("remove", &set_T::remove, "remove element")
+       .def("remove", &set_T::remove, "remove object")
        .def("__iter__", boost::python::iterator<set_T> ())
 
        .def("__repr__", &set_T::repr)
@@ -114,9 +114,9 @@ export_set(const char* py_name) {
        .def("__or__", &set_T::set_union, "set union")
        .def("intersection", &set_T::set_intersection, "set intersection")
        .def("__and__", &set_T::set_intersection, "set intersection")
-       .def("difference", &set_T::set_difference, "elements not in second set")
+       .def("difference", &set_T::set_difference, "objects not in second set")
        .def("__sub__", &set_T::set_difference, "set difference")
-       .def("symmetric_difference", &set_T::set_symmetric_difference, "elements unique to either set")
+       .def("symmetric_difference", &set_T::set_symmetric_difference, "objects unique to either set")
        .def("__xor__", &set_T::set_symmetric_difference, "symmetric set difference")
    ;
 
@@ -143,9 +143,9 @@ export_frozenset(const char* py_name) {
        .def("__or__", &set_T::set_union, "set union")
        .def("intersection", &set_T::set_intersection, "set intersection")
        .def("__and__", &set_T::set_intersection, "set intersection")
-       .def("difference", &set_T::set_difference, "elements not in second set")
+       .def("difference", &set_T::set_difference, "objects not in second set")
        .def("__sub__", &set_T::set_difference, "set different")
-       .def("symmetric_difference", &set_T::set_symmetric_difference, "elements unique to either set")
+       .def("symmetric_difference", &set_T::set_symmetric_difference, "objects unique to either set")
        .def("__xor__", &set_T::set_symmetric_difference, "symmetric set different")
    ;
 

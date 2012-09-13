@@ -249,26 +249,26 @@ struct DataVector {
 #endif // DOXYGEN
 
     /**
-     * Get iterator referring to the first element in data vector.
-     * @return const iterator referring to the first element in data vector
+     * Get iterator referring to the first object in data vector.
+     * @return const iterator referring to the first object in data vector
      */
     const_iterator begin() const { return data_; }
 
     /**
-     * Get iterator referring to the first element in data vector.
-     * @return iterator referring to the first element in data vector
+     * Get iterator referring to the first object in data vector.
+     * @return iterator referring to the first object in data vector
      */
     iterator begin() { return data_; }
 
     /**
-     * Get iterator referring to the past-the-end element in data vector
-     * @return const iterator referring to the past-the-end element in data vector
+     * Get iterator referring to the past-the-end object in data vector
+     * @return const iterator referring to the past-the-end object in data vector
      */
     const_iterator end() const { return data_ + size_; }
 
     /**
-     * Get iterator referring to the past-the-end element in data vector
-     * @return iterator referring to the past-the-end element in data vector
+     * Get iterator referring to the past-the-end object in data vector
+     * @return iterator referring to the past-the-end object in data vector
      */
     iterator end() { return data_ + size_; }
 
@@ -282,14 +282,14 @@ struct DataVector {
     T* data() { return data_; }
 
     /**
-     * Return n-th element of the data.
-     * @param n number of element to return
+     * Return n-th object of the data.
+     * @param n number of object to return
      */
     const T& operator [](std::size_t n) const { return data_[n]; }
 
     /**
-     * Return reference to the n-th element of the data.
-     * @param n number of element to return
+     * Return reference to the n-th object of the data.
+     * @param n number of object to return
      */
     T& operator [](std::size_t n) { return data_[n]; }
 

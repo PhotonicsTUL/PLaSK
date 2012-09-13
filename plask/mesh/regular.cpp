@@ -21,18 +21,18 @@ RegularMesh3D RegularMesh3D::getMidpointsMesh() const {
 
 
 template <>
-void RegularMesh2D::writeXML(XMLElement& element) const {
-    element.attr("type", "regular2d");
-    element.addTag("axis0").attr("start", axis0.getFirst()).attr("end", axis0.getLast()).attr("count", axis0.size());
-    element.addTag("axis1").attr("start", axis1.getFirst()).attr("end", axis1.getLast()).attr("count", axis1.size());
+void RegularMesh2D::writeXML(XMLElement& object) const {
+    object.attr("type", "regular2d");
+    object.addTag("axis0").attr("start", axis0.getFirst()).attr("end", axis0.getLast()).attr("count", axis0.size());
+    object.addTag("axis1").attr("start", axis1.getFirst()).attr("end", axis1.getLast()).attr("count", axis1.size());
 }
 
 template <>
-void RegularMesh3D::writeXML(XMLElement& element) const {
-    element.attr("type", "regular3d");
-    element.addTag("axis0").attr("start", axis0.getFirst()).attr("end", axis0.getLast()).attr("count", axis0.size());
-    element.addTag("axis1").attr("start", axis1.getFirst()).attr("end", axis1.getLast()).attr("count", axis1.size());
-    element.addTag("axis2").attr("start", axis2.getFirst()).attr("end", axis2.getLast()).attr("count", axis2.size());
+void RegularMesh3D::writeXML(XMLElement& object) const {
+    object.attr("type", "regular3d");
+    object.addTag("axis0").attr("start", axis0.getFirst()).attr("end", axis0.getLast()).attr("count", axis0.size());
+    object.addTag("axis1").attr("start", axis1.getFirst()).attr("end", axis1.getLast()).attr("count", axis1.size());
+    object.addTag("axis2").attr("start", axis2.getFirst()).attr("end", axis2.getLast()).attr("count", axis2.size());
 }
 
 

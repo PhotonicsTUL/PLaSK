@@ -15,9 +15,9 @@ namespace plask {
 /**
  * Base class for all geometry trunks. Solvers can do calculation in calculation space with specific type.
  *
- * Almost all GeometryElement methods are delegate to child of this.
+ * Almost all GeometryObject methods are delegate to child of this.
  */
-struct Geometry: public GeometryElement {
+struct Geometry: public GeometryObject {
 
     /// Default material (which will be used for places in which geometry doesn't define any material), typically air.
     shared_ptr<Material> defaultMaterial;
@@ -130,10 +130,10 @@ struct Geometry: public GeometryElement {
     virtual Type getType() const { return TYPE_GEOMETRY; }
 
     /**
-     * Get 3D element held by this geometry (which has type Extrusion or Revolution for 2d geometries).
-     * @param 3D geometry element held by this geometry
+     * Get 3D object held by this geometry (which has type Extrusion or Revolution for 2d geometries).
+     * @param 3D geometry object held by this geometry
      */
-    virtual shared_ptr< GeometryElementD<3> > getElement3D() const = 0;
+    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const = 0;
 
 protected:
 
@@ -192,7 +192,7 @@ class GeometryD: public Geometry {
      * Refresh bounding box cache. Called by childrenChanged signal. Delegate this signal.
      * @param evt
      */
-    void onChildChanged(const GeometryElement::Event& evt) {
+    void onChildChanged(const GeometryObject::Event& evt) {
         if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
         //comipler should optimized out dim == 2 condition checking
         fireChanged(dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
@@ -212,7 +212,7 @@ class GeometryD: public Geometry {
      */
     void initNewChild() {
         disconnectOnChildChanged(); //disconnect old child, if any
-        auto c3d = getElement3D();
+        auto c3d = getObject3D();
         if (c3d) {
             if (c3d) connection_with_child = c3d->changedConnectMethod(this, &GeometryD<dim>::onChildChanged);
             auto c = getChild();
@@ -247,7 +247,7 @@ public:
      * Get child geometry.
      * @return child geometry
      */
-    virtual shared_ptr< GeometryElementD<dim> > getChild() const = 0;
+    virtual shared_ptr< GeometryObjectD<dim> > getChild() const = 0;
 
     /**
      * Get bounding box of child geometry.
@@ -257,33 +257,33 @@ public:
         return cachedBoundingBox;
     }
 
-    virtual bool isInSubtree(const GeometryElement& el) const {
+    virtual bool isInSubtree(const GeometryObject& el) const {
         return getChild()->isInSubtree(el);
     }
 
-    virtual Subtree getPathsTo(const GeometryElement& el, const PathHints* pathHints = 0) const {
+    virtual Subtree getPathsTo(const GeometryObject& el, const PathHints* pathHints = 0) const {
         return getChild()->getPathsTo(el, pathHints);
     }
 
-    virtual void getElementsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const {
-        return getChild()->getElementsToVec(predicate, dest, path);
+    virtual void getObjectsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
+        return getChild()->getObjectsToVec(predicate, dest, path);
     }
 
     virtual std::size_t getChildrenCount() const {
         return getChild() ? 1 : 0;
     }
 
-    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const {
         //if (!hasChild() || child_nr > 0) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
         if (child_nr >= getChildrenCount()) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
         return getChild();
     }
 
-    std::vector<shared_ptr<const GeometryElement>> getLeafs(const PathHints* path=nullptr) const {
+    std::vector<shared_ptr<const GeometryObject>> getLeafs(const PathHints* path=nullptr) const {
         return getChild()->getLeafs(path);
     }
 
-    std::vector<shared_ptr<const GeometryElement>> getLeafs(const PathHints& path) const {
+    std::vector<shared_ptr<const GeometryObject>> getLeafs(const PathHints& path) const {
         return getChild()->getLeafs(path);
     }
 
@@ -295,20 +295,20 @@ public:
         return getChild()->getLeafsPositions(path);
     }
 
-    std::vector<CoordsType> getElementPositions(const GeometryElement& element, const PathHints* path=nullptr) const {
-        return getChild()->getElementPositions(element, path);
+    std::vector<CoordsType> getObjectPositions(const GeometryObject& object, const PathHints* path=nullptr) const {
+        return getChild()->getObjectPositions(object, path);
     }
 
-    std::vector<CoordsType> getElementPositions(const GeometryElement& element, const PathHints& path) const {
-        return getChild()->getElementPositions(element, path);
+    std::vector<CoordsType> getObjectPositions(const GeometryObject& object, const PathHints& path) const {
+        return getChild()->getObjectPositions(object, path);
     }
 
-    std::vector<CoordsType> getElementPositions(const shared_ptr<const GeometryElement>& element, const PathHints* path=nullptr) const {
-        return getChild()->getElementPositions(*element, path);
+    std::vector<CoordsType> getObjectPositions(const shared_ptr<const GeometryObject>& object, const PathHints* path=nullptr) const {
+        return getChild()->getObjectPositions(*object, path);
     }
 
-    std::vector<CoordsType> getElementPositions(const shared_ptr<const GeometryElement>& element, const PathHints& path) const {
-        return getChild()->getElementPositions(*element, path);
+    std::vector<CoordsType> getObjectPositions(const shared_ptr<const GeometryObject>& object, const PathHints& path) const {
+        return getChild()->getObjectPositions(*object, path);
     }
 
     std::vector<typename Primitive<DIMS>::Box> getLeafsBoundingBoxes(const PathHints* path=nullptr) const {
@@ -319,27 +319,27 @@ public:
         return getChild()->getLeafsBoundingBoxes(path);
     }
 
-    std::vector<typename Primitive<DIMS>::Box> getElementBoundingBoxes(const GeometryElement& element, const PathHints* path=nullptr) const {
-        return getChild()->getElementBoundingBoxes(element, path);
+    std::vector<typename Primitive<DIMS>::Box> getObjectBoundingBoxes(const GeometryObject& object, const PathHints* path=nullptr) const {
+        return getChild()->getObjectBoundingBoxes(object, path);
     }
 
-    std::vector<typename Primitive<DIMS>::Box> getElementBoundingBoxes(const GeometryElement& element, const PathHints& path) const {
-        return getChild()->getElementBoundingBoxes(element, path);
+    std::vector<typename Primitive<DIMS>::Box> getObjectBoundingBoxes(const GeometryObject& object, const PathHints& path) const {
+        return getChild()->getObjectBoundingBoxes(object, path);
     }
 
-    std::vector<typename Primitive<DIMS>::Box> getElementBoundingBoxes(const shared_ptr<const GeometryElement>& element, const PathHints* path=nullptr) const {
-        return getChild()->getElementBoundingBoxes(*element, path);
+    std::vector<typename Primitive<DIMS>::Box> getObjectBoundingBoxes(const shared_ptr<const GeometryObject>& object, const PathHints* path=nullptr) const {
+        return getChild()->getObjectBoundingBoxes(*object, path);
     }
 
-    std::vector<typename Primitive<DIMS>::Box> getElementBoundingBoxes(const shared_ptr<const GeometryElement>& element, const PathHints& path) const {
-        return getChild()->getElementBoundingBoxes(*element, path);
+    std::vector<typename Primitive<DIMS>::Box> getObjectBoundingBoxes(const shared_ptr<const GeometryObject>& object, const PathHints& path) const {
+        return getChild()->getObjectBoundingBoxes(*object, path);
     }
 
-    GeometryElement::Subtree getPathsTo(const CoordsType& point) const {
+    GeometryObject::Subtree getPathsTo(const CoordsType& point) const {
         return getChild()->getPathsTo(point);
     }
 
-    virtual shared_ptr<const GeometryElement> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const {
+    virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const {
         return getChild()->changedVersion(changer, translation);
     }
 
@@ -347,25 +347,25 @@ public:
 
     /**
      * Get the sub/super-space of this one (automatically detected)
-     * \param element geometry element within the geometry tree of this subspace or with this space child as its sub-tree
-     * \param path hints specifying particular instance of the geometry element
+     * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
+     * \param path hints specifying particular instance of the geometry object
      * \param copyBorders indicates wheter the new space should have the same borders as this one
      * \return new space
      */
-    virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
+    virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
 
     /**
      * Get the sub/super-space of this one (automatically detected) with specified borders
-     * \param element geometry element within the geometry tree of this subspace or with this space child as its sub-tree
-     * \param path hints specifying particular instance of the geometry element
+     * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
+     * \param path hints specifying particular instance of the geometry object
      * \param borders map of edge name to border description
      * \param axesNames name of the axes for borders
      * \return new space
      */
-    virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryElementD<dim>>& element, const PathHints* path=nullptr,
+    virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr,
                                                  const std::map<std::string, std::string>& borders=null_borders,
                                                  const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
-        GeometryD<dim>* subspace = getSubspace(element, path, false);
+        GeometryD<dim>* subspace = getSubspace(object, path, false);
         subspace->setBorders( [&](const std::string& s) -> boost::optional<std::string> {
             auto b = borders.find(s);
             return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
@@ -481,58 +481,58 @@ public:
     shared_ptr<Material> getBackMaterial() const { return backMaterial ? backMaterial : defaultMaterial; }
 
     /**
-     * Construct geometry over given @p extrusion element.
-     * @param extrusion extrusion geometry element
+     * Construct geometry over given @p extrusion object.
+     * @param extrusion extrusion geometry object
      */
     Geometry2DCartesian(shared_ptr<Extrusion> extrusion = shared_ptr<Extrusion>());
 
     /**
-     * Construct geometry over extrusion element build on top of given 2D @p childGeometry and with given @p length.
+     * Construct geometry over extrusion object build on top of given 2D @p childGeometry and with given @p length.
      *
-     * It construct new extrusion element internally.
+     * It construct new extrusion object internally.
      * @param childGeometry, length parameters which will be passed to plask::Extrusion constructor
      */
-    Geometry2DCartesian(shared_ptr<GeometryElementD<2>> childGeometry, double length);
+    Geometry2DCartesian(shared_ptr<GeometryObjectD<2>> childGeometry, double length);
 
     /**
-     * Get child of extrusion element used by this geometry.
+     * Get child of extrusion object used by this geometry.
      * @return child geometry
      */
-    virtual shared_ptr< GeometryElementD<2> > getChild() const;
+    virtual shared_ptr< GeometryObjectD<2> > getChild() const;
 
-    void removeAtUnsafe(std::size_t) { extrusion->setChildUnsafe(shared_ptr< GeometryElementD<2> >()); }
+    void removeAtUnsafe(std::size_t) { extrusion->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
     /**
-     * Get extrusion element included in this geometry.
-     * @return extrusion element included in this geometry
+     * Get extrusion object included in this geometry.
+     * @return extrusion object included in this geometry
      */
     shared_ptr<Extrusion> getExtrusion() const { return extrusion; }
 
     /**
-     * Get extrusion element included in this geometry.
-     * @return extrusion element included in this geometry
+     * Get extrusion object included in this geometry.
+     * @return extrusion object included in this geometry
      */
-    virtual shared_ptr< GeometryElementD<3> > getElement3D() const { return extrusion; }
+    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const { return extrusion; }
 
     /**
-     * Set new extrusion element for this geometry and inform observers about changing of geometry.
-     * @param extrusion new extrusion element to set and use
+     * Set new extrusion object for this geometry and inform observers about changing of geometry.
+     * @param extrusion new extrusion object to set and use
      */
     void setExtrusion(shared_ptr<Extrusion> extrusion);
 
-    virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
+    virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path = 0, bool copyBorders = false) const;
 
-    virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
+    virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path=nullptr,
                                           const std::map<std::string, std::string>& borders=null_borders,
                                           const AxisNames& axesNames=AxisNames()) const {
-        return (Geometry2DCartesian*)GeometryD<2>::getSubspace(element, path, borders, axesNames);
+        return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
     }
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const;
 
 };
 
@@ -606,53 +606,53 @@ public:
     const border::Strategy& getUpBorder() { return bottomup.getHi(); }
 
     /**
-     * Construct geometry over given @p revolution element.
-     * @param revolution revolution element
+     * Construct geometry over given @p revolution object.
+     * @param revolution revolution object
      */
     Geometry2DCylindrical(shared_ptr<Revolution> revolution = shared_ptr<Revolution>());
 
     /**
-     * Construct geometry over revolution element build on top of given 2D @p childGeometry.
+     * Construct geometry over revolution object build on top of given 2D @p childGeometry.
      *
-     * It construct new plask::Revolution element internally.
+     * It construct new plask::Revolution object internally.
      * @param childGeometry parameters which will be passed to plask::Revolution constructor
      */
-    Geometry2DCylindrical(shared_ptr<GeometryElementD<2>> childGeometry);
+    Geometry2DCylindrical(shared_ptr<GeometryObjectD<2>> childGeometry);
 
     /**
-     * Get child of revolution element used by this geometry.
+     * Get child of revolution object used by this geometry.
      * @return child geometry
      */
-    virtual shared_ptr< GeometryElementD<2> > getChild() const;
+    virtual shared_ptr< GeometryObjectD<2> > getChild() const;
 
-    void removeAtUnsafe(std::size_t) { revolution->setChildUnsafe(shared_ptr< GeometryElementD<2> >()); }
+    void removeAtUnsafe(std::size_t) { revolution->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
 
     /**
-     * Get revolution element included in this geometry.
-     * @return revolution element included in this geometry
+     * Get revolution object included in this geometry.
+     * @return revolution object included in this geometry
      */
     shared_ptr<Revolution> getRevolution() const { return revolution; }
 
     /**
-     * Get revolution element included in this geometry.
-     * @return revolution element included in this geometry
+     * Get revolution object included in this geometry.
+     * @return revolution object included in this geometry
      */
-    virtual shared_ptr< GeometryElementD<3> > getElement3D() const { return revolution; }
+    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const { return revolution; }
 
     /**
-     * Set new revolution element for this geometry and inform observers about changing of geometry.
-     * @param revolution new revolution element to set and use
+     * Set new revolution object for this geometry and inform observers about changing of geometry.
+     * @param revolution new revolution object to set and use
      */
     void setRevolution(shared_ptr<Revolution> revolution);
 
-    virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path = 0, bool copyBorders = false) const;
+    virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path = 0, bool copyBorders = false) const;
 
-    virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path=nullptr,
+    virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path=nullptr,
                                             const std::map<std::string, std::string>& borders=null_borders,
                                             const AxisNames& axesNames=AxisNames()) const {
-        return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(element, path, borders, axesNames);
+        return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
     }
 
     void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
@@ -663,9 +663,9 @@ public:
 
     const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
-    void writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const;
+    void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const;
 
   protected:
 
@@ -681,7 +681,7 @@ public:
  */
 class Geometry3D: public GeometryD<3> {
 
-    shared_ptr< GeometryElementD<3> > child;
+    shared_ptr< GeometryObjectD<3> > child;
 
     border::StrategyPairHolder<Primitive<3>::DIRECTION_LON> backfront;
     border::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
@@ -762,23 +762,23 @@ public:
     const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
 
     /**
-     * Construct geometry over given 3D @p child element.
+     * Construct geometry over given 3D @p child object.
      * @param child child, of equal to nullptr (default) you should call setChild before use this geometry
      */
-    Geometry3D(shared_ptr<GeometryElementD<3>> child = shared_ptr<GeometryElementD<3>>());
+    Geometry3D(shared_ptr<GeometryObjectD<3>> child = shared_ptr<GeometryObjectD<3>>());
 
     /**
-     * Get child element used by this geometry.
-     * @return child element
+     * Get child object used by this geometry.
+     * @return child object
      */
-    virtual shared_ptr< GeometryElementD<3> > getChild() const;
+    virtual shared_ptr< GeometryObjectD<3> > getChild() const;
 
     /**
      * Set new child.
      * This method doesn't inform observers about change.
      * @param child new child
      */
-    void setChildUnsafe(shared_ptr< GeometryElementD<3> > child) {
+    void setChildUnsafe(shared_ptr< GeometryObjectD<3> > child) {
         if (child == this->child) return;
         this->child = child;
         this->initNewChild();
@@ -788,7 +788,7 @@ public:
      * Set new child. Informs observers about change.
      * @param child new child
      */
-    void setChild(shared_ptr< GeometryElementD<3> > child) {
+    void setChild(shared_ptr< GeometryObjectD<3> > child) {
         //this->ensureCanHaveAsChild(*child);
         setChildUnsafe(child);
         fireChildrenChanged();
@@ -799,19 +799,19 @@ public:
      */
     bool hasChild() const { return this->child != nullptr; }
 
-    void removeAtUnsafe(std::size_t) { setChildUnsafe(shared_ptr< GeometryElementD<3> >()); }
+    void removeAtUnsafe(std::size_t) { setChildUnsafe(shared_ptr< GeometryObjectD<3> >()); }
 
     /**
-     * Get child element used by this geometry.
-     * @return child element
+     * Get child object used by this geometry.
+     * @return child object
      */
-    virtual shared_ptr< GeometryElementD<3> > getElement3D() const;
+    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const;
 
     virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const;
 
-    virtual Geometry3D* getSubspace(const shared_ptr<GeometryElementD<3>>& element, const PathHints* path=nullptr, bool copyBorders=false) const;
+    virtual Geometry3D* getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path=nullptr, bool copyBorders=false) const;
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const;
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 };
 
 

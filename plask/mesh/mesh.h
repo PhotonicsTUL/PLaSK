@@ -73,9 +73,9 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
         return point;
     }
 
-    virtual void writeXML(XMLElement& element) const;
-        element.attr("type", "point3d"); // this is required attribute for the provided element
-        element.addTag("point")
+    virtual void writeXML(XMLElement& object) const;
+        object.attr("type", "point3d"); // this is required attribute for the provided object
+        object.addTag("point")
                .attr("c0", point.c0)
                .attr("c1", point.c1)
                .attr("c2", point.c2)     // store this point coordinates in attributes of the tag <point>
@@ -113,7 +113,7 @@ You should also implement interpolation algorithms for your mesh, see @ref inter
 #include <plask/memory.h>
 
 #include "../vec.h"
-#include "../geometry/element.h"
+#include "../geometry/object.h"
 #include "../utils/iterators.h"
 #include "../utils/cache.h"
 #include "../utils/xml.h"
@@ -183,9 +183,9 @@ struct Mesh {
 
     /**
      * Write mesh to XML
-     * \param element XML element to write to
+     * \param object XML object to write to
      */
-    virtual void writeXML(XMLElement& element) const {
+    virtual void writeXML(XMLElement& object) const {
         throw NotImplemented("Mesh::writeXML()");
     }
 
@@ -412,7 +412,7 @@ template <typename MeshT>
 class MeshGeneratorOf: public MeshGenerator
 {
   protected:
-    WeakCache<GeometryElement, MeshT, CacheRemoveOnEachChange> cache;
+    WeakCache<GeometryObject, MeshT, CacheRemoveOnEachChange> cache;
 
   public:
     // Type of generated mesh
@@ -423,7 +423,7 @@ class MeshGeneratorOf: public MeshGenerator
      * \param geometry on which the mesh should be generated
      * \return new generated mesh
      */
-    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryElementD<MeshT::DIM>>& geometry) = 0;
+    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryObjectD<MeshT::DIM>>& geometry) = 0;
 
     /**
      * Clear the cache of generated meshes.
@@ -434,7 +434,7 @@ class MeshGeneratorOf: public MeshGenerator
     }
 
     /// Get generated mesh if it is cached or create a new one
-    shared_ptr<MeshT> operator()(const shared_ptr<GeometryElementD<MeshT::DIM>>& geometry) {
+    shared_ptr<MeshT> operator()(const shared_ptr<GeometryObjectD<MeshT::DIM>>& geometry) {
         if (auto res = cache.get(geometry))
             return res;
         else

@@ -567,7 +567,7 @@ Q_GLOBAL_STATIC(QtMetaEnumProvider, metaEnumProvider)
 
     \brief The QtGroupPropertyManager provides and manages group properties.
 
-    This class is intended to provide a grouping element without any value.
+    This class is intended to provide a grouping object without any value.
 
     \sa QtAbstractPropertyManager
 */

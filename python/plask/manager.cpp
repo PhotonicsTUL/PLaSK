@@ -97,7 +97,7 @@ void PythonManager::loadMaterials(XMLReader& reader, const Manager::MaterialsSou
 
 
 void PythonManager::export_dict(py::object self, py::dict dict) {
-    dict["ELE"] = self.attr("ele");
+    dict["OBJ"] = self.attr("obj");
     dict["PTH"] = self.attr("pth");
     dict["GEO"] = self.attr("geo");
     dict["MSH"] = self.attr("msh");
@@ -145,7 +145,7 @@ void PythonManager::export_dict(py::object self, py::dict dict) {
 
 
 template <typename T> static const std::string item_name() { return ""; }
-template <> const std::string item_name<shared_ptr<GeometryElement>>() { return "geometry element"; }
+template <> const std::string item_name<shared_ptr<GeometryObject>>() { return "geometry object"; }
 template <> const std::string item_name<shared_ptr<Geometry>>() { return "geometry"; }
 template <> const std::string item_name<PathHints>() { return "path"; }
 template <> const std::string item_name<shared_ptr<Solver>>() { return "solver"; }
@@ -280,7 +280,7 @@ static void register_manager_dict(const std::string name) {
         // .def("__setattr__", &dict__setattr__<T>)
         // .def("__delattr__", &dict__delattr__<T>)
     ;
-    // This swap ensures that in case there is an element with id 'keys', 'values', or 'items' it will take precedence over corresponding method
+    // This swap ensures that in case there is an object with id 'keys', 'values', or 'items' it will take precedence over corresponding method
     py::object __getattr__ = c.attr("__getattr__");
     c.attr("__getattr__") = c.attr("__getattribute__");
     c.attr("__getattribute__") = __getattr__;
@@ -297,13 +297,13 @@ static void register_manager_dict(const std::string name) {
 
 void register_manager() {
     py::class_<PythonManager, shared_ptr<PythonManager>, boost::noncopyable> manager("Manager",
-        "Main input manager. It provides methods to read the XML file and fetch geometry elements, pathes,"
+        "Main input manager. It provides methods to read the XML file and fetch geometry objects, pathes,"
         "meshes, and generators by name.\n\n"
         "GeometryReader(materials=None)\n"
         "    Create manager with specified material database (if None, use default database)\n\n",
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
         .def("read", &PythonManager::read, "Read data from source (can be a filename, file, or an XML string to read)", py::arg("source"))
-        .def_readonly("elements", &PythonManager::namedElements, "Dictionary of all named geometry elements")
+        .def_readonly("objects", &PythonManager::namedObjects, "Dictionary of all named geometry objects")
         .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
         .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")
         .def_readonly("meshes", &PythonManager::meshes, "Dictionary of all named meshes")
@@ -312,14 +312,14 @@ void register_manager() {
         .def_readonly("script", &PythonManager::script, "Script read from XML file")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
-    manager.attr("ele") = manager.attr("elements");
+    manager.attr("obj") = manager.attr("objects");
     manager.attr("pth") = manager.attr("paths");
     manager.attr("geo") = manager.attr("geometries");
     manager.attr("msh") = manager.attr("meshes");
     manager.attr("msg") = manager.attr("mesh_generators");
     manager.attr("slv") = manager.attr("solvers");
 
-    register_manager_dict<shared_ptr<GeometryElement>>("GeometryElements");
+    register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");
     register_manager_dict<shared_ptr<Geometry>>("Geometries");
     register_manager_dict<PathHints>("PathHints");
     register_manager_dict<shared_ptr<Mesh>>("Meshes");

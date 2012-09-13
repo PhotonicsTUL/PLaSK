@@ -1,7 +1,7 @@
 #ifndef CONST_PROVIDERS_H
 #define CONST_PROVIDERS_H
 
-#include "../geometry/element.h"
+#include "../geometry/object.h"
 #include "../data.h"
 #include "../geometry/path.h"
 
@@ -10,7 +10,7 @@ namespace plask {
 template <typename PropertyT, typename SpaceT> struct ProviderFor;
 
 /**
- * Helper class which allow to easy implementation of providers which allows to define value in each geometry place pointed as geometry element.
+ * Helper class which allow to easy implementation of providers which allows to define value in each geometry place pointed as geometry object.
  */
 template <typename PropertyT, typename SpaceT>
 struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
@@ -19,24 +19,24 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
     typedef typename PropertyT::ValueType ValueType;
 
     struct Place {
-        /// Element for which we specify the value
-        weak_ptr<GeometryElementD<DIMS>> element;
+        /// Object for which we specify the value
+        weak_ptr<GeometryObjectD<DIMS>> object;
 
-        /// Hints specifying pointed element
+        /// Hints specifying pointed object
         PathHints hints;
 
-        Place(weak_ptr<GeometryElementD<DIMS>> element, const PathHints& hints=PathHints())
-            : element(element), hints(hints) {}
+        Place(weak_ptr<GeometryObjectD<DIMS>> object, const PathHints& hints=PathHints())
+            : object(object), hints(hints) {}
 
         bool operator<(const Place& other) const {
-            return (element < other.element) || ( !(other.element < element) && (other.hints < hints) ); // most probably empty hints will be larger
+            return (object < other.object) || ( !(other.object < object) && (other.hints < hints) ); // most probably empty hints will be larger
         }
     };
 
   protected:
 
-    /// Element for which coordinates we specify the values
-    weak_ptr<const GeometryElementD<DIMS>> root_geometry;
+    /// Object for which coordinates we specify the values
+    weak_ptr<const GeometryObjectD<DIMS>> root_geometry;
 
     /// Values for places.
     std::map<Place, ValueType> values;
@@ -46,7 +46,7 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
     ValueType default_value;
 
 
-    ConstByPlaceProviderImpl(weak_ptr<const GeometryElementD<DIMS>> root=weak_ptr<const GeometryElementD<DIMS>>(), const ValueType& default_value=ValueType())
+    ConstByPlaceProviderImpl(weak_ptr<const GeometryObjectD<DIMS>> root=weak_ptr<const GeometryObjectD<DIMS>>(), const ValueType& default_value=ValueType())
         : root_geometry(root), default_value(default_value) {}
 
     /**
@@ -54,7 +54,7 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
      * @param dst_mesh mesh
      */
     DataVector<ValueType> get(const plask::MeshD<DIMS>& dst_mesh) const {
-        shared_ptr<const GeometryElementD<DIMS>> geometry = root_geometry.lock();
+        shared_ptr<const GeometryObjectD<DIMS>> geometry = root_geometry.lock();
         if (!geometry) return DataVector<ValueType>(dst_mesh.size(), default_value);
 
         DataVector<ValueType> result(dst_mesh.size());
@@ -63,9 +63,9 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
         for (Vec<DIMS, double> point: dst_mesh) {
             bool assigned = false;
             for (auto& place: values) {
-                auto element = place.first.element.lock();
-                if (!element) continue;
-                auto regions = geometry->getElementInThisCoordinates(element, place.first.hints);
+                auto object = place.first.object.lock();
+                if (!object) continue;
+                auto regions = geometry->getObjectInThisCoordinates(object, place.first.hints);
                 for (const auto& region: regions) {
                     if (region && region->includes(point)) {
                         result[i] = place.second;
@@ -85,8 +85,8 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
   public:
 
     /**
-     * Set value for specified element
-     * \param element element on which the value is to be set
+     * Set value for specified object
+     * \param object object on which the value is to be set
      * \param value value to set
      */
     void setValueFor(const Place& place, ValueType value) {
@@ -95,9 +95,9 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
     }
 
     /**
-     * Get value from specified element
-     * \param element element on which the value is to be gotten
-     * \param hints optional hints specifying particular element instantions
+     * Get value from specified object
+     * \param object object on which the value is to be gotten
+     * \param hints optional hints specifying particular object instantions
      */
     ValueType getValueFrom(const Place& place) const {
         auto item = this->values.find(place);
@@ -106,9 +106,9 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
     }
 
     /**
-     * Remove value from specified element
-     * \param element element on which the value is to be removed
-     * \param hints optional hints specifying particular element instantions
+     * Remove value from specified object
+     * \param object object on which the value is to be removed
+     * \param hints optional hints specifying particular object instantions
      */
     void removeValueFrom(const Place& place) {
         auto item = this->values.find(place);
@@ -121,14 +121,14 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
         this->fireChanged();
     }
 
-    /// \return root geometry element
-    weak_ptr<const GeometryElementD<SpaceT::DIMS>> getRoot() const { return this->root_geometry; }
+    /// \return root geometry object
+    weak_ptr<const GeometryObjectD<SpaceT::DIMS>> getRoot() const { return this->root_geometry; }
 
     /**
      * Set root geometry
      * \param root new root geometry
      */
-    void setRoot(weak_ptr<const GeometryElementD<SpaceT::DIMS>> root) {
+    void setRoot(weak_ptr<const GeometryObjectD<SpaceT::DIMS>> root) {
         this->root_geometry = root;
         this->fireChanged();
     }

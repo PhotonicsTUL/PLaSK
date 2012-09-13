@@ -59,13 +59,13 @@ Geometry2DCartesian::Geometry2DCartesian(shared_ptr<Extrusion> extrusion)
     initNewChild();
 }
 
-Geometry2DCartesian::Geometry2DCartesian(shared_ptr<GeometryElementD<2>> childGeometry, double length)
+Geometry2DCartesian::Geometry2DCartesian(shared_ptr<GeometryObjectD<2>> childGeometry, double length)
     : extrusion(make_shared<Extrusion>(childGeometry, length))
 {
    initNewChild();
 }
 
-shared_ptr< GeometryElementD<2> > Geometry2DCartesian::getChild() const {
+shared_ptr< GeometryObjectD<2> > Geometry2DCartesian::getChild() const {
     return extrusion->getChild();
 }
 
@@ -89,10 +89,10 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
     fireChildrenChanged();
 }
 
-Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryElementD<2>>& element, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getUniqueElementInThisCoordinates(element, path);
+Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path, bool copyBorders) const {
+    auto new_child = getChild()->getUniqueObjectInThisCoordinates(object, path);
     if (!new_child) {
-        new_child = element->requireUniqueElementInThisCoordinates(getChild(), path);
+        new_child = object->requireUniqueObjectInThisCoordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
@@ -126,12 +126,12 @@ const border::Strategy& Geometry2DCartesian::getBorder(DIRECTION direction, bool
     return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
 }
 
-void Geometry2DCartesian::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
+void Geometry2DCartesian::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     //TODO borders
 }
 
-void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
+void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_object, *this, axes);
     if (WriteXMLCallback::isRef(tag)) return;
     writeXMLAttr(tag, axes);
     if (auto c = getExtrusion()) c->writeXML(tag, write_cb, axes);
@@ -143,13 +143,13 @@ Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<Revolution> revolution)
     initNewChild();
 }
 
-Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<GeometryElementD<2>> childGeometry)
+Geometry2DCylindrical::Geometry2DCylindrical(shared_ptr<GeometryObjectD<2>> childGeometry)
     : revolution(make_shared<Revolution>(childGeometry))
 {
    initNewChild();
 }
 
-shared_ptr< GeometryElementD<2> > Geometry2DCylindrical::getChild() const {
+shared_ptr< GeometryObjectD<2> > Geometry2DCylindrical::getChild() const {
     return revolution->getChild();
 }
 
@@ -175,10 +175,10 @@ void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
     fireChildrenChanged();
 }
 
-Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryElementD<2> >& element, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getUniqueElementInThisCoordinates(element, path);
+Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryObjectD<2> >& object, const PathHints* path, bool copyBorders) const {
+    auto new_child = getChild()->getUniqueObjectInThisCoordinates(object, path);
     if (!new_child) {
-        new_child = element->requireUniqueElementInThisCoordinates(getChild(), path);
+        new_child = object->requireUniqueObjectInThisCoordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
@@ -227,12 +227,12 @@ const border::Strategy& Geometry2DCylindrical::getBorder(DIRECTION direction, bo
     return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
 
-void Geometry2DCylindrical::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
+void Geometry2DCylindrical::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     //TODO borders
 }
 
-void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_element, WriteXMLCallback& write_cb, AxisNames axes) const {
-    XMLWriter::Element tag = write_cb.makeTag(parent_xml_element, *this, axes);
+void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {
+    XMLWriter::Element tag = write_cb.makeTag(parent_xml_object, *this, axes);
     if (WriteXMLCallback::isRef(tag)) return;
     writeXMLAttr(tag, axes);
     if (auto c = getRevolution()) c->writeXML(tag, write_cb, axes);
@@ -274,16 +274,16 @@ const border::Strategy &Geometry3D::getBorder(DIRECTION direction, bool higher) 
     assert(0);
 }
 
-Geometry3D::Geometry3D(shared_ptr<GeometryElementD<3> > child)
+Geometry3D::Geometry3D(shared_ptr<GeometryObjectD<3> > child)
 : child(child) {
     initNewChild();
 }
 
-shared_ptr<GeometryElementD<3> > Geometry3D::getChild() const {
+shared_ptr<GeometryObjectD<3> > Geometry3D::getChild() const {
     return child;
 }
 
-shared_ptr<GeometryElementD<3> > Geometry3D::getElement3D() const {
+shared_ptr<GeometryObjectD<3> > Geometry3D::getObject3D() const {
     return child;
 }
 
@@ -303,10 +303,10 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
     return getMaterialOrDefault(r);
 }
 
-Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryElementD<3>>& element, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getUniqueElementInThisCoordinates(element, path);
+Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path, bool copyBorders) const {
+    auto new_child = getChild()->getUniqueObjectInThisCoordinates(object, path);
     if (!new_child) {
-        new_child = element->requireUniqueElementInThisCoordinates(getChild(), path);
+        new_child = object->requireUniqueObjectInThisCoordinates(getChild(), path);
         new_child->translation = - new_child->translation;
     }
     if (copyBorders) {
@@ -317,7 +317,7 @@ Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryElementD<3>>& eleme
         return new Geometry3D(new_child);
 }
 
-void Geometry3D::writeXMLAttr(XMLWriter::Element& dest_xml_element, const AxisNames& axes) const {
+void Geometry3D::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     //TODO borders
 }
 

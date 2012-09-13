@@ -2,10 +2,10 @@
 #define GUI_GEOMETRY_WRAPPER_ELEMENT_H
 
 /** @file
- * This file includes interface to plask geometry elements model extensions connected with Qt.
+ * This file includes interface to plask geometry objects model extensions connected with Qt.
  *
- * Typically you should call ext() function with pointer to your geometry element object as argument.
- * This function return ElementWrapper which provide methods which operates on your element, knowing its type.
+ * Typically you should call ext() function with pointer to your geometry object object as argument.
+ * This function return ObjectWrapper which provide methods which operates on your object, knowing its type.
  */
 
 #include <QPainter>
@@ -19,53 +19,53 @@ class QGraphicsItem;
 class QRectF;
 QT_END_NAMESPACE
 
-#include <plask/geometry/element.h>
+#include <plask/geometry/object.h>
 
 /**
- * Wrapper over plask::GeometryElement, which:
+ * Wrapper over plask::GeometryObject, which:
  * - has extra method used by Qt GUI,
- * - has extra data (like element name).
+ * - has extra data (like object name).
  *
  * Typically you should not create object of this class or subclasses of this directly,
  * but using ext function (defined in register.h).
  */
-struct ElementWrapper {
+struct ObjectWrapper {
 
-    typedef plask::GeometryElement WrappedType;
+    typedef plask::GeometryObject WrappedType;
 
-    plask::GeometryElement* wrappedElement;
+    plask::GeometryObject* wrappedObject;
 
     QString name;
 
     /// This is typically called once, just after constructor
-    virtual void setWrappedElement(plask::shared_ptr<plask::GeometryElement> plaskElement) {
-        if (this->wrappedElement) this->wrappedElement->changedDisconnectMethod(this, &ElementWrapper::onWrappedChange);
-        this->wrappedElement = plaskElement.get();
-        if (this->wrappedElement) this->wrappedElement->changedConnectMethod(this, &ElementWrapper::onWrappedChange);
+    virtual void setWrappedObject(plask::shared_ptr<plask::GeometryObject> plaskObject) {
+        if (this->wrappedObject) this->wrappedObject->changedDisconnectMethod(this, &ObjectWrapper::onWrappedChange);
+        this->wrappedObject = plaskObject.get();
+        if (this->wrappedObject) this->wrappedObject->changedConnectMethod(this, &ObjectWrapper::onWrappedChange);
     }
 
-    /// Virtual destructor, diconnect from wrapped element.
-    virtual ~ElementWrapper();
+    /// Virtual destructor, diconnect from wrapped object.
+    virtual ~ObjectWrapper();
 
     /**
-     * Store information about event connected with geometry element or its wrapper.
+     * Store information about event connected with geometry object or its wrapper.
      *
      * Subclasses of this can includes additional information about specific type of event.
      */
-    struct Event: public EventWithSourceAndFlags<ElementWrapper> {
+    struct Event: public EventWithSourceAndFlags<ObjectWrapper> {
 
         /// Event flags (which describes event properties).
-        typedef plask::GeometryElement::Event::Flags Flags;
+        typedef plask::GeometryObject::Event::Flags Flags;
 
-        /// Non-null if event is delegeted from wrapped element.
-        plask::GeometryElement::Event* delegatedEvent;
+        /// Non-null if event is delegeted from wrapped object.
+        plask::GeometryObject::Event* delegatedEvent;
 
         /**
-         * Get element wrapped by source of event.
-         * @return element wrapped by source of event
+         * Get object wrapped by source of event.
+         * @return object wrapped by source of event
          */
-        plask::shared_ptr<plask::GeometryElement> wrappedElement() {
-            return this->source().wrappedElement->shared_from_this();
+        plask::shared_ptr<plask::GeometryObject> wrappedObject() {
+            return this->source().wrappedObject->shared_from_this();
         }
 
         /**
@@ -79,50 +79,50 @@ struct ElementWrapper {
          * Check if DELETE flag is set, which mean that source of event is deleted.
          * @return @c true only if DELETE flag is set
          */
-        bool isDelete() const { return hasFlag(plask::GeometryElement::Event::DELETE); }
+        bool isDelete() const { return hasFlag(plask::GeometryObject::Event::DELETE); }
 
         /**
          * Check if RESIZE flag is set, which mean that source of event could be resized.
          * @return @c true only if RESIZE flag is set
          */
-        bool isResize() const { return hasFlag(plask::GeometryElement::Event::RESIZE); }
+        bool isResize() const { return hasFlag(plask::GeometryObject::Event::RESIZE); }
 
         /**
          * Check if DELEGATED flag is set, which mean that source delegate event from its child.
          * @return @c true only if DELEGATED flag is set
          */
-        bool isDelgatedFromChild() const { return hasFlag(plask::GeometryElement::Event::DELEGATED); }
+        bool isDelgatedFromChild() const { return hasFlag(plask::GeometryObject::Event::DELEGATED); }
 
         /**
-         * Check if event is delegated from wrapped element.
-         * @return @c true only if event is delegated from wrapped element
+         * Check if event is delegated from wrapped object.
+         * @return @c true only if event is delegated from wrapped object
          */
-        bool isDelgatedFromWrappedElement() const { return delegatedEvent != nullptr; }
+        bool isDelgatedFromWrappedObject() const { return delegatedEvent != nullptr; }
 
         /**
          * Check if CHILD_LIST flag is set, which mean that children list of source could be changed.
          * @return @c true only if CHILD_LIST flag is set
          */
-        bool hasChangedChildrenList() const { return hasAnyFlag(plask::GeometryElement::Event::CHILDREN_GENERIC | plask::GeometryElement::Event::CHILDREN_INSERT | plask::GeometryElement::Event::CHILDREN_REMOVE); }
+        bool hasChangedChildrenList() const { return hasAnyFlag(plask::GeometryObject::Event::CHILDREN_GENERIC | plask::GeometryObject::Event::CHILDREN_INSERT | plask::GeometryObject::Event::CHILDREN_REMOVE); }
 
         /**
          * Construct event.
          * @param source source of event
          * @param flags which describes event's properties
          */
-        explicit Event(ElementWrapper& source, unsigned char flags = 0):
-            EventWithSourceAndFlags<ElementWrapper>(source, flags), delegatedEvent(0) {}
+        explicit Event(ObjectWrapper& source, unsigned char flags = 0):
+            EventWithSourceAndFlags<ObjectWrapper>(source, flags), delegatedEvent(0) {}
 
         /**
-         * Construct event which delegete event from wrapped element.
+         * Construct event which delegete event from wrapped object.
          * @param source source of event
-         * @param evt event generated by wrapped element
+         * @param evt event generated by wrapped object
          */
-        Event(ElementWrapper& source, plask::GeometryElement::Event& evt)
-            : EventWithSourceAndFlags<ElementWrapper>(source, evt.flags()), delegatedEvent(&evt) {}
+        Event(ObjectWrapper& source, plask::GeometryObject::Event& evt)
+            : EventWithSourceAndFlags<ObjectWrapper>(source, evt.flags()), delegatedEvent(&evt) {}
     };
 
-    /// Changed signal, fired when element was changed.
+    /// Changed signal, fired when object was changed.
     boost::signals2::signal<void(Event&)> changed;
 
     /**
@@ -154,14 +154,14 @@ struct ElementWrapper {
     }
 
 protected:
-    void onWrappedChange(plask::GeometryElement::Event& evt) {
+    void onWrappedChange(plask::GeometryObject::Event& evt) {
         fireChanged(evt);
-        if (evt.isDelete()) wrappedElement = nullptr;
+        if (evt.isDelete()) wrappedObject = nullptr;
     }
 
 public:
 
-    int getDimensionsCount() const { return wrappedElement->getDimensionsCount(); }
+    int getDimensionsCount() const { return wrappedObject->getDimensionsCount(); }
 
     /**
      * @return dimentions count of children, by default same as getDimensionsCount()
@@ -190,8 +190,8 @@ public:
     }
 
     /**
-     * Draw geometry element using given Qt @p painter.
-     * @param painter where draw element
+     * Draw geometry object using given Qt @p painter.
+     * @param painter where draw object
      */
     virtual void draw(QPainter& painter) const;
 
@@ -203,8 +203,8 @@ public:
     virtual void drawMiniature(QPainter& painter, qreal w, qreal h) const;
 
     /**
-     * Draw real part (real children only) of geometry element using given Qt @p painter.
-     * @param painter where draw element
+     * Draw real part (real children only) of geometry object using given Qt @p painter.
+     * @param painter where draw object
      */
     virtual void drawReal(QPainter& painter) const;
 
@@ -216,13 +216,13 @@ public:
     QPixmap getMiniature(qreal w, qreal h) const;
 
     /**
-     * Get string representation of given element.
-     * @return string representation of wrapped element, can have multiple lines of text
+     * Get string representation of given object.
+     * @return string representation of wrapped object, can have multiple lines of text
      */
     virtual QString toStr() const;
 
     /**
-     * Fill property browser with properties of wrapped element.
+     * Fill property browser with properties of wrapped object.
      */
     virtual void setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
 
@@ -234,7 +234,7 @@ public:
      * Fill property browser with properties of @p container child.
      *
      * This is called only for containers and default implementation call setupPropertiesBrowser for pointed child.
-     * Typically, you can call ElementExtensionImplBase::setupPropertiesBrowserForChild in subclasses.
+     * Typically, you can call ObjectExtensionImplBase::setupPropertiesBrowserForChild in subclasses.
      * @param index real child index
      */
     virtual void setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst);
@@ -249,23 +249,23 @@ public:
      * Type of @p to_insert and possible loops are checked. Also @p index is checked.
      * @return @c true if @p to_insert can be insert to this at position @p index
      */
-    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
-        return wrappedElement->isContainer() &&
-                index <= wrappedElement->getRealChildrenCount() &&
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) const {
+        return wrappedObject->isContainer() &&
+                index <= wrappedObject->getRealChildrenCount() &&
                 to_insert->getDimensionsCount() == getChildrenDimensionsCount() &&
-                wrappedElement->canHasAsChild(*to_insert);
+                wrappedObject->canHasAsChild(*to_insert);
     }
 
-    virtual bool canInsert(const GeometryElementCreator& to_insert, std::size_t index) const {
+    virtual bool canInsert(const GeometryObjectCreator& to_insert, std::size_t index) const {
         if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
-        return canInsert(to_insert.getElement(getChildrenDimensionsCount()), index);
+        return canInsert(to_insert.getObject(getChildrenDimensionsCount()), index);
     }
 
     /**
      * Insert @p to_insert at postion @p index to this.
      * @return @c true if @p to_insert can be insert to this at position @p index
      */
-    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) {
         return false;
     }
 
@@ -273,23 +273,23 @@ public:
      * Insert @p to_insert at postion @p index to this.
      * @return @c true if @p to_insert can be insert to this at position @p index
      */
-    virtual bool tryInsert(const GeometryElementCreator& to_insert, std::size_t index) {
+    virtual bool tryInsert(const GeometryObjectCreator& to_insert, std::size_t index) {
         if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
-        return tryInsert(to_insert.getElement(getChildrenDimensionsCount()), index);
+        return tryInsert(to_insert.getObject(getChildrenDimensionsCount()), index);
     }
 
     /**
-     * Get child creators for thie element.
+     * Get child creators for thie object.
      *
      * Default implementation returns empty vector, but sublasses redefine this.
      * @return vector of creators of child of this
      */
-    std::vector<const GeometryElementCreator*> getChildCreators() const {
-        return std::vector<const GeometryElementCreator*>();
+    std::vector<const GeometryObjectCreator*> getChildCreators() const {
+        return std::vector<const GeometryObjectCreator*>();
     }
 
     /**
-     * Get index where element should be insert to be near place pointed by @p point.
+     * Get index where object should be insert to be near place pointed by @p point.
      * @param point point to place in this
      * @return value which will be returned by tryInsertNearPoint2D for given point
      * @see tryInsertNearPoint2D
@@ -299,40 +299,40 @@ public:
     }
 
     /**
-     * Insert element @p to_insert near place pointed by @p point.
-     * @param to_insert element to insert
-     * @param point point to place in this, near which element @p to_insert should be inserted
-     * @return index of inserted element in this, or -1 if insertion wasn't succesed
+     * Insert object @p to_insert near place pointed by @p point.
+     * @param to_insert object to insert
+     * @param point point to place in this, near which object @p to_insert should be inserted
+     * @return index of inserted object in this, or -1 if insertion wasn't succesed
      */
-    virtual int tryInsertNearPoint2D(plask::shared_ptr<plask::GeometryElement> to_insert, const plask::Vec<2, double>& point) {
+    virtual int tryInsertNearPoint2D(plask::shared_ptr<plask::GeometryObject> to_insert, const plask::Vec<2, double>& point) {
         int index = getInsertionIndexForPoint(point);
         if (index == -1) return -1;
         return this->tryInsert(to_insert, index) ? index : -1;
     }
 
     /**
-     * Insert element created by @p to_insert near place pointed by @p point.
-     * @param to_insert creator of element to insert
-     * @param point point to place in this, near which element @p to_insert should be inserted
-     * @return index of inserted element in this, or -1 if insertion wasn't succesed
+     * Insert object created by @p to_insert near place pointed by @p point.
+     * @param to_insert creator of object to insert
+     * @param point point to place in this, near which object @p to_insert should be inserted
+     * @return index of inserted object in this, or -1 if insertion wasn't succesed
      */
-    virtual int tryInsertNearPoint2D(const GeometryElementCreator& to_insert, const plask::Vec<2, double>& point) {
+    virtual int tryInsertNearPoint2D(const GeometryObjectCreator& to_insert, const plask::Vec<2, double>& point) {
         if (!to_insert.supportDimensionsCount(getChildrenDimensionsCount())) return false;
-        return tryInsertNearPoint2D(to_insert.getElement(getChildrenDimensionsCount()), point);
+        return tryInsertNearPoint2D(to_insert.getObject(getChildrenDimensionsCount()), point);
     }
 
-    virtual plask::Box2D getInsertPlace2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point) {
+    virtual plask::Box2D getInsertPlace2D(const GeometryObjectCreator &to_insert, const plask::Vec<2, double> &point) {
         return plask::Box2D::invalidInstance();
     }
 
 };
 
-template <typename WrappedT, typename BaseClass = ElementWrapper>
-struct ElementWrapperFor: public BaseClass {
+template <typename WrappedT, typename BaseClass = ObjectWrapper>
+struct ObjectWrapperFor: public BaseClass {
 
     typedef WrappedT WrappedType;
 
-    WrappedType& c() const { return static_cast<WrappedType&>(*this->wrappedElement); }
+    WrappedType& c() const { return static_cast<WrappedType&>(*this->wrappedObject); }
 
 };
 

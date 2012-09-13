@@ -74,7 +74,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "geometry/space.h"
 #include "geometry/geometry.h"
 #include "geometry/primitives.h"
-#include "geometry/element.h"
+#include "geometry/object.h"
 #include "geometry/transform.h"
 #include "geometry/leaf.h"
 #include "geometry/transform_space_cartesian.h"

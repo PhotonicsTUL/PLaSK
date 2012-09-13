@@ -98,7 +98,7 @@ BOOST_PYTHON_MODULE(plaskcore)
 
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
     register_exception<plask::NoSuchMaterial>(PyExc_ValueError);
-    register_exception<plask::NoSuchGeometryElementType>(PyExc_TypeError);
+    register_exception<plask::NoSuchGeometryObjectType>(PyExc_TypeError);
     register_exception<plask::BadInput>(PyExc_ValueError);
     register_exception<plask::NoValue>(PyExc_ValueError);
     register_exception<plask::NoProvider>(PyExc_TypeError);

@@ -126,8 +126,8 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
-        METHOD(setSimpleMesh, "Set simple mesh based on the geometry elements bounding boxes");
-        METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry elements bounding boxes", "points");
+        METHOD(setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
+        METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(computeMode, "Find the mode near the specified effective index", "neff");
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
@@ -151,8 +151,8 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
-        METHOD(setSimpleMesh, "Set simple mesh based on the geometry elements bounding boxes");
-        METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry elements bounding boxes", "points");
+        METHOD(setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
+        METHOD(setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(computeMode, "Find the mode near the specified effective index", "wavelength");
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);

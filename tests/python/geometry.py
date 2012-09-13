@@ -69,13 +69,13 @@ class GeometryPath(unittest.TestCase):
     def setUp(self):
         self.stack1 = plask.geometry.Stack2D()
         self.stack2 = plask.geometry.Stack2D()
-        self.element = plask.geometry.Rectangle(1,2, plask.material.GaN())
+        self.object = plask.geometry.Rectangle(1,2, plask.material.GaN())
         self.stack1.append(self.stack2)
-        self.stack2.append(self.element)
+        self.stack2.append(self.object)
 
     def testPath(self):
         p = plask.geometry.Path([self.stack1, self.stack2])
-        p += self.element
+        p += self.object
 
 
 
@@ -111,7 +111,7 @@ class Containers(unittest.TestCase):
         self.assertEqual( multistack.getMaterial(0.,10.), self.block1.getMaterial(0.,0.) )
 
         self.assertIn( self.block1, multistack )
-        # 5 * 2 childs = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
+        # 5 * 2 childs = 10 objects, each have size 5x3, should be in [0, 10] - [5, 40]
         self.assertEqual( multistack.bbox, plask.geometry.Box2D(0., 10.0, 5., 40.0) )
         self.assertEqual( multistack.getMaterial(1.0, 39.0), self.aln )
         self.assertIsNone( multistack.getMaterial(4.0, 41.0) )
@@ -126,7 +126,7 @@ class Containers(unittest.TestCase):
         self.assertEqual( multistack[hint2][0].child, self.block2 )
 
     def testRemoval(self):
-        '''Test if removing elements from container works. In addition test prepending elements'''
+        '''Test if removing objects from container works. In addition test prepending objects'''
         container = plask.geometry.TranslationContainer2D()
         h = container.append(self.block1, 0,0) # be removed by hint
         container.append(self.block2, 10,0)

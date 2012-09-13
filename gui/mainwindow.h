@@ -94,7 +94,7 @@ private:
     void createStatusBar();
     void createDockWindows();
 
-    ElementViewer *view;    //TODO should accept only drop with source() != 0 (from this application)
+    ObjectViewer *view;    //TODO should accept only drop with source() != 0 (from this application)
     QTreeView *treeView;    //TODO should accept only drop with source() != 0 (from this application)
     QtTreePropertyBrowser *propertyTree;
     QListView *creatorsList;
@@ -129,7 +129,7 @@ private:
 
     QAction *zoomInAct;
     QAction *zoomOutAct;
-    
+
 
 };
 

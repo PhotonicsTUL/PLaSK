@@ -6,16 +6,16 @@
 namespace plask {
 
 /**
- * Represent 3d geometry element which is an effect of revolving a 2d element (child) around the up axis.
+ * Represent 3d geometry object which is an effect of revolving a 2d object (child) around the up axis.
  *
  * Child must have getBoundingBox().lower.tran() >= 0.
  */
-struct Revolution: public GeometryElementTransformSpace<3, 2> {
+struct Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     /**
-     * @param child element to revolve, must have getBoundingBox().lower.tran() >= 0
+     * @param child object to revolve, must have getBoundingBox().lower.tran() >= 0
      */
-    Revolution(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryElementTransformSpace<3, 2>(child) {}
+    Revolution(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryObjectTransformSpace<3, 2>(child) {}
 
     static constexpr const char* NAME = "revolution";
 
@@ -29,13 +29,13 @@ struct Revolution: public GeometryElementTransformSpace<3, 2> {
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const;
 
-    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
-    virtual shared_ptr<GeometryElementTransform<3, GeometryElementD<2> > > shallowCopy() const;
+    virtual shared_ptr<GeometryObjectTransform<3, GeometryObjectD<2> > > shallowCopy() const;
 
-    using GeometryElementTransformSpace<3, 2>::getPathsTo;
+    using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 
-    virtual GeometryElement::Subtree getPathsTo(const DVec& point) const;
+    virtual GeometryObject::Subtree getPathsTo(const DVec& point) const;
 
 private:
 

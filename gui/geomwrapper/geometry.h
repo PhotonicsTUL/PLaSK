@@ -2,7 +2,7 @@
 #define GUI_GEOMETRY_WRAPPER_GEOMETRY_H
 
 /** @file
- * This file includes implementation of geometry elements model extensions for geometries. Do not include it directly (see register.h).
+ * This file includes implementation of geometry objects model extensions for geometries. Do not include it directly (see register.h).
  */
 
 #include "element.h"
@@ -10,7 +10,7 @@
 #include <plask/geometry/space.h>
 
 template <int dim>
-struct GeometryWrapper: public ElementWrapperFor< plask::GeometryD<dim> > {
+struct GeometryWrapper: public ObjectWrapperFor< plask::GeometryD<dim> > {
 
     virtual QString toStr() const;
 
@@ -37,13 +37,13 @@ struct Geometry2DCartesianWrapper: public GeometryWrapper<2> {
     
     plask::Geometry2DCartesian& getCartesian2D() const;
     
-    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const;
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) const;
     
-    virtual bool canInsert(const GeometryElementCreator& to_insert, std::size_t index) const;
+    virtual bool canInsert(const GeometryObjectCreator& to_insert, std::size_t index) const;
     
-    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index);
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index);
     
-    virtual bool tryInsert(const GeometryElementCreator& to_insert, std::size_t index);
+    virtual bool tryInsert(const GeometryObjectCreator& to_insert, std::size_t index);
 
 };
 
@@ -57,13 +57,13 @@ struct Geometry2DCylindricalWrapper: public GeometryWrapper<2> {
     
     plask::Geometry2DCylindrical& getCylindrical2D() const;
     
-    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const;
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) const;
     
-    virtual bool canInsert(const GeometryElementCreator& to_insert, std::size_t index) const;
+    virtual bool canInsert(const GeometryObjectCreator& to_insert, std::size_t index) const;
     
-    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index);
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index);
     
-    virtual bool tryInsert(const GeometryElementCreator& to_insert, std::size_t index);
+    virtual bool tryInsert(const GeometryObjectCreator& to_insert, std::size_t index);
 
 };
 

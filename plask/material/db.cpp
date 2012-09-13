@@ -11,9 +11,9 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
     for (auto& p1: material1composition) {
         auto p2 = material2composition.find(p1.first);
         if (p2 == material2composition.end())
-            throw MaterialParseException("materials compositions are different: in first there is \"%1%\" element which is missing in second.", p1.first);
+            throw MaterialParseException("materials compositions are different: in first there is \"%1%\" object which is missing in second.", p1.first);
         if (std::isnan(p1.second) != std::isnan(p2->second))
-            throw MaterialParseException("amounts must be defined for the same elements, which is not true in case of \"%1%\" element.", p1.first);
+            throw MaterialParseException("amounts must be defined for the same objects, which is not true in case of \"%1%\" object.", p1.first);
     }
 }
 
@@ -61,7 +61,7 @@ std::string dbKey(std::vector<std::string> elNames, const std::string& dopant_na
 }
 
 std::string dbKey(const std::string& name, const std::string& dopant_name) {
-    return dbKey(Material::parseElementsNames(name), dopant_name);
+    return dbKey(Material::parseObjectsNames(name), dopant_name);
 }
 
 std::string dbKey(const std::string& fullComplexName) {
@@ -73,9 +73,9 @@ std::string dbKey(const std::string& fullComplexName) {
     std::string result;
     std::vector<std::string>::iterator grBegin = elemenNames.begin();
     if (grBegin == elemenNames.end()) return "";    //exception??
-    int grNr = elementGroup(*grBegin);
+    int grNr = objectGroup(*grBegin);
     for (std::vector<std::string>::iterator grEnd = grBegin + 1; grEnd != elemenNames.end(); ++grEnd) {
-        int endNr = elementGroup(*grEnd);
+        int endNr = objectGroup(*grEnd);
         if (grNr != endNr) {
             std::sort(grBegin, grEnd);
             for (auto s_iter = grBegin; s_iter != grEnd; ++s_iter) result += *s_iter;
@@ -147,12 +147,12 @@ shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant
     std::tie(name, dopant) = splitString2(parsed_name_with_dopant, ':');
     if (composition.empty())
         return get(parsed_name_with_dopant, Material::Composition(), dopant, doping_amount_type, doping_amount);
-    std::vector<std::string> elements = Material::parseElementsNames(name);
-    if (composition.size() > elements.size())
-        throw plask::Exception("Too long composition vector (longer than number of elements in \"%1%\")", parsed_name_with_dopant);
+    std::vector<std::string> objects = Material::parseObjectsNames(name);
+    if (composition.size() > objects.size())
+        throw plask::Exception("Too long composition vector (longer than number of objects in \"%1%\")", parsed_name_with_dopant);
     Material::Composition comp;
-    for (std::size_t i = 0; i < composition.size(); ++i) comp[elements[i]] = composition[i];
-    for (std::size_t i = composition.size(); i < elements.size(); ++i) comp[elements[i]] = std::numeric_limits<double>::quiet_NaN();
+    for (std::size_t i = 0; i < composition.size(); ++i) comp[objects[i]] = composition[i];
+    for (std::size_t i = composition.size(); i < objects.size(); ++i) comp[objects[i]] = std::numeric_limits<double>::quiet_NaN();
     return get(Material::completeComposition(comp), dopant, doping_amount_type, doping_amount);
 }
 

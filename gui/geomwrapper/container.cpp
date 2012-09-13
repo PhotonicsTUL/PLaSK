@@ -9,7 +9,7 @@
 
 template <int dim>
 QString StackWrapper<dim>::toStr() const {
-    plask::GeometryElement& el = *this->wrappedElement;
+    plask::GeometryObject& el = *this->wrappedObject;
     return QString(QObject::tr("stack%1d%2\n%3 children"))
         .arg(dim)
         .arg(this->name.isEmpty() ? "" : (" \"" + this->name + "\""))
@@ -18,7 +18,7 @@ QString StackWrapper<dim>::toStr() const {
 
 template <int dim>
 void StackWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
-    ElementWrapperFor< plask::StackContainer<dim> >::setupPropertiesBrowser(managers, dst);
+    ObjectWrapperFor< plask::StackContainer<dim> >::setupPropertiesBrowser(managers, dst);
     QtProperty *from = managers.doubl.addProperty("from");
     managers.doubl.setValue(from, this->c().getBaseHeight());
     dst.addProperty(from);
@@ -44,30 +44,30 @@ static void setupAlignerEditor(plask::StackContainer<3>& s, std::size_t index, B
 template <int dim>
 void StackWrapper<dim>::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
     setupAlignerEditor(this->c(), index, managers, dst);
-    ElementWrapper::setupPropertiesBrowserForChild(index, managers, dst);
+    ObjectWrapper::setupPropertiesBrowserForChild(index, managers, dst);
 }
 
 template <int dim>
 int StackWrapper<dim>::getInsertionIndexForPoint(const plask::Vec<2, double>& point) {
-    return std::min(this->c().getInsertionIndexForHeight(point.up()), this->wrappedElement->getRealChildrenCount());
+    return std::min(this->c().getInsertionIndexForHeight(point.up()), this->wrappedObject->getRealChildrenCount());
 }
 
 template <>
-plask::Box2D StackWrapper<3>::getInsertPlace2D(const GeometryElementCreator &to_insert, const plask::Vec<2, double> &point) {
+plask::Box2D StackWrapper<3>::getInsertPlace2D(const GeometryObjectCreator &to_insert, const plask::Vec<2, double> &point) {
     //TODO
-    return ElementWrapper::getInsertPlace2D(to_insert, point);
+    return ObjectWrapper::getInsertPlace2D(to_insert, point);
 }
 
 template <>
-plask::Box2D StackWrapper<2>::getInsertPlace2D(const GeometryElementCreator &, const plask::Vec<2, double> &point) {
-    if (this->wrappedElement->getRealChildrenCount() == 0)
+plask::Box2D StackWrapper<2>::getInsertPlace2D(const GeometryObjectCreator &, const plask::Vec<2, double> &point) {
+    if (this->wrappedObject->getRealChildrenCount() == 0)
         return plask::Box2D::invalidInstance();
 
     std::size_t index = getInsertionIndexForPoint(point);
     if (index == 0) {
         plask::Box2D b = this->c().getTranslationOfRealChildAt(0)->getBoundingBox();
         return plask::Box2D(b.lower.tran(), b.lower.up() - 1e-12, b.upper.tran(), b.lower.up() + 1e-12);    //lower edge of first
-    } else if (index == this->wrappedElement->getRealChildrenCount()) {
+    } else if (index == this->wrappedObject->getRealChildrenCount()) {
         plask::Box2D b = this->c().getTranslationOfRealChildAt(index-1)->getBoundingBox();
         return plask::Box2D(b.lower.tran(), b.upper.up() - 1e-12, b.upper.tran(), b.upper.up() + 1e-12);    //upper edge of last
     }
@@ -119,7 +119,7 @@ template struct MultiStackWrapper<3>;
 
 QString ShelfWrapper::toStr() const
 {
-    plask::GeometryElement& el = *this->wrappedElement;
+    plask::GeometryObject& el = *this->wrappedObject;
     return QString(QObject::tr("shelf2D%2\n%3 children"))
         .arg(this->name.isEmpty() ? "" : (" \"" + this->name + "\""))
             .arg(el.getChildrenCount());
@@ -127,18 +127,18 @@ QString ShelfWrapper::toStr() const
 
 int ShelfWrapper::getInsertionIndexForPoint(const plask::Vec<2, double> &point)
 {
-    return std::min(this->c().getInsertionIndexForHeight(point.tran()), this->wrappedElement->getRealChildrenCount());
+    return std::min(this->c().getInsertionIndexForHeight(point.tran()), this->wrappedObject->getRealChildrenCount());
 }
 
-plask::Box2D ShelfWrapper::getInsertPlace2D(const GeometryElementCreator &, const plask::Vec<2, double> &point) {
-    if (this->wrappedElement->getRealChildrenCount() == 0)
+plask::Box2D ShelfWrapper::getInsertPlace2D(const GeometryObjectCreator &, const plask::Vec<2, double> &point) {
+    if (this->wrappedObject->getRealChildrenCount() == 0)
         return plask::Box2D::invalidInstance();
 
     std::size_t index = getInsertionIndexForPoint(point);
     if (index == 0) {
         plask::Box2D b = this->c().getTranslationOfRealChildAt(0)->getBoundingBox();
         return plask::Box2D(b.lower.tran() - 1e-12, b.lower.up(), b.lower.tran() + 1e-12, b.upper.up());    //lower edge of first
-    } else if (index == this->wrappedElement->getRealChildrenCount()) {
+    } else if (index == this->wrappedObject->getRealChildrenCount()) {
         plask::Box2D b = this->c().getTranslationOfRealChildAt(index-1)->getBoundingBox();
         return plask::Box2D(b.upper.tran() - 1e-12, b.lower.up(), b.upper.tran() + 1e-12, b.upper.up());    //upper edge of last
     }

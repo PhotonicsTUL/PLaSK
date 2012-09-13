@@ -124,14 +124,14 @@ struct AxisNames {
 
     /**
      * Check if this and @p to_compare have equals names of all axes.
-     * @param to_compare element to compare to @c this
+     * @param to_compare object to compare to @c this
      * @return @c true only if @c this and @p to_compar are equals
      */
     bool operator==(const AxisNames& to_compare) const;
     
     /**
      * Check if this and @p to_compare have not equals names of all axes.
-     * @param to_compare element to compare to @c this
+     * @param to_compare object to compare to @c this
      * @return @c true only if @c this and @p to_compar are not equals
      */
     bool operator!=(const AxisNames& to_compare) const { return !(*this == to_compare); }

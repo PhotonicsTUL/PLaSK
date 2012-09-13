@@ -9,23 +9,23 @@ void register_geometry_container_stack()
 {
     // Stack container
 
-    py::class_<StackContainer<2>, shared_ptr<StackContainer<2>>, py::bases<GeometryElementContainer<2>>, boost::noncopyable>("Stack2D",
+    py::class_<StackContainer<2>, shared_ptr<StackContainer<2>>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>("Stack2D",
         "Container that organizes its children in vertical stack (2D version)\n\n"
         "Stack2D(base=0)\n"
-        "    Create the stack with the bottom side of the first element at the base (in container local coordinates).",
+        "    Create the stack with the bottom side of the first object at the base (in container local coordinates).",
         py::init<double>((py::arg("base")=0.)))
-        .def("append", &StackContainer<2>::push_back, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Append new element to the container")
-        .def("prepend", &StackContainer<2>::push_front, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Prepend new element to the container")
-        .def("insert", &StackContainer<2>::insert, (py::arg("child"), "pos", py::arg("align")=StackContainer<2>::DefaultAligner()), "Insert new element to the container")
+        .def("append", &StackContainer<2>::push_back, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Append new object to the container")
+        .def("prepend", &StackContainer<2>::push_front, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Prepend new object to the container")
+        .def("insert", &StackContainer<2>::insert, (py::arg("child"), "pos", py::arg("align")=StackContainer<2>::DefaultAligner()), "Insert new object to the container")
     ;
 
-    py::class_<StackContainer<3>, shared_ptr<StackContainer<3>>, py::bases<GeometryElementContainer<3>>, boost::noncopyable>("Stack3D",
+    py::class_<StackContainer<3>, shared_ptr<StackContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>("Stack3D",
         "Stack container which repeats its contents (3D version)\n\n"
         "Stack3D(base=0)\n"
-        "    Create the stack with the bottom side of the first element at the base (in container local coordinates).",
+        "    Create the stack with the bottom side of the first object at the base (in container local coordinates).",
         py::init<double>((py::arg("base")=0.)))
-        .def("append", &StackContainer<3>::push_back, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Append new element to the container")
-        .def("prepend", &StackContainer<3>::push_front, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Prepend new element to the container")
+        .def("append", &StackContainer<3>::push_back, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Append new object to the container")
+        .def("prepend", &StackContainer<3>::push_front, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Prepend new object to the container")
     ;
 
     // Multi-stack constainer
@@ -45,14 +45,14 @@ void register_geometry_container_stack()
     ;
 
     // Shelf (horizontal stack)
-    py::class_<ShelfContainer2D, shared_ptr<ShelfContainer2D>, py::bases<GeometryElementContainer<2>>, boost::noncopyable>("Shelf2D",
+    py::class_<ShelfContainer2D, shared_ptr<ShelfContainer2D>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>("Shelf2D",
         "Container that organizes its children one next to another (like books on a bookshelf)\n\n"
         "Shelf2D(base=0)\n"
-        "    Create the shelf with the left side of the first element at the base (in container local coordinates).",
+        "    Create the shelf with the left side of the first object at the base (in container local coordinates).",
         py::init<double>((py::arg("base")=0.)))
-        .def("append", &ShelfContainer2D::push_back, (py::arg("child")), "Append new element to the container")
-        .def("prepend", &ShelfContainer2D::push_front, (py::arg("child")), "Prepend new element to the container")
-        .def("insert", &ShelfContainer2D::insert, (py::arg("child"), "pos"), "Insert new element to the container")
+        .def("append", &ShelfContainer2D::push_back, (py::arg("child")), "Append new object to the container")
+        .def("prepend", &ShelfContainer2D::push_front, (py::arg("child")), "Prepend new object to the container")
+        .def("insert", &ShelfContainer2D::insert, (py::arg("child"), "pos"), "Insert new object to the container")
         .add_property("flat", &ShelfContainer2D::isFlat, "Return true if all children has the same height (the top line is flat)")
     ;
     py::scope().attr("Shelf") = py::scope().attr("Shelf2D");

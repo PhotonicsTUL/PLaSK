@@ -19,7 +19,7 @@ void YourSolver::loadParam(const std::string& param, XMLReader& reader, Manager&
 
 
 void YourSolver::compute(double parameter) {
-    // Below we show some key elements of the computational methods
+    // Below we show some key objects of the computational methods
     initCalculation(); // This must be called before any calculation!
     writelog(LOG_INFO, "Begining calculation of something");
     auto temperature = inTemperature(*mesh); // Obtain temperature from some other solver

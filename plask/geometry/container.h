@@ -2,7 +2,7 @@
 #define PLASK__GEOMETRY_CONTAINER_H
 
 /** @file
-This file includes containers of geometries elements.
+This file includes containers of geometries objects.
 */
 
 #include <vector>
@@ -22,21 +22,21 @@ namespace plask {
  * Template of base class for all container nodes.
  * Container nodes can include one or more child nodes with translations.
  *
- * @tparam dim GeometryElementContainer dimension
+ * @tparam dim GeometryObjectContainer dimension
  */
 template <int dim>
-struct GeometryElementContainer: public GeometryElementD<dim> {
+struct GeometryObjectContainer: public GeometryObjectD<dim> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryElementContainer<dim>::DVec DVec;
+    typedef typename GeometryObjectContainer<dim>::DVec DVec;
 
     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryElementContainer<dim>::Box Box;
+    typedef typename GeometryObjectContainer<dim>::Box Box;
 
     /// Type of the container children.
-    typedef GeometryElementD<dim> ChildType;
+    typedef GeometryObjectD<dim> ChildType;
 
-    /// Type of translation geometry element in space of this.
+    /// Type of translation geometry object in space of this.
     typedef Translation<dim> TranslationT;
 
     /// Type of the vector holding container children
@@ -61,38 +61,38 @@ protected:
      * @param[out] recomended_translation optional, place to store recommended translation (if is not nullptr, it has all coordinates equals to 0.0)
      * @return copy of this, with new children
      */
-    virtual shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const = 0;
+    virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const = 0;
 
 public:
 
     /**
      * Call writeXMLAttr for this container attribute and writeXMLChildAttr for each child tag.
-     * @param parent_xml_element
+     * @param parent_xml_object
      * @param write_cb
      * @param axes
      */
-    virtual void writeXML(XMLWriter::Element& parent_xml_element, GeometryElement::WriteXMLCallback& write_cb, AxisNames axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames axes) const;
 
     // TODO container should reduce number of generated event from child if have 2 or more same children, for each children should be connected once
 
     /// Disconnect onChildChanged from current child change signal
-    ~GeometryElementContainer() {
+    ~GeometryObjectContainer() {
         for (auto& c: children) disconnectOnChildChanged(*c);
     }
 
     /// Called by child.change signal, call this change
-    virtual void onChildChanged(const GeometryElement::Event& evt) {
+    virtual void onChildChanged(const GeometryObject::Event& evt) {
         this->fireChanged(evt.flagsForParent());
     }
 
     /// Connect onChildChanged to current child change signal
     void connectOnChildChanged(Translation<dim>& child) {
-        child.changedConnectMethod(this, &GeometryElementContainer::onChildChanged);
+        child.changedConnectMethod(this, &GeometryObjectContainer::onChildChanged);
     }
 
     /// Disconnect onChildChanged from current child change signal
     void disconnectOnChildChanged(Translation<dim>& child) {
-        child.changedDisconnectMethod(this, &GeometryElementContainer::onChildChanged);
+        child.changedDisconnectMethod(this, &GeometryObjectContainer::onChildChanged);
     }
 
     /**
@@ -104,7 +104,7 @@ public:
     }
 
     /// @return GE_TYPE_CONTAINER
-    virtual GeometryElement::Type getType() const { return GeometryElement::TYPE_CONTAINER; }
+    virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_CONTAINER; }
 
     virtual bool includes(const DVec& p) const {
         for (auto child: children) if (child->includes(p)) return true;
@@ -124,7 +124,7 @@ public:
      */
     virtual shared_ptr<Material> getMaterial(const DVec& p) const;
 
-    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryElement>, Box, DVec> >& dest, const PathHints* path = 0) const {
+    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryObject>, Box, DVec> >& dest, const PathHints* path = 0) const {
         if (path) {
             auto c = path->getTranslationChildren<dim>(*this);
             if (!c.empty()) {
@@ -135,47 +135,47 @@ public:
         for (auto child: children) child->getLeafsInfoToVec(dest, path);
     }*/
 
-    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
-    virtual void getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path = 0) const;
+    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const;
 
-    /*virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryElement> >& dest) const {
+    /*virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest) const {
         for (auto child: children) child->getLeafsToVec(dest);
     }*/
 
-    virtual void getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
 
-    /*virtual std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > getLeafsWithTranslations() const {
-        std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > result;
+    /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
+        std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > result;
         for (auto child: children) {
-            std::vector< std::tuple<shared_ptr<const GeometryElement>, DVec> > child_leafs_tran = child->getLeafsWithTranslations();
+            std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > child_leafs_tran = child->getLeafsWithTranslations();
             result.insert(result.end(), child_leafs_tran.begin(), child_leafs_tran.end());
         }
         return result;
     }*/
 
-    virtual bool isInSubtree(const GeometryElement& el) const;
+    virtual bool isInSubtree(const GeometryObject& el) const;
 
     template <typename ChildIter>
-    GeometryElement::Subtree findPathsFromChildTo(ChildIter childBegin, ChildIter childEnd, const GeometryElement& el, const PathHints* path = 0) const {
-        GeometryElement::Subtree result;
+    GeometryObject::Subtree findPathsFromChildTo(ChildIter childBegin, ChildIter childEnd, const GeometryObject& el, const PathHints* path = 0) const {
+        GeometryObject::Subtree result;
         for (auto child_iter = childBegin; child_iter != childEnd; ++child_iter) {
-            GeometryElement::Subtree child_path = (*child_iter)->getPathsTo(el, path);
+            GeometryObject::Subtree child_path = (*child_iter)->getPathsTo(el, path);
             if (!child_path.empty())
                 result.children.push_back(std::move(child_path));
         }
         if (!result.children.empty())
-            result.element = this->shared_from_this();
+            result.object = this->shared_from_this();
         return result;
     }
 
-    virtual GeometryElement::Subtree getPathsTo(const GeometryElement& el, const PathHints* path = 0) const;
+    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const;
 
-    virtual GeometryElement::Subtree getPathsTo(const DVec& point) const;
+    virtual GeometryObject::Subtree getPathsTo(const DVec& point) const;
 
     virtual std::size_t getChildrenCount() const { return children.size(); }
 
-    virtual shared_ptr<GeometryElement> getChildAt(std::size_t child_nr) const {
+    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const {
         this->ensureIsValidChildNr(child_nr);
         return children[child_nr];
     }
@@ -185,7 +185,7 @@ public:
         return children[child_nr];
     }
 
-    virtual shared_ptr<const GeometryElement> changedVersion(const GeometryElement::Changer& changer, Vec<3, double>* translation = 0) const;
+    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const;
 
     /**
      * Remove all children which fulfil predicate.
@@ -240,7 +240,7 @@ public:
     bool remove(const PathHints& hints) {
         auto cset = hints.getChildren(*this);
         return removeIfT([&](const shared_ptr<TranslationT>& t) {
-                       return cset.find(static_pointer_cast<GeometryElement>(t)) != cset.end();
+                       return cset.find(static_pointer_cast<GeometryObject>(t)) != cset.end();
                 });
     }
 
@@ -259,26 +259,26 @@ public:
 };
 
 /**
- * Geometry elements container in which every child has an associated translation vector.
+ * Geometry objects container in which every child has an associated translation vector.
  */
 //TODO some implementation are naive, and can be done faster with some caches
 template < int dim >
-struct TranslationContainer: public GeometryElementContainer<dim> {
+struct TranslationContainer: public GeometryObjectContainer<dim> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryElementContainer<dim>::DVec DVec;
+    typedef typename GeometryObjectContainer<dim>::DVec DVec;
 
     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryElementContainer<dim>::Box Box;
+    typedef typename GeometryObjectContainer<dim>::Box Box;
 
     /// Type of this child.
-    typedef typename GeometryElementContainer<dim>::ChildType ChildType;
+    typedef typename GeometryObjectContainer<dim>::ChildType ChildType;
 
-    /// Type of translation geometry element in space of this.
-    typedef typename GeometryElementContainer<dim>::TranslationT TranslationT;
+    /// Type of translation geometry object in space of this.
+    typedef typename GeometryObjectContainer<dim>::TranslationT TranslationT;
 
-    using GeometryElementContainer<dim>::children;
-    using GeometryElementContainer<dim>::shared_from_this;
+    using GeometryObjectContainer<dim>::children;
+    using GeometryObjectContainer<dim>::shared_from_this;
 
     static constexpr const char* NAME = dim == 2 ?
                 ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
@@ -316,7 +316,7 @@ struct TranslationContainer: public GeometryElementContainer<dim> {
     virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
 protected:
-    virtual shared_ptr<GeometryElement> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
 
 };
 
@@ -325,7 +325,7 @@ protected:
  * Read "path" parameter from each \<child\> tag.
  * @param reader reader
  * @param child_param_read functor called for each \<child\> tag, without parameters, should create child, add it to container and return PathHints::Hint
- * @param without_child_param_add functor called for each children (when there was no \<child\> tag), as paremter it take one geometry element (child) of type ConstructedType::ChildType
+ * @param without_child_param_add functor called for each children (when there was no \<child\> tag), as paremter it take one geometry object (child) of type ConstructedType::ChildType
  */
 template <typename ConstructedType, typename ChildParamF, typename WithoutChildParamF>
 inline void read_children(GeometryReader& reader, ChildParamF child_param_read, WithoutChildParamF without_child_param_add) {
@@ -352,14 +352,14 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
                         }
                     }
                 } else {
-                    without_child_param_add(reader.readElement< typename ConstructedType::ChildType >());
+                    without_child_param_add(reader.readObject< typename ConstructedType::ChildType >());
                 }
 
             case XMLReader::NODE_COMMENT:
                 break;  //skip comments
 
             default:
-                throw XMLUnexpectedElementException(reader.source, "<child> or geometry element tag");
+                throw XMLUnexpectedElementException(reader.source, "<child> or geometry object tag");
         }
     }
     throw XMLUnexpectedEndException(reader.source);

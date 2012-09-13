@@ -36,7 +36,7 @@ QMimeData* CreatorsListModel::mimeData(const QModelIndexList &indexes) const
             /*QPixmap pixmap = qvariant_cast<QPixmap>(data(index, Qt::UserRole));
             QPoint location = data(index, Qt::UserRole+1).toPoint();
             stream << pixmap << location;*/
-            const GeometryElementCreator* to_write = getCreators()[index.row()];
+            const GeometryObjectCreator* to_write = getCreators()[index.row()];
             stream.writeRawData(reinterpret_cast<const char*>(&to_write), sizeof(to_write));
         }
     }

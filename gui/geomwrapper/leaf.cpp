@@ -17,7 +17,7 @@ QString BlockWrapper<dim>::toStr() const {
 
 template <>
 void BlockWrapper<2>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
-    ElementWrapperFor< plask::Block<2> >::setupPropertiesBrowser(managers, dst);
+    ObjectWrapperFor< plask::Block<2> >::setupPropertiesBrowser(managers, dst);
 
     QtProperty *size = managers.sizeF.addProperty("size");
     managers.sizeF.setValue(size, toQtSize(this->c().size));
@@ -43,7 +43,7 @@ void BlockWrapper<2>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAb
 
 template <>
 void BlockWrapper<3>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
-    ElementWrapperFor< plask::Block<3> >::setupPropertiesBrowser(managers, dst);
+    ObjectWrapperFor< plask::Block<3> >::setupPropertiesBrowser(managers, dst);
     //TODO 3d
 }
 

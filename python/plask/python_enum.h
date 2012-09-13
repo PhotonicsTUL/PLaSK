@@ -61,7 +61,7 @@ PyObject* py_enum<T>::to_python(void const* x)
 }
 
 //
-// The following two static functions serve as the elements of an
+// The following two static functions serve as the objects of an
 // rvalue from_python converter for the enumeration type.
 //
 

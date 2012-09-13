@@ -18,14 +18,14 @@ class QRubberBand;
 QT_END_NAMESPACE
 
 /**
- * Geometry element viewer.
+ * Geometry object viewer.
  */
-class ElementViewer: public QAbstractItemView
+class ObjectViewer: public QAbstractItemView
 {
     Q_OBJECT
 
 public:
-    ElementViewer(QWidget *parent = 0);
+    ObjectViewer(QWidget *parent = 0);
 
     void dragEnterEvent(QDragEnterEvent *event);
     void dragLeaveEvent(QDragLeaveEvent *event);
@@ -48,17 +48,17 @@ public:
     GeometryTreeModel* model() const { return static_cast<GeometryTreeModel*>(QAbstractItemView::model()); }
     void setModel (GeometryTreeModel* model) { QAbstractItemView::setModel(model); }
 
-    plask::shared_ptr<ElementWrapper> getElementWrapper() const;
-    plask::shared_ptr<plask::GeometryElementD<2> > getElement() const {
-        plask::shared_ptr<ElementWrapper> ew = getElementWrapper();
-        return ew && ew->wrappedElement ? ew->wrappedElement->asD<2>() : plask::shared_ptr<plask::GeometryElementD<2> >();
+    plask::shared_ptr<ObjectWrapper> getObjectWrapper() const;
+    plask::shared_ptr<plask::GeometryObjectD<2> > getObject() const {
+        plask::shared_ptr<ObjectWrapper> ew = getObjectWrapper();
+        return ew && ew->wrappedObject ? ew->wrappedObject->asD<2>() : plask::shared_ptr<plask::GeometryObjectD<2> >();
     }
 
     /**
      * Get model bounding box in model coordinates.
      */
     plask::Box2D getBoundingBox() const {
-        plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
+        plask::shared_ptr<plask::GeometryObjectD<2> > e = getObject();
         return e ? e->getRealBoundingBox() : plask::Box2D(0.0, 0.0, 0.0, 0.0);
     }
 

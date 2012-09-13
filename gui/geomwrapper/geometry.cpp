@@ -17,7 +17,7 @@ void GeometryWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers &managers,
     managers.connectString(nameProp, [this](const QString& v) {
         this->setName(v);
     });
-    auto el3D = this->c().getElement3D();
+    auto el3D = this->c().getObject3D();
     if (el3D) ext(el3D)->setupPropertiesBrowser(managers, dst);
 }
 
@@ -46,8 +46,8 @@ template struct GeometryWrapper<3>;
 
 QString Geometry2DCartesianWrapper::toStr() const {
     QString res = QString(QObject::tr("Cartesian geometry 2d%1")).arg(this->name.isEmpty() ? "" : ("\n\"" + this->name + "\""));
-    if (c().getElement3D()) {
-        auto ch = ext(c().getElement3D());
+    if (c().getObject3D()) {
+        auto ch = ext(c().getObject3D());
         if (!ch->name.isEmpty()) {
             res += '\n';
             res += QString(QObject::tr("Extrusion name \"%1\"")).arg(ch->name);
@@ -57,7 +57,7 @@ QString Geometry2DCartesianWrapper::toStr() const {
 }
 
 plask::shared_ptr<plask::Extrusion> Geometry2DCartesianWrapper::getExtrusion() const {
-    return plask::static_pointer_cast<plask::Extrusion>(c().getElement3D());
+    return plask::static_pointer_cast<plask::Extrusion>(c().getObject3D());
 }
 
 plask::Geometry2DCartesian &Geometry2DCartesianWrapper::getCartesian2D() const
@@ -65,18 +65,18 @@ plask::Geometry2DCartesian &Geometry2DCartesianWrapper::getCartesian2D() const
     return static_cast<plask::Geometry2DCartesian&>(c());
 }
 
-bool Geometry2DCartesianWrapper::canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
-    return index == 0 && c().getElement3D()->getRealChildrenCount() == 0 &&
+bool Geometry2DCartesianWrapper::canInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) const {
+    return index == 0 && c().getObject3D()->getRealChildrenCount() == 0 &&
             (to_insert->getDimensionsCount() == 2 || plask::dynamic_pointer_cast<plask::Extrusion>(to_insert));
 }
 
-bool Geometry2DCartesianWrapper::canInsert(const GeometryElementCreator &to_insert, std::size_t index) const  {
+bool Geometry2DCartesianWrapper::canInsert(const GeometryObjectCreator &to_insert, std::size_t index) const  {
     if (index != 0) return false;
     if (to_insert.supportDimensionsCount(2)) return true;
-    return plask::dynamic_pointer_cast<plask::Extrusion>(to_insert.getElement(3));  //if is 3d must allow to create extrusion
+    return plask::dynamic_pointer_cast<plask::Extrusion>(to_insert.getObject(3));  //if is 3d must allow to create extrusion
 }
 
-bool Geometry2DCartesianWrapper::tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+bool Geometry2DCartesianWrapper::tryInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) {
     if (!canInsert(to_insert, index)) return false;
     if (to_insert->getDimensionsCount() == 2) {
         getExtrusion()->setChild(to_insert->asD<2>());
@@ -86,11 +86,11 @@ bool Geometry2DCartesianWrapper::tryInsert(plask::shared_ptr<plask::GeometryElem
     return true;
 }
 
-bool Geometry2DCartesianWrapper::tryInsert(const GeometryElementCreator& to_insert, std::size_t index) {
+bool Geometry2DCartesianWrapper::tryInsert(const GeometryObjectCreator& to_insert, std::size_t index) {
     if (to_insert.supportDimensionsCount(2))
-        return tryInsert(to_insert.getElement(2), index);
+        return tryInsert(to_insert.getObject(2), index);
     else
-        return tryInsert(to_insert.getElement(3), index);
+        return tryInsert(to_insert.getObject(3), index);
 }
 
 
@@ -98,8 +98,8 @@ bool Geometry2DCartesianWrapper::tryInsert(const GeometryElementCreator& to_inse
 QString Geometry2DCylindricalWrapper::toStr() const
 {
     QString res = QString(QObject::tr("Cylindrical geometry 2d%1")).arg(this->name.isEmpty() ? "" : ("\n\"" + this->name + "\""));
-    if (c().getElement3D()) {
-        auto ch = ext(c().getElement3D());
+    if (c().getObject3D()) {
+        auto ch = ext(c().getObject3D());
         if (!ch->name.isEmpty()) {
             res += '\n';
             res += QString(QObject::tr("Revolution name \"%1\"")).arg(ch->name);
@@ -109,7 +109,7 @@ QString Geometry2DCylindricalWrapper::toStr() const
 }
 
 plask::shared_ptr<plask::Revolution> Geometry2DCylindricalWrapper::getRevolution() const {
-    return plask::static_pointer_cast<plask::Revolution>(c().getElement3D());
+    return plask::static_pointer_cast<plask::Revolution>(c().getObject3D());
 }
 
 plask::Geometry2DCylindrical &Geometry2DCylindricalWrapper::getCylindrical2D() const
@@ -117,18 +117,18 @@ plask::Geometry2DCylindrical &Geometry2DCylindricalWrapper::getCylindrical2D() c
     return static_cast<plask::Geometry2DCylindrical&>(c());
 }
 
-bool Geometry2DCylindricalWrapper::canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const {
-    return index == 0 && c().getElement3D()->getRealChildrenCount() == 0 &&
+bool Geometry2DCylindricalWrapper::canInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) const {
+    return index == 0 && c().getObject3D()->getRealChildrenCount() == 0 &&
             (to_insert->getDimensionsCount() == 2 || plask::dynamic_pointer_cast<plask::Revolution>(to_insert));
 }
 
-bool Geometry2DCylindricalWrapper::canInsert(const GeometryElementCreator &to_insert, std::size_t index) const  {
+bool Geometry2DCylindricalWrapper::canInsert(const GeometryObjectCreator &to_insert, std::size_t index) const  {
     if (index != 0) return false;
     if (to_insert.supportDimensionsCount(2)) return true;
-    return plask::dynamic_pointer_cast<plask::Revolution>(to_insert.getElement(3));  //if is 3d must allow to create extrusion
+    return plask::dynamic_pointer_cast<plask::Revolution>(to_insert.getObject(3));  //if is 3d must allow to create extrusion
 }
 
-bool Geometry2DCylindricalWrapper::tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) {
+bool Geometry2DCylindricalWrapper::tryInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) {
     if (!canInsert(to_insert, index)) return false;
     if (to_insert->getDimensionsCount() == 2) {
         getRevolution()->setChild(to_insert->asD<2>());
@@ -138,9 +138,9 @@ bool Geometry2DCylindricalWrapper::tryInsert(plask::shared_ptr<plask::GeometryEl
     return true;
 }
 
-bool Geometry2DCylindricalWrapper::tryInsert(const GeometryElementCreator& to_insert, std::size_t index) {
+bool Geometry2DCylindricalWrapper::tryInsert(const GeometryObjectCreator& to_insert, std::size_t index) {
     if (to_insert.supportDimensionsCount(2))
-        return tryInsert(to_insert.getElement(2), index);
+        return tryInsert(to_insert.getObject(2), index);
     else
-        return tryInsert(to_insert.getElement(3), index);
+        return tryInsert(to_insert.getObject(3), index);
 }

@@ -252,21 +252,21 @@ namespace detail {
         }
 
         static typename ProviderT::Place place(py::object obj) {
-            GeometryElementD<SpaceT::DIMS>* element;
+            GeometryObjectD<SpaceT::DIMS>* object;
             PathHints hints;
             try {
-                element = py::extract<GeometryElementD<SpaceT::DIMS>*>(obj);
+                object = py::extract<GeometryObjectD<SpaceT::DIMS>*>(obj);
             } catch (py::error_already_set) {
                 try {
                     PyErr_Clear();
                     if (py::len(obj) != 2) throw py::error_already_set();
-                    element = py::extract<GeometryElementD<SpaceT::DIMS>*>(obj[0]);
+                    object = py::extract<GeometryObjectD<SpaceT::DIMS>*>(obj[0]);
                     hints = py::extract<PathHints>(obj[1]);
                 } catch (py::error_already_set) {
-                    throw TypeError("Key must be either of type geometry.GeometryElement%1%D or (geometry.GeometryElement%1%D, geometry.PathHints)", SpaceT::DIMS);
+                    throw TypeError("Key must be either of type geometry.GeometryObject%1%D or (geometry.GeometryObject%1%D, geometry.PathHints)", SpaceT::DIMS);
                 }
             }
-            return typename ProviderT::Place(dynamic_pointer_cast<GeometryElementD<SpaceT::DIMS>>(element->shared_from_this()), hints);
+            return typename ProviderT::Place(dynamic_pointer_cast<GeometryObjectD<SpaceT::DIMS>>(object->shared_from_this()), hints);
         }
 
         static ValueT __getitem__(const ProviderT& self, py::object key) {

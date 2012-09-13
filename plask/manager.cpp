@@ -61,20 +61,20 @@ const PathHints& Manager::requirePathHints(const std::string& path_hints_name) c
     return result_it->second;
 }
 
-shared_ptr<GeometryElement> Manager::getGeometryElement(const std::string &name) const {
-    auto result_it = namedElements.find(name);
-    if (result_it == namedElements.end()) return shared_ptr<GeometryElement>();
+shared_ptr<GeometryObject> Manager::getGeometryObject(const std::string &name) const {
+    auto result_it = namedObjects.find(name);
+    if (result_it == namedObjects.end()) return shared_ptr<GeometryObject>();
     // auto result = result_it->second.lock();
-    // if (!result) const_cast<Manager*>(this)->namedElements.erase(name);
+    // if (!result) const_cast<Manager*>(this)->namedObjects.erase(name);
     // return result;
     return result_it->second;
-    /*auto result_it = namedElements.find(name);
-    return result_it != namedElements.end() ? result_it->second.lock() : shared_ptr<GeometryElement>();*/
+    /*auto result_it = namedObjects.find(name);
+    return result_it != namedObjects.end() ? result_it->second.lock() : shared_ptr<GeometryObject>();*/
 }
 
-shared_ptr<GeometryElement> Manager::requireGeometryElement(const std::string &name) const {
-    shared_ptr<GeometryElement> result = getGeometryElement(name);
-    if (!result) throw NoSuchGeometryElement(name);
+shared_ptr<GeometryObject> Manager::requireGeometryObject(const std::string &name) const {
+    shared_ptr<GeometryObject> result = getGeometryObject(name);
+    if (!result) throw NoSuchGeometryObject(name);
     return result;
 }
 

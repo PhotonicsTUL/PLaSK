@@ -21,11 +21,11 @@ This file includes base classes for materials and material database class.
 namespace plask {
 
 /**
- * Get group in periodic table of given @p element.
- * @param elementName name of element
- * @return group of element with given name @p elementName or 0 if given element is not known
+ * Get group in periodic table of given @p object.
+ * @param objectName name of object
+ * @return group of object with given name @p objectName or 0 if given object is not known
  */
-int elementGroup(const std::string& elementName);
+int objectGroup(const std::string& objectName);
 
 /**
  * Represent material, its physical properties.
@@ -96,35 +96,35 @@ struct Material {
         operator std::string() const { return str.str(); }
 
         /**
-         * Append name of element (without ammount) to built string.
-         * @param elementName name of element to add
+         * Append name of object (without ammount) to built string.
+         * @param objectName name of object to add
          * @return *this
          */
-        StringBuilder& operator()(const std::string& elementName) { str << elementName; return *this; }
+        StringBuilder& operator()(const std::string& objectName) { str << objectName; return *this; }
 
         /**
-         * Construct builder and append name of element (without ammount) to built string.
-         * @param elementName name of element to add
+         * Construct builder and append name of object (without ammount) to built string.
+         * @param objectName name of object to add
          */
-        StringBuilder(const std::string& elementName) {
-            this->operator ()(elementName);
+        StringBuilder(const std::string& objectName) {
+            this->operator ()(objectName);
         }
 
         /**
-         * Append name of element (with ammount) to built string.
-         * @param elementName name of element to add
-         * @param ammount ammount of added element
+         * Append name of object (with ammount) to built string.
+         * @param objectName name of object to add
+         * @param ammount ammount of added object
          * @return *this
          */
-        StringBuilder& operator()(const std::string& elementName, double ammount);
+        StringBuilder& operator()(const std::string& objectName, double ammount);
 
         /**
-         * Construct builder and append name of element (with ammount) to built string.
-         * @param elementName name of element to add
-         * @param ammount ammount of added element
+         * Construct builder and append name of object (with ammount) to built string.
+         * @param objectName name of object to add
+         * @param ammount ammount of added object
          */
-        StringBuilder(const std::string& elementName, double ammount) {
-            this->operator ()(elementName, ammount);
+        StringBuilder(const std::string& objectName, double ammount) {
+            this->operator ()(objectName, ammount);
         }
 
         /**
@@ -147,18 +147,18 @@ struct Material {
     };
 
     /**
-     * Parse composition element from [begin, end) string.
-     * @param begin begin of string, will be increased to point to potential next composition element or end (if parsed composition element was last one)
+     * Parse composition object from [begin, end) string.
+     * @param begin begin of string, will be increased to point to potential next composition object or end (if parsed composition object was last one)
      * @param end points just after last charcter of string, must be: begin < end
-     * @return parsed element name and ammount (NaN if there was no information about ammount)
+     * @return parsed object name and ammount (NaN if there was no information about ammount)
      */
-    static std::pair<std::string, double> getFirstCompositionElement(const char*& begin, const char* end);
+    static std::pair<std::string, double> getFirstCompositionObject(const char*& begin, const char* end);
 
     /**
      * Change NaN-s in material composition to calculated amounts.
      *
      * Throw exception if it is impossible to complete given composition.
-     * @param composition amounts of elements composition with NaN on position for which amounts has not been taken
+     * @param composition amounts of objects composition with NaN on position for which amounts has not been taken
      * @return complate composition, for example for ("Al", 0.7), ("Ga", NaN), ("N", NaN) result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
      */
     static Composition completeComposition(const Composition& composition);
@@ -177,7 +177,7 @@ struct Material {
      * Parse composition from string.
      *
      * Throws exception in case of parsing errors.
-     * @param composition_str composition string, elements and amounts, for example "Al(0.7)GaN"
+     * @param composition_str composition string, objects and amounts, for example "Al(0.7)GaN"
      * @return parsed composition, can be not complate, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", NaN), ("N", NaN)
      * @see @ref completeComposition
      */
@@ -202,20 +202,20 @@ struct Material {
     static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount);
 
     /**
-     * Split element name to elements.
+     * Split object name to objects.
      * @param begin, end [begin, end) string or range in string, for example "AlGaN"
-     * @return vector of parsed elements (for "AlGaN" result is ["Al", "Ga", "N"])
+     * @return vector of parsed objects (for "AlGaN" result is ["Al", "Ga", "N"])
      * @throw MaterialParseException when name is ill-formated
      */
-    static std::vector<std::string> parseElementsNames(const char* begin, const char* end);
+    static std::vector<std::string> parseObjectsNames(const char* begin, const char* end);
 
     /**
-     * Split element name to elements.
-     * @param allNames all elements names, for example "AlGaN"
-     * @return vector of parsed elements (for "AlGaN" result is ["Al", "Ga", "N"])
+     * Split object name to objects.
+     * @param allNames all objects names, for example "AlGaN"
+     * @return vector of parsed objects (for "AlGaN" result is ["Al", "Ga", "N"])
      * @throw MaterialParseException when name is ill-formated
      */
-    static std::vector<std::string> parseElementsNames(const std::string& allNames);
+    static std::vector<std::string> parseObjectsNames(const std::string& allNames);
 
     /// Do nothing.
     virtual ~Material() {}
@@ -480,7 +480,7 @@ struct Material {
     /**
      * Get anisotropic refractive index tensor nR [-].
      * Tensor must have the form \f$ \left[\begin{array}{ccc} n_{0} & n_{3} & 0\\ n_{4} & n_{1} & 0\\ 0 & 0 & n_{2} \end{array}\right] \f$,
-     * where \f$ n_i \f$ is i-th element of the returned tuple.
+     * where \f$ n_i \f$ is i-th object of the returned tuple.
      * @param wl Wavelength [nm]
      * @param T temperature [K]
      * @return refractive index tensor nR[-]

@@ -254,21 +254,21 @@ struct NoGeometryException: public Exception {
 };
 
 /**
- * Exceptions of this class are thrown by some geometry element classes when there is no required child.
+ * Exceptions of this class are thrown by some geometry object classes when there is no required child.
  */
 struct NoChildException: public Exception {
     NoChildException(): Exception("Incomplete geometry tree") {}
 };
 
 /**
- * Exceptions of this class are thrown by some geometry element classes
+ * Exceptions of this class are thrown by some geometry object classes
  */
-struct NotUniqueElementException: public Exception {
-    NotUniqueElementException(): Exception("Unique element instance required") {}
-    NotUniqueElementException(const std::string& msg): Exception(msg) {}
+struct NotUniqueObjectException: public Exception {
+    NotUniqueObjectException(): Exception("Unique object instance required") {}
+    NotUniqueObjectException(const std::string& msg): Exception(msg) {}
 
     template <typename... T>
-    NotUniqueElementException(const std::string& msg, const T&... args): Exception(msg, args...) {}
+    NotUniqueObjectException(const std::string& msg, const T&... args): Exception(msg, args...) {}
 };
 
 /**
@@ -279,41 +279,41 @@ struct CyclicReferenceException: public Exception {
 };
 
 /**
- * This exception is thrown when geometry element (typically with given name) is not found.
+ * This exception is thrown when geometry object (typically with given name) is not found.
  */
-struct NoSuchGeometryElementType: public Exception {
+struct NoSuchGeometryObjectType: public Exception {
     //std::string materialName;
 
     /**
-     * @param element_type_name name of element type which is not found
+     * @param object_type_name name of object type which is not found
      */
-    NoSuchGeometryElementType(const std::string& element_type_name)
-        : Exception("No geometry element with given type name \"" + element_type_name + "\"")/*, materialName(material_name)*/ {}
+    NoSuchGeometryObjectType(const std::string& object_type_name)
+        : Exception("No geometry object with given type name \"" + object_type_name + "\"")/*, materialName(material_name)*/ {}
 };
 
 /**
- * Exceptions of this class are thrownby some geometry element classes when there is no required child.
+ * Exceptions of this class are thrownby some geometry object classes when there is no required child.
  */
 struct NamesConflictException: public Exception {
 
     /**
-     * @param element_name name of element which is already exists
+     * @param object_name name of object which is already exists
      */
-    NamesConflictException(const std::string& what, const std::string& element_name):
-        Exception(what + " with name \"" + element_name + "\" already exists.") {}
+    NamesConflictException(const std::string& what, const std::string& object_name):
+        Exception(what + " with name \"" + object_name + "\" already exists.") {}
 };
 
 /**
- * This exception is thrown when geometry element (typically with given name) is not found.
+ * This exception is thrown when geometry object (typically with given name) is not found.
  */
-struct NoSuchGeometryElement: public Exception {
+struct NoSuchGeometryObject: public Exception {
     //std::string materialName;
 
     /**
-     * @param element_name name of element which is not found
+     * @param object_name name of object which is not found
      */
-    NoSuchGeometryElement(const std::string& element_name)
-    : Exception("No geometry element with name \"" + element_name + "\"") {}
+    NoSuchGeometryObject(const std::string& object_name)
+    : Exception("No geometry object with name \"" + object_name + "\"") {}
 };
 
 /**
@@ -321,10 +321,10 @@ struct NoSuchGeometryElement: public Exception {
  */
 struct NoSuchGeometry: public Exception {
     /**
-     * @param element_name name of element which is not found
+     * @param object_name name of object which is not found
      */
-    NoSuchGeometry(const std::string& element_name)
-    : Exception("No geometry of required type with name \"" + element_name + "\"") {}
+    NoSuchGeometry(const std::string& object_name)
+    : Exception("No geometry of required type with name \"" + object_name + "\"") {}
 };
 
 /**
@@ -332,17 +332,17 @@ struct NoSuchGeometry: public Exception {
  */
 struct NoSuchPath: public Exception {
     /**
-     * @param element_name name of element which is not found
+     * @param object_name name of object which is not found
      */
-    NoSuchPath(const std::string& element_name)
-    : Exception("No path with name \"" + element_name + "\"") {}
+    NoSuchPath(const std::string& object_name)
+    : Exception("No path with name \"" + object_name + "\"") {}
 };
 
 /**
- * This exception is thrown when geometry element has type different than expectation (for example is 3d but expected 2d).
+ * This exception is thrown when geometry object has type different than expectation (for example is 3d but expected 2d).
  */
-struct UnexpectedGeometryElementTypeException: public Exception {
-    UnexpectedGeometryElementTypeException(): Exception("Geometry element has unexpected type") {}
+struct UnexpectedGeometryObjectTypeException: public Exception {
+    UnexpectedGeometryObjectTypeException(): Exception("Geometry object has unexpected type") {}
 };
 
 /**

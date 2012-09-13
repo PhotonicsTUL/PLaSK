@@ -13,12 +13,6 @@
 
 namespace plask { namespace python {
 
-#if PY_VERSION_HEX >= 0x03000000
-#       define PLASK_PyCodeObject PyObject
-#else
-#       define PLASK_PyCodeObject PyCodeObject
-#endif
-
 struct EmptyBase : public Material {
     virtual std::string name() const { return ""; }
     virtual Material::Kind kind() const { return Material::NONE; }
@@ -241,7 +235,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     std::string base;
     Material::Kind kind;
 
-    PLASK_PyCodeObject
+    PyCodeObject
         *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *eps, *chi,
         *Nc, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *res, *A, *B, *C, *D,
         *condT, *condT_t, *dens, *specHeat, *nr, *absp, *Nr, *Nr_tensor;
@@ -281,7 +275,7 @@ class PythonEvalMaterial : public Material
     py::dict globals;
 
     template <typename RETURN>
-    RETURN call(PLASK_PyCodeObject *fun, const py::dict& locals) const {
+    RETURN call(PyCodeObject *fun, const py::dict& locals) const {
         PyObject* result = PyEval_EvalCode(fun, globals.ptr(), locals.ptr());
         if (!result) throw py::error_already_set();
         return py::extract<RETURN>(result);
@@ -406,22 +400,22 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
         else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
-            constructor->func = (PLASK_PyCodeObject*)Py_CompileString(trim(reader.requireText().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input);
+            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireText().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input);
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(name, func) \
         else if (reader.getNodeName() == name) \
-            constructor->func = (PLASK_PyCodeObject*)Py_CompileString(trim(reader.requireText().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input);
+            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireText().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input);
 
 #   else
         PyCompilerFlags flags { CO_FUTURE_DIVISION };
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
         else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
-            constructor->func = (PLASK_PyCodeObject*)Py_CompileStringFlags(trim(reader.requireText().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
+            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireText().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(name, func) \
         else if (reader.getNodeName() == name) \
-            constructor->func = (PLASK_PyCodeObject*)Py_CompileStringFlags(trim(reader.requireText().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
+            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireText().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
 
 #   endif
     while (reader.requireTagOrEnd()) {
@@ -660,18 +654,18 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     }
 
     // So, kwargs contains compostion
-    std::vector<std::string> elements = Material::parseElementsNames(name);
+    std::vector<std::string> objects = Material::parseObjectsNames(name);
     py::object none;
-    // test if only correct elements are given
+    // test if only correct objects are given
     for (int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
-        if (k != "dp" && k != "dc" && k != "cc" && std::find(elements.begin(), elements.end(), k) == elements.end()) {
+        if (k != "dp" && k != "dc" && k != "cc" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
             throw TypeError("'%s' not allowed in material %s", k, name);
         }
     }
     // make composition map
     Material::Composition composition;
-    for (auto e: elements) {
+    for (auto e: objects) {
         py::object v;
         try {
             v = kwargs[e];
@@ -686,7 +680,7 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 
 /**
  * Converter for Python string to material using default database.
- * Allows to create geometry elements as \c rectange(2,1,"GaAs")
+ * Allows to create geometry objects as \c rectange(2,1,"GaAs")
  */
 struct Material_from_Python_string {
 
@@ -727,9 +721,9 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
     }
     if (name != "") {
         std::string basename = splitString2(name, ':').first;
-        std::vector<std::string> elements = Material::parseElementsNames(basename);
+        std::vector<std::string> objects = Material::parseObjectsNames(basename);
         for (auto c: comp) {
-            if (std::find(elements.begin(), elements.end(), c.first) == elements.end()) {
+            if (std::find(objects.begin(), objects.end(), c.first) == objects.end()) {
                 throw TypeError("'%s' not allowed in material %s", c.first, name);
             }
         }

@@ -288,9 +288,9 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
     /**
      * Write mesh to XML
-     * \param element XML element to write to
+     * \param object XML object to write to
      */
-    virtual void writeXML(XMLElement& element) const;
+    virtual void writeXML(XMLElement& object) const;
 
 
     /// @return true only if there are no points in mesh

@@ -396,7 +396,7 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplat
     };
 
     /**
-     * Provider which allows to define value in each geometry place pointed as geometry element.
+     * Provider which allows to define value in each geometry place pointed as geometry object.
      *
      * It ignores extra parameters.
      */
@@ -407,7 +407,7 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplat
          * \param root root geometry
          * \param default_value default value returned in all not-specified places
          */
-        ConstByPlace(weak_ptr<const GeometryElementD<SpaceT::DIMS>> root=weak_ptr<const GeometryElementD<SpaceT::DIMS>>(), const ValueT& default_value=ValueT()):
+        ConstByPlace(weak_ptr<const GeometryObjectD<SpaceT::DIMS>> root=weak_ptr<const GeometryObjectD<SpaceT::DIMS>>(), const ValueT& default_value=ValueT()):
             ConstByPlaceProviderImpl<PropertyT, SpaceT>(root, default_value) {}
 
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams...) const {
@@ -609,7 +609,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
     };
 
     /**
-     * Provider which allows to define value in each geometry place pointed as geometry element.
+     * Provider which allows to define value in each geometry place pointed as geometry object.
      *
      * It ignors extra parameters.
      */
@@ -620,7 +620,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
          * \param root root geometry
          * \param default_value default value returned in all not-specified places
          */
-        ConstByPlace(weak_ptr<const GeometryElementD<SpaceT::DIMS>> root=weak_ptr<const GeometryElementD<SpaceT::DIMS>>(), const ValueT& default_value=ValueT()):
+        ConstByPlace(weak_ptr<const GeometryObjectD<SpaceT::DIMS>> root=weak_ptr<const GeometryObjectD<SpaceT::DIMS>>(), const ValueT& default_value=ValueT()):
             ConstByPlaceProviderImpl<PropertyT, SpaceT>(root, default_value) {}
 
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod) const {

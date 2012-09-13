@@ -8,40 +8,40 @@ void PathHints::addHint(const Hint& hint) {
     addHint(hint.first, hint.second);
 }
 
-void PathHints::addHint(weak_ptr<GeometryElement> container, weak_ptr<GeometryElement> child) {
+void PathHints::addHint(weak_ptr<GeometryObject> container, weak_ptr<GeometryObject> child) {
     hintFor[container].insert(child);
 }
 
-void PathHints::addAllHintsFromPath(const std::vector< shared_ptr<const GeometryElement> >& pathElements) {
-    int possibleContainers_size = pathElements.size() - 1;
+void PathHints::addAllHintsFromPath(const std::vector< shared_ptr<const GeometryObject> >& pathObjects) {
+    int possibleContainers_size = pathObjects.size() - 1;
     for (int i = 0; i < possibleContainers_size; ++i)
-        if (pathElements[i]->isContainer())
-            addHint(const_pointer_cast<GeometryElement>(pathElements[i]), const_pointer_cast<GeometryElement>(pathElements[i+1]));
+        if (pathObjects[i]->isContainer())
+            addHint(const_pointer_cast<GeometryObject>(pathObjects[i]), const_pointer_cast<GeometryObject>(pathObjects[i+1]));
 }
 
 void PathHints::addAllHintsFromPath(const Path& path) {
-    addAllHintsFromPath(path.elements);
+    addAllHintsFromPath(path.objects);
 }
 
-void PathHints::addAllHintsFromSubtree(const GeometryElement::Subtree &subtree) {
-    if (subtree.element->isContainer()) {
+void PathHints::addAllHintsFromSubtree(const GeometryObject::Subtree &subtree) {
+    if (subtree.object->isContainer()) {
         for (auto& c: subtree.children)
-            addHint(const_pointer_cast<GeometryElement>(subtree.element), const_pointer_cast<GeometryElement>(c.element));
+            addHint(const_pointer_cast<GeometryObject>(subtree.object), const_pointer_cast<GeometryObject>(c.object));
     }
     for (auto& c: subtree.children)
         addAllHintsFromPath(c);
 }
 
-std::set<shared_ptr<GeometryElement>> PathHints::getChildren(shared_ptr<const GeometryElement> container) {
-    std::set<shared_ptr<GeometryElement>> result;
-    auto e = hintFor.find(const_pointer_cast<GeometryElement>(container));
+std::set<shared_ptr<GeometryObject>> PathHints::getChildren(shared_ptr<const GeometryObject> container) {
+    std::set<shared_ptr<GeometryObject>> result;
+    auto e = hintFor.find(const_pointer_cast<GeometryObject>(container));
     if (e == hintFor.end()) return result;
     if (e->first.expired()) {   // container was deleted, new container is under same address as was old one
         hintFor.erase(e);
         return result;
     }
     for (auto weak_child_iter = e->second.begin(); weak_child_iter != e->second.end(); ) {
-        shared_ptr<GeometryElement> child = weak_child_iter->lock();
+        shared_ptr<GeometryObject> child = weak_child_iter->lock();
         if (!child)        // child was deleted
             e->second.erase(weak_child_iter++);
         else {
@@ -53,12 +53,12 @@ std::set<shared_ptr<GeometryElement>> PathHints::getChildren(shared_ptr<const Ge
     return result;
 }
 
-std::set<shared_ptr<GeometryElement>> PathHints::getChildren(shared_ptr<const GeometryElement> container) const {
-    std::set<shared_ptr<GeometryElement>> result;
-    auto e = hintFor.find(const_pointer_cast<GeometryElement>(container));
+std::set<shared_ptr<GeometryObject>> PathHints::getChildren(shared_ptr<const GeometryObject> container) const {
+    std::set<shared_ptr<GeometryObject>> result;
+    auto e = hintFor.find(const_pointer_cast<GeometryObject>(container));
     if (e == hintFor.end() || e->first.expired()) return result;
     for (auto child_weak: e->second) {
-        shared_ptr<GeometryElement> child = child_weak.lock();
+        shared_ptr<GeometryObject> child = child_weak.lock();
         if (child) result.insert(child);
     }
     return result;
@@ -84,48 +84,48 @@ void PathHints::cleanDeleted() {
 
 //----------------- Path ------------------------------------------
 
-bool Path::completeToFirst(const GeometryElement& newFirst, const PathHints* hints) {
-    GeometryElement::Subtree path = newFirst.getPathsTo(*elements.front(), hints);
+bool Path::completeToFirst(const GeometryObject& newFirst, const PathHints* hints) {
+    GeometryObject::Subtree path = newFirst.getPathsTo(*objects.front(), hints);
     if (path.empty()) return false;
     push_front(path.toLinearPath());
     return true;
 }
 
-bool Path::completeFromLast(const GeometryElement& newLast, const PathHints* hints) {
-    GeometryElement::Subtree path = elements.back()->getPathsTo(newLast, hints);
+bool Path::completeFromLast(const GeometryObject& newLast, const PathHints* hints) {
+    GeometryObject::Subtree path = objects.back()->getPathsTo(newLast, hints);
     if (path.empty()) return false;
     push_back(path.toLinearPath());
     return true;
 }
 
-void Path::push_front(const std::vector< shared_ptr<const GeometryElement> >& toAdd) {
+void Path::push_front(const std::vector< shared_ptr<const GeometryObject> >& toAdd) {
     if (toAdd.empty()) return;
-    if (elements.empty()) {
-        elements = toAdd;
+    if (objects.empty()) {
+        objects = toAdd;
     } else {
-        if (toAdd.back() == elements.front())   //last to add is already first on list?
-            elements.insert(elements.begin(), toAdd.begin(), toAdd.end()-1);
+        if (toAdd.back() == objects.front())   //last to add is already first on list?
+            objects.insert(objects.begin(), toAdd.begin(), toAdd.end()-1);
         else
-            elements.insert(elements.begin(), toAdd.begin(), toAdd.end());
+            objects.insert(objects.begin(), toAdd.begin(), toAdd.end());
     }
 }
 
-void Path::push_back(const std::vector< shared_ptr<const GeometryElement> >& toAdd) {
+void Path::push_back(const std::vector< shared_ptr<const GeometryObject> >& toAdd) {
     if (toAdd.empty()) return;
-    if (elements.empty()) {
-        elements = toAdd;
+    if (objects.empty()) {
+        objects = toAdd;
     } else {
-        if (toAdd.front() == elements.back())   //first to add is already as last on list?
-            elements.insert(elements.end(), toAdd.begin()+1, toAdd.end());
+        if (toAdd.front() == objects.back())   //first to add is already as last on list?
+            objects.insert(objects.end(), toAdd.begin()+1, toAdd.end());
         else
-            elements.insert(elements.end(), toAdd.begin(), toAdd.end());
+            objects.insert(objects.end(), toAdd.begin(), toAdd.end());
     }
 }
 
-Path& Path::append(const std::vector< shared_ptr<const GeometryElement> >& path, const PathHints* hints) {
+Path& Path::append(const std::vector< shared_ptr<const GeometryObject> >& path, const PathHints* hints) {
     if (path.empty()) return *this;
-    if (elements.empty())
-        elements = path;
+    if (objects.empty())
+        objects = path;
     else {
         if (completeToFirst(*path.back(), hints)) {
             push_front(path);
@@ -138,24 +138,24 @@ Path& Path::append(const std::vector< shared_ptr<const GeometryElement> >& path,
     return *this;
 }
 
-Path& Path::append(const GeometryElement::Subtree& path, const PathHints* hints) {
+Path& Path::append(const GeometryObject::Subtree& path, const PathHints* hints) {
     return append(path.toLinearPath(), hints);
 }
 
 Path& Path::append(const Path& path, const PathHints* hints) {
-    return append(path.elements, hints);
+    return append(path.objects, hints);
 }
 
 Path& Path::append(const PathHints::Hint& hint, const PathHints* hints) {
-    return append(std::vector< shared_ptr<const GeometryElement> > { hint.first, hint.second }, hints);
+    return append(std::vector< shared_ptr<const GeometryObject> > { hint.first, hint.second }, hints);
 }
 
-Path& Path::append(const GeometryElement& element, const PathHints* hints) {
-    return append( std::vector< shared_ptr<const GeometryElement> > { element.shared_from_this() }, hints);
+Path& Path::append(const GeometryObject& object, const PathHints* hints) {
+    return append( std::vector< shared_ptr<const GeometryObject> > { object.shared_from_this() }, hints);
 }
 
-Path& Path::append(shared_ptr<const GeometryElement> element, const PathHints* hints) {
-    return append( std::vector< shared_ptr<const GeometryElement> > { element }, hints);
+Path& Path::append(shared_ptr<const GeometryObject> object, const PathHints* hints) {
+    return append( std::vector< shared_ptr<const GeometryObject> > { object }, hints);
 }
 
 PathHints Path::getPathHints() const {

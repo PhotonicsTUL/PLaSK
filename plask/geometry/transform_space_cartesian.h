@@ -6,18 +6,18 @@
 namespace plask {
 
 /**
- * Represent 3d geometry element which are extend of 2d element (child) in lon direction.
+ * Represent 3d geometry object which are extend of 2d object (child) in lon direction.
  */
-struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*/ {
+struct Extrusion: public GeometryObjectTransformSpace<3, 2>/*, public Geometry*/ {
 
-    typedef GeometryElementTransformSpace<3, 2>::ChildType ChildType;
+    typedef GeometryObjectTransformSpace<3, 2>::ChildType ChildType;
 
     double length;
 
     // Size of the calculation space.
     // spaceSize;
 
-    explicit Extrusion(shared_ptr<ChildType> child, double length): GeometryElementTransformSpace<3,2>(child), length(length) {}
+    explicit Extrusion(shared_ptr<ChildType> child, double length): GeometryObjectTransformSpace<3,2>(child), length(length) {}
 
     explicit Extrusion(double length = 0.0/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 
@@ -39,19 +39,19 @@ struct Extrusion: public GeometryElementTransformSpace<3, 2>/*, public Geometry*
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const;
 
-    //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryElement>, Box, DVec>>& dest, const PathHints* path = 0) const;
+    //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const;
 
-    virtual void getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
 
-    virtual std::vector< plask::shared_ptr< const plask::GeometryElement > > getLeafs() const;
+    virtual std::vector< plask::shared_ptr< const plask::GeometryObject > > getLeafs() const;
 
-    virtual shared_ptr<GeometryElementTransform<3, ChildType>> shallowCopy() const;
+    virtual shared_ptr<GeometryObjectTransform<3, ChildType>> shallowCopy() const;
 
-    using GeometryElementTransformSpace<3, 2>::getPathsTo;
+    using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 
-    GeometryElement::Subtree getPathsTo(const DVec& point) const;
+    GeometryObject::Subtree getPathsTo(const DVec& point) const;
 
-    void writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const;
+    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 
 private:
     /// @return true only if p can be inside this, false if for sure its not inside

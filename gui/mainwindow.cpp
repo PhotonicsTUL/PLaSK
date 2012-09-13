@@ -10,7 +10,7 @@
 MainWindow::MainWindow()
     : propertyTree(new QtTreePropertyBrowser(this)), document(*propertyTree)
 {
-    view = new ElementViewer(this);
+    view = new ObjectViewer(this);
     view->setModel(&document.treeModel);
 
     setCentralWidget(view);
@@ -57,7 +57,7 @@ void MainWindow::open() {
 
     /*view->setTransform(flipVertical);
     view->scale(10.0, 10.0);
-    scene->addItem(new GeometryElementItem(document.manager.getRootElement<plask::GeometryElementD<2>>(0)));
+    scene->addItem(new GeometryObjectItem(document.manager.getRootObject<plask::GeometryObjectD<2>>(0)));
     scene->addLine(-10.0, 0.0, 10.0, 0.0, QPen(Qt::red));
     scene->addLine(0.0, -10.0, 0.0, 10.0, QPen(Qt::red));*/
 }
@@ -122,9 +122,9 @@ void MainWindow::about()
 
 void MainWindow::treeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected) {
     if (selected.indexes().empty()) {
-        document.selectElement(0);  //deselect
+        document.selectObject(0);  //deselect
     } else
-        document.selectElement((GeometryTreeItem*) selected.indexes().first().internalPointer());
+        document.selectObject((GeometryTreeItem*) selected.indexes().first().internalPointer());
 }
 
 void MainWindow::treeRemoveSelected() {
@@ -179,7 +179,7 @@ void MainWindow::createActions()
     connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
 
     editSelectedAct = new QAction(QIcon::fromTheme("media-record"), tr("&Edit selected"), this);
-    editSelectedAct->setStatusTip(tr("Edit selected element"));
+    editSelectedAct->setStatusTip(tr("Edit selected object"));
     connect(editSelectedAct, SIGNAL(triggered()), this, SLOT(editSelected()));
 
     quitAct = new QAction(tr("&Quit"), this);
@@ -198,7 +198,7 @@ void MainWindow::createActions()
     //tree actions:
     
     treeRemoveAct = new QAction(tr("&Remove"), this);
-    treeRemoveAct->setToolTip(tr("Remove selected element from geometry tree"));
+    treeRemoveAct->setToolTip(tr("Remove selected object from geometry tree"));
     connect(treeRemoveAct, SIGNAL(triggered()), this, SLOT(treeRemoveSelected()));
     
     treeAddCartesian2dAct = new QAction(tr("&New 2D cartesian geometry"), this);
@@ -279,7 +279,7 @@ void MainWindow::createStatusBar()
 }
 
 void MainWindow::createDockWindows() {
-    QDockWidget *dock = new QDockWidget(tr("Geometry elements tree"), this);
+    QDockWidget *dock = new QDockWidget(tr("Geometry objects tree"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea); 
     treeView = new QTreeView(dock);
     treeView->setAlternatingRowColors(true);    //2 colors for even/odd
@@ -313,7 +313,7 @@ void MainWindow::createDockWindows() {
     addDockWidget(Qt::LeftDockWidgetArea, dock);
     viewMenu->addAction(dock->toggleViewAction());
 
-    dock = new QDockWidget(tr("New geometry elements"), this);
+    dock = new QDockWidget(tr("New geometry objects"), this);
     dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     creatorsList = new QListView(dock);
     creatorsList->setModel(&creators);

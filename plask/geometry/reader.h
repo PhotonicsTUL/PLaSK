@@ -20,41 +20,41 @@ class Manager;
  */
 class GeometryReader {
 
-    /// Allow to access elements by auto-name (beggined with '#').
-    std::map<std::string, shared_ptr<GeometryElement> > autoNamedElements;
+    /// Allow to access objects by auto-name (beggined with '#').
+    std::map<std::string, shared_ptr<GeometryObject> > autoNamedObjects;
 
 public:
 
     /**
-     * Create new geometry element with parameters reading from XML source.
+     * Create new geometry object with parameters reading from XML source.
      *
-     * After return reader should point to end of tag of this element.
-     * Can call managers methods to read children (GeometryReader::readElement).
-     * Should throw exception if can't create element.
+     * After return reader should point to end of tag of this object.
+     * Can call managers methods to read children (GeometryReader::readObject).
+     * Should throw exception if can't create object.
      */
-    typedef shared_ptr<GeometryElement> element_read_f(GeometryReader& reader);
+    typedef shared_ptr<GeometryObject> object_read_f(GeometryReader& reader);
 
     /**
-     * @return Global elements readers register.
-     * Map: xml tag name -> element reader function.
+     * @return Global objects readers register.
+     * Map: xml tag name -> object reader function.
      */
-    static std::map<std::string, element_read_f*>& elementReaders();
+    static std::map<std::string, object_read_f*>& objectReaders();
 
     /**
-     * Add reader to elementReaders.
+     * Add reader to objectReaders.
      * @param tag_name XML tag name
-     * @param reader element reader function
+     * @param reader object reader function
      */
-    static void registerElementReader(const std::string& tag_name, element_read_f* reader);
+    static void registerObjectReader(const std::string& tag_name, object_read_f* reader);
 
     /**
-     * Helper which call registerElementReader in constructor.
+     * Helper which call registerObjectReader in constructor.
      *
-     * Each element can create one global instance of this class to register own reader.
+     * Each object can create one global instance of this class to register own reader.
      */
-    struct RegisterElementReader {
-        RegisterElementReader(const std::string& tag_name, element_read_f* reader) {
-            GeometryReader::registerElementReader(tag_name, reader);
+    struct RegisterObjectReader {
+        RegisterObjectReader(const std::string& tag_name, object_read_f* reader) {
+            GeometryReader::registerObjectReader(tag_name, reader);
         }
     };
 
@@ -62,7 +62,7 @@ public:
     const AxisNames* axisNames;
 
     /**
-     * Currently expected suffix for names of geometry elements types, can have one of the following values:
+     * Currently expected suffix for names of geometry objects types, can have one of the following values:
      * - 0 dimensions of children space can't be deduced (initial value),
      * - PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D if 2d children are expected,
      * - PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D if 3d children are expected.
@@ -123,7 +123,7 @@ public:
 
     /// Type of material source, can return material with given name.
     typedef std::function<shared_ptr<Material>(const std::string& material_full_name)> MaterialsSource;
-    
+
     /**
      * Materials source functor which use materials database.
      */
@@ -149,60 +149,60 @@ public:
 
     /**
      * @param manager
-     * @param source xml data source from which element data should be read
+     * @param source xml data source from which object data should be read
      * @param materialsDB materials database used to set leafs materials
      */
     GeometryReader(Manager& manager, XMLReader& source, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
      * @param manager
-     * @param source xml data source from which element data should be read
+     * @param source xml data source from which object data should be read
      * @param materialsSource materials source used to set leafs materials
      */
     GeometryReader(Manager& manager, XMLReader& source, const MaterialsSource& materialsSource);
 
     /**
-     * Read geometry element from @p source and add it Manager structures.
+     * Read geometry object from @p source and add it Manager structures.
      *
-     * Typically it creates new geometry element using elementReaders,
-     * but it also support references and can return existing elements.
+     * Typically it creates new geometry object using objectReaders,
+     * but it also support references and can return existing objects.
      *
-     * After call source reader point to end of tag which represent read element.
-     * @return element which was read and create or to which reference was read
-     * @throw NamesConflictException if element with read name already exists
-     * @throw NoSuchGeometryElement if ref element reference to element which not exists
+     * After call source reader point to end of tag which represent read object.
+     * @return object which was read and create or to which reference was read
+     * @throw NamesConflictException if object with read name already exists
+     * @throw NoSuchGeometryObject if ref object reference to object which not exists
      * @throw NoAttrException if XML tag has no required attributes
      */
-    shared_ptr<GeometryElement> readElement();
+    shared_ptr<GeometryObject> readObject();
 
     /**
-     * Helper function to read elements which have exactly one child (typically: transform).
+     * Helper function to read objects which have exactly one child (typically: transform).
      *
-     * Befor call source reader should point to parent element tag (typically transform element)
-     * and after call it will be point to end of parent element tag.
-     * @return child element which was read and create or to which reference was read
+     * Befor call source reader should point to parent object tag (typically transform object)
+     * and after call it will be point to end of parent object tag.
+     * @return child object which was read and create or to which reference was read
      */
-    shared_ptr<GeometryElement> readExactlyOneChild();
+    shared_ptr<GeometryObject> readExactlyOneChild();
 
     /**
-     * Call readElement() and try dynamic cast it to @a RequiredElementType.
-     * @return element (casted to RequiredElementType) which was read and create or to which reference was read
-     * @tparam RequiredElementType required type of element
-     * @throw UnexpectedGeometryElementTypeException if requested element is not of type RequiredElementType
-     * @throw NamesConflictException if element with read name already exists
-     * @throw NoSuchGeometryElement if ref element reference to element which not exists
+     * Call readObject() and try dynamic cast it to @a RequiredObjectType.
+     * @return object (casted to RequiredObjectType) which was read and create or to which reference was read
+     * @tparam RequiredObjectType required type of object
+     * @throw UnexpectedGeometryObjectTypeException if requested object is not of type RequiredObjectType
+     * @throw NamesConflictException if object with read name already exists
+     * @throw NoSuchGeometryObject if ref object reference to object which not exists
      * @throw NoAttrException if XML tag has no required attributes
      */
-    template <typename RequiredElementType>
-    shared_ptr<RequiredElementType> readElement();
+    template <typename RequiredObjectType>
+    shared_ptr<RequiredObjectType> readObject();
 
     /**
-     * Call readExactlyOneChild() and try dynamic cast it to @a RequiredElementType.
-     * @return element (casted to RequiredElementType) which was return by readExactlyOneChild()
-     * @tparam RequiredElementType required type of element
+     * Call readExactlyOneChild() and try dynamic cast it to @a RequiredObjectType.
+     * @return object (casted to RequiredObjectType) which was return by readExactlyOneChild()
+     * @tparam RequiredObjectType required type of object
      */
-    template <typename RequiredElementType>
-    shared_ptr<RequiredElementType> readExactlyOneChild();
+    template <typename RequiredObjectType>
+    shared_ptr<RequiredObjectType> readExactlyOneChild();
 
     /**
      * Try reading calculation space. Throw exception if can't.
@@ -211,49 +211,49 @@ public:
     shared_ptr<Geometry> readGeometry();
 
     /**
-     * Get named elements. It support boths: named elements (from manager) and auto-named elements.
-     * @param name element name (can be auto-generated: in form '#'+number)
-     * @return element with given name
-     * @throw NoSuchGeometryElement if element was not found
+     * Get named objects. It support boths: named objects (from manager) and auto-named objects.
+     * @param name object name (can be auto-generated: in form '#'+number)
+     * @return object with given name
+     * @throw NoSuchGeometryObject if object was not found
      */
-    shared_ptr<GeometryElement> requireElementWithName(const std::string& name) const;
+    shared_ptr<GeometryObject> requireElementWithName(const std::string& name) const;
 
 };
 
 // specialization for most types
-template <typename RequiredElementType>
-inline shared_ptr<RequiredElementType> GeometryReader::readElement() {
-    shared_ptr<RequiredElementType> result = dynamic_pointer_cast<RequiredElementType>(readElement());
-    if (!result) throw UnexpectedGeometryElementTypeException();
+template <typename RequiredObjectType>
+inline shared_ptr<RequiredObjectType> GeometryReader::readObject() {
+    shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(readObject());
+    if (!result) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
 
-// specialization for GeometryElement which doesn't required dynamic_cast
+// specialization for GeometryObject which doesn't required dynamic_cast
 template <>
-inline shared_ptr<GeometryElement> GeometryReader::readElement<GeometryElement>() {
-    return readElement();
+inline shared_ptr<GeometryObject> GeometryReader::readObject<GeometryObject>() {
+    return readObject();
 }
 
 // specialization for most types
-template <typename RequiredElementType>
-inline shared_ptr<RequiredElementType> GeometryReader::readExactlyOneChild() {
-    shared_ptr<RequiredElementType> result = dynamic_pointer_cast<RequiredElementType>(readExactlyOneChild());
-    if (!result) throw UnexpectedGeometryElementTypeException();
+template <typename RequiredObjectType>
+inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild() {
+    shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(readExactlyOneChild());
+    if (!result) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
 
-// specialization for GeometryElement which doesn't required dynamic_cast
+// specialization for GeometryObject which doesn't required dynamic_cast
 template <>
-inline shared_ptr<GeometryElement> GeometryReader::readExactlyOneChild<GeometryElement>() {
+inline shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild<GeometryObject>() {
     return readExactlyOneChild();
 }
 
-/*template <typename FunctorType, typename RequiredElementType>
-inline void GeometryReader::readAllElements(XMLReader& source, FunctorType functor) {
+/*template <typename FunctorType, typename RequiredObjectType>
+inline void GeometryReader::readAllObjects(XMLReader& source, FunctorType functor) {
     while(source.read()) {
         switch (source.getNodeType()) {
             case irr::io::EXN_ELEMENT_END: return;
-            case irr::io::EXN_ELEMENT: functor(readElement<RequiredElementType>(source));
+            case irr::io::EXN_ELEMENT: functor(readObject<RequiredObjectType>(source));
             //TODO what with all other XML types (which now are just ignored)?
         }
     }

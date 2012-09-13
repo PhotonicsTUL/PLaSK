@@ -5,18 +5,18 @@
 namespace plask { namespace python {
 
 template <int dim>
-static bool Transfrom__contains__(const GeometryElementTransform<dim>& self, shared_ptr<typename GeometryElementTransform<dim>::ChildType> child) {
+static bool Transfrom__contains__(const GeometryObjectTransform<dim>& self, shared_ptr<typename GeometryObjectTransform<dim>::ChildType> child) {
     if (self.getChild() == child) return true;
     return false;
 }
 
 
-/// Initialize class GeometryElementTransform for Python
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementTransform, "GeometryElementTransform", "Base class for all "," transform nodes") {
-    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementTransform, GeometryElementD<dim>)
+/// Initialize class GeometryObjectTransform for Python
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, "GeometryObjectTransform", "Base class for all "," transform nodes") {
+    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, GeometryObjectD<dim>)
         .add_property("child",
-                      (shared_ptr<typename GeometryElementTransform<dim>::ChildType> (GeometryElementTransform<dim>::*)()) &GeometryElementTransform<dim>::getChild,
-                      &GeometryElementTransform<dim>::setChild, "Child of the transform object")
+                      (shared_ptr<typename GeometryObjectTransform<dim>::ChildType> (GeometryObjectTransform<dim>::*)()) &GeometryObjectTransform<dim>::getChild,
+                      &GeometryObjectTransform<dim>::setChild, "Child of the transform object")
         .def("__contains__", &Transfrom__contains__<dim>)
     ;
 }
@@ -24,28 +24,28 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementTransform, "GeometryElementTransform
 
 // Some helpful wrappers
 template <int dim>
-shared_ptr<Translation<dim>> Translation_constructor1(shared_ptr<GeometryElementD<dim>> element, const Vec<dim,double>& trans) {
-    return make_shared<Translation<dim>>(element, trans);
+shared_ptr<Translation<dim>> Translation_constructor1(shared_ptr<GeometryObjectD<dim>> object, const Vec<dim,double>& trans) {
+    return make_shared<Translation<dim>>(object, trans);
 }
 
 template <int dim> struct Translation_constructor2 {};
 template <> struct Translation_constructor2<2> {
-    static inline shared_ptr<Translation<2>> call(shared_ptr<GeometryElementD<2>> element, double c0, double c1) {
-        return make_shared<Translation<2>>(element, Vec<2,double>(c0, c1));
+    static inline shared_ptr<Translation<2>> call(shared_ptr<GeometryObjectD<2>> object, double c0, double c1) {
+        return make_shared<Translation<2>>(object, Vec<2,double>(c0, c1));
     }
     const static py::detail::keywords<3> args;
 };
 const py::detail::keywords<3> Translation_constructor2<2>::args = (py::arg("child"), py::arg("c0"), py::arg("c1"));
 template <> struct Translation_constructor2<3> {
-    static inline shared_ptr<Translation<3>> call(shared_ptr<GeometryElementD<3>> element, double c0, double c1, double c2) {
-        return make_shared<Translation<3>>(element, Vec<3,double>(c0, c1, c2));
+    static inline shared_ptr<Translation<3>> call(shared_ptr<GeometryObjectD<3>> object, double c0, double c1, double c2) {
+        return make_shared<Translation<3>>(object, Vec<3,double>(c0, c1, c2));
     }
     const static py::detail::keywords<4> args;
 };
 const py::detail::keywords<4> Translation_constructor2<3>::args = (py::arg("child"), py::arg("c0"), py::arg("c1"), py::arg("c2"));
 
 
-std::string GeometryElement__repr__(const shared_ptr<GeometryElement>& self);
+std::string GeometryObject__repr__(const shared_ptr<GeometryObject>& self);
 
 template <int dim>
 static std::string Translation__str__(const Translation<dim>& self) {
@@ -56,7 +56,7 @@ static std::string Translation__str__(const Translation<dim>& self) {
         out << str;
     } catch (py::error_already_set) {
         PyErr_Clear();
-        out << GeometryElement__repr__(self.getChild());
+        out << GeometryObject__repr__(self.getChild());
     }
     out << ", plask.vec("; for (int i = 0; i < dim; ++i) out << pyformat(self.translation[i]) << (i!=dim-1 ? "," : ")");
     out << ")";
@@ -68,9 +68,9 @@ static std::string Translation__repr__(const Translation<dim>& self) {
     return format("plask.geometry.Translation%1%D%2%", dim, Translation__str__<dim>(self));
 }
 
-DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transfer holds a translated geometry element together with translation vector ("," version)")
+DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transfer holds a translated geometry object together with translation vector ("," version)")
 {
-    GEOMETRY_ELEMENT_23D(Translation, GeometryElementTransform<dim>, py::no_init)
+    GEOMETRY_ELEMENT_23D(Translation, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("child"), py::arg("translation"))))
     .def("__init__", py::make_constructor(&Translation_constructor2<dim>::call, py::default_call_policies(), Translation_constructor2<dim>::args))
     .def_readwrite("translation", &Translation<dim>::translation, "Translation vector")
@@ -83,8 +83,8 @@ void register_geometry_changespace();
 
 void register_geometry_transform()
 {
-    init_GeometryElementTransform<2>();
-    init_GeometryElementTransform<3>();
+    init_GeometryObjectTransform<2>();
+    init_GeometryObjectTransform<3>();
 
     register_geometry_changespace();
 

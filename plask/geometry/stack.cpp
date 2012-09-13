@@ -14,11 +14,11 @@ void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBase
     for (std::size_t i = 1; i < stackHeights.size(); ++i) {
         stackHeights[i] += diff;
         children[i-1]->translation[growingDirection] += diff;
-        //children[i-1]->fireChanged(GeometryElement::Event::RESIZE);
+        //children[i-1]->fireChanged(GeometryObject::Event::RESIZE);
     }
     this->fireChildrenChanged();    //TODO should this be called? children was moved but not removed/inserted
-    //this->fireChanged(GeometryElement::Event::RESIZE);
-    //TODO: block connection to not react on children changed, call children[i]->fireChanged(GeometryElement::Event::RESIZE); for each child, call this->fireChanged(GeometryElement::Event::RESIZE delegate;
+    //this->fireChanged(GeometryObject::Event::RESIZE);
+    //TODO: block connection to not react on children changed, call children[i]->fireChanged(GeometryObject::Event::RESIZE); for each child, call this->fireChanged(GeometryObject::Event::RESIZE delegate;
 }
 
 template <int dim, int growingDirection>
@@ -40,19 +40,19 @@ StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) 
 
 template <int dim, int growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::removeAtUnsafe(std::size_t index) {
-    GeometryElementContainer<dim>::removeAtUnsafe(index);
+    GeometryObjectContainer<dim>::removeAtUnsafe(index);
     stackHeights.pop_back();
     updateAllHeights(index);
 }
 
 template <int dim, int growingDirection>
-void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &) const {
-    dest_xml_element.attr(baseH_attr, getBaseHeight());
+void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+    dest_xml_object.attr(baseH_attr, getBaseHeight());
 }
 
 template <int dim, int growingDirection>
 bool StackContainerBaseImpl<dim, growingDirection>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
-    if (GeometryElementContainer<dim>::removeIfTUnsafe(predicate)) {
+    if (GeometryObjectContainer<dim>::removeIfTUnsafe(predicate)) {
         this->rebuildStackHeights();
         return true;
     } else
@@ -63,7 +63,7 @@ template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_UP>;
 template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_UP>;
 template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
 
-/*template <int dim>    //this is fine but GeometryElements doesn't have copy constructors at all, becose signal doesn't have copy constructor
+/*template <int dim>    //this is fine but GeometryObjects doesn't have copy constructors at all, becose signal doesn't have copy constructor
 StackContainer<dim>::StackContainer(const StackContainer& to_copy)
     : StackContainerBaseImpl<dim>(to_copy) //copy all but aligners
 {
@@ -125,16 +125,16 @@ bool StackContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_
 
 template <int dim>
 void StackContainer<dim>::removeAtUnsafe(std::size_t index) {
-    GeometryElementContainer<dim>::removeAtUnsafe(index);
+    GeometryObjectContainer<dim>::removeAtUnsafe(index);
     aligners.erase(aligners.begin() + index);
     stackHeights.pop_back();
     this->updateAllHeights(index);
 }
 
 template <int dim>
-void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_element, GeometryElement::WriteXMLCallback &write_cb, AxisNames axes) const {
-    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_element, *this, axes);
-    if (GeometryElement::WriteXMLCallback::isRef(container_tag)) return;
+void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_object, GeometryObject::WriteXMLCallback &write_cb, AxisNames axes) const {
+    XMLWriter::Element container_tag = write_cb.makeTag(parent_xml_object, *this, axes);
+    if (GeometryObject::WriteXMLCallback::isRef(container_tag)) return;
     this->writeXMLAttr(container_tag, axes);
     for (int i = children.size()-1; i >= 0; --i) {   //children are written in reverse order
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
@@ -156,7 +156,7 @@ void StackContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag
 }
 
 template <int dim>
-shared_ptr<GeometryElement> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< StackContainer<dim> > result = make_shared< StackContainer<dim> >(this->getBaseHeight());
     for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
         if (children_after_change[child_nr].first)
@@ -205,7 +205,7 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
-shared_ptr<GeometryElement> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< ShelfContainer2D > result = make_shared< ShelfContainer2D >(this->getBaseHeight());
     for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
         if (children_after_change[child_nr].first)
@@ -234,7 +234,7 @@ bool MultiStackContainer<dim>::intersects(const Box& area) const {
 }
 
 template <int dim>
-void MultiStackContainer<dim>::getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+void MultiStackContainer<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
         return;
@@ -252,13 +252,13 @@ void MultiStackContainer<dim>::getBoundingBoxesToVec(const GeometryElement::Pred
 }
 
 template <int dim>
-void MultiStackContainer<dim>::getElementsToVec(const GeometryElement::Predicate& predicate, std::vector< shared_ptr<const GeometryElement> >& dest, const PathHints* path) const {
+void MultiStackContainer<dim>::getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(this->shared_from_this());
         return;
     }
     std::size_t old_size = dest.size();
-    UpperClass::getElementsToVec(predicate, dest, path);
+    UpperClass::getObjectsToVec(predicate, dest, path);
     std::size_t new_size = dest.size();
     for (unsigned r = 1; r < repeat_count; ++r)
         for (std::size_t i = old_size; i < new_size; ++i)
@@ -266,7 +266,7 @@ void MultiStackContainer<dim>::getElementsToVec(const GeometryElement::Predicate
 }
 
 template <int dim>
-void MultiStackContainer<dim>::getPositionsToVec(const GeometryElement::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
+void MultiStackContainer<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
@@ -283,34 +283,34 @@ void MultiStackContainer<dim>::getPositionsToVec(const GeometryElement::Predicat
 }
 
 template <int dim>
-GeometryElement::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryElement& el, const PathHints* path) const {
-    GeometryElement::Subtree result = UpperClass::getPathsTo(el, path);
+GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryObject& el, const PathHints* path) const {
+    GeometryObject::Subtree result = UpperClass::getPathsTo(el, path);
     if (!result.empty()) {
         const std::size_t size = result.children.size();   //oryginal size
         const double stackHeight = stackHeights.back() - stackHeights.front();
         for (unsigned r = 1; r < repeat_count; ++r)
             for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
-                auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].element)));
+                auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].object)));
                 shared_ptr<Translation<dim>> new_child = org_child.copyShallow();
                 new_child->translation.up() += stackHeight;
-                result.children.push_back(GeometryElement::Subtree(new_child, result.children[org_child_nr].children));
+                result.children.push_back(GeometryObject::Subtree(new_child, result.children[org_child_nr].children));
             }
     }
     return result;
 }
 
 template <int dim>
-GeometryElement::Subtree MultiStackContainer<dim>::getPathsTo(const MultiStackContainer::DVec &point) const {
+GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const MultiStackContainer::DVec &point) const {
     MultiStackContainer::DVec new_point = point;
     new_point.up() = reduceHeight(new_point.up());
-    return GeometryElementContainer<dim>::getPathsTo(new_point);
+    return GeometryObjectContainer<dim>::getPathsTo(new_point);
 }
 
 template class MultiStackContainer<2>;
 template class MultiStackContainer<3>;
 
 template <int dim>
-shared_ptr<GeometryElement> MultiStackContainer<dim>::getChildAt(std::size_t child_nr) const {
+shared_ptr<GeometryObject> MultiStackContainer<dim>::getChildAt(std::size_t child_nr) const {
     if (child_nr >= getChildrenCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildrenCount()-1);
     if (child_nr < children.size()) return children[child_nr];
     auto result = children[child_nr % children.size()]->copyShallow();
@@ -319,13 +319,13 @@ shared_ptr<GeometryElement> MultiStackContainer<dim>::getChildAt(std::size_t chi
 }
 
 template <int dim>
-void MultiStackContainer<dim>::writeXMLAttr(XMLWriter::Element &dest_xml_element, const AxisNames &axes) const {
-    StackContainer<dim>::writeXMLAttr(dest_xml_element, axes);
-    dest_xml_element.attr(repeat_attr, repeat_count);
+void MultiStackContainer<dim>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    StackContainer<dim>::writeXMLAttr(dest_xml_object, axes);
+    dest_xml_object.attr(repeat_attr, repeat_count);
 }
 
 template <int dim>
-shared_ptr<GeometryElement> MultiStackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+shared_ptr<GeometryObject> MultiStackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< MultiStackContainer<dim> > result = make_shared< MultiStackContainer<dim> >(this->repeat_count, this->getBaseHeight());
     for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
         if (children_after_change[child_nr].first)
@@ -333,7 +333,7 @@ shared_ptr<GeometryElement> MultiStackContainer<dim>::changedVersionForChildren(
     return result;
 }
 
-shared_ptr<GeometryElement> read_StackContainer2D(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
     std::unique_ptr<align::Aligner2D<align::DIRECTION_TRAN>> default_aligner(
           align::fromStr<align::DIRECTION_TRAN>(reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")));
@@ -361,7 +361,7 @@ shared_ptr<GeometryElement> read_StackContainer2D(GeometryReader& reader) {
     return result;
 }
 
-shared_ptr<GeometryElement> read_StackContainer3D(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
     //TODO default aligner (see above)
     shared_ptr< StackContainer<3> > result(
@@ -385,10 +385,10 @@ shared_ptr<GeometryElement> read_StackContainer3D(GeometryReader& reader) {
     return result;
 }
 
-static GeometryReader::RegisterElementReader stack2D_reader(StackContainer<2>::NAME, read_StackContainer2D);
-static GeometryReader::RegisterElementReader stack3D_reader(StackContainer<3>::NAME, read_StackContainer3D);
+static GeometryReader::RegisterObjectReader stack2D_reader(StackContainer<2>::NAME, read_StackContainer2D);
+static GeometryReader::RegisterObjectReader stack3D_reader(StackContainer<3>::NAME, read_StackContainer3D);
 
-shared_ptr<GeometryElement> read_ShelfContainer2D(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
     shared_ptr< ShelfContainer2D > result(new ShelfContainer2D(reader.source.getAttribute(baseH_attr, 0.0)));
     bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, false);
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
@@ -404,7 +404,7 @@ shared_ptr<GeometryElement> read_ShelfContainer2D(GeometryReader& reader) {
     return result;
 }
 
-static GeometryReader::RegisterElementReader horizontalstack_reader(ShelfContainer2D::NAME, read_ShelfContainer2D);
-static GeometryReader::RegisterElementReader horizontalstack2D_reader("shelf" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_ShelfContainer2D);
+static GeometryReader::RegisterObjectReader horizontalstack_reader(ShelfContainer2D::NAME, read_ShelfContainer2D);
+static GeometryReader::RegisterObjectReader horizontalstack2D_reader("shelf" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_ShelfContainer2D);
 
 }   // namespace plask

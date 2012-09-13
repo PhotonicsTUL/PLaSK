@@ -2,13 +2,13 @@
 
 #include <QObject>
 
-QString toStr(plask::GeometryElement::Type type) {
+QString toStr(plask::GeometryObject::Type type) {
     switch (type) {
-    case plask::GeometryElement::TYPE_CONTAINER: return QObject::tr("container");
-    case plask::GeometryElement::TYPE_LEAF: return QObject::tr("leaf");
-    case plask::GeometryElement::TYPE_SPACE_CHANGER: return QObject::tr("space changer");
-    case plask::GeometryElement::TYPE_TRANSFORM: return QObject::tr("transform");
-    case plask::GeometryElement::TYPE_GEOMETRY: return QObject::tr("geometry");
+    case plask::GeometryObject::TYPE_CONTAINER: return QObject::tr("container");
+    case plask::GeometryObject::TYPE_LEAF: return QObject::tr("leaf");
+    case plask::GeometryObject::TYPE_SPACE_CHANGER: return QObject::tr("space changer");
+    case plask::GeometryObject::TYPE_TRANSFORM: return QObject::tr("transform");
+    case plask::GeometryObject::TYPE_GEOMETRY: return QObject::tr("geometry");
     }
     return QString();
 }

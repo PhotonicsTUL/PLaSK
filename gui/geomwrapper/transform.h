@@ -2,7 +2,7 @@
 #define GUI_GEOMETRY_WRAPPER_TRANSFORM_H
 
 /** @file
- * This file includes implementation of geometry elements model extensions for transforms. Do not include it directly (see register.h).
+ * This file includes implementation of geometry objects model extensions for transforms. Do not include it directly (see register.h).
  */
 
 #include "element.h"
@@ -11,7 +11,7 @@
 #include <plask/geometry/transform_space_cartesian.h>
 
 template <int dim>
-struct TranslationWrapper: public ElementWrapperFor< plask::Translation<dim> > {
+struct TranslationWrapper: public ObjectWrapperFor< plask::Translation<dim> > {
 
     /**
      * Names of path hints, used only if this translation is inside container.
@@ -22,13 +22,13 @@ struct TranslationWrapper: public ElementWrapperFor< plask::Translation<dim> > {
 
     virtual void draw(QPainter& painter) const;
 
-    virtual bool canInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index) const;
+    virtual bool canInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) const;
 
-    virtual bool tryInsert(plask::shared_ptr<plask::GeometryElement> to_insert, std::size_t index);
+    virtual bool tryInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index);
 
 };
 
-struct ExtrusionWrapper: public ElementWrapperFor< plask::Extrusion > {
+struct ExtrusionWrapper: public ObjectWrapperFor< plask::Extrusion > {
 
     virtual QString toStr() const;
 

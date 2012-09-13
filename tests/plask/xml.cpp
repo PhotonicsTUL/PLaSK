@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(empty_xml) {
     BOOST_CHECK_EQUAL(ss.str(), HEADER);
 }
 
-BOOST_AUTO_TEST_CASE(simple_xml_element) {
+BOOST_AUTO_TEST_CASE(simple_xml_object) {
     std::stringstream ss;
     plask::XMLWriter writer(ss);
     writer.writeHeader();
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(simple_xml_element) {
     BOOST_CHECK_EQUAL(ss.str(), HEADER "<tag/>\n");
 }
 
-BOOST_AUTO_TEST_CASE(simple_xml_element_with_text) {
+BOOST_AUTO_TEST_CASE(simple_xml_object_with_text) {
     std::stringstream ss;
     {
         plask::XMLWriter writer(ss);
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(simple_xml_element_with_text) {
     BOOST_CHECK_EQUAL(ss.str(), "<tag>\nhello\n</tag>\n");
 }
 
-BOOST_AUTO_TEST_CASE(nested_xml_elements_with_text) {
+BOOST_AUTO_TEST_CASE(nested_xml_objects_with_text) {
 
     std::stringstream ss;
     {
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(nested_xml_elements_with_text) {
     BOOST_CHECK_EQUAL(ss.str(), "<tag>\n  <inner>\n    hello\n  </inner>\n  <inner/>\n</tag>\n");
 }
 
-BOOST_AUTO_TEST_CASE(simple_xml_element_with_attr) {
+BOOST_AUTO_TEST_CASE(simple_xml_object_with_attr) {
     std::stringstream ss;
     plask::XMLWriter writer(ss);
     auto tag = writer.addTag("tag");
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(simple_xml_element_with_attr) {
     BOOST_CHECK_EQUAL(ss.str(), "<tag name=\"Flip\" friend=\"Flap\">\nhello\n</tag>\n");
 }
 
-BOOST_AUTO_TEST_CASE(xml_element_with_quotes) {
+BOOST_AUTO_TEST_CASE(xml_object_with_quotes) {
     std::stringstream ss;
     plask::XMLWriter writer(ss);
     {

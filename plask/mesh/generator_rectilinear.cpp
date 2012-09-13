@@ -6,7 +6,7 @@
 
 namespace plask {
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryElementD<2>>& geometry)
+shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = make_shared<RectilinearMesh2D>();
 
@@ -25,7 +25,7 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
     return mesh;
 }
 
-shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryElementD<3>>& geometry)
+shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh = make_shared<RectilinearMesh3D>();
 
@@ -46,19 +46,19 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
 }
 
 
-RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryElementD<2>>& geometry, size_t dir)
+RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryObjectD<2>>& geometry, size_t dir)
 {
     RectilinearMesh1D result = initial;
 
     // First add refinement points
     for (auto ref: refinements[dir]) {
-        auto element = ref.first.first.lock();
-        if (!element) {
+        auto object = ref.first.first.lock();
+        if (!object) {
              if (warn_missing) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement defined for object not existing any more.");
         } else {
             auto path = ref.first.second;
-            auto boxes = geometry->getElementBoundingBoxes(*element, path);
-            auto origins = geometry->getElementPositions(*element, path);
+            auto boxes = geometry->getObjectBoundingBoxes(*object, path);
+            auto origins = geometry->getObjectPositions(*object, path);
             if (warn_missing && boxes.size() == 0) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Refinement defined for object absent from the geometry.");
             else if (warn_multiple && boxes.size() > 1) writelog(LOG_WARNING, "RectilinearMesh2DDivideGenerator: Single refinement defined for more than one object.");
             auto box = boxes.begin();
@@ -77,7 +77,7 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
         }
     }
 
-    // Next divide each element
+    // Next divide each object
     double x = *result.begin();
     std::vector<double> points; points.reserve((pre_divisions[dir]-1)*(result.size()-1));
     for (auto i = result.begin()+1; i!= result.end(); ++i) {
@@ -115,7 +115,7 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
         }
     }
 
-    // Finally divide each element in post- division
+    // Finally divide each object in post- division
     x = *result.begin();
     points.clear(); points.reserve((post_divisions[dir]-1)*(result.size()-1));
     for (auto i = result.begin()+1; i!= result.end(); ++i) {
@@ -129,7 +129,7 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
     return result;
 }
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const shared_ptr<GeometryElementD<2>>& geometry)
+shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     RectilinearMesh2D initial;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
@@ -201,12 +201,12 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
                 if (reader.getNodeName() != "horizontal" && reader.getNodeName() != "vertical")
                     throw XMLUnexpectedElementException(reader, "<horizontal ...> of <vertical ...>");
                 auto direction = (reader.getNodeName()=="horizontal")? Primitive<2>::DIRECTION_TRAN : Primitive<2>::DIRECTION_UP;
-                weak_ptr<GeometryElementD<2>> element =
-                    manager.requireGeometryElement<GeometryElementD<2>>(reader.requireAttribute("element"));
+                weak_ptr<GeometryObjectD<2>> object =
+                    manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
                 double pos = reader.requireAttribute<double>("pos");
                 auto path = reader.getAttribute("path");
-                if (path) result->addRefinement(direction, element, manager.requirePathHints(*path), pos);
-                else result->addRefinement(direction, element, pos);
+                if (path) result->addRefinement(direction, object, manager.requirePathHints(*path), pos);
+                else result->addRefinement(direction, object, pos);
                 reader.requireTagEnd();
             }
         } else throw XMLUnexpectedElementException(reader, "proper 'divide' generator configuration tag");

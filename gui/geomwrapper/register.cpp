@@ -11,36 +11,36 @@
 #include "geometry.h"
 #include <plask/utils/cache.h>
 
-typedef ElementWrapper* construct_element_wrapper_t(plask::shared_ptr<plask::GeometryElement> to_wrap);
+typedef ObjectWrapper* construct_object_wrapper_t(plask::shared_ptr<plask::GeometryObject> to_wrap);
 
 struct Register {
 
     //TODO possible destructor which disconnect from all changed signals is required
 
     template <typename WrapperType>
-    static ElementWrapper* constructWrapper(plask::shared_ptr<plask::GeometryElement> to_wrap) {
+    static ObjectWrapper* constructWrapper(plask::shared_ptr<plask::GeometryObject> to_wrap) {
         auto res = new WrapperType();
-        res->setWrappedElement(to_wrap);
+        res->setWrappedObject(to_wrap);
         return res;
     }
 
-    /// Constructors of wrappers for geometry elements, map: type id index of plask::GeometryElements -> wrapper constructor.
-    std::unordered_map<std::type_index, construct_element_wrapper_t*> wrappersConstructors;
+    /// Constructors of wrappers for geometry objects, map: type id index of plask::GeometryObjects -> wrapper constructor.
+    std::unordered_map<std::type_index, construct_object_wrapper_t*> wrappersConstructors;
 
-    /// Constructed wrappers for geometry elements, map: geometry element -> wrapper for key element.
-    //TODO GeometryElement -> shared_ptr<ElementWrapper>, ElementWrapper should hold weak_ptr or raw ptr.
-    plask::StrongCache<plask::GeometryElement, ElementWrapper> constructed;
+    /// Constructed wrappers for geometry objects, map: geometry object -> wrapper for key object.
+    //TODO GeometryObject -> shared_ptr<ObjectWrapper>, ObjectWrapper should hold weak_ptr or raw ptr.
+    plask::StrongCache<plask::GeometryObject, ObjectWrapper> constructed;
 
-    /// Construct geometry element wrapper using wrappersConstructors. Doesn't change constructed map.
-    ElementWrapper* construct(plask::shared_ptr<plask::GeometryElement> el) {
+    /// Construct geometry object wrapper using wrappersConstructors. Doesn't change constructed map.
+    ObjectWrapper* construct(plask::shared_ptr<plask::GeometryObject> el) {
         auto i = wrappersConstructors.find(std::type_index(typeid(*el)));
-        return i == wrappersConstructors.end() ? constructWrapper<ElementWrapper>(el) : i->second(el);
+        return i == wrappersConstructors.end() ? constructWrapper<ObjectWrapper>(el) : i->second(el);
     }
 
     /**
-     * Get wrapper for given element. Try get it from constructed map first.
+     * Get wrapper for given object. Try get it from constructed map first.
      */
-    plask::shared_ptr<ElementWrapper> get(plask::shared_ptr<plask::GeometryElement> el) {
+    plask::shared_ptr<ObjectWrapper> get(plask::shared_ptr<plask::GeometryObject> el) {
         if (auto res = constructed.get(el))
             return res;
         else
@@ -72,20 +72,20 @@ struct Register {
 
 Register geom_register;
 
-plask::shared_ptr<ElementWrapper> ext(plask::shared_ptr<plask::GeometryElement> el) {
+plask::shared_ptr<ObjectWrapper> ext(plask::shared_ptr<plask::GeometryObject> el) {
     return geom_register.get(el);
 }
 
-plask::shared_ptr<ElementWrapper> ext(const plask::GeometryElement& el) {
-    return ext(const_cast<plask::GeometryElement&>(el).shared_from_this());
+plask::shared_ptr<ObjectWrapper> ext(const plask::GeometryObject& el) {
+    return ext(const_cast<plask::GeometryObject&>(el).shared_from_this());
 }
 
 
-std::string NamesFromExtensions::getName(const plask::GeometryElement &element, plask::AxisNames &axesNames) const {
-    return ext(element)->getName();
+std::string NamesFromExtensions::getName(const plask::GeometryObject &object, plask::AxisNames &axesNames) const {
+    return ext(object)->getName();
 }
 
-std::vector<std::string> NamesFromExtensions::getPathNames(const plask::GeometryElement &parent, const plask::GeometryElement &child, std::size_t index_of_child_in_parent) const {
+std::vector<std::string> NamesFromExtensions::getPathNames(const plask::GeometryObject &parent, const plask::GeometryObject &child, std::size_t index_of_child_in_parent) const {
     //TODO
     return std::vector<std::string>();
 }

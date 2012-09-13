@@ -11,7 +11,7 @@ This file includes rectilinear mesh for 2d space.
 #include "boundary.h"
 #include "interpolation.h"
 #include "../utils/interpolation.h"
-#include "../geometry/element.h"
+#include "../geometry/object.h"
 
 namespace plask {
 
@@ -247,9 +247,9 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     /**
      * Write mesh to XML
-     * \param element XML element to write to
+     * \param object XML object to write to
      */
-    virtual void writeXML(XMLElement& element) const;
+    virtual void writeXML(XMLElement& object) const;
 
     /// @return true only if there are no points in mesh
     bool empty() const { return axis0.empty() || axis1.empty(); }
@@ -351,67 +351,67 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /**
-     * Get number of elements (for FEM method) in the first direction.
-     * @return number of elements in this mesh in the first direction (axis0 direction).
+     * Get number of objects (for FEM method) in the first direction.
+     * @return number of objects in this mesh in the first direction (axis0 direction).
      */
-    std::size_t getElementsCount0() const {
+    std::size_t getObjectsCount0() const {
         return std::max(int(axis0.size())-1, 0);
     }
 
     /**
-     * Get number of elements (for FEM method) in the second direction.
-     * @return number of elements in this mesh in the second direction (axis1 direction).
+     * Get number of objects (for FEM method) in the second direction.
+     * @return number of objects in this mesh in the second direction (axis1 direction).
      */
-    std::size_t getElementsCount1() const {
+    std::size_t getObjectsCount1() const {
         return std::max(int(axis1.size())-1, 0);
     }
 
     /**
-     * Get number of elements (for FEM method).
-     * @return number of elements in this mesh
+     * Get number of objects (for FEM method).
+     * @return number of objects in this mesh
      */
-    std::size_t getElementsCount() const {
+    std::size_t getObjectsCount() const {
         return std::max((int(axis0.size())-1) * (int(axis1.size())-1), 0);
     }
 
     /**
-     * Get area of given element.
-     * @param index0, index1 index of element
-     * @return area of element with given index
+     * Get area of given object.
+     * @param index0, index1 index of object
+     * @return area of object with given index
      */
-    double getElementArea(std::size_t index0, std::size_t index1) const {
+    double getObjectArea(std::size_t index0, std::size_t index1) const {
         return (axis0[index0+1] - axis0[index0])*(axis1[index1+1] - axis1[index1]);
     }
 
     /**
-     * Get first coordinate of point in center of element.
-     * @param index0 index of element (axis0 index)
-     * @return first coordinate of point point in center of element with given index
+     * Get first coordinate of point in center of object.
+     * @param index0 index of object (axis0 index)
+     * @return first coordinate of point point in center of object with given index
      */
-    double getElementCenter0(std::size_t index0) const { return (axis0[index0+1] + axis0[index0]) / 2.0; }
+    double getObjectCenter0(std::size_t index0) const { return (axis0[index0+1] + axis0[index0]) / 2.0; }
 
     /**
-     * Get second coordinate of point in center of element.
-     * @param index1 index of element (axis1 index)
-     * @return second coordinate of point point in center of element with given index
+     * Get second coordinate of point in center of object.
+     * @param index1 index of object (axis1 index)
+     * @return second coordinate of point point in center of object with given index
      */
-    double getElementCenter1(std::size_t index1) const { return (axis1[index1+1] + axis1[index1]) / 2.0; }
+    double getObjectCenter1(std::size_t index1) const { return (axis1[index1+1] + axis1[index1]) / 2.0; }
 
     /**
-     * Get point in center of element.
-     * @param index0, index1 index of element
-     * @return point in center of element with given index
+     * Get point in center of object.
+     * @param index0, index1 index of object
+     * @return point in center of object with given index
      */
-    Vec<2, double> getElementCenter(std::size_t index0, std::size_t index1) const {
-        return vec(getElementCenter0(index0), getElementCenter1(index1));
+    Vec<2, double> getObjectCenter(std::size_t index0, std::size_t index1) const {
+        return vec(getObjectCenter0(index0), getObjectCenter1(index1));
     }
 
     /**
-     * Get element (as rectangle).
-     * @param index0, index1 index of element
-     * @return element with given index
+     * Get object (as rectangle).
+     * @param index0, index1 index of object
+     * @return object with given index
      */
-    Box2D getElement(std::size_t index0, std::size_t index1) const {
+    Box2D getObject(std::size_t index0, std::size_t index1) const {
         return Box2D(axis0[index0], axis1[index1], axis0[index0+1], axis1[index1+1]);
     }
 

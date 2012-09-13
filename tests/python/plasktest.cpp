@@ -61,11 +61,11 @@ void print_ptr(py::object o) {
     std::cerr << "ptr: " << o.ptr() << "\n";
 }
 
-plask::shared_ptr<plask::GeometryElement> getExtrusion(plask::shared_ptr<plask::GeometryElementD<2>>c, double l) {
+plask::shared_ptr<plask::GeometryObject> getExtrusion(plask::shared_ptr<plask::GeometryObjectD<2>>c, double l) {
     return plask::make_shared<plask::Extrusion>(c,l);
 }
 
-bool isEmpy(plask::shared_ptr<plask::GeometryElement> p) {
+bool isEmpy(plask::shared_ptr<plask::GeometryObject> p) {
     return !p;
 }
 

@@ -15,7 +15,7 @@ struct Leafs2D {
 };
 
 void test_multi_stack(plask::shared_ptr<plask::MultiStackContainer<2>> multistack, plask::PathHints& p) {
-    // 5 * 2 children = 10 elements, each have size 5x3, should be in [0, 10] - [5, 40]
+    // 5 * 2 children = 10 objects, each have size 5x3, should be in [0, 10] - [5, 40]
     BOOST_CHECK_EQUAL(multistack->getBoundingBox(), plask::Box2D(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
     BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 39.0)) != nullptr);
     BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 41.0)) == nullptr);
@@ -106,10 +106,10 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
                     "<child x=\"0\"><block name=\"block-5-3\" x=\"5\" y=\"3\" material=\"Al\" /></child>"
                     "<child x=\"0\" path=\"p,other,'jet-another-one'\"><ref name=\"block-5-3\" /></child>"
                     "</stack></cartesian2d></geometry></plask>", materialsDB);
-        //BOOST_CHECK_EQUAL(manager.elements.size(), 3);
-        BOOST_CHECK(manager.getGeometryElement("block-5-3") != nullptr);
-        BOOST_CHECK(manager.getGeometryElement("notexist") == nullptr);
-        test_multi_stack(manager.getGeometryElement<plask::MultiStackContainer<2>>("multistack"), manager.requirePathHints("p"));
+        //BOOST_CHECK_EQUAL(manager.objects.size(), 3);
+        BOOST_CHECK(manager.getGeometryObject("block-5-3") != nullptr);
+        BOOST_CHECK(manager.getGeometryObject("notexist") == nullptr);
+        test_multi_stack(manager.getGeometryObject<plask::MultiStackContainer<2>>("multistack"), manager.requirePathHints("p"));
     }
 
     BOOST_AUTO_TEST_CASE(path_from_vector) {
@@ -117,13 +117,13 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         initDumbMaterialDb(materialsDB);
         plask::shared_ptr<plask::StackContainer<2>> stack1( new plask::StackContainer<2> );
         plask::shared_ptr<plask::StackContainer<2>> stack2( new plask::StackContainer<2> );
-        plask::shared_ptr<plask::Rectangle> element( new plask::Rectangle(plask::vec(1,2), materialsDB.get("Al")) );
-        stack2->add(element);
+        plask::shared_ptr<plask::Rectangle> object( new plask::Rectangle(plask::vec(1,2), materialsDB.get("Al")) );
+        stack2->add(object);
         stack1->add(stack2);
 
-        std::vector<plask::shared_ptr<const plask::GeometryElement>> list = {stack2, stack1};
+        std::vector<plask::shared_ptr<const plask::GeometryObject>> list = {stack2, stack1};
         plask::Path path(list);
-        path += element;
+        path += object;
     }
 
     BOOST_AUTO_TEST_CASE(empty_containters) {

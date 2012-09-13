@@ -3,7 +3,7 @@
 
 namespace plask {
 
-bool Revolution::includes(const GeometryElementD< 3 >::DVec& p) const {
+bool Revolution::includes(const GeometryObjectD< 3 >::DVec& p) const {
     return getChild()->includes(childVec(p));
 }
 
@@ -19,7 +19,7 @@ shared_ptr<Material> Revolution::getMaterial(const DVec& p) const {
     return getChild()->getMaterial(childVec(p));
 }
 
-void Revolution::getBoundingBoxesToVec(const GeometryElement::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+void Revolution::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
         return;
@@ -29,12 +29,12 @@ void Revolution::getBoundingBoxesToVec(const GeometryElement::Predicate& predica
                    [&](const ChildBox& r) { return parentBox(r); });
 }
 
-shared_ptr<GeometryElementTransform< 3, GeometryElementD<2> > > Revolution::shallowCopy() const {
+shared_ptr<GeometryObjectTransform< 3, GeometryObjectD<2> > > Revolution::shallowCopy() const {
     return make_shared<Revolution>(this->getChild());
 }
 
-GeometryElement::Subtree Revolution::getPathsTo(const DVec& point) const {
-    return GeometryElement::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
+GeometryObject::Subtree Revolution::getPathsTo(const DVec& point) const {
+    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
 }
 
 Box2D Revolution::childBox(const plask::Box3D& r) {
@@ -50,11 +50,11 @@ Box3D Revolution::parentBox(const ChildBox& r) {
            );
 }
 
-shared_ptr<GeometryElement> read_revolution(GeometryReader& reader) {
+shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     return make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>());
 }
 
-static GeometryReader::RegisterElementReader revolution_reader(Revolution::NAME, read_revolution);
+static GeometryReader::RegisterObjectReader revolution_reader(Revolution::NAME, read_revolution);
 
 }   // namespace plask

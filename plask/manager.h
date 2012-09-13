@@ -26,42 +26,42 @@ namespace plask {
 /**
  * Geometry manager features:
  * - read/write geometries,
- * - allow for access to geometry elements (also by names).
+ * - allow for access to geometry objects (also by names).
  *
  * @see @ref geometry
  */
 struct Manager {
-    
+
     typedef GeometryReader::MaterialsSource MaterialsSource;
 
     /// Throw exception with information that loading from external sources is not supported or disallowed.
     static void disallowExternalSources(Manager& manager, const MaterialsSource& materialsSource, const std::string& url, const std::string& section) {
         throw Exception("Can't load section \"%1%\" from \"%2%\". Loading from external sources is not supported or disallowed.", section, url); }
-    
+
     /// Allow to support reading some sections from other files.
     struct ExternalSourcesFromFile {
-        
+
         /// Current file name.
         boost::filesystem::path oryginalFileName;
-        
+
         /// Name of section which is just read
         std::string currentSection;
-        
-        /// Names of files from which current section is read (detect circular reference).        
+
+        /// Names of files from which current section is read (detect circular reference).
         ExternalSourcesFromFile* prev;
-        
+
         bool hasCircularRef(boost::filesystem::path& fileName, const std::string& section) {
             if (!currentSection.empty() || currentSection != section) return false;
             if (fileName == oryginalFileName) return true;
             return prev != 0 && prev->hasCircularRef(fileName, section);
         }
-        
+
         /**
          * Create ExternalSourcesFromFile which dosn't support relative file names
          * (oryginal file name is not known).
          */
         ExternalSourcesFromFile(): prev(nullptr) {}
-        
+
         /**
          * Create ExternalSourcesFromFile which support relative file names.
          * @param oryginalFileName name of file from which XML is read now
@@ -70,13 +70,13 @@ struct Manager {
                                 const std::string& currentSection = std::string(),
                                 ExternalSourcesFromFile* prev = nullptr)
             : oryginalFileName(oryginalFileName), currentSection(currentSection), prev(prev) {}
-        
+
         void operator()(Manager& manager, const MaterialsSource& materialsSource, const std::string& url, const std::string& section);
-        
+
     };
-    
+
 private:
-    
+
     /// @return @c true
     static bool acceptAllSections(const std::string&) { return true; }
 
@@ -88,7 +88,7 @@ private:
 
     /// Load section from external url, throw excpetion in case of errors, takes as parameters: manager, materials source, url and section name.
     typedef std::function<void(Manager&, const MaterialsSource&, const std::string&, const std::string&)> LoadFunCallbackT;
-    
+
     /**
      * Try load section from external location.
      *
@@ -121,10 +121,10 @@ private:
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;
 
-    /// Allow to access elements by name.
-    std::map<std::string, shared_ptr<GeometryElement> > namedElements;
+    /// Allow to access objects by name.
+    std::map<std::string, shared_ptr<GeometryObject> > namedObjects;
 
-    /// Roots elements, geometries.
+    /// Roots objects, geometries.
     std::vector< shared_ptr<Geometry> > roots;
 
     /// Geometries (calculation spaces) by name.
@@ -163,39 +163,39 @@ private:
     const PathHints& requirePathHints(const std::string& path_hints_name) const;
 
     /**
-     * Get element with given @p name.
-     * @param name name of element
-     * @return element with given @p name or @c nullptr if there is no element with given name
+     * Get object with given @p name.
+     * @param name name of object
+     * @return object with given @p name or @c nullptr if there is no object with given name
      */
-    shared_ptr<GeometryElement> getGeometryElement(const std::string& name) const;
+    shared_ptr<GeometryObject> getGeometryObject(const std::string& name) const;
 
     /**
-     * Call getElement(name) and try dynamic cast it to @a RequiredElementType.
-     * @param name name of element
-     * @return element (casted to RequiredElementType) with given @p name or @c nullptr if there is no element with given name or element with given name is not of type @a RequiredElementType
-     * @tparam RequiredElementType required type of element
+     * Call getObject(name) and try dynamic cast it to @a RequiredObjectType.
+     * @param name name of object
+     * @return object (casted to RequiredObjectType) with given @p name or @c nullptr if there is no object with given name or object with given name is not of type @a RequiredObjectType
+     * @tparam RequiredObjectType required type of object
      */
-    template <typename RequiredElementType>
-    shared_ptr<RequiredElementType> getGeometryElement(const std::string& name) const;
+    template <typename RequiredObjectType>
+    shared_ptr<RequiredObjectType> getGeometryObject(const std::string& name) const;
 
     /**
-     * Get element with given name or throw exception if element with given name does not exist.
-     * @param name name of element
-     * @return element with given name
-     * @throw NoSuchGeometryElement if there is no element with given name
+     * Get object with given name or throw exception if object with given name does not exist.
+     * @param name name of object
+     * @return object with given name
+     * @throw NoSuchGeometryObject if there is no object with given name
      */
-    shared_ptr<GeometryElement> requireGeometryElement(const std::string& name) const;
+    shared_ptr<GeometryObject> requireGeometryObject(const std::string& name) const;
 
     /**
-     * Call requireElement(name) and try dynamic cast it to @a RequiredElementType.
-     * @param name name of element
-     * @return element (casted to RequiredElementType) with given @p name
-     * @tparam RequiredElementType required type of element
-     * @throw UnexpectedGeometryElementTypeException if requested element is not of type RequiredElementType
-     * @throw NoSuchGeometryElement if there is no element with given name
+     * Call requireElement(name) and try dynamic cast it to @a RequiredObjectType.
+     * @param name name of object
+     * @return object (casted to RequiredObjectType) with given @p name
+     * @tparam RequiredObjectType required type of object
+     * @throw UnexpectedGeometryObjectTypeException if requested object is not of type RequiredObjectType
+     * @throw NoSuchGeometryObject if there is no object with given name
      */
-    template <typename RequiredElementType>
-    shared_ptr<RequiredElementType> requireGeometryElement(const std::string& name) const;
+    template <typename RequiredObjectType>
+    shared_ptr<RequiredObjectType> requireGeometryObject(const std::string& name) const;
 
     /**
      * Get geometry trunk with given @p name.
@@ -325,14 +325,14 @@ private:
     void loadFromXMLString(const std::string &input_XML_str, const GeometryReader::MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /*
-     * Read all elements up to end of XML tag and call functor(element) for each element which was read.
+     * Read all objects up to end of XML tag and call functor(object) for each object which was read.
      * @param source
      * @param functor
-     * @tparam FunctorType unary functor which can take RequiredElementType& as argument
-     * @tparam RequiredElementType required type of element
+     * @tparam FunctorType unary functor which can take RequiredObjectType& as argument
+     * @tparam RequiredObjectType required type of object
      */
-    /*template <typename FunctorType, typename RequiredElementType = GeometryElement>
-    void readAllElements(XMLReader& source, FunctorType functor);*/
+    /*template <typename FunctorType, typename RequiredObjectType = GeometryObject>
+    void readAllObjects(XMLReader& source, FunctorType functor);*/
 
     /**
      * Load geometry from XML file.
@@ -403,7 +403,7 @@ private:
     void load(XMLReader& XMLreader, const MaterialsSource& materialsSource,
               const LoadFunCallbackT& load_from_cb = &disallowExternalSources,
               const std::function<bool(const std::string& section_name)>& section_filter = &acceptAllSections);
-    
+
     /**
      * Load one section from XML content.
      * @param XMLreader XML data source, to load
@@ -426,29 +426,29 @@ private:
 };
 
 // Specialization for most types
-template <typename RequiredElementType>
-shared_ptr<RequiredElementType> Manager::getGeometryElement(const std::string& name) const {
-    return dynamic_pointer_cast<RequiredElementType>(getGeometryElement(name));
+template <typename RequiredObjectType>
+shared_ptr<RequiredObjectType> Manager::getGeometryObject(const std::string& name) const {
+    return dynamic_pointer_cast<RequiredObjectType>(getGeometryObject(name));
 }
 
-// Specialization for GeometryElement which doesn't require dynamic_cast
+// Specialization for GeometryObject which doesn't require dynamic_cast
 template <>
-inline shared_ptr<GeometryElement> Manager::getGeometryElement<GeometryElement>(const std::string& name) const {
-    return getGeometryElement(name);
+inline shared_ptr<GeometryObject> Manager::getGeometryObject<GeometryObject>(const std::string& name) const {
+    return getGeometryObject(name);
 }
 
 //specialization for most types
-template <typename RequiredElementType>
-inline shared_ptr<RequiredElementType> Manager::requireGeometryElement(const std::string& name) const {
-    shared_ptr<RequiredElementType> result = dynamic_pointer_cast<RequiredElementType>(requireGeometryElement(name));
-    if (!result) throw UnexpectedGeometryElementTypeException();
+template <typename RequiredObjectType>
+inline shared_ptr<RequiredObjectType> Manager::requireGeometryObject(const std::string& name) const {
+    shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(requireGeometryObject(name));
+    if (!result) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
 
-// Specialization for GeometryElement which doesn't require dynamic_cast
+// Specialization for GeometryObject which doesn't require dynamic_cast
 template <>
-inline shared_ptr<GeometryElement> Manager::requireGeometryElement<GeometryElement>(const std::string& name) const {
-    return requireGeometryElement(name);
+inline shared_ptr<GeometryObject> Manager::requireGeometryObject<GeometryObject>(const std::string& name) const {
+    return requireGeometryObject(name);
 }
 
 //specialization for most types

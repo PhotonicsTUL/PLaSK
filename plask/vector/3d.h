@@ -120,7 +120,7 @@ struct Vec<3, T> {
 
     /**
      * Construct vector with components read from input iterator (including C array).
-     * @param inputIt input iterator with minimum 3 elements available
+     * @param inputIt input iterator with minimum 3 objects available
      * @tparam InputIteratorType input iterator type, must allow for postincrementation and derefrence operation
      */
     template <typename InputIteratorType>

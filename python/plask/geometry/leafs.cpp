@@ -4,10 +4,10 @@
 
 namespace plask { namespace python {
 
-/// Initialize class GeometryElementLeaf for Python
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, "GeometryElementLeaf", "Base class for all "," leaves") {
-    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryElementLeaf, GeometryElementD<dim>)
-        .def_readwrite("material", &GeometryElementLeaf<dim>::material, "material of the geometry object")
+/// Initialize class GeometryObjectLeaf for Python
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base class for all "," leaves") {
+    ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, GeometryObjectD<dim>)
+        .def_readwrite("material", &GeometryObjectLeaf<dim>::material, "material of the geometry object")
     ;
 }
 
@@ -37,10 +37,10 @@ void register_geometry_leafs()
 {
     py::scope scope;
 
-    init_GeometryElementLeaf<2>();
-    init_GeometryElementLeaf<3>();
+    init_GeometryObjectLeaf<2>();
+    init_GeometryObjectLeaf<3>();
 
-    py::class_<Rectangle, shared_ptr<Rectangle>, py::bases<GeometryElementLeaf<2>>, boost::noncopyable> block2D("Rectangle",
+    py::class_<Rectangle, shared_ptr<Rectangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> block2D("Rectangle",
         "Geometry object (2D) : a rectangular block filled with one material\n\n"
         "Rectangle(size)\n    initialize block with size given in two-dimensional vector\n\n"
         "Rectangle(width, height)\n    initialize block with given width and height\n",
@@ -52,7 +52,7 @@ void register_geometry_leafs()
     ;
     scope.attr("Block2D") = block2D;
 
-    py::class_<Cuboid, shared_ptr<Cuboid>, py::bases<GeometryElementLeaf<3>>, boost::noncopyable> block3D("Cuboid",
+    py::class_<Cuboid, shared_ptr<Cuboid>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> block3D("Cuboid",
         "Geometry object (3D) : a cuboidal block filled with one material\n\n"
         "Cuboid(size)\n    initialize block with size given in three-dimensional vector\n\n"
         "Cuboid(depth, width, height)\n    initialize block with given depth, width, and heigh\n",

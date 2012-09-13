@@ -7,7 +7,7 @@
 
 #include "../modelext/converter.h"
 
-ElementViewer::ElementViewer(QWidget *parent)
+ObjectViewer::ObjectViewer(QWidget *parent)
     : QAbstractItemView(parent), zoom(10.0, 10.0)
 {
     setAcceptDrops(true);
@@ -19,7 +19,7 @@ ElementViewer::ElementViewer(QWidget *parent)
     rubberBand = 0;
 }
 
-void ElementViewer::dragEnterEvent(QDragEnterEvent *event)
+void ObjectViewer::dragEnterEvent(QDragEnterEvent *event)
 {
     if (!rootIndex().isValid()) { event->ignore(); return; }
 
@@ -29,7 +29,7 @@ void ElementViewer::dragEnterEvent(QDragEnterEvent *event)
         event->ignore();
 }
 
-void ElementViewer::dragLeaveEvent(QDragLeaveEvent *event)
+void ObjectViewer::dragLeaveEvent(QDragLeaveEvent *event)
 {
     QRect updateRect = highlightedRectView();
     highlightedRect = QRectF();
@@ -37,14 +37,14 @@ void ElementViewer::dragLeaveEvent(QDragLeaveEvent *event)
     event->accept();
 }
 
-void ElementViewer::dragMoveEvent(QDragMoveEvent *event)
+void ObjectViewer::dragMoveEvent(QDragMoveEvent *event)
 {
     if (!rootIndex().isValid()) { event->ignore(); return; }
 
     if (event->source() != 0 && event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
         /*&& findPiece(targetSquare(event->pos())) == -1*/) {
 
-        GeometryElementCreator* creator = GeometryElementCreator::fromMimeData(event->mimeData());
+        GeometryObjectCreator* creator = GeometryObjectCreator::fromMimeData(event->mimeData());
         highlightedRect = toQt(model()->insertPlace2D(*creator, rootIndex(), fromQt(viewToModel().map(QPointF(event->pos())))));
 
         event->setDropAction(Qt::MoveAction);
@@ -57,7 +57,7 @@ void ElementViewer::dragMoveEvent(QDragMoveEvent *event)
     viewport()->update();
 }
 
-void ElementViewer::dropEvent(QDropEvent *event)
+void ObjectViewer::dropEvent(QDropEvent *event)
 {
     if (!rootIndex().isValid()) { event->ignore(); return; }
 
@@ -65,7 +65,7 @@ void ElementViewer::dropEvent(QDropEvent *event)
         event->mimeData()->hasFormat(MIME_PTR_TO_CREATOR)
         /*&& findPiece(targetSquare(event->pos())) == -1*/) {
 
-        GeometryElementCreator* creator = GeometryElementCreator::fromMimeData(event->mimeData());
+        GeometryObjectCreator* creator = GeometryObjectCreator::fromMimeData(event->mimeData());
 
         highlightedRect = QRect();
         viewport()->update();
@@ -83,7 +83,7 @@ void ElementViewer::dropEvent(QDropEvent *event)
     }
 }
 
-void ElementViewer::dataChanged(const QModelIndex &topLeft,
+void ObjectViewer::dataChanged(const QModelIndex &topLeft,
                           const QModelIndex &bottomRight)
 {
     QAbstractItemView::dataChanged(topLeft, bottomRight);
@@ -91,7 +91,7 @@ void ElementViewer::dataChanged(const QModelIndex &topLeft,
     viewport()->update();   //redraw
 }
 
-bool ElementViewer::edit(const QModelIndex &index, EditTrigger trigger, QEvent *event)
+bool ObjectViewer::edit(const QModelIndex &index, EditTrigger trigger, QEvent *event)
 {
     /*if (index.column() == 0)
         return QAbstractItemView::edit(index, trigger, event);
@@ -99,16 +99,16 @@ bool ElementViewer::edit(const QModelIndex &index, EditTrigger trigger, QEvent *
         return false;
 }
 
-QModelIndex ElementViewer::indexAt(const QPoint &point) const
+QModelIndex ObjectViewer::indexAt(const QPoint &point) const
 {
-    plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
+    plask::shared_ptr<plask::GeometryObjectD<2> > e = getObject();
     if (!e) return QModelIndex();
 
     plask::Vec<2, double> model_point = fromQt(viewToModel().map(QPointF(point)));
-    
+
     const std::size_t ch_count = e->getRealChildrenCount();
     for (std::size_t i = 0; i < ch_count; ++i) {
-        plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
+        plask::shared_ptr<plask::GeometryObjectD<2> > ch = e->getRealChildAt(i)->asD<2>();
         if (ch && ch->getBoundingBox().includes(model_point))
             return model()->index(i, 0, rootIndex());
     }
@@ -116,37 +116,37 @@ QModelIndex ElementViewer::indexAt(const QPoint &point) const
     return QModelIndex();
 }
 
-plask::shared_ptr<ElementWrapper> ElementViewer::getElementWrapper() const
+plask::shared_ptr<ObjectWrapper> ObjectViewer::getObjectWrapper() const
 {
     QModelIndex toDrawIndex = rootIndex();
-    if (!toDrawIndex.isValid()) return plask::shared_ptr<ElementWrapper>();    //root or invalidate (deleted) index
-    return model()->toItem(toDrawIndex)->getLowerWrappedElement();
+    if (!toDrawIndex.isValid()) return plask::shared_ptr<ObjectWrapper>();    //root or invalidate (deleted) index
+    return model()->toItem(toDrawIndex)->getLowerWrappedObject();
 }
 
-bool ElementViewer::isIndexHidden(const QModelIndex & /*index*/) const
+bool ObjectViewer::isIndexHidden(const QModelIndex & /*index*/) const
 {
     return false;
 }
 
-QRectF ElementViewer::itemRect(const QModelIndex &index) const
+QRectF ObjectViewer::itemRect(const QModelIndex &index) const
 {
     if (rootIndex().isValid() && index.isValid() && index.parent() == rootIndex()) {
         GeometryTreeItem* i = model()->toItem(index);
-        auto e = i->element->wrappedElement;
+        auto e = i->object->wrappedObject;
         if (e->getDimensionsCount() == 2) {
-            plask::Box2D b = static_cast< plask::GeometryElementD<2>* >(e)->getBoundingBox();
+            plask::Box2D b = static_cast< plask::GeometryObjectD<2>* >(e)->getBoundingBox();
             return toQt(b);
         }
     }
     return QRectF();
 }
 
-int ElementViewer::horizontalOffset() const
+int ObjectViewer::horizontalOffset() const
 {
     return horizontalScrollBar()->value();
 }
 
-void ElementViewer::mousePressEvent(QMouseEvent *event)
+void ObjectViewer::mousePressEvent(QMouseEvent *event)
 {
     QAbstractItemView::mousePressEvent(event);
     origin = event->pos();
@@ -156,14 +156,14 @@ void ElementViewer::mousePressEvent(QMouseEvent *event)
     rubberBand->show();
 }
 
-void ElementViewer::mouseMoveEvent(QMouseEvent *event)
+void ObjectViewer::mouseMoveEvent(QMouseEvent *event)
 {
     if (rubberBand)
         rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
     QAbstractItemView::mouseMoveEvent(event);
 }
 
-void ElementViewer::mouseReleaseEvent(QMouseEvent *event)
+void ObjectViewer::mouseReleaseEvent(QMouseEvent *event)
 {
     QAbstractItemView::mouseReleaseEvent(event);
     if (rubberBand)
@@ -171,7 +171,7 @@ void ElementViewer::mouseReleaseEvent(QMouseEvent *event)
     viewport()->update();
 }
 
-QModelIndex ElementViewer::moveCursor(QAbstractItemView::CursorAction cursorAction,
+QModelIndex ObjectViewer::moveCursor(QAbstractItemView::CursorAction cursorAction,
                                 Qt::KeyboardModifiers /*modifiers*/)
 {
     QModelIndex current = currentIndex();
@@ -202,7 +202,7 @@ QModelIndex ElementViewer::moveCursor(QAbstractItemView::CursorAction cursorActi
     return current;
 }
 
-void ElementViewer::wheelEvent(QWheelEvent *event) {
+void ObjectViewer::wheelEvent(QWheelEvent *event) {
     if ((event->modifiers() & Qt::ControlModifier) != 0) {
         if (event->delta() > 0) {
             zoomIn();
@@ -213,9 +213,9 @@ void ElementViewer::wheelEvent(QWheelEvent *event) {
         QAbstractItemView::wheelEvent(event);
 }
 
-void ElementViewer::paintEvent(QPaintEvent *event) {
+void ObjectViewer::paintEvent(QPaintEvent *event) {
 
-    plask::shared_ptr<ElementWrapper> el = getElementWrapper();
+    plask::shared_ptr<ObjectWrapper> el = getObjectWrapper();
     if (!el) return;
 
     QPainter painter(viewport());
@@ -232,9 +232,9 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
        // QModelIndex current = selectionModel()->getcurrentIndex();
         if (current.isValid() && current.parent() == rootIndex()) {
             GeometryTreeItem* i = model()->toItem(current);
-            plask::GeometryElement* e = i->element->wrappedElement;
+            plask::GeometryObject* e = i->object->wrappedObject;
             if (e->getDimensionsCount() == 2) {
-                plask::Box2D b = static_cast<plask::GeometryElementD<2>*>(e)->getBoundingBox();
+                plask::Box2D b = static_cast<plask::GeometryObjectD<2>*>(e)->getBoundingBox();
                 QRectF r = toQt(b);
                 painter.fillRect(r, QColor(50, 20, 120, 70));
                 painter.setPen(QPen(QColor(90, 40, 230, 170), 0.0, Qt::DashLine));
@@ -252,17 +252,17 @@ void ElementViewer::paintEvent(QPaintEvent *event) {
     painter.restore();
 }
 
-void ElementViewer::resizeEvent(QResizeEvent * /* event */)
+void ObjectViewer::resizeEvent(QResizeEvent * /* event */)
 {
     updateGeometries();
 }
 
-int ElementViewer::rows(const QModelIndex &index) const
+int ObjectViewer::rows(const QModelIndex &index) const
 {
     return model()->rowCount(model()->parent(index));
 }
 
-void ElementViewer::rowsInserted(const QModelIndex &parent, int start, int end)
+void ObjectViewer::rowsInserted(const QModelIndex &parent, int start, int end)
 {
     /*for (int row = start; row <= end; ++row) {
 
@@ -278,7 +278,7 @@ void ElementViewer::rowsInserted(const QModelIndex &parent, int start, int end)
     QAbstractItemView::rowsInserted(parent, start, end);
 }
 
-void ElementViewer::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
+void ObjectViewer::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
 {
     /*for (int row = start; row <= end; ++row) {
 
@@ -293,13 +293,13 @@ void ElementViewer::rowsAboutToBeRemoved(const QModelIndex &parent, int start, i
     QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
 }
 
-void ElementViewer::scrollContentsBy(int dx, int dy)
+void ObjectViewer::scrollContentsBy(int dx, int dy)
 {
     scrollDirtyRegion(dx, dy);
     viewport()->scroll(dx, dy);
 }
 
-void ElementViewer::scrollTo(const QModelIndex &index, ScrollHint)
+void ObjectViewer::scrollTo(const QModelIndex &index, ScrollHint)
 {
     QRect area = viewport()->rect();
     QRect rect = visualRect(index);
@@ -323,18 +323,18 @@ void ElementViewer::scrollTo(const QModelIndex &index, ScrollHint)
     update();
 }
 
-void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
+void ObjectViewer::setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
 {
     plask::Box2D model_sel = fromQt(viewToModel().mapRect(QRectF(rect)));
 
     QModelIndexList indexes;
 
-    plask::shared_ptr<plask::GeometryElementD<2> > e = getElement();
-    
+    plask::shared_ptr<plask::GeometryObjectD<2> > e = getObject();
+
     if (e) {
         const std::size_t ch_count = e->getRealChildrenCount();
         for (std::size_t i = 0; i < ch_count; ++i) {
-            plask::shared_ptr<plask::GeometryElementD<2> > ch = e->getRealChildAt(i)->asD<2>();
+            plask::shared_ptr<plask::GeometryObjectD<2> > ch = e->getRealChildAt(i)->asD<2>();
             if (ch && ch->getBoundingBox().intersects(model_sel))
                 indexes.append(model()->index(i, 0, rootIndex()));
         }
@@ -366,7 +366,7 @@ void ElementViewer::setSelection(const QRect &rect, QItemSelectionModel::Selecti
     update();
 }
 
-void ElementViewer::updateGeometries()
+void ObjectViewer::updateGeometries()
 {
     plask::Vec<2, double> s = getBoundingBox().size();
     horizontalScrollBar()->setPageStep(viewport()->width());
@@ -375,7 +375,7 @@ void ElementViewer::updateGeometries()
     verticalScrollBar()->setRange(0, qMax(0, int( 2* margin + s.c1 * zoom.y() - viewport()->height()) ));
 }
 
-QTransform ElementViewer::modelToView() const {
+QTransform ObjectViewer::modelToView() const {
     plask::Box2D bb = getBoundingBox();
 
     return QTransform(zoom.x(), 0.0,
@@ -385,12 +385,12 @@ QTransform ElementViewer::modelToView() const {
 }
 
 
-int ElementViewer::verticalOffset() const
+int ObjectViewer::verticalOffset() const
 {
     return verticalScrollBar()->value();
 }
 
-QRect ElementViewer::visualRect(const QModelIndex &index) const
+QRect ObjectViewer::visualRect(const QModelIndex &index) const
 {
     QRectF rect = itemRect(index);
     if (rect.isValid())
@@ -399,7 +399,7 @@ QRect ElementViewer::visualRect(const QModelIndex &index) const
     return QRect();
 }
 
-QRegion ElementViewer::visualRegionForSelection(const QItemSelection &selection) const
+QRegion ObjectViewer::visualRegionForSelection(const QItemSelection &selection) const
 {
     int ranges = selection.count();
 

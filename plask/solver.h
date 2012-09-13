@@ -15,8 +15,8 @@ Solvers in PLaSK are calculations units. Each is represented by subclass of plas
 Each solver has one or more input and one or more output realized by @ref providers "providers and receivers mechanism".
 This allows for communication between solvers.
 
-Typically, each solver is connected with @ref geometry "geometry element" which describe physical property (mainly materials) of laser or its fragment.
-This @ref geometry "geometry element" defines (local) calculation space for solver.
+Typically, each solver is connected with @ref geometry "geometry object" which describe physical property (mainly materials) of laser or its fragment.
+This @ref geometry "geometry object" defines (local) calculation space for solver.
 
 Typically, each solver also includes @ref meshes "mesh" which represent set of point (in calculation space) in which solver calculate its result.
 If another solver requests for data in points other than these includes in mesh, result can be @ref interpolation "interpolated".
@@ -273,7 +273,7 @@ For interpolated fields they will look like in the following example:
     }
 \endcode
 
-The important elements of the above method are the first and the last lines. In the former one, we check if the computations have been performed
+The important objects of the above method are the first and the last lines. In the former one, we check if the computations have been performed
 and are up-to-date (remember, we have cleared the value of \c outNeff in \c onInvalidate()). Otherwise we throw an exception. In the last line
 we use plask::interpolate function to interpolate our data to the receiver mesh (which is provided as \c destination_mesh argument).
 
@@ -372,7 +372,7 @@ will appear in a single package).
 
 Next you define your exported class member fields, properties (fake fields, which call your class methods on reading or assignment), methods,
 providers, and receivers (you have probably noticed that providers and receivers are just class member fields, but they need to be exported
-using separate macros, due to some additional logic necessary). Below, there is a complete list of macros exporting class elements and we believe
+using separate macros, due to some additional logic necessary). Below, there is a complete list of macros exporting class objects and we believe
 it is self-explanatory:
 
 \code

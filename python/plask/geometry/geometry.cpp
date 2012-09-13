@@ -17,7 +17,7 @@ namespace py = boost::python;
 void register_calculation_spaces();
 
 void register_geometry_aligners();
-void register_geometry_element();
+void register_geometry_object();
 void register_geometry_primitive();
 void register_geometry_leafs();
 void register_geometry_transform();
@@ -34,14 +34,14 @@ void initGeometry() {
     py::scope scope = geometry_module;
 
     scope.attr("__doc__") =
-        "This solver provides 2D and 3D geometry elements, necessary to describe the structure "
+        "This solver provides 2D and 3D geometry objects, necessary to describe the structure "
         "of analyzed device."; //TODO maybe more extensive description
 
     // This must be the first one
     register_geometry_path();
 
 
-    register_geometry_element();
+    register_geometry_object();
     register_geometry_primitive();
     register_geometry_leafs();
     register_geometry_transform();
@@ -49,7 +49,7 @@ void initGeometry() {
     register_geometry_container();
 
 
-    register_exception<NoSuchGeometryElement>(PyExc_IndexError);
+    register_exception<NoSuchGeometryObject>(PyExc_IndexError);
 
 
     // Calculation spaces
