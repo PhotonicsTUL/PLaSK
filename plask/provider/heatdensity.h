@@ -2,7 +2,7 @@
 #define PLASK__HEATS_H
 
 #include "providerfor.h"
-#include "combinate_providers.h"
+#include "combine_provider.h"
 
 namespace plask {
 

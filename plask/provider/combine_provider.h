@@ -16,7 +16,7 @@ namespace plask {
  * Subclass should define operator() which should combine values from providers set.
  */
 template <typename BaseProviderClass>
-class CombinateProviderBase: public BaseProviderClass, public BaseProviderClass::Listener {
+class CombineProviderBase: public BaseProviderClass, public BaseProviderClass::Listener {
        
     /// Set of private providers which should be delete by this.
     std::set<BaseProviderClass*> private_providers;
@@ -62,7 +62,7 @@ public:
     }
     
     /// Delete all private providers.
-    ~CombinateProviderBase() {
+    ~CombineProviderBase() {
         for (auto p: providers) disconnect(p);
     }
     
@@ -76,7 +76,7 @@ public:
  * Template of base class of sum provider for providers with interpolation.
  */
 template <typename BaseClass, typename ValueT, typename SpaceT, typename... ExtraArgs>
-struct SumOnMeshProviderWithInterpolation: public CombinateProviderBase<BaseClass> {
+struct SumOnMeshProviderWithInterpolation: public CombineProviderBase<BaseClass> {
     
     virtual DataVector<ValueT> operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         this->ensureHasProviders();
