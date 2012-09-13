@@ -8,13 +8,15 @@
 This file includes templates and base classes for providers which combinates (for example: sum) values from other providers.
 */
 
+namespace plask {
+
 /**
  * Template of base class of combinate provider.
  *
  * Subclass should define operator() which should combine values from providers set.
  */
-template <BaseProviderClass>
-class CombinateProviderBase: public BaseProviderClass, public typename BaseProviderClass::Listener {
+template <typename BaseProviderClass>
+class CombinateProviderBase: public BaseProviderClass, public BaseProviderClass::Listener {
        
     /// Set of private providers which should be delete by this.
     std::set<BaseProviderClass*> private_providers;
@@ -48,7 +50,7 @@ public:
         providers.insert(to_add);
         if (providerIsPrivate) private_providers.insert(to_add);
         to_add.add(*this);
-        fireChanged();
+        this->fireChanged();
     }
     
     /**
@@ -78,7 +80,7 @@ struct SumOnMeshProviderWithInterpolation: public CombinateProviderBase<BaseClas
     
     virtual DataVector<ValueT> operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         this->ensureHasProviders();
-        auto p = providers.begin();
+        auto p = this->providers.begin();
         DataVector<ValueT> result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         ++p;
         if (p == providers.end()) return result;    //has one element
@@ -89,6 +91,8 @@ struct SumOnMeshProviderWithInterpolation: public CombinateProviderBase<BaseClas
         } while (p != providers.end());
         return result;
     }
-}
+};
+
+}   // namespace plask
 
 #endif // COMBINATE_PROVIDERS_H
