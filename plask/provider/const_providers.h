@@ -1,5 +1,9 @@
-#ifndef CONST_PROVIDERS_H
-#define CONST_PROVIDERS_H
+#ifndef PLASK__CONST_PROVIDERS_H
+#define PLASK__CONST_PROVIDERS_H
+
+/** @file
+This file includes templates and base classes for providers of constant values.
+*/
 
 #include "../geometry/object.h"
 #include "../data.h"

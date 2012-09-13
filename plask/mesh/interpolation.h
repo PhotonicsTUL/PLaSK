@@ -184,17 +184,6 @@ interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec_ptr,
     return result;
 }
 
-#ifndef DOXYGEN
-// This is necessary for passing non-const src_vec_ptr.
-// Apparently C++ has problems with proper casting is the vector is template argument of shared_ptr
-/*template <typename SrcMeshT, typename DataT>
-inline shared_ptr<const std::vector<DataT>>
-interpolate(SrcMeshT& src_mesh, shared_ptr<std::vector<DataT>> src_vec_ptr,
-            MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION) {
-    return interpolate(src_mesh, (shared_ptr<const std::vector<DataT>>&&)src_vec_ptr, dst_mesh, method);
-}*/
-#endif // DOXYGEN
-
 } // namespace plask
 
 #endif  //PLASK__INTERPOLATION_H

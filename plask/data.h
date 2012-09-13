@@ -23,6 +23,7 @@ namespace plask {
  * In both cases, asign operation and copy constructor of DataVector do not copy the data, but just create DataVectors which referee to the same data.
  * So both of this operations are very fast.
  */
+//TODO std::remove_cv<T>::type, const T
 template <typename T>
 struct DataVector {
 
@@ -297,7 +298,7 @@ struct DataVector {
      * Make a deep copy of the data.
      * @return new object with manage copy of this data
      */
-    DataVector<T> copy() const {
+    DataVector<T> copy() const {    //TODO std::remove_cv<T>::type
         T* new_data = new T[size_];
         std::copy(begin(), end(), new_data);
         return DataVector<T>(new_data, size_, true);
@@ -315,7 +316,7 @@ struct DataVector {
      * Make copy of data only if this is not the only one owner of it.
      * @return copy of this: shallow if unique() is @c true, deep if unique() is @c false
      */
-    DataVector<T> claim() const {
+    DataVector<T> claim() const {    //TODO std::remove_cv<T>::type
         return unique() ? *this : copy();
     }
 
@@ -376,6 +377,20 @@ std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {
     return out;
 }
 
+/**
+ * Calculate: to_inc[i] += inc_val[i] for each i = 0, ..., min(to_inc.size(), inc_val.size()).
+ * @param to_inc vector to increase
+ * @param inc_val
+ * @return @c *this
+ */
+template<class T>
+DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
+    std::size_t min_size = std::min(to_inc.size(), inc_val.size());
+    for (std::size_t i = 0; i < min_size; ++i)
+        to_inc[i] += inc_val[i];
+    return to_inc;
+}
+
 }   // namespace plask
 
 namespace std {
@@ -386,5 +401,5 @@ namespace std {
 }   // namespace std
 
 
-
 #endif // PLASK__DATA_H
+

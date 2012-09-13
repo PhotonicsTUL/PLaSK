@@ -11,7 +11,7 @@
 #   include <complex>
 #endif // PLASK_MATH_STD
 
-class T;
+//class T;  //Piotr: declaration like this hides some serious errors (like missing template <typename T>)!
 namespace plask {
 
 // size_t is preferred for array indexing

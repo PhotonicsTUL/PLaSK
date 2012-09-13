@@ -92,6 +92,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "provider/providerfor.h"
 #include "provider/const_providers.h"
+#include "provider/combinate_providers.h"
 #include "provider/thermal.h"
 #include "provider/electrical.h"
 #include "provider/optical.h"
