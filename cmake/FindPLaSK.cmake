@@ -86,6 +86,7 @@ macro(make_default)
         target_link_libraries(${PYTHON_TARGET_NAME} ${TARGET_NAME} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
         set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
+                              OUTPUT_NAME ${SOLVER_NAME}
                               PREFIX "")
         if (DEFINED no_strict_aliasing_flag)
             set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
@@ -97,8 +98,6 @@ macro(make_default)
             install(TARGETS ${PYTHON_TARGET_NAME} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
                                                   LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
         else()
-            set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
-                                  OUTPUT_NAME ${SOLVER_NAME})
             install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
         endif()
     endif()
