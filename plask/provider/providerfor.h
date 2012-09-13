@@ -624,7 +624,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
             ConstByPlaceProviderImpl<PropertyT, SpaceT>(root, default_value) {}
 
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
-            return get(dst_mesh);
+            return this->get(dst_mesh);
         }
     };
 

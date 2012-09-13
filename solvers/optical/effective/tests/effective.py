@@ -23,6 +23,8 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         rect = geometry.Rectangle(0.75, 0.5, Glass())
         space = geometry.Cartesian2D(rect, left="mirror")
         self.solver.geometry = space
+        self.solver.root.tolf_max = 1e-6
+        self.solver.root.tolf_min = 1e-9
 
     def testBasic(self):
         self.assertEqual( self.solver.id, "test_eim:EffectiveIndex2D" )
