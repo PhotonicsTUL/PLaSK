@@ -293,6 +293,14 @@ struct Receiver: public Provider::Receiver {
     void setProvider(ProviderT &provider) {
         setProvider(&provider);
     }
+    
+    /**
+     * Change provider. If new provider is different from current one then changed flag is set.
+     * @param provider new provider, will be deleted by this receiver
+     */
+    void setProvider(std::unique_ptr<ProviderT>&& provider) {
+        setProvider(provider->release(), true);
+    }
 
     /**
      * Change provider. If new provider is different from current one then changed flag is set.
