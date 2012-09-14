@@ -60,7 +60,12 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     double **mpA;
     int mAWidth, mAHeight;
     std::vector<double> mTCorr;
+
+  public:
     double mTAmb;
+
+  protected:
+
     DataVector<double> mTemperatures; // out
     DataVector<Vec<2> > mHeatFluxes; // out
     DataVector<double> mHeatDensities; // in

@@ -5,7 +5,12 @@ namespace plask { namespace solvers { namespace thermal {
 FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
     outTemperature(this, &FiniteElementMethodThermalCartesian2DSolver::getTemperatures),
-    outHeatFlux(this, &FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes)
+    outHeatFlux(this, &FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes),
+    mTAmb(300.),
+    mLoopLim(5),
+    mTCorrLim(0.1),
+    mTBigCorr(1e5),
+    mBigNum(1e15)
 {
     mNodes.clear();
     mElements.clear();
@@ -99,7 +104,15 @@ void FiniteElementMethodThermalCartesian2DSolver::setElements()
 
 void FiniteElementMethodThermalCartesian2DSolver::setHeatDensities()
 {
-    mHeatDensities = inHeatDensity(mesh->getMidpointsMesh());
+    auto iMesh = mesh->getMidpointsMesh();
+    try
+    {
+        mHeatDensities = inHeatDensity(iMesh);
+    }
+    catch (NoValue)
+    {
+        mHeatDensities.reset(iMesh.size(), 0.);
+    }
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::setSolver()
