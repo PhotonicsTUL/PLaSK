@@ -26,6 +26,8 @@ void register_data_vectors();
 
 void register_python_log();
 
+void register_step_profile();
+
 // Hack necessary as macro import_array wants to return some value
 static inline bool plask_import_array() {
     import_array1(false);
@@ -84,6 +86,9 @@ BOOST_PYTHON_MODULE(plaskcore)
     // Data vector
     register_data_vectors();
 
+    // Additional providers
+    register_step_profile();
+
     // Solvers
     py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>("Solver", "Base class for all solvers", py::no_init)
         .add_property("name", &plask::Solver::getName, "Name of the solver object")
@@ -97,6 +102,7 @@ BOOST_PYTHON_MODULE(plaskcore)
     register_exception<plask::Exception>(PyExc_RuntimeError);
 
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
+    register_exception<plask::OutOfBoundException>(PyExc_IndexError);
     register_exception<plask::NoSuchMaterial>(PyExc_ValueError);
     register_exception<plask::NoSuchGeometryObjectType>(PyExc_TypeError);
     register_exception<plask::BadInput>(PyExc_ValueError);

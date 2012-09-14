@@ -40,10 +40,167 @@ struct DataVectorWrap : public DataVector<T> {
     void onMeshChanged(const typename MeshD<dim>::Event& event) { mesh_changed = true; }
 };
 
+// ---------- Step Profile ------------
+
+struct PythonStepProfile: public Provider {
+
+    struct Place
+    {
+        /// Object for which we specify the value
+        weak_ptr<GeometryObject> object;
+
+        /// Hints specifying pointed object
+        PathHints hints;
+
+        /**
+         * Create place
+         * \param object geometry object of the place
+         * \param hints path hints further specifying the place
+         */
+        Place(GeometryObject& object, const PathHints& hints=PathHints())
+            : object(object.shared_from_this()), hints(hints) {}
+
+        /**
+         * Create place
+         * \param src python tuple holding object and hints
+         */
+        Place(py::object src);
+
+        /// Comparison operator for std::find
+        inline bool operator==(const Place& other) const {
+            return !(object < other.object || other.object < object ||
+                     hints  < other.hints  || other.hints  < hints);
+        }
+    };
+
+    /// Object for which coordinates we specify the values
+    weak_ptr<const Geometry> root_geometry;
+
+    /// Values for places.
+    std::deque<Place> places;
+    std::deque<py::object> values;
+
+    /// Default value, provided for places where there is no other value
+    py::object custom_default_value;
+
+    /**
+     * Create step profile
+     * \param root root geometry
+     * \param default_value default value
+     */
+    PythonStepProfile(const Geometry& geometry, py::object default_value=py::object()):
+        root_geometry(dynamic_pointer_cast<const Geometry>(geometry.shared_from_this())), custom_default_value(default_value) {}
+
+    /// Get value for place
+    py::object __getitem__(py::object key);
+
+    /// Set value for place
+    void __setitem__(py::object key, py::object value);
+
+    /// Delete place
+    void __delitem__(py::object key);
+
+    /// Clear all the values
+    void clear();
+
+    /// Return number of defined places
+    size_t size() const { return places.size(); }
+
+    /// Return list of all places
+    py::list keys() const;
+
+    /// Return list of all values
+    py::list pyvalues() const;
+
+    /// Return values for specified mesh
+    template <typename ValueT, int DIMS>
+    DataVector<ValueT> get(const plask::MeshD<DIMS>& dst_mesh, ValueT default_value) const {
+        if (custom_default_value != py::object()) default_value = py::extract<ValueT>(custom_default_value);
+
+        auto geometry = dynamic_pointer_cast<const GeometryD<DIMS>>(root_geometry.lock());
+        if (!geometry) return DataVector<ValueT>(dst_mesh.size(), default_value);
+        auto root = geometry->getChild();
+        if (!root) throw DataVector<ValueT>(dst_mesh.size(), default_value);
+
+        std::vector<ValueT> vals; vals.reserve(values.size());
+        for (auto val: values) vals.push_back(py::extract<ValueT>(val));
+
+        DataVector<ValueT> result(dst_mesh.size());
+
+        size_t i = 0;
+        for (Vec<DIMS, double> point: dst_mesh) {
+            bool assigned = false;
+            for (auto place = places.begin(); place != places.end(); ++place) {
+                auto object = dynamic_pointer_cast<GeometryObjectD<DIMS>>(place->object.lock());
+                if (!object) continue;
+                auto regions = root->getObjectInThisCoordinates(object, place->hints);
+                for (const auto& region: regions) {
+                    if (region && region->includes(point)) {
+                        result[i] = vals[place-places.begin()];
+                        assigned = true;
+                        break;
+                    }
+                }
+                if (assigned) break;
+            }
+            if (!assigned) result[i] = default_value;
+            ++i;
+        }
+
+        return result;
+    }
+
+};
+
 
 namespace detail {
 
-    template<class ReceiverT> struct RegisterStepProfile;
+    template <typename, PropertyType, typename> struct StepProfileProvider;
+
+    template <typename ReceiverT, typename... _ExtraParams>
+    struct StepProfileProvider<ReceiverT,ON_MESH_PROPERTY,VariadicTemplateTypesHolder<_ExtraParams...>>:
+    public ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>, public Provider::Listener
+    {
+        shared_ptr<PythonStepProfile> profile;
+        StepProfileProvider(const shared_ptr<PythonStepProfile>& parent): profile(parent) {
+            parent->add(this);
+        }
+        virtual ~StepProfileProvider() { profile->remove(this); }
+        virtual DataVector<typename ReceiverT::PropertyTag::ValueType> operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, _ExtraParams...) const {
+            return profile->get<typename ReceiverT::PropertyTag::ValueType>(mesh, ReceiverT::PropertyTag::getDefaultValue());
+        }
+        virtual void onChange() { this->fireChanged(); }
+    };
+
+    template <typename ReceiverT, typename... _ExtraParams>
+    struct StepProfileProvider<ReceiverT,FIELD_PROPERTY,VariadicTemplateTypesHolder<_ExtraParams...>>:
+    public ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>, public Provider::Listener
+    {
+        shared_ptr<PythonStepProfile> profile;
+        StepProfileProvider(const shared_ptr<PythonStepProfile>& parent): profile(parent) {
+                parent->add(this);
+        }
+        virtual ~StepProfileProvider() { profile->remove(this); }
+        virtual DataVector<typename ReceiverT::PropertyTag::ValueType> operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, _ExtraParams..., InterpolationMethod) const {
+            return profile->get<typename ReceiverT::PropertyTag::ValueType>(mesh, ReceiverT::PropertyTag::getDefaultValue());
+        }
+        virtual void onChange() { this->fireChanged(); }
+    };
+
+    template <typename ReceiverT>
+    void connectStepProfileProvider(ReceiverT& receiver, shared_ptr<PythonStepProfile> profile) {
+        typedef StepProfileProvider<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams> ProviderT;
+        receiver.setProvider(new ProviderT(profile), true);
+    }
+
+    template <typename ReceiverT>
+    shared_ptr<PythonStepProfile> rconnectStepProfileProvider(ReceiverT& receiver, shared_ptr<PythonStepProfile> profile) {
+        connectStepProfileProvider(receiver, profile);
+        return profile;
+    }
+
+
+// ---------- Receiver ------------
 
     template <typename ReceiverT>
     struct RegisterReceiverBase
@@ -95,10 +252,8 @@ namespace detail {
         static void setValue(ReceiverT& self, const py::object& obj) { throw TypeError("Operation not allowed for non-interpolated field receiver"); }
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider");
-            RegisterStepProfile<ReceiverT> step_profile(spaceSuffix<typename ReceiverT::SpaceType>());
-            this->receiver_class.def("StepProfile", &RegisterStepProfile<ReceiverT>::StepProfile, py::return_value_policy<py::manage_new_object>(),
-                                     "Create new StepProfile and connect it with this receiver",
-                                     (py::arg("geometry"), py::arg("default_value")=ReceiverT::PropertyTag::getDefaultValue()));
+            this->receiver_class.def("__lshift__", &connectStepProfileProvider<ReceiverT>);
+            this->receiver_class.def("__rrshift__", &rconnectStepProfileProvider<ReceiverT>);
         }
     };
 
@@ -122,10 +277,8 @@ namespace detail {
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
             this->receiver_class.def("setValue", &setValue, "Set previously obtained value", (py::arg("data")));
-            RegisterStepProfile<ReceiverT> step_profile(spaceSuffix<typename ReceiverT::SpaceType>());
-            this->receiver_class.def("StepProfile", &RegisterStepProfile<ReceiverT>::StepProfile, py::return_value_policy<py::manage_new_object>(),
-                                     "Create new StepProfile and connect it with this receiver",
-                                     (py::arg("geometry"), py::arg("default_value")=ReceiverT::PropertyTag::getDefaultValue()));
+            this->receiver_class.def("__lshift__", &connectStepProfileProvider<ReceiverT>);
+            this->receiver_class.def("__rrshift__", &rconnectStepProfileProvider<ReceiverT>);
         }
       private:
         template <typename MeshT>
@@ -136,6 +289,9 @@ namespace detail {
         }
         friend struct ReceiverSetValueForMeshes<DIMS, ReceiverT, _ExtraParams...>;
     };
+
+// ---------- Provider ------------
+
 
     template <typename ProviderT>
     struct RegisterProviderBase
@@ -233,65 +389,6 @@ public detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyT
 template <typename ProviderT>
 struct RegisterProvider :
 public detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>  {};
-
-
-namespace detail {
-    template <typename ReceiverT>
-    struct RegisterStepProfile: public RegisterProvider<typename ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>::ConstByPlace>
-    {
-        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
-        typedef typename ReceiverT::SpaceType SpaceT;
-        typedef typename ProviderFor<typename ReceiverT::PropertyTag, SpaceT>::ConstByPlace ProviderT;
-
-        static ProviderT* StepProfile(ReceiverT& self, const SpaceT& geometry, ValueT default_value) {
-            auto child = geometry.getChild();
-            if (!child) throw NoChildException();
-            ProviderT* provider = new ProviderT(child, default_value);
-            self << *provider;
-            return provider;
-        }
-
-        static typename ProviderT::Place place(py::object obj) {
-            GeometryObjectD<SpaceT::DIMS>* object;
-            PathHints hints;
-            try {
-                object = py::extract<GeometryObjectD<SpaceT::DIMS>*>(obj);
-            } catch (py::error_already_set) {
-                try {
-                    PyErr_Clear();
-                    if (py::len(obj) != 2) throw py::error_already_set();
-                    object = py::extract<GeometryObjectD<SpaceT::DIMS>*>(obj[0]);
-                    hints = py::extract<PathHints>(obj[1]);
-                } catch (py::error_already_set) {
-                    throw TypeError("Key must be either of type geometry.GeometryObject%1%D or (geometry.GeometryObject%1%D, geometry.PathHints)", SpaceT::DIMS);
-                }
-            }
-            return typename ProviderT::Place(dynamic_pointer_cast<GeometryObjectD<SpaceT::DIMS>>(object->shared_from_this()), hints);
-        }
-
-        static ValueT __getitem__(const ProviderT& self, py::object key) {
-            return self.getValueFrom(place(key));
-        }
-
-        static void __setitem__(ProviderT& self, py::object key, ValueT value) {
-            return self.setValueFor(place(key), value);
-        }
-
-        static void __delitem__(ProviderT& self, py::object key) {
-            return self.removeValueFrom(place(key));
-        }
-
-        RegisterStepProfile(const std::string& suffix) {
-            this->provider_class.def("__getitem__", &__getitem__);
-            this->provider_class.def("__setitem__", &__setitem__);
-            this->provider_class.def("__delitem__", &__delitem__);
-            this->provider_class.def("clear", &ProviderT::clear, "Clear values for all places");
-        }
-    };
-
-
-
-} // namespace detail
 
 
 }} // namespace plask::python

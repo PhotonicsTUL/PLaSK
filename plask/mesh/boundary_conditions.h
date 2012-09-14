@@ -23,11 +23,19 @@ struct BoundaryCondition {
      * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
      */
     template <typename... ConditionArgumentsTypes>
+    BoundaryCondition(const Boundary& boundary, ConditionArgumentsTypes&&... conditionsArg)
+        : boundary(boundary),
+          condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
+
+    /**
+     * Construct boundary-condition pair.
+     * @param boundary boundary
+     * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     */
+    template <typename... ConditionArgumentsTypes>
     BoundaryCondition(Boundary&& boundary, ConditionArgumentsTypes&&... conditionsArg)
         : boundary(std::forward<Boundary>(boundary)),
           condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
-
-
 };
 
 /**
@@ -153,6 +161,36 @@ public:
         return lastIterator();
     }
 
+    /**
+     * Insert new boundary condition to this at specified position.
+     *
+     * It doesn't invalidate any iterators. It has constant time complexity.
+     * \param index insert position
+     * \param element boundary condition to add
+     * \return iterator to inserted element which allow to change or erase added element in future
+     */
+    iterator insert(std::size_t index, Element&& element) {
+        iterator i = getIteratorForIndex(index);
+        container.insert(i, std::forward<Element>(element));
+        return lastIterator();
+    }
+
+    /**
+     * Insert new boundary condition to this at specified position.
+     *
+     * It doesn't invalidate any iterators. It has constant time complexity.
+     * \param index insert position
+     * \param boundary boundary
+     * \param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     * \return iterator to inserted element which allow to change or erase added element in future
+     */
+    template <typename... ConditionArgumentsTypes>
+    iterator insert(std::size_t index, Boundary&& boundary, ConditionArgumentsTypes&&... conditionsArg) {
+        iterator i = getIteratorForIndex(index);
+        container.emplace(i, std::forward<Boundary>(boundary), std::forward<ConditionArgumentsTypes>(conditionsArg)...);
+        return lastIterator();
+    }
+
     /// Delete all boundary conditions from this set.
     void clear() {
         container.clear();
@@ -164,7 +202,7 @@ public:
      * It doesn't invalidate any iterators other than @p to_erase. It has constant time complexity.
      * @param to_erase iterator which show element to erase
      */
-    void erase(const_iterator to_erase) {
+    void erase(iterator to_erase) {
         container.erase(to_erase);
     }
 
@@ -174,7 +212,7 @@ public:
      * It doesn't invalidate any iterators from outside of deleted range. It has linear time complexity dependent on the length of the range.
      * @param first, last range of elements to remove
      */
-    void erase(const_iterator first, const_iterator last) {
+    void erase(iterator first, iterator last) {
         container.erase(first, last);
     }
 
@@ -188,7 +226,9 @@ public:
      * @param index index of element to remove
      */
     void erase(std::size_t index) {
-        erase(getIteratorForIndex(index));
+        iterator i = getIteratorForIndex(index);
+        if (i == end()) OutOfBoundException("BoundaryConditions[]", "index");
+        erase(i);
     }
 
     /**

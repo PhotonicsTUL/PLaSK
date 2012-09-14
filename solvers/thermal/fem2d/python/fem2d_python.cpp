@@ -18,6 +18,7 @@ BOOST_PYTHON_MODULE(fem2d)
         METHOD(runCalc, "Run thermal calculations");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
+        BOUNDARY_CONDITIONS(constT, mTConst, "Boundary conditions of the first kind (constant temperature)");
 /*
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
         RO_FIELD(field_name, "Short documentation"); // read-only field

@@ -25,6 +25,7 @@ BOOST_PYTHON_MODULE(solver_name)
         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
         RECEIVER(inReceiver, "Short documentation"); // receiver in the solver
         PROVIDER(outProvider, "Short documentation"); // provider in the solver
+        BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
     }
 
 }

@@ -130,7 +130,7 @@ Hence, we declare the following \link providers providers, receivers\endlink and
 
     plask::ProviderFor<plask::OpticalIntensity, plask::Geometry2DCartesian>::Delegate outIntensity;
 
-    plask::BoundaryConditions<plask::RectilinearMesh2D, double> boundaryConditionsOnTemperature;
+    plask::BoundaryConditions<plask::RectilinearMesh2D, double> boundaryConditionsOnField;
 \endcode
 
 In the code above, we have declared two receivers (by convention in PLaSK, names of every receiver in all solvers should begin with
@@ -282,7 +282,7 @@ reimplement \c loadParam method. It reads the configuration from the current XML
 require the closing of the tag. Below you have an example:
 
 \code
-    void loadParam(const std::string& param, XMLReader& reader, Manager&) {
+    void loadParam(const std::string& param, XMLReader& reader, Manager& manager) {
         if (param == "newton") {
             newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
             newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
@@ -290,6 +290,8 @@ require the closing of the tag. Below you have an example:
         } else if (param == "wavelength") {
             std::string = reader.requireText();
             inWavelength.setValue(boost::lexical_cast<double>(wavelength));
+        } else if (param == "boundary") {
+            manager.readBoundaryConditions(source, boundaryConditionsOnField);
         } else
             throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <newton>, or <wavelength>", param);
         reader.requireTagEnd();
@@ -353,6 +355,8 @@ BOOST_PYTHON_MODULE(fd)
      PROVIDER(outNeff, "Effective index of the last computed mode");
 
      PROVIDER(outIntensity, "Light intensity of the last computed mode");
+
+     BOUNDARY_CONDITIONS(boundary, boundaryConditionsOnField, "Boundary conditions of the first kind (constant field)");
 
      METHOD(compute, "Perform the computations");
     }

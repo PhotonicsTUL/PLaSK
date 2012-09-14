@@ -16,13 +16,12 @@ namespace py = boost::python;
 template <typename MeshType>
 py::class_<MeshGeneratorOf<MeshType>, shared_ptr<MeshGeneratorOf<MeshType>>, py::bases<MeshGenerator>, boost::noncopyable>
 ExportMeshGenerator(const std::string name) {
+    py::scope scope = py::object(py::scope().attr(name.c_str()));
     py::class_<MeshGeneratorOf<MeshType>, shared_ptr<MeshGeneratorOf<MeshType>>, py::bases<MeshGenerator>, boost::noncopyable>
     pyclass("Generator", ("Base class for all "+name+" mesh generators.").c_str(), py::no_init);
     pyclass.def("__call__", &MeshGeneratorOf<MeshType>::operator(), "Generate mesh for given geometry or load it from the cache", py::arg("geometry"));
     pyclass.def("generate", &MeshGeneratorOf<MeshType>::generate, "Generate mesh for given geometry omitting the cache", py::arg("geometry"));
     pyclass.def("clearCache", &MeshGeneratorOf<MeshType>::clearCache, "Clear cache of generated meshes");
-    py::scope().attr(name.c_str()).attr("Generator") = py::scope().attr("Generator");
-    py::delattr(py::scope(), "Generator");
     return pyclass;
 }
 
@@ -75,6 +74,7 @@ struct ExportBoundary {
             .def("__contains__", &MeshType::Boundary::WithMesh::includes)
             .def("__iter__", py::range(&MeshType::Boundary::WithMesh::begin, &MeshType::Boundary::WithMesh::end))
         ;
+        py::delattr(scope, "BoundaryInstance");
 
         py::class_<typename MeshType::Boundary, shared_ptr<typename MeshType::Boundary>>("Boundary",
             ("Generic boundary specification for "+name+" mesh").c_str(), py::no_init)

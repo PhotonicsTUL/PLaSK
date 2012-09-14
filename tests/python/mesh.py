@@ -72,7 +72,7 @@ class RectilinearMeshes(unittest.TestCase):
 
     def testBoundary(self):
         self.mesh2.ordering = "10"
-        b = plask.mesh.Rectilinear2D.leftBoundary(self.mesh2)
+        b = plask.mesh.Rectilinear2D.left(self.mesh2)
         self.assertIn(0, b)
         self.assertNotIn(1, b)
         self.assertIn(3, b)

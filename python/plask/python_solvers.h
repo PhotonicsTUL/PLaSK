@@ -6,6 +6,7 @@
 #include <plask/solver.h>
 #include "python_globals.h"
 #include "python_provider.h"
+#include "python_boundaries.h"
 
 #include <plask/provider/optical.h>
 
@@ -134,6 +135,13 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         return *this;
     }
 
+    template <typename MeshT, typename ValueT>
+    ExportSolver& add_boundary_conditions(const char* name, BoundaryConditions<MeshT,ValueT> Class::* field, const char* help) {
+
+        detail::RegisterBoundaryConditions<MeshT, ValueT>();
+        this->def_readonly(name, field, help);
+        return *this;
+    }
 
 };
 
@@ -147,6 +155,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 #define RW_FIELD(name, help) solver.def_readwrite(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 #define PROVIDER(name, help) solver.add_provider(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 #define RECEIVER(name, help) solver.add_receiver(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
+#define BOUNDARY_CONDITIONS(name, field, help) solver.add_boundary_conditions(BOOST_PP_STRINGIZE(name), &__Class__::field, help)
 
 
 using py::arg; // for more convenient specification of default arguments

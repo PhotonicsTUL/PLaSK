@@ -54,17 +54,21 @@ class ReceiverTest(unittest.TestCase):
         geom = geometry.Cartesian2D(stack)
         grid = mesh.Rectilinear2D([2.], [0.5, 2.0,  3.5])
 
-        step = self.solver.inTemperature.StepProfile(geom)
+        step = StepProfileProvider(geom)
+        self.solver.inTemperature << step
 
         step[r1] = 100.
+        self.assertEqual( step[r1], 100. )
         self.assertTrue( self.solver.inTemperature.changed )
         self.assertEqual( list(self.solver.inTemperature(grid)), [100., 300., 100.])
         self.assertFalse( self.solver.inTemperature.changed )
 
-        del step[r1]
         step[r2] = 400.
         step[r1, h] = 200.
         self.assertTrue( self.solver.inTemperature.changed )
+        self.assertEqual( list(self.solver.inTemperature(grid)), [200., 400., 100.])
+
+        del step[r1]
         self.assertEqual( list(self.solver.inTemperature(grid)), [200., 400., 300.])
 
-        self.assertEqual( step[r2], 400. )
+        self.assertEqual( step.values(), [400., 200.] )

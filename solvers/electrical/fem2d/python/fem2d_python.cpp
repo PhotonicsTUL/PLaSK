@@ -18,6 +18,7 @@ BOOST_PYTHON_MODULE(fem2d)
         METHOD(runCalc, "Run electrical calculations");
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver
         PROVIDER(outHeatDensity, "HeatDensities"); // provider in the solver
+        BOUNDARY_CONDITIONS(constV, mVconst, "Boundary conditions of the first kind (constant potential)");
 
 /*
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);

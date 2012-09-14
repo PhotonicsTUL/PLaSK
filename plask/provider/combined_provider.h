@@ -18,35 +18,35 @@ namespace plask {
  * Subclass should define operator() which should combine values from providers set (which is available by begin() and end() iterators).
  */
 template <typename BaseProviderClass>
-class CombineProviderBase: public BaseProviderClass, public BaseProviderClass::Listener {
-       
+class CombinedProviderBase: public BaseProviderClass, public BaseProviderClass::Listener {
+
     /// Set of private providers which should be delete by this.
     std::set<BaseProviderClass*> private_providers;
-    
+
 protected:
     /// Set of providers which values are combinating.
     std::set<BaseProviderClass*> providers;
-    
+
 public:
-    
+
     /// Type of iterator over BaseProviderClass
     typedef boost::indirect_iterator<typename std::set<BaseProviderClass*>::iterator> iterator;
-    
+
     /// Type of const iterator over BaseProviderClass
     typedef boost::indirect_iterator<typename std::set<BaseProviderClass*>::const_iterator> const_iterator;
-    
+
     /// @return begin iterator over BaseProviderClass
     iterator begin() { return providers.begin(); }
-    
+
     /// @return past-the-end iterator over BaseProviderClass
     iterator end() { return providers.end(); }
-    
+
     /// @return const begin iterator over BaseProviderClass
     const_iterator begin() const { return providers.begin(); }
-    
+
     /// @return const past-the-end iterator over BaseProviderClass
     const_iterator end() const { return providers.end(); }
-    
+
     /// BaseProviderClass::Listener implementation, call fireChanged()
     virtual void onChange() { this->fireChanged(); }
 
@@ -59,9 +59,9 @@ public:
         providers.erase(from_where);
         this->fireChanged();
     }
-    
+
     /**
-     * Append new provider to set of holded providers.
+     * Append new provider to set of held providers.
      * @param provider provider to append, can't be @c nullptr
      * @param providerIsPrivate @c true only if @p provider is private for this and will be deleted by destructor of this
      */
@@ -71,62 +71,62 @@ public:
         to_add.add(*this);
         this->fireChanged();
     }
-    
+
     /**
-     * Append new provider to set of holded providers.
+     * Append new provider to set of held providers.
      * @param provider provider to append, can't be @c nullptr,  will be deleted by destructor of this
      */
     void connect(std::unique_ptr<BaseProviderClass>&& to_add) {
         connect(to_add->release(), true);
     }
-    
+
     /**
-     * Remove provider from set of holded providers.
+     * Remove provider from set of held providers.
      * @param to_remove provider to remove, will be delete if it is private
      */
     void disconnect(BaseProviderClass* to_remove) {
         to_remove.remove(to_remove);    //onDisconnect call-back do the rest
     }
-    
+
     /// Delete all private providers.
-    ~CombineProviderBase() {
+    ~CombinedProviderBase() {
         for (auto p: providers) disconnect(p);
     }
-    
+
     /**
      * Check if providers set of this is empty.
      * @return @c true if this not includes any provider
      */
     bool empty() const { return providers.empty(); }
-    
+
     /**
      * Get number of providers in set.
      * @return number of providers
      */
     std::size_t size() const { return providers.size(); }
-    
+
     /**
      * Throw exception if providers set of this is empty.
      */
     void ensureHasProviders() {
         if (providers.empty()) throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", BaseProviderClass::NAME);
     }
-    
+
 };
 
 /**
  * Template of base class of sum provider for providers with interpolation.
  */
 template <typename BaseClass, typename ValueT, typename SpaceT, typename... ExtraArgs>
-struct SumOnMeshProviderWithInterpolation: public CombineProviderBase<BaseClass> {
-    
+struct SumOnMeshProviderWithInterpolation: public CombinedProviderBase<BaseClass> {
+
     virtual DataVector<ValueT> operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         this->ensureHasProviders();
         auto p = this->begin();
         DataVector<ValueT> result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         ++p;
-        if (p == this->end()) return result;    //has one element
-        result = result.claim();    //ensure has own memory
+        if (p == this->end()) return result;    // has one element
+        result = result.claim();    // ensure has own memory
         do {
             result += (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
             ++p;

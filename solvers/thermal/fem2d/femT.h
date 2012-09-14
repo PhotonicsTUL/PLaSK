@@ -113,9 +113,6 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     /// Matrix solver
     int solveMatrix(double **ipA, long iN, long iBandWidth);
 
-    /// Boundary conditions
-    BoundaryConditions<RectilinearMesh2D,double> mTConst;
-
     /// Initialize the solver
     virtual void onInitialize();
 
@@ -129,7 +126,10 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
         if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
         return interpolate(*mesh, my_data, dst_mesh, method); // interpolate your data to the requested mesh
     }*/
-    public:
+  public:
+
+    /// Boundary conditions
+    BoundaryConditions<RectilinearMesh2D,double> mTConst;
 
     ProviderFor<Temperature, Geometry2DCartesian>::Delegate outTemperature;
 

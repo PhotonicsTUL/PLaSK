@@ -116,9 +116,6 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     /// Matrix solver
     int solveMatrix(double **ipA, long iN, long iBandWidth);
 
-    /// Boundary conditions
-    BoundaryConditions<RectilinearMesh2D,double> mVconst;
-
     /// Initialize the solver
     virtual void onInitialize();
 
@@ -132,7 +129,10 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
         if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
         return interpolate(*mesh, my_data, dst_mesh, method); // interpolate your data to the requested mesh
     }*/
-    public:
+  public:
+
+    /// Boundary conditions
+    BoundaryConditions<RectilinearMesh2D,double> mVconst;
 
     ProviderFor<Potential, Geometry2DCartesian>::Delegate outPotential;
 
