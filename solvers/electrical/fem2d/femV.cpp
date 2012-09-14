@@ -6,7 +6,11 @@ FiniteElementMethodElectricalCartesian2DSolver::FiniteElementMethodElectricalCar
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
     outPotential(this, &FiniteElementMethodElectricalCartesian2DSolver::getPotentials),
     outCurrentDensity(this, &FiniteElementMethodElectricalCartesian2DSolver::getCurrentDensities),
-    outHeatDensity(this, &FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities)
+    outHeatDensity(this, &FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities),
+    mLoopLim(5),
+    mVCorrLim(0.01),
+    mVBigCorr(1e5),
+    mBigNum(1e15)
 {
     mNodes.clear();
     mElements.clear();
@@ -15,7 +19,7 @@ FiniteElementMethodElectricalCartesian2DSolver::FiniteElementMethodElectricalCar
     mTemperatures.reset(0.);
     mHeatDensities.reset(0.);
 
-    inTemperature = 0.;
+    inTemperature = 300.;
 }
 
 FiniteElementMethodElectricalCartesian2DSolver::~FiniteElementMethodElectricalCartesian2DSolver()
@@ -25,7 +29,8 @@ FiniteElementMethodElectricalCartesian2DSolver::~FiniteElementMethodElectricalCa
     delete [] mpA;
 }
 
-void FiniteElementMethodElectricalCartesian2DSolver::onInitialize() { // In this function check if geometry and mesh are set
+void FiniteElementMethodElectricalCartesian2DSolver::onInitialize() // In this function check if geometry and mesh are set
+{
     if (!geometry) throw NoGeometryException(getId());
     if (!mesh) throw NoMeshException(getId());
     setNodes();
@@ -101,8 +106,16 @@ void FiniteElementMethodElectricalCartesian2DSolver::setElements()
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::setTemperatures()
-{
-    mTemperatures = inTemperature(mesh->getMidpointsMesh());
+{  
+    auto iMesh = mesh->getMidpointsMesh();
+    try
+    {
+        mTemperatures = inTemperature(iMesh);
+    }
+    catch (NoValue)
+    {
+        mTemperatures.reset(iMesh.size(), 300.);
+    }
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::setSolver()
@@ -509,18 +522,24 @@ int FiniteElementMethodElectricalCartesian2DSolver::solveMatrix(double **ipA, lo
     return 0;
 }
 
-DataVector<double> FiniteElementMethodElectricalCartesian2DSolver::getPotentials(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+DataVector<double> FiniteElementMethodElectricalCartesian2DSolver::getPotentials(const MeshD<2> &dst_mesh, InterpolationMethod method) const
+{
+    if (method == DEFAULT_INTERPOLATION)
+        method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mPotentials, dst_mesh, method);
 }
 
-DataVector<Vec<2> > FiniteElementMethodElectricalCartesian2DSolver::getCurrentDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+DataVector<Vec<2> > FiniteElementMethodElectricalCartesian2DSolver::getCurrentDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
+{
+    if (method == DEFAULT_INTERPOLATION)
+        method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mCurrentDensities, dst_mesh, method);
 }
 
-DataVector<double> FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+DataVector<double> FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
+{
+    if (method == DEFAULT_INTERPOLATION)
+        method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mHeatDensities, dst_mesh, method);
 }
 
