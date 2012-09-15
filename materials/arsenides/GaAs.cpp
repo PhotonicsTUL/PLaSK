@@ -14,15 +14,17 @@ MI_PROPERTY(GaAs, cond,
 			MIComment("no temperature dependence")
             )
 std::pair<double,double> GaAs::cond(double T) const {
-    return (std::make_pair(940.,940.));
+    return (std::make_pair(940., 940.));
 }
 
 MI_PROPERTY(GaAs, condT,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
-            MIComment("no temperature dependence")
+            MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"),
+            MIArgumentRange(MaterialInfo::T, 300, 900)
             )
 std::pair<double,double> GaAs::condT(double T, double t) const {
-    return(std::make_pair(45.,45.));
+    double tCondT = 45*pow((T/300.),-1.25);
+    return(std::make_pair(tCondT, tCondT));
  }
 
 MI_PROPERTY(GaAs, absp,
@@ -66,7 +68,7 @@ MI_PROPERTY(GaAs, Me,
             MIComment("no temperature dependence")
             )
 std::pair<double,double> GaAs::Me(double T, char point) const {
-    std::pair<double,double> tMe(0.,0.);
+    std::pair<double,double> tMe(0., 0.);
     if (point == 'G') {
         tMe.first = 0.067;
         tMe.second = 0.067;
@@ -75,17 +77,31 @@ std::pair<double,double> GaAs::Me(double T, char point) const {
 }
 
 MI_PROPERTY(GaAs, Mhh,
-            MISource("")
+            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
+            MIComment("only for Gamma point"),
+            MIComment("no temperature dependence")
             )
 std::pair<double,double> GaAs::Mhh(double T, char point) const {
-    return (std::make_pair(0.,0.));
+    std::pair<double,double> tMhh(0., 0.);
+    if (point == 'G') {
+        tMhh.first = 0.33;
+        tMhh.second = 0.78;
+    }
+    return (tMhh);
 }
 
 MI_PROPERTY(GaAs, Mlh,
-            MISource("")
+            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
+            MIComment("only for Gamma point"),
+            MIComment("no temperature dependence")
             )
 std::pair<double,double> GaAs::Mlh(double T, char point) const {
-    return (std::make_pair(0.,0.));
+    std::pair<double,double> tMlh(0., 0.);
+    if (point == 'G') {
+        tMlh.first = 0.09;
+        tMlh.second = 0.077;
+    }
+    return (tMlh);
 }
 
 static MaterialsDB::Register<GaAs> materialDB_register_GaAs;

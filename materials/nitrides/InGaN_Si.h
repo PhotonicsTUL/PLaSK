@@ -2,7 +2,7 @@
 #define PLASK__InGaN_Si_H
 
 /** @file
-This file includes undoped InGaN_Si
+This file includes Si-doped InGaN
 */
 
 #include <plask/material/material.h>
@@ -13,7 +13,7 @@ This file includes undoped InGaN_Si
 namespace plask {
 
 /**
- * Represent undoped InGaN_Si, its physical properties.
+ * Represent Si-doped InGaN, its physical properties.
  */
 struct InGaN_Si: public InGaN {
 

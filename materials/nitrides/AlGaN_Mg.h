@@ -2,7 +2,7 @@
 #define PLASK__AlGaN_Mg_H
 
 /** @file
-This file includes undoped AlGaN_Mg
+This file includes Mg-doped AlGaN
 */
 
 #include <plask/material/material.h>
@@ -13,7 +13,7 @@ This file includes undoped AlGaN_Mg
 namespace plask {
 
 /**
- * Represent undoped AlGaN_Mg, its physical properties.
+ * Represent Mg-doped AlGaN, its physical properties.
  */
 struct AlGaN_Mg: public AlGaN {
 

@@ -2,7 +2,7 @@
 #define PLASK__InGaN_Mg_H
 
 /** @file
-This file includes undoped InGaN_Mg
+This file includes Mg-doped InGaN
 */
 
 #include <plask/material/material.h>
@@ -13,7 +13,7 @@ This file includes undoped InGaN_Mg
 namespace plask {
 
 /**
- * Represent undoped InGaN_Mg, its physical properties.
+ * Represent Mg-doped InGaN, its physical properties.
  */
 struct InGaN_Mg: public InGaN {
 
