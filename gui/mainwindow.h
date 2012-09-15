@@ -50,7 +50,7 @@
 
 
 #include "document.h"
-#include "view/elementview.h"
+#include "view/objectview.h"
 #include "creatorslist.h"
 
 QT_BEGIN_NAMESPACE

@@ -1,9 +1,8 @@
-#include "elementview.h"
-
 #include <math.h>
 #include <QtGui>
 
-#include "elementview.h"
+#include "objectview.h"
+
 
 #include "../modelext/converter.h"
 
