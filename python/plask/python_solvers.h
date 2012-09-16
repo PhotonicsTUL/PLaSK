@@ -68,22 +68,13 @@ namespace detail {
     template <typename Class, typename ReceiverT>
     struct ReceiverSetter
     {
-        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
+        typedef typename ReceiverT::PropertyTag PropertyT;
+        typedef detail::RegisterReceiverImpl<ReceiverT, PropertyT::propertyType, typename PropertyT::ExtraParams> RegisterT;
 
         ReceiverSetter(ReceiverT Class::* field) : field(field) {}
 
         void operator()(Class& self, py::object obj) {
-            if (obj == py::object()) {
-                (self.*field).setProvider(nullptr);
-                return;
-            }
-            try {
-                ValueT value = py::extract<ValueT>(obj);
-                self.*field = value;
-            } catch (py::error_already_set) {
-                PyErr_Clear();
-                detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams>::setValue(self.*field, obj);
-            }
+            RegisterT::assign(self.*field, obj);
         }
 
       private:

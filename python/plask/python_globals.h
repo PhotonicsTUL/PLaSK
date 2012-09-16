@@ -111,6 +111,16 @@ inline std::string str(py::object obj) {
 
 
 // ----------------------------------------------------------------------------------------------------------------------
+// Typename
+template <typename T>
+constexpr std::string type_name() {
+    const std::string s = py::type_id<T>().name();
+    size_t n = s.find_last_of(':');
+    return (n != s.npos)? s.substr(n+1) : s;
+}
+
+
+// ----------------------------------------------------------------------------------------------------------------------
 // Get numpy typenums for some types
 namespace detail {
     template <typename T> static inline constexpr int typenum();

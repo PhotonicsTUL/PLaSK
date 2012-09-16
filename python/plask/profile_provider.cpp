@@ -2,7 +2,7 @@
 
 namespace plask { namespace python {
 
-PythonStepProfile::Place::Place(py::object src) {
+PythonProfile::Place::Place(py::object src) {
     GeometryObject* obj;
     PathHints hnts;
     try {
@@ -22,7 +22,7 @@ PythonStepProfile::Place::Place(py::object src) {
 }
 
 
-py::object PythonStepProfile::__getitem__(py::object key) {
+py::object PythonProfile::__getitem__(py::object key) {
     Place place(key);
     auto found = std::find(places.begin(), places.end(), place);
     if (found != places.end()) return values[found-places.begin()];
@@ -30,7 +30,7 @@ py::object PythonStepProfile::__getitem__(py::object key) {
 }
 
 
-void PythonStepProfile::__setitem__(py::object key, py::object value) {
+void PythonProfile::__setitem__(py::object key, py::object value) {
     Place place(key);
     auto found = std::find(places.begin(), places.end(), place);
     if (found != places.end()) values[found-places.begin()] = value;
@@ -42,35 +42,35 @@ void PythonStepProfile::__setitem__(py::object key, py::object value) {
 }
 
 
-void PythonStepProfile::__delitem__(py::object key) {
+void PythonProfile::__delitem__(py::object key) {
     auto found = std::find(places.begin(), places.end(), Place(key));
     if (found != places.end()) { places.erase(found); values.erase(values.begin() + (found-places.begin())); fireChanged(); }
 }
 
 
-void PythonStepProfile::clear() {
+void PythonProfile::clear() {
     places.clear();
     values.clear();
     fireChanged();
 }
 
 
-py::list PythonStepProfile::keys() const {
+py::list PythonProfile::keys() const {
     py::list result;
     for (auto place: places) result.insert(0, place);
     return result;
 }
 
 
-py::list PythonStepProfile::pyvalues() const {
+py::list PythonProfile::pyvalues() const {
     py::list result;
     for (auto value: values) result.insert(0, value);
     return result;
 }
 
-struct PythonStepProfile_Place_to_python
+struct PythonProfile_Place_to_python
 {
-    static PyObject* convert(PythonStepProfile::Place const& item) {
+    static PyObject* convert(PythonProfile::Place const& item) {
         return py::incref(py::make_tuple(item.object.lock(), item.hints).ptr());
     }
 };
@@ -79,20 +79,20 @@ struct PythonStepProfile_Place_to_python
 
 void register_step_profile()
 {
-    py::class_<PythonStepProfile, shared_ptr<PythonStepProfile>, boost::noncopyable>("StepProfileProvider",
+    py::class_<PythonProfile, shared_ptr<PythonProfile>, boost::noncopyable>("StepProfile",
         "General step profile provider\n\n"
-        "StepProfileProvider(geometry[, default_value])\n    Create step profile for specified geometry and optional default_value\n\n",
+        "StepProfile(geometry[, default_value])\n    Create step profile for specified geometry and optional default_value\n\n",
         py::init<const Geometry&, py::object>((py::arg("geometry"), py::arg("default_value")=py::object())))
-        .def("__getitem__", &PythonStepProfile::__getitem__)
-        .def("__setitem__", &PythonStepProfile::__setitem__)
-        .def("__delitem__", &PythonStepProfile::__delitem__)
-        .def("__len__", &PythonStepProfile::size)
-        .def("clear", &PythonStepProfile::clear, "Clear values for all places")
-        .def("keys", &PythonStepProfile::keys, "Show list of defined places")
-        .def("values", &PythonStepProfile::pyvalues, "Show list of defined values")
+        .def("__getitem__", &PythonProfile::__getitem__)
+        .def("__setitem__", &PythonProfile::__setitem__)
+        .def("__delitem__", &PythonProfile::__delitem__)
+        .def("__len__", &PythonProfile::size)
+        .def("clear", &PythonProfile::clear, "Clear values for all places")
+        .def("keys", &PythonProfile::keys, "Show list of defined places")
+        .def("values", &PythonProfile::pyvalues, "Show list of defined values")
         ;
 
-    py::to_python_converter<PythonStepProfile::Place, PythonStepProfile_Place_to_python>();
+    py::to_python_converter<PythonProfile::Place, PythonProfile_Place_to_python>();
 }
 
 }} // namespace plask::python
