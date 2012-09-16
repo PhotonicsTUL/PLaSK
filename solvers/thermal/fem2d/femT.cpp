@@ -46,6 +46,18 @@ void FiniteElementMethodThermalCartesian2DSolver::onInvalidate() // This will be
     // If this method has been called, before next computations, onInitialize will be called.
 }
 
+void FiniteElementMethodThermalCartesian2DSolver::setLoopLim(int iLoopLim) { mLoopLim = iLoopLim; }
+void FiniteElementMethodThermalCartesian2DSolver::setTCorrLim(double iTCorrLim) { mTCorrLim = iTCorrLim; }
+void FiniteElementMethodThermalCartesian2DSolver::setTBigCorr(double iTBigCorr) { mTBigCorr = iTBigCorr; }
+void FiniteElementMethodThermalCartesian2DSolver::setBigNum(double iBigNum) { mBigNum = iBigNum; }
+void FiniteElementMethodThermalCartesian2DSolver::setTAmb(double iTAmb) { mTAmb = iTAmb; }
+
+int FiniteElementMethodThermalCartesian2DSolver::getLoopLim() { return mLoopLim; }
+double FiniteElementMethodThermalCartesian2DSolver::getTCorrLim() { return mTCorrLim; }
+double FiniteElementMethodThermalCartesian2DSolver::getTBigCorr() { return mTBigCorr; }
+double FiniteElementMethodThermalCartesian2DSolver::getBigNum() { return mBigNum; }
+double FiniteElementMethodThermalCartesian2DSolver::getTAmb() { return mTAmb; }
+
 void FiniteElementMethodThermalCartesian2DSolver::setNodes()
 {
     writelog(LOG_INFO, "Setting nodes...");

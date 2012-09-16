@@ -19,7 +19,10 @@ BOOST_PYTHON_MODULE(fem2d)
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver
         PROVIDER(outHeatDensity, "HeatDensities"); // provider in the solver
         BOUNDARY_CONDITIONS(constV, mVconst, "Boundary conditions of the first kind (constant potential)");
-
+        RW_PROPERTY(getsetLoopLim, getLoopLim, setLoopLim, "Get and set max. number of loops"); // read-write property
+        RW_PROPERTY(getsetVCorrLim, getVCorrLim, setVCorrLim, "Get and set limit for the potential updates"); // read-write property
+        RW_PROPERTY(getsetVBigCorr, getVBigCorr, setVBigCorr, "Get and set initial value of the potential update"); // read-write property
+        RW_PROPERTY(getsetBigNum, getBigNum, setBigNum, "Get and set big value for the first boundary condition"); // read-write property
 /*
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
         RO_FIELD(field_name, "Short documentation"); // read-only field

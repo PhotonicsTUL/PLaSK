@@ -49,6 +49,16 @@ void FiniteElementMethodElectricalCartesian2DSolver::onInvalidate() // This will
     // If this method has been called, before next computations, onInitialize will be called.
 }
 
+void FiniteElementMethodElectricalCartesian2DSolver::setLoopLim(int iLoopLim) { mLoopLim = iLoopLim; }
+void FiniteElementMethodElectricalCartesian2DSolver::setVCorrLim(double iVCorrLim) { mVCorrLim = iVCorrLim; }
+void FiniteElementMethodElectricalCartesian2DSolver::setVBigCorr(double iVBigCorr) { mVBigCorr = iVBigCorr; }
+void FiniteElementMethodElectricalCartesian2DSolver::setBigNum(double iBigNum) { mBigNum = iBigNum; }
+
+int FiniteElementMethodElectricalCartesian2DSolver::getLoopLim() { return mLoopLim; }
+double FiniteElementMethodElectricalCartesian2DSolver::getVCorrLim() { return mVCorrLim; }
+double FiniteElementMethodElectricalCartesian2DSolver::getVBigCorr() { return mVBigCorr; }
+double FiniteElementMethodElectricalCartesian2DSolver::getBigNum() { return mBigNum; }
+
 void FiniteElementMethodElectricalCartesian2DSolver::setNodes()
 {
     writelog(LOG_INFO, "Setting nodes...");

@@ -19,7 +19,11 @@ BOOST_PYTHON_MODULE(fem2d)
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
         BOUNDARY_CONDITIONS(constT, mTConst, "Boundary conditions of the first kind (constant temperature)");
-        solver.def_readwrite("Tamb", &FiniteElementMethodThermalCartesian2DSolver::mTAmb, "Ambient temperature");
+        RW_PROPERTY(getsetLoopLim, getLoopLim, setLoopLim, "Get and set max. number of loops"); // read-write property
+        RW_PROPERTY(getsetTCorrLim, getTCorrLim, setTCorrLim, "Get and set limit for the temperature updates"); // read-write property
+        RW_PROPERTY(getsetTBigCorr, getTBigCorr, setTBigCorr, "Get and set initial value of the temperature update"); // read-write property
+        RW_PROPERTY(getsetBigNum, getBigNum, setBigNum, "Get and set big value for the first boundary condition"); // read-write property
+        RW_PROPERTY(getsetTAmb, getTAmb, setTAmb, "Get and set ambient temperature"); // read-write property
 /*
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
         RO_FIELD(field_name, "Short documentation"); // read-only field

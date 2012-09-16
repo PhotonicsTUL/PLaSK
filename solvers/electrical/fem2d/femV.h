@@ -156,6 +156,16 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     /// Run potential calculations
     void runCalc();
 
+    void setLoopLim(int iLoopLim);
+    void setVCorrLim(double iVCorrLim);
+    void setVBigCorr(double iVBigCorr);
+    void setBigNum(double iBigNum);
+
+    int getLoopLim();
+    double getVCorrLim();
+    double getVBigCorr();
+    double getBigNum();
+
     virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
     // Parameters for rootdigger

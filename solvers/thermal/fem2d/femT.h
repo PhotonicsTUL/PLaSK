@@ -61,10 +61,13 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     int mAWidth, mAHeight;
     std::vector<double> mTCorr;
 
-  public:
-    double mTAmb;
+    // parameters for rootdigger
+    int mLoopLim; // number of loops - stops the calculations
+    double mTCorrLim; // small-enough correction - stops the calculations
+    double mTBigCorr; // big-enough correction for the temperature
+    double mBigNum; // for the first boundary condtion (see: set Matrix)
 
-  protected:
+    double mTAmb; // ambient temperature
 
     DataVector<double> mTemperatures; // out
     DataVector<Vec<2> > mHeatFluxes; // out
@@ -146,21 +149,22 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
 
     DataVector<Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
-    /**
-     * Find new temperature distribution.
-     *
-     **/
-
     /// Run temperature calculations
     void runCalc();
 
-    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
+    void setLoopLim(int iLoopLim);
+    void setTCorrLim(double iTCorrLim);
+    void setTBigCorr(double iTBigCorr);
+    void setBigNum(double iBigNum);
+    void setTAmb(double iTAmb);
 
-    // Parameters for rootdigger
-    int mLoopLim; // number of loops - stops the calculations
-    double mTCorrLim; // small-enough correction - stops the calculations
-    double mTBigCorr; // big-enough correction for the temperature
-    double mBigNum; // for the first boundary condtion (see: set Matrix)
+    int getLoopLim();
+    double getTCorrLim();
+    double getTBigCorr();
+    double getBigNum();
+    double getTAmb();
+
+    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodThermalCartesian2DSolver(const std::string& name="");
 
