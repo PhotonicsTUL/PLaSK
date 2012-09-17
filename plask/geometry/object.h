@@ -9,6 +9,7 @@ This file includes base class for geometries objects.
 #include <vector>
 #include <tuple>
 #include <functional>
+#include <set>
 
 #include "../material/material.h"
 #include "../material/air.h"
@@ -452,6 +453,9 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
 
     };
 
+    /// Classes/tags
+    std::set<std::string> classes;
+
     /// Changed signal, fired when object was changed.
     boost::signals2::signal<void(Event&)> changed;
 
@@ -592,6 +596,30 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     bool isSpaceChanger() const { return getType() == TYPE_SPACE_CHANGER; }
     bool isContainer() const { return getType() == TYPE_CONTAINER; }
     bool isGeometry() const { return getType() == TYPE_GEOMETRY; }
+
+    /**
+     * Check if this object has class (tag) of name @p class_name.
+     * @param class_name name of class to check
+     * @return @c true only if this has class @p class_name
+     */
+    bool hasClass(const std::string& class_name) const { return classes.find(class_name) != classes.end(); }
+
+    /**
+     * Append this to given class.
+     * @param class_name name of class where this should be added
+     */
+    void appendClass(const std::string& class_name) { classes.insert(class_name); }
+
+    /**
+     * Remove this from given class, do nothing if this is not in given class.
+     * @param class_name name of class from where this should be removed
+     */
+    void removeClass(const std::string& class_name) { classes.erase(class_name); }
+
+    /**
+     * Clear set of classes of this.
+     */
+    void clearClasses() { classes.clear(); }
 
     /**
      * Get number of dimentions.

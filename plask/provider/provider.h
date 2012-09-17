@@ -82,7 +82,7 @@ typedef plask::ReceiverFor<MyProperty> MyPropertyReceiver;
 // Usage example:
 MyPropertyProvider::WithValue provider;
 MyPropertyReceiver receiver;
-receiver << provider;       // connect
+receiver.setProvider(provider);       // connect
 provider = 2.0;             // set some value to provider
 assert(receiver() == 2.0);  // test the received value
 
@@ -97,7 +97,7 @@ struct ParamProperty: public plask::SingleValueProperty<double, int> {
 // Usage example:
 plask::ProviderFor<ParamProperty>::Delegate provider2([](int i) { return 2.0*i; });
 plask::ReceiverFor<ParamProperty> receiver2;
-receiver2 << provider2;      // connect
+receiver2.setProvider(provider2);      // connect
 assert(receiver2(3) == 6.0); // test the received value
 
 @endcode
@@ -134,7 +134,7 @@ typedef Receiver<ScalerProvider> ScalerReceiver;
 // Usage example:
 ScalerProvider sp(2.0);
 ScalerReceiver sr;
-sr << sp;               // connect
+sr.setProvider(sp);               // connect
 assert(sr(3.0) == 6.0); // test the received value
 @endcode
 */
@@ -302,21 +302,21 @@ struct Receiver: public Provider::Receiver {
         setProvider(provider->release(), true);
     }
 
-    /**
+    /*
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, can be @c nullptr to only disconnect from current provider.
      */
-    void operator<<(ProviderT *provider) {
+    /*void operator=(ProviderT *provider) {
         setProvider(provider);
-    }
+    }*/
 
-    /**
+    /*
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider
      */
-    void operator<<(ProviderT &provider) {
+    /*void operator=(ProviderT &provider) {
         setProvider(&provider);
-    }
+    }*/
 
     /**
      * Current provider getter.

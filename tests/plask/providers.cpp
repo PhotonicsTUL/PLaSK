@@ -60,10 +60,10 @@ BOOST_AUTO_TEST_CASE(single_value_delegate) {
     struct OneDouble: public plask::SingleValueProperty<double> {};
     plask::ProviderFor<OneDouble>::Delegate provider_member(&obj, &Obj::member);
     plask::ReceiverFor<OneDouble> receiver;
-    receiver << provider_member;
+    receiver.setProvider(provider_member);
     BOOST_CHECK_EQUAL(receiver(), 1.0);
     plask::ProviderFor<OneDouble>::Delegate provider_lambda([] { return 2.0; });
-    receiver << provider_lambda;
+    receiver.setProvider(provider_lambda);
     BOOST_CHECK_EQUAL(receiver(), 2.0);
 }
 

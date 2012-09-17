@@ -67,6 +67,7 @@ struct BrowserWithManagers {
 
     template <class ReceiverT>
     bool connectDouble(QtProperty* property, const ReceiverT &receiver, Qt::ConnectionType type = Qt::AutoConnection) {
+        doubl.setDecimals(property, 13);
         return connect<FunctorSlot::PropertyDouble>(property->propertyManager(), SIGNAL(valueChanged(QtProperty*, double)),
                        [=](QtProperty* p, double v) { if (p == property) receiver(v); }, type);
     }

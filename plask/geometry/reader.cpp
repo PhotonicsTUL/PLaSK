@@ -53,6 +53,8 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     if (name && !isAutoName(*name))
         BadId::throwIfBad("geometry object", *name, '-');
 
+    boost::optional<std::string> classes = source.getAttribute("class");    //read classes (tags)
+
     shared_ptr<GeometryObject> new_object;    //new object will be constructed
 
     if (nodeName == "copy") {   //TODO(?) move code of copy to virtual method of manager to allow custom support for it in GUI
@@ -105,6 +107,16 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                 throw NamesConflictException("Geometry object", *name);
         }
     }
+
+    if (classes) {  //if have some classes
+        new_object->clearClasses();  //in case of copied object: overwritte
+        auto classes_it = splitEscIterator(*classes, ',');
+        for (const std::string& c: classes_it) {
+            //BadId::throwIfBad("path", path, '-');
+            new_object->appendClass(c);
+        }
+    }
+
     return new_object;
 }
 
