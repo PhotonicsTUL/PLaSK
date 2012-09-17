@@ -369,6 +369,14 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
         bool operator()(const GeometryObject& el) const { return &el == &objectToBeEqual; }
     };
 
+    /// Predicate which check if given object belong to class with given name.
+    struct PredicateHasClass {
+        std::string class_name;
+        PredicateHasClass(const std::string& class_name): class_name(class_name) {};
+        PredicateHasClass(std::string&& class_name): class_name(std::move(class_name)) {};
+        bool operator()(const GeometryObject& obj) const { return obj.hasClass(class_name); }
+    };
+
     /**
      * Base class for callbacks used by save() method to get names of objects and paths.
      *
@@ -598,9 +606,9 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     bool isGeometry() const { return getType() == TYPE_GEOMETRY; }
 
     /**
-     * Check if this object has class (tag) of name @p class_name.
-     * @param class_name name of class to check
-     * @return @c true only if this has class @p class_name
+     * Check if this object belongs to class (has tag) with name @p class_name.
+     * @param class_name name of class/tag to check
+     * @return @c true only if this belongs to class @p class_name
      */
     bool hasClass(const std::string& class_name) const { return classes.find(class_name) != classes.end(); }
 
@@ -640,7 +648,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      * @param el object to search for
      * @return @c true only if @a el is in subtree with @c this in root
      */
-    //TODO predicate, path
+    //TODO ? predicate, path
     virtual bool isInSubtree(const GeometryObject& el) const;
 
     /**
@@ -649,7 +657,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      * @param pathHints (optional) path hints which limits search space
      * @return sub-tree with paths to given object (@p el is in all leafs), empty sub-tree if @p el is not in subtree with @c this in root
      */
-    //TODO predicate
+    //TODO ? predicate
     virtual Subtree getPathsTo(const GeometryObject& el, const PathHints* pathHints = 0) const = 0;
 
     /**
@@ -668,6 +676,28 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      */
     void getObjectsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints& path) const {
         getObjectsToVec(predicate, dest, &path);
+    }
+
+    /**
+     * Get vector of all objects from subtree with this in root, which fullfil predicate.
+     * @param predicate
+     * @param path path hints which limits search space
+     * @return vector of all objects from subtree with this in root, which fullfil predicate
+     */
+    std::vector< shared_ptr<const GeometryObject> > getObjects(const Predicate& predicate, const PathHints* path = 0) const {
+        std::vector< shared_ptr<const GeometryObject> > result;
+        getObjectsToVec(predicate, result, path);
+        return result;
+    }
+
+    /**
+     * Get vector of all objects from subtree with this in root, which fullfil predicate.
+     * @param predicate
+     * @param path path hints which limits search space
+     * @return vector of all objects from subtree with this in root, which fullfil predicate
+     */
+    std::vector< shared_ptr<const GeometryObject> > getObjects(const Predicate& predicate, const PathHints& path) const {
+        return getObjects(predicate, &path);
     }
 
     /**
@@ -1216,6 +1246,53 @@ struct GeometryObjectD: public GeometryObject {
         return getObjectPositions(object, &path);
     }
 
+    /**
+     * Get from subtree rooted by this elements which fullfil predicate and wrapped in objects which allow to calls to wrapped object using coordinates of this.
+     * @param predicate
+     * @param dest[out] place to append resulted objects
+     * @param path
+     */
+    virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints* path = 0) const = 0;
+
+    /**
+     * Get from subtree rooted by this elements which fullfil predicate and wrapped in objects which allow to calls to wrapped object using coordinates of this.
+     * @param predicate
+     * @param dest[out] place to append resulted objects
+     * @param path
+     */
+    void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints& path) const {
+        extractToVec(predicate, dest, &path);
+    }
+
+    /**
+     * Get from subtree rooted by this elements which fullfil predicate and wrapped in objects which allow to calls to wrapped object using coordinates of this.
+     * @param predicate
+     * @param path
+     * @return resulted objects
+     */
+    std::vector< shared_ptr<const GeometryObjectD<dimensions> > > extract(const Predicate& predicate, const PathHints* path = 0) const {
+        std::vector< shared_ptr<const GeometryObjectD<dimensions> > > dest;
+        extractToVec(predicate, dest, path);
+        return dest;
+    }
+
+    /**
+     * Get from subtree rooted by this elements which fullfil predicate and wrapped in objects which allow to calls to wrapped object using coordinates of this.
+     * @param predicate
+     * @param path
+     * @return resulted objects
+     */
+    std::vector< shared_ptr<const GeometryObjectD<dimensions> > > extract(const Predicate& predicate, const PathHints& path) const {
+        return extract(predicate, &path);
+    }
+
+    //std::vector< shared_ptr< Translation<dimensions> > > getInThisCoordinatesToVec(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints* path = 0) const;
+
+    //std::vector< shared_ptr< Translation<dimensions> > > getInThisCoordinates(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints* path = 0) const;
+
+
+
+    //TODO remove, change call to extract
     /**
      * Get all @p object instance wrapped with translation to be in coordinate space of this.
      *

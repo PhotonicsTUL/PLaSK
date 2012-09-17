@@ -283,6 +283,25 @@ void MultiStackContainer<dim>::getPositionsToVec(const GeometryObject::Predicate
 }
 
 template <int dim>
+void MultiStackContainer<dim>::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const {
+    if (predicate(*this)) {
+        dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
+        return;
+    }
+    std::size_t old_size = dest.size();
+    UpperClass::extractToVec(predicate, dest, path);
+    std::size_t new_size = dest.size();
+    const double stackHeight = stackHeights.back() - stackHeights.front();
+    for (unsigned r = 1; r < repeat_count; ++r) {
+        Vec<dim, double> v = Primitive<dim>::ZERO_VEC;
+        v.up() += stackHeight * r;
+        for (std::size_t i = old_size; i < new_size; ++i) {
+            dest.push_back(Translation<dim>::trySum(const_pointer_cast< GeometryObjectD<dim> >(dest[i]), v));
+        }
+    }
+}
+
+template <int dim>
 GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryObject& el, const PathHints* path) const {
     GeometryObject::Subtree result = UpperClass::getPathsTo(el, path);
     if (!result.empty()) {

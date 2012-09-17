@@ -5,6 +5,16 @@
 namespace plask {
 
 template <int dim>
+shared_ptr<Translation<dim>> Translation<dim>::trySum(shared_ptr<GeometryObjectD<dim> > child_or_translation, const Translation<dim>::DVec &translation) {
+    shared_ptr< Translation<dim> > asTranslation = dynamic_pointer_cast< Translation<dim> >(child_or_translation);
+    if (asTranslation) {    //translation are compressed, we must create new object becouse we can't modify child_or_translation (which can include pointer to objects in oryginal tree)
+        return make_shared< Translation<dim> >(asTranslation->getChild(), asTranslation->translation + translation);
+    } else {
+        return make_shared< Translation<dim> >(child_or_translation, translation);
+    }
+}
+
+template <int dim>
 void Translation<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
@@ -53,6 +63,17 @@ void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const Axi
     if (translation.lon() != 0.0) dest_xml_object.attr(axes.getNameForLon(), translation.lon());
     if (translation.tran() != 0.0) dest_xml_object.attr(axes.getNameForTran(), translation.tran());
     if (translation.up() != 0.0) dest_xml_object.attr(axes.getNameForUp(), translation.up());
+}
+
+template <int dim>
+void Translation<dim>::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const {
+    if (predicate(*this)) {
+        dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
+        return;
+    }
+    std::vector< shared_ptr<const GeometryObjectD<dim> > > child_res = getChild()->extract(predicate, path);
+    for (shared_ptr<const GeometryObjectD<dim>>& c: child_res)
+        dest.push_back(Translation<dim>::trySum(const_pointer_cast<GeometryObjectD<dim>>(c), this->translation));
 }
 
 template struct Translation<2>;

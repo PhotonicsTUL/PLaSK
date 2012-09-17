@@ -53,6 +53,8 @@ struct Extrusion: public GeometryObjectTransformSpace<3, 2>/*, public Geometry*/
 
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 
+    void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path = 0) const;
+
 private:
     /// @return true only if p can be inside this, false if for sure its not inside
     bool canBeInside(const DVec& p) const { return 0.0 <= p.lon() || p.lon() <= length; }

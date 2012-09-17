@@ -53,6 +53,16 @@ void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisName
     dest_xml_object.attr("length", length);
 }
 
+void Extrusion::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {
+    if (predicate(*this)) {
+        dest.push_back(static_pointer_cast< const GeometryObjectD<3> >(this->shared_from_this()));
+        return;
+    }
+    std::vector< shared_ptr<const GeometryObjectD<2> > > child_res = getChild()->extract(predicate, path);
+    for (shared_ptr<const GeometryObjectD<2>>& c: child_res)
+        dest.emplace_back(new Extrusion(const_pointer_cast<GeometryObjectD<2>>(c), this->length));
+}
+
 shared_ptr<GeometryObject> read_cartesianExtend(GeometryReader& reader) {
     double length = reader.source.requireAttribute<double>("length");
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);

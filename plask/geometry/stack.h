@@ -515,6 +515,8 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
 
+    void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path = 0) const;
+
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > result = UpperClass::getLeafsWithTranslations();
         std::size_t size = result.size();   //oryginal size
