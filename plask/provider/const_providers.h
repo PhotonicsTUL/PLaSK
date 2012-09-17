@@ -78,7 +78,7 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
             for (auto place = places.begin(); place != places.end(); ++place) {
                 auto object = place->object.lock();
                 if (!object) continue;
-                auto regions = geometry->getObjectInThisCoordinates(object, place->hints);
+                auto regions = geometry->extractObject(*object, place->hints);
                 for (const auto& region: regions) {
                     if (region && region->includes(point)) {
                         result[i] = values[place-places.begin()];

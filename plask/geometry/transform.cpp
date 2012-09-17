@@ -5,10 +5,10 @@
 namespace plask {
 
 template <int dim>
-shared_ptr<Translation<dim>> Translation<dim>::trySum(shared_ptr<GeometryObjectD<dim> > child_or_translation, const Translation<dim>::DVec &translation) {
-    shared_ptr< Translation<dim> > asTranslation = dynamic_pointer_cast< Translation<dim> >(child_or_translation);
-    if (asTranslation) {    //translation are compressed, we must create new object becouse we can't modify child_or_translation (which can include pointer to objects in oryginal tree)
-        return make_shared< Translation<dim> >(asTranslation->getChild(), asTranslation->translation + translation);
+shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjectD<dim> > child_or_translation, const Translation<dim>::DVec &translation) {
+    shared_ptr< Translation<dim> > as_translation = dynamic_pointer_cast< Translation<dim> >(child_or_translation);
+    if (as_translation) {    // translations are compressed, we must create new object because we can't modify child_or_translation (which can include pointer to objects in original tree)
+        return make_shared< Translation<dim> >(as_translation->getChild(), as_translation->translation + translation);
     } else {
         return make_shared< Translation<dim> >(child_or_translation, translation);
     }
@@ -73,7 +73,7 @@ void Translation<dim>::extractToVec(const GeometryObject::Predicate &predicate, 
     }
     std::vector< shared_ptr<const GeometryObjectD<dim> > > child_res = getChild()->extract(predicate, path);
     for (shared_ptr<const GeometryObjectD<dim>>& c: child_res)
-        dest.push_back(Translation<dim>::trySum(const_pointer_cast<GeometryObjectD<dim>>(c), this->translation));
+        dest.push_back(Translation<dim>::compress(const_pointer_cast<GeometryObjectD<dim>>(c), this->translation));
 }
 
 template struct Translation<2>;

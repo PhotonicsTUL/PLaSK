@@ -343,13 +343,22 @@ public:
         return getChild()->changedVersion(changer, translation);
     }
 
-    std::vector< shared_ptr<const GeometryObjectD<DIMS> > > extract(const Predicate& predicate, const PathHints* path = 0) const {
+    std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extract(const Predicate& predicate, const PathHints* path = 0) const {
         return getChild()->extract(predicate, path);
     }
 
-    std::vector< shared_ptr<const GeometryObjectD<DIMS> > > extract(const Predicate& predicate, const PathHints& path) const {
+    std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extract(const Predicate& predicate, const PathHints& path) const {
        return getChild()->extract(predicate, path);
     }
+
+    std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extractObject(const shared_ptr<const GeometryObjectD<DIMS>>& object, const PathHints* path = 0) const {
+        return getChild()->extractObject(*object, path);
+    }
+
+    std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extractObject(const shared_ptr<const GeometryObjectD<DIMS>>& object, const PathHints& path) const {
+        return getChild()->extractObject(*object, path);
+    }
+
 
     virtual void setPlanarBorders(const border::Strategy& border_to_set);
 

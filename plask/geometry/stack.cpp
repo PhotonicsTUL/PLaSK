@@ -296,7 +296,7 @@ void MultiStackContainer<dim>::extractToVec(const GeometryObject::Predicate &pre
         Vec<dim, double> v = Primitive<dim>::ZERO_VEC;
         v.up() += stackHeight * r;
         for (std::size_t i = old_size; i < new_size; ++i) {
-            dest.push_back(Translation<dim>::trySum(const_pointer_cast< GeometryObjectD<dim> >(dest[i]), v));
+            dest.push_back(Translation<dim>::compress(const_pointer_cast< GeometryObjectD<dim> >(dest[i]), v));
         }
     }
 }

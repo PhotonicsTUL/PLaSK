@@ -196,11 +196,11 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
  */
 template <int dim>
 struct Translation: public GeometryObjectTransform<dim> {
-    
+
     static constexpr const char* NAME = dim == 2 ?
                 ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    
+
     virtual std::string getTypeName() const { return NAME; }
 
     typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
@@ -237,7 +237,7 @@ struct Translation: public GeometryObjectTransform<dim> {
      * @param child_or_translation child, potential Translation
      * @return constructed translation
      */
-    static shared_ptr<Translation<dim>> trySum(shared_ptr< GeometryObjectD<dim> > child_or_translation = shared_ptr< GeometryObjectD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC);
+    static shared_ptr<Translation<dim>> compress(shared_ptr< GeometryObjectD<dim> > child_or_translation = shared_ptr< GeometryObjectD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC);
 
     virtual Box getBoundingBox() const {
         return getChild()->getBoundingBox().translated(translation);
@@ -301,7 +301,7 @@ struct Translation: public GeometryObjectTransform<dim> {
     shared_ptr<Translation<dim>> copyShallow(const DVec& new_translation) const {
         return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), new_translation));
     }
-    
+
    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
    void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const;

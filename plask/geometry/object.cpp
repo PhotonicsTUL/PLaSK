@@ -200,24 +200,6 @@ void GeometryObject::forEachRealObjectInSubtree(std::function<bool (const Geomet
 
 // --- GeometryObjectD ---
 
-template <int dimensions>
-std::vector< shared_ptr< Translation<dimensions> > >
-GeometryObjectD<dimensions>::getObjectInThisCoordinates(const shared_ptr<GeometryObjectD<dimensions>>& object, const PathHints* path) const {
-    auto trans_vec = getObjectPositions(*object, path);
-    std::vector< shared_ptr< Translation<dimensions> > > result;
-    result.reserve(trans_vec.size());
-    for (auto t: trans_vec)
-        if (std::isnan(t[0]))
-            result.emplace_back();
-        else
-            result.push_back(make_shared<Translation<dimensions>>(object, t));
-    return result;
-
-    /*if (trans_vec.size() != 1 || std::isnan(trans_vec[0][0]))
-        shared_ptr<Translation<dimensions>>();
-    return make_shared<Translation<dimensions>>(object, trans_vec[0]);*/
-}
-
 template struct GeometryObjectD<2>;
 template struct GeometryObjectD<3>;
 

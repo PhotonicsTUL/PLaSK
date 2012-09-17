@@ -1154,7 +1154,7 @@ struct GeometryObjectD: public GeometryObject {
      * @param path path fragments, optional
      */
     void getLeafsPositionsToVec(std::vector<DVec>& dest, const PathHints* path = 0) const {
-        getPositionsToVec(&PredicateIsLeaf, dest, path);
+        getPositionsToVec(&GeometryObject::PredicateIsLeaf, dest, path);
     }
 
     /**
@@ -1248,7 +1248,8 @@ struct GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Get from subtree rooted by this elements which fullfil predicate and wrapped in objects which allow to calls to wrapped object using coordinates of this.
+     * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
+     * are wrapped in transformations, which transform them to the root coordinates.
      * @param predicate
      * @param dest[out] place to append resulted objects
      * @param path
@@ -1256,7 +1257,8 @@ struct GeometryObjectD: public GeometryObject {
     virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints* path = 0) const = 0;
 
     /**
-     * Get from subtree rooted by this elements which fullfil predicate and wrapped in objects which allow to calls to wrapped object using coordinates of this.
+     * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
+     * are wrapped in transformations, which transform them to the root coordinates.
      * @param predicate
      * @param dest[out] place to append resulted objects
      * @param path
@@ -1266,7 +1268,8 @@ struct GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Get from subtree rooted by this elements which fullfil predicate and wrapped in objects which allow to calls to wrapped object using coordinates of this.
+     * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
+     * are wrapped in transformations, which transform them to the root coordinates.
      * @param predicate
      * @param path
      * @return resulted objects
@@ -1278,90 +1281,59 @@ struct GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Get from subtree rooted by this elements which fullfil predicate and wrapped in objects which allow to calls to wrapped object using coordinates of this.
+     * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
+     * are wrapped in transformations, which transform them to the root coordinates.
      * @param predicate
      * @param path
      * @return resulted objects
      */
-    std::vector< shared_ptr<const GeometryObjectD<dimensions> > > extract(const Predicate& predicate, const PathHints& path) const {
+    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extract(const Predicate& predicate, const PathHints& path) const {
         return extract(predicate, &path);
     }
 
+    /**
+     * Get instances of the object withing subtree with root in this. Returned intances
+     * are wrapped in transformations, which transform them to the root coordinates.
+     * @param object object to extract
+     * @param path
+     * @return resulted objects
+     */
+    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractObject(const GeometryObjectD<dimensions>& object, const PathHints* path = 0) {
+        return extract(PredicateIsA(object), path);
+    }
+
+    /**
+     * Get instances of the object withing subtree with root in this. Returned intances
+     * are wrapped in transformations, which transform them to the root coordinates.
+     * @param object object to extract
+     * @param path
+     * @return resulted objects
+     */
+    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractObject(const GeometryObjectD<dimensions>& object, const PathHints& path) {
+        return extractObject(object, &path);
+    }
+
+    /**
+     * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
+     * @param path
+     * @return resulted objects
+     */
+    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractLeafs(const PathHints* path = 0) {
+        return extract(&GeometryObject::PredicateIsLeaf, path);
+    }
+
+    /**
+     * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
+     * @param path
+     * @return resulted objects
+     */
+    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractLeafs(const PathHints& path) {
+        return extractLeafs(&path);
+    }
+
     //TODO
-    //shared_ptr<const TranslationContainer<dimensions>> extractInContainer(const Predicate& predicate, const PathHints* path = 0) const;
-    //shared_ptr<const TranslationContainer<dimensions>> extractInContainer(const Predicate& predicate, const PathHints& path) const;
-
-
-
-    //TODO remove, change call to extract
-    /**
-     * Get all @p object instance wrapped with translation to be in coordinate space of this.
-     *
-     * @param object object which should be in subtree of this
-     * @param path path fragments
-     * @return for each instance: @p object wrapped with translation or shared_ptr< Translation<dimensions> >() if translation is not well-defined
-     */
-    std::vector< shared_ptr< Translation<dimensions> > > getObjectInThisCoordinates(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints* path = 0) const;
-
-    /**
-     * Get all @p object instance wrapped with translation to be in coordinate space of this.
-     *
-     * @param object object which should be in subtree of this
-     * @param path path fragments
-     * @return for each instance: @p object wrapped with translation or shared_ptr< Translation<dimensions> >() if translation is not well-defined
-     */
-    std::vector< shared_ptr< Translation<dimensions> > > getObjectInThisCoordinates(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints& path) const {
-        return getObjectInThisCoordinates(object, &path);
-    }
-
-    /**
-     * Get @p object wrapped with translation to be in coordinate space of this.
-     *
-     * @param object object which should be in subtree of this
-     * @param path path fragments, optional
-     * @return @p object wrapped with translation or shared_ptr< Translation<dimensions> >() if translation is not well-defined
-     */
-    shared_ptr< Translation<dimensions> > getUniqueObjectInThisCoordinates(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints* path = 0) const {
-        auto ev = getObjectInThisCoordinates(object, path);
-        return ev.size() == 1 ? ev[0] : shared_ptr< Translation<dimensions> >();
-    }
-
-    /**
-     * Get @p object wrapped with translation to be in coordinate space of this.
-     *
-     * @param object object which should be in subtree of this
-     * @param path path fragments
-     * @return @p object wrapped with translation or shared_ptr< Translation<dimensions> >() if translation is not well-defined
-     */
-    shared_ptr< Translation<dimensions> > getUniqueObjectInThisCoordinates(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints& path) const {
-        return getUniqueObjectInThisCoordinates(object, &path);
-    }
-
-    /**
-     * Get @p object wrapped with translation to be in corrdinate space of this.
-     *
-     * Throw excpetion if object doesn't have well-defined, one translation.
-     * @param object object which should be in subtree of this
-     * @param path path fragments, optional
-     * @return @p object wrapped with translation
-     */
-    shared_ptr< Translation<dimensions> > requireUniqueObjectInThisCoordinates(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints* path = 0) const {
-        shared_ptr< Translation<dimensions> > result = getUniqueObjectInThisCoordinates(object, path);
-        if (!result) throw Exception("Translation to object required in local coordinates is not well defined");
-        return result;
-    }
-
-    /**
-     * Get @p object wrapped with translation to be in corrdinate space of this.
-     *
-     * Throw excpetion if object doesn't have well-defined, one translation.
-     * @param object object which should be in subtree of this
-     * @param path path fragments
-     * @return @p object wrapped with translation
-     */
-    shared_ptr< Translation<dimensions> > requireUniqueObjectInThisCoordinates(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints& path) const {
-        return requireUniqueObjectInThisCoordinates(object, &path);
-    }
+    //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints* path = 0) const;
+    //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints& path) const;
 
 };
 

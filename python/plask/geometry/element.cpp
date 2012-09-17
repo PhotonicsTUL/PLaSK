@@ -58,9 +58,9 @@ static py::list GeometryObjectD_getLeafsAsTranslations(const GeometryObjectD<dim
 
 template <int dim>
 static py::list GeometryObjectD_getObjectAsTranslations(const shared_ptr<GeometryObjectD<dim>>& self, const shared_ptr<GeometryObjectD<dim>>& object, const PathHints& path) {
-    auto translations = self->getObjectInThisCoordinates(object, path);
+    auto translations = self->extractObject(*object, path);
     py::list result;
-    for (auto i: translations) result.append(const_pointer_cast<Translation<dim>>(i));
+    for (auto i: translations) result.append(const_pointer_cast<GeometryObjectD<dim>>(i));
     return result;
 }
 
