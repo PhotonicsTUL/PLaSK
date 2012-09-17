@@ -12,7 +12,7 @@ namespace py = boost::python;
 
 #include <plask/exceptions.h>
 #include <plask/utils/system.h>
-#include "plask/python_manager.h"
+#include "plask/manager.h"
 
 //******************************************************************************
 #ifdef __cplusplus

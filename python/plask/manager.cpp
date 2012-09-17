@@ -3,7 +3,7 @@
 #include "python_globals.h"
 #include <numpy/arrayobject.h>
 
-#include "python_manager.h"
+#include "manager.h"
 
 #if PY_VERSION_HEX >= 0x03000000
 #   define NEXT "__next__"

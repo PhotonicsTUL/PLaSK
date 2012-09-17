@@ -3,13 +3,17 @@
 PLaSK (Photonic Laser Simultion Kit) is a comprehensive toolkit for simulation
 of various micro-scale photonic devices. It is particularly well suited for
 analysis of semiconductor lasers, as it allows to perform simulations of various
-physical phenomena with defferent models: thermal, electrial, quantum and optical.
+physical phenomena with different models: thermal, electrical, quantum and optical.
 PLaSK takes care of considering mutual interactions between these models and
-allows to easily perform complex self-consitent analysis of complete devices.
+allows to easily perform complex self-consistent analysis of complete devices.
 '''
 from .plaskcore import *
 
-from numpy import *
+try:
+    from plask.pylab import *
+except ImportError:
+    from numpy import *
+
 
 ## ## plask.material ## ##
 
@@ -77,10 +81,10 @@ def read(source, destination=None):
             import __main__
             destination = __main__.__dict__
     try:
-        manager = destination['manager']
+        manager = destination['__manager__']
     except KeyError:
         manager = Manager()
-        destination['manager'] = manager
+        destination['__manager__'] = manager
     manager.read(source)
     manager.export(destination)
     material.updateFactories() # There might have been some materials in the source file

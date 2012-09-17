@@ -471,16 +471,7 @@ class Solver {
      * It's does nothing if solver is already initialized and calls onInitialize() if it's not.
      * @return @c true only if solver was already initialized (before calling initCalculation)
      */
-    bool initCalculation() {
-        if (!initialized) {
-            writelog(LOG_INFO, "Initializing solver");
-            onInitialize();
-            initialized = true;
-            return false;
-        } else {
-            return true;
-        }
-    }
+    bool initCalculation();
 
   public:
 
