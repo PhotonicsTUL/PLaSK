@@ -27,11 +27,15 @@ void DynamicLibrary::open(const std::string &filename) {
     //MultiByteToWideChar(CP_UTF8, 0, filename.data(), filename.size(), output_buffer.get(), length);
     //handler = LoadLibraryW(output_buffer->get());
     handler = LoadLibraryA(filename.c_str());
+    if (!handler) {
+        throw plask::Exception("Could not open dynamic library from file \"%1%\".", filename);
+    }
 #else
     handler = dlopen(filename.c_str(), RTLD_NOW | RTLD_NODELETE);   //TODO remove RTLD_NODELETE
+    if (!handler) {
+        throw plask::Exception("Could not open dynamic library from %1%", dlerror());
+    }
 #endif
-    if (!handler)
-        throw plask::Exception("Could not open dynamic library from file \"%1%\".", filename);
 }
 
 void DynamicLibrary::close() {

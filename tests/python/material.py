@@ -8,7 +8,6 @@ import sys
 import plask.material
 import plasktest as ptest
 
-
 class Material(unittest.TestCase):
 
     @plask.material.complex
@@ -61,7 +60,6 @@ class Material(unittest.TestCase):
         for k in correct:
             self.assertAlmostEqual( result[k], correct[k] )
 
-
     def testCustomMaterial(self):
         '''Test creation of custom materials'''
 
@@ -78,7 +76,7 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.materialVBO("Al(0.2)GaAs", plask.materialdb, 1.0), 2.0 )
 
         print(plask.materialdb.all)
-        with self.assertRaises(ValueError): plask.materialdb.get("Al(0.2)GaAs:Si=1e14")
+        with self.assertRaises(ValueError): plask.materialdb.get("Al(0.2)GaAs:Np=1e14")
 
         print(plask.materialdb.all)
         m = plask.materialdb.get("Al(0.2)GaAs:Dp=3.0")

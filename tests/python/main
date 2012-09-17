@@ -1,4 +1,47 @@
-import sys, unittest
+import sys, unittest, traceback
+
+class PlaskTestResult(unittest.TextTestResult):
+    '''Format test failures/exceptions if IDE-friendly form'''
+
+    STDOUT_LINE = '\nStdout:\n%s'
+    STDERR_LINE = '\nStderr:\n%s'
+
+    def _exc_info_to_string(self, err, test):
+        """Converts a sys.exc_info()-style tuple of values into a string."""
+        exctype, value, tb = err
+        # Skip test runner traceback levels
+        while tb and self._is_relevant_tb_level(tb):
+            tb = tb.tb_next
+
+        if exctype is test.failureException:
+            # Skip assert*() traceback levels
+            length = self._count_relevant_tb_levels(tb)
+            tb_lines = traceback.extract_tb(tb, length)
+        else:
+            tb_lines = traceback.extract_tb(tb)
+            #msgLines = traceback.format_exception(exctype, value, tb)
+
+        msgLines = []
+        for filename, lineno, function, text in tb_lines[:-1]:
+            msgLines.append("In function %s: %s(%d)\n" % (function, filename, lineno))
+        filename, lineno, function, text = tb_lines[-1]
+        msgLines.append("In function %s: %s(%d): %s: %s\n" % (function, filename, lineno, exctype.__name__, value))
+
+        if self.buffer:
+            output = sys.stdout.getvalue()
+            error = sys.stderr.getvalue()
+            if output:
+                if not output.endswith('\n'):
+                    output += '\n'
+                msgLines.append(STDOUT_LINE % output)
+            if error:
+                if not error.endswith('\n'):
+                    error += '\n'
+                msgLines.append(STDERR_LINE % error)
+
+        return ''.join(msgLines)
+
+
 
 if __name__ == '__main__':
     exec(compile(open(sys.argv[1]).read(), sys.argv[1], 'exec'), globals(), locals())
@@ -14,7 +57,9 @@ if __name__ == '__main__':
 
     for m in tests:
             suite = unittest.TestLoader().loadTestsFromTestCase(m)
-            result = unittest.TextTestRunner().run(suite)
+            runner = unittest.TextTestRunner()
+            runner.resultclass = PlaskTestResult
+            result = runner.run(suite)
             errors += len(result.errors) + len(result.failures)
 
     sys.exit(errors)
