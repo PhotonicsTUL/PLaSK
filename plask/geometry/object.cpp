@@ -168,7 +168,7 @@ std::vector<shared_ptr<const GeometryObject>> GeometryObject::Subtree::getLastPa
         if (path_nodes->children.empty()) break;
         path_nodes = &(path_nodes->children.back());
     }
-return result;
+    return result;
 }
 
 void GeometryObject::ensureCanHasAsParent(const GeometryObject& potential_parent) const {

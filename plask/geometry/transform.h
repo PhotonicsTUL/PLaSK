@@ -257,8 +257,8 @@ struct Translation: public GeometryObjectTransform<dim> {
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
-    virtual GeometryObject::Subtree getPathsTo(const DVec& point) const {
-        return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(point-translation));
+    virtual GeometryObject::Subtree getPathsTo(const DVec& point, bool all=false) const {
+        return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(point-translation, all));
     }
 
     /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryObject>, Box, DVec> >& dest, const PathHints* path = 0) const {

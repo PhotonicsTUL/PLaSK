@@ -31,15 +31,15 @@ template <> struct GeometryObjectD_getMaterial<3> {
     }
 };
 
-template <int dim> struct GeometryObjectD_getPathsTo {};
+template <int dim> struct GeometryObjectD_getPathsTo;
 template <> struct GeometryObjectD_getPathsTo<2> {
-    static inline GeometryObject::Subtree call(const GeometryObjectD<2>& self, double c0, double c1) {
-        return self.getPathsTo(Vec<2,double>(c0, c1));
+    static inline GeometryObject::Subtree call(const GeometryObjectD<2>& self, double c0, double c1, bool all) {
+        return self.getPathsTo(Vec<2,double>(c0, c1), all);
     }
 };
 template <> struct GeometryObjectD_getPathsTo<3> {
-    static inline GeometryObject::Subtree call(const GeometryObjectD<3>& self, double c0, double c1, double c2) {
-        return self.getPathsTo(Vec<3,double>(c0, c1, c2));
+    static inline GeometryObject::Subtree call(const GeometryObjectD<3>& self, double c0, double c1, double c2, bool all) {
+        return self.getPathsTo(Vec<3,double>(c0, c1, c2), all);
     }
 };
 
@@ -120,9 +120,9 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
         .def("getObjectAsTranslations", &GeometryObjectD_getObjectAsTranslations<dim>,
              (py::arg("object"), py::arg("path")=py::object()), "Return Translations holding specified object")
-        .def("getPathsTo", (GeometryObject::Subtree(GeometryObjectD<dim>::*)(const typename GeometryObjectD<dim>::DVec&)const) &GeometryObjectD<dim>::getPathsTo, py::arg("point"),
+        .def("getPathsTo", (GeometryObject::Subtree(GeometryObjectD<dim>::*)(const typename GeometryObjectD<dim>::DVec&,bool)const) &GeometryObjectD<dim>::getPathsTo, (py::arg("point"), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
-        .def("getPathsTo", &GeometryObjectD_getPathsTo<dim>::call, GeometryObjectD_vector_args<dim>::args,
+        .def("getPathsTo", &GeometryObjectD_getPathsTo<dim>::call, (GeometryObjectD_vector_args<dim>::args, py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
     ;
 }

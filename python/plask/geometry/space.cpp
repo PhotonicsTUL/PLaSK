@@ -21,13 +21,13 @@ template <> struct Space_getMaterial<Geometry3D> {
 };
 
 template <typename S> struct Space_getPathsTo {
-    static inline GeometryObject::Subtree call(const S& self, double c0, double c1) {
-        return self.getPathsTo(Vec<2,double>(c0, c1));
+    static inline GeometryObject::Subtree call(const S& self, double c0, double c1, bool all) {
+        return self.getPathsTo(Vec<2,double>(c0, c1), all);
     }
 };
 template <> struct Space_getPathsTo<Geometry3D> {
-    static inline GeometryObject::Subtree call(const Geometry3D& self, double c0, double c1, double c2) {
-        return self.getPathsTo(Vec<3,double>(c0, c1, c2));
+    static inline GeometryObject::Subtree call(const Geometry3D& self, double c0, double c1, double c2, bool all) {
+        return self.getPathsTo(Vec<3,double>(c0, c1, c2), all);
     }
 };
 
@@ -311,9 +311,9 @@ void register_calculation_spaces() {
              (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
         .def("getObjectBBoxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCartesian::getObjectBoundingBoxes,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
-        .def("getPathsTo", (GeometryObject::Subtree(Geometry2DCartesian::*)(const Vec<2>&)const) &Geometry2DCartesian::getPathsTo, py::arg("point"),
+        .def("getPathsTo", (GeometryObject::Subtree(Geometry2DCartesian::*)(const Vec<2>&,bool)const) &Geometry2DCartesian::getPathsTo, (py::arg("point"), py::arg("all")=false),
              "Return subtree containg paths to all leafs covering specified point")
-        .def("getPathsTo", &Space_getMaterial<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1")))
+        .def("getPathsTo", &Space_getMaterial<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -344,9 +344,9 @@ void register_calculation_spaces() {
              (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
         .def("getObjectBBoxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectBoundingBoxes,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
-        .def("getPathsTo", (GeometryObject::Subtree(Geometry2DCylindrical::*)(const Vec<2>&)const) &Geometry2DCylindrical::getPathsTo, py::arg("point"),
+        .def("getPathsTo", (GeometryObject::Subtree(Geometry2DCylindrical::*)(const Vec<2>&,bool)const) &Geometry2DCylindrical::getPathsTo, (py::arg("point"), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
-        .def("getPathsTo", &Space_getMaterial<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1")))
+        .def("getPathsTo", &Space_getMaterial<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;

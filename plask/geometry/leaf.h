@@ -81,7 +81,7 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
         return GeometryObject::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
     }
 
-    virtual GeometryObject::Subtree getPathsTo(const DVec& point) const {
+    virtual GeometryObject::Subtree getPathsTo(const DVec& point, bool) const {
         return GeometryObject::Subtree( this->includes(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
     }
 
@@ -119,11 +119,11 @@ struct Block: public GeometryObjectLeaf<dim> {
 
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
     typedef typename GeometryObjectLeaf<dim>::Box Box;
-    
+
     static constexpr const char* NAME = dim == 2 ?
                 ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    
+
     virtual std::string getTypeName() const { return NAME; }
 
     /**
@@ -168,7 +168,7 @@ struct Block: public GeometryObjectLeaf<dim> {
     virtual bool intersects(const Box& area) const {
         return this->getBoundingBox().intersects(area);
     }
-    
+
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
 };

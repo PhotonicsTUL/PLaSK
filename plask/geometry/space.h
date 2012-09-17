@@ -335,8 +335,8 @@ public:
         return getChild()->getObjectBoundingBoxes(*object, path);
     }
 
-    GeometryObject::Subtree getPathsTo(const CoordsType& point) const {
-        return getChild()->getPathsTo(point);
+    GeometryObject::Subtree getPathsTo(const CoordsType& point, bool all=false) const {
+        return getChild()->getPathsTo(point, all);
     }
 
     virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const {

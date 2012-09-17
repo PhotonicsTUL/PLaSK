@@ -33,8 +33,8 @@ shared_ptr<GeometryObjectTransform< 3, GeometryObjectD<2> > > Revolution::shallo
     return make_shared<Revolution>(this->getChild());
 }
 
-GeometryObject::Subtree Revolution::getPathsTo(const DVec& point) const {
-    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point)));
+GeometryObject::Subtree Revolution::getPathsTo(const DVec& point, bool all) const {
+    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point), all));
 }
 
 void Revolution::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {

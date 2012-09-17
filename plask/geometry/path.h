@@ -225,9 +225,9 @@ struct Path {
     Path(const GeometryObject::Subtree& paths)
         : objects(paths.toLinearPath()) {}
 
-    //This are the same as default constructors, so can be skiped:
-    //Path(const Path& path): objects(path.objects) {}
-    //Path(Path&& path): objects(path.objects) {}
+    // This are the same as default constructors, so can be skiped:
+    // Path(const Path& path): objects(path.objects) {}
+    // Path(Path&& path): objects(path.objects) {}
 
     Path(const PathHints::Hint& hint) { append(hint); }
 

@@ -173,7 +173,7 @@ public:
 
     virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const;
 
-    virtual GeometryObject::Subtree getPathsTo(const DVec& point) const;
+    virtual GeometryObject::Subtree getPathsTo(const DVec& point, bool all=false) const;
 
     virtual std::size_t getChildrenCount() const { return children.size(); }
 

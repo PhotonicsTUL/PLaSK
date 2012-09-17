@@ -305,7 +305,7 @@ template <int dim>
 GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryObject& el, const PathHints* path) const {
     GeometryObject::Subtree result = UpperClass::getPathsTo(el, path);
     if (!result.empty()) {
-        const std::size_t size = result.children.size();   //oryginal size
+        const std::size_t size = result.children.size();   // original size
         const double stackHeight = stackHeights.back() - stackHeights.front();
         for (unsigned r = 1; r < repeat_count; ++r)
             for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
