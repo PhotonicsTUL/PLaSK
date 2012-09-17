@@ -1,0 +1,40 @@
+#ifndef PLASK__AlGaAs_Si_H
+#define PLASK__AlGaAs_Si_H
+
+/** @file
+This file includes Si-doped AlGaAs
+*/
+
+#include <plask/material/material.h>
+#include "AlGaAs.h"
+#include "GaAs_Si.h"
+#include "AlAs_Si.h"
+
+namespace plask {
+
+/**
+ * Represent Si-doped AlGaAs, its physical properties.
+ */
+struct AlGaAs_Si: public AlGaAs {
+
+    static constexpr const char* NAME = "AlGaAs:Si";
+
+    AlGaAs_Si(const Material::Composition& Comp, DopingAmountType Type, double Val);
+    virtual std::string name() const;    
+    virtual std::string str() const;
+    virtual std::pair<double,double> mob(double T) const;
+    virtual double Nf(double T) const;
+    virtual double Dop() const;
+    virtual std::pair<double,double> cond(double T) const;
+
+private:
+    double ND,
+           Nf_RT;
+
+    GaAs_Si mGaAs_Si;
+    AlAs_Si mAlAs_Si;
+};
+
+} // namespace plask
+
+#endif	//PLASK__AlGaAs_Si_H
