@@ -34,6 +34,7 @@ struct PathHints;
 
 struct Geometry;
 template < int dimensions > struct GeometryObjectD;
+template < int dimensions > struct TranslationContainer;
 
 /**
  * Base class for all geometries.
@@ -1286,9 +1287,9 @@ struct GeometryObjectD: public GeometryObject {
         return extract(predicate, &path);
     }
 
-    //std::vector< shared_ptr< Translation<dimensions> > > getInThisCoordinatesToVec(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints* path = 0) const;
-
-    //std::vector< shared_ptr< Translation<dimensions> > > getInThisCoordinates(const shared_ptr< GeometryObjectD<dimensions> >& object, const PathHints* path = 0) const;
+    //TODO
+    //shared_ptr<const TranslationContainer<dimensions>> extractInContainer(const Predicate& predicate, const PathHints* path = 0) const;
+    //shared_ptr<const TranslationContainer<dimensions>> extractInContainer(const Predicate& predicate, const PathHints& path) const;
 
 
 
