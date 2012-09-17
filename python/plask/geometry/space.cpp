@@ -233,37 +233,37 @@ static BordersProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical
     return borders;
 }
 
-template <typename S>
-static shared_ptr<S> Space_getSubspace(py::tuple args, py::dict kwargs) {
-    const S* self = py::extract<S*>(args[0]);
-
-    py::object arg;
-    py::ssize_t n = py::len(args);
-    if (n >= 2) {
-        if (kwargs.has_key("object")) throw TypeError("got multiple values for keyword argument 'object'");
-        arg = args[1];
-    } else
-        arg = kwargs["object"];
-    shared_ptr<GeometryObjectD<S::DIMS>> object = py::extract<shared_ptr<GeometryObjectD<S::DIMS>>>(arg);
-
-    PathHints* path = nullptr;
-    if (n >= 3) {
-        if (kwargs.has_key("path")) throw TypeError("got multiple values for keyword argument 'path'");
-        path = py::extract<PathHints*>(args[2]);
-    } else if (kwargs.has_key("path"))
-        path = py::extract<PathHints*>(kwargs["path"]);
-
-    if (n >= 4) throw TypeError("getSubspace() takes 2 or 3 non-keyword arguments (%1%) given", n);
-
-    S* space = self->getSubspace(object, path, false);
-
-    std::set<std::string> parsed;
-    parsed.insert("object");
-    parsed.insert("path");
-    _Space_setBorders(*space, kwargs, parsed, "unexpected border name '%s'");
-
-    return shared_ptr<S>(space);
-}
+// template <typename S>
+// static shared_ptr<S> Space_getSubspace(py::tuple args, py::dict kwargs) {
+//     const S* self = py::extract<S*>(args[0]);
+//
+//     py::object arg;
+//     py::ssize_t n = py::len(args);
+//     if (n >= 2) {
+//         if (kwargs.has_key("object")) throw TypeError("got multiple values for keyword argument 'object'");
+//         arg = args[1];
+//     } else
+//         arg = kwargs["object"];
+//     shared_ptr<GeometryObjectD<S::DIMS>> object = py::extract<shared_ptr<GeometryObjectD<S::DIMS>>>(arg);
+//
+//     PathHints* path = nullptr;
+//     if (n >= 3) {
+//         if (kwargs.has_key("path")) throw TypeError("got multiple values for keyword argument 'path'");
+//         path = py::extract<PathHints*>(args[2]);
+//     } else if (kwargs.has_key("path"))
+//         path = py::extract<PathHints*>(kwargs["path"]);
+//
+//     if (n >= 4) throw TypeError("getSubspace() takes 2 or 3 non-keyword arguments (%1%) given", n);
+//
+//     S* space = self->getSubspace(object, path, false);
+//
+//     std::set<std::string> parsed;
+//     parsed.insert("object");
+//     parsed.insert("path");
+//     _Space_setBorders(*space, kwargs, parsed, "unexpected border name '%s'");
+//
+//     return shared_ptr<S>(space);
+// }
 
 void register_calculation_spaces() {
 
@@ -314,8 +314,8 @@ void register_calculation_spaces() {
         .def("getPathsTo", (GeometryObject::Subtree(Geometry2DCartesian::*)(const Vec<2>&)const) &Geometry2DCartesian::getPathsTo, py::arg("point"),
              "Return subtree containg paths to all leafs covering specified point")
         .def("getPathsTo", &Space_getMaterial<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1")))
-        .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
-             "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+//         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
+//              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
@@ -347,8 +347,8 @@ void register_calculation_spaces() {
         .def("getPathsTo", (GeometryObject::Subtree(Geometry2DCylindrical::*)(const Vec<2>&)const) &Geometry2DCylindrical::getPathsTo, py::arg("point"),
              "Return subtree containing paths to all leafs covering specified point")
         .def("getPathsTo", &Space_getMaterial<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1")))
-        .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
-             "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+//         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
+//              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 
 }

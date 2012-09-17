@@ -89,19 +89,20 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
     fireChildrenChanged();
 }
 
-Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getUniqueObjectInThisCoordinates(object, path);
-    if (!new_child) {
-        new_child = object->requireUniqueObjectInThisCoordinates(getChild(), path);
-        new_child->translation = - new_child->translation;
-    }
-    if (copyBorders) {
-        std::unique_ptr<Geometry2DCartesian> result(new Geometry2DCartesian(*this));
-        result->extrusion = make_shared<Extrusion>(new_child, getExtrusion()->length);
-        return result.release();
-    } else
-        return new Geometry2DCartesian(new_child, getExtrusion()->length);
-}
+// Geometry2DCartesian* Geometry2DCartesian::getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path, bool copyBorders) const {
+//     auto shifts = getChild()->getObjectPositions(object, path);
+//     // auto new_child = getChild()->getUniqueObjectInThisCoordinates(object, path);
+//     // if (!new_child) {
+//     //     new_child = object->requireUniqueObjectInThisCoordinates(getChild(), path);
+//     //     new_child->translation = - new_child->translation;
+//     // }
+//     // if (copyBorders) {
+//     //     std::unique_ptr<Geometry2DCartesian> result(new Geometry2DCartesian(*this));
+//     //     result->extrusion = make_shared<Extrusion>(new_child, getExtrusion()->length);
+//     //     return result.release();
+//     // } else
+//     //     return new Geometry2DCartesian(new_child, getExtrusion()->length);
+// }
 
 void Geometry2DCartesian::setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
     Primitive<3>::ensureIsValid2DDirection(direction);
@@ -175,19 +176,8 @@ void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
     fireChildrenChanged();
 }
 
-Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryObjectD<2> >& object, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getUniqueObjectInThisCoordinates(object, path);
-    if (!new_child) {
-        new_child = object->requireUniqueObjectInThisCoordinates(getChild(), path);
-        new_child->translation = - new_child->translation;
-    }
-    if (copyBorders) {
-        std::unique_ptr<Geometry2DCylindrical> result(new Geometry2DCylindrical(*this));
-        result->revolution = make_shared<Revolution>(new_child);
-        return result.release();
-    } else
-        return new Geometry2DCylindrical(new_child);
-}
+// Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryObjectD<2> >& object, const PathHints* path, bool copyBorders) const {
+// }
 
 void Geometry2DCylindrical::setBorders(DIRECTION direction, const border::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
@@ -303,19 +293,8 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
     return getMaterialOrDefault(r);
 }
 
-Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path, bool copyBorders) const {
-    auto new_child = getChild()->getUniqueObjectInThisCoordinates(object, path);
-    if (!new_child) {
-        new_child = object->requireUniqueObjectInThisCoordinates(getChild(), path);
-        new_child->translation = - new_child->translation;
-    }
-    if (copyBorders) {
-        std::unique_ptr<Geometry3D> result(new Geometry3D(*this));
-        result->child = new_child;
-        return result.release();
-    } else
-        return new Geometry3D(new_child);
-}
+// Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path, bool copyBorders) const {
+// }
 
 void Geometry3D::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     //TODO borders

@@ -29,17 +29,17 @@ class Geometrys(unittest.TestCase):
 
         with self.assertRaises(RuntimeError): plask.geometry.Cartesian2D(r, right="mirror").getMaterial(3., 0.5)
 
-    def testSubspace(self):
-        stack = plask.geometry.Stack2D()
-        r1 = plask.geometry.Rectangle(2.,2., "GaN")
-        r2 = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
-        stack.append(r1, "l")
-        h2 = stack.append(r2, "l")
-        space = plask.geometry.Cartesian2D(stack)
-        subspace = space.getSubspace(r2)
-        v1 = space.getLeafsPositions(h2)
-        v2 = subspace.getLeafsPositions(h2)
-        self.assertEqual( space.getLeafsPositions(h2)[0], subspace.getLeafsPositions(h2)[0] )
+    #def testSubspace(self):
+        #stack = plask.geometry.Stack2D()
+        #r1 = plask.geometry.Rectangle(2.,2., "GaN")
+        #r2 = plask.geometry.Rectangle(2.,1., "Al(0.2)GaN")
+        #stack.append(r1, "l")
+        #h2 = stack.append(r2, "l")
+        #space = plask.geometry.Cartesian2D(stack)
+        #subspace = space.getSubspace(r2)
+        #v1 = space.getLeafsPositions(h2)
+        #v2 = subspace.getLeafsPositions(h2)
+        #self.assertEqual( space.getLeafsPositions(h2)[0], subspace.getLeafsPositions(h2)[0] )
 
     def testSolver(self):
         solver = plasktest.SpaceTest()

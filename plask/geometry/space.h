@@ -345,33 +345,33 @@ public:
 
     virtual void setPlanarBorders(const border::Strategy& border_to_set);
 
-    /**
-     * Get the sub/super-space of this one (automatically detected)
-     * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
-     * \param path hints specifying particular instance of the geometry object
-     * \param copyBorders indicates wheter the new space should have the same borders as this one
-     * \return new space
-     */
-    virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
+//     /**
+//      * Get the sub/super-space of this one (automatically detected)
+//      * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
+//      * \param path hints specifying particular instance of the geometry object
+//      * \param copyBorders indicates wheter the new space should have the same borders as this one
+//      * \return new space
+//      */
+//     virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
 
-    /**
-     * Get the sub/super-space of this one (automatically detected) with specified borders
-     * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
-     * \param path hints specifying particular instance of the geometry object
-     * \param borders map of edge name to border description
-     * \param axesNames name of the axes for borders
-     * \return new space
-     */
-    virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr,
-                                                 const std::map<std::string, std::string>& borders=null_borders,
-                                                 const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
-        GeometryD<dim>* subspace = getSubspace(object, path, false);
-        subspace->setBorders( [&](const std::string& s) -> boost::optional<std::string> {
-            auto b = borders.find(s);
-            return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
-        }, axesNames);
-        return subspace;
-    }
+//     /**
+//      * Get the sub/super-space of this one (automatically detected) with specified borders
+//      * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
+//      * \param path hints specifying particular instance of the geometry object
+//      * \param borders map of edge name to border description
+//      * \param axesNames name of the axes for borders
+//      * \return new space
+//      */
+//     virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr,
+//                                                  const std::map<std::string, std::string>& borders=null_borders,
+//                                                  const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
+//         GeometryD<dim>* subspace = getSubspace(object, path, false);
+//         subspace->setBorders( [&](const std::string& s) -> boost::optional<std::string> {
+//             auto b = borders.find(s);
+//             return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
+//         }, axesNames);
+//         return subspace;
+//     }
 
 
 };
@@ -522,13 +522,13 @@ public:
      */
     void setExtrusion(shared_ptr<Extrusion> extrusion);
 
-    virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path = 0, bool copyBorders = false) const;
+//     virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path = 0, bool copyBorders = false) const;
 
-    virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path=nullptr,
-                                          const std::map<std::string, std::string>& borders=null_borders,
-                                          const AxisNames& axesNames=AxisNames()) const {
-        return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
-    }
+//     virtual Geometry2DCartesian* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path=nullptr,
+//                                           const std::map<std::string, std::string>& borders=null_borders,
+//                                           const AxisNames& axesNames=AxisNames()) const {
+//         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
+//     }
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
@@ -647,13 +647,13 @@ public:
      */
     void setRevolution(shared_ptr<Revolution> revolution);
 
-    virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path = 0, bool copyBorders = false) const;
+//     virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path = 0, bool copyBorders = false) const;
 
-    virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path=nullptr,
-                                            const std::map<std::string, std::string>& borders=null_borders,
-                                            const AxisNames& axesNames=AxisNames()) const {
-        return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
-    }
+//     virtual Geometry2DCylindrical* getSubspace(const shared_ptr<GeometryObjectD<2>>& object, const PathHints* path=nullptr,
+//                                             const std::map<std::string, std::string>& borders=null_borders,
+//                                             const AxisNames& axesNames=AxisNames()) const {
+//         return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
+//     }
 
     void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
@@ -809,7 +809,7 @@ public:
 
     virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const;
 
-    virtual Geometry3D* getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path=nullptr, bool copyBorders=false) const;
+//     virtual Geometry3D* getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path=nullptr, bool copyBorders=false) const;
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 };
