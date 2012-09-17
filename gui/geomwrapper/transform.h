@@ -5,7 +5,7 @@
  * This file includes implementation of geometry objects model extensions for transforms. Do not include it directly (see register.h).
  */
 
-#include "element.h"
+#include "object.h"
 
 #include <plask/geometry/transform.h>
 #include <plask/geometry/transform_space_cartesian.h>

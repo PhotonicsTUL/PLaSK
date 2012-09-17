@@ -1,4 +1,4 @@
-#include "element.h"
+#include "object.h"
 
 #include <plask/geometry/space.h>
 

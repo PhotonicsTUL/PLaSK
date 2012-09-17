@@ -1,7 +1,7 @@
 #ifndef GUI_GEOMETRY_WRAPPER_REGISTER_H
 #define GUI_GEOMETRY_WRAPPER_REGISTER_H
 
-#include "element.h"
+#include "object.h"
 
 /**
  * Get extension for geometry object @p el.

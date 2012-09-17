@@ -5,7 +5,7 @@
  * This file includes implementation of geometry objects model extensions for geometries. Do not include it directly (see register.h).
  */
 
-#include "element.h"
+#include "object.h"
 
 #include <plask/geometry/space.h>
 
