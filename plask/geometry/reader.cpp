@@ -49,11 +49,11 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
         return result;
     }
 
-    boost::optional<std::string> name = source.getAttribute("name");    //read name
+    boost::optional<std::string> name = source.getAttribute("name");    // read name
     if (name && !isAutoName(*name))
         BadId::throwIfBad("geometry object", *name, '-');
 
-    boost::optional<std::string> classes = source.getAttribute("class");    //read classes (tags)
+    boost::optional<std::string> roles = source.getAttribute("role");    //r ead roles (tags)
 
     shared_ptr<GeometryObject> new_object;    //new object will be constructed
 
@@ -108,12 +108,12 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
         }
     }
 
-    if (classes) {  //if have some classes
-        new_object->clearClasses();  //in case of copied object: overwritte
-        auto classes_it = splitEscIterator(*classes, ',');
-        for (const std::string& c: classes_it) {
+    if (roles) {  // if have some roles
+        new_object->clearRoles();  // in case of copied object: overwrite
+        auto roles_it = splitEscIterator(*roles, ',');
+        for (const std::string& c: roles_it) {
             //BadId::throwIfBad("path", path, '-');
-            new_object->appendClass(c);
+            new_object->addRole(c);
         }
     }
 

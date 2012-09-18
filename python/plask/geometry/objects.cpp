@@ -3,6 +3,7 @@
 #include <plask/geometry/leaf.h>
 #include <plask/geometry/container.h>
 #include <plask/geometry/path.h>
+#include "../../util/py_set.h"
 
 namespace plask { namespace python {
 
@@ -43,18 +44,18 @@ template <> struct GeometryObjectD_getPathsTo<3> {
     }
 };
 
-template <int dim>
-static py::list GeometryObjectD_getLeafsAsTranslations(const GeometryObjectD<dim>& self, const PathHints& path) {
-    py::list result;
-    auto leafs = self.getLeafs(&path);
-    auto translations = self.getLeafsPositions(&path);
-    auto l = leafs.begin();
-    auto t = translations.begin();
-    for (; l != leafs.end(); ++l, ++t) {
-        result.append(make_shared<Translation<dim>>(const_pointer_cast<GeometryObjectD<dim>>(static_pointer_cast<const GeometryObjectD<dim>>(*l)), *t));
-    }
-    return result;
-}
+// template <int dim>
+// static py::list GeometryObjectD_getLeafsAsTranslations(const GeometryObjectD<dim>& self, const PathHints& path) {
+//     py::list result;
+//     auto leafs = self.getLeafs(&path);
+//     auto translations = self.getLeafsPositions(&path);
+//     auto l = leafs.begin();
+//     auto t = translations.begin();
+//     for (; l != leafs.end(); ++l, ++t) {
+//         result.append(make_shared<Translation<dim>>(const_pointer_cast<GeometryObjectD<dim>>(static_pointer_cast<const GeometryObjectD<dim>>(*l)), *t));
+//     }
+//     return result;
+// }
 
 // template <int dim>
 // static py::list GeometryObjectD_getObjectAsTranslations(const shared_ptr<GeometryObjectD<dim>>& self, const shared_ptr<GeometryObjectD<dim>>& object, const PathHints& path) {
@@ -86,6 +87,25 @@ std::string GeometryObject__repr__(const shared_ptr<GeometryObject>& self) {
     return out.str();
 }
 
+
+py::object GeometryObject_getRole(const GeometryObject& self) {
+    if (self.roles.size() == 0) return py::object();
+    if (self.roles.size() != 1) throw TypeError("Object has more than one role, use .roles instead");
+    return py::object(*(self.roles.begin()));
+}
+
+void GeometryObject_setRole(GeometryObject& self, const std::string& role) {
+    self.clearRoles();
+    self.addRole(role);
+}
+
+void GeometryObject_setRoles(GeometryObject& self, py::object roles) {
+    py::stl_input_iterator<std::string> begin(roles), end;
+    self.clearRoles();
+    for (auto role = begin; role != end; ++role) self.addRole(*role);
+}
+
+
 /// Initialize class GeometryObjectD for Python
 template <int dim> struct GeometryObjectD_vector_args { static const py::detail::keywords<dim> args; };
 template<> const py::detail::keywords<2> GeometryObjectD_vector_args<2>::args = (py::arg("c0"), py::arg("c1"));
@@ -110,8 +130,8 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
              (py::arg("path")=py::object()), "Calculate positions of all leafs (in local coordinates)")
         .def("getLeafsBBoxes", (std::vector<typename Primitive<dim>::Box>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsBoundingBoxes,
              (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
-        .def("getLeafsAsTranslations", &GeometryObjectD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
-             "Return list of Translation objects holding all leafs")
+        // .def("getLeafsAsTranslations", &GeometryObjectD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
+        //         "Return list of Translation objects holding all leafs")
         .def("getLeafs", &GeometryObject_getLeafs, (py::arg("path")=py::object()),
              "Return list of all leafs in the subtree originating from this object")
         .def("getObjectPositions", (std::vector<typename Primitive<dim>::DVec>(GeometryObjectD<dim>::*)(const GeometryObject&, const PathHints&)const) &GeometryObjectD<dim>::getObjectPositions,
@@ -129,6 +149,9 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
 
 void register_geometry_object()
 {
+    export_set<std::string>("string_set");
+    py::delattr(py::scope(), "string_set");
+
     py_enum<GeometryObject::Type>("ObjectType")
         .value("LEAF", GeometryObject::TYPE_LEAF)
         .value("TRANSFORM", GeometryObject::TYPE_TRANSFORM)
@@ -142,6 +165,8 @@ void register_geometry_object()
         .def("validate", &GeometryObject::validate, "Check if the object is compete and ready for calculations")
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
+        .add_property("role", &GeometryObject_getRole, &GeometryObject_setRole, "Role of the object")
+        .add_property("roles", py::make_getter(&GeometryObject::roles), &GeometryObject_setRoles, "Roles of the object")
     ;
 
     register_vector_of<shared_ptr<GeometryObject>>("GeometryObject");

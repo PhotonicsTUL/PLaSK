@@ -8,11 +8,13 @@
 
 namespace plask { namespace python {
 
+namespace py = boost::python;
 
-template<typename KeyType>
+
+template<typename KeyT>
 struct set_to_python_list_conventer {
 
-    static PyObject* convert(const std::set<KeyType>& set)  {
+    static PyObject* convert(const std::set<KeyT>& set)  {
         boost::python::list list;
         for (auto item: set) {
             list.append(boost::python::object(item));
@@ -21,72 +23,82 @@ struct set_to_python_list_conventer {
     }
 
     set_to_python_list_conventer() {
-        boost::python::to_python_converter<std::set<KeyType>, set_to_python_list_conventer<KeyType>>();
+        boost::python::to_python_converter<std::set<KeyT>, set_to_python_list_conventer<KeyT>>();
     }
 };
 
 
+namespace detail {
 
+    template<class KeyT> class py_set  {
 
-template<class KeyType> class py_set : public std::set<KeyType>,
-public boost::python::wrapper< std::set<KeyType> >  {
+    public:
+        // some typedefs for convinience
+        typedef std::set<KeyT> setT;
 
-  public:
-    // some typedefs for convinience
-    typedef std::set<KeyType> source_type;
-    typedef py_set<KeyType> wrap_type;
-
-    // constructors
-    py_set<KeyType> () {};
-    py_set<KeyType> (const source_type& s )
-        { this->insert(s.begin(), s.end()); }
-
-    // object access
-    bool contains(const KeyType key) { return this->count(key)>0; }
-    // we must define add() for it gets explicit argument types
-    void add(const KeyType key) { this->insert(key); }
-    void remove(const KeyType key) { // improve error handling here
-        if (!contains(key)) throw "object not in set"; erase(key);
-    }
-
-    std::string repr() {
-        std::stringstream out;
-        out << "set([";
-        int i = this->size()-1;
-        if (i == -1) out << "])";
-        else
-            for(auto item = this->begin(); item != this->end(); ++item, --i) {
-                out << std::string(py::extract<std::string>(py::object(*item).attr("__repr__")())) << (i?",":")");
+        // object access
+        static bool contains(const setT& self, const KeyT key) { return self.count(key)>0; }
+        // we must define add() for it gets explicit argument types
+        static void add(setT& self, const KeyT key) { self.insert(key); }
+        static void remove(setT& self, const KeyT key) { // improve error handling here
+            if (!contains(self, key)) {
+                PyErr_SetObject(PyExc_KeyError, py::str(py::object(key)).ptr());
+                throw py::error_already_set();
             }
-        return out.str();
-    }
+            self.erase(key);
+        }
 
-    // set operations
-    source_type set_union(wrap_type &other) {
-            source_type result;
-            std::set_union(this->begin(), this->end(), other.begin(), other.end(), inserter(result, result.begin()));
-            return result;
-    }
+        static std::string repr(const setT& self) {
+            std::stringstream out;
+            out << "set([";
+            int i = self.size()-1;
+            if (i == -1) out << "])";
+            else
+                for(auto item = self.begin(); item != self.end(); ++item, --i) {
+                    out << std::string(py::extract<std::string>(py::object(*item).attr("__repr__")())) << (i?", ":"])");
+                }
+            return out.str();
+        }
 
-    source_type set_intersection(wrap_type &other) {
-            source_type result;
-            std::set_intersection(this->begin(), this->end(), other.begin(), other.end(), inserter(result, result.begin()));
-            return result;
-    }
+        static std::string str(const setT& self) {
+            std::stringstream out;
+            out << "{ ";
+            int i = self.size()-1;
+            if (i == -1) out << "}";
+            else
+                for(auto item = self.begin(); item != self.end(); ++item, --i) {
+                    out << std::string(py::extract<std::string>(py::object(*item).attr("__repr__")())) << (i?", ":" }");
+                }
+            return out.str();
+        }
 
-    source_type set_difference(wrap_type &other) {
-            source_type result;
-            std::set_difference(this->begin(), this->end(), other.begin(), other.end(), inserter(result, result.begin()));
-            return result;
-    }
+        // set operations
+        static setT set_union(const setT& self, const setT &other) {
+                setT result;
+                std::set_union(self.begin(), self.end(), other.begin(), other.end(), std::inserter(result, result.begin()));
+                return result;
+        }
 
-    source_type set_symmetric_difference(wrap_type &other) {
-            source_type result;
-            std::set_symmetric_difference(this->begin(), this->end(), other.begin(), other.end(), inserter(result, result.begin()));
-            return result;
-    }
+        static setT set_intersection(const setT& self, const setT &other) {
+                setT result;
+                std::set_intersection(self.begin(), self.end(), other.begin(), other.end(), std::inserter(result, result.begin()));
+                return result;
+        }
 
-};
+        static setT set_difference(const setT& self, const setT &other) {
+                setT result;
+                std::set_difference(self.begin(), self.end(), other.begin(), other.end(), std::inserter(result, result.begin()));
+                return result;
+        }
+
+        static setT set_symmetric_difference(const setT& self, const setT &other) {
+                setT result;
+                std::set_symmetric_difference(self.begin(), self.end(), other.begin(), other.end(), std::inserter(result, result.begin()));
+                return result;
+        }
+
+    };
+}
 
 inline void block_hashing(boost::python::object) {
     // do something more intelligent here
@@ -94,64 +106,58 @@ inline void block_hashing(boost::python::object) {
 }
 
 // export mutable set
-template<class KeyType> void
+template<class KeyT> void
 export_set(const char* py_name) {
-   typedef py_set<KeyType> set_T;
+   typedef detail::py_set<KeyT> PySetT;
+   typedef std::set<KeyT> SetT;
 
-   boost::python::class_<set_T > (py_name, "Mutable set")
-       .def("__len__", &set_T::size)
-       .def("__contains__",&set_T::contains)
-       .def("add", &set_T::add, "add object")
-       .def("__delitem__", &set_T::remove)
-       .def("remove", &set_T::remove, "remove object")
-       .def("__iter__", boost::python::iterator<set_T> ())
+   boost::python::class_<SetT> (py_name, "Mutable set.")
+       .def("__len__", &SetT::size)
+       .def("__contains__",&PySetT::contains)
+       .def("add", &PySetT::add, "Add object to set.")
+       .def("__delitem__", &PySetT::remove)
+       .def("remove", &PySetT::remove, "Remove object from set.")
+       .def("__iter__", boost::python::iterator<SetT>())
 
-       .def("__repr__", &set_T::repr)
-
+       .def("__str__", &PySetT::str)
+       .def("__repr__", &PySetT::repr)
        .def("__hash__", &block_hashing)
 
-       .def("union", &set_T::set_union, "set union")
-       .def("__or__", &set_T::set_union, "set union")
-       .def("intersection", &set_T::set_intersection, "set intersection")
-       .def("__and__", &set_T::set_intersection, "set intersection")
-       .def("difference", &set_T::set_difference, "objects not in second set")
-       .def("__sub__", &set_T::set_difference, "set difference")
-       .def("symmetric_difference", &set_T::set_symmetric_difference, "objects unique to either set")
-       .def("__xor__", &set_T::set_symmetric_difference, "symmetric set difference")
+       .def("union", &PySetT::set_union, "Return the union of sets as a new set.")
+       .def("__add__", &PySetT::set_union)
+       .def("intersection", &PySetT::set_intersection, "Return the union of sets as a new set.")
+       .def("__mul__", &PySetT::set_intersection)
+       .def("difference", &PySetT::set_difference, "Return the difference of sets as a new set.")
+       .def("__sub__", &PySetT::set_difference, "set difference")
+       .def("symmetric_difference", &PySetT::set_symmetric_difference, "Return objects unique to either set.")
    ;
-
-   boost::python::implicitly_convertible<py_set<KeyType>, std::set<KeyType> >();
-   boost::python::implicitly_convertible<std::set<KeyType>, py_set<KeyType> >();
 }
 
 // export immutable set
-template<class KeyType> void
+template<class KeyT> void
 export_frozenset(const char* py_name) {
-   typedef py_set<KeyType> set_T;
+   typedef detail::py_set<KeyT> PySetT;
+   typedef std::set<KeyT> SetT;
 
-   boost::python::class_<set_T > (py_name, "Immutable set")
-       .def("__len__", &set_T::size)
-       .def("__contains__", &set_T::contains)
-       .def("__iter__", boost::python::iterator<set_T> ())
+   boost::python::class_<SetT> (py_name, "Immutable set")
+       .def("__len__", &SetT::size)
+       .def("__contains__", &PySetT::contains)
+       .def("__iter__", boost::python::iterator<SetT>())
 
        .def(boost::python::self < boost::python::self)
        .def(boost::python::self == boost::python::self)
 
-       .def("__repr__", &set_T::repr)
+       .def("__str__", &PySetT::str)
+       .def("__repr__", &PySetT::repr)
 
-       .def("union", &set_T::set_union, "set union")
-       .def("__or__", &set_T::set_union, "set union")
-       .def("intersection", &set_T::set_intersection, "set intersection")
-       .def("__and__", &set_T::set_intersection, "set intersection")
-       .def("difference", &set_T::set_difference, "objects not in second set")
-       .def("__sub__", &set_T::set_difference, "set different")
-       .def("symmetric_difference", &set_T::set_symmetric_difference, "objects unique to either set")
-       .def("__xor__", &set_T::set_symmetric_difference, "symmetric set different")
+       .def("union", &PySetT::set_union, "Return the union of sets as a new set.")
+       .def("__add__", &PySetT::set_union)
+       .def("intersection", &PySetT::set_intersection, "Return the union of sets as a new set.")
+       .def("__mul__", &PySetT::set_intersection)
+       .def("difference", &PySetT::set_difference, "Return the difference of sets as a new set.")
+       .def("__sub__", &PySetT::set_difference, "set difference")
+       .def("symmetric_difference", &PySetT::set_symmetric_difference, "Return objects unique to either set.")
    ;
-
-   boost::python::implicitly_convertible<py_set<KeyType>, std::set<KeyType> >();
-   boost::python::implicitly_convertible<std::set<KeyType>, py_set<KeyType> >();
-
 }
 
 }} // namespace plask::python

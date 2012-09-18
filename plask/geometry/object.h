@@ -54,9 +54,9 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     /**
      * Store information about event connected with geometry object.
      *
-     * Subclasses of this can includes additional information about specific type of event.
+     * Subroles of this can includes additional information about specific type of event.
      *
-     * Note: when object is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to subclasses of GeometryObject,
+     * Note: when object is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to subroles of GeometryObject,
      * because source() is already partially deleted.
      */
     struct Event: public EventWithSourceAndFlags<GeometryObject> {
@@ -372,11 +372,11 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     };
 
     /// Predicate which check if given object belong to class with given name.
-    struct PredicateHasClass {
-        std::string class_name;
-        PredicateHasClass(const std::string& class_name): class_name(class_name) {};
-        PredicateHasClass(std::string&& class_name): class_name(std::move(class_name)) {};
-        bool operator()(const GeometryObject& obj) const { return obj.hasClass(class_name); }
+    struct PredicateHasRole {
+        std::string role_name;
+        PredicateHasRole(const std::string& role_name): role_name(role_name) {};
+        PredicateHasRole(std::string&& role_name): role_name(std::move(role_name)) {};
+        bool operator()(const GeometryObject& obj) const { return obj.hasRole(role_name); }
     };
 
     /**
@@ -463,8 +463,8 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
 
     };
 
-    /// Classes/tags
-    std::set<std::string> classes;
+    /// Roles/tags
+    std::set<std::string> roles;
 
     /// Changed signal, fired when object was changed.
     boost::signals2::signal<void(Event&)> changed;
@@ -489,7 +489,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
 
     /*
      * Just call changed with given event data.
-     * Subclasses can redefine this and do some extra actions.
+     * Subroles can redefine this and do some extra actions.
      * @param evt event data
      */
     /*virtual void callChanged(Event& evt) {
@@ -608,28 +608,28 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     bool isGeometry() const { return getType() == TYPE_GEOMETRY; }
 
     /**
-     * Check if this object belongs to class (has tag) with name @p class_name.
-     * @param class_name name of class/tag to check
-     * @return @c true only if this belongs to class @p class_name
+     * Check if this object belongs to class (has tag) with name @p role_name.
+     * @param role_name name of class/tag to check
+     * @return @c true only if this belongs to class @p role_name
      */
-    bool hasClass(const std::string& class_name) const { return classes.find(class_name) != classes.end(); }
+    bool hasRole(const std::string& role_name) const { return roles.find(role_name) != roles.end(); }
 
     /**
-     * Append this to given class.
-     * @param class_name name of class where this should be added
+     * Add this to given class.
+     * @param role_name name of class where this should be added
      */
-    void appendClass(const std::string& class_name) { classes.insert(class_name); }
+    void addRole(const std::string& role_name) { roles.insert(role_name); }
 
     /**
      * Remove this from given class, do nothing if this is not in given class.
-     * @param class_name name of class from where this should be removed
+     * @param role_name name of class from where this should be removed
      */
-    void removeClass(const std::string& class_name) { classes.erase(class_name); }
+    void removeRole(const std::string& role_name) { roles.erase(role_name); }
 
     /**
-     * Clear set of classes of this.
+     * Clear set of roles of this.
      */
-    void clearClasses() { classes.clear(); }
+    void clearRoles() { roles.clear(); }
 
     /**
      * Get number of dimentions.
@@ -776,7 +776,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      * This is unsafe but fast version, it doesn't check index and doesn't call fireChildrenChanged() to inform listeners about this object changes.
      * Caller should do this manually or call removeAt(std::size_t) instead.
      *
-     * Default implementation throw excption but this method is overwritten in subclasses.
+     * Default implementation throw excption but this method is overwritten in subroles.
      * @param index index of real child to remove
      */
     virtual void removeAtUnsafe(std::size_t index);
@@ -904,7 +904,7 @@ protected:
 template <int dim> struct Translation;
 
 /**
- * Template of base classes for geometry objects in space with given number of dimensions (2 or 3).
+ * Template of base roles for geometry objects in space with given number of dimensions (2 or 3).
  * @tparam dimensions number of dimensions, 2 or 3
  */
 template <int dimensions>
@@ -1360,7 +1360,7 @@ struct GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Check if specified geometry object  includes point.
+     * Check if specified geometry object includes point.
      * @param point point
      * @return true only if this geometry includes point @a p
      */
@@ -1378,45 +1378,47 @@ struct GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Calculate a sum of classes sets on path to given @p point.
+     * Calculate a sum of roles sets on path to given @p point.
      * @param point point
      * @param path optional path hints filtering out some objects
      * @return calculated set
      */
-    std::set<std::string> getClassesAt(const DVec& point, const plask::PathHints* path = 0) const;
+    std::set<std::string> getRolesAt(const DVec& point, const plask::PathHints* path = 0) const;
 
     /**
-     * Calculate a sum of classes sets on path to given @p point.
+     * Calculate a sum of roles sets on path to given @p point.
      * @param point point
      * @param path path hints filtering out some objects
      * @return calculated set
      */
-    std::set<std::string> getClassesAt(const DVec& point, const plask::PathHints& path) const { return getClassesAt(point, &path); }
-
-    /**
-     * Check if any object at given @p point, not hiden by another object, belongs to class with given name @p class_name
-     * (if so, returns non-nullptr).
-     * @param class_name name of class
-     * @param point point
-     * @param path optional path hints filtering out some objects
-     * @return object which is at given @p point, is not hiden by another object, and belongs to class with name @p class_name,
-     *          nullptr if there is not such object
-     */
-    shared_ptr<const GeometryObject> hasClassAt(const std::string& class_name, const DVec& point, const plask::PathHints* path = 0) const {
-        return getMatchingAt(point, GeometryObject::PredicateHasClass(class_name), path);
+    std::set<std::string> getRolesAt(const DVec& point, const plask::PathHints& path) const {
+        return getRolesAt(point, &path);
     }
 
     /**
-     * Check if any object at given @p point, not hiden by another object, belongs to class with given name @p class_name
+     * Check if any object at given @p point, not hidden by another object, plays role with given name @p role_name
      * (if so, returns non-nullptr).
-     * @param class_name name of class
+     * @param role_name name of class
      * @param point point
      * @param path optional path hints filtering out some objects
-     * @return object which is at given @p point, is not hiden by another object, and belongs to class with name @p class_name,
+     * @return object which is at given @p point, is not hidden by another object and plays role with name @p role_name,
      *          nullptr if there is not such object
      */
-    shared_ptr<const GeometryObject> hasClassAt(const std::string& class_name, const DVec& point, const plask::PathHints& path) const {
-        return hasClassAt(class_name, point, &path);
+    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const DVec& point, const plask::PathHints* path = 0) const {
+        return getMatchingAt(point, GeometryObject::PredicateHasRole(role_name), path);
+    }
+
+    /**
+     * Check if any object at given @p point, not hidden by another object, plays role with given name @p role_name
+     * (if so, returns non-nullptr).
+     * @param role_name name of class
+     * @param point point
+     * @param path optional path hints filtering out some objects
+     * @return object which is at given @p point, is not hidden by another object and plays role with name @p role_name,
+     *          nullptr if there is not such object
+     */
+    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const DVec& point, const plask::PathHints& path) const {
+        return hasRoleAt(role_name, point, &path);
     }
 };
 

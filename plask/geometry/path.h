@@ -245,7 +245,7 @@ struct Path {
     Path(GeometryObject::Subtree&& paths)
         : objects(std::move(paths.toLinearPath().objects)) {}
 
-    // This are the same as default constructors, so can be skiped:
+    // These are the same as default constructors, so can be skiped:
     // Path(const Path& path): objects(path.objects) {}
     // Path(Path&& path): objects(path.objects) {}
 
