@@ -9,7 +9,7 @@ This file includes all plask geometry headers.
 @page geometry Geometry
 @section geometry_about About
 Geometry in PLaSK is represented by a directed, acyclic graph, which has geometry objects in its vertices
-(see plask::GeometryObject). Very often this graph is tree, in which each object has pointers to its children.
+(see plask::GeometryObject and @ref GEOMETRY_OBJ). Very often this graph is a tree, in which each object has pointers to its children.
 PLaSK uses terminology inhrtited from the tree theory i.e. object C is a child of P only if there is arc from P to C,
 and then P is called the parent of C).
 

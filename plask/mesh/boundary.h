@@ -7,6 +7,7 @@ This file includes templates of base classes for mesh's boundaries.
 */
 
 /** @page boundaries Boundaries
+
 @section boundaries_about About boundaries
 Boundaries represent some conditions which allow to choose a subset of points (strictly: indexes of points) from mesh.
 Boundaries are typically used by solvers to show points for boundaries conditions.
@@ -63,7 +64,6 @@ So, writing new boundary for given type of mesh @c MeshType is writing subclass 
 
 PLaSK includes some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" implementation:
 - @ref plask::PredicateBoundary "PredicateBoundary\<MeshType\>" is implementation which holds and uses predicate (given in constructor) to check which points lies on boundary.
-
 */
 
 #include "../utils/iterators.h"

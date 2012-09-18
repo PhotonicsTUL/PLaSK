@@ -12,6 +12,7 @@ namespace plask {
 /**
  * Template of base classes for all leaf nodes.
  * @tparam dim number of dimensions
+ * @ingroup GEOMETRY_OBJ
  */
 template < int dim >
 struct GeometryObjectLeaf: public GeometryObjectD<dim> {
@@ -110,6 +111,7 @@ Represent figure which, depends from @p dim is:
 
 Block is filled with one material.
 @tparam dim number of dimensions
+@ingroup GEOMETRY_OBJ
 */
 template <int dim>
 struct Block: public GeometryObjectLeaf<dim> {

@@ -12,6 +12,7 @@ namespace plask {
  * Transform node has exactly one child node and represent object which is equal to child after transform.
  * @tparam dim number of dimensions of this object
  * @tparam Child_Type type of child, can be in space with different number of dimensions than this is (in such case see @ref GeometryObjectTransformSpace).
+ * @ingroup GEOMETRY_OBJ
  */
 template < int dim, typename Child_Type = GeometryObjectD<dim> >
 struct GeometryObjectTransform: public GeometryObjectD<dim> {
@@ -158,6 +159,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
  * @tparam this_dim number of dimensions of this object
  * @tparam child_dim number of dimensions of child object
  * @tparam ChildType type of child, should be in space with @a child_dim number of dimensions
+ * @ingroup GEOMETRY_OBJ
  */
 template < int this_dim, int child_dim = 5-this_dim, typename ChildType = GeometryObjectD<child_dim> >
 struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, ChildType> {
@@ -193,6 +195,7 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
 
 /**
  * Represent geometry object equal to its child translated by vector.
+ * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
 struct Translation: public GeometryObjectTransform<dim> {

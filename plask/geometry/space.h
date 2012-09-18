@@ -16,6 +16,7 @@ namespace plask {
  * Base class for all geometry trunks. Solvers can do calculation in calculation space with specific type.
  *
  * Almost all GeometryObject methods are delegate to child of this.
+ * @ingroup GEOMETRY_OBJ
  */
 struct Geometry: public GeometryObject {
 
@@ -161,6 +162,7 @@ protected:
 /**
  * Base class for all geometry trunks in given space.
  * @tparam dim number of speace dimensions
+ * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
 class GeometryD: public Geometry {
@@ -359,23 +361,78 @@ public:
     //     return getChild()->extractObject(*object, path);
     // }
 
+    /**
+     * Get object closest to the root, which includes specific point and fulfills the predicate
+     * \param point point to test
+     * \param predicate predicate required to match, called for each object on path to point, in order from root to leaf
+     * \param path optional path hints filtering out some objects
+     * \return resulted object or empty pointer
+     */
     inline shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints* path=0) {
         return getChild()->getMatchingAt(point, predicate, path);
     }
 
+    /**
+     * Get object closest to the root, which includes specific point and fulfills the predicate
+     * \param point point to test
+     * \param predicate predicate required to match, called for each object on path to point, in order from root to leaf
+     * \param path optional path hints filtering out some objects
+     * \return resulted object or empty pointer
+     */
     inline shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints& path) {
         return getChild()->getMatchingAt(point, predicate, path);
     }
 
+    /**
+     * Check if specified geometry object includes point.
+     * @param point point
+     * @return true only if this geometry includes point @a p
+     */
     inline bool objectIncludes(const CoordsType& point, const GeometryObject& object, const PathHints* path = 0) const {
         return getChild()->objectIncludes(point, object, path);
     }
 
+    /**
+     * Check if specified geometry object  includes point.
+     * @param point point
+     * @return true only if this geometry includes point @a p
+     */
     inline bool objectIncludes(const CoordsType& point, const GeometryObject& object, const PathHints& path) const {
         return getChild()->objectIncludes(point, object, path);
     }
 
+    ///@{
+    /**
+     * Get a sum of roles sets of all objects which lies on path from this to leaf at given @p point.
+     * @param point point
+     * @param path optional path hints filtering out some objects
+     * @return calculated set
+     */
+    std::set<std::string> getRolesAt(const Vec<dim, double>& point, const plask::PathHints* path = 0) const {
+        return getChild()->getRolesAt(point, path);
+    }
+    std::set<std::string> getRolesAt(const Vec<dim, double>& point, const plask::PathHints& path) const {
+        return getChild()->getRolesAt(point, path);
+    }
+    ///@}
 
+    ///@{
+    /**
+     * Check if any object at given @p point, not hidden by another object, plays role with given name @p role_name
+     * (if so, returns non-nullptr).
+     * @param role_name name of class
+     * @param point point
+     * @param path optional path hints filtering out some objects
+     * @return object which is at given @p point, is not hidden by another object and plays role with name @p role_name,
+     *          nullptr if there is not such object
+     */
+    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const Vec<dim, double>& point, const plask::PathHints* path = 0) const {
+        return getChild()->hasRoleAt(role_name, point, path);
+    }
+    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const Vec<dim, double>& point, const plask::PathHints& path) const {
+        return getChild()->hasRoleAt(role_name, point, path);
+    }
+    ///@}
 
     virtual void setPlanarBorders(const border::Strategy& border_to_set);
 
@@ -413,6 +470,7 @@ public:
 /**
  * Geometry trunk in 2D Cartesian space
  * @see plask::Extrusion
+ * @ingroup GEOMETRY_OBJ
  */
 class Geometry2DCartesian: public GeometryD<2> {
 
@@ -573,6 +631,7 @@ public:
 /**
  * Geometry trunk in 2D Cylindrical space
  * @see plask::Revolution
+ * @ingroup GEOMETRY_OBJ
  */
 class Geometry2DCylindrical: public GeometryD<2> {
 
@@ -711,7 +770,8 @@ public:
 };
 
 /**
- * Geometry trunk in 3D space
+ * Geometry trunk in 3D space.
+ * @ingroup GEOMETRY_OBJ
  */
 class Geometry3D: public GeometryD<3> {
 

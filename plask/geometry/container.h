@@ -23,6 +23,7 @@ namespace plask {
  * Container nodes can include one or more child nodes with translations.
  *
  * @tparam dim GeometryObjectContainer dimension
+ * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
 struct GeometryObjectContainer: public GeometryObjectD<dim> {
@@ -262,6 +263,7 @@ public:
 
 /**
  * Geometry objects container in which every child has an associated translation vector.
+ * @ingroup GEOMETRY_OBJ
  */
 //TODO some implementation are naive, and can be done faster with some caches
 template < int dim >

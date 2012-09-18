@@ -5,6 +5,8 @@
 This file includes base class for geometries objects.
 */
 
+/** @defgroup GEOMETRY_OBJ Geometries objects classes
+*/
 
 #include <vector>
 #include <tuple>
@@ -39,6 +41,7 @@ template < int dimensions > struct TranslationContainer;
 
 /**
  * Base class for all geometries.
+ * @ingroup GEOMETRY_OBJ
  */
 struct GeometryObject: public enable_shared_from_this<GeometryObject> {
 
@@ -906,6 +909,7 @@ template <int dim> struct Translation;
 /**
  * Template of base roles for geometry objects in space with given number of dimensions (2 or 3).
  * @tparam dimensions number of dimensions, 2 or 3
+ * @ingroup GEOMETRY_OBJ
  */
 template <int dimensions>
 struct GeometryObjectD: public GeometryObject {
@@ -1378,7 +1382,7 @@ struct GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Calculate a sum of roles sets on path to given @p point.
+     * Get a sum of roles sets of all objects which lies on path from this to leaf at given @p point.
      * @param point point
      * @param path optional path hints filtering out some objects
      * @return calculated set
@@ -1386,7 +1390,7 @@ struct GeometryObjectD: public GeometryObject {
     std::set<std::string> getRolesAt(const DVec& point, const plask::PathHints* path = 0) const;
 
     /**
-     * Calculate a sum of roles sets on path to given @p point.
+     * Get a sum of roles sets of all objects which lies on path from this to leaf at given @p point.
      * @param point point
      * @param path path hints filtering out some objects
      * @return calculated set

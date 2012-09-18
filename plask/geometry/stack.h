@@ -11,6 +11,7 @@ namespace plask {
  * Common code for stack containers (which have children in stack/layers).
  * @tparam dim number of space dimentions
  * @tparam growingDirection direction in which stack growing
+ * @ingroup GEOMETRY_OBJ
  */
 template <int dim, int growingDirection = Primitive<dim>::DIRECTION_UP>
 struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
@@ -143,6 +144,7 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
 /**
  * Horizontal stack.
+ * @ingroup GEOMETRY_OBJ
  */
 //TODO it is not possible to save flat requiment to XML!
 struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
@@ -243,6 +245,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
 
 /**
  * Container which have children in stack/layers.
+ * @ingroup GEOMETRY_OBJ
  */
 //TODO copy constructor
 template <int dim>
@@ -430,6 +433,10 @@ protected:
 
 };
 
+/**
+ * N-stacks
+ * @ingroup GEOMETRY_OBJ
+ */
 template <int dim>
 class MultiStackContainer: public StackContainer<dim> {
 
