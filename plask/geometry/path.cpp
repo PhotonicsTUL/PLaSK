@@ -95,14 +95,14 @@ void PathHints::cleanDeleted() {
 bool Path::completeToFirst(const GeometryObject& newFirst, const PathHints* hints) {
     GeometryObject::Subtree path = newFirst.getPathsTo(*objects.front(), hints);
     if (path.empty()) return false;
-    push_front(path.toLinearPath());
+    push_front(path.toLinearPath().objects);
     return true;
 }
 
 bool Path::completeFromLast(const GeometryObject& newLast, const PathHints* hints) {
     GeometryObject::Subtree path = objects.back()->getPathsTo(newLast, hints);
     if (path.empty()) return false;
-    push_back(path.toLinearPath());
+    push_back(path.toLinearPath().objects);
     return true;
 }
 

@@ -31,6 +31,7 @@ This file includes base class for geometries objects.
 namespace plask {
 
 struct PathHints;
+struct Path;
 
 struct Geometry;
 template < int dimensions > struct GeometryObjectD;
@@ -222,13 +223,13 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
          * Throw excpetion if this subtree is not linear path (inludes more than one branch).
          * @return linear path represented by this
          */
-        std::vector<shared_ptr<const GeometryObject>> toLinearPath() const;
+        Path toLinearPath() const;
 
         /**
          * Get last (last child is chosen at each level), linear path from subtree.
          * @return last path from subtree
          */
-        std::vector<shared_ptr<const GeometryObject>> getLastPath() const;
+        Path getLastPath() const;
 
         /**
          * Check if this subtree is empty (its object points to null).

@@ -95,7 +95,6 @@ static shared_ptr<GeometryObject> Path__getitem__(const Path& self, long int ind
 static size_t Path__len__(const Path& self) { return self.objects.size(); }
 
 static bool Subtree__nonzero__(const GeometryObject::Subtree& self) { return !self.empty(); }
-static Path Subtree_getLastBranch(const GeometryObject::Subtree& self) { return Path(self.getLastPath()); }
 
 void register_geometry_path()
 {
@@ -164,7 +163,7 @@ void register_geometry_path()
     py::class_<GeometryObject::Subtree, shared_ptr<GeometryObject::Subtree>>("Subtree", "Class holding some part of geometry tree", py::no_init)
         .def("__nonzero__", &Subtree__nonzero__)
         .add_property("brached", &GeometryObject::Subtree::hasBranches, "Indicates whether the subtree has more than one branch")
-        .add_property("last_path", &Subtree_getLastBranch, "Last (topmost) branch of the subtree")
+        .add_property("last_path", &GeometryObject::Subtree::getLastPath, "Last (topmost) branch of the subtree")
     ;
     py::implicitly_convertible<GeometryObject::Subtree,PathHints>();
     py::implicitly_convertible<GeometryObject::Subtree,Path>();

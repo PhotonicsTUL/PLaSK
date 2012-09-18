@@ -147,7 +147,7 @@ bool GeometryObject::Subtree::hasBranches() const {
     return false;
 }
 
-std::vector< shared_ptr<const GeometryObject> > GeometryObject::Subtree::toLinearPath() const {
+Path GeometryObject::Subtree::toLinearPath() const {
     std::vector< shared_ptr<const GeometryObject> > result;
     if (empty()) return result;
     const GeometryObject::Subtree* path_nodes = this;
@@ -160,7 +160,7 @@ std::vector< shared_ptr<const GeometryObject> > GeometryObject::Subtree::toLinea
     return result;
 }
 
-std::vector<shared_ptr<const GeometryObject>> GeometryObject::Subtree::getLastPath() const {
+Path GeometryObject::Subtree::getLastPath() const {
     std::vector< shared_ptr<const GeometryObject> > result;
     if (empty()) return result;
     const GeometryObject::Subtree* path_nodes = this;
@@ -207,7 +207,6 @@ shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec
     // Walk the subtree
     const GeometryObject::Subtree* nodes = &subtree;
     while (!nodes->empty()) {
-        assert(nodes->children.size() == 1); // Just to make sure that we have linear path
         if (predicate(*(nodes->object))) return nodes->object;
         if (nodes->children.empty()) return shared_ptr<const GeometryObject>();
         if (path && nodes->object->isContainer()) {

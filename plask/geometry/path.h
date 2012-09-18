@@ -240,7 +240,7 @@ struct Path {
         : objects(path) {}
 
     Path(const GeometryObject::Subtree& paths)
-        : objects(paths.toLinearPath()) {}
+        : objects(paths.toLinearPath().objects) {}
 
     // This are the same as default constructors, so can be skiped:
     // Path(const Path& path): objects(path.objects) {}
