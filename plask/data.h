@@ -10,6 +10,7 @@ This file includes classes which can hold (or points to) datas.
 #include <iostream>
 #include <initializer_list>
 #include <atomic>
+#include <type_traits>
 
 namespace plask {
 
@@ -23,7 +24,7 @@ namespace plask {
  * In both cases, asign operation and copy constructor of DataVector do not copy the data, but just create DataVectors which referee to the same data.
  * So both of this operations are very fast.
  */
-//TODO std::remove_cv<T>::type, const T
+//TODO std::remove_const<T>::type, const T
 template <typename T>
 struct DataVector {
 
@@ -100,14 +101,18 @@ struct DataVector {
      * Copy constructor. Only makes a shallow copy (doesn't copy data).
      * @param src data source
      */
-    DataVector(const DataVector& src): size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
+    //TODO DataVector(const DataVector<T>& src)
+    template <typename TS>
+    DataVector(const DataVector<TS>& src): size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
 
     /**
      * Assign operator. Only makes a shallow copy (doesn't copy data).
      * @param M data source
      * @return *this
      */
-    DataVector<T>& operator=(const DataVector<T>& M) {
+    //TODO DataVector(const DataVector<T>& src)
+    template <typename TS>
+    DataVector<T>& operator=(const DataVector<TS>& M) {
         if (this == &M) return *this;
         this->dec_ref();
         size_ = M.size_;
@@ -121,7 +126,16 @@ struct DataVector {
      * Move constructor.
      * @param src data to move
      */
-    DataVector(DataVector&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
+    DataVector(DataVector<T>&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
+        src.gc_ = nullptr;
+    }
+
+    /**
+     * Move constructor.
+     * @param src data to move
+     */
+    template <typename TS>
+    DataVector(DataVector<TS>&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
         src.gc_ = nullptr;
     }
 
@@ -130,10 +144,31 @@ struct DataVector {
      * @param src data source
      * @return *this
      */
-    DataVector<T>& operator=(DataVector&& src) {
+    DataVector<T>& operator=(DataVector<T>&& src) {
         swap(src);
         return *this;
     }
+
+    /**
+     * Move operator.
+     * @param src data source
+     * @return *this
+     */
+    template <typename TS>
+    DataVector<T>& operator=(DataVector<TS>&& src) {
+        swap(src);
+        return *this;
+    }
+
+    /**
+     * Create vector out of existing data.
+     * @param size  total size of the existing data
+     * @param existing_data pointer to existing data
+     * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
+     */
+    template <typename TS>
+    DataVector(TS* existing_data, std::size_t size, bool manage = false)
+        : size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
 
     /**
      * Create vector out of existing data.
@@ -182,11 +217,22 @@ struct DataVector {
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
-    void reset(T* existing_data, std::size_t size, bool manage = false) {
+    template <typename TS>
+    void reset(TS* existing_data, std::size_t size, bool manage = false) {
         dec_ref();
         size_ = size;
         gc_ = manage ? new Gc(1) : nullptr;
         data_ = existing_data;
+    }
+
+    /**
+     * Chenge data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
+     * @param size  total size of the existing data
+     * @param existing_data pointer to existing data
+     * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
+     */
+    void reset(T* existing_data, std::size_t size, bool manage = false) {
+        reset<T>(existing_data, size, manage);
     }
 
     /**
@@ -298,26 +344,37 @@ struct DataVector {
      * Make a deep copy of the data.
      * @return new object with manage copy of this data
      */
-    DataVector<T> copy() const {    //TODO std::remove_cv<T>::type
-        T* new_data = new T[size_];
+    DataVector< typename std::remove_const<T>::type > copy() const {
+        typename std::remove_const<T>::type* new_data = new typename std::remove_const<T>::type[size_];
         std::copy(begin(), end(), new_data);
-        return DataVector<T>(new_data, size_, true);
+        return DataVector< typename std::remove_const<T>::type >(new_data, size_, true);
     }
 
     /**
      * Check if this is the only one owner of data.
-     * @return @c true only if this is the only one owner of data
+     * @return @c true only if for sure this is the only one owner of data
      */
     bool unique() const {
         return (gc_ != nullptr) && (gc_->count == 1);
     }
 
     /**
+     * Allow to remove const qualifer from data, must be
+     * @return non-const version of this which refere to the same data
+     */
+    DataVector< typename std::remove_const<T>::type > constCast() const {
+        DataVector< typename std::remove_const<T>::type > result(const_cast<  typename std::remove_const<T>::type* >(this->data()), this->size(), false);
+        result.gc_ = this->gc_;
+        inc_ref();
+        return result;
+    }
+
+    /**
      * Make copy of data only if this is not the only one owner of it.
      * @return copy of this: shallow if unique() is @c true, deep if unique() is @c false
      */
-    DataVector<T> claim() const {    //TODO std::remove_cv<T>::type
-        return unique() ? *this : copy();
+    DataVector< typename std::remove_const<T>::type > claim() const {
+        return unique() ? constCast() : copy();
     }
 
     /**
@@ -389,6 +446,11 @@ DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
     for (std::size_t i = 0; i < min_size; ++i)
         to_inc[i] += inc_val[i];
     return to_inc;
+}
+
+template<class T>
+inline DataVector< typename std::remove_const<T>::type > const_data_cast(const DataVector<T>& t) {
+    return t.constCast();
 }
 
 }   // namespace plask

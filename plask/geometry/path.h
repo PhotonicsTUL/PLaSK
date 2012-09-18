@@ -4,10 +4,11 @@
 #include <map>
 #include <set>
 #include <plask/config.h>
-#include "object.h"
 #include "transform.h"
 
 namespace plask {
+
+struct GeometryObject;
 
 //TODO redefine to structure which alow to cast to container and translation
 typedef std::pair< shared_ptr<GeometryObject>, shared_ptr<GeometryObject> > Edge;
@@ -86,6 +87,22 @@ struct PathHints {
      * @param hint hint to add
      */
     void addHint(const Hint& hint);
+
+    /**
+     * Check if hint is included in this.
+     * @param container, child_tran content of hint (container and child - typically translation)
+     * @return *c true only if hint is included in @c this
+     */
+    bool include(shared_ptr<const GeometryObject> container, shared_ptr<const GeometryObject> child_tran) const;
+
+    /**
+     * Check if @p hint is included in @c this.
+     * @param hint hint to check
+     * @return *c true only if @p hint is included in @c this
+     */
+    bool include(const Hint& hint) const {
+        return include(hint.first, hint.second);
+    }
 
     /**
      * Add hint to hints map. Overwrite if hint for given container already exists.

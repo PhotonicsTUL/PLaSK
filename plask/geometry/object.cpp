@@ -4,6 +4,7 @@
 
 #include "transform.h"
 #include "space.h"
+#include "path.h"
 
 namespace plask {
 
@@ -205,13 +206,17 @@ shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec
     Subtree subtree = getPathsTo(point, false);
     // Walk the subtree
     const GeometryObject::Subtree* nodes = &subtree;
-    if (nodes->empty()) return shared_ptr<const GeometryObject>();
-    while (true) {
-        if(predicate(*(nodes->object))) return nodes->object;
-        if (nodes->children.empty()) return shared_ptr<const GeometryObject>();
+    while (!nodes->empty()) {
         assert(nodes->children.size() == 1); // Just to make sure that we have linear path
+        if (predicate(*(nodes->object))) return nodes->object;
+        if (nodes->children.empty()) return shared_ptr<const GeometryObject>();
+        if (path && nodes->object->isContainer()) {
+            if (!path->include(nodes->object, nodes->children.front().object))
+                return shared_ptr<const GeometryObject>();
+        }
         nodes = &(nodes->children.front());
     }
+    return shared_ptr<const GeometryObject>();
 }
 
 

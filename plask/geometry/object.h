@@ -1336,6 +1336,8 @@ struct GeometryObjectD: public GeometryObject {
     // //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints* path = 0) const;
     // //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints& path) const;
 
+    //std::vector< std::shared_ptr<const GeometryObject> > getPathToObjectAt(const DVec& point, const Predicate& predicate, const PathHints* path = 0) const;
+
     /**
      * Get object closest to the root, which includes specific point and fulfills the predicate
      * \param point point to test
@@ -1343,7 +1345,7 @@ struct GeometryObjectD: public GeometryObject {
      * \param path optional path hints filtering out some objects
      * \return resulted object or empty pointer
      */
-    shared_ptr<const GeometryObject> getMatchingAt(const DVec& point, const Predicate& predicate, const PathHints* path=0) const;
+    shared_ptr<const GeometryObject> getMatchingAt(const DVec& point, const Predicate& predicate, const PathHints* path = 0) const;
 
     /**
      * Get object closest to the root, which includes specific point and fulfills the predicate
@@ -1374,7 +1376,7 @@ struct GeometryObjectD: public GeometryObject {
         return objectIncludes(point, object, &path);
     }
 
-
+    std::set<std::string> getClassesAt(const DVec& point);
 };
 
 } // namespace plask
