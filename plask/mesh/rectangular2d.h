@@ -424,7 +424,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 private:
 
     // Common code for: left, right, bottom, top boundries:
-    struct BoundaryIteratorImpl: public BoundaryLogicImpl<RectangularMesh>::IteratorImpl {
+    struct BoundaryIteratorImpl: public BoundaryLogicImpl::IteratorImpl {
 
         const RectangularMesh &mesh;
 
@@ -436,7 +436,7 @@ private:
 
         virtual void increment() { ++index; }
 
-        virtual bool equal(const typename BoundaryLogicImpl<RectangularMesh>::IteratorImpl& other) const {
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
@@ -449,7 +449,7 @@ private:
 
         virtual std::size_t dereference() const { return this->mesh.index(this->line, this->index); }
 
-        virtual typename BoundaryLogicImpl<RectangularMesh>::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
             return new VerticalIteratorImpl(*this);
         }
     };
@@ -461,14 +461,14 @@ private:
 
         virtual std::size_t dereference() const { return this->mesh.index(this->index, this->line); }
 
-        virtual typename BoundaryLogicImpl<RectangularMesh>::IteratorImpl* clone() const {
+        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const {
             return new HorizontalIteratorImpl(*this);
         }
     };
 
     struct VerticalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
-        typedef typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryLogicImpl::Iterator Iterator;
 
 		std::size_t line;
 
@@ -492,7 +492,7 @@ private:
 
     struct HorizontalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
-        typedef typename BoundaryLogicImpl<RectangularMesh<2,Mesh1D>>::Iterator Iterator;
+        typedef typename BoundaryLogicImpl::Iterator Iterator;
 
 		std::size_t line;
 
@@ -514,21 +514,21 @@ private:
     };
 
     //TODO
-    struct HorizontalLineBoundary: public BoundaryLogicImpl<RectangularMesh<2,Mesh1D>> {
+    /*struct HorizontalLineBoundary: public BoundaryLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         double height;
 
         bool includes(const RectangularMesh &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == mesh.axis1.findNearestIndex(height);
         }
-    };
+    };*/
 
 public:
     // boundaries:
 
     template <typename Predicate>
     static Boundary getBoundary(Predicate predicate) {
-        return Boundary(new PredicateBoundary<RectangularMesh<2,Mesh1D>, Predicate>(predicate));
+        return Boundary(new PredicateBoundaryImpl<RectangularMesh<2,Mesh1D>, Predicate>(predicate));
     }
 
 	/**
