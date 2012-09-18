@@ -343,52 +343,69 @@ public:
         return getChild()->changedVersion(changer, translation);
     }
 
-    std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extract(const Predicate& predicate, const PathHints* path = 0) const {
-        return getChild()->extract(predicate, path);
+    // std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extract(const Predicate& predicate, const PathHints* path = 0) const {
+    //     return getChild()->extract(predicate, path);
+    // }
+
+    // std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extract(const Predicate& predicate, const PathHints& path) const {
+    //     return getChild()->extract(predicate, path);
+    // }
+
+    // std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extractObject(const shared_ptr<const GeometryObjectD<DIMS>>& object, const PathHints* path = 0) const {
+    //     return getChild()->extractObject(*object, path);
+    // }
+
+    // std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extractObject(const shared_ptr<const GeometryObjectD<DIMS>>& object, const PathHints& path) const {
+    //     return getChild()->extractObject(*object, path);
+    // }
+
+    inline shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints* path=0) {
+        return getChild()->getMatchingAt(point, predicate, path);
     }
 
-    std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extract(const Predicate& predicate, const PathHints& path) const {
-       return getChild()->extract(predicate, path);
+    inline shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints& path) {
+        return getChild()->getMatchingAt(point, predicate, path);
     }
 
-    std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extractObject(const shared_ptr<const GeometryObjectD<DIMS>>& object, const PathHints* path = 0) const {
-        return getChild()->extractObject(*object, path);
+    inline bool objectIncludes(const CoordsType& point, const GeometryObject& object, const PathHints* path = 0) const {
+        return getChild()->objectIncludes(point, object, path);
     }
 
-    std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extractObject(const shared_ptr<const GeometryObjectD<DIMS>>& object, const PathHints& path) const {
-        return getChild()->extractObject(*object, path);
+    inline bool objectIncludes(const CoordsType& point, const GeometryObject& object, const PathHints& path) const {
+        return getChild()->objectIncludes(point, object, path);
     }
+
 
 
     virtual void setPlanarBorders(const border::Strategy& border_to_set);
 
-//     /**
-//      * Get the sub/super-space of this one (automatically detected)
-//      * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
-//      * \param path hints specifying particular instance of the geometry object
-//      * \param copyBorders indicates wheter the new space should have the same borders as this one
-//      * \return new space
-//      */
-//     virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
+    // /**
+    //  * Get the sub/super-space of this one (automatically detected)
+    //  * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
+    //  * \param path hints specifying particular instance of the geometry object
+    //  * \param copyBorders indicates wheter the new space should have the same borders as this one
+    //  * \return new space
+    //  */
+    // virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
 
-//     /**
-//      * Get the sub/super-space of this one (automatically detected) with specified borders
-//      * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
-//      * \param path hints specifying particular instance of the geometry object
-//      * \param borders map of edge name to border description
-//      * \param axesNames name of the axes for borders
-//      * \return new space
-//      */
-//     virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr,
-//                                                  const std::map<std::string, std::string>& borders=null_borders,
-//                                                  const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
-//         GeometryD<dim>* subspace = getSubspace(object, path, false);
-//         subspace->setBorders( [&](const std::string& s) -> boost::optional<std::string> {
-//             auto b = borders.find(s);
-//             return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
-//         }, axesNames);
-//         return subspace;
-//     }
+    // /**
+    //  * Get the sub/super-space of this one (automatically detected) with specified borders
+    //  * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
+    //  * \param path hints specifying particular instance of the geometry object
+    //  * \param borders map of edge name to border description
+    //  * \param axesNames name of the axes for borders
+    //  * \return new space
+    //  */
+    // virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr,
+    //                                              const std::map<std::string, std::string>& borders=null_borders,
+    //                                              const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
+    //     GeometryD<dim>* subspace = getSubspace(object, path, false);
+    //     subspace->setBorders( [&](const std::string& s) -> boost::optional<std::string> {
+    //         auto b = borders.find(s);
+    //         return (b != borders.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
+    //     }, axesNames);
+    //     return subspace;
+    // }
 
 
 };

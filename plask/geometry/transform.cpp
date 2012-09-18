@@ -65,16 +65,16 @@ void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const Axi
     if (translation.up() != 0.0) dest_xml_object.attr(axes.getNameForUp(), translation.up());
 }
 
-template <int dim>
-void Translation<dim>::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const {
-    if (predicate(*this)) {
-        dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
-        return;
-    }
-    std::vector< shared_ptr<const GeometryObjectD<dim> > > child_res = getChild()->extract(predicate, path);
-    for (shared_ptr<const GeometryObjectD<dim>>& c: child_res)
-        dest.push_back(Translation<dim>::compress(const_pointer_cast<GeometryObjectD<dim>>(c), this->translation));
-}
+// template <int dim>
+// void Translation<dim>::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const {
+//     if (predicate(*this)) {
+//         dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
+//         return;
+//     }
+//     std::vector< shared_ptr<const GeometryObjectD<dim> > > child_res = getChild()->extract(predicate, path);
+//     for (shared_ptr<const GeometryObjectD<dim>>& c: child_res)
+//         dest.push_back(Translation<dim>::compress(const_pointer_cast<GeometryObjectD<dim>>(c), this->translation));
+// }
 
 template struct Translation<2>;
 template struct Translation<3>;

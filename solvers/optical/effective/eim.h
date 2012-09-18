@@ -104,9 +104,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     void setHorizontalMesh(const RectilinearMesh1D& meshx) {
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
-        auto child = geometry->getChild();
-        if (!child) throw NoChildException();
-        shared_ptr<RectilinearMesh2D> meshxy = RectilinearMesh2DSimpleGenerator().generate(child);
+        shared_ptr<RectilinearMesh2D> meshxy = RectilinearMesh2DSimpleGenerator().generate(geometry->getChild());
         meshxy->tran() = meshx;
         setMesh(meshxy);
     }

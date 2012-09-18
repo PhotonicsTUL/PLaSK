@@ -37,15 +37,15 @@ GeometryObject::Subtree Revolution::getPathsTo(const DVec& point, bool all) cons
     return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsTo(childVec(point), all));
 }
 
-void Revolution::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {
-    if (predicate(*this)) {
-        dest.push_back(static_pointer_cast< const GeometryObjectD<3> >(this->shared_from_this()));
-        return;
-    }
-    std::vector< shared_ptr<const GeometryObjectD<2> > > child_res = getChild()->extract(predicate, path);
-    for (shared_ptr<const GeometryObjectD<2>>& c: child_res)
-        dest.emplace_back(new Revolution(const_pointer_cast<GeometryObjectD<2>>(c)));
-}
+// void Revolution::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {
+//     if (predicate(*this)) {
+//         dest.push_back(static_pointer_cast< const GeometryObjectD<3> >(this->shared_from_this()));
+//         return;
+//     }
+//     std::vector< shared_ptr<const GeometryObjectD<2> > > child_res = getChild()->extract(predicate, path);
+//     for (shared_ptr<const GeometryObjectD<2>>& c: child_res)
+//         dest.emplace_back(new Revolution(const_pointer_cast<GeometryObjectD<2>>(c)));
+// }
 
 Box2D Revolution::childBox(const plask::Box3D& r) {
     Box2D result(childVec(r.lower), childVec(r.upper));

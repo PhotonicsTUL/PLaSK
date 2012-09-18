@@ -906,7 +906,7 @@ template <int dim> struct Translation;
  * Template of base classes for geometry objects in space with given number of dimensions (2 or 3).
  * @tparam dimensions number of dimensions, 2 or 3
  */
-template < int dimensions >
+template <int dimensions>
 struct GeometryObjectD: public GeometryObject {
 
     static const int dim = dimensions;
@@ -921,21 +921,21 @@ struct GeometryObjectD: public GeometryObject {
 
     /**
      * Find all paths to objects which lies at given @p point.
-     * @param point point in coordinates of this
+     * @param point point in local coordinates
      * \param all if true then return all paths if branches overlap the point
      * @return all paths, last one is on top and overlies rest
      */
     virtual Subtree getPathsTo(const DVec& point, bool all=false) const = 0;
 
     /**
-     * Check if geometry includes point.
-     * @param p point
+     * Check if this geometry object includes point.
+     * @param point point in local coordinates
      * @return true only if this geometry includes point @a p
      */
-    virtual bool includes(const DVec& p) const = 0;
+    virtual bool includes(const DVec& point) const = 0;
 
     /**
-     * Check if geometry includes some point from given @a area.
+     * Check if this geometry object includes some point from given @a area.
      * @param area rectangular area
      * @return true only if this geometry includes some points from @a area
      */
@@ -1248,93 +1248,132 @@ struct GeometryObjectD: public GeometryObject {
         return getObjectPositions(object, &path);
     }
 
-    /**
-     * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
-     * are wrapped in transformations, which transform them to the root coordinates.
-     * @param predicate
-     * @param dest[out] place to append resulted objects
-     * @param path
-     */
-    virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints* path = 0) const = 0;
+    // /**
+    //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
+    //  * are wrapped in transformations, which transform them to the root coordinates.
+    //  * @param predicate
+    //  * @param dest[out] place to append resulted objects
+    //  * @param path
+    //  */
+    // virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints* path = 0) const = 0;
+
+    // /**
+    //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
+    //  * are wrapped in transformations, which transform them to the root coordinates.
+    //  * @param predicate
+    //  * @param dest[out] place to append resulted objects
+    //  * @param path
+    //  */
+    // void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints& path) const {
+    //     extractToVec(predicate, dest, &path);
+    // }
+
+    // /**
+    //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
+    //  * are wrapped in transformations, which transform them to the root coordinates.
+    //  * @param predicate
+    //  * @param path
+    //  * @return resulted objects
+    //  */
+    // std::vector< shared_ptr<const GeometryObjectD<dimensions> > > extract(const Predicate& predicate, const PathHints* path = 0) const {
+    //     std::vector< shared_ptr<const GeometryObjectD<dimensions> > > dest;
+    //     extractToVec(predicate, dest, path);
+    //     return dest;
+    // }
+
+    // /**
+    //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
+    //  * are wrapped in transformations, which transform them to the root coordinates.
+    //  * @param predicate
+    //  * @param path
+    //  * @return resulted objects
+    //  */
+    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extract(const Predicate& predicate, const PathHints& path) const {
+    //     return extract(predicate, &path);
+    // }
+
+    // /**
+    //  * Get instances of the object withing subtree with root in this. Returned intances
+    //  * are wrapped in transformations, which transform them to the root coordinates.
+    //  * @param object object to extract
+    //  * @param path
+    //  * @return resulted objects
+    //  */
+    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractObject(const GeometryObjectD<dimensions>& object, const PathHints* path = 0) {
+    //     return extract(PredicateIsA(object), path);
+    // }
+
+    // /**
+    //  * Get instances of the object withing subtree with root in this. Returned intances
+    //  * are wrapped in transformations, which transform them to the root coordinates.
+    //  * @param object object to extract
+    //  * @param path
+    //  * @return resulted objects
+    //  */
+    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractObject(const GeometryObjectD<dimensions>& object, const PathHints& path) {
+    //     return extractObject(object, &path);
+    // }
+
+    // /**
+    //  * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
+    //  * @param path
+    //  * @return resulted objects
+    //  */
+    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractLeafs(const PathHints* path = 0) {
+    //     return extract(&GeometryObject::PredicateIsLeaf, path);
+    // }
+
+    // /**
+    //  * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
+    //  * @param path
+    //  * @return resulted objects
+    //  */
+    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractLeafs(const PathHints& path) {
+    //     return extractLeafs(&path);
+    // }
+
+    // //TODO
+    // //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints* path = 0) const;
+    // //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints& path) const;
 
     /**
-     * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
-     * are wrapped in transformations, which transform them to the root coordinates.
-     * @param predicate
-     * @param dest[out] place to append resulted objects
-     * @param path
+     * Get object closest to the root, which includes specific point and fulfills the predicate
+     * \param point point to test
+     * \param predicate predicate required to match
+     * \param path optional path hints filtering out some objects
+     * \return resulted object or empty pointer
      */
-    void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints& path) const {
-        extractToVec(predicate, dest, &path);
+    shared_ptr<const GeometryObject> getMatchingAt(const DVec& point, const Predicate& predicate, const PathHints* path=0) const;
+
+    /**
+     * Get object closest to the root, which includes specific point and fulfills the predicate
+     * \param point point to test
+     * \param predicate predicate required to match
+     * \param path optional path hints filtering out some objects
+     * \return resulted object or empty pointer
+     */
+    inline shared_ptr<const GeometryObject> getMatchingAt(const DVec& point, const Predicate& predicate, const PathHints& path) const {
+        return getMatchingAt(point, predicate, &path);
     }
 
     /**
-     * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
-     * are wrapped in transformations, which transform them to the root coordinates.
-     * @param predicate
-     * @param path
-     * @return resulted objects
+     * Check if specified geometry object  includes point.
+     * @param point point
+     * @return true only if this geometry includes point @a p
      */
-    std::vector< shared_ptr<const GeometryObjectD<dimensions> > > extract(const Predicate& predicate, const PathHints* path = 0) const {
-        std::vector< shared_ptr<const GeometryObjectD<dimensions> > > dest;
-        extractToVec(predicate, dest, path);
-        return dest;
+    inline bool objectIncludes(const DVec& point, const GeometryObject& object, const PathHints* path = 0) const {
+        return getMatchingAt(point, PredicateIsA(object), path);
     }
 
     /**
-     * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
-     * are wrapped in transformations, which transform them to the root coordinates.
-     * @param predicate
-     * @param path
-     * @return resulted objects
+     * Check if specified geometry object  includes point.
+     * @param point point
+     * @return true only if this geometry includes point @a p
      */
-    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extract(const Predicate& predicate, const PathHints& path) const {
-        return extract(predicate, &path);
+    inline bool objectIncludes(const DVec& point, const GeometryObject& object, const PathHints& path) const {
+        return objectIncludes(point, object, &path);
     }
 
-    /**
-     * Get instances of the object withing subtree with root in this. Returned intances
-     * are wrapped in transformations, which transform them to the root coordinates.
-     * @param object object to extract
-     * @param path
-     * @return resulted objects
-     */
-    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractObject(const GeometryObjectD<dimensions>& object, const PathHints* path = 0) {
-        return extract(PredicateIsA(object), path);
-    }
-
-    /**
-     * Get instances of the object withing subtree with root in this. Returned intances
-     * are wrapped in transformations, which transform them to the root coordinates.
-     * @param object object to extract
-     * @param path
-     * @return resulted objects
-     */
-    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractObject(const GeometryObjectD<dimensions>& object, const PathHints& path) {
-        return extractObject(object, &path);
-    }
-
-    /**
-     * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
-     * @param path
-     * @return resulted objects
-     */
-    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractLeafs(const PathHints* path = 0) {
-        return extract(&GeometryObject::PredicateIsLeaf, path);
-    }
-
-    /**
-     * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
-     * @param path
-     * @return resulted objects
-     */
-    std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractLeafs(const PathHints& path) {
-        return extractLeafs(&path);
-    }
-
-    //TODO
-    //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints* path = 0) const;
-    //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints& path) const;
 
 };
 

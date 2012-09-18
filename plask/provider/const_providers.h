@@ -69,6 +69,8 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
     DataVector<ValueType> get(const plask::MeshD<DIMS>& dst_mesh) const {
         shared_ptr<const GeometryObjectD<DIMS>> geometry = root_geometry.lock();
         if (!geometry) return DataVector<ValueType>(dst_mesh.size(), default_value);
+        auto root = geometry->getChild();
+        if (!root) throw DataVector<ValueType>(dst_mesh.size(), default_value);
 
         DataVector<ValueType> result(dst_mesh.size());
 
@@ -78,14 +80,10 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
             for (auto place = places.begin(); place != places.end(); ++place) {
                 auto object = place->object.lock();
                 if (!object) continue;
-                auto regions = geometry->extractObject(*object, place->hints);
-                for (const auto& region: regions) {
-                    if (region && region->includes(point)) {
-                        result[i] = values[place-places.begin()];
-                        assigned = true;
-                        break;
-                    }
-                    if (assigned) break;
+                if (root->objectIncludes(point, *object, place->hints)) {
+                    result[i] = values[place-places.begin()];
+                    assigned = true;
+                    break;
                 }
             }
             if (!assigned) result[i] = default_value;

@@ -200,6 +200,21 @@ void GeometryObject::forEachRealObjectInSubtree(std::function<bool (const Geomet
 
 // --- GeometryObjectD ---
 
+template <int dims>
+shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec& point, const Predicate& predicate, const plask::PathHints* path) const {
+    Subtree subtree = getPathsTo(point, false);
+    // Walk the subtree
+    const GeometryObject::Subtree* nodes = &subtree;
+    if (nodes->empty()) return shared_ptr<const GeometryObject>();
+    while (true) {
+        if(predicate(*(nodes->object))) return nodes->object;
+        if (nodes->children.empty()) return shared_ptr<const GeometryObject>();
+        assert(nodes->children.size() == 1); // Just to make sure that we have linear path
+        nodes = &(nodes->children.front());
+    }
+}
+
+
 template struct GeometryObjectD<2>;
 template struct GeometryObjectD<3>;
 

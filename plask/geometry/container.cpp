@@ -86,21 +86,21 @@ void GeometryObjectContainer<dim>::getPositionsToVec(const GeometryObject::Predi
     for (auto child: children) child->getPositionsToVec(predicate, dest, path);
 }
 
-template <int dim>
-void GeometryObjectContainer<dim>::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const {
-    if (predicate(*this)) {
-        dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
-        return;
-    }
-    if (path) {
-        auto c = path->getTranslationChildren<dim>(*this);
-        if (!c.empty()) {
-            for (auto child: c) child->extractToVec(predicate, dest, path);
-            return;
-        }
-    }
-    for (auto child: children) child->extractToVec(predicate, dest, path);
-}
+// template <int dim>
+// void GeometryObjectContainer<dim>::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const {
+//     if (predicate(*this)) {
+//         dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
+//         return;
+//     }
+//     if (path) {
+//         auto c = path->getTranslationChildren<dim>(*this);
+//         if (!c.empty()) {
+//             for (auto child: c) child->extractToVec(predicate, dest, path);
+//             return;
+//         }
+//     }
+//     for (auto child: children) child->extractToVec(predicate, dest, path);
+// }
 
 template <int dim>
 bool GeometryObjectContainer<dim>::isInSubtree(const GeometryObject& el) const {
