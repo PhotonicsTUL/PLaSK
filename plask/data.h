@@ -410,18 +410,18 @@ bool operator != ( DataVector<T> const& a, DataVector<T> const& b) { return !(a=
  * @param a, b vectors to compare
  * @return @c true only if @p a is smaller than the @p b
  */
-template<class T> inline
-bool operator< ( DataVector<T> const& a, DataVector<T> const& b)
+template<class T1, class T2> inline
+bool operator< ( DataVector<T1> const& a, DataVector<T2> const& b)
 { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()); }
 
-template<class T> inline
-bool operator> ( DataVector<T> const& a, DataVector<T> const& b) { return b < a; }
+template<class T1, class T2> inline
+bool operator> ( DataVector<T1> const& a, DataVector<T2> const& b) { return b < a; }
 
-template<class T> inline
-bool operator<= ( DataVector<T> const& a, DataVector<T> const& b) { return !(b < a); }
+template<class T1, class T2> inline
+bool operator<= ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(b < a); }
 
-template<class T> inline
-bool operator>= ( DataVector<T> const& a, DataVector<T> const& b) { return !(a < b); }
+template<class T1, class T2> inline
+bool operator>= ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a < b); }
 
 /**
  * Print data vector to stream.

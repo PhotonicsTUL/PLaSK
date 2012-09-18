@@ -237,10 +237,13 @@ struct Path {
         : objects(path) {}
 
     Path(std::vector< shared_ptr<const GeometryObject> >&& path)
-        : objects(path) {}
+        : objects(std::move(path)) {}
 
     Path(const GeometryObject::Subtree& paths)
         : objects(paths.toLinearPath().objects) {}
+
+    Path(GeometryObject::Subtree&& paths)
+        : objects(std::move(paths.toLinearPath().objects)) {}
 
     // This are the same as default constructors, so can be skiped:
     // Path(const Path& path): objects(path.objects) {}

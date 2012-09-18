@@ -209,6 +209,7 @@ shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec
     while (!nodes->empty()) {
         if (predicate(*(nodes->object))) return nodes->object;
         if (nodes->children.empty()) return shared_ptr<const GeometryObject>();
+        assert(nodes->children.size() == 1);
         if (path && nodes->object->isContainer()) {
             if (!path->include(nodes->object, nodes->children.front().object))
                 return shared_ptr<const GeometryObject>();
@@ -218,6 +219,12 @@ shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec
     return shared_ptr<const GeometryObject>();
 }
 
+template <int dims>
+std::set<std::string> GeometryObjectD<dims>::getClassesAt(const DVec& point, const plask::PathHints* path) const {
+    std::set<std::string> result;
+    getMatchingAt(point, [&](const GeometryObject& o) { result.insert(o.classes.begin(), o.classes.end()); return false; }, path);
+    return result;
+}
 
 template struct GeometryObjectD<2>;
 template struct GeometryObjectD<3>;
