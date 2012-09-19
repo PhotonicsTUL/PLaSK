@@ -15,42 +15,51 @@ This file includes classes which can hold (or points to) datas.
 namespace plask {
 
 /**
- * Store pointer and size. Is like inteligent pointer for plain data arrays.
+  * Base class for optional data destructor.
+  * When the reference count reaches 0 then if there is a destructor set, its \c destruct method is called,
+  * which can delete vector data (it will not be deleted automatically). Afterwards the destructor object is deleted.
+  */
+template <typename T>
+struct DataVectorDestructor {
+    virtual ~DataVectorDestructor() {}
+    /**
+     * Method called when data is to be destructed. Should be overriden in derived class.
+     * \param data vector data to delete
+     */
+    virtual void destruct(T* data) = 0;
+};
+
+
+namespace detail {
+    /// Garbage collector info for DataVector
+    template <typename T>
+    struct DataVectorGC {
+        // Count is atomic so many threads can increment and decrement it at same time.
+        // If it is 0, it means that there has been only one DataVector object, so probably one thread uses it.
+        std::atomic<unsigned> count;
+        DataVectorDestructor<T>* destructor;
+        explicit DataVectorGC(unsigned initial) : count(initial), destructor(nullptr) {}
+        ~DataVectorGC() { delete destructor; }
+    };
+}
+
+/**
+ * Store pointer and size. Is like intelligent pointer for plain data arrays.
  *
  * Can work in two modes:
- * - manage - data will be deleted (by delete[]) by destructor of last DataVector instance which referee to this data (reference counting is using);
- * - non-manage - data will be not deleted by DataVector (so DataVector just referee to external data).
+ * - managed — data will be deleted (by delete[]) by destructor of last DataVector instance which referee to this data (reference counting is using);
+ * - non-managed — data will be not deleted by DataVector (so DataVector just refers to external data).
  *
- * In both cases, asign operation and copy constructor of DataVector do not copy the data, but just create DataVectors which referee to the same data.
- * So both of this operations are very fast.
+ * In both cases, assign operation and copy constructor of DataVector do not copy the data, but just create DataVectors which refers to the same data.
+ * So both these operations are very fast.
  */
-//TODO std::remove_const<T>::type, const T
 template <typename T>
 struct DataVector {
 
-    /**
-     * Base class for optional data destructor.
-     * When the reference count reaches 0 then if there is a destructor set, its \c destruct method is called,
-     * which can delete vector data (it will not be deleted automatically). Afterwards the destructor object is deleted.
-     */
-    struct Destructor {
-        virtual ~Destructor() {}
-        /**
-         * Method calles when data is to be destructed. Should be overriden in derived class.
-         * \param data vector data to delete
-         */
-        virtual void destruct(T* data) = 0;
-    };
+    typedef detail::DataVectorGC<typename std::remove_const<T>::type> Gc;
+    typedef DataVectorDestructor<typename std::remove_const<T>::type> Destructor;
 
   private:
-
-    struct Gc {
-        //count is atomic so many threads can increment and decrement it at same time, if it will be 0 it means that there was only one DataVector object, so probably one thread use it
-        std::atomic<unsigned> count;
-        Destructor* destructor;
-        explicit Gc(unsigned initial) : count(initial), destructor(nullptr) {}
-        ~Gc() { delete destructor; }
-    };
 
     std::size_t size_;                  ///< size of the stored data
     Gc* gc_;                            ///< the reference count for the garbage collector and optional destructor
@@ -60,7 +69,7 @@ struct DataVector {
     void dec_ref() {
         if (gc_ && --(gc_->count) == 0) {
             if (gc_->destructor == nullptr) delete[] data_;
-            else { gc_->destructor->destruct(data_); }
+            else { gc_->destructor->destruct(const_cast<typename std::remove_const<T>::type*>(data_)); }
             delete gc_;
         }
     }
@@ -70,7 +79,12 @@ struct DataVector {
         if (gc_) ++(gc_->count);
     }
 
+    friend struct DataVector<typename std::remove_const<T>::type>;
+    friend struct DataVector<const T>;
+
   public:
+
+#   define ONLY_FOR_CONST_DATAVECTOR(TS)  typename ET = typename std::enable_if< std::is_same<T,const TS>::value && !std::is_const<TS>::value >::type
 
     typedef T value_type;               ///< type of the stored data
 
@@ -101,19 +115,38 @@ struct DataVector {
      * Copy constructor. Only makes a shallow copy (doesn't copy data).
      * @param src data source
      */
-    //TODO DataVector(const DataVector<T>& src)
-    template <typename TS>
-    DataVector(const DataVector<TS>& src): size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
+    DataVector(const DataVector<T>& src): size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
+
+    /**
+     * Copy constructor. Only makes a shallow copy (doesn't copy data).
+     * @param src data source
+     */
+    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    DataVector(const DataVector<TS>& src):
+        size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
 
     /**
      * Assign operator. Only makes a shallow copy (doesn't copy data).
      * @param M data source
      * @return *this
      */
-    //TODO DataVector(const DataVector<T>& src)
-    template <typename TS>
-    DataVector<T>& operator=(const DataVector<TS>& M) {
+    DataVector<T>& operator=(const DataVector<T>& M) {
         if (this == &M) return *this;
+        this->dec_ref();
+        size_ = M.size_;
+        data_ = M.data_;
+        gc_ = M.gc_;
+        inc_ref();
+        return *this;
+    }
+
+    /**
+     * Assign operator. Only makes a shallow copy (doesn't copy data).
+     * @param M data source
+     * @return *this
+     */
+    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    DataVector<T>& operator=(const DataVector<TS>& M) {
         this->dec_ref();
         size_ = M.size_;
         data_ = M.data_;
@@ -134,7 +167,7 @@ struct DataVector {
      * Move constructor.
      * @param src data to move
      */
-    template <typename TS>
+    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
     DataVector(DataVector<TS>&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
         src.gc_ = nullptr;
     }
@@ -154,7 +187,7 @@ struct DataVector {
      * @param src data source
      * @return *this
      */
-    template <typename TS>
+    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
     DataVector<T>& operator=(DataVector<TS>&& src) {
         swap(src);
         return *this;
@@ -166,8 +199,7 @@ struct DataVector {
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
-    template <typename TS>
-    DataVector(TS* existing_data, std::size_t size, bool manage = false)
+    DataVector(T* existing_data, std::size_t size, bool manage = false)
         : size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
 
     /**
@@ -176,7 +208,8 @@ struct DataVector {
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
-    DataVector(T* existing_data, std::size_t size, bool manage = false)
+    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    DataVector(TS* existing_data, std::size_t size, bool manage = false)
         : size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
 
     /**
@@ -184,6 +217,15 @@ struct DataVector {
      * @param init initializer list with data
      */
     DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new Gc(1)), data_(new T[size_]) {
+        std::copy(init.begin(), init.end(), data_);
+    }
+
+    /**
+     * Create data vector and fill it with data from initializer list.
+     * @param init initializer list with data
+     */
+    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    DataVector(std::initializer_list<TS> init): size_(init.size()), gc_(new Gc(1)), data_(new T[size_]) {
         std::copy(init.begin(), init.end(), data_);
     }
 
@@ -217,12 +259,8 @@ struct DataVector {
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
-    template <typename TS>
-    void reset(TS* existing_data, std::size_t size, bool manage = false) {
-        dec_ref();
-        size_ = size;
-        gc_ = manage ? new Gc(1) : nullptr;
-        data_ = existing_data;
+    void reset(T* existing_data, std::size_t size, bool manage = false) {
+        reset<T>(existing_data, size, manage);
     }
 
     /**
@@ -231,8 +269,12 @@ struct DataVector {
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
-    void reset(T* existing_data, std::size_t size, bool manage = false) {
-        reset<T>(existing_data, size, manage);
+    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    void reset(TS* existing_data, std::size_t size, bool manage = false) {
+        dec_ref();
+        size_ = size;
+        gc_ = manage ? new Gc(1) : nullptr;
+        data_ = existing_data;
     }
 
     /**
@@ -386,6 +428,9 @@ struct DataVector {
         std::swap(gc_, other.gc_);
         std::swap(data_, other.data_);
     }
+
+
+#   undef ONLY_FOR_CONST_DATAVECTOR
 };
 
 /**
