@@ -379,7 +379,13 @@ public:
         return getChild()->objectIncludes(object, point);
     }
 
+    inline shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const CoordsType& point) {
+        return getChild()->hasRoleAt(role_name, point);
+    }
 
+    inline std::set<std::string> getRolesAt(const CoordsType& point) {
+        return getChild()->getRolesAt(point);
+    }
 
     virtual void setPlanarBorders(const border::Strategy& border_to_set);
 

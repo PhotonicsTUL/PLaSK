@@ -189,7 +189,11 @@ struct DataVector {
      */
     template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
     DataVector<T>& operator=(DataVector<TS>&& src) {
-        swap(src);
+        this->dec_ref();
+        size_ = std::move(src.size_);
+        gc_ = std::move(src.gc_);
+        data_ = std::move(src.data_);
+        src.gc_ = nullptr;
         return *this;
     }
 
@@ -278,7 +282,7 @@ struct DataVector {
     }
 
     /**
-     * Change data of this data vector to unitilized data with given @p size.
+     * Change data of this data vector to uninitialized data with given @p size.
      *
      * Reserve memory using new T[size] call.
      *
@@ -386,7 +390,7 @@ struct DataVector {
      * Make a deep copy of the data.
      * @return new object with manage copy of this data
      */
-    DataVector< typename std::remove_const<T>::type > copy() const {
+    DataVector<typename std::remove_const<T>::type> copy() const {
         typename std::remove_const<T>::type* new_data = new typename std::remove_const<T>::type[size_];
         std::copy(begin(), end(), new_data);
         return DataVector< typename std::remove_const<T>::type >(new_data, size_, true);
@@ -404,10 +408,10 @@ struct DataVector {
      * Allow to remove const qualifer from data, must be
      * @return non-const version of this which refere to the same data
      */
-    DataVector< typename std::remove_const<T>::type > constCast() const {
-        DataVector< typename std::remove_const<T>::type > result(const_cast<  typename std::remove_const<T>::type* >(this->data()), this->size(), false);
+    DataVector<typename std::remove_const<T>::type> remove_const() const {
+        DataVector<typename std::remove_const<T>::type> result(const_cast<typename std::remove_const<T>::type*>(this->data()), this->size(), false);
         result.gc_ = this->gc_;
-        inc_ref();
+        result.inc_ref();
         return result;
     }
 
@@ -415,8 +419,8 @@ struct DataVector {
      * Make copy of data only if this is not the only one owner of it.
      * @return copy of this: shallow if unique() is @c true, deep if unique() is @c false
      */
-    DataVector< typename std::remove_const<T>::type > claim() const {
-        return unique() ? constCast() : copy();
+    DataVector<typename std::remove_const<T>::type> claim() const {
+        return unique() ? remove_const() : copy();
     }
 
     /**
@@ -428,7 +432,6 @@ struct DataVector {
         std::swap(gc_, other.gc_);
         std::swap(data_, other.data_);
     }
-
 
 #   undef ONLY_FOR_CONST_DATAVECTOR
 };
@@ -493,9 +496,14 @@ DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
     return to_inc;
 }
 
-template<class T>
-inline DataVector< typename std::remove_const<T>::type > const_data_cast(const DataVector<T>& t) {
-    return t.constCast();
+/**
+ * Cast DataVector<const T> into DataVector<T>
+ * \param data vector of type DataVector<const T> or DataVector<T>
+ * \return data vector of type DataVector<T>
+ */
+template<typename RT, typename T>
+inline DataVector<RT> const_data_cast(const DataVector<T>& src) {
+    return src.remove_const();
 }
 
 }   // namespace plask
