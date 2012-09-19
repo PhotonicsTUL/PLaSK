@@ -63,20 +63,24 @@ class Transforms(unittest.TestCase):
 
 
 
-
 class GeometryPath(unittest.TestCase):
 
     def setUp(self):
         self.stack1 = plask.geometry.Stack2D()
         self.stack2 = plask.geometry.Stack2D()
-        self.object = plask.geometry.Rectangle(1,2, plask.material.GaN())
+        self.object1 = plask.geometry.Rectangle(1,2, plask.material.GaN())
+        self.object2 = plask.geometry.Rectangle(1,2, plask.material.GaN())
         self.stack1.append(self.stack2)
-        self.stack2.append(self.object)
+        self.stack2.append(self.object1)
+        self.stack2.append(self.object2)
 
     def testPath(self):
         p = plask.geometry.Path([self.stack1, self.stack2])
-        p += self.object
+        p += self.object1
 
+    def testIncludes(self):
+        self.assertTrue( self.stack1.objectIncludes(self.object1, 0.5, 1.0) )
+        self.assertFalse( self.stack1.objectIncludes(self.object1, 0.5, 3.0) )
 
 
 class Containers(unittest.TestCase):
@@ -171,3 +175,13 @@ class Containers(unittest.TestCase):
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,4) )
         self.assertEqual( stack.getMaterial(0,0,1), self.aln)
         self.assertEqual( stack.getMaterial(0,0,3), self.gan)
+
+    def testRoles(self):
+        stack = plask.geometry.Stack2D()
+        stack.append(self.block1)
+        stack.append(self.block2)
+        self.block2.role = "something"
+        self.assertIn( "something", stack.getRolesAt(2., 4.) )
+        self.assertTrue( stack.hasRoleAt("something", 2., 4.) )
+
+

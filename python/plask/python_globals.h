@@ -87,7 +87,7 @@ struct IOError: public Exception {
 
 
 // ----------------------------------------------------------------------------------------------------------------------
-// Compare shared pointes
+// Compare shared pointers
 template <typename T>
 bool __is__(const shared_ptr<T>& a, const shared_ptr<T>& b) {
     return a == b;
@@ -186,9 +186,9 @@ template <> inline std::string spaceSuffix<Geometry2DCartesian>() { return "2D";
 template <> inline std::string spaceSuffix<Geometry2DCylindrical>() { return "Cyl"; }
 template <> inline std::string spaceSuffix<Geometry3D>() { return "3D"; }
 
+
 // ----------------------------------------------------------------------------------------------------------------------
 // Config
-
 struct Config
 {
     // Current axis names

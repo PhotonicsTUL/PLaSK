@@ -1364,21 +1364,35 @@ struct GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Check if specified geometry object includes point.
-     * @param point point
-     * @return true only if this geometry includes point @a p
+     * Check if specified geometry object includes a point @a point.
+     * \param object object to test
+     * \param path path hints specifying the object
+     * \param point point
+     * \return true only if this geometry includes the point @a point
      */
-    inline bool objectIncludes(const DVec& point, const GeometryObject& object, const PathHints* path = 0) const {
+    inline bool objectIncludes(const GeometryObject& object, const PathHints* path, const DVec& point) const {
         return getMatchingAt(point, PredicateIsA(object), path);
     }
 
     /**
-     * Check if specified geometry object  includes point.
-     * @param point point
-     * @return true only if this geometry includes point @a p
+     * Check if specified geometry object includes a point @a point.
+     * \param object object to test
+     * \param path path hints specifying the object
+     * \param point point
+     * \return true only if this geometry includes the point @a point
      */
-    inline bool objectIncludes(const DVec& point, const GeometryObject& object, const PathHints& path) const {
-        return objectIncludes(point, object, &path);
+    inline bool objectIncludes(const GeometryObject& object, const PathHints& path, const DVec& point) const {
+        return objectIncludes(object, &path, point);
+    }
+
+    /**
+     * Check if specified geometry object includes a point @a point.
+     * \param object object to test
+     * \param point point
+     * \return true only if this geometry includes the point @a point
+     */
+    inline bool objectIncludes(const GeometryObject& object, const DVec& point) const {
+        return objectIncludes(object, nullptr, point);
     }
 
     /**

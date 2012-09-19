@@ -133,7 +133,7 @@ struct PythonProfile: public Provider {
             for (auto place = places.begin(); place != places.end(); ++place) {
                 auto object = dynamic_pointer_cast<GeometryObjectD<DIMS>>(place->object.lock());
                 if (!object) continue;
-                if (root->objectIncludes(point, *object, place->hints)) {
+                if (root->objectIncludes(*object, place->hints, point)) {
                     result[i] = vals[place-places.begin()];
                     assigned = true;
                     break;
