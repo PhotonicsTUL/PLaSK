@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_SUITE(data) // MUST be the same as the file name
         plask::DataVector<int> v2;
         plask::DataVector<const int> cv2(v);
 
-        // cv = v;
+        // v = cv;
         // vd = v;
 
         v2 = plask::const_data_cast<int>(v);

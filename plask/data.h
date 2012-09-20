@@ -84,8 +84,6 @@ struct DataVector {
 
   public:
 
-#   define ONLY_FOR_CONST_DATAVECTOR(TS)  typename ET = typename std::enable_if< std::is_same<T,const TS>::value && !std::is_const<TS>::value >::type
-
     typedef T value_type;               ///< type of the stored data
 
     typedef T* iterator;                ///< iterator type for the array
@@ -121,7 +119,7 @@ struct DataVector {
      * Copy constructor. Only makes a shallow copy (doesn't copy data).
      * @param src data source
      */
-    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    template <typename TS>
     DataVector(const DataVector<TS>& src):
         size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
 
@@ -145,7 +143,7 @@ struct DataVector {
      * @param M data source
      * @return *this
      */
-    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    template <typename TS>
     DataVector<T>& operator=(const DataVector<TS>& M) {
         this->dec_ref();
         size_ = M.size_;
@@ -167,7 +165,7 @@ struct DataVector {
      * Move constructor.
      * @param src data to move
      */
-    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    template <typename TS>
     DataVector(DataVector<TS>&& src): size_(src.size_), gc_(src.gc_), data_(src.data_) {
         src.gc_ = nullptr;
     }
@@ -187,7 +185,7 @@ struct DataVector {
      * @param src data source
      * @return *this
      */
-    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    template <typename TS>
     DataVector<T>& operator=(DataVector<TS>&& src) {
         this->dec_ref();
         size_ = std::move(src.size_);
@@ -212,7 +210,7 @@ struct DataVector {
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
-    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    template <typename TS>
     DataVector(TS* existing_data, std::size_t size, bool manage = false)
         : size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
 
@@ -228,7 +226,7 @@ struct DataVector {
      * Create data vector and fill it with data from initializer list.
      * @param init initializer list with data
      */
-    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    template <typename TS>
     DataVector(std::initializer_list<TS> init): size_(init.size()), gc_(new Gc(1)), data_(new T[size_]) {
         std::copy(init.begin(), init.end(), data_);
     }
@@ -273,7 +271,7 @@ struct DataVector {
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
-    template <typename TS, ONLY_FOR_CONST_DATAVECTOR(TS)>
+    template <typename TS>
     void reset(TS* existing_data, std::size_t size, bool manage = false) {
         dec_ref();
         size_ = size;
@@ -433,7 +431,6 @@ struct DataVector {
         std::swap(data_, other.data_);
     }
 
-#   undef ONLY_FOR_CONST_DATAVECTOR
 };
 
 /**
