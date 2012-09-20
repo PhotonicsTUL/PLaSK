@@ -42,51 +42,95 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
   public:
     
-    /*class Element {
-        RectangularMesh<2,Mesh1D>& mesh;
-        std::size_t lowIndex0, lowIndex1; //probably this form allow to do most operation fastest in avarage
+    /**
+     * Represent FEM-like element in RectangularMesh.
+     */
+    class Element {
+        const RectangularMesh<2,Mesh1D>& mesh;
+        std::size_t index0, index1; //probably this form allow to do most operation fastest in avarage, low indexes of element corner or just element indexes
         
         public:
         
-        std::size_t getMeshIndexLower0() const { return lowIndex0; }
+        Element(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index0, std::size_t index1): mesh(mesh), index0(index0), index1(index1) {}
         
-        std::size_t getMeshIndexLower1() const { return lowIndex1; }
+        Element(const RectangularMesh<2,Mesh1D>& mesh, std::size_t elementIndex): mesh(mesh) {
+            std::size_t v = mesh.getElementMeshLowIndex(elementIndex);
+            index0 = mesh.index0(v);
+            index1 = mesh.index1(v);
+        }
         
-        std::size_t getMeshIndexLower() const { return mesh.index(lowIndex0, lowIndex1); }
+        typedef typename Mesh1D::PointType PointType;   // exaclty type returned by []
         
-        T& getLower0() { return mesh.axis0[lowIndex0]; }
+        std::size_t getMeshIndexLower0() const { return index0; }
         
-        const T& getLower0() const { return mesh.axis0[lowIndex0]; }
+        std::size_t getMeshIndexLower1() const { return index1; }
         
-        T& getLower1() { return mesh.axis1[lowIndex1]; }
+        std::size_t getMeshIndexLower() const { return mesh.index(index0, index1); }
+               
+        PointType getLower0() const { return mesh.axis0[index0]; }
         
-        const T& getLower1() const { return mesh.axis1[lowIndex1]; }
+        PointType getLower1() const { return mesh.axis1[index1]; }
+                
+        Vec<2, PointType> getLower() const { return mesh(getLower0(), getLower1()); }
         
-        std::size_t getMeshIndexUpper0() const { return lowIndex0+1; }
+        std::size_t getMeshIndexUpper0() const { return index0+1; }
         
-        std::size_t getMeshIndexUpper1() const { return lowIndex1+1; }
+        std::size_t getMeshIndexUpper1() const { return index1+1; }
+                
+        PointType getUpper0() const { return mesh.axis0[getMeshIndexUpper0()]; }
         
-        T& getUpper0() { return mesh.axis0[getMeshIndexUpper0()]; }
+        PointType getUpper1() const { return mesh.axis1[getMeshIndexUpper1()]; }
         
-        const T& getUpper0() const { return mesh.axis0[getMeshIndexUpper0()]; }
+        Vec<2, PointType> getUpper() const { return mesh(getUpper0(), getUpper1()); }
         
-        T& getUpper1() { return mesh.axis1[getMeshIndexUpper1()]; }
+        PointType getSize0() const { return getUpper0() - getLower0(); }
         
-        const T& getUpper1() const { return mesh.axis1[getMeshIndexUpper1()]; }
+        PointType getSize1() const { return getUpper0() - getLower0(); }
         
-        std::size_t getIndex() const { return mesh.getElementIndexFromLowIndex(getMeshIndexLow()); }
-    };*/
+        Vec<2, PointType> getSize() const { return getUpper() - getLower(); }
+        
+        Vec<2, PointType> getMidpoint() const { return mesh.getElementMidpoint(index0, index1); }
+        
+        ///@return this element index
+        std::size_t getIndex() const { return mesh.getElementIndexFromLowIndex(getMeshIndexLower()); }
+        
+        Box2D toBox() const { return mesh.getElementBox(index0, index1); }
+    };
     
-    /*
+    /**
      * Wrapper to RectangularMesh which allow to access to FEM-like elements.
+     *
+     * It works like read-only, random access container of @ref Element objects.
      */
-    /*struct Elements {
+    struct Elements {
         
-        RectangularMesh<2,Mesh1D>& mesh;
+        typedef IndexedIterator< const Elements, Element > const_iterator;
+        typedef const_iterator iterator;
         
-        Elements(RectangularMesh<2,Mesh1D>& mesh): mesh(mesh) {}
+        const RectangularMesh<2,Mesh1D>& mesh;
         
-    };*/
+        Elements(const RectangularMesh<2,Mesh1D>& mesh): mesh(mesh) {}
+        
+        /**
+         * Get @p i-th element.
+         * @param i element index
+         * @return @p i-th element
+         */
+        Element operator[](std::size_t i) const { return Element(mesh, i); }
+        
+        /**
+         * Get number of elements.
+         * @return number of elements
+         */
+        std::size_t size() const { return mesh.getElementsCount(); }
+
+        /// @return iterator referring to the first element
+        const_iterator begin() const { return const_iterator(this, 0); }
+    
+        /// @return iterator referring to the past-the-end element
+        const_iterator end() const { return const_iterator(this, size()); }
+        
+    };
 
     /// Boundary type.
     typedef ::plask::Boundary<RectangularMesh<2,Mesh1D>> Boundary;
@@ -398,6 +442,12 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /**
+     * Get accessor to FEM-like elements.
+     * @return accessor to FEM-like elements, valid not longer than life of this mesh
+     */
+    Elements elements() const { return Elements(*this); }
+
+    /**
      * Get number of elements (for FEM method) in the first direction.
      * @return number of elements in this mesh in the first direction (axis0 direction).
      */
@@ -445,7 +495,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return axis 0 and axis 1 indexes of mesh,
      * you can easy calculate rest indexes of element corner adding 1 to returned coordinates
      */
-    Vec<2, std::size_t> getElementBottomLeftIndexes(std::size_t element_index) const {
+    Vec<2, std::size_t> getElementMeshLowIndexes(std::size_t element_index) const {
         std::size_t bl_index = getElementMeshLowIndex(element_index);
         return Vec<2, std::size_t>(index0(bl_index), index1(bl_index));
     }
