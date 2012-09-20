@@ -7,7 +7,7 @@
 namespace plask {
 
 
-/**
+/** @relates Vec
 * Calculate square of vector magnitude.
 * @param v a vector
 * @return square of vector magnitude
@@ -25,7 +25,7 @@ inline double abs2<3,dcomplex>(const Vec<3,dcomplex>& v) { return dot(v,v).real(
 
 #endif // DOXYGEN
 
-/**
+/** @relates Vec
  * Multiple vector @p v by scalar @p scale.
  * @param scale scalar
  * @param v vector
@@ -37,7 +37,7 @@ inline auto operator*(const OtherT& scale, const Vec<dim,T>& v) -> decltype(v*sc
 }
 
 
-/**
+/** @relates Vec
 * Calculate vector magnitude.
 * @param v a vector
 * @return vector magnitude
@@ -65,7 +65,7 @@ namespace details {
 }
 
 
-/**
+/** @relates Vec
  * Convert vector between space.
  */
 template <int dst_dim, typename T, int src_dim>

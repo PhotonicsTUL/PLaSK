@@ -442,7 +442,7 @@ struct DataVector {
 
 };
 
-/**
+/** \relates DataVector
  * Check if two data vectors are equal.
  * @param a, b vectors to compare
  * @return @c true only if a is equal to b (a[0]==b[0], a[1]==b[1], ...)
@@ -451,7 +451,7 @@ template<class T1, class T2> inline
 bool operator == ( DataVector<T1> const& a, DataVector<T2> const& b)
 { return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin()); }
 
-/**
+/** \relates DataVector
  * Check if two data vectors are not equal.
  * @param a, b vectors to compare
  * @return @c true only if a is not equal to b
@@ -459,7 +459,7 @@ bool operator == ( DataVector<T1> const& a, DataVector<T2> const& b)
 template<class T1, class T2> inline
 bool operator != ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a==b); }
 
-/**
+/** \relates DataVector
  * A lexical comparison of two data vectors.
  * @param a, b vectors to compare
  * @return @c true only if @p a is smaller than the @p b
@@ -468,16 +468,31 @@ template<class T1, class T2> inline
 bool operator< ( DataVector<T1> const& a, DataVector<T2> const& b)
 { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()); }
 
+/** \relates DataVector
+ * A lexical comparison of two data vectors.
+ * @param a, b vectors to compare
+ * @return @c true only if @p b is smaller than the @p a
+ */
 template<class T1, class T2> inline
 bool operator> ( DataVector<T1> const& a, DataVector<T2> const& b) { return b < a; }
 
+/** \relates DataVector
+ * A lexical comparison of two data vectors.
+ * @param a, b vectors to compare
+ * @return @c true only if @p a is smaller or equal to @p b
+ */
 template<class T1, class T2> inline
 bool operator<= ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(b < a); }
 
+/** \relates DataVector
+ * A lexical comparison of two data vectors.
+ * @param a, b vectors to compare
+ * @return @c true only if @p b is smaller or equal to @p a
+ */
 template<class T1, class T2> inline
 bool operator>= ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a < b); }
 
-/**
+/** \relates DataVector
  * Print data vector to stream.
  */
 template<class T>
@@ -488,7 +503,7 @@ std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {
     return out;
 }
 
-/**
+/** \relates DataVector
  * Calculate: to_inc[i] += inc_val[i] for each i = 0, ..., min(to_inc.size(), inc_val.size()).
  * @param to_inc vector to increase
  * @param inc_val
@@ -502,7 +517,7 @@ DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
     return to_inc;
 }
 
-/**
+/** \relates DataVector
  * Cast DataVector<const T> into DataVector<T>
  * \param src vector of type DataVector<const T> or DataVector<T>
  * \return data vector of type DataVector<RT>
