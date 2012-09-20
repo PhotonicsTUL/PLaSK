@@ -42,16 +42,51 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
   public:
     
-    /**
+    /*class Element {
+        RectangularMesh<2,Mesh1D>& mesh;
+        std::size_t lowIndex0, lowIndex1; //probably this form allow to do most operation fastest in avarage
+        
+        public:
+        
+        std::size_t getMeshIndexLower0() const { return lowIndex0; }
+        
+        std::size_t getMeshIndexLower1() const { return lowIndex1; }
+        
+        std::size_t getMeshIndexLower() const { return mesh.index(lowIndex0, lowIndex1); }
+        
+        T& getLower0() { return mesh.axis0[lowIndex0]; }
+        
+        const T& getLower0() const { return mesh.axis0[lowIndex0]; }
+        
+        T& getLower1() { return mesh.axis1[lowIndex1]; }
+        
+        const T& getLower1() const { return mesh.axis1[lowIndex1]; }
+        
+        std::size_t getMeshIndexUpper0() const { return lowIndex0+1; }
+        
+        std::size_t getMeshIndexUpper1() const { return lowIndex1+1; }
+        
+        T& getUpper0() { return mesh.axis0[getMeshIndexUpper0()]; }
+        
+        const T& getUpper0() const { return mesh.axis0[getMeshIndexUpper0()]; }
+        
+        T& getUpper1() { return mesh.axis1[getMeshIndexUpper1()]; }
+        
+        const T& getUpper1() const { return mesh.axis1[getMeshIndexUpper1()]; }
+        
+        std::size_t getIndex() const { return mesh.getElementIndexFromLowIndex(getMeshIndexLow()); }
+    };*/
+    
+    /*
      * Wrapper to RectangularMesh which allow to access to FEM-like elements.
      */
-    struct Elements {
+    /*struct Elements {
         
         RectangularMesh<2,Mesh1D>& mesh;
         
         Elements(RectangularMesh<2,Mesh1D>& mesh): mesh(mesh) {}
         
-    };
+    };*/
 
     /// Boundary type.
     typedef ::plask::Boundary<RectangularMesh<2,Mesh1D>> Boundary;
@@ -391,7 +426,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @param mesh_index_of_el_bottom_left mesh index
      * @return index of element, from 0 to getElementsCount()-1
      */
-    std::size_t getElementIndexFromBottomLeft(std::size_t mesh_index_of_el_bottom_left) const {
+    std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
         return mesh_index_of_el_bottom_left - mesh_index_of_el_bottom_left / major_axis->size();
     }
     
@@ -400,18 +435,18 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @param element_index index of element, from 0 to getElementsCount()-1
      * @return mesh index
      */
-    std::size_t getElementBottomLeftIndex(std::size_t element_index) const {
+    std::size_t getElementMeshLowIndex(std::size_t element_index) const {
         return element_index + (element_index / (major_axis->size()-1));
     }
     
     /**
-     * Conver element index to mesh indexes of bottom left element corner.
+     * Convert element index to mesh indexes of bottom left element corner.
      * @param element_index index of element, from 0 to getElementsCount()-1
      * @return axis 0 and axis 1 indexes of mesh,
      * you can easy calculate rest indexes of element corner adding 1 to returned coordinates
      */
     Vec<2, std::size_t> getElementBottomLeftIndexes(std::size_t element_index) const {
-        std::size_t bl_index = getElementBottomLeftIndex(element_index);
+        std::size_t bl_index = getElementMeshLowIndex(element_index);
         return Vec<2, std::size_t>(index0(bl_index), index1(bl_index));
     }
 
@@ -430,7 +465,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return area of elements with given index
      */
     double getElementArea(std::size_t element_index) const {
-        std::size_t bl_index = getElementBottomLeftIndex(element_index);
+        std::size_t bl_index = getElementMeshLowIndex(element_index);
         return getElementArea(index0(bl_index), index1(bl_index));
     }
 
@@ -463,7 +498,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return point in center of element with given index
      */
     Vec<2, double> getElementMidpoint(std::size_t element_index) const {
-        std::size_t bl_index = getElementBottomLeftIndex(element_index);
+        std::size_t bl_index = getElementMeshLowIndex(element_index);
         return getElementMidpoint(index0(bl_index), index1(bl_index));
     }
 
@@ -482,7 +517,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return point in center of element with given index
      */
     Box2D getElementBox(std::size_t element_index) const {
-        std::size_t bl_index = getElementBottomLeftIndex(element_index);
+        std::size_t bl_index = getElementMeshLowIndex(element_index);
         return getElementBox(index0(bl_index), index1(bl_index));
     }
 
