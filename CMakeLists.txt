@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 project(plask)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
-set(VERSION_MINOR 0)            # MINOR version (change to 1 when anything works)
+set(VERSION_MINOR 1)            # MINOR version (bump up by one on visible feature change)
 # set(VERSION_REVISION 1)       # REVISION number (leave undefined unless really needed, it's normally set to svn revision)
 
 # ---------- common options --------------------------------------------

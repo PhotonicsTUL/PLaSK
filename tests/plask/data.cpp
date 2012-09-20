@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 #include <plask/data.h>
 
-BOOST_AUTO_TEST_SUITE(datavector) // MUST be the same as the file name
+BOOST_AUTO_TEST_SUITE(data) // MUST be the same as the file name
 
     BOOST_AUTO_TEST_CASE(const_datavector) {
 

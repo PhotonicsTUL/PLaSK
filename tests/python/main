@@ -23,9 +23,9 @@ class PlaskTestResult(unittest.TextTestResult):
 
         msgLines = []
         for filename, lineno, function, text in tb_lines[:-1]:
-            msgLines.append("In function %s: %s(%d)\n" % (function, filename, lineno))
+            msgLines.append("In function %s: %s(%d)\n: %s\n" % (function, filename, lineno, text))
         filename, lineno, function, text = tb_lines[-1]
-        msgLines.append("In function %s: %s(%d): %s: %s\n" % (function, filename, lineno, exctype.__name__, value))
+        msgLines.append("In function %s: %s(%d): %s: %s\n: %s\n" % (function, filename, lineno, exctype.__name__, value, text))
 
         if self.buffer:
             output = sys.stdout.getvalue()
