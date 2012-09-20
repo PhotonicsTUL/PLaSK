@@ -57,10 +57,10 @@ User of solver can call this fields methods to @ref plask::BoundaryConditions::a
 See also @ref solvers_writing_details.
 
 @section boundaries_impl Boundaries implementations.
-Instance of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" in fact is only a holder which includes pointer to abstract class @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>".
-It points to subclass of @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" which implements all boundary logic (all calls of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" methods are delegete to it).
+Instance of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" in fact is only a holder which includes pointer to abstract class @ref plask::BoundaryLogicImpl.
+It points to subclass of @ref plask::BoundaryLogicImpl which implements all boundary logic (all calls of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" methods are delegete to it).
 
-So, writing new boundary for given type of mesh @c MeshType is writing subclass of @ref plask::BoundaryImpl "BoundaryImpl\<MeshType\>".
+So, writing new boundary for given type of mesh @c MeshType is writing subclass of @ref plask::BoundaryImpl.
 
 PLaSK includes some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" implementation:
 - @ref plask::PredicateBoundary "PredicateBoundary\<MeshType\>" is implementation which holds and uses predicate (given in constructor) to check which points lies on boundary.
@@ -77,7 +77,7 @@ PLaSK includes some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<
 namespace plask {
 
 /**
- * Template of base class for boundaries. Reperesnt polymorphic set of mesh indexes.
+ * Base class for boundaries logic. Reperesnt polymorphic set of mesh indexes.
  * @see @ref boundaries
  */
 struct BoundaryLogicImpl {

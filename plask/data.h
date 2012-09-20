@@ -504,8 +504,9 @@ DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
 
 /**
  * Cast DataVector<const T> into DataVector<T>
- * \param data vector of type DataVector<const T> or DataVector<T>
- * \return data vector of type DataVector<T>
+ * \param src vector of type DataVector<const T> or DataVector<T>
+ * \return data vector of type DataVector<RT>
+ * \tparam RT must be equal to T without const
  */
 template<typename RT, typename T>
 inline DataVector<RT> const_data_cast(const DataVector<T>& src) {

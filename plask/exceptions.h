@@ -297,6 +297,7 @@ struct NoSuchGeometryObjectType: public Exception {
 struct NamesConflictException: public Exception {
 
     /**
+     * @param what type of object
      * @param object_name name of object which is already exists
      */
     NamesConflictException(const std::string& what, const std::string& object_name):

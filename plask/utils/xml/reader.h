@@ -58,7 +58,7 @@ class XMLReader {
 
     /**
      * Construct XML reader to read XML from given @p file FILE*.
-     * @param input input stream
+     * @param file input file
      */
     XMLReader(FILE* file);
 

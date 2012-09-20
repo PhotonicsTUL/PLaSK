@@ -97,7 +97,7 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
 
     /**
      * Set value for specified object
-     * \param object object on which the value is to be set
+     * \param place object on which the value is to be set
      * \param value value to set
      */
     void setValueFor(const Place& place, ValueType value) {

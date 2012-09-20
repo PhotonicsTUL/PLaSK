@@ -114,7 +114,7 @@ struct XMLDuplicatedElementException: public XMLException {
         XMLException(reader, duplicated + " should apprear only once in the current scope") {}
     /**
      * @param parent name of the parent tag
-     * @param what_is_expected what is expected (typically tag with name, etc.)
+     * @param duplicated name of duplicated thing
      */
     XMLDuplicatedElementException(const std::string& parent, const std::string& duplicated):
         XMLException(parent, duplicated + " should apprear only once in the current scope") {}

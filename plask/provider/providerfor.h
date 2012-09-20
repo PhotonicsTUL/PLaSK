@@ -531,6 +531,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
 
         /**
          * @param mesh_ptr pointer to mesh which describes in which points there are this->values
+         * @param default_interpolation type of interpolation to use as default
          */
         explicit WithValue(MeshPtrType mesh_ptr = nullptr, const InterpolationMethod& default_interpolation = INTERPOLATION_LINEAR)
             : mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {

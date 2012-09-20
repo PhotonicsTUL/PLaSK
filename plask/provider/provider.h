@@ -477,6 +477,7 @@ struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT, Ex
     /**
      * Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
      * @param dst_mesh set of requested points
+     * @param extra_args
      * @return values in points describe by mesh @a dst_mesh
      */
     virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const {

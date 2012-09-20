@@ -448,7 +448,6 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
          * It is also possible that this creates a reference tag, and this case should be checked by @ref isRef method.
          * @param parent_tag parent XML tag
          * @param object object to write
-         * @param object_type_name name of @p object type used in XML
          * @param[in, out] axesNames axis names which was used when saved parent of @p object, this can assign to it new value to use in branch rooted by @p object
          *  (assigned pointer must be valid while branch will be saved, typically it is a pointer to object in register)
          * @return opened XML tag ready to add extra atribiutes of @p object or reference tag.
@@ -1080,6 +1079,7 @@ struct GeometryObjectD: public GeometryObject {
 
     /**
      * Calculate bounding boxes of all instances of given \p object, optionally marked by path.
+     * @param object
      * @param path (optional) path hints which limits search space
      * @return bounding boxes of all instances of given \p object
      */

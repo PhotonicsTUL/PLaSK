@@ -36,7 +36,7 @@ std::string prefixPath();
 /**
  * Get path to plask library files (shared libraries).
  *
- * This directory includes subdirectories: solvers (see @ref getSolversPath), materials (see @ref getMaterialsPath).
+ * This directory includes subdirectories: solvers (see @ref plaskSolversPath), materials (see @ref plaskMaterialsPath).
  * @return path to plask library files (with rearmost '/' or '\\')
  */
 std::string plaskLibPath();
@@ -48,6 +48,10 @@ std::string plaskLibPath();
  */
 std::string plaskSolversPath(const std::string &category);
 
+/**
+ * Get path to materials files (shared libraries).
+ * @return path (with rearmost '/' or '\\')
+ */
 std::string plaskMaterialsPath();
 
 }
