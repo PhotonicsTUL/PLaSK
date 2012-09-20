@@ -63,7 +63,7 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     DataVector<double> mPotentials; // out
     DataVector<Vec<2> > mCurrentDensities; // out
     DataVector<double> mHeatDensities; // out
-    DataVector<double> mTemperatures; // in
+    DataVector<const double> mTemperatures; // in
 
     /// Vector of nodes
     std::vector<Node2D> mNodes;

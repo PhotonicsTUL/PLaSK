@@ -16,7 +16,7 @@ FiniteElementMethodElectricalCartesian2DSolver::FiniteElementMethodElectricalCar
     mElements.clear();
     mPotentials.reset(0.);
     mCurrentDensities.reset(0.);
-    mTemperatures.reset(0.);
+    mTemperatures.reset();
     mHeatDensities.reset(0.);
 
     inTemperature = 300.;
@@ -43,7 +43,7 @@ void FiniteElementMethodElectricalCartesian2DSolver::onInvalidate() // This will
     mElements.clear();
     mPotentials.reset(0);
     mCurrentDensities.reset(0);
-    mTemperatures.reset(0);
+    mTemperatures.reset();
     mHeatDensities.reset(0.);
     // Make sure that no provider returns any value.
     // If this method has been called, before next computations, onInitialize will be called.
