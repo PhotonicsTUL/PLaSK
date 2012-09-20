@@ -46,7 +46,7 @@ struct SimpleDiffusionSolverCyl: public SolverOver<Geometry2DCylindrical>
      *
      * \return list of boxes with quantum wells
      */
-    std::vector<Box2D> detectQuantumWells();
+    std::deque<Box2D> detectQuantumWells();
 
     /// Initialize the solver
     virtual void onInitialize();
