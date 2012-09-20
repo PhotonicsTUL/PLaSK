@@ -11,6 +11,7 @@ This file includes classes which can hold (or points to) datas.
 #include <initializer_list>
 #include <atomic>
 #include <type_traits>
+#include <memory>   //std::unique_ptr
 
 namespace plask {
 
@@ -93,7 +94,7 @@ struct DataVector {
     DataVector() : size_(0), gc_(nullptr), data_(nullptr) {}
 
     /**
-     * Create vector of given @p size.
+     * Create vector of given @p size with uninitialized data values.
      *
      * Reserve memory using new T[size] call.
      * @param size total size of the data
@@ -105,8 +106,11 @@ struct DataVector {
      * @param size size of vector
      * @param value initial value for each cell
      */
-    DataVector(std::size_t size, const T& value): size_(size), gc_(new Gc(1)), data_(new T[size]) {
-        std::fill(begin(), end(), value);
+    DataVector(std::size_t size, const T& value): size_(size) {
+        std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
+        std::fill_n(data_non_const.get(), size, value);   //this may throw, but no memory leak than
+        data_ = data_non_const.release();
+        gc_ = new Gc(1);
     }
 
     /**
@@ -236,8 +240,11 @@ struct DataVector {
      * @param begin, end range of data to copy
      */
     template <typename InIterT>
-    DataVector(InIterT begin, InIterT end): size_(std::distance(begin, end)), gc_(new Gc(1)), data_(new T[size_]) {
-        std::copy(begin, end, data_);
+    DataVector(InIterT begin, InIterT end): size_(std::distance(begin, end)) {
+        std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
+        std::copy(begin, end, data_non_const.get());   //no memory leak if this throws
+        data_ = data_non_const.release();
+        gc_ = new Gc(1);
     }
 
     /// Delete data if this was last reference to it.
@@ -302,11 +309,12 @@ struct DataVector {
      * @param value initial value for each cell
      */
     void reset(std::size_t size, const T& value) {
+        std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
+        std::fill_n(data_non_const.get(), size, value);   //this may throw, than our data will not change
         dec_ref();
-        size_ = size;
+        data_ = data_non_const.release();
         gc_ = new Gc(1);
-        data_ = new T[size];
-        std::fill(begin(), end(), value);
+        size_ = size;
     }
 
     /**
@@ -317,10 +325,11 @@ struct DataVector {
      */
     template <typename InIterT>
     void reset(InIterT begin, InIterT end) {
+        std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
+        std::copy(begin, end, data_non_const.get());    //this may throw, and than our vector will not changed
+        data_ = data_non_const.release();
         size_ = std::distance(begin, end);
         gc_ = new Gc(1);
-        data_ = new T[size_];
-        std::copy(begin, end, data_);
     }
 
 #ifndef DOXYGEN // Advanced method skipped from documentation
@@ -438,8 +447,8 @@ struct DataVector {
  * @param a, b vectors to compare
  * @return @c true only if a is equal to b (a[0]==b[0], a[1]==b[1], ...)
  */
-template<class T> inline
-bool operator == ( DataVector<T> const& a, DataVector<T> const& b)
+template<class T1, class T2> inline
+bool operator == ( DataVector<T1> const& a, DataVector<T2> const& b)
 { return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin()); }
 
 /**
@@ -447,8 +456,8 @@ bool operator == ( DataVector<T> const& a, DataVector<T> const& b)
  * @param a, b vectors to compare
  * @return @c true only if a is not equal to b
  */
-template<class T> inline
-bool operator != ( DataVector<T> const& a, DataVector<T> const& b) { return !(a==b); }
+template<class T1, class T2> inline
+bool operator != ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a==b); }
 
 /**
  * A lexical comparison of two data vectors.

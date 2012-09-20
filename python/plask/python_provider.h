@@ -179,7 +179,7 @@ namespace detail {
                 parent->add(this);
         }
         virtual ~ProfileProvider() { profile->remove(this); }
-        virtual DataVector<typename ReceiverT::PropertyTag::ValueType> operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, ExtraParams..., InterpolationMethod) const {
+        virtual typename ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>::ProvidedValueType operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, ExtraParams..., InterpolationMethod) const {
             return profile->get<typename ReceiverT::PropertyTag::ValueType>(mesh, ReceiverT::PropertyTag::getDefaultValue());
         }
         virtual void onChange() { this->fireChanged(); }
@@ -312,7 +312,7 @@ namespace detail {
     {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIMS;
-        typedef DataVectorWrap<ValueT, DIMS> DataT;
+        typedef DataVectorWrap<const ValueT, DIMS> DataT;
 
         static void assign(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
@@ -401,8 +401,8 @@ namespace detail {
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static const int DIMS = ProviderT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
-            return DataVectorWrap<ValueT,DIMS>(self(*mesh, params..., method), mesh);
+        static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+            return DataVectorWrap<const ValueT,DIMS>(self(*mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>()) {
             this->provider_class.def("__call__", &__call__, "Get value from the provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);

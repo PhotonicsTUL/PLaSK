@@ -180,7 +180,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::
      * \param mesh mesh value
      */
     template <typename MeshPtrT, PropertyType propertyType = PropertyTag::propertyType>
-    typename std::enable_if<propertyType == FIELD_PROPERTY>::type setValue(DataVector<typename PropertyT::ValueType> data, const MeshPtrT& mesh) {
+    typename std::enable_if<propertyType == FIELD_PROPERTY>::type setValue(typename ProviderFor<PropertyTag, SpaceType>::ProvidedValueType data, const MeshPtrT& mesh) {
         if (data.size() != mesh->size())
             throw BadMesh("ReceiverFor::setValue()", "Mesh size (%2%) and data size (%1%) do not match", data.size(), mesh->size());
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshPtrT>(data, mesh), true);
@@ -355,7 +355,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTe
  * and don't use interpolation.
  */
 template <typename PropertyT, typename ValueT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public OnMeshProvider<ValueT, SpaceT, _ExtraParams...> {
+struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public OnMeshProvider<const ValueT, SpaceT, _ExtraParams...> {
 
     static constexpr const char* NAME = PropertyT::NAME;
 
@@ -363,7 +363,7 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplat
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
 
     /// Type of provided value.
-    typedef typename OnMeshProvider<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
+    typedef typename OnMeshProvider<const ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
 
     /**
      * Implementation of  field provider class which delegates all operator() calls to external functor.
@@ -420,7 +420,7 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplat
  * Specialization which implements provider class which provides values in mesh points and uses interpolation.
  */
 template <typename PropertyT, typename ValueT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public OnMeshProviderWithInterpolation<ValueT, SpaceT, _ExtraParams...> {
+struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public OnMeshProviderWithInterpolation<const ValueT, SpaceT, _ExtraParams...> {
 
     static constexpr const char* NAME = PropertyT::NAME;
 
@@ -428,7 +428,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
 
     /// Type of provided value.
-    typedef typename OnMeshProviderWithInterpolation<ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
+    typedef typename OnMeshProviderWithInterpolation<const ValueT, SpaceT>::ProvidedValueType ProvidedValueType;
 
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.

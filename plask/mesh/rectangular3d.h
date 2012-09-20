@@ -487,7 +487,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
 template <typename Mesh1D,typename DataT>    //for any data type
 struct InterpolationAlgorithm<RectangularMesh<3,Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(const RectangularMesh<3,Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(const RectangularMesh<3,Mesh1D>& src_mesh, const DataVector<const DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
             *dst++ = src_mesh.interpolateLinear(src_vec, p);

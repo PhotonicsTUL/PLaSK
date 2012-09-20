@@ -655,7 +655,7 @@ auto interpolateLinear2D(DataGetter2D data, const double& point_axis0, const dou
 
 template <typename Mesh1D, typename DataT>    // for any data type
 struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<DataT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<const DataT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DataT>& dst_vec) {
         auto dst = dst_vec.begin();
         for (auto p: dst_mesh)
             *dst++ = src_mesh.interpolateLinear(src_vec, p);

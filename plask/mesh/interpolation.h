@@ -112,7 +112,7 @@ inline InterpolationMethod defInterpolation(InterpolationMethod method) {
 template <typename SrcMeshT, typename DataT, InterpolationMethod method>
 struct InterpolationAlgorithm
 {
-    static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(const SrcMeshT& src_mesh, const DataVector<const DataT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
         std::string msg = "interpolate (source mesh type: ";
         msg += typeid(src_mesh).name();
         msg += ", interpolation method: ";
@@ -129,7 +129,7 @@ struct InterpolationAlgorithm
 template <typename SrcMeshT, typename DataT>
 struct InterpolationAlgorithm<SrcMeshT, DataT, DEFAULT_INTERPOLATION>
 {
-    static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(const SrcMeshT& src_mesh, const DataVector<const DataT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
         throw CriticalException("interpolate(...) called for DEFAULT_INTERPOLATION method. "
                                 "To avoid it use 'defInterpolation<YOUR_DEFAULT_METHOD>(interpolation_method) in your provider.");
     }
@@ -141,9 +141,9 @@ template <typename SrcMeshT, typename DataT, int iter>
 struct __InterpolateMeta__
 {
     inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
+                const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<typename std::remove_const<DataT>::type>& dst_vec, InterpolationMethod method) {
         if (int(method) == iter)
-            InterpolationAlgorithm<SrcMeshT, DataT, (InterpolationMethod)iter>::interpolate(src_mesh, src_vec, dst_mesh, dst_vec);
+            InterpolationAlgorithm<SrcMeshT, typename std::remove_const<DataT>::type, (InterpolationMethod)iter>::interpolate(src_mesh, DataVector<const DataT>(src_vec), dst_mesh, dst_vec);
         else
             __InterpolateMeta__<SrcMeshT, DataT, iter+1>::interpolate(src_mesh, src_vec, dst_mesh, dst_vec, method);
     }
@@ -152,7 +152,7 @@ template <typename SrcMeshT, typename DataT>
 struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
 {
     inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec, InterpolationMethod method) {
+                const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<typename std::remove_const<DataT>::type>& dst_vec, InterpolationMethod method) {
         throw CriticalException("no such interpolation method");
     }
 };
@@ -163,7 +163,7 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  * Calculate (interpolate when needed) a field of some physical properties in requested points of (@a dst_mesh)
  * if values of this field in points of (@a src_mesh) are known.
  * @param src_mesh set of points in which fields values are known
- * @param src_vec_ptr pointer to the vector of known field values in points described by @a sec_mesh
+ * @param src_vec the vector of known field values in points described by @a sec_mesh
  * @param dst_mesh requested set of points, in which the field values should be calculated (interpolated)
  * @param method interpolation method to use
  * @return vector of the field values in points described by @a dst_mesh, can be equal to @a src_vec
@@ -173,14 +173,14 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  * @see @ref meshes_interpolation
  */
 template <typename SrcMeshT, typename DataT>
-inline const DataVector<DataT>
-interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec_ptr,
+inline DataVector<DataT>
+interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
             const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
 {
-    if (&src_mesh == &dst_mesh) return src_vec_ptr; // meshes are identical, so just return src_vec
+    if (&src_mesh == &dst_mesh) return src_vec; // meshes are identical, so just return src_vec
 
-    DataVector<DataT> result(dst_mesh.size());
-    __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, src_vec_ptr, dst_mesh, result, method);
+    DataVector<typename std::remove_const<DataT>::type> result(dst_mesh.size());
+    __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, src_vec, dst_mesh, result, method);
     return result;
 }
 

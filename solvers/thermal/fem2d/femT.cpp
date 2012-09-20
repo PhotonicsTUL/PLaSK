@@ -16,7 +16,7 @@ FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian
     mElements.clear();
     mTemperatures.reset(0);
     mHeatFluxes.reset(0);
-    mHeatDensities.reset(0);
+    mHeatDensities.reset();
 
     inHeatDensity = 0.;
 }
@@ -41,7 +41,7 @@ void FiniteElementMethodThermalCartesian2DSolver::onInvalidate() // This will be
     mElements.clear();
     mTemperatures.reset(0);
     mHeatFluxes.reset(0);
-    mHeatDensities.reset(0);
+    mHeatDensities.reset();
     // Make sure that no provider returns any value.
     // If this method has been called, before next computations, onInitialize will be called.
 }
