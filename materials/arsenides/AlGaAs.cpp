@@ -16,12 +16,12 @@ AlGaAs::AlGaAs(const Material::Composition& Comp) {
     Ga = Comp.find("Ga")->second;
 }
 
-MI_PROPERTY(AlGaAs, condT,
+MI_PROPERTY(AlGaAs, thermCond,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009")
             )
-std::pair<double,double> AlGaAs::condT(double T, double t) const {
-    double lCondT = 1/(Al/mAlAs.condT(T,t).first + Ga/mGaAs.condT(T,t).first + Al*Ga*0.32),
-           vCondT = 1/(Al/mAlAs.condT(T,t).second + Ga/mAlAs.condT(T,t).second + Al*Ga*0.32);
+std::pair<double,double> AlGaAs::thermCond(double T, double t) const {
+    double lCondT = 1/(Al/mAlAs.thermCond(T,t).first + Ga/mGaAs.thermCond(T,t).first + Al*Ga*0.32),
+           vCondT = 1/(Al/mAlAs.thermCond(T,t).second + Ga/mAlAs.thermCond(T,t).second + Al*Ga*0.32);
     return(std::make_pair(lCondT,vCondT));
  }
 

@@ -18,11 +18,11 @@ std::pair<double,double> GaN::cond(double T) const {
     return (std::make_pair(tCond,tCond));
 }
 
-MI_PROPERTY(GaN, condT,
+MI_PROPERTY(GaN, thermCond,
             MISource("C. Mion et al., App. Phys. Lett. 89 (2006) 092123"),
             MIArgumentRange(MaterialInfo::T, 300, 450)
             )
-std::pair<double,double> GaN::condT(double T, double t) const {
+std::pair<double,double> GaN::thermCond(double T, double t) const {
     double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12),
            tCondT = 230*fun_t*pow((T/300.),-1.43);
     return(std::make_pair(tCondT,tCondT));

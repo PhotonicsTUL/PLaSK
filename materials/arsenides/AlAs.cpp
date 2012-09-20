@@ -8,11 +8,11 @@ namespace plask {
 
 std::string AlAs::name() const { return NAME; }
 
-MI_PROPERTY(AlAs, condT,
+MI_PROPERTY(AlAs, thermCond,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::condT(double T, double t) const {
+std::pair<double,double> AlAs::thermCond(double T, double t) const {
     return(std::make_pair(91., 91.));
  }
 

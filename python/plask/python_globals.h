@@ -126,10 +126,16 @@ namespace detail {
     template <typename T> static inline constexpr int typenum();
     template <> inline constexpr int typenum<double>() { return NPY_DOUBLE; }
     template <> inline constexpr int typenum<dcomplex>() { return NPY_CDOUBLE; }
-    template <> constexpr inline int typenum<Vec<2,double>>() { return NPY_DOUBLE; }
-    template <> constexpr inline int typenum<Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
-    template <> constexpr inline int typenum<Vec<3,double>>() { return NPY_DOUBLE; }
-    template <> constexpr inline int typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<Vec<2,double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<Vec<3,double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const double>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const dcomplex>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const Vec<2,double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const Vec<3,double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
 }
 
 

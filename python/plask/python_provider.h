@@ -16,11 +16,13 @@ struct DataVectorWrap : public DataVector<T> {
     shared_ptr<MeshD<dim>> mesh;
     bool mesh_changed;
 
-    DataVectorWrap(const DataVector<T>& src, const shared_ptr<MeshD<dim>>& mesh) : DataVector<T>(src), mesh(mesh), mesh_changed(false) {
+    DataVectorWrap(const DataVector<T>& src, const shared_ptr<MeshD<dim>>& mesh):
+        DataVector<T>(src), mesh(mesh), mesh_changed(false) {
         mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
     }
 
-    DataVectorWrap(DataVector<T>&& src, const shared_ptr<MeshD<dim>>& mesh) : DataVector<T>(std::forward<DataVector<T>>(src)), mesh(mesh), mesh_changed(false) {
+    DataVectorWrap(DataVector<T>&& src, const shared_ptr<MeshD<dim>>& mesh):
+        DataVector<T>(std::forward<DataVector<T>>(src)), mesh(mesh), mesh_changed(false) {
         mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
     }
 
@@ -29,7 +31,8 @@ struct DataVectorWrap : public DataVector<T> {
     DataVectorWrap(DataVector<T>&& src) : DataVector<T>(std::forward<DataVector<T>>(src)) {}
 
     DataVectorWrap() = default;
-    DataVectorWrap(const DataVectorWrap<T,dim>& src) : DataVector<T>(src), mesh(src.mesh), mesh_changed(src.mesh_changed) {
+    DataVectorWrap(const DataVectorWrap<T,dim>& src):
+    DataVector<T>(src), mesh(src.mesh), mesh_changed(src.mesh_changed) {
         if (mesh) mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
     }
 
@@ -282,6 +285,7 @@ namespace detail {
     {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIMS;
+        typedef DataVectorWrap<const ValueT, DIMS> DataT;
 
         static void assign(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
@@ -293,8 +297,8 @@ namespace detail {
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
 
-        static DataVectorWrap<ValueT,DIMS> __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params) {
-            return DataVectorWrap<ValueT,DIMS>(self(*mesh, params...), mesh);
+        static DataT __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params) {
+            return DataT(self(*mesh, params...), mesh);
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {

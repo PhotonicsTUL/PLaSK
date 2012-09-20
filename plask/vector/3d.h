@@ -119,6 +119,13 @@ struct Vec<3, T> {
     Vec(const T& c0__lon, const T& c1__tran, const T& c2__up): c0(c0__lon), c1(c1__tran), c2(c2__up) {}
 
     /**
+     * Construct vector components given in std::tuple.
+     * @param comp components
+     */
+    template <typename T0, typename T1, typename T2>
+    Vec(const std::tuple<T0,T1,T2>& comp): c0(std::get<0>(comp)), c1(std::get<1>(comp)), c2(std::get<2>(comp)) {}
+
+    /**
      * Construct vector with components read from input iterator (including C array).
      * @param inputIt input iterator with minimum 3 objects available
      * @tparam InputIteratorType input iterator type, must allow for postincrementation and derefrence operation

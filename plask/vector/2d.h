@@ -86,7 +86,14 @@ struct Vec<2, T> {
      * Construct vector with given components.
      * @param c0__tran, c1__up components
      */
-    Vec(const T& c0__tran, const T& c1__up): c0(c0__tran), c1(c1__up){}
+    Vec(const T& c0__tran, const T& c1__up): c0(c0__tran), c1(c1__up) {}
+
+    /**
+     * Construct vector components given in std::pair.
+     * @param comp components
+     */
+    template <typename T0, typename T1>
+    Vec(const std::pair<T0,T1>& comp): c0(comp.first), c1(comp.second) {}
 
     /**
      * Construct vector with components read from input iterator (including C array).
@@ -100,7 +107,6 @@ struct Vec<2, T> {
         result.c1 = *++inputIt;
         return result;
     }
-
 
     /**
      * Get begin iterator over components.

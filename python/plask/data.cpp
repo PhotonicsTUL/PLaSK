@@ -123,7 +123,7 @@ static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std
 
     npy_intp dims[] = { to-from, detail::type_dim<T>() };
     PyObject* arr = PyArray_SimpleNew((dims[1]!=1)? 2 : 1, dims, detail::typenum<T>());
-    T* arr_data = (T*)PyArray_DATA(arr);
+    typename std::remove_const<T>::type* arr_data = static_cast<typename std::remove_const<T>::type*>(PyArray_DATA(arr));
     for (auto i = self.begin()+from; i < self.begin()+to; ++i, ++arr_data)
         *arr_data = *i;
     return py::object(py::handle<>(arr));
@@ -136,7 +136,7 @@ static bool DataVectorWrap_contains(const DataVectorWrap<T,dim>& self, const T& 
 
 template <typename T, int dim>
 py::handle<> DataVector_dtype() {
-    return detail::dtype<T>();
+    return detail::dtype<typename std::remove_const<T>::type>();
 }
 
 
@@ -252,7 +252,7 @@ namespace detail {
 
         if (size != mesh->size()) throw ValueError("Sizes of data (%1%) and mesh (%2%) do not match", size, mesh->size());
 
-        auto data = make_shared<DataVectorWrap<T,dim>>(DataVector<T>((T*)PyArray_DATA(arr), size), mesh);
+        auto data = make_shared<DataVectorWrap<const T,dim>>(DataVector<const T>((const T*)PyArray_DATA(arr), size), mesh);
         data->setDataDestructor(new NumpyDataDestructor<T>(arr));
 
         return py::object(data);
@@ -311,16 +311,16 @@ py::object Data(PyObject* obj, py::object omesh) {
 template <typename T, int dim>
 void register_data_vector() {
 
-    py::class_<DataVectorWrap<T,dim>, shared_ptr<DataVectorWrap<T,dim>>>("Data", "Data returned by field providers", py::no_init)
-        .def_readonly("mesh", &DataVectorWrap<T,dim>::mesh)
-        .def("__len__", &DataVectorWrap<T,dim>::size)
-        .def("__getitem__", &DataVectorWrap_getitem<T,dim>)
-        .def("__getslice__", &DataVectorWrap_getslice<T,dim>)
-        .def("__contains__", &DataVectorWrap_contains<T,dim>)
-        .def("__iter__", py::range(&DataVectorWrap_begin<T,dim>, &DataVectorWrap_end<T,dim>))
-        .def("__array__", &DataVectorWrap__array__<T,dim>)
-        .add_static_property("dtype", &DataVector_dtype<T,dim>, "Type of the held values")
-        .add_property("array", &DataVectorWrap_Array<T,dim>, "Array formatted by the mesh")
+    py::class_<DataVectorWrap<const T,dim>, shared_ptr<DataVectorWrap<const T,dim>>>("Data", "Data returned by field providers", py::no_init)
+        .def_readonly("mesh", &DataVectorWrap<const T,dim>::mesh)
+        .def("__len__", &DataVectorWrap<const T,dim>::size)
+        .def("__getitem__", &DataVectorWrap_getitem<const T,dim>)
+        .def("__getslice__", &DataVectorWrap_getslice<const T,dim>)
+        .def("__contains__", &DataVectorWrap_contains<const T,dim>)
+        .def("__iter__", py::range(&DataVectorWrap_begin<const T,dim>, &DataVectorWrap_end<const T,dim>))
+        .def("__array__", &DataVectorWrap__array__<const T,dim>)
+        .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values")
+        .add_property("array", &DataVectorWrap_Array<const T,dim>, "Array formatted by the mesh")
     ;
 
     py::def("Data", &Data, (py::arg("array"), "mesh"), "Create new data from array and mesh");
@@ -344,8 +344,12 @@ void register_data_vectors() {
 
     register_data_vector<double, 3>();
     register_data_vector<dcomplex, 3>();
+    register_data_vector< Vec<2,double>, 3 >();
+    register_data_vector< Vec<2,dcomplex>, 3 >();
     register_data_vector< Vec<3,double>, 3 >();
     register_data_vector< Vec<3,dcomplex>, 3 >();
+    register_data_vector<double, 3>();
+    register_data_vector<dcomplex, 3>();
 }
 
 }} // namespace plask::python

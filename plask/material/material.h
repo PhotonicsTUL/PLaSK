@@ -13,7 +13,6 @@ This file includes base classes for materials and material database class.
 
 #include "../math.h"
 #include "../memory.h"
-#include <plask/config.h>   //dcomplex
 #include "../exceptions.h"
 
 #include <type_traits>
@@ -48,6 +47,15 @@ struct Material {
         METAL,          ///< metal
         LIQUID_CRYSTAL, ///< liquid crystal
         MIXED           ///< artificial mix of several materials with averaged properties
+    };
+
+    /// Material conductivity type.
+    enum ConductivityType {
+        CONDUCTIVITY_N,           ///< n-type semiconductor
+        CONDUCTIVITY_I,           ///< i-type semiconductor
+        CONDUCTIVITY_P,           ///< p-type semiconductor
+        CONDUCTIVITY_OTHER,       ///< other conductivity
+        CONDUCTIVITY_UNDETERMINED ///< undetermined conductivity (e.g. a mixed material)
     };
 
     /**
@@ -390,11 +398,10 @@ struct Material {
     virtual std::pair<double,double> cond(double T) const;
 
     /**
-     * Get electrical resistivity in in-plane (lateral) and cross-plane (vertical) direction [Ohm*m].
-     * @param T temperature [K]
-     * @return electrical resistivity [Ohm*m]
+     * Get electrical conductivity type. In semiconductors this indicates what type of carriers \a Nf refers to.
+     * \return electrical conductivity type of material
      */
-    virtual std::pair<double,double> res(double T) const;
+    virtual ConductivityType condType() const;
 
     /**
      * Get monomolecular recombination coefficient A [1/s].
@@ -429,7 +436,7 @@ struct Material {
      * @param T temperature [K]
      * @return thermal conductivity k[W/(m*K)]
      */
-    virtual std::pair<double,double> condT(double T) const;
+    virtual std::pair<double,double> thermCond(double T) const;
 
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
@@ -437,7 +444,7 @@ struct Material {
      * @param thickness thickness [m]
      * @return thermal conductivity k[W/(m*K)]
      */
-    virtual std::pair<double,double> condT(double T, double thickness) const;
+    virtual std::pair<double,double> thermCond(double T, double thickness) const;
 
     /**
      * Get density [kg/m^3].
@@ -539,7 +546,7 @@ struct LiquidCrystal: public Material {
 struct MixedMaterial: public Material {
 
     /** Vector of materials and its weights. */
-    std::vector < std::tuple <shared_ptr<Material>, double> > materials;
+    std::vector < std::pair<shared_ptr<Material>,double> > materials;
 
     /**
       Delegate all constructor to materials vector.
@@ -608,7 +615,7 @@ struct MixedMaterial: public Material {
 
     virtual std::pair<double,double> cond(double T) const;
 
-    virtual std::pair<double,double> res(double T) const;
+    virtual ConductivityType condType() const;
 
     virtual double A(double T) const;
 
@@ -618,9 +625,9 @@ struct MixedMaterial: public Material {
 
     virtual double D(double T) const;
 
-    virtual std::pair<double,double> condT(double T) const;
+    virtual std::pair<double,double> thermCond(double T) const;
 
-    virtual std::pair<double,double> condT(double T, double thickness) const;
+    virtual std::pair<double,double> thermCond(double T, double thickness) const;
 
     virtual double dens(double T) const;
 

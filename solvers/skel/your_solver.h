@@ -2,8 +2,8 @@
  * \file
  * Sample solver header for your solver
  */
-#ifndef PLASK__MODULE_YOUR_MODULE_H
-#define PLASK__MODULE_YOUR_MODULE_H
+#ifndef PLASK__SOLVER_YOUR_SOLVER_H
+#define PLASK__SOLVER_YOUR_SOLVER_H
 
 #include <plask/plask.hpp>
 
@@ -24,20 +24,15 @@ struct YourSolver: public SolverWithMesh<ForExample_Geometry2DCartesian, ForExam
     /// Sample provider for field (it's better to use delegate here).
     ProviderFor<SomeFieldProperty, Geometry2DCartesian>::Delegate outSomeField;
 
-    YourSolver(const std::string& name=""): SolverWithMesh<ForExample_Geometry2DCartesian, ForExample_RectilinearMesh2D>(name),
-        outSomeField(this, getDelegated) // getDelegated will be called whether provider value is requested
-    {
-        inTemperature = 300.; // temperature receiver has some sensible value
-    }
+    YourSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "Name of your solver"; }
+    virtual std::string getClassName() const { return "NameOfYourSolver"; }
 
     virtual std::string getClassDescription() const {
-        return "This solver does this and that. And this description can be e.g. shown as a hng in GUI.";
+        return "This solver does this and that. And this description can be e.g. shown as a hint in GUI.";
     }
 
     virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager);
-
 
     /**
      * This method performs the main computations.
@@ -52,26 +47,13 @@ struct YourSolver: public SolverWithMesh<ForExample_Geometry2DCartesian, ForExam
     DataVector<double> my_data;
 
     /// Initialize the solver
-    virtual void onInitialize() { // In this function check if geometry and mesh are set
-        if (!geometry) throw NoGeometryException(getId());
-        if (!mesh) throw NoMeshException(getId());
-        my_data.reset(mesh->size()); // and e.g. allocate memory
-    }
+    virtual void onInitialize();
 
     /// Invalidate the data
-    virtual void onInvalidate() { // This will be called when e.g. geometry or mesh changes and your results become outdated
-        outSingleValue.invalidate(); // clear the value
-        my_data.reset();
-        // Make sure that no provider returns any value.
-        // If this method has been called, before next computations, onInitialize will be called.
-   }
+    virtual void onInvalidate();
 
     /// Method computing the value for the delegate provider
-    const DataVector<double> getDelegated(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod method=DEFAULT_INTERPOLATION) {
-        if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
-            throw NoValue(SomeSingleValueProperty::NAME);
-        return interpolate(*mesh, my_data, dst_mesh, defInterpolation<INTERPOLATION_LINEAR>(method)); // interpolate your data to the requested mesh
-    }
+    const DataVector<const double> getDelegated(const MeshD<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);
 
 };
 

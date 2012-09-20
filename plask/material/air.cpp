@@ -24,6 +24,8 @@ double Air::chi(double T, char point) const { throwNotApplicable("chi(double T, 
 
 std::pair<double,double> Air::cond(double T) const { return std::make_pair(0.,0.); }
 
+Material::ConductivityType Air::condType() const { return Material::CONDUCTIVITY_OTHER; }
+
 double Air::D(double T) const { throwNotApplicable("D(double T)"); return 0; }
 
 double Air::dens(double T) const { throwNotApplicable("dens(double T)"); return 0; }
@@ -60,12 +62,10 @@ double Air::Ni(double T) const { throwNotApplicable("Ni(double T)"); return 0; }
 
 double Air::nr(double wl, double T) const { return 1.; }
 
-std::pair<double,double> Air::res(double T) const { return std::make_pair(INFINITY, INFINITY); }
-
 double Air::specHeat(double T) const { throwNotApplicable("specHeat(double T)"); return 0; }
 
-std::pair<double,double> Air::condT(double T) const { return std::make_pair(0.,0.); }
-std::pair<double,double> Air::condT(double T, double thickness) const { return std::make_pair(0.,0.); }
+std::pair<double,double> Air::thermCond(double T) const { return std::make_pair(0.,0.); }
+std::pair<double,double> Air::thermCond(double T, double thickness) const { return std::make_pair(0.,0.); }
 
 double Air::VBO(double T) const { throwNotApplicable("VBO(double T)"); return 0; }
 

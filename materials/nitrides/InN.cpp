@@ -10,10 +10,10 @@ namespace plask {
 
 std::string InN::name() const { return NAME; }
 
-MI_PROPERTY(InN, condT,
+MI_PROPERTY(InN, thermCond,
             MISource("H. Tong et al., Proc. SPIE 7602 (2010) 76020U")
             )
-std::pair<double,double> InN::condT(double T) const {
+std::pair<double,double> InN::thermCond(double T) const {
     return(std::make_pair(126., 126.));
  }
 

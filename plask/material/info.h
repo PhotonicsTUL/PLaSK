@@ -37,20 +37,20 @@ struct MaterialInfo {
         Ni,
         Nf,
         EactD,
-        EactA,      ///<acceptor ionisation energy
-        mob,        ///<mobility
-        cond,       ///<electrical conductivity
-        res,        ///<electrical resistivity
-        A,          ///<monomolecular recombination coefficient
-        B,          ///<radiative recombination coefficient
-        C,          ///<Auger recombination coefficient
-        D,          ///<ambipolar diffusion coefficient
-        condT,      ///<thermal conductivity
-        dens,       ///<density
-        specHeat,   ///<specific heat at constant pressure
-        nr,         ///<refractive index
-        absp,       ///<absorption coefficient alpha
-        Nr          ///<refractive index
+        EactA,      ///< acceptor ionisation energy
+        mob,        ///< mobility
+        cond,       ///< electrical conductivity
+        condType,   ///< conductivity type
+        A,          ///< monomolecular recombination coefficient
+        B,          ///< radiative recombination coefficient
+        C,          ///< Auger recombination coefficient
+        D,          ///< ambipolar diffusion coefficient
+        thermCond,  ///< thermal conductivity
+        dens,       ///< density
+        specHeat,   ///< specific heat at constant pressure
+        nr,         ///< refractive index
+        absp,       ///< absorption coefficient alpha
+        Nr          ///< refractive index
     };
 
     ///Names of arguments for which range we need give

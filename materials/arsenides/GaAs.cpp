@@ -17,12 +17,12 @@ std::pair<double,double> GaAs::cond(double T) const {
     return (std::make_pair(940., 940.));
 }
 
-MI_PROPERTY(GaAs, condT,
+MI_PROPERTY(GaAs, thermCond,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
             MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"),
             MIArgumentRange(MaterialInfo::T, 300, 900)
             )
-std::pair<double,double> GaAs::condT(double T, double t) const {
+std::pair<double,double> GaAs::thermCond(double T, double t) const {
     double tCondT = 45*pow((T/300.),-1.25);
     return(std::make_pair(tCondT, tCondT));
  }

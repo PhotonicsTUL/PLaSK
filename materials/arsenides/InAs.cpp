@@ -8,12 +8,12 @@ namespace plask {
 
 std::string InAs::name() const { return NAME; }
 
-MI_PROPERTY(InAs, condT,
+MI_PROPERTY(InAs, thermCond,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
             MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"),
             MIArgumentRange(MaterialInfo::T, 300, 650)
             )
-std::pair<double,double> InAs::condT(double T, double t) const {
+std::pair<double,double> InAs::thermCond(double T, double t) const {
     double tCondT = 30*pow((T/300.),-1.234);
     return(std::make_pair(tCondT, tCondT));
  }

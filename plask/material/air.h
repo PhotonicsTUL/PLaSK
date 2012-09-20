@@ -38,13 +38,13 @@ struct Air: public Material {
     virtual double EactA(double T) const;
     virtual std::pair<double,double> mob(double T) const;
     virtual std::pair<double,double> cond(double T) const;
-    virtual std::pair<double,double> res(double T) const;
+    virtual ConductivityType condType() const;
     virtual double A(double T) const;
     virtual double B(double T) const;
     virtual double C(double T) const;
     virtual double D(double T) const;
-    virtual std::pair<double,double> condT(double T) const;
-    virtual std::pair<double,double> condT(double T, double thickness) const;
+    virtual std::pair<double,double> thermCond(double T) const;
+    virtual std::pair<double,double> thermCond(double T, double thickness) const;
     virtual double dens(double T) const;
     virtual double specHeat(double T) const;
     virtual double nr(double wl, double T) const;

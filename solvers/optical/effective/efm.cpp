@@ -181,9 +181,12 @@ void EffectiveFrequencyCylSolver::stageOne()
 
         auto midmesh = mesh->getMidpointsMesh();
         auto gain = inGain(midmesh, lam1);
-        auto gain_slope = inGain(midmesh, lam2);
-        for (auto g1 = gain_slope.begin(), g2 = gain.begin(); g1 != gain_slope.end(); ++g1, ++g2)
-            *g1 = (*g2 - *g1) * ih2;
+        auto gain_slope = inGain(midmesh, lam2).claim();
+        {
+            auto g1 = gain_slope.begin();
+            auto g2 = gain.begin();
+            for (; g1 != gain_slope.end(); ++g1, ++g2) *g1 = (*g2 - *g1) * ih2;
+        }
         gain = inGain(midmesh, lam);
 
         for (size_t ix = 0; ix != rsize; ++ix) {

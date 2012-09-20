@@ -217,8 +217,8 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
                 break;
             }
         }
-        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(), tSize.ee_x()).first; // TODO
-        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(), tSize.ee_y()).second; // TODO
+        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first; // TODO
+        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
 
         // set load vector
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()]; // 1e-12 -> to transform um*um into m*m
@@ -449,8 +449,8 @@ void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
             }
         }
         mHeatFluxes[/*place++*/ttE->getNo()-1] = vec(
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX(), // TODO
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->condT(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() ); // TODO
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX(), // TODO
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() ); // TODO
     }
 }
 

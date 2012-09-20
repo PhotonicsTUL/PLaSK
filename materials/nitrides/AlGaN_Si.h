@@ -26,7 +26,7 @@ struct AlGaN_Si: public AlGaN {
     virtual double Nf(double T) const;
     virtual double Dop() const;
     virtual std::pair<double,double> cond(double T) const;
-    virtual std::pair<double,double> condT(double T, double t) const;
+    virtual std::pair<double,double> thermCond(double T, double t) const;
     virtual double absp(double wl, double T) const;
 
 private:

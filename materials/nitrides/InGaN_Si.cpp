@@ -45,13 +45,13 @@ std::pair<double,double> InGaN_Si::cond(double T) const {
     return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
-MI_PROPERTY(InGaN_Si, condT,
-            MISeeClass<InGaN>(MaterialInfo::condT),
+MI_PROPERTY(InGaN_Si, thermCond,
+            MISeeClass<InGaN>(MaterialInfo::thermCond),
             MIComment("Si doping dependence for GaN")
             )
-std::pair<double,double> InGaN_Si::condT(double T, double t) const {
-    double lCondT = 1/(In/mInN_Si.condT(T).first + Ga/mGaN_Si.condT(T,t).first + In*Ga*0.215*exp(7.913*In)),
-           vCondT = 1/(In/mInN_Si.condT(T).second + Ga/mGaN_Si.condT(T,t).second + In*Ga*0.215*exp(7.913*In));
+std::pair<double,double> InGaN_Si::thermCond(double T, double t) const {
+    double lCondT = 1/(In/mInN_Si.thermCond(T).first + Ga/mGaN_Si.thermCond(T,t).first + In*Ga*0.215*exp(7.913*In)),
+           vCondT = 1/(In/mInN_Si.thermCond(T).second + Ga/mGaN_Si.thermCond(T,t).second + In*Ga*0.215*exp(7.913*In));
     return(std::make_pair(lCondT, vCondT));
  }
 
