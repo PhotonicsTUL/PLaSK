@@ -439,14 +439,19 @@ namespace detail {
 
 } // namespace detail
 
-
 template <typename ReceiverT>
-struct RegisterReceiver :
-public detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams> {};
+inline void RegisterReceiver() {
+    if (py::converter::registry::lookup(py::type_id<ReceiverT>()).m_class_object == nullptr) {
+        detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams>();
+    }
+}
 
 template <typename ProviderT>
-struct RegisterProvider :
-public detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>  {};
+void RegisterProvider() {
+    if (py::converter::registry::lookup(py::type_id<ProviderT>()).m_class_object == nullptr) {
+        detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>();
+    }
+}
 
 
 }} // namespace plask::python

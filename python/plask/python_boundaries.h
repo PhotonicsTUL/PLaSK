@@ -61,21 +61,25 @@ struct RegisterBoundaryConditions {
 
     RegisterBoundaryConditions()
     {
-        py::to_python_converter<ConditionT, BoundaryCondition_to_python>();
+        if (py::converter::registry::lookup(py::type_id<BoundaryConditionsT>()).m_class_object == nullptr) {
 
-        py::class_<BoundaryConditionsT, shared_ptr<BoundaryConditionsT>>("BoundaryConditions")
-            .def("__getitem__", &__getitem__)
-            .def("__setitem__", &__setitem__)
-            .def("__delitem__", &__delitem__)
-            .def("__len__", &BoundaryConditionsT::size)
-            .def("append", &append, "Append new boundary condition to the list", (py::arg("boundary"), "value"))
-            .def("prepend", &prepend, "Prepend new boundary condition to the list", (py::arg("boundary"), "value"))
-            .def("insert", &insert, "Insert new boundary condition to the list at specified position", (py::arg("index"), "boundary", "value"))
-            .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions")
-            .def("__iter__", py::range<py::return_value_policy<py::return_by_value>>(
-                (typename BoundaryConditionsT::const_iterator(BoundaryConditionsT::*)()const)&BoundaryConditionsT::begin,
-                (typename BoundaryConditionsT::const_iterator(BoundaryConditionsT::*)()const)&BoundaryConditionsT::end))
-        ;
+            py::to_python_converter<ConditionT, BoundaryCondition_to_python>();
+
+            py::class_<BoundaryConditionsT>("BoundaryConditions")
+                .def("__getitem__", &__getitem__)
+                .def("__setitem__", &__setitem__)
+                .def("__delitem__", &__delitem__)
+                .def("__len__", &BoundaryConditionsT::size)
+                .def("append", &append, "Append new boundary condition to the list", (py::arg("boundary"), "value"))
+                .def("prepend", &prepend, "Prepend new boundary condition to the list", (py::arg("boundary"), "value"))
+                .def("insert", &insert, "Insert new boundary condition to the list at specified position", (py::arg("index"), "boundary", "value"))
+                .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions")
+                .def("__iter__", py::range<py::return_value_policy<py::return_by_value>>(
+                    (typename BoundaryConditionsT::const_iterator(BoundaryConditionsT::*)()const)&BoundaryConditionsT::begin,
+                    (typename BoundaryConditionsT::const_iterator(BoundaryConditionsT::*)()const)&BoundaryConditionsT::end))
+            ;
+            py::delattr(py::scope(), "BoundaryConditions");
+        }
     }
 
 };
