@@ -142,11 +142,11 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
 
     ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
 
-    DataVector<double> getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const double> getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
-    DataVector<double> getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const double> getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
-    DataVector<Vec<2> > getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const Vec<2> > getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
     /**
      * Find new potential distribution.

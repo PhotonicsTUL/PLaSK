@@ -532,21 +532,21 @@ int FiniteElementMethodElectricalCartesian2DSolver::solveMatrix(double **ipA, lo
     return 0;
 }
 
-DataVector<double> FiniteElementMethodElectricalCartesian2DSolver::getPotentials(const MeshD<2> &dst_mesh, InterpolationMethod method) const
+DataVector<const double> FiniteElementMethodElectricalCartesian2DSolver::getPotentials(const MeshD<2> &dst_mesh, InterpolationMethod method) const
 {
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mPotentials, dst_mesh, method);
 }
 
-DataVector<Vec<2> > FiniteElementMethodElectricalCartesian2DSolver::getCurrentDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
+DataVector<const Vec<2> > FiniteElementMethodElectricalCartesian2DSolver::getCurrentDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
 {
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mCurrentDensities, dst_mesh, method);
 }
 
-DataVector<double> FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
+DataVector<const double> FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
 {
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;

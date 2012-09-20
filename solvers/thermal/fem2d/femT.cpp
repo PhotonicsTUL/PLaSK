@@ -539,12 +539,12 @@ int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long 
     return 0;
 }
 
-DataVector<double> FiniteElementMethodThermalCartesian2DSolver::getTemperatures(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
+DataVector<const double> FiniteElementMethodThermalCartesian2DSolver::getTemperatures(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mTemperatures, dst_mesh, method);
 }
 
-DataVector<Vec<2> > FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
+DataVector<const Vec<2> > FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mHeatFluxes, dst_mesh, method);
 }

@@ -145,9 +145,9 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
 
     ReceiverFor<HeatDensity, Geometry2DCartesian> inHeatDensity;
 
-    DataVector<double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
-    DataVector<Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
     /// Run temperature calculations
     void runCalc();
