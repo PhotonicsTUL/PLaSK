@@ -163,6 +163,15 @@ struct Box2D {
      * @see isValid()
      */
     void makeInvalid() { lower = vec(0.0, 0.0); upper = vec(-1.0, -1.0); }
+    
+    /**
+     * Calculate area of the box.
+     * @return area of the box
+     */
+    double getArea() const {
+        Vec<2, double> v = size();
+        return v.c0 * v.c1;
+    }
 };
 
 /**
@@ -308,6 +317,15 @@ struct Box3D {
      * @see isValid()
      */
     void makeInvalid() { lower = vec(0.0, 0.0, 0.0); upper = vec(-1.0, -1.0, -1.0); }
+    
+    /**
+     * Calculate area of the box.
+     * @return area of the box
+     */
+    double getArea() const {
+        Vec<3, double> v = size();
+        return v.c0 * v.c1 * v.c2;
+    }
 
 };
 

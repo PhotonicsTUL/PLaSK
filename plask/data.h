@@ -109,8 +109,8 @@ struct DataVector {
     DataVector(std::size_t size, const T& value): size_(size) {
         std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
         std::fill_n(data_non_const.get(), size, value);   //this may throw, but no memory leak than
-        data_ = data_non_const.release();
         gc_ = new Gc(1);
+        data_ = data_non_const.release();
     }
 
     /**
@@ -133,8 +133,8 @@ struct DataVector {
      * @return *this
      */
     DataVector<T>& operator=(const DataVector<T>& M) {
-        if (this == &M) return *this;
-        this->dec_ref();
+        if (this == &M) return *this;   //assigned to self protection
+        this->dec_ref();    //release old content, this can delete old data
         size_ = M.size_;
         data_ = M.data_;
         gc_ = M.gc_;
@@ -149,7 +149,7 @@ struct DataVector {
      */
     template <typename TS>
     DataVector<T>& operator=(const DataVector<TS>& M) {
-        this->dec_ref();
+        this->dec_ref();    //release old content, this can delete old data
         size_ = M.size_;
         data_ = M.data_;
         gc_ = M.gc_;
@@ -243,8 +243,8 @@ struct DataVector {
     DataVector(InIterT begin, InIterT end): size_(std::distance(begin, end)) {
         std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
         std::copy(begin, end, data_non_const.get());   //no memory leak if this throws
+        gc_ = new Gc(1);                               //or this
         data_ = data_non_const.release();
-        gc_ = new Gc(1);
     }
 
     /// Delete data if this was last reference to it.
@@ -281,8 +281,8 @@ struct DataVector {
     template <typename TS>
     void reset(TS* existing_data, std::size_t size, bool manage = false) {
         dec_ref();
-        size_ = size;
         gc_ = manage ? new Gc(1) : nullptr;
+        size_ = size;
         data_ = existing_data;
     }
 
@@ -296,9 +296,9 @@ struct DataVector {
      */
     void reset(std::size_t size) {
         dec_ref();
-        size_ = size;
-        gc_ = new Gc(1);
         data_ = new T[size];
+        gc_ = new Gc(1);
+        size_ = size;
     }
 
     /**
@@ -312,8 +312,8 @@ struct DataVector {
         std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
         std::fill_n(data_non_const.get(), size, value);   //this may throw, than our data will not change
         dec_ref();
+        gc_ = new Gc(1);    //this also may throw
         data_ = data_non_const.release();
-        gc_ = new Gc(1);
         size_ = size;
     }
 
@@ -327,9 +327,10 @@ struct DataVector {
     void reset(InIterT begin, InIterT end) {
         std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
         std::copy(begin, end, data_non_const.get());    //this may throw, and than our vector will not changed
-        data_ = data_non_const.release();
-        size_ = std::distance(begin, end);
+        dec_ref();
         gc_ = new Gc(1);
+        size_ = std::distance(begin, end);
+        data_ = data_non_const.release();
     }
 
 #ifndef DOXYGEN // Advanced method skipped from documentation

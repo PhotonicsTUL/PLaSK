@@ -12,11 +12,11 @@ RectilinearMesh2D RectilinearMesh2D::getMidpointsMesh() const {
 
     RectilinearMesh1D line0;
     for (auto a = axis0.begin(), b = axis0.begin()+1; b != axis0.end(); ++a, ++b)
-        line0.addPoint(0.5 * (*a + *b));
+        line0.addPoint((*a + *b) / 2.0);    // "/ 2.0" is better than "* 0.5", because 2.0 has accurate representation
 
     RectilinearMesh1D line1;
     for (auto a = axis1.begin(), b = axis1.begin()+1; b != axis1.end(); ++a, ++b)
-        line1.addPoint(0.5 * (*a + *b));
+        line1.addPoint((*a + *b) / 2.0);
 
     return RectilinearMesh2D(line0, line1, getIterationOrder());
 }
@@ -28,15 +28,15 @@ RectilinearMesh3D RectilinearMesh3D::getMidpointsMesh() const {
 
     RectilinearMesh1D line0;
     for (auto a = axis0.begin(), b = axis0.begin()+1; b != axis0.end(); ++a, ++b)
-        line0.addPoint(0.5 * (*a + *b));
+        line0.addPoint((*a + *b) / 2.0);
 
     RectilinearMesh1D line1;
     for (auto a = axis1.begin(), b = axis1.begin()+1; b != axis1.end(); ++a, ++b)
-        line1.addPoint(0.5 * (*a + *b));
+        line1.addPoint((*a + *b) / 2.0);
 
     RectilinearMesh1D line2;
     for (auto a = axis2.begin(), b = axis2.begin()+1; b != axis2.end(); ++a, ++b)
-        line2.addPoint(0.5 * (*a + *b));
+        line2.addPoint((*a + *b) / 2.0);
 
     return RectilinearMesh3D(line0, line1, line2, getIterationOrder());
 }

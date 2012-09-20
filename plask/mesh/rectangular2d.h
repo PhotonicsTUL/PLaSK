@@ -37,10 +37,21 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     index_ft* index_f;
     index01_ft* index0_f;
     index01_ft* index1_f;
-    Mesh1D* minor_axis;
-    Mesh1D* major_axis;
+    Mesh1D* minor_axis; ///< minor (changing fastest) axis
+    Mesh1D* major_axis; ///< major (changing slowest) axis
 
   public:
+    
+    /**
+     * Wrapper to RectangularMesh which allow to access to FEM-like elements.
+     */
+    struct Elements {
+        
+        RectangularMesh<2,Mesh1D>& mesh;
+        
+        Elements(RectangularMesh<2,Mesh1D>& mesh): mesh(mesh) {}
+        
+    };
 
     /// Boundary type.
     typedef ::plask::Boundary<RectangularMesh<2,Mesh1D>> Boundary;
@@ -208,12 +219,12 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         return *major_axis;
     }
 
-    /// \return minor (changing fastes) axis
+    /// \return minor (changing fastest) axis
     inline const Mesh1D& minorAxis() const {
         return *minor_axis;
     }
 
-    /// \return minor (changing fastes) axis
+    /// \return minor (changing fastest) axis
     inline Mesh1D& minorAxis() {
         return *minor_axis;
     }
@@ -336,6 +347,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         axis0.clear();
         axis1.clear();
     }
+    
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
      * @param data values of data in points describe by this mesh
@@ -351,68 +363,127 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /**
-     * Get number of objects (for FEM method) in the first direction.
-     * @return number of objects in this mesh in the first direction (axis0 direction).
+     * Get number of elements (for FEM method) in the first direction.
+     * @return number of elements in this mesh in the first direction (axis0 direction).
      */
-    std::size_t getObjectsCount0() const {
+    std::size_t getElementsCount0() const {
         return std::max(int(axis0.size())-1, 0);
     }
 
     /**
-     * Get number of objects (for FEM method) in the second direction.
-     * @return number of objects in this mesh in the second direction (axis1 direction).
+     * Get number of elements (for FEM method) in the second direction.
+     * @return number of elements in this mesh in the second direction (axis1 direction).
      */
-    std::size_t getObjectsCount1() const {
+    std::size_t getElementsCount1() const {
         return std::max(int(axis1.size())-1, 0);
     }
 
     /**
-     * Get number of objects (for FEM method).
-     * @return number of objects in this mesh
+     * Get number of elements (for FEM method).
+     * @return number of elements in this mesh
      */
-    std::size_t getObjectsCount() const {
+    std::size_t getElementsCount() const {
         return std::max((int(axis0.size())-1) * (int(axis1.size())-1), 0);
     }
+    
+    /**
+     * Conver mesh index of bottom left element corner to this element index.
+     * @param mesh_index_of_el_bottom_left mesh index
+     * @return index of element, from 0 to getElementsCount()-1
+     */
+    std::size_t getElementIndexFromBottomLeft(std::size_t mesh_index_of_el_bottom_left) const {
+        return mesh_index_of_el_bottom_left - mesh_index_of_el_bottom_left / major_axis->size();
+    }
+    
+    /**
+     * Conver element index to mesh index of bottom left element corner.
+     * @param element_index index of element, from 0 to getElementsCount()-1
+     * @return mesh index
+     */
+    std::size_t getElementBottomLeftIndex(std::size_t element_index) const {
+        return element_index + (element_index / (major_axis->size()-1));
+    }
+    
+    /**
+     * Conver element index to mesh indexes of bottom left element corner.
+     * @param element_index index of element, from 0 to getElementsCount()-1
+     * @return axis 0 and axis 1 indexes of mesh,
+     * you can easy calculate rest indexes of element corner adding 1 to returned coordinates
+     */
+    Vec<2, std::size_t> getElementBottomLeftIndexes(std::size_t element_index) const {
+        std::size_t bl_index = getElementBottomLeftIndex(element_index);
+        return Vec<2, std::size_t>(index0(bl_index), index1(bl_index));
+    }
 
     /**
-     * Get area of given object.
-     * @param index0, index1 index of object
-     * @return area of object with given index
+     * Get area of given element.
+     * @param index0, index1 axis 0 and axis 1 indexes of element
+     * @return area of elements with given index
      */
-    double getObjectArea(std::size_t index0, std::size_t index1) const {
+    double getElementArea(std::size_t index0, std::size_t index1) const {
         return (axis0[index0+1] - axis0[index0])*(axis1[index1+1] - axis1[index1]);
     }
-
+    
     /**
-     * Get first coordinate of point in center of object.
-     * @param index0 index of object (axis0 index)
-     * @return first coordinate of point point in center of object with given index
+     * Get area of given element.
+     * @param index index of element
+     * @return area of elements with given index
      */
-    double getObjectCenter0(std::size_t index0) const { return (axis0[index0+1] + axis0[index0]) / 2.0; }
-
-    /**
-     * Get second coordinate of point in center of object.
-     * @param index1 index of object (axis1 index)
-     * @return second coordinate of point point in center of object with given index
-     */
-    double getObjectCenter1(std::size_t index1) const { return (axis1[index1+1] + axis1[index1]) / 2.0; }
-
-    /**
-     * Get point in center of object.
-     * @param index0, index1 index of object
-     * @return point in center of object with given index
-     */
-    Vec<2, double> getObjectCenter(std::size_t index0, std::size_t index1) const {
-        return vec(getObjectCenter0(index0), getObjectCenter1(index1));
+    double getElementArea(std::size_t element_index) const {
+        std::size_t bl_index = getElementBottomLeftIndex(element_index);
+        return getElementArea(index0(bl_index), index1(bl_index));
     }
 
     /**
-     * Get object (as rectangle).
-     * @param index0, index1 index of object
-     * @return object with given index
+     * Get first coordinate of point in center of Elements.
+     * @param index0 index of Elements (axis0 index)
+     * @return first coordinate of point point in center of Elements with given index
      */
-    Box2D getObject(std::size_t index0, std::size_t index1) const {
+    double getElementMidpoint0(std::size_t index0) const { return (axis0[index0] + axis0[index0+1]) / 2.0; }
+
+    /**
+     * Get second coordinate of point in center of Elements.
+     * @param index1 index of Elements (axis1 index)
+     * @return second coordinate of point point in center of Elements with given index
+     */
+    double getElementMidpoint1(std::size_t index1) const { return (axis1[index1] + axis1[index1+1]) / 2.0; }
+
+    /**
+     * Get point in center of Elements.
+     * @param index0, index1 index of Elements
+     * @return point in center of element with given index
+     */
+    Vec<2, double> getElementMidpoint(std::size_t index0, std::size_t index1) const {
+        return vec(getElementMidpoint0(index0), getElementMidpoint1(index1));
+    }
+    
+    /**
+     * Get point in center of Elements.
+     * @param element_index index of Elements
+     * @return point in center of element with given index
+     */
+    Vec<2, double> getElementMidpoint(std::size_t element_index) const {
+        std::size_t bl_index = getElementBottomLeftIndex(element_index);
+        return getElementMidpoint(index0(bl_index), index1(bl_index));
+    }
+
+    /**
+     * Get Elements (as rectangle).
+     * @param index0, index1 index of Elements
+     * @return Elements with given index
+     */
+    Box2D getElementBox(std::size_t index0, std::size_t index1) const {
         return Box2D(axis0[index0], axis1[index1], axis0[index0+1], axis1[index1+1]);
+    }
+    
+    /**
+     * Get point in center of elements.
+     * @param element_index index of element
+     * @return point in center of element with given index
+     */
+    Box2D getElementBox(std::size_t element_index) const {
+        std::size_t bl_index = getElementBottomLeftIndex(element_index);
+        return getElementBox(index0(bl_index), index1(bl_index));
     }
 
     /**
