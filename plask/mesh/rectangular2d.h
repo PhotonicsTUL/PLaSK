@@ -51,15 +51,25 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         
         public:
         
+        /**
+         * Construct element using mesh and element indexes.
+         * @param mesh mesh, this element is valid up to time of this mesh life
+         * @param index0, index1 axis 0 and 1 indexes of element (equal to low corrner mesh indexes of element)
+         */
         Element(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index0, std::size_t index1): mesh(mesh), index0(index0), index1(index1) {}
         
+        /**
+         * Construct element using mesh and element indexe.
+         * @param mesh mesh, this element is valid up to time of this mesh life
+         * @param elementIndex indexe of element
+         */
         Element(const RectangularMesh<2,Mesh1D>& mesh, std::size_t elementIndex): mesh(mesh) {
             std::size_t v = mesh.getElementMeshLowIndex(elementIndex);
             index0 = mesh.index0(v);
             index1 = mesh.index1(v);
         }
         
-        typedef typename Mesh1D::PointType PointType;   // exaclty type returned by []
+        typedef typename Mesh1D::PointType PointType;
         
         std::size_t getMeshIndexLower0() const { return index0; }
         
@@ -85,7 +95,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         
         PointType getSize0() const { return getUpper0() - getLower0(); }
         
-        PointType getSize1() const { return getUpper0() - getLower0(); }
+        PointType getSize1() const { return getUpper1() - getLower1(); }
         
         Vec<2, PointType> getSize() const { return getUpper() - getLower(); }
         
