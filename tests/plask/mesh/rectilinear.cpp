@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE(middle2) {
     mesh.axis1.addPointsLinear(2., 6.0, 3);
 
     auto middles = mesh.getMidpointsMesh();
-    BOOST_CHECK_EQUAL(middles.axis0, plask::RectilinearMesh1D({1., 3.}));
-    BOOST_CHECK_EQUAL(middles.axis1, plask::RectilinearMesh1D({3., 5.}));
+    BOOST_CHECK_EQUAL(middles->axis0, plask::RectilinearMesh1D({1., 3.}));
+    BOOST_CHECK_EQUAL(middles->axis1, plask::RectilinearMesh1D({3., 5.}));
 }
 
 BOOST_AUTO_TEST_CASE(boundary) {

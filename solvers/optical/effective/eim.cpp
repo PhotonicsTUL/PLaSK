@@ -186,7 +186,7 @@ void EffectiveIndex2DSolver::stageOne()
             for (size_t iy = 0; iy != ysize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
-                double g = (ix == 0 || ix == xsize-1 || iy == 0 || iy == ysize-1)? NAN : gain[midmesh.index(ix-1, iy-1)];
+                double g = (ix == 0 || ix == xsize-1 || iy == 0 || iy == ysize-1)? NAN : gain[midmesh->index(ix-1, iy-1)];
                 if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outer_distance; }
                 if (iy < ysize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = ysize-2; y1 = mesh->axis1[ty1] + 2.*outer_distance; }
                 double T = 0.25 * ( temp[mesh->index(tx0,ty0)] + temp[mesh->index(tx0,ty1)] +

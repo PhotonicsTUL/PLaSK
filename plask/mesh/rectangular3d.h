@@ -37,6 +37,14 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     Mesh1D* middle_axis;
     Mesh1D* major_axis;
 
+    shared_ptr<RectangularMesh<3,Mesh1D>> midpoints_cache; ///< cache for midpoints mesh
+
+  protected:
+
+    virtual void onChange(const Event& evt) {
+        midpoints_cache.reset();
+    }
+
   public:
 
     /// Boundary type.
@@ -62,7 +70,20 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
     /// Construct an empty mesh
     RectangularMesh(IterationOrder iterationOrder=ORDER_210) {
+        axis0.owner = this; axis1.owner = this; axis2.owner = this;
         setIterationOrder(iterationOrder);
+    }
+
+    /// Copy constructor
+    RectangularMesh(const RectangularMesh& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2) {
+        axis0.owner = this; axis1.owner = this; axis2.owner = this;
+        setIterationOrder(src.getIterationOrder());
+    }
+
+    /// Move constructor
+    RectangularMesh(RectangularMesh&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), axis2(std::move(src.axis2)) {
+        axis0.owner = this; axis1.owner = this; axis2.owner = this;
+        setIterationOrder(src.getIterationOrder());
     }
 
     /**
@@ -95,21 +116,10 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     RectangularMesh(Mesh1D mesh0, Mesh1D mesh1, Mesh1D mesh2, IterationOrder iterationOrder = ORDER_210) :
         axis0(std::move(mesh0)),
         axis1(std::move(mesh1)),
-        axis2(std::move(mesh2)) { setIterationOrder(iterationOrder); }
-
-    /*
-     * Construct mesh with is based on given 1D meshes
-     *
-     * @param mesh0 mesh for the first coordinate, or constructor argument for the first coordinate mesh
-     * @param mesh1 mesh for the second coordinate, or constructor argument for the second coordinate mesh
-     * @param mesh2 mesh for the third coordinate, or constructor argument for the third coordinate mesh
-     * @param iterationOrder iteration order
-     */
-    /*template <typename Mesh0CtorArg, typename Mesh1CtorArg, typename Mesh2CtorArg>
-    RectangularMesh(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, Mesh2CtorArg&& mesh2, IterationOrder iterationOrder = ORDER_210) :
-        c0(std::forward<Mesh0CtorArg>(mesh0)),
-        c1(std::forward<Mesh1CtorArg>(mesh1)),
-        c2(std::forward<Mesh2CtorArg>(mesh2)) { setIterationOrder(iterationOrder); }*/
+        axis2(std::move(mesh2)) {
+        axis0.owner = this; axis1.owner = this; axis2.owner = this;
+        setIterationOrder(iterationOrder);
+    }
 
     /**
      * Get first coordinate of points in this mesh.
@@ -362,6 +372,17 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     }
 
     /**
+     * Get point with given mesh indices.
+     * @param index0 index of point in axis0
+     * @param index1 index of point in axis1
+     * @param index2 index of point in axis2
+     * @return point with given @p index
+     */
+    inline Vec<3, double> at(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return Vec<3, double>(axis0[index0], axis1[index1], axis2[index2]);
+    }
+
+    /**
      * Get point with given mesh index.
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
@@ -404,7 +425,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      * Return a mesh that enables iterating over middle points of the rectangles
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
-    RectangularMesh getMidpointsMesh() const;
+    shared_ptr<RectangularMesh> getMidpointsMesh();
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.

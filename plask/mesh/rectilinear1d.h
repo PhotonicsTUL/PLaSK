@@ -9,6 +9,7 @@ This file includes rectilinear mesh for 1d space.
 #include <algorithm>
 #include <initializer_list>
 
+#include "mesh.h"
 #include "../vec.h"
 #include "../utils/iterators.h"
 #include "../utils/interpolation.h"
@@ -32,6 +33,9 @@ public:
 
     /// Random access iterator type which allow iterate over all points in this mesh, in ascending order.
     typedef std::vector<double>::const_iterator const_iterator;
+
+    /// Pointer to mesh holding this axis
+    Mesh* owner;
 
     /// @return iterator referring to the first point in this mesh
     const_iterator begin() const { return points.begin(); }
@@ -60,14 +64,14 @@ public:
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
     std::size_t findIndex(double to_find) const { return find(to_find) - begin(); }
-    
+
     /**
      * Find position nearest to @p to_find.
      * @param to_find
      * @return position pos for which abs(*pos-to_find) is minimal
      */
     const_iterator findNearest(double to_find) const;
-    
+
     /**
      * Find index nearest to @p to_find.
      * @param to_find
@@ -81,7 +85,13 @@ public:
     iterator end() { return points.end(); }*/
 
     /// Construct an empty mesh.
-    RectilinearMesh1D() {}
+    RectilinearMesh1D(): owner(nullptr) {}
+
+    /// Copy constructor. It does not copy owner.
+    RectilinearMesh1D(const RectilinearMesh1D& src): points(src.points), owner(nullptr) {}
+
+    /// Move constructor. It does not move owner.
+    RectilinearMesh1D(RectilinearMesh1D&& src): points(std::move(src.points)), owner(nullptr) {}
 
     /**
      * Construct mesh with given points.
@@ -103,6 +113,28 @@ public:
      * @param points points, in any order
      */
     RectilinearMesh1D(std::vector<PointType>&& points);
+
+    /// Assign a new mesh. This operation preserves the \a owner.
+    RectilinearMesh1D& operator=(const RectilinearMesh1D& src) {
+        bool resized = size() != src.size();
+        points = src.points;
+        if (owner) {
+            if (resized) owner->fireResized();
+            else owner->fireChanged();
+        }
+        return *this;
+    }
+
+    /// Assign a new mesh. This operation preserves the \a owner.
+    RectilinearMesh1D& operator=(RectilinearMesh1D&& src) {
+        bool resized = size() != src.size();
+        std::swap(points, src.points);
+        if (owner) {
+            if (resized) owner->fireResized();
+            else owner->fireChanged();
+        }
+        return *this;
+    }
 
     /**
      * Compares meshes
@@ -189,22 +221,22 @@ public:
     void clear();
 
     /**
-     * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
+     * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
      * @param data values of data in points describe by this mesh
      * @param point point in which value should be calculate
      * @return interpolated value in point @p point
      */
     template <typename RandomAccessContainer>
-    auto interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type;
+    auto interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type;
 
 };
 
 // RectilinearMesh1D method templates implementation
 template <typename RandomAccessContainer>
-auto RectilinearMesh1D::interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
+auto RectilinearMesh1D::interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
-    if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
-    if (index == 0 || points[index] == point) return data[index]; //hit exactly
+    if (index == size()) return data[index - 1];     //TODO what should it do if mesh is empty?
+    if (index == 0 || points[index] == point) return data[index]; // hit exactly
     // here: points[index-1] < point < points[index]
     return interpolation::linear(points[index-1], data[index-1], points[index], data[index], point);
 }
@@ -215,6 +247,7 @@ inline void RectilinearMesh1D::addOrderedPoints(IteratorT begin, IteratorT end, 
     result.reserve(this->size() + points_count_hint);
     std::set_union(this->points.begin(), this->points.end(), begin, end, std::back_inserter(result));
     this->points = std::move(result);
+    if (owner) owner->fireResized();
 };
 
 }   // namespace plask

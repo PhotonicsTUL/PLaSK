@@ -178,6 +178,40 @@ struct Mesh {
         explicit Event(Mesh& source, unsigned char flags = 0):  EventWithSourceAndFlags<Mesh>(source, flags) {}
     };
 
+    /// Changed signal, fired when space was changed.
+    boost::signals2::signal<void(Event&)> changed;
+
+    /**
+     * Connect a method to changed signal.
+     * @param obj, method slot to connect, object and it's method
+     * @param at specifies where the slot should be connected:
+     *  - boost::signals2::at_front indicates that the slot will be connected at the front of the list or group of slots
+     *  - boost::signals2::at_back (default) indicates that the slot will be connected at the back of the list or group of slots
+     */
+    template <typename ClassT, typename methodT>
+    void changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
+        changed.connect(boost::bind(method, obj, _1), at);
+    }
+
+    template <typename ClassT, typename methodT>
+    void changedDisconnectMethod(ClassT* obj, methodT method) {
+        changed.disconnect(boost::bind(method, obj, _1));
+    }
+
+    /**
+     * Call changed with this as event source.
+     * @param event_constructor_params_without_source parameters for event constructor (without first - source)
+     */
+    template<typename EventT = Event, typename ...Args>
+    void fireChanged(Args&&... event_constructor_params_without_source) {
+        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
+        onChange(evt);
+        changed(evt);
+    }
+
+    /// This method is called when the mesh is resized
+    void fireResized() { fireChanged(Event::RESIZE); }
+
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
 
@@ -189,7 +223,16 @@ struct Mesh {
         throw NotImplemented("Mesh::writeXML()");
     }
 
-    virtual ~Mesh() {}
+    virtual ~Mesh() { fireChanged(Event::DELETE); }
+
+  protected:
+
+    /**
+     * This method is called when the mesh is changed
+     * \param evt triggering event
+     */
+    virtual void onChange(const Event& evt) {}
+
 };
 
 /**
@@ -235,40 +278,8 @@ struct MeshD: public Mesh {
     /// @return iterator referring to the past-the-end point in this mesh
     const_iterator end() const { return const_iterator(this, size()); }
 
-    /// Changed signal, fired when space was changed.
-    boost::signals2::signal<void(Event&)> changed;
-
     /**
-     * Connect a method to changed signal.
-     * @param obj, method slot to connect, object and it's method
-     * @param at specifies where the slot should be connected:
-     *  - boost::signals2::at_front indicates that the slot will be connected at the front of the list or group of slots
-     *  - boost::signals2::at_back (default) indicates that the slot will be connected at the back of the list or group of slots
-     */
-    template <typename ClassT, typename methodT>
-    void changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
-        changed.connect(boost::bind(method, obj, _1), at);
-    }
-
-    template <typename ClassT, typename methodT>
-    void changedDisconnectMethod(ClassT* obj, methodT method) {
-        changed.disconnect(boost::bind(method, obj, _1));
-    }
-
-    /**
-     * Call changed with this as event source.
-     * @param event_constructor_params_without_source parameters for event constructor (without first - source)
-     */
-    template<typename EventT = Event, typename ...Args>
-    void fireChanged(Args&&... event_constructor_params_without_source) {
-        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
-        changed(evt);
-    }
-
-    void fireResized() { fireChanged(Event::RESIZE); }
-
-    /**
-     * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
+     * Initialize this to be the same as @p to_copy but don't copy any changes observer.
      * @param to_copy object to copy
      */
     MeshD(const MeshD& to_copy) {}
@@ -280,9 +291,6 @@ struct MeshD: public Mesh {
     MeshD& operator=(const MeshD& to_copy) { return *this; }
 
     MeshD() = default;
-
-    /// Inform observators that this is being deleted
-    virtual ~MeshD() { fireChanged(Event::DELETE); }
 
 };
 

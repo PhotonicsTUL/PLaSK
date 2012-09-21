@@ -389,8 +389,6 @@ struct ProviderImpl<PropertyT, ValueT, ON_MESH_PROPERTY, SpaceT, VariadicTemplat
         ConstProviderType(Args&&... params): value(std::forward<Args>(params)...) {}
 
         virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams...) const {
-            //return copy of value for each point in dst_mesh
-            //return make_shared< const std::vector<ValueT> >(dst_mesh.size(), value);
             return ProvidedValueType(dst_mesh.size(), value);
         }
     };

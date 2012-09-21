@@ -293,7 +293,7 @@ struct Receiver: public Provider::Receiver {
     void setProvider(ProviderT &provider) {
         setProvider(&provider);
     }
-    
+
     /**
      * Change provider. If new provider is different from current one then changed flag is set.
      * @param provider new provider, will be deleted by this receiver
@@ -359,11 +359,10 @@ struct Receiver: public Provider::Receiver {
      * @throw NoProvider when provider is not available
      * @throw NoValue when provider can't give value (is uninitialized, etc.)
      */
-    //TODO const version? only const version?
     template<typename ...Args> auto
-    operator()(Args&&... params) -> decltype((*provider)(std::forward<Args>(params)...)) {
+    operator()(const Args&... params) -> decltype((*provider)(params...)) {
         beforeGetValue();
-        return (*provider)(std::forward<Args>(params)...);
+        return (*provider)(params...);
     }
 
     /**
@@ -372,15 +371,14 @@ struct Receiver: public Provider::Receiver {
      * @return value from provider or empty optional if value couldn't be got
      */
     template<typename ...Args> auto
-    optional(Args&&... params) -> boost::optional<decltype((*provider)(std::forward<Args>(params)...))> {
+    optional(const Args&... params) -> boost::optional<decltype((*provider)(params...))> {
         try {
-            return boost::optional<decltype((*provider)(std::forward<Args>(params)...))>(this->operator()(std::forward<Args>(params)...));
+            return boost::optional<decltype((*provider)(params...))>(this->operator()(params...));
         } catch (std::exception&) {
             changed = false; // unless anything changes, next call to optional will return the same
-            return boost::optional<decltype((*provider)(std::forward<Args>(params)...))>();
+            return boost::optional<decltype((*provider)(params...))>();
         }
     }
-
 
     /**
      * Set provider for this to provider of constant.
@@ -447,10 +445,19 @@ struct OnMeshProvider: public Provider {
 
     /**
      * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs...) const = 0;
+    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const = 0;
 
+    /**
+     * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedValueType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args) const {
+        return this->operator()(*dst_mesh, extra_args...);
+    }
 };
 
 //TODO typedef for OnMeshReceiver (GCC 4.7 needed)
@@ -469,19 +476,30 @@ struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT, Ex
 
     /**
      * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... ,InterpolationMethod method) const = 0;
+    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     /**
      * Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
      * @param dst_mesh set of requested points
-     * @param extra_args
+     * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
     virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const {
         return this->operator()(dst_mesh, extra_args..., DEFAULT_INTERPOLATION);
+    }
+
+    /**
+     * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments
+     * @param method method which should be use to do interpolation
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedValueType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
+        return this->operator()(*dst_mesh, extra_args..., method);
     }
 
 };

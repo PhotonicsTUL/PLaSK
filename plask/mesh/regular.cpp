@@ -3,20 +3,26 @@
 namespace plask {
 
 template<>
-RegularMesh2D RegularMesh2D::getMidpointsMesh() const {
-    return RegularMesh2D(
-        RegularMesh1D(axis0.getFirst() + 0.5*axis0.getStep(), axis0.getLast() - 0.5*axis0.getStep(), axis0.size()-1),
-        RegularMesh1D(axis1.getFirst() + 0.5*axis1.getStep(), axis1.getLast() - 0.5*axis1.getStep(), axis1.size()-1)
+shared_ptr<RegularMesh2D> RegularMesh2D::getMidpointsMesh() {
+    if (this->midpoints_cache) return this->midpoints_cache;
+
+    this->midpoints_cache = make_shared<RegularMesh2D>(
+        RegularMesh1D(this->axis0.getFirst() + 0.5*this->axis0.getStep(), this->axis0.getLast() - 0.5*this->axis0.getStep(), this->axis0.size()-1),
+        RegularMesh1D(this->axis1.getFirst() + 0.5*this->axis1.getStep(), this->axis1.getLast() - 0.5*this->axis1.getStep(), this->axis1.size()-1)
     );
+    return this->midpoints_cache;
 }
 
 template<>
-RegularMesh3D RegularMesh3D::getMidpointsMesh() const {
-    return RegularMesh3D(
-        RegularMesh1D(axis0.getFirst() + 0.5*axis0.getStep(), axis0.getLast() - 0.5*axis0.getStep(), axis0.size()-1),
-        RegularMesh1D(axis1.getFirst() + 0.5*axis1.getStep(), axis1.getLast() - 0.5*axis1.getStep(), axis1.size()-1),
-        RegularMesh1D(axis2.getFirst() + 0.5*axis2.getStep(), axis2.getLast() - 0.5*axis2.getStep(), axis2.size()-1)
+shared_ptr<RegularMesh3D> RegularMesh3D::getMidpointsMesh() {
+    if (this->midpoints_cache) return this->midpoints_cache;
+
+    this->midpoints_cache = make_shared<RegularMesh3D>(
+        RegularMesh1D(this->axis0.getFirst() + 0.5*this->axis0.getStep(), this->axis0.getLast() - 0.5*this->axis0.getStep(), this->axis0.size()-1),
+        RegularMesh1D(this->axis1.getFirst() + 0.5*this->axis1.getStep(), this->axis1.getLast() - 0.5*this->axis1.getStep(), this->axis1.size()-1),
+        RegularMesh1D(this->axis2.getFirst() + 0.5*this->axis2.getStep(), this->axis2.getLast() - 0.5*this->axis2.getStep(), this->axis2.size()-1)
     );
+    return this->midpoints_cache;
 }
 
 

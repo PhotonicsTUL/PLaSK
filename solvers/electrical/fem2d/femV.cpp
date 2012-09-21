@@ -116,7 +116,7 @@ void FiniteElementMethodElectricalCartesian2DSolver::setElements()
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::setTemperatures()
-{  
+{
     auto iMesh = mesh->getMidpointsMesh();
     try
     {
@@ -124,7 +124,7 @@ void FiniteElementMethodElectricalCartesian2DSolver::setTemperatures()
     }
     catch (NoValue)
     {
-        mTemperatures.reset(iMesh.size(), 300.);
+        mTemperatures.reset(iMesh->size(), 300.);
     }
 }
 

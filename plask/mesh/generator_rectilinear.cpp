@@ -140,9 +140,7 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const s
         initial.axis1.addPoint(box.upper.c1);
     }
 
-    auto mesh = make_shared<RectilinearMesh2D>();
-    mesh->axis0 = get1DMesh(initial.axis0, geometry, 0);
-    mesh->axis1 = get1DMesh(initial.axis1, geometry, 1);
+    auto mesh = make_shared<RectilinearMesh2D>(get1DMesh(initial.axis0, geometry, 0), get1DMesh(initial.axis1, geometry, 1));
 
     mesh->setOptimalIterationOrder();
     return mesh;

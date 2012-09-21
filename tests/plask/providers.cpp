@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(attach_datavector)
 {
     auto mesh1 = plask::make_shared<plask::RegularMesh2D>(plask::RegularMesh1D(0., 4., 3), plask::RegularMesh1D(0., 20., 3));
 
-    auto mesh2 = plask::make_shared<std::remove_reference<decltype(*mesh1)>::type>(mesh1->getMidpointsMesh());
+    auto mesh2 = mesh1->getMidpointsMesh();
 
     plask::DataVector<double> data(9);
     data[0] = 100.; data[1] = 100.; data[2] = 100.;

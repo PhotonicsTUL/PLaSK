@@ -33,17 +33,17 @@ void SimpleDiffusionSolverCyl::loadParam(const std::string& param, XMLReader& re
 std::deque<Box2D> SimpleDiffusionSolverCyl::detectQuantumWells()
 {
     shared_ptr<RectilinearMesh2D> mesh = RectilinearMesh2DSimpleGenerator()(geometry->getChild());
-    RectilinearMesh2D points = mesh->getMidpointsMesh();
+    shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
 
     std::deque<Box2D> results;
 
     // Now compact each row (it can contain only one QW and each must start and end in the same point)
     double left, right;
     bool foundQW = false;
-    for (int j = 0; j < points.axis1.size(); ++j) {
+    for (int j = 0; j < points->axis1.size(); ++j) {
         bool inQW = false;
-        for (int i = 0; i < points.axis0.size(); ++i) {
-            auto point = points(i,j);
+        for (int i = 0; i < points->axis0.size(); ++i) {
+            auto point = points->at(i,j);
             auto tags = geometry->getRolesAt(point);
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
             if (QW && !inQW) { // QW start
@@ -62,9 +62,9 @@ std::deque<Box2D> SimpleDiffusionSolverCyl::detectQuantumWells()
             }
         }
         if (inQW) { // handle situation when QW spans to the end of the structure
-            if (foundQW && right != mesh->axis0[points.axis0.size()])
+            if (foundQW && right != mesh->axis0[points->axis0.size()])
                 throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
-            right = mesh->axis0[points.axis0.size()];
+            right = mesh->axis0[points->axis0.size()];
             results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
             foundQW = true;
             inQW = false;

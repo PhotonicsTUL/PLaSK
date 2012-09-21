@@ -123,7 +123,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setHeatDensities()
     }
     catch (NoValue)
     {
-        mHeatDensities.reset(iMesh.size(), 0.);
+        mHeatDensities.reset(iMesh->size(), 0.);
     }
 }
 
