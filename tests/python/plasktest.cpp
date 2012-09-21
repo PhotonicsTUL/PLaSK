@@ -152,6 +152,48 @@ struct InOutSolver : plask::Solver {
 };
 
 
+//// Mesh /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct MeshTest {
+
+    plask::shared_ptr<plask::RectilinearMesh2D> rectilinear2d;
+    plask::shared_ptr<plask::RectilinearMesh3D> rectilinear3d;
+    plask::shared_ptr<plask::RegularMesh2D> regular2d;
+    plask::shared_ptr<plask::RegularMesh3D> regular3d;
+
+    bool changed_rectilinear2d, changed_rectilinear3d, changed_regular2d, changed_regular3d;
+
+    void change_rectilinear2d(const plask::Mesh::Event&) { changed_rectilinear2d = true; }
+    bool rectilinear2d_changed() { bool r = changed_rectilinear2d; changed_rectilinear2d = false; return r; }
+
+    void change_rectilinear3d(const plask::Mesh::Event&) { changed_rectilinear3d = true; }
+    bool rectilinear3d_changed() { bool r = changed_rectilinear3d; changed_rectilinear3d = false; return r; }
+
+    void change_regular2d(const plask::Mesh::Event&) { changed_regular2d = true; }
+    bool regular2d_changed() { bool r = changed_regular2d; changed_regular2d = false; return r; }
+
+    void change_regular3d(const plask::Mesh::Event&) { changed_regular3d = true; }
+    bool regular3d_changed() { bool r = changed_regular3d; changed_regular3d = false; return r; }
+
+    MeshTest():
+        rectilinear2d(plask::make_shared<plask::RectilinearMesh2D>()), rectilinear3d(plask::make_shared<plask::RectilinearMesh3D>()),
+        regular2d(plask::make_shared<plask::RegularMesh2D>()), regular3d(plask::make_shared<plask::RegularMesh3D>()),
+        changed_rectilinear2d(false), changed_rectilinear3d(false), changed_regular2d(false), changed_regular3d(false) {
+        rectilinear2d->changedConnectMethod(this, &MeshTest::change_rectilinear2d);
+        rectilinear3d->changedConnectMethod(this, &MeshTest::change_rectilinear3d);
+        regular2d->changedConnectMethod(this, &MeshTest::change_regular2d);
+        regular3d->changedConnectMethod(this, &MeshTest::change_regular3d);
+    }
+
+    ~MeshTest() {
+        rectilinear2d->changedDisconnectMethod(this, &MeshTest::change_rectilinear2d);
+        rectilinear3d->changedDisconnectMethod(this, &MeshTest::change_rectilinear3d);
+        regular2d->changedDisconnectMethod(this, &MeshTest::change_regular2d);
+        regular3d->changedDisconnectMethod(this, &MeshTest::change_regular3d);
+    }
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 BOOST_PYTHON_MODULE(plasktest)
@@ -198,6 +240,16 @@ BOOST_PYTHON_MODULE(plasktest)
             .add_receiver("inWavelength", &InOutSolver::inWavelength, "Input Wavelength")
             .add_provider("outWavelength", &InOutSolver::outWavelength, "Output Wavelength")
     ;
-
     }
+
+    py::class_<MeshTest, boost::noncopyable>("MeshTest")
+        .def_readonly("rectilinear2d", &MeshTest::rectilinear2d)
+        .add_property("rectilinear2d_changed", &MeshTest::rectilinear2d_changed)
+        .def_readonly("rectilinear3d", &MeshTest::rectilinear3d)
+        .add_property("rectilinear3d_changed", &MeshTest::rectilinear3d_changed)
+        .def_readonly("regular2d", &MeshTest::regular2d)
+        .add_property("regular2d_changed", &MeshTest::regular2d_changed)
+        .def_readonly("regular3d", &MeshTest::regular3d)
+        .add_property("regular3d_changed", &MeshTest::regular3d_changed)
+    ;
 }

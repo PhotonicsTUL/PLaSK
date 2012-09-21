@@ -126,3 +126,37 @@ class RectilinearMeshes(unittest.TestCase):
         stack.append(rect)
         self.assertFalse(solver.initialized)
         self.assertEqual( list(solver.mesh.axis1), [0., 2., 4.] )
+
+    def testEvents(self):
+        test = plasktest.MeshTest()
+
+        self.assertFalse(test.rectilinear2d_changed)
+        test.rectilinear2d.axis0 = linspace(0., 10., 11)
+        self.assertTrue(test.rectilinear2d_changed)
+        test.rectilinear2d.axis0.insert(12)
+        self.assertTrue(test.rectilinear2d_changed)
+        test.rectilinear2d.axis0.extend(linspace(12., 15., 4))
+        self.assertTrue(test.rectilinear2d_changed)
+        test.rectilinear2d.axis1 = linspace(0., 10., 11)
+        self.assertTrue(test.rectilinear2d_changed)
+        test.rectilinear2d.axis1.insert(12)
+        self.assertTrue(test.rectilinear2d_changed)
+        test.rectilinear2d.axis1.extend(linspace(12., 15., 4))
+        self.assertTrue(test.rectilinear2d_changed)
+
+        self.assertFalse(test.rectilinear3d_changed)
+        test.rectilinear3d.axis0 = linspace(0., 10., 11)
+        self.assertTrue(test.rectilinear3d_changed)
+        test.rectilinear3d.axis1 = linspace(0., 10., 11)
+        self.assertTrue(test.rectilinear3d_changed)
+        test.rectilinear3d.axis2 = linspace(0., 10., 11)
+        self.assertTrue(test.rectilinear3d_changed)
+
+        self.assertFalse(test.regular2d_changed)
+        test.regular2d.axis0 = (0., 10., 11)
+        self.assertTrue(test.regular2d_changed)
+        test.regular2d.axis0.first = 2.
+        self.assertTrue(test.regular2d_changed)
+        test.regular2d.axis0.last = 12.
+        self.assertTrue(test.regular2d_changed)
+        test.regular2d.axis0.resize(20)

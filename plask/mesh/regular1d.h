@@ -40,7 +40,8 @@ class RegularMesh1D {
     Mesh* owner;
 
     /// Construct uninitialized mesh.
-    RegularMesh1D(): owner(nullptr) {}
+    RegularMesh1D():
+        lo(0.), step(0.), points_count(0), owner(nullptr) {}
 
     /// Copy constructor. It does not copy owner
     RegularMesh1D(const RegularMesh1D& src):

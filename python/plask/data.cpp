@@ -20,6 +20,10 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<Vec<2,dcomplex>>() { return 2; }
     template <> constexpr inline npy_intp type_dim<Vec<3,double>>() { return 3; }
     template <> constexpr inline npy_intp type_dim<Vec<3,dcomplex>>() { return 3; }
+    template <> constexpr inline npy_intp type_dim<const Vec<2,double>>() { return 2; }
+    template <> constexpr inline npy_intp type_dim<const Vec<2,dcomplex>>() { return 2; }
+    template <> constexpr inline npy_intp type_dim<const Vec<3,double>>() { return 3; }
+    template <> constexpr inline npy_intp type_dim<const Vec<3,dcomplex>>() { return 3; }
 
 
     inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.axis1.size(), mesh.axis0.size() }; }
@@ -348,8 +352,6 @@ void register_data_vectors() {
     register_data_vector< Vec<2,dcomplex>, 3 >();
     register_data_vector< Vec<3,double>, 3 >();
     register_data_vector< Vec<3,dcomplex>, 3 >();
-    register_data_vector<double, 3>();
-    register_data_vector<dcomplex, 3>();
 }
 
 }} // namespace plask::python

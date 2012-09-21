@@ -141,13 +141,11 @@ static void RegularMesh1D_resize(RegularMesh1D& self, int count) {
 }
 
 static void RegularMesh1D_setFirst(RegularMesh1D& self, double first) {
-    double last = self.getLast();
-    self.reset(first, last, self.size());
+    self.reset(first, self.getLast(), self.size());
 }
 
 static void RegularMesh1D_setLast(RegularMesh1D& self, double last) {
-    double first = self.getFirst();
-    self.reset(first, last, self.size());
+    self.reset(self.getFirst(), last, self.size());
 }
 
 
