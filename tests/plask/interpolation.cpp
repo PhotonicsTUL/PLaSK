@@ -7,7 +7,7 @@
 
 namespace plask {
     struct DummyMesh: public plask::MeshD<2> {
-        virtual std::size_t size() const { return 1; }
+        virtual std::size_t size() const { return 2; }
         virtual plask::Vec<2, double> at(std::size_t) const { return plask::vec(0.0, 0.0); }
     };
 

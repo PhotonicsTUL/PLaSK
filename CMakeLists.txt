@@ -9,7 +9,7 @@ set(VERSION_MINOR 1)            # MINOR version (bump up by one on visible featu
 
 # ---------- common options --------------------------------------------
 
-add_definitions(-Wall -Wno-narrowing)                   # almost all warnings
+add_definitions(-Wall -Wno-narrowing -Wno-sign-compare) # almost all warnings
 set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")    # C++0x (C++11) standard
 
 # Turn-off strict aliasing for Python code

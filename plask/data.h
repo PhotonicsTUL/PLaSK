@@ -263,7 +263,7 @@ struct DataVector {
     }
 
     /**
-     * Chenge data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
+     * Change data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
      * @param size  total size of the existing data
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
@@ -273,7 +273,7 @@ struct DataVector {
     }
 
     /**
-     * Chenge data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
+     * Change data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
      * @param size  total size of the existing data
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
@@ -302,7 +302,7 @@ struct DataVector {
     }
 
     /**
-     * Chenge data of this to array of given @p size and fill all its' cells with given @p value.
+     * Change data of this to array of given @p size and fill all its' cells with given @p value.
      *
      * Same as: DataVector(size, value).swap(*this);
      * @param size size of vector
@@ -310,7 +310,7 @@ struct DataVector {
      */
     void reset(std::size_t size, const T& value) {
         std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
-        std::fill_n(data_non_const.get(), size, value);   //this may throw, than our data will not change
+        std::fill_n(data_non_const.get(), size, value);   // this may throw, than our data will not change
         dec_ref();
         gc_ = new Gc(1);    //this also may throw
         data_ = data_non_const.release();
@@ -318,7 +318,7 @@ struct DataVector {
     }
 
     /**
-     * Chenge data of this to copy of range [begin, end).
+     * Change data of this to copy of range [begin, end).
      *
      * Same as: DataVector(begin, end).swap(*this);
      * @param begin, end range of data to copy

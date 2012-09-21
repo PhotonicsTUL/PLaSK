@@ -141,7 +141,7 @@ template <typename SrcMeshT, typename DataT, int iter>
 struct __InterpolateMeta__
 {
     inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<typename std::remove_const<DataT>::type>& dst_vec, InterpolationMethod method) {
+                                   const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<typename std::remove_const<DataT>::type>& dst_vec, InterpolationMethod method) {
         if (int(method) == iter)
             InterpolationAlgorithm<SrcMeshT, typename std::remove_const<DataT>::type, (InterpolationMethod)iter>::interpolate(src_mesh, DataVector<const DataT>(src_vec), dst_mesh, dst_vec);
         else
@@ -173,10 +173,13 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  * @see @ref meshes_interpolation
  */
 template <typename SrcMeshT, typename DataT>
-inline DataVector<DataT>
-interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-            const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
+DataVector<DataT> interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
+                              const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
 {
+    if (!src_vec.data()) throw NoValue(); // throw if we have been called with uninitialized data
+    if (src_mesh.size() != src_vec.size())
+        throw BadMesh("interpolate", "Mesh size (%2%) and values size (%1%) do not match", src_vec.size(), src_mesh.size());
+
     if (&src_mesh == &dst_mesh) return src_vec; // meshes are identical, so just return src_vec
 
     DataVector<typename std::remove_const<DataT>::type> result(dst_mesh.size());

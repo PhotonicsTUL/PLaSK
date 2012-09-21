@@ -16,10 +16,10 @@ FiniteElementMethodElectricalCartesian2DSolver::FiniteElementMethodElectricalCar
 {
     mNodes.clear();
     mElements.clear();
-    mPotentials.reset(0.);
-    mCurrentDensities.reset(0.);
+    mPotentials.reset();
+    mCurrentDensities.reset();
     mTemperatures.reset();
-    mHeatDensities.reset(0.);
+    mHeatDensities.reset();
 
     inTemperature = 300.;
 }
@@ -43,10 +43,10 @@ void FiniteElementMethodElectricalCartesian2DSolver::onInvalidate() // This will
 {
     mNodes.clear();
     mElements.clear();
-    mPotentials.reset(0);
-    mCurrentDensities.reset(0);
+    mPotentials.reset();
+    mCurrentDensities.reset();
     mTemperatures.reset();
-    mHeatDensities.reset(0.);
+    mHeatDensities.reset();
     // Make sure that no provider returns any value.
     // If this method has been called, before next computations, onInitialize will be called.
 }
@@ -557,14 +557,14 @@ DataVector<const Vec<2> > FiniteElementMethodElectricalCartesian2DSolver::getCur
 {
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
-    return interpolate(*mesh, mCurrentDensities, dst_mesh, method);
+    return interpolate(*(mesh->getMidpointsMesh()), mCurrentDensities, dst_mesh, method);
 }
 
 DataVector<const double> FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
 {
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
-    return interpolate(*mesh, mHeatDensities, dst_mesh, method);
+    return interpolate(*(mesh->getMidpointsMesh()), mHeatDensities, dst_mesh, method);
 }
 
 }}} // namespace plask::solvers::eletrical
