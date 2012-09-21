@@ -397,22 +397,15 @@ static inline bool plask_import_array() {
     return true;
 }
 
-namespace detail {
-    py::object vector2fClass;
-    py::object vector2cClass;
-    py::object vector3fClass;
-    py::object vector3cClass;
-}
-
 void register_vectors()
 {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-    detail::vector2fClass = register_vector_class<2,double>("vector2f");
-    detail::vector2cClass = register_vector_class<2,dcomplex>("vector2fc");
-    detail::vector3fClass = register_vector_class<3,double>("vector3f");
-    detail::vector3cClass = register_vector_class<3,dcomplex>("vector2c");
+    register_vector_class<2,double>("vector2f");
+    register_vector_class<2,dcomplex>("vector2fc");
+    register_vector_class<3,double>("vector3f");
+    register_vector_class<3,dcomplex>("vector2c");
 
     py::implicitly_convertible<Vec<2,double>,Vec<2,dcomplex>>();
     py::implicitly_convertible<Vec<3,double>,Vec<3,dcomplex>>();

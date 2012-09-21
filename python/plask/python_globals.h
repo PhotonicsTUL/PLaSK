@@ -142,18 +142,13 @@ namespace detail {
 // ----------------------------------------------------------------------------------------------------------------------
 // Get dtype for data
 namespace detail {
-    extern py::object vector2fClass;
-    extern py::object vector2cClass;
-    extern py::object vector3fClass;
-    extern py::object vector3cClass;
-
     template <typename T> inline static py::handle<> dtype();
     template<> inline py::handle<> dtype<double>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyFloat_Type))); }
-    template<> inline py::handle<> dtype<Vec<2,double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2fClass.ptr()))); }
-    template<> inline py::handle<> dtype<Vec<3,double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector2cClass.ptr()))); }
+    template<> inline py::handle<> dtype<Vec<2,double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(py::converter::registry::lookup(py::type_id<Vec<2,double>>()).get_class_object()))); }
+    template<> inline py::handle<> dtype<Vec<3,double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(py::converter::registry::lookup(py::type_id<Vec<3,double>>()).get_class_object()))); }
     template<> inline py::handle<> dtype<dcomplex>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyComplex_Type))); }
-    template<> inline py::handle<> dtype<Vec<2,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3fClass.ptr()))); }
-    template<> inline py::handle<> dtype<Vec<3,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(vector3cClass.ptr()))); }
+    template<> inline py::handle<> dtype<Vec<2,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(py::converter::registry::lookup(py::type_id<Vec<2,dcomplex>>()).get_class_object()))); }
+    template<> inline py::handle<> dtype<Vec<3,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(py::converter::registry::lookup(py::type_id<Vec<3,dcomplex>>()).get_class_object()))); }
 }
 
 
