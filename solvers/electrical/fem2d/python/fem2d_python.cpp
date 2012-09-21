@@ -17,6 +17,8 @@ BOOST_PYTHON_MODULE(fem2d)
     {CLASS(FiniteElementMethodElectricalCartesian2DSolver, "CartesianFEM", "Finite Element electrical solver for 2D Cartesian Geometry.")
         METHOD(runCalc, "Run electrical calculations");
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver
+        PROVIDER(outPotential, "Potentials"); // provider in the solver
+        PROVIDER(outCurrentDensity, "CurrentDensities"); // provider in the solver
         PROVIDER(outHeatDensity, "HeatDensities"); // provider in the solver
         BOUNDARY_CONDITIONS(constV, mVconst, "Boundary conditions of the first kind (constant potential)");
         RW_PROPERTY(getsetLoopLim, getLoopLim, setLoopLim, "Get and set max. number of loops"); // read-write property

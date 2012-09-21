@@ -60,6 +60,13 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     double **mpA;
     int mAWidth, mAHeight;
     std::vector<double> mVcorr;
+    int mLoopLim; // number of loops - stops the calculations
+    double mVCorrLim; // small-enough correction - stops the calculations
+    double mVBigCorr; // big-enough correction for the potential
+    double mBigNum; // for the first boundary condtion (see: set Matrix)
+    bool mLogs; // logs (0-most important logs, 1-all logs)
+    int mLoopNo; // number of completed loops
+
     DataVector<double> mPotentials; // out
     DataVector<Vec<2> > mCurrentDensities; // out
     DataVector<double> mHeatDensities; // out
@@ -167,12 +174,6 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     double getBigNum();
 
     virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
-
-    // Parameters for rootdigger
-    int mLoopLim; // number of loops - stops the calculations
-    double mVCorrLim; // small-enough correction - stops the calculations
-    double mVBigCorr; // big-enough correction for the potential
-    double mBigNum; // for the first boundary condtion (see: set Matrix)
 
     FiniteElementMethodElectricalCartesian2DSolver(const std::string& name="");
 

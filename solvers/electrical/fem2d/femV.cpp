@@ -4,13 +4,15 @@ namespace plask { namespace solvers { namespace electrical {
 
 FiniteElementMethodElectricalCartesian2DSolver::FiniteElementMethodElectricalCartesian2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
-    outPotential(this, &FiniteElementMethodElectricalCartesian2DSolver::getPotentials),
-    outCurrentDensity(this, &FiniteElementMethodElectricalCartesian2DSolver::getCurrentDensities),
-    outHeatDensity(this, &FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities),
     mLoopLim(5),
     mVCorrLim(0.01),
     mVBigCorr(1e5),
-    mBigNum(1e15)
+    mBigNum(1e15),
+    mLogs(false),
+    mLoopNo(0),
+    outPotential(this, &FiniteElementMethodElectricalCartesian2DSolver::getPotentials),
+    outCurrentDensity(this, &FiniteElementMethodElectricalCartesian2DSolver::getCurrentDensities),
+    outHeatDensity(this, &FiniteElementMethodElectricalCartesian2DSolver::getHeatDensities)
 {
     mNodes.clear();
     mElements.clear();
@@ -61,7 +63,8 @@ double FiniteElementMethodElectricalCartesian2DSolver::getBigNum() { return mBig
 
 void FiniteElementMethodElectricalCartesian2DSolver::setNodes()
 {
-    writelog(LOG_INFO, "Setting nodes...");
+    if (mLogs)
+        writelog(LOG_INFO, "Setting nodes...");
 
     size_t tNo = 1; // node number
 
@@ -88,7 +91,8 @@ void FiniteElementMethodElectricalCartesian2DSolver::setNodes()
 
 void FiniteElementMethodElectricalCartesian2DSolver::setElements()
 {
-    writelog(LOG_INFO, "Setting elememts...");
+    if (mLogs)
+        writelog(LOG_INFO, "Setting elememts...");
 
     size_t tNo = 1; // element number
 
@@ -130,7 +134,8 @@ void FiniteElementMethodElectricalCartesian2DSolver::setTemperatures()
 
 void FiniteElementMethodElectricalCartesian2DSolver::setSolver()
 {
-    writelog(LOG_INFO, "Setting solver...");
+    if (mLogs)
+        writelog(LOG_INFO, "Setting solver...");
 
     /*size_t tNoOfNodesX, tNoOfNodesY; // TEST
 
@@ -166,7 +171,8 @@ void FiniteElementMethodElectricalCartesian2DSolver::setSolver()
 
 void FiniteElementMethodElectricalCartesian2DSolver::delSolver()
 {
-    writelog(LOG_INFO, "Deleting solver...");
+    if (mLogs)
+        writelog(LOG_INFO, "Deleting solver...");
 
     for (int i = 0; i < mAHeight; i++)
         delete [] mpA[i];
@@ -178,7 +184,8 @@ void FiniteElementMethodElectricalCartesian2DSolver::delSolver()
 
 void FiniteElementMethodElectricalCartesian2DSolver::setMatrix()
 {
-    writelog(LOG_INFO, "Setting matrix...");
+    if (mLogs)
+        writelog(LOG_INFO, "Setting matrix...");
 
     std::vector<Element2D>::const_iterator ttE = mElements.begin();
     std::vector<Node2D>::const_iterator ttN = mNodes.begin();
@@ -267,13 +274,15 @@ void FiniteElementMethodElectricalCartesian2DSolver::runCalc()
     initCalculation();
     //if (!inTemperatures.changed) return;
 
-    writelog(LOG_INFO, "Starting electrical calculations...");
+    if (mLogs)
+        writelog(LOG_INFO, "Starting electrical calculations...");
 
     setSolver();
 
     setTemperatures();
 
-    writelog(LOG_INFO, "Running solver...");
+    if (mLogs)
+        writelog(LOG_INFO, "Running solver...");
 
     std::vector<double>::const_iterator ttVCorr;
     int tLoop = 1, tInfo = 1;
@@ -288,7 +297,7 @@ void FiniteElementMethodElectricalCartesian2DSolver::runCalc()
         {
             // update
             updNodes();
-            updElements();
+            //updElements();
 
             // find max correction
             std::vector<double> tB(mAHeight, 0.);
@@ -300,8 +309,10 @@ void FiniteElementMethodElectricalCartesian2DSolver::runCalc()
 
             tVCorr = *ttVCorr;
 
+            mLoopNo++;
+
             // show max correction
-            writelog(LOG_INFO, "Loop no: %1%, max. corr. for V: %2%", tLoop, tVCorr);
+            writelog(LOG_INFO, "Loop no: %1%(%2%), max. corr. for V: %3%", tLoop, mLoopNo, tVCorr);
 
             tLoop++;
         }
@@ -315,11 +326,17 @@ void FiniteElementMethodElectricalCartesian2DSolver::runCalc()
 
     savePotentials();
 
-    showPotentials();
+    saveCurrentDensities();
+
+    saveHeatDensities();
+
+    if (mLogs)
+        showPotentials();
 
     delSolver();
 
-    writelog(LOG_INFO, "Potential calculations completed");
+    if (mLogs)
+        writelog(LOG_INFO, "Potential calculations completed");
 
     outPotential.fireChanged();
     outCurrentDensity.fireChanged();
@@ -350,11 +367,17 @@ void FiniteElementMethodElectricalCartesian2DSolver::loadParam(const std::string
         mBigNum = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
+    if (param == "logs")
+    {
+        mLogs = source.requireAttribute<bool>("value");
+        source.requireTagEnd();
+    }
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::updNodes()
 {
-    writelog(LOG_INFO, "Updating nodes...");
+    if (mLogs)
+        writelog(LOG_INFO, "Updating nodes...");
 
     std::vector<Node2D>::iterator ttN = mNodes.begin();
 
@@ -369,10 +392,8 @@ void FiniteElementMethodElectricalCartesian2DSolver::updNodes()
 
 void FiniteElementMethodElectricalCartesian2DSolver::updElements()
 {
-    writelog(LOG_INFO, "Updating elements...");
-
-    //for (std::vector<Element2D>::iterator ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
-    //    ttE->setV(); // TODO
+    if (mLogs)
+        writelog(LOG_INFO, "Updating elements...");
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::showNodes()
@@ -402,29 +423,29 @@ void FiniteElementMethodElectricalCartesian2DSolver::showElements()
 
 void FiniteElementMethodElectricalCartesian2DSolver::savePotentials()
 {
-    writelog(LOG_INFO, "Saving potentials...");
+    if (mLogs)
+        writelog(LOG_INFO, "Saving potentials...");
 
     std::vector<Node2D>::const_iterator ttN;
 
     mPotentials.reset(mNodes.size());
-    //size_t tI = 0;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        mPotentials[ttN->getNo()-1/*tI++*/] = ttN->getV();
+        mPotentials[ttN->getNo()-1] = ttN->getV();
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::saveCurrentDensities()
 {
-    writelog(LOG_INFO, "Saving current densities...");
+    if (mLogs)
+        writelog(LOG_INFO, "Saving current densities...");
 
     std::vector<Element2D>::const_iterator ttE;
 
     mCurrentDensities.reset(mElements.size());
-    //size_t tI = 0;
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
-        mCurrentDensities[/*tI++*/ttE->getNo()-1] = vec(
+        mCurrentDensities[ttE->getNo()-1] = vec(
             - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) * ttE->getdVdX(),
             - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second) * ttE->getdVdY() );
     }
@@ -432,36 +453,29 @@ void FiniteElementMethodElectricalCartesian2DSolver::saveCurrentDensities()
 
 void FiniteElementMethodElectricalCartesian2DSolver::saveHeatDensities()
 {
-    writelog(LOG_INFO, "Saving heat densities...");
+    if (mLogs)
+        writelog(LOG_INFO, "Saving heat densities...");
 
     std::vector<Element2D>::const_iterator ttE;
 
     mHeatDensities.reset(mElements.size());
-    //std::size_t place = 0;
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
-        mHeatDensities[/*place*/ttE->getNo()-1] = (mCurrentDensities[/*place*/ttE->getNo()-1]).ee_x() * (mCurrentDensities[/*place*/ttE->getNo()-1]).ee_x() / (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) +
-            (mCurrentDensities[/*place*/ttE->getNo()-1]).ee_y() * (mCurrentDensities[/*place*/ttE->getNo()-1]).ee_y() / (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second);
-        //place++;
+        mHeatDensities[ttE->getNo()-1] = (mCurrentDensities[ttE->getNo()-1]).ee_x() * (mCurrentDensities[ttE->getNo()-1]).ee_x() / (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) +
+            (mCurrentDensities[ttE->getNo()-1]).ee_y() * (mCurrentDensities[ttE->getNo()-1]).ee_y() / (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second);
     }
 }
 
 void FiniteElementMethodElectricalCartesian2DSolver::showPotentials()
 {
-    writelog(LOG_INFO, "Showing potentials...");
-
-    std::vector<Node2D>::const_iterator ttN;
-
-    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        std::cout << mPotentials[ttN->getNo()-1] << " ";
-        //std::cout << "Node no: " << ttN->getNo() << ", V: " << mPotentials[ttN->getNo()-1] << std::endl; // TEST
-    std::cout << std::endl;
+    std::cout << "Showing potentials... " << mPotentials << std::endl;
 }
 
 int FiniteElementMethodElectricalCartesian2DSolver::solveMatrix(double **ipA, long iN, long iBandWidth)
 {
-    writelog(LOG_INFO, "Solving matrix...");
+    if (mLogs)
+        writelog(LOG_INFO, "Solving matrix...");
 
     long m, k, i, j, poc, kon, q, mn;
     double SUM;

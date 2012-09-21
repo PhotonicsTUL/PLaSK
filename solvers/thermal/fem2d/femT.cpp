@@ -9,6 +9,8 @@ FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian
     mTBigCorr(1e5),
     mBigNum(1e15),
     mTAmb(300.),
+    mLogs(false),
+    mLoopNo(0),
     outTemperature(this, &FiniteElementMethodThermalCartesian2DSolver::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes)
 {
@@ -60,7 +62,8 @@ double FiniteElementMethodThermalCartesian2DSolver::getTAmb() { return mTAmb; }
 
 void FiniteElementMethodThermalCartesian2DSolver::setNodes()
 {
-    writelog(LOG_INFO, "Setting nodes...");
+    if (mLogs)
+        writelog(LOG_INFO, "Setting nodes...");
 
     size_t tNo = 1; // node number
 
@@ -87,7 +90,8 @@ void FiniteElementMethodThermalCartesian2DSolver::setNodes()
 
 void FiniteElementMethodThermalCartesian2DSolver::setElements()
 {
-    writelog(LOG_INFO, "Setting elememts...");
+    if (mLogs)
+        writelog(LOG_INFO, "Setting elememts...");
 
     size_t tNo = 1; // element number
 
@@ -129,7 +133,8 @@ void FiniteElementMethodThermalCartesian2DSolver::setHeatDensities()
 
 void FiniteElementMethodThermalCartesian2DSolver::setSolver()
 {
-    writelog(LOG_INFO, "Setting solver...");
+    if (mLogs)
+        writelog(LOG_INFO, "Setting solver...");
 
     /*size_t tNoOfNodesX, tNoOfNodesY; // TEST
 
@@ -165,7 +170,8 @@ void FiniteElementMethodThermalCartesian2DSolver::setSolver()
 
 void FiniteElementMethodThermalCartesian2DSolver::delSolver()
 {
-    writelog(LOG_INFO, "Deleting solver...");
+    if (mLogs)
+        writelog(LOG_INFO, "Deleting solver...");
 
     for (int i = 0; i < mAHeight; i++)
         delete [] mpA[i];
@@ -177,7 +183,8 @@ void FiniteElementMethodThermalCartesian2DSolver::delSolver()
 
 void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
 {
-    writelog(LOG_INFO, "Setting matrix...");
+    if (mLogs)
+        writelog(LOG_INFO, "Setting matrix...");
 
     std::vector<Element2D>::const_iterator ttE = mElements.begin();
     std::vector<Node2D>::const_iterator ttN = mNodes.begin();
@@ -207,7 +214,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
 
         // set assistant values
-        std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
+        std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes(); // geometry->extract(GeometryObject::PredicateHasClass("active"));
         Vec<2, double> tSize;
         for (Box2D tBox: tVecBox)
         {
@@ -276,13 +283,15 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
     initCalculation();
     //if (!inHeats.changed) return;
 
-    writelog(LOG_INFO, "Starting thermal calculations...");
+    if (mLogs)
+        writelog(LOG_INFO, "Starting thermal calculations...");
 
     setSolver();
 
     setHeatDensities();
 
-    writelog(LOG_INFO, "Running solver...");
+    if (mLogs)
+        writelog(LOG_INFO, "Running solver...");
 
     std::vector<double>::const_iterator ttTCorr;
     int tLoop = 1, tInfo = 1;
@@ -309,8 +318,10 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
 
             tTCorr = *ttTCorr;
 
+            mLoopNo++;
+
             // show max correction
-            writelog(LOG_INFO, "Loop no: %1%, max. corr. for T: %2%", tLoop, tTCorr);
+            writelog(LOG_INFO, "Loop no: %1%(%2%), max. corr. for T: %3%", tLoop, mLoopNo, tTCorr);
 
             tLoop++;
         }
@@ -324,11 +335,13 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
 
     saveTemperatures();
 
-    showTemperatures();
+    if (mLogs)
+        showTemperatures();
 
     delSolver();
 
-    writelog(LOG_INFO, "Temperature calculations completed");
+    if (mLogs)
+        writelog(LOG_INFO, "Temperature calculations completed");
 
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
@@ -363,11 +376,17 @@ void FiniteElementMethodThermalCartesian2DSolver::loadParam(const std::string &p
         mBigNum = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
+    if (param == "logs")
+    {
+        mLogs = source.requireAttribute<bool>("value");
+        source.requireTagEnd();
+    }
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::updNodes()
 {
-    writelog(LOG_INFO, "Updating nodes...");
+    if (mLogs)
+        writelog(LOG_INFO, "Updating nodes...");
 
     std::vector<Node2D>::iterator ttN = mNodes.begin();
 
@@ -382,7 +401,8 @@ void FiniteElementMethodThermalCartesian2DSolver::updNodes()
 
 void FiniteElementMethodThermalCartesian2DSolver::updElements()
 {
-    writelog(LOG_INFO, "Updating elements...");
+    if (mLogs)
+        writelog(LOG_INFO, "Updating elements...");
 
     for (std::vector<Element2D>::iterator ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
         ttE->setT();
@@ -415,25 +435,25 @@ void FiniteElementMethodThermalCartesian2DSolver::showElements()
 
 void FiniteElementMethodThermalCartesian2DSolver::saveTemperatures()
 {
-    writelog(LOG_INFO, "Saving temperatures...");
+    if (mLogs)
+        writelog(LOG_INFO, "Saving temperatures...");
 
     std::vector<Node2D>::const_iterator ttN;
 
     mTemperatures.reset(mNodes.size());
-    //std::size_t place = 0;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        mTemperatures[/*place++*/ttN->getNo()-1] = ttN->getT();
+        mTemperatures[ttN->getNo()-1] = ttN->getT();
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
 {
-    writelog(LOG_INFO, "Saving heat fluxes...");
+    if (mLogs)
+        writelog(LOG_INFO, "Saving heat fluxes...");
 
     std::vector<Element2D>::const_iterator ttE;
 
     mHeatFluxes.reset(mElements.size());
-    //std::size_t place = 0;
 
     std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
 
@@ -448,27 +468,21 @@ void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
                 break;
             }
         }
-        mHeatFluxes[/*place++*/ttE->getNo()-1] = vec(
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX(), // TODO
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() ); // TODO
+        mHeatFluxes[ttE->getNo()-1] = vec(
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX(),
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() );
     }
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::showTemperatures()
 {
-    writelog(LOG_INFO, "Showing temperatures...");
-
-    std::vector<Node2D>::const_iterator ttN;
-
-    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        std::cout << mTemperatures[ttN->getNo()-1] << " ";
-        //std::cout << "Node no: " << ttN->getNo() << ", T: " << mTemperatures[ttN->getNo()-1] << " "; // TEST
-    std::cout << std::endl;
+    std::cout << "Showing temperatures... " << mTemperatures<< std::endl;
 }
 
 int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long iN, long iBandWidth)
 {
-    writelog(LOG_INFO, "Solving matrix...");
+    if (mLogs)
+        writelog(LOG_INFO, "Solving matrix...");
 
     long m, k, i, j, poc, kon, q, mn;
     double SUM;

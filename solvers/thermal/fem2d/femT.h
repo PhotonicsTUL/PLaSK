@@ -60,14 +60,13 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     double **mpA;
     int mAWidth, mAHeight;
     std::vector<double> mTCorr;
-
-    // parameters for rootdigger
     int mLoopLim; // number of loops - stops the calculations
     double mTCorrLim; // small-enough correction - stops the calculations
     double mTBigCorr; // big-enough correction for the temperature
     double mBigNum; // for the first boundary condtion (see: set Matrix)
-
     double mTAmb; // ambient temperature
+    bool mLogs; // logs (0-most important logs, 1-all logs)
+    int mLoopNo; // number of completed loops
 
     DataVector<double> mTemperatures; // out
     DataVector<Vec<2> > mHeatFluxes; // out

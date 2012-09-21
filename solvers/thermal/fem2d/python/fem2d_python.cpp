@@ -18,6 +18,7 @@ BOOST_PYTHON_MODULE(fem2d)
         METHOD(runCalc, "Run thermal calculations");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
+        PROVIDER(outHeatFlux, "HeatFluxes"); // provider in the solver
         BOUNDARY_CONDITIONS(Tconst, mTConst, "Boundary conditions of the first kind (constant temperature)");
         RW_PROPERTY(loopLim, getLoopLim, setLoopLim, "Max. number of loops"); // read-write property
         RW_PROPERTY(TCorrLim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
