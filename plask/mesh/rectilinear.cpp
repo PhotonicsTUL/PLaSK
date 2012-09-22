@@ -15,7 +15,7 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2D::getMidpointsMesh() {
 
     RectilinearMesh1D line0;
     for (auto a = this->axis0.begin(), b = this->axis0.begin()+1; b != this->axis0.end(); ++a, ++b)
-        line0.addPoint((*a + *b) / 2.0);    // "/ 2.0" is better than "* 0.5", because 2.0 has accurate representation
+        line0.addPoint((*a + *b) / 2.0);
 
     RectilinearMesh1D line1;
     for (auto a = this->axis1.begin(), b = this->axis1.begin()+1; b != this->axis1.end(); ++a, ++b)
