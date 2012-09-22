@@ -15,11 +15,11 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2D::getMidpointsMesh() {
 
     RectilinearMesh1D line0;
     for (auto a = this->axis0.begin(), b = this->axis0.begin()+1; b != this->axis0.end(); ++a, ++b)
-        line0.addPoint((*a + *b) / 2.0);
+        line0.addPoint(0.5 * (*a + *b));
 
     RectilinearMesh1D line1;
     for (auto a = this->axis1.begin(), b = this->axis1.begin()+1; b != this->axis1.end(); ++a, ++b)
-        line1.addPoint((*a + *b) / 2.0);
+        line1.addPoint(0.5 * (*a + *b));
 
     this->midpoints_cache = make_shared<RectilinearMesh2D>(line0, line1, this->getIterationOrder());
     return this->midpoints_cache;
