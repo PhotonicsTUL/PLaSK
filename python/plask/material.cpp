@@ -288,7 +288,9 @@ class PythonEvalMaterial : public Material
 
     template <typename RETURN>
     RETURN call(PyCodeObject *fun, const py::dict& locals) const {
+        //PyGILState_STATE gstate = PyGILState_Ensure();
         PyObject* result = PyEval_EvalCode(fun, globals.ptr(), locals.ptr());
+        //PyGILState_Release(gstate);
         if (!result) throw py::error_already_set();
         return py::extract<RETURN>(result);
     }
@@ -297,7 +299,7 @@ class PythonEvalMaterial : public Material
 
     PythonEvalMaterial(const shared_ptr<PythonEvalMaterialConstructor>& constructor, const shared_ptr<Material>& base, const py::dict& params) :
         cls(constructor), base(base) {
-        globals = py::dict(py::import("__main__").attr("__dict__")).copy(); // should be numpy instead on __main__?
+        globals = py::dict(py::import("numpy").attr("__dict__")).copy(); // should be __main__ instead of numpy?
         globals.update(params);
     }
 
@@ -352,9 +354,10 @@ class PythonEvalMaterial : public Material
     virtual double absp(double wl, double T) const { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
     virtual dcomplex Nr(double wl, double T) const {
         py::dict locals; locals["wl"] = wl; locals["T"] = T;
-        py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
         if (cls->Nr != NULL) {
+            //PyGILState_STATE gstate = PyGILState_Ensure();
             PyObject* result = PyEval_EvalCode(cls->Nr, globals.ptr(), locals.ptr());
+            //PyGILState_Release(gstate);
             if (!result) throw py::error_already_set();
             return py::extract<dcomplex>(result);
         }
@@ -362,9 +365,10 @@ class PythonEvalMaterial : public Material
     }
     virtual NrTensorT Nr_tensor(double wl, double T) const {
         py::dict locals; locals["wl"] = wl; locals["T"] = T;
-        py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
         if (cls->Nr != NULL) {
+            //PyGILState_STATE gstate = PyGILState_Ensure();
             PyObject* result = PyEval_EvalCode(cls->Nr_tensor, globals.ptr(), locals.ptr());
+            //PyGILState_Release(gstate);
             if (!result) throw py::error_already_set();
             return py::extract<NrTensorT>(result);
         } else {

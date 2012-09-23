@@ -27,9 +27,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     friend class RootDigger;
 
     /// Logger for char_val
-    Data2DLog<dcomplex,dcomplex> log_stripe;
-
-    /// Logger for char_val
     Data2DLog<dcomplex,dcomplex> log_value;
 
     /// Cached refractive indices

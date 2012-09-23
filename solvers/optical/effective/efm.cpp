@@ -7,8 +7,7 @@ namespace plask { namespace solvers { namespace effective {
 
 EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
-    log_stripe(dataLog<dcomplex, dcomplex>(getId(), "veff", "det")),
-    log_value(dataLog<dcomplex, dcomplex>(getId(), "v", "det")),
+    log_value(dataLog<dcomplex, dcomplex>("freq", "v", "det")),
     have_fields(false),
     l(0),
     k0(NAN),
@@ -194,7 +193,7 @@ void EffectiveFrequencyCylSolver::stageOne()
             double x0, x1;
             x0 = mesh->axis0[ix];
             if (ix < mesh->axis0.size()-1) { tx1 = ix+1; x1 = mesh->axis0[tx1]; } else { tx1 = mesh->axis0.size()-1; x1 = mesh->axis0[tx1] + 2.*outer_distance; }
-            for (size_t iy = 0; iy != zsize; ++iy) {
+            for (size_t iy = 0; iy < zsize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
                 if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outer_distance; }
@@ -217,9 +216,9 @@ void EffectiveFrequencyCylSolver::stageOne()
             }
         }
 
-        // Compute effective indices for all stripes
-        // TODO: start form the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
-        for (size_t i = 0; i != nrCache.size(); ++i) {
+        // Compute effective frequencies for all stripes
+        #pragma omp parallel for schedule(dynamic)
+        for (size_t i = 0; i < nrCache.size(); ++i) {
 
             writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
             // std::stringstream nrgs; for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
@@ -235,6 +234,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                 veffs[i] = 1.; // TODO make sure this is so!
                 nng[i] = same_nr * same_ng;
             } else {
+                Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "veff", "det");
                 RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, striperoot);
                 veffs[i] = rootdigger.getSolution(1e-3);
                 computeStripeNNg(i);
@@ -417,6 +417,7 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
         std::vector<dcomplex>& NG = ngCache[stripe];
         dcomplex veff = veffs[stripe];
         betaz.resize(NR.size());
+        #pragma omp parallel for
         for (size_t i = 0; i < NR.size(); ++i) {
             betaz[i] = k0 * sqrt(NR[i]*NR[i] - veff * NR[i]*NG[i]);
             if (real(betaz[i]) < 0.) betaz[i] = -betaz[i];  // TODO verify this condition; in general it should consider really outgoing waves
@@ -441,18 +442,20 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
     }
 
     DataVector<double> results(dst_mesh.size());
-    size_t id = 0;
 
     if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results) &&
         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results)) {
 
-        double Jr, Ji, Hr, Hi;
-        int nz, ierr;
 
-        for (auto point: dst_mesh) {
+        #pragma omp parallel for schedule(guided)
+        for (size_t id = 0; id < dst_mesh.size(); ++id) {
+            auto point = dst_mesh[id];
             double r = point.c0;
             double z = point.c1;
             if (r < 0) r = -r;
+
+            double Jr, Ji, Hr, Hi;
+            int nz, ierr;
 
             size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
             dcomplex x = r * k0 * sqrt(nng[ir-1] * (veffs[ir-1]-v));
@@ -472,7 +475,7 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
             dcomplex phasz = exp(- I * betaz[iy] * z);
             val *= fieldZ[iy][0] * phasz + fieldZ[iy][1] / phasz;
 
-            results[id++] = real(abs2(val));
+            results[id] = real(abs2(val));
         }
 
     }
@@ -493,12 +496,12 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
 
         std::vector<dcomplex> valr(rect_mesh.axis0.size());
         std::vector<dcomplex> valz(rect_mesh.axis1.size());
-        size_t idr = 0, idz = 0;
 
-        double Jr, Ji, Hr, Hi;
-        int nz, ierr;
-
-        for (double r: rect_mesh.axis0) {
+        #pragma omp parallel for schedule(guided)
+        for (size_t idr = 0; idr < rect_mesh.tran().size(); ++idr) {
+            double r = rect_mesh.axis0[idr];
+            double Jr, Ji, Hr, Hi;
+            int nz, ierr;
             if (r < 0.) r = -r;
             size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;  if (ir >= veffs.size()) ir = veffs.size()-1;
             dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
@@ -511,28 +514,33 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
                 F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Hr, &Hi, nz, ierr);
                 if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, str(x));
             }
-            valr[idr++] = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
+            valr[idr] = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
         }
 
-        for (auto z: rect_mesh.axis1) {
+        #pragma omp parallel for schedule(guided)
+        for (size_t idz = 0; idz < rect_mesh.up().size(); ++idz) {
+            double z = rect_mesh.axis1[idz];
             size_t iz = mesh->axis1.findIndex(z);
             z -= mesh->axis1[max(int(iz)-1, 0)];
             dcomplex phasz = exp(- I * betaz[iz] * z);
-            valz[idz++] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
+            valz[idz] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
         }
 
+        double* data = results.data();
         if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
-            for (size_t i1 = 0, i = 0; i1 != rect_mesh.axis1.size(); ++i1) {
-                for (size_t i0 = 0; i0 != rect_mesh.axis0.size(); ++i0, ++i) {
+            for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1, data += rect_mesh.axis0.size()) {
+                #pragma omp parallel for
+                for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
                     dcomplex f = valr[i0] * valz[i1];
-                    results[i] = abs2(f);
+                    data[i0] = abs2(f);
                 }
             }
         } else {
-            for (size_t i0 = 0, i = 0; i0 != rect_mesh.axis0.size(); ++i0) {
-                for (size_t i1 = 0; i1 != rect_mesh.axis1.size(); ++i1, ++i) {
+            for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0, data += rect_mesh.axis1.size()) {
+                #pragma omp parallel for
+                for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                     dcomplex f = valr[i0] * valz[i1];
-                    results[i] = abs2(f);
+                    data[i1] = abs2(f);
                 }
             }
         }

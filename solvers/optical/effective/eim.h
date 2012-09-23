@@ -38,10 +38,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     friend class RootDigger;
 
-    /// Logger for char_val
-    Data2DLog<dcomplex,dcomplex> log_stripe;
-
-    /// Logger for char_val
+    /// Logger for determinant
     Data2DLog<dcomplex,dcomplex> log_value;
 
     /// Cached refractive indices

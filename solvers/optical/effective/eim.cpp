@@ -6,8 +6,7 @@ namespace plask { namespace solvers { namespace effective {
 
 EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
-    log_stripe(dataLog<dcomplex, dcomplex>(getId(), "neff", "det")),
-    log_value(dataLog<dcomplex, dcomplex>(getId(), "Neff", "det")),
+    log_value(dataLog<dcomplex, dcomplex>("Neff", "Neff", "det")),
     have_fields(false),
     old_polarization(TE),
     polarization(TE),
@@ -178,12 +177,12 @@ void EffectiveIndex2DSolver::stageOne()
         auto temp = inTemperature(*mesh);
         auto midmesh = mesh->getMidpointsMesh();
         auto gain = inGain(midmesh, w);
-        for (size_t ix = xbegin; ix != xsize; ++ix) {
+        for (size_t ix = xbegin; ix < xsize; ++ix) {
             size_t tx0, tx1;
             double x0, x1;
             if (ix > 0) { tx0 = ix-1; x0 = mesh->axis0[tx0]; } else { tx0 = 0; x0 = mesh->axis0[tx0] - 2.*outer_distance; }
             if (ix < xsize-1) { tx1 = ix; x1 = mesh->axis0[tx1]; } else { tx1 = xsize-2; x1 = mesh->axis0[tx1] + 2.*outer_distance; }
-            for (size_t iy = 0; iy != ysize; ++iy) {
+            for (size_t iy = 0; iy < ysize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
                 double g = (ix == 0 || ix == xsize-1 || iy == 0 || iy == ysize-1)? NAN : gain[midmesh->index(ix-1, iy-1)];
@@ -192,7 +191,7 @@ void EffectiveIndex2DSolver::stageOne()
                 double T = 0.25 * ( temp[mesh->index(tx0,ty0)] + temp[mesh->index(tx0,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
                 nrCache[ix][iy] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->Nr(w, T)
-                              + dcomplex(0., isnan(g)? 0. : w * g * 7.95774715459e-09);
+                                + dcomplex(0., isnan(g)? 0. : w * g * 7.95774715459e-09);
             }
         }
         if (xbegin == 1) nrCache[0] = nrCache[1];
@@ -205,11 +204,12 @@ void EffectiveIndex2DSolver::stageOne()
 
         // Compute effective indices for all stripes
         // TODO: start from the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
-        for (size_t i = xbegin; i != nrCache.size(); ++i) {
+        #pragma omp parallel for schedule(dynamic)
+        for (size_t i = xbegin; i < nrCache.size(); ++i) {
 
             writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
-            std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
-            writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
+            // std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
+            // writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
 
             dcomplex same_val = nrCache[i].front();
             bool all_the_same = true;
@@ -217,6 +217,7 @@ void EffectiveIndex2DSolver::stageOne()
             if (all_the_same) {
                 stripeNeffs[i] = same_val;
             } else {
+                Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i-xbegin), "neff", "det");
                 RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, striperoot);
                 dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
                 stripeNeffs[i] = rootdigger.getSolution(0.999999*maxn);
@@ -333,6 +334,7 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
 
     size_t Nx = mesh->tran().size()+1;
     std::vector<dcomplex> betax(Nx);
+    #pragma omp parallel for
     for (size_t i = 0; i < Nx; ++i) {
         betax[i] = k0 * sqrt(stripeNeffs[i]*stripeNeffs[i] - neff*neff);
         if (imag(betax[i]) > 0.) betax[i] = -betax[i];
@@ -403,6 +405,7 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
     if (all_the_same) {
         betay.assign(Ny, 0.);
     } else {
+        #pragma omp parallel for
         for (size_t i = 0; i < Ny; ++i) {
             betay[i] = k0 * sqrt(nrCache[mid_x][i]*nrCache[mid_x][i] - stripeNeffs[mid_x]*stripeNeffs[mid_x]);
             if (imag(betay[i]) > 0.) betay[i] = -betay[i];
@@ -433,12 +436,13 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
     }
 
     DataVector<double> results(dst_mesh.size());
-    size_t idx = 0;
 
     if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, betax, betay) &&
         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, betax, betay)) {
 
-        for (auto point: dst_mesh) {
+        #pragma omp parallel for schedule(dynamic)
+        for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
+            auto point = dst_mesh[idx];
             double x = point.tran();
             double y = point.up();
 
@@ -458,7 +462,7 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
             dcomplex phasy = exp(- I * betay[iy] * y);
             val *= fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
 
-            results[idx++] = real(abs2(val));
+            results[idx] = real(abs2(val));
         }
 
     }
@@ -480,9 +484,10 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
 
         std::vector<dcomplex> valx(rect_mesh.tran().size());
         std::vector<dcomplex> valy(rect_mesh.up().size());
-        size_t idx = 0, idy = 0;
 
-        for (auto x: rect_mesh.tran()) {
+        #pragma omp parallel for schedule(guided)
+        for (size_t idx = 0; idx < rect_mesh.tran().size(); ++idx) {
+            double x = rect_mesh.tran()[idx];
             bool negate = false;
             if (x < 0. && symmetry != NO_SYMMETRY) {
                 x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
@@ -493,28 +498,33 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             dcomplex phasx = exp(- I * betax[ix] * x);
             dcomplex val = fieldX[ix][0] * phasx + fieldX[ix][1] / phasx;
             if (negate) val = - val;
-            valx[idx++] = val;
+            valx[idx] = val;
         }
 
-        for (auto y: rect_mesh.up()) {
+        #pragma omp parallel for schedule(guided)
+        for (size_t idy = 0; idy < rect_mesh.up().size(); ++idy) {
+            double y = rect_mesh.up()[idy];
             size_t iy = mesh->up().findIndex(y);
             y -= mesh->up()[max(int(iy)-1, 0)];
             dcomplex phasy = exp(- I * betay[iy] * y);
-            valy[idy++] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
+            valy[idy] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
         }
 
+        double* data = results.data();
         if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
-            for (size_t i1 = 0, i = 0; i1 != rect_mesh.axis1.size(); ++i1) {
-                for (size_t i0 = 0; i0 != rect_mesh.axis0.size(); ++i0, ++i) {
+            for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1, data += rect_mesh.axis0.size()) {
+                #pragma omp parallel for
+                for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
                     dcomplex f = valx[i0] * valy[i1];
-                    results[i] = abs2(f);
+                    data[i0] = abs2(f);
                 }
             }
         } else {
-            for (size_t i0 = 0, i = 0; i0 != rect_mesh.axis0.size(); ++i0) {
-                for (size_t i1 = 0; i1 != rect_mesh.axis1.size(); ++i1, ++i) {
+            for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0, data += rect_mesh.axis1.size()) {
+                #pragma omp parallel for
+                for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                     dcomplex f = valx[i0] * valy[i1];
-                    results[i] = abs2(f);
+                    data[i1] = abs2(f);
                 }
             }
         }

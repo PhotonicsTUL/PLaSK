@@ -58,6 +58,8 @@ option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)."
 option(BUILD_TESTING "Build unit tests." ON)
 cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 
+option(USE_OMP "Use OpenMP" ON)
+
 #option (PACK_EXE "Self-pack and strip executables." OFF)  # compress exe
 
 set(PYTHON_VERSION "" CACHE STRING "Python version to use")
@@ -82,6 +84,17 @@ if(BUILD_PYTHON)
         message(FATAL_ERROR "Python 2.6 or newer required.")
     endif()
 endif(BUILD_PYTHON)
+
+if(USE_OMP)
+    find_package(OpenMP 3)
+    if(OPENMP_FOUND)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
+endif()
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever

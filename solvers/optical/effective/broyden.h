@@ -48,6 +48,13 @@ struct RootDigger {
     // Search for the root of char_val using globally convergent Broyden method
     dcomplex Broyden(dcomplex x) const;
 
+    // Write log message
+    template <typename... Args>
+    void writelog(LogLevel level, const std::string& msg, Args&&... args) const {
+        std::string prefix = solver.getId(); prefix += ": "; prefix += log_value.chart_name; prefix += ": ";
+        plask::writelog(level, prefix + msg, std::forward<Args>(args)...);
+    }
+
   public:
 
     Params par;

@@ -28,7 +28,7 @@ void writelog(LogLevel level, const std::string& msg);
  * \param msg log message
  * \param params parameters passed to format
  **/
-template<typename ...Args>
+template<typename... Args>
 inline void writelog(LogLevel level, const std::string& msg, Args&&... params) {
     writelog(level, format(msg, std::forward<Args>(params)...));
 }

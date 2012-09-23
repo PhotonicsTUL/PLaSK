@@ -576,7 +576,7 @@ class Solver {
     * \param params parameters passed to format
     **/
     template<typename ...Args>
-    void writelog(LogLevel level, std::string msg, Args&&... params) { plask::writelog(level, getId() + ": " + msg, std::forward<Args>(params)...); }
+    void writelog(LogLevel level, std::string msg, Args&&... params) const { plask::writelog(level, getId() + ": " + msg, std::forward<Args>(params)...); }
 
 };
 

@@ -39,6 +39,7 @@ static py::object initPlaskSolver(int argc, const char* argv[])
 
     // Initialize Python
     Py_Initialize();
+    //PyEval_InitThreads();
 
     py::object plaskcore = py::import("plaskcore");
 
@@ -64,6 +65,8 @@ static py::object initPlaskSolver(int argc, const char* argv[])
         }
         sys.attr("argv") = sys_argv;
     }
+
+    //PyEval_ReleaseLock();
 
     return plaskcore;
 }

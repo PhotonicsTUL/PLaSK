@@ -78,12 +78,12 @@ struct Data2DLog: public DataLog<ArgT, ValT> {
     }
 
     virtual Data2DLog& operator()(const ArgT& arg, const ValT& val) {
-        writelog(LOG_DATA, "%1%: %2%=%4% %3%=%5%", chart_name, axis_arg_name, axis_val_name, str(arg), str(val));
+        writelog(LOG_DATA, "%1%: %6%: %2%=%4% %3%=%5%", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), chart_name);
         return *this;
     }
 
     virtual Data2DLog& operator()(const ArgT& arg, const ValT& val, int counter) {
-        writelog(LOG_DATA, "%1%: %2%=%4% %3%=%5% (%6%)", chart_name, axis_arg_name, axis_val_name, str(arg), str(val), counter);
+        writelog(LOG_DATA, "%1%: %7%: %2%=%4% %3%=%5% (%6%)", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), counter, chart_name);
         return *this;
     };
 };

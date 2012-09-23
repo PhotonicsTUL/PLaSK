@@ -509,26 +509,12 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 template <typename Mesh1D,typename DataT>    //for any data type
 struct InterpolationAlgorithm<RectangularMesh<3,Mesh1D>, DataT, INTERPOLATION_LINEAR> {
     static void interpolate(const RectangularMesh<3,Mesh1D>& src_mesh, const DataVector<const DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
-        auto dst = dst_vec.begin();
-        for (auto p: dst_mesh)
-            *dst++ = src_mesh.interpolateLinear(src_vec, p);
+        #pragma omp parallel for schedule(guided)
+        for (size_t i = 0; i < dst_mesh.size(); ++i)
+            dst_vec[i] = src_mesh.interpolateLinear(src_vec, dst_mesh[i]);
     }
 };
 
 }   // namespace plask
-
-namespace std { //use fast iterator if know mesh type at compile time:
-
-    template <typename Mesh1D>
-    inline auto begin(const plask::RectangularMesh<3,Mesh1D>& m) -> decltype(m.begin_fast()) {
-      return m.begin_fast();
-    }
-
-    template <typename Mesh1D>
-    inline auto end(const plask::RectangularMesh<3,Mesh1D>& m) -> decltype(m.end_fast()) {
-      return m.begin_fast();
-    }
-
-}   // namespace std
 
 #endif // PLASK__RECTANGULAR3D_H
