@@ -108,7 +108,7 @@ struct XMLUnexpectedElementException: public XMLException {
 struct XMLDuplicatedElementException: public XMLException {
     /**
      * @param reader current reader
-     * @param what_is_expected what is expected (typically tag with name, etc.)
+     * @param duplicated name of duplicated thing
      */
     XMLDuplicatedElementException(const XMLReader& reader, const std::string& duplicated):
         XMLException(reader, duplicated + " should apprear only once in the current scope") {}

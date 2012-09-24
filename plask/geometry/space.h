@@ -131,7 +131,7 @@ struct Geometry: public GeometryObject {
 
     /**
      * Get 3D object held by this geometry (which has type Extrusion or Revolution for 2d geometries).
-     * @param 3D geometry object held by this geometry
+     * @return 3D geometry object held by this geometry
      */
     virtual shared_ptr< GeometryObjectD<3> > getObject3D() const = 0;
 

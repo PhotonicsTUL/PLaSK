@@ -62,7 +62,7 @@ public:
 
     /**
      * Append new provider to set of held providers.
-     * @param provider provider to append, can't be @c nullptr
+     * @param to_add provider to append, can't be @c nullptr
      * @param providerIsPrivate @c true only if @p provider is private for this and will be deleted by destructor of this
      */
     void connect(BaseProviderClass* to_add, bool providerIsPrivate = false) {
@@ -74,7 +74,7 @@ public:
 
     /**
      * Append new provider to set of held providers.
-     * @param provider provider to append, can't be @c nullptr,  will be deleted by destructor of this
+     * @param to_add provider to append, can't be @c nullptr,  will be deleted by destructor of this
      */
     void connect(std::unique_ptr<BaseProviderClass>&& to_add) {
         connect(to_add->release(), true);

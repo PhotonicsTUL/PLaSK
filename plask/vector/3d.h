@@ -1,26 +1,18 @@
 #ifndef PLASK__VECTORCART3D_H
 #define PLASK__VECTORCART3D_H
 
+/** @file
+This file includes implementation of vector in 3D space.
+*/
+
 #include <iostream>
-#include <boost/concept_check.hpp>
 
 #include "../math.h"
 #include <plask/exceptions.h>
 
+#include "common.h"
+
 namespace plask {
-
-#ifndef VEC_TEMPLATE_DEFINED
-#define VEC_TEMPLATE_DEFINED
-    /// Generic template for 2D and 3D vectors
-    template <int dim, typename T=double>
-    struct Vec {};
-#endif // VEC_TEMPLATE_DEFINED
-
-namespace axis {
-    const std::size_t lon_index = 0;
-    const std::size_t tran_index = 1;
-    const std::size_t up_index = 2;
-}   // axis
 
 /**
  * Vector in 3d space.

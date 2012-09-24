@@ -60,10 +60,13 @@ See also @ref solvers_writing_details.
 Instance of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" in fact is only a holder which includes pointer to abstract class @ref plask::BoundaryLogicImpl.
 It points to subclass of @ref plask::BoundaryLogicImpl which implements all boundary logic (all calls of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" methods are delegete to it).
 
-So, writing new boundary for given type of mesh @c MeshType is writing subclass of @ref plask::BoundaryImpl.
+So, writing new boundary for given type of mesh @c MeshType is writing subclass of @ref plask::BoundaryLogicImpl.
 
 PLaSK includes some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" implementation:
-- @ref plask::PredicateBoundary "PredicateBoundary\<MeshType\>" is implementation which holds and uses predicate (given in constructor) to check which points lies on boundary.
+- @ref plask::EmptyBoundaryImpl is implementation which represents empty set of indexes,
+    You can construct boundary which use this logic using @ref plask::makeEmptyBoundary function,
+- @ref plask::PredicateBoundaryImpl "PredicateBoundaryImpl\<MeshType, Predicate\>" is implementation which holds and uses predicate (given in constructor) to check which points lies on boundary,
+    You can construct boundary which use this logic using @ref plask::makePredicateBoundary function.
 */
 
 #include "../utils/iterators.h"
@@ -102,14 +105,13 @@ struct BoundaryLogicImpl {
     virtual bool includes(std::size_t mesh_index) const = 0;
 
     /**
-     * Get begin iterator over boundary points (which are defined by indexes in @p mesh).
+     * Get begin iterator over boundary points.
      * @return begin iterator over boundary points
      */
     virtual const_iterator begin() const = 0;
 
     /**
-     * Get end iterator over boundary points (which are defined by indexes in @p mesh).
-     * @param mesh mesh
+     * Get end iterator over boundary points.
      * @return end iterator over boundary points
      */
     virtual const_iterator end() const = 0;
@@ -190,7 +192,7 @@ struct Boundary {
         }
 
         /**
-         * Get begin iterator over boundary points (which are defined by indexes in @p mesh).
+         * Get begin iterator over boundary points.
          * @return begin iterator over boundary points
          */
         const_iterator begin() const {
@@ -198,8 +200,7 @@ struct Boundary {
         }
 
         /**
-         * Get end iterator over boundary points (which are defined by indexes in @p mesh).
-         * @param mesh mesh
+         * Get end iterator over boundary points.
          * @return end iterator over boundary points
          */
         const_iterator end() const {
@@ -372,16 +373,11 @@ struct EmptyBoundaryImpl: public BoundaryLogicImpl {
 };
 
 /**
- * Boundary logic implementation which wrap and use predicate.
+ * Boundary logic implementation which represents set of indexes which fulfill predicate.
  * @tparam MeshType type of mesh
- * @tparam Predicate predicate which check if given point is in boundary, predicate can has exactly one of the following arguments set:
- * - MeshType::LocaLCoords coords (plask::vec over MeshType space)
- * - MeshType mesh, std::size_t index (mesh and index in mesh)
- * - std::size_t index, MeshType mesh (mesh and index in mesh)
- * - std::size_t index (index in mesh)
+ * @tparam predicate functor which check if given point is in boundary
  * @ref boundaries
  */
-//TODO predykat powinien być na iterator po siatce
 template <typename MeshType, typename Predicate>
 struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
 
@@ -433,6 +429,7 @@ struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
 
     /**
      * Construct predicate boundary which use given @p predicate.
+     * @param mesh mesh for which boundary should be calculated
      * @param predicate predicate which check if given point is in boundary
      */
     PredicateBoundaryImpl(const MeshType& mesh, Predicate predicate): BoundaryWithMeshLogicImpl<MeshType>(mesh), predicate(predicate) {}
@@ -461,11 +458,22 @@ public:
 };
 
 /**
- * Helper to create boundary which wrap predicate.
+ * Helper to create empty boundary.
+ * @return empty boundary
+ * @tparam MeshType type of mesh for which boundary should be returned
+ */
+template <typename MeshType>
+inline typename MeshType::Boundary makeEmptyBoundary() {
+    return typename MeshType::Boundary( [=](const MeshType& mesh) { return new EmptyBoundaryImpl(); } );
+}
+
+
+/**
+ * Helper to create boundary which represents set of indexes which fulfill given @p predicate.
  * Use: makePredicateBoundary\<MeshType>(predicate);
  * @param predicate functor which check if given point is in boundary
- * @return <code>Boundary<MeshType>(new PredicateBoundary<MeshType, Predicate>(predicate))</code>
- * @tparam MeshType type of mesh
+ * @return boundary which represents set of indexes which fulfill @p predicate
+ * @tparam MeshType type of mesh for which boundary should be returned
  * @tparam Predicate predicate which check if given point is in boundary, predicate has following arguments:
  * - std::size_t index, MeshType mesh (mesh and index in mesh)
  */

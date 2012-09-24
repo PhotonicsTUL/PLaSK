@@ -1,19 +1,18 @@
 #ifndef PLASK__VECTOR2D_H
 #define PLASK__VECTOR2D_H
 
+/** @file
+This file includes implementation of vector in 2D space.
+*/
+
 #include <iostream>
 
 #include "../math.h"
 #include <plask/exceptions.h>
 
-namespace plask {
+#include "common.h"
 
-#ifndef VEC_TEMPLATE_DEFINED
-#define VEC_TEMPLATE_DEFINED
-    /// Generic template for 2D and 3D vectors
-    template <int dim, typename T=double>
-    struct Vec {};
-#endif // VEC_TEMPLATE_DEFINED
+namespace plask {
 
 /**
  * Vector in 2d space.

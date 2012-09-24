@@ -97,8 +97,8 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
 
     /**
      * Set value for specified object
-     * \param place object on which the value is to be set
-     * \param value value to set
+     * @param place object (with optional hints specifying particular object instances) on which the value is to be set
+     * @param value value to set
      */
     void setValueFor(const Place& place, ValueType value) {
         auto found = std::find(places.begin(), places.end(), place);
@@ -112,8 +112,8 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
 
     /**
      * Get value from specified object
-     * \param object object on which the value is to be gotten
-     * \param hints optional hints specifying particular object instances
+     * @param place object (with optional hints specifying particular object instances)
+     * @return value
      */
     ValueType getValueFrom(const Place& place) const {
         auto found = std::find(places.begin(), places.end(), place);
@@ -122,9 +122,8 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
     }
 
     /**
-     * Remove value from specified object
-     * \param object object on which the value is to be removed
-     * \param hints optional hints specifying particular object instances
+     * Remove value of given object
+     * @param place object (with optional hints specifying particular object instances)
      */
     void removeValueFrom(const Place& place) {
         auto found = std::find(places.begin(), places.end(), place);
@@ -138,12 +137,15 @@ struct ConstByPlaceProviderImpl: public ProviderFor<PropertyT, SpaceT> {
         this->fireChanged();
     }
 
-    /// \return root geometry object
+    /**
+     * Get root geometry object.
+     * @return root geometry object
+     */
     weak_ptr<const GeometryObjectD<SpaceT::DIMS>> getRoot() const { return root_geometry; }
 
     /**
      * Set root geometry
-     * \param root new root geometry
+     * @param root new root geometry
      */
     void setRoot(weak_ptr<const GeometryObjectD<SpaceT::DIMS>> root) {
         root_geometry = root;

@@ -96,8 +96,8 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * Add refinement to the mesh
      * \param direction direction in which the object should be refined
      * \param object refined object
-     * \param position position of the additional grid line in the refined object
      * \param path additional path hints pointing to the refined object
+     * \param position position of the additional grid line in the refined object
      */
     void addRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
         auto key = std::make_pair(object, path);
@@ -110,7 +110,6 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param direction direction in which the object should be refined
      * \param object refined object
      * \param position position of the additional grid line in the refined object
-     * \param path additional path hints pointing to the refined object
      */
     void addRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryObjectD<2>>& object, double position) {
         addRefinement(direction, object, PathHints(), position);
@@ -120,6 +119,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * Add refinement to the mesh
      * \param direction direction in which the object should be refined
      * \param path path to the refined object
+     * \param position position of the additional grid line in the refined object
      */
     void addRefinement(Primitive<2>::DIRECTION direction, const Path& path, double position) {
         addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
@@ -129,6 +129,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * Add refinement to the mesh
      * \param direction direction in which the object should be refined
      * \param subtree subtree to the refined object (only the last path is used)
+     * \param position position of the additional grid line in the refined object
      */
     void addRefinement(Primitive<2>::DIRECTION direction, const GeometryObject::Subtree& subtree, double position) {
         auto path = subtree.getLastPath();
@@ -139,8 +140,8 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * Remove refinement to the mesh
      * \param direction direction in which the object was refined
      * \param object refined object
-     * \param position position of the additional grid line in the refined object
      * \param path additional path hints pointing to the refined object
+     * \param position position of the additional grid line in the refined object
      */
     void removeRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
         auto key = std::make_pair(object, path);
@@ -158,7 +159,6 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param direction direction in which the object was refined
      * \param object refined object
      * \param position position of the additional grid line in the refined object
-     * \param path additional path hints pointing to the refined object
      */
     void removeRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryObjectD<2>>& object, double position) {
         removeRefinement(direction, object, PathHints(), position);
@@ -214,7 +214,6 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     /**
      * Remove all refinements from the object
-     * \param direction direction in which the object was refined
      * \param path path to the refined object
      */
     void removeRefinements(const Path& path) {
@@ -223,7 +222,6 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     /**
      * Remove all refinements from the object
-     * \param direction direction in which the object was refined
      * \param subtree subtree to the refined object (only the last path is used)
      */
     void removeRefinements(const GeometryObject::Subtree& subtree) {
