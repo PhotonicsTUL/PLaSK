@@ -98,7 +98,7 @@ endif()
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
-set(boost_components unit_test_framework system filesystem)
+set(boost_components unit_test_framework system filesystem thread)
 
 if(BUILD_PYTHON)
     find_package(Boost QUIET COMPONENTS "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
@@ -112,6 +112,10 @@ if(BUILD_PYTHON)
 endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
+
+#if (NOT WIN32) #can be usefull if more threads libraries will be used
+#    target_link_libraries(sdsolver "pthread")
+#endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 
