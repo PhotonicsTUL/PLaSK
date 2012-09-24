@@ -203,7 +203,6 @@ void EffectiveIndex2DSolver::stageOne()
         old_polarization = polarization;
 
         // Compute effective indices for all stripes
-        // TODO: start from the stripe with highest refractive index and use effective index of adjacent stripe to find the new one
         #pragma omp parallel for schedule(dynamic)
         for (size_t i = xbegin; i < nrCache.size(); ++i) {
 
@@ -228,8 +227,8 @@ void EffectiveIndex2DSolver::stageOne()
         }
         if (xbegin == 1) stripeNeffs[0] = stripeNeffs[1];
 
-        std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
-        writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
+        // std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
+        // writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
     }
 }
 
@@ -381,8 +380,8 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
         }
         double sumw = 0; for (const double& w: fieldWeights) sumw += w;
         double factor = 1./sumw; for (double& w: fieldWeights) w *= factor;
-        std::stringstream weightss; for (size_t i = xbegin; i < Nx; ++i) weightss << ", " << str(fieldWeights[i]);
-        writelog(LOG_DEBUG, "field confinement in stripes = [%1% ]", weightss.str().substr(1));
+        // std::stringstream weightss; for (size_t i = xbegin; i < Nx; ++i) weightss << ", " << str(fieldWeights[i]);
+        // writelog(LOG_DEBUG, "field confinement in stripes = [%1% ]", weightss.str().substr(1));
     }
 
     size_t Ny = mesh->up().size()+1;

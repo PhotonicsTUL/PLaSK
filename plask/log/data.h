@@ -72,7 +72,7 @@ struct Data2DLog: public DataLog<ArgT, ValT> {
     }
 
     Data2DLog(const std::string& global_prefix, const std::string& axis_arg_name, const std::string& axis_val_name) :
-        global_prefix(global_prefix), chart_name(axis_arg_name + "_" + getUniqueString()), axis_arg_name(axis_arg_name), axis_val_name(axis_val_name)
+        global_prefix(global_prefix), chart_name(axis_val_name + "(" + axis_arg_name + ")_" + getUniqueString()), axis_arg_name(axis_arg_name), axis_val_name(axis_val_name)
     {
         //chart_name = axis_arg_name(axis_arg_name)_getUniqueString()
     }

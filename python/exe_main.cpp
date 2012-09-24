@@ -15,24 +15,27 @@ namespace py = boost::python;
 #include "plask/manager.h"
 
 //******************************************************************************
-#ifdef __cplusplus
-extern "C"
-#endif
-
 #if PY_VERSION_HEX >= 0x03000000
-    PyObject* PyInit_plaskcore(void);
+    extern "C" PyObject* PyInit_plaskcore(void);
 #   define PLASK_MODULE PyInit_plaskcore
     inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
     inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
     inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
     inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
 #else
-    void initplaskcore(void);
+    extern "C" void initplaskcore(void);
 #   define PLASK_MODULE initplaskcore
 #endif
 
+//******************************************************************************
+// static PyThreadState* mainTS;   // state of the main thread
+namespace plask { namespace python {
+    py::dict xml_globals;       // globals for XML material
+}}
+
+//******************************************************************************
 // Initialize the binary modules and load the package from disc
-static py::object initPlaskSolver(int argc, const char* argv[])
+static py::object initPlask(int argc, const char* argv[])
 {
     // Initialize the plask module
     if (PyImport_AppendInittab("plaskcore", &PLASK_MODULE) != 0) throw plask::CriticalException("No plaskcore module");
@@ -66,6 +69,7 @@ static py::object initPlaskSolver(int argc, const char* argv[])
         sys.attr("argv") = sys_argv;
     }
 
+    // mainTS = PyEval_SaveThread();
     //PyEval_ReleaseLock();
 
     return plaskcore;
@@ -106,6 +110,7 @@ void fixMatplotlibBug() {
 }
 
 //******************************************************************************
+// Handle exception and exit
 int handlePythonException() {
     // Use our logging system to print exception
     PyObject* value;
@@ -177,6 +182,14 @@ int handlePythonException() {
 }
 
 //******************************************************************************
+// Finalize Python interpreter
+void endPlask() {
+    // PyEval_RestoreThread(mainTS);
+    fixMatplotlibBug();
+    Py_Finalize();
+}
+
+//******************************************************************************
 int main(int argc, const char *argv[])
 {
     // Test if we want to import plask into global namespace
@@ -194,12 +207,14 @@ int main(int argc, const char *argv[])
 
     // Initalize python and load the plask module
     try {
-        initPlaskSolver(argc-1, argv+1);
+        initPlask(argc-1, argv+1);
     } catch (plask::CriticalException) {
         std::cerr << "CriticalError: Cannot import plask builtin module.\n";
+        endPlask();
         return 101;
     } catch (py::error_already_set) {
         PyErr_Print();
+        endPlask();
         return 102;
     }
 
@@ -216,6 +231,9 @@ int main(int argc, const char *argv[])
         if (from_import) { // from plask import *
             from_import_all("plask", globals);
         }
+
+        // Import numpy for materials
+        from_import_all("numpy", plask::python::xml_globals);
 
         try {
             std::string filename = argv[1];
@@ -291,19 +309,19 @@ int main(int argc, const char *argv[])
             }
         } catch (std::invalid_argument& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
-            fixMatplotlibBug();
+            endPlask();
             return -1;
         } catch (plask::XMLException& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, "'%1%': %2%", argv[1], err.what());
-            fixMatplotlibBug();
+            endPlask();
             return 2;
         } catch (plask::Exception& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
-            fixMatplotlibBug();
+            endPlask();
             return 3;
         } catch (py::error_already_set) {
             int exitcode = handlePythonException();
-            fixMatplotlibBug();
+            endPlask();
             return exitcode;
         }
 
@@ -318,12 +336,12 @@ int main(int argc, const char *argv[])
             interactive.attr("interact")(py::object(), sys_argv);
         } catch (py::error_already_set) { // This should not happen
             int exitcode = handlePythonException();
-            fixMatplotlibBug();
+            endPlask();
             return exitcode;
         }
     }
 
     // Close the Python interpreter and exit
-    fixMatplotlibBug();
+    endPlask();
     return 0;
 }
