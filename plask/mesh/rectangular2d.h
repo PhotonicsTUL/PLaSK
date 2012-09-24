@@ -589,14 +589,14 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @param index0 index of Elements (axis0 index)
      * @return first coordinate of point point in center of Elements with given index
      */
-    double getElementMidpoint0(std::size_t index0) const { return (axis0[index0] + axis0[index0+1]) / 2.0; }
+    double getElementMidpoint0(std::size_t index0) const { return 0.5 * (axis0[index0] + axis0[index0+1]); }
 
     /**
      * Get second coordinate of point in center of Elements.
      * @param index1 index of Elements (axis1 index)
      * @return second coordinate of point point in center of Elements with given index
      */
-    double getElementMidpoint1(std::size_t index1) const { return (axis1[index1] + axis1[index1+1]) / 2.0; }
+    double getElementMidpoint1(std::size_t index1) const { return 0.5 * (axis1[index1] + axis1[index1+1]); }
 
     /**
      * Get point in center of Elements.
