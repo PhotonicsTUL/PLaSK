@@ -317,7 +317,8 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     /**
      * Get numbered axis
-     * \param no
+     * @param n number of axis
+     * @return n-th axis (cn)
      */
     Mesh1D& axis(size_t n) {
         if (n == 0) return axis0;
@@ -327,7 +328,8 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     /**
      * Get numbered axis
-     * \param no
+     * @param n number of axis
+     * @return n-th axis (cn)
      */
     const Mesh1D& axis(size_t n) const {
         if (n == 0) return axis0;
@@ -574,7 +576,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     /**
      * Get area of given element.
-     * @param index index of element
+     * @param element_index index of element
      * @return area of elements with given index
      */
     double getElementArea(std::size_t element_index) const {

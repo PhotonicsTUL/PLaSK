@@ -106,14 +106,14 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         setMesh(meshxy);
     }
 
-    // /**
+    // /*
     //  * Get the position of the matching interface.
     //  *
     //  * \return index of the vertical mesh, where interface is set
     //  */
     // inline size_t getInterface() { return interface; }
     //
-    // /**
+    // /*
     //  * Set the position of the matching interface.
     //  *
     //  * \param index index of the vertical mesh, where interface is set
@@ -126,7 +126,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     //     interface = index;
     // }
     //
-    // /**
+    // /*
     //  * Set the position of the matching interface at the top of the provided geometry object
     //  *
     //  * \param path path to the object in the geometry

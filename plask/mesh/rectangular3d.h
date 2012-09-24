@@ -231,7 +231,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
     /**
      * Get numbered axis
-     * \param no
+     * \param n number of axis
      */
     Mesh1D& axis(size_t n) {
         if (n == 0) return axis0;
@@ -242,7 +242,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
     /**
      * Get numbered axis
-     * \param no
+     * \param n number of axis
      */
     const Mesh1D& axis(size_t n) const {
         if (n == 0) return axis0;

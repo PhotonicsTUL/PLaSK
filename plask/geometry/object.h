@@ -1256,7 +1256,7 @@ struct GeometryObjectD: public GeometryObject {
         return getObjectPositions(object, &path);
     }
 
-    // /**
+    // /*
     //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
     //  * are wrapped in transformations, which transform them to the root coordinates.
     //  * @param predicate
@@ -1265,7 +1265,7 @@ struct GeometryObjectD: public GeometryObject {
     //  */
     // virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints* path = 0) const = 0;
 
-    // /**
+    // /*
     //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
     //  * are wrapped in transformations, which transform them to the root coordinates.
     //  * @param predicate
@@ -1276,7 +1276,7 @@ struct GeometryObjectD: public GeometryObject {
     //     extractToVec(predicate, dest, &path);
     // }
 
-    // /**
+    // /*
     //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
     //  * are wrapped in transformations, which transform them to the root coordinates.
     //  * @param predicate
@@ -1289,7 +1289,7 @@ struct GeometryObjectD: public GeometryObject {
     //     return dest;
     // }
 
-    // /**
+    // /*
     //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
     //  * are wrapped in transformations, which transform them to the root coordinates.
     //  * @param predicate
@@ -1300,7 +1300,7 @@ struct GeometryObjectD: public GeometryObject {
     //     return extract(predicate, &path);
     // }
 
-    // /**
+    // /*
     //  * Get instances of the object withing subtree with root in this. Returned intances
     //  * are wrapped in transformations, which transform them to the root coordinates.
     //  * @param object object to extract
@@ -1311,7 +1311,7 @@ struct GeometryObjectD: public GeometryObject {
     //     return extract(PredicateIsA(object), path);
     // }
 
-    // /**
+    // /*
     //  * Get instances of the object withing subtree with root in this. Returned intances
     //  * are wrapped in transformations, which transform them to the root coordinates.
     //  * @param object object to extract
@@ -1322,7 +1322,7 @@ struct GeometryObjectD: public GeometryObject {
     //     return extractObject(object, &path);
     // }
 
-    // /**
+    // /*
     //  * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
     //  * @param path
     //  * @return resulted objects
@@ -1331,7 +1331,7 @@ struct GeometryObjectD: public GeometryObject {
     //     return extract(&GeometryObject::PredicateIsLeaf, path);
     // }
 
-    // /**
+    // /*
     //  * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
     //  * @param path
     //  * @return resulted objects
@@ -1359,7 +1359,7 @@ struct GeometryObjectD: public GeometryObject {
      * Get object closest to the root, which includes specific point and fulfills the predicate
      * \param point point to test
      * \param predicate predicate required to match, called for each object on path to point, in order from root to leaf
-     * \param path optional path hints filtering out some objects
+     * \param path path hints filtering out some objects
      * \return resulted object or empty pointer
      */
     inline shared_ptr<const GeometryObject> getMatchingAt(const DVec& point, const Predicate& predicate, const PathHints& path) const {
