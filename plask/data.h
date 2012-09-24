@@ -22,13 +22,13 @@ namespace plask {
   * which can delete vector data (it will not be deleted automatically). Afterwards the destructor object is deleted.
   */
 template <typename T>
-struct DataVectorDestructor {
-    virtual ~DataVectorDestructor() {}
+struct DataVectorDeallocator {
+    virtual ~DataVectorDeallocator() {}
     /**
      * Method called when data is to be destructed. Should be overriden in derived class.
      * \param data vector data to delete
      */
-    virtual void destruct(T* data) = 0;
+    virtual void deallocate(T* data) = 0;
 };
 
 
@@ -39,9 +39,9 @@ namespace detail {
         // Count is atomic so many threads can increment and decrement it at same time.
         // If it is 0, it means that there has been only one DataVector object, so probably one thread uses it.
         std::atomic<unsigned> count;
-        DataVectorDestructor<T>* destructor;
-        explicit DataVectorGC(unsigned initial) : count(initial), destructor(nullptr) {}
-        ~DataVectorGC() { delete destructor; }
+        DataVectorDeallocator<T>* deallocator;
+        explicit DataVectorGC(unsigned initial) : count(initial), deallocator(nullptr) {}
+        ~DataVectorGC() { delete deallocator; }
     };
 }
 
@@ -59,7 +59,7 @@ template <typename T>
 struct DataVector {
 
     typedef detail::DataVectorGC<typename std::remove_const<T>::type> Gc;
-    typedef DataVectorDestructor<typename std::remove_const<T>::type> Destructor;
+    typedef DataVectorDeallocator<typename std::remove_const<T>::type> Deallocator;
 
   private:
 
@@ -70,8 +70,8 @@ struct DataVector {
     /// Decrease GC counter and free memory if necessary.
     void dec_ref() {
         if (gc_ && --(gc_->count) == 0) {
-            if (gc_->destructor == nullptr) delete[] data_;
-            else { gc_->destructor->destruct(const_cast<typename std::remove_const<T>::type*>(data_)); }
+            if (gc_->deallocator == nullptr) delete[] data_;
+            else { gc_->deallocator->deallocate(const_cast<typename std::remove_const<T>::type*>(data_)); }
             delete gc_;
         }
     }
@@ -92,7 +92,7 @@ struct DataVector {
     typedef const T* const_iterator;    ///< constant iterator type for the array
 
     /// Create empty.
-    DataVector() : size_(0), gc_(nullptr), data_(nullptr) {}
+    DataVector(): size_(0), gc_(nullptr), data_(nullptr) {}
 
     /**
      * Create vector of given @p size with uninitialized data values.
@@ -100,7 +100,7 @@ struct DataVector {
      * Reserve memory using new T[size] call.
      * @param size total size of the data
      */
-    DataVector(std::size_t size) : size_(size), gc_(new Gc(1)), data_(new T[size]) {}
+    DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(new T[size]) {}
 
     /**
      * Create data vector with given @p size and fill all its' cells with given @p value.
@@ -206,8 +206,8 @@ struct DataVector {
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
-    DataVector(T* existing_data, std::size_t size, bool manage = false)
-        : size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
+    DataVector(T* existing_data, std::size_t size, bool manage = false):
+        size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
 
     /**
      * Create vector out of existing data.
@@ -216,8 +216,20 @@ struct DataVector {
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
     template <typename TS>
-    DataVector(TS* existing_data, std::size_t size, bool manage = false)
-        : size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
+    DataVector(TS* existing_data, std::size_t size, bool manage = false):
+        size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
+
+    /**
+     * Create vector out of existing data with deallocator.
+     * \param size  total size of the existing data
+     * \param existing_data pointer to existing data
+     * \param deallocator pointer to the data deallocator object created on the heap (it will be deleted automatically)
+     */
+    template <typename TS>
+    DataVector(TS* existing_data, std::size_t size, Deallocator* deallocator) :
+        size_(size), gc_(new Gc(1)), data_(existing_data) {
+        gc_->deallocator = deallocator;
+    }
 
     /**
      * Create data vector and fill it with data from initializer list.
@@ -288,6 +300,18 @@ struct DataVector {
     }
 
     /**
+     * Change data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
+     * \param size  total size of the existing data
+     * \param existing_data pointer to existing data
+     * \param deallocator pointer to the data deallocator object created on the heap (it will be deleted automatically)
+     */
+    template <typename TS>
+    void reset(TS* existing_data, std::size_t size, Deallocator* deallocator) {
+        reset<TS>(existing_data, size, true);
+        gc_->deallocator = deallocator;
+    }
+
+    /**
      * Change data of this data vector to uninitialized data with given @p size.
      *
      * Reserve memory using new T[size] call.
@@ -333,22 +357,6 @@ struct DataVector {
         size_ = std::distance(begin, end);
         data_ = data_non_const.release();
     }
-
-#ifndef DOXYGEN // Advanced method skipped from documentation
-    /**
-     * Set some destructor object for this data, so its deletion can be taken over manually.
-     * If the data was not managed, start managing it, supposing that this is the only one owner of data (reference counter is initialized to 1).
-     * \param destructor pointer do destructor object created on heap (it will be deleted automatically)
-     */
-    void setDataDestructor(Destructor* destructor) {
-        if (gc_) {
-            if (gc_->destructor) delete gc_->destructor;
-        } else {
-            gc_ = new Gc(1);
-        }
-        gc_->destructor = destructor;
-    }
-#endif // DOXYGEN
 
     /**
      * Get iterator referring to the first object in data vector.

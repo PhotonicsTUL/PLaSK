@@ -230,11 +230,11 @@ namespace detail {
     }
 
     template <typename T>
-    struct NumpyDataDestructor: public DataVector<T>::Destructor {
+    struct NumpyDataDeallocator: public DataVector<T>::Deallocator {
         PyArrayObject* arr;
-        NumpyDataDestructor(PyArrayObject* arr) : arr(arr) { Py_XINCREF(arr); }
-        virtual ~NumpyDataDestructor() { Py_XDECREF(arr); }
-        virtual void destruct(T* data) {}
+        NumpyDataDeallocator(PyArrayObject* arr) : arr(arr) { Py_XINCREF(arr); }
+        virtual ~NumpyDataDeallocator() { Py_XDECREF(arr); }
+        virtual void deallocate(T* data) {}
     };
 
     template <typename T, int dim>
@@ -256,8 +256,7 @@ namespace detail {
 
         if (size != mesh->size()) throw ValueError("Sizes of data (%1%) and mesh (%2%) do not match", size, mesh->size());
 
-        auto data = make_shared<DataVectorWrap<const T,dim>>(DataVector<const T>((const T*)PyArray_DATA(arr), size), mesh);
-        data->setDataDestructor(new NumpyDataDestructor<T>(arr));
+        auto data = make_shared<DataVectorWrap<const T,dim>>(DataVector<const T>((const T*)PyArray_DATA(arr), size, new NumpyDataDeallocator<T>(arr)), mesh);
 
         return py::object(data);
     }
