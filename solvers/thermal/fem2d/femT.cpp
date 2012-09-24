@@ -1,5 +1,6 @@
 #include "femT.h"
 
+
 namespace plask { namespace solvers { namespace thermal {
 
 FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian2DSolver(const std::string& name) :
@@ -21,6 +22,7 @@ FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian
     mHeatDensities.reset();
 
     inHeatDensity = 0.;
+
 }
 
 FiniteElementMethodThermalCartesian2DSolver::~FiniteElementMethodThermalCartesian2DSolver()
@@ -228,7 +230,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
 
         // set load vector
-        tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()]; // 1e-12 -> to transform um*um into m*m
+        tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
         // heat per unit volume or heat rate per unit volume [W/(m^3)]
 
         // set symetric matrix components
@@ -236,6 +238,8 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         tK43 = tK21 = (-2.*tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight ) / 6.;
         tK42 = tK31 = -(tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight)/ 6.;
         tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;
+
+        writelog(LOG_INFO, "%1% %2% %3% %4% %5% %6%", tK44, tK43, tK42, tK32, tF, mBigNum);
 
         // set stiffness matrix
         mpA[tLoLeftNo-1][mAWidth-2] +=  tK11;
@@ -393,8 +397,10 @@ void FiniteElementMethodThermalCartesian2DSolver::updNodes()
     while (ttN != mNodes.end())
     {
         mTCorr[ttN->getNo()-1] = fabs( ttN->getT() - mpA[ttN->getNo()-1][mAWidth-1] ); // calculate corrections
-        if (!ttN->ifTConst())
+        if (!ttN->ifTConst()) {
+            //writelog(LOG_INFO, "mpA = %1%", mpA[ttN->getNo()-1][mAWidth-1]);
             ttN->setT( mpA[ttN->getNo()-1][mAWidth-1] ); // mpA[ttN->getNo()-1][mAWidth-1] - here are new values of temperature
+        }
         ttN++;
     }
 }
@@ -442,8 +448,10 @@ void FiniteElementMethodThermalCartesian2DSolver::saveTemperatures()
 
     mTemperatures.reset(mNodes.size());
 
-    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
+    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN) {
+        writelog(LOG_INFO, "getT = %1% [const %2%]", ttN->getT(), ttN->ifTConst());
         mTemperatures[ttN->getNo()-1] = ttN->getT();
+    }
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()

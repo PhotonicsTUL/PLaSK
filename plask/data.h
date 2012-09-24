@@ -12,6 +12,7 @@ This file includes classes which can hold (or points to) datas.
 #include <atomic>
 #include <type_traits>
 #include <memory>   //std::unique_ptr
+#include <cassert>
 
 namespace plask {
 
@@ -386,13 +387,13 @@ struct DataVector {
      * Return n-th object of the data.
      * @param n number of object to return
      */
-    const T& operator [](std::size_t n) const { return data_[n]; }
+    const T& operator [](std::size_t n) const { assert(n < size_); return data_[n]; }
 
     /**
      * Return reference to the n-th object of the data.
      * @param n number of object to return
      */
-    T& operator [](std::size_t n) { return data_[n]; }
+    T& operator [](std::size_t n) { assert(n < size_); return data_[n]; }
 
     /**
      * Make a deep copy of the data.

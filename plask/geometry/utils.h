@@ -101,14 +101,26 @@ public:
         return object;
     }
 
+    /**
+     * Construct bouding box cache connected with given object
+     * @param object object for which bounding box should be cached, can be nullptr (typically you should later call setObject in such cache)
+     */
     BoundingBoxCache(const GeometryObjectD<dims>* object = 0): object(object), isFresh(false) {
         connect();
     }
 
+    /**
+     * Construct bouding box cache connected with given object
+     * @param object object for which bounding box should be cached
+     */
     BoundingBoxCache(const GeometryObjectD<dims>& object): object(&object), isFresh(false) {
         connect();
     }
 
+    /**
+     * Construct bouding box cache connected with given object
+     * @param object object for which bounding box should be cached
+     */
     BoundingBoxCache(shared_ptr< const GeometryObjectD<dims> > object): object(&object), isFresh(false) {
         connect();
     }

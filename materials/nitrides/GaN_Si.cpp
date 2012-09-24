@@ -62,10 +62,11 @@ MI_PROPERTY(GaN_Si, thermCond,
             MIComment("Nf: 1e18 - 1e19 cm^-3")
             )
 std::pair<double,double> GaN_Si::thermCond(double T, double t) const {
-    double fun_Nf = 2.18*pow(Nf_RT,-0.022),
-           lCondT = GaN::thermCond(T,t).first*fun_Nf,
-           vCondT = GaN::thermCond(T,t).second*fun_Nf;
-    return(std::make_pair(lCondT, vCondT));
+    double fun_Nf = 2.18*std::pow(Nf_RT,-0.022);
+    auto p = GaN::thermCond(T,t);
+    p.first *= fun_Nf;
+    p.second *= fun_Nf;
+    return p;
  }
 
 MI_PROPERTY(GaN_Si, absp,
