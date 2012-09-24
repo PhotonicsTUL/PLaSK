@@ -11,6 +11,7 @@ This file includes implementation of vector in 2D space.
 #include <plask/exceptions.h>
 
 #include "common.h"
+#include <cassert>
 
 namespace plask {
 
@@ -154,6 +155,7 @@ struct Vec<2, T> {
      * @return i-th component
      */
     inline T& operator[](size_t i) {
+        assert(i < 2);
         return *(&c0 + i);
     }
 
@@ -164,6 +166,7 @@ struct Vec<2, T> {
      * @return i-th component
      */
     inline const T& operator[](size_t i) const {
+        assert(i < 2);
         return *(&c0 + i);
     }
 

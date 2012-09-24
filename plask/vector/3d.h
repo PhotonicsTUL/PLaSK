@@ -178,6 +178,7 @@ struct Vec<3, T> {
      * @return i-th component
      */
     inline T& operator[](size_t i) {
+        assert(i < 3);
         return *(&c0 + i);
     }
 
@@ -188,6 +189,7 @@ struct Vec<3, T> {
      * @return i-th component
      */
     inline const T& operator[](size_t i) const {
+        assert(i < 3);
         return *(&c0 + i);
     }
 
