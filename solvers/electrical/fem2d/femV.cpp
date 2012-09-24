@@ -215,8 +215,8 @@ void FiniteElementMethodElectricalCartesian2DSolver::setMatrix()
         tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
 
         // set assistant values
-        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()]).first;
-        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()]).second;
+        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first;
+        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second;
 
         // set load vector
         tF = 0.; //0.25 * tElemWidth * tElemHeight * 1e-12 * 0.; // 1e-12 -> to transform um*um into m*m
