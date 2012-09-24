@@ -113,10 +113,6 @@ endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
-#if (NOT WIN32) #can be usefull if more threads libraries will be used
-#    target_link_libraries(sdsolver "pthread")
-#endif()
-
 include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
@@ -155,7 +151,7 @@ file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 # ---------- plask library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
-target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
+target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY})
 if(WIN32)
     target_link_libraries(libplask kernel32)
     install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
@@ -165,6 +161,10 @@ else(WIN32)
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
 endif(WIN32)
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
+
+#if (NOT WIN32) #can be usefull if more threads libraries will be used
+#    target_link_libraries(sdsolver "pthread")
+#endif()
 
 install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
 install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
