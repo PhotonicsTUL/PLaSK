@@ -12,6 +12,7 @@ This file includes rectilinear mesh for 2d space.
 #include "interpolation.h"
 #include "../utils/interpolation.h"
 #include "../geometry/object.h"
+#include "../math.h"
 
 namespace plask {
 
@@ -705,6 +706,32 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     };
 
+    
+    struct VerticalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
+
+        typedef typename BoundaryLogicImpl::Iterator Iterator;
+
+		std::size_t line, beginInLineIndex, endInLineIndex;
+
+        VerticalBoundaryInRange(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis0, std::size_t beginInLineIndex, std::size_t endInLineIndex)
+            : BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis0), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
+
+        //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
+
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index0(mesh_index) == line && in_range(this->mesh.index1(mesh_index), beginInLineIndex, endInLineIndex);
+        }
+
+        Iterator begin() const {
+            return Iterator(new VerticalIteratorImpl(this->mesh, line, beginInLineIndex));
+        }
+
+        Iterator end() const {
+            return Iterator(new VerticalIteratorImpl(this->mesh, line, endInLineIndex));
+        }
+
+    };
+    
     struct HorizontalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
@@ -725,6 +752,29 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         Iterator end() const {
 			return Iterator(new HorizontalIteratorImpl(this->mesh, line, this->mesh.axis0.size()));
+        }
+    };
+    
+    struct HorizontalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
+
+        typedef typename BoundaryLogicImpl::Iterator Iterator;
+
+		std::size_t line, beginInLineIndex, endInLineIndex;
+
+        HorizontalBoundaryInRange(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis1, std::size_t beginInLineIndex, std::size_t endInLineIndex)
+            : BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis1), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
+        //virtual TopBoundary* clone() const { return new TopBoundary(); }
+
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index1(mesh_index) == line && in_range(this->mesh.index1(mesh_index), beginInLineIndex, endInLineIndex);
+        }
+
+		Iterator begin() const {
+            return Iterator(new HorizontalIteratorImpl(this->mesh, line, beginInLineIndex));
+        }
+
+        Iterator end() const {
+			return Iterator(new HorizontalIteratorImpl(this->mesh, line, endInLineIndex));
         }
     };
 
@@ -755,6 +805,16 @@ public:
 		return Boundary( [line_nr_axis0](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, line_nr_axis0);} );
 	}
 
+    /**
+     * Get boundary which show range in vertical (from bottom to top) line in mesh.
+     * @param line_nr_axis0 number of vertical line, axis 0 index of mesh
+     * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
+     * @return boundary which show range in vertical (from bottom to top) line in mesh.
+     */
+    static Boundary getVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) {
+        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundaryInRange(mesh, line_nr_axis0, indexBegin, indexEnd);} );
+    }
+
 	/**
 	 * Get boundary which show one vertical (from bottom to top) line in mesh which lies nearest given coordinate.
 	 * @param axis0_coord axis 0 coordinate
@@ -779,6 +839,23 @@ public:
     static Boundary getRightBoundary() {
         return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.size()-1);} );
     }
+    
+    /**
+     * Get boundary which lies on left edge of the @p box.
+     * @param box box in which boundary should lie
+     * @return boundary which lies on left edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
+     */
+    static Boundary getLeftOfBoundary(Box2D box) {
+        return Boundary( [&](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line = mesh.axis0.findIndex(box.lower.c0);
+            if (line == mesh.axis0.size() || mesh.axis0[line] > box.upper.c0)
+                return new EmptyBoundaryImpl();
+            std::size_t begInd = mesh.axis1.findIndex(box.lower.c1);
+            std::size_t endInd = mesh.axis1.findIndex(box.upper.c1);
+            if (endInd != mesh.axis1.size() && mesh.axis1[endInd] == box.upper.c1) ++endInd;
+            return new VerticalBoundaryInRange(mesh, line, begInd, endInd);
+        } );
+    }
 
 	/**
 	 * Get boundary which show one horizontal (from left to right) line in mesh.
@@ -788,6 +865,16 @@ public:
 	static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1) {
 		return Boundary( [line_nr_axis1](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, line_nr_axis1);} );
 	}
+	
+	/**
+     * Get boundary which show range in horizontal (from left to right) line in mesh.
+     * @param line_nr_axis1 number of horizontal line, axis 1 index of mesh
+     * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
+     * @return boundary which show range in horizontal (from left to right) line in mesh.
+     */
+    static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) {
+        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundaryInRange(mesh, line_nr_axis1, indexBegin, indexEnd);} );
+    }
 
 	/**
 	 * Get boundary which show one horizontal (from left to right) line in mesh which lies nearest given coordinate.

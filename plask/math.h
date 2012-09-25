@@ -84,6 +84,17 @@ const T& clamp(const T& v, const T& min, const T& max) {
     return v;
 }
 
+/**
+ * Check if value @p v is in given range [beg, end).
+ * @param v value to check
+ * @param beg, end ends of range [beg, end)
+ * @return @c true only if beg <= v && v < end
+ */
+template <typename T>
+const bool in_range(const T& v, const T& beg, const T& end) {
+    return beg <= v && v < end;
+}
+
 } // namespace plask
 
 #endif // PLASK__NUMBERS_H

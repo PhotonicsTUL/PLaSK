@@ -150,7 +150,7 @@ class RegularMesh1D {
      * Find index where @p to_find point could be inserted.
      * @param to_find point to find
      * @return First index where to_find could be inserted.
-     *         Refer to value equal to @p to_find only if @p to_find is already in mesh.
+     *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value bigger than to_find.
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
     std::size_t findIndex(double to_find) const {
@@ -161,7 +161,7 @@ class RegularMesh1D {
      * Find position where @p to_find point could be inserted.
      * @param to_find point to find
      * @return First position where to_find could be insert.
-     *         Refer to value equal to @p to_find only if @p to_find is in mesh.
+     *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value bigger than to_find.
      *         Can be equal to end() if to_find is higher than all points in mesh
      *         (in such case returned iterator can't be dereferenced).
      */
