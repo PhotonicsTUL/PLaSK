@@ -856,6 +856,9 @@ public:
             return new VerticalBoundaryInRange(mesh, line, begInd, endInd);
         } );
     }
+    
+    //TODO getLeftOfBoundary(functor which returns vector of boxes)  //someteimes return sums of boundaries!
+    //TODO getLeftOfBoundary(root_geom, child_geom, pathhints)  //use above version of getLeftOfBoundary
 
 	/**
 	 * Get boundary which show one horizontal (from left to right) line in mesh.
