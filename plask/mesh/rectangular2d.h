@@ -857,6 +857,7 @@ public:
         } );
     }
     
+    //TODO szablon do implementacji poniżeszego, dla wszystkich wariantótów: przyjmujący funktor zwracający boundary dla boxa i functor which returns vector of boxes
     //TODO getLeftOfBoundary(functor which returns vector of boxes)  //someteimes return sums of boundaries!
     //TODO getLeftOfBoundary(root_geom, child_geom, pathhints)  //use above version of getLeftOfBoundary
 
