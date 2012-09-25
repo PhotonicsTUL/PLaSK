@@ -852,7 +852,7 @@ public:
                 return new EmptyBoundaryImpl();
             std::size_t begInd = mesh.axis1.findIndex(box.lower.c1);
             std::size_t endInd = mesh.axis1.findIndex(box.upper.c1);
-            if (endInd != mesh.axis1.size() && mesh.axis1[endInd] == box.upper.c1) ++endInd;
+            if (endInd != mesh.axis1.size() && mesh.axis1[endInd] == box.upper.c1) ++endInd;    //endInd is exluded
             return new VerticalBoundaryInRange(mesh, line, begInd, endInd);
         } );
     }
