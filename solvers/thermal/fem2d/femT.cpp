@@ -337,8 +337,13 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
 
     saveTemperatures();
 
+    saveHeatFluxes();
+
     if (mLogs)
         showTemperatures();
+
+    if (mLogs)
+        showHeatFluxes();
 
     delSolver();
 
@@ -471,14 +476,19 @@ void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
             }
         }
         mHeatFluxes[ttE->getNo()-1] = vec(
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX(),
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() );
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX() * 1e6, // 1e6 - from um to m
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() * 1e6 ); // 1e6 - from um to m
     }
 }
 
 void FiniteElementMethodThermalCartesian2DSolver::showTemperatures()
 {
     std::cout << "Showing temperatures... " << mTemperatures<< std::endl;
+}
+
+void FiniteElementMethodThermalCartesian2DSolver::showHeatFluxes()
+{
+    std::cout << "Showing heat fluxes... " << mHeatFluxes<< std::endl;
 }
 
 int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long iN, long iBandWidth)
@@ -556,13 +566,15 @@ int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long 
 }
 
 DataVector<const double> FiniteElementMethodThermalCartesian2DSolver::getTemperatures(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+    if (method == DEFAULT_INTERPOLATION)
+        method = INTERPOLATION_LINEAR;
     return interpolate(*mesh, mTemperatures, dst_mesh, method);
 }
 
 DataVector<const Vec<2> > FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-    return interpolate(*mesh, mHeatFluxes, dst_mesh, method);
+    if (method == DEFAULT_INTERPOLATION)
+        method = INTERPOLATION_LINEAR;
+    return interpolate(*(mesh->getMidpointsMesh()), mHeatFluxes, dst_mesh, method);
 }
 
 }}} // namespace plask::solvers::thermal

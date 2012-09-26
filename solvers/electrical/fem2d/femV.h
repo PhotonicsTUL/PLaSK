@@ -64,6 +64,8 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     double mVCorrLim; // small-enough correction - stops the calculations
     double mVBigCorr; // big-enough correction for the potential
     double mBigNum; // for the first boundary condtion (see: set Matrix)
+    double mJs; // p-n junction parameter [A/m^2]
+    double mBeta; // p-n junction parameter [1/V]
     bool mLogs; // logs (0-most important logs, 1-all logs)
     int mLoopNo; // number of completed loops
 
@@ -109,16 +111,22 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     void showElements();
 
     /// Create vector with calculated potentials
-    void savePotentials();
+    void savePotentials(); // [V]
 
     /// Create 2D-vector with calculated current densities
-    void saveCurrentDensities();
+    void saveCurrentDensities(); // [A/m^2]
 
     /// Create vector with calculated heat densities
-    void saveHeatDensities();
+    void saveHeatDensities(); // [W/m^3]
 
-    /// Show vector with calculated potentials (node numbers for info only)
+    /// Show vector with calculated potentials
     void showPotentials();
+
+    /// Show vector with calculated current densities
+    void showCurrentDensities();
+
+    /// Show vector with calculated heat fluxes
+    void showHeatDensities();
 
     /// Matrix solver
     int solveMatrix(double **ipA, long iN, long iBandWidth);

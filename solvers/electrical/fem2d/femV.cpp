@@ -8,6 +8,8 @@ FiniteElementMethodElectricalCartesian2DSolver::FiniteElementMethodElectricalCar
     mVCorrLim(0.01),
     mVBigCorr(1e5),
     mBigNum(1e15),
+    mJs(1e-7),
+    mBeta(20.),
     mLogs(false),
     mLoopNo(0),
     outPotential(this, &FiniteElementMethodElectricalCartesian2DSolver::getPotentials),
@@ -215,8 +217,31 @@ void FiniteElementMethodElectricalCartesian2DSolver::setMatrix()
         tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
 
         // set assistant values
-        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first;
-        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second;
+        std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes(); // geometry->extract(GeometryObject::PredicateHasClass("active"));
+        Vec<2, double> tSize;
+        for (Box2D tBox: tVecBox)
+        {
+            if (tBox.includes(vec(ttE->getX(), ttE->getY())))
+            {
+                tSize = tBox.size();
+                break;
+            }
+        }
+        if (geometry->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
+        {
+            double tJx = 1.0e-7,//(mCurrentDensities[ttE->getNo()-1]).ee_x(),
+                   tJy = 1.0e7,//(mCurrentDensities[ttE->getNo()-1]).ee_y();
+                   tJ = sqrt(tJx * tJx + tJy * tJy); //new one
+            tKXAssist = ( mBeta * tJ * tSize.ee_y() ) / log(tJ / mJs + 1. );
+            tKYAssist = ( mBeta * tJ * tSize.ee_y() ) / log(tJ / mJs + 1. );
+            //tKXAssist = ( mBeta * tJx * tSize.ee_y() ) / log(tJx / mJs + 1. );
+            //tKYAssist = ( mBeta * tJy * tSize.ee_y() ) / log(tJy / mJs + 1. );
+        }
+        else
+        {
+            tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first;
+            tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second;
+        }
 
         // set load vector
         tF = 0.; //0.25 * tElemWidth * tElemHeight * 1e-12 * 0.; // 1e-12 -> to transform um*um into m*m
@@ -333,6 +358,12 @@ void FiniteElementMethodElectricalCartesian2DSolver::runCalc()
     if (mLogs)
         showPotentials();
 
+    if (mLogs)
+        showCurrentDensities();
+
+    if (mLogs)
+        showHeatDensities();
+
     delSolver();
 
     if (mLogs)
@@ -446,8 +477,8 @@ void FiniteElementMethodElectricalCartesian2DSolver::saveCurrentDensities()
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
         mCurrentDensities[ttE->getNo()-1] = vec(
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) * ttE->getdVdX(),
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second) * ttE->getdVdY() );
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) * ttE->getdVdX() * 1e6, // 1e6 - from um to m
+            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second) * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
     }
 }
 
@@ -470,6 +501,16 @@ void FiniteElementMethodElectricalCartesian2DSolver::saveHeatDensities()
 void FiniteElementMethodElectricalCartesian2DSolver::showPotentials()
 {
     std::cout << "Showing potentials... " << mPotentials << std::endl;
+}
+
+void FiniteElementMethodElectricalCartesian2DSolver::showCurrentDensities()
+{
+    std::cout << "Showing current densities... " << mCurrentDensities << std::endl;
+}
+
+void FiniteElementMethodElectricalCartesian2DSolver::showHeatDensities()
+{
+    std::cout << "Showing heat densities... " << mHeatDensities << std::endl;
 }
 
 int FiniteElementMethodElectricalCartesian2DSolver::solveMatrix(double **ipA, long iN, long iBandWidth)

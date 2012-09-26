@@ -14,7 +14,7 @@ struct HeatDensity: public ScalarFieldProperty {
 };
 
 /**
- * Provider which sum heat densities fro one or more source.
+ * Provider which sum heat densities from one or more source.
  */
 template <typename SpaceT>
 struct HeatDensitySumProvider: public SumOnMeshProviderWithInterpolation<ProviderFor<HeatDensity, SpaceT>, double, SpaceT> {
