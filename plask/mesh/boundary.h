@@ -294,15 +294,15 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
 
         typename BoundariesVec::const_iterator current_boundary;
         typename BoundariesVec::const_iterator current_boundary_end;
-        typename Boundary<MeshType>::const_iterator in_boundary;
-        typename Boundary<MeshType>::const_iterator in_boundary_end;
+        typename Boundary<MeshType>::WithMesh::const_iterator in_boundary;
+        typename Boundary<MeshType>::WithMesh::const_iterator in_boundary_end;
 
         void fixCurrentBoundary() {
             while (in_boundary == in_boundary_end) {
                 ++current_boundary;
                 if (current_boundary != current_boundary_end) return;
-                in_boundary = current_boundary.begin();
-                in_boundary_end = current_boundary.end();
+                in_boundary = current_boundary->begin();
+                in_boundary_end = current_boundary->end();
             }
         }
 
@@ -324,7 +324,7 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
         }
 
         virtual IteratorImpl* clone() const {
-            return new IteratorImpl(current_boundary, current_boundary_end, in_boundary);
+            return new IteratorImpl(*this);
         }
 
         virtual std::size_t dereference() const {

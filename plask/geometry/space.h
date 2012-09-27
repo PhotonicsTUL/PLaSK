@@ -389,7 +389,7 @@ public:
 
     virtual void setPlanarBorders(const border::Strategy& border_to_set);
 
-    // /**
+    // /*
     //  * Get the sub/super-space of this one (automatically detected)
     //  * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
     //  * \param path hints specifying particular instance of the geometry object
@@ -398,7 +398,7 @@ public:
     //  */
     // virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints* path=nullptr, bool copyBorders=false) const = 0;
 
-    // /**
+    // /*
     //  * Get the sub/super-space of this one (automatically detected) with specified borders
     //  * \param object geometry object within the geometry tree of this subspace or with this space child as its sub-tree
     //  * \param path hints specifying particular instance of the geometry object

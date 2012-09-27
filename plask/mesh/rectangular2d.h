@@ -12,6 +12,8 @@ This file includes rectilinear mesh for 2d space.
 #include "interpolation.h"
 #include "../utils/interpolation.h"
 #include "../geometry/object.h"
+#include "../geometry/space.h"
+#include "../geometry/path.h"
 #include "../math.h"
 
 namespace plask {
@@ -963,7 +965,7 @@ public:
         return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* { //TODO returns Boundary?
             std::vector<RectangularMesh<2,Mesh1D>::Boundary> boundaries;
             std::vector<typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh> boundaries_with_meshes;
-            auto boxes = getBoxes(mesh); //probably std::vector<Box2D>
+            auto boxes = getBoxes(); //probably std::vector<Box2D>
             for (auto& box: boxes) {
                 RectangularMesh<2,Mesh1D>::Boundary boundary = getBoundaryForBox(box);
                 typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh boundary_with_mesh = boundary(mesh);
@@ -978,10 +980,122 @@ public:
         } );
     }
     
-    //TODO use getBoundaryForBoxes to impl.:
-    //TODO getLeftOfBoundary(functor which returns vector of boxes)  //someteimes return sums of boundaries!
-    //TODO getLeftOfBoundary(root_geom, child_geom, pathhints)  //use getBoundaryForBoxes to impl.
-
+    /**
+     * Get boundary which lies on left edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geomoetry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
+     */
+	static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+		return getBoundaryForBoxes(
+			[=] { return geometry->getObjectBoundingBoxes(object, path); },
+			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
+		);
+	}
+	
+	/**
+     * Get boundary which lies on left edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geomoetry
+     * @param path (optional) hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
+     */
+	static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+		if (path) return getLeftOfBoundary(geometry, object, *path);
+		return getBoundaryForBoxes(
+			[=] { return geometry->getObjectBoundingBoxes(object); },
+			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
+		);
+	}
+	
+	/**
+     * Get boundary which lies on right edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geomoetry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
+     */
+	static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+		return getBoundaryForBoxes(
+			[=] { return geometry->getObjectBoundingBoxes(object, path); },
+			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
+		);
+	}
+	
+	/**
+     * Get boundary which lies on right edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geomoetry
+     * @param path (optional) hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
+     */
+	static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+		if (path) return getRightOfBoundary(geometry, object, *path);
+		return getBoundaryForBoxes(
+			[=] { return geometry->getObjectBoundingBoxes(object); },
+			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
+		);
+	}
+	
+	/**
+     * Get boundary which lies on bottom edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geomoetry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
+     */
+	static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+		return getBoundaryForBoxes(
+			[=] { return geometry->getObjectBoundingBoxes(object, path); },
+			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
+		);
+	}
+	
+	/**
+     * Get boundary which lies on bottom edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geomoetry
+     * @param path (optional) hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
+     */
+	static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+		if (path) return getBottomOfBoundary(geometry, object, *path);
+		return getBoundaryForBoxes(
+			[=] { return geometry->getObjectBoundingBoxes(object); },
+			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
+		);
+	}
+	
+	/**
+     * Get boundary which lies on top edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geomoetry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
+     */
+	static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+		return getBoundaryForBoxes(
+			[=] { return geometry->getObjectBoundingBoxes(object, path); },
+			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
+		);
+	}
+	
+	/**
+     * Get boundary which lies on top edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geomoetry
+     * @param path (optional) hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
+     */
+	static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+		if (path) return getTopOfBoundary(geometry, object, *path);
+		return getBoundaryForBoxes(
+			[=] { return geometry->getObjectBoundingBoxes(object); },
+			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
+		);
+	}
+	
 	/**
 	 * Get boundary which show one horizontal (from left to right) line in mesh.
 	 * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
