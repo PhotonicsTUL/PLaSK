@@ -787,6 +787,54 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
             return mesh.index1(mesh_index) == mesh.axis1.findNearestIndex(height);
         }
     };*/
+    
+    /**
+     * Helper used by getLeftOfBoundary, etc.
+     * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_lower,
+     *  undefined if @c false was returned
+     * @param[in] axis axis, 1D mesh
+     * @param[in] box_lower, box_upper position of lower and upper box edges
+     * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
+     */
+    static bool getLineLo(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
+        assert(box_lower <= box_upper);
+        line = axis.findIndex(box_lower);
+        return line != axis.size() && axis[line] <= box_upper;
+    }
+    
+    /**
+     * Helper used by getRightOfBoundary, etc.
+     * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_upper,
+     *  undefined if @c false was returned
+     * @param[in] axis axis, 1D mesh
+     * @param[in] box_lower, box_upper position of lower and upper box edges
+     * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
+     */
+    static bool getLineHi(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
+        assert(box_lower <= box_upper);
+        line = axis.findIndex(box_upper);
+        if (line == axis.size()) return false;
+        if (axis[line] == box_upper) return true;
+        if (line == 0) return false;
+        --line;
+        return axis[line] >= box_lower;
+    }
+    
+    /**
+     * Helper used by getLeftOfBoundary, etc.
+     * @param[out] begInd, endInd range [begInd, endInd) of index in @p axis which show points which lies in bounds [@p box_lower, @p box_upper],
+     *      undefined if @c false was returned
+     * @param[in] axis axis, 1D mesh
+     * @param[in] box_lower, box_upper position of lower and upper box edges
+     * @return @c true only if some of @p axis points lies in bounds [@p box_lower, @p box_upper]
+     */
+    static bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const Mesh1D& axis, double box_lower, double box_upper) {
+        assert(box_lower <= box_upper);
+        begInd = axis.findIndex(box_lower);
+        endInd = axis.findIndex(box_upper);
+        if (endInd != axis.size() && axis[endInd] == box_upper) ++endInd;    //endInd is exluded
+        return begInd != endInd;
+    }
 
 public:
     // boundaries:
@@ -841,19 +889,66 @@ public:
     }
     
     /**
-     * Get boundary which lies on left edge of the @p box.
+     * Get boundary which lies on left edge of the @p box (at mesh line nearest left edge and inside the box).
      * @param box box in which boundary should lie
      * @return boundary which lies on left edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    static Boundary getLeftOfBoundary(Box2D box) {
-        return Boundary( [&](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
-            std::size_t line = mesh.axis0.findIndex(box.lower.c0);
-            if (line == mesh.axis0.size() || mesh.axis0[line] > box.upper.c0)
+    static Boundary getLeftOfBoundary(const Box2D& box) {
+        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd, endInd;
+            if (RectangularMesh<2,Mesh1D>::getLineLo(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                RectangularMesh<2,Mesh1D>::getIndexesInBounds(begInd, endInd, mesh.axis1, box.lower.c1, box.upper.c1))
+                return new VerticalBoundaryInRange(mesh, line, begInd, endInd);
+            else
                 return new EmptyBoundaryImpl();
-            std::size_t begInd = mesh.axis1.findIndex(box.lower.c1);
-            std::size_t endInd = mesh.axis1.findIndex(box.upper.c1);
-            if (endInd != mesh.axis1.size() && mesh.axis1[endInd] == box.upper.c1) ++endInd;    //endInd is exluded
-            return new VerticalBoundaryInRange(mesh, line, begInd, endInd);
+        } );
+    }
+    
+    /**
+     * Get boundary which lies on right edge of the @p box (at mesh line nearest right edge and inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which lies on right edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
+     */
+    static Boundary getRightOfBoundary(const Box2D& box) {
+        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd, endInd;
+            if (RectangularMesh<2,Mesh1D>::getLineHi(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                RectangularMesh<2,Mesh1D>::getIndexesInBounds(begInd, endInd, mesh.axis1, box.lower.c1, box.upper.c1))
+                return new VerticalBoundaryInRange(mesh, line, begInd, endInd);
+            else
+                return new EmptyBoundaryImpl();
+        } );
+    }
+    
+    /**
+     * Get boundary which lies on bottom edge of the @p box (at mesh line nearest bottom edge and inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which lies on bottom edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
+     */
+    static Boundary getBottomOfBoundary(const Box2D& box) {
+        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd, endInd;
+            if (RectangularMesh<2,Mesh1D>::getLineLo(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
+                RectangularMesh<2,Mesh1D>::getIndexesInBounds(begInd, endInd, mesh.axis0, box.lower.c0, box.upper.c0))
+                return new HorizontalBoundaryInRange(mesh, line, begInd, endInd);
+            else
+                return new EmptyBoundaryImpl();
+        } );
+    }
+    
+    /**
+     * Get boundary which lies on top edge of the @p box (at mesh line nearest top edge and inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which lies on top edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
+     */
+    static Boundary getTopOfBoundary(const Box2D& box) {
+        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd, endInd;
+            if (RectangularMesh<2,Mesh1D>::getLineHi(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
+                RectangularMesh<2,Mesh1D>::getIndexesInBounds(begInd, endInd, mesh.axis0, box.lower.c0, box.upper.c0))
+                return new HorizontalBoundaryInRange(mesh, line, begInd, endInd);
+            else
+                return new EmptyBoundaryImpl();
         } );
     }
     
