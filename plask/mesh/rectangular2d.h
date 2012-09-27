@@ -952,13 +952,39 @@ public:
         } );
     }
     
-    //TODO szablon do implementacji poniżeszego, dla wszystkich wariantótów: przyjmujący funktor zwracający boundary dla boxa i functor which returns vector of boxes
+    /**
+     * Get boundary which lies on choosen edge of boxes.
+     * @param getBoxes functor which returns 0 or more boxes (vector of boxes)
+     * @param getBoundaryForBox functor which returns boundary for box given as parameter, it choose edge of box (for example this may call getLeftOfBoundary, etc.)
+     * @return boundary which represents sum of boundaries returned by getBoundaryForBox for all boxes returned by getBoxes
+     */
+    template <typename GetBoxes, typename GetBoundaryForBox>
+    static Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBoundaryForBox getBoundaryForBox) {
+        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* { //TODO returns Boundary?
+            std::vector<RectangularMesh<2,Mesh1D>::Boundary> boundaries;
+            std::vector<typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh> boundaries_with_meshes;
+            auto boxes = getBoxes(mesh); //probably std::vector<Box2D>
+            for (auto& box: boxes) {
+                RectangularMesh<2,Mesh1D>::Boundary boundary = getBoundaryForBox(box);
+                typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh boundary_with_mesh = boundary(mesh);
+                if (!boundary_with_mesh.empty()) {
+                    boundaries.push_back(std::move(boundary));
+                    boundaries_with_meshes.push_back(std::move(boundary_with_mesh));
+                }
+            }
+            if (boundaries.empty()) return new EmptyBoundaryImpl();
+            //if (boundaries.size() == 1) return //TODO only first bounday from vec. should be returned
+            return new SumBoundaryImpl<RectangularMesh<2,Mesh1D>>(std::move(boundaries_with_meshes));
+        } );
+    }
+    
+    //TODO use getBoundaryForBoxes to impl.:
     //TODO getLeftOfBoundary(functor which returns vector of boxes)  //someteimes return sums of boundaries!
-    //TODO getLeftOfBoundary(root_geom, child_geom, pathhints)  //use above version of getLeftOfBoundary
+    //TODO getLeftOfBoundary(root_geom, child_geom, pathhints)  //use getBoundaryForBoxes to impl.
 
 	/**
 	 * Get boundary which show one horizontal (from left to right) line in mesh.
-	 * @param line_nr_axis1 number of horizontal line, axis 1 index of mesh
+	 * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
 	 * @return boundary which show one horizontal (from left to right) line in mesh
 	 */
 	static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1) {
@@ -967,7 +993,7 @@ public:
 	
 	/**
      * Get boundary which show range in horizontal (from left to right) line in mesh.
-     * @param line_nr_axis1 number of horizontal line, axis 1 index of mesh
+     * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
      * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
      * @return boundary which show range in horizontal (from left to right) line in mesh.
      */

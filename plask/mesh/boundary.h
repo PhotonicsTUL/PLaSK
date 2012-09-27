@@ -116,6 +116,12 @@ struct BoundaryLogicImpl {
      */
     virtual const_iterator end() const = 0;
 
+    /**
+     * Check if this represents empty set of indexes.
+     * @return @c true only if this represents empty set of indexes
+     */
+    virtual bool empty() const { return begin() == end(); }
+    
 };
 
 /**
@@ -206,6 +212,12 @@ struct Boundary {
         const_iterator end() const {
             return this->held->end();
         }
+        
+        /**
+         * Check if boundary represents empty set of indexes.
+         * @return @c true only if this represents empty set of indexes
+         */
+        virtual bool empty() const { return this->held->empty(); }
 
     };
 
@@ -250,7 +262,20 @@ public:
     bool includes(const MeshType& mesh, std::size_t mesh_index) const {
         return get(mesh).includes(mesh_index);
     }
+    
+    /**
+     * Check if boundary, for given @p mesh, represents empty set of indexes.
+     * @param mesh mesh
+     * @return @c true only if this represents empty set of indexes of given @p mesh
+     */
+    bool empty(const MeshType& mesh) const {
+        return get(mesh).empty();
+    }
 
+    /**
+     * Check if boundary is null (doesn't hold valid creator)
+     * @return @c true only if boundary doesn't hold valid creator
+     */
     bool isNull() const {
         return !create;
     }
@@ -314,6 +339,10 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
 
     };
 
+    template <typename... Args>
+    SumBoundaryImpl(Args&&... args):
+        boundaries(std::forward<Args>(args)...) {   }
+    
     virtual bool includes(std::size_t mesh_index) const {
         for (auto& b: boundaries)
             if (b.includes(mesh_index)) return true;
@@ -370,6 +399,7 @@ struct EmptyBoundaryImpl: public BoundaryLogicImpl {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
     }
 
+    virtual bool empty() const { return true; }
 };
 
 /**
