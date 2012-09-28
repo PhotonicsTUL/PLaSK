@@ -133,6 +133,14 @@ struct PolymorphicForwardIterator:
      * @param src Iterator from which implementation object should be clone. It mustn't hold @c nullptr.
      */
     PolymorphicForwardIterator(const PolymorphicForwardIterator& src) { impl = src.impl->clone(); }
+    
+    PolymorphicForwardIterator& operator=(const PolymorphicForwardIterator& src) {
+        if (this->impl != src.impl) {   //not self-assigned?
+            delete this->impl;
+            this->impl = src.impl->clone();
+        }
+        return *this;
+    }
 
     /**
      * Move constructor.
@@ -140,6 +148,18 @@ struct PolymorphicForwardIterator:
      * @param src iterator from which implementation object should be moved
      */
     PolymorphicForwardIterator(PolymorphicForwardIterator &&src): impl(src.impl) { src.impl = 0; }
+    
+    /**
+     * Swap values of @c this and @p to_swap.
+     * @param to_swap
+     */
+    void swap(PolymorphicForwardIterator & to_swap) { std::swap(this->impl, to_swap.impl); }
+    
+    PolymorphicForwardIterator& operator=(PolymorphicForwardIterator &&src) {
+        this->swap(src);    //old impl of this will be deleted for a moment (when src will be deleted)
+        return *this;
+    }
+    
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
