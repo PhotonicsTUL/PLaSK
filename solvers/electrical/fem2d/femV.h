@@ -13,9 +13,9 @@
 namespace plask { namespace solvers { namespace electrical {
 
 /**
- * Solver performing calculations in 2D Cartesian space using finite element method
+ * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D> {
+template<typename Geometry2Dtype> struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2Dtype, RectilinearMesh2D> {
 /*
     /// Sample receiver for temperature.
     ReceiverFor<Temperature, Space2DCartesian> inTemperature;
@@ -149,13 +149,13 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
     /// Boundary conditions
     BoundaryConditions<RectilinearMesh2D,double> mVconst;
 
-    ProviderFor<Potential, Geometry2DCartesian>::Delegate outPotential;
+    typename ProviderFor<Potential, Geometry2Dtype>::Delegate outPotential;
 
-    ProviderFor<CurrentDensity2D, Geometry2DCartesian>::Delegate outCurrentDensity;
+    typename ProviderFor<CurrentDensity2D, Geometry2Dtype>::Delegate outCurrentDensity;
 
-    ProviderFor<HeatDensity, Geometry2DCartesian>::Delegate outHeatDensity;
+    typename ProviderFor<HeatDensity, Geometry2Dtype>::Delegate outHeatDensity;
 
-    ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
+    ReceiverFor<Temperature, Geometry2Dtype> inTemperature;
 
     DataVector<const double> getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
@@ -183,11 +183,11 @@ struct FiniteElementMethodElectricalCartesian2DSolver: public SolverWithMesh<Geo
 
     virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
-    FiniteElementMethodElectricalCartesian2DSolver(const std::string& name="");
+    FiniteElementMethodElectrical2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "CartesianFEM"; }
+    virtual std::string getClassName() const;
 
-    ~FiniteElementMethodElectricalCartesian2DSolver();
+    ~FiniteElementMethodElectrical2DSolver();
 };
 
 

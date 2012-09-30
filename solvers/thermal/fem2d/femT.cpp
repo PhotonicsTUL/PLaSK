@@ -3,8 +3,8 @@
 
 namespace plask { namespace solvers { namespace thermal {
 
-FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian2DSolver(const std::string& name) :
-    SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
+template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::FiniteElementMethodThermal2DSolver(const std::string& name) :
+    SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>(name),
     mLoopLim(5),
     mTCorrLim(0.1),
     mTBigCorr(1e5),
@@ -12,8 +12,8 @@ FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian
     mTAmb(300.),
     mLogs(false),
     mLoopNo(0),
-    outTemperature(this, &FiniteElementMethodThermalCartesian2DSolver::getTemperatures),
-    outHeatFlux(this, &FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes)
+    outTemperature(this, &FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTemperatures),
+    outHeatFlux(this, &FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getHeatFluxes)
 {
     mNodes.clear();
     mElements.clear();
@@ -25,21 +25,21 @@ FiniteElementMethodThermalCartesian2DSolver::FiniteElementMethodThermalCartesian
 
 }
 
-FiniteElementMethodThermalCartesian2DSolver::~FiniteElementMethodThermalCartesian2DSolver()
+template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::~FiniteElementMethodThermal2DSolver()
 {
     for (int i = 0; i < mAHeight; i++)
         delete [] mpA[i];
     delete [] mpA;
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::onInitialize() { // In this function check if geometry and mesh are set
-    if (!geometry) throw NoGeometryException(getId());
-    if (!mesh) throw NoMeshException(getId());
-    setNodes();
-    setElements();
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::onInitialize() { // In this function check if geometry and mesh are set
+    if (!this->geometry) throw NoGeometryException(this->getId());
+    if (!this->mesh) throw NoMeshException(this->getId());
+    this->setNodes();
+    this->setElements();
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
 {
     mNodes.clear();
     mElements.clear();
@@ -50,19 +50,19 @@ void FiniteElementMethodThermalCartesian2DSolver::onInvalidate() // This will be
     // If this method has been called, before next computations, onInitialize will be called.
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setLoopLim(int iLoopLim) { mLoopLim = iLoopLim; }
-void FiniteElementMethodThermalCartesian2DSolver::setTCorrLim(double iTCorrLim) { mTCorrLim = iTCorrLim; }
-void FiniteElementMethodThermalCartesian2DSolver::setTBigCorr(double iTBigCorr) { mTBigCorr = iTBigCorr; }
-void FiniteElementMethodThermalCartesian2DSolver::setBigNum(double iBigNum) { mBigNum = iBigNum; }
-void FiniteElementMethodThermalCartesian2DSolver::setTAmb(double iTAmb) { mTAmb = iTAmb; }
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setLoopLim(int iLoopLim) { mLoopLim = iLoopLim; }
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setTCorrLim(double iTCorrLim) { mTCorrLim = iTCorrLim; }
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setTBigCorr(double iTBigCorr) { mTBigCorr = iTBigCorr; }
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setBigNum(double iBigNum) { mBigNum = iBigNum; }
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setTAmb(double iTAmb) { mTAmb = iTAmb; }
 
-int FiniteElementMethodThermalCartesian2DSolver::getLoopLim() { return mLoopLim; }
-double FiniteElementMethodThermalCartesian2DSolver::getTCorrLim() { return mTCorrLim; }
-double FiniteElementMethodThermalCartesian2DSolver::getTBigCorr() { return mTBigCorr; }
-double FiniteElementMethodThermalCartesian2DSolver::getBigNum() { return mBigNum; }
-double FiniteElementMethodThermalCartesian2DSolver::getTAmb() { return mTAmb; }
+template<typename Geometry2Dtype> int FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getLoopLim() { return mLoopLim; }
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTCorrLim() { return mTCorrLim; }
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTBigCorr() { return mTBigCorr; }
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getBigNum() { return mBigNum; }
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTAmb() { return mTAmb; }
 
-void FiniteElementMethodThermalCartesian2DSolver::setNodes()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setNodes()
 {
     if (mLogs)
         writelog(LOG_INFO, "Setting nodes...");
@@ -71,13 +71,13 @@ void FiniteElementMethodThermalCartesian2DSolver::setNodes()
 
     Node2D* tpN = NULL;
 
-    for(plask::RectilinearMesh2D::iterator vec_it = mesh->begin(); vec_it != mesh->end(); ++vec_it) // loop through all nodes given in the correct iteration order
+    for(plask::RectilinearMesh2D::iterator vec_it = (this->mesh)->begin(); vec_it != (this->mesh)->end(); ++vec_it) // loop through all nodes given in the correct iteration order
     {
         double x = vec_it->ee_x();
         double y = vec_it->ee_y();
 
         std::size_t i = vec_it.getIndex();
-        auto it = mTConst.includes(*mesh, i);
+        auto it = mTConst.includes(*(this->mesh), i);
         if (it != mTConst.end())
             tpN = new Node2D(tNo, x, y, it->condition, true);
         else
@@ -90,7 +90,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setNodes()
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setElements()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setElements()
 {
     if (mLogs)
         writelog(LOG_INFO, "Setting elememts...");
@@ -101,14 +101,14 @@ void FiniteElementMethodThermalCartesian2DSolver::setElements()
 
     std::vector<Node2D>::const_iterator ttN = mNodes.begin();
 
-    for(std::size_t i = 0; i < mesh->majorAxis().size()-1; i++)
+    for(std::size_t i = 0; i < (this->mesh)->majorAxis().size()-1; i++)
     {
-        for(std::size_t j = 0; j < mesh->minorAxis().size()-1; j++)
+        for(std::size_t j = 0; j < (this->mesh)->minorAxis().size()-1; j++)
         {
-            if (mesh->getIterationOrder() == 0) // more nodes in y-direction
-                tpE = new Element2D(tNo, &(*ttN), &(*(ttN+1)), &(*(ttN+(mesh->minorAxis().size()))), &(*(ttN+(mesh->minorAxis().size()+1))));
+            if ((this->mesh)->getIterationOrder() == 0) // more nodes in y-direction
+                tpE = new Element2D(tNo, &(*ttN), &(*(ttN+1)), &(*(ttN+((this->mesh)->minorAxis().size()))), &(*(ttN+((this->mesh)->minorAxis().size()+1))));
             else // (mesh->getIterationOrder() == 1)
-                tpE = new Element2D(tNo, &(*ttN), &(*(ttN+(mesh->minorAxis().size()))), &(*(ttN+1)), &(*(ttN+(mesh->minorAxis().size()+1))));
+                tpE = new Element2D(tNo, &(*ttN), &(*(ttN+((this->mesh)->minorAxis().size()))), &(*(ttN+1)), &(*(ttN+((this->mesh)->minorAxis().size()+1))));
             tpE->setT();
             mElements.push_back(*tpE);
 
@@ -120,9 +120,9 @@ void FiniteElementMethodThermalCartesian2DSolver::setElements()
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setHeatDensities()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setHeatDensities()
 {
-    auto iMesh = mesh->getMidpointsMesh();
+    auto iMesh = (this->mesh)->getMidpointsMesh();
     try
     {
         mHeatDensities = inHeatDensity(iMesh);
@@ -133,7 +133,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setHeatDensities()
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setSolver()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setSolver()
 {
     if (mLogs)
         writelog(LOG_INFO, "Setting solver...");
@@ -157,7 +157,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setSolver()
     size_t tNoOfNodes = mesh->size(); // number of all nodes // TEST
     std::cout << "Number of nodes: " << tNoOfNodes << std::endl;*/ // TEST
 
-    mAWidth = mesh->minorAxis().size() + 3;
+    mAWidth = (this->mesh)->minorAxis().size() + 3;
     mAHeight = mNodes.size();
     mpA = new double*[mAHeight];
     for(int i = 0; i < mAHeight; i++)
@@ -170,7 +170,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setSolver()
     //std::cout << "Main matrix height: " << mAHeight << std::endl; // TEST
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::delSolver()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::delSolver()
 {
     if (mLogs)
         writelog(LOG_INFO, "Deleting solver...");
@@ -183,7 +183,7 @@ void FiniteElementMethodThermalCartesian2DSolver::delSolver()
     mTCorr.clear();
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
+template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix()
 {
     if (mLogs)
         writelog(LOG_INFO, "Setting matrix...");
@@ -216,7 +216,7 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
 
         // set assistant values
-        std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes(); // geometry->extract(GeometryObject::PredicateHasClass("active"));
+        std::vector<Box2D> tVecBox = (this->geometry)->getLeafsBoundingBoxes(); // geometry->extract(GeometryObject::PredicateHasClass("active"));
         Vec<2, double> tSize;
         for (Box2D tBox: tVecBox)
         {
@@ -226,8 +226,8 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
                 break;
             }
         }
-        tKXAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first; // TODO
-        tKYAssist = geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
+        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first; // TODO
+        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
 
         // set load vector
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
@@ -278,11 +278,106 @@ void FiniteElementMethodThermalCartesian2DSolver::setMatrix()
         }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::runCalc()
+template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix()
+{
+    if (mLogs)
+        writelog(LOG_INFO, "Setting matrix...");
+
+    std::vector<Element2D>::const_iterator ttE = mElements.begin();
+    std::vector<Node2D>::const_iterator ttN = mNodes.begin();
+
+    size_t tLoLeftNo, tLoRightNo, tUpLeftNo, tUpRightNo, // nodes numbers in current element
+           tFstArg, tSecArg; // assistant values
+
+    double tKXAssist, tKYAssist, tElemWidth, tElemHeight, tF, // assistant values to set stiffness matrix
+           tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44; // local symetric matrix components
+
+    // set zeros
+    for(int i = 0; i < mAHeight; i++)
+        for(int j = 0; j < mAWidth; j++)
+            mpA[i][j]=0.;
+
+    // set stiffness matrix and load vector
+    for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
+    {
+        // set nodes numbers for the current element
+        tLoLeftNo = ttE->getNLoLeftPtr()->getNo();
+        tLoRightNo = ttE->getNLoRightPtr()->getNo();
+        tUpLeftNo = ttE->getNUpLeftPtr()->getNo();
+        tUpRightNo = ttE->getNUpRightPtr()->getNo();
+
+        // set element size
+        tElemWidth = fabs(ttE->getNLoLeftPtr()->getX() - ttE->getNLoRightPtr()->getX());
+        tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
+
+        // set assistant values
+        std::vector<Box2D> tVecBox = (this->geometry)->getLeafsBoundingBoxes(); // geometry->extract(GeometryObject::PredicateHasClass("active"));
+        Vec<2, double> tSize;
+        for (Box2D tBox: tVecBox)
+        {
+            if (tBox.includes(vec(ttE->getX(), ttE->getY())))
+            {
+                tSize = tBox.size();
+                break;
+            }
+        }
+        tKXAssist = ttE->getX() * (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first; // TODO
+        tKYAssist = ttE->getX() * (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
+
+        // set load vector
+        tF = ttE->getX() * 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
+        // heat per unit volume or heat rate per unit volume [W/(m^3)]
+
+        // set symetric matrix components
+        tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
+        tK43 = tK21 = (-2.*tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight ) / 6.;
+        tK42 = tK31 = -(tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight)/ 6.;
+        tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;
+
+        // set stiffness matrix
+        mpA[tLoLeftNo-1][mAWidth-2] +=  tK11;
+        mpA[tLoRightNo-1][mAWidth-2] +=  tK22;
+        mpA[tUpRightNo-1][mAWidth-2] += tK33;
+        mpA[tUpLeftNo-1][mAWidth-2] += tK44;
+
+        tLoRightNo > tLoLeftNo ? (tFstArg = tLoRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tLoRightNo);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK21;
+
+        tUpRightNo > tLoLeftNo ? (tFstArg = tUpRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpRightNo);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK31;
+
+        tUpLeftNo > tLoLeftNo ? (tFstArg = tUpLeftNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpLeftNo);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK41;
+
+        tUpRightNo > tLoRightNo ? (tFstArg = tUpRightNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpRightNo);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK32;
+
+        tUpLeftNo > tLoRightNo ? (tFstArg = tUpLeftNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpLeftNo);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK42;
+
+        tUpLeftNo > tUpRightNo ? (tFstArg = tUpLeftNo, tSecArg = tUpRightNo) : (tFstArg = tUpRightNo, tSecArg = tUpLeftNo);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK43;
+
+        // set load vector
+        mpA[tLoLeftNo-1][mAWidth-1]  += tF;
+        mpA[tLoRightNo-1][mAWidth-1] += tF;
+        mpA[tUpRightNo-1][mAWidth-1] += tF;
+        mpA[tUpLeftNo-1][mAWidth-1]  += tF;
+    }
+    // boundary conditions are taken into account
+    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
+        if ( ttN->ifTConst() )
+        {
+            mpA[ttN->getNo()-1][mAWidth-2] += mBigNum;
+            mpA[ttN->getNo()-1][mAWidth-1] += ttN->getT()*mBigNum;
+        }
+}
+
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::runCalc()
 {
     //if (!isInitialized()) std::cout << "First calc.\n";
     ///else "Cont. calc.\n";
-    initCalculation();
+    this->initCalculation();
     //if (!inHeats.changed) return;
 
     if (mLogs)
@@ -303,7 +398,7 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
     {
         setMatrix();
 
-        tInfo = solveMatrix(mpA, mNodes.size(), mesh->minorAxis().size()+2);
+        tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
         if (!tInfo)
         {
             // update
@@ -354,7 +449,7 @@ void FiniteElementMethodThermalCartesian2DSolver::runCalc()
     outHeatFlux.fireChanged();
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::loadParam(const std::string &param, XMLReader &source, Manager &manager)
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadParam(const std::string &param, XMLReader &source, Manager &manager)
 {
     if (param == "Tconst")
         manager.readBoundaryConditions(source,mTConst);
@@ -390,7 +485,7 @@ void FiniteElementMethodThermalCartesian2DSolver::loadParam(const std::string &p
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::updNodes()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::updNodes()
 {
     if (mLogs)
         writelog(LOG_INFO, "Updating nodes...");
@@ -406,7 +501,7 @@ void FiniteElementMethodThermalCartesian2DSolver::updNodes()
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::updElements()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::updElements()
 {
     if (mLogs)
         writelog(LOG_INFO, "Updating elements...");
@@ -415,7 +510,7 @@ void FiniteElementMethodThermalCartesian2DSolver::updElements()
         ttE->setT();
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::showNodes()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::showNodes()
 {
     writelog(LOG_INFO, "Showing nodes...");
 
@@ -425,7 +520,7 @@ void FiniteElementMethodThermalCartesian2DSolver::showNodes()
         std::cout << "Node no: " << ttN->getNo() << ", x: " << ttN->getX() << ", y: " << ttN->getY() << ", T: " << ttN->getT() << std::endl; // TEST
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::showElements()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::showElements()
 {
     writelog(LOG_INFO, "Showing elements...");
 
@@ -440,7 +535,7 @@ void FiniteElementMethodThermalCartesian2DSolver::showElements()
                      << std::endl; // TEST
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::saveTemperatures()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveTemperatures()
 {
     if (mLogs)
         writelog(LOG_INFO, "Saving temperatures...");
@@ -453,7 +548,7 @@ void FiniteElementMethodThermalCartesian2DSolver::saveTemperatures()
         mTemperatures[ttN->getNo()-1] = ttN->getT();
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveHeatFluxes()
 {
     if (mLogs)
         writelog(LOG_INFO, "Saving heat fluxes...");
@@ -462,7 +557,7 @@ void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
 
     mHeatFluxes.reset(mElements.size());
 
-    std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
+    std::vector<Box2D> tVecBox = (this->geometry)->getLeafsBoundingBoxes();
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
@@ -476,22 +571,22 @@ void FiniteElementMethodThermalCartesian2DSolver::saveHeatFluxes()
             }
         }
         mHeatFluxes[ttE->getNo()-1] = vec(
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX() * 1e6, // 1e6 - from um to m
-            - (geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() * 1e6 ); // 1e6 - from um to m
+            - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX() * 1e6, // 1e6 - from um to m
+            - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() * 1e6 ); // 1e6 - from um to m
     }
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::showTemperatures()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::showTemperatures()
 {
     std::cout << "Showing temperatures... " << mTemperatures<< std::endl;
 }
 
-void FiniteElementMethodThermalCartesian2DSolver::showHeatFluxes()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::showHeatFluxes()
 {
     std::cout << "Showing heat fluxes... " << mHeatFluxes<< std::endl;
 }
 
-int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long iN, long iBandWidth)
+template<typename Geometry2Dtype> int FiniteElementMethodThermal2DSolver<Geometry2Dtype>::solveMatrix(double **ipA, long iN, long iBandWidth)
 {
     if (mLogs)
         writelog(LOG_INFO, "Solving matrix...");
@@ -565,16 +660,23 @@ int FiniteElementMethodThermalCartesian2DSolver::solveMatrix(double **ipA, long 
     return 0;
 }
 
-DataVector<const double> FiniteElementMethodThermalCartesian2DSolver::getTemperatures(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
+template<typename Geometry2Dtype> DataVector<const double> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTemperatures(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
-    return interpolate(*mesh, mTemperatures, dst_mesh, method);
+    return interpolate(*(this->mesh), mTemperatures, dst_mesh, method);
 }
 
-DataVector<const Vec<2> > FiniteElementMethodThermalCartesian2DSolver::getHeatFluxes(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
+template<typename Geometry2Dtype> DataVector<const Vec<2> > FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getHeatFluxes(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
-    return interpolate(*(mesh->getMidpointsMesh()), mHeatFluxes, dst_mesh, method);
+    return interpolate(*((this->mesh)->getMidpointsMesh()), mHeatFluxes, dst_mesh, method);
 }
+
+template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::getClassName() const { return "CartesianFEM"; }
+
+template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::getClassName() const { return "CylindricalFEM"; }
+
+template struct FiniteElementMethodThermal2DSolver<Geometry2DCartesian>;
+template struct FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>;
 
 }}} // namespace plask::solvers::thermal

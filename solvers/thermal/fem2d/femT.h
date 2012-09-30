@@ -13,9 +13,9 @@
 namespace plask { namespace solvers { namespace thermal {
 
 /**
- * Solver performing calculations in 2D Cartesian space using finite element method
+ * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D> {
+template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2Dtype, RectilinearMesh2D> {
 /*
     /// Sample receiver for temperature.
     ReceiverFor<Temperature, Space2DCartesian> inTemperature;
@@ -141,11 +141,11 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
     /// Boundary conditions
     BoundaryConditions<RectilinearMesh2D,double> mTConst;
 
-    ProviderFor<Temperature, Geometry2DCartesian>::Delegate outTemperature;
+    typename ProviderFor<Temperature, Geometry2Dtype>::Delegate outTemperature;
 
-    ProviderFor<HeatFlux2D, Geometry2DCartesian>::Delegate outHeatFlux;
+    typename ProviderFor<HeatFlux2D, Geometry2Dtype>::Delegate outHeatFlux;
 
-    ReceiverFor<HeatDensity, Geometry2DCartesian> inHeatDensity;
+    ReceiverFor<HeatDensity, Geometry2Dtype> inHeatDensity;
 
     DataVector<const double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
@@ -168,11 +168,11 @@ struct FiniteElementMethodThermalCartesian2DSolver: public SolverWithMesh<Geomet
 
     virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
-    FiniteElementMethodThermalCartesian2DSolver(const std::string& name="");
+    FiniteElementMethodThermal2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "CartesianFEM"; }
+    virtual std::string getClassName() const;
 
-    ~FiniteElementMethodThermalCartesian2DSolver();
+    ~FiniteElementMethodThermal2DSolver();
 };
 
 

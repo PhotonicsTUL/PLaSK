@@ -14,7 +14,7 @@ using namespace plask::solvers::thermal;
  */
 BOOST_PYTHON_MODULE(fem2d)
 {
-    {CLASS(FiniteElementMethodThermalCartesian2DSolver, "CartesianFEM", "Finite element thermal solver for 2D Cartesian Geometry.")
+    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "CartesianFEM", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(runCalc, "Run thermal calculations");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
@@ -35,11 +35,12 @@ BOOST_PYTHON_MODULE(fem2d)
         PROVIDER(outProvider, "Short documentation"); // provider in the solver
 */
     }
-/*
-    {CLASS(FiniteElementMethodThermalCartesian2DSolver, "CartesianFEM", "Finite element thermal solver for 2D Cartesian Geometry.")
+
+    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "CylindricalFEM", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(runCalc, "Run thermal calculations");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
+        PROVIDER(outHeatFlux, "HeatFluxes"); // provider in the solver
         BOUNDARY_CONDITIONS(Tconst, mTConst, "Boundary conditions of the first kind (constant temperature)");
         RW_PROPERTY(loopLim, getLoopLim, setLoopLim, "Max. number of loops"); // read-write property
         RW_PROPERTY(TCorrLim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
@@ -47,6 +48,5 @@ BOOST_PYTHON_MODULE(fem2d)
         RW_PROPERTY(bigNum, getBigNum, setBigNum, "Big value for the first boundary condition"); // read-write property
         RW_PROPERTY(TAmb, getTAmb, setTAmb, "Ambient temperature"); // read-write property
     }
-*/
 }
 
