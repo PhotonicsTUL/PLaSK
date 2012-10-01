@@ -24,7 +24,7 @@ BOOST_PYTHON_MODULE(fem2d)
         RW_PROPERTY(TCorrLim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         RW_PROPERTY(TBigCorr, getTBigCorr, setTBigCorr, "Initial value of the temperature update"); // read-write property
         RW_PROPERTY(bigNum, getBigNum, setBigNum, "Big value for the first boundary condition"); // read-write property
-        RW_PROPERTY(TAmb, getTAmb, setTAmb, "Ambient temperature"); // read-write property
+        RW_PROPERTY(TInit, getTInit, setTInit, "Initial temperature"); // read-write property
 /*
         METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
         RO_FIELD(field_name, "Short documentation"); // read-only field
@@ -46,7 +46,7 @@ BOOST_PYTHON_MODULE(fem2d)
         RW_PROPERTY(TCorrLim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         RW_PROPERTY(TBigCorr, getTBigCorr, setTBigCorr, "Initial value of the temperature update"); // read-write property
         RW_PROPERTY(bigNum, getBigNum, setBigNum, "Big value for the first boundary condition"); // read-write property
-        RW_PROPERTY(TAmb, getTAmb, setTAmb, "Ambient temperature"); // read-write property
+        RW_PROPERTY(TInit, getTInit, setTInit, "Initial temperature"); // read-write property
     }
 }
 

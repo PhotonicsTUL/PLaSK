@@ -12,6 +12,20 @@
 
 namespace plask { namespace solvers { namespace thermal {
 
+struct BoundCondConvection // boundary condition: convection
+{
+public:
+    double mConvCoeff; // convection coefficient [W/(m^2*K)]
+    double mTAmb; // ambient temperature [K]
+};
+
+struct BoundCondRadiation // boundary condition: radiation
+{
+public:
+    double mSurfEmiss; // surface emissivity [-]
+    double mTAmb; // ambient temperature [K]
+};
+
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
@@ -64,7 +78,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     double mTCorrLim; // small-enough correction - stops the calculations
     double mTBigCorr; // big-enough correction for the temperature
     double mBigNum; // for the first boundary condtion (see: set Matrix)
-    double mTAmb; // ambient temperature
+    double mTInit; // ambient temperature
     bool mLogs; // logs (0-most important logs, 1-all logs)
     int mLoopNo; // number of completed loops
 
@@ -139,7 +153,9 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
   public:
 
     /// Boundary conditions
-    BoundaryConditions<RectilinearMesh2D,double> mTConst;
+    BoundaryConditions<RectilinearMesh2D,double> mTConst; // constant temperature [K]
+    BoundaryConditions<RectilinearMesh2D,double> mHFConst; // constant heat flux [W/m^2]
+    BoundaryConditions<RectilinearMesh2D,BoundCondConvection> mConv; // convection
 
     typename ProviderFor<Temperature, Geometry2Dtype>::Delegate outTemperature;
 
@@ -158,13 +174,13 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     void setTCorrLim(double iTCorrLim);
     void setTBigCorr(double iTBigCorr);
     void setBigNum(double iBigNum);
-    void setTAmb(double iTAmb);
+    void setTInit(double iTInit);
 
     int getLoopLim();
     double getTCorrLim();
     double getTBigCorr();
     double getBigNum();
-    double getTAmb();
+    double getTInit();
 
     virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
@@ -175,8 +191,17 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     ~FiniteElementMethodThermal2DSolver();
 };
 
+}}  //namespaces
 
-}}} // namespace
+template <>
+inline solvers::thermal::BoundCondConvection parseCondition<solvers::thermal::BoundCondConvection>(const XMLReader& tag_with_value) {
+    solvers::thermal::BoundCondConvection result;
+    result.mConvCoeff = tag_with_value.requireAttribute<double>("conv");
+    result.mTAmb = tag_with_value.requireAttribute<double>("tamb");
+    return result;
+}
+
+} // namespace plask
 
 #endif
 

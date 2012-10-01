@@ -13,16 +13,22 @@ public:
     double getX() const; // return x
     double getY() const; // return y
     double getT() const; // return temperature
+    double getHF() const; // return heat flux
     bool ifTConst() const; // true if temperature is constant
+    bool ifHFConst() const; // true if heat flux is constant
 
     // setters
     void setT(double iT); // set temperature
+    void setHF(double iHF); // set heat flux
+    void setHFflag(bool ifHF); // set heat flux flag
 
 protected:
     int mNo; // number
     double mX, mY; // coordinates
     double mT; // temperature
+    double mHF; // heat flux
     bool mfTConst; // true if temperature is constant
+    bool mfHFConst; // true if heat flux is constant
 };
 
 }}} // namespace plask::solvers::thermal

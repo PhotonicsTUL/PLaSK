@@ -6,7 +6,7 @@ namespace plask { namespace solvers { namespace electrical {
 namespace cPhys // physical constants
 {
 	const double 
-        pi = 3.14159265,    // pi
+        //pi = 3.14159265,    // pi
         q = 1.60217733e-19; // elementary charge [C]
 }
 

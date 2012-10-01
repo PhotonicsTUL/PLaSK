@@ -9,7 +9,7 @@ template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dt
     mTCorrLim(0.1),
     mTBigCorr(1e5),
     mBigNum(1e15),
-    mTAmb(300.),
+    mTInit(300.),
     mLogs(false),
     mLoopNo(0),
     outTemperature(this, &FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTemperatures),
@@ -54,13 +54,13 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setTCorrLim(double iTCorrLim) { mTCorrLim = iTCorrLim; }
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setTBigCorr(double iTBigCorr) { mTBigCorr = iTBigCorr; }
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setBigNum(double iBigNum) { mBigNum = iBigNum; }
-template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setTAmb(double iTAmb) { mTAmb = iTAmb; }
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setTInit(double iTInit) { mTInit = iTInit; }
 
 template<typename Geometry2Dtype> int FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getLoopLim() { return mLoopLim; }
 template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTCorrLim() { return mTCorrLim; }
 template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTBigCorr() { return mTBigCorr; }
 template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getBigNum() { return mBigNum; }
-template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTAmb() { return mTAmb; }
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTInit() { return mTInit; }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setNodes()
 {
@@ -77,11 +77,23 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         double y = vec_it->ee_y();
 
         std::size_t i = vec_it.getIndex();
-        auto it = mTConst.includes(*(this->mesh), i);
-        if (it != mTConst.end())
-            tpN = new Node2D(tNo, x, y, it->condition, true);
+
+        // checking boundary condition - constant temperature
+        auto it1 = mTConst.includes(*(this->mesh), i);
+        if (it1 != mTConst.end())
+            tpN = new Node2D(tNo, x, y, it1->condition, true);
         else
-            tpN = new Node2D(tNo, x, y, mTAmb, false);
+            tpN = new Node2D(tNo, x, y, mTInit, false);
+
+        // checking boundary condition - constant heat flux
+        auto it2 = mHFConst.includes(*(this->mesh), i);
+        if (it2 != mHFConst.end())
+        {
+            tpN->setHF(it2->condition);
+            tpN->setHFflag(true);
+        }
+        else
+            tpN->setHFflag(false);
 
         mNodes.push_back(*tpN);
 
@@ -195,7 +207,9 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
            tFstArg, tSecArg; // assistant values
 
     double tKXAssist, tKYAssist, tElemWidth, tElemHeight, tF, // assistant values to set stiffness matrix
-           tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44; // local symetric matrix components
+           tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44, // local symetric matrix components
+           tF1hfX = 0., tF2hfX = 0., tF3hfX = 0., tF4hfX = 0., // for load vector (heat flux components for x-direction)
+           tF1hfY = 0., tF2hfY = 0., tF3hfY = 0., tF4hfY = 0.; // for load vector (heat flux components for y-direction)
 
     // set zeros
     for(int i = 0; i < mAHeight; i++)
@@ -231,7 +245,28 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
 
         // set load vector
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
-        // heat per unit volume or heat rate per unit volume [W/(m^3)]
+        // mHeatDensities - heat per unit volume or heat rate per unit volume [W/(m^3)]
+        // boundary condition: heat flux
+        if ( ttE->getNLoLeftPtr()->ifHFConst() && ttE->getNLoRightPtr()->ifHFConst() ) // heat flux on bottom edge of the element
+        {
+            tF1hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getHF(); // 1e-6 -> to transform um into m
+            tF2hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getHF();
+        }
+        if ( ttE->getNUpLeftPtr()->ifHFConst() && ttE->getNUpRightPtr()->ifHFConst() ) // heat flux on top edge of the element
+        {
+            tF3hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getHF();
+            tF4hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getHF();
+        }
+        if ( ttE->getNLoLeftPtr()->ifHFConst() && ttE->getNUpLeftPtr()->ifHFConst() ) // heat flux on left edge of the element
+        {
+            tF1hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getHF();
+            tF4hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getHF();
+        }
+        if ( ttE->getNLoRightPtr()->ifHFConst() && ttE->getNUpRightPtr()->ifHFConst() ) // heat flux on right edge of the element
+        {
+            tF2hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getHF();
+            tF3hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getHF();
+        }
 
         // set symetric matrix components
         tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
@@ -264,10 +299,10 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
         mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK43;
 
         // set load vector
-        mpA[tLoLeftNo-1][mAWidth-1]  += tF;
-        mpA[tLoRightNo-1][mAWidth-1] += tF;
-        mpA[tUpRightNo-1][mAWidth-1] += tF;
-        mpA[tUpLeftNo-1][mAWidth-1]  += tF;
+        mpA[tLoLeftNo-1][mAWidth-1]  += (tF + tF1hfX + tF1hfY);
+        mpA[tLoRightNo-1][mAWidth-1] += (tF + tF2hfX + tF2hfY);
+        mpA[tUpRightNo-1][mAWidth-1] += (tF + tF3hfX + tF3hfY);
+        mpA[tUpLeftNo-1][mAWidth-1]  += (tF + tF4hfX + tF4hfY);
     }
     // boundary conditions are taken into account
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
@@ -290,7 +325,9 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
            tFstArg, tSecArg; // assistant values
 
     double tKXAssist, tKYAssist, tElemWidth, tElemHeight, tF, // assistant values to set stiffness matrix
-           tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44; // local symetric matrix components
+           tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44, // local symetric matrix components
+           tF1hfX = 0., tF2hfX = 0., tF3hfX = 0., tF4hfX = 0., // for load vector (heat flux components for x-direction)
+           tF1hfY = 0., tF2hfY = 0., tF3hfY = 0., tF4hfY = 0.; // for load vector (heat flux components for y-direction)
 
     // set zeros
     for(int i = 0; i < mAHeight; i++)
@@ -321,12 +358,33 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
                 break;
             }
         }
-        tKXAssist = ttE->getX() * (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first; // TODO
-        tKYAssist = ttE->getX() * (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
+        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first; // TODO
+        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
 
         // set load vector
-        tF = ttE->getX() * 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
-        // heat per unit volume or heat rate per unit volume [W/(m^3)]
+        tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
+        // mHeatDensities - heat per unit volume or heat rate per unit volume [W/(m^3)]
+        // boundary condition: heat flux
+        if ( ttE->getNLoLeftPtr()->ifHFConst() && ttE->getNLoRightPtr()->ifHFConst() ) // heat flux on bottom edge of the element
+        {
+            tF1hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getHF(); // 1e-6 -> to transform um into m
+            tF2hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getHF();
+        }
+        if ( ttE->getNUpLeftPtr()->ifHFConst() && ttE->getNUpRightPtr()->ifHFConst() ) // heat flux on top edge of the element
+        {
+            tF3hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getHF();
+            tF4hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getHF();
+        }
+        if ( ttE->getNLoLeftPtr()->ifHFConst() && ttE->getNUpLeftPtr()->ifHFConst() ) // heat flux on left edge of the element
+        {
+            tF1hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getHF();
+            tF4hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getHF();
+        }
+        if ( ttE->getNLoRightPtr()->ifHFConst() && ttE->getNUpRightPtr()->ifHFConst() ) // heat flux on right edge of the element
+        {
+            tF2hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getHF();
+            tF3hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getHF();
+        }
 
         // set symetric matrix components
         tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
@@ -335,34 +393,34 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
         tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;
 
         // set stiffness matrix
-        mpA[tLoLeftNo-1][mAWidth-2] +=  tK11;
-        mpA[tLoRightNo-1][mAWidth-2] +=  tK22;
-        mpA[tUpRightNo-1][mAWidth-2] += tK33;
-        mpA[tUpLeftNo-1][mAWidth-2] += tK44;
+        mpA[tLoLeftNo-1][mAWidth-2] += (ttE->getX() * tK11);
+        mpA[tLoRightNo-1][mAWidth-2] += (ttE->getX() * tK22);
+        mpA[tUpRightNo-1][mAWidth-2] += (ttE->getX() * tK33);
+        mpA[tUpLeftNo-1][mAWidth-2] += (ttE->getX() * tK44);
 
         tLoRightNo > tLoLeftNo ? (tFstArg = tLoRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tLoRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK21;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK21);
 
         tUpRightNo > tLoLeftNo ? (tFstArg = tUpRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK31;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK31);
 
         tUpLeftNo > tLoLeftNo ? (tFstArg = tUpLeftNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK41;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK41);
 
         tUpRightNo > tLoRightNo ? (tFstArg = tUpRightNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK32;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK32);
 
         tUpLeftNo > tLoRightNo ? (tFstArg = tUpLeftNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK42;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK42);
 
         tUpLeftNo > tUpRightNo ? (tFstArg = tUpLeftNo, tSecArg = tUpRightNo) : (tFstArg = tUpRightNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK43;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK43);
 
         // set load vector
-        mpA[tLoLeftNo-1][mAWidth-1]  += tF;
-        mpA[tLoRightNo-1][mAWidth-1] += tF;
-        mpA[tUpRightNo-1][mAWidth-1] += tF;
-        mpA[tUpLeftNo-1][mAWidth-1]  += tF;
+        mpA[tLoLeftNo-1][mAWidth-1]  += ( ttE->getX() * (tF + tF1hfX + tF1hfY) );
+        mpA[tLoRightNo-1][mAWidth-1] += ( ttE->getX() * (tF + tF2hfX + tF2hfY) );
+        mpA[tUpRightNo-1][mAWidth-1] += ( ttE->getX() * (tF + tF3hfX + tF3hfY) );
+        mpA[tUpLeftNo-1][mAWidth-1]  += ( ttE->getX() * (tF + tF4hfX + tF4hfY) );
     }
     // boundary conditions are taken into account
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
@@ -452,10 +510,14 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadParam(const std::string &param, XMLReader &source, Manager &manager)
 {
     if (param == "Tconst")
-        manager.readBoundaryConditions(source,mTConst);
-    if (param == "Tamb")
+        this->readBoundaryConditions(manager, source, mTConst);
+    if (param == "HFconst")
+        this->readBoundaryConditions(manager, source, mHFConst);
+    if (param == "conv")
+        this->readBoundaryConditions(manager, source, mConv);
+    if (param == "Tinit")
     {
-        mTAmb = source.requireAttribute<double>("value");
+        mTInit = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
     if (param == "looplim")
