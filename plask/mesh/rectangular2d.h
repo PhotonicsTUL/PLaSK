@@ -854,7 +854,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
                 geometry = dynamic_pointer_cast< const plask::GeometryD<2> >(enviroment.geometry);
                 if (!geometry)
                     throw Exception("Can't parse %1% of \"%2%\" object. Geometry is not known (\"geometry\" attribute can be use to provide this information).",
-                                    boundary_desc.getNodeName(), *of);
+                                    boundary_desc.requireAttribute("dir"), *of);
             }
             boost::optional<std::string> path_name = boundary_desc.getAttribute("path");
             boundary_desc.requireTagEnd();
@@ -1174,13 +1174,14 @@ public:
     }
 
     static Boundary getBoundary(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment) {
-        if (boundary_desc.getNodeName() == "bottom")
+        std::string dir = boundary_desc.requireAttribute("dir");
+        if (dir == "bottom")
             return parseBoundaryFromXML(boundary_desc, enviroment, &getBottomBoundary, &getBottomOfBoundary);
-        if (boundary_desc.getNodeName() == "left")
+        if (dir == "left")
             return parseBoundaryFromXML(boundary_desc, enviroment, &getLeftBoundary, &getLeftOfBoundary);
-        if (boundary_desc.getNodeName() == "right")
+        if (dir == "right")
             return parseBoundaryFromXML(boundary_desc, enviroment, &getRightBoundary, &getRightOfBoundary);
-        if (boundary_desc.getNodeName() == "top")
+        if (dir == "top")
             return parseBoundaryFromXML(boundary_desc, enviroment, &getTopBoundary, &getTopOfBoundary);
         return Boundary();
     }
