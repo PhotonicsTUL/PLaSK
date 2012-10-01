@@ -90,11 +90,9 @@ static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
         if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
         if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
-        std::string data = reader.requireText();
+        std::string data = reader.requireTextUntilEnd();
         for (auto point: boost::tokenizer<>(data))
             axes[node].push_back(boost::lexical_cast<double>(point));
-
-        reader.requireTagEnd();
     }
     reader.requireTagEnd();
 
@@ -112,11 +110,9 @@ static shared_ptr<Mesh> readRectilinearMesh3D(XMLReader& reader)
         if (node != "axis0" && node != "axis1" && node != "axis2") throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
         if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
-        std::string data = reader.requireText();
+        std::string data = reader.requireTextUntilEnd();
         for (auto point: boost::tokenizer<>(data))
             axes[node].push_back(boost::lexical_cast<double>(point));
-
-        reader.requireTagEnd();
     }
     reader.requireTagEnd();
 

@@ -287,14 +287,15 @@ require the closing of the tag. Below you have an example:
             newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
             newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
             newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
+            reader.requireTagEnd();
         } else if (param == "wavelength") {
-            std::string = reader.requireText();
+            std::string = reader.requireTextUntilEnd();
             inWavelength.setValue(boost::lexical_cast<double>(wavelength));
         } else if (param == "boundary") {
             manager.readBoundaryConditions(source, boundaryConditionsOnField);
+            reader.requireTagEnd();
         } else
             throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <newton>, or <wavelength>", param);
-        reader.requireTagEnd();
     }
 \endcode
 
@@ -767,7 +768,8 @@ void SolverOver<SpaceT>::loadConfiguration(XMLReader& reader, Manager& manager) 
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "geometry") {
             auto name = reader.getAttribute("ref");
-            if (!name) name.reset(reader.requireText());
+            if (!name) name.reset(reader.requireTextUntilEnd());
+            else reader.requireTagEnd();
             auto found = manager.geometries.find(*name);
             if (found == manager.geometries.end())
                 throw BadInput(this->getId(), "Geometry '%1%' not found.", *name);
@@ -776,7 +778,6 @@ void SolverOver<SpaceT>::loadConfiguration(XMLReader& reader, Manager& manager) 
                 if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
                 this->setGeometry(geometry);
             }
-            reader.requireTagEnd();
         } else {
             this->loadParam(reader.getNodeName(), reader, manager);
         }
@@ -788,7 +789,8 @@ void SolverWithMesh<SpaceT, MeshT>::loadConfiguration(XMLReader& reader, Manager
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "geometry") {
             auto name = reader.getAttribute("ref");
-            if (!name) name.reset(reader.requireText());
+            if (!name) name.reset(reader.requireTextUntilEnd());
+            else reader.requireTagEnd();
             auto found = manager.geometries.find(*name);
             if (found == manager.geometries.end())
                 throw BadInput(this->getId(), "Geometry '%1%' not found.", *name);
@@ -797,10 +799,11 @@ void SolverWithMesh<SpaceT, MeshT>::loadConfiguration(XMLReader& reader, Manager
                 if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
                 this->setGeometry(geometry);
             }
-            reader.requireTagEnd();
         }
         else if (reader.getNodeName() == "mesh") {
             auto name = reader.getAttribute("ref");
+            if (!name) name.reset(reader.requireTextUntilEnd());
+            else reader.requireTagEnd();
             auto found = manager.meshes.find(*name);
             if (found != manager.meshes.end()) {
                 auto mesh = dynamic_pointer_cast<MeshT>(found->second);
@@ -816,7 +819,6 @@ void SolverWithMesh<SpaceT, MeshT>::loadConfiguration(XMLReader& reader, Manager
                 } else
                     throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found.", *name);
             }
-            reader.requireTagEnd();
         } else {
             this->loadParam(reader.getNodeName(), reader, manager);
         }

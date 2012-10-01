@@ -76,9 +76,9 @@ void XMLReader::swap(XMLReader &to_swap)
     std::swap(read_attributes, to_swap.read_attributes);
 }
 
-bool XMLReader::read(bool check_if_all_attributes_was_read) {
+bool XMLReader::read(bool check_if_all_attributes_were_read) {
     if (currentNodeType == NODE_ELEMENT) {
-        if (check_if_all_attributes_was_read && (std::size_t(getAttributeCount()) != read_attributes.size())) {
+        if (check_if_all_attributes_were_read && (std::size_t(getAttributeCount()) != read_attributes.size())) {
             std::string attr;
             for (int i = 0; i < irrReader->getAttributeCount(); ++i)
                 if (read_attributes.find(irrReader->getAttributeName(i)) == read_attributes.end()) {
@@ -192,6 +192,20 @@ void XMLReader::requireTagEnd() {
 std::string XMLReader::requireText() {
     requireNext();
     return getTextContent();
+}
+
+std::string XMLReader::requireTextUntilEnd() {
+    std::string text;
+    requireNext();
+    while (getNodeType() == NODE_TEXT) {
+        text += getTextContent();
+        requireNext();
+    }
+    if (text == "")
+        throw XMLUnexpectedElementException(*this, "text");
+    if (getNodeType() != NODE_ELEMENT_END)
+        throw XMLUnexpectedElementException(*this, "</" + path.back() + ">");
+    return text;
 }
 
 

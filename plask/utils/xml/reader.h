@@ -108,10 +108,10 @@ class XMLReader {
 
     /**
      * Reads forward to the next xml node.
-     * @param check_if_all_attributes_was_read if @c true (default) and current tag is NODE_ELEMENT, parser will check if all attributes was read from it and throw excpetion if it was not
+     * @param check_if_all_attributes_were_read if @c true (default) and current tag is NODE_ELEMENT, parser will check if all attributes were read from it and throw excpetion if they were not
      * @return @c false only if there is no further node.
     */
-    bool read(bool check_if_all_attributes_was_read = true);
+    bool read(bool check_if_all_attributes_were_read = true);
 
     /**
      * Check if node is empty, like \<foo /\>.
@@ -127,7 +127,7 @@ class XMLReader {
      * @return vector of names of all opened tags, first is root, last is current tag
      */
     const std::vector<std::string> getPath() const { return path; }
-    
+
     /**
      * Get level of current node. Root has level 0, children of root have level 1, and so on.
      * @return level of current node which is equal to size of path returned by getPath()
@@ -206,7 +206,7 @@ class XMLReader {
     const char* getNodeDataC() const { return irrReader->getNodeData(); }
 
     /**
-     * Check if current node is NODE_TEXT (throw excpetion if it's not) and get node data (text content).
+     * Check if current node is NODE_TEXT (throw exception if it's not) and get node data (text content).
      * @return data of the current node
      */
     std::string getTextContent() const;
@@ -320,6 +320,13 @@ class XMLReader {
     std::string requireText();
 
     /**
+     * Call requireNext() and read all text elements even if they are separated by comments. In the end require closing of a tag.
+     * Throw exception no text is read or there is anything else than closing tag afterwards.
+     * \return read text
+     */
+    std::string requireTextUntilEnd();
+
+    /**
      * Call requireNext() and next check if current element is text. Throw exception if it's not.
      * \return read text casted (by lexical_cast) to givent type T
      */
@@ -333,7 +340,7 @@ class XMLReader {
      * @return @c true if read non-comment or @c false if XML data end
      */
     bool skipComments();
-    
+
     /**
      * Skip everything up to element with required type on required level.
      * @param required_level level on which required element should be
@@ -341,13 +348,13 @@ class XMLReader {
      * @return @c true if reader is on required element or @c false if XML data end
      */
     bool gotoNextOnLevel(std::size_t required_level, NodeType required_type = NODE_ELEMENT);
-    
+
     /**
      * Skip everything up to next tag element on current level.
      * @return @c true if reader is on required element or @c false if XML data end
      */
     bool gotoNextTagOnCurrentLevel();
-    
+
     /**
      * Skip everything up to end of current tag.
      */

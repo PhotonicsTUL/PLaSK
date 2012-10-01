@@ -19,12 +19,12 @@ void SimpleDiffusionSolverCyl::loadParam(const std::string& param, XMLReader& re
         newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
         newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
         newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
+        reader.requireTagEnd();
     } else if (param == "wavelength") {
-        std::string = reader.requireText();
+        std::string = reader.requireTextUntilEnd();
         inWavelength.setValue(boost::lexical_cast<double>(wavelength));
     } else
         throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <newton>, or <wavelength>", param);
-    reader.requireTagEnd();
 */}
 
 
