@@ -839,6 +839,15 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         return begInd != endInd;
     }
 
+    /**
+     * Parse boundary from XML tag in format:
+     * \<place dir="i.e. left" [of="object name" [path="path name"] [geometry="name of geometry which is used by solver"]]/>
+     * @param boundary_desc XML reader which point to tag to read (after read it will be moved to end of this tag)
+     * @param enviroment parser enviroment
+     * @param getXBoundary function which creates simple boundary, with edge of mesh, i.e. getLeftBoundary
+     * @param getXOfBoundary function which creates simple boundary, with edge of object, i.e. getLeftOfBoundary
+     * @return boundary which was read
+     */
     static Boundary parseBoundaryFromXML(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment, Boundary (*getXBoundary)(),
                                          Boundary (*getXOfBoundary)(shared_ptr<const GeometryD<2>>, shared_ptr<const GeometryObject>, const PathHints*)) {
         boost::optional<std::string> of = boundary_desc.getAttribute("of");
