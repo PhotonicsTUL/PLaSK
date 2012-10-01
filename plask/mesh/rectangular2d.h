@@ -709,7 +709,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     };
 
-    
+
     struct VerticalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
@@ -734,7 +734,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         }
 
     };
-    
+
     struct HorizontalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
@@ -757,7 +757,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 			return Iterator(new HorizontalIteratorImpl(this->mesh, line, this->mesh.axis0.size()));
         }
     };
-    
+
     struct HorizontalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
@@ -790,7 +790,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
             return mesh.index1(mesh_index) == mesh.axis1.findNearestIndex(height);
         }
     };*/
-    
+
     /**
      * Helper used by getLeftOfBoundary, etc.
      * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_lower,
@@ -804,7 +804,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         line = axis.findIndex(box_lower);
         return line != axis.size() && axis[line] <= box_upper;
     }
-    
+
     /**
      * Helper used by getRightOfBoundary, etc.
      * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_upper,
@@ -822,7 +822,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         --line;
         return axis[line] >= box_lower;
     }
-    
+
     /**
      * Helper used by getLeftOfBoundary, etc.
      * @param[out] begInd, endInd range [begInd, endInd) of index in @p axis which show points which lies in bounds [@p box_lower, @p box_upper],
@@ -923,7 +923,7 @@ public:
     static Boundary getRightBoundary() {
         return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.size()-1);} );
     }
-    
+
     /**
      * Get boundary which lies on left edge of the @p box (at mesh line nearest left edge and inside the box).
      * @param box box in which boundary should lie
@@ -939,7 +939,7 @@ public:
                 return new EmptyBoundaryImpl();
         } );
     }
-    
+
     /**
      * Get boundary which lies on right edge of the @p box (at mesh line nearest right edge and inside the box).
      * @param box box in which boundary should lie
@@ -955,7 +955,7 @@ public:
                 return new EmptyBoundaryImpl();
         } );
     }
-    
+
     /**
      * Get boundary which lies on bottom edge of the @p box (at mesh line nearest bottom edge and inside the box).
      * @param box box in which boundary should lie
@@ -971,7 +971,7 @@ public:
                 return new EmptyBoundaryImpl();
         } );
     }
-    
+
     /**
      * Get boundary which lies on top edge of the @p box (at mesh line nearest top edge and inside the box).
      * @param box box in which boundary should lie
@@ -987,7 +987,7 @@ public:
                 return new EmptyBoundaryImpl();
         } );
     }
-    
+
     /**
      * Get boundary which lies on choosen edge of boxes.
      * @param getBoxes functor which returns 0 or more boxes (vector of boxes)
@@ -1013,7 +1013,7 @@ public:
             return new SumBoundaryImpl<RectangularMesh<2,Mesh1D>>(std::move(boundaries_with_meshes));
         } );
     }
-    
+
     /**
      * Get boundary which lies on left edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
@@ -1027,7 +1027,7 @@ public:
 			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
 		);
 	}
-	
+
 	/**
      * Get boundary which lies on left edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
@@ -1042,7 +1042,7 @@ public:
 			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
 		);
 	}
-	
+
 	/**
      * Get boundary which lies on right edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
@@ -1056,7 +1056,7 @@ public:
 			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
 		);
 	}
-	
+
 	/**
      * Get boundary which lies on right edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
@@ -1071,7 +1071,7 @@ public:
 			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
 		);
 	}
-	
+
 	/**
      * Get boundary which lies on bottom edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
@@ -1085,7 +1085,7 @@ public:
 			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
 		);
 	}
-	
+
 	/**
      * Get boundary which lies on bottom edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
@@ -1100,7 +1100,7 @@ public:
 			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
 		);
 	}
-	
+
 	/**
      * Get boundary which lies on top edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
@@ -1114,7 +1114,7 @@ public:
 			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
 		);
 	}
-	
+
 	/**
      * Get boundary which lies on top edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
@@ -1129,7 +1129,7 @@ public:
 			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
 		);
 	}
-	
+
 	/**
 	 * Get boundary which show one horizontal (from left to right) line in mesh.
 	 * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
@@ -1138,7 +1138,7 @@ public:
 	static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1) {
 		return Boundary( [line_nr_axis1](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, line_nr_axis1);} );
 	}
-	
+
 	/**
      * Get boundary which show range in horizontal (from left to right) line in mesh.
      * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
@@ -1244,7 +1244,6 @@ auto interpolateLinear2D(DataGetter2D data, const double& point_axis0, const dou
 template <typename Mesh1D, typename DataT>    // for any data type
 struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, DataT, INTERPOLATION_LINEAR> {
     static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<const DataT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DataT>& dst_vec) {
-        #pragma omp parallel for schedule(guided)
         for (size_t i = 0; i < dst_mesh.size(); ++i)
             dst_vec[i] = src_mesh.interpolateLinear(src_vec, dst_mesh[i]);
     }

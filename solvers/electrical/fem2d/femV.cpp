@@ -485,32 +485,34 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::loadParam(const std::string &param, XMLReader &source, Manager &manager)
 {
     if (param == "Vconst")
-        manager.readBoundaryConditions(source,mVconst);
-    if (param == "looplim")
+        manager.readBoundaryConditions(source, mVconst);
+    else if (param == "looplim")
     {
         mLoopLim = source.requireAttribute<int>("value");
         source.requireTagEnd();
     }
-    if (param == "Vcorrlim")
+    else if (param == "Vcorrlim")
     {
         mVCorrLim = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
-    if (param == "Vbigcorr")
+    else if (param == "Vbigcorr")
     {
         mVBigCorr = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
-    if (param == "bignum")
+    else if (param == "bignum")
     {
         mBigNum = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
-    if (param == "logs")
+    else if (param == "logs")
     {
         mLogs = source.requireAttribute<bool>("value");
         source.requireTagEnd();
     }
+    else
+        throw XMLUnexpectedElementException(source, "electrical solver configuration tag", param);
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::updNodes()

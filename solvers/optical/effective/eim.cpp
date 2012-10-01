@@ -1,5 +1,7 @@
 #include "eim.h"
 
+#include <omp.h>
+
 using plask::dcomplex;
 
 namespace plask { namespace solvers { namespace effective {
@@ -203,12 +205,14 @@ void EffectiveIndex2DSolver::stageOne()
         old_polarization = polarization;
 
         // Compute effective indices for all stripes
-        #pragma omp parallel for schedule(dynamic)
+        // #pragma omp parallel for // UNEFFICIENT
         for (size_t i = xbegin; i < nrCache.size(); ++i) {
 
             writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
-            // std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
-            // writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
+#           ifndef NDEBUG
+                std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
+                writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
+#           endif
 
             dcomplex same_val = nrCache[i].front();
             bool all_the_same = true;
@@ -227,8 +231,10 @@ void EffectiveIndex2DSolver::stageOne()
         }
         if (xbegin == 1) stripeNeffs[0] = stripeNeffs[1];
 
-        // std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
-        // writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
+#       ifndef NDEBUG
+            std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
+            writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
+#       endif
     }
 }
 
@@ -333,7 +339,6 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
 
     size_t Nx = mesh->tran().size()+1;
     std::vector<dcomplex> betax(Nx);
-    #pragma omp parallel for
     for (size_t i = 0; i < Nx; ++i) {
         betax[i] = k0 * sqrt(stripeNeffs[i]*stripeNeffs[i] - neff*neff);
         if (imag(betax[i]) > 0.) betax[i] = -betax[i];
@@ -380,8 +385,10 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
         }
         double sumw = 0; for (const double& w: fieldWeights) sumw += w;
         double factor = 1./sumw; for (double& w: fieldWeights) w *= factor;
-        // std::stringstream weightss; for (size_t i = xbegin; i < Nx; ++i) weightss << ", " << str(fieldWeights[i]);
-        // writelog(LOG_DEBUG, "field confinement in stripes = [%1% ]", weightss.str().substr(1));
+#       ifndef NDEBUG
+            std::stringstream weightss; for (size_t i = xbegin; i < Nx; ++i) weightss << ", " << str(fieldWeights[i]);
+            writelog(LOG_DEBUG, "field confinement in stripes = [%1% ]", weightss.str().substr(1));
+#       endif
     }
 
     size_t Ny = mesh->up().size()+1;
@@ -404,7 +411,6 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
     if (all_the_same) {
         betay.assign(Ny, 0.);
     } else {
-        #pragma omp parallel for
         for (size_t i = 0; i < Ny; ++i) {
             betay[i] = k0 * sqrt(nrCache[mid_x][i]*nrCache[mid_x][i] - stripeNeffs[mid_x]*stripeNeffs[mid_x]);
             if (imag(betay[i]) > 0.) betay[i] = -betay[i];
@@ -439,7 +445,6 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
     if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, betax, betay) &&
         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, betax, betay)) {
 
-        #pragma omp parallel for schedule(dynamic)
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
             auto point = dst_mesh[idx];
             double x = point.tran();
@@ -463,7 +468,6 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
 
             results[idx] = real(abs2(val));
         }
-
     }
 
     // Normalize results to make maximum value equal to one
@@ -484,7 +488,6 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
         std::vector<dcomplex> valx(rect_mesh.tran().size());
         std::vector<dcomplex> valy(rect_mesh.up().size());
 
-        #pragma omp parallel for schedule(guided)
         for (size_t idx = 0; idx < rect_mesh.tran().size(); ++idx) {
             double x = rect_mesh.tran()[idx];
             bool negate = false;
@@ -500,7 +503,6 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             valx[idx] = val;
         }
 
-        #pragma omp parallel for schedule(guided)
         for (size_t idy = 0; idy < rect_mesh.up().size(); ++idy) {
             double y = rect_mesh.up()[idy];
             size_t iy = mesh->up().findIndex(y);
@@ -512,7 +514,6 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
         double* data = results.data();
         if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
             for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1, data += rect_mesh.axis0.size()) {
-                #pragma omp parallel for
                 for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
                     dcomplex f = valx[i0] * valy[i1];
                     data[i0] = abs2(f);
@@ -520,7 +521,6 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             }
         } else {
             for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0, data += rect_mesh.axis1.size()) {
-                #pragma omp parallel for
                 for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                     dcomplex f = valx[i0] * valy[i1];
                     data[i1] = abs2(f);

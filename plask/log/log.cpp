@@ -1,3 +1,5 @@
+#include <cstdio>
+
 #include "log.h"
 
 namespace plask {
@@ -29,12 +31,12 @@ static std::string logLevelHead(LogLevel level) {
 }
 
 void writelog(LogLevel level, const std::string& msg) {
-    #pragma omp critical
-    std::cerr << logLevelHead(level) << ": " <<  msg
 #if defined(WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-              << "\n";
+    #pragma omp critical
+    fprintf(stderr, "%s: %s\n", logLevelHead(level).c_str(), msg.c_str());
 #else
-              << "\033[0m\n";
+    #pragma omp critical
+    fprintf(stderr, "%s: %s\033[0m\n", logLevelHead(level).c_str(), msg.c_str());
 #endif
 }
 

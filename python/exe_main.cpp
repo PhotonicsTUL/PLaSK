@@ -34,6 +34,25 @@ namespace plask { namespace python {
 }}
 
 //******************************************************************************
+static void from_import_all(const char* name, py::dict& globals)
+{
+    py::object module = py::import(name);
+    py::dict module_dict = py::dict(module.attr("__dict__"));
+    py::list all;
+
+    try {
+        all = py::list(module.attr("__all__"));
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        all = module_dict.keys();
+    }
+    py::stl_input_iterator<std::string> begin(all), end;
+    for (auto item = begin; item != end; item++) {
+        if ((*item)[0] != '_') globals[*item] = module_dict[*item];
+    }
+}
+
+//******************************************************************************
 // Initialize the binary modules and load the package from disc
 static py::object initPlask(int argc, const char* argv[])
 {
@@ -60,6 +79,9 @@ static py::object initPlask(int argc, const char* argv[])
     path.insert(2, plask_path + "solvers" );
     sys.attr("path") = path;
 
+    // Import numpy for materials
+    from_import_all("numpy", plask::python::xml_globals);
+
     // Add program arguments to sys.argv
     if (argc > 0) {
         py::list sys_argv;
@@ -76,37 +98,21 @@ static py::object initPlask(int argc, const char* argv[])
 }
 
 //******************************************************************************
-static void from_import_all(const char* name, py::dict globals)
-{
-    py::object module = py::import(name);
-    py::dict module_dict = py::dict(module.attr("__dict__"));
-    py::list all;
-
-    try {
-        all = py::list(module.attr("__all__"));
-    } catch (py::error_already_set) {
-        PyErr_Clear();
-        all = module_dict.keys();
-    }
-    py::stl_input_iterator<std::string> begin(all), end;
-    for (auto item = begin; item != end; item++) {
-        if ((*item)[0] != '_') globals[*item] = module_dict[*item];
-    }
-}
-
-//******************************************************************************
 // This functions closes all matplotlib windows in order to avoid the annoying
 // 'Fatal Python error: PyEval_RestoreThread: NULL tstate' bug on Windows.
-void fixMatplotlibBug() {
+static inline void fixMatplotlibBug() {
+#if defined(WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
     py::object modules = py::import("sys").attr("modules");
     if (py::dict(modules).has_key("matplotlib")) {
         try {
             py::object pylab = py::import("pylab");
-            pylab.attr("close")("all");
+            std::string backend = py::extract<std::string>(pylab.attr("get_backend")());
+            if (backend == "TkAgg") pylab.attr("close")("all"); // fix bug in TkAgg backend in Windows
         } catch (py::error_already_set) {
             PyErr_Clear(); // silently ignore errors here
         }
     }
+#endif
 }
 
 //******************************************************************************
@@ -186,7 +192,7 @@ int handlePythonException() {
 void endPlask() {
     // PyEval_RestoreThread(mainTS);
     fixMatplotlibBug();
-    Py_Finalize();
+    // Py_Finalize(); // Py_Finalize is not supported by Boost
 }
 
 //******************************************************************************
@@ -221,19 +227,17 @@ int main(int argc, const char *argv[])
     // Test if we should use the file or start an interactive mode
     if(argc > 1 && !force_interactive) { // load commands from file
 
+        py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
+        py::incref(globals.ptr());
+
         // Add plask to the global namespace
         py::object plask = py::import("plask");
-        py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
-
         plask.attr("__globals") = globals;
 
         globals["plask"] = plask; // import plask
         if (from_import) { // from plask import *
             from_import_all("plask", globals);
         }
-
-        // Import numpy for materials
-        from_import_all("numpy", plask::python::xml_globals);
 
         try {
             std::string filename = argv[1];
@@ -305,7 +309,6 @@ int main(int argc, const char *argv[])
                 Py_DECREF(pyfile);
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);
-
             }
         } catch (std::invalid_argument& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());

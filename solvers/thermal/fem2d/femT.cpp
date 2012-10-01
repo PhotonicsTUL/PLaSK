@@ -511,40 +511,42 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 {
     if (param == "Tconst")
         this->readBoundaryConditions(manager, source, mTConst);
-    if (param == "HFconst")
+    else if (param == "HFconst")
         this->readBoundaryConditions(manager, source, mHFConst);
-    if (param == "conv")
+    else if (param == "conv")
         this->readBoundaryConditions(manager, source, mConv);
-    if (param == "Tinit")
+    else if (param == "Tinit")
     {
         mTInit = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
-    if (param == "looplim")
+    else if (param == "looplim")
     {
         mLoopLim = source.requireAttribute<int>("value");
         source.requireTagEnd();
     }
-    if (param == "Tcorrlim")
+    else if (param == "Tcorrlim")
     {
         mTCorrLim = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
-    if (param == "Tbigcorr")
+    else if (param == "Tbigcorr")
     {
         mTBigCorr = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
-    if (param == "bignum")
+    else if (param == "bignum")
     {
         mBigNum = source.requireAttribute<double>("value");
         source.requireTagEnd();
     }
-    if (param == "logs")
+    else if (param == "logs")
     {
         mLogs = source.requireAttribute<bool>("value");
         source.requireTagEnd();
     }
+    else
+        throw XMLUnexpectedElementException(source, "thermal solver configuration tag", param);
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::updNodes()
