@@ -15,6 +15,7 @@ This file includes rectilinear mesh for 2d space.
 #include "../geometry/space.h"
 #include "../geometry/path.h"
 #include "../math.h"
+#include "../manager.h"
 
 namespace plask {
 
@@ -838,6 +839,30 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         return begInd != endInd;
     }
 
+    static Boundary parseBoundaryFromXML(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment, Boundary (*getXBoundary)(),
+                                         Boundary (*getXOfBoundary)(shared_ptr<const GeometryD<2>>, shared_ptr<const GeometryObject>, const PathHints*)) {
+        boost::optional<std::string> of = boundary_desc.getAttribute("of");
+        if (!of) {
+            boundary_desc.requireTagEnd();
+            return getXBoundary();
+        } else {
+            plask::shared_ptr< const plask::GeometryD<2> > geometry;
+            boost::optional<std::string> geom_name = boundary_desc.getAttribute("geometry");
+            if (geom_name)
+                geometry = enviroment.manager.requireGeometryObject<const plask::GeometryD<2>>(*geom_name);
+            else {
+                geometry = dynamic_pointer_cast< const plask::GeometryD<2> >(enviroment.geometry);
+                if (!geometry)
+                    throw Exception("Can't parse %1% of \"%2%\" object. Geometry is not known (\"geometry\" attribute can be use to provide this information).",
+                                    boundary_desc.getNodeName(), *of);
+            }
+            boost::optional<std::string> path_name = boundary_desc.getAttribute("path");
+            boundary_desc.requireTagEnd();
+            return getXOfBoundary(geometry, enviroment.manager.requireGeometryObject(*of),
+                                  path_name ? &enviroment.manager.requirePathHints(*path_name) : nullptr);
+        }
+    }
+
 public:
     // boundaries:
 
@@ -1145,6 +1170,18 @@ public:
         if (boundary_desc == "left") return getLeftBoundary();
         if (boundary_desc == "right") return getRightBoundary();
         if (boundary_desc == "top") return getTopBoundary();
+        return Boundary();
+    }
+
+    static Boundary getBoundary(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment) {
+        if (boundary_desc.getNodeName() == "bottom")
+            return parseBoundaryFromXML(boundary_desc, enviroment, &getBottomBoundary, &getBottomOfBoundary);
+        if (boundary_desc.getNodeName() == "left")
+            return parseBoundaryFromXML(boundary_desc, enviroment, &getLeftBoundary, &getLeftOfBoundary);
+        if (boundary_desc.getNodeName() == "right")
+            return parseBoundaryFromXML(boundary_desc, enviroment, &getRightBoundary, &getRightOfBoundary);
+        if (boundary_desc.getNodeName() == "top")
+            return parseBoundaryFromXML(boundary_desc, enviroment, &getTopBoundary, &getTopOfBoundary);
         return Boundary();
     }
 };

@@ -16,7 +16,10 @@ namespace plask {
 typedef RectangularMesh<2,RegularMesh1D> RegularMesh2D;
 
 template <>
-inline Boundary<RegularMesh2D> parseBoundary<RegularMesh2D>(const std::string& boundary_desc) { return RegularMesh2D::getBoundary(boundary_desc); }
+inline Boundary<RegularMesh2D> parseBoundary<RegularMesh2D>(const std::string& boundary_desc, BoundaryParserEnviroment) { return RegularMesh2D::getBoundary(boundary_desc); }
+
+template <>
+inline Boundary<RegularMesh2D> parseBoundary<RegularMesh2D>(XMLReader& boundary_desc, BoundaryParserEnviroment env) { return RegularMesh2D::getBoundary(boundary_desc, env); }
 
 /// Three-dimensional rectilinear mesh type
 typedef RectangularMesh<3,RegularMesh1D> RegularMesh3D;

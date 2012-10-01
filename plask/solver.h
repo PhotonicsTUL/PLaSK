@@ -578,6 +578,9 @@ class Solver {
     template<typename ...Args>
     void writelog(LogLevel level, std::string msg, Args&&... params) const { plask::writelog(level, getId() + ": " + msg, std::forward<Args>(params)...); }
 
+    //virtual shared_ptr<const Geometry> getUsedGeometry() const;   //return empty by default
+    //virtual shared_ptr<const Mesh> getUsedMesh() const;
+
 };
 
 /*

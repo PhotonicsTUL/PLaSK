@@ -386,11 +386,12 @@ private:
      * - place name must be unique for all places in XML, and must be given before any placeref which refer to it;
      * - condition value must be given exaclty once (as attribute or in value tag).
      * @param reader source of XML data
+     * @param geometry (optional) geometry used by solver which reads boundary conditions
      * @param dest place to append read conditions
      */
     //TODO moves to modules reader (with names map)
     template <typename MeshT, typename ConditionT>
-    void readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest);
+    void readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest, shared_ptr<Geometry> geometry = shared_ptr<Geometry>());
 
     /**
      * Load XML content.
@@ -464,14 +465,15 @@ inline shared_ptr<Geometry> Manager::getGeometry<Geometry>(const std::string& na
 }
 
 template <typename MeshT, typename ConditionT>
-inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest) {
+inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest, shared_ptr<Geometry> geometry) {
+    BoundaryParserEnviroment parser_enviroment(*this, geometry);
     while (reader.requireTagOrEnd("condition")) {
         Boundary<MeshT> boundary;
         boost::optional<std::string> place = reader.getAttribute("place");
         boost::optional<std::string> placename = reader.getAttribute("placename");
         boost::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
         if (place) {
-            boundary = parseBoundary<MeshT>(*place);
+            boundary = parseBoundary<MeshT>(*place, parser_enviroment);
             if (boundary.isNull()) throw Exception("Can't parse boundary place from string \"%1%\".", *place);
         } else {
             place = reader.getAttribute("placeref");
@@ -483,7 +485,7 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
             } else {
                 reader.requireTag("place");
                 if (!placename) placename = reader.getAttribute("name");
-                boundary = parseBoundary<MeshT>(reader);
+                boundary = parseBoundary<MeshT>(reader, parser_enviroment);
                 if (boundary.isNull()) throw Exception("Can't parse boundary place from XML.", *place);
             }
         }

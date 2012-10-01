@@ -512,6 +512,20 @@ inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
     return typename MeshType::Boundary( [=](const MeshType& mesh) { return new PredicateBoundaryImpl<MeshType, Predicate>(mesh, predicate); } );
 }
 
+struct Manager;
+struct Geometry;
+
+struct BoundaryParserEnviroment {
+
+    Manager& manager;   ///< XML manager
+
+    shared_ptr<const Geometry> geometry;    ///< geometry used by solver for which boundary are read, can by nullptr
+
+    BoundaryParserEnviroment(Manager& manager, shared_ptr<const Geometry> geometry)
+        : manager(manager), geometry(geometry) {}
+};
+
+
 /**
  * Parse boundary from string.
  *
@@ -524,7 +538,7 @@ inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
  * @return parsed boundary or Boundary<MeshType>() if can't parse given string
  */
 template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc) { return Boundary<MeshType>(); }
+inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc, BoundaryParserEnviroment enviroment) { return Boundary<MeshType>(); }
 
 
 /**
@@ -541,7 +555,7 @@ inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc) { retu
  * @return parsed boundary or Boundary<MeshType>() if can't parse given tag
  */
 template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(XMLReader& boundary_desc) { return Boundary<MeshType>(); }
+inline Boundary<MeshType> parseBoundary(XMLReader& boundary_desc, BoundaryParserEnviroment enviroment) { return Boundary<MeshType>(); }
 
 }   // namespace plask
 

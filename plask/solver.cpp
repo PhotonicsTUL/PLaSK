@@ -16,7 +16,6 @@ void Solver::loadParam(const std::string& param, XMLReader& reader, Manager& man
     throw XMLUnexpectedElementException(reader, "no additional configuration for this solver");
 }
 
-
 bool Solver::initCalculation() {
     if (!initialized) {
         writelog(LOG_INFO, "Initializing solver");
