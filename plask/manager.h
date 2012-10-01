@@ -23,6 +23,8 @@ This file includes:
 
 namespace plask {
 
+struct Solver;
+
 /**
  * Geometry manager features:
  * - read/write geometries,
@@ -369,22 +371,25 @@ private:
     /**
      * Read boundary conditions from current tag and move parser to end of current tag.
      *
-     * Use MeshT static methods to read boundaries, and boost::lexical_cast<ConditionT> to parse values of conditions.
+     * Use MeshT static methods to read boundaries, and @c parseCondition to parse values of conditions:
+     * @code
+     * template <typename ConditionT> ConditionT parseCondition(const XMLReader& tag_with_value);
+     * @endcode
+     * (by default it just read value from "value" attribute)
      *
      * Require format (one or more tag as below):
      * @code
-     * \<condition [place="mesh type related place description"] [placename="name of this place"] [placeref="name of earlier stored place"] [value="condition value"]>
+     * \<condition [place="mesh type related place description"] [placename="name of this place"] [placeref="name of earlier stored place"] value attributes read by parseCondition>
      *  [\<place [name="name of this place"] [mesh-type related]>
      *     ...mesh type related place description...
      *   \</place>]
-     *  [\<value>condition value\</value>]
      * \</condition>
      * @endcode
      * With restrictions:
      * - place must be given exactly once (as attribute or tag), and only in case if placeref was not given;
      * - place name can be given only if placeref was not given;
      * - place name must be unique for all places in XML, and must be given before any placeref which refer to it;
-     * - condition value must be given exaclty once (as attribute or in value tag).
+     * - condition value must be in format required by parseCondition for given type (in most cases it is just one attribute: value).
      * @param reader source of XML data
      * @param geometry (optional) geometry used by solver which reads boundary conditions
      * @param dest place to append read conditions
@@ -464,6 +469,20 @@ inline shared_ptr<Geometry> Manager::getGeometry<Geometry>(const std::string& na
     return getGeometry(name);
 }
 
+/**
+ * Parse condition from XML tag.
+ *
+ * Default implementation just read it from "value" attribute which use boost::lexical_cast to convert it to given type @p ConditionT.
+ * Specializations for choosen types can require other attributes.
+ * @param tag_with_value XML tag to parse
+ * @return parsed condition
+ * @tparam ConditionT type of condition to parse
+ */
+template <typename ConditionT>
+inline ConditionT parseCondition(const XMLReader& tag_with_value) {
+    return tag_with_value.requireAttribute<ConditionT>("value");
+}
+
 template <typename MeshT, typename ConditionT>
 inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest, shared_ptr<Geometry> geometry) {
     BoundaryParserEnviroment parser_enviroment(*this, geometry);
@@ -471,7 +490,8 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
         Boundary<MeshT> boundary;
         boost::optional<std::string> place = reader.getAttribute("place");
         boost::optional<std::string> placename = reader.getAttribute("placename");
-        boost::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
+        //boost::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
+        ConditionT value = parseCondition<ConditionT>(reader);
         if (place) {
             boundary = parseBoundary<MeshT>(*place, parser_enviroment);
             if (boundary.isNull()) throw Exception("Can't parse boundary place from string \"%1%\".", *place);
@@ -489,16 +509,16 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
                 if (boundary.isNull()) throw Exception("Can't parse boundary place from XML.", *place);
             }
         }
-        if (!value) {   // value still not known, must be read from tag <value>...</value>
+        /*if (!value) {   // value still not known, must be read from tag <value>...</value>
             reader.requireTag("value");
             *value = reader.requireText<ConditionT>();
             reader.requireTagEnd();
-        }
+        }*/ //now we read only from XML tags
         if (placename) {
             if (!this->boundaries.insert(std::make_pair(*placename, boost::any(boundary))).second)
                 throw NamesConflictException("Place (boundary)", *placename);
         }
-        dest.add(std::move(boundary), std::move(*value));
+        dest.add(std::move(boundary), /*std::move(*value)*/ std::move(value));
         reader.requireTagEnd(); //</condition>
     }
 }

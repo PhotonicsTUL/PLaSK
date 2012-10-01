@@ -431,6 +431,7 @@ This concludes our short tutorial. Now you can go on and write your own calculat
 #include "mesh/mesh.h"
 #include "geometry/space.h"
 #include "geometry/reader.h"
+#include "manager.h"
 
 namespace plask {
 
@@ -617,6 +618,11 @@ class SolverOver: public Solver {
 
     /// Space in which the calculations are performed
     shared_ptr<SpaceT> geometry;
+
+    template <typename MeshT, typename ConditionT>
+    void readBoundaryConditions(Manager& manager, XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest) {
+        manager.readBoundaryConditions<MeshT, ConditionT>(reader, dest, geometry);
+    }
 
   public:
 
