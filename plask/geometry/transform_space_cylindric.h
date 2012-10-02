@@ -6,7 +6,7 @@
 namespace plask {
 
 /**
- * Represent 3d geometry object which is an effect of revolving a 2d object (child) around the up axis.
+ * Represent 3D geometry object which is an effect of revolving a 2D object (child) around the up axis.
  *
  * Child must have getBoundingBox().lower.tran() >= 0.
  * @ingroup GEOMETRY_OBJ

@@ -44,7 +44,7 @@ struct MaterialsDB {
         Register() { getDefault().add<MaterialType>(); }
     };
 
-    ///Same as Register but for materials without static field NAME.
+    /// Same as Register but for materials without static field NAME.
     template <typename MaterialType>
     struct RegisterN {
         RegisterN(const std::string& name) { getDefault().add<MaterialType>(name); }

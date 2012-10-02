@@ -6,7 +6,7 @@
 namespace plask {
 
 /**
- * Represent 3d geometry object which are extend of 2d object (child) in lon direction.
+ * Represent 3D geometry object which are extend of 2D object (child) in lon direction.
  * @ingroup GEOMETRY_OBJ
  */
 struct Extrusion: public GeometryObjectTransformSpace<3, 2>/*, public Geometry*/ {
