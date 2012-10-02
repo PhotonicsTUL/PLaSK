@@ -32,10 +32,10 @@ static std::string logLevelHead(LogLevel level) {
 
 void writelog(LogLevel level, const std::string& msg) {
 #if defined(WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
-    #pragma omp critical
+    #pragma omp critical(writelog)
     fprintf(stderr, "%s: %s\n", logLevelHead(level).c_str(), msg.c_str());
 #else
-    #pragma omp critical
+    #pragma omp critical(writelog)
     fprintf(stderr, "%s: %s\033[0m\n", logLevelHead(level).c_str(), msg.c_str());
 #endif
 }

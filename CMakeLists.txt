@@ -86,7 +86,7 @@ if(BUILD_PYTHON)
 endif(BUILD_PYTHON)
 
 if(USE_OMP)
-    find_package(OpenMP 3)
+    find_package(OpenMP 3.0)
     if(OPENMP_FOUND)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")

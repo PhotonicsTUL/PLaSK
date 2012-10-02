@@ -445,6 +445,7 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
     if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, betax, betay) &&
         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, betax, betay)) {
 
+        #pragma omp parallel for schedule(static,1024)
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
             auto point = dst_mesh[idx];
             double x = point.tran();
@@ -488,6 +489,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
         std::vector<dcomplex> valx(rect_mesh.tran().size());
         std::vector<dcomplex> valy(rect_mesh.up().size());
 
+        #pragma omp parallel for
         for (size_t idx = 0; idx < rect_mesh.tran().size(); ++idx) {
             double x = rect_mesh.tran()[idx];
             bool negate = false;
@@ -503,6 +505,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             valx[idx] = val;
         }
 
+        #pragma omp parallel for
         for (size_t idy = 0; idy < rect_mesh.up().size(); ++idy) {
             double y = rect_mesh.up()[idy];
             size_t iy = mesh->up().findIndex(y);
@@ -511,16 +514,19 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             valy[idy] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
         }
 
-        double* data = results.data();
         if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
-            for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1, data += rect_mesh.axis0.size()) {
+            #pragma omp parallel for
+            for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
+                double* data = results.data() + i1 * rect_mesh.axis0.size();
                 for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
                     dcomplex f = valx[i0] * valy[i1];
                     data[i0] = abs2(f);
                 }
             }
         } else {
-            for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0, data += rect_mesh.axis1.size()) {
+            #pragma omp parallel for
+            for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                double* data = results.data() + i0 * rect_mesh.axis1.size();
                 for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                     dcomplex f = valx[i0] * valy[i1];
                     data[i1] = abs2(f);

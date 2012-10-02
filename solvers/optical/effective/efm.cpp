@@ -450,6 +450,7 @@ const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const Me
     if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results) &&
         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results)) {
 
+        #pragma omp parallel for schedule(static,1024)
         for (size_t id = 0; id < dst_mesh.size(); ++id) {
             auto point = dst_mesh[id];
             double r = point.c0;
@@ -499,6 +500,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
         std::vector<dcomplex> valr(rect_mesh.axis0.size());
         std::vector<dcomplex> valz(rect_mesh.axis1.size());
 
+        #pragma omp parallel for
         for (size_t idr = 0; idr < rect_mesh.tran().size(); ++idr) {
             double r = rect_mesh.axis0[idr];
             double Jr, Ji, Hr, Hi;
@@ -518,6 +520,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
             valr[idr] = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
         }
 
+        #pragma omp parallel for
         for (size_t idz = 0; idz < rect_mesh.up().size(); ++idz) {
             double z = rect_mesh.axis1[idz];
             size_t iz = mesh->axis1.findIndex(z);
@@ -526,16 +529,19 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
             valz[idz] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
         }
 
-        double* data = results.data();
         if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
-            for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1, data += rect_mesh.axis0.size()) {
+            #pragma omp parallel for
+            for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
+                double* data = results.data() + i1 * rect_mesh.axis0.size();
                 for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
                     dcomplex f = valr[i0] * valz[i1];
                     data[i0] = abs2(f);
                 }
             }
         } else {
-            for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0, data += rect_mesh.axis1.size()) {
+            #pragma omp parallel for
+            for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                double* data = results.data() + i0 * rect_mesh.axis1.size();
                 for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                     dcomplex f = valr[i0] * valz[i1];
                     data[i1] = abs2(f);
