@@ -12,18 +12,18 @@
 
 namespace plask { namespace solvers { namespace thermal {
 
-struct BoundCondConvection // boundary condition: convection
+struct Convection // boundary condition: convection
 {
 public:
     double mConvCoeff; // convection coefficient [W/(m^2*K)]
-    double mTAmb; // ambient temperature [K]
+    double mTAmb1; // ambient temperature [K]
 };
 
-struct BoundCondRadiation // boundary condition: radiation
+struct Radiation // boundary condition: radiation
 {
 public:
     double mSurfEmiss; // surface emissivity [-]
-    double mTAmb; // ambient temperature [K]
+    double mTAmb2; // ambient temperature [K]
 };
 
 /**
@@ -155,7 +155,8 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     /// Boundary conditions
     BoundaryConditions<RectilinearMesh2D,double> mTConst; // constant temperature [K]
     BoundaryConditions<RectilinearMesh2D,double> mHFConst; // constant heat flux [W/m^2]
-    BoundaryConditions<RectilinearMesh2D,BoundCondConvection> mConv; // convection
+    BoundaryConditions<RectilinearMesh2D,Convection> mConvection; // convection
+    BoundaryConditions<RectilinearMesh2D,Radiation> mRadiation; // radiation
 
     typename ProviderFor<Temperature, Geometry2Dtype>::Delegate outTemperature;
 
@@ -193,11 +194,19 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
 
 }}  //namespaces
 
-template <>
-inline solvers::thermal::BoundCondConvection parseCondition<solvers::thermal::BoundCondConvection>(const XMLReader& tag_with_value) {
-    solvers::thermal::BoundCondConvection result;
-    result.mConvCoeff = tag_with_value.requireAttribute<double>("conv");
-    result.mTAmb = tag_with_value.requireAttribute<double>("tamb");
+template <> inline solvers::thermal::Convection parseCondition<solvers::thermal::Convection>(const XMLReader& tag_with_value)
+{
+    solvers::thermal::Convection result;
+    result.mConvCoeff = tag_with_value.requireAttribute<double>("coefficient");
+    result.mTAmb1 = tag_with_value.requireAttribute<double>("Tamb");
+    return result;
+}
+
+template <> inline solvers::thermal::Radiation parseCondition<solvers::thermal::Radiation>(const XMLReader& tag_with_value)
+{
+    solvers::thermal::Radiation result;
+    result.mSurfEmiss = tag_with_value.requireAttribute<double>("emissivity");
+    result.mTAmb2 = tag_with_value.requireAttribute<double>("Tamb");
     return result;
 }
 

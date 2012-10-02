@@ -95,6 +95,26 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         else
             tpN->setHFflag(false);
 
+        // checking boundary condition - convection
+        auto it3 = mConvection.includes(*(this->mesh), i);
+        if (it3 != mConvection.end())
+        {
+            tpN->setConv(it3->condition.mConvCoeff, it3->condition.mTAmb1);
+            tpN->setConvflag(true);
+        }
+        else
+            tpN->setConvflag(false);
+
+        // checking boundary condition - radiation
+        auto it4 = mRadiation.includes(*(this->mesh), i);
+        if (it4 != mRadiation.end())
+        {
+            tpN->setRad(it4->condition.mSurfEmiss, it4->condition.mTAmb2);
+            tpN->setRadflag(true);
+        }
+        else
+            tpN->setRadflag(false);
+
         mNodes.push_back(*tpN);
 
         delete tpN;
@@ -209,7 +229,15 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
     double tKXAssist, tKYAssist, tElemWidth, tElemHeight, tF, // assistant values to set stiffness matrix
            tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44, // local symetric matrix components
            tF1hfX = 0., tF2hfX = 0., tF3hfX = 0., tF4hfX = 0., // for load vector (heat flux components for x-direction)
-           tF1hfY = 0., tF2hfY = 0., tF3hfY = 0., tF4hfY = 0.; // for load vector (heat flux components for y-direction)
+           tF1hfY = 0., tF2hfY = 0., tF3hfY = 0., tF4hfY = 0., // for load vector (heat flux components for y-direction)
+           tK11convX = 0., tK21convX = 0., tK31convX = 0., tK41convX = 0., tK22convX = 0., // for symetric matrix (convection components for x-direction)
+           tK32convX = 0., tK42convX = 0., tK33convX = 0., tK43convX = 0., tK44convX = 0., // for symetric matrix (convection components for x-direction)
+           tK11convY = 0., tK21convY = 0., tK31convY = 0., tK41convY = 0., tK22convY = 0., // for symetric matrix (convection components for y-direction)
+           tK32convY = 0., tK42convY = 0., tK33convY = 0., tK43convY = 0., tK44convY = 0., // for symetric matrix (convection components for y-direction)
+           tF1convX = 0., tF2convX = 0., tF3convX = 0., tF4convX = 0., // for load vector (convection components for x-direction)
+           tF1convY = 0., tF2convY = 0., tF3convY = 0., tF4convY = 0., // for load vector (convection components for y-direction)
+           tF1radX = 0., tF2radX = 0., tF3radX = 0., tF4radX = 0., // for load vector (radiation components for x-direction)
+           tF1radY = 0., tF2radY = 0., tF3radY = 0., tF4radY = 0.; // for load vector (radiation components for y-direction)
 
     // set zeros
     for(int i = 0; i < mAHeight; i++)
@@ -240,12 +268,12 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
                 break;
             }
         }
-        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first; // TODO
-        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
+        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first;
+        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second;
 
-        // set load vector
+        // load vector: heat densities
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
-        // mHeatDensities - heat per unit volume or heat rate per unit volume [W/(m^3)]
+
         // boundary condition: heat flux
         if ( ttE->getNLoLeftPtr()->ifHFConst() && ttE->getNLoRightPtr()->ifHFConst() ) // heat flux on bottom edge of the element
         {
@@ -268,41 +296,93 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
             tF3hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getHF();
         }
 
+        // boundary condition: convection
+        if ( ttE->getNLoLeftPtr()->ifConvection() && ttE->getNLoRightPtr()->ifConvection() ) // convection on bottom edge of the element
+        {
+            tF1convX = 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getConvCoeff() * ttE->getNLoLeftPtr()->getTAmb1(); // 1e-6 -> to transform um into m
+            tF2convX = 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getConvCoeff() * ttE->getNLoRightPtr()->getTAmb1();
+            tK22convX = tK11convX = (ttE->getNLoLeftPtr()->getConvCoeff() + ttE->getNLoRightPtr()->getConvCoeff()) * tElemWidth / 3.;
+            tK21convX = 0.5 * tK22convX;
+        }
+        if ( ttE->getNUpLeftPtr()->ifConvection() && ttE->getNUpRightPtr()->ifConvection() ) // convection on top edge of the element
+        {
+            tF3convX = 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getConvCoeff() * ttE->getNUpRightPtr()->getTAmb1();
+            tF4convX = 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getConvCoeff() * ttE->getNUpLeftPtr()->getTAmb1();
+            tK44convX = tK33convX = (ttE->getNUpLeftPtr()->getConvCoeff() + ttE->getNUpRightPtr()->getConvCoeff()) * tElemWidth / 3.;
+            tK43convX = 0.5 * tK44convX;
+        }
+        if ( ttE->getNLoLeftPtr()->ifConvection() && ttE->getNUpLeftPtr()->ifConvection() ) // convection on left edge of the element
+        {
+            tF1convY = 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getConvCoeff() * ttE->getNLoLeftPtr()->getTAmb1();
+            tF4convY = 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getConvCoeff() * ttE->getNUpLeftPtr()->getTAmb1();
+            tK44convY = tK11convY = (ttE->getNLoLeftPtr()->getConvCoeff() + ttE->getNUpLeftPtr()->getConvCoeff()) * tElemHeight / 3.;
+            tK41convY = 0.5 * tK44convY;
+        }
+        if ( ttE->getNLoRightPtr()->ifConvection() && ttE->getNUpRightPtr()->ifConvection() ) // convection on right edge of the element
+        {
+            tF2convY = 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getConvCoeff() * ttE->getNLoRightPtr()->getTAmb1();
+            tF3convY = 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getConvCoeff() * ttE->getNUpRightPtr()->getTAmb1();
+            tK33convY = tK22convY = (ttE->getNLoRightPtr()->getConvCoeff() + ttE->getNUpRightPtr()->getConvCoeff()) * tElemHeight / 3.;
+            tK32convY = 0.5 * tK33convY;
+        }
+
+        // boundary condition: radiation
+        if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNLoRightPtr()->ifRadiation() ) // radiation on bottom edge of the element
+        {
+            tF1radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4)); // 1e-6 -> to transform um into m
+            tF2radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
+        }
+        if ( ttE->getNUpLeftPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on top edge of the element
+        {
+            tF3radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
+            tF4radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
+        }
+        if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNUpLeftPtr()->ifRadiation() ) // radiation on left edge of the element
+        {
+            tF1radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4));
+            tF4radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
+        }
+        if ( ttE->getNLoRightPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on right edge of the element
+        {
+            tF2radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
+            tF3radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
+        }
+
         // set symetric matrix components
         tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
         tK43 = tK21 = (-2.*tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight ) / 6.;
         tK42 = tK31 = -(tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight)/ 6.;
-        tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;
+        tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;       
 
         // set stiffness matrix
-        mpA[tLoLeftNo-1][mAWidth-2] +=  tK11;
-        mpA[tLoRightNo-1][mAWidth-2] +=  tK22;
-        mpA[tUpRightNo-1][mAWidth-2] += tK33;
-        mpA[tUpLeftNo-1][mAWidth-2] += tK44;
+        mpA[tLoLeftNo-1][mAWidth-2] +=  (tK11 + tK11convX + tK11convY);
+        mpA[tLoRightNo-1][mAWidth-2] +=  (tK22 + tK22convX + tK22convY);
+        mpA[tUpRightNo-1][mAWidth-2] += (tK33 + tK33convX + tK33convY);
+        mpA[tUpLeftNo-1][mAWidth-2] += (tK44 + tK44convX + tK44convY);
 
         tLoRightNo > tLoLeftNo ? (tFstArg = tLoRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tLoRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK21;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (tK21 + tK21convX + tK21convY);
 
         tUpRightNo > tLoLeftNo ? (tFstArg = tUpRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK31;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (tK31 + tK31convX + tK31convY);
 
         tUpLeftNo > tLoLeftNo ? (tFstArg = tUpLeftNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK41;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (tK41 + tK41convX + tK41convY);
 
         tUpRightNo > tLoRightNo ? (tFstArg = tUpRightNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK32;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (tK32 + tK32convX + tK32convY);
 
         tUpLeftNo > tLoRightNo ? (tFstArg = tUpLeftNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK42;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (tK42 + tK42convX + tK42convY);
 
         tUpLeftNo > tUpRightNo ? (tFstArg = tUpLeftNo, tSecArg = tUpRightNo) : (tFstArg = tUpRightNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK43;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (tK43 + tK43convX + tK43convY);
 
         // set load vector
-        mpA[tLoLeftNo-1][mAWidth-1]  += (tF + tF1hfX + tF1hfY);
-        mpA[tLoRightNo-1][mAWidth-1] += (tF + tF2hfX + tF2hfY);
-        mpA[tUpRightNo-1][mAWidth-1] += (tF + tF3hfX + tF3hfY);
-        mpA[tUpLeftNo-1][mAWidth-1]  += (tF + tF4hfX + tF4hfY);
+        mpA[tLoLeftNo-1][mAWidth-1]  += (tF + tF1hfX + tF1hfY + tF1convX + tF1convY + tF1radX + tF1radY);
+        mpA[tLoRightNo-1][mAWidth-1] += (tF + tF2hfX + tF2hfY + tF2convX + tF2convY + tF2radX + tF2radY);
+        mpA[tUpRightNo-1][mAWidth-1] += (tF + tF3hfX + tF3hfY + tF3convX + tF3convY + tF3radX + tF3radY);
+        mpA[tUpLeftNo-1][mAWidth-1]  += (tF + tF4hfX + tF4hfY + tF4convX + tF4convY + tF4radX + tF4radY);
     }
     // boundary conditions are taken into account
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
@@ -327,7 +407,15 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
     double tKXAssist, tKYAssist, tElemWidth, tElemHeight, tF, // assistant values to set stiffness matrix
            tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44, // local symetric matrix components
            tF1hfX = 0., tF2hfX = 0., tF3hfX = 0., tF4hfX = 0., // for load vector (heat flux components for x-direction)
-           tF1hfY = 0., tF2hfY = 0., tF3hfY = 0., tF4hfY = 0.; // for load vector (heat flux components for y-direction)
+           tF1hfY = 0., tF2hfY = 0., tF3hfY = 0., tF4hfY = 0., // for load vector (heat flux components for y-direction)
+           tK11convX = 0., tK21convX = 0., tK31convX = 0., tK41convX = 0., tK22convX = 0., // for symetric matrix (convection components for x-direction)
+           tK32convX = 0., tK42convX = 0., tK33convX = 0., tK43convX = 0., tK44convX = 0., // for symetric matrix (convection components for x-direction)
+           tK11convY = 0., tK21convY = 0., tK31convY = 0., tK41convY = 0., tK22convY = 0., // for symetric matrix (convection components for y-direction)
+           tK32convY = 0., tK42convY = 0., tK33convY = 0., tK43convY = 0., tK44convY = 0., // for symetric matrix (convection components for y-direction)
+           tF1convX = 0., tF2convX = 0., tF3convX = 0., tF4convX = 0., // for load vector (convection components for x-direction)
+           tF1convY = 0., tF2convY = 0., tF3convY = 0., tF4convY = 0., // for load vector (convection components for y-direction)
+           tF1radX = 0., tF2radX = 0., tF3radX = 0., tF4radX = 0., // for load vector (radiation components for x-direction)
+           tF1radY = 0., tF2radY = 0., tF3radY = 0., tF4radY = 0.; // for load vector (radiation components for y-direction)
 
     // set zeros
     for(int i = 0; i < mAHeight; i++)
@@ -358,12 +446,12 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
                 break;
             }
         }
-        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first; // TODO
-        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second; // TODO
+        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first;
+        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second;
 
-        // set load vector
+        // set load vector: heat densities
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
-        // mHeatDensities - heat per unit volume or heat rate per unit volume [W/(m^3)]
+
         // boundary condition: heat flux
         if ( ttE->getNLoLeftPtr()->ifHFConst() && ttE->getNLoRightPtr()->ifHFConst() ) // heat flux on bottom edge of the element
         {
@@ -384,6 +472,58 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
         {
             tF2hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getHF();
             tF3hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getHF();
+        }  
+
+        // boundary condition: convection
+        if ( ttE->getNLoLeftPtr()->ifConvection() && ttE->getNLoRightPtr()->ifConvection() ) // convection on bottom edge of the element
+        {
+            tF1convX = 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getConvCoeff() * ttE->getNLoLeftPtr()->getTAmb1(); // 1e-6 -> to transform um into m
+            tF2convX = 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getConvCoeff() * ttE->getNLoRightPtr()->getTAmb1();
+            tK22convX = tK11convX = (ttE->getNLoLeftPtr()->getConvCoeff() + ttE->getNLoRightPtr()->getConvCoeff()) * tElemWidth / 3.;
+            tK21convX = 0.5 * tK22convX;
+        }
+        if ( ttE->getNUpLeftPtr()->ifConvection() && ttE->getNUpRightPtr()->ifConvection() ) // convection on top edge of the element
+        {
+            tF3convX = 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getConvCoeff() * ttE->getNUpRightPtr()->getTAmb1();
+            tF4convX = 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getConvCoeff() * ttE->getNUpLeftPtr()->getTAmb1();
+            tK44convX = tK33convX = (ttE->getNUpLeftPtr()->getConvCoeff() + ttE->getNUpRightPtr()->getConvCoeff()) * tElemWidth / 3.;
+            tK43convX = 0.5 * tK44convX;
+        }
+        if ( ttE->getNLoLeftPtr()->ifConvection() && ttE->getNUpLeftPtr()->ifConvection() ) // convection on left edge of the element
+        {
+            tF1convY = 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getConvCoeff() * ttE->getNLoLeftPtr()->getTAmb1();
+            tF4convY = 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getConvCoeff() * ttE->getNUpLeftPtr()->getTAmb1();
+            tK44convY = tK11convY = (ttE->getNLoLeftPtr()->getConvCoeff() + ttE->getNUpLeftPtr()->getConvCoeff()) * tElemHeight / 3.;
+            tK41convY = 0.5 * tK44convY;
+        }
+        if ( ttE->getNLoRightPtr()->ifConvection() && ttE->getNUpRightPtr()->ifConvection() ) // convection on right edge of the element
+        {
+            tF2convY = 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getConvCoeff() * ttE->getNLoRightPtr()->getTAmb1();
+            tF3convY = 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getConvCoeff() * ttE->getNUpRightPtr()->getTAmb1();
+            tK33convY = tK22convY = (ttE->getNLoRightPtr()->getConvCoeff() + ttE->getNUpRightPtr()->getConvCoeff()) * tElemHeight / 3.;
+            tK32convY = 0.5 * tK33convY;
+        }
+
+        // boundary condition: radiation
+        if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNLoRightPtr()->ifRadiation() ) // radiation on bottom edge of the element
+        {
+            tF1radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4)); // 1e-6 -> to transform um into m
+            tF2radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
+        }
+        if ( ttE->getNUpLeftPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on top edge of the element
+        {
+            tF3radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
+            tF4radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
+        }
+        if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNUpLeftPtr()->ifRadiation() ) // radiation on left edge of the element
+        {
+            tF1radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4));
+            tF4radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
+        }
+        if ( ttE->getNLoRightPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on right edge of the element
+        {
+            tF2radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
+            tF3radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
         }
 
         // set symetric matrix components
@@ -393,34 +533,34 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
         tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;
 
         // set stiffness matrix
-        mpA[tLoLeftNo-1][mAWidth-2] += (ttE->getX() * tK11);
-        mpA[tLoRightNo-1][mAWidth-2] += (ttE->getX() * tK22);
-        mpA[tUpRightNo-1][mAWidth-2] += (ttE->getX() * tK33);
-        mpA[tUpLeftNo-1][mAWidth-2] += (ttE->getX() * tK44);
+        mpA[tLoLeftNo-1][mAWidth-2] += ( ttE->getX() * (tK11 + tK11convX + tK11convY) );
+        mpA[tLoRightNo-1][mAWidth-2] += ( ttE->getX() * (tK22 + tK22convX + tK22convY) );
+        mpA[tUpRightNo-1][mAWidth-2] += ( ttE->getX() * (tK33 + tK33convX + tK33convY) );
+        mpA[tUpLeftNo-1][mAWidth-2] += ( ttE->getX() * (tK44 + tK44convX + tK44convY) );
 
         tLoRightNo > tLoLeftNo ? (tFstArg = tLoRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tLoRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK21);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK21 + tK21convX + tK21convY) );
 
         tUpRightNo > tLoLeftNo ? (tFstArg = tUpRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK31);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK31 + tK31convX + tK31convY) );
 
         tUpLeftNo > tLoLeftNo ? (tFstArg = tUpLeftNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK41);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK41 + tK41convX + tK41convY) );
 
         tUpRightNo > tLoRightNo ? (tFstArg = tUpRightNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK32);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK32 + tK32convX + tK32convY) );
 
         tUpLeftNo > tLoRightNo ? (tFstArg = tUpLeftNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK42);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK42 + tK42convX + tK42convY) );
 
         tUpLeftNo > tUpRightNo ? (tFstArg = tUpLeftNo, tSecArg = tUpRightNo) : (tFstArg = tUpRightNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK43);
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK43 + tK43convX + tK43convY) );
 
         // set load vector
-        mpA[tLoLeftNo-1][mAWidth-1]  += ( ttE->getX() * (tF + tF1hfX + tF1hfY) );
-        mpA[tLoRightNo-1][mAWidth-1] += ( ttE->getX() * (tF + tF2hfX + tF2hfY) );
-        mpA[tUpRightNo-1][mAWidth-1] += ( ttE->getX() * (tF + tF3hfX + tF3hfY) );
-        mpA[tUpLeftNo-1][mAWidth-1]  += ( ttE->getX() * (tF + tF4hfX + tF4hfY) );
+        mpA[tLoLeftNo-1][mAWidth-1]  += ( ttE->getX() * (tF + tF1hfX + tF1hfY + tF1convX + tF1convY + tF1radX + tF1radY) );
+        mpA[tLoRightNo-1][mAWidth-1] += ( ttE->getX() * (tF + tF2hfX + tF2hfY + tF2convX + tF2convY + tF2radX + tF2radY) );
+        mpA[tUpRightNo-1][mAWidth-1] += ( ttE->getX() * (tF + tF3hfX + tF3hfY + tF3convX + tF3convY + tF3radX + tF3radY) );
+        mpA[tUpLeftNo-1][mAWidth-1]  += ( ttE->getX() * (tF + tF4hfX + tF4hfY + tF4convX + tF4convY + tF4radX + tF4radY) );
     }
     // boundary conditions are taken into account
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
@@ -486,7 +626,8 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
             writelog(LOG_ERROR, "Wrong solver matrix");
     }
 
-    //showNodes();
+    if (mLogs)
+        showNodes();
 
     saveTemperatures();
 
@@ -513,8 +654,10 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         this->readBoundaryConditions(manager, source, mTConst);
     else if (param == "HFconst")
         this->readBoundaryConditions(manager, source, mHFConst);
-    else if (param == "conv")
-        this->readBoundaryConditions(manager, source, mConv);
+    else if (param == "convection")
+        this->readBoundaryConditions(manager, source, mConvection);
+    else if (param == "radiation")
+        this->readBoundaryConditions(manager, source, mRadiation);
     else if (param == "Tinit")
     {
         mTInit = source.requireAttribute<double>("value");
