@@ -37,6 +37,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
     if (!this->mesh) throw NoMeshException(this->getId());
     this->setNodes();
     this->setElements();
+    mTemperatures.reset(mNodes.size(), mTInit);
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
@@ -352,7 +353,7 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
         tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
         tK43 = tK21 = (-2.*tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight ) / 6.;
         tK42 = tK31 = -(tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight)/ 6.;
-        tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;       
+        tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;
 
         // set stiffness matrix
         mpA[tLoLeftNo-1][mAWidth-2] +=  (tK11 + tK11convX + tK11convY);
@@ -472,7 +473,7 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
         {
             tF2hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getHF();
             tF3hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getHF();
-        }  
+        }
 
         // boundary condition: convection
         if ( ttE->getNLoLeftPtr()->ifConvection() && ttE->getNLoRightPtr()->ifConvection() ) // convection on bottom edge of the element
@@ -571,7 +572,7 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
         }
 }
 
-template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::runCalc()
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::runCalc()
 {
     //if (!isInitialized()) std::cout << "First calc.\n";
     ///else "Cont. calc.\n";
@@ -629,7 +630,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
     if (mLogs)
         showNodes();
 
-    saveTemperatures();
+    double corr = saveTemperatures();
 
     saveHeatFluxes();
 
@@ -646,6 +647,8 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
+
+    return corr;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadParam(const std::string &param, XMLReader &source, Manager &manager)
@@ -742,17 +745,24 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
                      << std::endl; // TEST
 }
 
-template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveTemperatures()
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveTemperatures()
 {
     if (mLogs)
         writelog(LOG_INFO, "Saving temperatures...");
 
     std::vector<Node2D>::const_iterator ttN;
 
-    mTemperatures.reset(mNodes.size());
+    // mTemperatures.reset(mNodes.size());
 
-    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
+    double corr = 0.;
+
+    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN) {
+        double c = abs(mTemperatures[ttN->getNo()-1] - ttN->getT());
+        if (c > corr) corr = c;
         mTemperatures[ttN->getNo()-1] = ttN->getT();
+    }
+
+    return corr;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveHeatFluxes()

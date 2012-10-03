@@ -123,7 +123,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     void showElements();
 
     /// Create vector with calculated temperatures
-    void saveTemperatures(); // [K]
+    double saveTemperatures(); // [K]
 
     /// Create 2D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
@@ -168,8 +168,11 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
 
     DataVector<const Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
-    /// Run temperature calculations
-    void runCalc();
+    /**
+     * Run temperature calculations
+     * \return max correction of temperature agains the last call
+     */
+    double runCalc();
 
     void setLoopLim(int iLoopLim);
     void setTCorrLim(double iTCorrLim);
