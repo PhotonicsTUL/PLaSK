@@ -445,7 +445,7 @@ const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2
     if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, betax, betay) &&
         !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, betax, betay)) {
 
-        #pragma omp parallel for schedule(static,1024)
+        #pragma omp parallel for
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
             auto point = dst_mesh[idx];
             double x = point.tran();
@@ -489,47 +489,50 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
         std::vector<dcomplex> valx(rect_mesh.tran().size());
         std::vector<dcomplex> valy(rect_mesh.up().size());
 
-        #pragma omp parallel for
-        for (size_t idx = 0; idx < rect_mesh.tran().size(); ++idx) {
-            double x = rect_mesh.tran()[idx];
-            bool negate = false;
-            if (x < 0. && symmetry != NO_SYMMETRY) {
-                x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
-            }
-            size_t ix = mesh->tran().findIndex(x);
-            if (ix != 0) x -= mesh->tran()[ix-1];
-            else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
-            dcomplex phasx = exp(- I * betax[ix] * x);
-            dcomplex val = fieldX[ix][0] * phasx + fieldX[ix][1] / phasx;
-            if (negate) val = - val;
-            valx[idx] = val;
-        }
-
-        #pragma omp parallel for
-        for (size_t idy = 0; idy < rect_mesh.up().size(); ++idy) {
-            double y = rect_mesh.up()[idy];
-            size_t iy = mesh->up().findIndex(y);
-            y -= mesh->up()[max(int(iy)-1, 0)];
-            dcomplex phasy = exp(- I * betay[iy] * y);
-            valy[idy] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
-        }
-
-        if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
-            #pragma omp parallel for
-            for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
-                double* data = results.data() + i1 * rect_mesh.axis0.size();
-                for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
-                    dcomplex f = valx[i0] * valy[i1];
-                    data[i0] = abs2(f);
+        #pragma omp parallel
+        {
+            #pragma omp for nowait
+            for (size_t idx = 0; idx < rect_mesh.tran().size(); ++idx) {
+                double x = rect_mesh.tran()[idx];
+                bool negate = false;
+                if (x < 0. && symmetry != NO_SYMMETRY) {
+                    x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
                 }
+                size_t ix = mesh->tran().findIndex(x);
+                if (ix != 0) x -= mesh->tran()[ix-1];
+                else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
+                dcomplex phasx = exp(- I * betax[ix] * x);
+                dcomplex val = fieldX[ix][0] * phasx + fieldX[ix][1] / phasx;
+                if (negate) val = - val;
+                valx[idx] = val;
             }
-        } else {
-            #pragma omp parallel for
-            for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
-                double* data = results.data() + i0 * rect_mesh.axis1.size();
+
+            #pragma omp for
+            for (size_t idy = 0; idy < rect_mesh.up().size(); ++idy) {
+                double y = rect_mesh.up()[idy];
+                size_t iy = mesh->up().findIndex(y);
+                y -= mesh->up()[max(int(iy)-1, 0)];
+                dcomplex phasy = exp(- I * betay[iy] * y);
+                valy[idy] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
+            }
+
+            if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
+                #pragma omp for
                 for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
-                    dcomplex f = valx[i0] * valy[i1];
-                    data[i1] = abs2(f);
+                    double* data = results.data() + i1 * rect_mesh.axis0.size();
+                    for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                        dcomplex f = valx[i0] * valy[i1];
+                        data[i0] = abs2(f);
+                    }
+                }
+            } else {
+                #pragma omp for
+                for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                    double* data = results.data() + i0 * rect_mesh.axis1.size();
+                    for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
+                        dcomplex f = valx[i0] * valy[i1];
+                        data[i1] = abs2(f);
+                    }
                 }
             }
         }

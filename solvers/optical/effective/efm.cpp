@@ -500,51 +500,54 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
         std::vector<dcomplex> valr(rect_mesh.axis0.size());
         std::vector<dcomplex> valz(rect_mesh.axis1.size());
 
-        #pragma omp parallel for
-        for (size_t idr = 0; idr < rect_mesh.tran().size(); ++idr) {
-            double r = rect_mesh.axis0[idr];
-            double Jr, Ji, Hr, Hi;
-            int nz, ierr;
-            if (r < 0.) r = -r;
-            size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;  if (ir >= veffs.size()) ir = veffs.size()-1;
-            dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
-            if (real(x) < 0.) x = -x;
-            F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
-            if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, str(x));
-            if (ir == 0) {
-                Hr = Hi = 0.;
-            } else {
-                F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Hr, &Hi, nz, ierr);
-                if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, str(x));
-            }
-            valr[idr] = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
-        }
-
-        #pragma omp parallel for
-        for (size_t idz = 0; idz < rect_mesh.up().size(); ++idz) {
-            double z = rect_mesh.axis1[idz];
-            size_t iz = mesh->axis1.findIndex(z);
-            z -= mesh->axis1[max(int(iz)-1, 0)];
-            dcomplex phasz = exp(- I * betaz[iz] * z);
-            valz[idz] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
-        }
-
-        if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
-            #pragma omp parallel for
-            for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
-                double* data = results.data() + i1 * rect_mesh.axis0.size();
-                for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
-                    dcomplex f = valr[i0] * valz[i1];
-                    data[i0] = abs2(f);
+        #pragma omp parallel
+        {
+            #pragma omp for nowait
+            for (size_t idr = 0; idr < rect_mesh.tran().size(); ++idr) {
+                double r = rect_mesh.axis0[idr];
+                double Jr, Ji, Hr, Hi;
+                int nz, ierr;
+                if (r < 0.) r = -r;
+                size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;  if (ir >= veffs.size()) ir = veffs.size()-1;
+                dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
+                if (real(x) < 0.) x = -x;
+                F77_GLOBAL(zbesj,ZBESJ)(x.real(), x.imag(), l, 1, 1, &Jr, &Ji, nz, ierr);
+                if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", l, str(x));
+                if (ir == 0) {
+                    Hr = Hi = 0.;
+                } else {
+                    F77_GLOBAL(zbesh,ZBESH)(x.real(), x.imag(), l, 1, mh, 1, &Hr, &Hi, nz, ierr);
+                    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", l, str(x));
                 }
+                valr[idr] = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
             }
-        } else {
-            #pragma omp parallel for
-            for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
-                double* data = results.data() + i0 * rect_mesh.axis1.size();
+
+            #pragma omp for
+            for (size_t idz = 0; idz < rect_mesh.up().size(); ++idz) {
+                double z = rect_mesh.axis1[idz];
+                size_t iz = mesh->axis1.findIndex(z);
+                z -= mesh->axis1[max(int(iz)-1, 0)];
+                dcomplex phasz = exp(- I * betaz[iz] * z);
+                valz[idz] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
+            }
+
+            if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
+                #pragma omp for
                 for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
-                    dcomplex f = valr[i0] * valz[i1];
-                    data[i1] = abs2(f);
+                    double* data = results.data() + i1 * rect_mesh.axis0.size();
+                    for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                        dcomplex f = valr[i0] * valz[i1];
+                        data[i0] = abs2(f);
+                    }
+                }
+            } else {
+                #pragma omp for
+                for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                    double* data = results.data() + i0 * rect_mesh.axis1.size();
+                    for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
+                        dcomplex f = valr[i0] * valz[i1];
+                        data[i1] = abs2(f);
+                    }
                 }
             }
         }
