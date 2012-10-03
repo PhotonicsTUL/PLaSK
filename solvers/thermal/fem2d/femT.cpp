@@ -630,7 +630,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
     if (mLogs)
         showNodes();
 
-    double corr = saveTemperatures();
+    double tTCorrOut = saveTemperatures();
 
     saveHeatFluxes();
 
@@ -648,7 +648,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
 
-    return corr;
+    return tTCorrOut;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadParam(const std::string &param, XMLReader &source, Manager &manager)
@@ -754,15 +754,17 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
 
     // mTemperatures.reset(mNodes.size());
 
-    double corr = 0.;
+    double tCorr = 0.;
 
-    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN) {
-        double c = abs(mTemperatures[ttN->getNo()-1] - ttN->getT());
-        if (c > corr) corr = c;
+    for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
+    {
+        double tC = fabs(mTemperatures[ttN->getNo()-1] - ttN->getT());
+        if (tC > tCorr)
+            tCorr = tC;
         mTemperatures[ttN->getNo()-1] = ttN->getT();
     }
 
-    return corr;
+    return tCorr;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveHeatFluxes()

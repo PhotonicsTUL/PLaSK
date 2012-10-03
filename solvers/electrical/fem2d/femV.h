@@ -111,7 +111,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodElectrical2DSolver: 
     void showElements();
 
     /// Create vector with calculated potentials
-    void savePotentials(); // [V]
+    double savePotentials(); // [V]
 
     /// Create 2D-vector with calculated current densities
     void saveCurrentDensities(); // [A/m^2]
@@ -164,12 +164,10 @@ template<typename Geometry2Dtype> struct FiniteElementMethodElectrical2DSolver: 
     DataVector<const Vec<2> > getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
     /**
-     * Find new potential distribution.
-     *
+     * Run potential calculations
+     * \return max correction of temperature agains the last call
      **/
-
-    /// Run potential calculations
-    void runCalc();
+    double runCalc();
 
     void setLoopLim(int iLoopLim);
     void setVCorrLim(double iVCorrLim);

@@ -171,7 +171,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     /**
      * Run temperature calculations
      * \return max correction of temperature agains the last call
-     */
+     **/
     double runCalc();
 
     void setLoopLim(int iLoopLim);

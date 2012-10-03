@@ -39,6 +39,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     if (!this->mesh) throw NoMeshException(this->getId());
     this->setNodes();
     this->setElements();
+    mPotentials.reset(mNodes.size(), 0.);
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
@@ -400,7 +401,7 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
         }
 }
 
-template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::runCalc()
+template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::runCalc()
 {
     //if (!isInitialized()) std::cout << "First calc.\n";
     ///else "Cont. calc.\n";
@@ -455,9 +456,10 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
             writelog(LOG_ERROR, "Wrong solver matrix");
     }
 
-    //showNodes();
+    if (mLogs)
+        showNodes();
 
-    savePotentials();
+    double tVCorrOut = savePotentials();
 
     saveCurrentDensities();
 
@@ -480,6 +482,8 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     outPotential.fireChanged();
     outCurrentDensity.fireChanged();
     outHeatDensity.fireChanged();
+
+    return tVCorrOut;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::loadParam(const std::string &param, XMLReader &source, Manager &manager)
@@ -562,17 +566,26 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
                      << std::endl; // TEST
 }
 
-template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::savePotentials()
+template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::savePotentials()
 {
     if (mLogs)
         writelog(LOG_INFO, "Saving potentials...");
 
     std::vector<Node2D>::const_iterator ttN;
 
-    mPotentials.reset(mNodes.size());
+    // mPotentials.reset(mNodes.size());
+
+    double tCorr = 0.;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
+    {
+        double tC = fabs(mPotentials[ttN->getNo()-1] - ttN->getV());
+        if (tC > tCorr)
+            tCorr = tC;
         mPotentials[ttN->getNo()-1] = ttN->getV();
+    }
+
+    return tCorr;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::saveCurrentDensities()
