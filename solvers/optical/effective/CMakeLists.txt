@@ -62,7 +62,11 @@ enable_testing()
 add_python_test(solvers/loading ${CMAKE_CURRENT_SOURCE_DIR}/tests/loading.py)
 add_python_test(solvers/optical/effective ${CMAKE_CURRENT_SOURCE_DIR}/tests/effective.py)
 
+add_executable(eimtest tests/eimtest.cpp)
+target_link_libraries(eimtest libplask ${SOLVER_TARGET})
+set(SOLVER_TEST_DEPENDS eimtest)
 
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
 make_default()
+

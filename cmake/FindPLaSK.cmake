@@ -8,10 +8,10 @@ cmake_minimum_required(VERSION 2.8)
 string(REPLACE "${CMAKE_SOURCE_DIR}/solvers/" "" SOLVER_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Obtain solver library name (it can actually contain several solvers)
-string(REGEX REPLACE "/|_" "" TARGET_NAME ${SOLVER_DIR})
+string(REGEX REPLACE "/|_" "" SOLVER_TARGET ${SOLVER_DIR})
 
 # Add prefix to target name
-set(TARGET_NAME solver-${TARGET_NAME})
+set(SOLVER_TARGET solver-${SOLVER_TARGET})
 
 # Obtain default canonical solver name
 get_filename_component(SOLVER_NAME ${SOLVER_DIR} NAME)
@@ -50,26 +50,26 @@ endif()
 macro(make_default)
 
     # Build solver library
-    add_library(${TARGET_NAME} SHARED ${solver_src})
-    set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME ${SOLVER_LIB_NAME})
-    target_link_libraries(${TARGET_NAME} libplask ${SOLVER_LINK_LIBRARIES})
+    add_library(${SOLVER_TARGET} SHARED ${solver_src})
+    set_target_properties(${SOLVER_TARGET} PROPERTIES OUTPUT_NAME ${SOLVER_LIB_NAME})
+    target_link_libraries(${SOLVER_TARGET} libplask ${SOLVER_LINK_LIBRARIES})
     include_directories(${SOLVER_INCLUDE_DIRECTORIES})
     if (DEFINED SOLVER_LINK_FLAGS)
-        set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS ${SOLVER_LINK_FLAGS})
+        set_target_properties(${SOLVER_TARGET} PROPERTIES LINK_FLAGS ${SOLVER_LINK_FLAGS})
     endif()
     if (DEFINED SOLVER_COMPILE_FLAGS)
-        set_target_properties(${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${SOLVER_COMPILE_FLAGS})
+        set_target_properties(${SOLVER_TARGET} PROPERTIES COMPILE_FLAGS ${SOLVER_COMPILE_FLAGS})
     endif()
 
     if(WIN32)
-        install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
+        install(TARGETS ${SOLVER_TARGET} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
                                        ARCHIVE DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
     else()
-        install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
+        install(TARGETS ${SOLVER_TARGET} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
     endif()
 
     if(BUILD_PYTHON)
-        set(PYTHON_TARGET_NAME ${TARGET_NAME}-python)
+        set(PYTHON_SOLVER_TARGET ${SOLVER_TARGET}-python)
         # Make package hierarchy
         set(curr_path "${PLASK_PATH}/solvers")
         foreach(dir ${SOLVER_DIRECTORIES})
@@ -79,12 +79,12 @@ macro(make_default)
         endforeach()
         # Build Python interface
         if(WIN32)
-            add_library(${PYTHON_TARGET_NAME} SHARED ${interface_src})
+            add_library(${PYTHON_SOLVER_TARGET} SHARED ${interface_src})
         else()
-            add_library(${PYTHON_TARGET_NAME} MODULE ${interface_src})
+            add_library(${PYTHON_SOLVER_TARGET} MODULE ${interface_src})
         endif()
-        target_link_libraries(${PYTHON_TARGET_NAME} ${TARGET_NAME} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
-        set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
+        target_link_libraries(${PYTHON_SOLVER_TARGET} ${SOLVER_TARGET} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+        set_target_properties(${PYTHON_SOLVER_TARGET} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
                               OUTPUT_NAME ${SOLVER_NAME}
                               PREFIX "")
@@ -92,18 +92,18 @@ macro(make_default)
             set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
         endif()
         if(WIN32)
-            set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES
+            set_target_properties(${PYTHON_SOLVER_TARGET} PROPERTIES
                                   RUNTIME_OUTPUT_DIRECTORY "${PLASK_SOLVER_PATH}"
                                   SUFFIX ".pyd")
-            install(TARGETS ${PYTHON_TARGET_NAME} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
+            install(TARGETS ${PYTHON_SOLVER_TARGET} RUNTIME DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers
                                                   LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers-dev)
         else()
-            install(TARGETS ${PYTHON_TARGET_NAME} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
+            install(TARGETS ${PYTHON_SOLVER_TARGET} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
         endif()
     endif()
 
     if(BUILD_TESTING)
-        add_custom_target(${TARGET_NAME}-test DEPENDS ${TARGET_NAME} ${PYTHON_TARGET_NAME} ${SOLVER_TEST_DEPENDS})
+        add_custom_target(${SOLVER_TARGET}-test DEPENDS ${SOLVER_TARGET} ${PYTHON_SOLVER_TARGET} ${SOLVER_TEST_DEPENDS})
     endif()
 
 endmacro()
