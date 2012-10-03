@@ -18,7 +18,8 @@ double Element2D::getX() const { return 0.5 * (getNLoLeftPtr()->getX() + getNLoR
 double Element2D::getY() const { return 0.5 * (getNLoLeftPtr()->getY() + getNUpLeftPtr()->getY()); }
 double Element2D::getdVdX() const { return (0.5*(getNLoRightPtr()->getV() + getNUpRightPtr()->getV()) - 0.5*(getNLoLeftPtr()->getV() + getNUpLeftPtr()->getV())) / getWidth(); }
 double Element2D::getdVdY() const { return (0.5*(getNUpLeftPtr()->getV() + getNUpRightPtr()->getV()) - 0.5*(getNLoLeftPtr()->getV() + getNLoRightPtr()->getV())) / getHeight(); }
-//double Element2D::getT() const { return mT; }
+double Element2D::getCondJuncY() const { return mCondJuncY; }
+void Element2D::setCondJuncY(double iCondJuncY) { mCondJuncY = iCondJuncY; }
 
 /*void Element2D::setT()
 {

@@ -192,8 +192,8 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
     if (mLogs)
         writelog(LOG_INFO, "Setting matrix...");
 
-    std::vector<Element2D>::const_iterator ttE = mElements.begin();
-    std::vector<Node2D>::const_iterator ttN = mNodes.begin();
+    std::vector<Element2D>::iterator ttE = mElements.begin();
+    std::vector<Node2D>::iterator ttN = mNodes.begin();
 
     size_t tLoLeftNo, tLoRightNo, tUpLeftNo, tUpRightNo, // nodes numbers in current element
            tFstArg, tSecArg; // assistant values
@@ -233,13 +233,15 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
         if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
         {
             tKXAssist = mCondJuncX0;
-            //if (!mLoopNo)
-                tKYAssist = mCondJuncY0;
-            /*else
+            if (!mLoopNo)
+                ttE->setCondJuncY(mCondJuncY0);
+            else
             {
-                double tDact = 0.05; // getDact(ttE->getY()); [um]
-                tKYAssist = (mBeta * fabs(ttE->getdVdY()) * tDact) / log(tJy / mJs + 1.); // 1e-6 - from um to m
-            }*/
+                double tJy = ttE->getCondJuncY() * fabs(ttE->getdVdY()) * 1e6; // 1e6 - from um to m
+                double tDact = 10. * 1e-6; // getDact(ttE->getY()); [um] // 1e-6 - from um to m
+                ttE->setCondJuncY( (mBeta * tJy * tDact) / log(tJy / mJs + 1.) );
+            }
+            tKYAssist = ttE->getCondJuncY();
         }
         else
         {
@@ -301,8 +303,8 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
     if (mLogs)
         writelog(LOG_INFO, "Setting matrix...");
 
-    std::vector<Element2D>::const_iterator ttE = mElements.begin();
-    std::vector<Node2D>::const_iterator ttN = mNodes.begin();
+    std::vector<Element2D>::iterator ttE = mElements.begin();
+    std::vector<Node2D>::iterator ttN = mNodes.begin();
 
     size_t tLoLeftNo, tLoRightNo, tUpLeftNo, tUpRightNo, // nodes numbers in current element
            tFstArg, tSecArg; // assistant values
@@ -342,13 +344,15 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
         if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
         {
             tKXAssist = mCondJuncX0;
-            //if (!mLoopNo)
-                tKYAssist = mCondJuncY0;
-            /*else
+            if (!mLoopNo)
+                ttE->setCondJuncY(mCondJuncY0);
+            else
             {
-                double tDact = 0.05; // getDact(ttE->getY()); [um]
-                tKYAssist = (mBeta * fabs(ttE->getdVdY()) * tDact) / log(tJy / mJs + 1.); // 1e-6 - from um to m
-            }*/
+                double tJy = ttE->getCondJuncY() * fabs(ttE->getdVdY()) * 1e6; // 1e6 - from um to m
+                double tDact = 10. * 1e-6; // getDact(ttE->getY()); [um] // 1e-6 - from um to m
+                ttE->setCondJuncY( (mBeta * tJy * tDact) / log(tJy / mJs + 1.) );
+            }
+            tKYAssist = ttE->getCondJuncY();
         }
         else
         {
@@ -623,9 +627,18 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
-        mCurrentDensities[ttE->getNo()-1] = vec(
-            - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) * ttE->getdVdX() * 1e6, // 1e6 - from um to m
-            - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second) * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
+        if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
+        {
+            mCurrentDensities[ttE->getNo()-1] = vec(
+                - mCondJuncX0 * ttE->getdVdX() * 1e6, // 1e6 - from um to m
+                - ttE->getCondJuncY() * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
+        }
+        else
+        {
+            mCurrentDensities[ttE->getNo()-1] = vec(
+                - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) * ttE->getdVdX() * 1e6, // 1e6 - from um to m
+                - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second) * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
+        }
     }
 }
 
@@ -640,8 +653,15 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
-        mHeatDensities[ttE->getNo()-1] = (mCurrentDensities[ttE->getNo()-1]).ee_x() * (mCurrentDensities[ttE->getNo()-1]).ee_x() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) +
-            (mCurrentDensities[ttE->getNo()-1]).ee_y() * (mCurrentDensities[ttE->getNo()-1]).ee_y() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second);
+        if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
+        {
+            mHeatDensities[ttE->getNo()-1] = ( cPhys::h * cPhys::c * fabs((mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( cPhys::q * 450e-9 * 10e-6 );
+        }
+        else
+        {
+            mHeatDensities[ttE->getNo()-1] = (mCurrentDensities[ttE->getNo()-1]).ee_x() * (mCurrentDensities[ttE->getNo()-1]).ee_x() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) +
+                (mCurrentDensities[ttE->getNo()-1]).ee_y() * (mCurrentDensities[ttE->getNo()-1]).ee_y() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second);
+        }
     }
 }
 

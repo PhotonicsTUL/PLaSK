@@ -23,10 +23,10 @@ public:
     double getY() const; // return y-coordinate
     double getdVdX() const; // return dV/dx
     double getdVdY() const; // return dV/dy
-    //double getT() const; // return temperature
+    double getCondJuncY() const; // return conductivity in y-direction
 
     // setters
-    //void setV(); // set potential (from nodes)
+    void setCondJuncY(double iCondJuncY); // set conductivity in y-direction
 
 protected:
     int mNo; // number
@@ -34,7 +34,7 @@ protected:
                *mpNLoRight, // pointer to bottom-right node
                *mpNUpLeft, // pointer to top-left node
                *mpNUpRight; // pointer to top-right nodeRight Node
-    //double mT; // average temperature
+    double mCondJuncY; // electrical conductivity in y-direction
 };
 
 }}} // namespace plask::solvers::electrical
