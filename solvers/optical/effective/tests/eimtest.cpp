@@ -14,7 +14,9 @@ int main() {
 
     Manager manager;
     manager.loadFromXMLString(
+        "<plask>"
         "<geometry>"
+
         "   <cartesian2d name=\"main\" axes=\"xy\" left=\"mirror\">"
         "        <stack>"
         "            <container>"
@@ -25,6 +27,7 @@ int main() {
         "        </stack>"
         "    </cartesian2d>"
         "</geometry>"
+        "</plask>"
     );
 
     EffectiveIndex2DSolver solver;
@@ -43,7 +46,7 @@ int main() {
            left = -right,
            bottom = -0.5;
 
-    size_t N = 10000;
+    size_t N = 50000;
 
     auto mesh = make_shared<RegularMesh2D>(RegularMesh1D(left, right, N), RegularMesh1D(bottom, top, N));
 
