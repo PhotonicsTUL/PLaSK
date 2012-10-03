@@ -8,8 +8,10 @@ template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry
     mVCorrLim(0.01),
     mVBigCorr(1e5),
     mBigNum(1e15),
-    mJs(1e-7),
+    mJs(1e7),
     mBeta(20.),
+    mCondJuncX0(1e-6),
+    mCondJuncY0(5.),
     mLogs(false),
     mLoopNo(0),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getPotentials),
@@ -196,7 +198,7 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
     size_t tLoLeftNo, tLoRightNo, tUpLeftNo, tUpRightNo, // nodes numbers in current element
            tFstArg, tSecArg; // assistant values
 
-    double tKXAssist, tKYAssist, tElemWidth, tElemHeight, tF, // assistant values to set stiffness matrix
+    double tKXAssist, tKYAssist, tElemWidth, tElemHeight, /*tF,*/ // assistant values to set stiffness matrix
            tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44; // local symetric matrix components
 
     // set zeros
@@ -230,13 +232,14 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
         }
         if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
         {
-            double tJx = 1.0e-7,//(mCurrentDensities[ttE->getNo()-1]).ee_x(),
-                   tJy = 1.0e7,//(mCurrentDensities[ttE->getNo()-1]).ee_y();
-                   tJ = sqrt(tJx * tJx + tJy * tJy); //new one
-            tKXAssist = ( mBeta * tJ * tSize.ee_y() ) / log(tJ / mJs + 1. );
-            tKYAssist = ( mBeta * tJ * tSize.ee_y() ) / log(tJ / mJs + 1. );
-            //tKXAssist = ( mBeta * tJx * tSize.ee_y() ) / log(tJx / mJs + 1. );
-            //tKYAssist = ( mBeta * tJy * tSize.ee_y() ) / log(tJy / mJs + 1. );
+            tKXAssist = mCondJuncX0;
+            //if (!mLoopNo)
+                tKYAssist = mCondJuncY0;
+            /*else
+            {
+                double tDact = 0.05; // getDact(ttE->getY()); [um]
+                tKYAssist = (mBeta * fabs(ttE->getdVdY()) * tDact) / log(tJy / mJs + 1.); // 1e-6 - from um to m
+            }*/
         }
         else
         {
@@ -245,7 +248,7 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
         }
 
         // set load vector
-        tF = 0.; //0.25 * tElemWidth * tElemHeight * 1e-12 * 0.; // 1e-12 -> to transform um*um into m*m
+        //tF = 0.; //0.25 * tElemWidth * tElemHeight * 1e-12 * 0.; // 1e-12 -> to transform um*um into m*m
 
         // set symetric matrix components
         tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
@@ -278,10 +281,10 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
         mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK43;
 
         // set load vector
-        mpA[tLoLeftNo-1][mAWidth-1]  += tF;
+        /*mpA[tLoLeftNo-1][mAWidth-1]  += tF;
         mpA[tLoRightNo-1][mAWidth-1] += tF;
         mpA[tUpRightNo-1][mAWidth-1] += tF;
-        mpA[tUpLeftNo-1][mAWidth-1]  += tF;
+        mpA[tUpLeftNo-1][mAWidth-1]  += tF;*/
 
     }
     // boundary conditions are taken into account
@@ -304,7 +307,7 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
     size_t tLoLeftNo, tLoRightNo, tUpLeftNo, tUpRightNo, // nodes numbers in current element
            tFstArg, tSecArg; // assistant values
 
-    double tKXAssist, tKYAssist, tElemWidth, tElemHeight, tF, // assistant values to set stiffness matrix
+    double tKXAssist, tKYAssist, tElemWidth, tElemHeight, /*tF,*/ // assistant values to set stiffness matrix
            tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44; // local symetric matrix components
 
     // set zeros
@@ -338,22 +341,23 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
         }
         if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
         {
-            double tJx = 1.0e-7,//(mCurrentDensities[ttE->getNo()-1]).ee_x(),
-                   tJy = 1.0e7,//(mCurrentDensities[ttE->getNo()-1]).ee_y();
-                   tJ = sqrt(tJx * tJx + tJy * tJy); //new one
-            tKXAssist = ttE->getX() * ( mBeta * tJ * tSize.ee_y() ) / log(tJ / mJs + 1. );
-            tKYAssist = ttE->getX() * ( mBeta * tJ * tSize.ee_y() ) / log(tJ / mJs + 1. );
-            //tKXAssist = ( mBeta * tJx * tSize.ee_y() ) / log(tJx / mJs + 1. );
-            //tKYAssist = ( mBeta * tJy * tSize.ee_y() ) / log(tJy / mJs + 1. );
+            tKXAssist = mCondJuncX0;
+            //if (!mLoopNo)
+                tKYAssist = mCondJuncY0;
+            /*else
+            {
+                double tDact = 0.05; // getDact(ttE->getY()); [um]
+                tKYAssist = (mBeta * fabs(ttE->getdVdY()) * tDact) / log(tJy / mJs + 1.); // 1e-6 - from um to m
+            }*/
         }
         else
         {
-            tKXAssist = ttE->getX() * (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first;
-            tKYAssist = ttE->getX() * (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second;
+            tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first;
+            tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second;
         }
 
         // set load vector
-        tF = 0.; //0.25 * tElemWidth * tElemHeight * 1e-12 * 0.; // 1e-12 -> to transform um*um into m*m
+        //tF = 0.; //0.25 * tElemWidth * tElemHeight * 1e-12 * 0.; // 1e-12 -> to transform um*um into m*m
 
         // set symetric matrix components
         tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
@@ -362,34 +366,34 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
         tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;
 
         // set stiffness matrix
-        mpA[tLoLeftNo-1][mAWidth-2] +=  tK11;
-        mpA[tLoRightNo-1][mAWidth-2] +=  tK22;
-        mpA[tUpRightNo-1][mAWidth-2] += tK33;
-        mpA[tUpLeftNo-1][mAWidth-2] += tK44;
+        mpA[tLoLeftNo-1][mAWidth-2] +=  (ttE->getX() * tK11);
+        mpA[tLoRightNo-1][mAWidth-2] +=  (ttE->getX() * tK22);
+        mpA[tUpRightNo-1][mAWidth-2] += (ttE->getX() * tK33);
+        mpA[tUpLeftNo-1][mAWidth-2] += (ttE->getX() * tK44);
 
         tLoRightNo > tLoLeftNo ? (tFstArg = tLoRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tLoRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK21;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK21);
 
         tUpRightNo > tLoLeftNo ? (tFstArg = tUpRightNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK31;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK31);
 
         tUpLeftNo > tLoLeftNo ? (tFstArg = tUpLeftNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK41;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK41);
 
         tUpRightNo > tLoRightNo ? (tFstArg = tUpRightNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpRightNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK32;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK32);
 
         tUpLeftNo > tLoRightNo ? (tFstArg = tUpLeftNo, tSecArg = tLoRightNo) : (tFstArg = tLoRightNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK42;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK42);
 
         tUpLeftNo > tUpRightNo ? (tFstArg = tUpLeftNo, tSecArg = tUpRightNo) : (tFstArg = tUpRightNo, tSecArg = tUpLeftNo);
-        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += tK43;
+        mpA[tFstArg-1][mAWidth-2-(tFstArg-tSecArg)] += (ttE->getX() * tK43);
 
         // set load vector
-        mpA[tLoLeftNo-1][mAWidth-1]  += tF;
+        /*mpA[tLoLeftNo-1][mAWidth-1]  += tF;
         mpA[tLoRightNo-1][mAWidth-1] += tF;
         mpA[tUpRightNo-1][mAWidth-1] += tF;
-        mpA[tUpLeftNo-1][mAWidth-1]  += tF;
+        mpA[tUpLeftNo-1][mAWidth-1]  += tF;*/
 
     }
     // boundary conditions are taken into account
@@ -490,6 +494,26 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 {
     if (param == "Vconst")
         manager.readBoundaryConditions(source, mVconst);
+    else if (param == "js")
+    {
+        mJs = source.requireAttribute<double>("value");
+        source.requireTagEnd();
+    }
+    else if (param == "beta")
+    {
+        mBeta = source.requireAttribute<double>("value");
+        source.requireTagEnd();
+    }
+    else if (param == "pnjcondx0")
+    {
+        mCondJuncX0 = source.requireAttribute<double>("value");
+        source.requireTagEnd();
+    }
+    else if (param == "pnjcondy0")
+    {
+        mCondJuncY0 = source.requireAttribute<double>("value");
+        source.requireTagEnd();
+    }
     else if (param == "looplim")
     {
         mLoopLim = source.requireAttribute<int>("value");

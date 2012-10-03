@@ -66,6 +66,8 @@ template<typename Geometry2Dtype> struct FiniteElementMethodElectrical2DSolver: 
     double mBigNum; // for the first boundary condtion (see: set Matrix)
     double mJs; // p-n junction parameter [A/m^2]
     double mBeta; // p-n junction parameter [1/V]
+    double mCondJuncX0; // initial electrical conductivity for p-n junction in x-direction [1/(Ohm*m)]
+    double mCondJuncY0; // initial electrical conductivity for p-n junction in y-direction [1/(Ohm*m)]
     bool mLogs; // logs (0-most important logs, 1-all logs)
     int mLoopNo; // number of completed loops
 
