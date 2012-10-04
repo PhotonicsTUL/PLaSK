@@ -9,19 +9,22 @@ YourSolver::YourSolver(const std::string& name=""): SolverWithMesh<ForExample_Ge
 }
 
 
-void YourSolver::loadParam(const std::string& param, XMLReader& reader, Manager&) {
+void YourSolver::loadConfiguration(XMLReader& reader, Manager& manager) {
     // Load a configuration parameter from XML.
     // Below you have an example
-    if (param == "newton") {
-        newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
-        newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
-        newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
-        reader.requireTagEnd();
-    } else if (param == "wavelength") {
-        std::string = reader.requireTextUntilEnd();
-        inWavelength.setValue(boost::lexical_cast<double>(wavelength));
-    } else
-        throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <newton>, or <wavelength>", param);
+    while (reader.requireTagOrEnd()) {
+        std::string param = reader.getNodeName();
+        if (param == "newton") {
+            newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
+            newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
+            newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
+            reader.requireTagEnd();
+        } else if (param == "wavelength") {
+            std::string = reader.requireTextUntilEnd();
+            inWavelength.setValue(boost::lexical_cast<double>(wavelength));
+        } else
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <newton>, or <wavelength>");
+    }
 }
 
 

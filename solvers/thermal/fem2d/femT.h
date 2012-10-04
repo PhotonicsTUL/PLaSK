@@ -186,7 +186,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     double getBigNum();
     double getTInit();
 
-    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
+    virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodThermal2DSolver(const std::string& name="");
 

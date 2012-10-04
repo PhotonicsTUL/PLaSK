@@ -32,7 +32,7 @@ struct YourSolver: public SolverWithMesh<ForExample_Geometry2DCartesian, ForExam
         return "This solver does this and that. And this description can be e.g. shown as a hint in GUI.";
     }
 
-    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager);
+    virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
 
     /**
      * This method performs the main computations.

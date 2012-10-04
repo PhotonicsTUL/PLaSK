@@ -5,15 +5,11 @@ namespace plask {
 
 
 void Solver::loadConfiguration(XMLReader& reader, Manager& manager) {
-    while (reader.requireTagOrEnd()) {
-        loadParam(reader.getNodeName(), reader, manager);
-        reader.requireTagEnd();
-    }
+    reader.requireTagEnd();
 }
 
-
-void Solver::loadParam(const std::string& param, XMLReader& reader, Manager& manager) {
-    throw XMLUnexpectedElementException(reader, "no additional configuration for this solver");
+void Solver::parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg) {
+    throw XMLUnexpectedElementException(source, expected_msg);
 }
 
 bool Solver::initCalculation() {

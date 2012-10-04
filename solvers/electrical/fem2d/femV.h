@@ -181,7 +181,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodElectrical2DSolver: 
     double getVBigCorr();
     double getBigNum();
 
-    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
+    virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodElectrical2DSolver(const std::string& name="");
 

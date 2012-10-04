@@ -28,32 +28,38 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
 }
 
 
-void EffectiveFrequencyCylSolver::loadParam(const std::string& param, XMLReader& reader, Manager&) {
-    if (param == "mode") {
-        l = reader.getAttribute<unsigned short>("l", l);
-        auto alam0 = reader.getAttribute<unsigned short>("lam0");
-        auto ak0 = reader.getAttribute<unsigned short>("k0");
-        if (alam0) {
-            if (ak0) throw XMLConflictingAttributesException(reader, "k0", "lam0");
-            k0 = 2e3*M_PI / *alam0;
-        } else if (ak0) k0 = *ak0;
-    } else if (param == "root") {
+void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& manager) {
+    while (reader.requireTagOrEnd()) {
+        std::string param = reader.getNodeName();
+        if (param == "mode") {
+            l = reader.getAttribute<unsigned short>("l", l);
+            auto alam0 = reader.getAttribute<unsigned short>("lam0");
+            auto ak0 = reader.getAttribute<unsigned short>("k0");
+            if (alam0) {
+                if (ak0) throw XMLConflictingAttributesException(reader, "k0", "lam0");
+                k0 = 2e3*M_PI / *alam0;
+            } else if (ak0) k0 = *ak0;
+            reader.requireTagEnd();
+        } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
             root.tolf_min = reader.getAttribute<double>("tolf_min", root.tolf_min);
             root.tolf_max = reader.getAttribute<double>("tolf_max", root.tolf_max);
             root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
             root.maxiterations = reader.getAttribute<int>("maxiterations", root.maxstep);
-    } else if (param == "striperoot") {
+            reader.requireTagEnd();
+        } else if (param == "striperoot") {
             striperoot.tolx = reader.getAttribute<double>("tolx", striperoot.tolx);
             striperoot.tolf_min = reader.getAttribute<double>("tolf_min", striperoot.tolf_min);
             striperoot.tolf_max = reader.getAttribute<double>("tolf_max", striperoot.tolf_max);
             striperoot.maxstep = reader.getAttribute<double>("maxstep", striperoot.maxstep);
             striperoot.maxiterations = reader.getAttribute<int>("maxiterations", striperoot.maxiterations);
-    } else if (param == "outer") {
+            reader.requireTagEnd();
+        } else if (param == "outer") {
             outer_distance = reader.requireAttribute<double>("distance");
-    } else
-        throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <mode>, <striperoot>, <root>, or <outer>", param);
-    reader.requireTagEnd();
+            reader.requireTagEnd();
+        } else
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <striperoot>, or <outer>");
+    }
 }
 
 dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)

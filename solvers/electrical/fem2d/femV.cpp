@@ -454,7 +454,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
             mLoopNo++;
 
             // show max correction
-            writelog(LOG_INFO, "Loop no: %1%(%2%), max. corr. for V: %3%", tLoop, mLoopNo, tVCorr);
+            writelog(LOG_DETAIL, "Loop no: %1%(%2%), max. corr. for V: %3%", tLoop, mLoopNo, tVCorr);
 
             tLoop++;
         }
@@ -494,57 +494,41 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
     return tVCorrOut;
 }
 
-template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::loadParam(const std::string &param, XMLReader &source, Manager &manager)
+template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::loadConfiguration(XMLReader &source, Manager &manager)
 {
-    if (param == "Vconst")
-        manager.readBoundaryConditions(source, mVconst);
-    else if (param == "js")
-    {
-        mJs = source.requireAttribute<double>("value");
-        source.requireTagEnd();
+    while (source.requireTagOrEnd()) {
+        std::string param = source.getNodeName();
+
+        if (param == "Vconst")
+            manager.readBoundaryConditions(source, mVconst);
+        else if (param == "js")
+        {
+            mJs = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "beta")
+        {
+            mBeta = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "pnjcondx0")
+        {
+            mCondJuncX0 = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "pnjcondy0")
+        {
+            mCondJuncY0 = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "looplim")
+        {
+            mLoopLim = source.requireAttribute<int>("value");
+            source.requireTagEnd();
+        }
+        else
+            this->parseStandardConfiguration(source, manager);
     }
-    else if (param == "beta")
-    {
-        mBeta = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "pnjcondx0")
-    {
-        mCondJuncX0 = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "pnjcondy0")
-    {
-        mCondJuncY0 = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "looplim")
-    {
-        mLoopLim = source.requireAttribute<int>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "Vcorrlim")
-    {
-        mVCorrLim = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "Vbigcorr")
-    {
-        mVBigCorr = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "bignum")
-    {
-        mBigNum = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "logs")
-    {
-        mLogs = source.requireAttribute<bool>("value");
-        source.requireTagEnd();
-    }
-    else
-        throw XMLUnexpectedElementException(source, "electrical solver configuration tag", param);
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::updNodes()

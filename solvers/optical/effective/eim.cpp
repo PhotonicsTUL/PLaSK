@@ -30,45 +30,51 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
 }
 
 
-void EffectiveIndex2DSolver::loadParam(const std::string& param, XMLReader& reader, Manager&) {
-    if (param == "mode") {
-        auto pol = reader.getAttribute("polarization");
-        if (pol) {
-            if (*pol == "TE") polarization = TE;
-            else if (*pol == "TM") polarization = TM;
-            else throw BadInput(getId(), "Wrong polarization specification '%1%' in XML", *pol);
-        }
-        auto sym = reader.getAttribute("symmetry");
-        if (sym) {
-            if (*sym == "0" || *sym == "none" ) {
-                symmetry = NO_SYMMETRY;
+void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manager) {
+    while (reader.requireTagOrEnd()) {
+        std::string param = reader.getNodeName();
+        if (param == "mode") {
+            auto pol = reader.getAttribute("polarization");
+            if (pol) {
+                if (*pol == "TE") polarization = TE;
+                else if (*pol == "TM") polarization = TM;
+                else throw BadInput(getId(), "Wrong polarization specification '%1%' in XML", *pol);
             }
-            else if (*sym == "positive" || *sym == "pos" || *sym == "symmeric" || *sym == "+" || *sym == "+1") {
-                symmetry = SYMMETRY_POSITIVE;;
+            auto sym = reader.getAttribute("symmetry");
+            if (sym) {
+                if (*sym == "0" || *sym == "none" ) {
+                    symmetry = NO_SYMMETRY;
+                }
+                else if (*sym == "positive" || *sym == "pos" || *sym == "symmeric" || *sym == "+" || *sym == "+1") {
+                    symmetry = SYMMETRY_POSITIVE;;
+                }
+                else if (*sym == "negative" || *sym == "neg" || *sym == "anti-symmeric" || *sym == "antisymmeric" || *sym == "-" || *sym == "-1") {
+                    symmetry = SYMMETRY_NEGATIVE;
+                } else throw BadInput(getId(), "Wrong symmetry specification '%1%' in XML", *sym);
             }
-            else if (*sym == "negative" || *sym == "neg" || *sym == "anti-symmeric" || *sym == "antisymmeric" || *sym == "-" || *sym == "-1") {
-                symmetry = SYMMETRY_NEGATIVE;
-            } else throw BadInput(getId(), "Wrong symmetry specification '%1%' in XML", *sym);
-        }
-        auto wavelength = reader.getAttribute<double>("wavelength");
-        if (wavelength) inWavelength.setValue(*wavelength);
-    } else if (param == "root") {
+            auto wavelength = reader.getAttribute<double>("wavelength");
+            if (wavelength) inWavelength.setValue(*wavelength);
+            reader.requireTagEnd();
+        } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
             root.tolf_min = reader.getAttribute<double>("tolf_min", root.tolf_min);
             root.tolf_max = reader.getAttribute<double>("tolf_max", root.tolf_max);
             root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
             root.maxiterations = reader.getAttribute<int>("maxiterations", root.maxstep);
-    } else if (param == "striperoot") {
+            reader.requireTagEnd();
+        } else if (param == "striperoot") {
             striperoot.tolx = reader.getAttribute<double>("tolx", striperoot.tolx);
             striperoot.tolf_min = reader.getAttribute<double>("tolf_min", striperoot.tolf_min);
             striperoot.tolf_max = reader.getAttribute<double>("tolf_max", striperoot.tolf_max);
             striperoot.maxstep = reader.getAttribute<double>("maxstep", striperoot.maxstep);
             striperoot.maxiterations = reader.getAttribute<int>("maxiterations", striperoot.maxiterations);
-    } else if (param == "outer") {
+            reader.requireTagEnd();
+        } else if (param == "outer") {
             outer_distance = reader.requireAttribute<double>("distance");
-    } else
-        throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <mode>, <striperoot>, <root>, or <outer>", param);
-    reader.requireTagEnd();
+            reader.requireTagEnd();
+        } else
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <striperoot>, or <outer>");
+    }
 }
 
 dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)

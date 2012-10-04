@@ -90,8 +90,7 @@ struct XMLUnexpectedElementException: public XMLException {
      * @param reader current reader
      * @param what_is_expected what is expected (typically tag with name, etc.)
      */
-    XMLUnexpectedElementException(const XMLReader& reader, const std::string& what_is_expected):
-        XMLException(reader, "expected " + what_is_expected) {}
+    XMLUnexpectedElementException(const XMLReader& reader, const std::string& what_is_expected);
 
     /**
      * @param reader current reader

@@ -15,4 +15,14 @@ XMLException::XMLException(const std::string& where, const std::string& msg):
 
 XMLException::XMLException(const std::string& msg): std::runtime_error(msg) {}
 
+XMLUnexpectedElementException::XMLUnexpectedElementException(const XMLReader& reader, const std::string& what_is_expected):
+    XMLException(reader, "expected " + what_is_expected + ", got " + (
+                    reader.getNodeType() == XMLReader::NODE_ELEMENT ?     ("<"+reader.getNodeName()+">") :
+                    reader.getNodeType() == XMLReader::NODE_ELEMENT_END ? ("</"+reader.getNodeName()+">") :
+                    reader.getNodeType() == XMLReader::NODE_TEXT ?         "text" :
+                    reader.getNodeType() == XMLReader::NODE_CDATA ?        "CDATA" :
+                    "unknown node"
+                 ) + " instead") {}
+
+
 } // namespace plask

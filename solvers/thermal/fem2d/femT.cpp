@@ -126,7 +126,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setElements()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Setting elememts...");
+        writelog(LOG_INFO, "Setting elements...");
 
     size_t tNo = 1; // element number
 
@@ -617,7 +617,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
             mLoopNo++;
 
             // show max correction
-            writelog(LOG_INFO, "Loop no: %1%(%2%), max. corr. for T: %3%", tLoop, mLoopNo, tTCorr);
+            writelog(LOG_DETAIL, "Loop no: %1%(%2%), max. corr. for T: %3%", tLoop, mLoopNo, tTCorr);
 
             tLoop++;
         }
@@ -651,48 +651,52 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
     return tTCorrOut;
 }
 
-template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadParam(const std::string &param, XMLReader &source, Manager &manager)
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadConfiguration(XMLReader &source, Manager &manager)
 {
-    if (param == "Tconst")
-        this->readBoundaryConditions(manager, source, mTConst);
-    else if (param == "HFconst")
-        this->readBoundaryConditions(manager, source, mHFConst);
-    else if (param == "convection")
-        this->readBoundaryConditions(manager, source, mConvection);
-    else if (param == "radiation")
-        this->readBoundaryConditions(manager, source, mRadiation);
-    else if (param == "Tinit")
-    {
-        mTInit = source.requireAttribute<double>("value");
-        source.requireTagEnd();
+    while (source.requireTagOrEnd()) {
+        std::string param = source.getNodeName();
+
+        if (param == "Tconst")
+            this->readBoundaryConditions(manager, source, mTConst);
+        else if (param == "HFconst")
+            this->readBoundaryConditions(manager, source, mHFConst);
+        else if (param == "convection")
+            this->readBoundaryConditions(manager, source, mConvection);
+        else if (param == "radiation")
+            this->readBoundaryConditions(manager, source, mRadiation);
+        else if (param == "Tinit")
+        {
+            mTInit = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "looplim")
+        {
+            mLoopLim = source.requireAttribute<int>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "Tcorrlim")
+        {
+            mTCorrLim = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "Tbigcorr")
+        {
+            mTBigCorr = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "bignum")
+        {
+            mBigNum = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "logs")
+        {
+            mLogs = source.requireAttribute<bool>("value");
+            source.requireTagEnd();
+        }
+        else
+            this->parseStandardConfiguration(source, manager);
     }
-    else if (param == "looplim")
-    {
-        mLoopLim = source.requireAttribute<int>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "Tcorrlim")
-    {
-        mTCorrLim = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "Tbigcorr")
-    {
-        mTBigCorr = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "bignum")
-    {
-        mBigNum = source.requireAttribute<double>("value");
-        source.requireTagEnd();
-    }
-    else if (param == "logs")
-    {
-        mLogs = source.requireAttribute<bool>("value");
-        source.requireTagEnd();
-    }
-    else
-        throw XMLUnexpectedElementException(source, "thermal solver configuration tag", param);
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::updNodes()

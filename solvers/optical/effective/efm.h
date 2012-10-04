@@ -82,7 +82,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
                "in Cartesian two-dimensional space.";
     }
 
-    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager);
+    virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
 
     /**
      * Set the simple mesh based on the geometry bounding boxes.

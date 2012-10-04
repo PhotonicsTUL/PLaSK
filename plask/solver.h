@@ -51,7 +51,7 @@ Once you have your source tree set up, do the following:
     - note that most providers are classes obtained by using plask::ProviderFor template,
     - more details can be found in @ref providers.
 -# If you need boundary conditions, place in your class public plask::BoundaryConditions fields which are containers of boundary-condition pairs.
--# Implement loadParam method, which loads configuration of your solver from XML reader.
+-# Implement loadConfiguration method, which loads configuration of your solver from XML reader.
 -# Typically, implement calculation method. This method is a place for your calculation code.
    You don't have to implement it if you don't need to do any calculations. You can also write more methods performing
    different calculations, however, you need to clearly document them. Each calculation method must call plask::Solver::initCalculation()
@@ -277,32 +277,34 @@ The important objects of the above method are the first and the last lines. In t
 and are up-to-date (remember, we have cleared the value of \c outNeff in \c onInvalidate()). Otherwise we throw an exception. In the last line
 we use plask::interpolate function to interpolate our data to the receiver mesh (which is provided as \c destination_mesh argument).
 
-Our solver can perform computations now. However, if it has any configuration to load, we can read it from XML file. To do this, we shoud
-reimplement \c loadParam method. It reads the configuration from the current XML tag named \c param using plask::XMLReader class and must
-require the closing of the tag. Below you have an example:
+Our solver can perform computations now. However, if it has any configuration to load, we can read it from XML file. To do this, we should
+reimplement \c loadConfiguration method. It reads the configuration from the current XML file using plask::XMLReader, by walking through
+the consecutive tags. It is important to call \c parseStandardConfiguration if you encounter unknown tag. Below you have an example:
 
 \code
-    void loadParam(const std::string& param, XMLReader& reader, Manager& manager) {
-        if (param == "newton") {
-            newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
-            newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
-            newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
-            reader.requireTagEnd();
-        } else if (param == "wavelength") {
-            std::string = reader.requireTextUntilEnd();
-            inWavelength.setValue(boost::lexical_cast<double>(wavelength));
-        } else if (param == "boundary") {
-            manager.readBoundaryConditions(source, boundaryConditionsOnField);
-            reader.requireTagEnd();
-        } else
-            throw XMLUnexpectedElementException(reader, "<geometry>, <mesh>, <newton>, or <wavelength>", param);
+    void loadConfiguration(XMLReader& reader, Manager& manager) {
+        while (reader.requireTagOrEnd()) {
+            if (reader.getNodeName() == "newton") {
+                newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
+                newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
+                newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
+                reader.requireTagEnd();
+            } else if (reader.getNodeName() == "wavelength") {
+                std::string = reader.requireTextUntilEnd();
+                inWavelength.setValue(boost::lexical_cast<double>(wavelength));
+            } else if (reader.getNodeName() == "boundary") {
+                manager.readBoundaryConditions(source, boundaryConditionsOnField);
+                reader.requireTagEnd();
+            } else
+                parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <newton>, or <wavelength>");
+        }
     }
 \endcode
 
 In the above example we assume that we have some local \p struct with parameters of Newton algorithm: \c tolx, \c tolf, and \c maxstep.
 They are read from the corresponding attributes of a &lt;newton&gt; tag, with default value equal to the current value of the corresponding
 parameter. Furthermore, user can optionally specify a wavelength, which we set as a specified input value of the inWavelength receiver
-(single-value receivers can be connected to providers, however thay can also have assigned value as normal variables, although in any case
+(single-value receivers can be connected to providers, however they can also have assigned value as normal variables, although in any case
 to read their values you must remember about using parenthesis, e.g. <tt>w&nbsp;=&nbsp;inWavelength()</tt>).
 
 The XML file to read by the above method can look as follows (although you should rather use XML attributes to set simple parameters,
@@ -488,30 +490,22 @@ class Solver {
      * XML reader (@p source) point to opening of @c this solver tag and
      * after return from this method should point to this solver closing tag.
      *
-     * Overload this method only if you really need it. Otherwise, overload \p loadParam method.
-     *
-     * Default implementation call loadParam for each read tag.
      * @param source source of configuration
      * @param manager manager from which information about geometry, meshes, materials, and so on can be get if needed
      */
     virtual void loadConfiguration(XMLReader& source, Manager& manager);
 
     /**
-     * Load single parameter from given \p source.
+     * Load standard configuration (geometry, mesh) tags from \p source.
+     * Throws an exception if the current tag is not a standard tag (so parse your own solver configuration first).
      *
-     * Move @p source reader to end of current (parameter) tag.
-     * (Note that you must call source.requireTagEnd() in subclass if you require empty tag.)
-     *
-     * This method is called by \p loadConfiguration, to read configuration of particular parameter.
-     *
-     * Default implementation just throws an exception (no parmaters are supported by default).
-     * \param[in] param configuration parameter to read (same as source.getNodeName())
-     * \param[in, out] source source of configuration which point to opening of paramter tag
+     * \param[in, out] source source of configuration which point to opening of parameter tag
      * \param[in, out] manager manager from which information about geometry, meshes, materials, and so on can be get if needed
+     * \param[in] expected_msg optional message stating what was expected
      *
-     * \throw XMLUnexpectedElementException if the parameter is not recognized
+     * \throw XMLUnexpectedElementException if the current tag is not recognized
      */
-    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager);
+    void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
 
     /**
      * Check if solver is already initialized.
@@ -638,6 +632,8 @@ class SolverOver: public Solver {
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager);
 
+    void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
+
     /**
      * This method is called when calculation space (geometry) was changed.
      * It just calls invalidate(); but subclasses can customize it.
@@ -708,6 +704,8 @@ class SolverWithMesh: public SolverOver<SpaceT> {
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager);
 
+    void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
+
     /**
      * This method is called when mesh was changed.
      * It just calls invalidate(); but subclasses can customize it.
@@ -765,63 +763,57 @@ namespace plask {
 
 template <typename SpaceT>
 void SolverOver<SpaceT>::loadConfiguration(XMLReader& reader, Manager& manager) {
-    while (reader.requireTagOrEnd()) {
-        if (reader.getNodeName() == "geometry") {
-            auto name = reader.getAttribute("ref");
-            if (!name) name.reset(reader.requireTextUntilEnd());
-            else reader.requireTagEnd();
-            auto found = manager.geometries.find(*name);
-            if (found == manager.geometries.end())
-                throw BadInput(this->getId(), "Geometry '%1%' not found.", *name);
-            else {
-                auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
-                if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
-                this->setGeometry(geometry);
-            }
-        } else {
-            this->loadParam(reader.getNodeName(), reader, manager);
-        }
-    }
+        while (reader.requireTagOrEnd()) parseStandardConfiguration(reader, manager, "<geometry>");
 }
 
 template <typename SpaceT, typename MeshT>
 void SolverWithMesh<SpaceT, MeshT>::loadConfiguration(XMLReader& reader, Manager& manager) {
-    while (reader.requireTagOrEnd()) {
-        if (reader.getNodeName() == "geometry") {
-            auto name = reader.getAttribute("ref");
-            if (!name) name.reset(reader.requireTextUntilEnd());
-            else reader.requireTagEnd();
-            auto found = manager.geometries.find(*name);
-            if (found == manager.geometries.end())
-                throw BadInput(this->getId(), "Geometry '%1%' not found.", *name);
-            else {
-                auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
-                if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
-                this->setGeometry(geometry);
-            }
+        while (reader.requireTagOrEnd()) parseStandardConfiguration(reader, manager, "<geometry> or <mesh>");
+}
+
+
+template <typename SpaceT>
+void SolverOver<SpaceT>::parseStandardConfiguration(XMLReader& reader, Manager& manager, const std::string& expected_msg) {
+    if (reader.getNodeName() == "geometry") {
+        auto name = reader.getAttribute("ref");
+        if (!name) name.reset(reader.requireTextUntilEnd());
+        else reader.requireTagEnd();
+        auto found = manager.geometries.find(*name);
+        if (found == manager.geometries.end())
+            throw BadInput(this->getId(), "Geometry '%1%' not found.", *name);
+        else {
+            auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
+            if (!geometry) throw BadInput(this->getId(), "Geometry '%1%' of wrong type.");
+            this->setGeometry(geometry);
         }
-        else if (reader.getNodeName() == "mesh") {
-            auto name = reader.getAttribute("ref");
-            if (!name) name.reset(reader.requireTextUntilEnd());
-            else reader.requireTagEnd();
-            auto found = manager.meshes.find(*name);
-            if (found != manager.meshes.end()) {
-                auto mesh = dynamic_pointer_cast<MeshT>(found->second);
-                if (!mesh) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
-                this->setMesh(mesh);
-            }
-            else {
-                auto found = manager.generators.find(*name);
-                if (found != manager.generators.end()) {
-                    auto generator = dynamic_pointer_cast<MeshGeneratorOf<MeshT>>(found->second);
-                    if (!generator) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
-                    this->setMesh(generator);
-                } else
-                    throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found.", *name);
-            }
-        } else {
-            this->loadParam(reader.getNodeName(), reader, manager);
+    } else {
+        Solver::parseStandardConfiguration(reader, manager, expected_msg);
+    }
+}
+
+template <typename SpaceT, typename MeshT>
+void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader, Manager& manager, const std::string& expected_msg) {
+    if (reader.getNodeName() == "mesh") {
+        auto name = reader.getAttribute("ref");
+        if (!name) name.reset(reader.requireTextUntilEnd());
+        else reader.requireTagEnd();
+        auto found = manager.meshes.find(*name);
+        if (found != manager.meshes.end()) {
+            auto mesh = dynamic_pointer_cast<MeshT>(found->second);
+            if (!mesh) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
+            this->setMesh(mesh);
         }
+        else {
+            auto found = manager.generators.find(*name);
+            if (found != manager.generators.end()) {
+                auto generator = dynamic_pointer_cast<MeshGeneratorOf<MeshT>>(found->second);
+                if (!generator) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
+                this->setMesh(generator);
+            } else
+                throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found.", *name);
+        }
+    } else {
+        SolverOver<SpaceT>::parseStandardConfiguration(reader, manager, expected_msg);
     }
 }
 

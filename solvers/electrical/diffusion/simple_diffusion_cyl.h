@@ -26,7 +26,7 @@ struct SimpleDiffusionSolverCyl: public SolverOver<Geometry2DCylindrical>
         return "This solver computes carrier distribution for single active region using simple one-dimensional model.";
     }
 
-    virtual void loadParam(const std::string& param, XMLReader& source, Manager& manager);
+    virtual void loadConfiguration(XMLReader& source, Manager& manager);
 
 
     /**
