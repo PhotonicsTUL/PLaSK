@@ -1,8 +1,8 @@
-#ifndef PLASK__Au_H
-#define PLASK__Au_H
+#ifndef PLASK__Cu_H
+#define PLASK__Cu_H
 
 /** @file
-This file includes Au
+This file includes Cu
 */
 
 #include <plask/material/material.h>
@@ -10,11 +10,11 @@ This file includes Au
 namespace plask {
 
 /**
- * Represent Au, its physical properties.
+ * Represent Cu, its physical properties.
  */
-struct Au: public Metal {
+struct Cu: public Metal {
 
-    static constexpr const char* NAME = "Au";
+    static constexpr const char* NAME = "Cu";
 
     virtual std::string name() const;
     virtual std::pair<double,double> cond(double T) const;
@@ -27,4 +27,4 @@ struct Au: public Metal {
 
 } // namespace plask
 
-#endif	//PLASK__GaAs_H
+#endif	//PLASK__Cu_H
