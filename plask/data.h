@@ -451,7 +451,47 @@ struct DataVector {
         std::swap(gc_, other.gc_);
         std::swap(data_, other.data_);
     }
+    
+    /**
+     * Fill all data using given value.
+     * @param value value to fill
+     */
+    template <typename O>
+    void fill(const O& value) {
+        std::fill_n(data_, size_, value);
+    }
+    
+    /**
+     * Get subarray of this which referee to data of this.
+     * @param begin_index index of this from which data of subarray should begin
+     * @param subarray_size size of sub-array
+     * @return data vector which refere to same data as this and is valid not longer than data of this
+     */
+    DataVector<T> getSubarrayRef(std::size_t begin_index, std::size_t subarray_size) {
+        assert(begin_index + subarray_size <= size_);
+        return DataVector<T>(data_ + begin_index, subarray_size, false);
+    }
+    
+    /**
+     * Get subarray of this which referee to data of this.
+     * @param begin_index index of this from which data of subarray should begin
+     * @param subarray_size size of sub-array
+     * @return data vector which refere to same data as this and is valid not longer than data of this
+     */
+    DataVector<const T> getSubarrayRef(std::size_t begin_index, std::size_t subarray_size) const {
+        assert(begin_index + subarray_size <= size_);
+        return DataVector<const T>(data_ + begin_index, subarray_size, false);
+    }
 
+    /**
+     * Get subarray of this which copy the data (fragment) of this.
+     * @param begin_index index of this from which data of subarray should begin
+     * @param subarray_size size of sub-array
+     * @return data vector which store new data which are copy of data from this
+     */
+    DataVector<T> getSubarrayCopy(std::size_t begin_index, std::size_t subarray_size) const {
+        return getSubarrayRef(begin_index, subarray_size).copy();
+    }
 };
 
 /** \relates DataVector
