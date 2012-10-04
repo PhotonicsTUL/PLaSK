@@ -31,7 +31,8 @@ template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry
 
 template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::~FiniteElementMethodElectrical2DSolver()
 {
-    if (mpA) {
+    if (mpA)
+    {
         for (int i = 0; i < mAHeight; i++)
             delete [] mpA[i];
         delete [] mpA;
@@ -499,7 +500,8 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::loadConfiguration(XMLReader &source, Manager &manager)
 {
-    while (source.requireTagOrEnd()) {
+    while (source.requireTagOrEnd())
+    {
         std::string param = source.getNodeName();
 
         if (param == "Vconst")
@@ -527,6 +529,21 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         else if (param == "looplim")
         {
             mLoopLim = source.requireAttribute<int>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "Vcorrlim")
+        {
+            mVCorrLim = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "Vbigcorr")
+        {
+            mVBigCorr = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "bignum")
+        {
+            mBigNum = source.requireAttribute<double>("value");
             source.requireTagEnd();
         }
         else if (param == "logs")

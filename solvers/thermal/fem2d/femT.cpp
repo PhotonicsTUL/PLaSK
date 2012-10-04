@@ -5,6 +5,7 @@ namespace plask { namespace solvers { namespace thermal {
 
 template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::FiniteElementMethodThermal2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>(name),
+    mpA(nullptr),
     mLoopLim(5),
     mTCorrLim(0.1),
     mTBigCorr(1e5),
@@ -27,9 +28,12 @@ template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dt
 
 template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::~FiniteElementMethodThermal2DSolver()
 {
-    for (int i = 0; i < mAHeight; i++)
-        delete [] mpA[i];
-    delete [] mpA;
+    if (mpA)
+    {
+        for (int i = 0; i < mAHeight; i++)
+            delete [] mpA[i];
+        delete [] mpA;
+    }
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::onInitialize() { // In this function check if geometry and mesh are set
@@ -653,7 +657,8 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadConfiguration(XMLReader &source, Manager &manager)
 {
-    while (source.requireTagOrEnd()) {
+    while (source.requireTagOrEnd())
+    {
         std::string param = source.getNodeName();
 
         if (param == "Tconst")
