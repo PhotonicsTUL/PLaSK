@@ -13,7 +13,6 @@ template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry
     mBeta(20.),
     mCondJuncX0(1e-6),
     mCondJuncY0(5.),
-    mWavelength(1300.),
     mLogs(false),
     mLoopNo(0),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getPotentials),
@@ -529,7 +528,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         }
         else if (param == "wavelength")
         {
-            mWavelength = source.requireAttribute<double>("value");
+            inWavelength = source.requireAttribute<double>("value");
             source.requireTagEnd();
         }
         else if (param == "looplim")
@@ -670,7 +669,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     {
         if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
         {
-            mHeatDensities[ttE->getNo()-1] = ( cPhys::h * cPhys::c * fabs((mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( cPhys::q * mWavelength * 1e-9 * 10e-6 ); // 10e-6 TODO
+            mHeatDensities[ttE->getNo()-1] = ( cPhys::h * cPhys::c * fabs((mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( cPhys::q * real(inWavelength()) * 1e-9 * 10e-6 ); // 10e-6 TODO
         }
         else
         {
