@@ -353,7 +353,7 @@ struct Material {
      * @param T temperature [K]
      * @return effective density of states in the valance band Nv [\f$m^{-3}\f$]
      */
-    virtual double Nc(double T) const;
+    virtual double Nv(double T) const;
 
     /**
      * Get intrinsic carrier concentration Ni [\f$m^{-3}\f$].
@@ -441,7 +441,7 @@ struct Material {
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
      * @param T temperature [K]
-     * @param thickness thickness [m]
+     * @param thickness [m]
      * @return thermal conductivity k[W/(m*K)]
      */
     virtual std::pair<double,double> thermCond(double T, double thickness) const;
@@ -601,7 +601,7 @@ struct MixedMaterial: public Material {
 
     virtual double Nc(double T, char point) const;
 
-    virtual double Nc(double T) const;
+    virtual double Nv(double T) const;
 
     virtual double Ni(double T) const;
 

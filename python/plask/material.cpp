@@ -820,6 +820,7 @@ void initMaterials() {
         .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
         .def("chi", (double (Material::*)(double, char) const)&Material::chi, (py::arg("T")=300., py::arg("point")='G'), "Get electron affinity Chi [eV]")
         .def("Nc", (double (Material::*)(double, char) const)&Material::Nc, (py::arg("T")=300., py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")
+        .def("Nv", (double (Material::*)(double) const)&Material::Nv, (py::arg("T")=300.), "Get effective density of states in the valence band Nv [m**(-3)]")
         .def("Ni", &Material::Ni, (py::arg("T")=300.), "Get intrinsic carrier concentration Ni [m**(-3)]")
         .def("Nf", &Material::Nf, (py::arg("T")=300.), "Get free carrier concentration N [m**(-3)]")
         .def("EactD", &Material::EactD, (py::arg("T")=300.), "Get donor ionisation energy EactD [eV]")

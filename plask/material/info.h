@@ -20,23 +20,24 @@ namespace plask {
 struct MaterialInfo {
 
     enum PROPERTY_NAME {
-        kind,
-        lattC,
-        Eg,
-        CBO,
-        VBO,
-        Dso,
-        Mso,
-        Me,
-        Mhh,
-        Mlh,
-        Mh,
-        eps,
-        chi,
-        Nc,
-        Ni,
-        Nf,
-        EactD,
+        kind,       ///< material kind
+        lattC,      ///< lattice constant
+        Eg,         ///< energy gap
+        CBO,        ///< conduction band offset
+        VBO,        ///< valence band offset
+        Dso,        ///< split-off energy
+        Mso,        ///< split-off mass
+        Me,         ///< electron effective mass
+        Mhh,        ///< heavy-hole effective mass
+        Mlh,        ///< light-hole effective mass
+        Mh,         ///< hole effective mass
+        eps,        ///< dielectric constant
+        chi,        ///< electron affinity
+        Nc,         ///< effective density of states in the conduction band
+        Nv,         ///< effective density of states in the valence band
+        Ni,         ///< intrinsic carrier concentration
+        Nf,         ///< free carrier concentration
+        EactD,      ///< donor ionisation energy
         EactA,      ///< acceptor ionisation energy
         mob,        ///< mobility
         cond,       ///< electrical conductivity

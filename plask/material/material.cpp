@@ -94,7 +94,8 @@ std::pair<double,double> Material::mob(double T) const { throwNotImplemented("mo
 double Material::Mso(double T) const { throwNotImplemented("Mso(double T)"); return 0; }
 
 double Material::Nc(double T, char point) const { throwNotImplemented("Nc(double T, char point)"); return 0; }
-double Material::Nc(double T) const { throwNotImplemented("Nc(double T)"); return 0; }
+
+double Material::Nv(double T) const { throwNotImplemented("Nv(double T)"); return 0; }
 
 double Material::Nf(double T) const { throwNotImplemented("Nf(double T)"); return 0; }
 
@@ -411,8 +412,9 @@ double MixedMaterial::Mso(double T) const {
 double MixedMaterial::Nc(double T, char point) const {
     return avg([&](const Material& m) { return m.Nc(T, point); });
 }
-double MixedMaterial::Nc(double T) const {
-    return avg([&](const Material& m) { return m.Nc(T); });
+
+double MixedMaterial::Nv(double T) const {
+    return avg([&](const Material& m) { return m.Nv(T); });
 }
 
 double MixedMaterial::Nf(double T) const {
