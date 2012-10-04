@@ -14,7 +14,7 @@ MI_PROPERTY(AuZn, cond,
             )
 std::pair<double,double> AuZn::cond(double T) const {
     double tCond = 1e6; // TODO (check this value: AuZn or AuSn)
-	return (std::make_pair(tCond, tCond));
+    return ( std::make_pair(tCond, tCond) );
 }
 
 MI_PROPERTY(AuZn, thermCond,
@@ -23,7 +23,7 @@ MI_PROPERTY(AuZn, thermCond,
             )
 std::pair<double,double> AuZn::thermCond(double T, double t) const {
     double tCondT = 110.3;
-    return(std::make_pair(tCondT, tCondT));
+    return ( std::make_pair(tCondT, tCondT) );
 }
 
 MI_PROPERTY(AuZn, absp,

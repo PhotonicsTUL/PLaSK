@@ -15,7 +15,7 @@ MI_PROPERTY(Ni, cond,
             )
 std::pair<double,double> Ni::cond(double T) const {
     double tCond = 1. / (5.8e-13*pow(T-300.,2.)+4.08e-10*(T-300.)+7.19e-8);
-	return (std::make_pair(tCond, tCond));
+    return ( std::make_pair(tCond, tCond) );
 }
 
 MI_PROPERTY(Ni, thermCond,
@@ -25,7 +25,7 @@ MI_PROPERTY(Ni, thermCond,
             )
 std::pair<double,double> Ni::thermCond(double T, double t) const {
     double tCondT = 90.3*pow((300./T),0.423);
-    return(std::make_pair(tCondT, tCondT));
+    return ( std::make_pair(tCondT, tCondT) );
 }
 
 MI_PROPERTY(Ni, absp,

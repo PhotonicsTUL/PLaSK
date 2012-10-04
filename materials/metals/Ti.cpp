@@ -14,7 +14,7 @@ MI_PROPERTY(Ti, cond,
             )
 std::pair<double,double> Ti::cond(double T) const {
     double tCond = 1. / (6.17169e-8 + 9.010579e-10*T + 1.817669e-12*T*T - 1.225226e-15*T*T*T);
-	return (std::make_pair(tCond, tCond));
+    return ( std::make_pair(tCond, tCond) );
 }
 
 MI_PROPERTY(Ti, thermCond,
@@ -24,7 +24,7 @@ MI_PROPERTY(Ti, thermCond,
             )
 std::pair<double,double> Ti::thermCond(double T, double t) const {
     double tCondT = 22.00*pow((300./T),0.24);
-    return(std::make_pair(tCondT, tCondT));
+    return ( std::make_pair(tCondT, tCondT) );
 }
 
 MI_PROPERTY(Ti, absp,

@@ -2,7 +2,7 @@
 #define PLASK__GaAs_C_H
 
 /** @file
-This file includes C doped GaAs
+This file includes C-doped GaAs
 */
 
 #include <plask/material/material.h>
@@ -11,7 +11,7 @@ This file includes C doped GaAs
 namespace plask {
 
 /**
- * Represent C doped GaAs, its physical properties.
+ * Represent C-doped GaAs, its physical properties.
  */
 struct GaAs_C: public GaAs {
 
@@ -32,7 +32,6 @@ private:
            mob_RT;
 
 };
-
 
 } // namespace plask
 

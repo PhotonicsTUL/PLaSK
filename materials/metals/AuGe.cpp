@@ -14,7 +14,7 @@ MI_PROPERTY(AuGe, cond,
             )
 std::pair<double,double> AuGe::cond(double T) const {
     double tCond = 1e8;
-	return (std::make_pair(tCond, tCond));
+    return ( std::make_pair(tCond, tCond) );
 }
 
 MI_PROPERTY(AuGe, thermCond,
@@ -23,7 +23,7 @@ MI_PROPERTY(AuGe, thermCond,
             )
 std::pair<double,double> AuGe::thermCond(double T, double t) const {
     double tCondT = 88.34;
-    return(std::make_pair(tCondT, tCondT));
+    return ( std::make_pair(tCondT, tCondT) );
 }
 
 MI_PROPERTY(AuGe, absp,

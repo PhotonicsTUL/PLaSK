@@ -11,6 +11,9 @@ This file includes base classes for materials and material database class.
 #include <functional>
 #include <tuple>
 
+#include <plask/../additions/constants.h>
+#include <plask/../additions/functions.h>
+
 #include "../math.h"
 #include "../memory.h"
 #include "../exceptions.h"

@@ -19,7 +19,7 @@ GaAs_C::GaAs_C(DopingAmountType Type, double Val) {
         Nf_RT = 0.92*Val;
         NA = Val;
     }
-    mob_RT = 530/(1+pow((Nf_RT/1e17),0.3));
+    mob_RT = 530e-4/(1+pow((Nf_RT/1e17),0.30)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
 }
 
 MI_PROPERTY(GaAs_C, mob,
@@ -30,24 +30,31 @@ std::pair<double,double> GaAs_C::mob(double T) const {
     return (std::make_pair(mob_RT,mob_RT));
 }
 
-
 MI_PROPERTY(GaAs_C, cond,
 			MIComment("no temperature dependence")
             )
 std::pair<double,double> GaAs_C::cond(double T) const {
-    double tCond = 1.602e-17*Nf_RT*mob_RT;
+    double tCond = cPhys::q * Nf_RT*1e6 * mob_RT;
     return (std::make_pair(tCond, tCond));
 }
 
 MI_PROPERTY(GaAs_C, absp,
-            MISource(""),
-            MIComment("TODO")
+            MISource("fit to ..."), // TODO
+            MIComment("no temperature dependence")
             )
 double GaAs_C::absp(double wl, double T) const {
-    return ( 0 );
+    double tAbsp(0.);
+    if ((wl > 1200.) && (wl < 1400.)) // only for 1300 nm TODO
+        tAbsp = 9. * pow(Nf_RT/1e18, 1.33);
+    else if ((wl > 1450.) && (wl < 1650.)) // only for 1550 nm TODO
+        tAbsp = 25. * pow(Nf_RT/1e18, 1.1);
+    else if ((wl > 2230.) && (wl < 2430.)) // only for 2330 nm TODO
+        tAbsp = 320. * pow(Nf_RT/1e18, 0.7);
+    else if ((wl > 8900.) && (wl < 9100.)) // only for 9000 nm TODO
+        tAbsp = 1340. * pow(Nf_RT/1e18, 0.7);
+    return ( tAbsp );
 }
-
 
 static MaterialsDB::Register<GaAs_C> materialDB_register_GaAs_C;
 
-}       // namespace plask
+} // namespace plask
