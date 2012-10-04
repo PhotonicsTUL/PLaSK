@@ -4,6 +4,7 @@ namespace plask { namespace solvers { namespace electrical {
 
 template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>(name),
+    mpA(nullptr),
     mLoopLim(5),
     mVCorrLim(0.01),
     mVBigCorr(1e5),
@@ -30,9 +31,11 @@ template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry
 
 template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::~FiniteElementMethodElectrical2DSolver()
 {
-    for (int i = 0; i < mAHeight; i++)
-        delete [] mpA[i];
-    delete [] mpA;
+    if (mpA) {
+        for (int i = 0; i < mAHeight; i++)
+            delete [] mpA[i];
+        delete [] mpA;
+    }
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::onInitialize() // In this function check if geometry and mesh are set
@@ -524,6 +527,11 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         else if (param == "looplim")
         {
             mLoopLim = source.requireAttribute<int>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "logs")
+        {
+            mLogs = source.requireAttribute<bool>("value");
             source.requireTagEnd();
         }
         else
