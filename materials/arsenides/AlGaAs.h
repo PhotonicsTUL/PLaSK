@@ -36,7 +36,6 @@ protected:
 
 };
 
-
 } // namespace plask
 
 #endif	//PLASK__AlGaAs_H

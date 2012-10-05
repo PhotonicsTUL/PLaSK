@@ -29,7 +29,8 @@ struct AlGaAs_C: public AlGaAs {
 
 private:
     double NA,
-           Nf_RT;
+           Nf_RT,
+           mob_RT;
 
     GaAs_C mGaAs_C;
     AlAs_C mAlAs_C;

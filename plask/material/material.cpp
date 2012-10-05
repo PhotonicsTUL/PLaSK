@@ -89,6 +89,12 @@ std::pair<double,double> Material::Mh(double T, char point) const { throwNotImpl
 std::pair<double,double> Material::Mhh(double T, char point) const { throwNotImplemented("Mhh(double T, char point)"); return std::make_pair(0.,0.); }
 std::pair<double,double> Material::Mlh(double T, char point) const { throwNotImplemented("Mlh(double T, char point)"); return std::make_pair(0.,0.); }
 
+double Material::ac(double T) const { throwNotImplemented("ac(double T)"); return 0; }
+double Material::av(double T) const { throwNotImplemented("av(double T)"); return 0; }
+double Material::b(double T) const { throwNotImplemented("b(double T)"); return 0; }
+double Material::c11(double T) const { throwNotImplemented("c11(double T)"); return 0; }
+double Material::c12(double T) const { throwNotImplemented("c12(double T)"); return 0; }
+
 std::pair<double,double> Material::mob(double T) const { throwNotImplemented("mob(double T)"); return std::make_pair(0.,0.); }
 
 double Material::Mso(double T) const { throwNotImplemented("Mso(double T)"); return 0; }
@@ -399,6 +405,26 @@ std::pair<double,double> MixedMaterial::Mhh(double T, char point) const {
 
 std::pair<double,double> MixedMaterial::Mlh(double T, char point) const  {
     return avg_pairs([&](const Material& m) { return m.Mlh(T, point); });
+}
+
+double MixedMaterial::ac(double T) const {
+    return avg([&](const Material& m) { return m.ac(T); });
+}
+
+double MixedMaterial::av(double T) const {
+    return avg([&](const Material& m) { return m.av(T); });
+}
+
+double MixedMaterial::b(double T) const {
+    return avg([&](const Material& m) { return m.b(T); });
+}
+
+double MixedMaterial::c11(double T) const {
+    return avg([&](const Material& m) { return m.c11(T); });
+}
+
+double MixedMaterial::c12(double T) const {
+    return avg([&](const Material& m) { return m.c12(T); });
 }
 
 std::pair<double,double> MixedMaterial::mob(double T) const {

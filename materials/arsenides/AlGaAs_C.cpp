@@ -14,14 +14,18 @@ MI_PARENT(AlGaAs_C, AlGaAs)
 
 AlGaAs_C::AlGaAs_C(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaAs(Comp), mGaAs_C(Type,Val), mAlAs_C(Type,Val)
 {
+    //double act_GaAs = 0.92;
+    //double fx1 = 1.;
     if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;
-        NA = Val/0.92;
+        NA = mGaAs_C.Dop(); // mGaAs_C.Dop()*fx1;
     }
     else {
+        Nf_RT = mGaAs_C.Nf(300.); // mGaAs_C.Nf(300.)*fx1;
         NA = Val;
-        Nf_RT = 0.92*Val;
     }
+    double fx2 = 0.66 / (1. + pow(Al/0.21,3.)) + 0.34; // (1.00-0.34) / (1. + pow(Al/0.21,3.)) + 0.34;
+    mob_RT = mGaAs_C.mob(300.).first * fx2;
 }
 
 MI_PROPERTY(AlGaAs_C, mob,
@@ -29,10 +33,7 @@ MI_PROPERTY(AlGaAs_C, mob,
             MISource("based on C-doped GaAs")
             )
 std::pair<double,double> AlGaAs_C::mob(double T) const {
-    double lMob(0.), vMob(0.);
-    lMob = mGaAs_C.mob(T).first*0; //TODO!!!
-    vMob = mGaAs_C.mob(T).second*0; //TODO!!!
-    return (std::make_pair(lMob, vMob));
+    return ( std::make_pair(mob_RT, mob_RT) );
 }
 
 MI_PROPERTY(AlGaAs_C, Nf,
@@ -44,13 +45,14 @@ double AlGaAs_C::Nf(double T) const {
 }
 
 double AlGaAs_C::Dop() const {
-    return NA;
+    return ( NA );
 }
 
 std::pair<double,double> AlGaAs_C::cond(double T) const {
-    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
+    double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
+    return ( std::make_pair(tCond, tCond) );
 }
 
 static MaterialsDB::Register<AlGaAs_C> materialDB_register_AlGaAs_C;
 
-}       // namespace plask
+} // namespace plask

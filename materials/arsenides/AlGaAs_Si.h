@@ -29,7 +29,8 @@ struct AlGaAs_Si: public AlGaAs {
 
 private:
     double ND,
-           Nf_RT;
+           Nf_RT,
+           mob_RT;
 
     GaAs_Si mGaAs_Si;
     AlAs_Si mAlAs_Si;

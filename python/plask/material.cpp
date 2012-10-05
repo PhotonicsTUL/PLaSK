@@ -251,28 +251,27 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     Material::ConductivityType cond_type;
 
     PyCodeObject
-        *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *eps, *chi,
+        *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *ac, *av, *b, *c11, *c12, *eps, *chi,
         *Nc, *Nv, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *A, *B, *C, *D,
         *thermCond, *condT_t, *dens, *specHeat, *nr, *absp, *Nr, *Nr_tensor;
 
     PythonEvalMaterialConstructor(const std::string& name) :
         MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), cond_type(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
-        Mhh(NULL), Mlh(NULL), Mh(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
+        Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
         thermCond(NULL), condT_t(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL), Nr(NULL), Nr_tensor(NULL) {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), cond_type(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
-        Mhh(NULL), Mlh(NULL), Mh(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
+        Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
         thermCond(NULL), condT_t(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL), Nr(NULL), Nr_tensor(NULL) {}
 
-
     virtual ~PythonEvalMaterialConstructor() {
         Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CBO); Py_XDECREF(VBO); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
-        Py_XDECREF(Mhh); Py_XDECREF(Mlh); Py_XDECREF(Mh); Py_XDECREF(eps); Py_XDECREF(chi);
+        Py_XDECREF(Mhh); Py_XDECREF(Mlh); Py_XDECREF(Mh); Py_XDECREF(ac); Py_XDECREF(av); Py_XDECREF(b); Py_XDECREF(c11); Py_XDECREF(c12); Py_XDECREF(eps); Py_XDECREF(chi);
         Py_XDECREF(Nc); Py_XDECREF(Nv); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
         Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C); Py_XDECREF(D);
         Py_XDECREF(thermCond); Py_XDECREF(condT_t); Py_XDECREF(dens); Py_XDECREF(specHeat);
@@ -330,6 +329,11 @@ class PythonEvalMaterial : public Material
     virtual DDPair Mhh(double T, const char Point) const { PYTHON_EVAL_CALL_2(DDPair, Mhh, T, Point) }
     virtual DDPair Mlh(double T, const char Point) const { PYTHON_EVAL_CALL_2(DDPair, Mlh, T, Point) }
     virtual DDPair Mh(double T, char EqType) const { PYTHON_EVAL_CALL_2(DDPair, Mh, T, EqType) }
+    virtual double ac(double T) const { PYTHON_EVAL_CALL_1(double, ac, T) }
+    virtual double av(double T) const { PYTHON_EVAL_CALL_1(double, av, T) }
+    virtual double b(double T) const { PYTHON_EVAL_CALL_1(double, b, T) }
+    virtual double c11(double T) const { PYTHON_EVAL_CALL_1(double, c11, T) }
+    virtual double c12(double T) const { PYTHON_EVAL_CALL_1(double, c12, T) }
     virtual double eps(double T) const { PYTHON_EVAL_CALL_1(double, eps, T) }
     virtual double chi(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, chi, T, Point) }
     virtual double Nc(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Nc, T, Point) }
@@ -458,6 +462,11 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Mh)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(ac)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(av)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(b)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(c11)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(c12)
         COMPILE_PYTHON_MATERIAL_FUNCTION(eps)
         COMPILE_PYTHON_MATERIAL_FUNCTION(chi)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nc)
@@ -820,6 +829,11 @@ void initMaterials() {
         .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("point")='G'), "Get heavy hole effective mass Mhh [m0]")
         .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("point")='G'), "Get light hole effective mass Mlh [m0]")
         .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("eq")/*='G'*/), "Get hole effective mass Mh [m0]")
+        .def("ac", &Material::ac, (py::arg("T")=300.), "Get hydrostatic deformation potential for the conduction band ac [eV]")
+        .def("av", &Material::av, (py::arg("T")=300.), "Get hydrostatic deformation potential for the valence band av [eV]")
+        .def("b", &Material::b, (py::arg("T")=300.), "Get shear deformation potential b [eV]")
+        .def("c11", &Material::c11, (py::arg("T")=300.), "Get elastic constant c11 [GPa]")
+        .def("c12", &Material::c12, (py::arg("T")=300.), "Get elastic constant c12 [GPa]")
         .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
         .def("chi", (double (Material::*)(double, char) const)&Material::chi, (py::arg("T")=300., py::arg("point")='G'), "Get electron affinity Chi [eV]")
         .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")

@@ -1,4 +1,4 @@
-#include "GaAs_C.h"
+#include "GaAs_Zn.h"
 
 #include <cmath>
 #include <plask/material/db.h>  //MaterialsDB::Register
@@ -6,55 +6,49 @@
 
 namespace plask {
 
-std::string GaAs_C::name() const { return NAME; }
+std::string GaAs_Zn::name() const { return NAME; }
 
-std::string GaAs_C::str() const { return StringBuilder("GaAs").dopant("C", NA); }
+std::string GaAs_Zn::str() const { return StringBuilder("GaAs").dopant("Zn", NA); }
 
-GaAs_C::GaAs_C(DopingAmountType Type, double Val) {
-    if (Type == CARRIER_CONCENTRATION) {
-        Nf_RT = Val;
-        NA = Val/0.92;
-    }
-    else {
-        Nf_RT = 0.92*Val;
-        NA = Val;
-    }
-    mob_RT = 530e-4/(1+pow((Nf_RT/1e17),0.30)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+GaAs_Zn::GaAs_Zn(DopingAmountType Type, double Val) {
+    Nf_RT = Val; // TODO (it is not from publication)
+    NA = Val; // TODO (it is not from publication)
+    mob_RT = 480e-4/(1+pow((Nf_RT/4e17),0.47)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
 }
 
-MI_PROPERTY(GaAs_C, mob,
-            MISource("fit to p-GaAs:C (based on 23 papers 1988 - 2006)"),
-            MIComment("no temperature dependence")
-            )
-std::pair<double,double> GaAs_C::mob(double T) const {
-    return (std::make_pair(mob_RT,mob_RT));
-}
-
-MI_PROPERTY(GaAs_C, Nf,
+MI_PROPERTY(GaAs_Zn, mob,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double GaAs_C::Nf(double T) const {
+std::pair<double,double> GaAs_Zn::mob(double T) const {
+    return ( std::make_pair(mob_RT,mob_RT) );
+}
+
+MI_PROPERTY(GaAs_Zn, Nf,
+            MISource("TODO"),
+            MIComment("no temperature dependence")
+            )
+double GaAs_Zn::Nf(double T) const {
     return ( Nf_RT );
 }
 
-double GaAs_C::Dop() const {
+double GaAs_Zn::Dop() const {
     return ( NA );
 }
 
-MI_PROPERTY(GaAs_C, cond,
+MI_PROPERTY(GaAs_Zn, cond,
 			MIComment("no temperature dependence")
             )
-std::pair<double,double> GaAs_C::cond(double T) const {
+std::pair<double,double> GaAs_Zn::cond(double T) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
     return (std::make_pair(tCond, tCond));
 }
 
-MI_PROPERTY(GaAs_C, absp,
-            MISource("fit to ..."), // TODO
+MI_PROPERTY(GaAs_Zn, absp,
+            MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double GaAs_C::absp(double wl, double T) const {
+double GaAs_Zn::absp(double wl, double T) const {
     double tAbsp(0.);
     if ((wl > 1200.) && (wl < 1400.)) // only for 1300 nm TODO
         tAbsp = 9. * pow(Nf_RT/1e18, 1.33);
@@ -67,6 +61,6 @@ double GaAs_C::absp(double wl, double T) const {
     return ( tAbsp );
 }
 
-static MaterialsDB::Register<GaAs_C> materialDB_register_GaAs_C;
+static MaterialsDB::Register<GaAs_Zn> materialDB_register_GaAs_Zn;
 
 } // namespace plask

@@ -2,7 +2,7 @@
 #define PLASK__GaAs_Si_H
 
 /** @file
-This file includes Si doped GaAs
+This file includes Si-doped GaAs
 */
 
 #include <plask/material/material.h>
@@ -11,7 +11,7 @@ This file includes Si doped GaAs
 namespace plask {
 
 /**
- * Represent Si doped GaAs, its physical properties.
+ * Represent Si-doped GaAs, its physical properties.
  */
 struct GaAs_Si: public GaAs {
 
@@ -32,7 +32,6 @@ private:
            mob_RT;
 
 };
-
 
 } // namespace plask
 

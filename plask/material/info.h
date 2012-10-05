@@ -31,6 +31,11 @@ struct MaterialInfo {
         Mhh,        ///< heavy-hole effective mass
         Mlh,        ///< light-hole effective mass
         Mh,         ///< hole effective mass
+        ac,         ///< hydrostatic deformation potential for the conduction band
+        av,         ///< hydrostatic deformation potential for the valence band
+        b,          ///< shear deformation potential
+        c11,        ///< elastic constant
+        c12,        ///< elastic constant
         eps,        ///< dielectric constant
         chi,        ///< electron affinity
         Nc,         ///< effective density of states in the conduction band

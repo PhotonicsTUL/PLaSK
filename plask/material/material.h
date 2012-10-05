@@ -325,6 +325,41 @@ struct Material {
     virtual std::pair<double,double> Mh(double T, char point) const;
 
     /**
+     * Get hydrostatic deformation potential for the conduction band ac [eV].
+     * @param T temperature [K]
+     * @return hydrostatic deformation potential for the conduction band ac [eV]
+     */
+    virtual double ac(double T) const;
+
+    /**
+     * Get hydrostatic deformation potential for the valence band av [eV].
+     * @param T temperature [K]
+     * @return hydrostatic deformation potential for the valence band av [eV]
+     */
+    virtual double av(double T) const;
+
+    /**
+     * Get shear deformation potential b [eV].
+     * @param T temperature [K]
+     * @return shear deformation potential b [eV]
+     */
+    virtual double b(double T) const;
+
+    /**
+     * Get elastic constant c11 [GPa].
+     * @param T temperature [K]
+     * @return elastic constant c11 [GPa]
+     */
+    virtual double c11(double T) const;
+
+    /**
+     * Get elastic constant c12 [GPa].
+     * @param T temperature [K]
+     * @return elastic constant c12 [GPa]
+     */
+    virtual double c12(double T) const;
+
+    /**
      * Get dielectric constant EpsR [-].
      * @param T temperature [K]
      * @return dielectric constant EpsR [-]
@@ -593,6 +628,16 @@ struct MixedMaterial: public Material {
     virtual std::pair<double,double> Mlh(double T, char point) const;
 
     virtual std::pair<double,double> Mh(double T, char EqType) const;
+
+    virtual double ac(double T) const;
+
+    virtual double av(double T) const;
+
+    virtual double b(double T) const;
+
+    virtual double c11(double T) const;
+
+    virtual double c12(double T) const;
 
     virtual double eps(double T) const;
 

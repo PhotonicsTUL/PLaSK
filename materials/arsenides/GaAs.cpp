@@ -8,41 +8,6 @@ namespace plask {
 
 std::string GaAs::name() const { return NAME; }
 
-MI_PROPERTY(GaAs, cond,
-            MISource("-"),
-			MIComment("fit to n-GaAs:Si (based on 8 papers 1982 - 2003)"),
-			MIComment("no temperature dependence")
-            )
-std::pair<double,double> GaAs::cond(double T) const {
-    return ( std::make_pair(940., 940.) ); // TODO
-}
-
-MI_PROPERTY(GaAs, thermCond,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
-            MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"),
-            MIArgumentRange(MaterialInfo::T, 300, 900)
-            )
-std::pair<double,double> GaAs::thermCond(double T, double t) const {
-    double tCondT = 45.*pow((300./T),1.25);
-    return ( std::make_pair(tCondT, tCondT) );
-}
-
-MI_PROPERTY(GaAs, absp,
-            MISource(""),
-            MIComment("TODO")
-            )
-double GaAs::absp(double wl, double T) const {
-    return ( 0. );
-}
-
-MI_PROPERTY(GaAs, nr,
-            MISource(""),
-            MIComment("TODO")
-            )
-double GaAs::nr(double wl, double T) const {
-    return ( 0. );
-}
-
 MI_PROPERTY(GaAs, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875")
             )
@@ -58,8 +23,16 @@ MI_PROPERTY(GaAs, Eg,
             )
 double GaAs::Eg(double T, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 1.519 - 0.5405e-3 * T * T / (T + 204.); //  cFunc::Varshni(1.519, 0.5405e-3, 204., T);
+    if (point == 'G') tEg = 1.519 - 0.5405e-3 * T * T / (T + 204.); //phys::Varshni(1.519, 0.5405e-3, 204., T);
     return ( tEg );
+}
+
+MI_PROPERTY(GaAs, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::Dso(double T) const {
+    return ( 0.341 );
 }
 
 MI_PROPERTY(GaAs, Me,
@@ -92,6 +65,72 @@ MI_PROPERTY(GaAs, Mlh,
 std::pair<double,double> GaAs::Mlh(double T, char point) const {
     std::pair<double,double> tMlh(0.090, 0.090);
     return ( tMlh );
+}
+
+MI_PROPERTY(GaAs, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::ac(double T) const {
+    return ( -7.17 );
+}
+
+MI_PROPERTY(GaAs, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::av(double T) const {
+    return ( 1.16 );
+}
+
+MI_PROPERTY(GaAs, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::b(double T) const {
+    return ( -2.0 );
+}
+
+MI_PROPERTY(GaAs, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::c11(double T) const {
+    return ( 122.1 );
+}
+
+MI_PROPERTY(GaAs, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::c12(double T) const {
+    return ( 56.6 );
+}
+
+MI_PROPERTY(GaAs, thermCond,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
+            MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"), // temperature dependence
+            MIArgumentRange(MaterialInfo::T, 300, 900)
+            )
+std::pair<double,double> GaAs::thermCond(double T, double t) const {
+    double tCondT = 45.*pow((300./T),1.25);
+    return ( std::make_pair(tCondT, tCondT) );
+}
+
+MI_PROPERTY(GaAs, nr,
+            MISource(""),
+            MIComment("TODO")
+            )
+double GaAs::nr(double wl, double T) const {
+    return ( 0. );
+}
+
+MI_PROPERTY(GaAs, absp,
+            MISource(""),
+            MIComment("TODO")
+            )
+double GaAs::absp(double wl, double T) const {
+    return ( 0. );
 }
 
 static MaterialsDB::Register<GaAs> materialDB_register_GaAs;

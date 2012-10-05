@@ -32,7 +32,6 @@ private:
 
 };
 
-
 } // namespace plask
 
 #endif	//PLASK__AlAs_C_H

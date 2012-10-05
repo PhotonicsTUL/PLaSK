@@ -1,8 +1,8 @@
-#ifndef PLASK__AlAs_H
-#define PLASK__AlAs_H
+#ifndef PLASK__InP_H
+#define PLASK__InP_H
 
 /** @file
-This file includes undoped AlAs
+This file includes undoped InP
 */
 
 #include <plask/material/material.h>
@@ -10,14 +10,16 @@ This file includes undoped AlAs
 namespace plask {
 
 /**
- * Represent undoped AlAs, its physical properties.
+ * Represent undoped InP, its physical properties.
  */
-struct AlAs: public Semiconductor {
+struct InP: public Semiconductor {
 
-    static constexpr const char* NAME = "AlAs";
+    static constexpr const char* NAME = "InP";
 
     virtual std::string name() const;
     virtual std::pair<double,double> thermCond(double T, double t) const;
+    virtual double nr(double wl, double T) const;
+    virtual double absp(double wl, double T) const;
     virtual double lattC(double T, char x) const;
     virtual double Eg(double T, char point) const;
     virtual std::pair<double,double> Me(double T, char point) const;
@@ -28,4 +30,4 @@ struct AlAs: public Semiconductor {
 
 } // namespace plask
 
-#endif	//PLASK__AlAs_H
+#endif	//PLASK__InP_H

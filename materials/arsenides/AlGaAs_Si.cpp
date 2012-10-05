@@ -14,16 +14,22 @@ MI_PARENT(AlGaAs_Si, AlGaAs)
 
 AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaAs(Comp), mGaAs_Si(Type,Val), mAlAs_Si(Type,Val)
 {
-    if (Type == CARRIER_CONCENTRATION) {//TO CHECK!!!
+    double fx1A = (1.-7.8*Al*Al); // x < 0.35
+    double fx1B = (1.14*Al-0.36); // else
+    if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;
-        if (Al < 0.35) ND = mGaAs_Si.Dop()*(1 - 7.8*Al*Al);
-        else ND = mGaAs_Si.Dop()*(1.14*Al - 0.36);
+        if (Al < 0.35) ND = mGaAs_Si.Dop()*fx1A;
+        else ND = mGaAs_Si.Dop()*fx1B;
     }
     else {
+        if (Al < 0.35) Nf_RT = mGaAs_Si.Nf(300.)*fx1A;
+        else Nf_RT = mGaAs_Si.Nf(300.)*fx1B;
         ND = Val;
-        if (Al < 0.35) Nf_RT = mGaAs_Si.Nf(300)*(1 - 7.8*Al*Al);
-        else Nf_RT = mGaAs_Si.Nf(300)*(1.14*Al - 0.36);
     }
+    double fx2A = exp(-16.*Al*Al); // x < 0.5
+    double fx2B = 0.054*Al-0.009; // else
+    if (Al < 0.5) mob_RT = mGaAs_Si.mob(300.).first * fx2A;
+    else mob_RT = mGaAs_Si.mob(300.).first * fx2B;
 }
 
 MI_PROPERTY(AlGaAs_Si, mob,
@@ -31,16 +37,7 @@ MI_PROPERTY(AlGaAs_Si, mob,
             MISource("based on Si-doped GaAs")
             )
 std::pair<double,double> AlGaAs_Si::mob(double T) const {
-    double lMob(0.), vMob(0.);
-    if (Al < 0.5) {
-        lMob = mGaAs_Si.mob(T).first*exp(-16*Al*Al);
-        vMob = mGaAs_Si.mob(T).second*exp(-16*Al*Al);
-    }
-    else {
-        lMob = mGaAs_Si.mob(T).first*(0.054*Al - 0.009);
-        lMob = mGaAs_Si.mob(T).second*(0.054*Al - 0.009);
-    }
-    return (std::make_pair(lMob, vMob));
+    return ( std::make_pair(mob_RT, mob_RT) );
 }
 
 MI_PROPERTY(AlGaAs_Si, Nf,
@@ -52,11 +49,12 @@ double AlGaAs_Si::Nf(double T) const {
 }
 
 double AlGaAs_Si::Dop() const {
-    return ND;
+    return ( ND );
 }
 
 std::pair<double,double> AlGaAs_Si::cond(double T) const {
-    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
+    double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
+    return ( std::make_pair(tCond, tCond) );
 }
 
 static MaterialsDB::Register<AlGaAs_Si> materialDB_register_AlGaAs_Si;
