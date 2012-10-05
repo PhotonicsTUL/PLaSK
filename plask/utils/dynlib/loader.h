@@ -21,6 +21,10 @@ namespace plask {
  */
 struct DynamicLibrary {
 
+    enum Flags {
+        DONT_CLOSE = 1  ///< if this flag is set DynamicLibrary will not close the library, but it will be closed on application exit
+    };
+
     /// Type of system shared library handler.
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     typedef HINSTANCE handler_t;
@@ -32,7 +36,7 @@ private:
     /// System shared library handler
     handler_t handler;
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-    bool unload;    // true if lib. should be unload, destructor just don't call FreeLibrary if this is false
+    bool unload;    // true if lib. should be unload, destructor just don't call FreeLibrary if this is false, undefined when handler == 0
 #endif
 
 public:
@@ -47,8 +51,9 @@ public:
     /**
      * Open library from file with given name @p filename.
      * @param filename name of file with library to load
+     * @param flags flags which describes configuration of open/close process, one or more (or-ed) flags from DynamicLibrary::Flags set
      */
-    explicit DynamicLibrary(const std::string &filename);
+    explicit DynamicLibrary(const std::string &filename, int flags = 0);
 
     /**
      * Don't open any library. You can call open later.
@@ -97,8 +102,9 @@ public:
      *
      * Close already opened library wrapped by this if any.
      * @param filename name of file with library to load
+     * @param flags flags which describes configuration of open/close process, one or more (or-ed) flags from DynamicLibrary::Flags set
      */
-    void open(const std::string &filename);
+    void open(const std::string &filename, int flags);
 
     /**
      * Close opened library.

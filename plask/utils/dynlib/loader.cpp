@@ -5,9 +5,9 @@
 
 namespace plask {
 
-DynamicLibrary::DynamicLibrary(const std::string &filename)
+DynamicLibrary::DynamicLibrary(const std::string &filename, int flags)
 : handler(0) {
-    open(filename);
+    open(filename, flags);
 }
 
 DynamicLibrary::DynamicLibrary(): handler(0) {}
@@ -19,7 +19,7 @@ DynamicLibrary::~DynamicLibrary() {
     close();
 }
 
-void DynamicLibrary::open(const std::string &filename) {
+void DynamicLibrary::open(const std::string &filename, int flags) {
     close();    // close if something is already open
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     //const int length = MultiByteToWideChar(CP_UTF8, 0, filename.data(), filename.size(), 0, 0);
@@ -30,8 +30,11 @@ void DynamicLibrary::open(const std::string &filename) {
     if (!handler) {
         throw plask::Exception("Could not open dynamic library from file \"%1%\".", filename);
     }
+    unload = !(flags & DONT_CLOSE);
 #else
-    handler = dlopen(filename.c_str(), RTLD_NOW | RTLD_NODELETE);   //TODO remove RTLD_NODELETE
+    int mode = RTLD_NOW;
+    if (flags & DONT_CLOSE) mode |= RTLD_NODELETE;
+    handler = dlopen(filename.c_str(), mode);
     if (!handler) {
         throw plask::Exception("Could not open dynamic library from %1%", dlerror());
     }
@@ -41,8 +44,10 @@ void DynamicLibrary::open(const std::string &filename) {
 void DynamicLibrary::close() {
     if (!handler) return;
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-    if (!FreeLibrary(handler))
-        throw plask::Exception("Can't close dynamic library: %1%", (const char*)GetLastError());
+    if (unload) {
+        if (!FreeLibrary(handler))
+            throw plask::Exception("Can't close dynamic library: %1%", (const char*)GetLastError());
+    }
 #else
     if (dlclose(handler))
         throw plask::Exception("Can't close dynamic library: %1%", dlerror());

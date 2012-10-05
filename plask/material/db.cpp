@@ -95,7 +95,8 @@ MaterialsDB& MaterialsDB::getDefault() {
 }
 
 void MaterialsDB::loadToDefault(const std::string &fileName_mainpart) {
-    DynamicLibraries::defaultLoad(plaskMaterialsPath() + fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION);
+    //DynamicLibraries::defaultLoad(plaskMaterialsPath() + fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION);
+    DynamicLibrary(plaskMaterialsPath() + fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION, DynamicLibrary::DONT_CLOSE);
 }
 
 void MaterialsDB::loadAllToDefault(const std::string& dir) {

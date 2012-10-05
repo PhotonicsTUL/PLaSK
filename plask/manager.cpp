@@ -50,7 +50,8 @@ shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::s
     lib_file_name += lib;
     lib_file_name += DynamicLibrary::DEFAULT_EXTENSION;
     return shared_ptr<Solver>(
-                DynamicLibraries::defaultLoad(lib_file_name)
+               // DynamicLibraries::defaultLoad(lib_file_name)
+                DynamicLibrary(lib_file_name, DynamicLibrary::DONT_CLOSE)
                     .requireSymbol<solver_construct_f*>(solver_name + SOLVER_CONSTRUCT_FUNCTION_SUFFIX)(name)
                 );
 }
