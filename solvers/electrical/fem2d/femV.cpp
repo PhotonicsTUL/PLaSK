@@ -438,11 +438,13 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
             updNodes();
             //updElements();
 
-            // find max correction
-            std::vector<double> tB(mAHeight, 0.);
-
-            for (int i = 0; i < mAHeight; i++)
-                tB.at(i) = mpA[i][mAWidth-1]; // mpA[i][mAWidth-1] - here are new values of potential
+// FIXME! Celem poniżej zakomentowanego przeze mnie bloku było tylko spowolnienie obliczeń, czy jeszcze jakaś czarna magia?
+// Do tB wpisujesz dwukrotnie wartości (najpierw zera, a potem wyniki) i nic z nimi nie robisz!
+//             // find max correction
+//             std::vector<double> tB(mAHeight, 0.);
+//
+//             for (int i = 0; i < mAHeight; i++)
+//                 tB.at(i) = mpA[i][mAWidth-1]; // mpA[i][mAWidth-1] - here are new values of potential
 
             ttVCorr = std::max_element(mVcorr.begin(), mVcorr.end());
 
