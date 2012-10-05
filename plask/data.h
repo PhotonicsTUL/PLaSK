@@ -376,14 +376,17 @@ struct DataVector {
      * @param n number of object to return
      * @return reference to n-th object of the data
      */
-    const T& operator [](std::size_t n) const { assert(n < size_); return data_[n]; }
+    const T& operator[](std::size_t n) const { assert(n < size_); return data_[n]; }
 
     /**
      * Return reference to the n-th object of the data.
      * @param n number of object to return
      * @return reference to n-th object of the data
      */
-    T& operator [](std::size_t n) { assert(n < size_); return data_[n]; }
+    T& operator[](std::size_t n) { assert(n < size_); return data_[n]; }
+
+    /// \return \c true if vector has any data
+    operator bool() const { return data_ != nullptr; };
 
     /**
      * Make a deep copy of the data.

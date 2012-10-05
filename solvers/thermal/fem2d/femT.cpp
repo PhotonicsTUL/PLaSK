@@ -160,14 +160,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setHeatDensities()
 {
     auto iMesh = (this->mesh)->getMidpointsMesh();
-    try
-    {
-        mHeatDensities = inHeatDensity(iMesh);
-    }
-    catch (NoValue)
-    {
-        mHeatDensities.reset(iMesh->size(), 0.);
-    }
+    mHeatDensities = inHeatDensity(iMesh);
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::setSolver()
@@ -889,14 +882,14 @@ template<typename Geometry2Dtype> int FiniteElementMethodThermal2DSolver<Geometr
 }
 
 template<typename Geometry2Dtype> DataVector<const double> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getTemperatures(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
-    if (method == DEFAULT_INTERPOLATION)
-        method = INTERPOLATION_LINEAR;
+    if (!mTemperatures) return DataVector<const double>(dst_mesh.size(), mTInit); // in case the receiver is connected and no temperature calculated yet
+    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
     return interpolate(*(this->mesh), mTemperatures, dst_mesh, method);
 }
 
 template<typename Geometry2Dtype> DataVector<const Vec<2> > FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getHeatFluxes(const MeshD<2> &dst_mesh, InterpolationMethod method) const {
-    if (method == DEFAULT_INTERPOLATION)
-        method = INTERPOLATION_LINEAR;
+    if (!mHeatFluxes) return DataVector<const Vec<2>>(dst_mesh.size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
+    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
     return interpolate(*((this->mesh)->getMidpointsMesh()), mHeatFluxes, dst_mesh, method);
 }
 

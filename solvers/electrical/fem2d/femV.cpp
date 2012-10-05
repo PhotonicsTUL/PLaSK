@@ -131,14 +131,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setTemperatures()
 {
     auto iMesh = (this->mesh)->getMidpointsMesh();
-    try
-    {
-        mTemperatures = inTemperature(iMesh);
-    }
-    catch (NoValue)
-    {
-        mTemperatures.reset(iMesh->size(), 300.);
-    }
+    mTemperatures = inTemperature(iMesh);
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setSolver()

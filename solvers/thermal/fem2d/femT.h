@@ -29,43 +29,6 @@ public:
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
 template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2Dtype, RectilinearMesh2D> {
-/*
-    /// Sample receiver for temperature.
-    ReceiverFor<Temperature, Space2DCartesian> inTemperature;
-
-    /// Sample provider for simple value.
-    ProviderFor<SomeSingleValueProperty>::WithValue outSingleValue;
-
-    /// Sample provider for field (it's better to use delegate here).
-    ProviderFor<SomeOnMeshProperty, Space2DCartesian>::Delegate outSomeField;
-
-    YourSolver():
-        outDelegateProvider(this, getDelegated) // getDelegated will be called whether provider value is requested
-    {
-        inTemperature = 300.; // temperature receiver has some sensible value
-    }
-
-    virtual std::string getClassDescription() const {
-        return "This solver does this and that. And this description can be e.g. shown as a hng in GUI.";
-    }*/
-
-    /**
-     * This method performs the main computations.
-     * Add short description of every method in a comment like this.
-     * \param parameter some value to be provided by the user for computationsś
-     **/
-    /*void compute(double parameter) {
-        // The code of this method probably should be in cpp file...
-        // But below we show some key elements
-        initCalculation(); // This must be called before any calculation!
-        writelog(LOG_INFO, "Begining calculation of something");
-        auto temperature = inTemperature(*mesh); // Obtain temperature from some other solver
-        // [...] Do your computations here
-        outSingleValue = new_computed_value;
-        writelog(LOG_RESULT, "Found new value of something = $1$", new_computed_value);
-        outSingleValue.fireChanged(); // Inform other solvers that you have computed a new value
-        outSomeField.fireChanged();
-    }*/
 
   protected:
 
