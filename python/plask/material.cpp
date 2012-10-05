@@ -200,7 +200,8 @@ class MaterialWrap : public Material
     virtual DDPair Mh(double T, char EqType) const { return override<DDPair>("Mh", &Material::Mh, T, EqType); }
     virtual double eps(double T) const { return override<double>("eps", &Material::eps, T); }
     virtual double chi(double T, const char Point) const { return override<double>("chi", (double (Material::*)(double, char) const) &Material::chi, T, Point); }
-    virtual double Nc(double T, const char Point) const { return override<double>("Nc", (double (Material::*)(double, char) const) &Material::Nc, T, Point); }
+    virtual double Nc(double T, const char Point) const { return override<double>("Nc", &Material::Nc, T, Point); }
+    virtual double Nv(double T) const { return override<double>("Nv", &Material::Nv, T); }
     virtual double Ni(double T) const { return override<double>("Ni", &Material::Ni, T); }
     virtual double Nf(double T) const { return override<double>("Nf", &Material::Nf, T); }
     virtual double EactD(double T) const { return override<double>("EactD", &Material::EactD, T); }
@@ -251,20 +252,20 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
     PyCodeObject
         *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *eps, *chi,
-        *Nc, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *A, *B, *C, *D,
+        *Nc, *Nv, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *A, *B, *C, *D,
         *thermCond, *condT_t, *dens, *specHeat, *nr, *absp, *Nr, *Nr_tensor;
 
     PythonEvalMaterialConstructor(const std::string& name) :
         MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), cond_type(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
-        Mhh(NULL), Mlh(NULL), Mh(NULL), eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL),
+        Mhh(NULL), Mlh(NULL), Mh(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
         thermCond(NULL), condT_t(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL), Nr(NULL), Nr_tensor(NULL) {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), cond_type(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
-        Mhh(NULL), Mlh(NULL), Mh(NULL), eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL),
+        Mhh(NULL), Mlh(NULL), Mh(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
         thermCond(NULL), condT_t(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL), Nr(NULL), Nr_tensor(NULL) {}
 
@@ -272,7 +273,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     virtual ~PythonEvalMaterialConstructor() {
         Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CBO); Py_XDECREF(VBO); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
         Py_XDECREF(Mhh); Py_XDECREF(Mlh); Py_XDECREF(Mh); Py_XDECREF(eps); Py_XDECREF(chi);
-        Py_XDECREF(Nc); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
+        Py_XDECREF(Nc); Py_XDECREF(Nv); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
         Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C); Py_XDECREF(D);
         Py_XDECREF(thermCond); Py_XDECREF(condT_t); Py_XDECREF(dens); Py_XDECREF(specHeat);
         Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(Nr); Py_XDECREF(Nr_tensor);
@@ -332,6 +333,7 @@ class PythonEvalMaterial : public Material
     virtual double eps(double T) const { PYTHON_EVAL_CALL_1(double, eps, T) }
     virtual double chi(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, chi, T, Point) }
     virtual double Nc(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Nc, T, Point) }
+    virtual double Nv(double T) const { PYTHON_EVAL_CALL_1(double, Nv, T) }
     virtual double Ni(double T) const { PYTHON_EVAL_CALL_1(double, Ni, T) }
     virtual double Nf(double T) const { PYTHON_EVAL_CALL_1(double, Nf, T) }
     virtual double EactD(double T) const { PYTHON_EVAL_CALL_1(double, EactD, T) }
@@ -459,6 +461,7 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         COMPILE_PYTHON_MATERIAL_FUNCTION(eps)
         COMPILE_PYTHON_MATERIAL_FUNCTION(chi)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nc)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Nv)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Ni)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nf)
         COMPILE_PYTHON_MATERIAL_FUNCTION(EactD)
@@ -819,8 +822,8 @@ void initMaterials() {
         .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("eq")/*='G'*/), "Get hole effective mass Mh [m0]")
         .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
         .def("chi", (double (Material::*)(double, char) const)&Material::chi, (py::arg("T")=300., py::arg("point")='G'), "Get electron affinity Chi [eV]")
-        .def("Nc", (double (Material::*)(double, char) const)&Material::Nc, (py::arg("T")=300., py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")
-        .def("Nv", (double (Material::*)(double) const)&Material::Nv, (py::arg("T")=300.), "Get effective density of states in the valence band Nv [m**(-3)]")
+        .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")
+        .def("Nv", &Material::Nv, (py::arg("T")=300.), "Get effective density of states in the valence band Nv [m**(-3)]")
         .def("Ni", &Material::Ni, (py::arg("T")=300.), "Get intrinsic carrier concentration Ni [m**(-3)]")
         .def("Nf", &Material::Nf, (py::arg("T")=300.), "Get free carrier concentration N [m**(-3)]")
         .def("EactD", &Material::EactD, (py::arg("T")=300.), "Get donor ionisation energy EactD [eV]")

@@ -5,7 +5,7 @@
 
 namespace plask {
 
-DynamicLibrary::DynamicLibrary(const std::string &filename, int flags)
+DynamicLibrary::DynamicLibrary(const std::string& filename, unsigned flags)
 : handler(0) {
     open(filename, flags);
 }
@@ -19,7 +19,7 @@ DynamicLibrary::~DynamicLibrary() {
     close();
 }
 
-void DynamicLibrary::open(const std::string &filename, int flags) {
+void DynamicLibrary::open(const std::string &filename, unsigned flags) {
     close();    // close if something is already open
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     //const int length = MultiByteToWideChar(CP_UTF8, 0, filename.data(), filename.size(), 0, 0);

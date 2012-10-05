@@ -105,7 +105,7 @@ void MaterialsDB::loadAllToDefault(const std::string& dir) {
     while (iter != end) {
         boost::filesystem::path p = iter->path();
         if (boost::filesystem::is_regular_file(p))
-            DynamicLibraries::defaultLoad(p.string());
+            DynamicLibraries::defaultLoad(p.string(), DynamicLibrary::DONT_CLOSE);
         ++iter;
     }
 }

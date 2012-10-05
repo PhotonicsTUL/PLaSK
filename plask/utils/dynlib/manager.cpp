@@ -2,8 +2,8 @@
 
 namespace plask {
 
-const DynamicLibrary& DynamicLibraries::load(const std::string &file_name) {
-    return *loaded.insert(DynamicLibrary(file_name)).first;
+const DynamicLibrary& DynamicLibraries::load(const std::string &file_name, unsigned flags) {
+    return *loaded.insert(DynamicLibrary(file_name, flags)).first;
 }
 
 void DynamicLibraries::close(const DynamicLibrary &to_close) {

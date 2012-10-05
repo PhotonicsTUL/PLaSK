@@ -36,7 +36,7 @@ private:
     /// System shared library handler
     handler_t handler;
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-    bool unload;    // true if lib. should be unload, destructor just don't call FreeLibrary if this is false, undefined when handler == 0
+    bool unload;    // true if lib. should be unloaded, destructor just don't call FreeLibrary if this is false, undefined when handler == 0
 #endif
 
 public:
@@ -53,7 +53,7 @@ public:
      * @param filename name of file with library to load
      * @param flags flags which describes configuration of open/close process, one or more (or-ed) flags from DynamicLibrary::Flags set
      */
-    explicit DynamicLibrary(const std::string &filename, int flags = 0);
+    explicit DynamicLibrary(const std::string& filename, unsigned flags);
 
     /**
      * Don't open any library. You can call open later.
@@ -80,7 +80,7 @@ public:
      * @return *this
      */
     DynamicLibrary& operator=(DynamicLibrary && to_move) {
-        swap(to_move);  //destructor of to_move will close current this library
+        swap(to_move);  // destructor of to_move will close current this library
         return *this;
     }
 
@@ -102,9 +102,9 @@ public:
      *
      * Close already opened library wrapped by this if any.
      * @param filename name of file with library to load
-     * @param flags flags which describes configuration of open/close process, one or more (or-ed) flags from DynamicLibrary::Flags set
+     * @param flags flags which describe configuration of open/close process, one or more (or-ed) flags from DynamicLibrary::Flags set
      */
-    void open(const std::string &filename, int flags);
+    void open(const std::string& filename, unsigned flags);
 
     /**
      * Close opened library.

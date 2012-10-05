@@ -43,13 +43,14 @@ public:
     const_iterator end() const { return loaded.end(); }
 
     /**
-     * Load dynamic library and add it to this or throw excpetion if it's not possible.
+     * Load dynamic library and add it to this or throw exception if it's not possible.
      *
-     * Loaded library will be closed by destructor of this or can also be explicted close by close(const DynamicLibrary& to_close) method.
+     * Loaded library will be closed by destructor of this or can also be explicitly closed by close(const DynamicLibrary& to_close) method.
      * @param file_name name of file with library to load
+     * @param flags flags which describe configuration of open/close process, one or more (or-ed) flags from DynamicLibrary::Flags set
      * @return loaded library
      */
-    const DynamicLibrary& load(const std::string& file_name);
+    const DynamicLibrary& load(const std::string& file_name, unsigned flags=0);
 
     /**
      * Close given library if it is in this set.
@@ -67,13 +68,14 @@ public:
     static DynamicLibraries& defaultSet();
 
     /**
-     * Load dynamic library and add it to default set or throw excpetion if it's not possible.
+     * Load dynamic library and add it to default set or throw exception if it's not possible.
      *
-     * Loaded library will be closed on program exit or can also be explicted close by defaultClose(const DynamicLibrary& to_close) method.
+     * Loaded library will be closed on program exit or can also be explicitly closed by defaultClose(const DynamicLibrary& to_close) method.
      * @param file_name name of file with library to load
+     * @param flags flags which describe configuration of open/close process, one or more (or-ed) flags from DynamicLibrary::Flags set
      * @return loaded library
      */
-    static const DynamicLibrary& defaultLoad(const std::string& file_name) { return defaultSet().load(file_name); }
+    static const DynamicLibrary& defaultLoad(const std::string& file_name, unsigned flags=0) { return defaultSet().load(file_name, flags); }
 
     /**
      * Close given library if it is in default set.

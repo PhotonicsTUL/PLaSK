@@ -240,18 +240,6 @@ struct DataVector {
         std::copy(init.begin(), init.end(), data_);
     }
 
-    /**
-     * Create vector which data are copy of range [begin, end).
-     * @param begin, end range of data to copy
-     */
-    template <typename InIterT>
-    DataVector(InIterT begin, InIterT end): size_(std::distance(begin, end)) {
-        std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
-        std::copy(begin, end, data_non_const.get());   //no memory leak if this throws
-        gc_ = new Gc(1);                               //or this
-        data_ = data_non_const.release();
-    }
-
     /// Delete data if this was last reference to it.
     ~DataVector() { dec_ref(); }
 
@@ -454,10 +442,10 @@ struct DataVector {
     }
 
     /**
-     * Get subarray of this which referee to data of this.
-     * @param begin_index index of this from which data of subarray should begin
+     * Get sub-array of this which refers to data of this.
+     * @param begin_index index of this from which data of sub-array should begin
      * @param subarray_size size of sub-array
-     * @return data vector which refere to same data as this and is valid not longer than data of this
+     * @return data vector which refers to same data as this and is valid not longer than the data of this
      */
     inline DataVector<T> getSubarrayRef(std::size_t begin_index, std::size_t subarray_size) {
         assert(begin_index + subarray_size <= size_);
@@ -465,10 +453,10 @@ struct DataVector {
     }
 
     /**
-     * Get subarray of this which referee to data of this.
-     * @param begin_index index of this from which data of subarray should begin
+     * Get sub-array of this which refers to data of this.
+     * @param begin_index index of this from which data of sub-array should begin
      * @param subarray_size size of sub-array
-     * @return data vector which refere to same data as this and is valid not longer than data of this
+     * @return data vector which refers to the same data as this and is valid not longer than the data of this
      */
     inline DataVector<const T> getSubarrayRef(std::size_t begin_index, std::size_t subarray_size) const {
         assert(begin_index + subarray_size <= size_);
@@ -476,19 +464,19 @@ struct DataVector {
     }
 
     /**
-     * Get subarray of this which copy the data (fragment) of this.
-     * @param begin_index index of this from which data of subarray should begin
+     * Get sub-array of this which copies the data (fragment) of this.
+     * @param begin_index index of this from which data of sub-array should begin
      * @param subarray_size size of sub-array
-     * @return data vector which store new data which are copy of data from this
+     * @return data vector which stores new data which are copy of data from this
      */
     inline DataVector<T> getSubarrayCopy(std::size_t begin_index, std::size_t subarray_size) const {
         return getSubarrayRef(begin_index, subarray_size).copy();
     }
 
     /**
-     * Get subarray of this which referee to data of this.
-     * @param begin, end range [begin, end), subrange of [begin(), end())
-     * @return data vector which refere to same data as this and is valid not longer than data of this
+     * Get sub-array of this which refers to data of this.
+     * @param begin, end range [begin, end), sub-range of [begin(), end())
+     * @return data vector which refers to same data as this and is valid not longer than the data of this
      */
     inline DataVector<T> getSubrangeRef(iterator begin, iterator end) {
         assert(begin() <= begin && begin <= end && end <= end());
@@ -496,23 +484,23 @@ struct DataVector {
     }
 
     /**
-     * Get subarray of this which referee to data of this.
-     * @param begin, end range [begin, end), subrange of [begin(), end())
-     * @return data vector which refere to same data as this and is valid not longer than data of this
+     * Get sub-array of this which refers to data of this.
+     * @param begin, end range [begin, end), sub-range of [begin(), end())
+     * @return data vector which refers to same data as this and is valid not longer than the data of this
      */
     inline DataVector<const T> getSubrangeRef(const_iterator begin, const_iterator end) const {
         assert(begin() <= begin && begin <= end && end <= end());
-        return DataVector<T>(begin, end - begin, false);
+        return DataVector<T>(begin, end-begin, false);
     }
 
     /**
-     * Get subarray of this which copy the data (fragment) of this.
-     * @param begin, end range [begin, end), subrange of [begin(), end())
-     * @return data vector which store new data which are copy of data from this
+     * Get sub-array of this which copies the data (fragment) of this.
+     * @param begin, end range [begin, end), sub-range of [begin(), end())
+     * @return data vector which stores new data which are copy of the data from this
      */
     inline DataVector<T> getSubrangeCopy(const_iterator begin, const_iterator end) {
         assert(begin() <= begin && begin <= end && end <= end());
-        return DataVector<T>(begin, end);
+        return getSubrangeRef(begin, end).copy();
     }
 };
 

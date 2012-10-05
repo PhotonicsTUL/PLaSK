@@ -442,7 +442,7 @@ struct Material {
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
      * @param T temperature [K]
-     * @param thickness [m]
+     * @param thickness layer thickness [m]
      * @return thermal conductivity k[W/(m*K)]
      */
     virtual std::pair<double,double> thermCond(double T, double thickness) const;

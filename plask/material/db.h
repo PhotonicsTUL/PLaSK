@@ -74,8 +74,8 @@ struct MaterialsDB {
          * @return created material
          */
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double dopant_amount) const = 0;
-        
-        virtual ~MaterialConstructor() {} //TODO cause crash
+
+        virtual ~MaterialConstructor() {}
     };
 
     /**
@@ -108,7 +108,7 @@ struct MaterialsDB {
      * Factory of complex material which construct it version with mixed version of two compositions.
      */
     //TODO cache: double -> constructed material
-    struct MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double
+    struct MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO mieszanie nieliniowe, funkcja, funktor double [0.0, 1.0] -> double
 
     protected:
 
