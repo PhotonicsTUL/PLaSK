@@ -99,4 +99,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "provider/gain.h"
 #include "provider/heatdensity.h"
 
+#include "phys/constants.h"
+#include "phys/functions.h"
+
 #endif // PLASK__PLASK_HPP

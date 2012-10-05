@@ -144,9 +144,19 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
      * If it is not proper mode, exception is throw
      *
-     * \param neff effective index of the mode
+     * \param clambda complex wavelength of the mode
      */
-    void setMode(dcomplex neff);
+    void setMode(dcomplex clambda);
+
+    /**
+     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * If it is not proper mode, exception is throw
+     *
+     * \param lambda wavelength of the mode
+     */
+    inline void setMode(double lambda, double extinction) {
+        setMode(dcomplex(lambda, - lambda*lambda / (2*M_PI) * extinction));
+    }
 
     /**
      * Compute determinant for a single stripe
@@ -192,6 +202,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Provider for computed resonant wavelength
     ProviderFor<Wavelength>::WithValue outWavelength;
 
+    /// Provider for computed modal extinction
+    ProviderFor<Extinction>::WithValue outExtinction;
+
     /// Provider of optical field
     ProviderFor<OpticalIntensity, Geometry2DCylindrical>::Delegate outIntensity;
 
@@ -222,7 +235,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     dcomplex detS(const plask::dcomplex& v);
 
     /// Method computing the distribution of light intensity
-    const DataVector<double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
+    DataVector<const double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
 
   private:
     template <typename MeshT>

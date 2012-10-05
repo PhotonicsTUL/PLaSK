@@ -156,9 +156,12 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(computeMode, "Find the mode near the specified effective index", "wavelength");
         METHOD(findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
         METHOD(findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
-        METHOD(setMode, "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by findModes.", "lam");
+        solver.def("setMode", (void (EffectiveFrequencyCylSolver::*)(dcomplex))&EffectiveFrequencyCylSolver::setMode,
+                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by findModes.", py::arg("lam"));
+        solver.def("setMode", (void (EffectiveFrequencyCylSolver::*)(double,double))&EffectiveFrequencyCylSolver::setMode,
+                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by findModes.", (py::arg("lam"), "ext"));
         solver.def("getStripeDeterminantV", &EffectiveFrequencyCylSolver_getStripeDeterminantV, "Get single stripe modal determinant for debugging purposes",
-                       (py::arg("stripe"), "veff"));
+                   (py::arg("stripe"), "veff"));
         solver.def("getDeterminantV", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes", py::arg("v"));
         solver.def("getDeterminant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", py::arg("lam"));
         RECEIVER(inTemperature, "Temperature distribution in the structure");

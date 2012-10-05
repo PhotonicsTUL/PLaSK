@@ -68,9 +68,12 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
     if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
     stageOne();
     v = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root).getSolution(0.);
-    dcomplex lam = 2e3*M_PI / k0 / (1. - v/2.); // get wavelength back from frequency parameter
-    outWavelength = lam;
+    dcomplex k = k0 / (1. - v/2.); // get wavelength back from frequency parameter
+    dcomplex lam = 2e3*M_PI / k;
+    outWavelength = real(lam);
+    outExtinction = phys::c * imag(k);
     outWavelength.fireChanged();
+    outExtinction.fireChanged();
     outIntensity.fireChanged();
     have_fields = false;
     return lam;
@@ -104,19 +107,21 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1
     return results;
 }
 
-void EffectiveFrequencyCylSolver::setMode(dcomplex lambda)
+void EffectiveFrequencyCylSolver::setMode(dcomplex clambda)
 {
-    if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
+    if (isnan(k0.real())) k0 = 2e3*M_PI / clambda;
     if (!initialized) {
         writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
         stageOne();
     }
-    v =  2. - 4e3*M_PI / lambda / k0;
+    v =  2. - 4e3*M_PI / clambda / k0;
     double det = abs(detS(v));
     if (det > root.tolf_max) throw BadInput(getId(), "Provided wavelength does not correspond to any mode (det = %1%)", det);
-    writelog(LOG_INFO, "Setting current mode to %1%", str(lambda));
-    outWavelength = lambda;
+    writelog(LOG_INFO, "Setting current mode to %1%", str(clambda));
+    outWavelength = real(clambda);
+    outExtinction = phys::c * imag(2e3*M_PI/clambda);
     outWavelength.fireChanged();
+    outExtinction.fireChanged();
     outIntensity.fireChanged();
 }
 
@@ -145,6 +150,7 @@ void EffectiveFrequencyCylSolver::onInitialize()
 void EffectiveFrequencyCylSolver::onInvalidate()
 {
     outWavelength.invalidate();
+    outExtinction.invalidate();
     have_fields = false;
     outWavelength.fireChanged();
     outIntensity.fireChanged();
@@ -391,7 +397,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 
 
 
-const DataVector<double> EffectiveFrequencyCylSolver::getLightIntenisty(const MeshD<2>& dst_mesh, InterpolationMethod)
+plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
 {
     if (!outWavelength.hasValue() || k0 != old_k0 || l != old_l) throw NoValue(OpticalIntensity::NAME);
 

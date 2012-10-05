@@ -334,23 +334,23 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
         // boundary condition: radiation
         if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNLoRightPtr()->ifRadiation() ) // radiation on bottom edge of the element
         {
-            tF1radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4)); // 1e-6 -> to transform um into m
-            tF2radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
+            tF1radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4)); // 1e-6 -> to transform um into m
+            tF2radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
         }
         if ( ttE->getNUpLeftPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on top edge of the element
         {
-            tF3radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
-            tF4radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
+            tF3radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
+            tF4radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
         }
         if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNUpLeftPtr()->ifRadiation() ) // radiation on left edge of the element
         {
-            tF1radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4));
-            tF4radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
+            tF1radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4));
+            tF4radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
         }
         if ( ttE->getNLoRightPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on right edge of the element
         {
-            tF2radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
-            tF3radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
+            tF2radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
+            tF3radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
         }
 
         // set symetric matrix components
@@ -512,23 +512,23 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
         // boundary condition: radiation
         if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNLoRightPtr()->ifRadiation() ) // radiation on bottom edge of the element
         {
-            tF1radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4)); // 1e-6 -> to transform um into m
-            tF2radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
+            tF1radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4)); // 1e-6 -> to transform um into m
+            tF2radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
         }
         if ( ttE->getNUpLeftPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on top edge of the element
         {
-            tF3radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
-            tF4radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
+            tF3radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
+            tF4radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
         }
         if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNUpLeftPtr()->ifRadiation() ) // radiation on left edge of the element
         {
-            tF1radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4));
-            tF4radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
+            tF1radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4));
+            tF4radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
         }
         if ( ttE->getNLoRightPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on right edge of the element
         {
-            tF2radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
-            tF3radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * cPhys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
+            tF2radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
+            tF3radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
         }
 
         // set symetric matrix components

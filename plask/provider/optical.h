@@ -22,8 +22,15 @@ struct OpticalIntensity : public ScalarFieldProperty {
  * It is a complex number, so it can contain information about both the wavelength and losses.
  * Its imaginary part is defined as \f$ \Im(\lambda)=-\frac{\Re(\lambda)^2}{2\pi c}\Im(\omega) \f$.
  */
-struct Wavelength : public SingleValueProperty<dcomplex> {
+struct Wavelength : public SingleValueProperty<double> {
     static constexpr const char* NAME = "wavelength";
+};
+
+/**
+ * Modal extinction, i.e. imaginary part of \f$ \omega \f$
+ */
+struct Extinction : public SingleValueProperty<double> {
+    static constexpr const char* NAME = "modal extinction";
 };
 
 /**

@@ -229,7 +229,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     /// Compute mirror losses for specified effective index
     double getMirrorLosses(const dcomplex& neff) {
-        const double lambda = real(inWavelength());
+        const double lambda = inWavelength();
         const double n = real(neff); // TODO is this really correct?
         const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
                      n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
@@ -254,7 +254,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     dcomplex detS(const dcomplex& x);
 
     /// Method computing the distribution of light intensity
-    const DataVector<double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
+    DataVector<const double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
 
   private:
     template <typename MeshT>

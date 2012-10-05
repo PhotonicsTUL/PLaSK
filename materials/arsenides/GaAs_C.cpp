@@ -34,7 +34,7 @@ MI_PROPERTY(GaAs_C, cond,
 			MIComment("no temperature dependence")
             )
 std::pair<double,double> GaAs_C::cond(double T) const {
-    double tCond = cPhys::q * Nf_RT*1e6 * mob_RT;
+    double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
     return (std::make_pair(tCond, tCond));
 }
 

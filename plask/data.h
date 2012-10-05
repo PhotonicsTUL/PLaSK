@@ -17,31 +17,24 @@ This file includes classes which can hold (or points to) datas.
 namespace plask {
 
 /**
-  * Base class for optional data destructor.
-  * When the reference count reaches 0 then if there is a destructor set, its \c destruct method is called,
-  * which can delete vector data (it will not be deleted automatically). Afterwards the destructor object is deleted.
+  * Base class for optional data guardian.
+  * When the reference count reaches 0 then if there is a guardian set, the data is not deleted, but the guradian is descructed.
+  * It should delete or otherwise release the data in its destructor. Furthermore, the data cannot be claimed if the guardian is set.
   */
-template <typename T>
-struct DataVectorDeallocator {
-    virtual ~DataVectorDeallocator() {}
-    /**
-     * Method called when data is to be destructed. Should be overriden in derived class.
-     * \param data vector data to delete
-     */
-    virtual void deallocate(T* data) = 0;
+struct DataVectorGuardian {
+    virtual ~DataVectorGuardian() {}
 };
 
 
 namespace detail {
     /// Garbage collector info for DataVector
-    template <typename T>
     struct DataVectorGC {
         // Count is atomic so many threads can increment and decrement it at same time.
         // If it is 0, it means that there has been only one DataVector object, so probably one thread uses it.
         std::atomic<unsigned> count;
-        DataVectorDeallocator<T>* deallocator;
-        explicit DataVectorGC(unsigned initial) : count(initial), deallocator(nullptr) {}
-        ~DataVectorGC() { delete deallocator; }
+        DataVectorGuardian* guardian;
+        explicit DataVectorGC(unsigned initial) : count(initial), guardian(nullptr) {}
+        ~DataVectorGC() { delete guardian; }
     };
 }
 
@@ -58,8 +51,8 @@ namespace detail {
 template <typename T>
 struct DataVector {
 
-    typedef detail::DataVectorGC<typename std::remove_const<T>::type> Gc;
-    typedef DataVectorDeallocator<typename std::remove_const<T>::type> Deallocator;
+    typedef detail::DataVectorGC Gc;
+    typedef DataVectorGuardian Guardian;
 
   private:
 
@@ -70,8 +63,7 @@ struct DataVector {
     /// Decrease GC counter and free memory if necessary.
     void dec_ref() {
         if (gc_ && --(gc_->count) == 0) {
-            if (gc_->deallocator == nullptr) delete[] data_;
-            else { gc_->deallocator->deallocate(const_cast<typename std::remove_const<T>::type*>(data_)); }
+            if (gc_->guardian == nullptr) delete[] data_;
             delete gc_;
         }
     }
@@ -109,7 +101,7 @@ struct DataVector {
      */
     DataVector(std::size_t size, const T& value): size_(size) {
         std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
-        std::fill_n(data_non_const.get(), size, value);   //this may throw, but no memory leak than
+        std::fill_n(data_non_const.get(), size, value);   // this may throw, but no memory leak than
         gc_ = new Gc(1);
         data_ = data_non_const.release();
     }
@@ -134,8 +126,8 @@ struct DataVector {
      * @return *this
      */
     DataVector<T>& operator=(const DataVector<T>& M) {
-        if (this == &M) return *this;   //assigned to self protection
-        this->dec_ref();    //release old content, this can delete old data
+        if (this == &M) return *this;   // self protection
+        this->dec_ref();                // release old content, this can delete old data
         size_ = M.size_;
         data_ = M.data_;
         gc_ = M.gc_;
@@ -220,15 +212,15 @@ struct DataVector {
         size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
 
     /**
-     * Create vector out of existing data with deallocator.
+     * Create vector out of existing data with guardian.
      * \param size  total size of the existing data
      * \param existing_data pointer to existing data
-     * \param deallocator pointer to the data deallocator object created on the heap (it will be deleted automatically)
+     * \param guardian pointer to the data guardian object created on the heap (it will be deleted automatically)
      */
     template <typename TS>
-    DataVector(TS* existing_data, std::size_t size, Deallocator* deallocator) :
+    DataVector(TS* existing_data, std::size_t size, Guardian* guardian) :
         size_(size), gc_(new Gc(1)), data_(existing_data) {
-        gc_->deallocator = deallocator;
+        gc_->guardian = guardian;
     }
 
     /**
@@ -303,12 +295,12 @@ struct DataVector {
      * Change data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
      * \param size  total size of the existing data
      * \param existing_data pointer to existing data
-     * \param deallocator pointer to the data deallocator object created on the heap (it will be deleted automatically)
+     * \param guardian pointer to the data guardian object created on the heap (it will be deleted automatically)
      */
     template <typename TS>
-    void reset(TS* existing_data, std::size_t size, Deallocator* deallocator) {
+    void reset(TS* existing_data, std::size_t size, Guardian* guardian) {
         reset<TS>(existing_data, size, true);
-        gc_->deallocator = deallocator;
+        gc_->guardian = guardian;
     }
 
     /**
@@ -439,7 +431,7 @@ struct DataVector {
      * @return copy of this: shallow if unique() is @c true, deep if unique() is @c false
      */
     DataVector<typename std::remove_const<T>::type> claim() const {
-        return unique() ? remove_const() : copy();
+        return (unique() && !gc_->guardian) ? remove_const() : copy();
     }
 
     /**
@@ -451,7 +443,7 @@ struct DataVector {
         std::swap(gc_, other.gc_);
         std::swap(data_, other.data_);
     }
-    
+
     /**
      * Fill all data using given value.
      * @param value value to fill
@@ -460,7 +452,7 @@ struct DataVector {
     void fill(const O& value) {
         std::fill_n(data_, size_, value);
     }
-    
+
     /**
      * Get subarray of this which referee to data of this.
      * @param begin_index index of this from which data of subarray should begin
@@ -471,7 +463,7 @@ struct DataVector {
         assert(begin_index + subarray_size <= size_);
         return DataVector<T>(data_ + begin_index, subarray_size, false);
     }
-    
+
     /**
      * Get subarray of this which referee to data of this.
      * @param begin_index index of this from which data of subarray should begin

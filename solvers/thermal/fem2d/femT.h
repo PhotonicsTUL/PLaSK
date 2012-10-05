@@ -8,7 +8,6 @@
 #include <plask/plask.hpp>
 #include "node2D.h"
 #include "element2D.h"
-#include <plask/../additions/constants.h>
 
 namespace plask { namespace solvers { namespace thermal {
 

@@ -179,7 +179,7 @@ void EffectiveIndex2DSolver::stageOne()
         // we need to update something
 
         k0 = 2e3*M_PI / inWavelength();
-        double w = real(inWavelength());
+        double w = inWavelength();
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto temp = inTemperature(*mesh);
@@ -335,7 +335,7 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x)
 
 
 
-const DataVector<double> EffectiveIndex2DSolver::getLightIntenisty(const MeshD<2>& dst_mesh, InterpolationMethod)
+plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
 {
     if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
 

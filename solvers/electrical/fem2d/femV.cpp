@@ -669,7 +669,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     {
         if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
         {
-            mHeatDensities[ttE->getNo()-1] = ( cPhys::h * cPhys::c * fabs((mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( cPhys::q * real(inWavelength()) * 1e-9 * 10e-6 ); // 10e-6 TODO
+            mHeatDensities[ttE->getNo()-1] = ( phys::h * phys::c * fabs((mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( phys::qe * real(inWavelength()) * 1e-9 * 10e-6 ); // 10e-6 TODO
         }
         else
         {
