@@ -13,7 +13,11 @@ DynamicLibrary::DynamicLibrary(const std::string& filename, unsigned flags)
 DynamicLibrary::DynamicLibrary(): handler(0) {}
 
 DynamicLibrary::DynamicLibrary(DynamicLibrary&& to_move)
-    : handler(to_move.handler) { to_move.handler = 0; }
+    : handler(to_move.handler)
+#ifdef PLASK__UTILS_PLUGIN_WINAPI
+    , unload(to_move.unload)
+#endif    
+{ to_move.handler = 0; }
 
 DynamicLibrary::~DynamicLibrary() {
     close();

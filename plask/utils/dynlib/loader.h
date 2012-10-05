@@ -90,6 +90,9 @@ public:
      */
     void swap(DynamicLibrary& to_swap) {
         std::swap(handler, to_swap.handler);
+#ifdef PLASK__UTILS_PLUGIN_WINAPI
+        std::swap(unload, to_swap.unload);
+#endif
     }
 
     /**
@@ -184,7 +187,11 @@ public:
      * Compare operator, defined to allow store dynamic libriaries in standard containers which require this.
      */
     bool operator<(const DynamicLibrary& other) const {
+#ifdef PLASK__UTILS_PLUGIN_WINAPI
+        return this->handler < other.handler || (this->handler == other.handler && !this->unload && other.unload);
+#else
         return this->handler < other.handler;
+#endif
     }
 
 };
