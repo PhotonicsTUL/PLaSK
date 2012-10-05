@@ -198,6 +198,11 @@ class MaterialWrap : public Material
     virtual DDPair Mhh(double T, const char Point) const { return override<DDPair>("Mhh", &Material::Mhh, T, Point); }
     virtual DDPair Mlh(double T, const char Point) const { return override<DDPair>("Mlh", &Material::Mlh, T, Point); }
     virtual DDPair Mh(double T, char EqType) const { return override<DDPair>("Mh", &Material::Mh, T, EqType); }
+    virtual double ac(double T) const { return override<double>("ac", &Material::Mso, T); }
+    virtual double av(double T) const { return override<double>("av", &Material::Mso, T); }
+    virtual double b(double T) const { return override<double>("b", &Material::Mso, T); }
+    virtual double c11(double T) const { return override<double>("c11", &Material::Mso, T); }
+    virtual double c12(double T) const {return override<double>("c12", &Material::Mso, T); }
     virtual double eps(double T) const { return override<double>("eps", &Material::eps, T); }
     virtual double chi(double T, const char Point) const { return override<double>("chi", (double (Material::*)(double, char) const) &Material::chi, T, Point); }
     virtual double Nc(double T, const char Point) const { return override<double>("Nc", &Material::Nc, T, Point); }
@@ -258,14 +263,14 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     PythonEvalMaterialConstructor(const std::string& name) :
         MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), cond_type(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
-        Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL),
+        Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
         thermCond(NULL), condT_t(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL), Nr(NULL), Nr_tensor(NULL) {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), cond_type(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
-        Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Ni(NULL), Nf(NULL),
+        Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
         thermCond(NULL), condT_t(NULL), dens(NULL), specHeat(NULL), nr(NULL), absp(NULL), Nr(NULL), Nr_tensor(NULL) {}
 
