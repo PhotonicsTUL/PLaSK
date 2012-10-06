@@ -2,7 +2,7 @@
 #define PLASK__InAs_Si_H
 
 /** @file
-This file includes Si doped InAs
+This file includes Si-doped InAs
 */
 
 #include <plask/material/material.h>
@@ -11,7 +11,7 @@ This file includes Si doped InAs
 namespace plask {
 
 /**
- * Represent Si doped InAs, its physical properties.
+ * Represent Si-doped InAs, its physical properties.
  */
 struct InAs_Si: public InAs {
 
@@ -31,7 +31,6 @@ private:
            mob_RT;
 
 };
-
 
 } // namespace plask
 

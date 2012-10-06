@@ -1,0 +1,42 @@
+#ifndef PLASK__GaInAs_Sn_H
+#define PLASK__GaInAs_Sn_H
+
+/** @file
+This file includes Sn-doped GaInAs
+*/
+
+#include <plask/material/material.h>
+#include "GaInAs.h"
+//#include "GaAs_Sn.h"
+//#include "InAs_Sn.h"
+
+namespace plask {
+
+/**
+ * Represent Sn-doped GaInAs, its physical properties.
+ */
+struct GaInAs_Sn: public GaInAs {
+
+    static constexpr const char* NAME = "GaInAs:Sn";
+
+    GaInAs_Sn(const Material::Composition& Comp, DopingAmountType Type, double Val);
+    virtual std::string name() const;
+    virtual std::string str() const;
+    virtual std::pair<double,double> mob(double T) const;
+    virtual double Nf(double T) const;
+    virtual double Dop() const;
+    virtual std::pair<double,double> cond(double T) const;
+    virtual double absp(double wl, double T) const;
+
+private:
+    double ND,
+           Nf_RT,
+           mob_RT;
+
+    //GaAs_Sn mGaAs_Sn;
+    //InAs_Sn mInAs_Sn;
+};
+
+} // namespace plask
+
+#endif	//PLASK__GaInAs_Sn_H

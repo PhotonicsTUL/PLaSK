@@ -2,7 +2,7 @@
 #define PLASK__InAs_C_H
 
 /** @file
-This file includes C doped InAs
+This file includes C-doped InAs
 */
 
 #include <plask/material/material.h>
@@ -11,7 +11,7 @@ This file includes C doped InAs
 namespace plask {
 
 /**
- * Represent C doped InAs, its physical properties.
+ * Represent C-doped InAs, its physical properties.
  */
 struct InAs_C: public InAs {
 
@@ -31,7 +31,6 @@ private:
            mob_RT;
 
 };
-
 
 } // namespace plask
 

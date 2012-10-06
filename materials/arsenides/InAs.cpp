@@ -8,38 +8,35 @@ namespace plask {
 
 std::string InAs::name() const { return NAME; }
 
-MI_PROPERTY(InAs, thermCond,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009"),
-            MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"),
-            MIArgumentRange(MaterialInfo::T, 300, 650)
-            )
-std::pair<double,double> InAs::thermCond(double T, double t) const {
-    double tCondT = 30*pow((T/300.),-1.234);
-    return(std::make_pair(tCondT, tCondT));
- }
-
 MI_PROPERTY(InAs, lattC,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875")
             )
 double InAs::lattC(double T, char x) const {
     double tLattC(0.);
-    if (x == 'a') tLattC = 6.0583;
-    return (tLattC);
+    if (x == 'a') tLattC = 6.0583 + 2.74e-5 * (T-300.);
+    return ( tLattC );
 }
 
 MI_PROPERTY(InAs, Eg,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009"),
-            MIComment("only for Gamma point"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("only for Gamma point")
             )
 double InAs::Eg(double T, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 0.359;
-    return (tEg);
+    if (point == 'G') tEg = 0.417 - 0.276e-3 * T * T / (T + 93.); //phys::Varshni(0.417, 0.276e-3, 93., T);
+    return ( tEg );
+}
+
+MI_PROPERTY(InAs, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::Dso(double T) const {
+    return ( 0.39 );
 }
 
 MI_PROPERTY(InAs, Me,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009"),
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
@@ -49,37 +46,77 @@ std::pair<double,double> InAs::Me(double T, char point) const {
         tMe.first = 0.024;
         tMe.second = 0.024;
     }
-    return (tMe);
+    return ( tMe );
 }
 
 MI_PROPERTY(InAs, Mhh,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009"),
-            MIComment("only for Gamma point"),
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
 std::pair<double,double> InAs::Mhh(double T, char point) const {
-    std::pair<double,double> tMhh(0., 0.);
-    if (point == 'G') {
-        tMhh.first = 0.26;
-        tMhh.second = 0.45;
-    }
-    return (tMhh);
+    std::pair<double,double> tMhh(0.26, 0.26); // [001]
+    return ( tMhh );
 }
 
 MI_PROPERTY(InAs, Mlh,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, IIIâ€“V and IIâ€“VI Semiconductors, Wiley 2009"),
-            MIComment("only for Gamma point"),
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
 std::pair<double,double> InAs::Mlh(double T, char point) const {
-    std::pair<double,double> tMlh(0., 0.);
-    if (point == 'G') {
-        tMlh.first = 0.027;
-        tMlh.second = 0.026;
-    }
-    return (tMlh);
+    std::pair<double,double> tMlh(0.027, 0.027);
+    return ( tMlh );
+}
+
+MI_PROPERTY(InAs, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::ac(double T) const {
+    return ( -5.08 );
+}
+
+MI_PROPERTY(InAs, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::av(double T) const {
+    return ( 1.00 );
+}
+
+MI_PROPERTY(InAs, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::b(double T) const {
+    return ( -1.8 );
+}
+
+MI_PROPERTY(InAs, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::c11(double T) const {
+    return ( 83.29 );
+}
+
+MI_PROPERTY(InAs, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::c12(double T) const {
+    return ( 45.26 );
+}
+
+MI_PROPERTY(InAs, thermCond,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"),
+            MIArgumentRange(MaterialInfo::T, 300, 650)
+            )
+std::pair<double,double> InAs::thermCond(double T, double t) const {
+    double tCondT = 30.*pow((300./T),1.234);
+    return(std::make_pair(tCondT, tCondT));
 }
 
 static MaterialsDB::Register<InAs> materialDB_register_InAs;
 
-}       // namespace plask
+} // namespace plask

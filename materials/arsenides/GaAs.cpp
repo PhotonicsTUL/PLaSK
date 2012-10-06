@@ -135,4 +135,4 @@ double GaAs::absp(double wl, double T) const {
 
 static MaterialsDB::Register<GaAs> materialDB_register_GaAs;
 
-}       // namespace plask
+} // namespace plask
