@@ -8,33 +8,6 @@ namespace plask {
 
 std::string InP::name() const { return NAME; }
 
-MI_PROPERTY(InP, thermCond,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // k(300K)
-            MISource("I. Kudman et al., Phys. Rev. 133 (1964) A1665-A1667"), // experimental data k(T)
-            MISource("L. Piskorski, unpublished"), // temperature dependence
-            MIArgumentRange(MaterialInfo::T, 300, 800)
-            )
-std::pair<double,double> InP::thermCond(double T, double t) const {
-    double tCondT = 68.*pow((300./T),1.5);
-    return ( std::make_pair(tCondT, tCondT) );
-}
-
-MI_PROPERTY(InP, absp,
-            MISource("TODO"),
-            MIComment("TODO")
-            )
-double InP::absp(double wl, double T) const {
-    return ( 0. );
-}
-
-MI_PROPERTY(InP, nr,
-            MISource(""),
-            MIComment("TODO")
-            )
-double InP::nr(double wl, double T) const {
-    return ( 0. );
-}
-
 MI_PROPERTY(InP, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875")
             )
@@ -52,6 +25,14 @@ double InP::Eg(double T, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = 1.4236 - 0.363e-3 * T * T / (T + 162.); // cFunc::Varshni(1.4236, 0.363e-3, 162., T);
     return ( tEg );
+}
+
+MI_PROPERTY(InP, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::Dso(double T) const {
+    return ( 0.108 );
 }
 
 MI_PROPERTY(InP, Me,
@@ -84,6 +65,73 @@ MI_PROPERTY(InP, Mlh,
 std::pair<double,double> InP::Mlh(double T, char point) const {
     std::pair<double,double> tMlh(0.12, 0.12);
     return ( tMlh );
+}
+
+MI_PROPERTY(InP, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::ac(double T) const {
+    return ( -6.0 );
+}
+
+MI_PROPERTY(InP, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::av(double T) const {
+    return ( 0.6 );
+}
+
+MI_PROPERTY(InP, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::b(double T) const {
+    return ( -2.0 );
+}
+
+MI_PROPERTY(InP, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::c11(double T) const {
+    return ( 101.1 );
+}
+
+MI_PROPERTY(InP, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::c12(double T) const {
+    return ( 56.1 );
+}
+
+MI_PROPERTY(InP, thermCond,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // k(300K)
+            MISource("I. Kudman et al., Phys. Rev. 133 (1964) A1665-A1667"), // experimental data k(T)
+            MISource("L. Piskorski, unpublished"), // temperature dependence
+            MIArgumentRange(MaterialInfo::T, 300, 800)
+            )
+std::pair<double,double> InP::thermCond(double T, double t) const {
+    double tCondT = 68.*pow((300./T),1.5);
+    return ( std::make_pair(tCondT, tCondT) );
+}
+
+MI_PROPERTY(InP, nr,
+            MISource(""),
+            MIComment("TODO")
+            )
+double InP::nr(double wl, double T) const {
+    return ( 0. );
+}
+
+MI_PROPERTY(InP, absp,
+            MISource("TODO"),
+            MIComment("TODO")
+            )
+double InP::absp(double wl, double T) const {
+    return ( 0. );
 }
 
 static MaterialsDB::Register<InP> materialDB_register_InP;

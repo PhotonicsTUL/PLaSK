@@ -289,6 +289,8 @@ Material::Kind Metal::kind() const { return Material::METAL; }
 
 Material::Kind Oxide::kind() const { return Material::OXIDE; }
 
+Material::Kind Dielectric::kind() const { return Material::DIELECTRIC; }
+
 Material::Kind LiquidCrystal::kind() const { return Material::LIQUID_CRYSTAL; }
 
 

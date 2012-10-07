@@ -538,28 +538,35 @@ protected:
 
 
 /**
- * Base maerial class for all semiconductors and similar materials
+ * Base material class for all semiconductors and similar materials
  */
 struct Semiconductor: public Material {
     virtual Kind kind() const;
 };
 
 /**
- * Base maerial class for all metals
+ * Base material class for all metals
  */
 struct Metal: public Material {
     virtual Kind kind() const;
 };
 
 /**
- * Base maerial class for all oxides
+ * Base material class for all oxides
  */
 struct Oxide: public Material {
     virtual Kind kind() const;
 };
 
 /**
- * Base maerial class for all liquid crystals
+ * Base material class for all dielectrics
+ */
+struct Dielectric: public Material {
+    virtual Kind kind() const;
+};
+
+/**
+ * Base material class for all liquid crystals
  */
 struct LiquidCrystal: public Material {
     virtual Kind kind() const;

@@ -1,4 +1,4 @@
-#include "AlAs.h"
+#include "GaP.h"
 
 #include <cmath>
 #include <plask/material/db.h>  //MaterialsDB::Register
@@ -6,115 +6,133 @@
 
 namespace plask {
 
-std::string AlAs::name() const { return NAME; }
+std::string GaP::name() const { return NAME; }
 
-MI_PROPERTY(AlAs, lattC,
+MI_PROPERTY(GaP, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875")
             )
-double AlAs::lattC(double T, char x) const {
+double GaP::lattC(double T, char x) const {
     double tLattC(0.);
-    if (x == 'a') tLattC = 5.6611 + 2.90e-5 * (T-300.);
+    if (x == 'a') tLattC = 5.4505 + 2.92e-5 * (T-300.);
     return ( tLattC );
 }
 
-MI_PROPERTY(AlAs, Eg,
+MI_PROPERTY(GaP, Eg,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
             MIComment("only for Gamma point")
             )
-double AlAs::Eg(double T, char point) const {
+double GaP::Eg(double T, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 3.099 - 0.885e-3 * T * T / (T + 530.); // cFunc::Varshni(3.099, 0.885e-3, 530., T);
+    if (point == 'G') tEg = 2.896 - 0.96e-3 * T * T / (T + 423.); // cFunc::Varshni(2.896, 0.96e-3, 423., T);
     return ( tEg );
 }
 
-MI_PROPERTY(AlAs, Dso,
+MI_PROPERTY(GaP, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
             MIComment("no temperature dependence")
             )
-double AlAs::Dso(double T) const {
-    return ( 0.28 );
+double GaP::Dso(double T) const {
+    return ( 0.08 );
 }
 
-MI_PROPERTY(AlAs, Me,
+MI_PROPERTY(GaP, Me,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::Me(double T, char point) const {
+std::pair<double,double> GaP::Me(double T, char point) const {
     std::pair<double,double> tMe(0., 0.);
     if (point == 'G') {
-        tMe.first = 0.124;
-        tMe.second = 0.124;
+        tMe.first = 0.114;
+        tMe.second = 0.114;
     }
     return ( tMe );
 }
 
-MI_PROPERTY(AlAs, Mhh,
+MI_PROPERTY(GaP, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::Mhh(double T, char point) const {
-    std::pair<double,double> tMhh(0.51, 0.51); // [001]
+std::pair<double,double> GaP::Mhh(double T, char point) const {
+    std::pair<double,double> tMhh(0.34, 0.34); // [001]
     return ( tMhh );
 }
 
-MI_PROPERTY(AlAs, Mlh,
+MI_PROPERTY(GaP, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::Mlh(double T, char point) const {
-    std::pair<double,double> tMlh(0.18, 0.18);
+std::pair<double,double> GaP::Mlh(double T, char point) const {
+    std::pair<double,double> tMlh(0.20, 0.20);
     return ( tMlh );
 }
 
-MI_PROPERTY(AlAs, ac,
+MI_PROPERTY(GaP, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
             MIComment("no temperature dependence")
             )
-double AlAs::ac(double T) const {
-    return ( -5.64 );
+double GaP::ac(double T) const {
+    return ( -8.2 );
 }
 
-MI_PROPERTY(AlAs, av,
+MI_PROPERTY(GaP, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
             MIComment("no temperature dependence")
             )
-double AlAs::av(double T) const {
-    return ( 2.47 );
+double GaP::av(double T) const {
+    return ( 1.7 );
 }
 
-MI_PROPERTY(AlAs, b,
+MI_PROPERTY(GaP, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
             MIComment("no temperature dependence")
             )
-double AlAs::b(double T) const {
-    return ( -2.3 );
+double GaP::b(double T) const {
+    return ( -1.6 );
 }
 
-MI_PROPERTY(AlAs, c11,
+MI_PROPERTY(GaP, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
             MIComment("no temperature dependence")
             )
-double AlAs::c11(double T) const {
-    return ( 125.0 );
+double GaP::c11(double T) const {
+    return ( 140.5 );
 }
 
-MI_PROPERTY(AlAs, c12,
+MI_PROPERTY(GaP, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
             MIComment("no temperature dependence")
             )
-double AlAs::c12(double T) const {
-    return ( 53.4 );
+double GaP::c12(double T) const {
+    return ( 62.03 );
 }
 
-MI_PROPERTY(AlAs, thermCond,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
-            MIComment("no temperature dependence")
+MI_PROPERTY(GaP, thermCond,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // k(300K)
+            MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"), // temperature dependence
+            MIArgumentRange(MaterialInfo::T, 300, 500)
             )
-std::pair<double,double> AlAs::thermCond(double T, double t) const {
-    return(std::make_pair(91., 91.));
+std::pair<double,double> GaP::thermCond(double T, double t) const {
+    double tCondT = 77.*pow((300./T),1.364);
+    return ( std::make_pair(tCondT, tCondT) );
 }
 
-static MaterialsDB::Register<AlAs> materialDB_register_AlAs;
+MI_PROPERTY(GaP, nr,
+            MISource(""),
+            MIComment("TODO")
+            )
+double GaP::nr(double wl, double T) const {
+    return ( 0. );
+}
 
-}       // namespace plask
+MI_PROPERTY(GaP, absp,
+            MISource("TODO"),
+            MIComment("TODO")
+            )
+double GaP::absp(double wl, double T) const {
+    return ( 0. );
+}
+
+static MaterialsDB::Register<GaP> materialDB_register_GaP;
+
+} // namespace plask

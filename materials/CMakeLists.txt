@@ -5,7 +5,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLASK_PATH}/materials)
 
 
 # List of all material groups
-set(materials arsenides nitrides antimonides phosphides silicons metals other)
+set(materials arsenides nitrides antimonides phosphides oxides silicons metals other)
 
 
 foreach(material ${materials})
