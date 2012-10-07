@@ -186,7 +186,7 @@ void EffectiveFrequencyCylSolver::stageOne()
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto temp = inTemperature(*mesh);
 
-        double h = lam * 1e6*SMALL;
+        double h = lam * sqrt(SMALL);
         double lam1 = lam - h, lam2 = lam + h;
         double ih2 = 0.5 / h;
 

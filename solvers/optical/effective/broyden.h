@@ -36,8 +36,7 @@ struct RootDigger {
     Data2DLog<dcomplex,dcomplex>& log_value;
 
     // Parameters for Broyden algorithm
-    constexpr static double EPS         ///< Square root of machine precission
-                 = sqrt(std::numeric_limits<double>::epsilon());
+    static const double EPS;         ///< square root of machine precission
 
     // Return Jacobian of F(x)
     void fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const;

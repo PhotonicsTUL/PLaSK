@@ -113,10 +113,10 @@ inline std::string str(py::object obj) {
 // ----------------------------------------------------------------------------------------------------------------------
 // Typename
 template <typename T>
-constexpr std::string type_name() {
-    const std::string s = py::type_id<T>().name();
-    size_t n = s.find_last_of(':');
-    return (n != s.npos)? s.substr(n+1) : s;
+const char* type_name() {
+    const char* s = py::type_id<T>().name();
+    for (const char* c = s; *c != 0; ++c) if (*c == ':') s = c+1;
+    return s;
 }
 
 

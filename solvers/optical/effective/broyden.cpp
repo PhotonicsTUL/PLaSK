@@ -4,6 +4,8 @@ using namespace std;
 
 namespace plask { namespace solvers { namespace effective {
 
+const double RootDigger::EPS = sqrt(std::numeric_limits<double>::epsilon());
+
 vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> impoints) const
 {
 

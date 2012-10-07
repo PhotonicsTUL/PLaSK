@@ -1,7 +1,5 @@
 #include "eim.h"
 
-#include <omp.h>
-
 using plask::dcomplex;
 
 namespace plask { namespace solvers { namespace effective {

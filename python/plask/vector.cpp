@@ -324,16 +324,12 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
     py::object result;
     try {
         if (force_complex) { PyErr_SetNone(PyExc_TypeError); throw py::error_already_set(); }
-        double cmps[n];
-        for (int i = 0; i < n; i++) cmps[i] = py::extract<double>(params[i]);
-        if (n == 2) return py::object(Vec<2,double>::fromIterator(cmps));
-        return py::object(Vec<3,double>::fromIterator(cmps));
+        if (n == 2) return py::object(Vec<2,double>(py::extract<double>(params[0]), py::extract<double>(params[1])));
+        return py::object(Vec<3,double>(py::extract<double>(params[0]), py::extract<double>(params[1]), py::extract<double>(params[2])));
     } catch (py::error_already_set) { PyErr_Clear(); try {
         if (force_double) { PyErr_SetNone(PyExc_TypeError); throw py::error_already_set(); }
-        dcomplex cmps[n];
-        for (int i = 0; i < n; i++) cmps[i] = py::extract<dcomplex>(params[i]);
-        if (n == 2) return py::object(Vec<2,dcomplex>::fromIterator(cmps));
-        return py::object(Vec<3,dcomplex>::fromIterator(cmps));
+        if (n == 2) return py::object(Vec<2,dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1])));
+        return py::object(Vec<3,dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1]), py::extract<dcomplex>(params[2])));
     } catch (py::error_already_set) {
         throw TypeError("wrong vector argument types");
     }}

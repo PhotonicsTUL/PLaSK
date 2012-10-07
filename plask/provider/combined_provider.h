@@ -68,7 +68,7 @@ public:
     void connect(BaseProviderClass* to_add, bool providerIsPrivate = false) {
         providers.insert(to_add);
         if (providerIsPrivate) private_providers.insert(to_add);
-        to_add.add(*this);
+        to_add->add(*this);
         this->fireChanged();
     }
 
@@ -85,7 +85,7 @@ public:
      * @param to_remove provider to remove, will be delete if it is private
      */
     void disconnect(BaseProviderClass* to_remove) {
-        to_remove.remove(to_remove);    //onDisconnect call-back do the rest
+        to_remove->remove(to_remove);    // onDisconnect callback does the rest
     }
 
     /// Delete all private providers.

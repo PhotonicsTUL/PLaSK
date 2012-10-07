@@ -32,7 +32,7 @@ template <> struct Space_getPathsTo<Geometry3D> {
 };
 
 template <typename S>
-static py::list Space_leafsAsTranslations(const S& self, const PathHints& path=0) {
+static py::list Space_leafsAsTranslations(const S& self, const PathHints& path) {
     py::list result;
     auto leafs = self.getLeafs(&path);
     auto translations = self.getLeafsPositions(&path);
