@@ -145,7 +145,7 @@ BOOST_PYTHON_MODULE(effective)
     {CLASS(EffectiveFrequencyCylSolver, "EffectiveFrequencyCyl",
         "Calculate optical modes and optical field distribution using the effective frequency\n"
         "method in two-dimensional cylindrical space.")
-        RW_FIELD(l, "Radial mode number");
+        RW_FIELD(m, "Angular mode number");
         RW_FIELD(k0, "Reference normalized frequency");
         solver.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_setLambda0, "Reference wavelength");
         RW_FIELD(outer_distance, "Distance outside outer borders where material is sampled");

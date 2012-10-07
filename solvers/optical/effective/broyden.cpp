@@ -27,6 +27,7 @@ vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> imp
         values[i] = new double[NI];
 
     // Compute the values at points
+    #pragma omp parallel for collapse(2)
     for (int r = 0; r < NR; r++)
         for (int i = 0; i < NI; i++) {
         try {

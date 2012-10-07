@@ -48,7 +48,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     std::vector<dcomplex> nng;
 
     /// Old value of the l number (to detect changes)
-    int old_l;
+    int old_m;
 
     /// Old value of k0 to detect changes
     dcomplex old_k0;
@@ -62,7 +62,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
   public:
 
     /// Number of the LP_lm mode describing angular dependence
-    int l;
+    int m;
 
     /// Current value of reference normalized frequency
     dcomplex k0;
