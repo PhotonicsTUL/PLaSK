@@ -211,7 +211,7 @@ void EffectiveIndex2DSolver::stageOne()
         old_polarization = polarization;
 
         // Compute effective indices for all stripes
-        // #pragma omp parallel for // UNEFFICIENT
+        #pragma omp parallel for
         for (size_t i = xbegin; i < nrCache.size(); ++i) {
 
             writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");

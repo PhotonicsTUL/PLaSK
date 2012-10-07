@@ -224,12 +224,11 @@ void EffectiveFrequencyCylSolver::stageOne()
                 double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain_slope[midmesh->index(ix, iy-1)];
                 ngCache[ix][iy] -= dcomplex(0., (isnan(gs))? 0. : 7.95774715459e-09 * lam*lam * gs);
                 nrCache[ix][iy] += dcomplex(0., isnan(g)? 0. : 7.95774715459e-09 * lam * g);
-
             }
         }
 
         // Compute effective frequencies for all stripes
-        // #pragma omp parallel for // UNEFFICIENT
+        #pragma omp parallel for
         for (size_t i = 0; i < nrCache.size(); ++i) {
 
             writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
