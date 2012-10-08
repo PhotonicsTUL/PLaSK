@@ -5,25 +5,26 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLASK_PATH}/materials)
 
 
 # List of all material groups
-set(materials arsenides nitrides antimonides phosphides oxides silicons metals other)
-
+file(GLOB materials RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/ *)
 
 foreach(material ${materials})
-    file(GLOB_RECURSE material_src FOLLOW_SYMLINKS ${material}/*.cpp ${material}/*.h)
-    if(material_src)
-        if (WIN32)
-            add_library(materials-${material} SHARED ${material_src})
-            install(TARGETS materials-${material} RUNTIME DESTINATION lib/plask/materials COMPONENT core
-                                            ARCHIVE DESTINATION lib/plask/materials COMPONENT dev)
-        else()
-            add_library(materials-${material} MODULE ${material_src})
-            install(TARGETS materials-${material} LIBRARY DESTINATION lib/plask/materials COMPONENT core)
+    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${material})
+        file(GLOB_RECURSE material_src FOLLOW_SYMLINKS ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.h)
+        if(material_src)
+            if (WIN32)
+                add_library(materials-${material} SHARED ${material_src})
+                install(TARGETS materials-${material} RUNTIME DESTINATION lib/plask/materials COMPONENT core
+                                                ARCHIVE DESTINATION lib/plask/materials COMPONENT dev)
+            else()
+                add_library(materials-${material} MODULE ${material_src})
+                install(TARGETS materials-${material} LIBRARY DESTINATION lib/plask/materials COMPONENT core)
+            endif()
+
+            set_target_properties(materials-${material} PROPERTIES OUTPUT_NAME ${material} PREFIX "")
+            target_link_libraries(materials-${material} ${PLaSK_LIBRARIES})
+
+            list(APPEND targets materials-${material})
         endif()
-
-        set_target_properties(materials-${material} PROPERTIES OUTPUT_NAME ${material} PREFIX "")
-        target_link_libraries(materials-${material} ${PLaSK_LIBRARIES})
-
-        list(APPEND targets materials-${material})
     endif()
 endforeach()
 
