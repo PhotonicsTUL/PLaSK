@@ -431,7 +431,11 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
     constructor->self = constructor;
     constructor->db = &materialsDB;
 
-    auto trim = [](const char* s) -> const char* { for(; *s != 0 && std::isspace(*s); ++s); return s; };
+    auto trim = [](const char* s) -> const char* {
+        for(; *s != 0 && std::isspace(*s); ++s)
+        ;
+        return s;
+    };
 
 #   if PY_VERSION_HEX >= 0x03000000
 

@@ -929,7 +929,7 @@ struct GeometryObjectD: public GeometryObject {
      * \param all if true then return all paths if branches overlap the point
      * @return all paths, last one is on top and overlies rest
      */
-    virtual Subtree getPathsTo(const DVec& point, bool all=false) const = 0;
+    virtual Subtree getPathsAt(const DVec& point, bool all=false) const = 0;
 
     /**
      * Check if this geometry object includes point.

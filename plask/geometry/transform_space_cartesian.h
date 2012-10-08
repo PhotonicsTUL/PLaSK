@@ -50,7 +50,7 @@ struct Extrusion: public GeometryObjectTransformSpace<3, 2>/*, public Geometry*/
 
     using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 
-    GeometryObject::Subtree getPathsTo(const DVec& point, bool all=false) const;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const;
 
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 

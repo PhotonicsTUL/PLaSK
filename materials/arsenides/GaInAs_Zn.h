@@ -20,10 +20,10 @@ struct GaInAs_Zn: public GaInAs {
     static constexpr const char* NAME = "GaInAs:Zn";
 
     GaInAs_Zn(const Material::Composition& Comp, DopingAmountType Type, double Val);
-    virtual std::string name() const;    
+    virtual std::string name() const;
     virtual std::string str() const;
     virtual std::pair<double,double> mob(double T) const;
-    virtual double Nf(double T) const;
+    virtual double Nf(double T) const; //TODO make sure the result is in cm^(-3)
     virtual double Dop() const;
     virtual std::pair<double,double> cond(double T) const;
     virtual double absp(double wl, double T) const;

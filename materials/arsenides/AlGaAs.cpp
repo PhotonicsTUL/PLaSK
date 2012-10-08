@@ -26,7 +26,7 @@ double AlGaAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlGaAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
 double AlGaAs::Eg(double T, char point) const {

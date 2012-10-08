@@ -23,7 +23,7 @@ MI_PROPERTY(GaN, thermCond,
             MIArgumentRange(MaterialInfo::T, 300, 450)
             )
 std::pair<double,double> GaN::thermCond(double T, double t) const {
-    double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12),
+    double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12), //TODO change t to microns
            tCondT = 230*fun_t*pow((T/300.),-1.43);
     return(std::make_pair(tCondT,tCondT));
  }

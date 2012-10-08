@@ -26,7 +26,7 @@ double GaInAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaInAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
 double GaInAs::Eg(double T, char point) const {

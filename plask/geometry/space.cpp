@@ -19,12 +19,12 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
         v = borderValuesGetter(axis_name);
         if (v) setBorders(DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
         v_lo = borderValuesGetter(axis_name + "-lo");
-        if (v = borderValuesGetter(alternativeDirectionName(dir_nr, 0))) {
+        if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
             if (v_lo) throw BadInput("setBorders", "Border specified by both '%1%-lo' and '%2%'", axis_name, alternativeDirectionName(dir_nr, 0));
             else v_lo = v;
         }
         v_hi = borderValuesGetter(axis_name + "-hi");
-        if (v = borderValuesGetter(alternativeDirectionName(dir_nr, 1))) {
+        if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 1)))) {
             if (v_hi) throw BadInput("setBorders", "Border specified by both '%1%-hi' and '%2%'", axis_name, alternativeDirectionName(dir_nr, 1));
             else v_hi = v;
         }

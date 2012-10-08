@@ -319,10 +319,10 @@ GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryObjec
 }
 
 template <int dim>
-GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const MultiStackContainer::DVec &point) const {
+GeometryObject::Subtree MultiStackContainer<dim>::getPathsAt(const MultiStackContainer::DVec &point, bool all) const {
     MultiStackContainer::DVec new_point = point;
     new_point.up() = reduceHeight(new_point.up());
-    return GeometryObjectContainer<dim>::getPathsTo(new_point);
+    return GeometryObjectContainer<dim>::getPathsAt(new_point, all);
 }
 
 template class MultiStackContainer<2>;

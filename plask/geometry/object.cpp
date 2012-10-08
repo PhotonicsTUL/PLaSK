@@ -203,7 +203,7 @@ void GeometryObject::forEachRealObjectInSubtree(std::function<bool (const Geomet
 
 template <int dims>
 shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec& point, const Predicate& predicate, const plask::PathHints* path) const {
-    Subtree subtree = getPathsTo(point, false);
+    Subtree subtree = getPathsAt(point, false);
     // Walk the subtree
     const GeometryObject::Subtree* nodes = &subtree;
     while (!nodes->empty()) {
@@ -222,7 +222,7 @@ shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec
 template <int dims>
 std::set<std::string> GeometryObjectD<dims>::getRolesAt(const DVec& point, const plask::PathHints* path) const {
     std::set<std::string> result;
-    getMatchingAt(point, [&](const GeometryObject& o) { result.insert(o.roles.begin(), o.roles.end()); return false; }, path);
+    getMatchingAt(point, [&](const GeometryObject& o)->bool { result.insert(o.roles.begin(), o.roles.end()); return false; }, path);
     return result;
 }
 

@@ -9,7 +9,7 @@ namespace plask {
 std::string InP::name() const { return NAME; }
 
 MI_PROPERTY(InP, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double InP::lattC(double T, char x) const {
     double tLattC(0.);
@@ -18,7 +18,7 @@ double InP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(InP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
 double InP::Eg(double T, char point) const {
@@ -28,7 +28,7 @@ double InP::Eg(double T, char point) const {
 }
 
 MI_PROPERTY(InP, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double InP::Dso(double T) const {
@@ -68,7 +68,7 @@ std::pair<double,double> InP::Mlh(double T, char point) const {
 }
 
 MI_PROPERTY(InP, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double InP::ac(double T) const {
@@ -76,7 +76,7 @@ double InP::ac(double T) const {
 }
 
 MI_PROPERTY(InP, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double InP::av(double T) const {
@@ -84,7 +84,7 @@ double InP::av(double T) const {
 }
 
 MI_PROPERTY(InP, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double InP::b(double T) const {
@@ -92,7 +92,7 @@ double InP::b(double T) const {
 }
 
 MI_PROPERTY(InP, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double InP::c11(double T) const {
@@ -100,7 +100,7 @@ double InP::c11(double T) const {
 }
 
 MI_PROPERTY(InP, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double InP::c12(double T) const {

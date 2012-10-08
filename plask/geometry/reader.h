@@ -10,7 +10,7 @@
 
 namespace plask {
 
-class Manager;
+struct Manager;
 
 /**
  * Allow to read geometry from XML.
@@ -23,7 +23,7 @@ class GeometryReader {
     /// Allow to access objects by auto-name (beggined with '#').
     std::map<std::string, shared_ptr<GeometryObject> > autoNamedObjects;
 
-public:
+  public:
 
     /**
      * Create new geometry object with parameters reading from XML source.

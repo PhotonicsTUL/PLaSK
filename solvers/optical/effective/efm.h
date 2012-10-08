@@ -20,11 +20,11 @@ namespace plask { namespace solvers { namespace effective {
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D> {
+class EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D> {
 
   protected:
 
-    friend class RootDigger;
+    friend struct RootDigger;
 
     /// Logger for char_val
     Data2DLog<dcomplex,dcomplex> log_value;

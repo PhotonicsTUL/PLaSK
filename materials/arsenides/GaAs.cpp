@@ -9,7 +9,7 @@ namespace plask {
 std::string GaAs::name() const { return NAME; }
 
 MI_PROPERTY(GaAs, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double GaAs::lattC(double T, char x) const {
     double tLattC(0.);
@@ -18,7 +18,7 @@ double GaAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
 double GaAs::Eg(double T, char point) const {
@@ -28,7 +28,7 @@ double GaAs::Eg(double T, char point) const {
 }
 
 MI_PROPERTY(GaAs, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaAs::Dso(double T) const {
@@ -68,7 +68,7 @@ std::pair<double,double> GaAs::Mlh(double T, char point) const {
 }
 
 MI_PROPERTY(GaAs, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaAs::ac(double T) const {
@@ -76,7 +76,7 @@ double GaAs::ac(double T) const {
 }
 
 MI_PROPERTY(GaAs, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaAs::av(double T) const {
@@ -84,7 +84,7 @@ double GaAs::av(double T) const {
 }
 
 MI_PROPERTY(GaAs, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaAs::b(double T) const {
@@ -92,7 +92,7 @@ double GaAs::b(double T) const {
 }
 
 MI_PROPERTY(GaAs, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaAs::c11(double T) const {
@@ -100,7 +100,7 @@ double GaAs::c11(double T) const {
 }
 
 MI_PROPERTY(GaAs, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaAs::c12(double T) const {

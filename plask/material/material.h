@@ -377,31 +377,31 @@ struct Material {
     virtual double chi(char point) const;
 
     /**
-     * Get effective density of states in the conduction band Nc [\f$m^{-3}\f$].
+     * Get effective density of states in the conduction band Nc [cm^(-3)].
      * @param T temperature [K]
      * @param point point in Brillouin zone [-]
-     * @return effective density of states in the conduction band Nc [\f$m^{-3}\f$]
+     * @return effective density of states in the conduction band Nc [cm^(-3)]
      */
     virtual double Nc(double T, char point) const;
 
     /**
-     * Get effective density of states in the valance band Nv [\f$m^{-3}\f$].
+     * Get effective density of states in the valance band Nv [cm^(-3)].
      * @param T temperature [K]
-     * @return effective density of states in the valance band Nv [\f$m^{-3}\f$]
+     * @return effective density of states in the valance band Nv [cm^(-3)]
      */
     virtual double Nv(double T) const;
 
     /**
-     * Get intrinsic carrier concentration Ni [\f$m^{-3}\f$].
+     * Get intrinsic carrier concentration Ni [cm^(-3)].
      * @param T temperature [K]
-     * @return intrinsic carrier concentration Ni [\f$m^{-3}\f$]
+     * @return intrinsic carrier concentration Ni [cm^(-3)]
      */
     virtual double Ni(double T) const;
 
     /**
-     * Get free carrier concentration N [\f$m^{-3}\f$].
+     * Get free carrier concentration N [cm^(-3)].
      * @param T temperature [K]
-     * @return free carrier concentration N [\f$m^{-3}\f$]
+     * @return free carrier concentration N [cm^(-3)]
      */
     virtual double Nf(double T) const;
 
@@ -477,7 +477,7 @@ struct Material {
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
      * @param T temperature [K]
-     * @param thickness layer thickness [m]
+     * @param thickness layer thickness [µm]
      * @return thermal conductivity k[W/(m*K)]
      */
     virtual std::pair<double,double> thermCond(double T, double thickness) const;
@@ -505,10 +505,10 @@ struct Material {
     virtual double nr(double wl, double T) const;
 
     /**
-     * Get absorption coefficient alpha [\f$ cm^{-1} \f$].
+     * Get absorption coefficient alpha [cm^(-1)].
      * @param wl Wavelength [nm]
      * @param T temperature [K]
-     * @return absorption coefficient alpha [\f$ cm^{-1} \f$]
+     * @return absorption coefficient alpha cm^(-1)]
      */
     virtual double absp(double wl, double T) const;
 

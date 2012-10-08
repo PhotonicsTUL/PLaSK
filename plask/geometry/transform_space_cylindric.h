@@ -36,7 +36,7 @@ struct Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 
-    virtual GeometryObject::Subtree getPathsTo(const DVec& point, bool all=false) const;
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const;
 
     // virtual void extractToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* = 0) const;
 

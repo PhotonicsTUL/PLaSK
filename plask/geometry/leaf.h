@@ -82,7 +82,7 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
         return GeometryObject::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
     }
 
-    virtual GeometryObject::Subtree getPathsTo(const DVec& point, bool) const {
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool) const {
         return GeometryObject::Subtree( this->includes(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
     }
 

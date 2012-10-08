@@ -121,7 +121,7 @@ struct BoundaryLogicImpl {
      * @return @c true only if this represents empty set of indexes
      */
     virtual bool empty() const { return begin() == end(); }
-    
+
 };
 
 /**
@@ -212,7 +212,7 @@ struct Boundary {
         const_iterator end() const {
             return this->held->end();
         }
-        
+
         /**
          * Check if boundary represents empty set of indexes.
          * @return @c true only if this represents empty set of indexes
@@ -262,7 +262,7 @@ public:
     bool includes(const MeshType& mesh, std::size_t mesh_index) const {
         return get(mesh).includes(mesh_index);
     }
-    
+
     /**
      * Check if boundary, for given @p mesh, represents empty set of indexes.
      * @param mesh mesh
@@ -282,7 +282,7 @@ public:
 };
 
 /**
- * This logic holds a list of boundaries and represent a set of index which is a sum of sets from this boundaries.
+ * This logic holds a list of boundaries and represent a set of indexes which is a sum of sets from this boundaries.
  */
 template <typename MeshType>
 struct SumBoundaryImpl: public BoundaryLogicImpl {
@@ -306,15 +306,15 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
             }
         }
 
-        //special version for begin
+        // special version for begin
         IteratorImpl(typename BoundariesVec::const_iterator current_boundary, typename BoundariesVec::const_iterator current_boundary_end)
             : current_boundary(current_boundary), current_boundary_end(current_boundary_end), in_boundary(current_boundary->begin()), in_boundary_end(current_boundary->end()) {
             if (current_boundary != current_boundary_end) fixCurrentBoundary();
         }
 
-        //special version for end
+        // special version for end
         IteratorImpl(typename BoundariesVec::const_iterator current_boundary)
-            : current_boundary(current_boundary), current_boundary_end(current_boundary_end)
+            : current_boundary(current_boundary), current_boundary_end(current_boundary) //FIXME: było current_boundary_end(current_boundary_end) -- co powinno być naprawdę?
         {}
 
         bool equal(const typename BoundaryLogicImpl::IteratorImpl &other) const {
@@ -342,7 +342,7 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
     template <typename... Args>
     SumBoundaryImpl(Args&&... args):
         boundaries(std::forward<Args>(args)...) {   }
-    
+
     virtual bool includes(std::size_t mesh_index) const {
         for (auto& b: boundaries)
             if (b.includes(mesh_index)) return true;

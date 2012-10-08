@@ -23,7 +23,7 @@ struct InGaN_Mg: public InGaN {
     virtual std::string name() const;
     virtual std::string str() const;
     virtual std::pair<double,double> mob(double T) const;
-    virtual double Nf(double T) const;
+    virtual double Nf(double T) const; //TODO change to cm^(-3)
     virtual double Dop() const;
     virtual std::pair<double,double> cond(double T) const;
     virtual double absp(double wl, double T) const;

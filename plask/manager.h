@@ -23,7 +23,7 @@ This file includes:
 
 namespace plask {
 
-struct Solver;
+class Solver;
 
 /**
  * Geometry manager features:

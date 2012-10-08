@@ -23,7 +23,7 @@ struct GaInAs_Si: public GaInAs {
     virtual std::string name() const;
     virtual std::string str() const;
     virtual std::pair<double,double> mob(double T) const;
-    virtual double Nf(double T) const;
+    virtual double Nf(double T) const; //TODO make sure the result is in cm^(-3)
     virtual double Dop() const;
     virtual std::pair<double,double> cond(double T) const;
     virtual double absp(double wl, double T) const;

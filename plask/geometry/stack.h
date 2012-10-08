@@ -526,7 +526,7 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const;
 
-    virtual GeometryObject::Subtree getPathsTo(const DVec& point) const;
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const;
 
     virtual bool includes(const DVec& p) const {
         DVec p_reduced = p;

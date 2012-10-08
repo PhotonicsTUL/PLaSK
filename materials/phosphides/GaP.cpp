@@ -9,7 +9,7 @@ namespace plask {
 std::string GaP::name() const { return NAME; }
 
 MI_PROPERTY(GaP, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double GaP::lattC(double T, char x) const {
     double tLattC(0.);
@@ -18,7 +18,7 @@ double GaP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
 double GaP::Eg(double T, char point) const {
@@ -28,7 +28,7 @@ double GaP::Eg(double T, char point) const {
 }
 
 MI_PROPERTY(GaP, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaP::Dso(double T) const {
@@ -68,7 +68,7 @@ std::pair<double,double> GaP::Mlh(double T, char point) const {
 }
 
 MI_PROPERTY(GaP, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaP::ac(double T) const {
@@ -76,7 +76,7 @@ double GaP::ac(double T) const {
 }
 
 MI_PROPERTY(GaP, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaP::av(double T) const {
@@ -84,7 +84,7 @@ double GaP::av(double T) const {
 }
 
 MI_PROPERTY(GaP, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaP::b(double T) const {
@@ -92,7 +92,7 @@ double GaP::b(double T) const {
 }
 
 MI_PROPERTY(GaP, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaP::c11(double T) const {
@@ -100,7 +100,7 @@ double GaP::c11(double T) const {
 }
 
 MI_PROPERTY(GaP, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815–5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaP::c12(double T) const {

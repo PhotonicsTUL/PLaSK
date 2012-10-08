@@ -462,7 +462,7 @@ struct RegisterMeshReader {
     static ReadingFunction* getReader(const std::string& name);
 };
 
-class Manager;
+struct Manager;
 
 /**
  * Helper which call stores mesh reader when constructed.

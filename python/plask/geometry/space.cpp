@@ -22,12 +22,12 @@ template <> struct Space_getMaterial<Geometry3D> {
 
 template <typename S> struct Space_getPathsTo {
     static inline GeometryObject::Subtree call(const S& self, double c0, double c1, bool all) {
-        return self.getPathsTo(Vec<2,double>(c0, c1), all);
+        return self.getPathsAt(Vec<2,double>(c0, c1), all);
     }
 };
 template <> struct Space_getPathsTo<Geometry3D> {
     static inline GeometryObject::Subtree call(const Geometry3D& self, double c0, double c1, double c2, bool all) {
-        return self.getPathsTo(Vec<3,double>(c0, c1, c2), all);
+        return self.getPathsAt(Vec<3,double>(c0, c1, c2), all);
     }
 };
 
@@ -56,7 +56,7 @@ static std::vector<shared_ptr<GeometryObject>> Space_getLeafs(S& self, const Pat
 
 static void _Space_setBorders(Geometry& self, py::dict borders, std::set<std::string>& parsed, const std::string& err_msg) {
    self.setBorders(
-        [&](const std::string& s) {
+        [&](const std::string& s)->boost::optional<std::string> {
             std::string str = s;
             std::replace(str.begin(), str.end(), '-', '_');
             parsed.insert(str);

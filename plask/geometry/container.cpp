@@ -123,10 +123,10 @@ GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsTo(const GeometryO
 }
 
 template <int dim>
-GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsTo(const GeometryObjectContainer::DVec &point, bool all) const {
+GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsAt(const GeometryObjectContainer::DVec &point, bool all) const {
     GeometryObject::Subtree result;
     for (auto child = children.rbegin(); child != children.rend(); ++child) {
-        GeometryObject::Subtree child_path = (*child)->getPathsTo(point, all);
+        GeometryObject::Subtree child_path = (*child)->getPathsAt(point, all);
         if (!child_path.empty()) {
             result.children.push_back(std::move(child_path));
             if (!all) break;

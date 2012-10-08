@@ -94,7 +94,7 @@ enum InterpolationMethod {
 #   endif // DOXYGEN
 };
 
-static const char* interpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE", "COSINE", "FOURIER" /*attach new interpolation algoritm names here*/};
+static const char* interpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE", "COSINE", "FOURIER" /*attach new interpolation algorithm names here*/};
 
 /**
  * Helper utility that replaces DEFAULT_INTERPOLATION with particular method.

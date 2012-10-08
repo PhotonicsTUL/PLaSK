@@ -438,7 +438,7 @@ This concludes our short tutorial. Now you can go on and write your own calculat
 
 namespace plask {
 
-class Manager;
+struct Manager;
 
 /**
  * Base class for all solvers.

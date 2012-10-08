@@ -36,7 +36,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
   protected:
 
-    friend class RootDigger;
+    friend struct RootDigger;
 
     /// Logger for determinant
     Data2DLog<dcomplex,dcomplex> log_value;
