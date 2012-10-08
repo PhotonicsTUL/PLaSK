@@ -20,7 +20,7 @@ namespace plask { namespace solvers { namespace effective {
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-class EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D> {
+struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D> {
 
   protected:
 

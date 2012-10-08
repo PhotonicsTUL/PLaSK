@@ -63,7 +63,7 @@ template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_UP>;
 template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_UP>;
 template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
 
-/*template <int dim>    //this is fine but GeometryObjects doesn't have copy constructors at all, becose signal doesn't have copy constructor
+/*template <int dim>    //this is fine but GeometryObjects doesn't have copy constructors at all, because signal doesn't have copy constructor
 StackContainer<dim>::StackContainer(const StackContainer& to_copy)
     : StackContainerBaseImpl<dim>(to_copy) //copy all but aligners
 {
@@ -321,7 +321,7 @@ GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryObjec
 template <int dim>
 GeometryObject::Subtree MultiStackContainer<dim>::getPathsAt(const MultiStackContainer::DVec &point, bool all) const {
     MultiStackContainer::DVec new_point = point;
-    new_point.up() = reduceHeight(new_point.up());
+    reduceHeight(new_point.up());
     return GeometryObjectContainer<dim>::getPathsAt(new_point, all);
 }
 
