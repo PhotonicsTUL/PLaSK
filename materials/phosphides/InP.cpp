@@ -23,7 +23,7 @@ MI_PROPERTY(InP, Eg,
             )
 double InP::Eg(double T, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 1.4236 - 0.363e-3 * T * T / (T + 162.); // cFunc::Varshni(1.4236, 0.363e-3, 162., T);
+    if (point == 'G') tEg = phys::Varshni(1.4236, 0.363e-3, 162., T);
     return ( tEg );
 }
 

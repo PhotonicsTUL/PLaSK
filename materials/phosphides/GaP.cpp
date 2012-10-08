@@ -23,7 +23,7 @@ MI_PROPERTY(GaP, Eg,
             )
 double GaP::Eg(double T, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 2.896 - 0.96e-3 * T * T / (T + 423.); // cFunc::Varshni(2.896, 0.96e-3, 423., T);
+    if (point == 'G') tEg = phys::Varshni(2.896, 0.96e-3, 423., T);
     return ( tEg );
 }
 

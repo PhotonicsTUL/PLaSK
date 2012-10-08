@@ -23,7 +23,7 @@ MI_PROPERTY(AlAs, Eg,
             )
 double AlAs::Eg(double T, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 3.099 - 0.885e-3 * T * T / (T + 530.); // cFunc::Varshni(3.099, 0.885e-3, 530., T);
+    if (point == 'G') tEg = phys::Varshni(3.099, 0.885e-3, 530., T);
     return ( tEg );
 }
 

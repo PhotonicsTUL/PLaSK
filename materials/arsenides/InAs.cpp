@@ -23,7 +23,7 @@ MI_PROPERTY(InAs, Eg,
             )
 double InAs::Eg(double T, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 0.417 - 0.276e-3 * T * T / (T + 93.); //phys::Varshni(0.417, 0.276e-3, 93., T);
+    if (point == 'G') tEg = phys::Varshni(0.417, 0.276e-3, 93., T);
     return ( tEg );
 }
 

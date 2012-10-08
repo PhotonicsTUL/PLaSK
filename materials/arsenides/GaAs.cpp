@@ -23,7 +23,7 @@ MI_PROPERTY(GaAs, Eg,
             )
 double GaAs::Eg(double T, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 1.519 - 0.5405e-3 * T * T / (T + 204.); //phys::Varshni(1.519, 0.5405e-3, 204., T);
+    if (point == 'G') tEg = phys::Varshni(1.519, 0.5405e-3, 204., T);
     return ( tEg );
 }
 
