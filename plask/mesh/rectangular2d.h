@@ -816,8 +816,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     static bool getLineHi(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
         assert(box_lower <= box_upper);
         line = axis.findIndex(box_upper);
-        if (line == axis.size()) return false;
-        if (axis[line] == box_upper) return true;
+        if (line != axis.size() && axis[line] == box_upper) return true;
         if (line == 0) return false;
         --line;
         return axis[line] >= box_lower;

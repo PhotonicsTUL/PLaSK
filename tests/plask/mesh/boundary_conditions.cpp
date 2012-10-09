@@ -4,10 +4,11 @@
 #include <plask/mesh/boundary_conditions.h>
 #include <plask/manager.h>
 #include <plask/utils/xml.h>
+#include "../common/dumb_material.h"
 
 BOOST_AUTO_TEST_SUITE(boundary_conditions) // MUST be the same as the file name
 
-BOOST_AUTO_TEST_CASE(boundary_conditions) {
+BOOST_AUTO_TEST_CASE(boundary_conditions_rect_simple) {
     plask::BoundaryConditions<plask::RectilinearMesh2D, double> conditions;
     BOOST_CHECK(conditions.empty());
     conditions.add(plask::RectilinearMesh2D::getLeftBoundary(), 1.0);
@@ -19,7 +20,29 @@ BOOST_AUTO_TEST_CASE(boundary_conditions) {
     mesh.axis0.addPointsLinear(1.0, 3.0, 3);   //1.0, 2.0, 3.0
     mesh.axis1.addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
     BOOST_CHECK(conditions.includes(mesh, 0) == conditions.begin());
+}
 
+BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
+    plask::BoundaryConditions<plask::RectilinearMesh2D, double> conditions;
+    plask::MaterialsDB materialsDB;
+    initDumbMaterialDb(materialsDB);
+    plask::Manager manager;
+    manager.loadFromXMLString(
+                "<plask><geometry><cartesian2d name=\"space\" length=\"1\" axes=\"xy\"><stack>"
+                    "<block name=\"top\" x=\"5\" y=\"3\" material=\"Al\" />"
+                    "<block name=\"bottom\" x=\"5\" y=\"3\" material=\"Al\" />"
+                "</stack></cartesian2d></geometry></plask>", materialsDB); //repeat=\"2\"
+    plask::RectilinearMesh2D::Boundary bottom_b = plask::RectilinearMesh2D::getBottomOfBoundary(manager.getGeometry<plask::GeometryD<2> >("space"), manager.getGeometryObject("bottom"));
+    plask::RectilinearMesh2D mesh;
+    mesh.axis0.addPointsLinear(1.0, 5.0, 5);   //1.0, 2.0, 3.0, 4.0, 5.0
+    mesh.axis1.addPointsLinear(0.0, 4.0, 5);   //0.0, 1.0, 2.0, 3.0, 4.0
+    plask::RectilinearMesh2D::Boundary::WithMesh wm = bottom_b.get(mesh);
+    for (int i = 0; i < 5; ++i) BOOST_CHECK(wm.includes(i));
+    for (int i = 5; i < 25; ++i) BOOST_CHECK(!wm.includes(i));
+    plask::RectilinearMesh2D::Boundary top_b = plask::RectilinearMesh2D::getTopOfBoundary(manager.getGeometry<plask::GeometryD<2> >("space"), manager.getGeometryObject("top"));
+    wm = top_b.get(mesh);
+    for (int i = 0; i < 20; ++i) BOOST_CHECK(!wm.includes(i));
+    for (int i = 20; i < 25; ++i) BOOST_CHECK(wm.includes(i));
 }
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {
@@ -34,5 +57,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {
     BOOST_CHECK_EQUAL(conditions[0].condition, 123.0);
     BOOST_CHECK_EQUAL(conditions[1].condition, 234.0);
 }
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
