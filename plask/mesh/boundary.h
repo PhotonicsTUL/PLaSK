@@ -325,10 +325,9 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
         bool equal(const typename BoundaryLogicImpl::IteratorImpl &other) const {
             const IteratorImpl& o = static_cast<const IteratorImpl&>(other);
             if (current_boundary != o.current_boundary) return false;   //other outer-loop boundaries
-            //same outer-loop boundaries
-            if (current_boundary == current_boundary_end) return true;  //and booth are ends
-            //both are no ends, compare inner-loop details:
-            return in_boundary == o.in_boundary;
+            //same outer-loop boundaries:
+            if (current_boundary == current_boundary_end) return true;  //and both are ends
+            return in_boundary == o.in_boundary;    //both are no ends, compare inner-loop iterators
         }
 
         virtual IteratorImpl* clone() const {
