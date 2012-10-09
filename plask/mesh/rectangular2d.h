@@ -995,7 +995,7 @@ public:
      */
     template <typename GetBoxes, typename GetBoundaryForBox>
     static Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBoundaryForBox getBoundaryForBox) {
-        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* { //TODO returns Boundary?
+        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryWithMesh {
             std::vector<RectangularMesh<2,Mesh1D>::Boundary> boundaries;
             std::vector<typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh> boundaries_with_meshes;
             auto boxes = getBoxes(); //probably std::vector<Box2D>
@@ -1008,7 +1008,7 @@ public:
                 }
             }
             if (boundaries.empty()) return new EmptyBoundaryImpl();
-            //if (boundaries.size() == 1) return //TODO only first bounday from vec. should be returned
+            if (boundaries.size() == 1) return boundaries_with_meshes[0];
             return new SumBoundaryImpl<RectangularMesh<2,Mesh1D>>(std::move(boundaries_with_meshes));
         } );
     }
