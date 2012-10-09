@@ -36,8 +36,8 @@ using std::ptrdiff_t;
 
 
 // Limits for comparing approximate numbers with zero
-const double SMALL = std::numeric_limits<double>::epsilon(); ///< The numeric precision limit
-const double SMALL2 = SMALL*SMALL; ///< Squared numeric precision limit
+constexpr double SMALL = std::numeric_limits<double>::epsilon(); ///< The numeric precision limit
+constexpr double SMALL2 = SMALL*SMALL; ///< Squared numeric precision limit
 
 /// Check if the real number is almost zero
 /// \param v number to verify

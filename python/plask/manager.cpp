@@ -1,7 +1,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include "python_globals.h"
-#include <numpy/arrayobject.h>
 
 #include "manager.h"
 

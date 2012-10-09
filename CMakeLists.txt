@@ -9,8 +9,8 @@ set(VERSION_MINOR 1)            # MINOR version (bump up by one on visible featu
 
 # ---------- common options --------------------------------------------
 
-add_definitions(-Wall -Wno-narrowing -Wno-sign-compare) # almost all warnings
-set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")    # C++0x (C++11) standard
+add_definitions(-Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas)    # almost all warnings
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")                            # C++0x (C++11) standard
 
 # Turn-off strict aliasing for Python code
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -18,6 +18,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     if ((GNUCXX_VERSION VERSION_GREATER 4.7 OR GNUCXX_VERSION VERSION_EQUAL 4.7))
         set(no_strict_aliasing_flag "-fno-strict-aliasing")
     endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(no_strict_aliasing_flag "-fno-strict-aliasing")
 endif()
 
 include_directories(.)          # solvers can include plask using <plask/plask.hpp>

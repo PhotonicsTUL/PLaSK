@@ -148,7 +148,8 @@ void Manager::loadGeometry(GeometryReader& greader) {
 
 void Manager::loadMaterials(XMLReader& reader, const MaterialsSource& materialsSource)
 {
-    throw NotImplemented("Loading materials from C++ not implemented");
+    writelog(LOG_ERROR, "Loading materials from C++ not implemented");
+    while (reader.requireTagOrEnd());
 }
 
 void Manager::loadGrids(XMLReader &reader)

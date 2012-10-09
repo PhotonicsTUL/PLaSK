@@ -91,18 +91,18 @@ static bool GeometryObjectD_hasRoleAt(const GeometryObjectD<dim>& self, const st
 }
 
 
-// template <int dim>
-// static py::list GeometryObjectD_getLeafsAsTranslations(const GeometryObjectD<dim>& self, const PathHints& path) {
-//     py::list result;
-//     auto leafs = self.getLeafs(&path);
-//     auto translations = self.getLeafsPositions(&path);
-//     auto l = leafs.begin();
-//     auto t = translations.begin();
-//     for (; l != leafs.end(); ++l, ++t) {
-//         result.append(make_shared<Translation<dim>>(const_pointer_cast<GeometryObjectD<dim>>(static_pointer_cast<const GeometryObjectD<dim>>(*l)), *t));
-//     }
-//     return result;
-// }
+template <int dim>
+static py::list GeometryObjectD_getLeafsAsTranslations(const GeometryObjectD<dim>& self, const PathHints& path) {
+    py::list result;
+    auto leafs = self.getLeafs(&path);
+    auto translations = self.getLeafsPositions(&path);
+    auto l = leafs.begin();
+    auto t = translations.begin();
+    for (; l != leafs.end(); ++l, ++t) {
+        result.append(make_shared<Translation<dim>>(const_pointer_cast<GeometryObjectD<dim>>(static_pointer_cast<const GeometryObjectD<dim>>(*l)), *t));
+    }
+    return result;
+}
 
 // template <int dim>
 // static py::list GeometryObjectD_getObjectAsTranslations(const shared_ptr<GeometryObjectD<dim>>& self, const shared_ptr<GeometryObjectD<dim>>& object, const PathHints& path) {
@@ -209,8 +209,8 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
         .def("getLeafsBBoxes", (std::vector<Box>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsBoundingBoxes,
              (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
 
-        // .def("getLeafsAsTranslations", &GeometryObjectD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
-        //         "Return list of Translation objects holding all leafs")
+        .def("getLeafsAsTranslations", &GeometryObjectD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
+                "Return list of Translation objects holding all leafs")
 
         .def("getLeafs", &GeometryObject_getLeafs, (py::arg("path")=py::object()),
              "Return list of all leafs in the subtree originating from this object")

@@ -23,7 +23,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         rect = geometry.Rectangle(0.75, 0.5, Glass())
         space = geometry.Cartesian2D(rect, left="mirror")
         self.solver.geometry = space
-        self.solver.root.tolf_max = 1e-6
+        self.solver.root.tolf_max = 5e-5
         self.solver.root.tolf_min = 1e-9
 
     def testBasic(self):
@@ -53,13 +53,13 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.solver.symmetry = "+"
         self.assertAlmostEqual( self.solver.computeMode(1.15), 1.1502818, 6)
         self.solver.symmetry = "-"
-        self.assertAlmostEqual( self.solver.computeMode(1.07), 1.0675743, 6)
+        self.assertAlmostEqual( self.solver.computeMode(1.07), 1.06757, 5)
 
         self.solver.polarization = "TM"
         self.solver.symmetry = "+"
         self.assertAlmostEqual( self.solver.computeMode(1.10), 1.1156605, 6)
         self.solver.symmetry = "-"
-        self.assertAlmostEqual( self.solver.computeMode(1.05), 1.0450032, 6)
+        self.assertAlmostEqual( self.solver.computeMode(1.05), 1.04500, 5)
 
     def testMesh(self):
         mesh = self.solver.mesh

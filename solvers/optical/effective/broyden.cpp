@@ -4,8 +4,6 @@ using namespace std;
 
 namespace plask { namespace solvers { namespace effective {
 
-const double RootDigger::EPS = sqrt(std::numeric_limits<double>::epsilon());
-
 vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> impoints) const
 {
 
@@ -199,7 +197,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
 
     while(true) {
         if (lambda < par.lambda_min) {              // we have (possible) convergence of x
-            x = x0; f = f0;
+            x = x0; // f = f0;
             return false;
         }
 
@@ -235,7 +233,6 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
                 lambda = (-b + sqrt(delta)) / (3.0*a);
             }
         }
-
 
         lambda2 = lambda1; f2 = f;              // store the second last parameters
 
