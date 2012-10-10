@@ -48,6 +48,9 @@ class XMLReader {
     /// attributes which was read
     std::unordered_set<std::string> read_attributes;
 
+    /// true if the reader should check if there are no spurious attributes in the current element
+    bool check_if_all_attributes_were_read;
+
   public:
 
     /**
@@ -71,18 +74,18 @@ class XMLReader {
 #if (__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X__)
     /**
      * Move constructor.
-     * @param to_move object to move from, should not be used but only delete after move
+     * @param to_move object to move from, should not be used but only deleted after move
      */
     XMLReader(XMLReader&& to_move);
 
     /**
      * Move assigment operator.
-     * @param to_move object to move from, should not be used but only delete after move
+     * @param to_move object to move from, should not be used but only deleted after move
      * @return *this
      */
     XMLReader& operator=(XMLReader&& to_move);
 
-    /// Disallow copy of reader.
+    /// Disallow copying of reader.
     XMLReader(const XMLReader& to_copy) = delete;
     XMLReader& operator=(const XMLReader& to_copy) = delete;
 #else
@@ -108,10 +111,9 @@ class XMLReader {
 
     /**
      * Reads forward to the next xml node.
-     * @param check_if_all_attributes_were_read if @c true (default) and current tag is NODE_ELEMENT, parser will check if all attributes were read from it and throw excpetion if they were not
      * @return @c false only if there is no further node.
     */
-    bool read(bool check_if_all_attributes_were_read = true);
+    bool read();
 
     /**
      * Check if node is empty, like \<foo /\>.
@@ -160,10 +162,15 @@ class XMLReader {
     const char* getAttributeValueC(const std::string& name) const;
 
     /**
-     * Mark argument with given name as read, so parser not throw an exeption if this attribute will be not read.
+     * Mark attribute with given name as read, so parser does not throw an exception if this attribute will be not read.
      * @param name name of attribute to ignore
      */
     void ignoreAttribute(const std::string& name) { getAttributeValueC(name); }
+
+    /**
+     * Allow to have unread attributes.
+     */
+    void ignoreAllAttributes() { check_if_all_attributes_were_read = false; }
 
     /* Returns the value of an attribute in a safe way.
 

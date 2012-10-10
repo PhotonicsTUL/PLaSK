@@ -36,18 +36,22 @@ int StreamReaderCallback::read(void *buffer, int sizeToRead) {
     return input.gcount();
 }
 
-XMLReader::XMLReader(const char* file_name): irrReader(irr::io::createIrrXMLReader(file_name)), currentNodeType(NODE_NONE) {
+XMLReader::XMLReader(const char* file_name):
+    irrReader(irr::io::createIrrXMLReader(file_name)), currentNodeType(NODE_NONE), check_if_all_attributes_were_read(true)
+{
     if (irrReader == nullptr) throw XMLException("Can't read from file \"" + std::string(file_name) +"\"");
 }
 
-XMLReader::XMLReader(std::istream& input)
-    :currentNodeType(NODE_NONE)
+XMLReader::XMLReader(std::istream& input):
+    currentNodeType(NODE_NONE), check_if_all_attributes_were_read(true)
 {
     StreamReaderCallback cb(input);
     irrReader = irr::io::createIrrXMLReader(&cb);
 }
 
-XMLReader::XMLReader(FILE* file): irrReader(irr::io::createIrrXMLReader(file)), currentNodeType(NODE_NONE) {
+XMLReader::XMLReader(FILE* file):
+    irrReader(irr::io::createIrrXMLReader(file)), currentNodeType(NODE_NONE), check_if_all_attributes_were_read(true)
+{
     if (irrReader == nullptr) throw XMLException("Can't read from file");
 }
 
@@ -56,12 +60,13 @@ XMLReader::XMLReader(XMLReader &&to_move)
     : irrReader(to_move.irrReader),
       currentNodeType(to_move.currentNodeType),
       path(std::move(to_move.path)),
-      read_attributes(std::move(to_move.read_attributes))
+      read_attributes(std::move(to_move.read_attributes)),
+      check_if_all_attributes_were_read(to_move.check_if_all_attributes_were_read)
 {
     to_move.irrReader = 0;
 }
 
-XMLReader &XMLReader::operator =(XMLReader &&to_move)
+XMLReader &XMLReader::operator=(XMLReader &&to_move)
 {
     swap(to_move);
     return *this;
@@ -74,9 +79,10 @@ void XMLReader::swap(XMLReader &to_swap)
     std::swap(currentNodeType, to_swap.currentNodeType);
     std::swap(path, to_swap.path);
     std::swap(read_attributes, to_swap.read_attributes);
+    std::swap(check_if_all_attributes_were_read, to_swap.check_if_all_attributes_were_read);
 }
 
-bool XMLReader::read(bool check_if_all_attributes_were_read) {
+bool XMLReader::read() {
     if (currentNodeType == NODE_ELEMENT) {
         if (check_if_all_attributes_were_read && (std::size_t(getAttributeCount()) != read_attributes.size())) {
             std::string attr;
@@ -89,6 +95,7 @@ bool XMLReader::read(bool check_if_all_attributes_were_read) {
         }
         read_attributes.clear();
     }
+    check_if_all_attributes_were_read = true;
 
     if (currentNodeType == NODE_ELEMENT && irrReader->isEmptyElement())
         currentNodeType = NODE_ELEMENT_END;
@@ -217,9 +224,12 @@ bool XMLReader::skipComments() {
 
 bool XMLReader::gotoNextOnLevel(std::size_t required_level, NodeType required_type)
 {
-    while (read(false))
+    ignoreAllAttributes();
+    while (read()) {
         if (getLevel() == required_level && getNodeType() == required_type)
             return true;
+        ignoreAllAttributes();
+    }
     return false;
 }
 

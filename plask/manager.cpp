@@ -42,20 +42,6 @@ bool Manager::tryLoadFromExternal(XMLReader& reader, const MaterialsSource& mate
     return true;*/
 }
 
-shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::string &lib, const std::string &solver_name, const std::string& name) {
-    std::string lib_file_name = plaskSolversPath(category);
-    lib_file_name += "lib";
-    lib_file_name += category;
-    lib_file_name += "_";
-    lib_file_name += lib;
-    lib_file_name += DynamicLibrary::DEFAULT_EXTENSION;
-    return shared_ptr<Solver>(
-               // DynamicLibraries::defaultLoad(lib_file_name)
-                DynamicLibrary(lib_file_name, DynamicLibrary::DONT_CLOSE)
-                    .requireSymbol<solver_construct_f*>(solver_name + SOLVER_CONSTRUCT_FUNCTION_SUFFIX)(name)
-                );
-}
-
 const PathHints& Manager::requirePathHints(const std::string& path_hints_name) const {
     auto result_it = pathHints.find(path_hints_name);
     if (result_it == pathHints.end()) throw NoSuchPath(path_hints_name);
@@ -148,8 +134,8 @@ void Manager::loadGeometry(GeometryReader& greader) {
 
 void Manager::loadMaterials(XMLReader& reader, const MaterialsSource& materialsSource)
 {
-    writelog(LOG_ERROR, "Loading materials from C++ not implemented");
-    while (reader.requireTagOrEnd());
+    writelog(LOG_ERROR, "Loading materials from C++ not implemented. Ignoring XML section <materials>");
+    reader.gotoEndOfCurrentTag();
 }
 
 void Manager::loadGrids(XMLReader &reader)
@@ -180,6 +166,15 @@ void Manager::loadGrids(XMLReader &reader)
     }
 }
 
+shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::string &lib, const std::string &solver_name, const std::string& name) {
+    std::string lib_file_name = plaskSolversPath(category);
+    auto found = solvers.find(name);
+    if (found == solvers.end())
+        throw Exception("In C++ solvers ('%1%' in this case) must be created and added to Manager::solvers manually before reading XML.", name);
+    solvers.erase(found); // this is necessary so we don't have name conflicts — the solver will be added back to the map by loadSolvers
+    return found->second;
+}
+
 void Manager::loadSolvers(XMLReader& reader) {
     if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("solvers"))
         throw XMLUnexpectedElementException(reader, "<solvers>");
@@ -197,7 +192,8 @@ void Manager::loadSolvers(XMLReader& reader) {
 
 void Manager::loadConnects(XMLReader& reader)
 {
-    throw NotImplemented("Loading interconnects only possible from Python interface.");
+    writelog(LOG_ERROR, "Loading interconnects only possible from Python interface. Ignoring XML section <connects>");
+    reader.gotoEndOfCurrentTag();
 }
 
 void Manager::loadScript(XMLReader& reader)

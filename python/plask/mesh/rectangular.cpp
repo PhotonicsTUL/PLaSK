@@ -470,7 +470,7 @@ void register_mesh_rectangular()
         .add_static_property("bottom", &RectilinearMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RectilinearMesh2D> rect2dbound(rectilinear2d);
+    ExportBoundary<RectilinearMesh2D> { rectilinear2d };
 
     py::class_<RectilinearMesh3D, shared_ptr<RectilinearMesh3D>, py::bases<MeshD<3>>> rectilinear3d("Rectilinear3D",
         "Two-dimensional mesh\n\n"
@@ -506,7 +506,7 @@ void register_mesh_rectangular()
         .def("getMidpointsMesh", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RectilinearMesh3D> rect3dbound(rectilinear3d);
+    ExportBoundary<RectilinearMesh3D> { rectilinear3d };
 
     py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>, boost::noncopyable>("Regular1D",
         "Regular mesh axis\n\n"
@@ -559,7 +559,7 @@ void register_mesh_rectangular()
         .add_static_property("bottom", &RegularMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RegularMesh2D> reg2dbound(regular2d);
+    ExportBoundary<RegularMesh2D> { regular2d };
 
     py::class_<RegularMesh3D, shared_ptr<RegularMesh3D>, py::bases<MeshD<3>>, boost::noncopyable>regular3d("Regular3D",
         "Two-dimensional mesh\n\n"
@@ -593,7 +593,7 @@ void register_mesh_rectangular()
         .def("getMidpointsMesh", &RegularMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RegularMesh3D> reg3dbound(regular3d);
+    ExportBoundary<RegularMesh3D> { regular3d };
 
     ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");
     {

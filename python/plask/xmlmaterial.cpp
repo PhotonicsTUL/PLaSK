@@ -168,6 +168,8 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
     return make_shared<PythonEvalMaterial>(self.lock(), base_obj, params);
 }
 
+
+
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {
     shared_ptr<PythonEvalMaterialConstructor> constructor;
     std::string name = reader.requireAttribute("name");
