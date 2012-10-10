@@ -18,7 +18,7 @@ class QModelIndex;
 class QPixmap;
 QT_END_NAMESPACE
 
-struct GeometryTreeModel;
+class GeometryTreeModel;
 
 /**
  * Geometry tree item. Holds geometry object wrapper.
@@ -85,7 +85,7 @@ public:
      * @param[in] index of this in parent
      */
     void getExistsSubtreeIndexes(QModelIndexList& dst, std::size_t indexInParent);
-    
+
     /**
      * Get indexes for all cached nodes in subtree with this in root.
      * @param[out] dst place to add indexes
@@ -307,7 +307,7 @@ class GeometryTreeModel: public QAbstractItemModel {
     std::vector< std::unique_ptr<RootItem> > rootItems;
 
 public:
-    
+
     void appendGeometry(plask::shared_ptr<plask::Geometry> geometry);
 
     friend class GeometryTreeItem;
@@ -317,7 +317,7 @@ public:
      * @param roots new roots objects
      */
     void refresh(const std::vector< plask::shared_ptr<plask::Geometry> >& roots);
-    
+
     /**
      * Clear whole geometry tree.
      */
@@ -328,9 +328,9 @@ public:
      * @param parent
      */
     GeometryTreeModel(QObject *parent = 0);
-    
+
     ~GeometryTreeModel();
-    
+
     /**
      * Save geometry to file.
      * @param root_object parent (root) object

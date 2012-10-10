@@ -739,6 +739,16 @@ struct RotatedMaterial: public Material {
 
 };
 
+/**
+ * Empty material, which can actually be instantiated
+ */
+struct EmptyMaterial : public Material {
+    virtual std::string name() const { return ""; }
+    virtual Material::Kind kind() const { return Material::NONE; }
+};
+
+
+
 } // namespace plask
 
 #endif	//PLASK__MATERIAL_H
