@@ -5,6 +5,8 @@ namespace plask { namespace solvers { namespace electrical {
 template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>(name),
     mpA(nullptr),
+    mCalcType("loops"),
+    mVChange("absolute"),
     mLoopLim(5),
     mVCorrLim(0.01),
     mVBigCorr(1e5),
@@ -79,7 +81,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 
     Node2D* tpN = NULL;
 
-    auto tVconst = mVconst.get(this->mesh);
+    auto tVConst = mVConst.get(this->mesh);
 
     for(plask::RectilinearMesh2D::iterator vec_it = (this->mesh)->begin(); vec_it != (this->mesh)->end(); ++vec_it) // loop through all nodes given in the correct iteration order
     {
@@ -87,8 +89,8 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         double y = vec_it->ee_y();
 
         std::size_t i = vec_it.getIndex();
-        auto it = tVconst.find(i);
-        if (it != tVconst.end())
+        auto it = tVConst.find(i);
+        if (it != tVConst.end())
             tpN = new Node2D(tNo, x, y, it->condition, true);
         else
             tpN = new Node2D(tNo, x, y, 0., false);
@@ -165,9 +167,6 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     mpA = new double*[mAHeight];
     for(int i = 0; i < mAHeight; i++)
         mpA[i] = new double[mAWidth];
-    mVcorr.clear();
-    for(int i = 0; i < mAHeight; i++)
-        mVcorr.push_back(mVBigCorr);
 
     //std::cout << "Main matrix width: " << mAWidth << std::endl; // TEST
     //std::cout << "Main matrix height: " << mAHeight << std::endl; // TEST
@@ -182,8 +181,6 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         delete [] mpA[i];
     delete [] mpA;
     mpA = NULL;
-
-    mVcorr.clear();
 }
 
 template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix()
@@ -236,8 +233,20 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
                 ttE->setCondJuncY(mCondJuncY0);
             else
             {
+                // TODO: no good enough
+                std::vector<Box2D> tVecBox = (this->geometry)->getLeafsBoundingBoxes(); // geometry->extract(GeometryObject::PredicateHasClass("active"));
+                Vec<2, double> tSize;
+                for (Box2D tBox: tVecBox)
+                {
+                    if (tBox.includes(vec(ttE->getX(), ttE->getY())))
+                    {
+                        tSize = tBox.size();
+                        break;
+                    }
+                }
+
                 double tJy = ttE->getCondJuncY() * fabs(ttE->getdVdY()) * 1e6; // 1e6 - from um to m
-                double tDact = 10. * 1e-6; // getDact(ttE->getY()); [um] // 1e-6 - from um to m
+                double tDact = tSize.ee_y() * 1e-6; // 1e-6 - from um to m
                 ttE->setCondJuncY( (mBeta * tJy * tDact) / log(tJy / mJs + 1.) );
             }
             tKYAssist = ttE->getCondJuncY();
@@ -292,6 +301,8 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
         if ( ttN->ifVConst() )
         {
+            //std::cout << "Node no: " << ttN->getNo() << ", x: " << ttN->getX() << ", y: " << ttN->getY() << ", V: " << ttN->getV() << std::endl; // TEST
+
             mpA[ttN->getNo()-1][mAWidth-2] += mBigNum;
             mpA[ttN->getNo()-1][mAWidth-1] += ttN->getV()*mBigNum;
         }
@@ -347,8 +358,20 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
                 ttE->setCondJuncY(mCondJuncY0);
             else
             {
+                // TODO: no good enough
+                std::vector<Box2D> tVecBox = (this->geometry)->getLeafsBoundingBoxes(); // geometry->extract(GeometryObject::PredicateHasClass("active"));
+                Vec<2, double> tSize;
+                for (Box2D tBox: tVecBox)
+                {
+                    if (tBox.includes(vec(ttE->getX(), ttE->getY())))
+                    {
+                        tSize = tBox.size();
+                        break;
+                    }
+                }
+
                 double tJy = ttE->getCondJuncY() * fabs(ttE->getdVdY()) * 1e6; // 1e6 - from um to m
-                double tDact = 10. * 1e-6; // getDact(ttE->getY()); [um] // 1e-6 - from um to m
+                double tDact = tSize.ee_y() * 1e-6; // 1e-6 - from um to m
                 ttE->setCondJuncY( (mBeta * tJy * tDact) / log(tJy / mJs + 1.) );
             }
             tKYAssist = ttE->getCondJuncY();
@@ -410,10 +433,7 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
 
 template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::runCalc()
 {
-    //if (!isInitialized()) std::cout << "First calc.\n";
-    ///else "Cont. calc.\n";
     this->initCalculation();
-    //if (!inTemperatures.changed) return;
 
     if (mLogs)
         writelog(LOG_INFO, "Starting electrical calculations...");
@@ -425,11 +445,41 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
     if (mLogs)
         writelog(LOG_INFO, "Running solver...");
 
-    std::vector<double>::const_iterator ttVCorr;
-    int tLoop = 1, tInfo = 1;
-    double tVCorr = mVBigCorr; // much bigger than calculated corrections
+    int tInfo = 1;
 
-    while ( (tLoop <= mLoopLim) && (tVCorr > mVCorrLim) )
+    if (mCalcType == "loops")
+    {
+        std::vector<double>::const_iterator ttVCorr;
+        int tLoop = 1;
+        double tVCorr = mVBigCorr; // much bigger than calculated co    rrections
+
+        while ( (tLoop <= mLoopLim) && (tVCorr > mVCorrLim) )
+        {
+            setMatrix();
+
+            tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
+            if (!tInfo)
+            {
+                // update
+                updNodes();
+                //updElements();
+
+                tVCorr = mMaxAbsVCorr;
+
+                mLoopNo++;
+
+                // show max correction
+                writelog(LOG_DETAIL, "Loop no: %d(%d), max. V upd: %8.6f (abs), %8.6f (rel)", tLoop, mLoopNo, mMaxAbsVCorr, mMaxRelVCorr/*tVCorr*/);
+
+                tLoop++;
+            }
+            else if (tInfo < 0)
+                writelog(LOG_ERROR, "Wrong value of new potential");
+            else
+                writelog(LOG_ERROR, "Wrong solver matrix");
+        }
+    }
+    else //if (mCalcType == "single")
     {
         setMatrix();
 
@@ -440,16 +490,10 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
             updNodes();
             //updElements();
 
-            ttVCorr = std::max_element(mVcorr.begin(), mVcorr.end());
-
-            tVCorr = *ttVCorr;
-
             mLoopNo++;
 
             // show max correction
-            writelog(LOG_DETAIL, "Loop no: %1%(%2%), max. corr. for V: %3%", tLoop, mLoopNo, tVCorr);
-
-            tLoop++;
+            writelog(LOG_DETAIL, "Loop no: %d, max. V upd: %8.6f (abs), %8.6f (rel)", mLoopNo, mMaxAbsVCorr, mMaxRelVCorr);
         }
         else if (tInfo < 0)
             writelog(LOG_ERROR, "Wrong value of new potential");
@@ -460,7 +504,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
     if (mLogs)
         showNodes();
 
-    double tVCorrOut = savePotentials();
+    savePotentials();
 
     saveCurrentDensities();
 
@@ -484,7 +528,15 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
     outCurrentDensity.fireChanged();
     outHeatDensity.fireChanged();
 
-    return tVCorrOut;
+    if (mCalcType == "loops")
+        return mMaxVCorr;
+    else //if (mCalcType == "single")
+    {
+        if (mVChange == "relative")
+            return mMaxRelVCorr;
+        else //if (mVChange == "absolute")
+            return mMaxAbsVCorr;
+    }
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::loadConfiguration(XMLReader &source, Manager &manager)
@@ -494,7 +546,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         std::string param = source.getNodeName();
 
         if (param == "Vconst")
-            this->readBoundaryConditions(manager, source, mVconst);
+            this->readBoundaryConditions(manager, source, mVConst);
         else if (param == "js")
         {
             mJs = source.requireAttribute<double>("value");
@@ -518,6 +570,16 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         else if (param == "wavelength")
         {
             inWavelength = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "Vchange")
+        {
+            mVChange = source.requireAttribute<std::string>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "calctype")
+        {
+            mCalcType = source.requireAttribute<std::string>("value");
             source.requireTagEnd();
         }
         else if (param == "looplim")
@@ -557,9 +619,21 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 
     std::vector<Node2D>::iterator ttN = mNodes.begin();
 
+    mMaxAbsVCorr = 0.;
+    mMaxRelVCorr = 0.;
+
     while (ttN != mNodes.end())
     {
-        mVcorr[ttN->getNo()-1] = fabs( ttN->getV() - mpA[ttN->getNo()-1][mAWidth-1] ); // calculate corrections
+        double tMaxAbsVCorr = fabs( ttN->getV() - mpA[ttN->getNo()-1][mAWidth-1] );
+        if (tMaxAbsVCorr > mMaxAbsVCorr)
+            mMaxAbsVCorr = tMaxAbsVCorr;
+        if (mpA[ttN->getNo()-1][mAWidth-1])
+        {
+            double tMaxRelVCorr = fabs( ttN->getV() - mpA[ttN->getNo()-1][mAWidth-1] ) * 100. / mpA[ttN->getNo()-1][mAWidth-1];
+            if (tMaxRelVCorr > mMaxRelVCorr)
+                mMaxRelVCorr = tMaxRelVCorr;
+        }
+
         if (!ttN->ifVConst())
             ttN->setV( mpA[ttN->getNo()-1][mAWidth-1] ); // mpA[ttN->getNo()-1][mAWidth-1] - here are new values of potential
         ttN++;
@@ -572,6 +646,16 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         writelog(LOG_INFO, "Updating elements...");
 }
 
+template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getMaxAbsVCorr()
+{
+    return mMaxAbsVCorr;
+}
+
+template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getMaxRelVCorr()
+{
+    return mMaxRelVCorr;
+}
+
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::showNodes()
 {
     writelog(LOG_INFO, "Showing nodes...");
@@ -579,7 +663,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     std::vector<Node2D>::const_iterator ttN;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        std::cout << "Node no: " << ttN->getNo() << ", x: " << ttN->getX() << ", y: " << ttN->getY() << ", T: " << ttN->getV() << std::endl; // TEST
+        writelog(LOG_DETAIL, "Node no: %1%, x: %2%, y: %3%, V: %4%", ttN->getNo(), ttN->getX(), ttN->getY(), ttN->getV());
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::showElements()
@@ -597,26 +681,22 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
                      << std::endl; // TEST
 }
 
-template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::savePotentials()
+template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::savePotentials()
 {
     if (mLogs)
         writelog(LOG_INFO, "Saving potentials...");
 
     std::vector<Node2D>::const_iterator ttN;
 
-    // mPotentials.reset(mNodes.size());
-
-    double tCorr = 0.;
+    mMaxVCorr = 0.;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
     {
-        double tC = fabs(mPotentials[ttN->getNo()-1] - ttN->getV());
-        if (tC > tCorr)
-            tCorr = tC;
+        double tMaxVCorr = fabs(mPotentials[ttN->getNo()-1] - ttN->getV());
+        if (tMaxVCorr > mMaxVCorr)
+            mMaxVCorr = tMaxVCorr;
         mPotentials[ttN->getNo()-1] = ttN->getV();
     }
-
-    return tCorr;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::saveCurrentDensities()
@@ -779,7 +859,6 @@ template<typename Geometry2Dtype> DataVector<const double> FiniteElementMethodEl
 }
 
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "CartesianFEM"; }
-
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "CylindricalFEM"; }
 
 template struct FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>;

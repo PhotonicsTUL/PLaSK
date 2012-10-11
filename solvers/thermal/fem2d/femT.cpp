@@ -6,7 +6,9 @@ namespace plask { namespace solvers { namespace thermal {
 template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::FiniteElementMethodThermal2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>(name),
     mpA(nullptr),
-    mLoopLim(5),
+    mCalcType("loops"),
+    mTChange("absolute"),
+    mLoopLim(1),
     mTCorrLim(0.1),
     mTBigCorr(1e5),
     mBigNum(1e15),
@@ -23,7 +25,6 @@ template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dt
     mHeatDensities.reset();
 
     inHeatDensity = 0.;
-
 }
 
 template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::~FiniteElementMethodThermal2DSolver()
@@ -175,21 +176,21 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 
     /*size_t tNoOfNodesX, tNoOfNodesY; // TEST
 
-    if (mesh->getIterationOrder() == 0) // 0: fast x, slow y
+    if (this->mesh->getIterationOrder() == 0) // 0: fast x, slow y
     {
-        tNoOfNodesX = mesh->minorAxis().size(); // number of nodes on minor axis (smaller one)
-        tNoOfNodesY = mesh->majorAxis().size(); // number of nodes on major axis (larger one)
+        tNoOfNodesX = this->mesh->minorAxis().size(); // number of nodes on minor axis (smaller one)
+        tNoOfNodesY = this->mesh->majorAxis().size(); // number of nodes on major axis (larger one)
     }
     else // mesh->getIterationOrder() == 1 // 1: fast y, slow x
     {
-        tNoOfNodesY = mesh->minorAxis().size(); // number of nodes on minor axis (smaller one)
-        tNoOfNodesX = mesh->majorAxis().size(); // number of nodes on major axis (larger one)
+        tNoOfNodesY = this-> mesh->minorAxis().size(); // number of nodes on minor axis (smaller one)
+        tNoOfNodesX = this->mesh->majorAxis().size(); // number of nodes on major axis (larger one)
     };
 
     std::cout << "Number of nodes in x-direction: " << tNoOfNodesX << std::endl; // TEST
     std::cout << "Number of nodes in y-direction: " << tNoOfNodesY << std::endl; // TEST
 
-    size_t tNoOfNodes = mesh->size(); // number of all nodes // TEST
+    size_t tNoOfNodes = this->mesh->size(); // number of all nodes // TEST
     std::cout << "Number of nodes: " << tNoOfNodes << std::endl;*/ // TEST
 
     mAWidth = (this->mesh)->minorAxis().size() + 3;
@@ -197,9 +198,6 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
     mpA = new double*[mAHeight];
     for(int i = 0; i < mAHeight; i++)
         mpA[i] = new double[mAWidth];
-    mTCorr.clear();
-    for(int i = 0; i < mAHeight; i++)
-        mTCorr.push_back(mTBigCorr);
 
     //std::cout << "Main matrix width: " << mAWidth << std::endl; // TEST
     //std::cout << "Main matrix height: " << mAHeight << std::endl; // TEST
@@ -214,8 +212,6 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         delete [] mpA[i];
     delete [] mpA;
     mpA = NULL;
-
-    mTCorr.clear();
 }
 
 template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix()
@@ -576,10 +572,7 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
 
 template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::runCalc()
 {
-    //if (!isInitialized()) std::cout << "First calc.\n";
-    ///else "Cont. calc.\n";
     this->initCalculation();
-    //if (!inHeats.changed) return;
 
     if (mLogs)
         writelog(LOG_INFO, "Starting thermal calculations...");
@@ -591,11 +584,41 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
     if (mLogs)
         writelog(LOG_INFO, "Running solver...");
 
-    std::vector<double>::const_iterator ttTCorr;
-    int tLoop = 1, tInfo = 1;
-    double tTCorr = mTBigCorr; // much bigger than calculated corrections
+    int tInfo = 1;
 
-    while ( (tLoop <= mLoopLim) && (tTCorr > mTCorrLim) )
+    if (mCalcType == "loops")
+    {
+        std::vector<double>::const_iterator ttTCorr;
+        int tLoop = 1;
+        double tTCorr = mTBigCorr; // much bigger than calculated corrections
+
+        while ( (tLoop <= mLoopLim) && (tTCorr > mTCorrLim) )
+        {
+            setMatrix();
+
+            tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
+            if (!tInfo)
+            {
+                // update
+                updNodes();
+                updElements();
+
+                tTCorr = mMaxAbsTCorr;
+
+                mLoopNo++;
+
+                // show max correction
+                writelog(LOG_DETAIL, "Loop no: %d(%d), max. T upd: %8.6f (abs), %8.6f (rel)", tLoop, mLoopNo, mMaxAbsTCorr, mMaxRelTCorr/*tTCorr*/);
+
+                tLoop++;
+            }
+            else if (tInfo < 0)
+                writelog(LOG_ERROR, "Wrong value of new temperature");
+            else
+                writelog(LOG_ERROR, "Wrong solver matrix");
+        }
+    }
+    else //if (mCalcType == "single")
     {
         setMatrix();
 
@@ -604,18 +627,12 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
         {
             // update
             updNodes();
-            updElements();
-
-            ttTCorr = std::max_element(mTCorr.begin(), mTCorr.end());
-
-            tTCorr = *ttTCorr;
+            //updElements();
 
             mLoopNo++;
 
             // show max correction
-            writelog(LOG_DETAIL, "Loop no: %1%(%2%), max. corr. for T: %3%", tLoop, mLoopNo, tTCorr);
-
-            tLoop++;
+            writelog(LOG_DETAIL, "Loop no: %d, max. T upd: %8.6f (abs), %8.6f (rel)", mLoopNo, mMaxAbsTCorr, mMaxRelTCorr);
         }
         else if (tInfo < 0)
             writelog(LOG_ERROR, "Wrong value of new temperature");
@@ -626,7 +643,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
     if (mLogs)
         showNodes();
 
-    double tTCorrOut = saveTemperatures();
+    saveTemperatures();
 
     saveHeatFluxes();
 
@@ -644,7 +661,15 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
 
-    return tTCorrOut;
+    if (mCalcType == "loops")
+        return mMaxTCorr;
+    else //if (mCalcType == "single")
+    {
+        if (mTChange == "relative")
+            return mMaxRelTCorr;
+        else //if (mVChange == "absolute")
+            return mMaxAbsTCorr;
+    }
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadConfiguration(XMLReader &source, Manager &manager)
@@ -664,6 +689,16 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         else if (param == "Tinit")
         {
             mTInit = source.requireAttribute<double>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "Tchange")
+        {
+            mTChange = source.requireAttribute<std::string>("value");
+            source.requireTagEnd();
+        }
+        else if (param == "calctype")
+        {
+            mCalcType = source.requireAttribute<std::string>("value");
             source.requireTagEnd();
         }
         else if (param == "looplim")
@@ -703,13 +738,26 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 
     std::vector<Node2D>::iterator ttN = mNodes.begin();
 
+    mMaxAbsTCorr = 0.;
+    mMaxRelTCorr = 0.;
+
     while (ttN != mNodes.end())
     {
-        mTCorr[ttN->getNo()-1] = fabs( ttN->getT() - mpA[ttN->getNo()-1][mAWidth-1] ); // calculate corrections
+        double tMaxAbsTCorr = fabs( ttN->getT() - mpA[ttN->getNo()-1][mAWidth-1] );
+        if (tMaxAbsTCorr > mMaxAbsTCorr)
+            mMaxAbsTCorr = tMaxAbsTCorr;
+        if (mpA[ttN->getNo()-1][mAWidth-1])
+        {
+            double tMaxRelTCorr = fabs( ttN->getT() - mpA[ttN->getNo()-1][mAWidth-1] ) * 100. / mpA[ttN->getNo()-1][mAWidth-1];
+            if (tMaxRelTCorr > mMaxRelTCorr)
+                mMaxRelTCorr = tMaxRelTCorr;
+        }
+
         if (!ttN->ifTConst())
             ttN->setT( mpA[ttN->getNo()-1][mAWidth-1] ); // mpA[ttN->getNo()-1][mAWidth-1] - here are new values of temperature
         ttN++;
     }
+
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::updElements()
@@ -721,6 +769,16 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         ttE->setT();
 }
 
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getMaxAbsTCorr()
+{
+    return mMaxAbsTCorr;
+}
+
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::getMaxRelTCorr()
+{
+    return mMaxRelTCorr;
+}
+
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::showNodes()
 {
     writelog(LOG_INFO, "Showing nodes...");
@@ -728,7 +786,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
     std::vector<Node2D>::const_iterator ttN;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        std::cout << "Node no: " << ttN->getNo() << ", x: " << ttN->getX() << ", y: " << ttN->getY() << ", T: " << ttN->getT() << std::endl; // TEST
+        writelog(LOG_DETAIL, "Node no: %1%, x: %2%, y: %3%, T: %4%", ttN->getNo(), ttN->getX(), ttN->getY(), ttN->getT());
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::showElements()
@@ -746,26 +804,22 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
                      << std::endl; // TEST
 }
 
-template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveTemperatures()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveTemperatures()
 {
     if (mLogs)
         writelog(LOG_INFO, "Saving temperatures...");
 
     std::vector<Node2D>::const_iterator ttN;
 
-    // mTemperatures.reset(mNodes.size());
-
-    double tCorr = 0.;
+    mMaxTCorr = 0.;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
     {
-        double tC = fabs(mTemperatures[ttN->getNo()-1] - ttN->getT());
-        if (tC > tCorr)
-            tCorr = tC;
+        double tMaxTCorr = fabs(mTemperatures[ttN->getNo()-1] - ttN->getT());
+        if (tMaxTCorr > mMaxTCorr)
+            mMaxTCorr = tMaxTCorr;
         mTemperatures[ttN->getNo()-1] = ttN->getT();
     }
-
-    return tCorr;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::saveHeatFluxes()
@@ -893,7 +947,6 @@ template<typename Geometry2Dtype> DataVector<const Vec<2> > FiniteElementMethodT
 }
 
 template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::getClassName() const { return "CartesianFEM"; }
-
 template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::getClassName() const { return "CylindricalFEM"; }
 
 template struct FiniteElementMethodThermal2DSolver<Geometry2DCartesian>;

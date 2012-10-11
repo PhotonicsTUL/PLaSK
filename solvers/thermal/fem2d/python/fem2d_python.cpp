@@ -16,6 +16,8 @@ BOOST_PYTHON_MODULE(fem2d)
 {
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "CartesianFEM", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(runCalc, "Run thermal calculations");
+        METHOD(getMaxAbsTCorr, "Get max absolute correction for temperature");
+        METHOD(getMaxRelTCorr, "Get max relative correction for temperature");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
         PROVIDER(outHeatFlux, "HeatFluxes"); // provider in the solver

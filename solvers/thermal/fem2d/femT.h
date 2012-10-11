@@ -32,14 +32,15 @@ struct Radiation
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2Dtype, RectilinearMesh2D> {
-
-  protected:
+template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>
+{
+protected:
 
     /// Main Matrix
     double **mpA;
     int mAWidth, mAHeight;
-    std::vector<double> mTCorr;
+    std::string mCalcType; // loops or single
+    std::string mTChange; // absolute or relative
     int mLoopLim; // number of loops - stops the calculations
     double mTCorrLim; // small-enough correction - stops the calculations
     double mTBigCorr; // big-enough correction for the temperature
@@ -47,6 +48,9 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     double mTInit; // ambient temperature
     bool mLogs; // logs (0-most important logs, 1-all logs)
     int mLoopNo; // number of completed loops
+    double mMaxAbsTCorr; // max. absolute temperature correction (useful for single calculations managed by external python script)
+    double mMaxRelTCorr; // max. relative temperature correction (useful for single calculations managed by external python script)
+    double mMaxTCorr; // max. absolute temperature correction (useful for calculations with internal loops)
 
     DataVector<double> mTemperatures; // out
     DataVector<Vec<2> > mHeatFluxes; // out
@@ -89,7 +93,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     void showElements();
 
     /// Create vector with calculated temperatures
-    double saveTemperatures(); // [K]
+    void saveTemperatures(); // [K]
 
     /// Create 2D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
@@ -133,6 +137,18 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
      **/
     double runCalc();
 
+    /**
+     * Get max absolute correction for temperature
+     * \return get max absolute correction for temperature
+     **/
+    double getMaxAbsTCorr(); // result in [K]
+
+    /**
+     * Get max relative correction for temperature
+     * \return get max relative correction for temperature
+     **/
+    double getMaxRelTCorr(); // result in [%]
+
     void setLoopLim(int iLoopLim);
     void setTCorrLim(double iTCorrLim);
     void setTBigCorr(double iTBigCorr);
@@ -154,7 +170,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
     ~FiniteElementMethodThermal2DSolver();
 };
 
-}}  //namespaces
+}} //namespaces
 
 template <> inline solvers::thermal::Convection parseCondition<solvers::thermal::Convection>(const XMLReader& tag_with_value)
 {
