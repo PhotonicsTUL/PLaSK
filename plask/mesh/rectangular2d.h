@@ -689,7 +689,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
 
-		std::size_t line;
+        std::size_t line;
 
         VerticalBoundary(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis0) {}
 
@@ -714,7 +714,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
 
-		std::size_t line, beginInLineIndex, endInLineIndex;
+        std::size_t line, beginInLineIndex, endInLineIndex;
 
         VerticalBoundaryInRange(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis0, std::size_t beginInLineIndex, std::size_t endInLineIndex)
             : BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis0), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
@@ -739,7 +739,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
 
-		std::size_t line;
+        std::size_t line;
 
         HorizontalBoundary(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis1): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis1) {}
 
@@ -749,12 +749,12 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
             return this->mesh.index1(mesh_index) == line;
         }
 
-		Iterator begin() const {
+        Iterator begin() const {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, 0));
         }
 
         Iterator end() const {
-			return Iterator(new HorizontalIteratorImpl(this->mesh, line, this->mesh.axis0.size()));
+            return Iterator(new HorizontalIteratorImpl(this->mesh, line, this->mesh.axis0.size()));
         }
     };
 
@@ -762,22 +762,22 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
 
-		std::size_t line, beginInLineIndex, endInLineIndex;
+        std::size_t line, beginInLineIndex, endInLineIndex;
 
         HorizontalBoundaryInRange(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis1, std::size_t beginInLineIndex, std::size_t endInLineIndex)
             : BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis1), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
         bool includes(std::size_t mesh_index) const {
-            return this->mesh.index1(mesh_index) == line && in_range(this->mesh.index1(mesh_index), beginInLineIndex, endInLineIndex);
+            return this->mesh.index1(mesh_index) == line && in_range(this->mesh.index0(mesh_index), beginInLineIndex, endInLineIndex);
         }
 
-		Iterator begin() const {
+        Iterator begin() const {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, beginInLineIndex));
         }
 
         Iterator end() const {
-			return Iterator(new HorizontalIteratorImpl(this->mesh, line, endInLineIndex));
+            return Iterator(new HorizontalIteratorImpl(this->mesh, line, endInLineIndex));
         }
     };
 
@@ -824,7 +824,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     /**
      * Helper used by getLeftOfBoundary, etc.
-     * @param[out] begInd, endInd range [begInd, endInd) of index in @p axis which show points which lies in bounds [@p box_lower, @p box_upper],
+     * @param[out] begInd, endInd range [begInd, endInd) of indices in @p axis which show points which lie in bounds [@p box_lower, @p box_upper],
      *      undefined if @c false was returned
      * @param[in] axis axis, 1D mesh
      * @param[in] box_lower, box_upper position of lower and upper box edges
@@ -857,11 +857,11 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
             plask::shared_ptr< const plask::GeometryD<2> > geometry;
             boost::optional<std::string> geom_name = boundary_desc.getAttribute("geometry");
             if (geom_name)
-                geometry = enviroment.manager.requireGeometryObject<const plask::GeometryD<2>>(*geom_name);
+                geometry = enviroment.manager.requireGeometry<const plask::GeometryD<2>>(*geom_name);
             else {
                 geometry = dynamic_pointer_cast< const plask::GeometryD<2> >(enviroment.geometry);
                 if (!geometry)
-                    throw Exception("Can't parse %1% of \"%2%\" object. Geometry is not known (\"geometry\" attribute can be use to provide this information).",
+                    throw Exception("Cannot parse %1% of \"%2%\" object. Geometry is not known (\"geometry\" attribute can be used to provide this information).",
                                     boundary_desc.requireAttribute("dir"), *of);
             }
             boost::optional<std::string> path_name = boundary_desc.getAttribute("path");
@@ -879,14 +879,14 @@ public:
         return Boundary(new PredicateBoundaryImpl<RectangularMesh<2,Mesh1D>, Predicate>(predicate));
     }
 
-	/**
-	 * Get boundary which show one vertical (from bottom to top) line in mesh.
-	 * @param line_nr_axis0 number of vertical line, axis 0 index of mesh
-	 * @return boundary which show one vertical (from bottom to top) line in mesh
-	 */
-	static Boundary getVerticalBoundaryAtLine(std::size_t line_nr_axis0) {
-		return Boundary( [line_nr_axis0](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, line_nr_axis0);} );
-	}
+    /**
+     * Get boundary which show one vertical (from bottom to top) line in mesh.
+     * @param line_nr_axis0 number of vertical line, axis 0 index of mesh
+     * @return boundary which show one vertical (from bottom to top) line in mesh
+     */
+    static Boundary getVerticalBoundaryAtLine(std::size_t line_nr_axis0) {
+        return Boundary( [line_nr_axis0](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, line_nr_axis0);} );
+    }
 
     /**
      * Get boundary which show range in vertical (from bottom to top) line in mesh.
@@ -898,27 +898,27 @@ public:
         return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundaryInRange(mesh, line_nr_axis0, indexBegin, indexEnd);} );
     }
 
-	/**
-	 * Get boundary which show one vertical (from bottom to top) line in mesh which lies nearest given coordinate.
-	 * @param axis0_coord axis 0 coordinate
-	 * @return boundary which show one vertical (from bottom to top) line in mesh
-	 */
-	static Boundary getVerticalBoundaryNear(double axis0_coord) {
-		return Boundary( [axis0_coord](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.findNearestIndex(axis0_coord));} );
-	}
+    /**
+     * Get boundary which show one vertical (from bottom to top) line in mesh which lies nearest given coordinate.
+     * @param axis0_coord axis 0 coordinate
+     * @return boundary which show one vertical (from bottom to top) line in mesh
+     */
+    static Boundary getVerticalBoundaryNear(double axis0_coord) {
+        return Boundary( [axis0_coord](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.findNearestIndex(axis0_coord));} );
+    }
 
-	/**
-	 * Get boundary which show one vertical, left (from bottom to top) line in mesh.
-	 * @return boundary which show left line in mesh
-	 */
+    /**
+     * Get boundary which show one vertical, left (from bottom to top) line in mesh.
+     * @return boundary which show left line in mesh
+     */
     static Boundary getLeftBoundary() {
         return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, 0);} );
     }
 
-	/**
-	 * Get boundary which show one vertical, right (from bottom to top) line in mesh.
-	 * @return boundary which show right line in mesh
-	 */
+    /**
+     * Get boundary which show one vertical, right (from bottom to top) line in mesh.
+     * @return boundary which show right line in mesh
+     */
     static Boundary getRightBoundary() {
         return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.size()-1);} );
     }
@@ -988,9 +988,9 @@ public:
     }
 
     /**
-     * Get boundary which lies on choosen edge of boxes.
+     * Get boundary which lies on chosen edge of boxes.
      * @param getBoxes functor which returns 0 or more boxes (vector of boxes)
-     * @param getBoundaryForBox functor which returns boundary for box given as parameter, it choose edge of box (for example this may call getLeftOfBoundary, etc.)
+     * @param getBoundaryForBox functor which returns boundary for box given as parameter, it chooses edge of box (for example this may call getLeftOfBoundary, etc.)
      * @return boundary which represents sum of boundaries returned by getBoundaryForBox for all boxes returned by getBoxes
      */
     template <typename GetBoxes, typename GetBoundaryForBox>
@@ -998,7 +998,7 @@ public:
         return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryWithMesh {
             std::vector<RectangularMesh<2,Mesh1D>::Boundary> boundaries;
             std::vector<typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh> boundaries_with_meshes;
-            auto boxes = getBoxes(); //probably std::vector<Box2D>
+            auto boxes = getBoxes(); // probably std::vector<Box2D>
             for (auto& box: boxes) {
                 RectangularMesh<2,Mesh1D>::Boundary boundary = getBoundaryForBox(box);
                 typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh boundary_with_mesh = boundary(mesh);
@@ -1020,126 +1020,126 @@ public:
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
      */
-	static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-		return getBoundaryForBoxes(
-			[=] { return geometry->getObjectBoundingBoxes(object, path); },
-			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
-		);
-	}
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return getBoundaryForBoxes(
+            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
+        );
+    }
 
-	/**
+    /**
      * Get boundary which lies on left edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
      * @param object object included in @p geomoetry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
      */
-	static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-		if (path) return getLeftOfBoundary(geometry, object, *path);
-		return getBoundaryForBoxes(
-			[=] { return geometry->getObjectBoundingBoxes(object); },
-			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
-		);
-	}
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getLeftOfBoundary(geometry, object, *path);
+        return getBoundaryForBoxes(
+            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
+        );
+    }
 
-	/**
+    /**
      * Get boundary which lies on right edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
      * @param object object included in @p geomoetry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
      */
-	static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-		return getBoundaryForBoxes(
-			[=] { return geometry->getObjectBoundingBoxes(object, path); },
-			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
-		);
-	}
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return getBoundaryForBoxes(
+            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
+        );
+    }
 
-	/**
+    /**
      * Get boundary which lies on right edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
      * @param object object included in @p geomoetry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
      */
-	static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-		if (path) return getRightOfBoundary(geometry, object, *path);
-		return getBoundaryForBoxes(
-			[=] { return geometry->getObjectBoundingBoxes(object); },
-			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
-		);
-	}
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getRightOfBoundary(geometry, object, *path);
+        return getBoundaryForBoxes(
+            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
+        );
+    }
 
-	/**
+    /**
      * Get boundary which lies on bottom edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
      * @param object object included in @p geomoetry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
      */
-	static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-		return getBoundaryForBoxes(
-			[=] { return geometry->getObjectBoundingBoxes(object, path); },
-			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
-		);
-	}
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return getBoundaryForBoxes(
+            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
+        );
+    }
 
-	/**
+    /**
      * Get boundary which lies on bottom edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
      * @param object object included in @p geomoetry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
      */
-	static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-		if (path) return getBottomOfBoundary(geometry, object, *path);
-		return getBoundaryForBoxes(
-			[=] { return geometry->getObjectBoundingBoxes(object); },
-			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
-		);
-	}
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getBottomOfBoundary(geometry, object, *path);
+        return getBoundaryForBoxes(
+            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
+        );
+    }
 
-	/**
+    /**
      * Get boundary which lies on top edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
      * @param object object included in @p geomoetry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
      */
-	static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-		return getBoundaryForBoxes(
-			[=] { return geometry->getObjectBoundingBoxes(object, path); },
-			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
-		);
-	}
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return getBoundaryForBoxes(
+            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
+        );
+    }
 
-	/**
+    /**
      * Get boundary which lies on top edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
      * @param object object included in @p geomoetry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
      */
-	static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-		if (path) return getTopOfBoundary(geometry, object, *path);
-		return getBoundaryForBoxes(
-			[=] { return geometry->getObjectBoundingBoxes(object); },
-			[](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
-		);
-	}
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getTopOfBoundary(geometry, object, *path);
+        return getBoundaryForBoxes(
+            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
+        );
+    }
 
-	/**
-	 * Get boundary which show one horizontal (from left to right) line in mesh.
-	 * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
-	 * @return boundary which show one horizontal (from left to right) line in mesh
-	 */
-	static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1) {
-		return Boundary( [line_nr_axis1](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, line_nr_axis1);} );
-	}
+    /**
+     * Get boundary which show one horizontal (from left to right) line in mesh.
+     * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
+     * @return boundary which show one horizontal (from left to right) line in mesh
+     */
+    static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1) {
+        return Boundary( [line_nr_axis1](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, line_nr_axis1);} );
+    }
 
-	/**
-     * Get boundary which show range in horizontal (from left to right) line in mesh.
+    /**
+     * Get boundary which shows range in horizontal (from left to right) line in mesh.
      * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
      * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
      * @return boundary which show range in horizontal (from left to right) line in mesh.
@@ -1148,27 +1148,27 @@ public:
         return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundaryInRange(mesh, line_nr_axis1, indexBegin, indexEnd);} );
     }
 
-	/**
-	 * Get boundary which show one horizontal (from left to right) line in mesh which lies nearest given coordinate.
-	 * @param axis1_coord axis 1 coordinate
-	 * @return boundary which show one horizontal (from left to right) line in mesh
-	 */
-	static Boundary getHorizontalBoundaryNear(double axis1_coord) {
-		return Boundary( [axis1_coord](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, mesh.axis1.findNearestIndex(axis1_coord));} );
-	}
+    /**
+     * Get boundary which shows one horizontal (from left to right) line in mesh which lies nearest given coordinate.
+     * @param axis1_coord axis 1 coordinate
+     * @return boundary which show one horizontal (from left to right) line in mesh
+     */
+    static Boundary getHorizontalBoundaryNear(double axis1_coord) {
+        return Boundary( [axis1_coord](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, mesh.axis1.findNearestIndex(axis1_coord));} );
+    }
 
-	/**
-	 * Get boundary which show one horizontal, top (from left to right) line in mesh.
-	 * @return boundary which show top line in mesh
-	 */
+    /**
+     * Get boundary which shows one horizontal, top (from left to right) line in mesh.
+     * @return boundary which show top line in mesh
+     */
     static Boundary getTopBoundary() {
         return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, mesh.axis1.size()-1);} );
     }
 
-	/**
-	 * Get boundary which show one horizontal, bottom (from left to right) line in mesh.
-	 * @return boundary which show bottom line in mesh
-	 */
+    /**
+     * Get boundary which shows one horizontal, bottom (from left to right) line in mesh.
+     * @return boundary which show bottom line in mesh
+     */
     static Boundary getBottomBoundary() {
         return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, 0);} );
     }

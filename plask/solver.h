@@ -614,6 +614,12 @@ class SolverOver: public Solver {
     /// Space in which the calculations are performed
     shared_ptr<SpaceT> geometry;
 
+    /**
+     * Read boundary conditions using information about the geometry of this solver
+     * \param manager manager used for load
+     * \param reader current XML reader
+     * \param dest BoundaryConditions variable which will store the boundary conditions
+     */
     template <typename MeshT, typename ConditionT>
     void readBoundaryConditions(Manager& manager, XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest) {
         manager.readBoundaryConditions<MeshT, ConditionT>(reader, dest, geometry);

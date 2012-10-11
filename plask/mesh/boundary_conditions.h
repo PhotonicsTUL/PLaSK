@@ -38,6 +38,135 @@ struct BoundaryCondition {
           condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
 };
 
+
+/// One boundary-condition pair with mesh.
+template <typename MeshT, typename ConditionT>
+struct BoundaryConditionWithMesh {
+    typedef MeshT MeshType;    ///< type of mesh
+    typedef ConditionT ConditionType;  ///< type which describe boundary condition
+    typedef typename MeshType::Boundary::WithMesh Boundary;   ///< Boundary type for mesh of type MeshType
+
+    Boundary boundary;          ///< Boundary with mesh
+    ConditionType condition;    ///< Condition
+
+    /**
+     * Construct boundary-condition pair.
+     * @param boundary boundary
+     * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     */
+    template <typename... ConditionArgumentsTypes>
+    BoundaryConditionWithMesh(const Boundary& boundary, ConditionArgumentsTypes&&... conditionsArg)
+        : boundary(boundary),
+          condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
+
+    /**
+     * Construct boundary-condition pair.
+     * @param boundary boundary
+     * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     */
+    template <typename... ConditionArgumentsTypes>
+    BoundaryConditionWithMesh(Boundary&& boundary, ConditionArgumentsTypes&&... conditionsArg)
+        : boundary(std::forward<Boundary>(boundary)),
+          condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
+};
+
+template <typename MeshT, typename ConditionT> struct BoundaryConditions;
+
+/**
+ * Set of boundary conditions instances for given mesh type and boundary condition description type.
+ * @tparam MeshT type of mesh
+ * @tparam ConditionT type which describe boundary condition
+ * @ref boundaries
+ */
+template <typename MeshT, typename ConditionT>
+struct BoundaryConditionsWithMesh
+{
+    typedef MeshT MeshType;    ///< type of mesh
+    typedef ConditionT ConditionType;  ///< type which describes boundary condition
+
+    /// One boundary-condition pair.
+    typedef BoundaryConditionWithMesh<MeshType, ConditionType> Element;
+
+private:
+    typedef std::vector<Element> elements_container_t;
+    elements_container_t container;
+    friend struct BoundaryConditions<MeshType,ConditionType>;
+
+public:
+    typedef typename elements_container_t::iterator iterator;
+    typedef typename elements_container_t::const_iterator const_iterator;
+
+    iterator begin() { return container.begin(); }
+    const_iterator begin() const { return container.begin(); }
+
+    iterator end() { return container.end(); }
+    const_iterator end() const { return container.end(); }
+
+    /**
+     * Delegate all constructors to underline container (which is std::list\<Element>).
+     * @param args arguments to delegate
+     */
+    template <typename... ArgsTypes>
+    BoundaryConditionsWithMesh(ArgsTypes&&... args): container(std::forward<ArgsTypes>(args)...) {}
+
+    /**
+     * Get reference to boundary condition with given @p index.
+     *
+     * This method has linear time complexity.
+     * @param index index of element
+     * @return reference to boundary condition with given @p index
+     * @throw OutOfBoundException if @p index is not valid
+     */
+    Element& operator[](std::size_t index) {
+        return container[index];
+    }
+
+    /**
+     * Get const reference to boundary condition with given @p index.
+     *
+     * This method has linear time complexity.
+     * @param index index of element
+     * @return const reference to boundary condition with given @p index
+     * @throw OutOfBoundException if @p index is not valid
+     */
+    const Element& operator[](std::size_t index) const {
+        return container[index];
+    }
+
+    /**
+     * Get number of elements.
+     *
+     * This method has linear time complexity.
+     * @return number of elements
+     */
+    std::size_t size() const {
+        return container.size();
+    }
+
+    /**
+     * Check if this is empty.
+     *
+     * It has constant time complexity.
+     * @return @c true only if this container includes no conditions boundaries
+     */
+    bool empty() const {
+        return container.empty();
+    }
+
+    /**
+     * Check if any boundary includes a @p mesh_index
+     *
+     * @param mesh_index index in @p mesh
+     * @return element which boundary includes @p mesh_index or @ref end() if there is no such element
+     */
+    iterator find(std::size_t mesh_index) {
+        auto i = begin();
+        while (i != end() && !i->boundary.includes(mesh_index)) ++i;
+        return i;
+    }
+};
+
+
 /**
  * Set of boundary conditions for given mesh type and boundary condition description type.
  * @tparam MeshT type of mesh
@@ -252,37 +381,40 @@ public:
     }
 
     /**
-     * Check if any boundary includes a @p mesh_index for given @p mesh.
-     *
-     * Note: if you whish to call includes for more than one point using the same mesh, it is much more effective to call get first
-     *      and next call includes on returned object.
+     * Get BoundaryConditionsWithMesh<MeshType,ConditionType>
      * @param mesh mesh
-     * @param mesh_index index in @p mesh
-     * @return element which boundary includes @p mesh_index for given @p mesh or @ref end() if there is no such element
      */
-    iterator includes(const MeshType& mesh, std::size_t mesh_index) {
-        auto i = begin();
-        while (i != end() && !i->boundary.includes(mesh, mesh_index)) ++i;
-        return i;
+    BoundaryConditionsWithMesh<MeshType,ConditionType> get(const MeshType& mesh) const {
+        BoundaryConditionsWithMesh<MeshType,ConditionType> impl;
+        impl.container.reserve(container.size());
+        for (auto& el: container) impl.container.push_back(BoundaryConditionWithMesh<MeshType,ConditionType>(el.boundary(mesh), el.condition));
+        return impl;
     }
 
     /**
-     * Get Boundary<MeshT>::WithMesh for sum of boundaries in this.
+     * Get BoundaryConditionsWithMesh<MeshType,ConditionType>
      * @param mesh mesh
      */
-    typename Boundary::WithMesh get(const MeshType& mesh) const {
-        SumBoundaryImpl<MeshType>* impl = new SumBoundaryImpl<MeshType>;
-        for (auto& b: container) impl->push_back(b(mesh));
-        return typename Boundary::WithMesh(impl);
+    BoundaryConditionsWithMesh<MeshType,ConditionType> get(const shared_ptr<const MeshType>& mesh) const {
+        return get(*mesh);
     }
 
     /**
-     * Get Boundary<MeshT>::WithMesh for sum of boundaries in this.
+     * Get BoundaryConditionsWithMesh<MeshType,ConditionType>
      * @param mesh mesh
      */
-    typename Boundary::WithMesh operator()(const MeshType& mesh) const {
+    BoundaryConditionsWithMesh<MeshType,ConditionType> operator()(const MeshType& mesh) const {
         return get(mesh);
     }
+
+    /**
+     * Get BoundaryConditionsWithMesh<MeshType,ConditionType>
+     * @param mesh mesh
+     */
+    BoundaryConditionsWithMesh<MeshType,ConditionType> operator()(const shared_ptr<const MeshType>& mesh) const {
+        return get(*mesh);
+    }
+
 };
 
 }   // namespace plask

@@ -79,14 +79,16 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 
     Node2D* tpN = NULL;
 
+    auto tVconst = mVconst.get(this->mesh);
+
     for(plask::RectilinearMesh2D::iterator vec_it = (this->mesh)->begin(); vec_it != (this->mesh)->end(); ++vec_it) // loop through all nodes given in the correct iteration order
     {
         double x = vec_it->ee_x();
         double y = vec_it->ee_y();
 
         std::size_t i = vec_it.getIndex();
-        auto it = mVconst.includes(*(this->mesh), i);
-        if (it != mVconst.end())
+        auto it = tVconst.find(i);
+        if (it != tVconst.end())
             tpN = new Node2D(tNo, x, y, it->condition, true);
         else
             tpN = new Node2D(tNo, x, y, 0., false);
@@ -492,7 +494,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         std::string param = source.getNodeName();
 
         if (param == "Vconst")
-            manager.readBoundaryConditions(source, mVconst);
+            this->readBoundaryConditions(manager, source, mVconst);
         else if (param == "js")
         {
             mJs = source.requireAttribute<double>("value");

@@ -35,12 +35,12 @@ boundary = RectilinearMesh2D::getLeftBoundary();
 RectilinearMesh2D mesh;
 //... (add some points to mesh)
 
-Boundary<RectilinearMesh2D>::WithMesh bwm = boundary.get(mesh); //or boundary(mesh);
+Boundary<RectilinearMesh2D>::WithMesh bwm = boundary.get(mesh); // or boundary(mesh);
 // bwm represent set of points indexes which lies on left boundary of mesh
 
 std::cout << "Does point with index 0 lies on left boundary? Answer: " << bwm.includes(0) << std::endl;
 
-for (std::size_t index: bwm) {  //iterate over boundary points (indexes)
+for (std::size_t index: bwm) {  // iterate over boundary points (indexes)
     std::cout << "Point with index " << index
               << " lies on left boundary and has coordinates: "
               << mesh[index] << std::endl;
@@ -253,20 +253,21 @@ public:
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh get(const MeshType& mesh) const { return WithMesh(this->create(mesh)); }
+    WithMesh operator()(const shared_ptr<const MeshType>& mesh) const { return this->create(*mesh); }
 
     /**
-     * Check if boundary includes point with given index.
-     *
-     * Note: if you whish to call includes for more than one point using the same mesh, it is much more effective to call get first
-     *      and next call includes on returned object.
+     * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
-     * @param mesh_index valid index of point in @p mesh
-     * @return @c true only if point with index @p mesh_index in @p mesh lies on boundary
+     * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    bool includes(const MeshType& mesh, std::size_t mesh_index) const {
-        return get(mesh).includes(mesh_index);
-    }
+    WithMesh get(const MeshType& mesh) const { return this->create(mesh); }
+
+    /**
+     * Get boundary-mesh pair for this boundary and given @p mesh.
+     * @param mesh mesh
+     * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
+     */
+    WithMesh get(const shared_ptr<const MeshType>& mesh) const { return this->create(*mesh); }
 
     /**
      * Check if boundary, for given @p mesh, represents empty set of indexes.
@@ -552,7 +553,7 @@ inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc, Bounda
 /**
  * Parse boundary from XML reader.
  *
- * It starts from tag which beggining is pointed by reader and (in case of successful parse) move reader to end of this tag.
+ * It starts from tag which beginning is pointed by reader and (in case of successful parse) move reader to end of this tag.
  *
  * For given mesh type (MyMeshType) specialization of this function:
  * @code

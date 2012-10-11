@@ -76,6 +76,11 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
 
     Node2D* tpN = NULL;
 
+    auto tTConst = mTConst(this->mesh);
+    auto tHFConst = mHFConst(this->mesh);
+    auto tConvection = mConvection(this->mesh);
+    auto tRadiation = mRadiation(this->mesh);
+
     for(plask::RectilinearMesh2D::iterator vec_it = (this->mesh)->begin(); vec_it != (this->mesh)->end(); ++vec_it) // loop through all nodes given in the correct iteration order
     {
         double x = vec_it->ee_x();
@@ -84,15 +89,15 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         std::size_t i = vec_it.getIndex();
 
         // checking boundary condition - constant temperature
-        auto it1 = mTConst.includes(*(this->mesh), i);
-        if (it1 != mTConst.end())
+        auto it1 = tTConst.find(i);
+        if (it1 != tTConst.end()) {
             tpN = new Node2D(tNo, x, y, it1->condition, true);
-        else
+        } else
             tpN = new Node2D(tNo, x, y, mTInit, false);
 
         // checking boundary condition - constant heat flux
-        auto it2 = mHFConst.includes(*(this->mesh), i);
-        if (it2 != mHFConst.end())
+        auto it2 = tHFConst.find(i);
+        if (it2 != tHFConst.end())
         {
             tpN->setHF(it2->condition);
             tpN->setHFflag(true);
@@ -101,8 +106,8 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
             tpN->setHFflag(false);
 
         // checking boundary condition - convection
-        auto it3 = mConvection.includes(*(this->mesh), i);
-        if (it3 != mConvection.end())
+        auto it3 = tConvection.find(i);
+        if (it3 != tConvection.end())
         {
             tpN->setConv(it3->condition.mConvCoeff, it3->condition.mTAmb1);
             tpN->setConvflag(true);
@@ -111,8 +116,8 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
             tpN->setConvflag(false);
 
         // checking boundary condition - radiation
-        auto it4 = mRadiation.includes(*(this->mesh), i);
-        if (it4 != mRadiation.end())
+        auto it4 = tRadiation.find(i);
+        if (it4 != tRadiation.end())
         {
             tpN->setRad(it4->condition.mSurfEmiss, it4->condition.mTAmb2);
             tpN->setRadflag(true);

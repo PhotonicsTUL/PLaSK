@@ -28,16 +28,17 @@ BOOST_PYTHON_MODULE(fem2d)
         RW_PROPERTY(TBigCorr, getTBigCorr, setTBigCorr, "Initial value of the temperature update"); // read-write property
         RW_PROPERTY(bigNum, getBigNum, setBigNum, "Big value for the first boundary condition"); // read-write property
         RW_PROPERTY(TInit, getTInit, setTInit, "Initial temperature"); // read-write property
-/*
-        METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
-        RO_FIELD(field_name, "Short documentation"); // read-only field
-        RW_FIELD(field_name, "Short documentation"); // read-write field
-        RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
-        RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
-        RECEIVER(inReceiver, "Short documentation"); // receiver in the solver
-        PROVIDER(outProvider, "Short documentation"); // provider in the solver
-*/
     }
+
+    py::class_<Convection>("Convection", "Convective boundary condition value", py::init<double,double>())
+        .def_readwrite("coeff", &Convection::mConvCoeff)
+        .def_readwrite("ambient", &Convection::mTAmb1)
+    ;
+
+    py::class_<Radiation>("Radiation", "Radiative boundary condition value", py::init<double,double>())
+        .def_readwrite("emissivity", &Radiation::mSurfEmiss)
+        .def_readwrite("ambient", &Radiation::mTAmb2)
+    ;
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "CylindricalFEM", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(runCalc, "Run thermal calculations");

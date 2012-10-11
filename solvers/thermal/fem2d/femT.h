@@ -11,18 +11,22 @@
 
 namespace plask { namespace solvers { namespace thermal {
 
-struct Convection // boundary condition: convection
+/// Boundary condition: convection
+struct Convection
 {
-public:
-    double mConvCoeff; // convection coefficient [W/(m^2*K)]
-    double mTAmb1; // ambient temperature [K]
+    double mConvCoeff; ///< convection coefficient [W/(m^2*K)]
+    double mTAmb1; ///< ambient temperature [K]
+    Convection(double coeff, double amb): mConvCoeff(coeff), mTAmb1(amb) {}
+    Convection() = default;
 };
 
-struct Radiation // boundary condition: radiation
+/// Boundary condition: radiation
+struct Radiation
 {
-public:
-    double mSurfEmiss; // surface emissivity [-]
-    double mTAmb2; // ambient temperature [K]
+    double mSurfEmiss; ///< surface emissivity [-]
+    double mTAmb2; ///< ambient temperature [K]
+    Radiation(double emiss, double amb): mSurfEmiss(emiss), mTAmb2(amb) {}
+    Radiation() = default;
 };
 
 /**
@@ -104,14 +108,7 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
 
     /// Invalidate the data
     virtual void onInvalidate();
-/*
-    /// Method computing the value for the delegate provider
-    const DataVector<double> getDelegated(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod method=DEFAULT_INTERPOLATION) {
-        if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
-            throw NoValue(SomeSingleValueProperty::NAME);
-        if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-        return interpolate(*mesh, my_data, dst_mesh, method); // interpolate your data to the requested mesh
-    }*/
+
   public:
 
     /// Boundary conditions
@@ -161,18 +158,12 @@ template<typename Geometry2Dtype> struct FiniteElementMethodThermal2DSolver: pub
 
 template <> inline solvers::thermal::Convection parseCondition<solvers::thermal::Convection>(const XMLReader& tag_with_value)
 {
-    solvers::thermal::Convection result;
-    result.mConvCoeff = tag_with_value.requireAttribute<double>("coefficient");
-    result.mTAmb1 = tag_with_value.requireAttribute<double>("Tamb");
-    return result;
+    return solvers::thermal::Convection(tag_with_value.requireAttribute<double>("coefficient"), tag_with_value.requireAttribute<double>("Tamb"));
 }
 
 template <> inline solvers::thermal::Radiation parseCondition<solvers::thermal::Radiation>(const XMLReader& tag_with_value)
 {
-    solvers::thermal::Radiation result;
-    result.mSurfEmiss = tag_with_value.requireAttribute<double>("emissivity");
-    result.mTAmb2 = tag_with_value.requireAttribute<double>("Tamb");
-    return result;
+    return solvers::thermal::Radiation(tag_with_value.requireAttribute<double>("emissivity"), tag_with_value.requireAttribute<double>("Tamb"));
 }
 
 } // namespace plask
