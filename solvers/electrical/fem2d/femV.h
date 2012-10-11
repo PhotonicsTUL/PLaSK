@@ -31,6 +31,8 @@ protected:
     double mBeta; // p-n junction parameter [1/V]
     double mCondJuncX0; // initial electrical conductivity for p-n junction in x-direction [1/(Ohm*m)]
     double mCondJuncY0; // initial electrical conductivity for p-n junction in y-direction [1/(Ohm*m)]
+    double mCondPcontact; // p-contact electrical conductivity [S/m]
+    double mCondNcontact; // n-contact electrical conductivity [S/m]
     bool mLogs; // logs (0-most important logs, 1-all logs)
     int mLoopNo; // number of completed loops
     double mMaxAbsVCorr; // max. absolute potential correction

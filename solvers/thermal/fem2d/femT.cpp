@@ -41,6 +41,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
     this->setNodes();
+    this->setSolver();
     this->setElements();
     mTemperatures.reset(mNodes.size(), mTInit);
 }
@@ -577,7 +578,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
     if (mLogs)
         writelog(LOG_INFO, "Starting thermal calculations...");
 
-    setSolver();
+    //setSolver();
 
     setHeatDensities();
 
@@ -653,7 +654,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
     if (mLogs)
         showHeatFluxes();
 
-    delSolver();
+    //delSolver();
 
     if (mLogs)
         writelog(LOG_INFO, "Temperature calculations completed");
@@ -744,12 +745,12 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
     while (ttN != mNodes.end())
     {
         double tMaxAbsTCorr = fabs( ttN->getT() - mpA[ttN->getNo()-1][mAWidth-1] );
-        if (tMaxAbsTCorr > mMaxAbsTCorr)
+        if ((tMaxAbsTCorr > mMaxAbsTCorr) && !ttN->ifTConst())
             mMaxAbsTCorr = tMaxAbsTCorr;
         if (mpA[ttN->getNo()-1][mAWidth-1])
         {
             double tMaxRelTCorr = fabs( ttN->getT() - mpA[ttN->getNo()-1][mAWidth-1] ) * 100. / mpA[ttN->getNo()-1][mAWidth-1];
-            if (tMaxRelTCorr > mMaxRelTCorr)
+            if ((tMaxRelTCorr > mMaxRelTCorr) && !ttN->ifTConst())
                 mMaxRelTCorr = tMaxRelTCorr;
         }
 

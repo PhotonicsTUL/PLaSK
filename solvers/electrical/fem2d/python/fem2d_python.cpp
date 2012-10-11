@@ -40,6 +40,8 @@ BOOST_PYTHON_MODULE(fem2d)
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "CylindricalFEM", "Finite Element electrical solver for 2D Cylindrical Geometry.")
         METHOD(runCalc, "Run electrical calculations");
+        METHOD(getMaxAbsVCorr, "Get max absolute correction for potential");
+        METHOD(getMaxRelVCorr, "Get max relative correction for potential");
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver
         PROVIDER(outPotential, "Potentials"); // provider in the solver
         PROVIDER(outCurrentDensity, "CurrentDensities"); // provider in the solver
