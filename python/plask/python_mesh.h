@@ -69,12 +69,14 @@ struct ExportBoundary {
 
         std::string name = py::extract<std::string>(mesh_class.attr("__name__"));
 
-        py::class_<typename MeshType::Boundary::WithMesh, shared_ptr<typename MeshType::Boundary::WithMesh>>("BoundaryInstance",
-            ("Boundary specification for particular "+name+" mesh object").c_str(), py::no_init)
-            .def("__contains__", &MeshType::Boundary::WithMesh::includes)
-            .def("__iter__", py::range(&MeshType::Boundary::WithMesh::begin, &MeshType::Boundary::WithMesh::end))
-        ;
-        py::delattr(scope, "BoundaryInstance");
+        if (py::converter::registry::lookup(py::type_id<typename MeshType::Boundary::WithMesh>()).m_class_object == nullptr) {
+            py::class_<typename MeshType::Boundary::WithMesh, shared_ptr<typename MeshType::Boundary::WithMesh>>("BoundaryInstance",
+                ("Boundary specification for particular "+name+" mesh object").c_str(), py::no_init)
+                .def("__contains__", &MeshType::Boundary::WithMesh::includes)
+                .def("__iter__", py::range(&MeshType::Boundary::WithMesh::begin, &MeshType::Boundary::WithMesh::end))
+            ;
+            py::delattr(scope, "BoundaryInstance");
+        }
 
         py::class_<typename MeshType::Boundary, shared_ptr<typename MeshType::Boundary>>("Boundary",
             ("Generic boundary specification for "+name+" mesh").c_str(), py::no_init)
