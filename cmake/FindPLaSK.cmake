@@ -72,10 +72,13 @@ macro(make_default)
         set(SOLVER_PYTHON_MODULE ${SOLVER_LIBRARY}-python)
         # Make package hierarchy
         set(curr_path "${PLASK_PATH}/solvers")
+        set(install_path "lib/plask/solvers")
         foreach(dir ${SOLVER_DIRECTORIES})
             set(curr_path "${curr_path}/${dir}")
+            set(install_path "${install_path}/${dir}")
             file(MAKE_DIRECTORY ${curr_path})
             file(WRITE "${curr_path}/__init__.py" "")
+            install(FILES "${curr_path}/__init__.py"  DESTINATION ${install_path} COMPONENT solvers)
         endforeach()
         # Build Python interface
         if(WIN32)
@@ -87,6 +90,7 @@ macro(make_default)
         set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
                               OUTPUT_NAME ${SOLVER_NAME}
+                              INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${SOLVER_INSTALL_PATH}
                               PREFIX "")
         if (DEFINED no_strict_aliasing_flag)
             set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
