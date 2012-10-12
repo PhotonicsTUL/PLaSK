@@ -18,11 +18,7 @@ struct CurrentDensity3D: public VectorFieldProperty<3> {
 };
 
 struct CarrierConcentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "carrier pairs concentration"; // mind lower case here
-};
-
-struct Concentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "radial concentration"; // mind lower case here
+    static constexpr const char* NAME = "carrier concentration"; // mind lower case here
 };
 
 struct ElectronConcentration: public ScalarFieldProperty {
