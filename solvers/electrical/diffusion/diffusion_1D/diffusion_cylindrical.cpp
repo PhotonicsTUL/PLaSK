@@ -10,19 +10,11 @@ namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
 void DiffusionCylindricalSolver::onInitialize()
 {
-    mesh = plask::RegularMesh1D (r_min, r_max, no_points);
-    RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z,z,1));
-
-    T_input = inTemperature(mesh2);      // data temperature vector provided by inTemperature reciever
-    j_input = inCurrentDensity(mesh2);   // data current density vector provided by inCurrentDensity reciever
-
-    n_present.reset(mesh.size(), 0.0);
-    n_previous.reset(mesh.size(), 0.0);
-
     initial_computation = true;
     threshold_computation = true;
 
-
+    detected_QW = detectQuantumWells();
+    z = getZQWCoordinate();
 }
 
 //virtual void DiffusionCylindricalSolver::onInvalidate()
@@ -34,23 +26,38 @@ void DiffusionCylindricalSolver::Compute()
 {
     initCalculation();
 
-    int points = 0;
+    int points = no_points;
+
+    int mesh_change = 0;
 
     bool convergence = true;
 
+    mesh = plask::RegularMesh1D( r_min, r_max, no_points );
+    RegularMesh2D mesh2( mesh, plask::RegularMesh1D( z, z, 1 ) );
+
+    T_on_the_mesh = inTemperature(mesh2);      // data temperature vector provided by inTemperature reciever
+    j_on_the_mesh = inCurrentDensity(mesh2);   // data current density vector provided by inCurrentDensity reciever
+
+    n_present.reset(mesh.size(), 0.0);
+    n_previous.reset(mesh.size(), 0.0);
+
     do
     {
-        points = no_points;
-
-        if(!convergence)
+        if(!convergence && (mesh_change < max_mesh_change))
         {
-            points /= 2.0;
-            mesh.reset(r_min, r_max, points);
+            points *= 2.0;
 
-//            j_on_the_mesh = interpolate();
-//            T_on_the_mesh = interpolate();
+            if (points%2 == 0)
+                points += 1;
+
+            mesh.reset( r_min, r_max, points );
+//            mesh2.reset( mesh, plask::RegularMesh1D( z, z, 1 ) )
+
+            T_on_the_mesh = inTemperature(mesh2);      // data temperature vector provided by inTemperature reciever
+            j_on_the_mesh = inCurrentDensity(mesh2);   // data current density vector provided by inCurrentDensity reciever
 //            n_present.reset(mesh.size(), 0.0);
 //            n_previous.reset(mesh.size(), 0.0);
+            mesh_change += 1;
         }
         if (initial_computation)
         {
@@ -79,7 +86,7 @@ void DiffusionCylindricalSolver::Compute()
 
         }
     }
-    while( convergence && !initial_computation && !threshold_computation);
+    while( !(convergence && !initial_computation && !threshold_computation) );
 
 
 
@@ -93,6 +100,7 @@ bool DiffusionCylindricalSolver::CylindricalMES()
 {
 //    Computation of K*n" - E*n = -F
     bool _convergence;
+    int iterations = 0;
 
     // LAPACK factorization (dpbtrf) and equation solver (dpbtrs) info variables:
     int info_f = 0;
@@ -100,15 +108,15 @@ bool DiffusionCylindricalSolver::CylindricalMES()
 
     // linear MES elements variables:
 
-    double r1 =0,r2=0;
+    double r1 = 0.0, r2 = 0.0;
     double k11e = 0, k12e = 0, k22e = 0;
     double p1e = 0, p2e = 0;
 
     // parabolic MES elements variables:
 
-    double r3 = 0;
-    double k13e = 0, k23e = 0, k33e = 0;  // elemnty lokalnej macierzy sztywnosci
-    double p3e = 0;
+    double r3 = 0.0;
+    double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // elemnty lokalnej macierzy sztywnosci
+    double p3e = 0.0;
 
     double T = 0.0;
     double n0 = 0.0;
@@ -212,8 +220,8 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                     r1 = mesh[i];
                     r2 = mesh[i+1];
 
-                    double j1 = j_on_the_mesh[i];
-                    double j2 = j_on_the_mesh[i+1];
+                    double j1 = j_on_the_mesh[0][i];
+                    double j2 = j_on_the_mesh[0][i+1];
 
                     K = DiffusionCylindricalSolver::K(T);
 //                    K = (this->*KPointer)(i, T, n0);
@@ -366,9 +374,10 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                     _convergence = false;
             }
         }
+        iterations += 1;
     }
 
-    while (!_convergence);
+    while (!_convergence || (iterations < max_iterations));
 
     return _convergence;
 }
@@ -442,7 +451,7 @@ double DiffusionCylindricalSolver::E(double T, double n0)
 double DiffusionCylindricalSolver::F(int i, double T, double n0)
 {
     if ((mes_method == "old_linear") || (mes_method == "parabolic"))  // 02.10.2012 Marcin Gebski
-    return (+ j_on_the_mesh[i]/(plask::phys::qe*global_QW_width) + this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
+    return (+ j_on_the_mesh[0][i]/(plask::phys::qe*global_QW_width) + this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
 
     else if (mes_method == "linear")  // 02.10.2012 Marcin Gebski
     return (this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
@@ -524,15 +533,15 @@ double DiffusionCylindricalSolver::leftSide(int i, double T, double n)
 
 double DiffusionCylindricalSolver::rightSide(int i)
 {
-  return -j_on_the_mesh[i]/(plask::phys::qe*global_QW_width);
+  return -j_on_the_mesh[0][i]/(plask::phys::qe*global_QW_width);
 }
 
-std::deque<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
+std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
 {
     shared_ptr<RectilinearMesh2D> mesh = RectilinearMesh2DSimpleGenerator()(geometry->getChild());
     shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
 
-    std::deque<Box2D> results;
+    std::vector<Box2D> results;
 
     // Now compact each row (it can contain only one QW and each must start and end in the same point)
     double left, right;
@@ -572,6 +581,28 @@ std::deque<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
     //TODO
 
     return results;
+}
+
+double DiffusionCylindricalSolver::getZQWCoordinate()
+{
+    double coordinate = 0.0;
+    int no_QW = detected_QW.size();
+    int no_Box = 0;
+
+    if ((no_QW%2 == 0) && (no_QW > 0))
+    {
+        no_Box = no_QW/2 -1;
+        coordinate = (detected_QW[no_Box].lower[1] + detected_QW[no_Box].upper[1]) / 2.0;
+    }
+    else if ((no_QW%2 == 1) && (no_QW > 0))
+    {
+        no_Box = (no_QW - 1)/2;
+        coordinate = (detected_QW[no_Box].lower[1] + detected_QW[no_Box].upper[1]) / 2.0;
+    }
+    else
+        throw Exception("Active region error: no_QW = 0!");
+
+    return coordinate;
 }
 
 }}} //namespaces

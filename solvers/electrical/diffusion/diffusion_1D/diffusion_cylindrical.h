@@ -35,16 +35,18 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         bool initial_computation;
         bool threshold_computation;
 
+        std::vector<Box2D> detected_QW;
+
         std::string symmetry_type;                 // VCSEL or EEL
 
         plask::RegularMesh1D mesh;                  // radius vector (computation mesh)
-        plask::DataVector<const Vec<2>> j_input;    // current density vector provided by inCurrentDensity reciever
-        plask::DataVector<const double> T_input;    // temperature vector provided by inTemperature reciever
+        plask::DataVector<const Vec<2>> j_on_the_mesh;    // current density vector provided by inCurrentDensity reciever
+        plask::DataVector<const double> T_on_the_mesh;    // temperature vector provided by inTemperature reciever
 
         plask::DataVector<double> n_previous;       // concentration computed in n-1 -th step vector
         plask::DataVector<double> n_present;        // concentration computed in n -th step vector
-        plask::DataVector<double> j_on_the_mesh;    // current density on internal computation mesh
-        plask::DataVector<double> T_on_the_mesh;    // temperature on internal computation mesh
+//        plask::DataVector<double> j_on_the_mesh;    // current density on internal computation mesh
+//        plask::DataVector<double> T_on_the_mesh;    // temperature on internal computation mesh
 //        bool daneWczytane;        // Czy dane zostaly wczytane
 //        std::vector<std::string> wektorObliczen;    // przechowuje informacje o kolejnosci wykonywanych obliczen
 //
@@ -130,7 +132,8 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
 /************************************************************************************************/
 
     protected:
-        std::deque<Box2D> detectQuantumWells();
+        std::vector<Box2D> detectQuantumWells();
+        double getZQWCoordinate();
         virtual void onInitialize();
         virtual void onInvalidate();
 
