@@ -9,8 +9,8 @@ set(VERSION_MINOR 1)            # MINOR version (bump up by one on visible featu
 
 # ---------- common options --------------------------------------------
 
-add_definitions(-Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas)    # almost all warnings
-set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")                            # C++0x (C++11) standard
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas")
 
 # Turn-off strict aliasing for Python code
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -24,6 +24,7 @@ endif()
 
 include_directories(.)          # solvers can include plask using <plask/plask.hpp>
 include_directories(python)     # solvers can also include <plask/python.hpp>
+include_directories(solvers)    # solvers can also include <providers/*.h>
 include_directories(extlib)     # place for local external libraries
 include_directories(${CMAKE_BINARY_DIR}/include) # for include config.h
 
@@ -133,13 +134,12 @@ endif()
 
 # ----------===== Build and Install =====--------------------------------------------
 
-file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp)
+file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp solvers/providers/*.h solvers/providers/*.hpp)
 
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp)
 
 # Python sources and files
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp)
-file(GLOB_RECURSE python_plask_headers FOLLOW_SYMLINKS python/plask/*.h FOLLOW_SYMLINKS python/plask/*.hpp)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
 
 # GUI sources
@@ -152,7 +152,8 @@ file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 
 # ---------- plask library --------------------------------------------
 
-add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
+#add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
+add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src})
 target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY}) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
     target_link_libraries(libplask kernel32)
@@ -169,6 +170,7 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 #endif()
 
 install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
+install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
 install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 
 set(PLaSK_LIBRARIES libplask)

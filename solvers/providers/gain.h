@@ -1,8 +1,8 @@
 #ifndef PLASK__GAIN_H
 #define PLASK__GAIN_H
 
-#include "../math.h"
-#include "providerfor.h"
+#include <plask/math.h>
+#include <plask/provider/providerfor.h>
 
 namespace plask {
 

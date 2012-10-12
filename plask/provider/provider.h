@@ -186,9 +186,6 @@ struct Provider {
         virtual ~Listener() {}
     };
 
-    /// Base non-template class for all receivers
-    struct Receiver: public Listener {};
-
     /// Set of added (registered) listeners. This provider can call methods of listeners included in this set.
     std::set<Listener*> listeners;
 
@@ -240,7 +237,7 @@ struct Provider {
  * @see @ref providers
  */
 template <typename ProviderT>
-struct Receiver: public Provider::Receiver {
+struct Receiver: public Provider::Listener {
 
     /// Name of provider.
     static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
@@ -419,13 +416,13 @@ struct SingleValueProvider: public Provider {
     static constexpr const char* NAME = "undefined value";
 
     /// Type of provided value.
-    typedef ValueT ProvidedValueType;
+    typedef ValueT ProvidedType;
 
     /**
      * Provided value getter.
      * @return provided value
      */
-    virtual ProvidedValueType operator()(ArgsT...) const = 0;
+    virtual ProvidedType operator()(ArgsT...) const = 0;
 
 };
 
@@ -441,21 +438,21 @@ struct OnMeshProvider: public Provider {
     static constexpr const char* NAME = "undefined field";
 
     /// Type of value provided by this (returned by operator()).
-    typedef DataVector<ValueT> ProvidedValueType;
+    typedef DataVector<const ValueT> ProvidedType;
 
     /**
      * @param dst_mesh set of requested points
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const = 0;
+    virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const = 0;
 
     /**
      * @param dst_mesh set of requested points
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedValueType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args) const {
+    inline ProvidedType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args) const {
         return this->operator()(*dst_mesh, extra_args...);
     }
 };
@@ -463,16 +460,16 @@ struct OnMeshProvider: public Provider {
 //TODO typedef for OnMeshReceiver (GCC 4.7 needed)
 
 /**
- * Instantiation of this template is abstract base class for provider class which provide values in points describe by mesh
+ * Instantiation of this template is abstract base class for provider class which provide values in points described by mesh
  * and use interpolation.
  */
 template <typename ValueT, typename SpaceT, typename... ExtraArgs>
-struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT, ExtraArgs...> {
+struct FieldProvider: public OnMeshProvider<ValueT, SpaceT, ExtraArgs...> {
 
     static constexpr const char* NAME = "undefined field";
 
     /// Type of value provided by this (returned by operator()).
-    typedef typename OnMeshProvider<ValueT, SpaceT, ExtraArgs...>::ProvidedValueType ProvidedValueType;
+    typedef typename OnMeshProvider<ValueT, SpaceT, ExtraArgs...>::ProvidedType ProvidedType;
 
     /**
      * @param dst_mesh set of requested points
@@ -480,7 +477,7 @@ struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT, Ex
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     /**
      * Implementation of OnMeshProvider method, call this->operator()(dst_mesh, DEFAULT).
@@ -488,7 +485,7 @@ struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT, Ex
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedValueType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const {
+    virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const {
         return this->operator()(dst_mesh, extra_args..., DEFAULT_INTERPOLATION);
     }
 
@@ -498,7 +495,7 @@ struct OnMeshProviderWithInterpolation: public OnMeshProvider<ValueT, SpaceT, Ex
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedValueType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
+    inline ProvidedType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
         return this->operator()(*dst_mesh, extra_args..., method);
     }
 

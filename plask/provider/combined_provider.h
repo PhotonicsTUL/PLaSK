@@ -2,20 +2,21 @@
 #define PLASK__COMBINATE_PROVIDERS_H
 
 #include <set>
-#include "provider.h"
+#include <boost/iterator/indirect_iterator.hpp>
+
+#include "providerfor.h"
 
 /** @file
 This file includes templates and base classes for providers which combinates (for example: sum) values from other providers.
 */
 
-#include <boost/iterator/indirect_iterator.hpp>
 
 namespace plask {
 
 /**
  * Template of base class of combine provider.
  *
- * Subclass should define operator() which should combine values from providers set (which is available by begin() and end() iterators).
+ * Subclass should define operator() which should combine values from providers (which are available by begin() and end() iterators).
  */
 template <typename BaseProviderClass>
 class CombinedProviderBase: public BaseProviderClass, public BaseProviderClass::Listener {
@@ -114,16 +115,22 @@ public:
 
 };
 
+
 /**
  * Template of base class of sum provider for providers with interpolation.
  */
-template <typename BaseClass, typename ValueT, typename SpaceT, typename... ExtraArgs>
-struct SumOnMeshProviderWithInterpolation: public CombinedProviderBase<BaseClass> {
+template <typename, typename, typename> struct FieldSumProviderImpl;
 
-    virtual DataVector<ValueT> operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+template <typename PropertyT, typename SpaceT, typename... ExtraArgs>
+struct FieldSumProviderImpl<PropertyT,SpaceT,VariadicTemplateTypesHolder<ExtraArgs...>>: public CombinedProviderBase<ProviderFor<PropertyT,SpaceT>> {
+
+    typedef typename ProviderFor<PropertyT,SpaceT>::ProvidedType ProvidedType;
+
+
+    virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
         this->ensureHasProviders();
         auto p = this->begin();
-        DataVector<ValueT> result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        ProvidedType result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         ++p;
         if (p == this->end()) return result;    // has one element
         result = result.claim();    // ensure has own memory
@@ -134,6 +141,13 @@ struct SumOnMeshProviderWithInterpolation: public CombinedProviderBase<BaseClass
         return result;
     }
 };
+
+/**
+ * Template of class of sum provider for providers with interpolation.
+ */
+template <typename PropertyT, typename SpaceT>
+struct FieldSumProvider: public FieldSumProviderImpl<PropertyT,SpaceT,typename PropertyT::ExtraParams> {};
+
 
 }   // namespace plask
 

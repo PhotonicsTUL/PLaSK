@@ -1,8 +1,8 @@
 #ifndef PLASK__OPTICAL_H
 #define PLASK__OPTICAL_H
 
-#include "../math.h"
-#include "providerfor.h"
+#include <plask/math.h>
+#include <plask/provider/providerfor.h>
 
 namespace plask {
 

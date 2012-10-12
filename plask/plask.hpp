@@ -90,16 +90,18 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "mesh/rectilinear.h"
 #include "mesh/generator_rectilinear.h"
 
+#include "provider/provider.h"
 #include "provider/providerfor.h"
 #include "provider/const_providers.h"
 #include "provider/combined_provider.h"
-#include "provider/thermal.h"
-#include "provider/electrical.h"
-#include "provider/optical.h"
-#include "provider/gain.h"
-#include "provider/heatdensity.h"
 
 #include "phys/constants.h"
 #include "phys/functions.h"
+
+#include "providers/thermal.h"
+#include "providers/electrical.h"
+#include "providers/optical.h"
+#include "providers/gain.h"
+
 
 #endif // PLASK__PLASK_HPP

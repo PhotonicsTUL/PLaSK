@@ -1,7 +1,8 @@
 #ifndef PLASK__TEMPERATURE_H
 #define PLASK__TEMPERATURE_H
 
-#include "providerfor.h"
+#include <plask/provider/providerfor.h>
+#include <plask/provider/combined_provider.h>
 
 namespace plask {
 
@@ -66,17 +67,18 @@ struct HeatFlux3D: public VectorFieldProperty<3> {
     static constexpr const char* NAME = "heat flux 3D"; // mind lower case here
 };
 
-//TODO in gcc 4.7 can be done by new typedefs:
-
-/*
- * Provides temperature fields (temperature in points described by given mesh).
+/**
+ * Density of heat sources.
  */
-//typedef ProviderFor<Temperature> TemperatureProvider;
+struct HeatDensity: public ScalarFieldProperty {
+    static constexpr const char* NAME = "heat sources density"; // mind lower case here
+};
 
-/*
- * Receive temperature fields (temperature in points described by given mesh).
+/**
+ * Provider which sum heat densities from one or more source.
  */
-//typedef ReceiverFor<Temperature> TemperatureReceiver;
+template <typename SpaceT>
+struct HeatDensitySumProvider: public FieldSumProvider<HeatDensity,SpaceT> {};
 
 } // namespace plask
 

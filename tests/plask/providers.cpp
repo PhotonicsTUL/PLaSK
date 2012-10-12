@@ -2,10 +2,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include <plask/provider/provider.h>
-#include <plask/provider/thermal.h>
 #include <plask/geometry/space.h>
 #include <plask/mesh/rectilinear.h>
 #include <plask/mesh/regular.h>
+#include <providers/thermal.h>
 
 BOOST_AUTO_TEST_SUITE(providers) // MUST be the same as the file name
 

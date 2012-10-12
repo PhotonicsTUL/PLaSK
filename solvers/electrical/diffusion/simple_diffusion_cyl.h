@@ -16,7 +16,7 @@ struct SimpleDiffusionSolverCyl: public SolverOver<Geometry2DCylindrical>
     ReceiverFor<Temperature, Geometry2DCylindrical> inTemperature;
 
     /// Provider for carrier density distribution (it's better to use delegate here).
-    ProviderFor<CarriersDensity, Geometry2DCylindrical>::Delegate outCarrierDensity;
+    ProviderFor<CarrierConcentration, Geometry2DCylindrical>::Delegate outCarrierDensity;
 
     SimpleDiffusionSolverCyl(const std::string& name="");
 

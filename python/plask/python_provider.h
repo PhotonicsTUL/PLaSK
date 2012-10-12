@@ -182,7 +182,7 @@ namespace detail {
                 parent->add(this);
         }
         virtual ~ProfileProvider() { profile->remove(this); }
-        virtual typename ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>::ProvidedValueType operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, ExtraParams..., InterpolationMethod) const {
+        virtual typename ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>::ProvidedType operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, ExtraParams..., InterpolationMethod) const {
             return profile->get<typename ReceiverT::PropertyTag::ValueType>(mesh, ReceiverT::PropertyTag::getDefaultValue());
         }
         virtual void onChange() { this->fireChanged(); }
