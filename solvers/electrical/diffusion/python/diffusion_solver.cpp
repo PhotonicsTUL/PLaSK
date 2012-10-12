@@ -6,8 +6,8 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../simple_diffusion_cyl.h"
-using namespace plask::solvers::diffusion;
+#include "../diffusion_1D/diffusion_cylindrical.h"
+using namespace plask::solvers::diffusion_cylindrical;
 
 /**
  * Initialization of your solver class to Python

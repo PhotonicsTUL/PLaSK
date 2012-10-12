@@ -19,8 +19,8 @@ find_package(PLaSK)
 # Some libraries, that you can find using find_package command are:
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB
 #
-#find_package(LAPACK)
-#set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
+find_package(LAPACK)
+set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
 
 # Uncomment and edit the line below if you need some special include directories.
@@ -45,7 +45,7 @@ find_package(PLaSK)
 # the following lines. If you don't do it, your solver directory will be scanned
 # automatically for solver_src and the 'python' subdirectory for interface_src.
 #
-#set(solver_src file1.cpp file2.cpp file3.h file4.hpp)
+set(solver_src diffusion_1D/diffusion_cylindrical.cpp)
 #set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
 
 

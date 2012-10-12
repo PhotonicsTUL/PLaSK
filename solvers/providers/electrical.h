@@ -21,6 +21,10 @@ struct CarrierConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "carrier pairs concentration"; // mind lower case here
 };
 
+struct Concentration: public ScalarFieldProperty {
+    static constexpr const char* NAME = "radial concentration"; // mind lower case here
+};
+
 struct ElectronConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "electron concentration"; // mind lower case here
 };
