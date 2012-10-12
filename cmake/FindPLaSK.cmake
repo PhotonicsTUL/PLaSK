@@ -90,7 +90,7 @@ macro(make_default)
         set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
                               OUTPUT_NAME ${SOLVER_NAME}
-                              INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${SOLVER_INSTALL_PATH}
+                              INSTALL_RPATH "$ORIGIN"
                               PREFIX "")
         if (DEFINED no_strict_aliasing_flag)
             set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
