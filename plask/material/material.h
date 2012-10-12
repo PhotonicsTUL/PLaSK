@@ -27,6 +27,8 @@ namespace plask {
  */
 int objectGroup(const std::string& objectName);
 
+struct MaterialsDB;
+
 /**
  * Represent material, its physical properties.
  */
@@ -64,7 +66,10 @@ struct Material {
      */
     typedef std::map<std::string, double> Composition;
 
-    /// Check if material can be construct with composition.
+
+  private:
+
+    /// Check if material can be constructed with composition.
     template <typename MaterialType>
     struct is_with_composition {
         static const bool value =
@@ -72,13 +77,17 @@ struct Material {
             std::is_constructible<MaterialType, Composition, DopingAmountType, double>::value;
     };
 
-    /// Check if material can be construct with dopant.
+    /// Check if material can be constructed with dopant.
     template <typename MaterialType>
     struct is_with_dopant {
         static const bool value =
             std::is_constructible<MaterialType, DopingAmountType, double>::value ||
             std::is_constructible<MaterialType, Composition, DopingAmountType, double>::value;
     };
+
+    friend struct MaterialsDB;
+
+  public:
 
     /**
      * Helper class for easy constructing string representations of complex materials.
