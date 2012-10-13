@@ -553,8 +553,14 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
             auto tags = geometry->getRolesAt(point);
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
             if (QW && !inQW) { // QW start
-                if (foundQW && left != mesh->axis0[i])
-                    throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
+                if (foundQW) {
+		    if (left != mesh->axis0[i])
+			throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
+		    if (geometry->getMaterial(point) != QW_material)
+			throw Exception("In this solver all quantum wells must be constructed of a single material");
+		} else {
+		    QW_material = geometry->getMaterial(point);
+		}
                 left = mesh->axis0[i];
                 inQW = true;
             }
