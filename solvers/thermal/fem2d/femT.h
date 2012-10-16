@@ -39,7 +39,6 @@ protected:
     /// Main Matrix
     double **mpA;
     int mAWidth, mAHeight;
-    std::string mCalcType; // loops or single
     std::string mTChange; // absolute or relative
     int mLoopLim; // number of loops - stops the calculations
     double mTCorrLim; // small-enough correction - stops the calculations
@@ -107,6 +106,12 @@ protected:
     /// Matrix solver
     int solveMatrix(double **ipA, long iN, long iBandWidth);
 
+    /// Do some steps which are the same both for loop- and single- calculations
+    void doSomeSteps();
+
+    /// Do more steps which are the same both for loop- and single- calculations
+    void doMoreSteps();
+
     /// Initialize the solver
     virtual void onInitialize();
 
@@ -136,6 +141,12 @@ protected:
      * \return max correction of temperature agains the last call
      **/
     double runCalc();
+
+    /**
+     * Run single temperature calculations
+     * \return max correction of temperature agains the last call
+     **/
+    double runSingleCalc();
 
     /**
      * Get max absolute correction for temperature

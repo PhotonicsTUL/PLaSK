@@ -16,6 +16,7 @@ BOOST_PYTHON_MODULE(fem2d)
 {
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "CartesianFEM", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(runCalc, "Run thermal calculations");
+        METHOD(runSingleCalc, "Run single thermal calculations");
         METHOD(getMaxAbsTCorr, "Get max absolute correction for temperature");
         METHOD(getMaxRelTCorr, "Get max relative correction for temperature");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
@@ -44,12 +45,16 @@ BOOST_PYTHON_MODULE(fem2d)
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "CylindricalFEM", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(runCalc, "Run thermal calculations");
+        METHOD(runSingleCalc, "Run single thermal calculations");
         METHOD(getMaxAbsTCorr, "Get max absolute correction for temperature");
         METHOD(getMaxRelTCorr, "Get max relative correction for temperature");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
         PROVIDER(outHeatFlux, "HeatFluxes"); // provider in the solver
         BOUNDARY_CONDITIONS(Tconst, mTConst, "Boundary conditions of the first kind (constant temperature)");
+        BOUNDARY_CONDITIONS(HFconst, mHFConst, "Boundary conditions for the constant heat flux");
+        BOUNDARY_CONDITIONS(convection, mConvection, "Convective boundary conditions");
+        BOUNDARY_CONDITIONS(radiation, mRadiation, "Radiative boundary conditions");
         RW_PROPERTY(loopLim, getLoopLim, setLoopLim, "Max. number of loops"); // read-write property
         RW_PROPERTY(TCorrLim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         RW_PROPERTY(TBigCorr, getTBigCorr, setTBigCorr, "Initial value of the temperature update"); // read-write property

@@ -16,6 +16,7 @@ BOOST_PYTHON_MODULE(fem2d)
 {
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "CartesianFEM", "Finite Element electrical solver for 2D Cartesian Geometry.")
         METHOD(runCalc, "Run electrical calculations");
+        METHOD(runSingleCalc, "Run single electrical calculations");
         METHOD(getMaxAbsVCorr, "Get max absolute correction for potential");
         METHOD(getMaxRelVCorr, "Get max relative correction for potential");
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver
@@ -27,19 +28,11 @@ BOOST_PYTHON_MODULE(fem2d)
         RW_PROPERTY(getsetVCorrLim, getVCorrLim, setVCorrLim, "Get and set limit for the potential updates"); // read-write property
         RW_PROPERTY(getsetVBigCorr, getVBigCorr, setVBigCorr, "Get and set initial value of the potential update"); // read-write property
         RW_PROPERTY(getsetBigNum, getBigNum, setBigNum, "Get and set big value for the first boundary condition"); // read-write property
-/*
-        METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
-        RO_FIELD(field_name, "Short documentation"); // read-only field
-        RW_FIELD(field_name, "Short documentation"); // read-write field
-        RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
-        RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
-        RECEIVER(inReceiver, "Short documentation"); // receiver in the solver
-        PROVIDER(outProvider, "Short documentation"); // provider in the solver
-*/
     }
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "CylindricalFEM", "Finite Element electrical solver for 2D Cylindrical Geometry.")
         METHOD(runCalc, "Run electrical calculations");
+        METHOD(runSingleCalc, "Run single electrical calculations");
         METHOD(getMaxAbsVCorr, "Get max absolute correction for potential");
         METHOD(getMaxRelVCorr, "Get max relative correction for potential");
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver

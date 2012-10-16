@@ -21,7 +21,6 @@ protected:
     /// Main Matrix
     double **mpA;
     int mAWidth, mAHeight;
-    std::string mCalcType; // loops or single
     std::string mVChange; // absolute or relative
     int mLoopLim; // number of loops - stops the calculations
     double mVCorrLim; // small-enough correction - stops the calculations
@@ -103,6 +102,12 @@ protected:
     /// Matrix solver
     int solveMatrix(double **ipA, long iN, long iBandWidth);
 
+    /// Do some steps which are the same both for loop- and single- calculations
+    void doSomeSteps();
+
+    /// Do more steps which are the same both for loop- and single- calculations
+    void doMoreSteps();
+
     /// Initialize the solver
     virtual void onInitialize();
 
@@ -133,6 +138,12 @@ public:
      * \return max correction of potential agains the last call
      **/
     double runCalc();
+
+    /**
+     * Run single potential calculations
+     * \return max correction of potential agains the last call
+     **/
+    double runSingleCalc();
 
     /**
      * Get max absolute correction for potential

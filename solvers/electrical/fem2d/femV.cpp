@@ -5,7 +5,6 @@ namespace plask { namespace solvers { namespace electrical {
 template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>(name),
     mpA(nullptr),
-    mCalcType("loops"),
     mVChange("absolute"),
     mLoopLim(5),
     mVCorrLim(0.01),
@@ -420,7 +419,7 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::se
         }
 }
 
-template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::runCalc()
+template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::doSomeSteps()
 {
     this->initCalculation();
 
@@ -433,63 +432,10 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
 
     if (mLogs)
         writelog(LOG_INFO, "Running solver...");
+}
 
-    int tInfo = 1;
-
-    if (mCalcType == "loops")
-    {
-        std::vector<double>::const_iterator ttVCorr;
-        int tLoop = 1;
-        double tVCorr = mVBigCorr; // much bigger than calculated co    rrections
-
-        while ( (tLoop <= mLoopLim) && (tVCorr > mVCorrLim) )
-        {
-            setMatrix();
-
-            tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
-            if (!tInfo)
-            {
-                // update
-                updNodes();
-                //updElements();
-
-                tVCorr = mMaxAbsVCorr;
-
-                mLoopNo++;
-
-                // show max correction
-                writelog(LOG_DETAIL, "Loop no: %d(%d), max. V upd: %8.6f (abs), %8.6f (rel)", tLoop, mLoopNo, mMaxAbsVCorr, mMaxRelVCorr/*tVCorr*/);
-
-                tLoop++;
-            }
-            else if (tInfo < 0)
-                writelog(LOG_ERROR, "Wrong value of new potential");
-            else
-                writelog(LOG_ERROR, "Wrong solver matrix");
-        }
-    }
-    else //if (mCalcType == "single")
-    {
-        setMatrix();
-
-        tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
-        if (!tInfo)
-        {
-            // update
-            updNodes();
-            //updElements();
-
-            mLoopNo++;
-
-            // show max correction
-            writelog(LOG_DETAIL, "Loop no: %d, max. V upd: %8.6f (abs), %8.6f (rel)", mLoopNo, mMaxAbsVCorr, mMaxRelVCorr);
-        }
-        else if (tInfo < 0)
-            writelog(LOG_ERROR, "Wrong value of new potential");
-        else
-            writelog(LOG_ERROR, "Wrong solver matrix");
-    }
-
+template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::doMoreSteps()
+{
     if (mLogs)
         showNodes();
 
@@ -516,16 +462,76 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
     outPotential.fireChanged();
     outCurrentDensity.fireChanged();
     outHeatDensity.fireChanged();
+}
 
-    if (mCalcType == "loops")
-        return mMaxVCorr;
-    else //if (mCalcType == "single")
+template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::runCalc()
+{
+    doSomeSteps();
+
+    int tInfo = 1;
+    std::vector<double>::const_iterator ttVCorr;
+    int tLoop = 1;
+    double tVCorr = mVBigCorr; // much bigger than calculated co    rrections
+    while ( (tLoop <= mLoopLim) && (tVCorr > mVCorrLim) )
     {
-        if (mVChange == "relative")
-            return mMaxRelVCorr;
-        else //if (mVChange == "absolute")
-            return mMaxAbsVCorr;
+        setMatrix();
+
+        tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
+        if (!tInfo)
+        {
+            // update
+            updNodes();
+            //updElements();
+
+            tVCorr = mMaxAbsVCorr;
+
+            mLoopNo++;
+
+            // show max correction
+            writelog(LOG_DETAIL, "Loop no: %d(%d), max. V upd: %8.6f (abs), %8.6f (rel)", tLoop, mLoopNo, mMaxAbsVCorr, mMaxRelVCorr/*tVCorr*/);
+
+            tLoop++;
+        }
+        else if (tInfo < 0)
+            writelog(LOG_ERROR, "Wrong value of new potential");
+        else
+            writelog(LOG_ERROR, "Wrong solver matrix");
     }
+
+    doMoreSteps();
+
+    return mMaxVCorr;
+}
+
+template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::runSingleCalc()
+{
+    doSomeSteps();
+
+    int tInfo = 1;
+    setMatrix();
+    tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
+    if (!tInfo)
+    {
+        // update
+        updNodes();
+        //updElements();
+
+        mLoopNo++;
+
+        // show max correction
+        writelog(LOG_DETAIL, "Loop no: %d, max. V upd: %8.6f (abs), %8.6f (rel)", mLoopNo, mMaxAbsVCorr, mMaxRelVCorr);
+    }
+    else if (tInfo < 0)
+        writelog(LOG_ERROR, "Wrong value of new potential");
+    else
+        writelog(LOG_ERROR, "Wrong solver matrix");
+
+    doMoreSteps();
+
+    if (mVChange == "relative")
+        return mMaxRelVCorr;
+    else //if (mVChange == "absolute")
+        return mMaxAbsVCorr;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::loadConfiguration(XMLReader &source, Manager &manager)
@@ -574,11 +580,6 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         else if (param == "Vchange")
         {
             mVChange = source.requireAttribute<std::string>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "calctype")
-        {
-            mCalcType = source.requireAttribute<std::string>("value");
             source.requireTagEnd();
         }
         else if (param == "looplim")
@@ -749,7 +750,18 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
             mHeatDensities[ttE->getNo()-1] = 0.;
         else if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
         {
-            mHeatDensities[ttE->getNo()-1] = ( phys::h_J * phys::c * fabs((mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( phys::qe * real(inWavelength()) * 1e-9 * 10e-6 ); // 10e-6 TODO
+            std::vector<Box2D> tVecBox = (this->geometry)->getLeafsBoundingBoxes();
+            Vec<2, double> tSize;
+            for (Box2D tBox: tVecBox)
+            {
+                if (tBox.includes(vec(ttE->getX(), ttE->getY())))
+                {
+                    tSize = tBox.size();
+                    break;
+                }
+            }
+
+            mHeatDensities[ttE->getNo()-1] = ( phys::h_J * phys::c * fabs((mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( phys::qe * real(inWavelength()) * 1e-9 * tSize.ee_y() * 1e-6 ); // 10e-6 TODO
         }
         else if ((this->geometry)->hasRoleAt("p-contact", vec(ttE->getX(), ttE->getY())))
             mHeatDensities[ttE->getNo()-1] = (mCurrentDensities[ttE->getNo()-1]).ee_x() * (mCurrentDensities[ttE->getNo()-1]).ee_x() / mCondPcontact +

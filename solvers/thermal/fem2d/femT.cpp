@@ -6,7 +6,6 @@ namespace plask { namespace solvers { namespace thermal {
 template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dtype>::FiniteElementMethodThermal2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>(name),
     mpA(nullptr),
-    mCalcType("loops"),
     mTChange("absolute"),
     mLoopLim(1),
     mTCorrLim(0.1),
@@ -571,7 +570,7 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
         }
 }
 
-template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::runCalc()
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::doSomeSteps()
 {
     this->initCalculation();
 
@@ -584,63 +583,10 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
 
     if (mLogs)
         writelog(LOG_INFO, "Running solver...");
+}
 
-    int tInfo = 1;
-
-    if (mCalcType == "loops")
-    {
-        std::vector<double>::const_iterator ttTCorr;
-        int tLoop = 1;
-        double tTCorr = mTBigCorr; // much bigger than calculated corrections
-
-        while ( (tLoop <= mLoopLim) && (tTCorr > mTCorrLim) )
-        {
-            setMatrix();
-
-            tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
-            if (!tInfo)
-            {
-                // update
-                updNodes();
-                updElements();
-
-                tTCorr = mMaxAbsTCorr;
-
-                mLoopNo++;
-
-                // show max correction
-                writelog(LOG_DETAIL, "Loop no: %d(%d), max. T upd: %8.6f (abs), %8.6f (rel)", tLoop, mLoopNo, mMaxAbsTCorr, mMaxRelTCorr/*tTCorr*/);
-
-                tLoop++;
-            }
-            else if (tInfo < 0)
-                writelog(LOG_ERROR, "Wrong value of new temperature");
-            else
-                writelog(LOG_ERROR, "Wrong solver matrix");
-        }
-    }
-    else //if (mCalcType == "single")
-    {
-        setMatrix();
-
-        tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
-        if (!tInfo)
-        {
-            // update
-            updNodes();
-            //updElements();
-
-            mLoopNo++;
-
-            // show max correction
-            writelog(LOG_DETAIL, "Loop no: %d, max. T upd: %8.6f (abs), %8.6f (rel)", mLoopNo, mMaxAbsTCorr, mMaxRelTCorr);
-        }
-        else if (tInfo < 0)
-            writelog(LOG_ERROR, "Wrong value of new temperature");
-        else
-            writelog(LOG_ERROR, "Wrong solver matrix");
-    }
-
+template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::doMoreSteps()
+{
     if (mLogs)
         showNodes();
 
@@ -661,16 +607,77 @@ template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geom
 
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
+}
 
-    if (mCalcType == "loops")
-        return mMaxTCorr;
-    else //if (mCalcType == "single")
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::runCalc()
+{
+    doSomeSteps();
+
+    int tInfo = 1;
+    std::vector<double>::const_iterator ttTCorr;
+    int tLoop = 1;
+    double tTCorr = mTBigCorr; // much bigger than calculated corrections
+    while ( (tLoop <= mLoopLim) && (tTCorr > mTCorrLim) )
     {
-        if (mTChange == "relative")
-            return mMaxRelTCorr;
-        else //if (mVChange == "absolute")
-            return mMaxAbsTCorr;
+        setMatrix();
+
+        tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
+        if (!tInfo)
+        {
+            // update
+            updNodes();
+            updElements();
+
+            tTCorr = mMaxAbsTCorr;
+
+            mLoopNo++;
+
+            // show max correction
+            writelog(LOG_DETAIL, "Loop no: %d(%d), max. T upd: %8.6f (abs), %8.6f (rel)", tLoop, mLoopNo, mMaxAbsTCorr, mMaxRelTCorr/*tTCorr*/);
+
+            tLoop++;
+        }
+        else if (tInfo < 0)
+            writelog(LOG_ERROR, "Wrong value of new temperature");
+        else
+            writelog(LOG_ERROR, "Wrong solver matrix");
     }
+
+    doMoreSteps();
+
+    return mMaxTCorr;
+}
+
+template<typename Geometry2Dtype> double FiniteElementMethodThermal2DSolver<Geometry2Dtype>::runSingleCalc()
+{
+    doSomeSteps();
+
+    int tInfo = 1;
+    setMatrix();
+
+    tInfo = solveMatrix(mpA, mNodes.size(), (this->mesh)->minorAxis().size()+2);
+    if (!tInfo)
+    {
+        // update
+        updNodes();
+        updElements();
+
+        mLoopNo++;
+
+        // show max correction
+        writelog(LOG_DETAIL, "Loop no: %d, max. T upd: %8.6f (abs), %8.6f (rel)", mLoopNo, mMaxAbsTCorr, mMaxRelTCorr);
+    }
+    else if (tInfo < 0)
+        writelog(LOG_ERROR, "Wrong value of new temperature");
+    else
+        writelog(LOG_ERROR, "Wrong solver matrix");
+
+    doMoreSteps();
+
+    if (mTChange == "relative")
+        return mMaxRelTCorr;
+    else //if (mVChange == "absolute")
+        return mMaxAbsTCorr;
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geometry2Dtype>::loadConfiguration(XMLReader &source, Manager &manager)
@@ -695,11 +702,6 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         else if (param == "Tchange")
         {
             mTChange = source.requireAttribute<std::string>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "calctype")
-        {
-            mCalcType = source.requireAttribute<std::string>("value");
             source.requireTagEnd();
         }
         else if (param == "looplim")
