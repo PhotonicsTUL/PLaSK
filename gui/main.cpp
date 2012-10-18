@@ -48,9 +48,9 @@ int main(int argc, char *argv[])
 {
     //plask::MaterialsLibraryInit materials_init;
 
-    QLibrary load_material_library("plask_materialsdefault");
+    /*QLibrary load_material_library("plask_materialsdefault");
     if (!load_material_library.load())
-        std::cerr << "Can't load materials library." << std::endl;
+        std::cerr << "Can't load materials library." << std::endl;*/
 
     //initModelExtensions();
 
