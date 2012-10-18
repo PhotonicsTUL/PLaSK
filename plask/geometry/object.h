@@ -926,7 +926,7 @@ struct GeometryObjectD: public GeometryObject {
     /**
      * Find all paths to objects which lies at given @p point.
      * @param point point in local coordinates
-     * \param all if true then return all paths if branches overlap the point
+     * @param all if true then return all paths if branches overlap the point
      * @return all paths, last one is on top and overlies rest
      */
     virtual Subtree getPathsAt(const DVec& point, bool all=false) const = 0;
@@ -1423,7 +1423,7 @@ struct GeometryObjectD: public GeometryObject {
      * @param point point
      * @param path optional path hints filtering out some objects
      * @return object which is at given @p point, is not hidden by another object and plays role with name @p role_name,
-     *          nullptr if there is not such object
+     *          @c nullptr if there is not such object
      */
     shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const DVec& point, const plask::PathHints* path = 0) const {
         return getMatchingAt(point, GeometryObject::PredicateHasRole(role_name), path);
