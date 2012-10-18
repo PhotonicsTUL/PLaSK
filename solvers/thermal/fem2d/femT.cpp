@@ -7,7 +7,7 @@ template<typename Geometry2Dtype> FiniteElementMethodThermal2DSolver<Geometry2Dt
     SolverWithMesh<Geometry2Dtype, RectilinearMesh2D>(name),
     mpA(nullptr),
     mTChange("absolute"),
-    mLoopLim(1),
+    mLoopLim(10),
     mTCorrLim(0.1),
     mTBigCorr(1e5),
     mBigNum(1e15),

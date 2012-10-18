@@ -103,6 +103,15 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertEqual( list(mesh2.axis0), [0., 1., 2.] )
         self.assertEqual( list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )
 
+        generator3 = plask.mesh.Rectilinear2D.DivideGenerator()
+        stack = plask.geometry.Stack2D()
+        stack.append(plask.geometry.Rectangle(1000., 5., None))
+        stack.append(plask.geometry.Rectangle(1000., 10., None))
+        stack.append(plask.geometry.Rectangle(1000., 50., None))
+        stack.append(plask.geometry.Rectangle(1000., 150., None))
+        mesh3 = generator3(stack)
+        self.assertEqual( list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.] )
+
 
     def testRegenerationInSolver(self):
         stack = plask.geometry.Stack2D()

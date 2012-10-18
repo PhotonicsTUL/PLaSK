@@ -94,10 +94,10 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
         size_t end = result.size()-2;
         double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
         for (size_t i = 0; i <= end;) {
-            if (w > 2.*w_prev) {
+            if (w > 2.000001*w_prev) { // .000001 is for border case w == 2*w_prev, to avoid division even in presence of numerical error
                 result.addPoint(0.5 * (result[i] + result[i+1])); ++end;
                 w = w_next = result[i+1] - result[i];
-            } else if (w > 2.*w_next) {
+            } else if (w > 2.000001*w_next) {
                 result.addPoint(0.5 * (result[i] + result[i+1])); ++end;
                 w_next = result[i+1] - result[i];
                 if (i) {
