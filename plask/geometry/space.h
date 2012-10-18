@@ -207,7 +207,7 @@ class GeometryD: public Geometry {
     /**
      * Initialize bounding box cache and onChange connection.
      *
-     * Subclasses should call this from it's constructors (can't be moved to constructor because it uses virtual method getChild)
+     * Subclasses should call this from it's constructors (can't be moved to constructor because it uses virtual method getChildUnsafe)
      * and after changing child.
      */
     void initNewChild() {
@@ -215,7 +215,7 @@ class GeometryD: public Geometry {
         auto c3d = getObject3D();
         if (c3d) {
             if (c3d) connection_with_child = c3d->changedConnectMethod(this, &GeometryD<dim>::onChildChanged);
-            auto c = getChild();
+            auto c = getChildUnsafe();
             if (c) cachedBoundingBox = c->getBoundingBox();
         }
     }
@@ -245,9 +245,17 @@ public:
 
     /**
      * Get child geometry.
+     *
+     * Throws excpetion if has no child.
      * @return child geometry
      */
     virtual shared_ptr< GeometryObjectD<dim> > getChild() const = 0;
+
+    /**
+     * Get child geometry.
+     * @return child geometry or @c nullptr if there is no child
+     */
+    virtual shared_ptr< GeometryObjectD<dim> > getChildUnsafe() const = 0;
 
     /**
      * Get bounding box of child geometry.
@@ -270,7 +278,7 @@ public:
     }
 
     virtual std::size_t getChildrenCount() const {
-        return getChild() ? 1 : 0;
+        return getChildUnsafe() ? 1 : 0;
     }
 
     virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const {
@@ -544,6 +552,8 @@ public:
      */
     virtual shared_ptr< GeometryObjectD<2> > getChild() const;
 
+    virtual shared_ptr< GeometryObjectD<2> > getChildUnsafe() const;
+
     void removeAtUnsafe(std::size_t) { extrusion->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
     virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
@@ -668,6 +678,8 @@ public:
      * @return child geometry
      */
     virtual shared_ptr< GeometryObjectD<2> > getChild() const;
+
+    virtual shared_ptr< GeometryObjectD<2> > getChildUnsafe() const;
 
     void removeAtUnsafe(std::size_t) { revolution->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
@@ -816,6 +828,8 @@ public:
      * @return child object
      */
     virtual shared_ptr< GeometryObjectD<3> > getChild() const;
+
+    virtual shared_ptr< GeometryObjectD<3> > getChildUnsafe() const;
 
     /**
      * Set new child.

@@ -23,21 +23,21 @@ void GeometryWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers &managers,
 
 template <int dim>
 void GeometryWrapper<dim>::draw(QPainter &painter) const {
-    auto child = this->c().getChild();
+    auto child = this->c().getChildUnsafe();
     if (child) ext(child)->draw(painter);
 }
 
 template <int dim>
 void GeometryWrapper<dim>::drawMiniature(QPainter &painter, qreal w, qreal h) const
 {
-    auto child = this->c().getChild();
+    auto child = this->c().getChildUnsafe();
     if (child) ext(child)->drawMiniature(painter, w, h);
 }
 
 template <int dim>
 void GeometryWrapper<dim>::drawReal(QPainter &painter) const
 {
-    auto child = this->c().getChild();
+    auto child = this->c().getChildUnsafe();
     if (child) ext(child)->drawReal(painter);
 }
 

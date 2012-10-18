@@ -71,6 +71,10 @@ shared_ptr< GeometryObjectD<2> > Geometry2DCartesian::getChild() const {
     return child;
 }
 
+shared_ptr< GeometryObjectD<2> > Geometry2DCartesian::getChildUnsafe() const {
+    return extrusion->getChild();
+}
+
 shared_ptr<Material> Geometry2DCartesian::getMaterial(const Vec<2, double> &p) const {
     Vec<2, double> r = p;
     shared_ptr<Material> material;
@@ -156,6 +160,10 @@ shared_ptr< GeometryObjectD<2> > Geometry2DCylindrical::getChild() const {
     auto child = revolution->getChild();
     if (!child) throw NoChildException();
     return child;
+}
+
+shared_ptr< GeometryObjectD<2> > Geometry2DCylindrical::getChildUnsafe() const {
+    return revolution->getChild();
 }
 
 shared_ptr<Material> Geometry2DCylindrical::getMaterial(const Vec<2, double> &p) const {
@@ -275,6 +283,10 @@ Geometry3D::Geometry3D(shared_ptr<GeometryObjectD<3> > child)
 
 shared_ptr<GeometryObjectD<3> > Geometry3D::getChild() const {
     if (!child) throw NoChildException();
+    return child;
+}
+
+shared_ptr< GeometryObjectD<3> > Geometry3D::getChildUnsafe() const {
     return child;
 }
 
