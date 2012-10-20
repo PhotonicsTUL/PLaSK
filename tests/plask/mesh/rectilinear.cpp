@@ -136,5 +136,23 @@ BOOST_AUTO_TEST_CASE(generator) {
     BOOST_CHECK_EQUAL(mesh->axis1[6], 13.);
 }
 
+BOOST_AUTO_TEST_CASE(elements) {
+    plask::RectilinearMesh2DSimpleGenerator generator;
+    auto stack(plask::make_shared<plask::StackContainer<2>>());
+    stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 4.), plask::shared_ptr<plask::Material>()));
+    stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 1.), plask::shared_ptr<plask::Material>()));
+    stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 8.), plask::shared_ptr<plask::Material>()));
+    auto mesh = generator(stack);
+
+    size_t n = 0;
+    for (auto elem = mesh->elements.begin(); elem != mesh->elements.end(); ++elem, ++n) {
+        BOOST_CHECK_EQUAL(elem->getIndex(), n);
+        BOOST_CHECK_EQUAL(elem->getLoLoIndex(), 2*n);
+        BOOST_CHECK_EQUAL(elem->getUpLoIndex(), 2*n+1);
+        BOOST_CHECK_EQUAL(elem->getLoUpIndex(), 2*n+2);
+        BOOST_CHECK_EQUAL(elem->getUpUpIndex(), 2*n+3);
+    }
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()

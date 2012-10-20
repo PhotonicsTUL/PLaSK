@@ -140,22 +140,22 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         typedef IndexedIterator<const Elements, Element> const_iterator;
         typedef const_iterator iterator;
 
-        const RectangularMesh<2,Mesh1D>& mesh;
+        const RectangularMesh<2,Mesh1D>* mesh;
 
-        Elements(const RectangularMesh<2,Mesh1D>& mesh): mesh(mesh) {}
+        Elements(const RectangularMesh<2,Mesh1D>* mesh): mesh(mesh) {}
 
         /**
          * Get @p i-th element.
          * @param i element index
          * @return @p i-th element
          */
-        Element operator[](std::size_t i) const { return Element(mesh, i); }
+        Element operator[](std::size_t i) const { return Element(*mesh, i); }
 
         /**
          * Get number of elements.
          * @return number of elements
          */
-        std::size_t size() const { return mesh.getElementsCount(); }
+        std::size_t size() const { return mesh->getElementsCount(); }
 
         /// @return iterator referring to the first element
         const_iterator begin() const { return const_iterator(this, 0); }
@@ -173,6 +173,9 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     /// Second coordinate of points in this mesh.
     Mesh1D axis1;
+
+    /// Accessor to FEM-like elements.
+    const Elements elements;
 
     /**
      * Iteration orders:
@@ -206,19 +209,19 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /// Construct an empty mesh
-    RectangularMesh(IterationOrder iterationOrder = NORMAL_ORDER) {
+    RectangularMesh(IterationOrder iterationOrder = NORMAL_ORDER): elements(this) {
         axis0.owner = this; axis1.owner = this;
         setIterationOrder(iterationOrder);
     }
 
     /// Copy constructor
-    RectangularMesh(const RectangularMesh& src): axis0(src.axis0), axis1(src.axis1) {
+    RectangularMesh(const RectangularMesh& src): axis0(src.axis0), axis1(src.axis1), elements(this) {
         axis0.owner = this; axis1.owner = this;
         setIterationOrder(src.getIterationOrder());
     }
 
     /// Move constructor
-    RectangularMesh(RectangularMesh&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)) {
+    RectangularMesh(RectangularMesh&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), elements(this) {
         axis0.owner = this; axis1.owner = this;
         setIterationOrder(src.getIterationOrder());
     }
@@ -231,7 +234,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @param iterationOrder iteration order
      */
     RectangularMesh(Mesh1D mesh0, Mesh1D mesh1, IterationOrder iterationOrder = NORMAL_ORDER):
-        axis0(std::move(mesh0)), axis1(std::move(mesh1)) {
+        axis0(std::move(mesh0)), axis1(std::move(mesh1)), elements(this) {
         axis0.owner = this; axis1.owner = this;
         setIterationOrder(iterationOrder);
     }
@@ -244,8 +247,10 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @param iterationOrder iteration order
      */
     /*template <typename Mesh0CtorArg, typename Mesh1CtorArg>
-    RectangularMesh(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, IterationOrder iterationOrder = NORMAL_ORDER) :
-        axis0(std::forward<Mesh0CtorArg>(mesh0)), axis1(std::forward<Mesh1CtorArg>(mesh1)) { setIterationOrder(iterationOrder); }*/
+    RectangularMesh(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, IterationOrder iterationOrder = NORMAL_ORDER):
+        axis0(std::forward<Mesh0CtorArg>(mesh0)), axis1(std::forward<Mesh1CtorArg>(mesh1)) elements(this) {
+        axis0.owner = this; axis1.owner = this;
+        setIterationOrder(iterationOrder); }*/
 
     /**
      * Get first coordinate of points in this mesh.
@@ -509,12 +514,6 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
             point.c0, point.c1, axis0, axis1, axis0.findIndex(point.c0), axis1.findIndex(point.c1)
         );
     }
-
-    /**
-     * Get accessor to FEM-like elements.
-     * @return accessor to FEM-like elements, valid not longer than life of this mesh
-     */
-    Elements elements() const { return Elements(*this); }
 
     /**
      * Get number of elements (for FEM method) in the first direction.
