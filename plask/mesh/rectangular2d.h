@@ -546,7 +546,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return index of element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
-        return mesh_index_of_el_bottom_left - mesh_index_of_el_bottom_left / major_axis->size();
+        return mesh_index_of_el_bottom_left - mesh_index_of_el_bottom_left / minor_axis->size();
     }
 
     /**
@@ -555,7 +555,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return mesh index
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
-        return element_index + (element_index / (major_axis->size()-1));
+        return element_index + (element_index / (minor_axis->size()-1));
     }
 
     /**

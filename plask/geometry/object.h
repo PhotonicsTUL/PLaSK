@@ -919,8 +919,6 @@ struct GeometryObjectD: public GeometryObject {
 
     int getDimensionsCount() const { return dimensions; }
 
-    //virtual Box getBoundingBox() const;
-
     using GeometryObject::getPathsTo;
 
     /**
