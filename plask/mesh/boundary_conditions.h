@@ -8,89 +8,89 @@
 namespace plask {
 
 /// One boundary-condition pair.
-template <typename MeshT, typename ConditionT>
+template <typename MeshT, typename ValueT>
 struct BoundaryCondition {
     typedef MeshT MeshType;    ///< type of mesh
-    typedef ConditionT ConditionType;  ///< type which describe boundary condition
+    typedef ValueT ValueType;  ///< type which describe boundary condition
     typedef typename MeshType::Boundary Boundary;   ///< Boundary type for mesh of type MeshType
 
-    Boundary boundary;          ///< Boundary
-    ConditionType condition;    ///< Condition
+    Boundary place;          ///< Boundary
+    ValueType value;    ///< Condition
 
     /**
      * Construct boundary-condition pair.
-     * @param boundary boundary
-     * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     * @param place boundary
+     * @param value_args arguments for condition constructor, can be just one argument of ValueType to use copy/move-constructor
      */
     template <typename... ConditionArgumentsTypes>
-    BoundaryCondition(const Boundary& boundary, ConditionArgumentsTypes&&... conditionsArg)
-        : boundary(boundary),
-          condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
+    BoundaryCondition(const Boundary& place, ConditionArgumentsTypes&&... value_args)
+        : place(place),
+          value(std::forward<ConditionArgumentsTypes>(value_args)...) {}
 
     /**
      * Construct boundary-condition pair.
-     * @param boundary boundary
-     * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     * @param place boundary
+     * @param value_args arguments for condition constructor, can be just one argument of ValueType to use copy/move-constructor
      */
     template <typename... ConditionArgumentsTypes>
-    BoundaryCondition(Boundary&& boundary, ConditionArgumentsTypes&&... conditionsArg)
-        : boundary(std::forward<Boundary>(boundary)),
-          condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
+    BoundaryCondition(Boundary&& place, ConditionArgumentsTypes&&... value_args)
+        : place(std::forward<Boundary>(place)),
+          value(std::forward<ConditionArgumentsTypes>(value_args)...) {}
 };
 
 
 /// One boundary-condition pair with mesh.
-template <typename MeshT, typename ConditionT>
+template <typename MeshT, typename ValueT>
 struct BoundaryConditionWithMesh {
     typedef MeshT MeshType;    ///< type of mesh
-    typedef ConditionT ConditionType;  ///< type which describe boundary condition
+    typedef ValueT ValueType;  ///< type which describe boundary condition
     typedef typename MeshType::Boundary::WithMesh Boundary;   ///< Boundary type for mesh of type MeshType
 
-    Boundary boundary;          ///< Boundary with mesh
-    ConditionType condition;    ///< Condition
+    Boundary place;          ///< Boundary with mesh
+    ValueType value;    ///< Condition
 
     /**
      * Construct boundary-condition pair.
-     * @param boundary boundary
-     * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     * @param place boundary
+     * @param value_args arguments for condition constructor, can be just one argument of ValueType to use copy/move-constructor
      */
     template <typename... ConditionArgumentsTypes>
-    BoundaryConditionWithMesh(const Boundary& boundary, ConditionArgumentsTypes&&... conditionsArg)
-        : boundary(boundary),
-          condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
+    BoundaryConditionWithMesh(const Boundary& place, ConditionArgumentsTypes&&... value_args)
+        : place(place),
+          value(std::forward<ConditionArgumentsTypes>(value_args)...) {}
 
     /**
      * Construct boundary-condition pair.
-     * @param boundary boundary
-     * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     * @param place boundary
+     * @param value_args arguments for condition constructor, can be just one argument of ValueType to use copy/move-constructor
      */
     template <typename... ConditionArgumentsTypes>
-    BoundaryConditionWithMesh(Boundary&& boundary, ConditionArgumentsTypes&&... conditionsArg)
-        : boundary(std::forward<Boundary>(boundary)),
-          condition(std::forward<ConditionArgumentsTypes>(conditionsArg)...) {}
+    BoundaryConditionWithMesh(Boundary&& place, ConditionArgumentsTypes&&... value_args)
+        : place(std::forward<Boundary>(place)),
+          value(std::forward<ConditionArgumentsTypes>(value_args)...) {}
 };
 
-template <typename MeshT, typename ConditionT> struct BoundaryConditions;
+template <typename MeshT, typename ValueT> struct BoundaryConditions;
 
 /**
  * Set of boundary conditions instances for given mesh type and boundary condition description type.
  * @tparam MeshT type of mesh
- * @tparam ConditionT type which describe boundary condition
+ * @tparam ValueT type which describe boundary condition
  * @ref boundaries
  */
-template <typename MeshT, typename ConditionT>
+template <typename MeshT, typename ValueT>
 struct BoundaryConditionsWithMesh
 {
     typedef MeshT MeshType;    ///< type of mesh
-    typedef ConditionT ConditionType;  ///< type which describes boundary condition
+    typedef ValueT ValueType;  ///< type which describes boundary condition
 
     /// One boundary-condition pair.
-    typedef BoundaryConditionWithMesh<MeshType, ConditionType> Element;
+    typedef BoundaryConditionWithMesh<MeshType, ValueType> Element;
 
 private:
     typedef std::vector<Element> elements_container_t;
     elements_container_t container;
-    friend struct BoundaryConditions<MeshType,ConditionType>;
+    friend struct BoundaryConditions<MeshType,ValueType>;
 
 public:
     typedef typename elements_container_t::iterator iterator;
@@ -159,10 +159,16 @@ public:
      * @param mesh_index index in @p mesh
      * @return element which boundary includes @p mesh_index or @ref end() if there is no such element
      */
-    iterator find(std::size_t mesh_index) {
+    const_iterator find(std::size_t mesh_index) const {
         auto i = begin();
-        while (i != end() && !i->boundary.includes(mesh_index)) ++i;
+        while (i != end() && !i->place.includes(mesh_index)) ++i;
         return i;
+    }
+
+    boost::optional<ValueType> getValue(std::size_t mesh_index) const {
+        for (auto i: container)
+            if (i.place.includes(mesh_index)) return boost::optional<ValueType>(i.value);
+        return boost::optional<ValueType>();
     }
 };
 
@@ -170,18 +176,18 @@ public:
 /**
  * Set of boundary conditions for given mesh type and boundary condition description type.
  * @tparam MeshT type of mesh
- * @tparam ConditionT type which describe boundary condition
+ * @tparam ValueT type which describe boundary condition
  * @ref boundaries
  */
-template <typename MeshT, typename ConditionT>
+template <typename MeshT, typename ValueT>
 struct BoundaryConditions
 {
     typedef MeshT MeshType;    ///< type of mesh
-    typedef ConditionT ConditionType;  ///< type which describes boundary condition
+    typedef ValueT ValueType;  ///< type which describes boundary condition
     typedef typename MeshType::Boundary Boundary;   ///< Boundary type for a mesh of type MeshType
 
     /// One boundary-condition pair.
-    typedef BoundaryCondition<MeshType, ConditionType> Element;
+    typedef BoundaryCondition<MeshType, ValueType> Element;
 
 private:
     typedef std::list<Element> elements_container_t;    // std::list to not invalidate iterators on add/erase
@@ -280,13 +286,13 @@ public:
      * Add new boundary condition to this (to end of elements list).
      *
      * It doesn't invalidate any iterators. It has constant time complexity.
-     * @param boundary boundary
-     * @param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     * @param place boundary
+     * @param value_args arguments for condition constructor, can be just one argument of ValueType to use copy/move-constructor
      * @return iterator to added element which allow to change or erase added element in future
      */
     template <typename... ConditionArgumentsTypes>
-    iterator add(Boundary&& boundary, ConditionArgumentsTypes&&... conditionsArg) {
-        container.emplace_back(std::forward<Boundary>(boundary), std::forward<ConditionArgumentsTypes>(conditionsArg)...);
+    iterator add(Boundary&& place, ConditionArgumentsTypes&&... value_args) {
+        container.emplace_back(std::forward<Boundary>(place), std::forward<ConditionArgumentsTypes>(value_args)...);
         return lastIterator();
     }
 
@@ -309,14 +315,14 @@ public:
      *
      * It doesn't invalidate any iterators. It has constant time complexity.
      * \param index insert position
-     * \param boundary boundary
-     * \param conditionsArg arguments for condition constructor, can be just one argument of ConditionType to use copy/move-constructor
+     * \param place boundary
+     * \param value_args arguments for condition constructor, can be just one argument of ValueType to use copy/move-constructor
      * \return iterator to inserted element which allow to change or erase added element in future
      */
     template <typename... ConditionArgumentsTypes>
-    iterator insert(std::size_t index, Boundary&& boundary, ConditionArgumentsTypes&&... conditionsArg) {
+    iterator insert(std::size_t index, Boundary&& place, ConditionArgumentsTypes&&... value_args) {
         iterator i = getIteratorForIndex(index);
-        container.emplace(i, std::forward<Boundary>(boundary), std::forward<ConditionArgumentsTypes>(conditionsArg)...);
+        container.emplace(i, std::forward<Boundary>(place), std::forward<ConditionArgumentsTypes>(value_args)...);
         return lastIterator();
     }
 
@@ -381,37 +387,37 @@ public:
     }
 
     /**
-     * Get BoundaryConditionsWithMesh<MeshType,ConditionType>
+     * Get BoundaryConditionsWithMesh<MeshType,ValueType>
      * @param mesh mesh
      */
-    BoundaryConditionsWithMesh<MeshType,ConditionType> get(const MeshType& mesh) const {
-        BoundaryConditionsWithMesh<MeshType,ConditionType> impl;
+    BoundaryConditionsWithMesh<MeshType,ValueType> get(const MeshType& mesh) const {
+        BoundaryConditionsWithMesh<MeshType,ValueType> impl;
         impl.container.reserve(container.size());
-        for (auto& el: container) impl.container.push_back(BoundaryConditionWithMesh<MeshType,ConditionType>(el.boundary(mesh), el.condition));
+        for (auto& el: container) impl.container.push_back(BoundaryConditionWithMesh<MeshType,ValueType>(el.place(mesh), el.value));
         return impl;
     }
 
     /**
-     * Get BoundaryConditionsWithMesh<MeshType,ConditionType>
+     * Get BoundaryConditionsWithMesh<MeshType,ValueType>
      * @param mesh mesh
      */
-    BoundaryConditionsWithMesh<MeshType,ConditionType> get(const shared_ptr<const MeshType>& mesh) const {
+    BoundaryConditionsWithMesh<MeshType,ValueType> get(const shared_ptr<const MeshType>& mesh) const {
         return get(*mesh);
     }
 
     /**
-     * Get BoundaryConditionsWithMesh<MeshType,ConditionType>
+     * Get BoundaryConditionsWithMesh<MeshType,ValueType>
      * @param mesh mesh
      */
-    BoundaryConditionsWithMesh<MeshType,ConditionType> operator()(const MeshType& mesh) const {
+    BoundaryConditionsWithMesh<MeshType,ValueType> operator()(const MeshType& mesh) const {
         return get(mesh);
     }
 
     /**
-     * Get BoundaryConditionsWithMesh<MeshType,ConditionType>
+     * Get BoundaryConditionsWithMesh<MeshType,ValueType>
      * @param mesh mesh
      */
-    BoundaryConditionsWithMesh<MeshType,ConditionType> operator()(const shared_ptr<const MeshType>& mesh) const {
+    BoundaryConditionsWithMesh<MeshType,ValueType> operator()(const shared_ptr<const MeshType>& mesh) const {
         return get(*mesh);
     }
 

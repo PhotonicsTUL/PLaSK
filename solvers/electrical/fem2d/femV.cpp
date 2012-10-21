@@ -93,7 +93,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         std::size_t i = vec_it.getIndex();
         auto it = tVConst.find(i);
         if (it != tVConst.end())
-            tpN = new Node2D(tNo, x, y, it->condition, true);
+            tpN = new Node2D(tNo, x, y, it->value, true);
         else
             tpN = new Node2D(tNo, x, y, 0., false);
 

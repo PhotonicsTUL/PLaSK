@@ -183,12 +183,12 @@ protected:
 
 }} //namespaces
 
-template <> inline solvers::thermal::Convection parseCondition<solvers::thermal::Convection>(const XMLReader& tag_with_value)
+template <> inline solvers::thermal::Convection parseBoundaryValue<solvers::thermal::Convection>(const XMLReader& tag_with_value)
 {
     return solvers::thermal::Convection(tag_with_value.requireAttribute<double>("coefficient"), tag_with_value.requireAttribute<double>("Tamb"));
 }
 
-template <> inline solvers::thermal::Radiation parseCondition<solvers::thermal::Radiation>(const XMLReader& tag_with_value)
+template <> inline solvers::thermal::Radiation parseBoundaryValue<solvers::thermal::Radiation>(const XMLReader& tag_with_value)
 {
     return solvers::thermal::Radiation(tag_with_value.requireAttribute<double>("emissivity"), tag_with_value.requireAttribute<double>("Tamb"));
 }

@@ -371,15 +371,15 @@ private:
     /**
      * Read boundary conditions from current tag and move parser to end of current tag.
      *
-     * Use MeshT static methods to read boundaries, and @c parseCondition to parse values of conditions:
+     * Use MeshT static methods to read boundaries, and @c parseBoundaryValue to parse values of conditions:
      * @code
-     * template <typename ConditionT> ConditionT parseCondition(const XMLReader& tag_with_value);
+     * template <typename ConditionT> ConditionT parseBoundaryValue(const XMLReader& tag_with_value);
      * @endcode
      * (by default it just read value from "value" attribute)
      *
      * Require format (one or more tag as below):
      * @code
-     * \<condition [place="mesh type related place description"] [placename="name of this place"] [placeref="name of earlier stored place"] value attributes read by parseCondition>
+     * \<condition [place="mesh type related place description"] [placename="name of this place"] [placeref="name of earlier stored place"] value attributes read by parseBoundaryValue>
      *  [\<place [name="name of this place"] [mesh-type related]>
      *     ...mesh type related place description...
      *   \</place>]
@@ -389,7 +389,7 @@ private:
      * - place must be given exactly once (as attribute or tag), and only in case if placeref was not given;
      * - place name can be given only if placeref was not given;
      * - place name must be unique for all places in XML, and must be given before any placeref which refer to it;
-     * - condition value must be in format required by parseCondition for given type (in most cases it is just one attribute: value).
+     * - condition value must be in format required by parseBoundaryValue for given type (in most cases it is just one attribute: value).
      * @param reader source of XML data
      * @param geometry (optional) geometry used by solver which reads boundary conditions
      * @param dest place to append read conditions
@@ -479,7 +479,7 @@ inline shared_ptr<Geometry> Manager::getGeometry<Geometry>(const std::string& na
  * @tparam ConditionT type of condition to parse
  */
 template <typename ConditionT>
-inline ConditionT parseCondition(const XMLReader& tag_with_value) {
+inline ConditionT parseBoundaryValue(const XMLReader& tag_with_value) {
     return tag_with_value.requireAttribute<ConditionT>("value");
 }
 
@@ -491,7 +491,7 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
         boost::optional<std::string> place = reader.getAttribute("place");
         boost::optional<std::string> placename = reader.getAttribute("placename");
         //boost::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
-        ConditionT value = parseCondition<ConditionT>(reader);
+        ConditionT value = parseBoundaryValue<ConditionT>(reader);
         if (place) {
             boundary = parseBoundary<MeshT>(*place, parser_enviroment);
             if (boundary.isNull()) throw Exception("Can't parse boundary place from string \"%1%\".", *place);

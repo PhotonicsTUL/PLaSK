@@ -17,7 +17,7 @@ struct RegisterBoundaryConditions {
     struct BoundaryCondition_to_python
     {
         static PyObject* convert(ConditionT const& item) {
-            return py::incref(py::make_tuple(item.boundary, item.condition).ptr());
+            return py::incref(py::make_tuple(item.place, item.value).ptr());
         }
     };
 
@@ -70,9 +70,9 @@ struct RegisterBoundaryConditions {
                 .def("__setitem__", &__setitem__)
                 .def("__delitem__", &__delitem__)
                 .def("__len__", &BoundaryConditionsT::size)
-                .def("append", &append, "Append new boundary condition to the list", (py::arg("boundary"), "value"))
-                .def("prepend", &prepend, "Prepend new boundary condition to the list", (py::arg("boundary"), "value"))
-                .def("insert", &insert, "Insert new boundary condition to the list at specified position", (py::arg("index"), "boundary", "value"))
+                .def("append", &append, "Append new boundary condition to the list", (py::arg("place"), "value"))
+                .def("prepend", &prepend, "Prepend new boundary condition to the list", (py::arg("place"), "value"))
+                .def("insert", &insert, "Insert new boundary condition to the list at specified position", (py::arg("index"), "place", "value"))
                 .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions")
                 .def("__iter__", py::range<py::return_value_policy<py::return_by_value>>(
                     (typename BoundaryConditionsT::const_iterator(BoundaryConditionsT::*)()const)&BoundaryConditionsT::begin,

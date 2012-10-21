@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_simple) {
     conditions.add(plask::RectilinearMesh2D::getLeftBoundary(), 1.0);
     conditions.add(plask::RectilinearMesh2D::getRightBoundary(), 2.0);
     BOOST_CHECK_EQUAL(conditions.size(), 2);
-    BOOST_CHECK_EQUAL(conditions[0].condition, 1.0);
+    BOOST_CHECK_EQUAL(conditions[0].value, 1.0);
 
     plask::RectilinearMesh2D mesh;
     mesh.axis0.addPointsLinear(1.0, 3.0, 3);   // 1.0, 2.0, 3.0
@@ -54,8 +54,8 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {
     BOOST_CHECK_NO_THROW(reader.requireTag("cond"));
     manager.readBoundaryConditions(reader, conditions);
     BOOST_CHECK_EQUAL(conditions.size(), 2);
-    BOOST_CHECK_EQUAL(conditions[0].condition, 123.0);
-    BOOST_CHECK_EQUAL(conditions[1].condition, 234.0);
+    BOOST_CHECK_EQUAL(conditions[0].value, 123.0);
+    BOOST_CHECK_EQUAL(conditions[1].value, 234.0);
 }
 
 

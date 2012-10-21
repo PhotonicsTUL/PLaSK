@@ -92,7 +92,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         // checking boundary condition - constant temperature
         auto it1 = tTConst.find(i);
         if (it1 != tTConst.end()) {
-            tpN = new Node2D(tNo, x, y, it1->condition, true);
+            tpN = new Node2D(tNo, x, y, it1->value, true);
         } else
             tpN = new Node2D(tNo, x, y, mTInit, false);
 
@@ -100,7 +100,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         auto it2 = tHFConst.find(i);
         if (it2 != tHFConst.end())
         {
-            tpN->setHF(it2->condition);
+            tpN->setHF(it2->value);
             tpN->setHFflag(true);
         }
         else
@@ -110,7 +110,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         auto it3 = tConvection.find(i);
         if (it3 != tConvection.end())
         {
-            tpN->setConv(it3->condition.mConvCoeff, it3->condition.mTAmb1);
+            tpN->setConv(it3->value.mConvCoeff, it3->value.mTAmb1);
             tpN->setConvflag(true);
         }
         else
@@ -120,7 +120,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
         auto it4 = tRadiation.find(i);
         if (it4 != tRadiation.end())
         {
-            tpN->setRad(it4->condition.mSurfEmiss, it4->condition.mTAmb2);
+            tpN->setRad(it4->value.mSurfEmiss, it4->value.mTAmb2);
             tpN->setRadflag(true);
         }
         else
