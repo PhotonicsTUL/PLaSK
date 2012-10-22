@@ -37,7 +37,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
                     <mode polarization="TM"/>
                     <root tolx="0.1"/>
                 </optical>
-                <optical lib="effective" solver="EffectiveIndex2D" name="eff2">
+                <optical solver="EffectiveIndex2D" name="eff2">
                     <geometry ref="Space-1"/>
                     <mesh ref="div"/>
                 </optical>

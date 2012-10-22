@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "manager.h"
 
 #include "utils/stl.h"
@@ -181,9 +183,27 @@ void Manager::loadSolvers(XMLReader& reader) {
     while (reader.requireTagOrEnd()) {
         const std::string name = reader.requireAttribute("name");
         BadId::throwIfBad("solver", name);
-        const boost::optional<std::string> lib = reader.getAttribute("lib");
+        boost::optional<std::string> lib = reader.getAttribute("lib");
         const std::string solver_name = reader.requireAttribute("solver");
-        shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), lib ? *lib : solver_name, solver_name, name);
+        if (!lib) {
+            auto libs = global_solver_names[reader.getNodeName()];
+            if (libs.empty()) { // read lib index from file
+                std::string file_name = plaskSolversPath(reader.getNodeName()) + "solvers.lst";
+                try {
+                    std::ifstream list_file(file_name);
+                    if (list_file.is_open())
+                        while (!list_file.eof()) {
+                            std::string line, lib, cls;
+                            list_file >> line;
+                            std::tie(lib, cls) = splitString2(line, '.');
+                            if (cls == "") writelog(LOG_ERROR, "Wrong format of '%1%' file", file_name);
+                            else libs[cls] = lib;
+                        }
+                } catch (...) {}
+            }
+            lib.reset(libs[solver_name]);
+        }
+        shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), *lib, solver_name, name);
         solver->loadConfiguration(reader, *this);
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
             throw NamesConflictException("Solver", name);

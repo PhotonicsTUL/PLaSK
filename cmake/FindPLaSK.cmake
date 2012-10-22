@@ -17,8 +17,8 @@ set(SOLVER_LIBRARY solver-${SOLVER_LIBRARY})
 get_filename_component(SOLVER_NAME ${SOLVER_DIR} NAME)
 
 # Construct solver library name (category_solvername)
-get_filename_component(SOLVER_LIB_NAME ${SOLVER_DIR} PATH)
-set(SOLVER_LIB_NAME "${SOLVER_LIB_NAME}_${SOLVER_NAME}")
+get_filename_component(SOLVER_CATEGORY_NAME ${SOLVER_DIR} PATH)
+set(SOLVER_LIB_NAME "${SOLVER_CATEGORY_NAME}_${SOLVER_NAME}")
 
 # Obtain intermediate path list and to create necessary __init__.py files to mark packages
 get_filename_component(SOLVER_PATH ${SOLVER_DIR} PATH)
@@ -68,6 +68,14 @@ macro(make_default)
         install(TARGETS ${SOLVER_LIBRARY} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
     endif()
 
+    # Handle list of global classes
+    set(CLASSES_FILE_SOURCE "${CMAKE_SOURCE_DIR}/solvers/${SOLVER_CATEGORY_NAME}/solvers.lst")
+    set(CLASSES_FILE "${PLASK_PATH}/solvers/${SOLVER_CATEGORY_NAME}/solvers.lst")
+    if(EXISTS "${CLASSES_FILE_SOURCE}" AND NOT EXISTS "${CLASSES_FILE}")
+            file(INSTALL "${CLASSES_FILE_SOURCE}" DESTINATION "${PLASK_PATH}/solvers/${SOLVER_CATEGORY_NAME}")
+            install(FILES "${CLASSES_FILE}" DESTINATION "lib/plask/solvers/${SOLVER_CATEGORY_NAME}" COMPONENT solvers)
+    endif()
+
     if(BUILD_PYTHON)
         set(SOLVER_PYTHON_MODULE ${SOLVER_LIBRARY}-python)
         # Make package hierarchy
@@ -80,6 +88,19 @@ macro(make_default)
             file(WRITE "${curr_path}/__init__.py" "")
             install(FILES "${curr_path}/__init__.py"  DESTINATION ${install_path} COMPONENT solvers)
         endforeach()
+        # Create helpers for importing solvers
+        if(EXISTS "${CLASSES_FILE}")
+            file(APPEND "${curr_path}/__init__.py" "# Automatically generated. All your changes will be lost!\n# Edit 'classes.lst' instead.\n")
+            file(STRINGS "${CLASSES_FILE}" CLASSES_LST)
+            foreach(libclass ${CLASSES_LST})
+                string(REPLACE "." ";" libclass ${libclass})
+                list(GET libclass 0 lib)
+                list(GET libclass 1 class)
+                if(${lib} STREQUAL ${SOLVER_NAME})
+                    file(APPEND "${curr_path}/__init__.py" "\ndef ${class}(*args, **kwargs):\n    '''Create ${class} solver'''\n    import ${SOLVER_CATEGORY_NAME}.${lib}\n    return ${SOLVER_CATEGORY_NAME}.${lib}.${class}(*args, **kwargs)\n")
+                endif()
+            endforeach()
+        endif()
         # Build Python interface
         if(WIN32)
             add_library(${SOLVER_PYTHON_MODULE} SHARED ${interface_src})

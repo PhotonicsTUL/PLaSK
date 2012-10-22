@@ -79,6 +79,9 @@ struct Manager {
 
 private:
 
+    /// Map holding information about global solvers names stored in \p solvers.lst
+    std::map<std::string, std::map<std::string, std::string>> global_solver_names;
+
     /// @return @c true
     static bool acceptAllSections(const std::string&) { return true; }
 
