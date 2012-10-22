@@ -22,10 +22,10 @@ BOOST_PYTHON_MODULE(fem2d)
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
         PROVIDER(outHeatFlux, "HeatFluxes"); // provider in the solver
-        BOUNDARY_CONDITIONS(Tconst, mTConst, "Boundary conditions for the constant temperature");
-        BOUNDARY_CONDITIONS(HFconst, mHFConst, "Boundary conditions for the constant heat flux");
-        BOUNDARY_CONDITIONS(convection, mConvection, "Convective boundary conditions");
-        BOUNDARY_CONDITIONS(radiation, mRadiation, "Radiative boundary conditions");
+        solver.add_boundary_conditions("Tconst", &__Class__::mTConst, "Boundary conditions for the constant temperature");
+        solver.add_boundary_conditions("HFconst", &__Class__::mHFConst, "Boundary conditions for the constant heat flux");
+        solver.add_boundary_conditions("convection", &__Class__::mConvection, "Convective boundary conditions");
+        solver.add_boundary_conditions("radiation", &__Class__::mRadiation, "Radiative boundary conditions");
         RW_PROPERTY(loopLim, getLoopLim, setLoopLim, "Max. number of loops"); // read-write property
         RW_PROPERTY(TCorrLim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         RW_PROPERTY(TBigCorr, getTBigCorr, setTBigCorr, "Initial value of the temperature update"); // read-write property
@@ -51,10 +51,10 @@ BOOST_PYTHON_MODULE(fem2d)
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
         PROVIDER(outHeatFlux, "HeatFluxes"); // provider in the solver
-        BOUNDARY_CONDITIONS(Tconst, mTConst, "Boundary conditions of the first kind (constant temperature)");
-        BOUNDARY_CONDITIONS(HFconst, mHFConst, "Boundary conditions for the constant heat flux");
-        BOUNDARY_CONDITIONS(convection, mConvection, "Convective boundary conditions");
-        BOUNDARY_CONDITIONS(radiation, mRadiation, "Radiative boundary conditions");
+        solver.add_boundary_conditions("Tconst", &__Class__::mTConst, "Boundary conditions for the constant temperature");
+        solver.add_boundary_conditions("HFconst", &__Class__::mHFConst, "Boundary conditions for the constant heat flux");
+        solver.add_boundary_conditions("convection", &__Class__::mConvection, "Convective boundary conditions");
+        solver.add_boundary_conditions("radiation", &__Class__::mRadiation, "Radiative boundary conditions");
         RW_PROPERTY(loopLim, getLoopLim, setLoopLim, "Max. number of loops"); // read-write property
         RW_PROPERTY(TCorrLim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         RW_PROPERTY(TBigCorr, getTBigCorr, setTBigCorr, "Initial value of the temperature update"); // read-write property

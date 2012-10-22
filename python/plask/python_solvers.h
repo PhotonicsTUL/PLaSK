@@ -144,7 +144,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 #define RW_FIELD(name, help) solver.def_readwrite(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 #define PROVIDER(name, help) solver.add_provider(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 #define RECEIVER(name, help) solver.add_receiver(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
-#define BOUNDARY_CONDITIONS(name, field, help) solver.add_boundary_conditions(BOOST_PP_STRINGIZE(name), &__Class__::field, help)
+#define BOUNDARY_CONDITIONS(name, help) solver.add_boundary_conditions(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 
 
 using py::arg; // for more convenient specification of default arguments

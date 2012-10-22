@@ -1,7 +1,8 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 2.8)
-cmake_policy(SET CMP0017 OLD)
+cmake_policy(SET CMP0017 OLD)	# ensure our CMake modules are loaded first
+
 project(plask)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)

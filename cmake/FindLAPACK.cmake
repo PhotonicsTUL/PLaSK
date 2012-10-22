@@ -226,8 +226,8 @@ if (BLA_VENDOR STREQUAL "MKL" OR BLA_VENDOR STREQUAL "All")
     LAPACK
     cheev
     ""
+    "mkl_rt"
     ""
-    "${BLAS_LIBRARIES}"
     ""
     )
   endif ( NOT LAPACK_LIBRARIES )
