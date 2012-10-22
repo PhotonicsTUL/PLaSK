@@ -426,6 +426,37 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
     shared_ptr<RectangularMesh> getMidpointsMesh();
+    
+    /**
+     * Get number of elements (for FEM method).
+     * @return number of elements in this mesh
+     */
+    std::size_t getElementsCount() const {
+        return std::max((int(axis0.size())-1) * (int(axis1.size())-1) * (int(axis2.size())-1), 0);
+    }
+    
+    /**
+     * Conver element index to mesh index of bottom, left, front element corner.
+     * @param element_index index of element, from 0 to getElementsCount()-1
+     * @return mesh index
+     */
+    std::size_t getElementMeshLowIndex(std::size_t element_index) const {
+        const std::size_t minor_size_minus_1 = minor_axis->size()-1;
+        const std::size_t elements_per_level = minor_size_minus_1 * (middle_axis->size()-1);
+        return element_index + (element_index / elements_per_level) * (middle_axis->size() + minor_size_minus_1)
+                            + (element_index % elements_per_level) / minor_size_minus_1;
+    }
+    
+    /**
+     * Conver mesh index of bottom, left, front element corner to this element index.
+     * @param mesh_index_of_el_bottom_left mesh index
+     * @return index of element, from 0 to getElementsCount()-1
+     */
+    std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
+        const std::size_t verticles_per_level = minor_axis->size() * middle_axis->size();
+        return mesh_index_of_el_bottom_left - (mesh_index_of_el_bottom_left / verticles_per_level) * (middle_axis->size() + minor_axis->size() - 1)
+                - (mesh_index_of_el_bottom_left % verticles_per_level) / minor_axis->size();
+    }
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
