@@ -46,6 +46,11 @@ struct Box2D {
      */
     Box2D(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
 
+    /**
+     * Construct box.
+     * @param x_lo, y_lo lower corner of box (with minimal all coordinates)
+     * @param x_up, y_up upper corner of box (with maximal all coordinates)
+     */
     Box2D(double x_lo, double y_lo, double x_up, double y_up): lower(x_lo, y_lo), upper(x_up, y_up) {}
 
     static Box2D invalidInstance() {
@@ -209,6 +214,13 @@ struct Box3D {
      * @param upper position of upper corner of cuboid (with maximal all coordinates)
      */
     Box3D(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
+    
+    /**
+     * Construct box.
+     * @param x_lo, y_lo, z_lo lower corner of box (with minimal all coordinates)
+     * @param x_up, y_up, z_up upper corner of box (with maximal all coordinates)
+     */
+    Box3D(double x_lo, double y_lo, double z_lo, double x_up, double y_up, double z_up): lower(x_lo, y_lo, z_lo), upper(x_up, y_up, z_up) {}
 
     static Box3D invalidInstance() {
         Box3D r; r.makeInvalid(); return r;

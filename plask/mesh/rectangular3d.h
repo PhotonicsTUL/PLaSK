@@ -46,6 +46,128 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     }
 
   public:
+    
+    /**
+     * Represent FEM-like element in RectangularMesh.
+     */
+    class Element {
+        const RectangularMesh<3,Mesh1D>& mesh;
+        std::size_t index0, index1, index2; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
+
+        public:
+
+        /**
+         * Construct element using mesh and element indexes.
+         * @param mesh mesh, this element is valid up to time of this mesh life
+         * @param index0, index1, index2 axis 0, 1 and 2 indexes of element (equal to low corrner mesh indexes of element)
+         */
+        Element(const RectangularMesh<3,Mesh1D>& mesh, std::size_t index0, std::size_t index1, std::size_t index2): mesh(mesh), index0(index0), index1(index1), index2(index2) {}
+
+        /**
+         * Construct element using mesh and element index.
+         * @param mesh mesh, this element is valid up to time of this mesh life
+         * @param elementIndex index of element
+         */
+        Element(const RectangularMesh<3,Mesh1D>& mesh, std::size_t elementIndex): mesh(mesh) {
+            std::size_t v = mesh.getElementMeshLowIndex(elementIndex);
+            index0 = mesh.index0(v);
+            index1 = mesh.index1(v);
+            index2 = mesh.index2(v);
+        }
+
+        typedef typename Mesh1D::PointType PointType;
+
+        inline std::size_t getLowerIndex0() const { return index0; }
+
+        inline std::size_t getLowerIndex1() const { return index1; }
+        
+        inline std::size_t getLowerIndex2() const { return index2; }
+
+        inline PointType getLower0() const { return mesh.axis0[index0]; }
+
+        inline PointType getLower1() const { return mesh.axis1[index1]; }
+        
+        inline PointType getLower2() const { return mesh.axis2[index2]; }
+
+        inline std::size_t getUpperIndex0() const { return index0+1; }
+
+        inline std::size_t getUpperIndex1() const { return index1+1; }
+        
+        inline std::size_t getUpperIndex2() const { return index2+1; }
+
+        inline PointType getUpper0() const { return mesh.axis0[getUpperIndex0()]; }
+
+        inline PointType getUpper1() const { return mesh.axis1[getUpperIndex1()]; }
+        
+        inline PointType getUpper2() const { return mesh.axis2[getUpperIndex2()]; }
+
+        inline PointType getSize0() const { return getUpper0() - getLower0(); }
+
+        inline PointType getSize1() const { return getUpper1() - getLower1(); }
+        
+        inline PointType getSize2() const { return getUpper2() - getLower2(); }
+
+        inline Vec<3, PointType> getSize() const { return getUpUpUp() - getLoLoLo(); }
+
+        inline Vec<3, PointType> getMidpoint() const { return mesh.getElementMidpoint(index0, index1, index2); }
+
+        /// @return this element index
+        inline std::size_t getIndex() const { return mesh.getElementIndexFromLowIndex(getLoLoLoIndex()); }
+
+        inline Box3D toBox() const { return mesh.getElementBox(index0, index1, index2); }
+
+        inline std::size_t getLoLoLoIndex() const { return mesh.index(getLowerIndex0(), getLowerIndex1(), getLowerIndex2()); }
+
+        //inline std::size_t getLoUpIndex() const { return mesh.index(getLowerIndex0(), getUpperIndex1()); }
+
+        //inline std::size_t getUpLoIndex() const { return mesh.index(getUpperIndex0(), getLowerIndex1()); }
+
+        inline std::size_t getUpUpUpIndex() const { return mesh.index(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
+
+        inline Vec<3, PointType> getLoLoLo() const { return mesh(getLowerIndex0(), getLowerIndex1(), getLowerIndex2()); }
+
+        //inline Vec<2, PointType> getLoUp() const { return mesh(getLowerIndex0(), getUpperIndex1()); }
+
+        //inline Vec<2, PointType> getUpLo() const { return mesh(getUpperIndex0(), getLowerIndex1()); }
+
+        inline Vec<3, PointType> getUpUpUp() const { return mesh(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
+
+    };
+    
+    /**
+     * Wrapper to RectangularMesh which allow to access to FEM-like elements.
+     *
+     * It works like read-only, random access container of @ref Element objects.
+     */
+    struct Elements {
+
+        typedef IndexedIterator<const Elements, Element> const_iterator;
+        typedef const_iterator iterator;
+
+        const RectangularMesh<3,Mesh1D>* mesh;
+
+        Elements(const RectangularMesh<3,Mesh1D>* mesh): mesh(mesh) {}
+
+        /**
+         * Get @p i-th element.
+         * @param i element index
+         * @return @p i-th element
+         */
+        Element operator[](std::size_t i) const { return Element(*mesh, i); }
+
+        /**
+         * Get number of elements.
+         * @return number of elements
+         */
+        std::size_t size() const { return mesh->getElementsCount(); }
+
+        /// @return iterator referring to the first element
+        const_iterator begin() const { return const_iterator(this, 0); }
+
+        /// @return iterator referring to the past-the-end element
+        const_iterator end() const { return const_iterator(this, size()); }
+
+    };
 
     /// Boundary type.
     typedef ::plask::Boundary<RectangularMesh<3,Mesh1D>> Boundary;
@@ -58,6 +180,9 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
     /// Third coordinate of points in this mesh.
     Mesh1D axis2;
+    
+    /// Accessor to FEM-like elements.
+    const Elements elements;
 
     /**
      * Iteration orders:
@@ -69,19 +194,19 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     enum IterationOrder { ORDER_012, ORDER_021, ORDER_102, ORDER_120, ORDER_201, ORDER_210 };
 
     /// Construct an empty mesh
-    RectangularMesh(IterationOrder iterationOrder=ORDER_210) {
+    RectangularMesh(IterationOrder iterationOrder=ORDER_210): elements(this) {
         axis0.owner = this; axis1.owner = this; axis2.owner = this;
         setIterationOrder(iterationOrder);
     }
 
     /// Copy constructor
-    RectangularMesh(const RectangularMesh& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2) {
+    RectangularMesh(const RectangularMesh& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {
         axis0.owner = this; axis1.owner = this; axis2.owner = this;
         setIterationOrder(src.getIterationOrder());
     }
 
     /// Move constructor
-    RectangularMesh(RectangularMesh&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), axis2(std::move(src.axis2)) {
+    RectangularMesh(RectangularMesh&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), axis2(std::move(src.axis2)), elements(this) {
         axis0.owner = this; axis1.owner = this; axis2.owner = this;
         setIterationOrder(src.getIterationOrder());
     }
@@ -116,7 +241,9 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     RectangularMesh(Mesh1D mesh0, Mesh1D mesh1, Mesh1D mesh2, IterationOrder iterationOrder = ORDER_210) :
         axis0(std::move(mesh0)),
         axis1(std::move(mesh1)),
-        axis2(std::move(mesh2)) {
+        axis2(std::move(mesh2)),
+        elements(this)
+    {
         axis0.owner = this; axis1.owner = this; axis2.owner = this;
         setIterationOrder(iterationOrder);
     }
@@ -428,6 +555,30 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     shared_ptr<RectangularMesh> getMidpointsMesh();
     
     /**
+     * Get number of elements (for FEM method) in the first direction.
+     * @return number of elements in this mesh in the first direction (axis0 direction).
+     */
+    std::size_t getElementsCount0() const {
+        return std::max(int(axis0.size())-1, 0);
+    }
+
+    /**
+     * Get number of elements (for FEM method) in the second direction.
+     * @return number of elements in this mesh in the second direction (axis1 direction).
+     */
+    std::size_t getElementsCount1() const {
+        return std::max(int(axis1.size())-1, 0);
+    }
+    
+    /**
+     * Get number of elements (for FEM method) in the third direction.
+     * @return number of elements in this mesh in the third direction (axis2 direction).
+     */
+    std::size_t getElementsCount2() const {
+        return std::max(int(axis2.size())-1, 0);
+    }
+    
+    /**
      * Get number of elements (for FEM method).
      * @return number of elements in this mesh
      */
@@ -456,6 +607,95 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         const std::size_t verticles_per_level = minor_axis->size() * middle_axis->size();
         return mesh_index_of_el_bottom_left - (mesh_index_of_el_bottom_left / verticles_per_level) * (middle_axis->size() + minor_axis->size() - 1)
                 - (mesh_index_of_el_bottom_left % verticles_per_level) / minor_axis->size();
+    }
+    
+    /**
+     * Convert element index to mesh indexes of bottom left element corner.
+     * @param element_index index of element, from 0 to getElementsCount()-1
+     * @return axis 0, axis 1 and axis 2 indexes of mesh,
+     * you can easy calculate rest indexes of element corner adding 1 to returned coordinates
+     */
+    Vec<3, std::size_t> getElementMeshLowIndexes(std::size_t element_index) const {
+        std::size_t bl_index = getElementMeshLowIndex(element_index);
+        return Vec<3, std::size_t>(index0(bl_index), index1(bl_index), index2(bl_index));
+    }
+    
+    /**
+     * Get area of given element.
+     * @param index0, index1, index2 axis 0, 1 and 2 indexes of element
+     * @return area of elements with given index
+     */
+    double getElementArea(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return (axis0[index0+1] - axis0[index0]) * (axis1[index1+1] - axis1[index1]) * (axis2[index2+1] - axis2[index2]);
+    }
+    
+    /**
+     * Get area of given element.
+     * @param element_index index of element
+     * @return area of elements with given index
+     */
+    double getElementArea(std::size_t element_index) const {
+        std::size_t bl_index = getElementMeshLowIndex(element_index);
+        return getElementArea(index0(bl_index), index1(bl_index), index2(bl_index));
+    }
+    
+    /**
+     * Get first coordinate of point in center of Elements.
+     * @param index0 index of Elements (axis0 index)
+     * @return first coordinate of point point in center of Elements with given index
+     */
+    double getElementMidpoint0(std::size_t index0) const { return 0.5 * (axis0[index0] + axis0[index0+1]); }
+
+    /**
+     * Get second coordinate of point in center of Elements.
+     * @param index1 index of Elements (axis1 index)
+     * @return second coordinate of point point in center of Elements with given index
+     */
+    double getElementMidpoint1(std::size_t index1) const { return 0.5 * (axis1[index1] + axis1[index1+1]); }
+    
+    /**
+     * Get second coordinate of point in center of Elements.
+     * @param index1 index of Elements (axis1 index)
+     * @return second coordinate of point point in center of Elements with given index
+     */
+    double getElementMidpoint2(std::size_t index2) const { return 0.5 * (axis2[index2] + axis2[index2+1]); }
+    
+    /**
+     * Get point in center of Elements.
+     * @param index0, index1, index2 index of Elements
+     * @return point in center of element with given index
+     */
+    Vec<3, double> getElementMidpoint(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return vec(getElementMidpoint0(index0), getElementMidpoint1(index1), getElementMidpoint2(index2));
+    }
+
+    /**
+     * Get point in center of Elements.
+     * @param element_index index of Elements
+     * @return point in center of element with given index
+     */
+    Vec<3, double> getElementMidpoint(std::size_t element_index) const {
+        std::size_t bl_index = getElementMeshLowIndex(element_index);
+        return getElementMidpoint(index0(bl_index), index1(bl_index), index2(bl_index));
+    }
+    
+    /**
+     * Get element as rectangle.
+     * @param index0, index1, index2 index of Elements
+     * @return box of elements with given index
+     */
+    Box3D getElementBox(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return Box3D(axis0[index0], axis1[index1], axis2[index2], axis0[index0+1], axis1[index1+1], axis2[index2+1]);
+    }
+
+    /**
+     * Get element as rectangle.
+     * @param element_index index of element
+     * @return box of elements with given index
+     */
+    Box3D getElementBox(std::size_t element_index) const {
+        std::size_t bl_index = getElementMeshLowIndex(element_index);
+        return getElementBox(index0(bl_index), index1(bl_index), index2(bl_index));
     }
 
     /**

@@ -175,7 +175,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     Mesh1D axis1;
 
     /// Accessor to FEM-like elements.
-    const Elements elements;
+    const Elements elements;    //TODO what about copy/move constructors/operators
 
     /**
      * Iteration orders:
@@ -621,18 +621,18 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /**
-     * Get Elements (as rectangle).
+     * Get element as rectangle.
      * @param index0, index1 index of Elements
-     * @return Elements with given index
+     * @return box of elements with given index
      */
     Box2D getElementBox(std::size_t index0, std::size_t index1) const {
         return Box2D(axis0[index0], axis1[index1], axis0[index0+1], axis1[index1+1]);
     }
 
     /**
-     * Get point in center of elements.
+     * Get element as rectangle.
      * @param element_index index of element
-     * @return point in center of element with given index
+     * @return box of elements with given index
      */
     Box2D getElementBox(std::size_t element_index) const {
         std::size_t bl_index = getElementMeshLowIndex(element_index);
