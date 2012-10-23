@@ -25,7 +25,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.solver.geometry = space
 
     def testBasic(self):
-        self.assertEqual( self.solver.id, "test_eim:EffectiveIndex2D" )
+        self.assertEqual( self.solver.id, "test_eim:optical.EffectiveIndex2D" )
 
     def testExceptions(self):
         with self.assertRaisesRegexp(TypeError, r"^No wavelength set nor its provider connected$"):

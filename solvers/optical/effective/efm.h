@@ -75,7 +75,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     EffectiveFrequencyCylSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "EffectiveFrequencyCyl"; }
+    virtual std::string getClassName() const { return "optical.EffectiveFrequencyCyl"; }
 
     virtual std::string getClassDescription() const {
         return "Calculate optical modes and optical field distribution using the effective index method "

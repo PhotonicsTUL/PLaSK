@@ -76,7 +76,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     EffectiveIndex2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const { return "EffectiveIndex2D"; }
+    virtual std::string getClassName() const { return "optical.EffectiveIndex2D"; }
 
     virtual std::string getClassDescription() const {
         return "Calculate optical modes and optical field distribution using the effective index method "
