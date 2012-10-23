@@ -216,10 +216,10 @@ void EffectiveFrequencyCylSolver::stageOne()
 
                 auto material = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)));
 
-                // Nr = nr + i/(4π) λ g
-                // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - i/(4π) λ^2 dg/dλ
-                nrCache[ix][iy] = material->Nr(lam, T);
-                ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
+                // nR = nr + i/(4π) λ g
+                // Ng = nR - λ dN/dλ = nR - λ dn/dλ - i/(4π) λ^2 dg/dλ
+                nrCache[ix][iy] = material->nR(lam, T);
+                ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->nR(lam2, T) - material->nR(lam1, T)) * ih2;
                 double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh->index(ix, iy-1)];
                 double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain_slope[midmesh->index(ix, iy-1)];
                 ngCache[ix][iy] -= dcomplex(0., (isnan(gs))? 0. : 7.95774715459e-09 * lam*lam * gs);

@@ -214,15 +214,15 @@ class PythonMaterial : public Material
     virtual DDPair thermCond(double T) const { return override<DDPair>("thermCond", (DDPair (Material::*)(double) const) &Material::thermCond, T); }
     virtual DDPair thermCond(double T, double t) const { return override<DDPair>("thermCond", (DDPair (Material::*)(double, double) const) &Material::thermCond, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
-    virtual double specHeat(double T) const { return override<double>("specHeat", &Material::specHeat, T); }
+    virtual double cp(double T) const { return override<double>("cp", &Material::cp, T); }
     virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
     virtual double absp(double wl, double T) const { return override<double>("absp", &Material::absp, wl, T); }
-    virtual dcomplex Nr(double wl, double T) const {
-        if (overriden("Nr")) return py::call_method<dcomplex>(self, "Nr", wl, T);
+    virtual dcomplex nR(double wl, double T) const {
+        if (overriden("nR")) return py::call_method<dcomplex>(self, "nR", wl, T);
         return dcomplex(override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
     }
-    virtual NrTensorT Nr_tensor(double wl, double T) const {
-        if (overriden("Nr_tensor")) return py::call_method<NrTensorT>(self, "Nr_tensor", wl, T);
+    virtual NrTensorT nR_tensor(double wl, double T) const {
+        if (overriden("nR_tensor")) return py::call_method<NrTensorT>(self, "nR_tensor", wl, T);
         dcomplex n (override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
         return NrTensorT(n, n, n, 0., 0.);
     }
@@ -584,14 +584,14 @@ void initMaterials() {
         .def("B", &Material::B, (py::arg("T")=300.), "Get radiative recombination coefficient B [m**3/s]")
         .def("C", &Material::C, (py::arg("T")=300.), "Get Auger recombination coefficient C [m**6/s]")
         .def("D", &Material::D, (py::arg("T")=300.), "Get ambipolar diffusion coefficient D [m**2/s]")
-        .def("thermCond", (DDPair (Material::*)(double) const)&Material::thermCond, (py::arg("T")=300.), "Get thermal conductivity [W/(m*K)]")
+        .def("therm_cond", (DDPair (Material::*)(double) const)&Material::thermCond, (py::arg("T")=300.), "Get thermal conductivity [W/(m*K)]")
         .def("thermCond", (DDPair (Material::*)(double, double) const)&Material::thermCond, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity [W/(m*K)]")
         .def("dens", &Material::dens, (py::arg("T")=300.), "Get density [kg/m**3]")
-        .def("specHeat", &Material::specHeat, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
+        .def("cp", &Material::cp, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
         .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nr")
         .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.), "Get absorption coefficient alpha")
-        .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index nR")
-        .def("Nr_tensor", &Material::Nr_tensor, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index tensor nR")
+        .def("nR", &Material::nR, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index nR")
+        .def("nR_tensor", &Material::nR_tensor, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index tensor nR")
     ;
 
     Material_from_Python_string();

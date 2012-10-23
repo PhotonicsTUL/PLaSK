@@ -40,7 +40,7 @@ class Material(unittest.TestCase):
             return self.kwargs['dc'] * T
         def CBO(self, T=300.):
             return self.composition['Ga'] * T
-        def Nr_tensor(self, wl, T):
+        def nR_tensor(self, wl, T):
             return (3.5, 3.6, 3.7, 0.1, 0.2)
 
     @plask.material.simple
@@ -69,7 +69,7 @@ class Material(unittest.TestCase):
         self.assertEqual(m.name, "AlGaAs")
         self.assertEqual( m.VBO(1.0), 2.0 )
         self.assertEqual( m.nr(980., 300.), 3.5 )
-        self.assertEqual( m.Nr_tensor(980., 300.), (3.5, 3.5, 3.5, 0., 0.) )
+        self.assertEqual( m.nR_tensor(980., 300.), (3.5, 3.5, 3.5, 0., 0.) )
         del m
 
         self.assertEqual( ptest.materialName("Al(0.2)GaAs", plask.materialdb), "AlGaAs" )

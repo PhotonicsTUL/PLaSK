@@ -231,8 +231,8 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     double getMirrorLosses(const dcomplex& neff) {
         const double lambda = inWavelength();
         const double n = real(neff); // TODO is this really correct?
-        const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
-                     n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
+        const double n1 = real(geometry->getFrontMaterial()->nR(lambda, 300.)),
+                     n2 = real(geometry->getBackMaterial()->nR(lambda, 300.));
         const double R1 = abs((n-n1) / (n+n1)),
                      R2 = abs((n-n2) / (n+n2));
         return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->length);

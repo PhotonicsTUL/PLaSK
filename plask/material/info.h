@@ -53,10 +53,10 @@ struct MaterialInfo {
         D,          ///< ambipolar diffusion coefficient
         thermCond,  ///< thermal conductivity
         dens,       ///< density
-        specHeat,   ///< specific heat at constant pressure
+        cp,   ///< specific heat at constant pressure
         nr,         ///< refractive index
         absp,       ///< absorption coefficient alpha
-        Nr          ///< refractive index
+        nR          ///< refractive index
     };
 
     ///Names of arguments for which range we need give

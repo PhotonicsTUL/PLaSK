@@ -503,7 +503,7 @@ struct Material {
      * @param T temperature [K]
      * @return specific heat at constant pressure [J/(kg*K)]
      */
-    virtual double specHeat(double T) const;
+    virtual double cp(double T) const;
 
     /**
      * Get refractive index nR [-].
@@ -527,7 +527,7 @@ struct Material {
      * @param T temperature [K]
      * @return refractive index nR[-]
      */
-    virtual dcomplex Nr(double wl, double T) const;
+    virtual dcomplex nR(double wl, double T) const;
 
     /**
      * Get anisotropic refractive index tensor nR [-].
@@ -537,7 +537,7 @@ struct Material {
      * @param T temperature [K]
      * @return refractive index tensor nR[-]
      */
-    virtual std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Nr_tensor(double wl, double T) const;
+    virtual std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> nR_tensor(double wl, double T) const;
 
 protected:
     void throwNotImplemented(const std::string& method_name) const;
@@ -693,15 +693,15 @@ struct MixedMaterial: public Material {
 
     virtual double dens(double T) const;
 
-    virtual double specHeat(double T) const;
+    virtual double cp(double T) const;
 
     virtual double nr(double wl, double T) const;
 
     virtual double absp(double wl, double T) const;
 
-    virtual dcomplex Nr(double wl, double T) const;
+    virtual dcomplex nR(double wl, double T) const;
 
-    virtual std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Nr_tensor(double wl, double T) const;
+    virtual std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> nR_tensor(double wl, double T) const;
 
 private:
 

@@ -74,7 +74,7 @@ std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
 }
 
 std::tuple<plask::dcomplex,plask::dcomplex,plask::dcomplex,plask::dcomplex,plask::dcomplex> NrTensor(plask::shared_ptr<plask::Material> material) {
-    return material->Nr_tensor(1000., 300.);
+    return material->nR_tensor(1000., 300.);
 }
 
 //// Boundary conditions /////////////////////////////////////////////////////////////////////////////////////////////////////////

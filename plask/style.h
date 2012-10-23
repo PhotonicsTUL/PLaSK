@@ -64,7 +64,7 @@ it legible! The more specific rules are below:
   the legibility. If this rule is impossible to hold, you are allowed to sometimes use \c lower_case_with_underscores.
 
 - Do not use prefixed Hungarian notation for class members and variable names. It is really more legible to have
-  just \c i as loop index than \c tIndex.
+  just \c index as loop index than \c tIndex.
 
 - The only prefixed class fields in PLaSK are providers and receivers:
    - receivers are always prefixed with \a in, as \c inTemperature,

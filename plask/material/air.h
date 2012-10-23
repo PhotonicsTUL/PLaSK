@@ -46,7 +46,7 @@ struct Air: public Material {
     virtual std::pair<double,double> thermCond(double T) const;
     virtual std::pair<double,double> thermCond(double T, double thickness) const;
     virtual double dens(double T) const;
-    virtual double specHeat(double T) const;
+    virtual double cp(double T) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
 };

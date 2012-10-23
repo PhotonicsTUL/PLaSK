@@ -62,7 +62,7 @@ double Air::Ni(double T) const { throwNotApplicable("Ni(double T)"); return 0; }
 
 double Air::nr(double wl, double T) const { return 1.; }
 
-double Air::specHeat(double T) const { throwNotApplicable("specHeat(double T)"); return 0; }
+double Air::cp(double T) const { throwNotApplicable("cp(double T)"); return 0; }
 
 std::pair<double,double> Air::thermCond(double T) const { return std::make_pair(1e-6,1e-6); }//{ return std::make_pair(0.,0.); }
 std::pair<double,double> Air::thermCond(double T, double thickness) const { return std::make_pair(1e-6,1e-6); }//{ return std::make_pair(0.,0.); }

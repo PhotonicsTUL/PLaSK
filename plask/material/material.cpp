@@ -109,14 +109,14 @@ double Material::Ni(double T) const { throwNotImplemented("Ni(double T)"); retur
 
 double Material::nr(double wl, double T) const { throwNotImplemented("nr(double wl, double T)"); return 0; }
 
-dcomplex Material::Nr(double wl, double T) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
+dcomplex Material::nR(double wl, double T) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
 
-std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Material::Nr_tensor(double wl, double T) const {
-    dcomplex n = Nr(wl, T);
+std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Material::nR_tensor(double wl, double T) const {
+    dcomplex n = nR(wl, T);
     return std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex>(n, n, n, 0., 0.);
 }
 
-double Material::specHeat(double T) const { throwNotImplemented("specHeat(double T)"); return 0; }
+double Material::cp(double T) const { throwNotImplemented("cp(double T)"); return 0; }
 
 std::pair<double,double> Material::thermCond(double T) const { throwNotImplemented("thermCond(double T)"); return std::make_pair(0.,0.); }
 std::pair<double,double> Material::thermCond(double T, double thickness) const { throwNotImplemented("thermCond(double T, double t)"); return std::make_pair(0.,0.); }
@@ -457,22 +457,22 @@ double MixedMaterial::nr(double wl, double T) const {
     return avg([&](const Material& m) { return m.nr(wl, T); });
 }
 
-dcomplex MixedMaterial::Nr(double wl, double T) const {
-    return avg([&](const Material& m) { return m.Nr(wl, T); });
+dcomplex MixedMaterial::nR(double wl, double T) const {
+    return avg([&](const Material& m) { return m.nR(wl, T); });
 }
 
-std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> MixedMaterial::Nr_tensor(double wl, double T) const {
+std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> MixedMaterial::nR_tensor(double wl, double T) const {
     std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> result;
-    std::get<0>(result) = avg([&](const Material& m) { return std::get<0>(m.Nr_tensor(wl, T)); });
-    std::get<1>(result) = avg([&](const Material& m) { return std::get<1>(m.Nr_tensor(wl, T)); });
-    std::get<2>(result) = avg([&](const Material& m) { return std::get<2>(m.Nr_tensor(wl, T)); });
-    std::get<3>(result) = avg([&](const Material& m) { return std::get<3>(m.Nr_tensor(wl, T)); });
-    std::get<4>(result) = avg([&](const Material& m) { return std::get<4>(m.Nr_tensor(wl, T)); });
+    std::get<0>(result) = avg([&](const Material& m) { return std::get<0>(m.nR_tensor(wl, T)); });
+    std::get<1>(result) = avg([&](const Material& m) { return std::get<1>(m.nR_tensor(wl, T)); });
+    std::get<2>(result) = avg([&](const Material& m) { return std::get<2>(m.nR_tensor(wl, T)); });
+    std::get<3>(result) = avg([&](const Material& m) { return std::get<3>(m.nR_tensor(wl, T)); });
+    std::get<4>(result) = avg([&](const Material& m) { return std::get<4>(m.nR_tensor(wl, T)); });
     return result;
 }
 
-double MixedMaterial::specHeat(double T) const {
-    return avg([&](const Material& m) { return m.specHeat(T); });
+double MixedMaterial::cp(double T) const {
+    return avg([&](const Material& m) { return m.cp(T); });
 }
 
 std::pair<double,double> MixedMaterial::thermCond(double T) const {
