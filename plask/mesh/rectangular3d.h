@@ -775,6 +775,35 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         );
 
     }
+    
+private:
+    // Common code for: left, right, bottom, top, front, back boundries:
+    struct BoundaryIteratorImpl: public BoundaryLogicImpl::IteratorImpl {
+
+        const RectangularMesh &mesh;
+
+        std::size_t level;
+
+        std::size_t index_f, index_s;
+        
+        const std::size_t index_f_size;
+
+        BoundaryIteratorImpl(const RectangularMesh& mesh, std::size_t level, std::size_t index_f, std::size_t index_f_size, std::size_t index_s)
+        : mesh(mesh), level(level), index_f(index_f), index_s(index_s), index_f_size(index_f_size) {}
+
+        virtual void increment() {
+            ++index_f;
+            if (index_f == index_f_size) {
+                index_f = 0;
+                ++index_s;
+            }
+        }
+
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const {
+            return index_f == static_cast<const BoundaryIteratorImpl&>(other).index_f && index_s == static_cast<const BoundaryIteratorImpl&>(other).index_s;
+        }
+
+    };
 };
 
 template <typename Mesh1D,typename DataT>    //for any data type

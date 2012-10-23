@@ -356,6 +356,66 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
 };
 
 /**
+ * Template to create iterators which using method having index argument.
+ * @tparam ContainerType type of container (can be const or non-const)
+ * @tparam ReturnedType exact type returned by container method Method
+ * @tparam Method method used to get value
+ * @tparam Reference iterator reference type, should be the same type which return functor operator()
+ * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
+ */
+template <
+    typename ContainerType,
+    typename ReturnedType,
+    ReturnedType (ContainerType::*Method)(std::size_t),
+    typename Reference = ReturnedType,
+    typename Value = typename std::remove_reference<Reference>::type>
+struct MethodIterator: public boost::iterator_facade< MethodIterator<ContainerType, ReturnedType, Method, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
+
+    /// Pointer to container over which we iterate.
+    ContainerType* container;
+
+    /// Current iterator position (index).
+    std::size_t index;
+
+    /// Construct uninitialized iterator. Don't use it before initialization.
+    MethodIterator() {}
+
+    /**
+     * Construct iterator which point to given @a index in given @a container.
+     * @param container container to iterate over
+     * @param index index in @a container
+     */
+    MethodIterator(ContainerType* container, std::size_t index): container(container), index(index) {}
+
+    /**
+     * Get current iterator position (index).
+     * @return current iterator position (index)
+     */
+    std::size_t getIndex() const { return index; }
+
+    private: //--- methods used by boost::iterator_facade: ---
+    friend class boost::iterator_core_access;
+    template <class, class, class> friend class MethodIterator;
+
+    template <typename OtherT>
+    bool equal(const OtherT& other) const {
+        return index == other.index;
+    }
+
+    void increment() { ++index; }
+
+    void decrement() { --index; }
+
+    void advance(std::ptrdiff_t to_add) { index += to_add; }
+
+    template <typename OtherT>
+    std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
+
+    Reference dereference() const { return (container->*Method)(index); }
+
+};
+
+/**
  * Get FunctorIndexedIterator for given functor.
  * @param f functor
  * @param index initial iterator position

@@ -175,7 +175,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     Mesh1D axis1;
 
     /// Accessor to FEM-like elements.
-    const Elements elements;    //TODO what about copy/move constructors/operators
+    const Elements elements;
 
     /**
      * Iteration orders:
@@ -574,7 +574,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return area of elements with given index
      */
     double getElementArea(std::size_t index0, std::size_t index1) const {
-        return (axis0[index0+1] - axis0[index0])*(axis1[index1+1] - axis1[index1]);
+        return (axis0[index0+1] - axis0[index0]) * (axis1[index1+1] - axis1[index1]);
     }
 
     /**
@@ -838,6 +838,43 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /**
+     * Decrease @p index if @p real_pos is much closer to axis[index-1] than axis[index].
+     * @param[in] axis axis of mesh
+     * @param[in, out] index index such that axis[index] <= real_pos < axis[index+1], can be unchanged or decrement by one by this method
+     * @param[in] real_pos position
+     */
+    static void tryMakeLower(const Mesh1D& axis, std::size_t& index, double real_pos) {
+        if (index == 0) return;
+        if ((real_pos - axis[index-1]) * 100.0 < (axis[index] - axis[index-1])) --index;
+    }
+
+    /**
+     * Increase @p index if @p real_pos is much closer to axis[index] than axis[index-1].
+     * @param[in] axis axis of mesh
+     * @param[in, out] index index such that axis[index-1] <= real_pos < axis[index], can be unchanged or increment by one by this method
+     * @param[in] real_pos position
+     */
+    static void tryMakeHigher(const Mesh1D& axis, std::size_t& index, double real_pos) {
+        if (index == axis.size() || index == 0) return; //index == 0 means empty mesh
+        if ((axis[index] - real_pos) * 100.0 < (axis[index] - axis[index-1])) ++index;
+    }
+
+    /**
+     * Helper.
+     * @param[out] begInd, endInd range [begInd, endInd) of indices in @p axis which show points which lie or almost lie in bounds [@p box_lower, @p box_upper],
+     *      undefined if @c false was returned
+     * @param[in] axis axis, 1D mesh
+     * @param[in] box_lower, box_upper position of lower and upper box edges
+     * @return @c true only if some of @p axis points (almost) lies in bounds [@p box_lower, @p box_upper]
+     */
+    static bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, const Mesh1D& axis, double box_lower, double box_upper) {
+        getIndexesInBounds(begInd, endInd, axis, box_lower, box_upper);
+        tryMakeLower(axis, begInd, box_lower);
+        tryMakeHigher(axis, endInd, box_upper);
+        return begInd != endInd;
+    }
+
+    /**
      * Parse boundary from XML tag in format:
      * \<place dir="i.e. left" [of="object name" [path="path name"] [geometry="name of geometry which is used by solver"]]/>
      * @param boundary_desc XML reader which point to tag to read (after read it will be moved to end of this tag)
@@ -904,6 +941,21 @@ public:
      */
     static Boundary getVerticalBoundaryNear(double axis0_coord) {
         return Boundary( [axis0_coord](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.findNearestIndex(axis0_coord));} );
+    }
+
+    /**
+     * Get boundary which show one vertical (from bottom to top) segment in mesh which lies nearest given coordinate and has ends in given range
+     * @param axis0_coord axis 0 coordinate
+     * @param from, to ends of line segment, [from, to] range of axis 1 coordinates
+     * @return boundary which show one vertical (from bottom to top) segment in mesh
+     */
+    static Boundary getVerticalBoundaryNear(double axis0_coord, double from, double to) {
+        return Boundary( [axis0_coord, from, to](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t begInd, endInd;
+            if (!RectangularMesh<2,Mesh1D>::getIndexesInBoundsExt(begInd, endInd, mesh.axis1, from, to))
+                return new EmptyBoundaryImpl();
+            return new VerticalBoundaryInRange(mesh, mesh.axis0.findNearestIndex(axis0_coord), begInd, endInd);
+        } );
     }
 
     /**
@@ -1157,6 +1209,21 @@ public:
     }
 
     /**
+     * Get boundary which show one horizontal (from left to right) segment in mesh which lies nearest given coordinate and has ends in given range.
+     * @param axis1_coord axis 1 coordinate
+     * @param from, to ends of line segment, [from, to] range of axis 0 coordinates
+     * @return boundary which show one horizontal (from left to right) line in mesh
+     */
+    static Boundary getHorizontalBoundaryNear(double axis1_coord, double from, double to) {
+        return Boundary( [axis1_coord, from, to](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t begInd, endInd;
+            if (!RectangularMesh<2,Mesh1D>::getIndexesInBoundsExt(begInd, endInd, mesh.axis0, from, to))
+                return new EmptyBoundaryImpl();
+            return new HorizontalBoundaryInRange(mesh, mesh.axis1.findNearestIndex(axis1_coord), begInd, endInd);
+        } );
+    }
+
+    /**
      * Get boundary which shows one horizontal, top (from left to right) line in mesh.
      * @return boundary which show top line in mesh
      */
@@ -1190,6 +1257,10 @@ public:
             return parseBoundaryFromXML(boundary_desc, enviroment, &getRightBoundary, &getRightOfBoundary);
         if (dir == "top")
             return parseBoundaryFromXML(boundary_desc, enviroment, &getTopBoundary, &getTopOfBoundary);
+        if (dir == "vertical")
+            return getVerticalBoundaryNear(boundary_desc.requireAttribute<double>("at"), boundary_desc.requireAttribute<double>("from"), boundary_desc.requireAttribute<double>("to"));
+        if (dir == "horizontal")
+            return getHorizontalBoundaryNear(boundary_desc.requireAttribute<double>("at"), boundary_desc.requireAttribute<double>("from"), boundary_desc.requireAttribute<double>("to"));
         return Boundary();
     }
 };
