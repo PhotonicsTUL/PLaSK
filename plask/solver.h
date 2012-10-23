@@ -806,7 +806,7 @@ void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader
         auto found = manager.meshes.find(*name);
         if (found != manager.meshes.end()) {
             auto mesh = dynamic_pointer_cast<MeshT>(found->second);
-            if (!mesh) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.");
+            if (!mesh) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.", *name);
             this->setMesh(mesh);
         }
         else {

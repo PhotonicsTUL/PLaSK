@@ -164,8 +164,8 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertFalse(test.regular2d_changed)
         test.regular2d.axis0 = (0., 10., 11)
         self.assertTrue(test.regular2d_changed)
-        test.regular2d.axis0.first = 2.
+        test.regular2d.axis0.start = 2.
         self.assertTrue(test.regular2d_changed)
-        test.regular2d.axis0.last = 12.
+        test.regular2d.axis0.stop = 12.
         self.assertTrue(test.regular2d_changed)
         test.regular2d.axis0.resize(20)

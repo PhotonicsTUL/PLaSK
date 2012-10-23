@@ -81,7 +81,7 @@ void RectilinearMesh3D::writeXML(XMLElement& object) const {
 
 static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
 {
-    std::map<std::string,std::vector<double>> axes;
+    std::map<std::string,RectilinearMesh1D> axes;
 
     for (int i = 0; i < 2; ++i) {
         reader.requireTag();
@@ -90,9 +90,23 @@ static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
         if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
         if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
-        std::string data = reader.requireTextUntilEnd();
-        for (auto point: boost::tokenizer<>(data))
-            axes[node].push_back(boost::lexical_cast<double>(point));
+        if (reader.hasAttribute("start")) {
+            double start = reader.requireAttribute<double>("start");
+            double stop = reader.requireAttribute<double>("stop");
+            size_t count = reader.requireAttribute<size_t>("num");
+            axes[node].addPointsLinear(start, stop, count);
+            reader.requireTagEnd();
+        } else {
+            std::string data = reader.requireTextUntilEnd();
+            for (auto point: boost::tokenizer<>(data)) {
+                try {
+                    double val = boost::lexical_cast<double>(point);
+                    axes[node].addPoint(val);
+                } catch (boost::bad_lexical_cast) {
+                    throw XMLException(reader, format("Value '%1%' cannot be converted to float", point));
+                }
+            }
+        }
     }
     reader.requireTagEnd();
 
@@ -101,7 +115,7 @@ static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
 
 static shared_ptr<Mesh> readRectilinearMesh3D(XMLReader& reader)
 {
-    std::map<std::string,std::vector<double>> axes;
+    std::map<std::string,RectilinearMesh1D> axes;
 
     for (int i = 0; i < 3; ++i) {
         reader.requireTag();
@@ -110,9 +124,23 @@ static shared_ptr<Mesh> readRectilinearMesh3D(XMLReader& reader)
         if (node != "axis0" && node != "axis1" && node != "axis2") throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
         if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
-        std::string data = reader.requireTextUntilEnd();
-        for (auto point: boost::tokenizer<>(data))
-            axes[node].push_back(boost::lexical_cast<double>(point));
+       if (reader.hasAttribute("start")) {
+            double start = reader.requireAttribute<double>("start");
+            double stop = reader.requireAttribute<double>("stop");
+            size_t count = reader.requireAttribute<size_t>("num");
+            axes[node].addPointsLinear(start, stop, count);
+            reader.requireTagEnd();
+        } else {
+            std::string data = reader.requireTextUntilEnd();
+            for (auto point: boost::tokenizer<>(data)) {
+                try {
+                    double val = boost::lexical_cast<double>(point);
+                    axes[node].addPoint(val);
+                } catch (boost::bad_lexical_cast) {
+                    throw XMLException(reader, format("Value '%1%' cannot be converted to float", point));
+                }
+            }
+        }
     }
     reader.requireTagEnd();
 

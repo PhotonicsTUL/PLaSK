@@ -108,8 +108,8 @@ BOOST_AUTO_TEST_CASE(mesh) {
     BOOST_CHECK_EQUAL(ss.str(), HEADER
         "<grids>\n"
         "  <mesh name=\"reg\" type=\"regular2d\">\n"
-        "    <axis0 start=\"1\" end=\"5\" count=\"3\"/>\n"
-        "    <axis1 start=\"10\" end=\"40\" count=\"4\"/>\n"
+        "    <axis0 start=\"1\" stop=\"5\" num=\"3\"/>\n"
+        "    <axis1 start=\"10\" stop=\"40\" num=\"4\"/>\n"
         "  </mesh>\n"
         "  <mesh name=\"rec\" type=\"rectilinear3d\">\n"
         "    <axis0>\n"

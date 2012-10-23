@@ -72,6 +72,16 @@ struct XMLBadAttrException: public XMLException {
      */
     XMLBadAttrException(const XMLReader& reader, const std::string& attr_name, const std::string& attr_value):
         XMLException(reader, "tag attribute '" + attr_name + "' has bad value \"" + attr_value + "\"") {}
+
+    /**
+     * @param reader current reader
+     * @param attr_name name of attribute
+     * @param attr_value illegal value of attribute
+     * @param attr_required required value of attribute
+     */
+    XMLBadAttrException(const XMLReader& reader, const std::string& attr_name, const std::string& attr_value, const std::string& attr_required):
+        XMLException(reader, "tag attribute '" + attr_name + "' has bad value \"" + attr_value + "\", required was" + attr_required) {}
+
 };
 
 /**

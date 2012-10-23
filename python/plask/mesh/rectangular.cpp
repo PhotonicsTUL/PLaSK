@@ -511,12 +511,12 @@ void register_mesh_rectangular()
     py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>, boost::noncopyable>("Regular1D",
         "Regular mesh axis\n\n"
         "Regular1D()\n    create empty mesh\n\n"
-        "Regular1D(first, last, count)\n    create mesh of count points equally distributed between first and last"
+        "Regular1D(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
         )
         .def("__init__", py::make_constructor(&Regular1D__init__empty))
-        .def("__init__", py::make_constructor(&Regular1D__init__params, py::default_call_policies(), (py::arg("first"), "last", "count")))
-        .add_property("first", &RegularMesh1D::getFirst, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
-        .add_property("last", &RegularMesh1D::getLast, &RegularMesh1D_setLast, "Position of the end of the mesh")
+        .def("__init__", py::make_constructor(&Regular1D__init__params, py::default_call_policies(), (py::arg("start"), "stop", "num")))
+        .add_property("start", &RegularMesh1D::getFirst, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
+        .add_property("stop", &RegularMesh1D::getLast, &RegularMesh1D_setLast, "Position of the end of the mesh")
         .add_property("step", &RegularMesh1D::getStep)
         .def("__len__", &RegularMesh1D::size)
         .def("__nonzero__", __nonempty__<RegularMesh1D>)

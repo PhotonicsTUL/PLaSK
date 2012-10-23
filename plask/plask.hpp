@@ -40,6 +40,7 @@ structure analyzed. Such approach is also hardly documented and not tested.
 Here you can find the tutorials expalinig how you can extend PLaSK by writing new solver, creating providers and receivers for data exchange between solvers or implement a new mesh.
 You should start reading from section \ref solvers "How to implement an own solver" as it explains the most basic particulars of the internal PLaSK architecture.
 
+- \subpage style "Coding style guide" — please read it first!
 - \subpage solvers "How to write a calculation solver?"
     - \subpage providers "How to use providers and receivers for data exchange?"
 - \subpage providers_writing "How to implement new providers and receivers for new data types?"

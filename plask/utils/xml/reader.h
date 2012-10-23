@@ -238,13 +238,17 @@ class XMLReader {
     inline T getAttribute(const std::string& name, const T& default_value) const {
         const char* attr_str = getAttributeValueC(name);
         if (attr_str == nullptr) return default_value;
-        return boost::lexical_cast<T>(attr_str);
+        try {
+            return boost::lexical_cast<T>(attr_str);
+        } catch (boost::bad_lexical_cast) {
+            throw XMLBadAttrException(*this, name, attr_str);
+        }
     }
 
     /**
      * Get value of attribute with given @p name.
      * @param name name of attribute to get
-     * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribiute with given @p name
+     * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
      */
     boost::optional<std::string> getAttribute(const std::string& name) const;
 
@@ -253,14 +257,18 @@ class XMLReader {
      *
      * Throws exception if value of attribute given @p name can't be casted to required type T.
      * @param name name of attribute to get
-     * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribiute with given @p name
+     * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
      * @tparam T required type of value, boost::lexical_cast\<T> will be used to obtain value of this type from string
      */
     template <typename T>
     inline boost::optional<T> getAttribute(const std::string& name) const {
         const char* attr_str = getAttributeValueC(name);
         if (attr_str == nullptr) return boost::optional<T>();
-        return boost::lexical_cast<T>(attr_str);
+        try {
+            return boost::lexical_cast<T>(attr_str);
+        } catch (boost::bad_lexical_cast) {
+            throw XMLBadAttrException(*this, name, attr_str);
+        }
     }
 
     /**
@@ -280,7 +288,11 @@ class XMLReader {
      */
     template <typename T>
     inline T requireAttribute(const std::string& name) const {
-        return boost::lexical_cast<T>(requireAttribute(name));
+        try {
+            return boost::lexical_cast<T>(requireAttribute(name));
+        } catch (boost::bad_lexical_cast) {
+            throw XMLBadAttrException(*this, name, requireAttribute(name));
+        }
     }
 
     /**

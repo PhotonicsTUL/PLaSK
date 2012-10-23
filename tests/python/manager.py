@@ -23,11 +23,11 @@ class Manager(unittest.TestCase):
             <grids>
                 <mesh type="rectilinear2d" name="lin">
                     <axis0>1, 2, 3</axis0>
-                    <axis1>10 20 30</axis1>
+                    <axis1 start="10" stop="30" num="3"/>
                 </mesh>
                 <mesh type="regular2d" name="reg">
-                    <axis0 start="10" end="30" count="3"/>
-                    <axis1 start="1" end="3" count="3"/>
+                    <axis0 start="10" stop="30" num="3"/>
+                    <axis1 start="1" stop="3" num="3"/>
                 </mesh>
                 <generator type="rectilinear2d" method="divide" name="test">
                     <prediv by="4"/>

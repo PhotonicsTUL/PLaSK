@@ -29,16 +29,16 @@ shared_ptr<RegularMesh3D> RegularMesh3D::getMidpointsMesh() {
 template <>
 void RegularMesh2D::writeXML(XMLElement& object) const {
     object.attr("type", "regular2d");
-    object.addTag("axis0").attr("start", axis0.getFirst()).attr("end", axis0.getLast()).attr("count", axis0.size());
-    object.addTag("axis1").attr("start", axis1.getFirst()).attr("end", axis1.getLast()).attr("count", axis1.size());
+    object.addTag("axis0").attr("start", axis0.getFirst()).attr("stop", axis0.getLast()).attr("num", axis0.size());
+    object.addTag("axis1").attr("start", axis1.getFirst()).attr("stop", axis1.getLast()).attr("num", axis1.size());
 }
 
 template <>
 void RegularMesh3D::writeXML(XMLElement& object) const {
     object.attr("type", "regular3d");
-    object.addTag("axis0").attr("start", axis0.getFirst()).attr("end", axis0.getLast()).attr("count", axis0.size());
-    object.addTag("axis1").attr("start", axis1.getFirst()).attr("end", axis1.getLast()).attr("count", axis1.size());
-    object.addTag("axis2").attr("start", axis2.getFirst()).attr("end", axis2.getLast()).attr("count", axis2.size());
+    object.addTag("axis0").attr("start", axis0.getFirst()).attr("stop", axis0.getLast()).attr("num", axis0.size());
+    object.addTag("axis1").attr("start", axis1.getFirst()).attr("stop", axis1.getLast()).attr("num", axis1.size());
+    object.addTag("axis2").attr("start", axis2.getFirst()).attr("stop", axis2.getLast()).attr("num", axis2.size());
 }
 
 
@@ -54,9 +54,9 @@ static shared_ptr<Mesh> readRegularMesh2D(XMLReader& reader)
         if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
         double start = reader.requireAttribute<double>("start");
-        double end = reader.requireAttribute<double>("end");
-        size_t count = reader.requireAttribute<size_t>("count");
-        axes[node] = std::make_tuple(start, end, count);
+        double stop = reader.requireAttribute<double>("stop");
+        size_t count = reader.requireAttribute<size_t>("num");
+        axes[node] = std::make_tuple(start, stop, count);
 
         reader.requireTagEnd();
     }
@@ -78,9 +78,9 @@ static shared_ptr<Mesh> readRegularMesh3D(XMLReader& reader)
         if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
 
         double start = reader.requireAttribute<double>("start");
-        double end = reader.requireAttribute<double>("end");
-        size_t count = reader.requireAttribute<size_t>("count");
-        axes[node] = std::make_tuple(start, end, count);
+        double stop = reader.requireAttribute<double>("stop");
+        size_t count = reader.requireAttribute<size_t>("num");
+        axes[node] = std::make_tuple(start, stop, count);
 
         reader.requireTagEnd();
     }
