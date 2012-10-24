@@ -32,7 +32,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "mode") {
-            m = reader.getAttribute<unsigned short>("l", m);
+            m = reader.getAttribute<unsigned short>("m", m);
             auto alam0 = reader.getAttribute<unsigned short>("lam0");
             auto ak0 = reader.getAttribute<unsigned short>("k0");
             if (alam0) {

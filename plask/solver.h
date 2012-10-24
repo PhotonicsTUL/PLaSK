@@ -36,7 +36,7 @@ To write solver you should:
    \b your_solver/python.
 
 Once you have your source tree set up, do the following:
--# Write new class which inherit from \link plask::SolverOver plask::SolverOver<SPACE_TYPE>\endlink or
+-# Write new class which inherits from \link plask::SolverOver plask::SolverOver<SPACE_TYPE>\endlink or
    \link plask::SolverWithMesh plask::SolverWithMesh<SPACE_TYPE, MESH_TYPE>\endlink. SPACE_TYPE should be one of Geometry2DCartesian,
    Geometry2DCylindrical, or Geometry3D and should indicate in what space your solver is doing calculations. If you want to allow
    user to specify a mesh for your solver, inherit from \link plask::SolverWithMesh plask::SolverWithMesh<SPACE_TYPE, MESH_TYPE>\endlink,
@@ -159,8 +159,8 @@ for shared memory management between the solvers). So we declare the private fie
 Now, you can write the constructor to your class. By convention this constructor should take no configuration arguments as all the solver
 configuration parameters must be able to be set by the user afterwards (in future you might want to create a configuration window for your
 solver for GUI). The only constructor parameter is the name, which can be provided by user, and which should be passed to the parent class.
-In addition, you should write getClassName method, which returns the name of your solver class as seen by the end user (it does not need
-to be the same as your real class name, but it should match the Python class name and solver name in XML file).
+In addition, you should write getClassName method, which returns the category and the name of your solver class as seen by the end user
+(it does not need to be the same as your real class name, but it should match the Python class name and solver name in XML file).
 
 \code
   public:
@@ -172,7 +172,7 @@ to be the same as your real class name, but it should match the Python class nam
         inTemperature = 300.;                                      // set default value for input temperature
     }
 
-    virtual std::string getClassName() const { return "FiniteDifferencesCartesian2D"; }
+    virtual std::string getClassName() const { return "optical.FiniteDifferencesCartesian2D"; }
 
 \endcode
 
