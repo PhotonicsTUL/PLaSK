@@ -11,6 +11,13 @@
 #ifdef CMAKE_Fortran_COMPILER_WORKS
     // Fortran name mangling scheme
 #   include "f77.h"
+
+#ifdef _WIN32
+#	define F77SUB extern "C" __declspec(dllimport) void
+#else
+#	define F77SUB extern "C" void
+#endif
+
 #endif
 
 #endif // PLASK__CONFIG_H

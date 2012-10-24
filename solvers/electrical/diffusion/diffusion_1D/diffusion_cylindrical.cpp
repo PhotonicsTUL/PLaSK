@@ -3,8 +3,8 @@
 #define dpbtrf_ F77_GLOBAL(dpbtrf,DPBTRF)
 #define dpbtrs_ F77_GLOBAL(dpbtrs,DPBTRS)
 
-extern "C" int dpbtrf_(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
-extern "C" int dpbtrs_(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
+F77SUB dpbtrf_(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
+F77SUB dpbtrs_(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
 
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 

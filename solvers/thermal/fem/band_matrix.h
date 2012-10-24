@@ -7,13 +7,13 @@
 
 // LAPACK routines to solve set of linear equations
 #define dpbtrf F77_GLOBAL(dpbtrf,DPBTRF)
-extern "C" int dpbtrf(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
+F77SUB dpbtrf(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
 
 #define dpbtf2 F77_GLOBAL(dpbtf2,DPBTF2)
-extern "C" int dpbtf2(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
+F77SUB dpbtf2(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
 
 #define dpbtrs F77_GLOBAL(dpbtrs,DPBTRS)
-extern "C" int dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
+F77SUB dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
 
 namespace plask { namespace solvers { namespace thermal {
 
