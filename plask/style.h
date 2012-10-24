@@ -94,11 +94,11 @@ at this level is crucial!
 - XML configuration tag names must match the Python class properties for accessing the same configuration parameter
   (the usual rules for class fields names apply). The possible exceptions are stated below
   .
-- When reading the configuration from XML put the parameters as attributes either of a single tag \c <options>, or
+- When reading the configuration from XML put the parameters as attributes either of a single tag <code><options></code>, or
   better grouped under some other tags. Python properties need not to be similarly grouped (although they may).
   .
 - Boundary conditions in XML should be named by stating what is fixed (in lowercase). In Python they are suffixed with
-  \p _boundary. So for example constant temperature should be named as \c <temperature> in XML and \c temperature_boundary
+  \p _boundary. So for example constant temperature should be named as <code><temperature></code> in XML and \c temperature_boundary
   in Python.
 
 */
