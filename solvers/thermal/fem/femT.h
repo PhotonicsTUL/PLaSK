@@ -54,7 +54,6 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
         mABand;          ///< Number of non-zero rows on and below the main diagonal of the main matrix
 
 
-    CorrectionType mCorrType; ///< Type of the returned correction
     double mTCorrLim;     ///< Maximum temperature correction accepted as convergence
     double mTInit;        ///< Initial temperature
     int mLoopNo;          ///< Number of completed loops
@@ -90,6 +89,8 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     virtual void onInvalidate();
 
   public:
+
+    CorrectionType mCorrType; ///< Type of the returned correction
 
     // Boundary conditions
     BoundaryConditions<RectilinearMesh2D,double> mTConst; ///< Boundary cindition of constant temperature [K]

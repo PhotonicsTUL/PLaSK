@@ -5,10 +5,10 @@ namespace plask { namespace solvers { namespace thermal {
 template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DType>::FiniteElementMethodThermal2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DType, RectilinearMesh2D>(name),
     mBigNum(1e15),
-    mCorrType(CORRECTION_ABSOLUTE),
     mTCorrLim(0.1),
     mTInit(300.),
     mLoopNo(0),
+    mCorrType(CORRECTION_ABSOLUTE),
     outTemperature(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes),
     mAlgorithm(ALGORITHM_BLOCK)
@@ -236,179 +236,132 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& iRadiation
                   )
 {
-//     this->writelog(LOG_INFO, "Setting up matrix system");
-//
-//     std::vector<Element2D>::const_iterator ttE = mElements.begin();
-//     std::vector<Node2D>::const_iterator ttN = mNodes.begin();
-//
-//     size_t tLoLeftNo, tLoRghtNo, tUpLeftNo, tUpRghtNo, // nodes numbers in current element
-//            tFstArg, tSecArg; // assistant values
-//
-//     double tKXAssist, tKYAssist, tElemWidth, tElemHeight, tF, // assistant values to set stiffness matrix
-//            tK11, tK21, tK31, tK41, tK22, tK32, tK42, tK33, tK43, tK44, // local symetric matrix components
-//            tF1hfX = 0., tF2hfX = 0., tF3hfX = 0., tF4hfX = 0., // for load vector (heat flux components for x-direction)
-//            tF1hfY = 0., tF2hfY = 0., tF3hfY = 0., tF4hfY = 0., // for load vector (heat flux components for y-direction)
-//            tK11convX = 0., tK21convX = 0., tK31convX = 0., tK41convX = 0., tK22convX = 0., // for symetric matrix (convection components for x-direction)
-//            tK32convX = 0., tK42convX = 0., tK33convX = 0., tK43convX = 0., tK44convX = 0., // for symetric matrix (convection components for x-direction)
-//            tK11convY = 0., tK21convY = 0., tK31convY = 0., tK41convY = 0., tK22convY = 0., // for symetric matrix (convection components for y-direction)
-//            tK32convY = 0., tK42convY = 0., tK33convY = 0., tK43convY = 0., tK44convY = 0., // for symetric matrix (convection components for y-direction)
-//            tF1convX = 0., tF2convX = 0., tF3convX = 0., tF4convX = 0., // for load vector (convection components for x-direction)
-//            tF1convY = 0., tF2convY = 0., tF3convY = 0., tF4convY = 0., // for load vector (convection components for y-direction)
-//            tF1radX = 0., tF2radX = 0., tF3radX = 0., tF4radX = 0., // for load vector (radiation components for x-direction)
-//            tF1radY = 0., tF2radY = 0., tF3radY = 0., tF4radY = 0.; // for load vector (radiation components for y-direction)
-//
-//     // set zeros
-//     for(int i = 0; i < mABand; i++)
-//         for(int j = 0; j < mAOrder; j++)
-//             mpA[i][j]=0.;
-//
-//     // set stiffness matrix and load vector
-//     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
-//     {
-//         // set nodes numbers for the current element
-//         tLoLeftNo = ttE->getNLoLeftPtr()->getNo();
-//         tLoRghtNo = ttE->getNLoRightPtr()->getNo();
-//         tUpLeftNo = ttE->getNUpLeftPtr()->getNo();
-//         tUpRghtNo = ttE->getNUpRightPtr()->getNo();
-//
-//         // set element size
-//         tElemWidth = fabs(ttE->getNLoLeftPtr()->getX() - ttE->getNLoRightPtr()->getX());
-//         tElemHeight = fabs(ttE->getNLoLeftPtr()->getY() - ttE->getNUpLeftPtr()->getY());
-//
-//         // set assistant values
-//         std::vector<Box2D> tVecBox = (this->geometry)->getLeafsBoundingBoxes(); // geometry->extract(GeometryObject::PredicateHasClass("active"));
-//         Vec<2, double> tSize;
-//         for (Box2D tBox: tVecBox)
-//         {
-//             if (tBox.includes(vec(ttE->getX(), ttE->getY())))
-//             {
-//                 tSize = tBox.size();
-//                 break;
-//             }
-//         }
-//         tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first;
-//         tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second;
-//
-//         // set load vector: heat densities
-//         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
-//
-//         // boundary condition: heat flux
-//         if ( ttE->getNLoLeftPtr()->ifHFConst() && ttE->getNLoRightPtr()->ifHFConst() ) // heat flux on bottom edge of the element
-//         {
-//             tF1hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getHF(); // 1e-6 -> to transform um into m
-//             tF2hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getHF();
-//         }
-//         if ( ttE->getNUpLeftPtr()->ifHFConst() && ttE->getNUpRightPtr()->ifHFConst() ) // heat flux on top edge of the element
-//         {
-//             tF3hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getHF();
-//             tF4hfX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getHF();
-//         }
-//         if ( ttE->getNLoLeftPtr()->ifHFConst() && ttE->getNUpLeftPtr()->ifHFConst() ) // heat flux on left edge of the element
-//         {
-//             tF1hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getHF();
-//             tF4hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getHF();
-//         }
-//         if ( ttE->getNLoRightPtr()->ifHFConst() && ttE->getNUpRightPtr()->ifHFConst() ) // heat flux on right edge of the element
-//         {
-//             tF2hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getHF();
-//             tF3hfY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getHF();
-//         }
-//
-//         // boundary condition: convection
-//         if ( ttE->getNLoLeftPtr()->ifConvection() && ttE->getNLoRightPtr()->ifConvection() ) // convection on bottom edge of the element
-//         {
-//             tF1convX = 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getConvCoeff() * ttE->getNLoLeftPtr()->getTAmb1(); // 1e-6 -> to transform um into m
-//             tF2convX = 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getConvCoeff() * ttE->getNLoRightPtr()->getTAmb1();
-//             tK22convX = tK11convX = (ttE->getNLoLeftPtr()->getConvCoeff() + ttE->getNLoRightPtr()->getConvCoeff()) * tElemWidth / 3.;
-//             tK21convX = 0.5 * tK22convX;
-//         }
-//         if ( ttE->getNUpLeftPtr()->ifConvection() && ttE->getNUpRightPtr()->ifConvection() ) // convection on top edge of the element
-//         {
-//             tF3convX = 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getConvCoeff() * ttE->getNUpRightPtr()->getTAmb1();
-//             tF4convX = 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getConvCoeff() * ttE->getNUpLeftPtr()->getTAmb1();
-//             tK44convX = tK33convX = (ttE->getNUpLeftPtr()->getConvCoeff() + ttE->getNUpRightPtr()->getConvCoeff()) * tElemWidth / 3.;
-//             tK43convX = 0.5 * tK44convX;
-//         }
-//         if ( ttE->getNLoLeftPtr()->ifConvection() && ttE->getNUpLeftPtr()->ifConvection() ) // convection on left edge of the element
-//         {
-//             tF1convY = 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getConvCoeff() * ttE->getNLoLeftPtr()->getTAmb1();
-//             tF4convY = 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getConvCoeff() * ttE->getNUpLeftPtr()->getTAmb1();
-//             tK44convY = tK11convY = (ttE->getNLoLeftPtr()->getConvCoeff() + ttE->getNUpLeftPtr()->getConvCoeff()) * tElemHeight / 3.;
-//             tK41convY = 0.5 * tK44convY;
-//         }
-//         if ( ttE->getNLoRightPtr()->ifConvection() && ttE->getNUpRightPtr()->ifConvection() ) // convection on right edge of the element
-//         {
-//             tF2convY = 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getConvCoeff() * ttE->getNLoRightPtr()->getTAmb1();
-//             tF3convY = 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getConvCoeff() * ttE->getNUpRightPtr()->getTAmb1();
-//             tK33convY = tK22convY = (ttE->getNLoRightPtr()->getConvCoeff() + ttE->getNUpRightPtr()->getConvCoeff()) * tElemHeight / 3.;
-//             tK32convY = 0.5 * tK33convY;
-//         }
-//
-//         // boundary condition: radiation
-//         if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNLoRightPtr()->ifRadiation() ) // radiation on bottom edge of the element
-//         {
-//             tF1radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4)); // 1e-6 -> to transform um into m
-//             tF2radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
-//         }
-//         if ( ttE->getNUpLeftPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on top edge of the element
-//         {
-//             tF3radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
-//             tF4radX = - 0.5 * tElemWidth * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
-//         }
-//         if ( ttE->getNLoLeftPtr()->ifRadiation() && ttE->getNUpLeftPtr()->ifRadiation() ) // radiation on left edge of the element
-//         {
-//             tF1radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoLeftPtr()->getT(),4) - pow(ttE->getNLoLeftPtr()->getTAmb2(),4));
-//             tF4radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpLeftPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpLeftPtr()->getT(),4) - pow(ttE->getNUpLeftPtr()->getTAmb2(),4));
-//         }
-//         if ( ttE->getNLoRightPtr()->ifRadiation() && ttE->getNUpRightPtr()->ifRadiation() ) // radiation on right edge of the element
-//         {
-//             tF2radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNLoRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNLoRightPtr()->getT(),4) - pow(ttE->getNLoRightPtr()->getTAmb2(),4));
-//             tF3radY = - 0.5 * tElemHeight * 1e-6 * ttE->getNUpRightPtr()->getEmissivity() * phys::SB * (pow(ttE->getNUpRightPtr()->getT(),4) - pow(ttE->getNUpRightPtr()->getTAmb2(),4));
-//         }
-//
-//         // set symetric matrix components
-//         tK44 = tK33 = tK22 = tK11 = (tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight) / 3.;
-//         tK43 = tK21 = (-2.*tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight ) / 6.;
-//         tK42 = tK31 = -(tKXAssist*tElemHeight/tElemWidth + tKYAssist*tElemWidth/tElemHeight)/ 6.;
-//         tK32 = tK41 = (tKXAssist*tElemHeight/tElemWidth -2.*tKYAssist*tElemWidth/tElemHeight)/ 6.;
-//
-//         // set stiffness matrix
-//         mpA[tLoLeftNo-1][mAOrder-2] += ( ttE->getX() * (tK11 + tK11convX + tK11convY) );
-//         mpA[tLoRghtNo-1][mAOrder-2] += ( ttE->getX() * (tK22 + tK22convX + tK22convY) );
-//         mpA[tUpRghtNo-1][mAOrder-2] += ( ttE->getX() * (tK33 + tK33convX + tK33convY) );
-//         mpA[tUpLeftNo-1][mAOrder-2] += ( ttE->getX() * (tK44 + tK44convX + tK44convY) );
-//
-//         tLoRghtNo > tLoLeftNo ? (tFstArg = tLoRghtNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tLoRghtNo);
-//         mpA[tFstArg-1][mAOrder-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK21 + tK21convX + tK21convY) );
-//
-//         tUpRghtNo > tLoLeftNo ? (tFstArg = tUpRghtNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpRghtNo);
-//         mpA[tFstArg-1][mAOrder-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK31 + tK31convX + tK31convY) );
-//
-//         tUpLeftNo > tLoLeftNo ? (tFstArg = tUpLeftNo, tSecArg = tLoLeftNo) : (tFstArg = tLoLeftNo, tSecArg = tUpLeftNo);
-//         mpA[tFstArg-1][mAOrder-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK41 + tK41convX + tK41convY) );
-//
-//         tUpRghtNo > tLoRghtNo ? (tFstArg = tUpRghtNo, tSecArg = tLoRghtNo) : (tFstArg = tLoRghtNo, tSecArg = tUpRghtNo);
-//         mpA[tFstArg-1][mAOrder-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK32 + tK32convX + tK32convY) );
-//
-//         tUpLeftNo > tLoRghtNo ? (tFstArg = tUpLeftNo, tSecArg = tLoRghtNo) : (tFstArg = tLoRghtNo, tSecArg = tUpLeftNo);
-//         mpA[tFstArg-1][mAOrder-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK42 + tK42convX + tK42convY) );
-//
-//         tUpLeftNo > tUpRghtNo ? (tFstArg = tUpLeftNo, tSecArg = tUpRghtNo) : (tFstArg = tUpRghtNo, tSecArg = tUpLeftNo);
-//         mpA[tFstArg-1][mAOrder-2-(tFstArg-tSecArg)] += ( ttE->getX() * (tK43 + tK43convX + tK43convY) );
-//
-//         // set load vector
-//         mpA[tLoLeftNo-1][mAOrder-1]  += ( ttE->getX() * (tF + tF1hfX + tF1hfY + tF1convX + tF1convY + tF1radX + tF1radY) );
-//         mpA[tLoRghtNo-1][mAOrder-1] += ( ttE->getX() * (tF + tF2hfX + tF2hfY + tF2convX + tF2convY + tF2radX + tF2radY) );
-//         mpA[tUpRghtNo-1][mAOrder-1] += ( ttE->getX() * (tF + tF3hfX + tF3hfY + tF3convX + tF3convY + tF3radX + tF3radY) );
-//         mpA[tUpLeftNo-1][mAOrder-1]  += ( ttE->getX() * (tF + tF4hfX + tF4hfY + tF4convX + tF4convY + tF4radX + tF4radY) );
-//     }
-//     // boundary conditions are taken into account
-//     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-//         if ( ttN->ifTConst() )
-//         {
-//             mpA[ttN->getNo()-1][mAOrder-2] += mBigNum;
-//             mpA[ttN->getNo()-1][mAOrder-1] += ttN->getT()*mBigNum;
-//         }
+    this->writelog(LOG_DETAIL, "Setting up matrix system");
+
+    auto iMesh = (this->mesh)->getMidpointsMesh();
+    auto tHeatDensities = inHeatDensity(iMesh);
+
+    std::fill_n(oA.data, mABand*mAOrder, 0.); // zero the matrix
+    oLoad.fill(0.);
+
+    std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
+
+    // Set stiffness matrix and load vector
+    for (auto ttE = mesh->elements.begin(); ttE != mesh->elements.end(); ++ttE)
+    {
+        // nodes numbers for the current element
+        size_t tLoLeftNo = ttE->getLoLoIndex();
+        size_t tLoRghtNo = ttE->getUpLoIndex();
+        size_t tUpLeftNo = ttE->getLoUpIndex();
+        size_t tUpRghtNo = ttE->getUpUpIndex();
+
+        // element size
+        double tElemWidth = ttE->getUpper0() - ttE->getLower0();
+        double tElemHeight = ttE->getUpper1() - ttE->getLower1();
+
+        // point and material in the middle of the element
+        Vec<2,double> tMidPoint = ttE->getMidpoint();
+        auto tMaterial = geometry->getMaterial(tMidPoint);
+        double r = tMidPoint.rad_r();
+
+        // height of the leaf spanning over the element
+        double tLayerHeight = dynamic_pointer_cast<const GeometryObjectD<2>>( geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf) )
+                                -> getBoundingBox().sizeUp();
+
+        // average temperature on the element
+        double tTemp = 0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] + mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]);
+
+        // thermal conductivity
+        double tKx, tKy;
+        std::tie(tKx,tKy) = tMaterial->thermCond(tTemp, tLayerHeight);
+
+        tKx *= tElemHeight; tKx /= tElemWidth;
+        tKy *= tElemWidth; tKy /= tElemHeight;
+
+        // load vector: heat densities
+        double tF = 0.25e-12 * tElemWidth * tElemHeight * tHeatDensities[ttE->getIndex()]; // 1e-12 -> to transform um*um into m*m
+
+        // set symmetric matrix components
+        double tK44, tK33, tK22, tK11, tK43, tK21, tK42, tK31, tK32, tK41;
+
+        tK44 = tK33 = tK22 = tK11 = (tKx + tKy) / 3.;
+        tK43 = tK21 = (-2. * tKx + tKy) / 6.;
+        tK42 = tK31 = - (tKx + tKy) / 6.;
+        tK32 = tK41 = (tKx - 2. * tKy) / 6.;
+
+        double tF1 = tF, tF2 = tF, tF3 = tF, tF4 = tF;
+
+        // boundary conditions: heat flux
+        setBoundaries<double>(iHFConst, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
+                      tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
+                      [](double len, double val, double, size_t, size_t) { // F
+                          return - 0.5e-6 * len * val;
+                      },
+                      [](double,double,double,size_t,size_t){return 0.;}, // K diagonal
+                      [](double,double,double,size_t,size_t){return 0.;}  // K off-diagonal
+                     );
+
+        // boundary conditions: convection
+        setBoundaries<Convection>(iConvection, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
+                      tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
+                      [](double len, Convection val, Convection, size_t, size_t) { // F
+                          return 0.5e-6 * len * val.mConvCoeff * val.mTAmb1;
+                      },
+                      [](double len, Convection val1, Convection val2, size_t, size_t) { // K diagonal
+                          return (val1.mConvCoeff + val2.mConvCoeff) * len / 3.;
+                      },
+                      [](double len, Convection val1, Convection val2, size_t, size_t) { // K off-diagonal
+                          return (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
+                      }
+                     );
+
+        // boundary conditions: radiation
+        setBoundaries<Radiation>(iRadiation, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
+                      tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
+                      [this](double len, Radiation val, Radiation, size_t i, size_t) -> double { // F
+                          double a = val.mTAmb2; a = a*a;
+                          double T = this->mTemperatures[i]; T = T*T;
+                          return - 0.5e-6 * len * val.mSurfEmiss * phys::SB * (T*T - a*a);},
+                      [](double,Radiation,Radiation,size_t,size_t){return 0.;}, // K diagonal
+                      [](double,Radiation,Radiation,size_t,size_t){return 0.;}  // K off-diagonal
+                     );
+
+        // set stiffness matrix
+        oA(tLoLeftNo, tLoLeftNo) += r * tK11;
+        oA(tLoRghtNo, tLoRghtNo) += r * tK22;
+        oA(tUpRghtNo, tUpRghtNo) += r * tK33;
+        oA(tUpLeftNo, tUpLeftNo) += r * tK44;
+
+        oA(tLoRghtNo, tLoLeftNo) += r * tK21;
+        oA(tUpRghtNo, tLoLeftNo) += r * tK31;
+        oA(tUpLeftNo, tLoLeftNo) += r * tK41;
+        oA(tUpRghtNo, tLoRghtNo) += r * tK32;
+        oA(tUpLeftNo, tLoRghtNo) += r * tK42;
+        oA(tUpLeftNo, tUpRghtNo) += r * tK43;
+
+        // set load vector
+        oLoad[tLoLeftNo] += r * tF1;
+        oLoad[tLoRghtNo] += r * tF2;
+        oLoad[tUpRghtNo] += r * tF3;
+        oLoad[tUpLeftNo] += r * tF4;
+    }
+
+    // boundary conditions of the first kind
+    for (auto tCond: iTConst) {
+        for (auto tIndex: tCond.place) {
+            oA(tIndex, tIndex) += mBigNum;
+            oLoad[tIndex] += tCond.value * mBigNum;
+        }
+    }
+
+#ifndef NDEBUG
+    double* tAend = oA.data + oA.order * oA.band1;
+    for (double* pa = oA.data; pa != tAend; ++pa) {
+        if (isnan(*pa) || isinf(*pa))
+            throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
+    }
+#endif
+
 }
 
 
@@ -450,7 +403,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
         if (mMaxRelTCorr > tMaxMaxRelTCorr) tMaxMaxRelTCorr = mMaxRelTCorr;
 
         // show max correction
-        this->writelog(LOG_DATA, "Loop no: %d(%d), max. T update: %8.6f (%8.6f%%)", tLoop, mLoopNo, mMaxAbsTCorr, 100.*mMaxRelTCorr);
+        this->writelog(LOG_DATA, "Loop no: %d(%d), max. T update: %.3f (%.3f%%)", tLoop, mLoopNo, mMaxAbsTCorr, 100.*mMaxRelTCorr);
 
     } while (((mCorrType == CORRECTION_ABSOLUTE)? (mMaxAbsTCorr > mTCorrLim) : (mMaxRelTCorr > mTCorrLim)) && (iLoopLim == 0 || tLoop < iLoopLim));
 

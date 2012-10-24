@@ -30,14 +30,21 @@ def plotField2D(field, levels=None, **kwargs):
     '''Plot scalar real fields using pylab.imshow.'''
     #TODO documentation
     if levels is None:
-        data = field.array
-        data = 0.25 * (data[:-1,:-1] + data[1:,:-1] + data[:-1,1:] + data[1:,1:])
-        return pcolor(field.mesh.axis0, field.mesh.axis1, data, antialiased=True, **kwargs)
+        if type(field.mesh == plask.mesh.Regular2D):
+            return imshow(field.array, origin='lower', extent=[field.mesh.axis0[0], field.mesh.axis0[-1], field.mesh.axis1[0], field.mesh.axis1[-1]], **kwargs)
+        else:
+            if 'aspect' in kwargs:
+                kwargs = kwargs.copy()
+                set_aspect(kwargs.pop('aspect'))
+            adata = field.array
+            data = adata[:-1,:-1]; data += adata[1:,:-1]; data += adata[:-1,1:]; data += adata[1:,1:]; data *= 0.25
+            del adata
+            return pcolor(array(field.mesh.axis0), array(field.mesh.axis1), data, **kwargs)
     else:
         if 'cmap' in kwargs and type(kwargs['cmap']) == str: # contourf requires that cmap were cmap instance, not a string
             kwargs = kwargs.copy()
             kwargs['cmap'] = get_cmap(kwargs['cmap'])
-        return contourf(field.mesh.axis0, field.mesh.axis1, data, levels, antialiased=True, **kwargs)
+        return contourf(field.mesh.axis0, field.mesh.axis1, field.array, levels, antialiased=True, **kwargs)
 
 
 def plotGeometry2D(geometry, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):

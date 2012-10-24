@@ -13,9 +13,9 @@
 #   include "f77.h"
 
 #ifdef _WIN32
-#	define F77SUB extern "C" __declspec(dllimport) void
+#   define F77SUB extern "C" __declspec(dllimport) void
 #else
-#	define F77SUB extern "C" void
+#   define F77SUB extern "C" void
 #endif
 
 #endif

@@ -180,6 +180,8 @@ struct BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
      */
     BoundaryWithMesh(const BoundaryLogicImpl* to_hold = nullptr): HolderRef< const BoundaryLogicImpl >(to_hold) {}
 
+    virtual ~BoundaryWithMesh() {}
+
     /**
      * Check if boundary includes point with given index.
      * @param mesh_index valid index of point in @p mesh

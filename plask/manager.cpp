@@ -195,6 +195,8 @@ void Manager::loadSolvers(XMLReader& reader) {
                         while (!list_file.eof()) {
                             std::string line, lib, cls;
                             list_file >> line;
+                            boost::algorithm::trim(line);
+                            if (line == "") continue;
                             std::tie(lib, cls) = splitString2(line, '.');
                             if (cls == "") writelog(LOG_ERROR, "Wrong format of '%1%' file", file_name);
                             else libs[cls] = lib;

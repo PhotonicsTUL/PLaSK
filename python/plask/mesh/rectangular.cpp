@@ -102,11 +102,16 @@ namespace detail {
             void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularMesh1D>*)data)->storage.bytes;
             auto tuple = py::object(py::handle<>(py::borrowed(obj)));
             try {
-                if (py::len(tuple) != 3) throw py::error_already_set();
-                new(storage) RegularMesh1D(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
+                if (py::len(tuple) == 3)
+                    new(storage) RegularMesh1D(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
+                else if (py::len(tuple) == 1) {
+                    double val = py::extract<double>(tuple[0]);
+                    new(storage) RegularMesh1D(val, val, 1);
+                } else
+                    throw py::error_already_set();
                 data->convertible = storage;
             } catch (py::error_already_set) {
-                throw TypeError("Must provide either mesh.Regular1D or a tuple (first, last, count)");
+                throw TypeError("Must provide either mesh.Regular1D or a tuple (first[, last=first, count=1])");
             }
         }
     };

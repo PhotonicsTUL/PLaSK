@@ -6,7 +6,7 @@ namespace plask {
 
 static std::string logLevelHead(LogLevel level) {
     switch (level) {
-#     if defined(WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
+#     if defined(_WIN32)
         case LOG_ERROR:         return "ERROR         ";
         case LOG_CRITICAL_ERROR:return "CRITICAL ERROR";
         case LOG_WARNING:       return "WARNING       ";
@@ -31,7 +31,7 @@ static std::string logLevelHead(LogLevel level) {
 }
 
 void writelog(LogLevel level, const std::string& msg) {
-#if defined(WIN32) || defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(_WIN32)
     #pragma omp critical(writelog)
     fprintf(stderr, "%s: %s\n", logLevelHead(level).c_str(), msg.c_str());
 #else
