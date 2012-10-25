@@ -239,8 +239,8 @@ def write_xpl(name, geometry, axes, materials, regions, heats):
     ofile.write('    <container>\n')
     for r in regions:
         r.write(ofile)
-    ofile.write('    <container>\n')
-    ofile.write('  </%s>/n</geometry>\n\n' % geometry)
+    ofile.write('    </container>\n')
+    ofile.write('  </%s>\n</geometry>\n\n' % geometry)
 
     ofile.write('</plask>\n')
 
