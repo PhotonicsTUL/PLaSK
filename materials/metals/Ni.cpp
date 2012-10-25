@@ -18,12 +18,12 @@ std::pair<double,double> Ni::cond(double T) const {
     return ( std::make_pair(tCond, tCond) );
 }
 
-MI_PROPERTY(Ni, thermCond,
+MI_PROPERTY(Ni, thermk,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, 2005."),
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-std::pair<double,double> Ni::thermCond(double T, double t) const {
+std::pair<double,double> Ni::thermk(double T, double t) const {
     double tCondT = 90.3*pow((300./T),0.423);
     return ( std::make_pair(tCondT, tCondT) );
 }

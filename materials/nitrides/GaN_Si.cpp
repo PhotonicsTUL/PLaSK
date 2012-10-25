@@ -56,14 +56,14 @@ std::pair<double,double> GaN_Si::cond(double T) const {
     return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
-MI_PROPERTY(GaN_Si, thermCond,
-            MISeeClass<GaN>(MaterialInfo::thermCond),
+MI_PROPERTY(GaN_Si, thermk,
+            MISeeClass<GaN>(MaterialInfo::thermk),
             MISource("Y. Oshima et al., Phys. Status Solidi C 4 (2007) 2215"),
             MIComment("Nf: 1e18 - 1e19 cm^-3")
             )
-std::pair<double,double> GaN_Si::thermCond(double T, double t) const {
+std::pair<double,double> GaN_Si::thermk(double T, double t) const {
     double fun_Nf = 2.18*std::pow(Nf_RT,-0.022);
-    auto p = GaN::thermCond(T,t);
+    auto p = GaN::thermk(T,t);
     p.first *= fun_Nf;
     p.second *= fun_Nf;
     return p;

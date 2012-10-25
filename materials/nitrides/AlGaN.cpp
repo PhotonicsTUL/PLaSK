@@ -16,13 +16,13 @@ AlGaN::AlGaN(const Material::Composition& Comp) {
     Ga = Comp.find("Ga")->second;
 }
 
-MI_PROPERTY(AlGaN, thermCond,
+MI_PROPERTY(AlGaN, thermk,
             MISource("B. C. Daly et al., Journal of Applied Physics 92 (2002) 3820"),
             MIComment("based on data for Al = 0.2, 0.45")
             )
-std::pair<double,double> AlGaN::thermCond(double T, double t) const {
-    double lCondT = 1/(Al/mAlN.thermCond(T,t).first + Ga/mGaN.thermCond(T,t).first + Al*Ga*0.4),
-           vCondT = 1/(Al/mAlN.thermCond(T,t).second + Ga/mGaN.thermCond(T,t).second + Al*Ga*0.4);
+std::pair<double,double> AlGaN::thermk(double T, double t) const {
+    double lCondT = 1/(Al/mAlN.thermk(T,t).first + Ga/mGaN.thermk(T,t).first + Al*Ga*0.4),
+           vCondT = 1/(Al/mAlN.thermk(T,t).second + Ga/mGaN.thermk(T,t).second + Al*Ga*0.4);
     return(std::make_pair(lCondT,vCondT));
  }
 

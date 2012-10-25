@@ -137,12 +137,12 @@ double GaInP::D(double T) const {
     return ( T/300. );
 }
 
-MI_PROPERTY(GaInP, thermCond,
+MI_PROPERTY(GaInP, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
             )
-std::pair<double,double> GaInP::thermCond(double T, double t) const {
-    double lCondT = 1./(Ga/mGaP.thermCond(T,t).first + In/mInP.thermCond(T,t).first + Ga*In*0.72),
-           vCondT = 1./(Ga/mGaP.thermCond(T,t).second + In/mInP.thermCond(T,t).second + Ga*In*0.72);
+std::pair<double,double> GaInP::thermk(double T, double t) const {
+    double lCondT = 1./(Ga/mGaP.thermk(T,t).first + In/mInP.thermk(T,t).first + Ga*In*0.72),
+           vCondT = 1./(Ga/mGaP.thermk(T,t).second + In/mInP.thermk(T,t).second + Ga*In*0.72);
     return ( std::make_pair(lCondT,vCondT) );
 }
 

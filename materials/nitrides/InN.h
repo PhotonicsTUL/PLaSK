@@ -18,7 +18,7 @@ struct InN: public Semiconductor {
     static constexpr const char* NAME = "InN";
 
     virtual std::string name() const;
-    virtual std::pair<double,double> thermCond(double T) const;
+    virtual std::pair<double,double> thermk(double T) const;
     virtual double lattC(double T, char x) const;
     virtual double Eg(double T, char point) const;
     virtual std::pair<double,double> Me(double T, char point) const;

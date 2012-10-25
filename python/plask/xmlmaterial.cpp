@@ -24,33 +24,33 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
     std::string base;
     Material::Kind kind;
-    Material::ConductivityType cond_type;
+    Material::ConductivityType condtype;
 
     PyCodeObject
         *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *ac, *av, *b, *c11, *c12, *eps, *chi,
         *Nc, *Nv, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *A, *B, *C, *D,
-        *thermCond, *condT_t, *dens, *cp, *nr, *absp, *nR, *nR_tensor;
+        *thermk, *dens, *cp, *nr, *absp, *nR, *nR_tensor;
 
     PythonEvalMaterialConstructor(const std::string& name) :
-        MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), cond_type(Material::CONDUCTIVITY_UNDETERMINED),
+        MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
         Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        thermCond(NULL), condT_t(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), nR(NULL), nR_tensor(NULL) {}
+        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), nR(NULL), nR_tensor(NULL) {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
-        MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), cond_type(Material::CONDUCTIVITY_UNDETERMINED),
+        MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
         Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        thermCond(NULL), condT_t(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), nR(NULL), nR_tensor(NULL) {}
+        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), nR(NULL), nR_tensor(NULL) {}
 
     virtual ~PythonEvalMaterialConstructor() {
         Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CBO); Py_XDECREF(VBO); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
         Py_XDECREF(Mhh); Py_XDECREF(Mlh); Py_XDECREF(Mh); Py_XDECREF(ac); Py_XDECREF(av); Py_XDECREF(b); Py_XDECREF(c11); Py_XDECREF(c12); Py_XDECREF(eps); Py_XDECREF(chi);
         Py_XDECREF(Nc); Py_XDECREF(Nv); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
         Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C); Py_XDECREF(D);
-        Py_XDECREF(thermCond); Py_XDECREF(condT_t); Py_XDECREF(dens); Py_XDECREF(cp);
+        Py_XDECREF(thermk); Py_XDECREF(dens); Py_XDECREF(cp);
         Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(nR); Py_XDECREF(nR_tensor);
     }
 
@@ -83,7 +83,7 @@ class PythonEvalMaterial : public Material
 
     virtual std::string name() const { return cls->materialName; }
     virtual Material::Kind kind() const { return (cls->kind == Material::NONE)? base->kind() : cls->kind; }
-    virtual Material::ConductivityType condType() const { return (cls->cond_type == Material::CONDUCTIVITY_UNDETERMINED)? base->condType() : cls->cond_type; }
+    virtual Material::ConductivityType condtype() const { return (cls->condtype == Material::CONDUCTIVITY_UNDETERMINED)? base->condtype() : cls->condtype; }
 
 #   define PYTHON_EVAL_CALL_1(rtype, fun, arg1) \
         if (cls->fun == NULL) return base->fun(arg1); \
@@ -124,12 +124,8 @@ class PythonEvalMaterial : public Material
     virtual double B(double T) const { PYTHON_EVAL_CALL_1(double, B, T) }
     virtual double C(double T) const { PYTHON_EVAL_CALL_1(double, C, T) }
     virtual double D(double T) const { PYTHON_EVAL_CALL_1(double, D, T) }
-    virtual DDPair thermCond(double T) const { PYTHON_EVAL_CALL_1(DDPair, thermCond, T) }
-    virtual DDPair thermCond(double T, double t)  const {
-        if (cls->thermCond == NULL) return base->thermCond(T, t);
-        py::dict locals; locals["T"] = T; locals["t"] = t;
-        return call<DDPair>(cls->condT_t, locals);
-    }
+    virtual DDPair thermk(double T) const {PYTHON_EVAL_CALL_1(DDPair, thermk, T) }
+    virtual DDPair thermk(double T, double t)  const { PYTHON_EVAL_CALL_2(DDPair, thermk, T, t) }
     virtual double dens(double T) const { PYTHON_EVAL_CALL_1(double, dens, T) }
     virtual double cp(double T) const { PYTHON_EVAL_CALL_1(double, cp, T) }
     virtual double nr(double wl, double T) const { PYTHON_EVAL_CALL_2(double, nr, wl, T) }
@@ -186,20 +182,20 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
                                 Material::NONE;
         if (kind == Material::NONE) throw XMLBadAttrException(reader, "kind", kindname);
 
-        Material::ConductivityType cond_type = Material::CONDUCTIVITY_UNDETERMINED;
-        auto condname = reader.getAttribute("cond_type");
+        Material::ConductivityType condtype = Material::CONDUCTIVITY_UNDETERMINED;
+        auto condname = reader.getAttribute("condtype");
         if (condname) {
-            cond_type = (*condname == "n" || *condname == "N")? Material::CONDUCTIVITY_N :
+            condtype = (*condname == "n" || *condname == "N")? Material::CONDUCTIVITY_N :
                         (*condname == "i" || *condname == "I")? Material::CONDUCTIVITY_I :
                         (*condname == "p" || *condname == "P")? Material::CONDUCTIVITY_P :
                         (*condname == "other" || *condname == "OTHER")? Material::CONDUCTIVITY_OTHER :
                          Material::CONDUCTIVITY_UNDETERMINED;
-            if (cond_type == Material::CONDUCTIVITY_UNDETERMINED) throw XMLBadAttrException(reader, "cond_type", *condname);
+            if (condtype == Material::CONDUCTIVITY_UNDETERMINED) throw XMLBadAttrException(reader, "condtype", *condname);
         }
 
         constructor = make_shared<PythonEvalMaterialConstructor>(name);
         constructor->kind = kind;
-        constructor->cond_type = cond_type;
+        constructor->condtype = condtype;
     }
     constructor->self = constructor;
     constructor->db = &materialsDB;
@@ -263,8 +259,7 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         COMPILE_PYTHON_MATERIAL_FUNCTION(B)
         COMPILE_PYTHON_MATERIAL_FUNCTION(C)
         COMPILE_PYTHON_MATERIAL_FUNCTION(D)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(thermCond)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(condT_t)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(thermk)
         COMPILE_PYTHON_MATERIAL_FUNCTION(dens)
         COMPILE_PYTHON_MATERIAL_FUNCTION(cp)
         COMPILE_PYTHON_MATERIAL_FUNCTION(nr)

@@ -107,13 +107,13 @@ double InP::c12(double T) const {
     return ( 56.1 );
 }
 
-MI_PROPERTY(InP, thermCond,
+MI_PROPERTY(InP, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // k(300K)
             MISource("I. Kudman et al., Phys. Rev. 133 (1964) A1665-A1667"), // experimental data k(T)
             MISource("L. Piskorski, unpublished"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 300, 800)
             )
-std::pair<double,double> InP::thermCond(double T, double t) const {
+std::pair<double,double> InP::thermk(double T, double t) const {
     double tCondT = 68.*pow((300./T),1.5);
     return ( std::make_pair(tCondT, tCondT) );
 }

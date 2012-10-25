@@ -26,7 +26,7 @@ struct InGaN_Si: public InGaN {
     virtual double Nf(double T) const; //TODO change to cm^(-3)
     virtual double Dop() const;
     virtual std::pair<double,double> cond(double T) const;
-    virtual std::pair<double,double> thermCond(double T, double t) const;
+    virtual std::pair<double,double> thermk(double T, double t) const;
     virtual double absp(double wl, double T) const;
 
 protected:

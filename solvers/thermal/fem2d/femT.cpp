@@ -267,8 +267,8 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatr
                 break;
             }
         }
-        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first;
-        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second;
+        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermk(ttE->getT(), tSize.ee_x()).first;
+        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermk(ttE->getT(), tSize.ee_y()).second;
 
         // load vector: heat densities
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
@@ -445,8 +445,8 @@ template<> void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMa
                 break;
             }
         }
-        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first;
-        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second;
+        tKXAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermk(ttE->getT(), tSize.ee_x()).first;
+        tKYAssist = (this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermk(ttE->getT(), tSize.ee_y()).second;
 
         // set load vector: heat densities
         tF = 0.25 * tElemWidth * tElemHeight * 1e-12 * mHeatDensities[ttE->getNo()-1]; // 1e-12 -> to transform um*um into m*m
@@ -848,8 +848,8 @@ template<typename Geometry2Dtype> void FiniteElementMethodThermal2DSolver<Geomet
             }
         }
         mHeatFluxes[ttE->getNo()-1] = vec(
-            - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX() * 1e6, // 1e6 - from um to m
-            - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermCond(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() * 1e6 ); // 1e6 - from um to m
+            - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermk(ttE->getT(), tSize.ee_x()).first) * ttE->getdTdX() * 1e6, // 1e6 - from um to m
+            - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->thermk(ttE->getT(), tSize.ee_y()).second) * ttE->getdTdY() * 1e6 ); // 1e6 - from um to m
     }
 }
 

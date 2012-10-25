@@ -17,11 +17,11 @@ std::pair<double,double> AuGe::cond(double T) const {
     return ( std::make_pair(tCond, tCond) );
 }
 
-MI_PROPERTY(AuGe, thermCond,
+MI_PROPERTY(AuGe, thermk,
             MISource("www.thinfilm.com"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AuGe::thermCond(double T, double t) const {
+std::pair<double,double> AuGe::thermk(double T, double t) const {
     double tCondT = 88.34;
     return ( std::make_pair(tCondT, tCondT) );
 }

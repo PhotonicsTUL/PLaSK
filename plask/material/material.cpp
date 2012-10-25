@@ -64,7 +64,7 @@ double Material::chi(char point) const { return chi(300., point); }
 
 std::pair<double,double> Material::cond(double T) const { throwNotImplemented("cond(double T)"); return std::make_pair(0.,0.); }
 
-Material::ConductivityType Material::condType() const { return CONDUCTIVITY_UNDETERMINED; }
+Material::ConductivityType Material::condtype() const { return CONDUCTIVITY_UNDETERMINED; }
 
 double Material::D(double T) const {
     // Use Einstein coefficient here
@@ -118,8 +118,8 @@ std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Material::nR_tensor
 
 double Material::cp(double T) const { throwNotImplemented("cp(double T)"); return 0; }
 
-std::pair<double,double> Material::thermCond(double T) const { throwNotImplemented("thermCond(double T)"); return std::make_pair(0.,0.); }
-std::pair<double,double> Material::thermCond(double T, double thickness) const { throwNotImplemented("thermCond(double T, double t)"); return std::make_pair(0.,0.); }
+std::pair<double,double> Material::thermk(double T) const { throwNotImplemented("thermk(double T)"); return std::make_pair(0.,0.); }
+std::pair<double,double> Material::thermk(double T, double thickness) const { throwNotImplemented("thermk(double T, double t)"); return std::make_pair(0.,0.); }
 
 double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); return 0; }
 
@@ -354,11 +354,11 @@ std::pair<double,double> MixedMaterial::cond(double T) const {
     return avg_pairs([&](const Material& m) { return m.cond(T); });
 }
 
-Material::ConductivityType MixedMaterial::condType() const {
+Material::ConductivityType MixedMaterial::condtype() const {
     if (materials.size() == 0) return CONDUCTIVITY_UNDETERMINED;
-    Material::ConductivityType result = materials[0].first->condType();
+    Material::ConductivityType result = materials[0].first->condtype();
     for(auto mat = materials.begin()+1; mat != materials.end(); ++mat)
-        if (mat->first->condType() != result) return CONDUCTIVITY_UNDETERMINED;
+        if (mat->first->condtype() != result) return CONDUCTIVITY_UNDETERMINED;
     return result;
 }
 
@@ -475,11 +475,11 @@ double MixedMaterial::cp(double T) const {
     return avg([&](const Material& m) { return m.cp(T); });
 }
 
-std::pair<double,double> MixedMaterial::thermCond(double T) const {
-    return avg_pairs([&](const Material& m) { return m.thermCond(T); });
+std::pair<double,double> MixedMaterial::thermk(double T) const {
+    return avg_pairs([&](const Material& m) { return m.thermk(T); });
 }
-std::pair<double,double> MixedMaterial::thermCond(double T, double thickness) const {
-    return avg_pairs([&](const Material& m) { return m.thermCond(T, thickness); });
+std::pair<double,double> MixedMaterial::thermk(double T, double thickness) const {
+    return avg_pairs([&](const Material& m) { return m.thermk(T, thickness); });
 }
 
 double MixedMaterial::VBO(double T) const  {

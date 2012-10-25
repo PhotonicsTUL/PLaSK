@@ -107,12 +107,12 @@ double GaAs::c12(double T) const {
     return ( 56.6 );
 }
 
-MI_PROPERTY(GaAs, thermCond,
+MI_PROPERTY(GaAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
             MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 300, 900)
             )
-std::pair<double,double> GaAs::thermCond(double T, double t) const {
+std::pair<double,double> GaAs::thermk(double T, double t) const {
     double tCondT = 45.*pow((300./T),1.25);
     return ( std::make_pair(tCondT, tCondT) );
 }

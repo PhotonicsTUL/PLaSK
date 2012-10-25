@@ -446,7 +446,7 @@ struct Material {
      * Get electrical conductivity type. In semiconductors this indicates what type of carriers \a Nf refers to.
      * \return electrical conductivity type of material
      */
-    virtual ConductivityType condType() const;
+    virtual ConductivityType condtype() const;
 
     /**
      * Get monomolecular recombination coefficient A [1/s].
@@ -481,7 +481,7 @@ struct Material {
      * @param T temperature [K]
      * @return thermal conductivity k[W/(m*K)]
      */
-    virtual std::pair<double,double> thermCond(double T) const;
+    virtual std::pair<double,double> thermk(double T) const;
 
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
@@ -489,7 +489,7 @@ struct Material {
      * @param thickness layer thickness [µm]
      * @return thermal conductivity k[W/(m*K)]
      */
-    virtual std::pair<double,double> thermCond(double T, double thickness) const;
+    virtual std::pair<double,double> thermk(double T, double thickness) const;
 
     /**
      * Get density [kg/m^3].
@@ -677,7 +677,7 @@ struct MixedMaterial: public Material {
 
     virtual std::pair<double,double> cond(double T) const;
 
-    virtual ConductivityType condType() const;
+    virtual ConductivityType condtype() const;
 
     virtual double A(double T) const;
 
@@ -687,9 +687,9 @@ struct MixedMaterial: public Material {
 
     virtual double D(double T) const;
 
-    virtual std::pair<double,double> thermCond(double T) const;
+    virtual std::pair<double,double> thermk(double T) const;
 
-    virtual std::pair<double,double> thermCond(double T, double thickness) const;
+    virtual std::pair<double,double> thermk(double T, double thickness) const;
 
     virtual double dens(double T) const;
 

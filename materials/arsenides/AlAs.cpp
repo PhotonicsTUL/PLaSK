@@ -107,11 +107,11 @@ double AlAs::c12(double T) const {
     return ( 53.4 );
 }
 
-MI_PROPERTY(AlAs, thermCond,
+MI_PROPERTY(AlAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::thermCond(double T, double t) const {
+std::pair<double,double> AlAs::thermk(double T, double t) const {
     return(std::make_pair(91., 91.));
 }
 

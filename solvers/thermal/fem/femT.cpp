@@ -136,7 +136,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymM
 
         // thermal conductivity
         double tKx, tKy;
-        std::tie(tKx,tKy) = tMaterial->thermCond(tTemp, tLayerHeight);
+        std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLayerHeight);
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -273,7 +273,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
 
         // thermal conductivity
         double tKx, tKy;
-        std::tie(tKx,tKy) = tMaterial->thermCond(tTemp, tLayerHeight);
+        std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLayerHeight);
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -505,7 +505,7 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
         size_t tUpRghtNo = ttE->getUpUpIndex();
 
         double tKx, tKy;
-        std::tie(tKx,tKy) = tMaterial->thermCond(0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] +
+        std::tie(tKx,tKy) = tMaterial->thermk(0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] +
                                                          mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]  ), tLayerHeight);
 
         mHeatFluxes[ttE->getIndex()] = vec(

@@ -18,12 +18,12 @@ std::pair<double,double> Au::cond(double T) const {
     return ( std::make_pair(tCond, tCond) );
 }
 
-MI_PROPERTY(Au, thermCond,
+MI_PROPERTY(Au, thermk,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, 2005."),
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-std::pair<double,double> Au::thermCond(double T, double t) const {
+std::pair<double,double> Au::thermk(double T, double t) const {
     double tCondT = -0.064*(T-300.)+317.1;
     return ( std::make_pair(tCondT, tCondT) );
 }

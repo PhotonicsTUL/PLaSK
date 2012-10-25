@@ -45,13 +45,13 @@ std::pair<double,double> AlGaN_Si::cond(double T) const {
     return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
 }
 
-MI_PROPERTY(AlGaN_Si, thermCond,
-            MISeeClass<AlGaN>(MaterialInfo::thermCond),
+MI_PROPERTY(AlGaN_Si, thermk,
+            MISeeClass<AlGaN>(MaterialInfo::thermk),
             MIComment("Si doping dependence for GaN")
             )
-std::pair<double,double> AlGaN_Si::thermCond(double T, double t) const {
-    double lCondT = 1/(Al/mAlN_Si.thermCond(T,t).first + Ga/mGaN_Si.thermCond(T,t).first + Al*Ga*0.4),
-           vCondT = 1/(Al/mAlN_Si.thermCond(T,t).second + Ga/mGaN_Si.thermCond(T,t).second + Al*Ga*0.4);
+std::pair<double,double> AlGaN_Si::thermk(double T, double t) const {
+    double lCondT = 1/(Al/mAlN_Si.thermk(T,t).first + Ga/mGaN_Si.thermk(T,t).first + Al*Ga*0.4),
+           vCondT = 1/(Al/mAlN_Si.thermk(T,t).second + Ga/mGaN_Si.thermk(T,t).second + Al*Ga*0.4);
     return(std::make_pair(lCondT, vCondT));
  }
 

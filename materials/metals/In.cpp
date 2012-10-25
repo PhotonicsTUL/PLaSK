@@ -17,11 +17,11 @@ std::pair<double,double> In::cond(double T) const {
     return ( std::make_pair(tCond, tCond) );
 }
 
-MI_PROPERTY(In, thermCond,
+MI_PROPERTY(In, thermk,
             MISource("www.lakeshore.com"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> In::thermCond(double T, double t) const {
+std::pair<double,double> In::thermk(double T, double t) const {
     double tCondT = 84.;
     return ( std::make_pair(tCondT, tCondT) );
 }

@@ -107,12 +107,12 @@ double InAs::c12(double T) const {
     return ( 45.26 );
 }
 
-MI_PROPERTY(InAs, thermCond,
+MI_PROPERTY(InAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"),
             MIArgumentRange(MaterialInfo::T, 300, 650)
             )
-std::pair<double,double> InAs::thermCond(double T, double t) const {
+std::pair<double,double> InAs::thermk(double T, double t) const {
     double tCondT = 30.*pow((300./T),1.234);
     return(std::make_pair(tCondT, tCondT));
 }

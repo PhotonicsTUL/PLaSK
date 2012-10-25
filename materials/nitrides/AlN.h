@@ -17,7 +17,7 @@ struct AlN: public Semiconductor {
     static constexpr const char* NAME = "AlN";
 
 	virtual std::string name() const;
-    virtual std::pair<double,double> thermCond(double T, double t) const;
+    virtual std::pair<double,double> thermk(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
     virtual double lattC(double T, char x) const;

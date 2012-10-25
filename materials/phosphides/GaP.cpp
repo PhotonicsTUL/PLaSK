@@ -107,12 +107,12 @@ double GaP::c12(double T) const {
     return ( 62.03 );
 }
 
-MI_PROPERTY(GaP, thermCond,
+MI_PROPERTY(GaP, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // k(300K)
             MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 300, 500)
             )
-std::pair<double,double> GaP::thermCond(double T, double t) const {
+std::pair<double,double> GaP::thermk(double T, double t) const {
     double tCondT = 77.*pow((300./T),1.364);
     return ( std::make_pair(tCondT, tCondT) );
 }

@@ -169,14 +169,14 @@ class PythonMaterial : public Material
         else return name();
     }
 
-    virtual Material::ConductivityType condType() const {
+    virtual Material::ConductivityType condtype() const {
         py::object cls = py::object(py::detail::borrowed_reference(self)).attr("__class__");
         py::object octype;
         try {
-            octype = cls.attr("__dict__")["cond_type"];
+            octype = cls.attr("__dict__")["condtype"];
         } catch (py::error_already_set) {
             PyErr_Clear();
-            return base->condType();
+            return base->condtype();
         }
         return py::extract<Material::ConductivityType>(octype);
     }
@@ -211,8 +211,11 @@ class PythonMaterial : public Material
     virtual double B(double T) const { return override<double>("B", &Material::B, T); }
     virtual double C(double T) const { return override<double>("C", &Material::C, T); }
     virtual double D(double T) const { return override<double>("D", &Material::D, T); }
-    virtual DDPair thermCond(double T) const { return override<DDPair>("thermCond", (DDPair (Material::*)(double) const) &Material::thermCond, T); }
-    virtual DDPair thermCond(double T, double t) const { return override<DDPair>("thermCond", (DDPair (Material::*)(double, double) const) &Material::thermCond, T, t); }
+    virtual DDPair thermk(double T) const {
+        if (overriden("thermk")) return py::call_method<DDPair>(self, "thermk", T, py::object());
+        return base->thermk(T);
+    }
+    virtual DDPair thermk(double T, double t) const { return override<DDPair>("thermk", (DDPair (Material::*)(double, double) const) &Material::thermk, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
     virtual double cp(double T) const { return override<double>("cp", &Material::cp, T); }
     virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
@@ -579,13 +582,13 @@ void initMaterials() {
         .def("EactA", &Material::EactA, (py::arg("T")=300.), "Get acceptor ionisation energy EactA [eV]")
         .def("mob", &Material::mob, (py::arg("T")=300.), "Get mobility [m**2/(V*s)]")
         .def("cond", &Material::cond, (py::arg("T")=300.), "Get electrical conductivity Sigma [S/m]")
-        .add_property("cond_type", &Material::condType, "Electrical conductivity type")
+        .add_property("condtype", &Material::condtype, "Electrical conductivity type")
         .def("A", &Material::A, (py::arg("T")=300.), "Get monomolecular recombination coefficient A [1/s]")
         .def("B", &Material::B, (py::arg("T")=300.), "Get radiative recombination coefficient B [m**3/s]")
         .def("C", &Material::C, (py::arg("T")=300.), "Get Auger recombination coefficient C [m**6/s]")
         .def("D", &Material::D, (py::arg("T")=300.), "Get ambipolar diffusion coefficient D [m**2/s]")
-        .def("therm_cond", (DDPair (Material::*)(double) const)&Material::thermCond, (py::arg("T")=300.), "Get thermal conductivity [W/(m*K)]")
-        .def("thermCond", (DDPair (Material::*)(double, double) const)&Material::thermCond, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity [W/(m*K)]")
+        .def("thermk", (DDPair (Material::*)(double) const)&Material::thermk, (py::arg("T")=300.), "Get thermal conductivity [W/(m*K)]")
+        .def("thermk", (DDPair (Material::*)(double, double) const)&Material::thermk, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity [W/(m*K)]")
         .def("dens", &Material::dens, (py::arg("T")=300.), "Get density [kg/m**3]")
         .def("cp", &Material::cp, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
         .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nr")

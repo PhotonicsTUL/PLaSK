@@ -36,7 +36,7 @@ struct GaInP: public Semiconductor {
     virtual double B(double T) const;
     virtual double C(double T) const;
     virtual double D(double T) const;
-    virtual std::pair<double,double> thermCond(double T, double t) const;
+    virtual std::pair<double,double> thermk(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
 

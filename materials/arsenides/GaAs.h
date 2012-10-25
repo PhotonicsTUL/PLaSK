@@ -28,7 +28,7 @@ struct GaAs: public Semiconductor {
     virtual double b(double T) const;
     virtual double c11(double T) const;
     virtual double c12(double T) const;
-    virtual std::pair<double,double> thermCond(double T, double t) const;
+    virtual std::pair<double,double> thermk(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
 

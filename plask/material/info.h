@@ -46,12 +46,12 @@ struct MaterialInfo {
         EactA,      ///< acceptor ionisation energy
         mob,        ///< mobility
         cond,       ///< electrical conductivity
-        condType,   ///< conductivity type
+        condtype,   ///< conductivity type
         A,          ///< monomolecular recombination coefficient
         B,          ///< radiative recombination coefficient
         C,          ///< Auger recombination coefficient
         D,          ///< ambipolar diffusion coefficient
-        thermCond,  ///< thermal conductivity
+        thermk,  ///< thermal conductivity
         dens,       ///< density
         cp,   ///< specific heat at constant pressure
         nr,         ///< refractive index

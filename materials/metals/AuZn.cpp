@@ -17,11 +17,11 @@ std::pair<double,double> AuZn::cond(double T) const {
     return ( std::make_pair(tCond, tCond) );
 }
 
-MI_PROPERTY(AuZn, thermCond,
+MI_PROPERTY(AuZn, thermk,
             MISource("D. Singh and D.K. Pandey, Ultrasonic investigations in intermetallics, Pramana - Journal of Physics, vol. 72, no. 2, pp. 389-398, 2009."),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AuZn::thermCond(double T, double t) const {
+std::pair<double,double> AuZn::thermk(double T, double t) const {
     double tCondT = 110.3;
     return ( std::make_pair(tCondT, tCondT) );
 }

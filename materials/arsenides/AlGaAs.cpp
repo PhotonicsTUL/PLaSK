@@ -104,12 +104,12 @@ double AlGaAs::c12(double T) const {
     return ( Al*mAlAs.c12(T) + Ga*mGaAs.c12(T) );
 }
 
-MI_PROPERTY(AlGaAs, thermCond,
+MI_PROPERTY(AlGaAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
             )
-std::pair<double,double> AlGaAs::thermCond(double T, double t) const {
-    double lCondT = 1./(Al/mAlAs.thermCond(T,t).first + Ga/mGaAs.thermCond(T,t).first + Al*Ga*0.32),
-           vCondT = 1./(Al/mAlAs.thermCond(T,t).second + Ga/mAlAs.thermCond(T,t).second + Al*Ga*0.32);
+std::pair<double,double> AlGaAs::thermk(double T, double t) const {
+    double lCondT = 1./(Al/mAlAs.thermk(T,t).first + Ga/mGaAs.thermk(T,t).first + Al*Ga*0.32),
+           vCondT = 1./(Al/mAlAs.thermk(T,t).second + Ga/mAlAs.thermk(T,t).second + Al*Ga*0.32);
     return ( std::make_pair(lCondT,vCondT) );
 }
 

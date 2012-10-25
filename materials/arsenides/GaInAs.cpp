@@ -104,12 +104,12 @@ double GaInAs::c12(double T) const {
     return ( Ga*mGaAs.c12(T) + In*mInAs.c12(T) );
 }
 
-MI_PROPERTY(GaInAs, thermCond,
+MI_PROPERTY(GaInAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
             )
-std::pair<double,double> GaInAs::thermCond(double T, double t) const {
-    double lCondT = 1./(Ga/mGaAs.thermCond(T,t).first + In/mInAs.thermCond(T,t).first + Ga*In*0.72),
-           vCondT = 1./(Ga/mGaAs.thermCond(T,t).second + In/mInAs.thermCond(T,t).second + Ga*In*0.72);
+std::pair<double,double> GaInAs::thermk(double T, double t) const {
+    double lCondT = 1./(Ga/mGaAs.thermk(T,t).first + In/mInAs.thermk(T,t).first + Ga*In*0.72),
+           vCondT = 1./(Ga/mGaAs.thermk(T,t).second + In/mInAs.thermk(T,t).second + Ga*In*0.72);
     return ( std::make_pair(lCondT,vCondT) );
 }
 
