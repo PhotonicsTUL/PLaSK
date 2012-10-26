@@ -28,6 +28,9 @@ class RectilinearMesh1D {
 
 public:
 
+    /// Maximum difference between the points, so they are threated as one
+    constexpr static double MIN_DISTANCE = 1e-6; // 1 picometer
+
     /// Type of points in this mesh.
     typedef double PointType;
 
@@ -170,8 +173,9 @@ public:
      * Point is added to mesh only if it is not already included in it.
      * It use algorithm which has O(size()) time complexity.
      * @param new_node_cord coordinate of point to add
+     * @return \p true if the point has been inserted
      */
-    void addPoint(double new_node_cord);
+    bool addPoint(double new_node_cord);
 
     /**
      * Remove point at specified index
@@ -247,6 +251,9 @@ inline void RectilinearMesh1D::addOrderedPoints(IteratorT begin, IteratorT end, 
     result.reserve(this->size() + points_count_hint);
     std::set_union(this->points.begin(), this->points.end(), begin, end, std::back_inserter(result));
     this->points = std::move(result);
+    // Remove points too close to each other
+    auto almost_equal = [](const double& x, const double& y) -> bool { return std::abs(x-y) < MIN_DISTANCE; };
+    this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
     if (owner) owner->fireResized();
 };
 

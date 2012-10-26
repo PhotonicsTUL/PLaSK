@@ -23,7 +23,7 @@ BOOST_PYTHON_MODULE(fem2d)
         PROVIDER(outPotential, "Potentials"); // provider in the solver
         PROVIDER(outCurrentDensity, "CurrentDensities"); // provider in the solver
         PROVIDER(outHeatDensity, "HeatDensities"); // provider in the solver
-	solver.add_boundary_conditions("VConst", &__Class__::mVConst, "Boundary conditions of the first kind (constant potential)");
+        solver.add_boundary_conditions("potential_boundary", &__Class__::mVConst, "Boundary conditions of the first kind (constant potential)");
         RW_PROPERTY(getsetLoopLim, getLoopLim, setLoopLim, "Get and set max. number of loops"); // read-write property
         RW_PROPERTY(getsetVCorrLim, getVCorrLim, setVCorrLim, "Get and set limit for the potential updates"); // read-write property
         RW_PROPERTY(getsetVBigCorr, getVBigCorr, setVBigCorr, "Get and set initial value of the potential update"); // read-write property

@@ -49,7 +49,7 @@ void GeometryD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
 
 template <>
 void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
-    setBorders(DIRECTION_LON, border_to_set);
+    setBorders(DIRECTION_LONG, border_to_set);
     setBorders(DIRECTION_TRAN, border_to_set);
 }
 
@@ -242,36 +242,36 @@ void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_object, Writ
 
 void Geometry3D::setBorders(DIRECTION direction, const border::Strategy &border_lo, const border::Strategy &border_hi) {
     switch (direction) {
-        case DIRECTION_LON: backfront.setStrategies(border_lo, border_hi); break;
+        case DIRECTION_LONG: backfront.setStrategies(border_lo, border_hi); break;
         case DIRECTION_TRAN: leftright.setStrategies(border_lo, border_hi); break;
-        case DIRECTION_UP: bottomup.setStrategies(border_lo, border_hi); break;
+        case DIRECTION_VERT: bottomup.setStrategies(border_lo, border_hi); break;
     }
     fireChanged(Event::BORDERS);
 }
 
 void Geometry3D::setBorders(DIRECTION direction, const border::Strategy &border_to_set) {
     switch (direction) {
-        case DIRECTION_LON: backfront.setBoth(border_to_set); break;
+        case DIRECTION_LONG: backfront.setBoth(border_to_set); break;
         case DIRECTION_TRAN: leftright.setBoth(border_to_set); break;
-        case DIRECTION_UP: bottomup.setBoth(border_to_set); break;
+        case DIRECTION_VERT: bottomup.setBoth(border_to_set); break;
     }
     fireChanged(Event::BORDERS);
 }
 
 void Geometry3D::setBorder(DIRECTION direction, bool higher, const border::Strategy &border_to_set) {
     switch (direction) {
-        case DIRECTION_LON: backfront.set(higher, border_to_set); break;
+        case DIRECTION_LONG: backfront.set(higher, border_to_set); break;
         case DIRECTION_TRAN: leftright.set(higher, border_to_set); break;
-        case DIRECTION_UP: bottomup.set(higher, border_to_set); break;
+        case DIRECTION_VERT: bottomup.set(higher, border_to_set); break;
     }
     fireChanged(Event::BORDERS);
 }
 
 const border::Strategy &Geometry3D::getBorder(DIRECTION direction, bool higher) const {
     switch (direction) {
-        case DIRECTION_LON: return backfront.get(higher);
+        case DIRECTION_LONG: return backfront.get(higher);
         case DIRECTION_TRAN: return leftright.get(higher);
-        case DIRECTION_UP: return bottomup.get(higher);
+        case DIRECTION_VERT: return bottomup.get(higher);
     }
     assert(0);
 }

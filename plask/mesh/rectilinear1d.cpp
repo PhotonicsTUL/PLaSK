@@ -7,7 +7,8 @@ namespace plask {
 void RectilinearMesh1D::sortPointsAndRemoveNonUnique()
 {
     std::sort(this->points.begin(), this->points.end());
-    this->points.erase(std::unique(this->points.begin(), this->points.end()), this->points.end());
+    auto almost_equal = [](const double& x, const double& y) -> bool { return std::abs(x-y) < MIN_DISTANCE; };
+    this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
 }
 
 RectilinearMesh1D::RectilinearMesh1D(std::initializer_list<PointType> points): points(points), owner(nullptr) {
@@ -31,19 +32,27 @@ bool RectilinearMesh1D::operator==(const plask::RectilinearMesh1D& to_compare) c
 RectilinearMesh1D::const_iterator RectilinearMesh1D::find(double to_find) const {
     return std::lower_bound(points.begin(), points.end(), to_find);
 }
-
+//
 RectilinearMesh1D::const_iterator RectilinearMesh1D::findNearest(double to_find) const {
     return find_nearest_binary(points.begin(), points.end(), to_find);
 }
 
-void RectilinearMesh1D::addPoint(double new_node_cord) {
+bool RectilinearMesh1D::addPoint(double new_node_cord) {
     auto where = std::lower_bound(points.begin(), points.end(), new_node_cord);
-    if (where == points.end())
-        points.push_back(new_node_cord);
-    else
-        if (*where != new_node_cord)    // if node not already included
+    if (where == points.end()) {
+        if (points.size() == 0 || new_node_cord - points.back() > MIN_DISTANCE) {
+            points.push_back(new_node_cord);
+            if (owner) owner->fireResized();
+            return true;
+        }
+    } else {
+        if (*where - new_node_cord > MIN_DISTANCE && (where == points.begin() || new_node_cord - *(where-1) > MIN_DISTANCE)) {
             points.insert(where, new_node_cord);
-    if (owner) owner->fireResized();
+            if (owner) owner->fireResized();
+            return true;
+        }
+    }
+    return false;
 }
 
 void RectilinearMesh1D::addPointsLinear(double first, double last, std::size_t points_count) {

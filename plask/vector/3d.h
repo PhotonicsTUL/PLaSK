@@ -31,8 +31,8 @@ struct Vec<3, T> {
     T& tran() { return c1; }
     const T& tran() const { return c1; }
 
-    T& up() { return c2; }
-    const T& up() const { return c2; }
+    T& vert() { return c2; }
+    const T& vert() const { return c2; }
 
     // radial coordinates
     T& rad_p() { return c0; }

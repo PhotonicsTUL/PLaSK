@@ -14,14 +14,14 @@ inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
 template <typename BlockType>
 inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
     block.size.tran() = reader.source.requireAttribute<double>(reader.getAxisTranName());
-    block.size.up() = reader.source.requireAttribute<double>(reader.getAxisUpName());
+    block.size.vert() = reader.source.requireAttribute<double>(reader.getAxisUpName());
     setupLeaf(reader, block);
 }
 
 template <>
 void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr(axes.getNameForTran(), size.tran())
-                    .attr(axes.getNameForUp(), size.up())
+                    .attr(axes.getNameForUp(), size.vert())
                     .attr("material", material->str());
 }
 
@@ -29,7 +29,7 @@ template <>
 void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr(axes.getNameForLon(), size.lon())
                     .attr(axes.getNameForTran(), size.tran())
-                    .attr(axes.getNameForUp(), size.up())
+                    .attr(axes.getNameForUp(), size.vert())
                     .attr("material", material->str());
 }
 

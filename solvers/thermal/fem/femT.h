@@ -114,7 +114,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
      * Run temperature calculations
      * \return max correction of temperature against the last call
      **/
-    double calculate(int iLoopLim=1);
+    double compute(int iLoopLim=1);
 
     /**
      * Get max absolute correction for temperature

@@ -268,13 +268,13 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    Mesh1D& up() { return axis1; }
+    Mesh1D& vert() { return axis1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const Mesh1D& up() const { return axis1; }
+    const Mesh1D& vert() const { return axis1; }
 
     /**
      * Get first coordinate of points in this mesh.
@@ -520,7 +520,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return number of elements in this mesh in the first direction (axis0 direction).
      */
     std::size_t getElementsCount0() const {
-        return std::max(int(axis0.size())-1, 0);
+        return (axis0.size() != 0)? axis0.size() : 0;
     }
 
     /**
@@ -528,7 +528,9 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return number of elements in this mesh in the second direction (axis1 direction).
      */
     std::size_t getElementsCount1() const {
-        return std::max(int(axis1.size())-1, 0);
+        return (axis1.size() != 0)? axis1.size() : 0;
+
+
     }
 
     /**
@@ -536,7 +538,8 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @return number of elements in this mesh
      */
     std::size_t getElementsCount() const {
-        return std::max((int(axis0.size())-1) * (int(axis1.size())-1), 0);
+        return (axis0.size() != 0 && axis1.size() != 0)?
+            (axis0.size()-1) * (axis1.size()-1) : 0;
     }
 
     /**
@@ -1248,19 +1251,31 @@ public:
     }
 
     static Boundary getBoundary(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment) {
-        std::string dir = boundary_desc.requireAttribute("dir");
-        if (dir == "bottom")
-            return parseBoundaryFromXML(boundary_desc, enviroment, &getBottomBoundary, &getBottomOfBoundary);
-        if (dir == "left")
-            return parseBoundaryFromXML(boundary_desc, enviroment, &getLeftBoundary, &getLeftOfBoundary);
-        if (dir == "right")
-            return parseBoundaryFromXML(boundary_desc, enviroment, &getRightBoundary, &getRightOfBoundary);
-        if (dir == "top")
-            return parseBoundaryFromXML(boundary_desc, enviroment, &getTopBoundary, &getTopOfBoundary);
-        if (dir == "vertical")
-            return getVerticalBoundaryNear(boundary_desc.requireAttribute<double>("at"), boundary_desc.requireAttribute<double>("from"), boundary_desc.requireAttribute<double>("to"));
-        if (dir == "horizontal")
-            return getHorizontalBoundaryNear(boundary_desc.requireAttribute<double>("at"), boundary_desc.requireAttribute<double>("from"), boundary_desc.requireAttribute<double>("to"));
+        auto side = boundary_desc.getAttribute("side");
+        auto line = boundary_desc.getAttribute("line");
+        if (side && line) {
+            throw XMLConflictingAttributesException(boundary_desc, "size", "line");
+        } else if (side) {
+            if (*side == "bottom")
+                return parseBoundaryFromXML(boundary_desc, enviroment, &getBottomBoundary, &getBottomOfBoundary);
+            if (*side == "left")
+                return parseBoundaryFromXML(boundary_desc, enviroment, &getLeftBoundary, &getLeftOfBoundary);
+            if (*side == "right")
+                return parseBoundaryFromXML(boundary_desc, enviroment, &getRightBoundary, &getRightOfBoundary);
+            if (*side == "top")
+                return parseBoundaryFromXML(boundary_desc, enviroment, &getTopBoundary, &getTopOfBoundary);
+            throw XMLBadAttrException(boundary_desc, "side", *side);
+        } else if (line) {
+            double at = boundary_desc.requireAttribute<double>("at"),
+                   start = boundary_desc.requireAttribute<double>("start"),
+                   stop = boundary_desc.requireAttribute<double>("stop");
+            boundary_desc.requireTagEnd();
+            if (*line == "vertical")
+                return getVerticalBoundaryNear(at, start, stop);
+            if (*line == "horizontal")
+                return getHorizontalBoundaryNear(at, start, stop);
+            throw XMLBadAttrException(boundary_desc, "line", *line);
+        }
         return Boundary();
     }
 };

@@ -13,7 +13,7 @@ namespace plask {
  * @tparam growingDirection direction in which stack growing
  * @ingroup GEOMETRY_OBJ
  */
-template <int dim, int growingDirection = Primitive<dim>::DIRECTION_UP>
+template <int dim, int growingDirection = Primitive<dim>::DIRECTION_VERT>
 struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
@@ -88,7 +88,7 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     std::vector<double> stackHeights;
 
     /**
-     * Calculate object up translation and height of stack with object @a el.
+     * Calculate object vertical translation and height of stack with object @a el.
      * @param[in] elBoudingBox bounding box of geometry object (typically: for object which is or will be in stack)
      * @param[in] prev_height height of stack under an @a el
      * @param[out] el_translation up translation which should object @a el have
@@ -100,7 +100,7 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     }
 
     /**
-     * Calculate object up translation and height of stack with object @a el.
+     * Calculate object vertical translation and height of stack with object @a el.
      * @param[in] el geometry object (typically: which is or will be in stack)
      * @param[in] prev_height height of stack under an @a el
      * @param[out] el_translation up translation which should object @a el have
@@ -222,21 +222,11 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
      * @param el object to add
      * @return path hint, see @ref geometry_paths
-     */
-    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el) {
-        return insertUnsafe(el, 0);
-    }
-
-    /**
-     * Add children to shelf begin, move all other children right.
-     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el object to add
-     * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el) {
         this->ensureCanHaveAsChild(*el);
-        return push_front_Unsafe(el);
+        return insertUnsafe(el, 0);
     }
 
     virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
@@ -251,7 +241,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
 template <int dim>
 struct StackContainer: public StackContainerBaseImpl<dim> {
 
-    typedef typename chooseType<dim-2, align::Aligner2D<align::DIRECTION_TRAN>, align::Aligner3D<align::DIRECTION_LON, align::DIRECTION_TRAN> >::type Aligner;
+    typedef typename chooseType<dim-2, align::Aligner2D<align::DIRECTION_TRAN>, align::Aligner3D<align::DIRECTION_LONG, align::DIRECTION_TRAN> >::type Aligner;
     typedef typename chooseType<dim-2, align::Left, align::BackLeft>::type DefaultAligner;
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
@@ -283,7 +273,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans, const Box& elBB) const {
         shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
-        result->translation.up() = up_trans;
+        result->translation.vert() = up_trans;
         aligner.align(*result, elBB);
         //el->fireChanged();    //??
         return result;
@@ -298,7 +288,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans) const {
         shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
-        result->translation.up() = up_trans;
+        result->translation.vert() = up_trans;
         aligner.align(*result);
         return result;
     }
@@ -377,17 +367,6 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     PathHints::Hint push_back(const shared_ptr<ChildType> &el, const Aligner& aligner = DefaultAligner()) { return add(el, aligner); }
 
     /**
-     * Add children to stack bottom, move all other children up.
-     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
-     * @param el object to add
-     * @param aligner aligner which describe horizontal translation of added object
-     * @return path hint, see @ref geometry_paths
-     */
-    PathHints::Hint push_front_Unsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
-        return insertUnsafe(el, 0, aligner);
-    }
-
-    /**
      * Add child to stack bottom, move all other children up.
      * @param el object to add
      * @param aligner aligner which describe horizontal translation of object
@@ -396,7 +375,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
         this->ensureCanHaveAsChild(*el);
-        return push_front_Unsafe(el, aligner);
+        return insertUnsafe(el, 0, aligner);
     }
 
     const Aligner& getAlignerAt(std::size_t child_nr) const {
@@ -508,7 +487,7 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual Box getBoundingBox() const {
         Box result = UpperClass::getBoundingBox();
-        result.upper.up() += result.sizeUp() * (repeat_count-1);
+        result.upper.vert() += result.height() * (repeat_count-1);
         return result;
     }
 
@@ -530,13 +509,13 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual bool includes(const DVec& p) const {
         DVec p_reduced = p;
-        if (!reduceHeight(p_reduced.up())) return false;
+        if (!reduceHeight(p_reduced.vert())) return false;
         return UpperClass::includes(p_reduced);
     }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         DVec p_reduced = p;
-        if (!reduceHeight(p_reduced.up())) return shared_ptr<Material>();
+        if (!reduceHeight(p_reduced.vert())) return shared_ptr<Material>();
         return UpperClass::getMaterial(p_reduced);
     }
 

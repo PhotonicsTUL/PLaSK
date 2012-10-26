@@ -120,9 +120,9 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     //  */
     // inline void setInterface(size_t index) {
     //     if (!mesh) setSimpleMesh();
-    //     if (index < 0 || index >= mesh->up().size())
+    //     if (index < 0 || index >= mesh->vert().size())
     //         throw BadInput(getId(), "wrong interface position");
-    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->up()[index], index);
+    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->vert()[index], index);
     //     interface = index;
     // }
     //
@@ -135,9 +135,9 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     //     if (!mesh) setSimpleMesh();
     //     auto boxes = geometry->getLeafsBoundingBoxes(path);
     //     if (boxes.size() != 1) throw NotUniqueObjectException();
-    //     interface = std::lower_bound(mesh->up().begin(), mesh->up().end(), boxes[0].upper.up()) - mesh->up().begin();
-    //     if (interface >= mesh->up().size()) interface = mesh->up().size() - 1;
-    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->up()[interface], interface);
+    //     interface = std::lower_bound(mesh->vert().begin(), mesh->vert().end(), boxes[0].upper.vert()) - mesh->vert().begin();
+    //     if (interface >= mesh->vert().size()) interface = mesh->vert().size() - 1;
+    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->vert()[interface], interface);
     // }
 
     /**

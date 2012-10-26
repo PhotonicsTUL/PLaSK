@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding: utf8
 '''
     This tool converts RPSMES .dan file to PLaSK .xpl file.
 
@@ -15,17 +16,21 @@ from numpy import *
 
 
 # Generator of unique names
-_unique_object_name_counter = 0
-def unique_object_name():
-    global _unique_object_name_counter
-    _unique_object_name_counter += 1
-    return "obj%d" % _unique_object_name_counter
+class UniqueId(object):
 
-_unique_material_name_counter = 0
-def unique_material_name():
-    global _unique_material_name_counter
-    _unique_material_name_counter += 1
-    return "mat%d" % _unique_material_name_counter
+    def __init__(self, prefix, fmt="%02d", initial=1):
+        self.prefix = prefix
+        self.fmt = fmt
+        self.counter = initial - 1
+
+    def __call__(self):
+        self.counter += 1
+        return self.prefix + self.fmt % self.counter
+
+
+unique_object_name = UniqueId("object")
+
+unique_material_name = UniqueId("material")
 
 # Classes for storing data read from *.dan file
 class Region(object):
@@ -39,21 +44,21 @@ class Region(object):
         self.role = None
 
     def write(self, output):
-        locals().update(self.__dict__)
-        w = '%.6g' % (self.x1 - self.x0)
-        h = '%.6g' % (self.y1 - self.y0)
+        w = '%.4f' % (self.x1 - self.x0)
+        h = '%.4f' % (self.y1 - self.y0)
         more = ""
         if self.repeat and not self.name: self.name = unique_object_name()
         if self.role: more += ' role="%s"' % self.role
         if self.name: more += ' name="%s"' % self.name
-        output.write('      <child %(a0)s="%(x0)s" %(a1)s="%(y0)s"><block %(a0)s="%(w)s" %(a1)s="%(h)s" material="%(material)s"%(more)s/></child>\n' % locals())
+        locals().update(self.__dict__)
+        output.write('      <child %(a0)s="%(x0).4f" %(a1)s="%(y0).4f"><block %(a0)s="%(w)s" %(a1)s="%(h)s" material="%(material)s"%(more)s/></child>\n' % locals())
         if self.repeat:
             x = self.x0
             y = self.y0
             for i in range(self.repeat):
                 x += self.shift[0]
                 y += self.shift[1]
-                output.write('      <child %(a0)s="%(x)s" %(a1)s="%(y)s"><ref name="%(name)s"/></child>\n' % locals())
+                output.write('      <child %(a0)s="%(x).4f" %(a1)s="%(y).4f"><ref name="%(name)s"/></child>\n' % locals())
 
 
 class Material(object):
@@ -88,6 +93,8 @@ class Material(object):
             output.write('    <cond>%s, %s</cond>\n' % tuple(self.sigma))
         output.write('  </material>\n')
 
+
+
 def parse_material_name(mat, comp, dopant):
     if mat[0] == mat[0].lower(): elements = ['']
     else: elements = []
@@ -96,6 +103,8 @@ def parse_material_name(mat, comp, dopant):
         elements[-1] = elements[-1]+l
     if len(elements) == 1:
         result = elements[0]
+    elif len(elements) == 2:
+        result = ''.join(elements)
     else:
         if comp == 0.:
             result = ''.join(elements[1:])
@@ -114,6 +123,8 @@ def read_dan(fname):
        On exit this function returns dictionary of custom materials and list of regions
     '''
 
+    print "Reading %s:" % fname
+
     try:
         ifile = open(iname)
     except IOError:
@@ -124,21 +135,25 @@ def read_dan(fname):
     # Set-up generator, which skips empty lines, strips the '\n' character, and splits line by tabs
     def Input(ifile):
         for line in ifile:
-            print line[:-1]
-            if line.strip(): yield line[:-1].split()
+            if line[-1] == "\n": line = line[:-1]
+            print("> " + line)
+            if line.strip(): yield line.split()
     input = Input(ifile)
 
     # Header
-    name = input.next()[0]                              # structure name (will be used for output file)
-    matdb = input.next()[0]                             # materials database spec (All by default)
-    sym = int(input.next()[0])                          # symmetry (0: Cartesian2D, 1: cylindrical) type and height (not used)
-    input.next()                                        # horizontal something (not used)
-    line = input.next()                                 # number of defined regions and scale
+    name = input.next()[0]                      # structure name (will be used for output file)
+    matdb = input.next()[0]                     # materials database spec (All by default)
+    line = input.next()                         # symmetry (0: Cartesian2D, 1: cylindrical) type and length (not used)
+    sym = int(line[0])
+    setting = int(input.next()[0])              # setting (10,11 - temporal calculations, 100,100 - 3D)
+    line = input.next()                         # number of defined regions and scale
     nregions = int(line[0])
-    scale = float(line[1]) * 1e6                        # in xpl all dimensions are in microns
+    scale = float(line[1]) * 1e6                # in xpl all dimensions are in microns
+
+    if setting >= 10:
+        raise NotImplementedError("3D structure nor temporal data not implemented yet (%s)" % setting) # TODO
 
     # Set up symmetry
-    geometry = ['cartesian2d', 'cylindrical'][sym]
     axes = ['xy', 'rz'][sym]
 
     regions = []
@@ -146,7 +161,7 @@ def read_dan(fname):
     heats = {}
 
     # Read each region
-    for i in range(nregions):
+    for nr in range(nregions):
         r = Region(axes)
 
         # number, position, material
@@ -181,9 +196,9 @@ def read_dan(fname):
         kappa_t = line[2].lower()
 
         # create custom material if necessary
-        if sigma_t not in ('n','p') or kappa_t not in ('n','p'):
+        if sigma_t not in ('n','p','j') or kappa_t not in ('n','p'):
             material = Material()
-            if sigma_t not in ('n','p'):
+            if sigma_t not in ('n','p','j'):
                 material.sigma = sigma
             else:
                 material.base = parse_material_name(mat, sigma[0], dopant)
@@ -197,7 +212,7 @@ def read_dan(fname):
                 mat = unique_material_name()
             materials[mat] = material
         else:
-            mat = parse_material_name(mat, sigma[0], dopant)
+            mat = parse_material_name(mat, kappa[0], dopant)
 
         r.material = mat
         if ':' in mat: r.material += "=%g" % doping     # add doping information
@@ -206,9 +221,9 @@ def read_dan(fname):
         line = input.next()
         ht = int(line[0])
         if ht == -200:
-            r.role == 'active'
+            r.role = 'active'
         elif ht == 0:
-            r.role == 'insulator'
+            r.role = 'insulator'
         elif ht == -1:
             r.name = unique_material_name()
             heats[r.name] = float(line[1])
@@ -219,28 +234,102 @@ def read_dan(fname):
         regions.append(r)
 
     # boundary conditions
+    def parse_bc():
+        bounds = []
+        line = input.next()
+        nbc = int(line[0])
+        for nc in range(nbc):
+            line = input.next()
+            x0, y0, x1, y1 = line[0:4]
+            try: val = float(line[4])
+            except IndexError: val = 0.
+            except ValueError: val = 0.
+            bounds = []
+            if (x0 == x1):
+                bounds.append(dict(dir='vertical', at=x0, start=y0, stop=y1, value=val))
+            elif (y0 == y1):
+                bounds.append(dict(dir='horizontal', at=y0, start=x0, stop=x1, value=val))
+            else:
+                raise ValueError("boundary condition line is neither horizontal nor vertical")
+        return bounds
 
-    return name, geometry, axes, materials, regions, heats
+    boundaries = {}
+    boundaries['potential'] = parse_bc()
+    boundaries['temperature'] = parse_bc()
+    boundaries['convection'] = parse_bc()
+    boundaries['radiation'] = parse_bc()
+    try: boundaries['mesh'] = parse_bc()
+    except: pass
+
+    return name, sym, axes, materials, regions, heats, boundaries
 
 
-def write_xpl(name, geometry, axes, materials, regions, heats):
+def write_xpl(name, sym, axes, materials, regions, heats, boundaries):
     '''Write output xpl file'''
+
+    print "Writing %s.xpl" % name
 
     ofile = open(name+'.xpl', 'w')
     ofile.write('<plask>\n\n')
 
+    geometry = ['cartesian2d', 'cylindrical'][sym]
+    suffix = ['2D', 'Cyl'][sym]
+
+    # materials
     if materials:
         ofile.write('<materials>\n')
         for mat in materials:
             materials[mat].write(ofile, mat)
         ofile.write('</materials>\n\n')
 
+    # geometry
     ofile.write('<geometry>\n  <%s name="main" axes="%s">\n' % (geometry, axes))
     ofile.write('    <container>\n')
     for r in regions:
         r.write(ofile)
     ofile.write('    </container>\n')
     ofile.write('  </%s>\n</geometry>\n\n' % geometry)
+
+    # default mesh generator
+    ofile.write('<grids>\n  <generator type="rectilinear2d" method="divide" name="default">\n')
+    ofile.write('    <postdiv by="2"/>\n  </generator>\n</grids>\n\n')
+
+    def save_boundaries(name):
+        if boundaries[name]:
+            ofile.write('    <%s>\n' % name)
+            for data in boundaries[name]:
+                ofile.write(('      <condition value="%(value)s"><place line="%(dir)s"' +
+                            ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>\n') % data)
+            ofile.write('    </%s>\n' % name)
+
+    # default solvers
+    ofile.write('<solvers>\n')
+    ofile.write('  <thermal solver="Fem%s" name="THERMAL">\n' % suffix)
+    ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
+    save_boundaries('temperature')
+    save_boundaries('convection')
+    save_boundaries('radiation')
+    ofile.write('  </thermal>\n')
+    #ofile.write('  <electrical solver="Fem%s" name="electrical">' % suffix)
+    ofile.write('  <electrical lib="fem2d" solver="%sFEM" name="ELECTRICAL">\n' % ['Cartesian', 'Cylindrical'][sym]) # TODO change to above
+    ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
+    ofile.write('    <wavelength value="1300"/>\n') # TODO
+    save_boundaries('potential')
+    ofile.write('  </electrical>\n')
+    ofile.write('</solvers>\n\n')
+
+    # connections
+    ofile.write('<connects>\n  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>\n')
+    ofile.write('  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>\n</connects>\n\n')
+
+    # script
+    ofile.write('<script>\n# Here you may put your calculations\n\n')
+    if heats:
+        ofile.write('heats = StepProfile(GEO.main)\nTHERMAL.inHeatDensities = heats')
+        for i,heat in enumerate(heats.items()):
+            ofile.write('heats[%s] = %s\n' % heat)
+    ofile.write('')
+    ofile.write('</script>\n\n')
 
     ofile.write('</plask>\n')
 
@@ -254,3 +343,5 @@ if __name__ == "__main__":
         sys.exit(3)
 
     write_xpl(*read_dan(iname))
+
+    print "Done!"

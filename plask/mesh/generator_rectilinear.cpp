@@ -94,19 +94,27 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
         size_t end = result.size()-2;
         double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
         for (size_t i = 0; i <= end;) {
-            if (w > 2.000001*w_prev) { // .000001 is for border case w == 2*w_prev, to avoid division even in presence of numerical error
-                result.addPoint(0.5 * (result[i] + result[i+1])); ++end;
-                w = w_next = result[i+1] - result[i];
-            } else if (w > 2.000001*w_next) {
-                result.addPoint(0.5 * (result[i] + result[i+1])); ++end;
-                w_next = result[i+1] - result[i];
-                if (i) {
-                    --i;
-                    w = w_prev;
-                    w_prev = (i == 0)? INFINITY : result[i] - result[i-1];
-                } else
-                    w = w_next;
-            } else {
+            bool goon = true;
+            if (w > 2.001*w_prev) { // .0001 is for border case w == 2*w_prev, to avoid division even in presence of numerical error
+                if (result.addPoint(0.5 * (result[i] + result[i+1]))) {
+                    ++end;
+                    w = w_next = result[i+1] - result[i];
+                    goon = false;
+                }
+            } else if (w > 2.001*w_next) {
+                if (result.addPoint(0.5 * (result[i] + result[i+1]))) {
+                    ++end;
+                    w_next = result[i+1] - result[i];
+                    if (i) {
+                        --i;
+                        w = w_prev;
+                        w_prev = (i == 0)? INFINITY : result[i] - result[i-1];
+                    } else
+                        w = w_next;
+                    goon = false;
+                }
+            }
+            if (goon) {
                 ++i;
                 w_prev = w;
                 w = w_next;
@@ -196,9 +204,11 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "refinements") {
             while (reader.requireTagOrEnd()) {
-                if (reader.getNodeName() != "horizontal" && reader.getNodeName() != "vertical")
-                    throw XMLUnexpectedElementException(reader, "<horizontal ...> of <vertical ...>");
-                auto direction = (reader.getNodeName()=="horizontal")? Primitive<2>::DIRECTION_TRAN : Primitive<2>::DIRECTION_UP;
+                if (reader.getNodeName() != "vertical" && reader.getNodeName() != "horizontal" &&
+                    reader.getNodeName() != "axis0" && reader.getNodeName() != "axis1")
+                    throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, <vertical>, or <horizontal>");
+                auto direction = (reader.getNodeName() == "vertical" || reader.getNodeName() == "axis0")?
+                                  Primitive<2>::DIRECTION_TRAN : Primitive<2>::DIRECTION_VERT;
                 weak_ptr<GeometryObjectD<2>> object =
                     manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
                 double pos = reader.requireAttribute<double>("pos");

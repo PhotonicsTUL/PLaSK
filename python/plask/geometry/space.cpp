@@ -219,8 +219,8 @@ static BordersProxy Geometry2DCartesian_getBorders(const Geometry2DCartesian& se
     BordersProxy borders;
     borders["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
     borders["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
-    borders["top"] = _border(self, Geometry::DIRECTION_UP, true);
-    borders["bottom"] = _border(self, Geometry::DIRECTION_UP, false);
+    borders["top"] = _border(self, Geometry::DIRECTION_VERT, true);
+    borders["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
     return borders;
 }
 
@@ -228,8 +228,8 @@ static BordersProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical
     BordersProxy borders;
     borders["inner"] = _border(self, Geometry::DIRECTION_TRAN, false);
     borders["outer"] = _border(self, Geometry::DIRECTION_TRAN, true);
-    borders["top"] = _border(self, Geometry::DIRECTION_UP, true);
-    borders["bottom"] = _border(self, Geometry::DIRECTION_UP, false);
+    borders["top"] = _border(self, Geometry::DIRECTION_VERT, true);
+    borders["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
     return borders;
 }
 

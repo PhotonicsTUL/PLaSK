@@ -55,8 +55,8 @@ Box2D Revolution::childBox(const plask::Box3D& r) {
 
 Box3D Revolution::parentBox(const ChildBox& r) {
     return Box3D(
-            vec(-r.upper.tran(), -r.upper.tran(), r.lower.up()),
-            vec(r.upper.tran(),  r.upper.tran(),  r.upper.up())
+            vec(-r.upper.tran(), -r.upper.tran(), r.lower.vert()),
+            vec(r.upper.tran(),  r.upper.tran(),  r.upper.vert())
            );
 }
 

@@ -130,7 +130,7 @@ void EffectiveIndex2DSolver::onInitialize()
     if (!mesh) setSimpleMesh();
 
     // Assign space for refractive indices cache and stripe effective indices
-    nrCache.assign(mesh->tran().size()+1, std::vector<dcomplex>(mesh->up().size()+1));
+    nrCache.assign(mesh->tran().size()+1, std::vector<dcomplex>(mesh->vert().size()+1));
     stripeNeffs.resize(mesh->tran().size()+1);
 }
 
@@ -171,7 +171,7 @@ void EffectiveIndex2DSolver::stageOne()
     }
 
     size_t xsize = mesh->tran().size() + 1;
-    size_t ysize = mesh->up().size() + 1;
+    size_t ysize = mesh->vert().size() + 1;
 
     if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed) {
         // we need to update something
@@ -395,7 +395,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
 #       endif
     }
 
-    size_t Ny = mesh->up().size()+1;
+    size_t Ny = mesh->vert().size()+1;
     size_t mid_x = std::max_element(fieldWeights.begin(), fieldWeights.end()) - fieldWeights.begin();
     // double max_val = 0.;
     // for (size_t i = 1; i != Nx; ++i) { // Find stripe with maximum weight that has non-constant refractive indices
@@ -435,7 +435,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             fieldY[Ny-1] << 1., 0;
             for (ptrdiff_t i = Ny-2; i >= 0; --i) {
                 fieldY[i].noalias() = fresnelY(i) * fieldY[i+1];
-                double d = mesh->up()[i] - mesh->up()[max(int(i)-1, 0)];
+                double d = mesh->vert()[i] - mesh->vert()[max(int(i)-1, 0)];
                 dcomplex phas = exp(- I * betay[i] * d);
                 DiagonalMatrix<dcomplex, 2> P;
                 P.diagonal() << 1./phas, phas;  // we propagate backward
@@ -453,7 +453,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
             auto point = dst_mesh[idx];
             double x = point.tran();
-            double y = point.up();
+            double y = point.vert();
 
             bool negate = false;
             if (x < 0. && symmetry != NO_SYMMETRY) {
@@ -466,8 +466,8 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             dcomplex val = fieldX[ix][0] * phasx + fieldX[ix][1] / phasx;
             if (negate) val = - val;
 
-            size_t iy = mesh->up().findIndex(y);
-            y -= mesh->up()[max(int(iy)-1, 0)];
+            size_t iy = mesh->vert().findIndex(y);
+            y -= mesh->vert()[max(int(iy)-1, 0)];
             dcomplex phasy = exp(- I * betay[iy] * y);
             val *= fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
 
@@ -491,7 +491,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
         const MeshT& rect_mesh = dynamic_cast<const MeshT&>(dst_mesh);
 
         std::vector<dcomplex> valx(rect_mesh.tran().size());
-        std::vector<dcomplex> valy(rect_mesh.up().size());
+        std::vector<dcomplex> valy(rect_mesh.vert().size());
 
         #pragma omp parallel
         {
@@ -512,10 +512,10 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             }
 
             #pragma omp for
-            for (size_t idy = 0; idy < rect_mesh.up().size(); ++idy) {
-                double y = rect_mesh.up()[idy];
-                size_t iy = mesh->up().findIndex(y);
-                y -= mesh->up()[max(int(iy)-1, 0)];
+            for (size_t idy = 0; idy < rect_mesh.vert().size(); ++idy) {
+                double y = rect_mesh.vert()[idy];
+                size_t iy = mesh->vert().findIndex(y);
+                y -= mesh->vert()[max(int(iy)-1, 0)];
                 dcomplex phasy = exp(- I * betay[iy] * y);
                 valy[idy] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
             }

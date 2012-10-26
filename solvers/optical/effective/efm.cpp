@@ -534,7 +534,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
             }
 
             #pragma omp for
-            for (size_t idz = 0; idz < rect_mesh.up().size(); ++idz) {
+            for (size_t idz = 0; idz < rect_mesh.vert().size(); ++idz) {
                 double z = rect_mesh.axis1[idz];
                 size_t iz = mesh->axis1.findIndex(z);
                 z -= mesh->axis1[max(int(iz)-1, 0)];

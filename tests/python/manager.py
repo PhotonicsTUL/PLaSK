@@ -38,8 +38,8 @@ class Manager(unittest.TestCase):
                     <postdiv hor_by="2"/>
                     <warnings multiple="no"/>
                     <refinements>
-                        <vertical object="Block-3" path="Path-4" pos="1.0"/>
-                        <horizontal object="Block-3" pos="1.0"/>
+                        <vertical object="Block-3" pos="1.0"/>
+                        <horizontal object="Block-3" path="Path-4" pos="1.0"/>
                     </refinements>
                 </generator>
             </grids>

@@ -55,14 +55,14 @@ shared_ptr<const GeometryObject> Translation<dim>::changedVersion(const Geometry
 template <>
 void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     if (translation.tran() != 0.0) dest_xml_object.attr(axes.getNameForTran(), translation.tran());
-    if (translation.up() != 0.0) dest_xml_object.attr(axes.getNameForUp(), translation.up());
+    if (translation.vert() != 0.0) dest_xml_object.attr(axes.getNameForUp(), translation.vert());
 }
 
 template <>
 void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     if (translation.lon() != 0.0) dest_xml_object.attr(axes.getNameForLon(), translation.lon());
     if (translation.tran() != 0.0) dest_xml_object.attr(axes.getNameForTran(), translation.tran());
-    if (translation.up() != 0.0) dest_xml_object.attr(axes.getNameForUp(), translation.up());
+    if (translation.vert() != 0.0) dest_xml_object.attr(axes.getNameForUp(), translation.vert());
 }
 
 // template <int dim>
@@ -82,7 +82,7 @@ template struct Translation<3>;
 template <typename TranslationType>
 inline static void setupTranslation2D3D(GeometryReader& reader, TranslationType& translation) {
     translation.translation.tran() = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
-    translation.translation.up() = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
+    translation.translation.vert() = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
     translation.setChild(reader.readExactlyOneChild<typename TranslationType::ChildType>());
 }
 

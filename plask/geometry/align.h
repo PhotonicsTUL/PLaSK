@@ -17,9 +17,9 @@ namespace align {
  * Directions of aligners activity, same as vec<3, T> directions.
  */
 enum DIRECTION {
-    DIRECTION_LON,
+    DIRECTION_LONG,
     DIRECTION_TRAN,
-    DIRECTION_UP
+    DIRECTION_VERT
 };
 
 template <DIRECTION direction> struct Aligner2D;
@@ -320,28 +320,28 @@ typedef details::Aligner2DImpl<DIRECTION_TRAN, details::centerToZero, details::C
 typedef TranslationAligner2D<DIRECTION_TRAN> Tran;
 
 //2d lon. aligners:
-typedef details::Aligner2DImpl<DIRECTION_LON, details::hiToZero, details::FRONT> Front;
-typedef details::Aligner2DImpl<DIRECTION_LON, details::lowToZero, details::BACK> Back;
-typedef details::Aligner2DImpl<DIRECTION_LON, details::centerToZero, details::CENTER> LonCenter;
-typedef TranslationAligner2D<DIRECTION_LON> Lon;
+typedef details::Aligner2DImpl<DIRECTION_LONG, details::hiToZero, details::FRONT> Front;
+typedef details::Aligner2DImpl<DIRECTION_LONG, details::lowToZero, details::BACK> Back;
+typedef details::Aligner2DImpl<DIRECTION_LONG, details::centerToZero, details::CENTER> LonCenter;
+typedef TranslationAligner2D<DIRECTION_LONG> Lon;
 
 //3d lon/tran aligners:
-typedef details::Aligner3DImpl<DIRECTION_LON, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::lowToZero, details::LEFT> FrontLeft;
-typedef details::Aligner3DImpl<DIRECTION_LON, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::hiToZero, details::RIGHT> FrontRight;
-typedef details::Aligner3DImpl<DIRECTION_LON, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::centerToZero, details::CENTER> FrontCenter;
-typedef details::Aligner3DImpl<DIRECTION_LON, details::lowToZero, details::BACK, DIRECTION_TRAN, details::lowToZero, details::LEFT> BackLeft;
-typedef details::Aligner3DImpl<DIRECTION_LON, details::lowToZero, details::BACK, DIRECTION_TRAN, details::hiToZero, details::RIGHT> BackRight;
-typedef details::Aligner3DImpl<DIRECTION_LON, details::lowToZero, details::BACK, DIRECTION_TRAN, details::centerToZero, details::CENTER> BackCenter;
-typedef details::Aligner3DImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::lowToZero, details::LEFT> CenterLeft;
-typedef details::Aligner3DImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::hiToZero, details::RIGHT> CenterRight;
-typedef details::Aligner3DImpl<DIRECTION_LON, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::centerToZero, details::CENTER> CenterCenter;
-typedef TranslationAligner3D<DIRECTION_LON, DIRECTION_TRAN> LonTran;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::lowToZero, details::LEFT> FrontLeft;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::hiToZero, details::RIGHT> FrontRight;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::hiToZero, details::FRONT, DIRECTION_TRAN, details::centerToZero, details::CENTER> FrontCenter;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::lowToZero, details::BACK, DIRECTION_TRAN, details::lowToZero, details::LEFT> BackLeft;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::lowToZero, details::BACK, DIRECTION_TRAN, details::hiToZero, details::RIGHT> BackRight;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::lowToZero, details::BACK, DIRECTION_TRAN, details::centerToZero, details::CENTER> BackCenter;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::lowToZero, details::LEFT> CenterLeft;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::hiToZero, details::RIGHT> CenterRight;
+typedef details::Aligner3DImpl<DIRECTION_LONG, details::centerToZero, details::CENTER, DIRECTION_TRAN, details::centerToZero, details::CENTER> CenterCenter;
+typedef TranslationAligner3D<DIRECTION_LONG, DIRECTION_TRAN> LonTran;
 //typedef ComposeAligner3D<DIR3D_LON, DIR3D_TRAN> NFLR;
 //TODO mixed variants
 
 namespace details {
     Aligner2D<DIRECTION_TRAN>* transAlignerFromString(std::string str);
-    Aligner2D<DIRECTION_LON>* lonAlignerFromString(std::string str);
+    Aligner2D<DIRECTION_LONG>* lonAlignerFromString(std::string str);
 }
 
 /**
@@ -356,7 +356,7 @@ template <>
 inline Aligner2D<DIRECTION_TRAN>* fromStr<DIRECTION_TRAN>(const std::string& str) { return details::transAlignerFromString(str); }
 
 template <>
-inline Aligner2D<DIRECTION_LON>* fromStr<DIRECTION_LON>(const std::string& str) { return details::lonAlignerFromString(str); }
+inline Aligner2D<DIRECTION_LONG>* fromStr<DIRECTION_LONG>(const std::string& str) { return details::lonAlignerFromString(str); }
 
 template <DIRECTION direction>
 inline std::unique_ptr<Aligner2D<direction>> fromStrUnique(const std::string& str) {
@@ -370,7 +370,7 @@ inline std::unique_ptr<Aligner2D<direction>> fromStrUnique(const std::string& st
  * @param str string which describes 3d aligner
  * @return pointer to the constructed aligner
  **/
-Aligner3D<align::DIRECTION_LON, align::DIRECTION_TRAN>* alignerFromString(std::string str);
+Aligner3D<align::DIRECTION_LONG, align::DIRECTION_TRAN>* alignerFromString(std::string str);
 
 /**
  * Construct 3d aligner from two strings describing alignment in two directions

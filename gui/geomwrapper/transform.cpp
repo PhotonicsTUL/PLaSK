@@ -19,7 +19,7 @@ void TranslationWrapper<2>::draw(QPainter& painter) const {
     QTransform transformBackup = painter.transform();
     const plask::Translation<2>& t = c();
     if (!t.hasChild()) return;
-    painter.translate(t.translation.tran(), t.translation.up());
+    painter.translate(t.translation.tran(), t.translation.vert());
     ext(t.getChild())->draw(painter);
     painter.setTransform(transformBackup);
 }

@@ -127,16 +127,16 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymM
         Vec<2,double> tMidPoint = ttE->getMidpoint();
         auto tMaterial = geometry->getMaterial(tMidPoint);
 
-        // height of the leaf spanning over the element
-        double tLayerHeight = dynamic_pointer_cast<const GeometryObjectD<2>>( geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf) )
-                                -> getBoundingBox().sizeUp();
-
         // average temperature on the element
         double tTemp = 0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] + mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]);
 
         // thermal conductivity
         double tKx, tKy;
-        std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLayerHeight);
+        auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
+        if (tLeaf)
+            std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height());
+        else
+            std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -264,16 +264,16 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
         auto tMaterial = geometry->getMaterial(tMidPoint);
         double r = tMidPoint.rad_r();
 
-        // height of the leaf spanning over the element
-        double tLayerHeight = dynamic_pointer_cast<const GeometryObjectD<2>>( geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf) )
-                                -> getBoundingBox().sizeUp();
-
         // average temperature on the element
         double tTemp = 0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] + mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]);
 
         // thermal conductivity
         double tKx, tKy;
-        std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLayerHeight);
+        auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
+        if (tLeaf)
+            std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height());
+        else
+            std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -365,7 +365,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geometry2DType>::calculate(int iLoopLim)
+template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geometry2DType>::compute(int iLoopLim)
 {
     this->initCalculation();
 
@@ -497,7 +497,7 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
 
         double tLayerHeight =
             dynamic_pointer_cast<const GeometryObjectD<2>>( this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf) )
-                                -> getBoundingBox().sizeUp();
+                                -> getBoundingBox().height();
 
         size_t tLoLeftNo = ttE->getLoLoIndex();
         size_t tLoRghtNo = ttE->getUpLoIndex();

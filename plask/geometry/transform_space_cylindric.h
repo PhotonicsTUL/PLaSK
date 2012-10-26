@@ -48,7 +48,7 @@ private:
      * @return vector in child space
      */
     static Vec<2, double> childVec(const Vec<3, double>& v) {
-        return vec(sqrt(v.lon()*v.lon() + v.tran()*v.tran()), v.up());
+        return vec(sqrt(v.lon()*v.lon() + v.tran()*v.tran()), v.vert());
     }
 
     /**

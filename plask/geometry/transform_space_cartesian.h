@@ -68,7 +68,7 @@ private:
      * @param p vector in space of this (3d)
      * @return @p p without lon coordinate, vector in space of child (2d)
      */
-    static ChildVec childVec(const DVec& p) { return ChildVec(p.tran(), p.up()); }
+    static ChildVec childVec(const DVec& p) { return ChildVec(p.tran(), p.vert()); }
 
     /**
      * Convert box from this space (3d) to child space (2d).
@@ -83,7 +83,7 @@ private:
      * @param lon lon coordinate
      * @return vector in space of this (3d)
      */
-    static DVec parentVec(const ChildVec& p, double lon) { return DVec(lon, p.tran(), p.up()); }
+    static DVec parentVec(const ChildVec& p, double lon) { return DVec(lon, p.tran(), p.vert()); }
 
     /**
      * Convert box from child space (2d) to this space (3d).

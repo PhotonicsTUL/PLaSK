@@ -189,7 +189,7 @@ template <>
 void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     shared_ptr<Translation<2>> child_tran = children[child_index];
     if (child_tran->translation.tran() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran());
-    if (child_tran->translation.up() != 0.0) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up());
+    if (child_tran->translation.vert() != 0.0) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.vert());
 }
 
 template <>
@@ -197,7 +197,7 @@ void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_chi
     shared_ptr<Translation<3>> child_tran = children[child_index];
     if (child_tran->translation.lon() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.lon());
     if (child_tran->translation.tran() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran());
-    if (child_tran->translation.up() != 0.0) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.up());
+    if (child_tran->translation.vert() != 0.0) dest_xml_child_tag.attr(axes.getNameForUp(), child_tran->translation.vert());
 }
 
 template <int dim>
@@ -223,7 +223,7 @@ shared_ptr<GeometryObject> read_TranslationContainer2D(GeometryReader& reader) {
         [&]() -> PathHints::Hint {
             TranslationContainer<2>::DVec translation;
             translation.tran() = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
-            translation.up() = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
+            translation.vert() = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
             return result->add(reader.readExactlyOneChild< typename TranslationContainer<2>::ChildType >(), translation);
         },
         [&](const shared_ptr<typename TranslationContainer<2>::ChildType>& child) {

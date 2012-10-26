@@ -1,6 +1,6 @@
 #include "stack.h"
 
-#define baseH_attr "from"
+#define baseH_attr "base"
 #define repeat_attr "repeat"
 #define require_equal_heights_attr "flat"
 
@@ -59,8 +59,8 @@ bool StackContainerBaseImpl<dim, growingDirection>::removeIfTUnsafe(const std::f
         return false;
 }
 
-template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_UP>;
-template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_UP>;
+template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
+template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
 template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
 
 /*template <int dim>    //this is fine but GeometryObjects doesn't have copy constructors at all, because signal doesn't have copy constructor
@@ -76,15 +76,15 @@ StackContainer<dim>::StackContainer(const StackContainer& to_copy)
 template <int dim>
 PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner) {
     const auto bb = el->getBoundingBox();
-    shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.up(), bb);
+    shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.vert(), bb);
     this->connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
     aligners.insert(aligners.begin() + pos, aligner.cloneUnique());
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
-    const double delta = bb.upper.up() - bb.lower.up();
+    const double delta = bb.upper.vert() - bb.lower.vert();
     for (std::size_t i = pos + 1; i < children.size(); ++i) {
         stackHeights[i] += delta;
-        children[i]->translation.up() += delta;
+        children[i]->translation.vert() += delta;
     }
     stackHeights.back() += delta;
     this->fireChildrenInserted(pos, pos+1);
@@ -170,9 +170,9 @@ template struct StackContainer<3>;
 
 bool ShelfContainer2D::isFlat() const {
     if (children.size() < 2) return true;
-    double height = children.front()->getBoundingBoxSize().up();
+    double height = children.front()->getBoundingBoxSize().vert();
     for (std::size_t i = 1; i < children.size(); ++i)
-        if (height != children[i]->getBoundingBoxSize().up())
+        if (height != children[i]->getBoundingBoxSize().vert())
             return false;
     return true;
 }
@@ -181,7 +181,7 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
     double el_translation, next_height;
     auto elBB = el->getBoundingBox();
     calcHeight(elBB, stackHeights.back(), el_translation, next_height);
-    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(el_translation, -elBB.lower.up()));
+    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(el_translation, -elBB.lower.vert()));
     connectOnChildChanged(*trans_geom);
     children.push_back(trans_geom);
     stackHeights.push_back(next_height);
@@ -191,7 +191,7 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
 
 PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos) {
     const auto bb = el->getBoundingBox();
-    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(stackHeights[pos] - bb.lower.tran(), -bb.lower.up()));
+    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el, vec(stackHeights[pos] - bb.lower.tran(), -bb.lower.vert()));
     connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
@@ -278,7 +278,7 @@ void MultiStackContainer<dim>::getPositionsToVec(const GeometryObject::Predicate
     for (unsigned r = 1; r < repeat_count; ++r)
         for (std::size_t i = old_size; i < new_size; ++i) {
             dest.push_back(dest[i]);
-            dest.back().up() += stackHeight * r;
+            dest.back().vert() += stackHeight * r;
         }
 }
 
@@ -294,7 +294,7 @@ void MultiStackContainer<dim>::getPositionsToVec(const GeometryObject::Predicate
 //     const double stackHeight = stackHeights.back() - stackHeights.front();
 //     for (unsigned r = 1; r < repeat_count; ++r) {
 //         Vec<dim, double> v = Primitive<dim>::ZERO_VEC;
-//         v.up() += stackHeight * r;
+//         v.vert() += stackHeight * r;
 //         for (std::size_t i = old_size; i < new_size; ++i) {
 //             dest.push_back(Translation<dim>::compress(const_pointer_cast< GeometryObjectD<dim> >(dest[i]), v));
 //         }
@@ -311,7 +311,7 @@ GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryObjec
             for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
                 auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].object)));
                 shared_ptr<Translation<dim>> new_child = org_child.copyShallow();
-                new_child->translation.up() += stackHeight;
+                new_child->translation.vert() += stackHeight;
                 result.children.push_back(GeometryObject::Subtree(new_child, result.children[org_child_nr].children));
             }
     }
@@ -321,7 +321,7 @@ GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryObjec
 template <int dim>
 GeometryObject::Subtree MultiStackContainer<dim>::getPathsAt(const MultiStackContainer::DVec &point, bool all) const {
     MultiStackContainer::DVec new_point = point;
-    reduceHeight(new_point.up());
+    reduceHeight(new_point.vert());
     return GeometryObjectContainer<dim>::getPathsAt(new_point, all);
 }
 
@@ -333,7 +333,7 @@ shared_ptr<GeometryObject> MultiStackContainer<dim>::getChildAt(std::size_t chil
     if (child_nr >= getChildrenCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildrenCount()-1);
     if (child_nr < children.size()) return children[child_nr];
     auto result = children[child_nr % children.size()]->copyShallow();
-    result->translation.up() += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
+    result->translation.vert() += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
     return result;
 }
 
@@ -392,7 +392,7 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
     read_children<StackContainer<3>>(reader,
             [&]() {
                 return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
-                                          align::fromStr<align::DIRECTION_LON, align::DIRECTION_TRAN>(
+                                          align::fromStr<align::DIRECTION_LONG, align::DIRECTION_TRAN>(
                                               reader.source.getAttribute<std::string>(reader.getAxisLonName(), "b"),
                                               reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")
                                           ));

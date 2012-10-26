@@ -23,9 +23,9 @@ struct Geometry: public GeometryObject {
     shared_ptr<Material> defaultMaterial;
 
     enum DIRECTION {
-        DIRECTION_LON = Primitive<3>::DIRECTION_LON,
+        DIRECTION_LONG = Primitive<3>::DIRECTION_LONG,
         DIRECTION_TRAN = Primitive<3>::DIRECTION_TRAN,
-        DIRECTION_UP = Primitive<3>::DIRECTION_UP
+        DIRECTION_VERT = Primitive<3>::DIRECTION_VERT
     };
 
     /**
@@ -80,7 +80,7 @@ struct Geometry: public GeometryObject {
      */
     void setAllBorders(const border::Strategy& border_to_set) {
         setPlanarBorders(border_to_set);
-        setBorders(DIRECTION_UP, border_to_set);
+        setBorders(DIRECTION_VERT, border_to_set);
     }
 
     /**
@@ -643,7 +643,7 @@ class Geometry2DCartesian: public GeometryD<2> {
     shared_ptr<Extrusion> extrusion;
 
     border::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN> leftright;
-    border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
+    border::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
     shared_ptr<Material> frontMaterial;
     shared_ptr<Material> backMaterial;
@@ -805,7 +805,7 @@ class Geometry2DCylindrical: public GeometryD<2> {
     shared_ptr<Revolution> revolution;
 
     border::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> innerouter;
-    border::StrategyPairHolder<Primitive<2>::DIRECTION_UP> bottomup;
+    border::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
     static void ensureBoundDirIsProper(DIRECTION direction, bool hi) {
         Primitive<3>::ensureIsValid2DDirection(direction);
@@ -945,9 +945,9 @@ class Geometry3D: public GeometryD<3> {
 
     shared_ptr< GeometryObjectD<3> > child;
 
-    border::StrategyPairHolder<Primitive<3>::DIRECTION_LON> backfront;
+    border::StrategyPairHolder<Primitive<3>::DIRECTION_LONG> backfront;
     border::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
-    border::StrategyPairHolder<Primitive<3>::DIRECTION_UP> bottomup;
+    border::StrategyPairHolder<Primitive<3>::DIRECTION_VERT> bottomup;
 
 public:
 

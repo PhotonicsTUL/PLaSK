@@ -26,7 +26,7 @@ BOOST_PYTHON_MODULE(fem)
     ;
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Fem2D", "Finite element thermal solver for 2D Cartesian Geometry.")
-        METHOD(calculate, "Run thermal calculations", py::arg("loops")=1);
+        METHOD(compute, "Run thermal calculations", py::arg("loops")=1);
         RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
         RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
@@ -54,7 +54,7 @@ BOOST_PYTHON_MODULE(fem)
     ;
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "FemCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
-        METHOD(calculate, "Run thermal calculations", py::arg("loops")=1);
+        METHOD(compute, "Run thermal calculations", py::arg("loops")=1);
         RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
         RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver

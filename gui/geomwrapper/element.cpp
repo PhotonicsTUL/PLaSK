@@ -41,10 +41,10 @@ void ObjectWrapper::drawMiniature(QPainter& painter, qreal w, qreal h) const {
     plask::Box2D bb = static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox();
 
     plask::Vec<2, double> s = bb.size();
-    double scale = std::min(w / s.tran(), h / s.up());
+    double scale = std::min(w / s.tran(), h / s.vert());
     painter.scale(scale, scale);
 
-    painter.translate(-bb.lower.tran(), -bb.lower.up());
+    painter.translate(-bb.lower.tran(), -bb.lower.vert());
 
     draw(painter);
 
@@ -75,7 +75,7 @@ QPixmap ObjectWrapper::getMiniature(qreal w, qreal h) const {
         s = static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox().size();
     //plask::Vec<2, double> s = static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox().size();
 
-    double obj_prop = s.tran() / s.up();
+    double obj_prop = s.tran() / s.vert();
     if (obj_prop > w / h) { //obj. to wide
         h = w / obj_prop;
     } else  //obj to high

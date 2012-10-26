@@ -540,7 +540,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     {
         std::string param = source.getNodeName();
 
-        if (param == "Vconst")
+        if (param == "potential")
             this->readBoundaryConditions(manager, source, mVConst);
         else if (param == "js")
         {

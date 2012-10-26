@@ -28,8 +28,8 @@ struct Vec<2, T> {
     T& tran() { return c0; }
     const T& tran() const { return c0; }
 
-    T& up() { return c1; }
-    const T& up() const { return c1; }
+    T& vert() { return c1; }
+    const T& vert() const { return c1; }
 
     // radial coordinates
     T& rad_r() { return c0; }

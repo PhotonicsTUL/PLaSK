@@ -31,10 +31,10 @@ struct Box2D {
     Vec<2,double> size() const { return upper - lower; }
 
     /**
-     * Calculate size of this in up direction.
-     * @return upper.up() - lower.up
+     * Calculate height of this.
+     * @return upper.vert() - lower.up
      */
-    double sizeUp() const { return upper.up() - lower.up(); }
+    double height() const { return upper.vert() - lower.vert(); }
 
     ///Construct uninitialized .
     Box2D() {}
@@ -127,7 +127,7 @@ struct Box2D {
      * Translate this up by @p trasnalation_in_up_dir.
      * @param trasnalation_in_up_dir translation in up direction
      */
-    void translateUp(const double trasnalation_in_up_dir) { lower.up() += trasnalation_in_up_dir; upper.up() += trasnalation_in_up_dir; }
+    void translateUp(const double trasnalation_in_up_dir) { lower.vert() += trasnalation_in_up_dir; upper.vert() += trasnalation_in_up_dir; }
 
     /**
      * Translate a point to be inside the box by shifting to the closest edge.
@@ -168,7 +168,7 @@ struct Box2D {
      * @see isValid()
      */
     void makeInvalid() { lower = vec(0.0, 0.0); upper = vec(-1.0, -1.0); }
-    
+
     /**
      * Calculate area of the box.
      * @return area of the box
@@ -201,9 +201,9 @@ struct Box3D {
 
     /**
      * Calculate size of this in up direction.
-     * @return upper.up() - lower.up
+     * @return upper.vert() - lower.up
      */
-    double sizeUp() const { return upper.up() - lower.up(); }
+    double height() const { return upper.vert() - lower.vert(); }
 
     /// Construct uninitialized .
     Box3D() {}
@@ -214,7 +214,7 @@ struct Box3D {
      * @param upper position of upper corner of cuboid (with maximal all coordinates)
      */
     Box3D(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
-    
+
     /**
      * Construct box.
      * @param x_lo, y_lo, z_lo lower corner of box (with minimal all coordinates)
@@ -288,7 +288,7 @@ struct Box3D {
      * Translate this up by @p trasnalation_in_up_dir.
      * @param trasnalation_in_up_dir translation in up direction
      */
-    void translateUp(const double trasnalation_in_up_dir) { lower.up() += trasnalation_in_up_dir; upper.up() += trasnalation_in_up_dir; }
+    void translateUp(const double trasnalation_in_up_dir) { lower.vert() += trasnalation_in_up_dir; upper.vert() += trasnalation_in_up_dir; }
 
     /**
      * Translate a point to be inside the box by shifting to the closest edge.
@@ -329,7 +329,7 @@ struct Box3D {
      * @see isValid()
      */
     void makeInvalid() { lower = vec(0.0, 0.0, 0.0); upper = vec(-1.0, -1.0, -1.0); }
-    
+
     /**
      * Calculate area of the box.
      * @return area of the box
@@ -387,7 +387,7 @@ struct Primitive<2> {
 
     enum DIRECTION {
         DIRECTION_TRAN = 0,
-        DIRECTION_UP = 1
+        DIRECTION_VERT = 1
     };
 
     static void ensureIsValidDirection(unsigned direction) {
@@ -417,9 +417,9 @@ struct Primitive<3> {
     static const DVec NAN_VEC;
 
     enum DIRECTION {
-        DIRECTION_LON = 0,
+        DIRECTION_LONG = 0,
         DIRECTION_TRAN = 1,
-        DIRECTION_UP = 2
+        DIRECTION_VERT = 2
     };
 
     static void ensureIsValidDirection(unsigned direction) {
@@ -428,7 +428,7 @@ struct Primitive<3> {
     }
 
     static void ensureIsValid2DDirection(unsigned direction) {
-        if (direction != DIRECTION_TRAN && direction != DIRECTION_UP)
+        if (direction != DIRECTION_TRAN && direction != DIRECTION_VERT)
             throw DimensionError("bad 2D direction index, %s was given but allowed are: 0, 1.", direction);
     }
 };

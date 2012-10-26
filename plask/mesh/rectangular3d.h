@@ -15,7 +15,7 @@ namespace plask {
  * Includes three 1d rectilinear meshes:
  * - c0 (alternative names: lon(), ee_z(), r())
  * - c1 (alternative names: tran, ee_x(), phi())
- * - c2 (alternative names: up(), ee_y(), z())
+ * - c2 (alternative names: vert(), ee_y(), z())
  * Represent all points (x, y, z) such that x is in c0, y is in c1, z is in c2.
  */
 //TODO methods which call fireResize() when points are adding, etc.
@@ -46,7 +46,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     }
 
   public:
-    
+
     /**
      * Represent FEM-like element in RectangularMesh.
      */
@@ -80,31 +80,31 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         inline std::size_t getLowerIndex0() const { return index0; }
 
         inline std::size_t getLowerIndex1() const { return index1; }
-        
+
         inline std::size_t getLowerIndex2() const { return index2; }
 
         inline PointType getLower0() const { return mesh.axis0[index0]; }
 
         inline PointType getLower1() const { return mesh.axis1[index1]; }
-        
+
         inline PointType getLower2() const { return mesh.axis2[index2]; }
 
         inline std::size_t getUpperIndex0() const { return index0+1; }
 
         inline std::size_t getUpperIndex1() const { return index1+1; }
-        
+
         inline std::size_t getUpperIndex2() const { return index2+1; }
 
         inline PointType getUpper0() const { return mesh.axis0[getUpperIndex0()]; }
 
         inline PointType getUpper1() const { return mesh.axis1[getUpperIndex1()]; }
-        
+
         inline PointType getUpper2() const { return mesh.axis2[getUpperIndex2()]; }
 
         inline PointType getSize0() const { return getUpper0() - getLower0(); }
 
         inline PointType getSize1() const { return getUpper1() - getLower1(); }
-        
+
         inline PointType getSize2() const { return getUpper2() - getLower2(); }
 
         inline Vec<3, PointType> getSize() const { return getUpUpUp() - getLoLoLo(); }
@@ -133,7 +133,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         inline Vec<3, PointType> getUpUpUp() const { return mesh(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
 
     };
-    
+
     /**
      * Wrapper to RectangularMesh which allow to access to FEM-like elements.
      *
@@ -180,7 +180,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
     /// Third coordinate of points in this mesh.
     Mesh1D axis2;
-    
+
     /// Accessor to FEM-like elements.
     const Elements elements;
 
@@ -276,13 +276,13 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      * Get third coordinate of points in this mesh.
      * @return c2
      */
-    Mesh1D& up() { return axis2; }
+    Mesh1D& vert() { return axis2; }
 
     /**
      * Get third coordinate of points in this mesh.
      * @return c2
      */
-    const Mesh1D& up() const { return axis2; }
+    const Mesh1D& vert() const { return axis2; }
 
     /**
      * Get first coordinate of points in this mesh.
@@ -553,7 +553,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
     shared_ptr<RectangularMesh> getMidpointsMesh();
-    
+
     /**
      * Get number of elements (for FEM method) in the first direction.
      * @return number of elements in this mesh in the first direction (axis0 direction).
@@ -569,7 +569,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     std::size_t getElementsCount1() const {
         return std::max(int(axis1.size())-1, 0);
     }
-    
+
     /**
      * Get number of elements (for FEM method) in the third direction.
      * @return number of elements in this mesh in the third direction (axis2 direction).
@@ -577,7 +577,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     std::size_t getElementsCount2() const {
         return std::max(int(axis2.size())-1, 0);
     }
-    
+
     /**
      * Get number of elements (for FEM method).
      * @return number of elements in this mesh
@@ -585,7 +585,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     std::size_t getElementsCount() const {
         return std::max((int(axis0.size())-1) * (int(axis1.size())-1) * (int(axis2.size())-1), 0);
     }
-    
+
     /**
      * Conver element index to mesh index of bottom, left, front element corner.
      * @param element_index index of element, from 0 to getElementsCount()-1
@@ -597,7 +597,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         return element_index + (element_index / elements_per_level) * (middle_axis->size() + minor_size_minus_1)
                             + (element_index % elements_per_level) / minor_size_minus_1;
     }
-    
+
     /**
      * Conver mesh index of bottom, left, front element corner to this element index.
      * @param mesh_index_of_el_bottom_left mesh index
@@ -608,7 +608,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         return mesh_index_of_el_bottom_left - (mesh_index_of_el_bottom_left / verticles_per_level) * (middle_axis->size() + minor_axis->size() - 1)
                 - (mesh_index_of_el_bottom_left % verticles_per_level) / minor_axis->size();
     }
-    
+
     /**
      * Convert element index to mesh indexes of bottom left element corner.
      * @param element_index index of element, from 0 to getElementsCount()-1
@@ -619,7 +619,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         std::size_t bl_index = getElementMeshLowIndex(element_index);
         return Vec<3, std::size_t>(index0(bl_index), index1(bl_index), index2(bl_index));
     }
-    
+
     /**
      * Get area of given element.
      * @param index0, index1, index2 axis 0, 1 and 2 indexes of element
@@ -628,7 +628,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     double getElementArea(std::size_t index0, std::size_t index1, std::size_t index2) const {
         return (axis0[index0+1] - axis0[index0]) * (axis1[index1+1] - axis1[index1]) * (axis2[index2+1] - axis2[index2]);
     }
-    
+
     /**
      * Get area of given element.
      * @param element_index index of element
@@ -638,7 +638,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         std::size_t bl_index = getElementMeshLowIndex(element_index);
         return getElementArea(index0(bl_index), index1(bl_index), index2(bl_index));
     }
-    
+
     /**
      * Get first coordinate of point in center of Elements.
      * @param index0 index of Elements (axis0 index)
@@ -652,14 +652,14 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      * @return second coordinate of point point in center of Elements with given index
      */
     double getElementMidpoint1(std::size_t index1) const { return 0.5 * (axis1[index1] + axis1[index1+1]); }
-    
+
     /**
      * Get second coordinate of point in center of Elements.
      * @param index1 index of Elements (axis1 index)
      * @return second coordinate of point point in center of Elements with given index
      */
     double getElementMidpoint2(std::size_t index2) const { return 0.5 * (axis2[index2] + axis2[index2+1]); }
-    
+
     /**
      * Get point in center of Elements.
      * @param index0, index1, index2 index of Elements
@@ -678,7 +678,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         std::size_t bl_index = getElementMeshLowIndex(element_index);
         return getElementMidpoint(index0(bl_index), index1(bl_index), index2(bl_index));
     }
-    
+
     /**
      * Get element as rectangle.
      * @param index0, index1, index2 index of Elements
@@ -775,7 +775,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         );
 
     }
-    
+
 private:
     // Common code for: left, right, bottom, top, front, back boundries:
     struct BoundaryIteratorImpl: public BoundaryLogicImpl::IteratorImpl {
@@ -785,7 +785,7 @@ private:
         std::size_t level;
 
         std::size_t index_f, index_s;
-        
+
         const std::size_t index_f_size;
 
         BoundaryIteratorImpl(const RectangularMesh& mesh, std::size_t level, std::size_t index_f, std::size_t index_f_size, std::size_t index_s)

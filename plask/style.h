@@ -72,7 +72,7 @@ it legible! The more specific rules are below:
 - In all your names respect case convention regardless if you use abbreviations or not. So the correct name would be
   \c FemSolver and not \c FEMSolver.
   .
-- If your solver provides only a single calculation method, name it \c calculate. Otherwise name the methods such a way
+- If your solver provides only a single calculation method, name it \c compute. Otherwise name the methods such a way
   that it is clear what they do.
 
 

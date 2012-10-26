@@ -482,13 +482,13 @@ void register_mesh_rectangular()
         .def("bottomof", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
              "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottomof")
         .def("horizontal", (RectilinearMesh2D::Boundary(*)(double,double,double))&RectilinearMesh2D::getHorizontalBoundaryNear,
-             "Get boundary bottom of specified object", (py::arg("at"), "from", "to"))
+             "Get boundary at horizontal line", (py::arg("at"), "start", "stop"))
         .def("horizontal", (RectilinearMesh2D::Boundary(*)(double))&RectilinearMesh2D::getHorizontalBoundaryNear,
-             "Get boundary bottom of specified object", py::arg("at")).staticmethod("horizontal")
+             "Get boundary at horizontal line", py::arg("at")).staticmethod("horizontal")
         .def("vertical", (RectilinearMesh2D::Boundary(*)(double,double,double))&RectilinearMesh2D::getHorizontalBoundaryNear,
-             "Get boundary bottom of specified object", (py::arg("at"), "from", "to"))
+             "Get boundary at vertical line", (py::arg("at"), "start", "stop"))
         .def("vertical", (RectilinearMesh2D::Boundary(*)(double))&RectilinearMesh2D::getHorizontalBoundaryNear,
-             "Get boundary bottom of specified object", py::arg("at")).staticmethod("vertical")
+             "Get boundary at vertical line", py::arg("at")).staticmethod("vertical")
         .def(py::self == py::self)
     ;
     ExportBoundary<RectilinearMesh2D> { rectilinear2d };
@@ -587,13 +587,13 @@ void register_mesh_rectangular()
         .def("bottomof", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
              "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottomof")
         .def("horizontal", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Get boundary bottom of specified object", (py::arg("at"), "from", "to"))
+             "Get boundary at horizontal line", (py::arg("at"), "start", "stop"))
         .def("horizontal", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Get boundary bottom of specified object", py::arg("at")).staticmethod("horizontal")
+             "Get boundary at horizontal line", py::arg("at")).staticmethod("horizontal")
         .def("vertical", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Get boundary bottom of specified object", (py::arg("at"), "from", "to"))
+             "Get boundary at vertical line", (py::arg("at"), "start", "stop"))
         .def("vertical", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Get boundary bottom of specified object", py::arg("at")).staticmethod("vertical")
+             "Get boundary at vertical line", py::arg("at")).staticmethod("vertical")
         .def(py::self == py::self)
     ;
     ExportBoundary<RegularMesh2D> { regular2d };

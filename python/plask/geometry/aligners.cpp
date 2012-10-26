@@ -9,8 +9,8 @@
 namespace plask { namespace python {
 
 typedef align::Aligner2D<align::DIRECTION_TRAN> A2;
-typedef align::Aligner2D<align::DIRECTION_LON> A2l;
-typedef align::Aligner3D<align::DIRECTION_LON, align::DIRECTION_TRAN> A3;
+typedef align::Aligner2D<align::DIRECTION_LONG> A2l;
+typedef align::Aligner3D<align::DIRECTION_LONG, align::DIRECTION_TRAN> A3;
 
 namespace detail {
     struct Aligners_from_Python
@@ -89,11 +89,11 @@ void register_geometry_aligners()
 
     py::class_<A3, shared_ptr<A3>, boost::noncopyable>("Aligner3D", "Base for all 3D aligners", py::no_init);
 
-    py::class_<align::ComposeAligner3D<plask::align::DIRECTION_LON, plask::align::DIRECTION_TRAN>,
-               shared_ptr<align::ComposeAligner3D<plask::align::DIRECTION_LON, plask::align::DIRECTION_TRAN>>,
+    py::class_<align::ComposeAligner3D<plask::align::DIRECTION_LONG, plask::align::DIRECTION_TRAN>,
+               shared_ptr<align::ComposeAligner3D<plask::align::DIRECTION_LONG, plask::align::DIRECTION_TRAN>>,
                py::bases<A3>>("ComposedAligner3D", "Three-dimensional aligner composed of two 2D aligners", py::no_init);
-    py::class_<align::ComposeAligner3D<plask::align::DIRECTION_TRAN, plask::align::DIRECTION_LON>,
-               shared_ptr<align::ComposeAligner3D<plask::align::DIRECTION_TRAN, plask::align::DIRECTION_LON>>,
+    py::class_<align::ComposeAligner3D<plask::align::DIRECTION_TRAN, plask::align::DIRECTION_LONG>,
+               shared_ptr<align::ComposeAligner3D<plask::align::DIRECTION_TRAN, plask::align::DIRECTION_LONG>>,
                py::bases<A3>>("ComposedAligner3D", "Three-dimensional  aligner composed of two 2D aligners", py::no_init);
 
 

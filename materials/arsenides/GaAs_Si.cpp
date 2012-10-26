@@ -1,8 +1,8 @@
 #include "GaAs_Si.h"
 
 #include <cmath>
-#include <plask/material/db.h>  //MaterialsDB::Register
-#include <plask/material/info.h>    //MaterialInfo::DB::Register
+#include <plask/material/db.h>      // MaterialsDB::Register
+#include <plask/material/info.h>    // MaterialInfo::DB::Register
 
 namespace plask {
 
