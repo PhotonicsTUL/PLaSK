@@ -240,7 +240,7 @@ def read_dan(fname):
         nbc = int(line[0])
         for nc in range(nbc):
             line = input.next()
-            x0, y0, x1, y1 = line[0:4]
+            x0, y0, x1, y1 = [ scale * float(x) for x in line[0:4] ]
             try: val = float(line[4])
             except IndexError: val = 0.
             except ValueError: val = 0.
