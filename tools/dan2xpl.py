@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# coding: utf8
+# -*- coding: utf-8 -*-
 '''
     This tool converts RPSMES .dan file to PLaSK .xpl file.
 
@@ -225,7 +225,7 @@ def read_dan(fname):
         elif ht == 0:
             r.role = 'insulator'
         elif ht == -1:
-            r.name = unique_material_name()
+            r.name = unique_object_name()
             heats[r.name] = float(line[1])
         elif ht != -100:
             raise ValueError("wrong heat source type")
@@ -303,33 +303,46 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries):
             ofile.write('    </%s>\n' % name)
 
     # default solvers
-    ofile.write('<solvers>\n')
-    ofile.write('  <thermal solver="Fem%s" name="THERMAL">\n' % suffix)
-    ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
-    save_boundaries('temperature')
-    save_boundaries('convection')
-    save_boundaries('radiation')
-    ofile.write('  </thermal>\n')
-    #ofile.write('  <electrical solver="Fem%s" name="electrical">' % suffix)
-    ofile.write('  <electrical lib="fem2d" solver="%sFEM" name="ELECTRICAL">\n' % ['Cartesian', 'Cylindrical'][sym]) # TODO change to above
-    ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
-    ofile.write('    <wavelength value="1300"/>\n') # TODO
-    save_boundaries('potential')
-    ofile.write('  </electrical>\n')
-    ofile.write('</solvers>\n\n')
+    therm =  boundaries['temperature'] or boundaries['convection'] or boundaries['radiation'] or heats
+    electr = boundaries['potential']
+
+    if therm or electr:
+        ofile.write('<solvers>\n')
+        if therm:
+            ofile.write('  <thermal solver="Fem%s" name="THERMAL">\n' % suffix)
+            ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
+            save_boundaries('temperature')
+            save_boundaries('convection')
+            save_boundaries('radiation')
+            ofile.write('  </thermal>\n')
+        if electr:
+            #ofile.write('  <electrical solver="Fem%s" name="electrical">' % suffix)
+            ofile.write('  <electrical lib="fem2d" solver="%sFEM" name="ELECTRICAL">\n' % ['Cartesian', 'Cylindrical'][sym]) # TODO change to above
+            ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
+            ofile.write('    <wavelength value="1300"/>\n') # TODO
+            save_boundaries('potential')
+            ofile.write('  </electrical>\n')
+        ofile.write('</solvers>\n\n')
 
     # connections
-    ofile.write('<connects>\n  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>\n')
-    ofile.write('  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>\n</connects>\n\n')
+    if (therm and electr) or heats:
+        ofile.write('<connects>\n')
+        if (therm and electr):
+            ofile.write('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>\n')
+        if heats:
+            ofile.write('  <profile in="THERMAL.inHeatDensity">\n')
+            for i,heat in enumerate(heats.items()):
+                ofile.write('    <step object="%s" value="%s"/>\n' % heat)
+            ofile.write('  </profile>\n')
+            if electr:
+                print "WARNING: Electrical model present, but manually specified heats set as heats provider for thermal model!"
+        elif electr:
+            ofile.write('  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>\n')
+        ofile.write('</connects>\n\n')
 
-    # script
-    ofile.write('<script>\n# Here you may put your calculations\n\n')
-    if heats:
-        ofile.write('heats = StepProfile(GEO.main)\nTHERMAL.inHeatDensities = heats')
-        for i,heat in enumerate(heats.items()):
-            ofile.write('heats[%s] = %s\n' % heat)
-    ofile.write('')
-    ofile.write('</script>\n\n')
+    ## script
+    #ofile.write('<script>\n# Here you may put your calculations\n\n')
+    #ofile.write('</script>\n\n')
 
     ofile.write('</plask>\n')
 

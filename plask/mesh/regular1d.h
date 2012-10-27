@@ -54,7 +54,8 @@ class RegularMesh1D {
      * @param points_count number of points in mesh
      */
     RegularMesh1D(double first, double last, std::size_t points_count):
-        lo(first), step((last - first) / (points_count-1)), points_count(points_count), owner(nullptr) {}
+        lo(first), step( (last - first) / ((points_count>1)?(points_count-1):1.) ),
+        points_count(points_count), owner(nullptr) {}
 
     /// Assign a new mesh. This operation preserves the \a owner.
     RegularMesh1D& operator=(const RegularMesh1D& src) {
@@ -75,7 +76,7 @@ class RegularMesh1D {
      */
     void reset(double first, double last, std::size_t points_count) {
         lo = first;
-        step = (last - first) / (points_count-1);
+        step = (last - first) / ((points_count>1)?(points_count-1):1.);
         bool resized = this->points_count != points_count;
         this->points_count = points_count;
         if (owner) {

@@ -8,6 +8,9 @@ namespace plask { namespace  python {
 
 struct PythonManager: public Manager {
 
+    /// List of constant profiles
+    py::dict profiles;
+
     MaterialsDB* materialsDB;
 
     PythonManager(MaterialsDB* db=nullptr) : materialsDB(db? db : &MaterialsDB::getDefault()) {}

@@ -26,7 +26,7 @@ struct RegisterBoundaryConditions {
         return self[i];
     }
 
-    static void __setitem__(BoundaryConditionsT& self, int i, py::tuple object) {
+    static void __setitem__1(BoundaryConditionsT& self, int i, py::tuple object) {
         if (i < 0) i = self.size() + i;
         auto iter = self.getIteratorForIndex(i);
         if (iter == self.end()) OutOfBoundException("BoundaryConditions[]", "index");
@@ -38,6 +38,10 @@ struct RegisterBoundaryConditions {
         } catch (py::error_already_set) {
             throw TypeError("You can only assign a tuple (boundary, value)");
         }
+    }
+
+    static void __setitem__2(BoundaryConditionsT& self, const typename MeshT::Boundary& boundary, ValueT value) {
+        self.add(ConditionT(boundary, value));
     }
 
     static void __delitem__(BoundaryConditionsT& self, int i) {
@@ -67,7 +71,8 @@ struct RegisterBoundaryConditions {
 
             py::class_<BoundaryConditionsT>("BoundaryConditions")
                 .def("__getitem__", &__getitem__)
-                .def("__setitem__", &__setitem__)
+                .def("__setitem__", &__setitem__1)
+                .def("__setitem__", &__setitem__2)
                 .def("__delitem__", &__delitem__)
                 .def("__len__", &BoundaryConditionsT::size)
                 .def("append", &append, "Append new boundary condition to the list", (py::arg("place"), "value"))

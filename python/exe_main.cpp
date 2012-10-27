@@ -12,7 +12,7 @@ namespace py = boost::python;
 
 #include <plask/exceptions.h>
 #include <plask/utils/system.h>
-#include "plask/manager.h"
+#include "plask/python_manager.h"
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000

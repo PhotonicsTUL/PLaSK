@@ -1,8 +1,8 @@
 #include <boost/algorithm/string.hpp>
 
 #include "python_globals.h"
-
-#include "manager.h"
+#include "python_manager.h"
+#include "python_provider.h"
 
 #if PY_VERSION_HEX >= 0x03000000
 #   define NEXT "__next__"
@@ -46,36 +46,72 @@ shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const 
 }
 
 void PythonManager::loadConnects(XMLReader& reader) {
+
     while(reader.requireTagOrEnd()) {
-        if (reader.getNodeName() != "connect") throw XMLUnexpectedElementException(reader, "<connect>", reader.getNodeName());
-        auto out = splitString2(reader.requireAttribute("out"), '.');
-        auto in = splitString2(reader.requireAttribute("in"), '.');
 
-        py::object py_in, py_out, provider, receiver;
+        if (reader.getNodeName() != "connect" && reader.getNodeName() != "profile")
+            throw XMLUnexpectedElementException(reader, "<connect> or <profile>", reader.getNodeName());
 
-        auto out_solver = solvers.find(out.first);
-        if (out_solver == solvers.end()) throw ValueError("Cannot find (out) solver with name '%1%'.", out.first);
-        try { py_out = py::object(out_solver->second); }
-        catch (py::error_already_set) { throw TypeError("Cannot convert solver '%1%' to python object.", out.first); }
+        std::string inkey = reader.requireAttribute("in");
+        auto in = splitString2(inkey, '.');
+        py::object solverin;
 
         auto in_solver = solvers.find(in.first);
         if (in_solver == solvers.end()) throw ValueError("Cannot find (in) solver with name '%1%'.", in.first);
-        try { py_in = py::object(in_solver->second); }
+        try { solverin = py::object(in_solver->second); }
         catch (py::error_already_set) { throw TypeError("Cannot convert solver '%1%' to python object.", in.first); }
 
-        try { provider = py_out.attr(out.second.c_str()); }
-        catch (py::error_already_set) { throw AttributeError("Solver '%1%' does not have attribute '%2%.", out.first, out.second); }
+        if (reader.getNodeName() == "connect") {
 
-        try { receiver = py_in.attr(in.second.c_str()); }
-        catch (py::error_already_set) { throw AttributeError("Solver '%1%' does not have attribute '%2%.", in.first, in.second); }
+            auto out = splitString2(reader.requireAttribute("out"), '.');
+            py::object solverout, provider, receiver;
 
-        try {
-            receiver << provider;
-        } catch (py::error_already_set) {
-            throw TypeError("Cannot connect '%1%.%2%' to '%3%.'%4%'.", out.first, out.second, in.first, in.second);
+            try { receiver = solverin.attr(in.second.c_str()); }
+            catch (py::error_already_set) { throw AttributeError("Solver '%1%' does not have attribute '%2%.", in.first, in.second); }
+
+            auto out_solver = solvers.find(out.first);
+            if (out_solver == solvers.end()) throw ValueError("Cannot find (out) solver with name '%1%'.", out.first);
+            try { solverout = py::object(out_solver->second); }
+            catch (py::error_already_set) { throw TypeError("Cannot convert solver '%1%' to python object.", out.first); }
+
+            try { provider = solverout.attr(out.second.c_str()); }
+            catch (py::error_already_set) { throw AttributeError("Solver '%1%' does not have attribute '%2%.", out.first, out.second); }
+
+            try {
+                receiver.attr("connect")(provider);
+            } catch (py::error_already_set) {
+                throw TypeError("Cannot connect '%1%.%2%' to '%3%.'%4%'.", out.first, out.second, in.first, in.second);
+            }
+
+            reader.requireTagEnd();
+
+        } else if (reader.getNodeName() == "profile") {
+
+            auto defval = reader.getAttribute("default");
+            py::object defaultobj;
+            if (defval) defaultobj = py::eval(py::str(*defval));
+
+            if (profiles.has_key(inkey))
+                throw ValueError("There is already profile defined for receiver %1%", inkey);
+
+            auto profile = make_shared<PythonProfile>(py::extract<const Geometry&>(solverin.attr("geometry")), defaultobj);
+            profiles[inkey] = py::object(profile);
+
+            while (reader.requireTagOrEnd("step")) {
+                GeometryObject* object = requireGeometryObject(reader.requireAttribute("object")).get();
+                PathHints path;
+                auto hints = reader.getAttribute("path");
+                if (hints) path = requirePathHints(*hints);
+                py::object value = py::eval(py::str(reader.requireAttribute("value")));
+                profile->places.emplace_back(PythonProfile::Place(*object, path));
+                profile->values.push_back(value);
+            }
+
+            solverin.attr(in.second.c_str()) = profiles[inkey];
+
+            reader.requireTagEnd();
         }
 
-        reader.requireTagEnd();
     }
 }
 
@@ -308,6 +344,7 @@ void register_manager() {
         .def_readonly("meshes", &PythonManager::meshes, "Dictionary of all named meshes")
         .def_readonly("mesh_generators", &PythonManager::generators, "Dictionary of all named mesh generators")
         .def_readonly("solvers", &PythonManager::solvers, "Dictionary of all named solvers")
+        .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
         .def_readonly("script", &PythonManager::script, "Script read from XML file")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;

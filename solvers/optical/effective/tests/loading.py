@@ -42,10 +42,16 @@ class EffectiveIndex2D_Test(unittest.TestCase):
                     <mesh ref="div"/>
                 </optical>
             </solvers>
+            <connects>
+              <profile in="eff1.inTemperature">
+                <step object="Block-3" value="320."/>
+              </profile>
+            </connects>
         </plask>
         """)
         self.solver1 = self.manager.slv.eff1
         self.solver2 = self.manager.slv.eff2
+
 
     def testLoadConfigurations(self):
         self.assertEqual( self.solver1.id, "eff1:optical.EffectiveIndex2D" )
@@ -58,3 +64,10 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
         self.assertEqual( self.solver1.polarization, "TM" )
         self.assertEqual( self.solver1.root.tolx, 0.1 )
+
+
+    def testProfile(self):
+        m = plask.mesh.Regular2D((1.,), (1., 5., 2))
+        print list(m)
+        print self.manager.geo.Space_1.getLeafsBBoxes()
+        self.assertEqual( list(self.solver1.inTemperature(m)), [320., 300.] )
