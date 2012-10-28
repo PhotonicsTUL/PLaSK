@@ -93,8 +93,9 @@ namespace detail {
         }
 
         static void* convertible(PyObject* obj) {
-            if (!PyTuple_Check(obj)) return NULL;
-            return obj;
+            if (PyTuple_Check(obj)) return obj;
+            if (PySequence_Check(obj) && PySequence_Length(obj) == 1) return obj;
+            return NULL;
         }
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)

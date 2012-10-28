@@ -74,6 +74,7 @@ struct ExportBoundary {
                 ("Boundary specification for particular "+name+" mesh object").c_str(), py::no_init)
                 .def("__contains__", &MeshType::Boundary::WithMesh::includes)
                 .def("__iter__", py::range(&MeshType::Boundary::WithMesh::begin, &MeshType::Boundary::WithMesh::end))
+                .def("__len__", &MeshType::Boundary::WithMesh::size)
             ;
             py::delattr(scope, "BoundaryInstance");
         }

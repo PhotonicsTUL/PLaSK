@@ -331,11 +331,12 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries):
             ofile.write('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>\n')
         if heats:
             ofile.write('  <profile in="THERMAL.inHeatDensity">\n')
-            for i,heat in enumerate(heats.items()):
+            for heat in heats.items():
                 ofile.write('    <step object="%s" value="%s"/>\n' % heat)
             ofile.write('  </profile>\n')
             if electr:
-                print "WARNING: Electrical model present, but manually specified heats set as heats provider for thermal model!"
+                # TODO use sum provider when it gets fully supported in PLaSK
+                print "WARNING: Electrical model present, but only manually specified heats are provided to thermal model!"
         elif electr:
             ofile.write('  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>\n')
         ofile.write('</connects>\n\n')

@@ -27,11 +27,11 @@ import plask
 
 
 def plotField2D(field, levels=None, **kwargs):
-    '''Plot scalar real fields using pylab.imshow.'''
+    '''Plot scalar real fields using as two-dimensional color map'''
     #TODO documentation
     if levels is None:
         if type(field.mesh == plask.mesh.Regular2D):
-            return imshow(field.array, origin='lower', extent=[field.mesh.axis0[0], field.mesh.axis0[-1], field.mesh.axis1[0], field.mesh.axis1[-1]], **kwargs)
+            result = imshow(field.array, origin='lower', extent=[field.mesh.axis0[0], field.mesh.axis0[-1], field.mesh.axis1[0], field.mesh.axis1[-1]], **kwargs)
         else:
             if 'aspect' in kwargs:
                 kwargs = kwargs.copy()
@@ -39,13 +39,13 @@ def plotField2D(field, levels=None, **kwargs):
             adata = field.array
             data = adata[:-1,:-1]; data += adata[1:,:-1]; data += adata[:-1,1:]; data += adata[1:,1:]; data *= 0.25
             del adata
-            return pcolor(array(field.mesh.axis0), array(field.mesh.axis1), data, **kwargs)
+            result = pcolor(array(field.mesh.axis0), array(field.mesh.axis1), data, **kwargs)
     else:
         if 'cmap' in kwargs and type(kwargs['cmap']) == str: # contourf requires that cmap were cmap instance, not a string
             kwargs = kwargs.copy()
             kwargs['cmap'] = get_cmap(kwargs['cmap'])
-        return contourf(field.mesh.axis0, field.mesh.axis1, field.array, levels, antialiased=True, **kwargs)
-
+        result = contourf(field.mesh.axis0, field.mesh.axis1, field.array, levels, antialiased=True, **kwargs)
+    return result
 
 def plotGeometry2D(geometry, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):
     '''Plot two-dimensional geometry.'''
@@ -96,6 +96,23 @@ def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
 
     # return lines
 
+
+def plotBoundary2D(boundary, mesh, cmap=None, color='0.75', zorder=4, **kwargs):
+    '''Plot points of specified boundary'''
+    #TODO documentation
+    if type(cmap) == str: cmap = get_cmap(cmap)
+    if cmap is not None: c = []
+    else: c = color
+    x = []
+    y = []
+    for place, value in boundary:
+        points = place(mesh)
+        for i in points:
+            x.append(mesh[i][0])
+            y.append(mesh[i][1])
+        if cmap is not None:
+            c.extend(len(points) * [value])
+    return scatter(x, y, c=c, zorder=zorder, cmap=cmap, **kwargs)
 
 def plotMaterialParam2D(geometry, param, axes=None, mirror=False, **kwargs):
     '''Plot selected material parameter as color map'''

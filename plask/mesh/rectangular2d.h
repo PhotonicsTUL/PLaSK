@@ -709,6 +709,9 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
             return Iterator(new VerticalIteratorImpl(this->mesh, line, this->mesh.axis1.size()));
         }
 
+        std::size_t size() const {
+            return this->mesh.axis1.size();
+        }
     };
 
 
@@ -735,6 +738,9 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
             return Iterator(new VerticalIteratorImpl(this->mesh, line, endInLineIndex));
         }
 
+        std::size_t size() const {
+            return endInLineIndex - beginInLineIndex;
+        }
     };
 
     struct HorizontalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
@@ -758,6 +764,10 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         Iterator end() const {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, this->mesh.axis0.size()));
         }
+
+        std::size_t size() const {
+            return this->mesh.axis0.size();
+        }
     };
 
     struct HorizontalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
@@ -780,6 +790,10 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         Iterator end() const {
             return Iterator(new HorizontalIteratorImpl(this->mesh, line, endInLineIndex));
+        }
+
+        std::size_t size() const {
+            return endInLineIndex - beginInLineIndex;
         }
     };
 

@@ -122,6 +122,11 @@ struct BoundaryLogicImpl {
      */
     virtual bool empty() const { return begin() == end(); }
 
+    /**
+     * Get number of points in this boundary
+     * \return number of points in this boundary
+     */
+    virtual std::size_t size() const = 0;
 };
 
 /**
@@ -205,6 +210,14 @@ struct BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
      */
     const_iterator end() const {
         return this->held->end();
+    }
+
+    /**
+     * Get number of points in this boundary
+     * \return number of points in this boundary
+     */
+    std::size_t size() const {
+        return this->held->size();
     }
 
     /**
@@ -369,6 +382,12 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.end()));
     }
 
+    std::size_t size() const {
+        std::size_t s = 0;
+        for (auto bound: boundaries) s += bound.size();
+        return s;
+    }
+
     void push_back(const typename Boundary<MeshType>::WithMesh& to_append) { boundaries.push_back(to_append); }
 
     void push_back(typename Boundary<MeshType>::WithMesh&& to_append) { boundaries.push_back(to_append); }
@@ -408,6 +427,10 @@ struct EmptyBoundaryImpl: public BoundaryLogicImpl {
 
     virtual typename BoundaryLogicImpl::const_iterator end() const {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
+    }
+
+    std::size_t size() const {
+        return 0;
     }
 
     virtual bool empty() const { return true; }
@@ -494,6 +517,12 @@ public:
 
     typename BoundaryLogicImpl::Iterator end() const {
         return typename BoundaryLogicImpl::Iterator(new PredicateIteratorImpl(*this, std::end(this->mesh)));
+    }
+
+    std::size_t size() const { // this is quite costly, as we have to iterate the whole mesh and check the predicate
+        std::size_t s = 0;
+        for (auto i: *this) ++s;
+        return s;
     }
 
 };
