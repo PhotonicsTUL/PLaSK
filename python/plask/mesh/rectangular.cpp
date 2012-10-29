@@ -1,8 +1,8 @@
 #include "../python_globals.h"
+#include "../python_numpy.h"
 #include "../python_mesh.h"
 #include <algorithm>
 #include <boost/python/stl_iterator.hpp>
-#include <numpy/arrayobject.h>
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/interpolation.h>
@@ -38,12 +38,12 @@ namespace detail {
     };
 }
 
-static py::object Rectilinear1D__array__(py::object self) {
+static py::object Rectilinear1D__array__(py::object self, py::object dtype) {
     RectilinearMesh1D* mesh = py::extract<RectilinearMesh1D*>(self);
     npy_intp dims[] = { mesh->size() };
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*mesh->begin()));
     if (arr == nullptr) throw TypeError("cannot create array");
-    py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the data vector stays alive as long as the array
+    confirm_array<double>(arr, self, dtype);
     return py::object(py::handle<>(arr));
 }
 
@@ -413,11 +413,6 @@ py::dict RectilinearMesh2DDivideGenerator_listRefinements(const RectilinearMesh2
 }
 
 
-static inline bool plask_import_array() {
-    import_array1(false);
-    return true;
-}
-
 void register_mesh_rectangular()
 {
     // Initialize numpy
@@ -436,7 +431,7 @@ void register_mesh_rectangular()
         .def("__delitem__", &Rectilinear1D__delitem__)
         .def("__str__", &Rectilinear1D__str__)
         .def("__repr__", &Rectilinear1D__repr__)
-        .def("__array__", &Rectilinear1D__array__)
+        .def("__array__", &Rectilinear1D__array__, py::arg("dtype")=py::object())
         .def("insert", &RectilinearMesh1D::addPoint, "Insert point to the mesh", (py::arg("point")))
         .def("extend", &Rectilinear1D_extend, "Insert points from the sequence to the mesh", (py::arg("points")))
         .def(py::self == py::self)
@@ -467,21 +462,21 @@ void register_mesh_rectangular()
         .def("index1", &RectilinearMesh2D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
         .def("major_index", &RectilinearMesh2D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
         .def("minor_index", &RectilinearMesh2D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
-        .def("setOptimalOrdering", &RectilinearMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
+        .def("set_optimal_ordering", &RectilinearMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh2D__getOrdering<RectilinearMesh2D>, &RectangularMesh2D__setOrdering<RectilinearMesh2D>, "Ordering of the points in this mesh")
-        .def("getMidpointsMesh", &RectilinearMesh2D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
+        .def("get_midpoints_mesh", &RectilinearMesh2D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
         .add_static_property("left", &RectilinearMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions")
         .add_static_property("right", &RectilinearMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
         .add_static_property("top", &RectilinearMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
         .add_static_property("bottom", &RectilinearMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
-        .def("leftof", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
-             "Get boundary left of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("leftof")
-        .def("rightof", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
-             "Get boundary right of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("rightof")
-        .def("topof", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
-             "Get boundary top of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("topof")
-        .def("bottomof", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
-             "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottomof")
+        .def("left_of", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
+             "Get boundary left of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("left_of")
+        .def("right_of", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
+             "Get boundary right of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("right_of")
+        .def("top_of", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
+             "Get boundary top of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("top_of")
+        .def("bottom_of", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
+             "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottom_of")
         .def("horizontal", (RectilinearMesh2D::Boundary(*)(double,double,double))&RectilinearMesh2D::getHorizontalBoundaryNear,
              "Get boundary at horizontal line", (py::arg("at"), "start", "stop"))
         .def("horizontal", (RectilinearMesh2D::Boundary(*)(double))&RectilinearMesh2D::getHorizontalBoundaryNear,
@@ -523,9 +518,9 @@ void register_mesh_rectangular()
         .def("major_index", &RectilinearMesh3D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
         .def("middle_index", &RectilinearMesh3D::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
         .def("minor_index", &RectilinearMesh3D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
-        .def("setOptimalOrdering", &RectilinearMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
+        .def("set_optimal_ordering", &RectilinearMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh3D__getOrdering<RectilinearMesh3D>, &RectangularMesh3D__setOrdering<RectilinearMesh3D>, "Ordering of the points in this mesh")
-        .def("getMidpointsMesh", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
+        .def("get_midpoints_mesh", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
         .def(py::self == py::self)
     ;
     ExportBoundary<RectilinearMesh3D> { rectilinear3d };
@@ -572,21 +567,21 @@ void register_mesh_rectangular()
         .def("index1", &RegularMesh2D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
         .def("major_index", &RegularMesh2D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
         .def("minor_index", &RegularMesh2D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
-        .def("setOptimalOrdering", &RegularMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
+        .def("set_optimal_ordering", &RegularMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh2D__getOrdering<RegularMesh2D>, &RectangularMesh2D__setOrdering<RegularMesh2D>, "Ordering of the points in this mesh")
-        .def("getMidpointsMesh", &RegularMesh2D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
+        .def("get_midpoints_mesh", &RegularMesh2D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
         .add_static_property("left", &RegularMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions")
         .add_static_property("right", &RegularMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
         .add_static_property("top", &RegularMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
         .add_static_property("bottom", &RegularMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
-        .def("leftof", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Get boundary left of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("leftof")
-        .def("rightof", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Get boundary right of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("rightof")
-        .def("topof", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Get boundary top of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("topof")
-        .def("bottomof", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottomof")
+        .def("left_of", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
+             "Get boundary left of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("left_of")
+        .def("right_of", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
+             "Get boundary right of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("right_of")
+        .def("top_of", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
+             "Get boundary top of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("top_of")
+        .def("bottom_of", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
+             "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottom_of")
         .def("horizontal", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getHorizontalBoundaryNear,
              "Get boundary at horizontal line", (py::arg("at"), "start", "stop"))
         .def("horizontal", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getHorizontalBoundaryNear,
@@ -626,9 +621,9 @@ void register_mesh_rectangular()
         .def("major_index", &RegularMesh3D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
         .def("middle_index", &RegularMesh3D::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
         .def("minor_index", &RegularMesh3D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
-        .def("setOptimalOrdering", &RegularMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
+        .def("set_optimal_ordering", &RegularMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh3D__getOrdering<RegularMesh3D>, &RectangularMesh3D__setOrdering<RegularMesh3D>, "Ordering of the points in this mesh")
-        .def("getMidpointsMesh", &RegularMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
+        .def("get_midpoints_mesh", &RegularMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
         .def(py::self == py::self)
     ;
     ExportBoundary<RegularMesh3D> { regular3d };
@@ -656,31 +651,31 @@ void register_mesh_rectangular()
             .def_readwrite("warn_multiple", &RectilinearMesh2DDivideGenerator::warn_multiple, "Warn if refining path points to more than one object")
             .def_readwrite("warn_missing", &RectilinearMesh2DDivideGenerator::warn_missing, "Warn if refining path does not point to any object")
             .def_readwrite("warn_ouside", &RectilinearMesh2DDivideGenerator::warn_outside, "Warn if refining line is outside of its object")
-            .def("addRefinement", &RectilinearMesh2DDivideGenerator_addRefinement1, "Add a refining line inside the object",
+            .def("add_refinement", &RectilinearMesh2DDivideGenerator_addRefinement1, "Add a refining line inside the object",
                 (py::arg("axis"), "object", "path", "pos"))
-            .def("addRefinement", &RectilinearMesh2DDivideGenerator_addRefinement2, "Add a refining line inside the object",
+            .def("add_refinement", &RectilinearMesh2DDivideGenerator_addRefinement2, "Add a refining line inside the object",
                 (py::arg("axis"), "object", "pos"))
-            .def("addRefinement", &RectilinearMesh2DDivideGenerator_addRefinement3, "Add a refining line inside the object",
+            .def("add_refinement", &RectilinearMesh2DDivideGenerator_addRefinement3, "Add a refining line inside the object",
                 (py::arg("axis"), "subtree", "pos"))
-            .def("addRefinement", &RectilinearMesh2DDivideGenerator_addRefinement4, "Add a refining line inside the object",
+            .def("add_refinement", &RectilinearMesh2DDivideGenerator_addRefinement4, "Add a refining line inside the object",
                 (py::arg("axis"), "path", "pos"))
-            .def("removeRefinement", &RectilinearMesh2DDivideGenerator_removeRefinement1, "Remove the refining line from the object",
+            .def("remove_refinement", &RectilinearMesh2DDivideGenerator_removeRefinement1, "Remove the refining line from the object",
                 (py::arg("axis"), "object", "path", "pos"))
-            .def("removeRefinement", &RectilinearMesh2DDivideGenerator_removeRefinement2, "Remove the refining line from the object",
+            .def("remove_refinement", &RectilinearMesh2DDivideGenerator_removeRefinement2, "Remove the refining line from the object",
                 (py::arg("axis"), "object", "pos"))
-            .def("removeRefinement", &RectilinearMesh2DDivideGenerator_removeRefinement3, "Remove the refining line from the object",
+            .def("remove_refinement", &RectilinearMesh2DDivideGenerator_removeRefinement3, "Remove the refining line from the object",
                 (py::arg("axis"), "subtree", "pos"))
-            .def("removeRefinement", &RectilinearMesh2DDivideGenerator_removeRefinement4, "Remove the refining line from the object",
+            .def("remove_refinement", &RectilinearMesh2DDivideGenerator_removeRefinement4, "Remove the refining line from the object",
                 (py::arg("axis"), "path", "pos"))
-            .def("removeRefinements", &RectilinearMesh2DDivideGenerator_removeRefinements1, "Remove the all refining lines from the object",
+            .def("remove_refinements", &RectilinearMesh2DDivideGenerator_removeRefinements1, "Remove the all refining lines from the object",
                 (py::arg("object"), py::arg("path")=py::object()))
-            .def("removeRefinements", &RectilinearMesh2DDivideGenerator_removeRefinements2, "Remove the all refining lines from the object",
+            .def("remove_refinements", &RectilinearMesh2DDivideGenerator_removeRefinements2, "Remove the all refining lines from the object",
                 py::arg("path"))
-            .def("removeRefinements", &RectilinearMesh2DDivideGenerator_removeRefinements3, "Remove the all refining lines from the object",
+            .def("remove_refinements", &RectilinearMesh2DDivideGenerator_removeRefinements3, "Remove the all refining lines from the object",
                 py::arg("subtree"))
-            .def("clearRefinements", &RectilinearMesh2DDivideGenerator::clearRefinements, "Clear all refining lines",
+            .def("clear_refinements", &RectilinearMesh2DDivideGenerator::clearRefinements, "Clear all refining lines",
                 py::arg("subtree"))
-            .def("getRefinements", &RectilinearMesh2DDivideGenerator_listRefinements, py::arg("axis"),
+            .def("get_refinements", &RectilinearMesh2DDivideGenerator_listRefinements, py::arg("axis"),
                 "Get list of all the refinements defined for this generator for specified axis"
             )
         ;

@@ -5,9 +5,9 @@
 #include <plask/config.h>
 
 #include "python_globals.h"
+#include "python_numpy.h"
 #include "../util/raw_constructor.h"
 
-#include <numpy/arrayobject.h>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/concept_check.hpp>
 
@@ -152,22 +152,22 @@ template <int dim, typename T> inline static py::handle<> vec_dtype() { return d
 
 
 // vector.__array__
-template <int dim, typename T>  py::object vec__array__(py::object self) {
+template <int dim, typename T>  py::object vec__array__(py::object self, py::object dtype) {
     Vec<dim,T>* vec = py::extract<Vec<dim,T>*>(self);
     npy_intp dims[] = { dim };
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::typenum<T>(), (void*)vec->begin());
     if (arr == nullptr) throw plask::CriticalException("cannot create array from vector");
-    py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the vector stays alive as long as the array
+    confirm_array<T>(arr, self, dtype);
     return py::object(py::handle<>(arr));
 }
 
 // vector_list.__array__
-template <int dim, typename T>  py::object vec_list__array__(py::object self) {
+template <int dim, typename T>  py::object vec_list__array__(py::object self, py::object dtype) {
     std::vector<Vec<dim,T>>* list = py::extract<std::vector<Vec<dim,T>>*>(self);
     npy_intp dims[] = { (npy_int)list->size(), dim };
     PyObject* arr = PyArray_SimpleNewFromData(2, dims, detail::typenum<T>(), (void*)((*list)[0].begin()));
     if (arr == nullptr) throw plask::CriticalException("cannot create array from vector list");
-    py::incref(self.ptr()); PyArray_BASE(arr) = self.ptr(); // Make sure the vector list stays alive as long as the array
+    confirm_array<T>(arr, self, dtype);
     return py::object(py::handle<>(arr));
 }
 
@@ -250,13 +250,13 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>, "Vector magnitue")
         .def("copy", &copy_vec<dim,T>)
         .add_static_property("dtype", &vec_dtype<dim,T>)
-        .def("__array__", &vec__array__<dim,T>)
+        .def("__array__", &vec__array__<dim,T>, py::arg("dtype")=py::object())
     ;
 
     detail::Vec_from_Sequence<dim,T>();
 
     register_vector_of<Vec<dim,T>>(name)
-        .def("__array__", &vec_list__array__<dim,T>)
+        .def("__array__", &vec_list__array__<dim,T>, py::arg("dtype")=py::object())
     ;
 
     py::scope vec_scope = vec_class;
@@ -387,11 +387,6 @@ const static std::string __doc__ =
     "Create 2D vector in cylindrical coordinates, specifying dtype.\n"
 
     ;
-
-static inline bool plask_import_array() {
-    import_array1(false);
-    return true;
-}
 
 void register_vectors()
 {

@@ -91,9 +91,9 @@ class RectilinearMeshes(unittest.TestCase):
         generator1 = plask.mesh.Rectilinear2D.SimpleGenerator()
         generator2 = plask.mesh.Rectilinear2D.DivideGenerator()
         generator2.prediv = 2
-        generator2.addRefinement("z", rect, 8.)
+        generator2.add_refinement("z", rect, 8.)
 
-        self.assertEqual( list(generator2.getRefinements("z").values()), [[8.]] )
+        self.assertEqual( list(generator2.get_refinements("z").values()), [[8.]] )
 
         mesh1 = generator1(stack)
         self.assertEqual( list(mesh1.axis0), [0., 2.] )

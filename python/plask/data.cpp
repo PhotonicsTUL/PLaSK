@@ -1,6 +1,6 @@
 #include "python_globals.h"
 #include "python_provider.h"
-#include <numpy/arrayobject.h>
+#include "python_numpy.h"
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/rectilinear.h>
@@ -9,6 +9,7 @@
 #include <plask/vec.h>
 
 namespace plask { namespace python {
+
 
 /*
  * Some helper functions for getting information on rectangular meshes
@@ -146,7 +147,10 @@ py::handle<> DataVector_dtype() {
 
 
 template <typename T, int dim>
-static py::object DataVectorWrap__array__(py::object oself) {
+static py::object DataVectorWrap__array__(py::object oself, py::object dtype) {
+
+
+
     const DataVectorWrap<T,dim>* self = py::extract<const DataVectorWrap<T,dim>*>(oself);
 
     if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
@@ -156,7 +160,8 @@ static py::object DataVectorWrap__array__(py::object oself) {
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::typenum<T>(), (void*)self->data());
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
 
-    py::incref(oself.ptr()); PyArray_BASE(arr) = oself.ptr(); // Make sure the data vector stays alive as long as the array
+    confirm_array<T>(arr, oself, dtype);
+
     return py::object(py::handle<>(arr));
 }
 
@@ -185,7 +190,7 @@ static PyObject* DataVectorWrap_ArrayImpl(const DataVectorWrap<T,dim>* self) {
 }
 
 template <typename T, int dim>
-static py::object DataVectorWrap_Array(py::object oself) {
+static py::object DataVectorWrap_Array(py::object oself, py::object dtype) {
     const DataVectorWrap<T,dim>* self = py::extract<const DataVectorWrap<T,dim>*>(oself);
 
     if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
@@ -195,11 +200,10 @@ static py::object DataVectorWrap_Array(py::object oself) {
     if (!arr) arr = DataVectorWrap_ArrayImpl<T, RegularMesh2D>(self);
     if (!arr) arr = DataVectorWrap_ArrayImpl<T, RegularMesh3D>(self);
 
-
     if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for %1%)",
                                         (dim == 2)? "mesh.RegularMesh2D or mesh.RectilinearMesh2D" : "mesh.RegularMesh3D or mesh.RectilinearMesh3D");
 
-    py::incref(oself.ptr()); PyArray_BASE(arr) = oself.ptr(); // Make sure the data vector stays alive as long as the array
+    confirm_array<T>(arr, oself, dtype);
     return py::object(py::handle<>(arr));
 }
 
@@ -306,10 +310,6 @@ py::object Data(PyObject* obj, py::object omesh) {
 }
 
 
-
-
-
-
 template <typename T, int dim>
 void register_data_vector() {
 
@@ -320,17 +320,12 @@ void register_data_vector() {
         .def("__getslice__", &DataVectorWrap_getslice<const T,dim>)
         .def("__contains__", &DataVectorWrap_contains<const T,dim>)
         .def("__iter__", py::range(&DataVectorWrap_begin<const T,dim>, &DataVectorWrap_end<const T,dim>))
-        .def("__array__", &DataVectorWrap__array__<const T,dim>)
+        .def("__array__", &DataVectorWrap__array__<const T,dim>, py::arg("dtype")=py::object())
+        .def("array", &DataVectorWrap_Array<const T,dim>, "Array formatted by the mesh", py::arg("dtype")=py::object())
         .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values")
-        .add_property("array", &DataVectorWrap_Array<const T,dim>, "Array formatted by the mesh")
     ;
 
     py::def("Data", &Data, (py::arg("array"), "mesh"), "Create new data from array and mesh");
-}
-
-static inline bool plask_import_array() {
-    import_array1(false);
-    return true;
 }
 
 void register_data_vectors() {
