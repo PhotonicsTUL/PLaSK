@@ -495,18 +495,23 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
         Vec<2,double> tMidPoint = ttE->getMidpoint();
         auto tMaterial = this->geometry->getMaterial(tMidPoint);
 
-        double tLayerHeight =
-            dynamic_pointer_cast<const GeometryObjectD<2>>( this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf) )
-                                -> getBoundingBox().height();
-
         size_t tLoLeftNo = ttE->getLoLoIndex();
         size_t tLoRghtNo = ttE->getUpLoIndex();
         size_t tUpLeftNo = ttE->getLoUpIndex();
         size_t tUpRghtNo = ttE->getUpUpIndex();
 
+        double tTemp = 0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] +
+                               mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]);
+
         double tKx, tKy;
-        std::tie(tKx,tKy) = tMaterial->thermk(0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] +
-                                                         mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]  ), tLayerHeight);
+        auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(
+                        this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf)
+                     );
+        if (tLeaf)
+            std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height());
+        else
+            std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
+
 
         mHeatFluxes[ttE->getIndex()] = vec(
             - 0.5e6 * tKx * (- mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo]

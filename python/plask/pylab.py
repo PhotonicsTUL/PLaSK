@@ -47,6 +47,14 @@ def plot_field(field, levels=None, **kwargs):
     return result
 
 
+def plot_vectors(field, color='w', angles='xy', scale_units='xy', **kwargs):
+    '''Plot vector field'''
+    #TODO documentation
+    m = field.mesh
+    quiver(m.axis0, m.axis1, field.array()[:,:,0], field.array()[:,:,1],
+           color=color, angles=angles, scale_units=scale_units, **kwargs)
+
+
 def plot_geometry(geometry, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):
     '''Plot geometry.'''
     #TODO documentation
