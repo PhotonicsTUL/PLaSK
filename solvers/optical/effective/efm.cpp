@@ -11,7 +11,7 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     have_fields(false),
     m(0),
     k0(NAN),
-    outer_distance(0.1),
+    outdist(0.1),
     outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty) {
     inTemperature = 300.;
     inGain = NAN;
@@ -55,7 +55,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             striperoot.maxiterations = reader.getAttribute<int>("maxiterations", striperoot.maxiterations);
             reader.requireTagEnd();
         } else if (param == "outer") {
-            outer_distance = reader.requireAttribute<double>("distance");
+            outdist = reader.requireAttribute<double>("distance");
             reader.requireTagEnd();
         } else
             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <striperoot>, or <outer>");
@@ -204,12 +204,12 @@ void EffectiveFrequencyCylSolver::stageOne()
             size_t tx1;
             double x0, x1;
             x0 = mesh->axis0[ix];
-            if (ix < mesh->axis0.size()-1) { tx1 = ix+1; x1 = mesh->axis0[tx1]; } else { tx1 = mesh->axis0.size()-1; x1 = mesh->axis0[tx1] + 2.*outer_distance; }
+            if (ix < mesh->axis0.size()-1) { tx1 = ix+1; x1 = mesh->axis0[tx1]; } else { tx1 = mesh->axis0.size()-1; x1 = mesh->axis0[tx1] + 2.*outdist; }
             for (size_t iy = 0; iy < zsize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
-                if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outer_distance; }
-                if (iy < zsize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = zsize-2; y1 = mesh->axis1[ty1] + 2.*outer_distance; }
+                if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outdist; }
+                if (iy < zsize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = zsize-2; y1 = mesh->axis1[ty1] + 2.*outdist; }
 
                 double T = 0.25 * ( temp[mesh->index(ix,ty0)] + temp[mesh->index(ix,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );

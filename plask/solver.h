@@ -361,7 +361,7 @@ BOOST_PYTHON_MODULE(fd)
 
      BOUNDARY_CONDITIONS(boundary, boundaryConditionsOnField, "Boundary conditions of the first kind (constant field)");
 
-     METHOD(compute, "Perform the computations");
+     METHOD(compute, compute, "Perform the computations");
     }
 }
 \endcode
@@ -383,7 +383,7 @@ using separate macros, due to some additional logic necessary). Below, there is 
 it is self-explanatory:
 
 \code
-METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
+METHOD(python_method_name, method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
 
 RO_FIELD(field_name, "Short documentation");                                                    // read-only field
 

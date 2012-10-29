@@ -22,12 +22,12 @@ class Geometrys(unittest.TestCase):
         s = plask.geometry.Cartesian2D(r, x_lo="mirror" , right="AlN", top="GaN")
         print(s.bbox)
         self.assertEqual( dict(s.borders.items()), {'left': "mirror", 'right': "AlN", 'top': "GaN", 'bottom': None} )
-        self.assertEqual( str(s.getMaterial(-1.5, 0.5)), "Al(0.2)GaN" )
-        self.assertEqual( str(s.getMaterial(3., 0.5)), "AlN" )
-        self.assertEqual( str(s.getMaterial(-3., 0.5)), "AlN" )
-        self.assertEqual( str(s.getMaterial(0., 2.)), "GaN" )
+        self.assertEqual( str(s.get_material(-1.5, 0.5)), "Al(0.2)GaN" )
+        self.assertEqual( str(s.get_material(3., 0.5)), "AlN" )
+        self.assertEqual( str(s.get_material(-3., 0.5)), "AlN" )
+        self.assertEqual( str(s.get_material(0., 2.)), "GaN" )
 
-        with self.assertRaises(RuntimeError): plask.geometry.Cartesian2D(r, right="mirror").getMaterial(3., 0.5)
+        with self.assertRaises(RuntimeError): plask.geometry.Cartesian2D(r, right="mirror").get_material(3., 0.5)
 
     #def testSubspace(self):
         #stack = plask.geometry.Stack2D()

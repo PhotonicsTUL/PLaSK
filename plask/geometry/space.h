@@ -22,6 +22,9 @@ struct Geometry: public GeometryObject {
     /// Default material (which will be used for places in which geometry doesn't define any material), typically air.
     shared_ptr<Material> defaultMaterial;
 
+    /// Axis names for this geometry
+    AxisNames axisNames;
+
     enum DIRECTION {
         DIRECTION_LONG = Primitive<3>::DIRECTION_LONG,
         DIRECTION_TRAN = Primitive<3>::DIRECTION_TRAN,

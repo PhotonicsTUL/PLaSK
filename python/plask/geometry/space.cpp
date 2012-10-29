@@ -9,6 +9,14 @@
 
 namespace plask { namespace python {
 
+std::string Geometry_getAxes(const Geometry& self) {
+    return self.axisNames.str();
+}
+
+void Geometry_setAxes(Geometry& self, const std::string& axis) {
+    self.axisNames = AxisNames::axisNamesRegister.get(axis);
+}
+
 template <typename S> struct Space_getMaterial {
     static inline shared_ptr<Material> call(const S& self, double c0, double c1) {
         return self.getMaterial(Vec<2,double>(c0, c1));
@@ -270,6 +278,7 @@ void register_calculation_spaces() {
     py::class_<Geometry, shared_ptr<Geometry>, boost::noncopyable>("Geometry",
         "Base class for all geometries", py::no_init)
         .def("__eq__", __is__<Geometry>)
+        .add_property<>("axes", Geometry_getAxes, Geometry_getAxes, "Names of axes for this geometry")
     ;
 
     py::class_<BordersProxy>("BordersProxy")
@@ -299,21 +308,21 @@ void register_calculation_spaces() {
                       "Material on the negative side of the axis along the extrusion")
         .add_property("borders", &Geometry2DCartesian_getBorders, &Space_setBorders,
                       "Dictionary specifying the type of the surroundings around the structure")
-        .def("getMaterial", &Geometry2DCartesian::getMaterial, "Return material at given point", (py::arg("point")))
-        .def("getMaterial", &Space_getMaterial<Geometry2DCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("getLeafs", &Space_getLeafs<Geometry2DCartesian>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
-        .def("getLeafsPositions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsPositions,
+        .def("get_material", &Geometry2DCartesian::getMaterial, "Return material at given point", (py::arg("point")))
+        .def("get_material", &Space_getMaterial<Geometry2DCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
+        .def("get_leafs", &Space_getLeafs<Geometry2DCartesian>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
+        .def("get_leafs_positions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsPositions,
              (py::arg("path")=py::object()), "Calculate positions of all leafs")
-        .def("getLeafsBBoxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsBoundingBoxes,
+        .def("get_leafs_bboxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsBoundingBoxes,
              (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
-        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
-        .def("getObjectPositions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCartesian::getObjectPositions,
+        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry2DCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
+        .def("get_object_positions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCartesian::getObjectPositions,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
-        .def("getObjectBBoxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCartesian::getObjectBoundingBoxes,
+        .def("get_object_bboxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCartesian::getObjectBoundingBoxes,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
-        .def("getPathsAt", &Geometry2DCartesian::getPathsAt, (py::arg("point"), py::arg("all")=false),
+        .def("get_paths", &Geometry2DCartesian::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containg paths to all leafs covering specified point")
-        .def("getPathsAt", &Space_getMaterial<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
+        .def("get_paths", &Space_getMaterial<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -332,21 +341,21 @@ void register_calculation_spaces() {
         .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial, "Material of the 'empty' regions of the geometry")
         .add_property("borders", &Geometry2DCylindrical_getBorders, &Space_setBorders,
                       "Dictionary specifying the type of the surroundings around the structure")
-        .def("getMaterial", &Geometry2DCylindrical::getMaterial, "Return material at given point", (py::arg("point")))
-        .def("getMaterial", &Space_getMaterial<Geometry2DCylindrical>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("getLeafs", &Space_getLeafs<Geometry2DCylindrical>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
-        .def("getLeafsPositions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsPositions,
+        .def("get_material", &Geometry2DCylindrical::getMaterial, "Return material at given point", (py::arg("point")))
+        .def("get_material", &Space_getMaterial<Geometry2DCylindrical>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
+        .def("get_leafs", &Space_getLeafs<Geometry2DCylindrical>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
+        .def("get_leafs_positions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsPositions,
              (py::arg("path")=py::object()), "Calculate positions of all leafs")
-        .def("getLeafsBBoxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsBoundingBoxes,
+        .def("get_leafs_bboxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsBoundingBoxes,
              (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
-        .def("getLeafsAsTranslations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
-        .def("getObjectPositions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectPositions,
+        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
+        .def("get_object_positions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectPositions,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
         .def("getObjectBBoxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectBoundingBoxes,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
-        .def("getPathsAt", &Geometry2DCylindrical::getPathsAt, (py::arg("point"), py::arg("all")=false),
+        .def("get_paths", &Geometry2DCylindrical::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
-        .def("getPathsAt", &Space_getMaterial<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
+        .def("get_paths", &Space_getMaterial<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;

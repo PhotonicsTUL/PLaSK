@@ -192,9 +192,9 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
         .def("intersects", &GeometryObjectD<dim>::intersects, (py::arg("area")),
              "Return True if the geometry object has common points (in local coordinates) with an area")
 
-        .def("getMaterial", &GeometryObjectD<dim>::getMaterial, (py::arg("point")),
+        .def("get_material", &GeometryObjectD<dim>::getMaterial, (py::arg("point")),
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
-        .def("getMaterial", &MethodsD<dim>::getMaterial, GeometryObjectD_vector_args<dim>::args(),
+        .def("get_material", &MethodsD<dim>::getMaterial, GeometryObjectD_vector_args<dim>::args(),
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
 
         .add_property("bbox", &GeometryObjectD<dim>::getBoundingBox,
@@ -203,47 +203,47 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
         .add_property("bbox_size", &GeometryObjectD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
 
-        .def("getLeafsPositions", (std::vector<DVec>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsPositions,
+        .def("get_leafs_positions", (std::vector<DVec>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsPositions,
              (py::arg("path")=py::object()), "Calculate positions of all leafs (in local coordinates)")
 
-        .def("getLeafsBBoxes", (std::vector<Box>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsBoundingBoxes,
+        .def("get_leafs_bboxes", (std::vector<Box>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsBoundingBoxes,
              (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs (in local coordinates)")
 
-        .def("getLeafsAsTranslations", &GeometryObjectD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
+        .def("get_leafs_translations", &GeometryObjectD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
                 "Return list of Translation objects holding all leafs")
 
-        .def("getLeafs", &GeometryObject_getLeafs, (py::arg("path")=py::object()),
+        .def("get_leafs", &GeometryObject_getLeafs, (py::arg("path")=py::object()),
              "Return list of all leafs in the subtree originating from this object")
 
-        .def("getObjectPositions", (std::vector<DVec>(GeometryObjectD<dim>::*)(const GeometryObject&, const PathHints&)const) &GeometryObjectD<dim>::getObjectPositions,
+        .def("get_object_positions", (std::vector<DVec>(GeometryObjectD<dim>::*)(const GeometryObject&, const PathHints&)const) &GeometryObjectD<dim>::getObjectPositions,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
 
-        .def("getObjectBBoxes", (std::vector<Box>(GeometryObjectD<dim>::*)(const GeometryObject&, const PathHints&)const) &GeometryObjectD<dim>::getObjectBoundingBoxes,
+        .def("get_object_bboxes", (std::vector<Box>(GeometryObjectD<dim>::*)(const GeometryObject&, const PathHints&)const) &GeometryObjectD<dim>::getObjectBoundingBoxes,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
 
         // .def("getObjectAsTranslations", &GeometryObjectD_getObjectAsTranslations<dim>,
         //         (py::arg("object"), py::arg("path")=py::object()), "Return Translations holding specified object")
 
-        .def("getPathsAt", (GeometryObject::Subtree(GeometryObjectD<dim>::*)(const DVec&,bool)const) &GeometryObjectD<dim>::getPathsAt, (py::arg("point"), py::arg("all")=false),
+        .def("get_paths", (GeometryObject::Subtree(GeometryObjectD<dim>::*)(const DVec&,bool)const) &GeometryObjectD<dim>::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
 
-        .def("getPathsAt", &MethodsD<dim>::getPathsAt, (GeometryObjectD_vector_args<dim>::args(), py::arg("all")=false),
+        .def("get_paths", &MethodsD<dim>::getPathsAt, (GeometryObjectD_vector_args<dim>::args(), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
 
-        .def("objectIncludes", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const PathHints&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
+        .def("object_includes", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const PathHints&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
              (py::arg("object"), "path", "point"), "Return true if the specified object includes given point")
-        .def("objectIncludes", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
+        .def("object_includes", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
              (py::arg("object"), "point"), "Return true if the specified object includes given point")
-        .def("objectIncludes", &MethodsD<dim>::objectIncludes1, GeometryObjectD_vector_args<dim>::args((py::arg("object"), "path")),
-             "Return true if the specified object includes given point")
-        .def("objectIncludes", &MethodsD<dim>::objectIncludes2, (GeometryObjectD_vector_args<dim>::args(py::arg("object"))),
-             "Return true if the specified object includes given point")
+        .def("object_includes", &MethodsD<dim>::objectIncludes1, GeometryObjectD_vector_args<dim>::args((py::arg("object"), "path")),
+             "Return true if the specified child includes given point")
+        .def("object_includes", &MethodsD<dim>::objectIncludes2, (GeometryObjectD_vector_args<dim>::args(py::arg("object"))),
+             "Return true if the specified child includes given point")
 
-        .def("getRolesAt", &GeometryObjectD_getRolesAt<dim>, py::arg("point"), "Return roles of objects at specified point")
-        .def("getRolesAt", &MethodsD<dim>::getRolesAt, GeometryObjectD_vector_args<dim>::args(), "Return roles of objects at specified point")
+        .def("get_roles", &GeometryObjectD_getRolesAt<dim>, py::arg("point"), "Return roles of objects at specified point")
+        .def("get_roles", &MethodsD<dim>::getRolesAt, GeometryObjectD_vector_args<dim>::args(), "Return roles of objects at specified point")
 
-        .def("hasRoleAt", &GeometryObjectD_hasRoleAt<dim>, (py::arg("role"), "point"), "Return true if the specified point has given role")
-        .def("hasRoleAt", &MethodsD<dim>::hasRoleAt, GeometryObjectD_vector_args<dim>::args(py::arg("role")),
+        .def("has_role", &GeometryObjectD_hasRoleAt<dim>, (py::arg("role"), "point"), "Return true if the specified point has given role")
+        .def("has_role", &MethodsD<dim>::hasRoleAt, GeometryObjectD_vector_args<dim>::args(py::arg("role")),
              "Return true if the specified point has given role")
     ;
 }

@@ -61,7 +61,7 @@ it legible! The more specific rules are below:
   .
 - For class fields and variables it is best to use a single word: just a name or a typical physical symbol.
   For short two-word terms it is best to glue them together (e.g. \c bbox for bounding box) unless it obscures
-  the legibility. If this rule is impossible to hold, you are allowed to sometimes use \c lower_case_with_underscores.
+  the legibility. If this rule is impossible to hold, you are allowed to sometimes use \c mixedCase.
   .
 - Do not use prefixed Hungarian notation for class members and variable names.
   .
@@ -85,6 +85,11 @@ the rules MUST be even more strictly obeyed, as this interface is visible to the
 at this level is crucial!
 
 - Solver library names should be all lowercase.
+  .
+- Naming conventions of the in Python interface should comply with the rules specified in
+  <a href="http://www.python.org/dev/peps/pep-0008/#naming-conventions"><b>PEP 8</b></a>. This almost exactly corresponds
+  to the PLaSK \link naming naming convention \endlink for C++, although all the methods in the classes and class fields
+  should have \c lower_case_with_underscores names. However, names of providers and receivers _must_ match the ones from C++.
   .
 - Python names of your classes should rather reflect the method used, not the analyzed phenomena (in the user inerface
   they are prefixed with the category). Furthermore they must be suffixed with \c 2D, \c 3D, or \c Cyl, which states

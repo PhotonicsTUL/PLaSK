@@ -67,7 +67,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Current value of reference normalized frequency
     dcomplex k0;
 
-    double outer_distance; ///< Distance outside outer borders where material is sampled
+    double outdist; ///< Distance outside outer borders where material is sampled
 
     // Parameters for rootdigger
     RootDigger::Params root;

@@ -44,7 +44,7 @@ struct Manager {
     struct ExternalSourcesFromFile {
 
         /// Current file name.
-        boost::filesystem::path oryginalFileName;
+        boost::filesystem::path originalFileName;
 
         /// Name of section which is just read
         std::string currentSection;
@@ -54,24 +54,24 @@ struct Manager {
 
         bool hasCircularRef(boost::filesystem::path& fileName, const std::string& section) {
             if (!currentSection.empty() || currentSection != section) return false;
-            if (fileName == oryginalFileName) return true;
+            if (fileName == originalFileName) return true;
             return prev != 0 && prev->hasCircularRef(fileName, section);
         }
 
         /**
          * Create ExternalSourcesFromFile which dosn't support relative file names
-         * (oryginal file name is not known).
+         * (original file name is not known).
          */
         ExternalSourcesFromFile(): prev(nullptr) {}
 
         /**
          * Create ExternalSourcesFromFile which support relative file names.
-         * @param oryginalFileName name of file from which XML is read now
+         * @param originalFileName name of file from which XML is read now
          */
-        ExternalSourcesFromFile(const boost::filesystem::path& oryginalFileName,
+        ExternalSourcesFromFile(const boost::filesystem::path& originalFileName,
                                 const std::string& currentSection = std::string(),
                                 ExternalSourcesFromFile* prev = nullptr)
-            : oryginalFileName(oryginalFileName), currentSection(currentSection), prev(prev) {}
+            : originalFileName(originalFileName), currentSection(currentSection), prev(prev) {}
 
         void operator()(Manager& manager, const MaterialsSource& materialsSource, const std::string& url, const std::string& section);
 

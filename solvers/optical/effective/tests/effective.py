@@ -49,9 +49,9 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
         self.solver.symmetry = "+"
         self.solver.polarization = "TE"
-        self.assertAlmostEqual( self.solver.computeMode(1.15), 1.1502818, 6)
+        self.assertAlmostEqual( self.solver.compute(1.15), 1.1502818, 6)
         self.solver.polarization = "TM"
-        self.assertAlmostEqual( self.solver.computeMode(1.10), 1.1156605, 6)
+        self.assertAlmostEqual( self.solver.compute(1.10), 1.1156605, 6)
 
     def testMesh(self):
         mesh = self.solver.mesh

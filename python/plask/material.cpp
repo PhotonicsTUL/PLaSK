@@ -533,12 +533,12 @@ void initMaterials() {
         "    as the current state of the art. However, you can derive an abstract class plask.Material\n"
         "    to create your own materials.\n" //TODO maybe more extensive description
         ); materialsDB
-        .def("getDefault", &MaterialsDB::getDefault, "Get default database", py::return_value_policy<py::reference_existing_object>())
-        .staticmethod("getDefault")
+        .def("get_default", &MaterialsDB::getDefault, "Get default database", py::return_value_policy<py::reference_existing_object>())
+        .staticmethod("get_default")
         .def("load", &MaterialsDB::loadToDefault, "Load materials from library lib to default database", py::arg("lib"))
         .staticmethod("load") // TODO make it non-static
-        .def("loadAll", &MaterialsDB::loadAllToDefault, "Load all materials from specified directory to default database", py::arg("directory")=plaskMaterialsPath())
-        .staticmethod("loadAll") // TODO make it non-static
+        .def("load_all", &MaterialsDB::loadAllToDefault, "Load all materials from specified directory to default database", py::arg("directory")=plaskMaterialsPath())
+        .staticmethod("load_all") // TODO make it non-static
         .def("get", py::raw_function(&MaterialsDB_get), "Get material of given name and doping")
         .add_property("all", &MaterialsDB_list, "List of all materials in database")
         .def("__iter__", &MaterialsDB_iter)
@@ -549,9 +549,9 @@ void initMaterials() {
     py::class_<Material, shared_ptr<Material>, boost::noncopyable> MaterialClass("Material", "Base class for all materials.", py::no_init);
     MaterialClass
         .def("__init__", raw_constructor(&PythonMaterial::__init__))
-        .def("_completeComposition", &Material__completeComposition, (py::arg("composition"), py::arg("name")=""),
+        .def("complete_composition", &Material__completeComposition, (py::arg("composition"), py::arg("name")=""),
              "Fix incomplete material composition basing on pattern")
-        .staticmethod("_completeComposition")
+        .staticmethod("complete_composition")
         .add_property("name", &Material::name)
         .add_property("kind", &Material::kind)
         .def("__str__", &Material__str__)

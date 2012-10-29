@@ -18,7 +18,7 @@ using namespace plask::solvers::your_solver;
 BOOST_PYTHON_MODULE(solver_name)
 {
     {CLASS(Class_Name, "YourSolver", "Short solver description.")
-        METHOD(method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
+        METHOD(python_method_name, method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
         RO_FIELD(field_name, "Short documentation"); // read-only field
         RW_FIELD(field_name, "Short documentation"); // read-write field
         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property

@@ -11,7 +11,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     old_polarization(TE),
     polarization(TE),
     symmetry(NO_SYMMETRY),
-    outer_distance(0.1),
+    outdist(0.1),
     outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty) {
     inTemperature = 300.;
     inGain = NAN;
@@ -68,7 +68,7 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             striperoot.maxiterations = reader.getAttribute<int>("maxiterations", striperoot.maxiterations);
             reader.requireTagEnd();
         } else if (param == "outer") {
-            outer_distance = reader.requireAttribute<double>("distance");
+            outdist = reader.requireAttribute<double>("distance");
             reader.requireTagEnd();
         } else
             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <striperoot>, or <outer>");
@@ -186,14 +186,14 @@ void EffectiveIndex2DSolver::stageOne()
         for (size_t ix = xbegin; ix < xsize; ++ix) {
             size_t tx0, tx1;
             double x0, x1;
-            if (ix > 0) { tx0 = ix-1; x0 = mesh->axis0[tx0]; } else { tx0 = 0; x0 = mesh->axis0[tx0] - 2.*outer_distance; }
-            if (ix < xsize-1) { tx1 = ix; x1 = mesh->axis0[tx1]; } else { tx1 = xsize-2; x1 = mesh->axis0[tx1] + 2.*outer_distance; }
+            if (ix > 0) { tx0 = ix-1; x0 = mesh->axis0[tx0]; } else { tx0 = 0; x0 = mesh->axis0[tx0] - 2.*outdist; }
+            if (ix < xsize-1) { tx1 = ix; x1 = mesh->axis0[tx1]; } else { tx1 = xsize-2; x1 = mesh->axis0[tx1] + 2.*outdist; }
             for (size_t iy = 0; iy < ysize; ++iy) {
                 size_t ty0, ty1;
                 double y0, y1;
                 double g = (ix == 0 || ix == xsize-1 || iy == 0 || iy == ysize-1)? NAN : gain[midmesh->index(ix-1, iy-1)];
-                if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outer_distance; }
-                if (iy < ysize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = ysize-2; y1 = mesh->axis1[ty1] + 2.*outer_distance; }
+                if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outdist; }
+                if (iy < ysize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = ysize-2; y1 = mesh->axis1[ty1] + 2.*outdist; }
                 double T = 0.25 * ( temp[mesh->index(tx0,ty0)] + temp[mesh->index(tx0,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
                 nrCache[ix][iy] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->nR(w, T)

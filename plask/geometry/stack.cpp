@@ -151,7 +151,7 @@ void StackContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag
 template <>
 void StackContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     //TODO
-    //dest_xml_child_tag.attr(axes.getNameForLon(), aligners[child_index]->str());
+    //dest_xml_child_tag.attr(axes.getNameForLong(), aligners[child_index]->str());
     //dest_xml_child_tag.attr(axes.getNameForTran(), aligners[child_index]->str());
 }
 

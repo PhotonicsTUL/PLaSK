@@ -428,43 +428,43 @@ inline FunctorIndexedIterator<Functor> makeFunctorIndexedIterator(Functor f, std
 }
 
 /**
- * ReindexedContainer instantiation is class which objects have reference to oryginal container and operator[].
- * All calls to operator[] are delegated to oryginal container, but argument of call is chenged (reindexed) using formula: firstIndex + given_index * delta
+ * ReindexedContainer instantiation is class which objects have reference to original container and operator[].
+ * All calls to operator[] are delegated to original container, but argument of call is chenged (reindexed) using formula: firstIndex + given_index * delta
  * where:
  * - given_index is call parameter,
  * - firstIndex and delta are paremeters stored in ReindexedContainer.
  *
- * @tparam ContainerType type of oryginal container
+ * @tparam ContainerType type of original container
  */
 template <typename ContainerType>
 struct ReindexedContainer {
 
-    ContainerType& oryginalContainer;
+    ContainerType& originalContainer;
 
     int firstIndex, delta;
 
-    ReindexedContainer(ContainerType& oryginalContainer, int firstIndex = 0, int delta = 1)
-    : oryginalContainer(oryginalContainer), firstIndex(firstIndex), delta(delta) {}
+    ReindexedContainer(ContainerType& originalContainer, int firstIndex = 0, int delta = 1)
+    : originalContainer(originalContainer), firstIndex(firstIndex), delta(delta) {}
 
-    auto operator[](const std::size_t& this_index) -> decltype(oryginalContainer[0]) {
-        return oryginalContainer[firstIndex + this_index * delta];
+    auto operator[](const std::size_t& this_index) -> decltype(originalContainer[0]) {
+        return originalContainer[firstIndex + this_index * delta];
     }
 
-    auto operator[](const std::size_t& this_index) const -> decltype(const_cast<const ContainerType&>(oryginalContainer)[0])  {
-        return oryginalContainer[firstIndex + this_index * delta];
+    auto operator[](const std::size_t& this_index) const -> decltype(const_cast<const ContainerType&>(originalContainer)[0])  {
+        return originalContainer[firstIndex + this_index * delta];
     }
 
 };
 
 /**
  * Helper function to create ReindexedContainer instantiation objects.
- * @param oryginalContainer, firstIndex, delta ReindexedContainer constructor parameters
- * @return ReindexedContainer<ContainerType>(oryginalContainer, firstIndex, delta)
- * @tparam ContainerType type of oryginal container
+ * @param originalContainer, firstIndex, delta ReindexedContainer constructor parameters
+ * @return ReindexedContainer<ContainerType>(originalContainer, firstIndex, delta)
+ * @tparam ContainerType type of original container
  */
 template <typename ContainerType>
-ReindexedContainer<ContainerType> reindexContainer(ContainerType& oryginalContainer, int firstIndex = 0, int delta = 1) {
-    return ReindexedContainer<ContainerType>(oryginalContainer, firstIndex, delta);
+ReindexedContainer<ContainerType> reindexContainer(ContainerType& originalContainer, int firstIndex = 0, int delta = 1) {
+    return ReindexedContainer<ContainerType>(originalContainer, firstIndex, delta);
 }
 
 }       // namespace plask

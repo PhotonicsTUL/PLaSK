@@ -138,7 +138,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     if (nodeName == "cartesian2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         boost::optional<double> l = source.getAttribute<double>("length");
-        shared_ptr<Geometry2DCartesian> cartesian2d = make_shared<Geometry2DCartesian>();   //result with oryginal type
+        shared_ptr<Geometry2DCartesian> cartesian2d = make_shared<Geometry2DCartesian>();   // result with original type
         result = cartesian2d;
         result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
         if (l) {
@@ -168,6 +168,8 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
             readExactlyOneChild<GeometryObjectD<3>>());
     } else
         throw XMLUnexpectedElementException(source, "geometry tag (<cartesian2d>, <cartesian3d>, or <cylindrical>)");
+
+    result->axisNames = *axisNames;
 
     if (name) manager.geometries[*name] = result;
     return result;

@@ -21,15 +21,15 @@ inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
 template <>
 void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr(axes.getNameForTran(), size.tran())
-                    .attr(axes.getNameForUp(), size.vert())
+                    .attr(axes.getNameForVert(), size.vert())
                     .attr("material", material->str());
 }
 
 template <>
 void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
-    dest_xml_object.attr(axes.getNameForLon(), size.lon())
+    dest_xml_object.attr(axes.getNameForLong(), size.lon())
                     .attr(axes.getNameForTran(), size.tran())
-                    .attr(axes.getNameForUp(), size.vert())
+                    .attr(axes.getNameForVert(), size.vert())
                     .attr("material", material->str());
 }
 

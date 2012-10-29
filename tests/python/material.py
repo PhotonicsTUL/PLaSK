@@ -32,7 +32,7 @@ class Material(unittest.TestCase):
             self.args = args,
             print(kwargs)
             self.kwargs = kwargs
-            self.composition = self._completeComposition(kwargs, self.name);
+            self.composition = self.complete_composition(kwargs, self.name);
             print(self.composition)
         def __del__(self):
             ptest.print_ptr(self)
@@ -55,7 +55,7 @@ class Material(unittest.TestCase):
 
     def testMaterial(self):
         '''Test basic behavior of Material class'''
-        result = plask.material.Material._completeComposition(dict(Ga=0.3, Al=None, As=0.0, N=None))
+        result = plask.material.Material.complete_composition(dict(Ga=0.3, Al=None, As=0.0, N=None))
         correct = dict(Ga=0.3, Al=0.7, As=0.0, N=1.0)
         for k in correct:
             self.assertAlmostEqual( result[k], correct[k] )
@@ -143,8 +143,8 @@ class Material(unittest.TestCase):
 
 
     def testPassingMaterialsByName(self):
-        mat = plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Dp=3.0").getMaterial(0,0)
+        mat = plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Dp=3.0").get_material(0,0)
         self.assertEqual( mat.name, "AlGaAs:Dp" )
         self.assertEqual( mat.VBO(1.0), 3.0 )
 
-        with(self.assertRaises(ValueError)): plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Ja=3.0").getMaterial(0,0)
+        with(self.assertRaises(ValueError)): plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Ja=3.0").get_material(0,0)

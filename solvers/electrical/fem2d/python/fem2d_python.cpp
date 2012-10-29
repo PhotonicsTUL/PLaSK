@@ -15,10 +15,10 @@ using namespace plask::solvers::electrical;
 BOOST_PYTHON_MODULE(fem2d)
 {
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "CartesianFEM", "Finite Element electrical solver for 2D Cartesian Geometry.")
-        METHOD(runCalc, "Run electrical calculations");
-        METHOD(runSingleCalc, "Run single electrical calculations");
-        METHOD(getMaxAbsVCorr, "Get max absolute correction for potential");
-        METHOD(getMaxRelVCorr, "Get max relative correction for potential");
+        METHOD(runCalc, runCalc, "Run electrical calculations");
+        METHOD(runSingleCalc, runSingleCalc, "Run single electrical calculations");
+        RO_PROPERTY(maxAbsVCorr, getMaxAbsVCorr, "Max absolute correction for potential");
+        RO_PROPERTY(maxRelVCorr, getMaxRelVCorr, "Max relative correction for potential");
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver
         PROVIDER(outPotential, "Potentials"); // provider in the solver
         PROVIDER(outCurrentDensity, "CurrentDensities"); // provider in the solver
@@ -31,10 +31,10 @@ BOOST_PYTHON_MODULE(fem2d)
     }
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "CylindricalFEM", "Finite Element electrical solver for 2D Cylindrical Geometry.")
-        METHOD(runCalc, "Run electrical calculations");
-        METHOD(runSingleCalc, "Run single electrical calculations");
-        METHOD(getMaxAbsVCorr, "Get max absolute correction for potential");
-        METHOD(getMaxRelVCorr, "Get max relative correction for potential");
+        METHOD(runCalc, runCalc, "Run electrical calculations");
+        METHOD(runSingleCalc, runSingleCalc, "Run single electrical calculations");
+        RO_PROPERTY(maxAbsVCorr, getMaxAbsVCorr, "Max absolute correction for potential");
+        RO_PROPERTY(maxRelVCorr, getMaxRelVCorr, "Max relative correction for potential");
         RECEIVER(inTemperature, "Temperatures"); // receiver in the solver
         PROVIDER(outPotential, "Potentials"); // provider in the solver
         PROVIDER(outCurrentDensity, "CurrentDensities"); // provider in the solver

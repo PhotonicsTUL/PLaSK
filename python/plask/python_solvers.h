@@ -137,7 +137,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 // Here are some useful defines.
 // Note that if you use them to define methods, properties etc, you should also use MODULE
 #define CLASS(cls, name, help) typedef cls __Class__; ExportSolver<cls> solver(name, help, py::init<std::string>(py::arg("name")=""));
-#define METHOD(method, help, ...) solver.def(BOOST_PP_STRINGIZE(method), &__Class__::method, help, (py::arg("arg1") , ## __VA_ARGS__))
+#define METHOD(name, method, help, ...) solver.def(BOOST_PP_STRINGIZE(name), &__Class__::method, help, (py::arg("arg1") , ## __VA_ARGS__))
 #define RO_PROPERTY(name, get, help) solver.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, help)
 #define RW_PROPERTY(name, get, set, help) solver.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, &__Class__::set, help)
 #define RO_FIELD(name, help) solver.def_readonly(BOOST_PP_STRINGIZE(name), &__Class__::name, help)

@@ -49,7 +49,7 @@ class Manager(unittest.TestCase):
     def testGeometry(self):
         self.assertEqual( len(self.manager.objects), 2 )
         self.assertEqual( type(self.manager.objects["Block-3"]), plask.geometry.Block2D )
-        self.assertEqual( list(self.manager.objects["Stack-2"].getLeafsBBoxes()),
+        self.assertEqual( list(self.manager.objects["Stack-2"].get_leafs_bboxes()),
             [plask.geometry.Box2D(0,0,5,2), plask.geometry.Box2D(0,2,5,4)] )
         self.assertEqual( type(self.manager.geometries.Space_1), plask.geometry.Cartesian2D )
         self.assertEqual( len(self.manager.pth), 1 )
@@ -172,7 +172,7 @@ class Manager(unittest.TestCase):
             </materials>
         </plask>
         ''')
-        material.updateFactories()
+        material.update_factories()
         mat = plask.material.XmlMat()
         self.assertAlmostEqual( mat.nr(900, 300), 1.39 )
         self.assertAlmostEqual( mat.nR(900, 300), 1.39-7.16197244e-06j )

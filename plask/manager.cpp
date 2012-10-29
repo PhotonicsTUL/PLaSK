@@ -14,9 +14,9 @@ namespace plask {
 void Manager::ExternalSourcesFromFile::operator ()(Manager &manager, const MaterialsSource& materialsSource, const std::string &url, const std::string &section) {
     boost::filesystem::path url_path(url);
     if (url_path.is_relative()) {
-        if (oryginalFileName.empty())
+        if (originalFileName.empty())
             throw Exception("Error while reading section \"%1%\": relative path name \"%2%\" is not supported.", section, url);
-        url_path = oryginalFileName;
+        url_path = originalFileName;
         url_path.remove_filename();
         url_path /= url;
     }

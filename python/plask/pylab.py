@@ -25,9 +25,8 @@ __doc__ += matplotlib.pylab.__doc__
 
 import plask
 
-
-def plotField2D(field, levels=None, **kwargs):
-    '''Plot scalar real fields using as two-dimensional color map'''
+def plot_field(field, levels=None, **kwargs):
+    '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation
     if levels is None:
         if type(field.mesh == plask.mesh.Regular2D):
@@ -47,12 +46,13 @@ def plotField2D(field, levels=None, **kwargs):
         result = contourf(field.mesh.axis0, field.mesh.axis1, field.array, levels, antialiased=True, **kwargs)
     return result
 
-def plotGeometry2D(geometry, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):
-    '''Plot two-dimensional geometry.'''
+
+def plot_geometry(geometry, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):
+    '''Plot geometry.'''
     #TODO documentation
     axes = matplotlib.pylab.gca()
     patches = []
-    for leaf,box in zip(geometry.getLeafsAsTranslations(), geometry.getLeafsBBoxes()):
+    for leaf,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
         #TODO other shapes than rectangles
         def add_path(bottom):
             lefts = [box.lower[0]]
@@ -76,7 +76,7 @@ def plotGeometry2D(geometry, color='k', width=1.0, set_limits=False, zorder=3, m
     # return patches
 
 
-def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
+def plot_mesh(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
     '''Plot two-dimensional rectilinear mesh.'''
     #TODO documentation
     axes = matplotlib.pylab.gca()
@@ -97,7 +97,7 @@ def plotMesh2D(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
     # return lines
 
 
-def plotBoundary2D(boundary, mesh, cmap=None, color='0.75', zorder=4, **kwargs):
+def plot_boundary(boundary, mesh, cmap=None, color='0.75', zorder=4, **kwargs):
     '''Plot points of specified boundary'''
     #TODO documentation
     if type(cmap) == str: cmap = get_cmap(cmap)
@@ -114,7 +114,8 @@ def plotBoundary2D(boundary, mesh, cmap=None, color='0.75', zorder=4, **kwargs):
             c.extend(len(points) * [value])
     return scatter(x, y, c=c, zorder=zorder, cmap=cmap, **kwargs)
 
-def plotMaterialParam2D(geometry, param, axes=None, mirror=False, **kwargs):
+
+def plot_material_param(geometry, param, axes=None, mirror=False, **kwargs):
     '''Plot selected material parameter as color map'''
     #TODO documentation
     if axes is None: axes = matplotlib.pylab.gca()
@@ -131,6 +132,7 @@ def plotMaterialParam2D(geometry, param, axes=None, mirror=False, **kwargs):
         if geometry.borders['top'] == 'mirror' or geometry.borders['bottom'] == 'mirror':
             ax = array(grid.axis1)
             grid.axis1 = concatenate((-ax, ax))
-    points = grid.getMidpointsMesh()
-    data = array([ param(geometry.getMaterial(p)) for p in points ]).reshape((len(points.axis1), len(points.axis0)))
+    points = grid.get_midpoints_mesh()
+    data = array([ param(geometry.get_material(p)) for p in points ]).reshape((len(points.axis1), len(points.axis0)))
     return pcolor(array(grid.axis0), array(grid.axis1), data, **kwargs)
+

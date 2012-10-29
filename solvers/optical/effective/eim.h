@@ -68,7 +68,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     Symmetry symmetry;  ///< Symmetry of the searched modes
 
-    double outer_distance; ///< Distance outside outer borders where material is sampled
+    double outdist; ///< Distance outside outer borders where material is sampled
 
     // Parameters for rootdigger
     RootDigger::Params root;

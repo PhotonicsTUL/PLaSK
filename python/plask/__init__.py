@@ -14,12 +14,16 @@ try:
 except ImportError:
     from numpy import *
 
+try:
+    from plask.hdf5 import *
+except ImportError:
+    pass
 
 ## ## plask.material ## ##
 
-materialdb = material.database = material.MaterialsDB.getDefault()
+materialdb = material.database = material.MaterialsDB.get_default()
 
-def updateFactories():
+def update_factories():
     '''For each material in default database make factory in plask.material'''
     def factory(name):
         return lambda **kwargs: materialdb.get(name, **kwargs)
@@ -28,14 +32,14 @@ def updateFactories():
         name = mat.split(":")[0]
         if name not in material.__dict__:
             material.__dict__[name] = factory(name)
-material.updateFactories = updateFactories
-del updateFactories
+material.update_factories = update_factories
+del update_factories
 
 material.air = materialdb.get("air")
 material.Air = lambda: material.air
 
-materialdb.loadAll()
-material.updateFactories()
+materialdb.load_all()
+material.update_factories()
 
 def register_material(cls=None, name=None, complex=False, DB=None):
     '''Register a custom Python material'''
@@ -87,6 +91,10 @@ def read(source, destination=None):
         destination['__manager__'] = manager
     manager.read(source)
     manager.export(destination)
-    material.updateFactories() # There might have been some materials in the source file
+    material.update_factories() # There might have been some materials in the source file
+    # Set default axes if all read geometries share the same
+    lst = [ manager.geometries[g].axes for g in manager.geometries ]
+    same = lst and lst.count(lst[0]) == len(lst)
+    if same: config.axes = lst[0]
 
 ## ##  ## ##
