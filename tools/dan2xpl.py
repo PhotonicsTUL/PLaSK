@@ -10,7 +10,7 @@
     If the conversion is successful, the script writes
 '''
 import sys
-#import traceback
+import os
 
 from numpy import *
 
@@ -125,11 +125,7 @@ def read_dan(fname):
 
     print "Reading %s:" % fname
 
-    try:
-        ifile = open(iname)
-    except IOError:
-        sys.stderr.write("Cannot read file \n" % iname)
-        sys.exit(2)
+    ifile = open(fname)
 
 
     # Set-up generator, which skips empty lines, strips the '\n' character, and splits line by tabs
@@ -271,7 +267,7 @@ def read_dan(fname):
 
 def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond):
     '''Write output xpl file'''
-
+   
     print "Writing %s.xpl" % name
 
     ofile = open(name+'.xpl', 'w')
@@ -363,6 +359,20 @@ if __name__ == "__main__":
         sys.stderr.write("Usage: %s input_file_temp.dan\n" % sys.argv[0])
         sys.exit(3)
 
-    write_xpl(*read_dan(iname))
+    dest_dir = os.path.dirname(iname)
+    
+    try:
+        read = read_dan(iname)
+    except IOError:
+        sys.stderr.write("Cannot read file %s\n" % fname)
+        sys.exit(2)
+    
+    name = os.path.join(dest_dir,read[0])
+    
+    try:
+        write_xpl(name, *read[1:])
+    except IOError:
+        sys.stderr.write("Cannot write file %s\n" % name)
+        sys.exit(2)   
 
     print "Done!"
