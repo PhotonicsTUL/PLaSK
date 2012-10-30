@@ -11,7 +11,11 @@
 #   include <complex>
 #endif // PLASK_MATH_STD
 
-//class T;  //Piotr: declaration like this hides some serious errors (like missing template <typename T>)!
+#ifndef M_PI
+#   define M_PI 3.14159265358979323846
+#endif
+
+
 namespace plask {
 
 // size_t is preferred for array indexing
@@ -28,7 +32,7 @@ using std::ptrdiff_t;
     using std::sinh; using std::cosh; using std::tanh;
     using std::asin; using std::acos; using std::atan; using std::atan2;
     using std::asinh; using std::acosh; using std::atanh;
-    using std::isnan;
+    using std::isnan; using std::isinf;
     typedef complex<double> dcomplex;
     const dcomplex I(0.,1.);
 #endif // PLASK_MATH_STD
