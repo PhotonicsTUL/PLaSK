@@ -1,3 +1,5 @@
+#include <limits>
+
 #include "femV.h"
 
 namespace plask { namespace solvers { namespace electrical {
@@ -8,7 +10,6 @@ template<typename Geometry2Dtype> FiniteElementMethodElectrical2DSolver<Geometry
     mVChange("absolute"),
     mLoopLim(5),
     mVCorrLim(0.01),
-    mVBigCorr(1e5),
     mBigNum(1e15),
     mJs(1.),
     mBeta(20.),
@@ -66,18 +67,16 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setLoopLim(int iLoopLim) { mLoopLim = iLoopLim; }
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setVCorrLim(double iVCorrLim) { mVCorrLim = iVCorrLim; }
-template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setVBigCorr(double iVBigCorr) { mVBigCorr = iVBigCorr; }
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setBigNum(double iBigNum) { mBigNum = iBigNum; }
 
 template<typename Geometry2Dtype> int FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getLoopLim() { return mLoopLim; }
 template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getVCorrLim() { return mVCorrLim; }
-template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getVBigCorr() { return mVBigCorr; }
 template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getBigNum() { return mBigNum; }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setNodes()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Setting nodes...");
+        writelog(LOG_DETAIL, "Setting nodes...");
 
     size_t tNo = 1; // node number
 
@@ -107,7 +106,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setElements()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Setting elememts...");
+        writelog(LOG_DETAIL, "Setting elements...");
 
     size_t tNo = 1; // element number
 
@@ -143,7 +142,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::setSolver()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Setting solver...");
+        writelog(LOG_DETAIL, "Setting solver...");
 
     /*size_t tNoOfNodesX, tNoOfNodesY; // TEST
 
@@ -177,7 +176,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::delSolver()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Deleting solver...");
+        writelog(LOG_DETAIL, "Deleting solver...");
 
     for (int i = 0; i < mAHeight; i++)
         delete [] mpA[i];
@@ -188,7 +187,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Setting matrix...");
+        writelog(LOG_DETAIL, "Setting matrix...");
 
     std::vector<Element2D>::iterator ttE = mElements.begin();
     std::vector<Node2D>::iterator ttN = mNodes.begin();
@@ -305,7 +304,7 @@ template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setM
 template<> void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Setting matrix...");
+        writelog(LOG_DETAIL, "Setting matrix...");
 
     std::vector<Element2D>::iterator ttE = mElements.begin();
     std::vector<Node2D>::iterator ttN = mNodes.begin();
@@ -431,7 +430,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     setTemperatures();
 
     if (mLogs)
-        writelog(LOG_INFO, "Running solver...");
+        writelog(LOG_DETAIL, "Running solver...");
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::doMoreSteps()
@@ -464,14 +463,17 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     outHeatDensity.fireChanged();
 }
 
-template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::runCalc()
+template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::runCalc(int iLoopLim)
 {
+    if (iLoopLim == 1) return runSingleCalc();
+    mLoopLim = iLoopLim? iLoopLim : std::numeric_limits<int>::max();
+
     doSomeSteps();
 
     int tInfo = 1;
     std::vector<double>::const_iterator ttVCorr;
     int tLoop = 1;
-    double tVCorr = mVBigCorr; // much bigger than calculated co    rrections
+    double tVCorr = 2.*mVCorrLim; // bigger than calculated corrections
     while ( (tLoop <= mLoopLim) && (tVCorr > mVCorrLim) )
     {
         setMatrix();
@@ -488,7 +490,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
             mLoopNo++;
 
             // show max correction
-            writelog(LOG_DETAIL, "Loop no: %d(%d), max. V upd: %8.6f (abs), %8.6f (rel)", tLoop, mLoopNo, mMaxAbsVCorr, mMaxRelVCorr/*tVCorr*/);
+            writelog(LOG_DATA, "Loop no: %d(%d), max. V upd: %8.6f (abs), %8.6f (rel)", tLoop, mLoopNo, mMaxAbsVCorr, mMaxRelVCorr/*tVCorr*/);
 
             tLoop++;
         }
@@ -519,7 +521,7 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
         mLoopNo++;
 
         // show max correction
-        writelog(LOG_DETAIL, "Loop no: %d, max. V upd: %8.6f (abs), %8.6f (rel)", mLoopNo, mMaxAbsVCorr, mMaxRelVCorr);
+        writelog(LOG_DATA, "Loop no: %d, max. V upd: %8.6f (abs), %8.6f (rel)", mLoopNo, mMaxAbsVCorr, mMaxRelVCorr);
     }
     else if (tInfo < 0)
         writelog(LOG_ERROR, "Wrong value of new potential");
@@ -540,73 +542,63 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     {
         std::string param = source.getNodeName();
 
-        if (param == "potential")
+        if (param == "potential" || param == "voltage")
             this->readBoundaryConditions(manager, source, mVConst);
-        else if (param == "js")
-        {
-            mJs = source.requireAttribute<double>("value");
+
+        else if (param == "loop") {
+            mVCorrLim = source.getAttribute<double>("corrlim", mVCorrLim);
+            auto tCorrType = source.getAttribute("corrtype");
+            if (tCorrType) {
+                std::string tValue = *tCorrType; boost::algorithm::to_lower(tValue);
+                if (tValue == "absolute" || tValue == "abs") mVChange = "absolute"; //mCorrType = CORRECTION_ABSOLUTE;
+                else if (tValue == "relative" || tValue == "rel") mVChange = "realtive"; //mCorrType = CORRECTION_RELATIVE;
+                else throw XMLBadAttrException(source, "corrtype", *tCorrType, + "\"abs[olute]\" or \"rel[ative]\"");
+            }
             source.requireTagEnd();
         }
-        else if (param == "beta")
-        {
-            mBeta = source.requireAttribute<double>("value");
+
+        else if (param == "matrix") {
+            mBigNum = source.getAttribute<double>("bignum", mBigNum);
+//             auto tAlgo = source.getAttribute("algorithm");
+//             if (tAlgo) {
+//                 std::string tValue = *tAlgo; boost::algorithm::to_lower(tValue);
+//                 if (tValue == "slow") mAlgorithm = ALGORITHM_SLOW;
+//                 else if (tValue == "block") mAlgorithm = ALGORITHM_SLOW;
+//                 //else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
+//                 else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\" or \"slow\"");
+//             }
             source.requireTagEnd();
         }
-        else if (param == "pnjcondx0")
-        {
-            mCondJuncX0 = source.requireAttribute<double>("value");
+
+        else if (param == "junction") {
+            mJs = source.getAttribute<double>("js", mJs);
+            mBeta = source.getAttribute<double>("beta", mBeta);
+            auto tCondJunc0 = source.getAttribute("pnjcond");
+            if (tCondJunc0) {
+                try {
+                    auto tConds = splitString2(*tCondJunc0, ',');
+                    boost::trim(tConds.first);
+                    boost::trim(tConds.second);
+                    if (tConds.second != "") {
+                        mCondJuncX0 = boost::lexical_cast<double>(tConds.first);
+                        mCondJuncY0 = boost::lexical_cast<double>(tConds.second);
+                    } else
+                        mCondJuncX0 = mCondJuncY0 = boost::lexical_cast<double>(tConds.first);
+                } catch (boost::bad_lexical_cast) {
+                    throw XMLBadAttrException(source, "pnjcond", *tCondJunc0);
+                }
+            }
+            auto tWavelength = source.getAttribute<double>("wavelength");
+            if (tWavelength) inWavelength = *tWavelength;
             source.requireTagEnd();
         }
-        else if (param == "pnjcondy0")
-        {
-            mCondJuncY0 = source.requireAttribute<double>("value");
-            source.requireTagEnd();
+
+        else if (param == "contacts") {
+            mCondPcontact = source.getAttribute<double>("p_cond", mCondPcontact);
+            mCondNcontact = source.getAttribute<double>("n_cond", mCondNcontact);
+
         }
-        else if (param == "condPcontact")
-        {
-            mCondPcontact = source.requireAttribute<double>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "condNcontact")
-        {
-            mCondNcontact = source.requireAttribute<double>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "wavelength")
-        {
-            inWavelength = source.requireAttribute<double>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "Vchange")
-        {
-            mVChange = source.requireAttribute<std::string>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "looplim")
-        {
-            mLoopLim = source.requireAttribute<int>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "Vcorrlim")
-        {
-            mVCorrLim = source.requireAttribute<double>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "Vbigcorr")
-        {
-            mVBigCorr = source.requireAttribute<double>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "bignum")
-        {
-            mBigNum = source.requireAttribute<double>("value");
-            source.requireTagEnd();
-        }
-        else if (param == "logs")
-        {
-            mLogs = source.requireAttribute<bool>("value");
-            source.requireTagEnd();
-        }
+
         else
             this->parseStandardConfiguration(source, manager);
     }
@@ -615,7 +607,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::updNodes()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Updating nodes...");
+        writelog(LOG_DETAIL, "Updating nodes...");
 
     std::vector<Node2D>::iterator ttN = mNodes.begin();
 
@@ -643,7 +635,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::updElements()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Updating elements...");
+        writelog(LOG_DETAIL, "Updating elements...");
 }
 
 template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getMaxAbsVCorr()
@@ -658,17 +650,20 @@ template<typename Geometry2Dtype> double FiniteElementMethodElectrical2DSolver<G
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::showNodes()
 {
-    writelog(LOG_INFO, "Showing nodes...");
+#ifndef NDEBUG
+    writelog(LOG_DETAIL, "Showing nodes...");
 
     std::vector<Node2D>::const_iterator ttN;
 
     for (ttN = mNodes.begin(); ttN != mNodes.end(); ++ttN)
-        writelog(LOG_DETAIL, "Node no: %1%, x: %2%, y: %3%, V: %4%", ttN->getNo(), ttN->getX(), ttN->getY(), ttN->getV());
+        writelog(LOG_DEBUG, "Node no: %1%, x: %2%, y: %3%, V: %4%", ttN->getNo(), ttN->getX(), ttN->getY(), ttN->getV());
+#endif
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::showElements()
 {
-    writelog(LOG_INFO, "Showing elements...");
+#ifndef NDEBUG
+    writelog(LOG_DEBUG, "Showing elements...");
 
     std::vector<Element2D>::const_iterator ttE;
 
@@ -679,12 +674,13 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
                      << ", TL: " << ttE->getNUpLeftPtr()->getNo() << " (" << ttE->getNUpLeftPtr()->getX() << "," << ttE->getNUpLeftPtr()->getY() << ")"
                      << ", TR: " << ttE->getNUpRightPtr()->getNo() << " (" << ttE->getNUpRightPtr()->getX() << "," << ttE->getNUpRightPtr()->getY() << ")"
                      << std::endl; // TEST
+#endif
 }
 
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::savePotentials()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Saving potentials...");
+        writelog(LOG_DETAIL, "Saving potentials...");
 
     std::vector<Node2D>::const_iterator ttN;
 
@@ -702,7 +698,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::saveCurrentDensities()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Saving current densities...");
+        writelog(LOG_DETAIL, "Saving current densities...");
 
     std::vector<Element2D>::const_iterator ttE;
 
@@ -728,9 +724,10 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
                 - mCondNcontact * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
         else
         {
+            auto tCond = this->geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]);
             mCurrentDensities[ttE->getNo()-1] = vec(
-                - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) * ttE->getdVdX() * 1e6, // 1e6 - from um to m
-                - ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second) * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
+                - tCond.first * ttE->getdVdX() * 0.1, // kA/cm^2
+                - tCond.second * ttE->getdVdY() * 0.1 ); // kA/cm^2
         }
     }
 }
@@ -738,7 +735,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::saveHeatDensities()
 {
     if (mLogs)
-        writelog(LOG_INFO, "Saving heat densities...");
+        writelog(LOG_DETAIL, "Saving heat densities...");
 
     std::vector<Element2D>::const_iterator ttE;
 
@@ -761,18 +758,18 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
                 }
             }
 
-            mHeatDensities[ttE->getNo()-1] = ( phys::h_J * phys::c * fabs((mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( phys::qe * real(inWavelength()) * 1e-9 * tSize.ee_y() * 1e-6 ); // 10e-6 TODO
+            mHeatDensities[ttE->getNo()-1] = ( phys::h_J * phys::c * fabs((1e7*mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( phys::qe * real(inWavelength()) * 1e-9 * tSize.ee_y() * 1e-6 ); // 10e-6 TODO
         }
         else if ((this->geometry)->hasRoleAt("p-contact", vec(ttE->getX(), ttE->getY())))
-            mHeatDensities[ttE->getNo()-1] = (mCurrentDensities[ttE->getNo()-1]).ee_x() * (mCurrentDensities[ttE->getNo()-1]).ee_x() / mCondPcontact +
-                (mCurrentDensities[ttE->getNo()-1]).ee_y() * (mCurrentDensities[ttE->getNo()-1]).ee_y() / mCondPcontact;
+            mHeatDensities[ttE->getNo()-1] = (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() / mCondPcontact +
+                (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() / mCondPcontact;
         else if ((this->geometry)->hasRoleAt("n-contact", vec(ttE->getX(), ttE->getY())))
-            mHeatDensities[ttE->getNo()-1] = (mCurrentDensities[ttE->getNo()-1]).ee_x() * (mCurrentDensities[ttE->getNo()-1]).ee_x() / mCondNcontact +
-                (mCurrentDensities[ttE->getNo()-1]).ee_y() * (mCurrentDensities[ttE->getNo()-1]).ee_y() / mCondNcontact;
+            mHeatDensities[ttE->getNo()-1] = (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() / mCondNcontact +
+                (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() / mCondNcontact;
         else
         {
-            mHeatDensities[ttE->getNo()-1] = (mCurrentDensities[ttE->getNo()-1]).ee_x() * (mCurrentDensities[ttE->getNo()-1]).ee_x() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) +
-                (mCurrentDensities[ttE->getNo()-1]).ee_y() * (mCurrentDensities[ttE->getNo()-1]).ee_y() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second);
+            mHeatDensities[ttE->getNo()-1] = (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) +
+                (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second);
         }
     }
 }
@@ -795,7 +792,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2Dtype> int FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::solveMatrix(double **ipA, long iN, long iBandWidth)
 {
     if (mLogs)
-        writelog(LOG_INFO, "Solving matrix...");
+        writelog(LOG_DETAIL, "Solving matrix...");
 
     long m, k, i, j, poc, kon, q, mn;
     double SUM;
@@ -887,8 +884,8 @@ template<typename Geometry2Dtype> DataVector<const double> FiniteElementMethodEl
     return interpolate(*((this->mesh)->getMidpointsMesh()), mHeatDensities, dst_mesh, method);
 }
 
-template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "CartesianFEM"; }
-template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "CylindricalFEM"; }
+template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Fem2D"; }
+template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.FemCyl"; }
 
 template struct FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>;
 template struct FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>;

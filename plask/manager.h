@@ -497,19 +497,19 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
         ConditionT value = parseBoundaryValue<ConditionT>(reader);
         if (place) {
             boundary = parseBoundary<MeshT>(*place, parser_enviroment);
-            if (boundary.isNull()) throw Exception("Can't parse boundary place from string \"%1%\".", *place);
+            if (boundary.isNull()) throw XMLException(reader, format("Can't parse boundary place from string \"%1%\".", *place));
         } else {
             place = reader.getAttribute("placeref");
             if (place) {
                 auto p = this->boundaries.find(*place);
                 if (p == this->boundaries.end())
-                    throw Exception("Can't find boundary (place) with given name \"%1%\".", *place);
+                    throw XMLException(reader, format("Can't find boundary (place) with given name \"%1%\".", *place));
                 boundary = boost::any_cast<Boundary<MeshT>>(p->second);
             } else {
                 reader.requireTag("place");
                 if (!placename) placename = reader.getAttribute("name");
                 boundary = parseBoundary<MeshT>(reader, parser_enviroment);
-                if (boundary.isNull()) throw Exception("Can't parse boundary place from XML.", *place);
+                if (boundary.isNull()) throw XMLException(reader, "Can't parse boundary place from XML.");
             }
         }
         /*if (!value) {   // value still not known, must be read from tag <value>...</value>

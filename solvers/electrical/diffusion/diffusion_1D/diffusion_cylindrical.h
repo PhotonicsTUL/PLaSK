@@ -8,11 +8,11 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         plask::ReceiverFor<plask::CurrentDensity2D, plask::Geometry2DCylindrical> inCurrentDensity;
         plask::ReceiverFor<plask::Temperature, plask::Geometry2DCylindrical> inTemperature;
 
-        plask::ProviderFor<plask::CarrierConcentration, plask::Geometry2DCylindrical>::Delegate outCarrierConcentration;
+        plask::ProviderFor<plask::CarriersConcentration, plask::Geometry2DCylindrical>::Delegate outCarriersConcentration;
 
         DiffusionCylindricalSolver ( const std::string& name="" ):
             plask::SolverOver< plask::Geometry2DCylindrical > (name),
-            outCarrierConcentration( this, &DiffusionCylindricalSolver::getConcentration ){}
+            outCarriersConcentration( this, &DiffusionCylindricalSolver::getConcentration ){}
 
         virtual std::string getClassName() const { return "DiffusionCylindrical1D"; }
         void Compute();

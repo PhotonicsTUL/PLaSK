@@ -55,23 +55,23 @@ namespace plask {
  * @see @ref solvers_writing; @ref providers; plask::ProviderFor
  */
 struct Temperature: public ScalarFieldProperty {
-    static constexpr const char* NAME = "temperature"; // mind lower case here
+    static constexpr const char* NAME = "temperature";
     static inline double getDefaultValue() { return 300.; }
 };
 
 struct HeatFlux2D: public VectorFieldProperty<2> {
-    static constexpr const char* NAME = "heat flux 2D"; // mind lower case here
+    static constexpr const char* NAME = "heat flux 2D";
 };
 
 struct HeatFlux3D: public VectorFieldProperty<3> {
-    static constexpr const char* NAME = "heat flux 3D"; // mind lower case here
+    static constexpr const char* NAME = "heat flux 3D";
 };
 
 /**
  * Density of heat sources.
  */
 struct HeatDensity: public ScalarFieldProperty {
-    static constexpr const char* NAME = "heat sources density"; // mind lower case here
+    static constexpr const char* NAME = "heat sources density";
 };
 
 /**

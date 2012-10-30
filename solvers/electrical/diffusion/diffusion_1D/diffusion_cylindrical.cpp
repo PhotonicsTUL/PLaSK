@@ -93,7 +93,7 @@ void DiffusionCylindricalSolver::Compute()
 /* calculation... */
 
 //    outConcentration = ? // computed concentration
-    outCarrierConcentration.fireChanged();
+    outCarriersConcentration.fireChanged();
 }
 
 bool DiffusionCylindricalSolver::CylindricalMES()
@@ -264,7 +264,7 @@ bool DiffusionCylindricalSolver::CylindricalMES()
 //                lapack_ldb = (int)mesh.size();
 
                 dpbtrf_(uplo, lapack_n, lapack_kd, A_matrix.begin(), lapack_ldab, info_f);    // faktoryzacja macierzy A
-                dpbtrs_(uplo, lapack_n, lapack_kd, lapack_nrhs, A_matrix.begin(), lapack_ldab, RHS_vector.begin(), lapack_ldb, info_s);    // rozwi¹zywanie Ax = B
+                dpbtrs_(uplo, lapack_n, lapack_kd, lapack_nrhs, A_matrix.begin(), lapack_ldab, RHS_vector.begin(), lapack_ldb, info_s);    // rozwiï¿½zywanie Ax = B
 
                 X_vector = RHS_vector;
             }
@@ -273,16 +273,16 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                 for (int i = 0; i < (mesh.size() - 1)/2; i++) // petla po wszystkich elementach
                 {
 
-                    T = T_on_the_mesh[2*i + 1];                 // wartoœæ w wêŸle œrodkowym elementu
-                    n0 = n_previous[2*i + 1];                // wartoœæ w wêŸle œrodkowym elementu
+                    T = T_on_the_mesh[2*i + 1];                 // wartoï¿½ï¿½ w wï¿½ï¿½le ï¿½rodkowym elementu
+                    n0 = n_previous[2*i + 1];                // wartoï¿½ï¿½ w wï¿½ï¿½le ï¿½rodkowym elementu
 
                     r1 = mesh[2*i];
                     r3 = mesh[2*i + 2];
 
                     K = DiffusionCylindricalSolver::K(T);
-//                    K = (this->*KPointer)(2*i + 1, T, n0);      // wartoœæ w wêŸle œrodkowym elementu
-//                    F = (this->*FPointer)(2*i + 1, T, n0);      // wartoœæ w wêŸle œrodkowym elementu
-//                    E = (this->*EPointer)(2*i + 1, T, n0);      // wartoœæ w wêŸle œrodkowym elementu
+//                    K = (this->*KPointer)(2*i + 1, T, n0);      // wartoï¿½ï¿½ w wï¿½ï¿½le ï¿½rodkowym elementu
+//                    F = (this->*FPointer)(2*i + 1, T, n0);      // wartoï¿½ï¿½ w wï¿½ï¿½le ï¿½rodkowym elementu
+//                    E = (this->*EPointer)(2*i + 1, T, n0);      // wartoï¿½ï¿½ w wï¿½ï¿½le ï¿½rodkowym elementu
                     F = DiffusionCylindricalSolver::F(2*i + 1, T, n0);
                     E = DiffusionCylindricalSolver::E(T, n0);
 
@@ -313,7 +313,7 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                     A_matrix[6*i + 5]+= k22e;
                     A_matrix[6*i + 7] += k23e;
                     A_matrix[6*i + 8]+= k33e;
-                    A_matrix[6*i + 3] += 0;                         // k24 = 0 - dope³nienie górnej wstêgi
+                    A_matrix[6*i + 3] += 0;                         // k24 = 0 - dopeï¿½nienie gï¿½rnej wstï¿½gi
 
                     RHS_vector[2*i] += p1e;
                     RHS_vector[2*i+1] += p2e;
@@ -328,7 +328,7 @@ bool DiffusionCylindricalSolver::CylindricalMES()
 //                lapack_ldb = (int)mesh.size();
 
                 dpbtrf_(uplo, lapack_n, lapack_kd, A_matrix.begin(), lapack_ldab, info_f);    // faktoryzacja macierzy A
-                dpbtrs_(uplo, lapack_n, lapack_kd, lapack_nrhs, A_matrix.begin(), lapack_ldab, RHS_vector.begin(), lapack_ldb, info_s);    // rozwi¹zywanie Ax = B
+                dpbtrs_(uplo, lapack_n, lapack_kd, lapack_nrhs, A_matrix.begin(), lapack_ldab, RHS_vector.begin(), lapack_ldb, info_s);    // rozwiï¿½zywanie Ax = B
 
                 X_vector = RHS_vector;
             }

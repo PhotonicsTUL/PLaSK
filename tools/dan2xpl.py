@@ -150,6 +150,8 @@ def read_dan(fname):
     nregions = int(line[0])
     scale = float(line[1]) * 1e6                # in xpl all dimensions are in microns
 
+    pnjcond = None
+
     if setting >= 10:
         raise NotImplementedError("3D structure nor temporal data not implemented yet (%s)" % setting) # TODO
 
@@ -185,6 +187,9 @@ def read_dan(fname):
         line = input.next()
         sigma = array([float(line[0]), float(line[1])])
         sigma_t = line[2].lower()
+
+        if sigma_t == 'j':
+            pnjcond = sigma
 
         # doping
         line = input.next()
@@ -261,10 +266,10 @@ def read_dan(fname):
     try: boundaries['mesh'] = parse_bc()
     except: pass
 
-    return name, sym, axes, materials, regions, heats, boundaries
+    return name, sym, axes, materials, regions, heats, boundaries, pnjcond
 
 
-def write_xpl(name, sym, axes, materials, regions, heats, boundaries):
+def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond):
     '''Write output xpl file'''
 
     print "Writing %s.xpl" % name
@@ -316,10 +321,12 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries):
             save_boundaries('radiation')
             ofile.write('  </thermal>\n')
         if electr:
-            #ofile.write('  <electrical solver="Fem%s" name="electrical">' % suffix)
-            ofile.write('  <electrical lib="fem2d" solver="%sFEM" name="ELECTRICAL">\n' % ['Cartesian', 'Cylindrical'][sym]) # TODO change to above
+            ofile.write('  <electrical solver="Fem%s" name="ELECTRICAL">\n' % suffix)
             ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
-            ofile.write('    <wavelength value="1300"/>\n') # TODO
+            if pnjcond is not None:
+                ofile.write('    <junction pnjcond="%g,%g" wavelength="1300"/>\n' % tuple(pnjcond))
+            else:
+                ofile.write('    <junction wavelength="1300"/>\n' % tuple(pnjcond))
             save_boundaries('potential')
             ofile.write('  </electrical>\n')
         ofile.write('</solvers>\n\n')

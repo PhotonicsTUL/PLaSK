@@ -5,28 +5,48 @@
 
 namespace plask {
 
+/**
+ * Electric potential/voltage [V]
+ */
 struct Potential: public ScalarFieldProperty {
-    static constexpr const char* NAME = "potential"; // mind lower case here
+    static constexpr const char* NAME = "potential";
 };
 
+/**
+ * Electric current density [kA/cm^2]
+ * This is 2D vector for two-dimensional sovers
+ */
 struct CurrentDensity2D: public VectorFieldProperty<2> {
-    static constexpr const char* NAME = "current density 2D"; // mind lower case here
+    static constexpr const char* NAME = "current density 2D";
 };
 
+/**
+ * Electric current density [kA/cm^2]
+ */
 struct CurrentDensity3D: public VectorFieldProperty<3> {
-    static constexpr const char* NAME = "current density 3D"; // mind lower case here
+    static constexpr const char* NAME = "current density 3D";
 };
 
-struct CarrierConcentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "carrier concentration"; // mind lower case here
+/**
+ * Majority carriers concentration [1/cm^3]
+ * It is not specified whether the carriers are electrons or holes
+ */
+struct CarriersConcentration: public ScalarFieldProperty {
+    static constexpr const char* NAME = "carriers concentration";
 };
 
-struct ElectronConcentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "electron concentration"; // mind lower case here
+/**
+ * Electrons concentration [1/cm^3]
+ */
+struct ElectronsConcentration: public ScalarFieldProperty {
+    static constexpr const char* NAME = "electrons concentration";
 };
 
-struct HoleConcentration: public ScalarFieldProperty {
-    static constexpr const char* NAME = "hole concentration"; // mind lower case here
+/**
+ * Holes concentration [1/cm^3]
+ */
+struct HolesConcentration: public ScalarFieldProperty {
+    static constexpr const char* NAME = "holes concentration";
 };
 
 } // namespace plask

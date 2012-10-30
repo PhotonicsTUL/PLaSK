@@ -24,7 +24,6 @@ protected:
     std::string mVChange; // absolute or relative
     int mLoopLim; // number of loops - stops the calculations
     double mVCorrLim; // small-enough correction - stops the calculations
-    double mVBigCorr; // big-enough correction for the potential
     double mBigNum; // for the first boundary condtion (see: set Matrix)
     double mJs; // p-n junction parameter [A/m^2]
     double mBeta; // p-n junction parameter [1/V]
@@ -137,7 +136,7 @@ public:
      * Run potential calculations
      * \return max correction of potential agains the last call
      **/
-    double runCalc();
+    double runCalc(int iLoopLim=0);
 
     /**
      * Run single potential calculations
