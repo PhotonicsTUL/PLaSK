@@ -10,10 +10,7 @@
     If the conversion is successful, the script writes
 '''
 import sys
-import os
-
-from numpy import *
-
+import os, os.path
 
 # Generator of unique names
 class UniqueId(object):
@@ -123,7 +120,7 @@ def read_dan(fname):
        On exit this function returns dictionary of custom materials and list of regions
     '''
 
-    print "Reading %s:" % fname
+    print("Reading %s:" % fname)
 
     ifile = open(fname)
 
@@ -181,7 +178,7 @@ def read_dan(fname):
 
         # conductivity
         line = input.next()
-        sigma = array([float(line[0]), float(line[1])])
+        sigma = [float(line[0]), float(line[1])]
         sigma_t = line[2].lower()
 
         if sigma_t == 'j':
@@ -193,7 +190,7 @@ def read_dan(fname):
 
         # heat conductivity
         line = input.next()
-        kappa = array([float(line[0]), float(line[1])])
+        kappa = [float(line[0]), float(line[1])]
         kappa_t = line[2].lower()
 
         # create custom material if necessary
@@ -262,13 +259,15 @@ def read_dan(fname):
     try: boundaries['mesh'] = parse_bc()
     except: pass
 
+    print("")
+
     return name, sym, axes, materials, regions, heats, boundaries, pnjcond
 
 
 def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond):
     '''Write output xpl file'''
    
-    print "Writing %s.xpl" % name
+    print("Writing %s.xpl" % name)
 
     ofile = open(name+'.xpl', 'w')
     ofile.write('<plask>\n\n')
@@ -353,26 +352,30 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond):
 
 if __name__ == "__main__":
 
+    code = 0
+
     try:
         iname = sys.argv[1]
     except IndexError:
         sys.stderr.write("Usage: %s input_file_temp.dan\n" % sys.argv[0])
-        sys.exit(3)
+        code = 2
+    else:
+        dest_dir = os.path.dirname(iname)
+        
+        try:
+            read = read_dan(iname)
+            name = os.path.join(dest_dir,read[0])
+            write_xpl(name, *read[1:])
+        except Exception as err:
+            #import traceback as tb
+            #tb.print_exc()
+            sys.stderr.write("\n%s: %s\n" % (err.__class__.__name__, err))
+            code = 1
+        else:
+            print("\nDone!")
 
-    dest_dir = os.path.dirname(iname)
-    
-    try:
-        read = read_dan(iname)
-    except IOError:
-        sys.stderr.write("Cannot read file %s\n" % fname)
-        sys.exit(2)
-    
-    name = os.path.join(dest_dir,read[0])
-    
-    try:
-        write_xpl(name, *read[1:])
-    except IOError:
-        sys.stderr.write("Cannot write file %s\n" % name)
-        sys.exit(2)   
+    if os.name == 'nt':
+        sys.stdout.write("\nPress ENTER to close the window...")
+        raw_input()
 
-    print "Done!"
+    sys.exit(code)

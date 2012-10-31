@@ -63,12 +63,8 @@ static py::object initPlask(int argc, const char* argv[])
     Py_Initialize();
     //PyEval_InitThreads();
 
-    py::object plaskcore = py::import("plaskcore");
-
-    py::object sys = py::import("sys");
-    sys.attr("modules")["plask.plaskcore"] = plaskcore;
-
     // Add search paths
+    py::object sys = py::import("sys");
     py::list path = py::list(sys.attr("path"));
     path.insert(0, "." );
     std::string plask_path = plask::prefixPath();
@@ -78,6 +74,10 @@ static py::object initPlask(int argc, const char* argv[])
     path.insert(1, plask_path + "python" );
     path.insert(2, plask_path + "solvers" );
     sys.attr("path") = path;
+
+    py::object plaskcore = py::import("plaskcore");
+
+    sys.attr("modules")["plask.plaskcore"] = plaskcore;
 
     // Import numpy for materials
     from_import_all("numpy", plask::python::xml_globals);
