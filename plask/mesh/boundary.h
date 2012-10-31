@@ -123,10 +123,13 @@ struct BoundaryLogicImpl {
     virtual bool empty() const { return begin() == end(); }
 
     /**
-     * Get number of points in this boundary
+     * Get number of points in this boundary.
+     *
+     * Default implementation just use std::distance(begin(), end()) which iterates over all indexes and can be slow, so this is often reimplemented in subclasses.
      * \return number of points in this boundary
      */
-    virtual std::size_t size() const = 0;
+    virtual std::size_t size() const { return std::distance(begin(), end()); }
+    
 };
 
 /**
@@ -517,12 +520,6 @@ public:
 
     typename BoundaryLogicImpl::Iterator end() const {
         return typename BoundaryLogicImpl::Iterator(new PredicateIteratorImpl(*this, std::end(this->mesh)));
-    }
-
-    std::size_t size() const { // this is quite costly, as we have to iterate the whole mesh and check the predicate
-        std::size_t s = 0;
-        for (auto i: *this) ++s;
-        return s;
     }
 
 };
