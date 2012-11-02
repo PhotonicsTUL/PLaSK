@@ -351,7 +351,7 @@ void register_calculation_spaces() {
         .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
         .def("get_object_positions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectPositions,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
-        .def("getObjectBBoxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectBoundingBoxes,
+        .def("get_object_bboxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectBoundingBoxes,
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
         .def("get_paths", &Geometry2DCylindrical::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")

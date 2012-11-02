@@ -242,7 +242,6 @@ def read_dan(fname):
             try: val = float(line[4])
             except IndexError: val = 0.
             except ValueError: val = 0.
-            bounds = []
             if (x0 == x1):
                 bounds.append(dict(dir='vertical', at=x0, start=y0, stop=y1, value=val))
             elif (y0 == y1):
@@ -252,102 +251,200 @@ def read_dan(fname):
         return bounds
 
     boundaries = {}
-    boundaries['potential'] = parse_bc()
+    boundaries['voltage'] = parse_bc()
     boundaries['temperature'] = parse_bc()
     boundaries['convection'] = parse_bc()
     boundaries['radiation'] = parse_bc()
     try: boundaries['mesh'] = parse_bc()
     except: pass
 
+    actives = [ r for r in regions if r.role == 'active' ]
+    if len(actives) == 1:
+        actives[0].name = "active"
+        actlevel = True
+    elif len(actives) == 0:
+        actlevel = False
+    else:
+        actlevel = sum([ 0.5 * (r.y0 + r.y1) for r in actives ]) / len(actives)
+
     print("")
 
-    return name, sym, axes, materials, regions, heats, boundaries, pnjcond
+    return name, sym, axes, materials, regions, heats, boundaries, pnjcond, actlevel
 
 
-def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond):
+def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, actlevel):
     '''Write output xpl file'''
-   
+
     print("Writing %s.xpl" % name)
 
     ofile = open(name+'.xpl', 'w')
-    ofile.write('<plask>\n\n')
+
+    def out(text):
+        ofile.write(text)
+        ofile.write('\n')
+
+    out('<plask>\n')
 
     geometry = ['cartesian2d', 'cylindrical'][sym]
     suffix = ['2D', 'Cyl'][sym]
 
     # materials
     if materials:
-        ofile.write('<materials>\n')
+        out('<materials>')
         for mat in materials:
             materials[mat].write(ofile, mat)
-        ofile.write('</materials>\n\n')
+        out('</materials>\n')
 
     # geometry
-    ofile.write('<geometry>\n  <%s name="main" axes="%s">\n' % (geometry, axes))
-    ofile.write('    <container>\n')
+    out('<geometry>\n  <%s name="main" axes="%s">' % (geometry, axes))
+    out('    <container>')
     for r in regions:
         r.write(ofile)
-    ofile.write('    </container>\n')
-    ofile.write('  </%s>\n</geometry>\n\n' % geometry)
+    out('    </container>')
+    out('  </%s>\n</geometry>\n' % geometry)
 
     # default mesh generator
-    ofile.write('<grids>\n  <generator type="rectilinear2d" method="divide" name="default">\n')
-    ofile.write('    <postdiv by="2"/>\n  </generator>\n</grids>\n\n')
+    out('<grids>')
+    out('  <generator type="rectilinear2d" method="divide" name="default">\n    <postdiv by="2"/>\n  </generator>')
+    out('  <generator type="rectilinear2d" method="divide" name="plots">\n    <postdiv by="10"/>\n  </generator>')
+    out('</grids>\n')
 
     def save_boundaries(name):
         if boundaries[name]:
-            ofile.write('    <%s>\n' % name)
+            out('    <%s>' % name)
             for data in boundaries[name]:
-                ofile.write(('      <condition value="%(value)s"><place line="%(dir)s"' +
-                            ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>\n') % data)
-            ofile.write('    </%s>\n' % name)
+                out(('      <condition value="%(value)s"><place line="%(dir)s"' +
+                             ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>\n') % data)
+            out('    </%s>' % name)
 
     # default solvers
     therm =  boundaries['temperature'] or boundaries['convection'] or boundaries['radiation'] or heats
-    electr = boundaries['potential']
+    electr = boundaries['voltage']
 
     if therm or electr:
-        ofile.write('<solvers>\n')
+        out('<solvers>')
         if therm:
-            ofile.write('  <thermal solver="Fem%s" name="THERMAL">\n' % suffix)
-            ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
+            out('  <thermal solver="Fem%s" name="THERMAL">' % suffix)
+            out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             save_boundaries('temperature')
             save_boundaries('convection')
             save_boundaries('radiation')
-            ofile.write('  </thermal>\n')
+            out('  </thermal>')
         if electr:
-            ofile.write('  <electrical solver="Fem%s" name="ELECTRICAL">\n' % suffix)
-            ofile.write('    <geometry ref="main"/>\n    <mesh ref="default"/>\n')
+            out('  <electrical solver="Fem%s" name="ELECTRICAL">' % suffix)
+            out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             if pnjcond is not None:
-                ofile.write('    <junction pnjcond="%g,%g" wavelength="1300"/>\n' % tuple(pnjcond))
-            else:
-                ofile.write('    <junction wavelength="1300"/>\n' % tuple(pnjcond))
-            save_boundaries('potential')
-            ofile.write('  </electrical>\n')
-        ofile.write('</solvers>\n\n')
+                out('    <junction pnjcond="%g,%g"/>' % tuple(pnjcond))
+            save_boundaries('voltage')
+            out('  </electrical>')
+        out('</solvers>\n')
 
     # connections
     if (therm and electr) or heats:
-        ofile.write('<connects>\n')
+        out('<connects>')
         if (therm and electr):
-            ofile.write('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>\n')
+            out('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>')
         if heats:
-            ofile.write('  <profile in="THERMAL.inHeatDensity">\n')
+            out('  <profile in="THERMAL.inHeatDensity">')
             for heat in heats.items():
-                ofile.write('    <step object="%s" value="%s"/>\n' % heat)
-            ofile.write('  </profile>\n')
+                out('    <step object="%s" value="%s"/>' % heat)
+            out('  </profile>')
             if electr:
                 # TODO use sum provider when it gets fully supported in PLaSK
-                print "WARNING: Electrical model present, but only manually specified heats are provided to thermal model!"
+                print("WARNING: Electrical model present, but only manually specified heats are provided to thermal model!")
         elif electr:
-            ofile.write('  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>\n')
-        ofile.write('</connects>\n\n')
+            out('  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>')
+        out('</connects>\n')
 
     ## script
-    #ofile.write('<script>\n# Here you may put your calculations\n\n')
-    #ofile.write('</script>\n\n')
+    out('<script>\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
 
-    ofile.write('</plask>\n')
+    if electr:
+        out('# Adjust the values below!')
+        out('ELECTRICAL.inWavelength = 1300.')
+        out('ELECTRICAL.js = 1.1')
+        out('ELECTRICAL.beta = 19.\n')
+
+    if therm and electr:
+        out('terr = 300.')
+        out('verr = 10.')
+        out('ELECTRICAL.compute(1)')
+        out('THERMAL.compute(1)')
+        out('while terr > 0.1 or verr > 0.001:')
+        out('    verr = ELECTRICAL.compute(6)')
+        out('    terr = THERMAL.compute(1)')
+    else:
+        if therm:
+            out('THERMAL.compute(0)')
+        elif electr:
+            out('ELECTRICAL.compute(0)')
+
+    if therm or electr:
+        out('\nplotgrid = MSG.plots(GEO.main.child)')
+
+        if actlevel is not False:
+            if actlevel is True:
+                out('actbox = GEO.main.get_object_bboxes(OBJ.active)[0]')
+                out('actlevel = 0.5 * (actbox.lower[1] + actbox.upper[1])')
+            else:
+                out('actlevel = %g' % actlevel)
+            out('actgrid = mesh.Rectilinear2D(plotgrid.axis0, [actlevel])')
+            out('plotgrid.axis1.insert(actlevel)\n')
+
+        if therm:
+            out('temperature = THERMAL.outTemperature(plotgrid)')
+        if electr:
+            out('voltage = ELECTRICAL.outPotential(plotgrid)')
+            out('current = ELECTRICAL.outCurrentDensity(plotgrid)')
+            if actlevel is not False:
+                out('acurrent = ELECTRICAL.outCurrentDensity(actgrid)')
+
+        out('\ntry:\n    import h5py\nexcept:\n    pass\nelse:')
+        out('    h5file = h5py.File("%s.h5", "w")' % name)
+        if therm:
+            out('    save_field(temperature, h5file, "Temperature")')
+        if electr:
+            out('    save_field(voltage, h5file, "Voltage")')
+            out('    save_field(current, h5file, "CurrentDenstity")')
+
+        out('    h5file.close')
+
+        out('\nif has_pylab:')
+        out('    plot_geometry(GEO.main, set_limits=True)')
+        out('    defmesh = MSG.default(GEO.main.child)')
+        out('    plot_mesh(defmesh)')
+        if therm:
+            out('    plot_boundary(THERMAL.temperature_boundary, defmesh, color="r")')
+            out('    plot_boundary(THERMAL.convection_boundary, defmesh, color="g")')
+            out('    plot_boundary(THERMAL.radiation_boundary, defmesh, color="y")')
+        if electr:
+            out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, color="b")')
+        out('    gcf().canvas.set_window_title("Default mesh")')
+        if therm:
+            out('\n    figure()')
+            out('    plot_field(temperature, 16)')
+            out('    colorbar()')
+            out('    plot_geometry(GEO.main, color="0.75")')
+            out('    gcf().canvas.set_window_title("Temperature")')
+        if electr:
+            out('\n    figure()')
+            out('    plot_field(voltage, 16)')
+            out('    colorbar()')
+            out('    plot_geometry(GEO.main, color="0.75")')
+            out('    gcf().canvas.set_window_title("Electric potential")')
+            if actlevel is not False:
+                out('\n    figure()')
+                out('    plot(actgrid.axis0, abs(acurrent.array()[0,:,1]))')
+                out('    xlabel(u"%s [\xb5m]")' % axes[0])
+                out('    ylabel("current density [kA/cm$^2$]")')
+                out('    for x in mesh.Rectilinear2D.SimpleGenerator()(GEO.main.child).axis0:')
+                out('        axvline(x, ls=":", color="k")')
+                out('    gcf().canvas.set_window_title("Current density in the active region")')
+        out('    show()')
+
+    out('\n</script>\n')
+
+    out('</plask>')
 
 
 if __name__ == "__main__":
@@ -361,15 +458,15 @@ if __name__ == "__main__":
         code = 2
     else:
         dest_dir = os.path.dirname(iname)
-        
+
         try:
             read = read_dan(iname)
             name = os.path.join(dest_dir,read[0])
             write_xpl(name, *read[1:])
         except Exception as err:
-            #import traceback as tb
-            #tb.print_exc()
-            sys.stderr.write("\n%s: %s\n" % (err.__class__.__name__, err))
+            import traceback as tb
+            tb.print_exc()
+            #sys.stderr.write("\n%s: %s\n" % (err.__class__.__name__, err))
             code = 1
         else:
             print("\nDone!")

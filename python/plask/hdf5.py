@@ -11,10 +11,10 @@ import numpy
 import h5py
 import plask
 
-def save_field(file, field, name='', mode='a'):
+def save_field(field, file, name='', mode='a'):
     '''Save field to HDF5 file. Call this function as:
 
-           save_field(file, field, name='', mode='a')
+           save_field(field, file, name='', mode='a')
 
        'file' is either a filename to save to or a h5py.File object open for writing.
        'field' is plask.Data object returned by providers/receivers.

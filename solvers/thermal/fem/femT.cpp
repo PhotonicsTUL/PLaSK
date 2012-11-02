@@ -100,7 +100,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymM
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& iRadiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system");
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, band=%2%)", mAOrder, mABand);
 
     auto iMesh = (this->mesh)->getMidpointsMesh();
     auto tHeatDensities = inHeatDensity(iMesh);
@@ -236,7 +236,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& iRadiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system");
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, band=%2%)", mAOrder, mABand);
 
     auto iMesh = (this->mesh)->getMidpointsMesh();
     auto tHeatDensities = inHeatDensity(iMesh);

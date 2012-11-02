@@ -270,6 +270,10 @@ void register_geometry_object()
         .add_property("roles", py::make_getter(&GeometryObject::roles), &GeometryObject_setRoles, "Roles of the object")
     ;
 
+    py::implicitly_convertible<shared_ptr<GeometryObject>, shared_ptr<const GeometryObject>>();
+    py::implicitly_convertible<shared_ptr<GeometryObjectD<2>>, shared_ptr<const GeometryObjectD<2>>>();
+    py::implicitly_convertible<shared_ptr<GeometryObjectD<3>>, shared_ptr<const GeometryObjectD<3>>>();
+
     register_vector_of<shared_ptr<GeometryObject>>("GeometryObject");
 
     init_GeometryObjectD<2>();

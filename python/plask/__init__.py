@@ -12,12 +12,17 @@ from .plaskcore import *
 try:
     from plask.pylab import *
 except ImportError:
+    has_pylab = False
     from numpy import *
+else:
+    has_pylab = True
 
 try:
     from plask.hdf5 import *
 except ImportError:
-    pass
+    has_hdf5 = False
+else:
+    has_hdf5 = True
 
 ## ## plask.material ## ##
 

@@ -37,8 +37,6 @@ protected:
     double mMaxRelVCorr; // max. relative potential correction
     double mMaxVCorr; // max. absolute potential correction (useful for calculations with internal loops)
 
-    ReceiverFor<Wavelength> inWavelength; // wavelength (for heat generation in the active region) [nm]
-
     DataVector<double> mPotentials; // out
     DataVector<Vec<2> > mCurrentDensities; // out
     DataVector<double> mHeatDensities; // out
@@ -125,6 +123,8 @@ public:
     typename ProviderFor<HeatDensity, Geometry2Dtype>::Delegate outHeatDensity;
 
     ReceiverFor<Temperature, Geometry2Dtype> inTemperature;
+
+    ReceiverFor<Wavelength> inWavelength; // wavelength (for heat generation in the active region) [nm]
 
     DataVector<const double> getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 

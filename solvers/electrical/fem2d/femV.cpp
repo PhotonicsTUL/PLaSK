@@ -542,7 +542,7 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
     {
         std::string param = source.getNodeName();
 
-        if (param == "potential" || param == "voltage")
+        if (param == "voltage" || param == "potential")
             this->readBoundaryConditions(manager, source, mVConst);
 
         else if (param == "loop") {
@@ -711,17 +711,17 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
         else if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
         {
             mCurrentDensities[ttE->getNo()-1] = vec(
-                - mCondJuncX0 * ttE->getdVdX() * 1e6, // 1e6 - from um to m
-                - ttE->getCondJuncY() * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
+                - mCondJuncX0 * ttE->getdVdX() * 0.1, // kA/cm^2
+                - ttE->getCondJuncY() * ttE->getdVdY() * 0.1 ); // kA/cm^2
         }
         else if ((this->geometry)->hasRoleAt("p-contact", vec(ttE->getX(), ttE->getY())))
             mCurrentDensities[ttE->getNo()-1] = vec(
-                - mCondPcontact * ttE->getdVdX() * 1e6, // 1e6 - from um to m
-                - mCondPcontact * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
+                - mCondPcontact * ttE->getdVdX() * 0.1, // kA/cm^2
+                - mCondPcontact * ttE->getdVdY() * 0.1 ); // kA/cm^2
         else if ((this->geometry)->hasRoleAt("n-contact", vec(ttE->getX(), ttE->getY())))
             mCurrentDensities[ttE->getNo()-1] = vec(
-                - mCondNcontact * ttE->getdVdX() * 1e6, // 1e6 - from um to m
-                - mCondNcontact * ttE->getdVdY() * 1e6 ); // 1e6 - from um to m
+                - mCondNcontact * ttE->getdVdX() * 0.1, // kA/cm^2
+                - mCondNcontact * ttE->getdVdY() * 0.1 ); // kA/cm^2
         else
         {
             auto tCond = this->geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]);
