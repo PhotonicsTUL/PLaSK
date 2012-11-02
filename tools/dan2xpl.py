@@ -393,6 +393,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
 
         if therm:
             out('temperature = THERMAL.outTemperature(plotgrid)')
+            out('heats = THERMAL.inHeatDensity(plotgrid)')
         if electr:
             out('voltage = ELECTRICAL.outPotential(plotgrid)')
             out('current = ELECTRICAL.outCurrentDensity(plotgrid)')
@@ -403,6 +404,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
         out('    h5file = h5py.File("%s.h5", "w")' % name)
         if therm:
             out('    save_field(temperature, h5file, "Temperature")')
+            out('    save_field(heats, h5file, "HeatDensity")')
         if electr:
             out('    save_field(voltage, h5file, "Voltage")')
             out('    save_field(current, h5file, "CurrentDenstity")')
@@ -424,13 +426,18 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
             out('\n    figure()')
             out('    plot_field(temperature, 16)')
             out('    colorbar()')
-            out('    plot_geometry(GEO.main, color="0.75")')
+            out('    plot_geometry(GEO.main, color="w")')
             out('    gcf().canvas.set_window_title("Temperature")')
+            out('\n    figure()')
+            out('    plot_field(heats, 16)')
+            out('    colorbar()')
+            out('    plot_geometry(GEO.main, color="w")')
+            out('    gcf().canvas.set_window_title("Heat sources density")')
         if electr:
             out('\n    figure()')
             out('    plot_field(voltage, 16)')
             out('    colorbar()')
-            out('    plot_geometry(GEO.main, color="0.75")')
+            out('    plot_geometry(GEO.main, color="w")')
             out('    gcf().canvas.set_window_title("Electric potential")')
             if actlevel is not False:
                 out('\n    figure()')

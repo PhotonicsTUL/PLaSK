@@ -275,8 +275,8 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
         else
             std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
 
-        tKx *= tElemHeight; tKx /= tElemWidth;
-        tKy *= tElemWidth; tKy /= tElemHeight;
+        tKx = tKx * tElemHeight / tElemWidth;
+        tKy = tKy * tElemWidth / tElemHeight;
 
         // load vector: heat densities
         double tF = 0.25e-12 * tElemWidth * tElemHeight * tHeatDensities[ttE->getIndex()]; // 1e-12 -> to transform um*um into m*m

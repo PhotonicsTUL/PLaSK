@@ -743,6 +743,8 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
 
     for (ttE = mElements.begin(); ttE != mElements.end(); ++ttE)
     {
+        Vec<2> j = 1e7 * mCurrentDensities[ttE->getNo()-1];
+
         if ((this->geometry)->hasRoleAt("insulator", vec(ttE->getX(), ttE->getY())))
             mHeatDensities[ttE->getNo()-1] = 0.;
         else if ((this->geometry)->hasRoleAt("active", vec(ttE->getX(), ttE->getY()))) // TODO
@@ -758,18 +760,16 @@ template<typename Geometry2Dtype> void FiniteElementMethodElectrical2DSolver<Geo
                 }
             }
 
-            mHeatDensities[ttE->getNo()-1] = ( phys::h_J * phys::c * fabs((1e7*mCurrentDensities[ttE->getNo()-1]).ee_y()) ) / ( phys::qe * real(inWavelength()) * 1e-9 * tSize.ee_y() * 1e-6 ); // 10e-6 TODO
+            mHeatDensities[ttE->getNo()-1] = phys::h_J * phys::c * fabs(j.ee_y()) / ( phys::qe * real(inWavelength())*1e-9 * 1e-6*tSize.ee_y() );
         }
         else if ((this->geometry)->hasRoleAt("p-contact", vec(ttE->getX(), ttE->getY())))
-            mHeatDensities[ttE->getNo()-1] = (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() / mCondPcontact +
-                (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() / mCondPcontact;
+            mHeatDensities[ttE->getNo()-1] = (j.ee_x() * j.ee_x() + j.ee_y() * j.ee_y()) / mCondPcontact;
         else if ((this->geometry)->hasRoleAt("n-contact", vec(ttE->getX(), ttE->getY())))
-            mHeatDensities[ttE->getNo()-1] = (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() / mCondNcontact +
-                (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() / mCondNcontact;
+            mHeatDensities[ttE->getNo()-1] = (j.ee_x() * j.ee_x() + j.ee_y() * j.ee_y()) / mCondNcontact;
         else
         {
-            mHeatDensities[ttE->getNo()-1] = (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_x() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).first) +
-                (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() * (1e7*mCurrentDensities[ttE->getNo()-1]).ee_y() / ((this->geometry)->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]).second);
+            auto cond = this->geometry->getMaterial(vec(ttE->getX(), ttE->getY()))->cond(mTemperatures[ttE->getNo()-1]);
+            mHeatDensities[ttE->getNo()-1] = j.ee_x() * j.ee_x() / cond.first + j.ee_y() * j.ee_y() / cond.second;
         }
     }
 }
