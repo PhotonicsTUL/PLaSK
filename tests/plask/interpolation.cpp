@@ -30,8 +30,8 @@ BOOST_AUTO_TEST_SUITE(interpolation) // MUST be the same as the file name
         // Check exceptions
         BOOST_CHECK_THROW(plask::interpolate(src_mesh, src_data, dst_mesh, plask::__ILLEGAL_INTERPOLATION_METHOD__),
                           plask::CriticalException);
-        BOOST_CHECK_THROW(plask::interpolate(src_mesh, src_data, dst_mesh, (plask::InterpolationMethod)9999),
-                          plask::CriticalException);
+        //BOOST_CHECK_THROW(plask::interpolate(src_mesh, src_data, dst_mesh, (plask::InterpolationMethod)9999),
+        //                  plask::CriticalException);
         BOOST_CHECK_THROW(plask::interpolate(src_mesh, src_data, dst_mesh, plask::INTERPOLATION_SPLINE),
                           plask::NotImplemented);
 

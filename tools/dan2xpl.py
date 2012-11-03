@@ -422,7 +422,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
             out('    plot_boundary(THERMAL.convection_boundary, defmesh, color="g")')
             out('    plot_boundary(THERMAL.radiation_boundary, defmesh, color="y")')
         if electr:
-            out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, color="b")')
+            out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, color="b", marker="p")')
         out('    gcf().canvas.set_window_title("Default mesh")')
         if therm:
             out('\n    figure()')

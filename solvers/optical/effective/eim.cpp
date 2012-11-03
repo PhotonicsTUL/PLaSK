@@ -335,6 +335,8 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x)
 
 plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
 {
+    this->writelog(LOG_DETAIL, "Getting light intensity");
+
     if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
 
     dcomplex neff = outNeff();

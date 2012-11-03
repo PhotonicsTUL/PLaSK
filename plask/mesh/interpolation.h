@@ -75,6 +75,7 @@ Typically, the code of the function should iterate over all the points of the @a
 #include "../exceptions.h"
 #include "../memory.h"
 #include "../data.h"
+#include <plask/log/log.h>
 
 namespace plask {
 
@@ -88,13 +89,21 @@ enum InterpolationMethod {
     INTERPOLATION_SPLINE = 2,   ///< spline interpolation
     INTERPOLATION_COSINE = 3,   ///< cosine interpolation
     INTERPOLATION_FOURIER = 4,  ///< Fourier transform interpolation
-    //...add new interpolation algorithms here...
+    // ...add new interpolation algorithms here...
 #   ifndef DOXYGEN
     __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop and automatic Python enums
 #   endif // DOXYGEN
 };
 
-static constexpr const char* interpolationMethodNames[] = { "DEFAULT", "LINEAR", "SPLINE", "COSINE", "FOURIER" /*attach new interpolation algorithm names here*/};
+static constexpr const char* interpolationMethodNames[] = {
+    "DEFAULT",
+    "LINEAR",
+    "SPLINE",
+    "COSINE",
+    "FOURIER",
+    // ...attach new interpolation algorithm names here...
+    "ILLEGAL"
+};
 
 /**
  * Helper utility that replaces DEFAULT_INTERPOLATION with particular method.
@@ -183,6 +192,7 @@ DataVector<DataT> interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>&
     if (&src_mesh == &dst_mesh) return src_vec; // meshes are identical, so just return src_vec
 
     DataVector<typename std::remove_const<DataT>::type> result(dst_mesh.size());
+    writelog(LOG_DETAIL, std::string("interpolate: Running ") + interpolationMethodNames[method] + " interpolation");
     __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, src_vec, dst_mesh, result, method);
     return result;
 }

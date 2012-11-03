@@ -398,6 +398,8 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 
 plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
 {
+    this->writelog(LOG_DETAIL, "Getting light intensity");
+
     if (!outWavelength.hasValue() || k0 != old_k0 || m != old_m) throw NoValue(OpticalIntensity::NAME);
 
     if (!have_fields) {

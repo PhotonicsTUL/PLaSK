@@ -865,6 +865,7 @@ template<typename Geometry2Dtype> int FiniteElementMethodElectrical2DSolver<Geom
 
 template<typename Geometry2Dtype> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getPotentials(const MeshD<2> &dst_mesh, InterpolationMethod method) const
 {
+    this->writelog(LOG_DETAIL, "Getting potentials");
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
     return interpolate(*(this->mesh), mPotentials, dst_mesh, method);
@@ -872,6 +873,7 @@ template<typename Geometry2Dtype> DataVector<const double> FiniteElementMethodEl
 
 template<typename Geometry2Dtype> DataVector<const Vec<2> > FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getCurrentDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
 {
+    this->writelog(LOG_DETAIL, "Getting currents");
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
     return interpolate(*((this->mesh)->getMidpointsMesh()), mCurrentDensities, dst_mesh, method);
@@ -879,6 +881,7 @@ template<typename Geometry2Dtype> DataVector<const Vec<2> > FiniteElementMethodE
 
 template<typename Geometry2Dtype> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2Dtype>::getHeatDensities(const MeshD<2> &dst_mesh, InterpolationMethod method) const
 {
+    this->writelog(LOG_DETAIL, "Getting heat densities");
     if (method == DEFAULT_INTERPOLATION)
         method = INTERPOLATION_LINEAR;
     return interpolate(*((this->mesh)->getMidpointsMesh()), mHeatDensities, dst_mesh, method);
