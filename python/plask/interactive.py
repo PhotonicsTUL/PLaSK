@@ -155,8 +155,11 @@ def interact(ipython=None, argv=[]):
                 mainloop = lambda: ip.shell.mainloop(banner)
 
     if not in_ipython:
-        mainloop()
-        sys.exit('PLaSK exiting...')
+        try:
+            mainloop()
+        except SystemExit:
+            sys.stdout.write('PLaSK exiting...')
+            return
     else:
         ip.write(banner)
         ip.set_hook('shutdown_hook', lambda ip: ip.write("PLaSK exiting...\n"))

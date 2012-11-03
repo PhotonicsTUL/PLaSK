@@ -341,6 +341,8 @@ int main(int argc, const char *argv[])
             int exitcode = handlePythonException();
             endPlask();
             return exitcode;
+        } catch (...) {
+            return 0;
         }
     }
 

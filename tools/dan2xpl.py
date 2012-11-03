@@ -400,8 +400,10 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
             if actlevel is not False:
                 out('acurrent = ELECTRICAL.outCurrentDensity(actgrid)')
 
-        out('\ntry:\n    import h5py\nexcept:\n    pass\nelse:')
-        out('    h5file = h5py.File("%s.h5", "w")' % name)
+        h5mode = 'w'
+        out('\nif has_hdf5:')
+        out('    import sys, os')
+        out('    h5file = h5py.File(os.path.splitext(sys.argv[0])[0]+".h5", "w")')
         if therm:
             out('    save_field(temperature, h5file, "Temperature")')
             out('    save_field(heats, h5file, "HeatDensity")')
@@ -477,9 +479,5 @@ if __name__ == "__main__":
             code = 1
         else:
             print("\nDone!")
-
-    if os.name == 'nt':
-        sys.stdout.write("\nPress ENTER to close the window...")
-        raw_input()
 
     sys.exit(code)
