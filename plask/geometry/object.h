@@ -92,7 +92,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
          */
         unsigned char flagsForParentWithChildrenWasChangedInformation() const {
             unsigned char result = flagsForParent();
-            if (hasAnyFlag(CHILDREN_INSERT | CHILDREN_REMOVE)) result |= CHILDREN_GENERIC;
+            if (hasAnyFlag(CHILDREN_INSERT | CHILDREN_REMOVE | CHILDREN_GENERIC)) result |= CHILDREN_GENERIC;
             return result;
         }
 
