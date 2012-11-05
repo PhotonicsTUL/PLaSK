@@ -34,8 +34,6 @@ class Solver;
  */
 struct Manager {
 
-    typedef GeometryReader::MaterialsSource MaterialsSource;
-
     /// Throw exception with information that loading from external sources is not supported or disallowed.
     static void disallowExternalSources(Manager& manager, const MaterialsSource& materialsSource, const std::string& url, const std::string& section) {
         throw Exception("Can't load section \"%1%\" from \"%2%\". Loading from external sources is not supported or disallowed.", section, url); }
@@ -102,7 +100,7 @@ private:
      * @param materialsSource source of materials
      * @param load_from
      */
-    bool tryLoadFromExternal(XMLReader& reader, const GeometryReader::MaterialsSource& materialsSource, const LoadFunCallbackT& load_from);
+    bool tryLoadFromExternal(XMLReader& reader, const MaterialsSource& materialsSource, const LoadFunCallbackT& load_from);
 
   protected:
 
@@ -291,7 +289,7 @@ private:
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromReader(XMLReader& XMLreader, const GeometryReader::MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromReader(XMLReader& XMLreader, const MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Load geometry from (XML) stream.
@@ -309,7 +307,7 @@ private:
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromStream(std::istream &input, const GeometryReader::MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromStream(std::istream &input, const MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Load geometry from string which consist of XML.
@@ -327,7 +325,7 @@ private:
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromXMLString(const std::string &input_XML_str, const GeometryReader::MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromXMLString(const std::string &input_XML_str, const MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /*
      * Read all objects up to end of XML tag and call functor(object) for each object which was read.
@@ -351,7 +349,7 @@ private:
      * @param fileName name of XML file
      * @param materialsSource source of materials, used to get materials by name for leafs
      */
-    void loadFromFile(const std::string& fileName, const GeometryReader::MaterialsSource& materialsSource);
+    void loadFromFile(const std::string& fileName, const MaterialsSource& materialsSource);
 
     /**
      * Load geometry from C file object.
@@ -369,7 +367,7 @@ private:
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromFILE(FILE* file, const GeometryReader::MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromFILE(FILE* file, const MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Read boundary conditions from current tag and move parser to end of current tag.
@@ -426,12 +424,6 @@ private:
         load(XMLreader, materialsSource, load_from_cb, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
     }
 
-    /**
-     * Get material database wrapped by @p materialsSource.
-     * @param materialsSource source of materials, which can wrap material database
-     * @return pointer to wrapped material database or @c nullptr if materialsSource is not constructed using material database
-     */
-    static const MaterialsDB* getMaterialsDBfromSource(const Manager::MaterialsSource& materialsSource);
 };
 
 // Specialization for most types

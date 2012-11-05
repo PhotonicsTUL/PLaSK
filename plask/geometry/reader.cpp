@@ -32,7 +32,7 @@ plask::GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader 
     axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
 }
 
-GeometryReader::GeometryReader(Manager &manager, XMLReader &source, const GeometryReader::MaterialsSource &materialsSource)
+GeometryReader::GeometryReader(Manager &manager, XMLReader &source, const MaterialsSource &materialsSource)
     : expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
 {
     axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
@@ -140,7 +140,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         boost::optional<double> l = source.getAttribute<double>("length");
         shared_ptr<Geometry2DCartesian> cartesian2d = make_shared<Geometry2DCartesian>();   // result with original type
         result = cartesian2d;
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames, materialSource );
         if (l) {
             cartesian2d->setExtrusion(make_shared<Extrusion>(readExactlyOneChild<GeometryObjectD<2>>(), *l));
         } else {
@@ -157,13 +157,13 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = make_shared<Geometry2DCylindrical>();
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames, materialSource );
         static_pointer_cast<Geometry2DCylindrical>(result)->
             setRevolution(make_shared<Revolution>(readExactlyOneChild<GeometryObjectD<2>>()));
     } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
         result = make_shared<Geometry3D>();
-        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames );
+        result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, *axisNames, materialSource );
         static_pointer_cast<Geometry3D>(result)->setChildUnsafe(
             readExactlyOneChild<GeometryObjectD<3>>());
     } else

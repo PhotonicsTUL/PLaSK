@@ -237,7 +237,7 @@ public:
 };
 
 /**
- * Wrap translation and child of this translation inside container
+ * Wraps translation and child of this translation inside container
  * (this two objects are represented as one item in tree).
  */
 struct InContainerTreeItem: public GeometryTreeItem {

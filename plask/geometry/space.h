@@ -101,8 +101,9 @@ struct Geometry: public GeometryObject {
      * @param borderValuesGetter optionaly return border strategy string for direction(s) given in argument,
      *   argument can be one of: "borders", "planar", "<axis_name>", "<axis_name>-lo", "<axis_name>-hi"
      * @param axesNames name of axes, use to create arguments for @p borderValuesGetter
+     * @param materialsSource source of materials
      */
-    void setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
+    void setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsSource& materialsSource = MaterialsDB::getDefault().toSource());
 
     /**
      * Get border strategy or throw exception if border can't be get for this calculation space or direction.

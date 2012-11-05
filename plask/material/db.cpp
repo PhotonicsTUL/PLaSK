@@ -17,6 +17,11 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
     }
 }
 
+const MaterialsDB *MaterialsDB::getFromSource(const MaterialsSource &materialsSource) {
+    const MaterialsDB::Source* src = materialsSource.target<const MaterialsDB::Source>();
+    return src ? &src->materialsDB : nullptr;
+}
+
 MaterialsDB::MixedCompositionOnlyFactory::MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition)
     : MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(constructor), material1composition(material1composition), material2composition(material2composition) {
     //check if compositions are fine and simillar:

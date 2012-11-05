@@ -117,10 +117,10 @@ void PythonManager::loadConnects(XMLReader& reader) {
 
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB);
 
-void PythonManager::loadMaterials(XMLReader& reader, const Manager::MaterialsSource& materialsSource)
+void PythonManager::loadMaterials(XMLReader& reader, const MaterialsSource& materialsSource)
 {
     //we always use materials DB as source in python, so this cast is safe
-    MaterialsDB& materialsDB = const_cast<MaterialsDB&>(*Manager::getMaterialsDBfromSource(materialsSource));
+    MaterialsDB& materialsDB = const_cast<MaterialsDB&>(*MaterialsDB::getFromSource(materialsSource));
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "material")
             PythonEvalMaterialLoadFromXML(reader, materialsDB);

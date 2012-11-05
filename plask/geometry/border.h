@@ -83,13 +83,21 @@ struct Strategy {
      *
      * Throw excption if @p str not describe strategy.
      * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
-     * @param materialsDB material database used to get material
+     * @param materialsSource source of materials, typically material database, used to get material
      * @return created strategy
      */
-    static Strategy* fromStr(const std::string& str, const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    static Strategy* fromStr(const std::string& str, const MaterialsSource& materialsSource = MaterialsDB::getDefault().toSource());
 
-    static std::unique_ptr<Strategy> fromStrUnique(const std::string& str, const MaterialsDB& materialsDB = MaterialsDB::getDefault()) {
-        return std::unique_ptr<Strategy>(fromStr(str, materialsDB));
+    /**
+     * Create new strategy described by string @p str.
+     *
+     * Throw excption if @p str not describe strategy.
+     * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
+     * @param materialsSource source of materials, typically material database, used to get material
+     * @return created strategy manged by unique_ptr, same as <code>std::unique_ptr<Strategy>(fromStr(str, materialsSource))</code>
+     */
+    static std::unique_ptr<Strategy> fromStrUnique(const std::string& str, const MaterialsSource& materialsSource = MaterialsDB::getDefault().toSource()) {
+        return std::unique_ptr<Strategy>(fromStr(str, materialsSource));
     }
 };
 

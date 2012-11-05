@@ -118,8 +118,9 @@ QModelIndex ObjectViewer::indexAt(const QPoint &point) const
 plask::shared_ptr<ObjectWrapper> ObjectViewer::getObjectWrapper() const
 {
     QModelIndex toDrawIndex = rootIndex();
-    if (!toDrawIndex.isValid()) return plask::shared_ptr<ObjectWrapper>();    //root or invalidate (deleted) index
-    return model()->toItem(toDrawIndex)->getLowerWrappedObject();
+    auto _model = model();
+    if (!toDrawIndex.isValid() || !_model) return plask::shared_ptr<ObjectWrapper>();    //root or invalidate (deleted) index
+    return _model->toItem(toDrawIndex)->getLowerWrappedObject();
 }
 
 bool ObjectViewer::isIndexHidden(const QModelIndex & /*index*/) const

@@ -7,17 +7,17 @@ namespace plask {
 
 const std::map<std::string, std::string> Geometry::null_borders;
 
-void Geometry::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames)
+void Geometry::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsSource &materialsSource)
 {
     boost::optional<std::string> v, v_lo, v_hi;
     v = borderValuesGetter("borders");
-    if (v) setAllBorders(*border::Strategy::fromStrUnique(*v));
+    if (v) setAllBorders(*border::Strategy::fromStrUnique(*v, materialsSource));
     v = borderValuesGetter("planar");
-    if (v) setPlanarBorders(*border::Strategy::fromStrUnique(*v));
+    if (v) setPlanarBorders(*border::Strategy::fromStrUnique(*v, materialsSource));
     for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
         std::string axis_name = axesNames[dir_nr];
         v = borderValuesGetter(axis_name);
-        if (v) setBorders(DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v));
+        if (v) setBorders(DIRECTION(dir_nr), *border::Strategy::fromStrUnique(*v, materialsSource));
         v_lo = borderValuesGetter(axis_name + "-lo");
         if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
             if (v_lo) throw BadInput("setBorders", "Border specified by both '%1%-lo' and '%2%'", axis_name, alternativeDirectionName(dir_nr, 0));
@@ -30,10 +30,10 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
         }
         try {
             if (v_lo && v_hi) {
-                setBorders(DIRECTION(dir_nr),  *border::Strategy::fromStrUnique(*v_lo), *border::Strategy::fromStrUnique(*v_hi));
+                setBorders(DIRECTION(dir_nr),  *border::Strategy::fromStrUnique(*v_lo, materialsSource), *border::Strategy::fromStrUnique(*v_hi, materialsSource));
             } else {
-                if (v_lo) setBorder(DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v_lo));
-                if (v_hi) setBorder(DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi));
+                if (v_lo) setBorder(DIRECTION(dir_nr), false, *border::Strategy::fromStrUnique(*v_lo, materialsSource));
+                if (v_hi) setBorder(DIRECTION(dir_nr), true, *border::Strategy::fromStrUnique(*v_hi, materialsSource));
             }
         } catch (DimensionError) {
             throw BadInput("setBorders", "Axis '%1%' is not allowed for this space", axis_name);

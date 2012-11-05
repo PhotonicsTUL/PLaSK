@@ -1,6 +1,7 @@
 #ifndef PLASK__MATERIAL_DB_H
 #define PLASK__MATERIAL_DB_H
 
+#include <functional>
 #include "material.h"
 
 #include <boost/iterator/transform_iterator.hpp>
@@ -8,12 +9,35 @@
 
 namespace plask {
 
+/// Type of material source, can return material with given name.
+typedef std::function<shared_ptr<Material>(const std::string& material_full_name)> MaterialsSource;
+
 /**
  * Materials database.
  *
  * Create materials with given name, composition and dopant.
  */
 struct MaterialsDB {
+
+    /**
+     * Materials source functor which use materials database.
+     */
+    struct Source {
+        const MaterialsDB& materialsDB;
+        Source(const MaterialsDB& materialsDB): materialsDB(materialsDB) {}
+        shared_ptr<Material> operator()(const std::string& material_full_name) const { return materialsDB.get(material_full_name); }
+    };
+
+    /**
+     * Get material database wrapped by @p materialsSource.
+     * @param materialsSource source of materials, which can wrap material database
+     * @return pointer to wrapped material database or @c nullptr if materialsSource is not constructed using material database
+     */
+    static const MaterialsDB* getFromSource(const MaterialsSource& materialsSource);
+
+    Source toSource() const {
+        return Source(*this);
+    }
 
     /**
      * Get default material database.

@@ -78,10 +78,10 @@ shared_ptr<Mesh> Manager::getMesh(const std::string& name) const {
 }
 
 void Manager::loadFromReader(XMLReader &reader, const MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
-    load(reader, GeometryReader::MaterialsDBSource(materialsDB), load_from_cb);
+    load(reader, materialsDB.toSource(), load_from_cb);
 }
 
-void Manager::loadFromReader(XMLReader &reader, const GeometryReader::MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
+void Manager::loadFromReader(XMLReader &reader, const MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
     load(reader, materialsSource, load_from_cb);
 }
 
@@ -90,7 +90,7 @@ void Manager::loadFromStream(std::istream &input, const MaterialsDB& materialsDB
     loadFromReader(reader, materialsDB, load_from_cb);
 }
 
-void Manager::loadFromStream(std::istream &input, const GeometryReader::MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
+void Manager::loadFromStream(std::istream &input, const MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
     XMLReader reader(input);
     loadFromReader(reader, materialsSource, load_from_cb);
 }
@@ -100,7 +100,7 @@ void Manager::loadFromXMLString(const std::string &input_XML_str, const Material
     loadFromStream(stream, materialsDB, load_from_cb);
 }
 
-void Manager::loadFromXMLString(const std::string &input_XML_str, const GeometryReader::MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
+void Manager::loadFromXMLString(const std::string &input_XML_str, const MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
     std::istringstream stream(input_XML_str);
     loadFromStream(stream, materialsSource, load_from_cb);
 }
@@ -110,7 +110,7 @@ void Manager::loadFromFile(const std::string &fileName, const MaterialsDB& mater
     loadFromReader(reader, materialsDB, ExternalSourcesFromFile(fileName));
 }
 
-void Manager::loadFromFile(const std::string &fileName, const GeometryReader::MaterialsSource &materialsSource) {
+void Manager::loadFromFile(const std::string &fileName, const MaterialsSource &materialsSource) {
     XMLReader reader(fileName.c_str());
     loadFromReader(reader, materialsSource, ExternalSourcesFromFile(fileName));
 }
@@ -120,7 +120,7 @@ void Manager::loadFromFILE(FILE* file, const MaterialsDB& materialsDB, const Loa
     loadFromReader(reader, materialsDB, load_from_cb);
 }
 
-void Manager::loadFromFILE(FILE* file, const GeometryReader::MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
+void Manager::loadFromFILE(FILE* file, const MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
     XMLReader reader(file);
     loadFromReader(reader, materialsSource, load_from_cb);
 }
@@ -295,12 +295,6 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
         if (!reader.requireTagOrEnd()) return;
     }
 }
-
-const MaterialsDB *Manager::getMaterialsDBfromSource(const Manager::MaterialsSource &materialsSource) {
-    const GeometryReader::MaterialsDBSource* src = materialsSource.target<const GeometryReader::MaterialsDBSource>();
-    return src ? &src->materialsDB : nullptr;
-}
-
 
 
 } // namespace plask

@@ -11,13 +11,13 @@ bool Strategy::canMoveOutsideBoundingBox() const {
     return false;
 }
 
-Strategy* Strategy::fromStr(const std::string& str, const MaterialsDB& materialsDB) {
+Strategy* Strategy::fromStr(const std::string& str, const MaterialsSource& materialsSource) {
     std::string lower_name = boost::to_lower_copy(str);
     if (lower_name == "null") return new Null();
     if (lower_name == "periodic") return new Periodic();
     if (lower_name == "extend") return new Extend();
     if (lower_name == "mirror") return new Mirror();
-    return new SimpleMaterial(materialsDB.get(str));
+    return new SimpleMaterial(materialsSource(str));
 }
 
 void SimpleMaterial::applyLo(double, double, double&, shared_ptr<plask::Material> &result_material) const {
