@@ -12,18 +12,20 @@ ObjectWrapper::~ObjectWrapper() {
     if (this->wrappedObject) this->wrappedObject->changedDisconnectMethod(this, &ObjectWrapper::onWrappedChange);
 }
 
-void ObjectWrapper::draw(QPainter& painter) const {
+void ObjectWrapper::draw(QPainter& painter, bool paintBorders) const {
     plask::GeometryObject& toDraw = *wrappedObject;
     if (toDraw.getDimensionsCount() != 2)
         return; //we draw 2d only at this moment
     if (toDraw.isLeaf()) {
         auto bb = toQt(static_cast< const plask::GeometryObjectD<2>& >(toDraw).getBoundingBox());
         painter.fillRect(bb, QColor(150, 100, 100));
-        //painter.setPen(QPen(QColor(0,0,0), 0.0));
-        //painter.drawRect(bb);
+        if (paintBorders) {
+            painter.setPen(QPen(QColor(0,0,0), 0.0));
+            painter.drawRect(bb);
+        }
     } else {
         for (std::size_t i = 0; i < toDraw.getChildrenCount(); ++i)
-            ext(toDraw.getChildAt(i))->draw(painter);
+            ext(toDraw.getChildAt(i))->draw(painter, paintBorders);
     }
 }
 
@@ -49,7 +51,7 @@ void ObjectWrapper::drawMiniature(QPainter& painter, qreal w, qreal h, bool save
 
     painter.translate(-bb.lower.tran(), -bb.lower.vert());
 
-    draw(painter);
+    draw(painter, false);
 
     painter.setTransform(transformBackup);
 }
@@ -61,7 +63,7 @@ void ObjectWrapper::drawReal(QPainter &painter) const
         for (std::size_t i = 0; i < toDraw.getRealChildrenCount(); ++i)
             ext(toDraw.getRealChildAt(i))->draw(painter);
     } else
-        draw(painter);
+        draw(painter, false);
 }
 
 QPixmap ObjectWrapper::getMiniature(qreal w, qreal h, bool saveProp) const {

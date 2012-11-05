@@ -193,7 +193,7 @@ public:
      * Draw geometry object using given Qt @p painter.
      * @param painter where draw object
      */
-    virtual void draw(QPainter& painter) const;
+    virtual void draw(QPainter& painter, bool paintBorders = true) const;
 
     /**
      * Draw miniature with size close to given.

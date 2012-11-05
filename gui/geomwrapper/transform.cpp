@@ -15,17 +15,17 @@ QString TranslationWrapper<dim>::toStr() const {
 }
 
 template <>
-void TranslationWrapper<2>::draw(QPainter& painter) const {
+void TranslationWrapper<2>::draw(QPainter& painter, bool paintBorders) const {
     QTransform transformBackup = painter.transform();
     const plask::Translation<2>& t = c();
     if (!t.hasChild()) return;
     painter.translate(t.translation.tran(), t.translation.vert());
-    ext(t.getChild())->draw(painter);
+    ext(t.getChild())->draw(painter, paintBorders);
     painter.setTransform(transformBackup);
 }
 
 template <>
-void TranslationWrapper<3>::draw(QPainter& painter) const {
+void TranslationWrapper<3>::draw(QPainter& painter, bool paintBorders) const {
     //TODO 3d
 }
 

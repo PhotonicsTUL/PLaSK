@@ -22,9 +22,9 @@ void GeometryWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers &managers,
 }
 
 template <int dim>
-void GeometryWrapper<dim>::draw(QPainter &painter) const {
+void GeometryWrapper<dim>::draw(QPainter &painter, bool drawBorders) const {
     auto child = this->c().getChildUnsafe();
-    if (child) ext(child)->draw(painter);
+    if (child) ext(child)->draw(painter, drawBorders);
 }
 
 template <int dim>

@@ -18,7 +18,7 @@ struct GeometryWrapper: public ObjectWrapperFor< plask::GeometryD<dim> > {
 
     // delegate to child:
 
-    virtual void draw(QPainter& painter) const;
+    virtual void draw(QPainter& painter, bool drawBorders = true) const;
 
     virtual void drawMiniature(QPainter& painter, qreal w, qreal h, bool saveProp) const;
 

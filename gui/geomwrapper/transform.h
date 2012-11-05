@@ -20,7 +20,7 @@ struct TranslationWrapper: public ObjectWrapperFor< plask::Translation<dim> > {
     
     virtual QString toStr() const;
 
-    virtual void draw(QPainter& painter) const;
+    virtual void draw(QPainter& painter, bool paintBorders) const;
 
     virtual bool canInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) const;
 
