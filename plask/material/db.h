@@ -9,8 +9,11 @@
 
 namespace plask {
 
-/// Type of material source, can return material with given name.
+/**
+ * Type of material source, can return material with given name.
+ */
 typedef std::function<shared_ptr<Material>(const std::string& material_full_name)> MaterialsSource;
+//TODO ? maybe MaterialsSource should be a class, a base class for MaterialsDB, and maybe it should has interface to append new materials
 
 /**
  * Materials database.
@@ -35,6 +38,10 @@ struct MaterialsDB {
      */
     static const MaterialsDB* getFromSource(const MaterialsSource& materialsSource);
 
+    /**
+     * Convert @c this material database to material source.
+     * @return material source which use @c this database
+     */
     Source toSource() const {
         return Source(*this);
     }

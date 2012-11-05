@@ -28,10 +28,10 @@ void GeometryWrapper<dim>::draw(QPainter &painter) const {
 }
 
 template <int dim>
-void GeometryWrapper<dim>::drawMiniature(QPainter &painter, qreal w, qreal h) const
+void GeometryWrapper<dim>::drawMiniature(QPainter &painter, qreal w, qreal h, bool saveProp) const
 {
     auto child = this->c().getChildUnsafe();
-    if (child) ext(child)->drawMiniature(painter, w, h);
+    if (child) ext(child)->drawMiniature(painter, w, h, saveProp);
 }
 
 template <int dim>

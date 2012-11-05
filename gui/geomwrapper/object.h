@@ -200,7 +200,7 @@ public:
      * @param painter where miniature shpuld be drawn
      * @param w, h requested miniature size
      */
-    virtual void drawMiniature(QPainter& painter, qreal w, qreal h) const;
+    virtual void drawMiniature(QPainter& painter, qreal w, qreal h, bool saveProp = false) const;
 
     /**
      * Draw real part (real children only) of geometry object using given Qt @p painter.
@@ -213,7 +213,7 @@ public:
      * @param w, h requested miniature size
      * @return miniature
      */
-    QPixmap getMiniature(qreal w, qreal h) const;
+    QPixmap getMiniature(qreal w, qreal h, bool saveProp = false) const;
 
     /**
      * Get string representation of given object.

@@ -20,7 +20,7 @@ struct GeometryWrapper: public ObjectWrapperFor< plask::GeometryD<dim> > {
 
     virtual void draw(QPainter& painter) const;
 
-    virtual void drawMiniature(QPainter& painter, qreal w, qreal h) const;
+    virtual void drawMiniature(QPainter& painter, qreal w, qreal h, bool saveProp) const;
 
     virtual void drawReal(QPainter& painter) const;
 
