@@ -71,9 +71,9 @@ macro(make_default)
     # Handle list of global classes
     set(CLASSES_FILE_SOURCE "${CMAKE_SOURCE_DIR}/solvers/${SOLVER_CATEGORY_NAME}/solvers.lst")
     set(CLASSES_FILE "${PLASK_PATH}/solvers/${SOLVER_CATEGORY_NAME}/solvers.lst")
-    if(EXISTS "${CLASSES_FILE_SOURCE}" AND NOT EXISTS "${CLASSES_FILE}")
+    if(EXISTS "${CLASSES_FILE_SOURCE}")
             file(INSTALL "${CLASSES_FILE_SOURCE}" DESTINATION "${PLASK_PATH}/solvers/${SOLVER_CATEGORY_NAME}")
-            install(FILES "${CLASSES_FILE}" DESTINATION "lib/plask/solvers/${SOLVER_CATEGORY_NAME}" COMPONENT solvers)
+            install(FILES "${CLASSES_FILE_SOURCE}" DESTINATION "lib/plask/solvers/${SOLVER_CATEGORY_NAME}" COMPONENT solvers)
     endif()
 
     if(BUILD_PYTHON)
