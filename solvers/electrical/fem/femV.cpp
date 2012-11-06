@@ -82,7 +82,6 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             }
             auto tWavelength = source.getAttribute<double>("wavelength");
             if (tWavelength) inWavelength = *tWavelength;
-            source.requireTagEnd();
             auto tHeamMethod = source.getAttribute("heat");
             if (tHeamMethod) {
                 std::string tValue = *tHeamMethod; boost::algorithm::to_lower(tValue);
@@ -90,6 +89,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                 else if (tValue == "wavelength") mHeatMethod = HEAT_BANDGAP;
                 else throw XMLBadAttrException(source, "heat", *tHeamMethod, + "\"joules\" or \"wavelength\"");
             }
+            source.requireTagEnd();
         }
 
         else if (param == "contacts") {
