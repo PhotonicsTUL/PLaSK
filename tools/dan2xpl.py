@@ -92,9 +92,18 @@ class Material(object):
 
 
 
+ownmats = {
+#    'pAlGan': 'Al(0.2)GaN:Si',
+
+}
+
 def parse_material_name(mat, comp, dopant):
-    if mat[0] == mat[0].lower(): elements = ['']
-    else: elements = []
+    if mat in ownmats:
+        return ownmats[mat]
+    if mat[0] == mat[0].lower():
+        elements = ['']
+    else:
+        elements = []
     for l in mat:
         if l != l.lower(): elements.append('')
         elements[-1] = elements[-1]+l
@@ -194,9 +203,9 @@ def read_dan(fname):
         kappa_t = line[2].lower()
 
         # create custom material if necessary
-        if sigma_t not in ('n','p','j') or kappa_t not in ('n','p'):
+        if sigma_t not in ('n','p') or kappa_t not in ('n','p'):
             material = Material()
-            if sigma_t not in ('n','p','j'):
+            if sigma_t not in ('n','p'):
                 material.sigma = sigma
             else:
                 material.base = parse_material_name(mat, sigma[0], dopant)
@@ -314,7 +323,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
             out('    <%s>' % name)
             for data in boundaries[name]:
                 out(('      <condition value="%(value)s"><place line="%(dir)s"' +
-                             ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>\n') % data)
+                             ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>') % data)
             out('    </%s>' % name)
 
     # default solvers
@@ -416,7 +425,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
         out('\nif has_pylab:')
         out('    plot_geometry(GEO.main, set_limits=True)')
         out('    defmesh = MSG.default(GEO.main.child)')
-        out('    plot_mesh(defmesh)')
+        out('    plot_mesh(defmesh, color="0.75")')
         if therm:
             out('    plot_boundary(THERMAL.temperature_boundary, defmesh, color="r")')
             out('    plot_boundary(THERMAL.convection_boundary, defmesh, color="g")')
