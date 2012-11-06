@@ -10,7 +10,7 @@ class Manager(unittest.TestCase):
 
     def setUp(self):
         self.manager = plask.Manager()
-        self.manager.read('''
+        self.manager.load('''
         <plask>
             <geometry>
                 <cartesian2d name="Space-1" axes="xy">
@@ -82,7 +82,7 @@ class Manager(unittest.TestCase):
     def testException(self):
         manager = plask.Manager()
         with self.assertRaises(plask.XMLError):
-            manager.read('''
+            manager.load('''
             <plask>
                 <geometry>
                     <cartesian2d name="Space-1" axes="xy">
@@ -94,7 +94,7 @@ class Manager(unittest.TestCase):
             </plask>
             ''')
         with self.assertRaises(plask.XMLError):
-            manager.read('''
+            manager.load('''
             <plask>
                 <grids>
                     <mesh type="rectilinear2d" name="lin">
@@ -105,7 +105,7 @@ class Manager(unittest.TestCase):
             <plask>
             ''')
         with self.assertRaises(plask.XMLError):
-            manager.read('''
+            manager.load('''
             <plask>
                 <grids>
                     <generator type="rectilinear2d" method="divide" name="test">
@@ -115,7 +115,7 @@ class Manager(unittest.TestCase):
             </plask>
             ''')
         with self.assertRaises(plask.XMLError):
-            manager.read('''
+            manager.load('''
             <plask>
                 <grids>
                     <generator type="rectilinear2d" method="divide" name="test">
@@ -125,7 +125,7 @@ class Manager(unittest.TestCase):
             </plask>
             ''')
         with self.assertRaises(plask.XMLError):
-            manager.read('''
+            manager.load('''
             <plask>
                 <geometry>
                     <cartesian2d name="Space-2" axes="xy">
@@ -137,7 +137,7 @@ class Manager(unittest.TestCase):
 
     def testSolverConnections(self):
         manager = plask.Manager()
-        manager.read('''
+        manager.load('''
         <plask>
             <solvers>
                 <plasktest lib="solvers" solver="InOut" name="output"/>
@@ -154,7 +154,7 @@ class Manager(unittest.TestCase):
 
     def testMaterials(self):
         manager = plask.Manager()
-        manager.read('''
+        manager.load('''
         <plask>
             <materials>
                 <material name="XmlMat" kind="dielectric">

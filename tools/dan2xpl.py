@@ -379,7 +379,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
         out('verr = 10.')
         out('ELECTRICAL.compute(1)')
         out('THERMAL.compute(1)')
-        out('while terr > 0.1 or verr > 0.001:')
+        out('while terr > 0.05 or verr > 0.001:')
         out('    verr = ELECTRICAL.compute(6)')
         out('    terr = THERMAL.compute(1)')
     else:
@@ -458,7 +458,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
                 out('    for x in mesh.Rectilinear2D.SimpleGenerator()(GEO.main.child).axis0:')
                 out('        axvline(x, ls=":", color="k")')
                 out('    gcf().canvas.set_window_title("Current density in the active region")')
-        out('    show()')
+        out('\n    show()')
 
     out('\n</script>\n')
 

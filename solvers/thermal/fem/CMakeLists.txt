@@ -1,6 +1,6 @@
 
 # Set the project name in the style: plask/solvergroup/solverlib
-project(plask/thermal/fem2d)
+project(plask/thermal/fem)
 
 
 # Do not change thew following two lines

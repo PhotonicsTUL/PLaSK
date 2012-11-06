@@ -14,19 +14,19 @@ using namespace plask::solvers::thermal;
  */
 BOOST_PYTHON_MODULE(fem)
 {
-    py_enum<Algorithm>("Algorithm", "Algorithm used for matrix factorization")
+    py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
         .value("SLOW", ALGORITHM_SLOW)
         .value("BLOCK", ALGORITHM_BLOCK)
         //.value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py_enum<CorrectionType>("CorrectionType", "Type of the returned correction")
+    py_enum<CorrectionType>("CorrectionType", "Types of the returned correction")
         .value("ABSOLUTE", CORRECTION_ABSOLUTE)
         .value("RELATIVE", CORRECTION_RELATIVE)
     ;
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Fem2D", "Finite element thermal solver for 2D Cartesian Geometry.")
-        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=1);
+        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
         RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
@@ -54,7 +54,7 @@ BOOST_PYTHON_MODULE(fem)
     ;
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "FemCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
-        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=1);
+        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
         RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
         RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver

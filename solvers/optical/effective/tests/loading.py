@@ -10,7 +10,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
     def setUp(self):
         self.manager = Manager()
-        self.manager.read("""
+        self.manager.load("""
         <plask>
             <geometry>
                 <cartesian2d name="Space-1" axes="xy">

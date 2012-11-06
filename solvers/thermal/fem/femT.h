@@ -106,10 +106,6 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     Algorithm mAlgorithm;   ///< Factorization algorithm to use
 
-    DataVector<const double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
-
-    DataVector<const Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method);
-
     /**
      * Run temperature calculations
      * \return max correction of temperature against the last call
@@ -120,21 +116,21 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
      * Get max absolute correction for temperature
      * \return get max absolute correction for temperature
      **/
-    double getMaxAbsTCorr() { return mMaxAbsTCorr; } // result in [K]
+    double getMaxAbsTCorr() const { return mMaxAbsTCorr; } // result in [K]
 
     /**
      * Get max relative correction for temperature
      * \return get max relative correction for temperature
      **/
-    double getMaxRelTCorr() { return mMaxRelTCorr; }// result in [%]
+    double getMaxRelTCorr() const { return mMaxRelTCorr; }// result in [%]
 
     void setTCorrLim(double iTCorrLim) { mTCorrLim = iTCorrLim; }
     void setBigNum(double iBigNum)  { mBigNum = iBigNum; }
     void setTInit(double iTInit)  { mTInit = iTInit; }
 
-    double getTCorrLim() { return mTCorrLim; }
-    double getBigNum() { return mBigNum; }
-    double getTInit() { return mTInit; }
+    double getTCorrLim() const { return mTCorrLim; }
+    double getBigNum() const { return mBigNum; }
+    double getTInit() const { return mTInit; }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
@@ -143,6 +139,12 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     virtual std::string getClassName() const;
 
     ~FiniteElementMethodThermal2DSolver();
+
+  protected:
+
+    DataVector<const double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+
+    DataVector<const Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method);
 };
 
 }} //namespaces

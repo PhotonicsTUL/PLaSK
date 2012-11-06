@@ -337,7 +337,7 @@ void register_manager() {
         "GeometryReader(materials=None)\n"
         "    Create manager with specified material database (if None, use default database)\n\n",
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
-        .def("read", &PythonManager::read, "Read data from source (can be a filename, file, or an XML string to read)", py::arg("source"))
+        .def("load", &PythonManager::read, "Load data from source (can be a filename, file, or an XML string to read)", py::arg("source"))
         .def_readonly("objects", &PythonManager::namedObjects, "Dictionary of all named geometry objects")
         .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
         .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")

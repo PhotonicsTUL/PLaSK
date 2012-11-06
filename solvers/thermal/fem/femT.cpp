@@ -5,7 +5,7 @@ namespace plask { namespace solvers { namespace thermal {
 template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DType>::FiniteElementMethodThermal2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DType, RectilinearMesh2D>(name),
     mBigNum(1e15),
-    mTCorrLim(0.1),
+    mTCorrLim(0.05),
     mTInit(300.),
     mLoopNo(0),
     mCorrType(CORRECTION_ABSOLUTE),
@@ -20,6 +20,54 @@ template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DT
 
 
 template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DType>::~FiniteElementMethodThermal2DSolver() {
+}
+
+
+template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
+{
+    while (source.requireTagOrEnd())
+    {
+        std::string param = source.getNodeName();
+
+        if (param == "temperature")
+            this->readBoundaryConditions(manager, source, mTConst);
+
+        else if (param == "heatflux")
+            this->readBoundaryConditions(manager, source, mHFConst);
+
+        else if (param == "convection")
+            this->readBoundaryConditions(manager, source, mConvection);
+
+        else if (param == "radiation")
+            this->readBoundaryConditions(manager, source, mRadiation);
+
+        else if (param == "loop") {
+            mTInit = source.getAttribute<double>("inittemp", mTInit);
+            mTCorrLim = source.getAttribute<double>("corrlim", mTCorrLim);
+            auto tCorrType = source.getAttribute("corrtype");
+            if (tCorrType) {
+                std::string tValue = *tCorrType; boost::algorithm::to_lower(tValue);
+                if (tValue == "absolute" || tValue == "abs") mCorrType = CORRECTION_ABSOLUTE;
+                else if (tValue == "relative" || tValue == "rel") mCorrType = CORRECTION_RELATIVE;
+                else throw XMLBadAttrException(source, "corrtype", *tCorrType, + "\"abs[olute]\" or \"rel[ative]\"");
+            }
+            source.requireTagEnd();
+        }
+
+        else if (param == "matrix") {
+            mBigNum = source.getAttribute<double>("bignum", mBigNum);
+            auto tAlgo = source.getAttribute("algorithm");
+            if (tAlgo) {
+                std::string tValue = *tAlgo; boost::algorithm::to_lower(tValue);
+                if (tValue == "slow") mAlgorithm = ALGORITHM_SLOW;
+                else if (tValue == "block") mAlgorithm = ALGORITHM_SLOW;
+                //else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
+                else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\" or \"slow\"");
+            }
+            source.requireTagEnd();
+        } else
+            this->parseStandardConfiguration(source, manager);
+    }
 }
 
 
@@ -111,20 +159,20 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymM
     std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
 
     // Set stiffness matrix and load vector
-    for (auto ttE = mesh->elements.begin(); ttE != mesh->elements.end(); ++ttE)
+    for (auto tE: this->mesh->elements)
     {
         // nodes numbers for the current element
-        size_t tLoLeftNo = ttE->getLoLoIndex();
-        size_t tLoRghtNo = ttE->getUpLoIndex();
-        size_t tUpLeftNo = ttE->getLoUpIndex();
-        size_t tUpRghtNo = ttE->getUpUpIndex();
+        size_t tLoLeftNo = tE.getLoLoIndex();
+        size_t tLoRghtNo = tE.getUpLoIndex();
+        size_t tUpLeftNo = tE.getLoUpIndex();
+        size_t tUpRghtNo = tE.getUpUpIndex();
 
         // element size
-        double tElemWidth = ttE->getUpper0() - ttE->getLower0();
-        double tElemHeight = ttE->getUpper1() - ttE->getLower1();
+        double tElemWidth = tE.getUpper0() - tE.getLower0();
+        double tElemHeight = tE.getUpper1() - tE.getLower1();
 
         // point and material in the middle of the element
-        Vec<2,double> tMidPoint = ttE->getMidpoint();
+        Vec<2,double> tMidPoint = tE.getMidpoint();
         auto tMaterial = geometry->getMaterial(tMidPoint);
 
         // average temperature on the element
@@ -142,7 +190,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymM
         tKy *= tElemWidth; tKy /= tElemHeight;
 
         // load vector: heat densities
-        double tF = 0.25e-12 * tElemWidth * tElemHeight * tHeatDensities[ttE->getIndex()]; // 1e-12 -> to transform um*um into m*m
+        double tF = 0.25e-12 * tElemWidth * tElemHeight * tHeatDensities[tE.getIndex()]; // 1e-12 -> to transform µm² into m²
 
         // set symmetric matrix components
         double tK44, tK33, tK22, tK11, tK43, tK21, tK42, tK31, tK32, tK41;
@@ -247,20 +295,20 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
     std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
 
     // Set stiffness matrix and load vector
-    for (auto ttE = mesh->elements.begin(); ttE != mesh->elements.end(); ++ttE)
+    for (auto tE: this->mesh->elements)
     {
         // nodes numbers for the current element
-        size_t tLoLeftNo = ttE->getLoLoIndex();
-        size_t tLoRghtNo = ttE->getUpLoIndex();
-        size_t tUpLeftNo = ttE->getLoUpIndex();
-        size_t tUpRghtNo = ttE->getUpUpIndex();
+        size_t tLoLeftNo = tE.getLoLoIndex();
+        size_t tLoRghtNo = tE.getUpLoIndex();
+        size_t tUpLeftNo = tE.getLoUpIndex();
+        size_t tUpRghtNo = tE.getUpUpIndex();
 
         // element size
-        double tElemWidth = ttE->getUpper0() - ttE->getLower0();
-        double tElemHeight = ttE->getUpper1() - ttE->getLower1();
+        double tElemWidth = tE.getUpper0() - tE.getLower0();
+        double tElemHeight = tE.getUpper1() - tE.getLower1();
 
         // point and material in the middle of the element
-        Vec<2,double> tMidPoint = ttE->getMidpoint();
+        Vec<2,double> tMidPoint = tE.getMidpoint();
         auto tMaterial = geometry->getMaterial(tMidPoint);
         double r = tMidPoint.rad_r();
 
@@ -279,7 +327,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
         tKy = tKy * tElemWidth / tElemHeight;
 
         // load vector: heat densities
-        double tF = 0.25e-12 * tElemWidth * tElemHeight * tHeatDensities[ttE->getIndex()]; // 1e-12 -> to transform um*um into m*m
+        double tF = 0.25e-12 * tElemWidth * tElemHeight * tHeatDensities[tE.getIndex()]; // 1e-12 -> to transform um*um into m*m
 
         // set symmetric matrix components
         double tK44, tK33, tK22, tK11, tK43, tK21, tK42, tK31, tK32, tK41;
@@ -383,13 +431,13 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
     double tMaxMaxAbsTCorr = 0.,
            tMaxMaxRelTCorr = 0.;
 
-    // mTemperatures = mTemperatures.claim(); // FIXME should we call it or not? this is safer if someone else holds our temperature, but reduces performance!
+#   ifndef NDEBUG
+        if (!mTemperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
+#   endif
+    mTemperatures = mTemperatures.claim(); // FIXME should we call it or not? this is safer if someone else holds our temperature, but reduces performance!
     DataVector<double> tT(mAOrder);
 
     do {
-        ++mLoopNo;
-        ++tLoop;
-
         setMatrix(tA, tT, tTConst, tHFConst, tConvection, tRadiation);
 
         int tInfo = solveMatrix(tA, tT);
@@ -401,6 +449,9 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
 
         if (mMaxAbsTCorr > tMaxMaxAbsTCorr) tMaxMaxAbsTCorr = mMaxAbsTCorr;
         if (mMaxRelTCorr > tMaxMaxRelTCorr) tMaxMaxRelTCorr = mMaxRelTCorr;
+
+        ++mLoopNo;
+        ++tLoop;
 
         // show max correction
         this->writelog(LOG_DATA, "Loop no: %d(%d), max. T update: %.3f (%.3f%%)", tLoop, mLoopNo, mMaxAbsTCorr, 100.*mMaxRelTCorr);
@@ -417,108 +468,6 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
 
     if (mCorrType == CORRECTION_RELATIVE) return mMaxRelTCorr;
     else return mMaxAbsTCorr;
-}
-
-
-template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
-{
-    while (source.requireTagOrEnd())
-    {
-        std::string param = source.getNodeName();
-
-        if (param == "temperature")
-            this->readBoundaryConditions(manager, source, mTConst);
-
-        else if (param == "heatflux")
-            this->readBoundaryConditions(manager, source, mHFConst);
-
-        else if (param == "convection")
-            this->readBoundaryConditions(manager, source, mConvection);
-
-        else if (param == "radiation")
-            this->readBoundaryConditions(manager, source, mRadiation);
-
-        else if (param == "loop") {
-            mTInit = source.getAttribute<double>("inittemp", mTInit);
-            mTCorrLim = source.getAttribute<double>("corrlim", mTCorrLim);
-            auto tCorrType = source.getAttribute("corrtype");
-            if (tCorrType) {
-                std::string tValue = *tCorrType; boost::algorithm::to_lower(tValue);
-                if (tValue == "absolute" || tValue == "abs") mCorrType = CORRECTION_ABSOLUTE;
-                else if (tValue == "relative" || tValue == "rel") mCorrType = CORRECTION_RELATIVE;
-                else throw XMLBadAttrException(source, "corrtype", *tCorrType, + "\"abs[olute]\" or \"rel[ative]\"");
-            }
-            source.requireTagEnd();
-        }
-
-        else if (param == "matrix") {
-            mBigNum = source.getAttribute<double>("bignum", mBigNum);
-            auto tAlgo = source.getAttribute("algorithm");
-            if (tAlgo) {
-                std::string tValue = *tAlgo; boost::algorithm::to_lower(tValue);
-                if (tValue == "slow") mAlgorithm = ALGORITHM_SLOW;
-                else if (tValue == "block") mAlgorithm = ALGORITHM_SLOW;
-                //else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
-                else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\" or \"slow\"");
-            }
-            source.requireTagEnd();
-        } else
-            this->parseStandardConfiguration(source, manager);
-    }
-}
-
-
-template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveTemperatures(DataVector<double>& iT)
-{
-    mMaxAbsTCorr = 0.;
-    mMaxRelTCorr = 0.;
-
-    for (auto ttTemp = mTemperatures.begin(), ttT = iT.begin(); ttT != iT.end(); ++ttTemp, ++ttT)
-    {
-        double tAbsCorr = std::abs(*ttT - *ttTemp); // for boundary with constant temperature this will be zero anyway
-        double tRelCorr = tAbsCorr / *ttT;
-        if (tAbsCorr > mMaxAbsTCorr) mMaxAbsTCorr = tAbsCorr;
-        if (tRelCorr > mMaxRelTCorr) mMaxRelTCorr = tRelCorr;
-    }
-    std::swap(mTemperatures, iT);
-}
-
-
-template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveHeatFluxes()
-{
-    this->writelog(LOG_INFO, "Computing heat fluxes");
-
-    mHeatFluxes.reset(this->mesh->elements.size());
-
-    for (auto ttE = this->mesh->elements.begin(); ttE != this->mesh->elements.end(); ++ttE)
-    {
-        Vec<2,double> tMidPoint = ttE->getMidpoint();
-        auto tMaterial = this->geometry->getMaterial(tMidPoint);
-
-        size_t tLoLeftNo = ttE->getLoLoIndex();
-        size_t tLoRghtNo = ttE->getUpLoIndex();
-        size_t tUpLeftNo = ttE->getLoUpIndex();
-        size_t tUpRghtNo = ttE->getUpUpIndex();
-
-        double tTemp = 0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] +
-                               mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]);
-
-        double tKx, tKy;
-        auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(
-                        this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf)
-                     );
-        if (tLeaf)
-            std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height());
-        else
-            std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
-
-
-        mHeatFluxes[ttE->getIndex()] = vec(
-            - 0.5e6 * tKx * (- mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo]
-                             - mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]), // 1e6 - from um to m
-            - 0.5e6 * tKy * (- mTemperatures[tLoLeftNo] - mTemperatures[tLoRghtNo]
-                             + mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo])); // 1e6 - from um to m
-    }
 }
 
 
@@ -547,6 +496,60 @@ template<typename Geometry2DType> int FiniteElementMethodThermal2DSolver<Geometr
 
     // now iA contains factorized matrix and ioB the solutions
     return info;
+}
+
+
+template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveTemperatures(DataVector<double>& iT)
+{
+    mMaxAbsTCorr = 0.;
+    mMaxRelTCorr = 0.;
+
+    for (auto ttTemp = mTemperatures.begin(), ttT = iT.begin(); ttT != iT.end(); ++ttTemp, ++ttT)
+    {
+        double tAbsCorr = std::abs(*ttT - *ttTemp); // for boundary with constant temperature this will be zero anyway
+        double tRelCorr = tAbsCorr / *ttT;
+        if (tAbsCorr > mMaxAbsTCorr) mMaxAbsTCorr = tAbsCorr;
+        if (tRelCorr > mMaxRelTCorr) mMaxRelTCorr = tRelCorr;
+    }
+    std::swap(mTemperatures, iT);
+}
+
+
+template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveHeatFluxes()
+{
+    this->writelog(LOG_INFO, "Computing heat fluxes");
+
+    mHeatFluxes.reset(this->mesh->elements.size());
+
+    for (auto tE: this->mesh->elements)
+    {
+        Vec<2,double> tMidPoint = tE.getMidpoint();
+        auto tMaterial = this->geometry->getMaterial(tMidPoint);
+
+        size_t tLoLeftNo = tE.getLoLoIndex();
+        size_t tLoRghtNo = tE.getUpLoIndex();
+        size_t tUpLeftNo = tE.getLoUpIndex();
+        size_t tUpRghtNo = tE.getUpUpIndex();
+
+        double tTemp = 0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] +
+                               mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]);
+
+        double tKx, tKy;
+        auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(
+                        this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf)
+                     );
+        if (tLeaf)
+            std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height());
+        else
+            std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
+
+
+        mHeatFluxes[tE.getIndex()] = vec(
+            - 0.5e6 * tKx * (- mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo]
+                             - mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]) / (tE.getUpper0() - tE.getLower0()), // 1e6 - from um to m
+            - 0.5e6 * tKy * (- mTemperatures[tLoLeftNo] - mTemperatures[tLoRghtNo]
+                             + mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]) / (tE.getUpper1() - tE.getLower1())); // 1e6 - from um to m
+    }
 }
 
 

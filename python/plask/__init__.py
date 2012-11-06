@@ -82,7 +82,8 @@ material.complex = lambda mat, **kwargs: material.register_material(mat, complex
 
 ## ## plask.manager ## ##
 
-def read(source, destination=None):
+def load(source, destination=None):
+    #TODO documentation
     if destination is None:
         try:
             destination = __globals
@@ -94,10 +95,10 @@ def read(source, destination=None):
     except KeyError:
         manager = Manager()
         destination['__manager__'] = manager
-    manager.read(source)
+    manager.load(source)
     manager.export(destination)
     material.update_factories() # There might have been some materials in the source file
-    # Set default axes if all read geometries share the same
+    # Set default axes if all loaded geometries share the same
     lst = [ manager.geometries[g].axes for g in manager.geometries ]
     same = lst and lst.count(lst[0]) == len(lst)
     if same: config.axes = lst[0]
