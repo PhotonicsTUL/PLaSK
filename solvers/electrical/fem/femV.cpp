@@ -14,7 +14,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     mVCorrLim(1e-3),
     mLoopNo(0),
     mCorrType(CORRECTION_ABSOLUTE),
-    mHeatMethod(HEAT_BANDGAP), //TODO change to HEAT_JOULES
+    mHeatMethod(HEAT_JOULES),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
     outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
     outHeatDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities),

@@ -343,7 +343,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
             out('  <electrical solver="Fem%s" name="ELECTRICAL">' % suffix)
             out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             if pnjcond is not None:
-                out('    <junction pnjcond="%g,%g"/>' % tuple(pnjcond))
+                out('    <junction pnjcond="%g,%g" heat="wavelength"/>' % tuple(pnjcond))
             save_boundaries('voltage')
             out('  </electrical>')
         out('</solvers>\n')
