@@ -454,7 +454,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
         ++tLoop;
 
         // show max correction
-        this->writelog(LOG_DATA, "Loop no: %d(%d), max. T update: %.3f (%.3f%%)", tLoop, mLoopNo, mMaxAbsTCorr, 100.*mMaxRelTCorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(T)=%.3fK, update=%.3fK(%.3f%%)", tLoop, mLoopNo, mMaxT, mMaxAbsTCorr, 100.*mMaxRelTCorr);
 
     } while (((mCorrType == CORRECTION_ABSOLUTE)? (mMaxAbsTCorr > mTCorrLim) : (mMaxRelTCorr > mTCorrLim)) && (iLoopLim == 0 || tLoop < iLoopLim));
 
@@ -504,12 +504,15 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     mMaxAbsTCorr = 0.;
     mMaxRelTCorr = 0.;
 
+    mMaxT = 0.;
+
     for (auto ttTemp = mTemperatures.begin(), ttT = iT.begin(); ttT != iT.end(); ++ttTemp, ++ttT)
     {
         double tAbsCorr = std::abs(*ttT - *ttTemp); // for boundary with constant temperature this will be zero anyway
         double tRelCorr = tAbsCorr / *ttT;
         if (tAbsCorr > mMaxAbsTCorr) mMaxAbsTCorr = tAbsCorr;
         if (tRelCorr > mMaxRelTCorr) mMaxRelTCorr = tRelCorr;
+        if (*ttT > mMaxT) mMaxT = *ttT;
     }
     std::swap(mTemperatures, iT);
 }

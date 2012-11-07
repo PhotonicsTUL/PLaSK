@@ -160,8 +160,9 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandS
 
         double tKx, tKy;
 
+        auto tMaterial = geometry->getMaterial(tMidPoint);
         auto tRoles = geometry->getRolesAt(tMidPoint);
-        if (tRoles.find("insulator") != tRoles.end()) {
+        if (tRoles.find("insulator") != tRoles.end() || tMaterial->name() == "air") {
             mCond[i] = Vec<2>(5e-15, 5e-15);
             std::tie(tKx, tKy) = geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
         } else {
@@ -180,7 +181,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandS
             } else if (tRoles.find("n-contact") != tRoles.end()) {
                 mCond[i] = Vec<2>(mCondNcontact, mCondNcontact);
             } else
-                mCond[i] = Vec<2>(geometry->getMaterial(tMidPoint)->cond(tTemperature[i]));
+                mCond[i] = Vec<2>(tMaterial->cond(tTemperature[i]));
             tKx = mCond[i].c0;
             tKy = mCond[i].c1;
         }
@@ -371,7 +372,7 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
         ++tLoop;
 
         // show max correction
-        this->writelog(LOG_DATA, "Loop no: %d(%d), max. V update: %.3f (%.3f%%)", tLoop, mLoopNo, mMaxAbsVCorr, 100.*mMaxRelVCorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%.3fV(%.3f%%)", tLoop, mLoopNo, mDV, mMaxAbsVCorr, 100.*mMaxRelVCorr);
 
     } while (((mCorrType == CORRECTION_ABSOLUTE)? (mMaxAbsVCorr > mVCorrLim) : (mMaxRelVCorr > mVCorrLim)) && (iLoopLim == 0 || tLoop < iLoopLim));
 
@@ -423,13 +424,18 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     mMaxAbsVCorr = 0.;
     mMaxRelVCorr = 0.;
 
+    double tMaxV = 0., tMinV = INFINITY;
+
     for (auto ttPot = mPotentials.begin(), ttV = iV.begin(); ttV != iV.end(); ++ttPot, ++ttV)
     {
         double tAbsCorr = std::abs(*ttV - *ttPot); // for boundary with constant temperature this will be zero anyway
         double tRelCorr = tAbsCorr / *ttV;
         if (tAbsCorr > mMaxAbsVCorr) mMaxAbsVCorr = tAbsCorr;
         if (tRelCorr > mMaxRelVCorr) mMaxRelVCorr = tRelCorr;
+        if (*ttV > tMaxV) tMaxV = *ttV;
+        if (*ttV < tMinV) tMinV = *ttV;
     }
+    mDV = tMaxV - tMinV;
     if (mLoopNo == 0) mMaxRelVCorr = 1.;
     std::swap(mPotentials, iV);
 }
@@ -488,10 +494,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             if (this->geometry->hasRoleAt("active", tMidPoint)) {
                 auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
                 double tDact = 1e-6 * tLeaf->getBoundingBox().height(); // m
-                double tJy = 0.5e6 * mCond[i].c1 * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                                 / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
+                double tJy = mCond[i].c1 * fabs(tDVy); // [j] = A/m²
                 mHeatDensities[i] = phys::h_J * phys::c * tJy / ( phys::qe * real(inWavelength())*1e-9 * tDact );
-
             } else
                 mHeatDensities[i] = mCond[i].c0 * tDVx*tDVx + mCond[i].c1 * tDVy*tDVy;
         }

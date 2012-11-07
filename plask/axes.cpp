@@ -33,7 +33,8 @@ AxisNames::Register AxisNames::axisNamesRegister =
         ("x", "y", "z", "yz", "se", "z_up")
         ("z", "x", "y", "xy", "ee", "y_up")
         ("p", "r", "z", "rz", "rad")
-        ("lon", "tran", "up", "absolute", "abs");
+        ("l", "t", "v", "abs1")
+        ("long", "tran", "vert", "absolute", "abs");
 
 const AxisNames& AxisNames::getAbsoluteNames() {
     return axisNamesRegister.get("abs");

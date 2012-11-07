@@ -57,6 +57,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     double mTCorrLim;     ///< Maximum temperature correction accepted as convergence
     double mTInit;        ///< Initial temperature
     int mLoopNo;          ///< Number of completed loops
+    double mMaxT;         ///< Maximum temperature recorded
     double mMaxAbsTCorr;  ///< Maximum absolute temperature correction (useful for single calculations managed by external python script)
     double mMaxRelTCorr;  ///< Maximum relative temperature correction (useful for single calculations managed by external python script)
     double mMaxTCorr;     ///< Maximum absolute temperature correction (useful for calculations with internal loops)

@@ -145,8 +145,9 @@ def read_dan(fname):
     # Header
     name = input.next()[0]                      # structure name (will be used for output file)
     matdb = input.next()[0]                     # materials database spec (All by default)
-    line = input.next()                         # symmetry (0: Cartesian2D, 1: cylindrical) type and length (not used)
+    line = input.next()                         # symmetry (0: Cartesian2D, 1: cylindrical) type and length
     sym = int(line[0])
+    length = float(line[1])
     setting = int(input.next()[0])              # setting (10,11 - temporal calculations, 100,100 - 3D)
     line = input.next()                         # number of defined regions and scale
     nregions = int(line[0])
@@ -278,10 +279,10 @@ def read_dan(fname):
 
     print("")
 
-    return name, sym, axes, materials, regions, heats, boundaries, pnjcond, actlevel
+    return name, sym, length, axes, materials, regions, heats, boundaries, pnjcond, actlevel
 
 
-def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, actlevel):
+def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pnjcond, actlevel):
     '''Write output xpl file'''
 
     print("Writing %s.xpl" % name)
@@ -297,6 +298,11 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
     geometry = ['cartesian2d', 'cylindrical'][sym]
     suffix = ['2D', 'Cyl'][sym]
 
+    if sym == 0:
+        geomore = ' length="%s"' % length
+    else:
+        geomore = ''
+
     # materials
     if materials:
         out('<materials>')
@@ -305,7 +311,7 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
         out('</materials>\n')
 
     # geometry
-    out('<geometry>\n  <%s name="main" axes="%s">' % (geometry, axes))
+    out('<geometry>\n  <%s name="main" axes="%s"%s>' % (geometry, axes, geomore))
     out('    <container>')
     for r in regions:
         r.write(ofile)
@@ -426,12 +432,12 @@ def write_xpl(name, sym, axes, materials, regions, heats, boundaries, pnjcond, a
         out('    plot_geometry(GEO.main, set_limits=True)')
         out('    defmesh = MSG.default(GEO.main.child)')
         out('    plot_mesh(defmesh, color="0.75")')
+        if electr:
+            out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, color="b", marker="D")')
         if therm:
             out('    plot_boundary(THERMAL.temperature_boundary, defmesh, color="r")')
             out('    plot_boundary(THERMAL.convection_boundary, defmesh, color="g")')
             out('    plot_boundary(THERMAL.radiation_boundary, defmesh, color="y")')
-        if electr:
-            out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, color="b", marker="p")')
         out('    gcf().canvas.set_window_title("Default mesh")')
         if therm:
             out('\n    figure()')

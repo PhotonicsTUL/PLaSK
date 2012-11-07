@@ -29,13 +29,13 @@ plask::GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader 
     : expectedSuffix(0), manager(manager), source(source),
       materialSource([&materialsDB](const std::string& mat_name) { return materialsDB.get(mat_name); })
 {
-    axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
+    axisNames = &AxisNames::axisNamesRegister.get("long, tran, vert");
 }
 
 GeometryReader::GeometryReader(Manager &manager, XMLReader &source, const MaterialsSource &materialsSource)
     : expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
 {
-    axisNames = &AxisNames::axisNamesRegister.get("lon, tran, up");
+    axisNames = &AxisNames::axisNamesRegister.get("long, tran, vert");
 }
 
 inline bool isAutoName(const std::string& name) { return !name.empty() && name[0] == '#'; }

@@ -52,6 +52,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double mMaxAbsVCorr;  ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
     double mMaxRelVCorr;  ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
     double mMaxVCorr;     ///< Maximum absolute voltage correction (useful for calculations with internal loops)
+    double mDV;           ///< Maximum voltage
 
     DataVector<Vec<2,double>> mCond;                ///< Cached element conductivities
     DataVector<double> mPotentials;                 ///< Computed potentials
