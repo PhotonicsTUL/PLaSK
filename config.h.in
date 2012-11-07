@@ -9,16 +9,19 @@
 
 #cmakedefine CMAKE_Fortran_COMPILER_WORKS
 #ifdef CMAKE_Fortran_COMPILER_WORKS
-    // Fortran name mangling scheme
-#   include "f77.h"
-
+#   include "f77.h" // Fortran name mangling scheme
+#else // Use most probable mangling
+#    define F77_GLOBAL(name,NAME) name##_
+#    define F77_GLOBAL_(name,NAME) name##_
+#    define F77_MODULE(mod_name,name, mod_NAME,NAME) __##mod_name##_MOD_##name
+#    define F77_MODULE_(mod_name,name, mod_NAME,NAME) __##mod_name##_MOD_##name
+#endif
 #ifdef _WIN32
-#   define F77SUB extern "C" __declspec(dllimport) void
+#    define F77SUB extern "C" __declspec(dllimport) void
 #else
-#   define F77SUB extern "C" void
+#    define F77SUB extern "C" void
 #endif
 
-#endif
 
 #endif // PLASK__CONFIG_H
 // kate: syntax c++;

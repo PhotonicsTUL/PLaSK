@@ -125,12 +125,13 @@ if(MINGW)
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------
-enable_language(Fortran OPTIONAL)
-if (CMAKE_Fortran_COMPILER_WORKS)
-  include(FortranCInterface)
-  FortranCInterface_HEADER("${CMAKE_BINARY_DIR}/include/plask/f77.h" MACRO_NAMESPACE "F77_")
+include(${CMAKE_SOURCE_DIR}/cmake/CheckFortran.cmake)
+if (CMAKE_Fortran_COMPILER)
+    enable_language(Fortran)
+	include(FortranCInterface)
+	FortranCInterface_HEADER("${CMAKE_BINARY_DIR}/include/plask/f77.h" MACRO_NAMESPACE "F77_")
 else ()
-  message(WARNING "Fortran compiler not found! Unable to automatically determine the name mangling scheme.")
+	message(WARNING "Fortran compiler not found! Unable to automatically determine the name mangling scheme. Using the most probable option.")
 endif()
 
 
