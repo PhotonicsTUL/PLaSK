@@ -131,7 +131,7 @@ if (CMAKE_Fortran_COMPILER)
 	include(FortranCInterface)
 	FortranCInterface_HEADER("${CMAKE_BINARY_DIR}/include/plask/f77.h" MACRO_NAMESPACE "F77_")
 else ()
-	message(WARNING "Fortran compiler not found! Unable to automatically determine the name mangling scheme. Using the most probable option.")
+	message("Unable to determine Fortran name mangling scheme! Using the most probable version.")
 endif()
 
 
