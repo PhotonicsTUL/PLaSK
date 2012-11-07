@@ -9,21 +9,6 @@ allows to easily perform complex self-consistent analysis of complete devices.
 '''
 from .plaskcore import *
 
-try:
-    from plask.pylab import *
-except ImportError:
-    has_pylab = False
-    from numpy import *
-else:
-    has_pylab = True
-
-try:
-    from plask.hdf5 import *
-except ImportError:
-    has_hdf5 = False
-else:
-    has_hdf5 = True
-
 ## ## plask.material ## ##
 
 materialdb = material.database = material.MaterialsDB.get_default()
@@ -104,3 +89,19 @@ def load(source, destination=None):
     if same: config.axes = lst[0]
 
 ## ##  ## ##
+
+
+try:
+    from plask.pylab import *
+except ImportError:
+    has_pylab = False
+    from numpy import *
+else:
+    has_pylab = True
+
+try:
+    from plask.hdf5 import *
+except ImportError:
+    has_hdf5 = False
+else:
+    has_hdf5 = True
