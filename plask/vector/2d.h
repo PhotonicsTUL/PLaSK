@@ -150,7 +150,7 @@ struct Vec<2, T> {
 
     /**
      * Get i-th component
-     * WARNING This function does not check if i is valid (for efficiency reasons)
+     * WARNING This function does not check if it is valid (for efficiency reasons)
      * @param i number of coordinate
      * @return i-th component
      */
@@ -161,7 +161,7 @@ struct Vec<2, T> {
 
     /**
      * Get i-th component
-     * WARNING This function does not check if i is valid (for efficiency reasons)
+     * WARNING This function does not check if it is valid (for efficiency reasons)
      * @param i number of coordinate
      * @return i-th component
      */

@@ -1,35 +1,27 @@
-#ifndef PLASK__MODULE_OPTICAL_EFFECTIVE_AMOS_H
-#define PLASK__MODULE_OPTICAL_EFFECTIVE_AMOS_H
+#ifndef AMOS_H
+#define AMOS_H
 
 #include <plask/plask.hpp>
 
-extern "C" void F77_GLOBAL(zairy,ZAIRY)(const double& zr, const double& zi, const int& id, const int& kode,
-                                        double& air, double& aii, int& nz, int& ierr);
+extern "C" void zairy(const double& zr, const double& zi, const long& id, const long& kode,
+                      double& air, double& aii, long& nz, long& ierr);
 
-extern "C" void F77_GLOBAL(zbiry,ZBIRY)(const double& zr, const double& zi, const int& id, const int& kode,
-                                        double& bir, double& bii, int& ierr);
+extern "C" void zbiry(const double& zr, const double& zi, const long& id, const long& kode,
+                      double& bir, double& bii, long& ierr);
 
-extern "C" void F77_GLOBAL(zbesi,ZBESI)(const double& zr, const double& zi, const double& fnu, const int& kode, const int& n,
-                                        double* cyr, double* cyi, int& nz, int& ierr);
+extern "C" void zbesi(const double& zr, const double& zi, const double& fnu, const long& kode, const long& n,
+                      double* cyr, double* cyi, long& nz, long& ierr);
 
-extern "C" void F77_GLOBAL(zbesj,ZBESJ)(const double& zr, const double& zi, const double& fnu, const int& kode, const int& n,
-                                        double* cyr, double* cyi, int& nz, int& ierr);
+extern "C" void zbesj(const double& zr, const double& zi, const double& fnu, const long& kode, const long& n,
+                      double* cyr, double* cyi, long& nz, long& ierr);
 
-extern "C" void F77_GLOBAL(zbesk,ZBESK)(const double& zr, const double& zi, const double& fnu, const int& kode, const int& n,
-                                        double* cyr, double* cyi, int& nz, int& ierr);
+extern "C" void zbesk(const double& zr, const double& zi, const double& fnu, const long& kode, const long& n,
+                      double* cyr, double* cyi, long& nz, long& ierr);
 
-extern "C" void F77_GLOBAL(zbesy,ZBESY)(const double& zr, const double& zi, const double& fnu, const int& kode, const int& n,
-                                        double* cyr, double* cyi, int& nz, double* cwrkr, double* cwrki, int& ierr);
+extern "C" void zbesy(const double& zr, const double& zi, const double& fnu, const long& kode, const long& n,
+                      double* cyr, double* cyi, long& nz, double* cwrkr, double* cwrki, long& ierr);
 
-extern "C" void F77_GLOBAL(zbesh,ZBESH)(const double& zr, const double& zi, const double& fnu, const int& kode, const int& m, const int& n,
-                                        double* cyr, double* cyi, int& nz, int&);
+extern "C" void zbesh(const double& zr, const double& zi, const double& fnu, const long& kode, const long& m, const long& n,
+                      double* cyr, double* cyi, long& nz, long&);
 
-
-
-namespace plask {
-
-
-
-} // namespace plask
-
-#endif // PLASK__MODULE_OPTICAL_EFFECTIVE_AMOS_H
+#endif // AMOS_H
