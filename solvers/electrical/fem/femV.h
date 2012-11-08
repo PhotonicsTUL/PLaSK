@@ -54,7 +54,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double mMaxVCorr;     ///< Maximum absolute voltage correction (useful for calculations with internal loops)
     double mDV;           ///< Maximum voltage
 
-    DataVector<Vec<2,double>> mCond;                ///< Cached element conductivities
+    DataVector<std::pair<double,double>> mCond;     ///< Cached element conductivities
     DataVector<double> mPotentials;                 ///< Computed potentials
     DataVector<Vec<2,double>> mCurrentDensities;    ///< Computed current densities
     DataVector<double> mHeatDensities;              ///< Computed and cached heat source densities
@@ -139,8 +139,8 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double getCondNcontact() const { return mCondNcontact; }
     void setCondNcontact(double iCondNcontact)  { mCondNcontact = iCondNcontact; }
 
-    Vec<2,double> getCondJunc0() const { return Vec<2,double>(mCondJuncX0, mCondJuncY0); }
-    void setCondJunc0(Vec<2,double> iCond)  { mCondJuncX0 = iCond[0]; mCondJuncY0 = iCond[1]; }
+    std::pair<double,double> getCondJunc0() const { return std::make_pair(mCondJuncX0, mCondJuncY0); }
+    void setCondJunc0(const std::pair<double,double>& iCond)  { mCondJuncX0 = iCond.first; mCondJuncY0 = iCond.second; }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
@@ -156,7 +156,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     DataVector<const double> getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
 
-    DataVector<const Vec<2> > getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
+    DataVector<const Vec<2>> getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
 
 };
 

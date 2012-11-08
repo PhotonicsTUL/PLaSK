@@ -25,6 +25,8 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<const Vec<2,dcomplex>>() { return 2; }
     template <> constexpr inline npy_intp type_dim<const Vec<3,double>>() { return 3; }
     template <> constexpr inline npy_intp type_dim<const Vec<3,dcomplex>>() { return 3; }
+    template <> constexpr inline npy_intp type_dim<const std::pair<double,double>>() { return 2; }
+    template <> constexpr inline npy_intp type_dim<const std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex>>() { return 5; }
 
 
     inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.axis1.size(), mesh.axis0.size() }; }
@@ -148,8 +150,6 @@ py::handle<> DataVector_dtype() {
 
 template <typename T, int dim>
 static py::object DataVectorWrap__array__(py::object oself, py::object dtype) {
-
-
 
     const DataVectorWrap<T,dim>* self = py::extract<const DataVectorWrap<T,dim>*>(oself);
 
@@ -324,27 +324,28 @@ void register_data_vector() {
         .def("array", &DataVectorWrap_Array<const T,dim>, "Array formatted by the mesh", py::arg("dtype")=py::object())
         .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values")
     ;
+}
 
-    py::def("Data", &Data, (py::arg("array"), "mesh"), "Create new data from array and mesh");
+template <int dim>
+static inline void register_data_vectors_d() {
+    register_data_vector<double, dim>();
+    register_data_vector<dcomplex, dim>();
+    register_data_vector<Vec<2,double>, dim>();
+    register_data_vector<Vec<2,dcomplex>, dim>();
+    register_data_vector<Vec<3,double>, dim>();
+    register_data_vector<Vec<3,dcomplex>, dim>();
+    register_data_vector<std::pair<double,double>, dim>();
+    register_data_vector<std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex>, dim>();
 }
 
 void register_data_vectors() {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-    register_data_vector<double, 2>();
-    register_data_vector<dcomplex, 2>();
-    register_data_vector< Vec<2,double>, 2 >();
-    register_data_vector< Vec<2,dcomplex>, 2 >();
-    register_data_vector< Vec<3,double>, 2 >();
-    register_data_vector< Vec<3,dcomplex>, 2 >();
+    register_data_vectors_d<2>();
+    register_data_vectors_d<3>();
 
-    register_data_vector<double, 3>();
-    register_data_vector<dcomplex, 3>();
-    register_data_vector< Vec<2,double>, 3 >();
-    register_data_vector< Vec<2,dcomplex>, 3 >();
-    register_data_vector< Vec<3,double>, 3 >();
-    register_data_vector< Vec<3,dcomplex>, 3 >();
+    py::def("Data", &Data, (py::arg("array"), "mesh"), "Create new data from array and mesh");
 }
 
 }} // namespace plask::python
