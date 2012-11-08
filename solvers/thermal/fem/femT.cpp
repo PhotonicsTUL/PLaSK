@@ -417,6 +417,8 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
 {
     this->initCalculation();
 
+    mHeatFluxes.reset();
+
     // store boundary conditions for current mesh
     auto tTConst = mTConst(this->mesh);
     auto tHFConst = mHFConst(this->mesh);
@@ -454,7 +456,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
         ++tLoop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(T)=%.3fK, update=%.3fK(%.3f%%)", tLoop, mLoopNo, mMaxT, mMaxAbsTCorr, 100.*mMaxRelTCorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(T)=%.3fK, update=%.3fK(%.3f%%)", tLoop, mLoopNo, mMaxT, mMaxAbsTCorr, mMaxRelTCorr);
 
     } while (((mCorrType == CORRECTION_ABSOLUTE)? (mMaxAbsTCorr > mTCorrLim) : (mMaxRelTCorr > mTCorrLim)) && (iLoopLim == 0 || tLoop < iLoopLim));
 
@@ -514,13 +516,14 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
         if (tRelCorr > mMaxRelTCorr) mMaxRelTCorr = tRelCorr;
         if (*ttT > mMaxT) mMaxT = *ttT;
     }
+    mMaxRelTCorr *= 100.; // %
     std::swap(mTemperatures, iT);
 }
 
 
 template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveHeatFluxes()
 {
-    this->writelog(LOG_INFO, "Computing heat fluxes");
+    this->writelog(LOG_DETAIL, "Computing heat fluxes");
 
     mHeatFluxes.reset(this->mesh->elements.size());
 

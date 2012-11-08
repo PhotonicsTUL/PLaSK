@@ -122,6 +122,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInvalidate() {
     mCond.reset();
     mPotentials.reset();
+    mCurrentDensities.reset();
+    mHeatDensities.reset();
 }
 
 
@@ -163,7 +165,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandS
         auto tMaterial = geometry->getMaterial(tMidPoint);
         auto tRoles = geometry->getRolesAt(tMidPoint);
         if (tRoles.find("insulator") != tRoles.end() || tMaterial->name() == "air") {
-            mCond[i] = std::make_pair(5e-15, 5e-15);
+            mCond[i] = std::make_pair(0., 0.); // we will assume zero for computation of current and heats
             std::tie(tKx, tKy) = geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
         } else {
             if (tRoles.find("active") != tRoles.end()) {
@@ -338,6 +340,9 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
 {
     this->initCalculation();
 
+    mCurrentDensities.reset();
+    mHeatDensities.reset();
+
     // store boundary conditions for current mesh
     auto tVConst = mVConst(this->mesh);
 
@@ -371,7 +376,7 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
         ++tLoop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%.3fV(%.3f%%)", tLoop, mLoopNo, mDV, mMaxAbsVCorr, 100.*mMaxRelVCorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%.3fV(%.3f%%)", tLoop, mLoopNo, mDV, mMaxAbsVCorr, mMaxRelVCorr);
 
     } while (((mCorrType == CORRECTION_ABSOLUTE)? (mMaxAbsVCorr > mVCorrLim) : (mMaxRelVCorr > mVCorrLim)) && (iLoopLim == 0 || tLoop < iLoopLim));
 
@@ -417,7 +422,6 @@ template<typename Geometry2DType> int FiniteElementMethodElectrical2DSolver<Geom
 }
 
 
-
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::savePotentials(DataVector<double>& iV)
 {
     mMaxAbsVCorr = 0.;
@@ -435,13 +439,14 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
         if (*ttV < tMinV) tMinV = *ttV;
     }
     mDV = tMaxV - tMinV;
+    mMaxRelVCorr *= 100.; // %
     if (mLoopNo == 0) mMaxRelVCorr = 1.;
     std::swap(mPotentials, iV);
 }
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveCurrentDensities()
 {
-    this->writelog(LOG_INFO, "Computing current densities");
+    this->writelog(LOG_DETAIL, "Computing current densities");
 
     mCurrentDensities.reset(this->mesh->elements.size());
 
@@ -461,7 +466,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
 {
-    this->writelog(LOG_INFO, "Computing heat densities");
+    this->writelog(LOG_DETAIL, "Computing heat densities");
 
     mHeatDensities.reset(this->mesh->elements.size());
 
@@ -479,6 +484,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             mHeatDensities[i] = mCond[i].first * tDVx*tDVx + mCond[i].second * tDVy*tDVy;
         }
     } else {
+        boost::optional<double> tDact;
         for (auto tE: this->mesh->elements) {
             size_t i = tE.getIndex();
             size_t tLoLeftNo = tE.getLoLoIndex();
@@ -491,10 +497,15 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                                 / (tE.getUpper1() - tE.getLower1()); // [grad(dV)] = V/m
             auto tMidPoint = tE.getMidpoint();
             if (this->geometry->hasRoleAt("active", tMidPoint)) {
-                auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-                double tDact = 1e-6 * tLeaf->getBoundingBox().height(); // m
+                if (!tDact) {
+                    auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
+                    tDact.reset(1e-6 * tLeaf->getBoundingBox().height()); // m
+                    #ifndef NDEBUG
+                        this->writelog(LOG_DEBUG, "active layer thickness = %1%nm", 1e9 * *tDact);
+                    #endif
+                }
                 double tJy = mCond[i].second * fabs(tDVy); // [j] = A/m²
-                mHeatDensities[i] = phys::h_J * phys::c * tJy / ( phys::qe * real(inWavelength())*1e-9 * tDact );
+                mHeatDensities[i] = phys::h_J * phys::c * tJy / ( phys::qe * real(inWavelength())*1e-9 * *tDact );
             } else
                 mHeatDensities[i] = mCond[i].first * tDVx*tDVx + mCond[i].second * tDVy*tDVy;
         }

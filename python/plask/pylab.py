@@ -142,7 +142,7 @@ def plot_material_param(geometry, param, axes=None, mirror=False, **kwargs):
         if geometry.borders['top'] == 'mirror' or geometry.borders['bottom'] == 'mirror':
             ax = array(grid.axis1)
             grid.axis1 = concatenate((-ax, ax))
-    points = grid.get_midpoints_mesh()
+    points = grid.get_midpoints()
     data = array([ param(geometry.get_material(p)) for p in points ]).reshape((len(points.axis1), len(points.axis0)))
     return pcolor(array(grid.axis0), array(grid.axis1), data, antialiased=True, edgecolors='none', **kwargs)
 

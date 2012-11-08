@@ -14,4 +14,4 @@ else(WIN32)
     install(TARGETS camos LIBRARY DESTINATION lib COMPONENT solvers)
 endif(WIN32)
 
-install(FILES cmaos.h DESTINATION include/camos COMPONENT dev)
+install(FILES camos.h DESTINATION include/camos COMPONENT dev)
