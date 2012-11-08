@@ -164,28 +164,23 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandS
 
         auto tMaterial = geometry->getMaterial(tMidPoint);
         auto tRoles = geometry->getRolesAt(tMidPoint);
-        if (tRoles.find("insulator") != tRoles.end() || tMaterial->name() == "air") {
-            mCond[i] = std::make_pair(0., 0.); // we will assume zero for computation of current and heats
-            std::tie(tKx, tKy) = geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
-        } else {
-            if (tRoles.find("active") != tRoles.end()) {
-                if (mLoopNo == 0)
-                    mCond[i] = std::make_pair(mCondJuncX0, mCondJuncY0);
-                else {
-                    auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-                    double tDact = 1e-6 * tLeaf->getBoundingBox().height();
-                    double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                                         / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
-                    mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
-                }
-            } else if (tRoles.find("p-contact") != tRoles.end()) {
-                mCond[i] = std::make_pair(mCondPcontact, mCondPcontact);
-            } else if (tRoles.find("n-contact") != tRoles.end()) {
-                mCond[i] = std::make_pair(mCondNcontact, mCondNcontact);
-            } else
-                mCond[i] = tMaterial->cond(tTemperature[i]);
-            std::tie(tKx, tKy) = mCond[i];
-        }
+        if (tRoles.find("active") != tRoles.end()) {
+            if (mLoopNo == 0)
+                mCond[i] = std::make_pair(mCondJuncX0, mCondJuncY0);
+            else {
+                auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
+                double tDact = 1e-6 * tLeaf->getBoundingBox().height();
+                double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
+                                                        / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
+                mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
+            }
+        } else if (tRoles.find("p-contact") != tRoles.end()) {
+            mCond[i] = std::make_pair(mCondPcontact, mCondPcontact);
+        } else if (tRoles.find("n-contact") != tRoles.end()) {
+            mCond[i] = std::make_pair(mCondNcontact, mCondNcontact);
+        } else
+            mCond[i] = tMaterial->cond(tTemperature[i]);
+        std::tie(tKx, tKy) = mCond[i];
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -268,29 +263,23 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Ban
         double tKx, tKy;
 
         auto tRoles = geometry->getRolesAt(tMidPoint);
-        if (tRoles.find("insulator") != tRoles.end()) {
-            mCond[i] = std::make_pair(5e-15, 5e-15);
-            std::tie(tKx, tKy) = geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
-        } else {
-            if (tRoles.find("active") != tRoles.end()) {
-                if (mLoopNo == 0)
-                    mCond[i] = std::make_pair(mCondJuncX0, mCondJuncY0);
-                else {
-                    auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-                    double tDact = 1e-6 * tLeaf->getBoundingBox().height();
-                    double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                                         / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
-                    mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
-                }
-            } else if (tRoles.find("p-contact") != tRoles.end()) {
-                mCond[i] = std::make_pair(mCondPcontact, mCondPcontact);
-            } else if (tRoles.find("n-contact") != tRoles.end()) {
-                mCond[i] = std::make_pair(mCondNcontact, mCondNcontact);
-            } else
-                mCond[i] = geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
-            tKx = mCond[i].first;
-            tKy = mCond[i].second;
-        }
+        if (tRoles.find("active") != tRoles.end()) {
+            if (mLoopNo == 0)
+                mCond[i] = std::make_pair(mCondJuncX0, mCondJuncY0);
+            else {
+                auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
+                double tDact = 1e-6 * tLeaf->getBoundingBox().height();
+                double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
+                                                        / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
+                mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
+            }
+        } else if (tRoles.find("p-contact") != tRoles.end()) {
+            mCond[i] = std::make_pair(mCondPcontact, mCondPcontact);
+        } else if (tRoles.find("n-contact") != tRoles.end()) {
+            mCond[i] = std::make_pair(mCondNcontact, mCondNcontact);
+        } else
+            mCond[i] = geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
+        std::tie(tKx, tKy) = mCond[i];
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -477,11 +466,15 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             size_t tLoRghtNo = tE.getUpLoIndex();
             size_t tUpLeftNo = tE.getLoUpIndex();
             size_t tUpRghtNo = tE.getUpUpIndex();
-            double tDVx = 0.5e6 * (- mPotentials[tLoLeftNo] + mPotentials[tLoRghtNo] - mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                / (tE.getUpper0() - tE.getLower0()); // [grad(dV)] = V/m
-            double tDVy = 0.5e6 * (- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                / (tE.getUpper1() - tE.getLower1()); // [grad(dV)] = V/m
-            mHeatDensities[i] = mCond[i].first * tDVx*tDVx + mCond[i].second * tDVy*tDVy;
+            if (this->geometry->hasRoleAt("insulator", tE.getMidpoint()))
+                mHeatDensities[i] = 0.;
+            else {
+                double tDVx = 0.5e6 * (- mPotentials[tLoLeftNo] + mPotentials[tLoRghtNo] - mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
+                                    / (tE.getUpper0() - tE.getLower0()); // [grad(dV)] = V/m
+                double tDVy = 0.5e6 * (- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
+                                    / (tE.getUpper1() - tE.getLower1()); // [grad(dV)] = V/m
+                mHeatDensities[i] = mCond[i].first * tDVx*tDVx + mCond[i].second * tDVy*tDVy;
+            }
         }
     } else {
         boost::optional<double> tDact;
@@ -496,7 +489,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             double tDVy = 0.5e6 * (- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
                                 / (tE.getUpper1() - tE.getLower1()); // [grad(dV)] = V/m
             auto tMidPoint = tE.getMidpoint();
-            if (this->geometry->hasRoleAt("active", tMidPoint)) {
+            auto tRoles =this->geometry->getRolesAt(tMidPoint);
+            if (tRoles.find("active") != tRoles.end()) {
                 if (!tDact) {
                     auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
                     tDact.reset(1e-6 * tLeaf->getBoundingBox().height()); // m
@@ -506,7 +500,9 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                 }
                 double tJy = mCond[i].second * fabs(tDVy); // [j] = A/m²
                 mHeatDensities[i] = phys::h_J * phys::c * tJy / ( phys::qe * real(inWavelength())*1e-9 * *tDact );
-            } else
+            } else if (tRoles.find("insulator") != tRoles.end())
+                mHeatDensities[i] = 0.;
+            else
                 mHeatDensities[i] = mCond[i].first * tDVx*tDVx + mCond[i].second * tDVy*tDVy;
         }
     }
