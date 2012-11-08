@@ -1,5 +1,6 @@
+#include <camos/camos.h>
+
 #include "efm.h"
-#include "amos/amos.h"
 
 using plask::dcomplex;
 

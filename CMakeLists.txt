@@ -148,8 +148,13 @@ file(GLOB_RECURSE python_plask_py python/plask/*.py)
 # GUI sources
 file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 
-# external libs which are compiled by us:
-#   irrXML
+
+# ---------- external libraries built by us -----------------------------------------
+
+# CAMOS
+add_subdirectory(extlib/camos)
+
+# irrXML
 file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 
 

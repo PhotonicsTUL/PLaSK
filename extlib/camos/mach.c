@@ -1,11 +1,11 @@
-/* C source for I1MACH -- remove the * in column 1 */
-/* Note that some values may need changing. */
 #include <stdlib.h>
 #include <stdio.h>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
 
+/* C source for I1MACH  */
+/* Note that some values may need changing. */
 long i1mach(long *i)
 {
 	switch(*i){
@@ -29,3 +29,18 @@ long i1mach(long *i)
 	fprintf(stderr, "invalid argument: i1mach(%ld)\n", *i);
 	exit(1);return 0; /* some compilers demand return values */
 }
+
+/* Standard C source for D1MACH */
+double d1mach(long *i)
+{
+    switch(*i){
+      case 1: return DBL_MIN;
+      case 2: return DBL_MAX;
+      case 3: return DBL_EPSILON/FLT_RADIX;
+      case 4: return DBL_EPSILON;
+      case 5: return log10((double)FLT_RADIX);
+      }
+    fprintf(stderr, "invalid argument: d1mach(%ld)\n", *i);
+    exit(1); return 0.; /* some compilers demand return values */
+}
+
