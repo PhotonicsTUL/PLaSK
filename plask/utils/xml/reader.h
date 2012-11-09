@@ -126,6 +126,12 @@ class XMLReader {
   public:
 
     /**
+     * Construct XML reader to read XML from given source.
+     * @param source source of XML data, will be delete by this after use by this
+     */
+    XMLReader(DataSource* source);
+    
+    /**
      * Construct XML reader to read XML from given stream.
      * @param istream stream to read, will be closed and delete by this
      */
@@ -186,6 +192,18 @@ class XMLReader {
      * @return current type of node
      */
     NodeType getNodeType() const { ensureHasCurrent(); return getCurrent().type; }
+    
+    /**
+     * Get line number where current element starts.
+     * @return line number of current element start
+     */
+    unsigned getLineNr() const { ensureHasCurrent(); return getCurrent().lineNr; }
+    
+    /**
+     * Get column number where current element starts.
+     * @return column number of current element start
+     */
+    unsigned getColumnNr() const { ensureHasCurrent(); return getCurrent().columnNr; }
 
     /**
      * Reads forward to the next xml node.

@@ -94,25 +94,32 @@ bool XMLReader::readSome() {
 }
 
 void XMLReader::initParser() {
+    parser = XML_ParserCreate(NULL);
     XML_SetUserData(parser, this);
     XML_SetElementHandler(parser, &XMLReader::startTag, &XMLReader::endTag);
     XML_SetCharacterDataHandler(parser, &XMLReader::characterData);
 }
 
+XMLReader::XMLReader(DataSource* source):
+    source(source), check_if_all_attributes_were_read(true)
+{
+    initParser();
+}
+
 XMLReader::XMLReader(std::istream *istream):
-    source(new StreamDataSource(istream)), parser(XML_ParserCreate(NULL)), check_if_all_attributes_were_read(true)
+    source(new StreamDataSource(istream)), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(const char* file_name):
-    source(new StreamDataSource(new std::ifstream(file_name))), parser(XML_ParserCreate(NULL)), check_if_all_attributes_were_read(true)
+    source(new StreamDataSource(new std::ifstream(file_name))), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(FILE* file):
-    source(new CFileDataSource(file)), parser(XML_ParserCreate(NULL)), check_if_all_attributes_were_read(true)
+    source(new CFileDataSource(file)), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
