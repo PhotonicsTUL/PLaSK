@@ -1,16 +1,25 @@
 #ifndef PLASK__UTILS_XML_READER_H
 #define PLASK__UTILS_XML_READER_H
 
-#include <irrxml/irrXML.h>
-
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
 #include <vector>
 #include <unordered_set>
+#include <map>
 
 #include "exceptions.h"
+
+//this is copy paste from expat.h, it allow to not include expat.h in header
+#ifdef __cplusplus
+extern "C" {
+#endif
+struct XML_ParserStruct;
+typedef struct XML_ParserStruct *XML_Parser;
+#ifdef __cplusplus
+}
+#endif
 
 namespace plask {
 
@@ -26,32 +35,101 @@ class XMLReader {
 
     /// Enumeration for all xml nodes which are parsed by XMLReader
     enum NodeType {
-            NODE_NONE = irr::io::EXN_NONE,                  ///< No xml node. This is usually the node if you did not read anything yet.
-            NODE_ELEMENT = irr::io::EXN_ELEMENT,            ///< A xml element, like \<foo>
-            NODE_ELEMENT_END = irr::io::EXN_ELEMENT_END,    ///< End of an xml element, like \</foo>
-            NODE_TEXT = irr::io::EXN_TEXT,                  ///< Text within a xml element: \<foo> this is the text. \</foo>
-            NODE_COMMENT =  irr::io::EXN_COMMENT,           ///< An xml comment like &lt;!-- I am a comment --&gt; or a DTD definition.
-            NODE_CDATA =  irr::io::EXN_CDATA,               ///< An xml cdata section like &lt;![CDATA[ this is some CDATA ]]&gt;
-            NODE_UNKNOWN = irr::io::EXN_UNKNOWN             ///< Unknown element
+    //        NODE_NONE = irr::io::EXN_NONE,                  //< No xml node. This is usually the node if you did not read anything yet.
+            NODE_ELEMENT = 1 ,             ///< A xml element, like \<foo>
+            NODE_ELEMENT_END = 2,          ///< End of an xml element, like \</foo>
+            NODE_TEXT = 4                  ///< Text within a xml element: \<foo> this is the text. \</foo>
+    //        NODE_COMMENT =  irr::io::EXN_COMMENT,           //< An xml comment like &lt;!-- I am a comment --&gt; or a DTD definition.
+    //        NODE_CDATA =  irr::io::EXN_CDATA,               //< An xml cdata section like &lt;![CDATA[ this is some CDATA ]]&gt;
+    //        NODE_UNKNOWN = irr::io::EXN_UNKNOWN             //< Unknown element
+    };
+
+    struct DataSource {
+        /**
+         * @brief read
+         * @param buff
+         * @param buf_size
+         * @return number of bytes read, less than @p buf_size only on end of data
+         */
+        virtual std::size_t read(char* buff, std::size_t buf_size) = 0;
     };
 
   private:
-    /// xml reader, low level
-    irr::io::IrrXMLReader* irrReader;
 
-    /// current type of node
-    NodeType currentNodeType;
+    static void startTag(void *data, const char *element, const char **attribute);
+    static void endTag(void *data, const char *element);
+    static void characterData(void* data, const char *string, int string_len);
+
+    std::unique_ptr<DataSource> source;
+
+    struct State {
+
+        unsigned lineNr, columnNr;
+
+        std::string text;   ///< text or tag name
+
+        NodeType type;
+
+        std::map<std::string, std::string> attributes;
+
+        State(NodeType type, unsigned lineNr, unsigned columnNr, const std::string& text): lineNr(lineNr), columnNr(columnNr), text(text), type(type) {}
+
+        bool hasWhiteText() {
+            for (std::size_t i = 0; i < text.size(); ++i)
+                if (!isspace(text[i])) return false;
+            return true;
+        }
+    };
+
+    State& appendState(NodeType type, const std::string& text);
+
+    /// parsed states (if last one is NODE_TEXT than in can be not complatly parsed)
+    std::deque<State> states;
+
+    /// xml reader, low level
+    XML_Parser parser;
 
     /// path from root to current tag
     std::vector<std::string> path;
 
-    /// attributes which was read
+    /// attributes which was read in current tag
     std::unordered_set<std::string> read_attributes;
 
     /// true if the reader should check if there are no spurious attributes in the current element
     bool check_if_all_attributes_were_read;
 
+    bool hasCurrent() const {
+        if (states.empty()) return false;
+        return states.size() > 1 || states.front().type != NODE_TEXT;
+    }
+
+    void ensureHasCurrent() const {
+        if (!hasCurrent()) throw XMLException("XML reader: no current node (missing first read() call?)");
+    }
+
+    const State& getCurrent() const {
+        return states.front();
+    }
+
+    inline bool strToBool(std::string& str, const std::string& name) const {
+        boost::algorithm::to_lower(str);
+        if (str == "yes" || str == "true" || str == "1") return true;
+        else if (str == "no" || str == "false" || str == "0") return false;
+        else throw XMLBadAttrException(*this, name, str);
+    }
+
+    /// @return @c true if has more data to read
+    bool readSome();
+
+    void initParser();
+
   public:
+
+    /**
+     * Construct XML reader to read XML from given stream.
+     * @param istream stream to read, will be closed and delete by this
+     */
+    XMLReader(std::istream* istream);
 
     /**
      * Construct XML reader to read XML from given file.
@@ -65,11 +143,11 @@ class XMLReader {
      */
     XMLReader(FILE* file);
 
-    /**
+    /*
      * Construct XML reader to read XML from given @p input stream.
      * @param input input stream
      */
-    XMLReader(std::istream& input);
+    //XMLReader(std::istream& input);
 
 #if (__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X__)
     /**
@@ -95,7 +173,7 @@ class XMLReader {
   public:
 #endif
 
-    ~XMLReader() { delete irrReader; }  //if irrReader is not nullptr throw exception if path is not empty
+    ~XMLReader();
 
     /**
      * Swap states of @c this and @p to_swap.
@@ -107,28 +185,28 @@ class XMLReader {
      * Get current type of node.
      * @return current type of node
      */
-    NodeType getNodeType() const { return currentNodeType; }
+    NodeType getNodeType() const { ensureHasCurrent(); return getCurrent().type; }
 
     /**
      * Reads forward to the next xml node.
      * @return @c false only if there is no further node.
-    */
+     */
     bool read();
 
-    /**
+    /*
      * Check if node is empty, like \<foo /\>.
      *
      * Note that empty nodes are comunicate by parser two times: as NODE_ELEMENT and next as NODE_ELEMENT_END.
      * So for \<foo /\> parser work just like for \<foo>\</foo> and only this method allow to check which notation was used.
      * @return if an element is an empty element, like \<foo /\>
      */
-    bool isEmptyElement() const { return irrReader->isEmptyElement(); }
+    //bool isEmptyElement() const { return irrReader->isEmptyElement(); }
 
     /**
      * Get vector of names of all opened tags from root to current one.
      * @return vector of names of all opened tags, first is root, last is current tag
      */
-    const std::vector<std::string> getPath() const { return path; }
+    const std::vector<std::string>& getPath() const { return path; }
 
     /**
      * Get level of current node. Root has level 0, children of root have level 1, and so on.
@@ -138,79 +216,37 @@ class XMLReader {
 
     /**
      * Returns attribute count of the current XML node.
-
+     *
      * This is usually non 0 if the current node is NODE_ELEMENT, and the element has attributes.
      * @return amount of attributes of this xml node.
      */
-    int getAttributeCount() const { return irrReader->getAttributeCount(); }
-
-    /* Returns name of an attribute.
-    @param idx: Zero based index, should be something between 0 and getAttributeCount()-1.
-    @return Name of the attribute, 0 if an attribute with this index does not exist. */
-    //const char* getAttributeNameC(int idx) const { return irrReader->getAttributeName(idx); }
-
-    /* Returns the value of an attribute.
-     @param idx: Zero based index, should be something between 0 and getAttributeCount()-1.
-     @return Value of the attribute, 0 if an attribute with this index does not exist. */
-    //const char* getAttributeValueC(int idx) const { return irrReader->getAttributeValue(idx); }
-
-    /**
-     * Returns the value of an attribute.
-     * @param name: Name of the attribute.
-     * @return Value of the attribute, 0 if an attribute with this name does not exist.
-     */
-    const char* getAttributeValueC(const std::string& name) const;
+    std::size_t getAttributeCount() const { ensureHasCurrent(); return getCurrent().attributes.size(); }
 
     /**
      * Mark attribute with given name as read, so parser does not throw an exception if this attribute will be not read.
      * @param name name of attribute to ignore
      */
-    void ignoreAttribute(const std::string& name) { getAttributeValueC(name); }
+    void ignoreAttribute(const std::string& name) { getAttribute(name); }
 
     /**
      * Allow to have unread attributes.
      */
     void ignoreAllAttributes() { check_if_all_attributes_were_read = false; }
 
-    /* Returns the value of an attribute in a safe way.
-
-    Like getAttributeValue(), but does not
-    return 0 if the attribute does not exist. An empty string ("") is returned then.
-    @param name: Name of the attribute.
-    @return Value of the attribute, and "" if an attribute with this name does not exist */
-    //const char* getAttributeValueOrEmptyC(const char* name) const { return irrReader->getAttributeValueSafe(name); }
-
-    //bool hasAttribute(const char* name) const { return getAttributeValueC(name) != 0; }
-
     /**
      * Check if current node has attribute with given @p name.
      * @param name attribute name
      * @return @c true only if current node has attribute with given @p name
      */
-    bool hasAttribute(const std::string& name) const { return getAttributeValueC(name) != 0; }
+    bool hasAttribute(const std::string& name) const { return getAttribute(name); }
 
     /**
      * Returns the name of the current node.
      *
-     * Only non null, if the node type is NODE_ELEMENT.
-     * @return name of the current node or 0 if the node has no name.
-     */
-    const char* getNodeNameC() const { return irrReader->getNodeName(); }
-
-    /**
-     * Returns the name of the current node.
-     *
-     * Bechaviour is undefined if name is not defined.
+     * Throw exception if it is not defined.
      * @return name of the current node
      */
-    std::string getNodeName() const { return irrReader->getNodeName(); }
-
-    /** Returns data of the current node.
-     *
-     * Only non null if the node has some data and it is of type NODE_TEXT or NODE_UNKNOWN.
-     * @return data of the current node
-     */
-    const char* getNodeDataC() const { return irrReader->getNodeData(); }
+    std::string getNodeName() const { return getCurrent().text; }
 
     /**
      * Check if current node is NODE_TEXT (throw exception if it's not) and get node data (text content).
@@ -236,13 +272,18 @@ class XMLReader {
      */
     template <typename T>
     inline T getAttribute(const std::string& name, const T& default_value) const {
-        const char* attr_str = getAttributeValueC(name);
-        if (attr_str == nullptr) return default_value;
+        boost::optional<std::string> attr_str = getAttribute(name);
+        if (attr_str) {
+            return boost::lexical_cast<T>(*attr_str);
+        } else
+            return default_value;
+
+        /*if (attr_str == nullptr) return default_value;
         try {
             return boost::lexical_cast<T>(attr_str);
         } catch (boost::bad_lexical_cast) {
             throw XMLBadAttrException(*this, name, attr_str);
-        }
+        }*/
     }
 
     /**
@@ -262,12 +303,12 @@ class XMLReader {
      */
     template <typename T>
     inline boost::optional<T> getAttribute(const std::string& name) const {
-        const char* attr_str = getAttributeValueC(name);
-        if (attr_str == nullptr) return boost::optional<T>();
+        boost::optional<std::string> attr_str = getAttribute(name);
+        if (!attr_str) return boost::optional<T>();
         try {
-            return boost::lexical_cast<T>(attr_str);
+            return boost::lexical_cast<T>(*attr_str);
         } catch (boost::bad_lexical_cast) {
-            throw XMLBadAttrException(*this, name, attr_str);
+            throw XMLBadAttrException(*this, name, *attr_str);
         }
     }
 
@@ -354,11 +395,11 @@ class XMLReader {
         return boost::lexical_cast<T>(requireText());
     }
 
-    /**
+    /*
      * Skip XML comments.
      * @return @c true if read non-comment or @c false if XML data end
      */
-    bool skipComments();
+    //bool skipComments();
 
     /**
      * Skip everything up to element with required type on required level.
@@ -383,28 +424,14 @@ class XMLReader {
 
 template <>
 inline bool XMLReader::getAttribute<bool>(const std::string& name, const bool& default_value) const {
-    const char* cstr = getAttributeValueC(name);
-    if (cstr != nullptr) {
-        std::string str(cstr);
-        boost::algorithm::to_lower(str);
-        if (str == "yes" || str == "true" || str == "1") return true;
-        else if (str == "no" || str == "false" || str == "0") return false;
-        else throw XMLBadAttrException(*this, name, str);
-    }
-    return default_value;
+    boost::optional<std::string> ostr = getAttribute(name);
+    if (ostr) return strToBool(*ostr, name); else return default_value;
 }
 
 template <>
 inline boost::optional<bool> XMLReader::getAttribute<bool>(const std::string& name) const {
-    const char* cstr = getAttributeValueC(name);
-    if (cstr != nullptr) {
-        std::string str(cstr);
-        boost::algorithm::to_lower(str);
-        if (str == "yes" || str == "true" || str == "1") return true;
-        else if (str == "no" || str == "false" || str == "0") return false;
-        else throw XMLBadAttrException(*this, name, str);
-    }
-    return boost::optional<bool>();
+    boost::optional<std::string> ostr = getAttribute(name);
+    if (ostr) return boost::optional<bool>(strToBool(*ostr, name)); else return boost::optional<bool>();
 }
 
 template <>

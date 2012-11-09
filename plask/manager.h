@@ -293,21 +293,21 @@ private:
 
     /**
      * Load geometry from (XML) stream.
-     * @param input stream to read from, with XML content
+     * @param input stream to read from, with XML content, will be closed and deleted after read
      * @param materialsDB materials database, used to get materials by name for leafs
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromStream(std::istream &input, const MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromStream(std::istream* input, const MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Load geometry from (XML) stream.
-     * @param input stream to read from, with XML content
+     * @param input stream to read from, with XML content, will be closed and deleted after read
      * @param materialsSource source of materials, used to get materials by name for leafs
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromStream(std::istream &input, const MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromStream(std::istream* input, const MaterialsSource& materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Load geometry from string which consist of XML.

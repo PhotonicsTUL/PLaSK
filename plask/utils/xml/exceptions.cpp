@@ -19,9 +19,7 @@ XMLUnexpectedElementException::XMLUnexpectedElementException(const XMLReader& re
     XMLException(reader, "expected " + what_is_expected + ", got " + (
                     reader.getNodeType() == XMLReader::NODE_ELEMENT ?     ("<"+reader.getNodeName()+">") :
                     reader.getNodeType() == XMLReader::NODE_ELEMENT_END ? ("</"+reader.getNodeName()+">") :
-                    reader.getNodeType() == XMLReader::NODE_TEXT ?         "text" :
-                    reader.getNodeType() == XMLReader::NODE_CDATA ?        "CDATA" :
-                    "unknown node"
+                    "text"
                  ) + " instead") {}
 
 

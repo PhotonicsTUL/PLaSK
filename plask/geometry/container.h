@@ -358,9 +358,7 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
                 } else {
                     without_child_param_add(reader.readObject< typename ConstructedType::ChildType >());
                 }
-
-            case XMLReader::NODE_COMMENT:
-                break;  //skip comments
+                break;
 
             default:
                 throw XMLUnexpectedElementException(reader.source, "<child> or geometry object tag");

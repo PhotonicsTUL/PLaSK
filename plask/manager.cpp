@@ -85,24 +85,22 @@ void Manager::loadFromReader(XMLReader &reader, const MaterialsSource &materials
     load(reader, materialsSource, load_from_cb);
 }
 
-void Manager::loadFromStream(std::istream &input, const MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
+void Manager::loadFromStream(std::istream* input, const MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
     XMLReader reader(input);
     loadFromReader(reader, materialsDB, load_from_cb);
 }
 
-void Manager::loadFromStream(std::istream &input, const MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
+void Manager::loadFromStream(std::istream* input, const MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
     XMLReader reader(input);
     loadFromReader(reader, materialsSource, load_from_cb);
 }
 
 void Manager::loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
-    std::istringstream stream(input_XML_str);
-    loadFromStream(stream, materialsDB, load_from_cb);
+    loadFromStream(new std::istringstream(input_XML_str), materialsDB, load_from_cb);
 }
 
 void Manager::loadFromXMLString(const std::string &input_XML_str, const MaterialsSource &materialsSource, const LoadFunCallbackT& load_from_cb) {
-    std::istringstream stream(input_XML_str);
-    loadFromStream(stream, materialsSource, load_from_cb);
+    loadFromStream(new std::istringstream(input_XML_str), materialsSource, load_from_cb);
 }
 
 void Manager::loadFromFile(const std::string &fileName, const MaterialsDB& materialsDB) {

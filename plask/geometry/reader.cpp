@@ -16,8 +16,8 @@ void GeometryReader::registerObjectReader(const std::string &tag_name, object_re
 
 GeometryReader::ReadAxisNames::ReadAxisNames(GeometryReader &reader)
     : reader(reader), old(reader.axisNames) {
-    const char* axis = reader.source.getAttributeValueC("axes");
-    if (axis) reader.axisNames = &AxisNames::axisNamesRegister.get(axis);
+    boost::optional<std::string> axis = reader.source.getAttribute("axes");
+    if (axis) reader.axisNames = &AxisNames::axisNamesRegister.get(*axis);
 }
 
 GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, const char* new_expected_suffix)

@@ -117,8 +117,10 @@ if(BUILD_PYTHON)
 endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
-
 include_directories(${Boost_INCLUDE_DIRS})
+
+find_package(EXPAT REQUIRED)
+include_directories(${EXPAT_INCLUDE_DIR})
 
 if(MINGW)
     add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
@@ -162,7 +164,7 @@ file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
 
 #add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
 add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src})
-target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY}) # ${Boost_THREAD_LIBRARY}
+target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES}) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
     target_link_libraries(libplask kernel32)
     install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
