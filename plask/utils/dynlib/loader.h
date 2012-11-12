@@ -1,7 +1,7 @@
 #ifndef PLASK__UTILS_DYNLIB_LOADER_H
 #define PLASK__UTILS_DYNLIB_LOADER_H
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#ifdef _WIN32
 #define PLASK__UTILS_PLUGIN_WINAPI
 #include <windows.h>
 #else

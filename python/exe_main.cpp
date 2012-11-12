@@ -1,4 +1,4 @@
-#include <cmath>
+﻿#include <cmath>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 namespace py = boost::python;
@@ -13,6 +13,10 @@ namespace py = boost::python;
 #include <plask/exceptions.h>
 #include <plask/utils/system.h>
 #include "plask/python_manager.h"
+
+#ifdef _WIN32
+#   include <windows.h>
+#endif
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
@@ -200,6 +204,10 @@ void endPlask() {
 //******************************************************************************
 int main(int argc, const char *argv[])
 {
+#   ifdef _WIN32
+        SetDllDirectory(plask::exePath().c_str());
+#   endif
+
     // Test if we want to import plask into global namespace
     bool from_import = true;
     bool force_interactive = false;
