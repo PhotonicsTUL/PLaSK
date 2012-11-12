@@ -163,14 +163,11 @@ file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 # CAMOS
 add_subdirectory(extlib/camos)
 
-# irrXML
-file(GLOB_RECURSE plask_extlib_irrxml_src FOLLOW_SYMLINKS extlib/irrxml/*.cpp)
-
 
 # ---------- plask library --------------------------------------------
 
-#add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src} ${plask_headers})
-add_library(libplask SHARED ${plask_src} ${plask_extlib_irrxml_src})
+#add_library(libplask SHARED ${plask_src} ${plask_headers})
+add_library(libplask SHARED ${plask_src})
 target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES}) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
     target_link_libraries(libplask kernel32)
