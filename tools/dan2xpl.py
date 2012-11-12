@@ -459,7 +459,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             if actlevel is not False:
                 out('\n    figure()')
                 out('    plot(actgrid.axis0, abs(acurrent.array()[0,:,1]))')
-                out('    xlabel(u"%s [\xb5m]")' % axes[0])
+                out('    xlabel(u"%s [\\xb5m]")' % axes[0])
                 out('    ylabel("current density [kA/cm$^2$]")')
                 out('    for x in mesh.Rectilinear2D.SimpleGenerator()(GEO.main.child).axis0:')
                 out('        axvline(x, ls=":", color="k")')

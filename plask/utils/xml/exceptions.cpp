@@ -4,11 +4,11 @@
 namespace plask {
 
 XMLException::XMLException(const XMLReader& reader, const std::string& msg):
-    std::runtime_error("In " +
-        ( (reader.getNodeType() == XMLReader::NODE_ELEMENT)? "<" + reader.getNodeName() + ">" :
-          (reader.getNodeType() == XMLReader::NODE_ELEMENT_END)? "</" + reader.getNodeName() + ">" :
-          "\"" + reader.getNodeName() + "\"" )
-        + ": " + msg) {}
+    std::runtime_error("XML line " + boost::lexical_cast<std::string>(reader.getLineNr()) +
+                       ((reader.getNodeType() == XMLReader::NODE_ELEMENT)? " in <" + reader.getNodeName() + ">" :
+                        (reader.getNodeType() == XMLReader::NODE_ELEMENT_END)? " in </" + reader.getNodeName() + ">" :
+                        "") +
+                       ": " + msg) {}
 
 XMLException::XMLException(const std::string& where, const std::string& msg):
     std::runtime_error("In " + where + ": " + msg) {}

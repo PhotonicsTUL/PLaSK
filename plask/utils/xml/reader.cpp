@@ -85,9 +85,8 @@ bool XMLReader::readSome() {
     std::size_t read = source->read(buff, buff_size);
     bool has_more = buff_size == read;
     if (XML_Parse(parser, buff, read, !has_more) == XML_STATUS_ERROR) {
-        throw XMLException("XML parse error at line " +
-                           boost::lexical_cast<std::string>(XML_GetCurrentLineNumber(parser))
-                           + " (" + boost::lexical_cast<std::string>(XML_GetCurrentColumnNumber(parser)) + "): "
+        throw XMLException("XML line " +
+                           boost::lexical_cast<std::string>(XML_GetCurrentLineNumber(parser)) + ": parse error: "
                            + XML_ErrorString(XML_GetErrorCode(parser)));
     }
     return has_more;

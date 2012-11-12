@@ -1,13 +1,15 @@
 #include <math.h>
 
-static inline double pow_dd(double *ap, double *bp) {
-    return(pow(*ap, *bp) );
+static inline double pow_dd(double *ap, double *bp)
+{
+    return (pow(*ap, *bp));
 }
 
-double d_sign(double *a, double *b) {
+double d_sign(double *a, double *b)
+{
     double x;
-    x = (*a >= 0 ? *a : - *a);
-    return( *b >= 0 ? x : -x);
+    x = (*a >= 0 ? *a : -*a);
+    return (*b >= 0 ? x : -x);
 }
 
 #define min(a,b) ((a) <= (b) ? (a) : (b))
@@ -31,49 +33,51 @@ double dgamln(double *z__, long *ierr)
 {
     /* Initialized data */
 
-    static double gln[100] = { 0.,0.,.693147180559945309,
-	    1.791759469228055,3.17805383034794562,4.78749174278204599,
-	    6.579251212010101,8.5251613610654143,10.6046029027452502,
-	    12.8018274800814696,15.1044125730755153,17.5023078458738858,
-	    19.9872144956618861,22.5521638531234229,25.1912211827386815,
-	    27.8992713838408916,30.6718601060806728,33.5050734501368889,
-	    36.3954452080330536,39.339884187199494,42.335616460753485,
-	    45.380138898476908,48.4711813518352239,51.6066755677643736,
-	    54.7847293981123192,58.0036052229805199,61.261701761002002,
-	    64.5575386270063311,67.889743137181535,71.257038967168009,
-	    74.6582363488301644,78.0922235533153106,81.5579594561150372,
-	    85.0544670175815174,88.5808275421976788,92.1361756036870925,
-	    95.7196945421432025,99.3306124547874269,102.968198614513813,
-	    106.631760260643459,110.320639714757395,114.034211781461703,
-	    117.771881399745072,121.533081515438634,125.317271149356895,
-	    129.123933639127215,132.95257503561631,136.802722637326368,
-	    140.673923648234259,144.565743946344886,148.477766951773032,
-	    152.409592584497358,156.360836303078785,160.331128216630907,
-	    164.320112263195181,168.327445448427652,172.352797139162802,
-	    176.395848406997352,180.456291417543771,184.533828861449491,
-	    188.628173423671591,192.739047287844902,196.866181672889994,
-	    201.009316399281527,205.168199482641199,209.342586752536836,
-	    213.532241494563261,217.736934113954227,221.956441819130334,
-	    226.190548323727593,230.439043565776952,234.701723442818268,
-	    238.978389561834323,243.268849002982714,247.572914096186884,
-	    251.890402209723194,256.221135550009525,260.564940971863209,
-	    264.921649798552801,269.291097651019823,273.673124285693704,
-	    278.067573440366143,282.474292687630396,286.893133295426994,
-	    291.323950094270308,295.766601350760624,300.220948647014132,
-	    304.686856765668715,309.164193580146922,313.652829949879062,
-	    318.152639620209327,322.663499126726177,327.185287703775217,
-	    331.717887196928473,336.261181979198477,340.815058870799018,
-	    345.379407062266854,349.954118040770237,354.539085519440809,
-	    359.134205369575399 };
-    static double cf[22] = { .0833333333333333333,-.00277777777777777778,
-	    7.93650793650793651e-4,-5.95238095238095238e-4,
-	    8.41750841750841751e-4,-.00191752691752691753,
-	    .00641025641025641026,-.0295506535947712418,.179644372368830573,
-	    -1.39243221690590112,13.402864044168392,-156.848284626002017,
-	    2193.10333333333333,-36108.7712537249894,691472.268851313067,
-	    -15238221.5394074162,382900751.391414141,-10882266035.7843911,
-	    347320283765.002252,-12369602142269.2745,488788064793079.335,
-	    -21320333960919373.9 };
+    static double gln[100] = { 0., 0., .693147180559945309,
+	1.791759469228055, 3.17805383034794562, 4.78749174278204599,
+	6.579251212010101, 8.5251613610654143, 10.6046029027452502,
+	12.8018274800814696, 15.1044125730755153, 17.5023078458738858,
+	19.9872144956618861, 22.5521638531234229, 25.1912211827386815,
+	27.8992713838408916, 30.6718601060806728, 33.5050734501368889,
+	36.3954452080330536, 39.339884187199494, 42.335616460753485,
+	45.380138898476908, 48.4711813518352239, 51.6066755677643736,
+	54.7847293981123192, 58.0036052229805199, 61.261701761002002,
+	64.5575386270063311, 67.889743137181535, 71.257038967168009,
+	74.6582363488301644, 78.0922235533153106, 81.5579594561150372,
+	85.0544670175815174, 88.5808275421976788, 92.1361756036870925,
+	95.7196945421432025, 99.3306124547874269, 102.968198614513813,
+	106.631760260643459, 110.320639714757395, 114.034211781461703,
+	117.771881399745072, 121.533081515438634, 125.317271149356895,
+	129.123933639127215, 132.95257503561631, 136.802722637326368,
+	140.673923648234259, 144.565743946344886, 148.477766951773032,
+	152.409592584497358, 156.360836303078785, 160.331128216630907,
+	164.320112263195181, 168.327445448427652, 172.352797139162802,
+	176.395848406997352, 180.456291417543771, 184.533828861449491,
+	188.628173423671591, 192.739047287844902, 196.866181672889994,
+	201.009316399281527, 205.168199482641199, 209.342586752536836,
+	213.532241494563261, 217.736934113954227, 221.956441819130334,
+	226.190548323727593, 230.439043565776952, 234.701723442818268,
+	238.978389561834323, 243.268849002982714, 247.572914096186884,
+	251.890402209723194, 256.221135550009525, 260.564940971863209,
+	264.921649798552801, 269.291097651019823, 273.673124285693704,
+	278.067573440366143, 282.474292687630396, 286.893133295426994,
+	291.323950094270308, 295.766601350760624, 300.220948647014132,
+	304.686856765668715, 309.164193580146922, 313.652829949879062,
+	318.152639620209327, 322.663499126726177, 327.185287703775217,
+	331.717887196928473, 336.261181979198477, 340.815058870799018,
+	345.379407062266854, 349.954118040770237, 354.539085519440809,
+	359.134205369575399
+    };
+    static double cf[22] = { .0833333333333333333, -.00277777777777777778,
+	7.93650793650793651e-4, -5.95238095238095238e-4,
+	8.41750841750841751e-4, -.00191752691752691753,
+	.00641025641025641026, -.0295506535947712418, .179644372368830573,
+	-1.39243221690590112, 13.402864044168392, -156.848284626002017,
+	2193.10333333333333, -36108.7712537249894, 691472.268851313067,
+	-15238221.5394074162, 382900751.391414141, -10882266035.7843911,
+	347320283765.002252, -12369602142269.2745, 488788064793079.335,
+	-21320333960919373.9
+    };
     static double con = 1.83787706640934548;
 
     /* System generated locals */
@@ -153,13 +157,13 @@ double dgamln(double *z__, long *ierr)
     }
     ret_val = gln[nz - 1];
     return ret_val;
-L10:
+  L10:
     wdtol = d1mach(&c__4);
-    wdtol = max(wdtol,5e-19);
+    wdtol = max(wdtol, 5e-19);
     i1m = i1mach(&c__14);
     rln = d1mach(&c__5) * (float) i1m;
-    fln = min(rln,20.);
-    fln = max(fln,3.);
+    fln = min(rln, 20.);
+    fln = max(fln, 3.);
     fln += -3.;
     zm = fln * .3875 + 1.8;
     mz = (long) ((float) zm) + 1;
@@ -171,7 +175,7 @@ L10:
     }
     zinc = zmin - (float) nz;
     zdmy = *z__ + zinc;
-L20:
+  L20:
     zp = 1. / zdmy;
     t1 = cf[0] * zp;
     s = t1;
@@ -189,14 +193,14 @@ L20:
 	s += trm;
 /* L30: */
     }
-L40:
+  L40:
     if (zinc != 0.) {
 	goto L50;
     }
     tlg = log(*z__);
     ret_val = *z__ * (tlg - 1.) + (con - tlg) * .5 + s;
     return ret_val;
-L50:
+  L50:
     zp = 1.;
     nz = (long) ((float) zinc);
     i__1 = nz;
@@ -209,10 +213,10 @@ L50:
     return ret_val;
 
 
-L70:
+  L70:
     *ierr = 1;
     return ret_val;
-} /* dgamln_ */
+}				/* dgamln_ */
 
 /* Subroutine */ int dsclmr(void)
 {
@@ -235,7 +239,7 @@ L70:
 /*   * THIS CODE HAS BEEN APPROVED FOR UNLIMITED RELEASE. */
 /*   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
     return 0;
-} /* dsclmr_ */
+}				/* dsclmr_ */
 
 /* Subroutine */ int fdump(void)
 {
@@ -262,7 +266,7 @@ L70:
 /* ***END PROLOGUE  FDUMP */
 /* ***FIRST EXECUTABLE STATEMENT  FDUMP */
     return 0;
-} /* fdump_ */
+}				/* fdump_ */
 
 double azabs(double *zr, double *zi)
 {
@@ -300,27 +304,26 @@ double azabs(double *zr, double *zi)
     q = u / v;
     ret_val = v * sqrt(q * q + 1.);
     return ret_val;
-L10:
+  L10:
     q = v / u;
     ret_val = u * sqrt(q * q + 1.);
     return ret_val;
-L20:
+  L20:
     ret_val = 0.;
     return ret_val;
-} /* azabs_ */
+}				/* azabs_ */
 
 /* Subroutine */ int zacai(double *zr, double *zi, double *fnu,
-	long *kode, long *mr, long *n, double *yr, double *
-	yi, long *nz, double *rl, double *tol, double *elim,
-	double *alim)
+			   long *kode, long *mr, long *n, double *yr,
+			   double *yi, long *nz, double *rl, double *tol,
+			   double *elim, double *alim)
 {
     /* Initialized data */
 
     static double pi = 3.14159265358979324;
 
     /* Builtin functions */
-    double d_sign(double *, double *), sin(double), cos(
-	    double);
+    double d_sign(double *, double *), sin(double), cos(double);
 
     /* Local variables */
     static double az;
@@ -331,23 +334,26 @@ L20:
     static long inu;
     static double cyr[2], zni, znr, dfnu;
     extern /* Subroutine */ int zs1s2(double *, double *, double
-	    *, double *, double *, double *, long *,
-	    double *, double *, long *);
+				      *, double *, double *, double *,
+				      long *, double *, double *, long *);
     static double ascle;
     extern double azabs(double *, double *);
     static double csgni, csgnr, cspni, cspnr;
     extern /* Subroutine */ int zbknu(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    double *, double *, double *), zseri(double *,
-	    double *, double *, long *, long *, double *,
-	    double *, long *, double *, double *, double *)
-	    ;
+				      *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *), zseri(double *, double *,
+						       double *, long *,
+						       long *, double *,
+						       double *, long *,
+						       double *, double *,
+						       double *);
     extern double d1mach(long *);
     extern /* Subroutine */ int zmlri(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    double *), zasyi(double *, double *, double *,
-	    long *, long *, double *, double *, long *,
-	    double *, double *, double *, double *);
+				      *, long *, long *, double *,
+				      double *, long *, double *),
+	zasyi(double *, double *, double *, long *, long *, double *,
+	      double *, long *, double *, double *, double *, double *);
 
 /* ***BEGIN PROLOGUE  ZACAI */
 /* ***REFER TO  ZAIRY */
@@ -383,13 +389,14 @@ L20:
     if (az * az * .25 > dfnu + 1.) {
 	goto L20;
     }
-L10:
+  L10:
 /* ----------------------------------------------------------------------- */
 /*     POWER SERIES FOR THE I FUNCTION */
 /* ----------------------------------------------------------------------- */
-    zseri(&znr, &zni, fnu, kode, &nn, &yr[1], &yi[1], &nw, tol, elim, alim);
+    zseri(&znr, &zni, fnu, kode, &nn, &yr[1], &yi[1], &nw, tol, elim,
+	  alim);
     goto L40;
-L20:
+  L20:
     if (az < *rl) {
 	goto L30;
     }
@@ -397,12 +404,12 @@ L20:
 /*     ASYMPTOTIC EXPANSION FOR LARGE Z FOR THE I FUNCTION */
 /* ----------------------------------------------------------------------- */
     zasyi(&znr, &zni, fnu, kode, &nn, &yr[1], &yi[1], &nw, rl, tol, elim,
-	    alim);
+	  alim);
     if (nw < 0) {
 	goto L80;
     }
     goto L40;
-L30:
+  L30:
 /* ----------------------------------------------------------------------- */
 /*     MILLER ALGORITHM NORMALIZED BY THE SERIES FOR THE I FUNCTION */
 /* ----------------------------------------------------------------------- */
@@ -410,7 +417,7 @@ L30:
     if (nw < 0) {
 	goto L80;
     }
-L40:
+  L40:
 /* ----------------------------------------------------------------------- */
 /*     ANALYTIC CONTINUATION TO THE LEFT HALF PLANE FOR THE K FUNCTION */
 /* ----------------------------------------------------------------------- */
@@ -428,7 +435,7 @@ L40:
     yy = -zni;
     csgnr = -csgni * sin(yy);
     csgni *= cos(yy);
-L50:
+  L50:
 /* ----------------------------------------------------------------------- */
 /*     CALCULATE CSPN=EXP(FNU*PI*I) TO MINIMIZE LOSSES OF SIGNIFICANCE */
 /*     WHEN FNU IS LARGE */
@@ -442,7 +449,7 @@ L50:
     }
     cspnr = -cspnr;
     cspni = -cspni;
-L60:
+  L60:
     c1r = cyr[0];
     c1i = cyi[0];
     c2r = yr[1];
@@ -454,22 +461,22 @@ L60:
     ascle = d1mach(&c__1) * 1e3 / *tol;
     zs1s2(&znr, &zni, &c1r, &c1i, &c2r, &c2i, &nw, &ascle, alim, &iuf);
     *nz += nw;
-L70:
+  L70:
     yr[1] = cspnr * c1r - cspni * c1i + csgnr * c2r - csgni * c2i;
     yi[1] = cspnr * c1i + cspni * c1r + csgnr * c2i + csgni * c2r;
     return 0;
-L80:
+  L80:
     *nz = -1;
     if (nw == -2) {
 	*nz = -2;
     }
     return 0;
-} /* zacai_ */
+}				/* zacai_ */
 
 /* Subroutine */ int zacon(double *zr, double *zi, double *fnu,
-	long *kode, long *mr, long *n, double *yr, double *
-	yi, long *nz, double *rl, double *fnul, double *tol,
-	double *elim, double *alim)
+			   long *kode, long *mr, long *n, double *yr,
+			   double *yi, long *nz, double *rl, double *fnul,
+			   double *tol, double *elim, double *alim)
 {
     /* Initialized data */
 
@@ -481,35 +488,33 @@ L80:
     long i__1;
 
     /* Builtin functions */
-    double d_sign(double *, double *), cos(double), sin(
-	    double);
+    double d_sign(double *, double *), cos(double), sin(double);
 
     /* Local variables */
     static long i__;
     static double fn;
     static long nn, nw;
     static double yy, c1i, c2i, c1m, as2, c1r, c2r, s1i, s2i, s1r, s2r,
-	    cki, arg, ckr, cpn;
+	cki, arg, ckr, cpn;
     static long iuf;
     static double cyi[2], fmr, csr, azn, sgn;
     static long inu;
     static double bry[3], cyr[2], pti, spn, sti, zni, rzi, ptr, str, znr,
-	    rzr, sc1i, sc2i, sc1r, sc2r, cscl, cscr, csrr[3], cssr[3], razn;
+	rzr, sc1i, sc2i, sc1r, sc2r, cscl, cscr, csrr[3], cssr[3], razn;
     extern /* Subroutine */ int zs1s2(double *, double *, double
-	    *, double *, double *, double *, long *,
-	    double *, double *, long *), zmlt(double *,
-	    double *, double *, double *, double *,
-	    double *);
+				      *, double *, double *, double *,
+				      long *, double *, double *, long *),
+	zmlt(double *, double *, double *, double *, double *, double *);
     static long kflag;
     static double ascle, bscle;
     extern double azabs(double *, double *);
     static double csgni, csgnr, cspni, cspnr;
     extern /* Subroutine */ int zbinu(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    double *, double *, double *, double *,
-	    double *), zbknu(double *, double *, double *,
-	    long *, long *, double *, double *, long *,
-	    double *, double *, double *);
+				      *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *, double *, double *),
+	zbknu(double *, double *, double *, long *, long *, double *,
+	      double *, long *, double *, double *, double *);
     extern double d1mach(long *);
 
 /* ***BEGIN PROLOGUE  ZACON */
@@ -537,14 +542,14 @@ L80:
     zni = -(*zi);
     nn = *n;
     zbinu(&znr, &zni, fnu, kode, &nn, &yr[1], &yi[1], &nw, rl, fnul, tol,
-	    elim, alim);
+	  elim, alim);
     if (nw < 0) {
 	goto L90;
     }
 /* ----------------------------------------------------------------------- */
 /*     ANALYTIC CONTINUATION TO THE LEFT HALF PLANE FOR THE K FUNCTION */
 /* ----------------------------------------------------------------------- */
-    nn = min(2,*n);
+    nn = min(2, *n);
     zbknu(&znr, &zni, fnu, kode, &nn, cyr, cyi, &nw, tol, elim, alim);
     if (nw != 0) {
 	goto L90;
@@ -562,7 +567,7 @@ L80:
     cpn = cos(yy);
     spn = sin(yy);
     zmlt(&csgnr, &csgni, &cpn, &spn, &csgnr, &csgni);
-L10:
+  L10:
 /* ----------------------------------------------------------------------- */
 /*     CALCULATE CSPN=EXP(FNU*PI*I) TO MINIMIZE LOSSES OF SIGNIFICANCE */
 /*     WHEN FNU IS LARGE */
@@ -578,7 +583,7 @@ L10:
     }
     cspnr = -cspnr;
     cspni = -cspni;
-L20:
+  L20:
     iuf = 0;
     c1r = s1r;
     c1i = s1i;
@@ -592,7 +597,7 @@ L20:
     *nz += nw;
     sc1r = c1r;
     sc1i = c1i;
-L30:
+  L30:
     zmlt(&cspnr, &cspni, &c1r, &c1i, &str, &sti);
     zmlt(&csgnr, &csgni, &c2r, &c2i, &ptr, &pti);
     yr[1] = str + ptr;
@@ -615,7 +620,7 @@ L30:
     *nz += nw;
     sc2r = c1r;
     sc2i = c1i;
-L40:
+  L40:
     zmlt(&cspnr, &cspni, &c1r, &c1i, &str, &sti);
     zmlt(&csgnr, &csgni, &c2r, &c2i, &ptr, &pti);
     yr[2] = str + ptr;
@@ -655,12 +660,12 @@ L40:
     }
     kflag = 1;
     goto L60;
-L50:
+  L50:
     if (as2 < bry[1]) {
 	goto L60;
     }
     kflag = 3;
-L60:
+  L60:
     bscle = bry[kflag - 1];
     s1r *= cssr[kflag - 1];
     s1i *= cssr[kflag - 1];
@@ -703,7 +708,7 @@ L60:
 	s2i = sc2i * cssr[kflag - 1];
 	str = sc2r;
 	sti = sc2i;
-L70:
+      L70:
 	ptr = cspnr * c1r - cspni * c1i;
 	pti = cspnr * c1i + cspni * c1r;
 	yr[i__] = ptr + csgnr * c2r - csgni * c2i;
@@ -717,7 +722,7 @@ L70:
 	}
 	ptr = abs(c1r);
 	pti = abs(c1i);
-	c1m = max(ptr,pti);
+	c1m = max(ptr, pti);
 	if (c1m <= bscle) {
 	    goto L80;
 	}
@@ -732,21 +737,21 @@ L70:
 	s2r *= cssr[kflag - 1];
 	s2i *= cssr[kflag - 1];
 	csr = csrr[kflag - 1];
-L80:
+      L80:
 	;
     }
     return 0;
-L90:
+  L90:
     *nz = -1;
     if (nw == -2) {
 	*nz = -2;
     }
     return 0;
-} /* zacon_ */
+}				/* zacon_ */
 
 /* Subroutine */ int zairy(double *zr, double *zi, long *id,
-	long *kode, double *air, double *aii, long *nz, long
-	*ierr)
+			   long *kode, double *air, double *aii, long *nz, long
+			   *ierr)
 {
     /* Initialized data */
 
@@ -764,8 +769,7 @@ L90:
     double d__1;
 
     /* Builtin functions */
-    double log(double), pow_dd(double *, double *), sqrt(
-	    double);
+    double log(double), pow_dd(double *, double *), sqrt(double);
 
     /* Local variables */
     static long k;
@@ -776,22 +780,27 @@ L90:
     static double rl;
     static long mr;
     static double s1i, az3, s2i, s1r, s2r, z3i, z3r, dig, fid, cyi[1],
-	    r1m5, fnu, cyr[1], tol, sti, ptr, str, sfac, alim, elim, alaz,
-	    csqi, atrm, ztai, csqr, ztar, trm1i, trm2i, trm1r, trm2r;
+	r1m5, fnu, cyr[1], tol, sti, ptr, str, sfac, alim, elim, alaz,
+	csqi, atrm, ztai, csqr, ztar, trm1i, trm2i, trm1r, trm2r;
     static long iflag;
     extern /* Subroutine */ int zacai(double *, double *, double
-	    *, long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *, double *)
-	    ;
+				      *, long *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *, double *);
     extern double azabs(double *, double *);
     extern /* Subroutine */ int azexp(double *, double *, double
-	    *, double *), zbknu(double *, double *, double *,
-	     long *, long *, double *, double *, long *,
-	    double *, double *, double *);
+				      *, double *), zbknu(double *,
+							  double *,
+							  double *, long *,
+							  long *, double *,
+							  double *, long *,
+							  double *,
+							  double *,
+							  double *);
     extern double d1mach(long *);
     extern long i1mach(long *);
     extern /* Subroutine */ int azsqrt(double *, double *,
-	    double *, double *);
+				       double *, double *);
 
 /* ***BEGIN PROLOGUE  ZAIRY */
 /* ***DATE WRITTEN   830501   (YYMMDD) */
@@ -936,7 +945,7 @@ L90:
     az = azabs(zr, zi);
 /* Computing MAX */
     d__1 = d1mach(&c__4);
-    tol = max(d__1,1e-18);
+    tol = max(d__1, 1e-18);
     fid = (double) ((float) (*id));
     if (az > 1.) {
 	goto L70;
@@ -971,7 +980,7 @@ L90:
     dk = fid + 3. + fid;
     d1 = ak * dk;
     d2 = bk * ck;
-    ad = min(d1,d2);
+    ad = min(d1, d2);
     ak = fid * 9. + 24.;
     bk = 30. - fid * 9.;
     for (k = 1; k <= 25; ++k) {
@@ -988,7 +997,7 @@ L90:
 	atrm = atrm * az3 / ad;
 	d1 += ak;
 	d2 += bk;
-	ad = min(d1,d2);
+	ad = min(d1, d2);
 	if (atrm < tol * ad) {
 	    goto L40;
 	}
@@ -996,7 +1005,7 @@ L90:
 	bk += 18.;
 /* L30: */
     }
-L40:
+  L40:
     if (*id == 1) {
 	goto L50;
     }
@@ -1013,7 +1022,7 @@ L40:
     *aii = *air * sti + *aii * str;
     *air = ptr;
     return 0;
-L50:
+  L50:
     *air = -s2r * c2;
     *aii = -s2i * c2;
     if (az <= tol) {
@@ -1024,7 +1033,7 @@ L50:
     cc = c1 / (fid + 1.);
     *air += cc * (str * *zr - sti * *zi);
     *aii += cc * (str * *zi + sti * *zr);
-L60:
+  L60:
     if (*kode == 1) {
 	return 0;
     }
@@ -1039,7 +1048,7 @@ L60:
 /* ----------------------------------------------------------------------- */
 /*     CASE FOR CABS(Z).GT.1.0 */
 /* ----------------------------------------------------------------------- */
-L70:
+  L70:
     fnu = (fid + 1.) / 3.;
 /* ----------------------------------------------------------------------- */
 /*     SET PARAMETERS RELATED TO MACHINE CONSTANTS. */
@@ -1056,15 +1065,15 @@ L70:
     r1m5 = d1mach(&c__5);
 /* Computing MIN */
     i__1 = abs(k1), i__2 = abs(k2);
-    k = min(i__1,i__2);
+    k = min(i__1, i__2);
     elim = ((double) ((float) k) * r1m5 - 3.) * 2.303;
     k1 = i1mach(&c__14) - 1;
     aa = r1m5 * (double) ((float) k1);
-    dig = min(aa,18.);
+    dig = min(aa, 18.);
     aa *= 2.303;
 /* Computing MAX */
     d__1 = -aa;
-    alim = elim + max(d__1,-41.45);
+    alim = elim + max(d__1, -41.45);
     rl = dig * 1.2 + 3.;
     alaz = log(az);
 /* -------------------------------------------------------------------------- */
@@ -1072,7 +1081,7 @@ L70:
 /* ----------------------------------------------------------------------- */
     aa = .5 / tol;
     bb = (double) ((float) i1mach(&c__9)) * .5;
-    aa = min(aa,bb);
+    aa = min(aa, bb);
     aa = pow_dd(&aa, &tth);
     if (az > aa) {
 	goto L260;
@@ -1097,7 +1106,7 @@ L70:
     ck = -abs(bk);
     ztar = ck;
     ztai = ak;
-L80:
+  L80:
     if (*zi != 0.) {
 	goto L90;
     }
@@ -1106,7 +1115,7 @@ L80:
     }
     ztar = 0.;
     ztai = ak;
-L90:
+  L90:
     aa = ztar;
     if (aa >= 0. && *zr > 0.) {
 	goto L110;
@@ -1126,7 +1135,7 @@ L90:
     if (aa > elim) {
 	goto L270;
     }
-L100:
+  L100:
 /* ----------------------------------------------------------------------- */
 /*     CBKNU AND CACON RETURN EXP(ZTA)*K(FNU,ZTA) ON KODE=2 */
 /* ----------------------------------------------------------------------- */
@@ -1134,14 +1143,14 @@ L100:
     if (*zi < 0.) {
 	mr = -1;
     }
-    zacai(&ztar, &ztai, &fnu, kode, &mr, &c__1, cyr, cyi, &nn, &rl, &tol, &
-	    elim, &alim);
+    zacai(&ztar, &ztai, &fnu, kode, &mr, &c__1, cyr, cyi, &nn, &rl, &tol,
+	  &elim, &alim);
     if (nn < 0) {
 	goto L280;
     }
     *nz += nn;
     goto L130;
-L110:
+  L110:
     if (*kode == 2) {
 	goto L120;
     }
@@ -1157,9 +1166,10 @@ L110:
     if (aa < -elim) {
 	goto L210;
     }
-L120:
-    zbknu(&ztar, &ztai, &fnu, kode, &c__1, cyr, cyi, nz, &tol, &elim, &alim);
-L130:
+  L120:
+    zbknu(&ztar, &ztai, &fnu, kode, &c__1, cyr, cyi, nz, &tol, &elim,
+	  &alim);
+  L130:
     s1r = cyr[0] * coef;
     s1i = cyi[0] * coef;
     if (iflag != 0) {
@@ -1171,11 +1181,11 @@ L130:
     *air = csqr * s1r - csqi * s1i;
     *aii = csqr * s1i + csqi * s1r;
     return 0;
-L140:
+  L140:
     *air = -(*zr * s1r - *zi * s1i);
     *aii = -(*zr * s1i + *zi * s1r);
     return 0;
-L150:
+  L150:
     s1r *= sfac;
     s1i *= sfac;
     if (*id == 1) {
@@ -1187,14 +1197,14 @@ L150:
     *air = s1r / sfac;
     *aii = s1i / sfac;
     return 0;
-L160:
+  L160:
     str = -(s1r * *zr - s1i * *zi);
     s1i = -(s1r * *zi + s1i * *zr);
     s1r = str;
     *air = s1r / sfac;
     *aii = s1i / sfac;
     return 0;
-L170:
+  L170:
     aa = d1mach(&c__1) * 1e3;
     s1r = zeror;
     s1i = zeroi;
@@ -1206,11 +1216,11 @@ L170:
     }
     s1r = c2 * *zr;
     s1i = c2 * *zi;
-L180:
+  L180:
     *air = c1 - s1r;
     *aii = -s1i;
     return 0;
-L190:
+  L190:
     *air = -c2;
     *aii = 0.;
     aa = sqrt(aa);
@@ -1219,36 +1229,36 @@ L190:
     }
     s1r = (*zr * *zr - *zi * *zi) * .5;
     s1i = *zr * *zi;
-L200:
+  L200:
     *air += c1 * s1r;
     *aii += c1 * s1i;
     return 0;
-L210:
+  L210:
     *nz = 1;
     *air = zeror;
     *aii = zeroi;
     return 0;
-L270:
+  L270:
     *nz = 0;
     *ierr = 2;
     return 0;
-L280:
+  L280:
     if (nn == -1) {
 	goto L270;
     }
     *nz = 0;
     *ierr = 5;
     return 0;
-L260:
+  L260:
     *ierr = 4;
     *nz = 0;
     return 0;
-} /* zairy_ */
+}				/* zairy_ */
 
 /* Subroutine */ int zasyi(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *yr, double *yi, long *
-	nz, double *rl, double *tol, double *elim, double *
-	alim)
+			   long *kode, long *n, double *yr, double *yi,
+			   long *nz, double *rl, double *tol, double *elim,
+			   double *alim)
 {
     /* Initialized data */
 
@@ -1275,21 +1285,20 @@ L260:
     static double az;
     static long nn;
     static double p1i, s2i, p1r, s2r, cki, dki, fdn, arg, aez, arm, ckr,
-	    dkr, czi, ezi, sgn;
+	dkr, czi, ezi, sgn;
     static long inu;
     static double raz, czr, ezr, sqk, sti, rzi, tzi, str, rzr, tzr, ak1i,
-	    ak1r, cs1i, cs2i, cs1r, cs2r, dnu2, rtr1, dfnu, atol;
+	ak1r, cs1i, cs2i, cs1r, cs2r, dnu2, rtr1, dfnu, atol;
     extern /* Subroutine */ int zdiv(double *, double *, double *
-	    , double *, double *, double *), zmlt(double *,
-	    double *, double *, double *, double *,
-	    double *);
+				     , double *, double *, double *),
+	zmlt(double *, double *, double *, double *, double *, double *);
     static long koded;
     extern double azabs(double *, double *);
     extern /* Subroutine */ int azexp(double *, double *, double
-	    *, double *);
+				      *, double *);
     extern double d1mach(long *);
     extern /* Subroutine */ int azsqrt(double *, double *,
-	    double *, double *);
+				       double *, double *);
 
 /* ***BEGIN PROLOGUE  ZASYI */
 /* ***REFER TO  ZBESI,ZBESK */
@@ -1312,7 +1321,7 @@ L260:
     az = azabs(zr, zi);
     arm = d1mach(&c__1) * 1e3;
     rtr1 = sqrt(arm);
-    il = min(2,*n);
+    il = min(2, *n);
     dfnu = *fnu + (double) ((float) (*n - il));
 /* ----------------------------------------------------------------------- */
 /*     OVERFLOW TEST */
@@ -1330,7 +1339,7 @@ L260:
     }
     czr = zeror;
     czi = *zi;
-L10:
+  L10:
     if (abs(czr) > *elim) {
 	goto L100;
     }
@@ -1342,7 +1351,7 @@ L10:
     koded = 0;
     azexp(&czr, &czi, &str, &sti);
     zmlt(&ak1r, &ak1i, &str, &sti, &ak1r, &ak1i);
-L20:
+  L20:
     fdn = 0.;
     if (dnu2 > rtr1) {
 	fdn = dnu2 * dnu2;
@@ -1381,7 +1390,7 @@ L20:
     }
     p1r = -p1r;
     p1i = -p1i;
-L30:
+  L30:
     i__1 = il;
     for (k = 1; k <= i__1; ++k) {
 	sqk = fdn - 1.;
@@ -1420,7 +1429,7 @@ L30:
 /* L40: */
 	}
 	goto L110;
-L50:
+      L50:
 	s2r = cs1r;
 	s2i = cs1i;
 	if (*zr + *zr >= *elim) {
@@ -1435,7 +1444,7 @@ L50:
 	zmlt(&str, &sti, &cs2r, &cs2i, &str, &sti);
 	s2r += str;
 	s2i += sti;
-L60:
+      L60:
 	fdn = fdn + dfnu * 8. + 4.;
 	p1r = -p1r;
 	p1i = -p1i;
@@ -1457,8 +1466,10 @@ L60:
     ib = 3;
     i__1 = nn;
     for (i__ = ib; i__ <= i__1; ++i__) {
-	yr[k] = (ak + *fnu) * (rzr * yr[k + 1] - rzi * yi[k + 1]) + yr[k + 2];
-	yi[k] = (ak + *fnu) * (rzr * yi[k + 1] + rzi * yr[k + 1]) + yi[k + 2];
+	yr[k] =
+	    (ak + *fnu) * (rzr * yr[k + 1] - rzi * yi[k + 1]) + yr[k + 2];
+	yi[k] =
+	    (ak + *fnu) * (rzr * yi[k + 1] + rzi * yr[k + 1]) + yi[k + 2];
 	ak += -1.;
 	--k;
 /* L80: */
@@ -1475,17 +1486,17 @@ L60:
 /* L90: */
     }
     return 0;
-L100:
+  L100:
     *nz = -1;
     return 0;
-L110:
+  L110:
     *nz = -2;
     return 0;
-} /* zasyi_ */
+}				/* zasyi_ */
 
 /* Subroutine */ int zbesh(double *zr, double *zi, double *fnu,
-	long *kode, long *m, long *n, double *cyr, double *
-	cyi, long *nz, long *ierr)
+			   long *kode, long *m, long *n, double *cyr,
+			   double *cyi, long *nz, long *ierr)
 {
     /* Initialized data */
 
@@ -1497,7 +1508,7 @@ L110:
 
     /* Builtin functions */
     double sqrt(double), log(double), d_sign(double *, double
-	    *), cos(double), sin(double);
+					     *), cos(double), sin(double);
 
     /* Local variables */
     static long i__, k, k1, k2;
@@ -1515,20 +1526,24 @@ L110:
     extern double azabs(double *, double *);
     static double csgni;
     extern /* Subroutine */ int zacon(double *, double *, double
-	    *, long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *, double *,
-	     double *);
+				      *, long *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *, double *, double *);
     static double csgnr;
     extern /* Subroutine */ int zbknu(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    double *, double *, double *), zbunk(double *,
-	    double *, double *, long *, long *, long *,
-	    double *, double *, long *, double *, double *,
-	     double *);
+				      *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *), zbunk(double *, double *,
+						       double *, long *,
+						       long *, long *,
+						       double *, double *,
+						       long *, double *,
+						       double *, double *);
     extern double d1mach(long *);
     extern /* Subroutine */ int zuoik(double *, double *, double
-	    *, long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *);
+				      *, long *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *);
     extern long i1mach(long *);
 
 /* ***BEGIN PROLOGUE  ZBESH */
@@ -1730,21 +1745,21 @@ L110:
 /* ----------------------------------------------------------------------- */
 /* Computing MAX */
     d__1 = d1mach(&c__4);
-    tol = max(d__1,1e-18);
+    tol = max(d__1, 1e-18);
     k1 = i1mach(&c__15);
     k2 = i1mach(&c__16);
     r1m5 = d1mach(&c__5);
 /* Computing MIN */
     i__1 = abs(k1), i__2 = abs(k2);
-    k = min(i__1,i__2);
+    k = min(i__1, i__2);
     elim = ((double) ((float) k) * r1m5 - 3.) * 2.303;
     k1 = i1mach(&c__14) - 1;
     aa = r1m5 * (double) ((float) k1);
-    dig = min(aa,18.);
+    dig = min(aa, 18.);
     aa *= 2.303;
 /* Computing MAX */
     d__1 = -aa;
-    alim = elim + max(d__1,-41.45);
+    alim = elim + max(d__1, -41.45);
     fnul = (dig - 3.) * 6. + 10.;
     rl = dig * 1.2 + 3.;
     fn = *fnu + (double) ((float) (nn - 1));
@@ -1758,7 +1773,7 @@ L110:
     az = azabs(zr, zi);
     aa = .5 / tol;
     bb = (double) ((float) i1mach(&c__9)) * .5;
-    aa = min(aa,bb);
+    aa = min(aa, bb);
     if (az > aa) {
 	goto L260;
     }
@@ -1797,9 +1812,9 @@ L110:
 	goto L230;
     }
     goto L70;
-L60:
-    zuoik(&znr, &zni, fnu, kode, &c__2, &nn, &cyr[1], &cyi[1], &nuf, &tol, &
-	    elim, &alim);
+  L60:
+    zuoik(&znr, &zni, fnu, kode, &c__2, &nn, &cyr[1], &cyi[1], &nuf, &tol,
+	  &elim, &alim);
     if (nuf < 0) {
 	goto L230;
     }
@@ -1812,7 +1827,7 @@ L60:
     if (nn == 0) {
 	goto L140;
     }
-L70:
+  L70:
     if (znr < 0. || (znr == 0. && zni < 0. && *m == 2)) {
 	goto L80;
     }
@@ -1820,22 +1835,22 @@ L70:
 /*     RIGHT HALF PLANE COMPUTATION, XN.GE.0. .AND. (XN.NE.0. .OR. */
 /*     YN.GE.0. .OR. M=1) */
 /* ----------------------------------------------------------------------- */
-    zbknu(&znr, &zni, fnu, kode, &nn, &cyr[1], &cyi[1], nz, &tol, &elim, &
-	    alim);
+    zbknu(&znr, &zni, fnu, kode, &nn, &cyr[1], &cyi[1], nz, &tol, &elim,
+	  &alim);
     goto L110;
 /* ----------------------------------------------------------------------- */
 /*     LEFT HALF PLANE COMPUTATION */
 /* ----------------------------------------------------------------------- */
-L80:
+  L80:
     mr = -mm;
-    zacon(&znr, &zni, fnu, kode, &mr, &nn, &cyr[1], &cyi[1], &nw, &rl, &fnul,
-	     &tol, &elim, &alim);
+    zacon(&znr, &zni, fnu, kode, &mr, &nn, &cyr[1], &cyi[1], &nw, &rl,
+	  &fnul, &tol, &elim, &alim);
     if (nw < 0) {
 	goto L240;
     }
     *nz = nw;
     goto L110;
-L90:
+  L90:
 /* ----------------------------------------------------------------------- */
 /*     UNIFORM ASYMPTOTIC EXPANSIONS FOR FNU.GT.FNUL */
 /* ----------------------------------------------------------------------- */
@@ -1849,14 +1864,14 @@ L90:
     }
     znr = -znr;
     zni = -zni;
-L100:
-    zbunk(&znr, &zni, fnu, kode, &mr, &nn, &cyr[1], &cyi[1], &nw, &tol, &
-	    elim, &alim);
+  L100:
+    zbunk(&znr, &zni, fnu, kode, &mr, &nn, &cyr[1], &cyi[1], &nw, &tol,
+	  &elim, &alim);
     if (nw < 0) {
 	goto L240;
     }
     *nz += nw;
-L110:
+  L110:
 /* ----------------------------------------------------------------------- */
 /*     H(M,FNU,Z) = -FMM*(I/HPI)*(ZT**FNU)*K(FNU,-Z*ZT) */
 
@@ -1884,7 +1899,7 @@ L110:
 /*     ZNI = -ZNI */
     csgnr = -csgnr;
     csgni = -csgni;
-L120:
+  L120:
     zti = -fmm;
     rtol = 1. / tol;
     ascle = ufl * rtol;
@@ -1901,13 +1916,13 @@ L120:
 	atol = 1.;
 /* Computing MAX */
 	d__1 = abs(aa), d__2 = abs(bb);
-	if (max(d__1,d__2) > ascle) {
+	if (max(d__1, d__2) > ascle) {
 	    goto L135;
 	}
 	aa *= rtol;
 	bb *= rtol;
 	atol = tol;
-L135:
+      L135:
 	str = aa * csgnr - bb * csgni;
 	sti = aa * csgni + bb * csgnr;
 	cyr[i__] = str * atol;
@@ -1918,31 +1933,31 @@ L135:
 /* L130: */
     }
     return 0;
-L140:
+  L140:
     if (znr < 0.) {
 	goto L230;
     }
     return 0;
-L230:
+  L230:
     *nz = 0;
     *ierr = 2;
     return 0;
-L240:
+  L240:
     if (nw == -1) {
 	goto L230;
     }
     *nz = 0;
     *ierr = 5;
     return 0;
-L260:
+  L260:
     *nz = 0;
     *ierr = 4;
     return 0;
-} /* zbesh_ */
+}				/* zbesh_ */
 
 /* Subroutine */ int zbesi(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *cyr, double *cyi, long *
-	nz, long *ierr)
+			   long *kode, long *n, double *cyr, double *cyi,
+			   long *nz, long *ierr)
 {
     /* Initialized data */
 
@@ -1964,13 +1979,13 @@ L260:
     static double rl, dig, arg, r1m5;
     static long inu;
     static double tol, sti, zni, str, znr, alim, elim, atol, fnul, rtol,
-	    ascle;
+	ascle;
     extern double azabs(double *, double *);
     static double csgni, csgnr;
     extern /* Subroutine */ int zbinu(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    double *, double *, double *, double *,
-	    double *);
+				      *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *, double *, double *);
     extern double d1mach(long *);
     extern long i1mach(long *);
 
@@ -2159,21 +2174,21 @@ L260:
 /* ----------------------------------------------------------------------- */
 /* Computing MAX */
     d__1 = d1mach(&c__4);
-    tol = max(d__1,1e-18);
+    tol = max(d__1, 1e-18);
     k1 = i1mach(&c__15);
     k2 = i1mach(&c__16);
     r1m5 = d1mach(&c__5);
 /* Computing MIN */
     i__1 = abs(k1), i__2 = abs(k2);
-    k = min(i__1,i__2);
+    k = min(i__1, i__2);
     elim = ((double) ((float) k) * r1m5 - 3.) * 2.303;
     k1 = i1mach(&c__14) - 1;
     aa = r1m5 * (double) ((float) k1);
-    dig = min(aa,18.);
+    dig = min(aa, 18.);
     aa *= 2.303;
 /* Computing MAX */
     d__1 = -aa;
-    alim = elim + max(d__1,-41.45);
+    alim = elim + max(d__1, -41.45);
     rl = dig * 1.2 + 3.;
     fnul = (dig - 3.) * 6. + 10.;
 /* ----------------------------------------------------------------------------- */
@@ -2183,7 +2198,7 @@ L260:
     fn = *fnu + (double) ((float) (*n - 1));
     aa = .5 / tol;
     bb = (double) ((float) i1mach(&c__9)) * .5;
-    aa = min(aa,bb);
+    aa = min(aa, bb);
     if (az > aa) {
 	goto L260;
     }
@@ -2222,9 +2237,9 @@ L260:
     }
     csgnr = -csgnr;
     csgni = -csgni;
-L40:
-    zbinu(&znr, &zni, fnu, kode, n, &cyr[1], &cyi[1], nz, &rl, &fnul, &tol, &
-	    elim, &alim);
+  L40:
+    zbinu(&znr, &zni, fnu, kode, n, &cyr[1], &cyi[1], nz, &rl, &fnul, &tol,
+	  &elim, &alim);
     if (*nz < 0) {
 	goto L120;
     }
@@ -2250,13 +2265,13 @@ L40:
 	atol = 1.;
 /* Computing MAX */
 	d__1 = abs(aa), d__2 = abs(bb);
-	if (max(d__1,d__2) > ascle) {
+	if (max(d__1, d__2) > ascle) {
 	    goto L55;
 	}
 	aa *= rtol;
 	bb *= rtol;
 	atol = tol;
-L55:
+      L55:
 	str = aa * csgnr - bb * csgni;
 	sti = aa * csgni + bb * csgnr;
 	cyr[i__] = str * atol;
@@ -2266,26 +2281,26 @@ L55:
 /* L50: */
     }
     return 0;
-L120:
+  L120:
     if (*nz == -2) {
 	goto L130;
     }
     *nz = 0;
     *ierr = 2;
     return 0;
-L130:
+  L130:
     *nz = 0;
     *ierr = 5;
     return 0;
-L260:
+  L260:
     *nz = 0;
     *ierr = 4;
     return 0;
-} /* zbesi_ */
+}				/* zbesi_ */
 
 /* Subroutine */ int zbesj(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *cyr, double *cyi, long *
-	nz, long *ierr)
+			   long *kode, long *n, double *cyr, double *cyi,
+			   long *nz, long *ierr)
 {
     /* Initialized data */
 
@@ -2312,9 +2327,9 @@ L260:
     extern double azabs(double *, double *);
     static double csgni, csgnr;
     extern /* Subroutine */ int zbinu(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    double *, double *, double *, double *,
-	    double *);
+				      *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *, double *, double *);
     extern double d1mach(long *);
     extern long i1mach(long *);
 
@@ -2498,21 +2513,21 @@ L260:
 /* ----------------------------------------------------------------------- */
 /* Computing MAX */
     d__1 = d1mach(&c__4);
-    tol = max(d__1,1e-18);
+    tol = max(d__1, 1e-18);
     k1 = i1mach(&c__15);
     k2 = i1mach(&c__16);
     r1m5 = d1mach(&c__5);
 /* Computing MIN */
     i__1 = abs(k1), i__2 = abs(k2);
-    k = min(i__1,i__2);
+    k = min(i__1, i__2);
     elim = ((double) ((float) k) * r1m5 - 3.) * 2.303;
     k1 = i1mach(&c__14) - 1;
     aa = r1m5 * (double) ((float) k1);
-    dig = min(aa,18.);
+    dig = min(aa, 18.);
     aa *= 2.303;
 /* Computing MAX */
     d__1 = -aa;
-    alim = elim + max(d__1,-41.45);
+    alim = elim + max(d__1, -41.45);
     rl = dig * 1.2 + 3.;
     fnul = (dig - 3.) * 6. + 10.;
 /* ----------------------------------------------------------------------- */
@@ -2522,7 +2537,7 @@ L260:
     fn = *fnu + (double) ((float) (*n - 1));
     aa = .5 / tol;
     bb = (double) ((float) i1mach(&c__9)) * .5;
-    aa = min(aa,bb);
+    aa = min(aa, bb);
     if (az > aa) {
 	goto L260;
     }
@@ -2552,7 +2567,7 @@ L260:
     }
     csgnr = -csgnr;
     csgni = -csgni;
-L40:
+  L40:
 /* ----------------------------------------------------------------------- */
 /*     ZN IS IN THE RIGHT HALF PLANE */
 /* ----------------------------------------------------------------------- */
@@ -2565,9 +2580,9 @@ L40:
     zni = -zni;
     csgni = -csgni;
     cii = -cii;
-L50:
-    zbinu(&znr, &zni, fnu, kode, n, &cyr[1], &cyi[1], nz, &rl, &fnul, &tol, &
-	    elim, &alim);
+  L50:
+    zbinu(&znr, &zni, fnu, kode, n, &cyr[1], &cyi[1], nz, &rl, &fnul, &tol,
+	  &elim, &alim);
     if (*nz < 0) {
 	goto L130;
     }
@@ -2587,13 +2602,13 @@ L50:
 	atol = 1.;
 /* Computing MAX */
 	d__1 = abs(aa), d__2 = abs(bb);
-	if (max(d__1,d__2) > ascle) {
+	if (max(d__1, d__2) > ascle) {
 	    goto L55;
 	}
 	aa *= rtol;
 	bb *= rtol;
 	atol = tol;
-L55:
+      L55:
 	str = aa * csgnr - bb * csgni;
 	sti = aa * csgni + bb * csgnr;
 	cyr[i__] = str * atol;
@@ -2604,26 +2619,26 @@ L55:
 /* L60: */
     }
     return 0;
-L130:
+  L130:
     if (*nz == -2) {
 	goto L140;
     }
     *nz = 0;
     *ierr = 2;
     return 0;
-L140:
+  L140:
     *nz = 0;
     *ierr = 5;
     return 0;
-L260:
+  L260:
     *nz = 0;
     *ierr = 4;
     return 0;
-} /* zbesj_ */
+}				/* zbesj_ */
 
 /* Subroutine */ int zbesk(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *cyr, double *cyi, long *
-	nz, long *ierr)
+			   long *kode, long *n, double *cyr, double *cyi,
+			   long *nz, long *ierr)
 {
     /* System generated locals */
     long i__1, i__2;
@@ -2643,18 +2658,18 @@ L260:
     static double tol, alim, elim, fnul;
     extern double azabs(double *, double *);
     extern /* Subroutine */ int zacon(double *, double *, double
-	    *, long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *, double *,
-	     double *), zbknu(double *, double *, double *,
-	    long *, long *, double *, double *, long *,
-	    double *, double *, double *), zbunk(double *,
-	    double *, double *, long *, long *, long *,
-	    double *, double *, long *, double *, double *,
-	     double *);
+				      *, long *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *, double *, double *),
+	zbknu(double *, double *, double *, long *, long *, double *,
+	      double *, long *, double *, double *, double *),
+	zbunk(double *, double *, double *, long *, long *, long *,
+	      double *, double *, long *, double *, double *, double *);
     extern double d1mach(long *);
     extern /* Subroutine */ int zuoik(double *, double *, double
-	    *, long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *);
+				      *, long *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *);
     extern long i1mach(long *);
 
 /* ***BEGIN PROLOGUE  ZBESK */
@@ -2846,21 +2861,21 @@ L260:
 /* ----------------------------------------------------------------------- */
 /* Computing MAX */
     d__1 = d1mach(&c__4);
-    tol = max(d__1,1e-18);
+    tol = max(d__1, 1e-18);
     k1 = i1mach(&c__15);
     k2 = i1mach(&c__16);
     r1m5 = d1mach(&c__5);
 /* Computing MIN */
     i__1 = abs(k1), i__2 = abs(k2);
-    k = min(i__1,i__2);
+    k = min(i__1, i__2);
     elim = ((double) ((float) k) * r1m5 - 3.) * 2.303;
     k1 = i1mach(&c__14) - 1;
     aa = r1m5 * (double) ((float) k1);
-    dig = min(aa,18.);
+    dig = min(aa, 18.);
     aa *= 2.303;
 /* Computing MAX */
     d__1 = -aa;
-    alim = elim + max(d__1,-41.45);
+    alim = elim + max(d__1, -41.45);
     fnul = (dig - 3.) * 6. + 10.;
     rl = dig * 1.2 + 3.;
 /* ----------------------------------------------------------------------------- */
@@ -2870,7 +2885,7 @@ L260:
     fn = *fnu + (double) ((float) (nn - 1));
     aa = .5 / tol;
     bb = (double) ((float) i1mach(&c__9)) * .5;
-    aa = min(aa,bb);
+    aa = min(aa, bb);
     if (az > aa) {
 	goto L260;
     }
@@ -2910,9 +2925,9 @@ L260:
 	goto L180;
     }
     goto L60;
-L50:
-    zuoik(zr, zi, fnu, kode, &c__2, &nn, &cyr[1], &cyi[1], &nuf, &tol, &elim,
-	     &alim);
+  L50:
+    zuoik(zr, zi, fnu, kode, &c__2, &nn, &cyr[1], &cyi[1], &nuf, &tol,
+	  &elim, &alim);
     if (nuf < 0) {
 	goto L180;
     }
@@ -2925,14 +2940,15 @@ L50:
     if (nn == 0) {
 	goto L100;
     }
-L60:
+  L60:
     if (*zr < 0.) {
 	goto L70;
     }
 /* ----------------------------------------------------------------------- */
 /*     RIGHT HALF PLANE COMPUTATION, REAL(Z).GE.0. */
 /* ----------------------------------------------------------------------- */
-    zbknu(zr, zi, fnu, kode, &nn, &cyr[1], &cyi[1], &nw, &tol, &elim, &alim);
+    zbknu(zr, zi, fnu, kode, &nn, &cyr[1], &cyi[1], &nw, &tol, &elim,
+	  &alim);
     if (nw < 0) {
 	goto L200;
     }
@@ -2942,7 +2958,7 @@ L60:
 /*     LEFT HALF PLANE COMPUTATION */
 /*     PI/2.LT.ARG(Z).LE.PI AND -PI.LT.ARG(Z).LT.-PI/2. */
 /* ----------------------------------------------------------------------- */
-L70:
+  L70:
     if (*nz != 0) {
 	goto L180;
     }
@@ -2950,8 +2966,8 @@ L70:
     if (*zi < 0.) {
 	mr = -1;
     }
-    zacon(zr, zi, fnu, kode, &mr, &nn, &cyr[1], &cyi[1], &nw, &rl, &fnul, &
-	    tol, &elim, &alim);
+    zacon(zr, zi, fnu, kode, &mr, &nn, &cyr[1], &cyi[1], &nw, &rl, &fnul,
+	  &tol, &elim, &alim);
     if (nw < 0) {
 	goto L200;
     }
@@ -2960,7 +2976,7 @@ L70:
 /* ----------------------------------------------------------------------- */
 /*     UNIFORM ASYMPTOTIC EXPANSIONS FOR FNU.GT.FNUL */
 /* ----------------------------------------------------------------------- */
-L80:
+  L80:
     mr = 0;
     if (*zr >= 0.) {
 	goto L90;
@@ -2969,39 +2985,40 @@ L80:
     if (*zi < 0.) {
 	mr = -1;
     }
-L90:
-    zbunk(zr, zi, fnu, kode, &mr, &nn, &cyr[1], &cyi[1], &nw, &tol, &elim, &
-	    alim);
+  L90:
+    zbunk(zr, zi, fnu, kode, &mr, &nn, &cyr[1], &cyi[1], &nw, &tol, &elim,
+	  &alim);
     if (nw < 0) {
 	goto L200;
     }
     *nz += nw;
     return 0;
-L100:
+  L100:
     if (*zr < 0.) {
 	goto L180;
     }
     return 0;
-L180:
+  L180:
     *nz = 0;
     *ierr = 2;
     return 0;
-L200:
+  L200:
     if (nw == -1) {
 	goto L180;
     }
     *nz = 0;
     *ierr = 5;
     return 0;
-L260:
+  L260:
     *nz = 0;
     *ierr = 4;
     return 0;
-} /* zbesk_ */
+}				/* zbesk_ */
 
 /* Subroutine */ int zbesy(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *cyr, double *cyi, long *
-	nz, double *cwrkr, double *cwrki, long *ierr)
+			   long *kode, long *n, double *cyr, double *cyi,
+			   long *nz, double *cwrkr, double *cwrki,
+			   long *ierr)
 {
     /* System generated locals */
     long i__1, i__2;
@@ -3018,8 +3035,8 @@ L260:
     static float r1m5;
     static double exr, sti, tay, tol, str, hcii, elim, atol, rtol, ascle;
     extern /* Subroutine */ int zbesh(double *, double *, double
-	    *, long *, long *, long *, double *, double *,
-	    long *, long *);
+				      *, long *, long *, long *, double *,
+				      double *, long *, long *);
     extern double d1mach(long *);
     extern long i1mach(long *);
 
@@ -3205,7 +3222,7 @@ L260:
     if (*ierr != 0 && *ierr != 3) {
 	goto L170;
     }
-    *nz = min(nz1,nz2);
+    *nz = min(nz1, nz2);
     if (*kode == 2) {
 	goto L60;
     }
@@ -3218,15 +3235,15 @@ L260:
 /* L50: */
     }
     return 0;
-L60:
+  L60:
 /* Computing MAX */
     d__1 = d1mach(&c__4);
-    tol = max(d__1,1e-18);
+    tol = max(d__1, 1e-18);
     k1 = i1mach(&c__15);
     k2 = i1mach(&c__16);
 /* Computing MIN */
     i__1 = abs(k1), i__2 = abs(k2);
-    k = min(i__1,i__2);
+    k = min(i__1, i__2);
     r1m5 = d1mach(&c__5);
 /* ----------------------------------------------------------------------- */
 /*     ELIM IS THE APPROXIMATE EXPONENTIAL UNDER- AND OVERFLOW LIMIT */
@@ -3246,7 +3263,7 @@ L60:
     c1i = exi * ey;
     c2r = exr;
     c2i = -exi;
-L70:
+  L70:
     *nz = 0;
     rtol = 1. / tol;
     ascle = d1mach(&c__1) * rtol * 1e3;
@@ -3263,13 +3280,13 @@ L70:
 	atol = 1.;
 /* Computing MAX */
 	d__1 = abs(aa), d__2 = abs(bb);
-	if (max(d__1,d__2) > ascle) {
+	if (max(d__1, d__2) > ascle) {
 	    goto L75;
 	}
 	aa *= rtol;
 	bb *= rtol;
 	atol = tol;
-L75:
+      L75:
 	str = (aa * c2r - bb * c2i) * atol;
 	sti = (aa * c2i + bb * c2r) * atol;
 	aa = cyr[i__];
@@ -3277,13 +3294,13 @@ L75:
 	atol = 1.;
 /* Computing MAX */
 	d__1 = abs(aa), d__2 = abs(bb);
-	if (max(d__1,d__2) > ascle) {
+	if (max(d__1, d__2) > ascle) {
 	    goto L85;
 	}
 	aa *= rtol;
 	bb *= rtol;
 	atol = tol;
-L85:
+      L85:
 	str -= (aa * c1r - bb * c1i) * atol;
 	sti -= (aa * c1i + bb * c1r) * atol;
 	cyr[i__] = -sti * hcii;
@@ -3294,21 +3311,21 @@ L85:
 /* L80: */
     }
     return 0;
-L90:
+  L90:
     c1r = exr;
     c1i = exi;
     c2r = exr * ey;
     c2i = -exi * ey;
     goto L70;
-L170:
+  L170:
     *nz = 0;
     return 0;
-} /* zbesy_ */
+}				/* zbesy_ */
 
 /* Subroutine */ int zbinu(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *cyr, double *cyi, long *
-	nz, double *rl, double *fnul, double *tol, double *
-	elim, double *alim)
+			   long *kode, long *n, double *cyr, double *cyi,
+			   long *nz, double *rl, double *fnul, double *tol,
+			   double *elim, double *alim)
 {
     /* Initialized data */
 
@@ -3328,21 +3345,37 @@ L170:
     extern double azabs(double *, double *);
     static long nlast;
     extern /* Subroutine */ int zbuni(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    long *, long *, double *, double *, double *,
-	    double *), zseri(double *, double *, double *,
-	    long *, long *, double *, double *, long *,
-	    double *, double *, double *), zmlri(double *,
-	    double *, double *, long *, long *, double *,
-	    double *, long *, double *), zasyi(double *,
-	    double *, double *, long *, long *, double *,
-	    double *, long *, double *, double *, double *,
-	     double *), zuoik(double *, double *, double *,
-	    long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *), zwrsk(
-	    double *, double *, double *, long *, long *,
-	    double *, double *, long *, double *, double *,
-	     double *, double *, double *);
+				      *, long *, long *, double *,
+				      double *, long *, long *, long *,
+				      double *, double *, double *,
+				      double *), zseri(double *, double *,
+						       double *, long *,
+						       long *, double *,
+						       double *, long *,
+						       double *, double *,
+						       double *),
+	zmlri(double *, double *, double *, long *, long *, double *,
+	      double *, long *, double *), zasyi(double *, double *,
+						 double *, long *, long *,
+						 double *, double *,
+						 long *, double *,
+						 double *, double *,
+						 double *), zuoik(double *,
+								  double *,
+								  double *,
+								  long *,
+								  long *,
+								  long *,
+								  double *,
+								  double *,
+								  long *,
+								  double *,
+								  double *,
+								  double
+								  *),
+	zwrsk(double *, double *, double *, long *, long *, double *,
+	      double *, long *, double *, double *, double *, double *,
+	      double *);
 
 /* ***BEGIN PROLOGUE  ZBINU */
 /* ***REFER TO  ZBESH,ZBESI,ZBESJ,ZBESK,ZAIRY,ZBIRY */
@@ -3367,7 +3400,7 @@ L170:
     if (az * az * .25 > dfnu + 1.) {
 	goto L20;
     }
-L10:
+  L10:
 /* ----------------------------------------------------------------------- */
 /*     POWER SERIES */
 /* ----------------------------------------------------------------------- */
@@ -3382,7 +3415,7 @@ L10:
 	goto L120;
     }
     dfnu = *fnu + (double) ((float) (nn - 1));
-L20:
+  L20:
     if (az < *rl) {
 	goto L40;
     }
@@ -3395,23 +3428,23 @@ L20:
 /* ----------------------------------------------------------------------- */
 /*     ASYMPTOTIC EXPANSION FOR LARGE Z */
 /* ----------------------------------------------------------------------- */
-L30:
-    zasyi(zr, zi, fnu, kode, &nn, &cyr[1], &cyi[1], &nw, rl, tol, elim, alim)
-	    ;
+  L30:
+    zasyi(zr, zi, fnu, kode, &nn, &cyr[1], &cyi[1], &nw, rl, tol, elim,
+	  alim);
     if (nw < 0) {
 	goto L130;
     }
     goto L120;
-L40:
+  L40:
     if (dfnu <= 1.) {
 	goto L70;
     }
-L50:
+  L50:
 /* ----------------------------------------------------------------------- */
 /*     OVERFLOW AND UNDERFLOW TEST ON I SEQUENCE FOR MILLER ALGORITHM */
 /* ----------------------------------------------------------------------- */
     zuoik(zr, zi, fnu, kode, &c__1, &nn, &cyr[1], &cyi[1], &nw, tol, elim,
-	    alim);
+	  alim);
     if (nw < 0) {
 	goto L130;
     }
@@ -3427,11 +3460,11 @@ L50:
     if (az > *fnul) {
 	goto L110;
     }
-L60:
+  L60:
     if (az > *rl) {
 	goto L80;
     }
-L70:
+  L70:
 /* ----------------------------------------------------------------------- */
 /*     MILLER ALGORITHM NORMALIZED BY THE SERIES */
 /* ----------------------------------------------------------------------- */
@@ -3440,7 +3473,7 @@ L70:
 	goto L130;
     }
     goto L120;
-L80:
+  L80:
 /* ----------------------------------------------------------------------- */
 /*     MILLER ALGORITHM NORMALIZED BY THE WRONSKIAN */
 /* ----------------------------------------------------------------------- */
@@ -3459,24 +3492,24 @@ L80:
 /* L90: */
     }
     return 0;
-L100:
+  L100:
     if (nw > 0) {
 	goto L130;
     }
-    zwrsk(zr, zi, fnu, kode, &nn, &cyr[1], &cyi[1], &nw, cwr, cwi, tol, elim,
-	     alim);
+    zwrsk(zr, zi, fnu, kode, &nn, &cyr[1], &cyi[1], &nw, cwr, cwi, tol,
+	  elim, alim);
     if (nw < 0) {
 	goto L130;
     }
     goto L120;
-L110:
+  L110:
 /* ----------------------------------------------------------------------- */
 /*     INCREMENT FNU+NN-1 UP TO FNUL, COMPUTE AND RECUR BACKWARD */
 /* ----------------------------------------------------------------------- */
     nui = (long) ((float) (*fnul - dfnu)) + 1;
-    nui = max(nui,0);
-    zbuni(zr, zi, fnu, kode, &nn, &cyr[1], &cyi[1], &nw, &nui, &nlast, fnul,
-	    tol, elim, alim);
+    nui = max(nui, 0);
+    zbuni(zr, zi, fnu, kode, &nn, &cyr[1], &cyi[1], &nw, &nui, &nlast,
+	  fnul, tol, elim, alim);
     if (nw < 0) {
 	goto L130;
     }
@@ -3486,18 +3519,19 @@ L110:
     }
     nn = nlast;
     goto L60;
-L120:
+  L120:
     return 0;
-L130:
+  L130:
     *nz = -1;
     if (nw == -2) {
 	*nz = -2;
     }
     return 0;
-} /* zbinu_ */
+}				/* zbinu_ */
 
 /* Subroutine */ int zbiry(double *zr, double *zi, long *id,
-	long *kode, double *bir, double *bii, long *ierr)
+			   long *kode, double *bir, double *bii,
+			   long *ierr)
 {
     /* Initialized data */
 
@@ -3514,8 +3548,8 @@ L130:
     double d__1;
 
     /* Builtin functions */
-    double exp(double), pow_dd(double *, double *), sqrt(
-	    double), log(double), cos(double), sin(double);
+    double exp(double), pow_dd(double *, double *), sqrt(double),
+	log(double), cos(double), sin(double);
 
     /* Local variables */
     static long k;
@@ -3524,20 +3558,20 @@ L130:
     static double aa, bb, ad, cc, ak, bk, ck, dk, az, rl;
     static long nz;
     static double s1i, az3, s2i, s1r, s2r, z3i, z3r, eaa, fid, dig, cyi[2]
-	    , fmr, r1m5, fnu, cyr[2], tol, sti, str, sfac, alim, elim, csqi,
-	    atrm, fnul, ztai, csqr;
+    , fmr, r1m5, fnu, cyr[2], tol, sti, str, sfac, alim, elim, csqi,
+	atrm, fnul, ztai, csqr;
     extern /* Subroutine */ int zdiv(double *, double *, double *
-	    , double *, double *, double *);
+				     , double *, double *, double *);
     static double ztar, trm1i, trm2i, trm1r, trm2r;
     extern double azabs(double *, double *);
     extern /* Subroutine */ int zbinu(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    double *, double *, double *, double *,
-	    double *);
+				      *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *, double *, double *);
     extern double d1mach(long *);
     extern long i1mach(long *);
     extern /* Subroutine */ int azsqrt(double *, double *,
-	    double *, double *);
+				       double *, double *);
 
 /* ***BEGIN PROLOGUE  ZBIRY */
 /* ***DATE WRITTEN   830501   (YYMMDD) */
@@ -3676,7 +3710,7 @@ L130:
     az = azabs(zr, zi);
 /* Computing MAX */
     d__1 = d1mach(&c__4);
-    tol = max(d__1,1e-18);
+    tol = max(d__1, 1e-18);
     fid = (double) ((float) (*id));
     if (az > 1.f) {
 	goto L70;
@@ -3711,7 +3745,7 @@ L130:
     dk = fid + 3. + fid;
     d1 = ak * dk;
     d2 = bk * ck;
-    ad = min(d1,d2);
+    ad = min(d1, d2);
     ak = fid * 9. + 24.;
     bk = 30. - fid * 9.;
     for (k = 1; k <= 25; ++k) {
@@ -3728,7 +3762,7 @@ L130:
 	atrm = atrm * az3 / ad;
 	d1 += ak;
 	d2 += bk;
-	ad = min(d1,d2);
+	ad = min(d1, d2);
 	if (atrm < tol * ad) {
 	    goto L40;
 	}
@@ -3736,7 +3770,7 @@ L130:
 	bk += 18.;
 /* L30: */
     }
-L40:
+  L40:
     if (*id == 1) {
 	goto L50;
     }
@@ -3754,7 +3788,7 @@ L40:
     *bir *= eaa;
     *bii *= eaa;
     return 0;
-L50:
+  L50:
     *bir = s2r * c2;
     *bii = s2i * c2;
     if (az <= tol) {
@@ -3765,7 +3799,7 @@ L50:
     sti = s1r * *zi + s1i * *zr;
     *bir += cc * (str * *zr - sti * *zi);
     *bii += cc * (str * *zi + sti * *zr);
-L60:
+  L60:
     if (*kode == 1) {
 	return 0;
     }
@@ -3781,7 +3815,7 @@ L60:
 /* ----------------------------------------------------------------------- */
 /*     CASE FOR CABS(Z).GT.1.0 */
 /* ----------------------------------------------------------------------- */
-L70:
+  L70:
     fnu = (fid + 1.) / 3.;
 /* ----------------------------------------------------------------------- */
 /*     SET PARAMETERS RELATED TO MACHINE CONSTANTS. */
@@ -3799,15 +3833,15 @@ L70:
     r1m5 = d1mach(&c__5);
 /* Computing MIN */
     i__1 = abs(k1), i__2 = abs(k2);
-    k = min(i__1,i__2);
+    k = min(i__1, i__2);
     elim = ((double) ((float) k) * r1m5 - 3.) * 2.303;
     k1 = i1mach(&c__14) - 1;
     aa = r1m5 * (double) ((float) k1);
-    dig = min(aa,18.);
+    dig = min(aa, 18.);
     aa *= 2.303;
 /* Computing MAX */
     d__1 = -aa;
-    alim = elim + max(d__1,-41.45);
+    alim = elim + max(d__1, -41.45);
     rl = dig * 1.2 + 3.;
     fnul = (dig - 3.) * 6. + 10.;
 /* ----------------------------------------------------------------------- */
@@ -3815,7 +3849,7 @@ L70:
 /* ----------------------------------------------------------------------- */
     aa = .5 / tol;
     bb = (double) ((float) i1mach(&c__9)) * .5;
-    aa = min(aa,bb);
+    aa = min(aa, bb);
     aa = pow_dd(&aa, &tth);
     if (az > aa) {
 	goto L260;
@@ -3839,13 +3873,13 @@ L70:
     ck = -abs(bk);
     ztar = ck;
     ztai = ak;
-L80:
+  L80:
     if (*zi != 0. || *zr > 0.) {
 	goto L90;
     }
     ztar = 0.;
     ztai = ak;
-L90:
+  L90:
     aa = ztar;
     if (*kode == 2) {
 	goto L100;
@@ -3862,7 +3896,7 @@ L90:
     if (bb > elim) {
 	goto L190;
     }
-L100:
+  L100:
     fmr = 0.;
     if (aa >= 0. && *zr > 0.) {
 	goto L110;
@@ -3873,13 +3907,13 @@ L100:
     }
     ztar = -ztar;
     ztai = -ztai;
-L110:
+  L110:
 /* ----------------------------------------------------------------------- */
 /*     AA=FACTOR FOR ANALYTIC CONTINUATION OF I(FNU,ZTA) */
 /*     KODE=2 RETURNS EXP(-ABS(XZTA))*I(FNU,ZTA) FROM CBESI */
 /* ----------------------------------------------------------------------- */
-    zbinu(&ztar, &ztai, &fnu, kode, &c__1, cyr, cyi, &nz, &rl, &fnul, &tol, &
-	    elim, &alim);
+    zbinu(&ztar, &ztai, &fnu, kode, &c__1, cyr, cyi, &nz, &rl, &fnul, &tol,
+	  &elim, &alim);
     if (nz < 0) {
 	goto L200;
     }
@@ -3890,8 +3924,8 @@ L110:
     s1r = (str * cyr[0] - sti * cyi[0]) * z3r;
     s1i = (str * cyi[0] + sti * cyr[0]) * z3r;
     fnu = (2. - fid) / 3.;
-    zbinu(&ztar, &ztai, &fnu, kode, &c__2, cyr, cyi, &nz, &rl, &fnul, &tol, &
-	    elim, &alim);
+    zbinu(&ztar, &ztai, &fnu, kode, &c__2, cyr, cyi, &nz, &rl, &fnul, &tol,
+	  &elim, &alim);
     cyr[0] *= z3r;
     cyi[0] *= z3r;
     cyr[1] *= z3r;
@@ -3916,38 +3950,39 @@ L110:
     *bir = s1r / sfac;
     *bii = s1i / sfac;
     return 0;
-L120:
+  L120:
     str = *zr * s1r - *zi * s1i;
     s1i = *zr * s1i + *zi * s1r;
     s1r = str;
     *bir = s1r / sfac;
     *bii = s1i / sfac;
     return 0;
-L130:
+  L130:
     aa = c1 * (1. - fid) + fid * c2;
     *bir = aa;
     *bii = 0.;
     return 0;
-L190:
+  L190:
     *ierr = 2;
     nz = 0;
     return 0;
-L200:
+  L200:
     if (nz == -1) {
 	goto L190;
     }
     nz = 0;
     *ierr = 5;
     return 0;
-L260:
+  L260:
     *ierr = 4;
     nz = 0;
     return 0;
-} /* zbiry_ */
+}				/* zbiry_ */
 
 /* Subroutine */ int zbknu(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *yr, double *yi, long *
-	nz, double *tol, double *elim, double *alim)
+			   long *kode, long *n, double *yr, double *yi,
+			   long *nz, double *tol, double *elim,
+			   double *alim)
 {
     /* Initialized data */
 
@@ -3964,10 +3999,11 @@ L260:
     static double hpi = 1.57079632679489662;
     static double fpi = 1.89769999331517738;
     static double tth = .666666666666666666;
-    static double cc[8] = { .577215664901532861,-.0420026350340952355,
-	    -.0421977345555443367,.00721894324666309954,
-	    -2.15241674114950973e-4,-2.01348547807882387e-5,
-	    1.13302723198169588e-6,6.11609510448141582e-9 };
+    static double cc[8] = { .577215664901532861, -.0420026350340952355,
+	-.0421977345555443367, .00721894324666309954,
+	-2.15241674114950973e-4, -2.01348547807882387e-5,
+	1.13302723198169588e-6, 6.11609510448141582e-9
+    };
 
     /* System generated locals */
     long i__1;
@@ -3975,7 +4011,7 @@ L260:
 
     /* Builtin functions */
     double sin(double), exp(double), cos(double), atan(double)
-	    , sqrt(double), log(double);
+    , sqrt(double), log(double);
 
     /* Local variables */
     static long i__, j, k;
@@ -3986,17 +4022,17 @@ L260:
     static double fr, pi, qi, tm, pr, qr;
     static long nw;
     static double p1i, p2i, s1i, s2i, p2m, p1r, p2r, s1r, s2r, cbi, cbr,
-	    cki, caz, csi, ckr, fhs, fks, rak, czi, dnu, csr, elm, zdi, bry[3]
-	    , pti, czr, sti, zdr, cyr[2], rzi, ptr, cyi[2];
+	cki, caz, csi, ckr, fhs, fks, rak, czi, dnu, csr, elm, zdi, bry[3]
+    , pti, czr, sti, zdr, cyr[2], rzi, ptr, cyi[2];
     static long inu;
     static double str, rzr, dnu2, cchi, cchr, alas, cshi;
     static long inub, idum;
     static double cshr, fmui, rcaz, csrr[3], cssr[3], fmur;
     extern /* Subroutine */ int zdiv(double *, double *, double *
-	    , double *, double *, double *);
+				     , double *, double *, double *);
     static double smui, smur;
     extern /* Subroutine */ int zmlt(double *, double *, double *
-	    , double *, double *, double *);
+				     , double *, double *, double *);
     static long iflag, kflag;
     static double coefi;
     static long koded;
@@ -4004,20 +4040,26 @@ L260:
     extern double azabs(double *, double *);
     static double celmr, csclr, crscr;
     extern /* Subroutine */ int azlog(double *, double *, double
-	    *, double *, long *), zshch(double *, double *,
-	    double *, double *, double *, double *);
+				      *, double *, long *), zshch(double *,
+								  double *,
+								  double *,
+								  double *,
+								  double *,
+								  double
+								  *);
     static double etest;
     extern /* Subroutine */ int zuchk(double *, double *, long *,
-	    double *, double *), azexp(double *, double *,
-	    double *, double *), zkscl(double *, double *,
-	    double *, long *, double *, double *, long *,
-	    double *, double *, double *, double *,
-	    double *);
+				      double *, double *), azexp(double *,
+								 double *,
+								 double *,
+								 double *),
+	zkscl(double *, double *, double *, long *, double *, double *,
+	      long *, double *, double *, double *, double *, double *);
     extern double d1mach(long *);
     extern long i1mach(long *);
     extern double dgamln(double *, long *);
     extern /* Subroutine */ int azsqrt(double *, double *,
-	    double *, double *);
+				       double *, double *);
 
 /* ***BEGIN PROLOGUE  ZBKNU */
 /* ***REFER TO  ZBESI,ZBESK,ZAIRY,ZBESH */
@@ -4084,7 +4126,7 @@ L260:
     fc /= sin(fc);
     smur = cshr / dnu;
     smui = cshi / dnu;
-L10:
+  L10:
     a2 = dnu + 1.;
 /* ----------------------------------------------------------------------- */
 /*     GAM(1-Z)*GAM(1+Z)=PI*Z/SIN(PI*Z), T1=1/GAM(1-DNU), T2=1/GAM(1+DNU) */
@@ -4108,12 +4150,12 @@ L10:
 	}
 /* L20: */
     }
-L30:
+  L30:
     g1 = -s;
     goto L50;
-L40:
+  L40:
     g1 = (t1 - t2) / (dnu + dnu);
-L50:
+  L50:
     g2 = (t1 + t2) * .5;
     fr = fc * (cchr * g1 + smur * g2);
     fi = fc * (cchi * g1 + smui * g2);
@@ -4145,7 +4187,7 @@ L50:
     czr *= .25;
     czi *= .25;
     t1 = caz * .25 * caz;
-L60:
+  L60:
     fr = (fr * ak + pr + qr) / bk;
     fi = (fi * ak + pi + qi) / bk;
     str = 1. / (ak - dnu);
@@ -4166,7 +4208,7 @@ L60:
     if (a1 > *tol) {
 	goto L60;
     }
-L70:
+  L70:
     yr[1] = s1r;
     yi[1] = s1i;
     if (koded == 1) {
@@ -4178,7 +4220,7 @@ L70:
 /* ----------------------------------------------------------------------- */
 /*     GENERATE K(DNU,Z) AND K(DNU+1,Z) FOR FORWARD RECURRENCE */
 /* ----------------------------------------------------------------------- */
-L80:
+  L80:
     if (caz < *tol) {
 	goto L100;
     }
@@ -4186,7 +4228,7 @@ L80:
     czr *= .25;
     czi *= .25;
     t1 = caz * .25 * caz;
-L90:
+  L90:
     fr = (fr * ak + pr + qr) / bk;
     fi = (fi * ak + pi + qi) / bk;
     str = 1. / (ak - dnu);
@@ -4211,7 +4253,7 @@ L90:
     if (a1 > *tol) {
 	goto L90;
     }
-L100:
+  L100:
     kflag = 2;
     a1 = *fnu + 1.;
     ak = a1 * abs(smur);
@@ -4237,7 +4279,7 @@ L100:
 /*     KODED=2 AND A TEST FOR ON SCALE VALUES IS MADE DURING FORWARD */
 /*     RECURSION */
 /* ----------------------------------------------------------------------- */
-L110:
+  L110:
     azsqrt(zr, zi, &str, &sti);
     zdiv(&rthpi, &czeroi, &str, &sti, &coefr, &coefi);
     kflag = 2;
@@ -4252,7 +4294,7 @@ L110:
     sti = -str * sin(*zi);
     str *= cos(*zi);
     zmlt(&coefr, &coefi, &str, &sti, &coefr, &coefi);
-L120:
+  L120:
     if (abs(dnu) == .5) {
 	goto L300;
     }
@@ -4276,18 +4318,18 @@ L120:
 /* ----------------------------------------------------------------------- */
     t1 = (double) ((float) (i1mach(&c__14) - 1));
     t1 = t1 * d1mach(&c__5) * 3.321928094;
-    t1 = max(t1,12.);
-    t1 = min(t1,60.);
+    t1 = max(t1, 12.);
+    t1 = min(t1, 60.);
     t2 = tth * t1 - 6.;
     if (*zr != 0.) {
 	goto L130;
     }
     t1 = hpi;
     goto L140;
-L130:
+  L130:
     t1 = atan(*zi / *zr);
     t1 = abs(t1);
-L140:
+  L140:
     if (t2 > caz) {
 	goto L170;
     }
@@ -4321,11 +4363,11 @@ L140:
 /* L150: */
     }
     goto L310;
-L160:
+  L160:
     fk += spi * t1 * sqrt(t2 / caz);
     fhs = (d__1 = .25 - dnu2, abs(d__1));
     goto L180;
-L170:
+  L170:
 /* ----------------------------------------------------------------------- */
 /*     COMPUTE BACKWARD INDEX K FOR CABS(Z).LT.R2 */
 /* ----------------------------------------------------------------------- */
@@ -4335,7 +4377,7 @@ L170:
     bb = t1 * 14.7 / (caz + 28.);
     ak = (log(ak) + caz * cos(aa) / (caz * .008 + 1.)) / cos(bb);
     fk = ak * .12125 * ak / caz + 1.5;
-L180:
+  L180:
 /* ----------------------------------------------------------------------- */
 /*     BACKWARD RECURRENCE LOOP FOR MILLER ALGORITHM */
 /* ----------------------------------------------------------------------- */
@@ -4388,7 +4430,7 @@ L180:
 	goto L270;
     }
     goto L240;
-L200:
+  L200:
 /* ----------------------------------------------------------------------- */
 /*     COMPUTE P1/P2=(P1/CABS(P2)*CONJG(P2)/CABS(P2) FOR SCALING */
 /* ----------------------------------------------------------------------- */
@@ -4408,7 +4450,7 @@ L200:
 /*     FORWARD RECURSION ON THE THREE TERM RECURSION WITH RELATION WITH */
 /*     SCALING NEAR EXPONENT EXTREMES ON KFLAG=1 OR KFLAG=3 */
 /* ----------------------------------------------------------------------- */
-L210:
+  L210:
     str = dnu + 1.;
     ckr = str * rzr;
     cki = str * rzi;
@@ -4423,19 +4465,19 @@ L210:
     }
     s1r = s2r;
     s1i = s2i;
-L215:
+  L215:
     zdr = *zr;
     zdi = *zi;
     if (iflag == 1) {
 	goto L270;
     }
     goto L240;
-L220:
+  L220:
     inub = 1;
     if (iflag == 1) {
 	goto L261;
     }
-L225:
+  L225:
     p1r = csrr[kflag - 1];
     ascle = bry[kflag - 1];
     i__1 = inu;
@@ -4455,7 +4497,7 @@ L225:
 	p2i = s2i * p1r;
 	str = abs(p2r);
 	sti = abs(p2i);
-	p2m = max(str,sti);
+	p2m = max(str, sti);
 	if (p2m <= ascle) {
 	    goto L230;
 	}
@@ -4471,7 +4513,7 @@ L225:
 	s2r *= str;
 	s2i *= str;
 	p1r = csrr[kflag - 1];
-L230:
+      L230:
 	;
     }
     if (*n != 1) {
@@ -4479,7 +4521,7 @@ L230:
     }
     s1r = s2r;
     s1i = s2i;
-L240:
+  L240:
     str = csrr[kflag - 1];
     yr[1] = s1r * str;
     yi[1] = s1i * str;
@@ -4492,7 +4534,7 @@ L240:
 	return 0;
     }
     kk = 2;
-L250:
+  L250:
     ++kk;
     if (kk > *n) {
 	return 0;
@@ -4518,7 +4560,7 @@ L250:
 	}
 	str = abs(p2r);
 	sti = abs(p2i);
-	p2m = max(str,sti);
+	p2m = max(str, sti);
 	if (p2m <= ascle) {
 	    goto L260;
 	}
@@ -4534,14 +4576,14 @@ L250:
 	s2r *= str;
 	s2i *= str;
 	p1r = csrr[kflag - 1];
-L260:
+      L260:
 	;
     }
     return 0;
 /* ----------------------------------------------------------------------- */
 /*     IFLAG=1 CASES, FORWARD RECURRENCE ON SCALED VALUES ON UNDERFLOW */
 /* ----------------------------------------------------------------------- */
-L261:
+  L261:
     helim = *elim * .5;
     elm = exp(-(*elim));
     celmr = elm;
@@ -4584,7 +4626,7 @@ L261:
 	}
 	ic = i__;
 	goto L262;
-L263:
+      L263:
 	if (alas < helim) {
 	    goto L262;
 	}
@@ -4593,7 +4635,7 @@ L263:
 	s1i *= celmr;
 	s2r *= celmr;
 	s2i *= celmr;
-L262:
+      L262:
 	;
     }
     if (*n != 1) {
@@ -4602,7 +4644,7 @@ L262:
     s1r = s2r;
     s1i = s2i;
     goto L270;
-L264:
+  L264:
     kflag = 1;
     inub = i__ + 1;
     s2r = cyr[j - 1];
@@ -4619,7 +4661,7 @@ L264:
     s1r = s2r;
     s1i = s2i;
     goto L240;
-L270:
+  L270:
     yr[1] = s1r;
     yi[1] = s1i;
     if (*n == 1) {
@@ -4627,10 +4669,10 @@ L270:
     }
     yr[2] = s2r;
     yi[2] = s2i;
-L280:
+  L280:
     ascle = bry[0];
     zkscl(&zdr, &zdi, fnu, n, &yr[1], &yi[1], nz, &rzr, &rzi, &ascle, tol,
-	    elim);
+	  elim);
     inu = *n - *nz;
     if (inu <= 0) {
 	return 0;
@@ -4656,7 +4698,7 @@ L280:
     cki = t2 * rzi;
     kflag = 1;
     goto L250;
-L290:
+  L290:
 /* ----------------------------------------------------------------------- */
 /*     SCALE BY DEXP(Z), IFLAG = 1 CASES */
 /* ----------------------------------------------------------------------- */
@@ -4667,7 +4709,7 @@ L290:
 /* ----------------------------------------------------------------------- */
 /*     FNU=HALF ODD INTEGER CASE, DNU=-0.5 */
 /* ----------------------------------------------------------------------- */
-L300:
+  L300:
     s1r = coefr;
     s1i = coefi;
     s2r = coefr;
@@ -4675,15 +4717,15 @@ L300:
     goto L210;
 
 
-L310:
+  L310:
     *nz = -2;
     return 0;
-} /* zbknu_ */
+}				/* zbknu_ */
 
 /* Subroutine */ int zbuni(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *yr, double *yi, long *
-	nz, long *nui, long *nlast, double *fnul, double *tol,
-	double *elim, double *alim)
+			   long *kode, long *n, double *yr, double *yi,
+			   long *nz, long *nui, long *nlast, double *fnul,
+			   double *tol, double *elim, double *alim)
 {
     /* System generated locals */
     long i__1;
@@ -4693,13 +4735,14 @@ L310:
     static double ax, ay;
     static long nl, nw;
     static double c1i, c1m, c1r, s1i, s2i, s1r, s2r, cyi[2], gnu, raz,
-	    cyr[2], sti, bry[3], rzi, str, rzr, dfnu, fnui;
+	cyr[2], sti, bry[3], rzi, str, rzr, dfnu, fnui;
     extern /* Subroutine */ int zuni1(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    long *, double *, double *, double *, double *)
-	    , zuni2(double *, double *, double *, long *,
-	    long *, double *, double *, long *, long *,
-	    double *, double *, double *, double *);
+				      *, long *, long *, double *,
+				      double *, long *, long *, double *,
+				      double *, double *, double *)
+    , zuni2(double *, double *, double *, long *, long *, double *,
+	    double *, long *, long *, double *, double *, double *,
+	    double *);
     static long iflag;
     static double ascle;
     extern double azabs(double *, double *);
@@ -4745,17 +4788,17 @@ L310:
 /*     -PI/3.LE.ARG(Z).LE.PI/3 */
 /* ----------------------------------------------------------------------- */
     zuni1(zr, zi, &gnu, kode, &c__2, cyr, cyi, &nw, nlast, fnul, tol, elim,
-	    alim);
+	  alim);
     goto L20;
-L10:
+  L10:
 /* ----------------------------------------------------------------------- */
 /*     ASYMPTOTIC EXPANSION FOR J(FNU,Z*EXP(M*HPI)) FOR LARGE FNU */
 /*     APPLIED IN PI/3.LT.ABS(ARG(Z)).LE.PI/2 WHERE M=+I OR -I */
 /*     AND HPI=PI/2 */
 /* ----------------------------------------------------------------------- */
     zuni2(zr, zi, &gnu, kode, &c__2, cyr, cyi, &nw, nlast, fnul, tol, elim,
-	    alim);
-L20:
+	  alim);
+  L20:
     if (nw < 0) {
 	goto L50;
     }
@@ -4779,14 +4822,14 @@ L20:
     ascle = bry[0];
     csclr = 1. / *tol;
     goto L25;
-L21:
+  L21:
     if (str < bry[1]) {
 	goto L25;
     }
     iflag = 3;
     ascle = bry[2];
     csclr = *tol;
-L25:
+  L25:
     cscrr = 1. / csclr;
     s1r = cyr[1] * csclr;
     s1i = cyi[1] * csclr;
@@ -4813,7 +4856,7 @@ L25:
 	sti = s2i * cscrr;
 	c1r = abs(str);
 	c1i = abs(sti);
-	c1m = max(c1r,c1i);
+	c1m = max(c1r, c1i);
 	if (c1m <= ascle) {
 	    goto L30;
 	}
@@ -4829,7 +4872,7 @@ L25:
 	s1i *= csclr;
 	s2r *= csclr;
 	s2i *= csclr;
-L30:
+      L30:
 	;
     }
     yr[*n] = s2r * cscrr;
@@ -4859,7 +4902,7 @@ L30:
 	}
 	c1r = abs(str);
 	c1i = abs(sti);
-	c1m = max(c1r,c1i);
+	c1m = max(c1r, c1i);
 	if (c1m <= ascle) {
 	    goto L40;
 	}
@@ -4875,17 +4918,17 @@ L30:
 	s1i *= csclr;
 	s2r *= csclr;
 	s2i *= csclr;
-L40:
+      L40:
 	;
     }
     return 0;
-L50:
+  L50:
     *nz = -1;
     if (nw == -2) {
 	*nz = -2;
     }
     return 0;
-L60:
+  L60:
     if (iform == 2) {
 	goto L70;
     }
@@ -4893,39 +4936,43 @@ L60:
 /*     ASYMPTOTIC EXPANSION FOR I(FNU,Z) FOR LARGE FNU APPLIED IN */
 /*     -PI/3.LE.ARG(Z).LE.PI/3 */
 /* ----------------------------------------------------------------------- */
-    zuni1(zr, zi, fnu, kode, n, &yr[1], &yi[1], &nw, nlast, fnul, tol, elim,
-	    alim);
+    zuni1(zr, zi, fnu, kode, n, &yr[1], &yi[1], &nw, nlast, fnul, tol,
+	  elim, alim);
     goto L80;
-L70:
+  L70:
 /* ----------------------------------------------------------------------- */
 /*     ASYMPTOTIC EXPANSION FOR J(FNU,Z*EXP(M*HPI)) FOR LARGE FNU */
 /*     APPLIED IN PI/3.LT.ABS(ARG(Z)).LE.PI/2 WHERE M=+I OR -I */
 /*     AND HPI=PI/2 */
 /* ----------------------------------------------------------------------- */
-    zuni2(zr, zi, fnu, kode, n, &yr[1], &yi[1], &nw, nlast, fnul, tol, elim,
-	    alim);
-L80:
+    zuni2(zr, zi, fnu, kode, n, &yr[1], &yi[1], &nw, nlast, fnul, tol,
+	  elim, alim);
+  L80:
     if (nw < 0) {
 	goto L50;
     }
     *nz = nw;
     return 0;
-L90:
+  L90:
     *nlast = *n;
     return 0;
-} /* zbuni_ */
+}				/* zbuni_ */
 
 /* Subroutine */ int zbunk(double *zr, double *zi, double *fnu,
-	long *kode, long *mr, long *n, double *yr, double *
-	yi, long *nz, double *tol, double *elim, double *alim)
+			   long *kode, long *mr, long *n, double *yr,
+			   double *yi, long *nz, double *tol, double *elim,
+			   double *alim)
 {
     static double ax, ay;
     extern /* Subroutine */ int zunk1(double *, double *, double
-	    *, long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *), zunk2(
-	    double *, double *, double *, long *, long *,
-	    long *, double *, double *, long *, double *,
-	    double *, double *);
+				      *, long *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *), zunk2(double *, double *,
+						       double *, long *,
+						       long *, long *,
+						       double *, double *,
+						       long *, double *,
+						       double *, double *);
 
 /* ***BEGIN PROLOGUE  ZBUNK */
 /* ***REFER TO  ZBESK,ZBESH */
@@ -4954,19 +5001,19 @@ L90:
 /* ----------------------------------------------------------------------- */
     zunk1(zr, zi, fnu, kode, mr, n, &yr[1], &yi[1], nz, tol, elim, alim);
     goto L20;
-L10:
+  L10:
 /* ----------------------------------------------------------------------- */
 /*     ASYMPTOTIC EXPANSION FOR H(2,FNU,Z*EXP(M*HPI)) FOR LARGE FNU */
 /*     APPLIED IN PI/3.LT.ABS(ARG(Z)).LE.PI/2 WHERE M=+I OR -I */
 /*     AND HPI=PI/2 */
 /* ----------------------------------------------------------------------- */
     zunk2(zr, zi, fnu, kode, mr, n, &yr[1], &yi[1], nz, tol, elim, alim);
-L20:
+  L20:
     return 0;
-} /* zbunk_ */
+}				/* zbunk_ */
 
 /* Subroutine */ int zdiv(double *ar, double *ai, double *br,
-	double *bi, double *cr, double *ci)
+			  double *bi, double *cr, double *ci)
 {
     static double ca, cb, cc, cd, bm;
     extern double azabs(double *, double *);
@@ -4986,10 +5033,10 @@ L20:
     *cr = ca;
     *ci = cb;
     return 0;
-} /* zdiv_ */
+}				/* zdiv_ */
 
 /* Subroutine */ int azexp(double *ar, double *ai, double *br,
-	double *bi)
+			   double *bi)
 {
     /* Builtin functions */
     double exp(double), cos(double), sin(double);
@@ -5010,12 +5057,12 @@ L20:
     *br = ca;
     *bi = cb;
     return 0;
-} /* azexp_ */
+}				/* azexp_ */
 
 /* Subroutine */ int zkscl(double *zrr, double *zri, double *fnu,
-	 long *n, double *yr, double *yi, long *nz, double *
-	rzr, double *rzi, double *ascle, double *tol, double *
-	elim)
+			   long *n, double *yr, double *yi, long *nz,
+			   double *rzr, double *rzi, double *ascle,
+			   double *tol, double *elim)
 {
     /* Initialized data */
 
@@ -5033,14 +5080,18 @@ L20:
     static double as, fn;
     static long kk, nn, nw;
     static double s1i, s2i, s1r, s2r, acs, cki, elm, csi, ckr, cyi[2],
-	    zdi, csr, cyr[2], zdr, str, alas;
+	zdi, csr, cyr[2], zdr, str, alas;
     static long idum;
     static double helim;
     extern double azabs(double *, double *);
     static double celmr;
     extern /* Subroutine */ int azlog(double *, double *, double
-	    *, double *, long *), zuchk(double *, double *,
-	    long *, double *, double *);
+				      *, double *, long *), zuchk(double *,
+								  double *,
+								  long *,
+								  double *,
+								  double
+								  *);
 
 /* ***BEGIN PROLOGUE  ZKSCL */
 /* ***REFER TO  ZBESK */
@@ -5060,7 +5111,7 @@ L20:
 
     *nz = 0;
     ic = 0;
-    nn = min(2,*n);
+    nn = min(2, *n);
     i__1 = nn;
     for (i__ = 1; i__ <= i__1; ++i__) {
 	s1r = yr[i__];
@@ -5089,7 +5140,7 @@ L20:
 	yi[i__] = csi;
 	ic = i__;
 	--(*nz);
-L10:
+      L10:
 	;
     }
     if (*n == 1) {
@@ -5101,7 +5152,7 @@ L10:
     yr[1] = zeror;
     yi[1] = zeroi;
     *nz = 2;
-L20:
+  L20:
     if (*n == 2) {
 	return 0;
     }
@@ -5162,7 +5213,7 @@ L20:
 	}
 	ic = kk;
 	goto L30;
-L25:
+      L25:
 	if (alas < helim) {
 	    goto L30;
 	}
@@ -5171,7 +5222,7 @@ L25:
 	s1i *= celmr;
 	s2r *= celmr;
 	s2i *= celmr;
-L30:
+      L30:
 	;
     }
     *nz = *n;
@@ -5179,9 +5230,9 @@ L30:
 	*nz = *n - 1;
     }
     goto L45;
-L40:
+  L40:
     *nz = kk - 2;
-L45:
+  L45:
     i__1 = *nz;
     for (i__ = 1; i__ <= i__1; ++i__) {
 	yr[i__] = zeror;
@@ -5189,10 +5240,10 @@ L45:
 /* L50: */
     }
     return 0;
-} /* zkscl_ */
+}				/* zkscl_ */
 
 /* Subroutine */ int azlog(double *ar, double *ai, double *br,
-	double *bi, long *ierr)
+			   double *bi, long *ierr)
 {
     /* Initialized data */
 
@@ -5230,7 +5281,7 @@ L45:
 	dtheta -= dpi;
     }
     goto L50;
-L10:
+  L10:
     if (*ai == 0.) {
 	goto L60;
     }
@@ -5240,34 +5291,34 @@ L10:
 	*bi = -(*bi);
     }
     return 0;
-L20:
+  L20:
     if (*ar > 0.) {
 	goto L30;
     }
     *br = log((abs(*ar)));
     *bi = dpi;
     return 0;
-L30:
+  L30:
     *br = log(*ar);
     *bi = 0.;
     return 0;
-L40:
+  L40:
     if (*ar < 0.) {
 	dtheta += dpi;
     }
-L50:
+  L50:
     zm = azabs(ar, ai);
     *br = log(zm);
     *bi = dtheta;
     return 0;
-L60:
+  L60:
     *ierr = 1;
     return 0;
-} /* azlog_ */
+}				/* azlog_ */
 
 /* Subroutine */ int zmlri(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *yr, double *yi, long *
-	nz, double *tol)
+			   long *kode, long *n, double *yr, double *yi,
+			   long *nz, double *tol)
 {
     /* Initialized data */
 
@@ -5292,16 +5343,19 @@ L60:
     static double rho;
     static long inu;
     static double pti, raz, sti, rzi, ptr, str, tst, rzr, rho2, flam,
-	    fkap, scle, tfnf;
+	fkap, scle, tfnf;
     static long idum, ifnu;
     static double sumi, sumr;
     extern /* Subroutine */ int zmlt(double *, double *, double *
-	    , double *, double *, double *);
+				     , double *, double *, double *);
     extern double azabs(double *, double *);
     static long itime;
     extern /* Subroutine */ int azlog(double *, double *, double
-	    *, double *, long *), azexp(double *, double *,
-	    double *, double *);
+				      *, double *, long *), azexp(double *,
+								  double *,
+								  double *,
+								  double
+								  *);
     extern double d1mach(long *), dgamln(double *, long *);
     static double cnormi, cnormr;
 
@@ -5363,7 +5417,7 @@ L60:
 /* L10: */
     }
     goto L110;
-L20:
+  L20:
     ++i__;
     k = 0;
     if (inu < iaz) {
@@ -5403,21 +5457,21 @@ L20:
 	ack = azabs(&ckr, &cki);
 	flam = ack + sqrt(ack * ack - 1.);
 	fkap = ap / azabs(&p1r, &p1i);
-	rho = min(flam,fkap);
+	rho = min(flam, fkap);
 	tst *= sqrt(rho / (rho * rho - 1.));
 	itime = 2;
-L30:
+      L30:
 	;
     }
     goto L110;
-L40:
+  L40:
 /* ----------------------------------------------------------------------- */
 /*     BACKWARD RECURRENCE AND SUM NORMALIZING RELATION */
 /* ----------------------------------------------------------------------- */
     ++k;
 /* Computing MAX */
     i__1 = i__ + iaz, i__2 = k + inu;
-    kk = max(i__1,i__2);
+    kk = max(i__1, i__2);
     fkk = (double) ((float) kk);
     p1r = zeror;
     p1i = zeroi;
@@ -5431,8 +5485,8 @@ L40:
     d__1 = fkk + tfnf + 1.;
     d__2 = fkk + 1.;
     d__3 = tfnf + 1.;
-    bk = dgamln(&d__1, &idum) - dgamln(&d__2, &idum) - dgamln(&d__3, &idum)
-	    ;
+    bk = dgamln(&d__1, &idum) - dgamln(&d__2, &idum) - dgamln(&d__3,
+							      &idum);
     bk = exp(bk);
     sumr = zeror;
     sumi = zeroi;
@@ -5477,7 +5531,7 @@ L40:
 	yi[m] = p2i;
 /* L60: */
     }
-L70:
+  L70:
     if (ifnu <= 0) {
 	goto L90;
     }
@@ -5497,7 +5551,7 @@ L70:
 	fkk += -1.;
 /* L80: */
     }
-L90:
+  L90:
     ptr = *zr;
     pti = *zi;
     if (*kode == 2) {
@@ -5532,13 +5586,13 @@ L90:
 /* L100: */
     }
     return 0;
-L110:
+  L110:
     *nz = -2;
     return 0;
-} /* zmlri_ */
+}				/* zmlri_ */
 
 /* Subroutine */ int zmlt(double *ar, double *ai, double *br,
-	double *bi, double *cr, double *ci)
+			  double *bi, double *cr, double *ci)
 {
     static double ca, cb;
 
@@ -5554,10 +5608,10 @@ L110:
     *cr = ca;
     *ci = cb;
     return 0;
-} /* zmlt_ */
+}				/* zmlt_ */
 
 /* Subroutine */ int zrati(double *zr, double *zi, double *fnu,
-	long *n, double *cyr, double *cyi, double *tol)
+			   long *n, double *cyr, double *cyi, double *tol)
 {
     /* Initialized data */
 
@@ -5579,13 +5633,13 @@ L110:
     static double ak;
     static long id, kk;
     static double az, ap1, ap2, p1i, p2i, t1i, p1r, p2r, t1r, arg, rak,
-	    rho;
+	rho;
     static long inu;
     static double pti, tti, rzi, ptr, ttr, rzr, rap1, flam, dfnu, fdnu;
     static long magz, idnu;
     static double fnup;
     extern /* Subroutine */ int zdiv(double *, double *, double *
-	    , double *, double *, double *);
+				     , double *, double *, double *);
     static double test, test1, amagz;
     extern double azabs(double *, double *);
     static long itime;
@@ -5615,7 +5669,7 @@ L110:
     magz = (long) ((float) az);
     amagz = (double) ((float) (magz + 1));
     fdnu = (double) ((float) idnu);
-    fnup = max(amagz,fdnu);
+    fnup = max(amagz, fdnu);
     id = idnu - magz - 1;
     itime = 1;
     k = 1;
@@ -5650,7 +5704,7 @@ L110:
     p2r *= rap1;
     p2i *= rap1;
     ap2 *= rap1;
-L10:
+  L10:
     ++k;
     ap1 = ap2;
     ptr = p2r;
@@ -5672,11 +5726,11 @@ L10:
     flam = ak + sqrt(ak * ak - 1.);
 /* Computing MIN */
     d__1 = ap2 / ap1;
-    rho = min(d__1,flam);
+    rho = min(d__1, flam);
     test = test1 * sqrt(rho / (rho * rho - 1.));
     itime = 2;
     goto L10;
-L20:
+  L20:
     kk = k + 1 - id;
     ak = (double) ((float) kk);
     t1r = ak;
@@ -5705,7 +5759,7 @@ L20:
     }
     p1r = *tol;
     p1i = *tol;
-L40:
+  L40:
     zdiv(&p2r, &p2i, &p1r, &p1i, &cyr[*n], &cyi[*n]);
     if (*n == 1) {
 	return 0;
@@ -5727,7 +5781,7 @@ L40:
 	ptr = *tol;
 	pti = *tol;
 	ak = *tol * rt2;
-L50:
+      L50:
 	rak = coner / ak;
 	cyr[k] = rak * ptr * rak;
 	cyi[k] = -rak * pti * rak;
@@ -5736,11 +5790,11 @@ L50:
 /* L60: */
     }
     return 0;
-} /* zrati_ */
+}				/* zrati_ */
 
 /* Subroutine */ int zs1s2(double *zrr, double *zri, double *s1r,
-	 double *s1i, double *s2r, double *s2i, long *nz,
-	double *ascle, double *alim, long *iuf)
+			   double *s1i, double *s2r, double *s2i, long *nz,
+			   double *ascle, double *alim, long *iuf)
 {
     /* Initialized data */
 
@@ -5755,8 +5809,11 @@ L50:
     static long idum;
     extern double azabs(double *, double *);
     extern /* Subroutine */ int azlog(double *, double *, double
-	    *, double *, long *), azexp(double *, double *,
-	    double *, double *);
+				      *, double *, long *), azexp(double *,
+								  double *,
+								  double *,
+								  double
+								  *);
 
 /* ***BEGIN PROLOGUE  ZS1S2 */
 /* ***REFER TO  ZBESK,ZAIRY */
@@ -5796,8 +5853,8 @@ L50:
     azexp(&c1r, &c1i, s1r, s1i);
     as1 = azabs(s1r, s1i);
     ++(*iuf);
-L10:
-    aa = max(as1,as2);
+  L10:
+    aa = max(as1, as2);
     if (aa > *ascle) {
 	return 0;
     }
@@ -5808,11 +5865,12 @@ L10:
     *nz = 1;
     *iuf = 0;
     return 0;
-} /* zs1s2_ */
+}				/* zs1s2_ */
 
 /* Subroutine */ int zseri(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *yr, double *yi, long *
-	nz, double *tol, double *elim, double *alim)
+			   long *kode, long *n, double *yr, double *yi,
+			   long *nz, double *tol, double *elim,
+			   double *alim)
 {
     /* Initialized data */
 
@@ -5825,8 +5883,7 @@ L10:
     long i__1;
 
     /* Builtin functions */
-    double sqrt(double), exp(double), cos(double), sin(double)
-	    ;
+    double sqrt(double), exp(double), cos(double), sin(double);
 
     /* Local variables */
     static long i__, k, l, m;
@@ -5839,20 +5896,23 @@ L10:
     static double wi[2], rs, ss;
     static long nw;
     static double wr[2], s1i, s2i, s1r, s2r, cki, acz, arm, ckr, czi, hzi,
-	     raz, czr, sti, hzr, rzi, str, rzr, ak1i, ak1r, rtr1, dfnu;
+	raz, czr, sti, hzr, rzi, str, rzr, ak1i, ak1r, rtr1, dfnu;
     static long idum;
     static double atol, fnup;
     extern /* Subroutine */ int zdiv(double *, double *, double *
-	    , double *, double *, double *), zmlt(double *,
-	    double *, double *, double *, double *,
-	    double *);
+				     , double *, double *, double *),
+	zmlt(double *, double *, double *, double *, double *, double *);
     static long iflag;
     static double coefi, ascle, coefr;
     extern double azabs(double *, double *);
     static double crscr;
     extern /* Subroutine */ int azlog(double *, double *, double
-	    *, double *, long *), zuchk(double *, double *,
-	    long *, double *, double *);
+				      *, double *, long *), zuchk(double *,
+								  double *,
+								  long *,
+								  double *,
+								  double
+								  *);
     extern double d1mach(long *), dgamln(double *, long *);
 
 /* ***BEGIN PROLOGUE  ZSERI */
@@ -5895,11 +5955,11 @@ L10:
 	goto L10;
     }
     zmlt(&hzr, &hzi, &hzr, &hzi, &czr, &czi);
-L10:
+  L10:
     acz = azabs(&czr, &czi);
     nn = *n;
     azlog(&hzr, &hzi, &ckr, &cki, &idum);
-L20:
+  L20:
     dfnu = *fnu + (double) ((float) (nn - 1));
     fnup = dfnu + 1.;
 /* ----------------------------------------------------------------------- */
@@ -5915,7 +5975,7 @@ L20:
     if (ak1r > -(*elim)) {
 	goto L40;
     }
-L30:
+  L30:
     ++(*nz);
     yr[nn] = zeror;
     yi[nn] = zeroi;
@@ -5927,7 +5987,7 @@ L30:
 	return 0;
     }
     goto L20;
-L40:
+  L40:
     if (ak1r > -(*alim)) {
 	goto L50;
     }
@@ -5935,7 +5995,7 @@ L40:
     ss = 1. / *tol;
     crscr = *tol;
     ascle = arm * ss;
-L50:
+  L50:
     aa = exp(ak1r);
     if (iflag == 1) {
 	aa *= ss;
@@ -5943,7 +6003,7 @@ L50:
     coefr = aa * cos(ak1i);
     coefi = aa * sin(ak1i);
     atol = *tol * acz / fnup;
-    il = min(2,nn);
+    il = min(2, nn);
     i__1 = il;
     for (i__ = 1; i__ <= i__1; ++i__) {
 	dfnu = *fnu + (double) ((float) (nn - i__));
@@ -5958,7 +6018,7 @@ L50:
 	ak = fnup + 2.;
 	s = fnup;
 	aa = 2.;
-L60:
+      L60:
 	rs = 1. / s;
 	str = ak1r * czr - ak1i * czi;
 	sti = ak1r * czi + ak1i * czr;
@@ -5972,7 +6032,7 @@ L60:
 	if (aa > atol) {
 	    goto L60;
 	}
-L70:
+      L70:
 	s2r = s1r * coefr - s1i * coefi;
 	s2i = s1r * coefi + s1i * coefr;
 	wr[i__ - 1] = s2r;
@@ -5984,7 +6044,7 @@ L70:
 	if (nw != 0) {
 	    goto L30;
 	}
-L80:
+      L80:
 	m = nn - i__ + 1;
 	yr[m] = s2r * crscr;
 	yi[m] = s2i * crscr;
@@ -5994,7 +6054,7 @@ L80:
 	zdiv(&coefr, &coefi, &hzr, &hzi, &str, &sti);
 	coefr = str * dfnu;
 	coefi = sti * dfnu;
-L90:
+      L90:
 	;
     }
     if (nn <= 2) {
@@ -6011,11 +6071,13 @@ L90:
 	goto L120;
     }
     ib = 3;
-L100:
+  L100:
     i__1 = nn;
     for (i__ = ib; i__ <= i__1; ++i__) {
-	yr[k] = (ak + *fnu) * (rzr * yr[k + 1] - rzi * yi[k + 1]) + yr[k + 2];
-	yi[k] = (ak + *fnu) * (rzr * yi[k + 1] + rzi * yr[k + 1]) + yi[k + 2];
+	yr[k] =
+	    (ak + *fnu) * (rzr * yr[k + 1] - rzi * yi[k + 1]) + yr[k + 2];
+	yi[k] =
+	    (ak + *fnu) * (rzr * yi[k + 1] + rzi * yr[k + 1]) + yi[k + 2];
 	ak += -1.;
 	--k;
 /* L110: */
@@ -6024,7 +6086,7 @@ L100:
 /* ----------------------------------------------------------------------- */
 /*     RECUR BACKWARD WITH SCALED VALUES */
 /* ----------------------------------------------------------------------- */
-L120:
+  L120:
 /* ----------------------------------------------------------------------- */
 /*     EXP(-ALIM)=EXP(-ELIM)/TOL=APPROX. ONE PRECISION ABOVE THE */
 /*     UNDERFLOW LIMIT = ASCLE = D1MACH(1)*SS*1.0D+3 */
@@ -6053,18 +6115,18 @@ L120:
 /* L130: */
     }
     return 0;
-L140:
+  L140:
     ib = l + 1;
     if (ib > nn) {
 	return 0;
     }
     goto L100;
-L150:
+  L150:
     *nz = *n;
     if (*fnu == 0.) {
 	--(*nz);
     }
-L160:
+  L160:
     yr[1] = zeror;
     yi[1] = zeroi;
     if (*fnu != 0.) {
@@ -6072,7 +6134,7 @@ L160:
     }
     yr[1] = coner;
     yi[1] = conei;
-L170:
+  L170:
     if (*n == 1) {
 	return 0;
     }
@@ -6087,17 +6149,16 @@ L170:
 /*     RETURN WITH NZ.LT.0 IF CABS(Z*Z/4).GT.FNU+N-NZ-1 COMPLETE */
 /*     THE CALCULATION IN CBINU WITH N=N-IABS(NZ) */
 /* ----------------------------------------------------------------------- */
-L190:
+  L190:
     *nz = -(*nz);
     return 0;
-} /* zseri_ */
+}				/* zseri_ */
 
 /* Subroutine */ int zshch(double *zr, double *zi, double *cshr,
-	double *cshi, double *cchr, double *cchi)
+			   double *cshi, double *cchr, double *cchi)
 {
     /* Builtin functions */
-    double sinh(double), cosh(double), sin(double), cos(
-	    double);
+    double sinh(double), cosh(double), sin(double), cos(double);
 
     /* Local variables */
     static double ch, cn, sh, sn;
@@ -6120,10 +6181,10 @@ L190:
     *cchr = ch * cn;
     *cchi = sh * sn;
     return 0;
-} /* zshch_ */
+}				/* zshch_ */
 
 /* Subroutine */ int azsqrt(double *ar, double *ai, double *br,
-	double *bi)
+			    double *bi)
 {
     /* Initialized data */
 
@@ -6131,8 +6192,7 @@ L190:
     static double dpi = 3.141592653589793238462643383;
 
     /* Builtin functions */
-    double sqrt(double), atan(double), cos(double), sin(
-	    double);
+    double sqrt(double), atan(double), cos(double), sin(double);
 
     /* Local variables */
     static double zm;
@@ -6162,7 +6222,7 @@ L190:
 	dtheta -= dpi;
     }
     goto L50;
-L10:
+  L10:
     if (*ai > 0.) {
 	goto L60;
     }
@@ -6172,38 +6232,38 @@ L10:
     *br = 0.;
     *bi = 0.;
     return 0;
-L20:
+  L20:
     if (*ar > 0.) {
 	goto L30;
     }
     *br = 0.;
     *bi = sqrt((abs(*ar)));
     return 0;
-L30:
+  L30:
     *br = sqrt(*ar);
     *bi = 0.;
     return 0;
-L40:
+  L40:
     if (*ar < 0.) {
 	dtheta += dpi;
     }
-L50:
+  L50:
     dtheta *= .5;
     *br = zm * cos(dtheta);
     *bi = zm * sin(dtheta);
     return 0;
-L60:
+  L60:
     *br = zm * drt;
     *bi = zm * drt;
     return 0;
-L70:
+  L70:
     *br = zm * drt;
     *bi = -zm * drt;
     return 0;
-} /* azsqrt_ */
+}				/* azsqrt_ */
 
 /* Subroutine */ int zuchk(double *yr, double *yi, long *nz,
-	double *ascle, double *tol)
+			   double *ascle, double *tol)
 {
     static double wi, ss, st, wr;
 
@@ -6225,273 +6285,289 @@ L70:
     *nz = 0;
     wr = abs(*yr);
     wi = abs(*yi);
-    st = min(wr,wi);
+    st = min(wr, wi);
     if (st > *ascle) {
 	return 0;
     }
-    ss = max(wr,wi);
+    ss = max(wr, wi);
     st /= *tol;
     if (ss < st) {
 	*nz = 1;
     }
     return 0;
-} /* zuchk_ */
+}				/* zuchk_ */
 
 /* Subroutine */ int zunhj(double *zr, double *zi, double *fnu,
-	long *ipmtr, double *tol, double *phir, double *phii,
-	double *argr, double *argi, double *zeta1r, double *
-	zeta1i, double *zeta2r, double *zeta2i, double *asumr,
-	double *asumi, double *bsumr, double *bsumi)
+			   long *ipmtr, double *tol, double *phir,
+			   double *phii, double *argr, double *argi,
+			   double *zeta1r, double *zeta1i, double *zeta2r,
+			   double *zeta2i, double *asumr, double *asumi,
+			   double *bsumr, double *bsumi)
 {
     /* Initialized data */
 
-    static double ar[14] = { 1.,.104166666666666667,.0835503472222222222,
-	    .12822657455632716,.291849026464140464,.881627267443757652,
-	    3.32140828186276754,14.9957629868625547,78.9230130115865181,
-	    474.451538868264323,3207.49009089066193,24086.5496408740049,
-	    198923.119169509794,1791902.00777534383 };
-    static double br[14] = { 1.,-.145833333333333333,
-	    -.0987413194444444444,-.143312053915895062,-.317227202678413548,
-	    -.942429147957120249,-3.51120304082635426,-15.7272636203680451,
-	    -82.2814390971859444,-492.355370523670524,-3316.21856854797251,
-	    -24827.6742452085896,-204526.587315129788,-1838444.9170682099 };
-    static double c__[105] = { 1.,-.208333333333333333,.125,
-	    .334201388888888889,-.401041666666666667,.0703125,
-	    -1.02581259645061728,1.84646267361111111,-.8912109375,.0732421875,
-	    4.66958442342624743,-11.2070026162229938,8.78912353515625,
-	    -2.3640869140625,.112152099609375,-28.2120725582002449,
-	    84.6362176746007346,-91.8182415432400174,42.5349987453884549,
-	    -7.3687943594796317,.227108001708984375,212.570130039217123,
-	    -765.252468141181642,1059.99045252799988,-699.579627376132541,
-	    218.19051174421159,-26.4914304869515555,.572501420974731445,
-	    -1919.457662318407,8061.72218173730938,-13586.5500064341374,
-	    11655.3933368645332,-5305.64697861340311,1200.90291321635246,
-	    -108.090919788394656,1.7277275025844574,20204.2913309661486,
-	    -96980.5983886375135,192547.001232531532,-203400.177280415534,
-	    122200.46498301746,-41192.6549688975513,7109.51430248936372,
-	    -493.915304773088012,6.07404200127348304,-242919.187900551333,
-	    1311763.6146629772,-2998015.91853810675,3763271.297656404,
-	    -2813563.22658653411,1268365.27332162478,-331645.172484563578,
-	    45218.7689813627263,-2499.83048181120962,24.3805296995560639,
-	    3284469.85307203782,-19706819.1184322269,50952602.4926646422,
-	    -74105148.2115326577,66344512.2747290267,-37567176.6607633513,
-	    13288767.1664218183,-2785618.12808645469,308186.404612662398,
-	    -13886.0897537170405,110.017140269246738,-49329253.664509962,
-	    325573074.185765749,-939462359.681578403,1553596899.57058006,
-	    -1621080552.10833708,1106842816.82301447,-495889784.275030309,
-	    142062907.797533095,-24474062.7257387285,2243768.17792244943,
-	    -84005.4336030240853,551.335896122020586,814789096.118312115,
-	    -5866481492.05184723,18688207509.2958249,-34632043388.1587779,
-	    41280185579.753974,-33026599749.8007231,17954213731.1556001,
-	    -6563293792.61928433,1559279864.87925751,-225105661.889415278,
-	    17395107.5539781645,-549842.327572288687,3038.09051092238427,
-	    -14679261247.6956167,114498237732.02581,-399096175224.466498,
-	    819218669548.577329,-1098375156081.22331,1008158106865.38209,
-	    -645364869245.376503,287900649906.150589,-87867072178.0232657,
-	    17634730606.8349694,-2167164983.22379509,143157876.718888981,
-	    -3871833.44257261262,18257.7554742931747 };
+    static double ar[14] = { 1., .104166666666666667, .0835503472222222222,
+	.12822657455632716, .291849026464140464, .881627267443757652,
+	3.32140828186276754, 14.9957629868625547, 78.9230130115865181,
+	474.451538868264323, 3207.49009089066193, 24086.5496408740049,
+	198923.119169509794, 1791902.00777534383
+    };
+    static double br[14] = { 1., -.145833333333333333,
+	-.0987413194444444444, -.143312053915895062, -.317227202678413548,
+	-.942429147957120249, -3.51120304082635426, -15.7272636203680451,
+	-82.2814390971859444, -492.355370523670524, -3316.21856854797251,
+	-24827.6742452085896, -204526.587315129788, -1838444.9170682099
+    };
+    static double c__[105] = { 1., -.208333333333333333, .125,
+	.334201388888888889, -.401041666666666667, .0703125,
+	-1.02581259645061728, 1.84646267361111111, -.8912109375,
+	    .0732421875,
+	4.66958442342624743, -11.2070026162229938, 8.78912353515625,
+	-2.3640869140625, .112152099609375, -28.2120725582002449,
+	84.6362176746007346, -91.8182415432400174, 42.5349987453884549,
+	-7.3687943594796317, .227108001708984375, 212.570130039217123,
+	-765.252468141181642, 1059.99045252799988, -699.579627376132541,
+	218.19051174421159, -26.4914304869515555, .572501420974731445,
+	-1919.457662318407, 8061.72218173730938, -13586.5500064341374,
+	11655.3933368645332, -5305.64697861340311, 1200.90291321635246,
+	-108.090919788394656, 1.7277275025844574, 20204.2913309661486,
+	-96980.5983886375135, 192547.001232531532, -203400.177280415534,
+	122200.46498301746, -41192.6549688975513, 7109.51430248936372,
+	-493.915304773088012, 6.07404200127348304, -242919.187900551333,
+	1311763.6146629772, -2998015.91853810675, 3763271.297656404,
+	-2813563.22658653411, 1268365.27332162478, -331645.172484563578,
+	45218.7689813627263, -2499.83048181120962, 24.3805296995560639,
+	3284469.85307203782, -19706819.1184322269, 50952602.4926646422,
+	-74105148.2115326577, 66344512.2747290267, -37567176.6607633513,
+	13288767.1664218183, -2785618.12808645469, 308186.404612662398,
+	-13886.0897537170405, 110.017140269246738, -49329253.664509962,
+	325573074.185765749, -939462359.681578403, 1553596899.57058006,
+	-1621080552.10833708, 1106842816.82301447, -495889784.275030309,
+	142062907.797533095, -24474062.7257387285, 2243768.17792244943,
+	-84005.4336030240853, 551.335896122020586, 814789096.118312115,
+	-5866481492.05184723, 18688207509.2958249, -34632043388.1587779,
+	41280185579.753974, -33026599749.8007231, 17954213731.1556001,
+	-6563293792.61928433, 1559279864.87925751, -225105661.889415278,
+	17395107.5539781645, -549842.327572288687, 3038.09051092238427,
+	-14679261247.6956167, 114498237732.02581, -399096175224.466498,
+	819218669548.577329, -1098375156081.22331, 1008158106865.38209,
+	-645364869245.376503, 287900649906.150589, -87867072178.0232657,
+	17634730606.8349694, -2167164983.22379509, 143157876.718888981,
+	-3871833.44257261262, 18257.7554742931747
+    };
     static double alfa[180] = { -.00444444444444444444,
-	    -9.22077922077922078e-4,-8.84892884892884893e-5,
-	    1.65927687832449737e-4,2.4669137274179291e-4,
-	    2.6599558934625478e-4,2.61824297061500945e-4,
-	    2.48730437344655609e-4,2.32721040083232098e-4,
-	    2.16362485712365082e-4,2.00738858762752355e-4,
-	    1.86267636637545172e-4,1.73060775917876493e-4,
-	    1.61091705929015752e-4,1.50274774160908134e-4,
-	    1.40503497391269794e-4,1.31668816545922806e-4,
-	    1.23667445598253261e-4,1.16405271474737902e-4,
-	    1.09798298372713369e-4,1.03772410422992823e-4,
-	    9.82626078369363448e-5,9.32120517249503256e-5,
-	    8.85710852478711718e-5,8.42963105715700223e-5,
-	    8.03497548407791151e-5,7.66981345359207388e-5,
-	    7.33122157481777809e-5,7.01662625163141333e-5,
-	    6.72375633790160292e-5,6.93735541354588974e-4,
-	    2.32241745182921654e-4,-1.41986273556691197e-5,
-	    -1.1644493167204864e-4,-1.50803558053048762e-4,
-	    -1.55121924918096223e-4,-1.46809756646465549e-4,
-	    -1.33815503867491367e-4,-1.19744975684254051e-4,
-	    -1.0618431920797402e-4,-9.37699549891194492e-5,
-	    -8.26923045588193274e-5,-7.29374348155221211e-5,
-	    -6.44042357721016283e-5,-5.69611566009369048e-5,
-	    -5.04731044303561628e-5,-4.48134868008882786e-5,
-	    -3.98688727717598864e-5,-3.55400532972042498e-5,
-	    -3.1741425660902248e-5,-2.83996793904174811e-5,
-	    -2.54522720634870566e-5,-2.28459297164724555e-5,
-	    -2.05352753106480604e-5,-1.84816217627666085e-5,
-	    -1.66519330021393806e-5,-1.50179412980119482e-5,
-	    -1.35554031379040526e-5,-1.22434746473858131e-5,
-	    -1.10641884811308169e-5,-3.54211971457743841e-4,
-	    -1.56161263945159416e-4,3.0446550359493641e-5,
-	    1.30198655773242693e-4,1.67471106699712269e-4,
-	    1.70222587683592569e-4,1.56501427608594704e-4,
-	    1.3633917097744512e-4,1.14886692029825128e-4,
-	    9.45869093034688111e-5,7.64498419250898258e-5,
-	    6.07570334965197354e-5,4.74394299290508799e-5,
-	    3.62757512005344297e-5,2.69939714979224901e-5,
-	    1.93210938247939253e-5,1.30056674793963203e-5,
-	    7.82620866744496661e-6,3.59257485819351583e-6,
-	    1.44040049814251817e-7,-2.65396769697939116e-6,
-	    -4.9134686709848591e-6,-6.72739296091248287e-6,
-	    -8.17269379678657923e-6,-9.31304715093561232e-6,
-	    -1.02011418798016441e-5,-1.0880596251059288e-5,
-	    -1.13875481509603555e-5,-1.17519675674556414e-5,
-	    -1.19987364870944141e-5,3.78194199201772914e-4,
-	    2.02471952761816167e-4,-6.37938506318862408e-5,
-	    -2.38598230603005903e-4,-3.10916256027361568e-4,
-	    -3.13680115247576316e-4,-2.78950273791323387e-4,
-	    -2.28564082619141374e-4,-1.75245280340846749e-4,
-	    -1.25544063060690348e-4,-8.22982872820208365e-5,
-	    -4.62860730588116458e-5,-1.72334302366962267e-5,
-	    5.60690482304602267e-6,2.313954431482868e-5,
-	    3.62642745856793957e-5,4.58006124490188752e-5,
-	    5.2459529495911405e-5,5.68396208545815266e-5,
-	    5.94349820393104052e-5,6.06478527578421742e-5,
-	    6.08023907788436497e-5,6.01577894539460388e-5,
-	    5.891996573446985e-5,5.72515823777593053e-5,
-	    5.52804375585852577e-5,5.3106377380288017e-5,
-	    5.08069302012325706e-5,4.84418647620094842e-5,
-	    4.6056858160747537e-5,-6.91141397288294174e-4,
-	    -4.29976633058871912e-4,1.83067735980039018e-4,
-	    6.60088147542014144e-4,8.75964969951185931e-4,
-	    8.77335235958235514e-4,7.49369585378990637e-4,
-	    5.63832329756980918e-4,3.68059319971443156e-4,
-	    1.88464535514455599e-4,3.70663057664904149e-5,
-	    -8.28520220232137023e-5,-1.72751952869172998e-4,
-	    -2.36314873605872983e-4,-2.77966150694906658e-4,
-	    -3.02079514155456919e-4,-3.12594712643820127e-4,
-	    -3.12872558758067163e-4,-3.05678038466324377e-4,
-	    -2.93226470614557331e-4,-2.77255655582934777e-4,
-	    -2.59103928467031709e-4,-2.39784014396480342e-4,
-	    -2.20048260045422848e-4,-2.00443911094971498e-4,
-	    -1.81358692210970687e-4,-1.63057674478657464e-4,
-	    -1.45712672175205844e-4,-1.29425421983924587e-4,
-	    -1.14245691942445952e-4,.00192821964248775885,
-	    .00135592576302022234,-7.17858090421302995e-4,
-	    -.00258084802575270346,-.00349271130826168475,
-	    -.00346986299340960628,-.00282285233351310182,
-	    -.00188103076404891354,-8.895317183839476e-4,
-	    3.87912102631035228e-6,7.28688540119691412e-4,
-	    .00126566373053457758,.00162518158372674427,.00183203153216373172,
-	    .00191588388990527909,.00190588846755546138,.00182798982421825727,
-	    .0017038950642112153,.00155097127171097686,.00138261421852276159,
-	    .00120881424230064774,.00103676532638344962,
-	    8.71437918068619115e-4,7.16080155297701002e-4,
-	    5.72637002558129372e-4,4.42089819465802277e-4,
-	    3.24724948503090564e-4,2.20342042730246599e-4,
-	    1.28412898401353882e-4,4.82005924552095464e-5 };
+	-9.22077922077922078e-4, -8.84892884892884893e-5,
+	1.65927687832449737e-4, 2.4669137274179291e-4,
+	2.6599558934625478e-4, 2.61824297061500945e-4,
+	2.48730437344655609e-4, 2.32721040083232098e-4,
+	2.16362485712365082e-4, 2.00738858762752355e-4,
+	1.86267636637545172e-4, 1.73060775917876493e-4,
+	1.61091705929015752e-4, 1.50274774160908134e-4,
+	1.40503497391269794e-4, 1.31668816545922806e-4,
+	1.23667445598253261e-4, 1.16405271474737902e-4,
+	1.09798298372713369e-4, 1.03772410422992823e-4,
+	9.82626078369363448e-5, 9.32120517249503256e-5,
+	8.85710852478711718e-5, 8.42963105715700223e-5,
+	8.03497548407791151e-5, 7.66981345359207388e-5,
+	7.33122157481777809e-5, 7.01662625163141333e-5,
+	6.72375633790160292e-5, 6.93735541354588974e-4,
+	2.32241745182921654e-4, -1.41986273556691197e-5,
+	-1.1644493167204864e-4, -1.50803558053048762e-4,
+	-1.55121924918096223e-4, -1.46809756646465549e-4,
+	-1.33815503867491367e-4, -1.19744975684254051e-4,
+	-1.0618431920797402e-4, -9.37699549891194492e-5,
+	-8.26923045588193274e-5, -7.29374348155221211e-5,
+	-6.44042357721016283e-5, -5.69611566009369048e-5,
+	-5.04731044303561628e-5, -4.48134868008882786e-5,
+	-3.98688727717598864e-5, -3.55400532972042498e-5,
+	-3.1741425660902248e-5, -2.83996793904174811e-5,
+	-2.54522720634870566e-5, -2.28459297164724555e-5,
+	-2.05352753106480604e-5, -1.84816217627666085e-5,
+	-1.66519330021393806e-5, -1.50179412980119482e-5,
+	-1.35554031379040526e-5, -1.22434746473858131e-5,
+	-1.10641884811308169e-5, -3.54211971457743841e-4,
+	-1.56161263945159416e-4, 3.0446550359493641e-5,
+	1.30198655773242693e-4, 1.67471106699712269e-4,
+	1.70222587683592569e-4, 1.56501427608594704e-4,
+	1.3633917097744512e-4, 1.14886692029825128e-4,
+	9.45869093034688111e-5, 7.64498419250898258e-5,
+	6.07570334965197354e-5, 4.74394299290508799e-5,
+	3.62757512005344297e-5, 2.69939714979224901e-5,
+	1.93210938247939253e-5, 1.30056674793963203e-5,
+	7.82620866744496661e-6, 3.59257485819351583e-6,
+	1.44040049814251817e-7, -2.65396769697939116e-6,
+	-4.9134686709848591e-6, -6.72739296091248287e-6,
+	-8.17269379678657923e-6, -9.31304715093561232e-6,
+	-1.02011418798016441e-5, -1.0880596251059288e-5,
+	-1.13875481509603555e-5, -1.17519675674556414e-5,
+	-1.19987364870944141e-5, 3.78194199201772914e-4,
+	2.02471952761816167e-4, -6.37938506318862408e-5,
+	-2.38598230603005903e-4, -3.10916256027361568e-4,
+	-3.13680115247576316e-4, -2.78950273791323387e-4,
+	-2.28564082619141374e-4, -1.75245280340846749e-4,
+	-1.25544063060690348e-4, -8.22982872820208365e-5,
+	-4.62860730588116458e-5, -1.72334302366962267e-5,
+	5.60690482304602267e-6, 2.313954431482868e-5,
+	3.62642745856793957e-5, 4.58006124490188752e-5,
+	5.2459529495911405e-5, 5.68396208545815266e-5,
+	5.94349820393104052e-5, 6.06478527578421742e-5,
+	6.08023907788436497e-5, 6.01577894539460388e-5,
+	5.891996573446985e-5, 5.72515823777593053e-5,
+	5.52804375585852577e-5, 5.3106377380288017e-5,
+	5.08069302012325706e-5, 4.84418647620094842e-5,
+	4.6056858160747537e-5, -6.91141397288294174e-4,
+	-4.29976633058871912e-4, 1.83067735980039018e-4,
+	6.60088147542014144e-4, 8.75964969951185931e-4,
+	8.77335235958235514e-4, 7.49369585378990637e-4,
+	5.63832329756980918e-4, 3.68059319971443156e-4,
+	1.88464535514455599e-4, 3.70663057664904149e-5,
+	-8.28520220232137023e-5, -1.72751952869172998e-4,
+	-2.36314873605872983e-4, -2.77966150694906658e-4,
+	-3.02079514155456919e-4, -3.12594712643820127e-4,
+	-3.12872558758067163e-4, -3.05678038466324377e-4,
+	-2.93226470614557331e-4, -2.77255655582934777e-4,
+	-2.59103928467031709e-4, -2.39784014396480342e-4,
+	-2.20048260045422848e-4, -2.00443911094971498e-4,
+	-1.81358692210970687e-4, -1.63057674478657464e-4,
+	-1.45712672175205844e-4, -1.29425421983924587e-4,
+	-1.14245691942445952e-4, .00192821964248775885,
+	.00135592576302022234, -7.17858090421302995e-4,
+	-.00258084802575270346, -.00349271130826168475,
+	-.00346986299340960628, -.00282285233351310182,
+	-.00188103076404891354, -8.895317183839476e-4,
+	3.87912102631035228e-6, 7.28688540119691412e-4,
+	.00126566373053457758, .00162518158372674427,
+	    .00183203153216373172,
+	.00191588388990527909, .00190588846755546138,
+	    .00182798982421825727,
+	.0017038950642112153, .00155097127171097686, .00138261421852276159,
+	.00120881424230064774, .00103676532638344962,
+	8.71437918068619115e-4, 7.16080155297701002e-4,
+	5.72637002558129372e-4, 4.42089819465802277e-4,
+	3.24724948503090564e-4, 2.20342042730246599e-4,
+	1.28412898401353882e-4, 4.82005924552095464e-5
+    };
     static double beta[210] = { .0179988721413553309,
-	    .00559964911064388073,.00288501402231132779,.00180096606761053941,
-	    .00124753110589199202,9.22878876572938311e-4,
-	    7.14430421727287357e-4,5.71787281789704872e-4,
-	    4.69431007606481533e-4,3.93232835462916638e-4,
-	    3.34818889318297664e-4,2.88952148495751517e-4,
-	    2.52211615549573284e-4,2.22280580798883327e-4,
-	    1.97541838033062524e-4,1.76836855019718004e-4,
-	    1.59316899661821081e-4,1.44347930197333986e-4,
-	    1.31448068119965379e-4,1.20245444949302884e-4,
-	    1.10449144504599392e-4,1.01828770740567258e-4,
-	    9.41998224204237509e-5,8.74130545753834437e-5,
-	    8.13466262162801467e-5,7.59002269646219339e-5,
-	    7.09906300634153481e-5,6.65482874842468183e-5,
-	    6.25146958969275078e-5,5.88403394426251749e-5,
-	    -.00149282953213429172,-8.78204709546389328e-4,
-	    -5.02916549572034614e-4,-2.94822138512746025e-4,
-	    -1.75463996970782828e-4,-1.04008550460816434e-4,
-	    -5.96141953046457895e-5,-3.1203892907609834e-5,
-	    -1.26089735980230047e-5,-2.42892608575730389e-7,
-	    8.05996165414273571e-6,1.36507009262147391e-5,
-	    1.73964125472926261e-5,1.9867297884213378e-5,
-	    2.14463263790822639e-5,2.23954659232456514e-5,
-	    2.28967783814712629e-5,2.30785389811177817e-5,
-	    2.30321976080909144e-5,2.28236073720348722e-5,
-	    2.25005881105292418e-5,2.20981015361991429e-5,
-	    2.16418427448103905e-5,2.11507649256220843e-5,
-	    2.06388749782170737e-5,2.01165241997081666e-5,
-	    1.95913450141179244e-5,1.9068936791043674e-5,
-	    1.85533719641636667e-5,1.80475722259674218e-5,
-	    5.5221307672129279e-4,4.47932581552384646e-4,
-	    2.79520653992020589e-4,1.52468156198446602e-4,
-	    6.93271105657043598e-5,1.76258683069991397e-5,
-	    -1.35744996343269136e-5,-3.17972413350427135e-5,
-	    -4.18861861696693365e-5,-4.69004889379141029e-5,
-	    -4.87665447413787352e-5,-4.87010031186735069e-5,
-	    -4.74755620890086638e-5,-4.55813058138628452e-5,
-	    -4.33309644511266036e-5,-4.09230193157750364e-5,
-	    -3.84822638603221274e-5,-3.60857167535410501e-5,
-	    -3.37793306123367417e-5,-3.15888560772109621e-5,
-	    -2.95269561750807315e-5,-2.75978914828335759e-5,
-	    -2.58006174666883713e-5,-2.413083567612802e-5,
-	    -2.25823509518346033e-5,-2.11479656768912971e-5,
-	    -1.98200638885294927e-5,-1.85909870801065077e-5,
-	    -1.74532699844210224e-5,-1.63997823854497997e-5,
-	    -4.74617796559959808e-4,-4.77864567147321487e-4,
-	    -3.20390228067037603e-4,-1.61105016119962282e-4,
-	    -4.25778101285435204e-5,3.44571294294967503e-5,
-	    7.97092684075674924e-5,1.031382367082722e-4,
-	    1.12466775262204158e-4,1.13103642108481389e-4,
-	    1.08651634848774268e-4,1.01437951597661973e-4,
-	    9.29298396593363896e-5,8.40293133016089978e-5,
-	    7.52727991349134062e-5,6.69632521975730872e-5,
-	    5.92564547323194704e-5,5.22169308826975567e-5,
-	    4.58539485165360646e-5,4.01445513891486808e-5,
-	    3.50481730031328081e-5,3.05157995034346659e-5,
-	    2.64956119950516039e-5,2.29363633690998152e-5,
-	    1.97893056664021636e-5,1.70091984636412623e-5,
-	    1.45547428261524004e-5,1.23886640995878413e-5,
-	    1.04775876076583236e-5,8.79179954978479373e-6,
-	    7.36465810572578444e-4,8.72790805146193976e-4,
-	    6.22614862573135066e-4,2.85998154194304147e-4,
-	    3.84737672879366102e-6,-1.87906003636971558e-4,
-	    -2.97603646594554535e-4,-3.45998126832656348e-4,
-	    -3.53382470916037712e-4,-3.35715635775048757e-4,
-	    -3.04321124789039809e-4,-2.66722723047612821e-4,
-	    -2.27654214122819527e-4,-1.89922611854562356e-4,
-	    -1.5505891859909387e-4,-1.2377824076187363e-4,
-	    -9.62926147717644187e-5,-7.25178327714425337e-5,
-	    -5.22070028895633801e-5,-3.50347750511900522e-5,
-	    -2.06489761035551757e-5,-8.70106096849767054e-6,
-	    1.1369868667510029e-6,9.16426474122778849e-6,
-	    1.5647778542887262e-5,2.08223629482466847e-5,
-	    2.48923381004595156e-5,2.80340509574146325e-5,
-	    3.03987774629861915e-5,3.21156731406700616e-5,
-	    -.00180182191963885708,-.00243402962938042533,
-	    -.00183422663549856802,-7.62204596354009765e-4,
-	    2.39079475256927218e-4,9.49266117176881141e-4,
-	    .00134467449701540359,.00148457495259449178,.00144732339830617591,
-	    .00130268261285657186,.00110351597375642682,
-	    8.86047440419791759e-4,6.73073208165665473e-4,
-	    4.77603872856582378e-4,3.05991926358789362e-4,
-	    1.6031569459472163e-4,4.00749555270613286e-5,
-	    -5.66607461635251611e-5,-1.32506186772982638e-4,
-	    -1.90296187989614057e-4,-2.32811450376937408e-4,
-	    -2.62628811464668841e-4,-2.82050469867598672e-4,
-	    -2.93081563192861167e-4,-2.97435962176316616e-4,
-	    -2.96557334239348078e-4,-2.91647363312090861e-4,
-	    -2.83696203837734166e-4,-2.73512317095673346e-4,
-	    -2.6175015580676858e-4,.00638585891212050914,
-	    .00962374215806377941,.00761878061207001043,.00283219055545628054,
-	    -.0020984135201272009,-.00573826764216626498,
-	    -.0077080424449541462,-.00821011692264844401,
-	    -.00765824520346905413,-.00647209729391045177,
-	    -.00499132412004966473,-.0034561228971313328,
-	    -.00201785580014170775,-7.59430686781961401e-4,
-	    2.84173631523859138e-4,.00110891667586337403,
-	    .00172901493872728771,.00216812590802684701,.00245357710494539735,
-	    .00261281821058334862,.00267141039656276912,.0026520307339598043,
-	    .00257411652877287315,.00245389126236094427,.00230460058071795494,
-	    .00213684837686712662,.00195896528478870911,.00177737008679454412,
-	    .00159690280765839059,.00142111975664438546 };
-    static double gama[30] = { .629960524947436582,.251984209978974633,
-	    .154790300415655846,.110713062416159013,.0857309395527394825,
-	    .0697161316958684292,.0586085671893713576,.0504698873536310685,
-	    .0442600580689154809,.0393720661543509966,.0354283195924455368,
-	    .0321818857502098231,.0294646240791157679,.0271581677112934479,
-	    .0251768272973861779,.0234570755306078891,.0219508390134907203,
-	    .020621082823564624,.0194388240897880846,.0183810633800683158,
-	    .0174293213231963172,.0165685837786612353,.0157865285987918445,
-	    .0150729501494095594,.0144193250839954639,.0138184805735341786,
-	    .0132643378994276568,.0127517121970498651,.0122761545318762767,
-	    .0118338262398482403 };
+	.00559964911064388073, .00288501402231132779,
+	    .00180096606761053941,
+	.00124753110589199202, 9.22878876572938311e-4,
+	7.14430421727287357e-4, 5.71787281789704872e-4,
+	4.69431007606481533e-4, 3.93232835462916638e-4,
+	3.34818889318297664e-4, 2.88952148495751517e-4,
+	2.52211615549573284e-4, 2.22280580798883327e-4,
+	1.97541838033062524e-4, 1.76836855019718004e-4,
+	1.59316899661821081e-4, 1.44347930197333986e-4,
+	1.31448068119965379e-4, 1.20245444949302884e-4,
+	1.10449144504599392e-4, 1.01828770740567258e-4,
+	9.41998224204237509e-5, 8.74130545753834437e-5,
+	8.13466262162801467e-5, 7.59002269646219339e-5,
+	7.09906300634153481e-5, 6.65482874842468183e-5,
+	6.25146958969275078e-5, 5.88403394426251749e-5,
+	-.00149282953213429172, -8.78204709546389328e-4,
+	-5.02916549572034614e-4, -2.94822138512746025e-4,
+	-1.75463996970782828e-4, -1.04008550460816434e-4,
+	-5.96141953046457895e-5, -3.1203892907609834e-5,
+	-1.26089735980230047e-5, -2.42892608575730389e-7,
+	8.05996165414273571e-6, 1.36507009262147391e-5,
+	1.73964125472926261e-5, 1.9867297884213378e-5,
+	2.14463263790822639e-5, 2.23954659232456514e-5,
+	2.28967783814712629e-5, 2.30785389811177817e-5,
+	2.30321976080909144e-5, 2.28236073720348722e-5,
+	2.25005881105292418e-5, 2.20981015361991429e-5,
+	2.16418427448103905e-5, 2.11507649256220843e-5,
+	2.06388749782170737e-5, 2.01165241997081666e-5,
+	1.95913450141179244e-5, 1.9068936791043674e-5,
+	1.85533719641636667e-5, 1.80475722259674218e-5,
+	5.5221307672129279e-4, 4.47932581552384646e-4,
+	2.79520653992020589e-4, 1.52468156198446602e-4,
+	6.93271105657043598e-5, 1.76258683069991397e-5,
+	-1.35744996343269136e-5, -3.17972413350427135e-5,
+	-4.18861861696693365e-5, -4.69004889379141029e-5,
+	-4.87665447413787352e-5, -4.87010031186735069e-5,
+	-4.74755620890086638e-5, -4.55813058138628452e-5,
+	-4.33309644511266036e-5, -4.09230193157750364e-5,
+	-3.84822638603221274e-5, -3.60857167535410501e-5,
+	-3.37793306123367417e-5, -3.15888560772109621e-5,
+	-2.95269561750807315e-5, -2.75978914828335759e-5,
+	-2.58006174666883713e-5, -2.413083567612802e-5,
+	-2.25823509518346033e-5, -2.11479656768912971e-5,
+	-1.98200638885294927e-5, -1.85909870801065077e-5,
+	-1.74532699844210224e-5, -1.63997823854497997e-5,
+	-4.74617796559959808e-4, -4.77864567147321487e-4,
+	-3.20390228067037603e-4, -1.61105016119962282e-4,
+	-4.25778101285435204e-5, 3.44571294294967503e-5,
+	7.97092684075674924e-5, 1.031382367082722e-4,
+	1.12466775262204158e-4, 1.13103642108481389e-4,
+	1.08651634848774268e-4, 1.01437951597661973e-4,
+	9.29298396593363896e-5, 8.40293133016089978e-5,
+	7.52727991349134062e-5, 6.69632521975730872e-5,
+	5.92564547323194704e-5, 5.22169308826975567e-5,
+	4.58539485165360646e-5, 4.01445513891486808e-5,
+	3.50481730031328081e-5, 3.05157995034346659e-5,
+	2.64956119950516039e-5, 2.29363633690998152e-5,
+	1.97893056664021636e-5, 1.70091984636412623e-5,
+	1.45547428261524004e-5, 1.23886640995878413e-5,
+	1.04775876076583236e-5, 8.79179954978479373e-6,
+	7.36465810572578444e-4, 8.72790805146193976e-4,
+	6.22614862573135066e-4, 2.85998154194304147e-4,
+	3.84737672879366102e-6, -1.87906003636971558e-4,
+	-2.97603646594554535e-4, -3.45998126832656348e-4,
+	-3.53382470916037712e-4, -3.35715635775048757e-4,
+	-3.04321124789039809e-4, -2.66722723047612821e-4,
+	-2.27654214122819527e-4, -1.89922611854562356e-4,
+	-1.5505891859909387e-4, -1.2377824076187363e-4,
+	-9.62926147717644187e-5, -7.25178327714425337e-5,
+	-5.22070028895633801e-5, -3.50347750511900522e-5,
+	-2.06489761035551757e-5, -8.70106096849767054e-6,
+	1.1369868667510029e-6, 9.16426474122778849e-6,
+	1.5647778542887262e-5, 2.08223629482466847e-5,
+	2.48923381004595156e-5, 2.80340509574146325e-5,
+	3.03987774629861915e-5, 3.21156731406700616e-5,
+	-.00180182191963885708, -.00243402962938042533,
+	-.00183422663549856802, -7.62204596354009765e-4,
+	2.39079475256927218e-4, 9.49266117176881141e-4,
+	.00134467449701540359, .00148457495259449178,
+	    .00144732339830617591,
+	.00130268261285657186, .00110351597375642682,
+	8.86047440419791759e-4, 6.73073208165665473e-4,
+	4.77603872856582378e-4, 3.05991926358789362e-4,
+	1.6031569459472163e-4, 4.00749555270613286e-5,
+	-5.66607461635251611e-5, -1.32506186772982638e-4,
+	-1.90296187989614057e-4, -2.32811450376937408e-4,
+	-2.62628811464668841e-4, -2.82050469867598672e-4,
+	-2.93081563192861167e-4, -2.97435962176316616e-4,
+	-2.96557334239348078e-4, -2.91647363312090861e-4,
+	-2.83696203837734166e-4, -2.73512317095673346e-4,
+	-2.6175015580676858e-4, .00638585891212050914,
+	.00962374215806377941, .00761878061207001043,
+	    .00283219055545628054,
+	-.0020984135201272009, -.00573826764216626498,
+	-.0077080424449541462, -.00821011692264844401,
+	-.00765824520346905413, -.00647209729391045177,
+	-.00499132412004966473, -.0034561228971313328,
+	-.00201785580014170775, -7.59430686781961401e-4,
+	2.84173631523859138e-4, .00110891667586337403,
+	.00172901493872728771, .00216812590802684701,
+	    .00245357710494539735,
+	.00261281821058334862, .00267141039656276912, .0026520307339598043,
+	.00257411652877287315, .00245389126236094427,
+	    .00230460058071795494,
+	.00213684837686712662, .00195896528478870911,
+	    .00177737008679454412,
+	.00159690280765839059, .00142111975664438546
+    };
+    static double gama[30] = { .629960524947436582, .251984209978974633,
+	.154790300415655846, .110713062416159013, .0857309395527394825,
+	.0697161316958684292, .0586085671893713576, .0504698873536310685,
+	.0442600580689154809, .0393720661543509966, .0354283195924455368,
+	.0321818857502098231, .0294646240791157679, .0271581677112934479,
+	.0251768272973861779, .0234570755306078891, .0219508390134907203,
+	.020621082823564624, .0194388240897880846, .0183810633800683158,
+	.0174293213231963172, .0165685837786612353, .0157865285987918445,
+	.0150729501494095594, .0144193250839954639, .0138184805735341786,
+	.0132643378994276568, .0127517121970498651, .0122761545318762767,
+	.0118338262398482403
+    };
     static double ex1 = .333333333333333333;
     static double ex2 = .666666666666666667;
     static double hpi = 1.57079632679489662;
@@ -6507,8 +6583,8 @@ L70:
     double d__1;
 
     /* Builtin functions */
-    double log(double), pow_dd(double *, double *), atan(
-	    double), cos(double), sin(double), sqrt(double);
+    double log(double), pow_dd(double *, double *), atan(double),
+	cos(double), sin(double), sqrt(double);
 
     /* Local variables */
     static long j, k, l, m, l1, l2;
@@ -6523,7 +6599,7 @@ L70:
     static double cri[14], dri[14];
     static long ibs;
     static double zai, zbi, zci, crr[14], drr[14], raw, zar, upi[14], sti,
-	     zbr, zcr, upr[14], str, raw2;
+	zbr, zcr, upr[14], str, raw2;
     static long lrp1;
     static double rfn13;
     static long idum;
@@ -6531,18 +6607,18 @@ L70:
     static long kmax;
     static double azth, tzai, tfnr, rfnu;
     extern /* Subroutine */ int zdiv(double *, double *, double *
-	    , double *, double *, double *);
+				     , double *, double *, double *);
     static double zthi, test, tzar, zthr, rfnu2;
     extern double azabs(double *, double *);
     static double zetai;
     extern /* Subroutine */ int azlog(double *, double *, double
-	    *, double *, long *);
+				      *, double *, long *);
     static double ptfni, sumai, sumbi, zetar, ptfnr, razth, sumar, sumbr,
-	    rzthi;
+	rzthi;
     extern double d1mach(long *);
     static double rzthr, rtzti, rtztr, przthi;
     extern /* Subroutine */ int azsqrt(double *, double *,
-	    double *, double *);
+				       double *, double *);
     static double przthr;
 
 /* ***BEGIN PROLOGUE  ZUNHJ */
@@ -6598,7 +6674,7 @@ L70:
     *argr = 1.;
     *argi = 0.;
     return 0;
-L15:
+  L15:
     zbr = *zr * rfnu;
     zbi = *zi * rfnu;
     rfnu2 = rfnu * rfnu;
@@ -6638,7 +6714,7 @@ L15:
 /* L10: */
     }
     k = 30;
-L20:
+  L20:
     kmax = k;
     zetar = w2r * sumar - w2i * sumai;
     zetai = w2r * sumai + w2i * sumar;
@@ -6703,13 +6779,13 @@ L20:
 	    }
 /* L40: */
 	}
-L50:
+      L50:
 	*asumr += sumar * pp;
 	*asumi += sumai * pp;
 	if (pp < *tol) {
 	    ias = 1;
 	}
-L60:
+      L60:
 	if (ibs == 1) {
 	    goto L90;
 	}
@@ -6725,13 +6801,13 @@ L60:
 	    }
 /* L70: */
 	}
-L80:
+      L80:
 	*bsumr += sumbr * pp;
 	*bsumi += sumbi * pp;
 	if (pp < btol) {
 	    ibs = 1;
 	}
-L90:
+      L90:
 	if (ias == 1 && ibs == 1) {
 	    goto L110;
 	}
@@ -6739,17 +6815,17 @@ L90:
 	l2 += 30;
 /* L100: */
     }
-L110:
+  L110:
     *asumr += coner;
     pp = rfnu * rfn13;
     *bsumr *= pp;
     *bsumi *= pp;
-L120:
+  L120:
     return 0;
 /* ----------------------------------------------------------------------- */
 /*     CABS(W2).GT.0.25D0 */
 /* ----------------------------------------------------------------------- */
-L130:
+  L130:
     azsqrt(&w2r, &w2i, &wr, &wi);
     if (wr < 0.) {
 	wr = 0.;
@@ -6789,7 +6865,7 @@ L130:
     if (zthr < 0.) {
 	ang += gpi;
     }
-L140:
+  L140:
     pp = pow_dd(&azth, &ex2);
     ang *= ex2;
     zetar = pp * cos(ang);
@@ -6895,10 +6971,12 @@ L140:
 	i__1 = lr;
 	for (jr = 1; jr <= i__1; ++jr) {
 	    --ju;
-	    sumar = sumar + crr[jr - 1] * upr[ju - 1] - cri[jr - 1] * upi[ju
-		    - 1];
-	    sumai = sumai + crr[jr - 1] * upi[ju - 1] + cri[jr - 1] * upr[ju
-		    - 1];
+	    sumar =
+		sumar + crr[jr - 1] * upr[ju - 1] - cri[jr - 1] * upi[ju -
+								      1];
+	    sumai =
+		sumai + crr[jr - 1] * upi[ju - 1] + cri[jr - 1] * upr[ju -
+								      1];
 /* L170: */
 	}
 	*asumr += sumar;
@@ -6907,7 +6985,7 @@ L140:
 	if (pp < *tol && test < *tol) {
 	    ias = 1;
 	}
-L180:
+      L180:
 	if (ibs == 1) {
 	    goto L200;
 	}
@@ -6917,10 +6995,12 @@ L180:
 	i__1 = lr;
 	for (jr = 1; jr <= i__1; ++jr) {
 	    --ju;
-	    sumbr = sumbr + drr[jr - 1] * upr[ju - 1] - dri[jr - 1] * upi[ju
-		    - 1];
-	    sumbi = sumbi + drr[jr - 1] * upi[ju - 1] + dri[jr - 1] * upr[ju
-		    - 1];
+	    sumbr =
+		sumbr + drr[jr - 1] * upr[ju - 1] - dri[jr - 1] * upi[ju -
+								      1];
+	    sumbi =
+		sumbi + drr[jr - 1] * upi[ju - 1] + dri[jr - 1] * upr[ju -
+								      1];
 /* L190: */
 	}
 	*bsumr += sumbr;
@@ -6929,24 +7009,24 @@ L180:
 	if (pp < btol && test < btol) {
 	    ibs = 1;
 	}
-L200:
+      L200:
 	if (ias == 1 && ibs == 1) {
 	    goto L220;
 	}
 /* L210: */
     }
-L220:
+  L220:
     *asumr += coner;
     str = -(*bsumr) * rfn13;
     sti = -(*bsumi) * rfn13;
     zdiv(&str, &sti, &rtztr, &rtzti, bsumr, bsumi);
     goto L120;
-} /* zunhj_ */
+}				/* zunhj_ */
 
 /* Subroutine */ int zuni1(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *yr, double *yi, long *
-	nz, long *nlast, double *fnul, double *tol, double *
-	elim, double *alim)
+			   long *kode, long *n, double *yr, double *yi,
+			   long *nz, long *nlast, double *fnul,
+			   double *tol, double *elim, double *alim)
 {
     /* Initialized data */
 
@@ -6967,7 +7047,7 @@ L220:
     static double c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, cyi[2];
     static long nuf;
     static double bry[3], cyr[2], sti, rzi, str, rzr, aphi, cscl, phii,
-	    crsc, phir;
+	crsc, phir;
     static long init;
     static double csrr[3], cssr[3], rast, sumi, sumr;
     static long iflag;
@@ -6975,16 +7055,20 @@ L220:
     extern double azabs(double *, double *);
     static double cwrki[16];
     extern /* Subroutine */ int zuchk(double *, double *, long *,
-	    double *, double *);
+				      double *, double *);
     static double cwrkr[16];
     extern double d1mach(long *);
     extern /* Subroutine */ int zunik(double *, double *, double
-	    *, long *, long *, double *, long *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *), zuoik(double *, double *, double *,
-	    long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *);
+				      *, long *, long *, double *, long *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *), zuoik(double *, double *,
+						       double *, long *,
+						       long *, long *,
+						       double *, double *,
+						       long *, double *,
+						       double *, double *);
     static double zeta1i, zeta2i, zeta1r, zeta2r;
 
 /* ***BEGIN PROLOGUE  ZUNI1 */
@@ -7029,10 +7113,10 @@ L220:
 /* ----------------------------------------------------------------------- */
 /*     CHECK FOR UNDERFLOW AND OVERFLOW ON FIRST MEMBER */
 /* ----------------------------------------------------------------------- */
-    fn = max(*fnu,1.);
+    fn = max(*fnu, 1.);
     init = 0;
-    zunik(zr, zi, &fn, &c__1, &c__1, tol, &init, &phir, &phii, &zeta1r, &
-	    zeta1i, &zeta2r, &zeta2i, &sumr, &sumi, cwrkr, cwrki);
+    zunik(zr, zi, &fn, &c__1, &c__1, tol, &init, &phir, &phii, &zeta1r,
+	  &zeta1i, &zeta2r, &zeta2i, &sumr, &sumi, cwrkr, cwrki);
     if (*kode == 1) {
 	goto L10;
     }
@@ -7044,22 +7128,22 @@ L220:
     s1r = -zeta1r + str;
     s1i = -zeta1i + sti;
     goto L20;
-L10:
+  L10:
     s1r = -zeta1r + zeta2r;
     s1i = -zeta1i + zeta2i;
-L20:
+  L20:
     rs1 = s1r;
     if (abs(rs1) > *elim) {
 	goto L130;
     }
-L30:
-    nn = min(2,nd);
+  L30:
+    nn = min(2, nd);
     i__1 = nn;
     for (i__ = 1; i__ <= i__1; ++i__) {
 	fn = *fnu + (double) ((float) (nd - i__));
 	init = 0;
-	zunik(zr, zi, &fn, &c__1, &c__0, tol, &init, &phir, &phii, &zeta1r, &
-		zeta1i, &zeta2r, &zeta2i, &sumr, &sumi, cwrkr, cwrki);
+	zunik(zr, zi, &fn, &c__1, &c__0, tol, &init, &phir, &phii, &zeta1r,
+	      &zeta1i, &zeta2r, &zeta2i, &sumr, &sumi, cwrkr, cwrki);
 	if (*kode == 1) {
 	    goto L40;
 	}
@@ -7071,10 +7155,10 @@ L30:
 	s1r = -zeta1r + str;
 	s1i = -zeta1i + sti + *zi;
 	goto L50;
-L40:
+      L40:
 	s1r = -zeta1r + zeta2r;
 	s1i = -zeta1i + zeta2i;
-L50:
+      L50:
 /* ----------------------------------------------------------------------- */
 /*     TEST FOR UNDERFLOW AND OVERFLOW */
 /* ----------------------------------------------------------------------- */
@@ -7105,7 +7189,7 @@ L50:
 	if (i__ == 1) {
 	    iflag = 3;
 	}
-L60:
+      L60:
 /* ----------------------------------------------------------------------- */
 /*     SCALE S1 IF CABS(S1).LT.ASCLE */
 /* ----------------------------------------------------------------------- */
@@ -7124,7 +7208,7 @@ L60:
 	if (nw != 0) {
 	    goto L110;
 	}
-L70:
+      L70:
 	cyr[i__ - 1] = s2r;
 	cyi[i__ - 1] = s2i;
 	m = nd - i__ + 1;
@@ -7169,7 +7253,7 @@ L70:
 	}
 	str = abs(c2r);
 	sti = abs(c2i);
-	c2m = max(str,sti);
+	c2m = max(str, sti);
 	if (c2m <= ascle) {
 	    goto L90;
 	}
@@ -7184,15 +7268,15 @@ L70:
 	s2r *= cssr[iflag - 1];
 	s2i *= cssr[iflag - 1];
 	c1r = csrr[iflag - 1];
-L90:
+      L90:
 	;
     }
-L100:
+  L100:
     return 0;
 /* ----------------------------------------------------------------------- */
 /*     SET UNDERFLOW AND UPDATE PARAMETERS */
 /* ----------------------------------------------------------------------- */
-L110:
+  L110:
     if (rs1 > 0.) {
 	goto L120;
     }
@@ -7204,7 +7288,7 @@ L110:
 	goto L100;
     }
     zuoik(zr, zi, fnu, kode, &c__1, &nd, &yr[1], &yi[1], &nuf, tol, elim,
-	    alim);
+	  alim);
     if (nuf < 0) {
 	goto L120;
     }
@@ -7219,10 +7303,10 @@ L110:
     }
     *nlast = nd;
     return 0;
-L120:
+  L120:
     *nz = -1;
     return 0;
-L130:
+  L130:
     if (rs1 > 0.) {
 	goto L120;
     }
@@ -7234,20 +7318,20 @@ L130:
 /* L140: */
     }
     return 0;
-} /* zuni1_ */
+}				/* zuni1_ */
 
 /* Subroutine */ int zuni2(double *zr, double *zi, double *fnu,
-	long *kode, long *n, double *yr, double *yi, long *
-	nz, long *nlast, double *fnul, double *tol, double *
-	elim, double *alim)
+			   long *kode, long *n, double *yr, double *yi,
+			   long *nz, long *nlast, double *fnul,
+			   double *tol, double *elim, double *alim)
 {
     /* Initialized data */
 
     static double zeror = 0.;
     static double zeroi = 0.;
     static double coner = 1.;
-    static double cipr[4] = { 1.,0.,-1.,0. };
-    static double cipi[4] = { 0.,1.,0.,-1. };
+    static double cipr[4] = { 1., 0., -1., 0. };
+    static double cipi[4] = { 0., 1., 0., -1. };
     static double hpi = 1.57079632679489662;
     static double aic = 1.265512123484645396;
 
@@ -7262,12 +7346,12 @@ L130:
     static double fn;
     static long in, nn, nw;
     static double c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, aii, ang,
-	    car;
+	car;
     static long nai;
     static double air, zbi, cyi[2], sar;
     static long nuf, inu;
     static double bry[3], raz, sti, zbr, zni, cyr[2], rzi, str, znr, rzr,
-	    daii, cidi, aarg;
+	daii, cidi, aarg;
     static long ndai;
     static double dair, aphi, argi, cscl, phii, crsc, argr;
     static long idum;
@@ -7277,18 +7361,24 @@ L130:
     extern double azabs(double *, double *);
     static double asumi, bsumi;
     extern /* Subroutine */ int zuchk(double *, double *, long *,
-	    double *, double *);
+				      double *, double *);
     static double asumr, bsumr;
     extern double d1mach(long *);
     extern /* Subroutine */ int zunhj(double *, double *, double
-	    *, long *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *), zairy(double *, double *,
-	    long *, long *, double *, double *, long *,
-	    long *), zuoik(double *, double *, double *,
-	    long *, long *, long *, double *, double *,
-	    long *, double *, double *, double *);
+				      *, long *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *), zairy(double *,
+								 double *,
+								 long *,
+								 long *,
+								 double *,
+								 double *,
+								 long *,
+								 long *),
+	zuoik(double *, double *, double *, long *, long *, long *,
+	      double *, double *, long *, double *, double *, double *);
     static double zeta1i, zeta2i, zeta1r, zeta2r;
 
 /* ***BEGIN PROLOGUE  ZUNI2 */
@@ -7357,13 +7447,13 @@ L130:
     zbi = -zbi;
     cidi = -cidi;
     c2i = -c2i;
-L10:
+  L10:
 /* ----------------------------------------------------------------------- */
 /*     CHECK FOR UNDERFLOW AND OVERFLOW ON FIRST MEMBER */
 /* ----------------------------------------------------------------------- */
-    fn = max(*fnu,1.);
-    zunhj(&znr, &zni, &fn, &c__1, tol, &phir, &phii, &argr, &argi, &zeta1r, &
-	    zeta1i, &zeta2r, &zeta2i, &asumr, &asumi, &bsumr, &bsumi);
+    fn = max(*fnu, 1.);
+    zunhj(&znr, &zni, &fn, &c__1, tol, &phir, &phii, &argr, &argi, &zeta1r,
+	  &zeta1i, &zeta2r, &zeta2i, &asumr, &asumi, &bsumr, &bsumi);
     if (*kode == 1) {
 	goto L20;
     }
@@ -7375,22 +7465,22 @@ L10:
     s1r = -zeta1r + str;
     s1i = -zeta1i + sti;
     goto L30;
-L20:
+  L20:
     s1r = -zeta1r + zeta2r;
     s1i = -zeta1i + zeta2i;
-L30:
+  L30:
     rs1 = s1r;
     if (abs(rs1) > *elim) {
 	goto L150;
     }
-L40:
-    nn = min(2,nd);
+  L40:
+    nn = min(2, nd);
     i__1 = nn;
     for (i__ = 1; i__ <= i__1; ++i__) {
 	fn = *fnu + (double) ((float) (nd - i__));
-	zunhj(&znr, &zni, &fn, &c__0, tol, &phir, &phii, &argr, &argi, &
-		zeta1r, &zeta1i, &zeta2r, &zeta2i, &asumr, &asumi, &bsumr, &
-		bsumi);
+	zunhj(&znr, &zni, &fn, &c__0, tol, &phir, &phii, &argr, &argi,
+	      &zeta1r, &zeta1i, &zeta2r, &zeta2i, &asumr, &asumi, &bsumr,
+	      &bsumi);
 	if (*kode == 1) {
 	    goto L50;
 	}
@@ -7402,10 +7492,10 @@ L40:
 	s1r = -zeta1r + str;
 	s1i = -zeta1i + sti + abs(*zi);
 	goto L60;
-L50:
+      L50:
 	s1r = -zeta1r + zeta2r;
 	s1i = -zeta1i + zeta2i;
-L60:
+      L60:
 /* ----------------------------------------------------------------------- */
 /*     TEST FOR UNDERFLOW AND OVERFLOW */
 /* ----------------------------------------------------------------------- */
@@ -7438,7 +7528,7 @@ L60:
 	if (i__ == 1) {
 	    iflag = 3;
 	}
-L70:
+      L70:
 /* ----------------------------------------------------------------------- */
 /*     SCALE S1 TO KEEP INTERMEDIATE ARITHMETIC ON SCALE NEAR */
 /*     EXPONENT EXTREMES */
@@ -7464,7 +7554,7 @@ L70:
 	if (nw != 0) {
 	    goto L120;
 	}
-L80:
+      L80:
 	if (*zi <= 0.) {
 	    s2i = -s2i;
 	}
@@ -7518,7 +7608,7 @@ L80:
 	}
 	str = abs(c2r);
 	sti = abs(c2i);
-	c2m = max(str,sti);
+	c2m = max(str, sti);
 	if (c2m <= ascle) {
 	    goto L100;
 	}
@@ -7533,12 +7623,12 @@ L80:
 	s2r *= cssr[iflag - 1];
 	s2i *= cssr[iflag - 1];
 	c1r = csrr[iflag - 1];
-L100:
+      L100:
 	;
     }
-L110:
+  L110:
     return 0;
-L120:
+  L120:
     if (rs1 > 0.) {
 	goto L140;
     }
@@ -7553,7 +7643,7 @@ L120:
 	goto L110;
     }
     zuoik(zr, zi, fnu, kode, &c__1, &nd, &yr[1], &yi[1], &nuf, tol, elim,
-	    alim);
+	  alim);
     if (nuf < 0) {
 	goto L140;
     }
@@ -7583,13 +7673,13 @@ L120:
 	c2i = -c2i;
     }
     goto L40;
-L130:
+  L130:
     *nlast = nd;
     return 0;
-L140:
+  L140:
     *nz = -1;
     return 0;
-L150:
+  L150:
     if (rs1 > 0.) {
 	goto L140;
     }
@@ -7601,13 +7691,14 @@ L150:
 /* L160: */
     }
     return 0;
-} /* zuni2_ */
+}				/* zuni2_ */
 
 /* Subroutine */ int zunik(double *zrr, double *zri, double *fnu,
-	 long *ikflg, long *ipmtr, double *tol, long *init,
-	double *phir, double *phii, double *zeta1r, double *
-	zeta1i, double *zeta2r, double *zeta2i, double *sumr,
-	double *sumi, double *cwrkr, double *cwrki)
+			   long *ikflg, long *ipmtr, double *tol,
+			   long *init, double *phir, double *phii,
+			   double *zeta1r, double *zeta1i, double *zeta2r,
+			   double *zeta2i, double *sumr, double *sumi,
+			   double *cwrkr, double *cwrki)
 {
     /* Initialized data */
 
@@ -7615,47 +7706,49 @@ L150:
     static double zeroi = 0.;
     static double coner = 1.;
     static double conei = 0.;
-    static double con[2] = { .398942280401432678,1.25331413731550025 };
-    static double c__[120] = { 1.,-.208333333333333333,.125,
-	    .334201388888888889,-.401041666666666667,.0703125,
-	    -1.02581259645061728,1.84646267361111111,-.8912109375,.0732421875,
-	    4.66958442342624743,-11.2070026162229938,8.78912353515625,
-	    -2.3640869140625,.112152099609375,-28.2120725582002449,
-	    84.6362176746007346,-91.8182415432400174,42.5349987453884549,
-	    -7.3687943594796317,.227108001708984375,212.570130039217123,
-	    -765.252468141181642,1059.99045252799988,-699.579627376132541,
-	    218.19051174421159,-26.4914304869515555,.572501420974731445,
-	    -1919.457662318407,8061.72218173730938,-13586.5500064341374,
-	    11655.3933368645332,-5305.64697861340311,1200.90291321635246,
-	    -108.090919788394656,1.7277275025844574,20204.2913309661486,
-	    -96980.5983886375135,192547.001232531532,-203400.177280415534,
-	    122200.46498301746,-41192.6549688975513,7109.51430248936372,
-	    -493.915304773088012,6.07404200127348304,-242919.187900551333,
-	    1311763.6146629772,-2998015.91853810675,3763271.297656404,
-	    -2813563.22658653411,1268365.27332162478,-331645.172484563578,
-	    45218.7689813627263,-2499.83048181120962,24.3805296995560639,
-	    3284469.85307203782,-19706819.1184322269,50952602.4926646422,
-	    -74105148.2115326577,66344512.2747290267,-37567176.6607633513,
-	    13288767.1664218183,-2785618.12808645469,308186.404612662398,
-	    -13886.0897537170405,110.017140269246738,-49329253.664509962,
-	    325573074.185765749,-939462359.681578403,1553596899.57058006,
-	    -1621080552.10833708,1106842816.82301447,-495889784.275030309,
-	    142062907.797533095,-24474062.7257387285,2243768.17792244943,
-	    -84005.4336030240853,551.335896122020586,814789096.118312115,
-	    -5866481492.05184723,18688207509.2958249,-34632043388.1587779,
-	    41280185579.753974,-33026599749.8007231,17954213731.1556001,
-	    -6563293792.61928433,1559279864.87925751,-225105661.889415278,
-	    17395107.5539781645,-549842.327572288687,3038.09051092238427,
-	    -14679261247.6956167,114498237732.02581,-399096175224.466498,
-	    819218669548.577329,-1098375156081.22331,1008158106865.38209,
-	    -645364869245.376503,287900649906.150589,-87867072178.0232657,
-	    17634730606.8349694,-2167164983.22379509,143157876.718888981,
-	    -3871833.44257261262,18257.7554742931747,286464035717.679043,
-	    -2406297900028.50396,9109341185239.89896,-20516899410934.4374,
-	    30565125519935.3206,-31667088584785.1584,23348364044581.8409,
-	    -12320491305598.2872,4612725780849.13197,-1196552880196.1816,
-	    205914503232.410016,-21822927757.5292237,1247009293.51271032,
-	    -29188388.1222208134,118838.426256783253 };
+    static double con[2] = { .398942280401432678, 1.25331413731550025 };
+    static double c__[120] = { 1., -.208333333333333333, .125,
+	.334201388888888889, -.401041666666666667, .0703125,
+	-1.02581259645061728, 1.84646267361111111, -.8912109375,
+	    .0732421875,
+	4.66958442342624743, -11.2070026162229938, 8.78912353515625,
+	-2.3640869140625, .112152099609375, -28.2120725582002449,
+	84.6362176746007346, -91.8182415432400174, 42.5349987453884549,
+	-7.3687943594796317, .227108001708984375, 212.570130039217123,
+	-765.252468141181642, 1059.99045252799988, -699.579627376132541,
+	218.19051174421159, -26.4914304869515555, .572501420974731445,
+	-1919.457662318407, 8061.72218173730938, -13586.5500064341374,
+	11655.3933368645332, -5305.64697861340311, 1200.90291321635246,
+	-108.090919788394656, 1.7277275025844574, 20204.2913309661486,
+	-96980.5983886375135, 192547.001232531532, -203400.177280415534,
+	122200.46498301746, -41192.6549688975513, 7109.51430248936372,
+	-493.915304773088012, 6.07404200127348304, -242919.187900551333,
+	1311763.6146629772, -2998015.91853810675, 3763271.297656404,
+	-2813563.22658653411, 1268365.27332162478, -331645.172484563578,
+	45218.7689813627263, -2499.83048181120962, 24.3805296995560639,
+	3284469.85307203782, -19706819.1184322269, 50952602.4926646422,
+	-74105148.2115326577, 66344512.2747290267, -37567176.6607633513,
+	13288767.1664218183, -2785618.12808645469, 308186.404612662398,
+	-13886.0897537170405, 110.017140269246738, -49329253.664509962,
+	325573074.185765749, -939462359.681578403, 1553596899.57058006,
+	-1621080552.10833708, 1106842816.82301447, -495889784.275030309,
+	142062907.797533095, -24474062.7257387285, 2243768.17792244943,
+	-84005.4336030240853, 551.335896122020586, 814789096.118312115,
+	-5866481492.05184723, 18688207509.2958249, -34632043388.1587779,
+	41280185579.753974, -33026599749.8007231, 17954213731.1556001,
+	-6563293792.61928433, 1559279864.87925751, -225105661.889415278,
+	17395107.5539781645, -549842.327572288687, 3038.09051092238427,
+	-14679261247.6956167, 114498237732.02581, -399096175224.466498,
+	819218669548.577329, -1098375156081.22331, 1008158106865.38209,
+	-645364869245.376503, 287900649906.150589, -87867072178.0232657,
+	17634730606.8349694, -2167164983.22379509, 143157876.718888981,
+	-3871833.44257261262, 18257.7554742931747, 286464035717.679043,
+	-2406297900028.50396, 9109341185239.89896, -20516899410934.4374,
+	30565125519935.3206, -31667088584785.1584, 23348364044581.8409,
+	-12320491305598.2872, 4612725780849.13197, -1196552880196.1816,
+	205914503232.410016, -21822927757.5292237, 1247009293.51271032,
+	-29188388.1222208134, 118838.426256783253
+    };
 
     /* System generated locals */
     long i__1;
@@ -7667,16 +7760,16 @@ L150:
     /* Local variables */
     static long i__, j, k, l;
     static double ac, si, ti, sr, tr, t2i, t2r, rfn, sri, sti, zni, srr,
-	    str, znr;
+	str, znr;
     static long idum;
     extern /* Subroutine */ int zdiv(double *, double *, double *
-	    , double *, double *, double *);
+				     , double *, double *, double *);
     static double test, crfni, crfnr;
     extern /* Subroutine */ int azlog(double *, double *, double
-	    *, double *, long *);
+				      *, double *, long *);
     extern double d1mach(long *);
     extern /* Subroutine */ int azsqrt(double *, double *,
-	    double *, double *);
+				       double *, double *);
 
 /* ***BEGIN PROLOGUE  ZUNIK */
 /* ***REFER TO  ZBESI,ZBESK */
@@ -7728,7 +7821,7 @@ L150:
     *phir = 1.;
     *phii = 0.;
     return 0;
-L15:
+  L15:
     tr = *zrr * rfn;
     ti = *zri * rfn;
     sr = coner + (tr * tr - ti * ti);
@@ -7782,9 +7875,9 @@ L15:
 /* L20: */
     }
     k = 15;
-L30:
+  L30:
     *init = k;
-L40:
+  L40:
     if (*ikflg == 2) {
 	goto L60;
     }
@@ -7804,7 +7897,7 @@ L40:
     *phir = cwrkr[16] * con[0];
     *phii = cwrki[16] * con[0];
     return 0;
-L60:
+  L60:
 /* ----------------------------------------------------------------------- */
 /*     COMPUTE SUM FOR THE K FUNCTION */
 /* ----------------------------------------------------------------------- */
@@ -7823,11 +7916,12 @@ L60:
     *phir = cwrkr[16] * con[1];
     *phii = cwrki[16] * con[1];
     return 0;
-} /* zunik_ */
+}				/* zunik_ */
 
 /* Subroutine */ int zunk1(double *zr, double *zi, double *fnu,
-	long *kode, long *mr, long *n, double *yr, double *
-	yi, long *nz, double *tol, double *elim, double *alim)
+			   long *kode, long *mr, long *n, double *yr,
+			   double *yi, long *nz, double *tol, double *elim,
+			   double *alim)
 {
     /* Initialized data */
 
@@ -7841,26 +7935,26 @@ L60:
 
     /* Builtin functions */
     double log(double), exp(double), cos(double), sin(double),
-	     d_sign(double *, double *);
+	d_sign(double *, double *);
 
     /* Local variables */
     static long i__, j, k, m, ib, ic;
     static double fn;
     static long il, kk, nw;
     static double c1i, c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, ang,
-	    asc, cki, fnf;
+	asc, cki, fnf;
     static long ifn;
     static double ckr;
     static long iuf;
     static double cyi[2], fmr, csr, sgn;
     static long inu;
     static double bry[3], cyr[2], sti, rzi, zri, str, rzr, zrr, aphi,
-	    cscl, phii[2], crsc, phir[2];
+	cscl, phii[2], crsc, phir[2];
     static long init[2];
     static double csrr[3], cssr[3], rast, sumi[2], razr;
     extern /* Subroutine */ int zs1s2(double *, double *, double
-	    *, double *, double *, double *, long *,
-	    double *, double *, long *);
+				      *, double *, double *, double *,
+				      long *, double *, double *, long *);
     static double sumr[2];
     static long iflag, kflag;
     static double ascle;
@@ -7870,18 +7964,19 @@ L60:
     extern double azabs(double *, double *);
     static double csgni, phidr;
     static long initd;
-    static double cspni, cwrki[48]	/* was [16][3] */, sumdi;
+    static double cspni, cwrki[48] /* was [16][3] */ , sumdi;
     extern /* Subroutine */ int zuchk(double *, double *, long *,
-	    double *, double *);
-    static double cspnr, cwrkr[48]	/* was [16][3] */, sumdr;
+				      double *, double *);
+    static double cspnr, cwrkr[48] /* was [16][3] */ , sumdr;
     extern double d1mach(long *);
     extern /* Subroutine */ int zunik(double *, double *, double
-	    *, long *, long *, double *, long *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *);
-    static double zeta1i[2], zeta2i[2], zet1di, zet2di, zeta1r[2], zeta2r[
-	    2], zet1dr, zet2dr;
+				      *, long *, long *, double *, long *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *);
+    static double zeta1i[2], zeta2i[2], zet1di, zet2di, zeta1r[2],
+	zeta2r[2], zet1dr, zet2dr;
 
 /* ***BEGIN PROLOGUE  ZUNK1 */
 /* ***REFER TO  ZBESK */
@@ -7926,7 +8021,7 @@ L60:
     }
     zrr = -(*zr);
     zri = -(*zi);
-L10:
+  L10:
     j = 2;
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
@@ -7936,10 +8031,11 @@ L10:
 	j = 3 - j;
 	fn = *fnu + (double) ((float) (i__ - 1));
 	init[j - 1] = 0;
-	zunik(&zrr, &zri, &fn, &c__2, &c__0, tol, &init[j - 1], &phir[j - 1],
-		 &phii[j - 1], &zeta1r[j - 1], &zeta1i[j - 1], &zeta2r[j - 1],
-		 &zeta2i[j - 1], &sumr[j - 1], &sumi[j - 1], &cwrkr[(j << 4)
-		- 16], &cwrki[(j << 4) - 16]);
+	zunik(&zrr, &zri, &fn, &c__2, &c__0, tol, &init[j - 1],
+	      &phir[j - 1], &phii[j - 1], &zeta1r[j - 1], &zeta1i[j - 1],
+	      &zeta2r[j - 1], &zeta2i[j - 1], &sumr[j - 1], &sumi[j - 1],
+	      &cwrkr[(j << 4)
+		     - 16], &cwrki[(j << 4) - 16]);
 	if (*kode == 1) {
 	    goto L20;
 	}
@@ -7951,10 +8047,10 @@ L10:
 	s1r = zeta1r[j - 1] - str;
 	s1i = zeta1i[j - 1] - sti;
 	goto L30;
-L20:
+      L20:
 	s1r = zeta1r[j - 1] - zeta2r[j - 1];
 	s1i = zeta1i[j - 1] - zeta2i[j - 1];
-L30:
+      L30:
 	rs1 = s1r;
 /* ----------------------------------------------------------------------- */
 /*     TEST FOR UNDERFLOW AND OVERFLOW */
@@ -7985,7 +8081,7 @@ L30:
 	if (kdflg == 1) {
 	    kflag = 3;
 	}
-L40:
+      L40:
 /* ----------------------------------------------------------------------- */
 /*     SCALE S1 TO KEEP INTERMEDIATE ARITHMETIC ON SCALE NEAR */
 /*     EXPONENT EXTREMES */
@@ -8005,7 +8101,7 @@ L40:
 	if (nw != 0) {
 	    goto L60;
 	}
-L50:
+      L50:
 	cyr[kdflg - 1] = s2r;
 	cyi[kdflg - 1] = s2i;
 	yr[i__] = s2r * csrr[kflag - 1];
@@ -8015,7 +8111,7 @@ L50:
 	}
 	kdflg = 2;
 	goto L70;
-L60:
+      L60:
 	if (rs1 > 0.) {
 	    goto L300;
 	}
@@ -8038,11 +8134,11 @@ L60:
 	yr[i__ - 1] = zeror;
 	yi[i__ - 1] = zeroi;
 	++(*nz);
-L70:
+      L70:
 	;
     }
     i__ = *n;
-L75:
+  L75:
     razr = 1. / azabs(&zrr, &zri);
     str = zrr * razr;
     sti = -zri * razr;
@@ -8064,9 +8160,9 @@ L75:
 	ipard = 0;
     }
     initd = 0;
-    zunik(&zrr, &zri, &fn, &c__2, &ipard, tol, &initd, &phidr, &phidi, &
-	    zet1dr, &zet1di, &zet2dr, &zet2di, &sumdr, &sumdi, &cwrkr[32], &
-	    cwrki[32]);
+    zunik(&zrr, &zri, &fn, &c__2, &ipard, tol, &initd, &phidr, &phidi,
+	  &zet1dr, &zet1di, &zet2dr, &zet2di, &sumdr, &sumdi, &cwrkr[32],
+	  &cwrki[32]);
     if (*kode == 1) {
 	goto L80;
     }
@@ -8078,10 +8174,10 @@ L75:
     s1r = zet1dr - str;
     s1i = zet1di - sti;
     goto L90;
-L80:
+  L80:
     s1r = zet1dr - zet2dr;
     s1i = zet1di - zet2di;
-L90:
+  L90:
     rs1 = s1r;
     if (abs(rs1) > *elim) {
 	goto L95;
@@ -8097,7 +8193,7 @@ L90:
     if (abs(rs1) < *elim) {
 	goto L100;
     }
-L95:
+  L95:
     if (abs(rs1) > 0.) {
 	goto L300;
     }
@@ -8118,7 +8214,7 @@ L95:
 /* --------------------------------------------------------------------------- */
 /*     FORWARD RECUR FOR REMAINDER OF THE SEQUENCE */
 /* ---------------------------------------------------------------------------- */
-L100:
+  L100:
     s1r = cyr[0];
     s1i = cyi[0];
     s2r = cyr[1];
@@ -8144,7 +8240,7 @@ L100:
 	}
 	str = abs(c2r);
 	sti = abs(c2i);
-	c2m = max(str,sti);
+	c2m = max(str, sti);
 	if (c2m <= ascle) {
 	    goto L120;
 	}
@@ -8159,10 +8255,10 @@ L100:
 	s2r *= cssr[kflag - 1];
 	s2i *= cssr[kflag - 1];
 	c1r = csrr[kflag - 1];
-L120:
+      L120:
 	;
     }
-L160:
+  L160:
     if (*mr == 0) {
 	return 0;
     }
@@ -8187,7 +8283,7 @@ L160:
     }
     cspnr = -cspnr;
     cspni = -cspni;
-L170:
+  L170:
     asc = bry[0];
     iuf = 0;
     kk = *n;
@@ -8205,7 +8301,7 @@ L170:
 	if (*n > 2) {
 	    goto L175;
 	}
-L172:
+      L172:
 	initd = init[j - 1];
 	phidr = phir[j - 1];
 	phidi = phii[j - 1];
@@ -8218,7 +8314,7 @@ L172:
 	m = j;
 	j = 3 - j;
 	goto L180;
-L175:
+      L175:
 	if (kk == *n && ib < *n) {
 	    goto L180;
 	}
@@ -8226,10 +8322,10 @@ L175:
 	    goto L172;
 	}
 	initd = 0;
-L180:
-	zunik(&zrr, &zri, &fn, &c__1, &c__0, tol, &initd, &phidr, &phidi, &
-		zet1dr, &zet1di, &zet2dr, &zet2di, &sumdr, &sumdi, &cwrkr[(m
-		<< 4) - 16], &cwrki[(m << 4) - 16]);
+      L180:
+	zunik(&zrr, &zri, &fn, &c__1, &c__0, tol, &initd, &phidr, &phidi,
+	      &zet1dr, &zet1di, &zet2dr, &zet2di, &sumdr, &sumdi,
+	      &cwrkr[(m << 4) - 16], &cwrki[(m << 4) - 16]);
 	if (*kode == 1) {
 	    goto L200;
 	}
@@ -8241,10 +8337,10 @@ L180:
 	s1r = -zet1dr + str;
 	s1i = -zet1di + sti;
 	goto L210;
-L200:
+      L200:
 	s1r = -zet1dr + zet2dr;
 	s1i = -zet1di + zet2di;
-L210:
+      L210:
 /* ----------------------------------------------------------------------- */
 /*     TEST FOR UNDERFLOW AND OVERFLOW */
 /* ----------------------------------------------------------------------- */
@@ -8275,7 +8371,7 @@ L210:
 	if (kdflg == 1) {
 	    iflag = 3;
 	}
-L220:
+      L220:
 	str = phidr * sumdr - phidi * sumdi;
 	sti = phidr * sumdi + phidi * sumdr;
 	s2r = -csgni * sti;
@@ -8295,7 +8391,7 @@ L220:
 	}
 	s2r = zeror;
 	s2i = zeroi;
-L230:
+      L230:
 	cyr[kdflg - 1] = s2r;
 	cyi[kdflg - 1] = s2i;
 	c2r = s2r;
@@ -8312,7 +8408,7 @@ L230:
 	}
 	zs1s2(&zrr, &zri, &s1r, &s1i, &s2r, &s2i, &nw, &asc, alim, &iuf);
 	*nz += nw;
-L250:
+      L250:
 	yr[kk] = s1r * cspnr - s1i * cspni + s2r;
 	yi[kk] = cspnr * s1i + cspni * s1r + s2i;
 	--kk;
@@ -8323,24 +8419,24 @@ L250:
 	}
 	kdflg = 1;
 	goto L270;
-L255:
+      L255:
 	if (kdflg == 2) {
 	    goto L275;
 	}
 	kdflg = 2;
 	goto L270;
-L260:
+      L260:
 	if (rs1 > 0.) {
 	    goto L300;
 	}
 	s2r = zeror;
 	s2i = zeroi;
 	goto L230;
-L270:
+      L270:
 	;
     }
     k = *n;
-L275:
+  L275:
     il = *n - k;
     if (il == 0) {
 	return 0;
@@ -8377,7 +8473,7 @@ L275:
 	}
 	zs1s2(&zrr, &zri, &c1r, &c1i, &c2r, &c2i, &nw, &asc, alim, &iuf);
 	*nz += nw;
-L280:
+      L280:
 	yr[kk] = c1r * cspnr - c1i * cspni + c2r;
 	yi[kk] = c1r * cspni + c1i * cspnr + c2i;
 	--kk;
@@ -8388,7 +8484,7 @@ L280:
 	}
 	c2r = abs(ckr);
 	c2i = abs(cki);
-	c2m = max(c2r,c2i);
+	c2m = max(c2r, c2i);
 	if (c2m <= ascle) {
 	    goto L290;
 	}
@@ -8403,18 +8499,19 @@ L280:
 	s2r *= cssr[iflag - 1];
 	s2i *= cssr[iflag - 1];
 	csr = csrr[iflag - 1];
-L290:
+      L290:
 	;
     }
     return 0;
-L300:
+  L300:
     *nz = -1;
     return 0;
-} /* zunk1_ */
+}				/* zunk1_ */
 
 /* Subroutine */ int zunk2(double *zr, double *zi, double *fnu,
-	long *kode, long *mr, long *n, double *yr, double *
-	yi, long *nz, double *tol, double *elim, double *alim)
+			   long *kode, long *mr, long *n, double *yr,
+			   double *yi, long *nz, double *tol, double *elim,
+			   double *alim)
 {
     /* Initialized data */
 
@@ -8428,22 +8525,22 @@ L300:
     static double hpi = 1.57079632679489662;
     static double pi = 3.14159265358979324;
     static double aic = 1.26551212348464539;
-    static double cipr[4] = { 1.,0.,-1.,0. };
-    static double cipi[4] = { 0.,-1.,0.,1. };
+    static double cipr[4] = { 1., 0., -1., 0. };
+    static double cipi[4] = { 0., -1., 0., 1. };
 
     /* System generated locals */
     long i__1;
 
     /* Builtin functions */
     double cos(double), sin(double), log(double), exp(double),
-	     d_sign(double *, double *);
+	d_sign(double *, double *);
 
     /* Local variables */
     static long i__, j, k, ib, ic;
     static double fn;
     static long il, kk, in, nw;
     static double yy, c1i, c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r,
-	    aii, ang, asc, car, cki, fnf;
+	aii, ang, asc, car, cki, fnf;
     static long nai;
     static double air;
     static long ifn;
@@ -8452,14 +8549,14 @@ L300:
     static double cyi[2], fmr, sar, csr, sgn, zbi;
     static long inu;
     static double bry[3], cyr[2], pti, sti, zbr, zni, rzi, ptr, zri, str,
-	    znr, rzr, zrr, daii, aarg;
+	znr, rzr, zrr, daii, aarg;
     static long ndai;
     static double dair, aphi, argi[2], cscl, phii[2], crsc, argr[2];
     static long idum;
     static double phir[2], csrr[3], cssr[3], rast, razr;
     extern /* Subroutine */ int zs1s2(double *, double *, double
-	    *, double *, double *, double *, long *,
-	    double *, double *, long *);
+				      *, double *, double *, double *,
+				      long *, double *, double *, long *);
     static long iflag, kflag;
     static double argdi, ascle;
     static long kdflg;
@@ -8468,18 +8565,24 @@ L300:
     static long ipard;
     static double csgni, phidr, cspni, asumi[2], bsumi[2];
     extern /* Subroutine */ int zuchk(double *, double *, long *,
-	    double *, double *);
+				      double *, double *);
     static double cspnr, asumr[2], bsumr[2];
     extern double d1mach(long *);
     extern /* Subroutine */ int zunhj(double *, double *, double
-	    *, long *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *), zairy(double *, double *,
-	    long *, long *, double *, double *, long *,
-	    long *);
-    static double zeta1i[2], zeta2i[2], zet1di, zet2di, zeta1r[2], zeta2r[
-	    2], zet1dr, zet2dr, asumdi, bsumdi, asumdr, bsumdr;
+				      *, long *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *), zairy(double *,
+								 double *,
+								 long *,
+								 long *,
+								 double *,
+								 double *,
+								 long *,
+								 long *);
+    static double zeta1i[2], zeta2i[2], zet1di, zet2di, zeta1r[2],
+	zeta2r[2], zet1dr, zet2dr, asumdi, bsumdi, asumdr, bsumdr;
 
 /* ***BEGIN PROLOGUE  ZUNK2 */
 /* ***REFER TO  ZBESK */
@@ -8528,7 +8631,7 @@ L300:
     }
     zrr = -(*zr);
     zri = -(*zi);
-L10:
+  L10:
     yy = zri;
     znr = zri;
     zni = -zrr;
@@ -8551,7 +8654,7 @@ L10:
     }
     znr = -znr;
     zbi = -zbi;
-L20:
+  L20:
 /* ----------------------------------------------------------------------- */
 /*     K(FNU,Z) IS COMPUTED FROM H(2,FNU,-I*Z) WHERE Z IS IN THE FIRST */
 /*     QUADRANT. FOURTH QUADRANT VALUES (YY.LE.0.0E0) ARE COMPUTED BY */
@@ -8565,10 +8668,10 @@ L20:
 /* ----------------------------------------------------------------------- */
 	j = 3 - j;
 	fn = *fnu + (double) ((float) (i__ - 1));
-	zunhj(&znr, &zni, &fn, &c__0, tol, &phir[j - 1], &phii[j - 1], &argr[
-		j - 1], &argi[j - 1], &zeta1r[j - 1], &zeta1i[j - 1], &zeta2r[
-		j - 1], &zeta2i[j - 1], &asumr[j - 1], &asumi[j - 1], &bsumr[
-		j - 1], &bsumi[j - 1]);
+	zunhj(&znr, &zni, &fn, &c__0, tol, &phir[j - 1], &phii[j - 1],
+	      &argr[j - 1], &argi[j - 1], &zeta1r[j - 1], &zeta1i[j - 1],
+	      &zeta2r[j - 1], &zeta2i[j - 1], &asumr[j - 1], &asumi[j - 1],
+	      &bsumr[j - 1], &bsumi[j - 1]);
 	if (*kode == 1) {
 	    goto L30;
 	}
@@ -8580,10 +8683,10 @@ L20:
 	s1r = zeta1r[j - 1] - str;
 	s1i = zeta1i[j - 1] - sti;
 	goto L40;
-L30:
+      L30:
 	s1r = zeta1r[j - 1] - zeta2r[j - 1];
 	s1i = zeta1i[j - 1] - zeta2i[j - 1];
-L40:
+      L40:
 /* ----------------------------------------------------------------------- */
 /*     TEST FOR UNDERFLOW AND OVERFLOW */
 /* ----------------------------------------------------------------------- */
@@ -8615,7 +8718,7 @@ L40:
 	if (kdflg == 1) {
 	    kflag = 3;
 	}
-L50:
+      L50:
 /* ----------------------------------------------------------------------- */
 /*     SCALE S1 TO KEEP INTERMEDIATE ARITHMETIC ON SCALE NEAR */
 /*     EXPONENT EXTREMES */
@@ -8647,7 +8750,7 @@ L50:
 	if (nw != 0) {
 	    goto L70;
 	}
-L60:
+      L60:
 	if (yy <= 0.) {
 	    s2i = -s2i;
 	}
@@ -8663,7 +8766,7 @@ L60:
 	}
 	kdflg = 2;
 	goto L80;
-L70:
+      L70:
 	if (rs1 > 0.) {
 	    goto L320;
 	}
@@ -8689,11 +8792,11 @@ L70:
 	yr[i__ - 1] = zeror;
 	yi[i__ - 1] = zeroi;
 	++(*nz);
-L80:
+      L80:
 	;
     }
     i__ = *n;
-L85:
+  L85:
     razr = 1. / azabs(&zrr, &zri);
     str = zrr * razr;
     sti = -zri * razr;
@@ -8714,9 +8817,9 @@ L85:
     if (*mr != 0) {
 	ipard = 0;
     }
-    zunhj(&znr, &zni, &fn, &ipard, tol, &phidr, &phidi, &argdr, &argdi, &
-	    zet1dr, &zet1di, &zet2dr, &zet2di, &asumdr, &asumdi, &bsumdr, &
-	    bsumdi);
+    zunhj(&znr, &zni, &fn, &ipard, tol, &phidr, &phidi, &argdr, &argdi,
+	  &zet1dr, &zet1di, &zet2dr, &zet2di, &asumdr, &asumdi, &bsumdr,
+	  &bsumdi);
     if (*kode == 1) {
 	goto L90;
     }
@@ -8728,10 +8831,10 @@ L85:
     s1r = zet1dr - str;
     s1i = zet1di - sti;
     goto L100;
-L90:
+  L90:
     s1r = zet1dr - zet2dr;
     s1i = zet1di - zet2di;
-L100:
+  L100:
     rs1 = s1r;
     if (abs(rs1) > *elim) {
 	goto L105;
@@ -8747,7 +8850,7 @@ L100:
     if (abs(rs1) < *elim) {
 	goto L120;
     }
-L105:
+  L105:
     if (rs1 > 0.) {
 	goto L320;
     }
@@ -8765,7 +8868,7 @@ L105:
 /* L106: */
     }
     return 0;
-L120:
+  L120:
     s1r = cyr[0];
     s1i = cyi[0];
     s2r = cyr[1];
@@ -8791,7 +8894,7 @@ L120:
 	}
 	str = abs(c2r);
 	sti = abs(c2i);
-	c2m = max(str,sti);
+	c2m = max(str, sti);
 	if (c2m <= ascle) {
 	    goto L130;
 	}
@@ -8806,10 +8909,10 @@ L120:
 	s2r *= cssr[kflag - 1];
 	s2i *= cssr[kflag - 1];
 	c1r = csrr[kflag - 1];
-L130:
+      L130:
 	;
     }
-L180:
+  L180:
     if (*mr == 0) {
 	return 0;
     }
@@ -8835,7 +8938,7 @@ L180:
     }
     cspnr = -cspnr;
     cspni = -cspni;
-L190:
+  L190:
 /* ----------------------------------------------------------------------- */
 /*     CS=COEFF OF THE J FUNCTION TO GET THE I FUNCTION. I(FNU,Z) IS */
 /*     COMPUTED FROM EXP(I*FNU*HPI)*J(FNU,-I*Z) WHERE Z IS IN THE FIRST */
@@ -8866,7 +8969,7 @@ L190:
 	if (*n > 2) {
 	    goto L175;
 	}
-L172:
+      L172:
 	phidr = phir[j - 1];
 	phidi = phii[j - 1];
 	argdr = argr[j - 1];
@@ -8881,17 +8984,17 @@ L172:
 	bsumdi = bsumi[j - 1];
 	j = 3 - j;
 	goto L210;
-L175:
+      L175:
 	if (kk == *n && ib < *n) {
 	    goto L210;
 	}
 	if (kk == ib || kk == ic) {
 	    goto L172;
 	}
-	zunhj(&znr, &zni, &fn, &c__0, tol, &phidr, &phidi, &argdr, &argdi, &
-		zet1dr, &zet1di, &zet2dr, &zet2di, &asumdr, &asumdi, &bsumdr,
-		&bsumdi);
-L210:
+	zunhj(&znr, &zni, &fn, &c__0, tol, &phidr, &phidi, &argdr, &argdi,
+	      &zet1dr, &zet1di, &zet2dr, &zet2di, &asumdr, &asumdi,
+	      &bsumdr, &bsumdi);
+      L210:
 	if (*kode == 1) {
 	    goto L220;
 	}
@@ -8903,10 +9006,10 @@ L210:
 	s1r = -zet1dr + str;
 	s1i = -zet1di + sti;
 	goto L230;
-L220:
+      L220:
 	s1r = -zet1dr + zet2dr;
 	s1i = -zet1di + zet2di;
-L230:
+      L230:
 /* ----------------------------------------------------------------------- */
 /*     TEST FOR UNDERFLOW AND OVERFLOW */
 /* ----------------------------------------------------------------------- */
@@ -8938,7 +9041,7 @@ L230:
 	if (kdflg == 1) {
 	    iflag = 3;
 	}
-L240:
+      L240:
 	zairy(&argdr, &argdi, &c__0, &c__2, &air, &aii, &nai, &idum);
 	zairy(&argdr, &argdi, &c__1, &c__2, &dair, &daii, &ndai, &idum);
 	str = dair * bsumdr - daii * bsumdi;
@@ -8964,7 +9067,7 @@ L240:
 	}
 	s2r = zeror;
 	s2i = zeroi;
-L250:
+      L250:
 	if (yy <= 0.) {
 	    s2i = -s2i;
 	}
@@ -8984,7 +9087,7 @@ L250:
 	}
 	zs1s2(&zrr, &zri, &s1r, &s1i, &s2r, &s2i, &nw, &asc, alim, &iuf);
 	*nz += nw;
-L270:
+      L270:
 	yr[kk] = s1r * cspnr - s1i * cspni + s2r;
 	yi[kk] = s1r * cspni + s1i * cspnr + s2i;
 	--kk;
@@ -8998,24 +9101,24 @@ L270:
 	}
 	kdflg = 1;
 	goto L290;
-L255:
+      L255:
 	if (kdflg == 2) {
 	    goto L295;
 	}
 	kdflg = 2;
 	goto L290;
-L280:
+      L280:
 	if (rs1 > 0.) {
 	    goto L320;
 	}
 	s2r = zeror;
 	s2i = zeroi;
 	goto L250;
-L290:
+      L290:
 	;
     }
     k = *n;
-L295:
+  L295:
     il = *n - k;
     if (il == 0) {
 	return 0;
@@ -9052,7 +9155,7 @@ L295:
 	}
 	zs1s2(&zrr, &zri, &c1r, &c1i, &c2r, &c2i, &nw, &asc, alim, &iuf);
 	*nz += nw;
-L300:
+      L300:
 	yr[kk] = c1r * cspnr - c1i * cspni + c2r;
 	yi[kk] = c1r * cspni + c1i * cspnr + c2i;
 	--kk;
@@ -9063,7 +9166,7 @@ L300:
 	}
 	c2r = abs(ckr);
 	c2i = abs(cki);
-	c2m = max(c2r,c2i);
+	c2m = max(c2r, c2i);
 	if (c2m <= ascle) {
 	    goto L310;
 	}
@@ -9078,19 +9181,19 @@ L300:
 	s2r *= cssr[iflag - 1];
 	s2i *= cssr[iflag - 1];
 	csr = csrr[iflag - 1];
-L310:
+      L310:
 	;
     }
     return 0;
-L320:
+  L320:
     *nz = -1;
     return 0;
-} /* zunk2_ */
+}				/* zunk2_ */
 
 /* Subroutine */ int zuoik(double *zr, double *zi, double *fnu,
-	long *kode, long *ikflg, long *n, double *yr, double
-	*yi, long *nuf, double *tol, double *elim, double *
-	alim)
+			   long *kode, long *ikflg, long *n, double *yr, double
+			   *yi, long *nuf, double *tol, double *elim,
+			   double *alim)
 {
     /* Initialized data */
 
@@ -9109,7 +9212,7 @@ L320:
     static double ax, ay;
     static long nn, nw;
     static double fnn, gnn, zbi, czi, gnu, zbr, czr, rcz, sti, zni, zri,
-	    str, znr, zrr, aarg, aphi, argi, phii, argr;
+	str, znr, zrr, aarg, aphi, argi, phii, argr;
     static long idum;
     static double phir;
     static long init;
@@ -9117,21 +9220,34 @@ L320:
     extern double azabs(double *, double *);
     static long iform;
     extern /* Subroutine */ int azlog(double *, double *, double
-	    *, double *, long *);
+				      *, double *, long *);
     static double asumi, bsumi, cwrki[16];
     extern /* Subroutine */ int zuchk(double *, double *, long *,
-	    double *, double *);
+				      double *, double *);
     static double asumr, bsumr, cwrkr[16];
     extern double d1mach(long *);
     extern /* Subroutine */ int zunhj(double *, double *, double
-	    *, long *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *), zunik(double *, double *,
-	    double *, long *, long *, double *, long *,
-	    double *, double *, double *, double *,
-	    double *, double *, double *, double *,
-	    double *, double *);
+				      *, long *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *, double *,
+				      double *, double *), zunik(double *,
+								 double *,
+								 double *,
+								 long *,
+								 long *,
+								 double *,
+								 long *,
+								 double *,
+								 double *,
+								 double *,
+								 double *,
+								 double *,
+								 double *,
+								 double *,
+								 double *,
+								 double *,
+								 double *);
     static double zeta1i, zeta2i, zeta1r, zeta2r;
 
 /* ***BEGIN PROLOGUE  ZUOIK */
@@ -9175,7 +9291,7 @@ L320:
     }
     zrr = -(*zr);
     zri = -(*zi);
-L10:
+  L10:
     zbr = zrr;
     zbi = zri;
     ax = abs(*zr) * 1.7321;
@@ -9184,14 +9300,14 @@ L10:
     if (ay > ax) {
 	iform = 2;
     }
-    gnu = max(*fnu,1.);
+    gnu = max(*fnu, 1.);
     if (*ikflg == 1) {
 	goto L20;
     }
     fnn = (double) ((float) nn);
     gnn = *fnu + fnn - 1.;
-    gnu = max(gnn,fnn);
-L20:
+    gnu = max(gnn, fnn);
+  L20:
 /* ----------------------------------------------------------------------- */
 /*     ONLY THE MAGNITUDE OF ARG AND PHI ARE NEEDED ALONG WITH THE */
 /*     REAL PARTS OF ZETA1, ZETA2 AND ZB. NO ATTEMPT IS MADE TO GET */
@@ -9201,37 +9317,38 @@ L20:
 	goto L30;
     }
     init = 0;
-    zunik(&zrr, &zri, &gnu, ikflg, &c__1, tol, &init, &phir, &phii, &zeta1r,
-	    &zeta1i, &zeta2r, &zeta2i, &sumr, &sumi, cwrkr, cwrki);
+    zunik(&zrr, &zri, &gnu, ikflg, &c__1, tol, &init, &phir, &phii,
+	  &zeta1r, &zeta1i, &zeta2r, &zeta2i, &sumr, &sumi, cwrkr, cwrki);
     czr = -zeta1r + zeta2r;
     czi = -zeta1i + zeta2i;
     goto L50;
-L30:
+  L30:
     znr = zri;
     zni = -zrr;
     if (*zi > 0.) {
 	goto L40;
     }
     znr = -znr;
-L40:
-    zunhj(&znr, &zni, &gnu, &c__1, tol, &phir, &phii, &argr, &argi, &zeta1r,
-	    &zeta1i, &zeta2r, &zeta2i, &asumr, &asumi, &bsumr, &bsumi);
+  L40:
+    zunhj(&znr, &zni, &gnu, &c__1, tol, &phir, &phii, &argr, &argi,
+	  &zeta1r, &zeta1i, &zeta2r, &zeta2i, &asumr, &asumi, &bsumr,
+	  &bsumi);
     czr = -zeta1r + zeta2r;
     czi = -zeta1i + zeta2i;
     aarg = azabs(&argr, &argi);
-L50:
+  L50:
     if (*kode == 1) {
 	goto L60;
     }
     czr -= zbr;
     czi -= zbi;
-L60:
+  L60:
     if (*ikflg == 1) {
 	goto L70;
     }
     czr = -czr;
     czi = -czi;
-L70:
+  L70:
     aphi = azabs(&phir, &phii);
     rcz = czr;
 /* ----------------------------------------------------------------------- */
@@ -9251,7 +9368,7 @@ L70:
 	goto L210;
     }
     goto L130;
-L80:
+  L80:
 /* ----------------------------------------------------------------------- */
 /*     UNDERFLOW TEST */
 /* ----------------------------------------------------------------------- */
@@ -9268,7 +9385,7 @@ L80:
     if (rcz > -(*elim)) {
 	goto L110;
     }
-L90:
+  L90:
     i__1 = nn;
     for (i__ = 1; i__ <= i__1; ++i__) {
 	yr[i__] = zeror;
@@ -9277,7 +9394,7 @@ L90:
     }
     *nuf = nn;
     return 0;
-L110:
+  L110:
     ascle = d1mach(&c__1) * 1e3 / *tol;
     azlog(&phir, &phii, &str, &sti, &idum);
     czr += str;
@@ -9288,7 +9405,7 @@ L110:
     azlog(&argr, &argi, &str, &sti, &idum);
     czr = czr - str * .25 - aic;
     czi -= sti * .25;
-L120:
+  L120:
     ax = exp(rcz) / *tol;
     ay = czi;
     czr = ax * cos(ay);
@@ -9297,7 +9414,7 @@ L120:
     if (nw != 0) {
 	goto L90;
     }
-L130:
+  L130:
     if (*ikflg == 2) {
 	return 0;
     }
@@ -9307,30 +9424,31 @@ L130:
 /* ----------------------------------------------------------------------- */
 /*     SET UNDERFLOWS ON I SEQUENCE */
 /* ----------------------------------------------------------------------- */
-L140:
+  L140:
     gnu = *fnu + (double) ((float) (nn - 1));
     if (iform == 2) {
 	goto L150;
     }
     init = 0;
-    zunik(&zrr, &zri, &gnu, ikflg, &c__1, tol, &init, &phir, &phii, &zeta1r,
-	    &zeta1i, &zeta2r, &zeta2i, &sumr, &sumi, cwrkr, cwrki);
+    zunik(&zrr, &zri, &gnu, ikflg, &c__1, tol, &init, &phir, &phii,
+	  &zeta1r, &zeta1i, &zeta2r, &zeta2i, &sumr, &sumi, cwrkr, cwrki);
     czr = -zeta1r + zeta2r;
     czi = -zeta1i + zeta2i;
     goto L160;
-L150:
-    zunhj(&znr, &zni, &gnu, &c__1, tol, &phir, &phii, &argr, &argi, &zeta1r,
-	    &zeta1i, &zeta2r, &zeta2i, &asumr, &asumi, &bsumr, &bsumi);
+  L150:
+    zunhj(&znr, &zni, &gnu, &c__1, tol, &phir, &phii, &argr, &argi,
+	  &zeta1r, &zeta1i, &zeta2r, &zeta2i, &asumr, &asumi, &bsumr,
+	  &bsumi);
     czr = -zeta1r + zeta2r;
     czi = -zeta1i + zeta2i;
     aarg = azabs(&argr, &argi);
-L160:
+  L160:
     if (*kode == 1) {
 	goto L170;
     }
     czr -= zbr;
     czi -= zbi;
-L170:
+  L170:
     aphi = azabs(&phir, &phii);
     rcz = czr;
     if (rcz < -(*elim)) {
@@ -9346,7 +9464,7 @@ L170:
     if (rcz > -(*elim)) {
 	goto L190;
     }
-L180:
+  L180:
     yr[nn] = zeror;
     yi[nn] = zeroi;
     --nn;
@@ -9355,7 +9473,7 @@ L180:
 	return 0;
     }
     goto L140;
-L190:
+  L190:
     ascle = d1mach(&c__1) * 1e3 / *tol;
     azlog(&phir, &phii, &str, &sti, &idum);
     czr += str;
@@ -9366,7 +9484,7 @@ L190:
     azlog(&argr, &argi, &str, &sti, &idum);
     czr = czr - str * .25 - aic;
     czi -= sti * .25;
-L200:
+  L200:
     ax = exp(rcz) / *tol;
     ay = czi;
     czr = ax * cos(ay);
@@ -9376,15 +9494,15 @@ L200:
 	goto L180;
     }
     return 0;
-L210:
+  L210:
     *nuf = -1;
     return 0;
-} /* zuoik_ */
+}				/* zuoik_ */
 
 /* Subroutine */ int zwrsk(double *zrr, double *zri, double *fnu,
-	 long *kode, long *n, double *yr, double *yi, long *
-	nz, double *cwr, double *cwi, double *tol, double *
-	elim, double *alim)
+			   long *kode, long *n, double *yr, double *yi,
+			   long *nz, double *cwr, double *cwi, double *tol,
+			   double *elim, double *alim)
 {
     /* System generated locals */
     long i__1;
@@ -9395,14 +9513,16 @@ L210:
     /* Local variables */
     static long i__, nw;
     static double c1i, c2i, c1r, c2r, act, acw, cti, ctr, pti, sti, ptr,
-	    str, ract, ascle;
+	str, ract, ascle;
     extern double azabs(double *, double *);
     static double csclr, cinui, cinur;
     extern /* Subroutine */ int zbknu(double *, double *, double
-	    *, long *, long *, double *, double *, long *,
-	    double *, double *, double *), zrati(double *,
-	    double *, double *, long *, double *, double *,
-	     double *);
+				      *, long *, long *, double *,
+				      double *, long *, double *, double *,
+				      double *), zrati(double *, double *,
+						       double *, long *,
+						       double *, double *,
+						       double *);
     extern double d1mach(long *);
 
 /* ***BEGIN PROLOGUE  ZWRSK */
@@ -9427,8 +9547,8 @@ L210:
 
     /* Function Body */
     *nz = 0;
-    zbknu(zrr, zri, fnu, kode, &c__2, &cwr[1], &cwi[1], &nw, tol, elim, alim)
-	    ;
+    zbknu(zrr, zri, fnu, kode, &c__2, &cwr[1], &cwi[1], &nw, tol, elim,
+	  alim);
     if (nw != 0) {
 	goto L50;
     }
@@ -9444,7 +9564,7 @@ L210:
     }
     cinur = cos(*zri);
     cinui = sin(*zri);
-L10:
+  L10:
 /* ----------------------------------------------------------------------- */
 /*     ON LOW EXPONENT MACHINES THE K FUNCTIONS CAN BE CLOSE TO BOTH */
 /*     THE UNDER AND OVERFLOW LIMITS AND THE NORMALIZATION MUST BE */
@@ -9459,13 +9579,13 @@ L10:
     }
     csclr = 1. / *tol;
     goto L30;
-L20:
+  L20:
     ascle = 1. / ascle;
     if (acw < ascle) {
 	goto L30;
     }
     csclr = *tol;
-L30:
+  L30:
     c1r = cwr[1] * csclr;
     c1i = cwi[1] * csclr;
     c2r = cwr[2] * csclr;
@@ -9507,11 +9627,10 @@ L30:
 /* L40: */
     }
     return 0;
-L50:
+  L50:
     *nz = -1;
     if (nw == -2) {
 	*nz = -2;
     }
     return 0;
-} /* zwrsk_ */
-
+}				/* zwrsk_ */

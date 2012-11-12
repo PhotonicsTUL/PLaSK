@@ -149,6 +149,9 @@ private:
     /// Script read from file
     std::string script;
 
+    /// Line in which script begins
+    unsigned scriptline;
+
     /**
      * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
      * @param path_hints_name name of path hints to get

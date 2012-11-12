@@ -220,6 +220,7 @@ void Manager::loadScript(XMLReader& reader)
 {
     if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("script"))
         throw XMLUnexpectedElementException(reader, "<script>");
+    scriptline = reader.getLineNr();
     script = reader.requireTextUntilEnd();
     size_t start;
     for (start = 0; script[start] != '\n'; ++start) {
