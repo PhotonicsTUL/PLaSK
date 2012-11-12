@@ -241,6 +241,7 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
                    const std::function<bool(const std::string& section_name)>& section_filter)
 {
     reader.requireTag(TAG_NAME_ROOT);
+    reader.removeAlienNamespaceAttr();  //eventual schema decl. will be removed
     reader.requireTag();
 
     if (reader.getNodeName() == TAG_NAME_MATERIALS) {

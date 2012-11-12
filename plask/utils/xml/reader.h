@@ -313,6 +313,11 @@ class XMLReader {
     bool hasAttribute(const std::string& name) const { return getAttribute(name); }
 
     /**
+     * Remove from attributes all attributes which are not in default (empty) namespace.
+     */
+    void removeAlienNamespaceAttr();
+
+    /**
      * Returns the name of the current node.
      *
      * Throw exception if it is not defined.

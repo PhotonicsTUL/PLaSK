@@ -54,8 +54,9 @@ struct CFileDataSource: public XMLReader::DataSource {
 
 void XMLReader::startTag(void *data, const char *element, const char **attribute) {
     State& state = reinterpret_cast<XMLReader*>(data)->appendState(NODE_ELEMENT, element);
-    for (int i = 0; attribute[i]; i += 2)
+    for (int i = 0; attribute[i]; i += 2) {
         state.attributes[attribute[i]] = attribute[i+1];
+    }
 }
 
 void XMLReader::endTag(void *data, const char *element) {
@@ -93,7 +94,7 @@ bool XMLReader::readSome() {
 }
 
 void XMLReader::initParser() {
-    parser = XML_ParserCreate(NULL);
+    parser = XML_ParserCreateNS(NULL, ' ');
     XML_SetUserData(parser, this);
     XML_SetElementHandler(parser, &XMLReader::startTag, &XMLReader::endTag);
     XML_SetCharacterDataHandler(parser, &XMLReader::characterData);
@@ -185,6 +186,18 @@ bool XMLReader::read() {
         return true;
     } else
         return false;
+}
+
+void XMLReader::removeAlienNamespaceAttr() {
+    if (getNodeType() != NODE_ELEMENT)
+        throw XMLUnexpectedElementException(*this, "element");
+    auto iter = states.front().attributes.begin();
+    while (iter != states.front().attributes.end()) {
+        if (iter->first.find(' ') != std::string::npos) //not in default NS?
+            states.front().attributes.erase(iter++);
+        else
+            ++iter;
+    }
 }
 
 std::string XMLReader::getNodeName() const {
