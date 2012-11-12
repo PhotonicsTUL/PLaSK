@@ -282,8 +282,7 @@ int main(int argc, const char *argv[])
                 globals["__manager__"] = py::object(manager);
                 FILE* file = std::fopen(filename.c_str(), "r");
                 if (!file) throw std::invalid_argument("No such file: " + filename);
-                manager->loadFromFILE(file);
-                std::fclose(file);
+                manager->loadFromFILE(file); // it closes the file
                 scriptline = manager->scriptline;
                 // manager->script = plask::python::PythonManager::removeSpaces(manager->script);
                 plask::python::PythonManager::export_dict(globals["__manager__"], globals);
