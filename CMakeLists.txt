@@ -70,6 +70,13 @@ option(USE_OMP "Use OpenMP" ON)
 set(PYTHON_VERSION "" CACHE STRING "Python version to use")
 
 # ---------- External libraries --------------------------------------------
+if(WIN32)
+	get_filename_component(compliler_prefix_path ${CMAKE_CXX_COMPILER} PATH)
+	get_filename_component(compliler_prefix_path ${compliler_prefix_path} PATH) # get rid of bin
+	#TODO test how it should look like if we use MSVC
+	list(APPEND CMAKE_SYSTEM_PREFIX_PATH ${compliler_prefix_path})
+endif()
+
 if(BUILD_PYTHON)
     set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
 
@@ -101,6 +108,9 @@ if(USE_OMP)
     endif()
 endif()
 
+find_package(EXPAT REQUIRED)
+include_directories(${EXPAT_INCLUDE_DIR})
+
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
 set(boost_components unit_test_framework system filesystem) #thread
@@ -118,9 +128,6 @@ endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
 include_directories(${Boost_INCLUDE_DIRS})
-
-find_package(EXPAT REQUIRED)
-include_directories(${EXPAT_INCLUDE_DIR})
 
 if(MINGW)
     add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
