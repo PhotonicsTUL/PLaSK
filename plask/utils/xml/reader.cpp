@@ -144,6 +144,7 @@ XMLReader &XMLReader::operator=(XMLReader &&to_move)
 
 XMLReader::~XMLReader() {
     XML_ParserFree(this->parser);
+    delete source;
 }
 
 void XMLReader::swap(XMLReader &to_swap)
@@ -186,6 +187,13 @@ bool XMLReader::read() {
         return false;
 }
 
+std::string XMLReader::getNodeName() const {
+    NodeType n = getNodeType();
+    if (n != NODE_ELEMENT && n != NODE_ELEMENT_END)
+        throw XMLUnexpectedElementException(*this, "element or end of element");
+    return getCurrent().text;
+}
+
 std::string XMLReader::getTextContent() const {
     if (getNodeType() != NODE_TEXT)
         throw XMLUnexpectedElementException(*this, "text");
@@ -196,7 +204,7 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
     auto res_it = this->getCurrent().attributes.find(name);
     if (res_it == this->getCurrent().attributes.end())
         return boost::optional<std::string>();
-    const_cast<std::unordered_set<std::string>&>(read_attributes).insert(name);
+    const_cast<std::set<std::string>&>(read_attributes).insert(name);
     return res_it->second;
 }
 
@@ -244,29 +252,15 @@ void XMLReader::requireTagEnd() {
         throw XMLUnexpectedElementException(*this, "</" + path.back() + ">");
 }
 
-/*void requireTagEndOrEmptyTag(XMLReader& reader, const std::string& tag) {
-    if (reader.getNodeType() == irr::io::EXN_ELEMENT && reader.isEmptyElement())
-        return;
-    requireTagEnd(reader, tag);
-}*/
-
 std::string XMLReader::requireText() {
     requireNext();
     return getTextContent();
 }
 
-std::string XMLReader::requireTextUntilEnd() {
-    std::string text;
-    requireNext();
-    while (getNodeType() == NODE_TEXT) {
-        text += getTextContent();
-        requireNext();
-    }
-    if (text == "")
-        throw XMLUnexpectedElementException(*this, "text");
-    if (getNodeType() != NODE_ELEMENT_END)
-        throw XMLUnexpectedElementException(*this, "</" + path.back() + ">");
-    return text;
+std::string XMLReader::requireTextInCurrentTag() {
+    std::string t = requireText();
+    requireTagEnd();
+    return t;
 }
 
 bool XMLReader::gotoNextOnLevel(std::size_t required_level, NodeType required_type)

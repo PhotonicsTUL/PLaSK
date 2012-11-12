@@ -782,7 +782,7 @@ template <typename SpaceT>
 void SolverOver<SpaceT>::parseStandardConfiguration(XMLReader& reader, Manager& manager, const std::string& expected_msg) {
     if (reader.getNodeName() == "geometry") {
         auto name = reader.getAttribute("ref");
-        if (!name) name.reset(reader.requireTextUntilEnd());
+        if (!name) name.reset(reader.requireTextInCurrentTag());
         else reader.requireTagEnd();
         auto found = manager.geometries.find(*name);
         if (found == manager.geometries.end())
@@ -801,7 +801,7 @@ template <typename SpaceT, typename MeshT>
 void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader, Manager& manager, const std::string& expected_msg) {
     if (reader.getNodeName() == "mesh") {
         auto name = reader.getAttribute("ref");
-        if (!name) name.reset(reader.requireTextUntilEnd());
+        if (!name) name.reset(reader.requireTextInCurrentTag());
         else reader.requireTagEnd();
         auto found = manager.meshes.find(*name);
         if (found != manager.meshes.end()) {

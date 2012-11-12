@@ -97,7 +97,7 @@ static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
             axes[node].addPointsLinear(start, stop, count);
             reader.requireTagEnd();
         } else {
-            std::string data = reader.requireTextUntilEnd();
+            std::string data = reader.requireTextInCurrentTag();
             for (auto point: boost::tokenizer<>(data)) {
                 try {
                     double val = boost::lexical_cast<double>(point);
@@ -131,7 +131,7 @@ static shared_ptr<Mesh> readRectilinearMesh3D(XMLReader& reader)
             axes[node].addPointsLinear(start, stop, count);
             reader.requireTagEnd();
         } else {
-            std::string data = reader.requireTextUntilEnd();
+            std::string data = reader.requireTextInCurrentTag();
             for (auto point: boost::tokenizer<>(data)) {
                 try {
                     double val = boost::lexical_cast<double>(point);

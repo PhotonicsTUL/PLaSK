@@ -6,7 +6,7 @@
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
 #include <vector>
-#include <unordered_set>
+#include <set>
 #include <map>
 
 #include "exceptions.h"
@@ -44,14 +44,21 @@ class XMLReader {
     //        NODE_UNKNOWN = irr::io::EXN_UNKNOWN             //< Unknown element
     };
 
+    /// Base class to source of data.
     struct DataSource {
+
         /**
-         * @brief read
-         * @param buff
-         * @param buf_size
+         * Read @p buf_size bytes of data and store it in buffer @p buff.
+         *
+         * Throws exception if can't read.
+         * @param buff destination buffer
+         * @param buf_size size of @p buff
          * @return number of bytes read, less than @p buf_size only on end of data
          */
         virtual std::size_t read(char* buff, std::size_t buf_size) = 0;
+
+        /// Empty, virtual destructor.
+        virtual ~DataSource() {}
     };
 
   private:
@@ -60,20 +67,42 @@ class XMLReader {
     static void endTag(void *data, const char *element);
     static void characterData(void* data, const char *string, int string_len);
 
-    std::unique_ptr<DataSource> source;
+    /// Source of data.
+    DataSource* source;
 
+    /**
+     * Fragment of XML data which was read by parser.
+     */
     struct State {
 
-        unsigned lineNr, columnNr;
+        /// Line number when fragment begin.
+        unsigned lineNr;
 
-        std::string text;   ///< text or tag name
+        /// Column number in line this->lineNr when fragment begin.
+        unsigned columnNr;
 
-        NodeType type;
+        /// Text or tag name.
+        std::string text;
 
+        /// Attributes (used only if type == NODE_ELEMENT).
         std::map<std::string, std::string> attributes;
 
+        /// Type of tag.
+        NodeType type;
+
+        /**
+         * Construct state using given data.
+         * @param type type of tag
+         * @param lineNr line number when fragment begin
+         * @param columnNr column number (in line @p lineNr) when fragment begin
+         * @param text text or tag name
+         */
         State(NodeType type, unsigned lineNr, unsigned columnNr, const std::string& text): lineNr(lineNr), columnNr(columnNr), text(text), type(type) {}
 
+        /**
+         * Check if text consist of white characters only.
+         * @return @p true if text consist of white characters only
+         */
         bool hasWhiteText() {
             for (std::size_t i = 0; i < text.size(); ++i)
                 if (!isspace(text[i])) return false;
@@ -81,46 +110,69 @@ class XMLReader {
         }
     };
 
+    /**
+     * Append parsed XML fragment.
+     * @param type type of tag
+     * @param text text or tag name
+     */
     State& appendState(NodeType type, const std::string& text);
 
-    /// parsed states (if last one is NODE_TEXT than in can be not complatly parsed)
+    /// Parsed states (if last one is NODE_TEXT than in can be not complatly parsed).
     std::deque<State> states;
 
-    /// xml reader, low level
+    /// XML reader/parser, low level.
     XML_Parser parser;
 
-    /// path from root to current tag
+    /// Path from root to current tag.
     std::vector<std::string> path;
 
-    /// attributes which was read in current tag
-    std::unordered_set<std::string> read_attributes;
+    /// Attributes which was read in current tag.
+    std::set<std::string> read_attributes;
 
     /// true if the reader should check if there are no spurious attributes in the current element
     bool check_if_all_attributes_were_read;
 
+    /**
+     * Check if current XML state is available.
+     * @return @c true if current XML state is available and can be use, @c false in other cases (typically before first or after last read())
+     */
     bool hasCurrent() const {
         if (states.empty()) return false;
         return states.size() > 1 || states.front().type != NODE_TEXT;
     }
 
+    /**
+     * Check if current XML state is available and throw exception if not.
+     */
     void ensureHasCurrent() const {
         if (!hasCurrent()) throw XMLException("XML reader: no current node (missing first read() call?)");
     }
 
+    /// @return current XML state (valid only if hasCurrent() returns @c true)
     const State& getCurrent() const {
         return states.front();
     }
 
-    inline bool strToBool(std::string& str, const std::string& name) const {
+    /**
+     * Parse @p str as bool.
+     * @param str string which represent bool: "0", "1", "yes", "no", "true", "false" (case insensive)
+     * @param name name of data use in case of exception throwing
+     * @return bool parsed from @p str
+     */
+    bool strToBool(std::string& str, const std::string& name) const {
         boost::algorithm::to_lower(str);
         if (str == "yes" || str == "true" || str == "1") return true;
         else if (str == "no" || str == "false" || str == "0") return false;
         else throw XMLBadAttrException(*this, name, str);
     }
 
-    /// @return @c true if has more data to read
+    /**
+     * Parse some data from input. Can (but not must!) append some states to states deque
+     * @return @c true if has more data to read and @c false of and of source was reach while reading
+     */
     bool readSome();
 
+    /// Initialize XML parser, called by constructors.
     void initParser();
 
   public:
@@ -179,6 +231,7 @@ class XMLReader {
   public:
 #endif
 
+    /// Delete source and XML parser.
     ~XMLReader();
 
     /**
@@ -265,7 +318,7 @@ class XMLReader {
      * Throw exception if it is not defined.
      * @return name of the current node
      */
-    std::string getNodeName() const { return getCurrent().text; }
+    std::string getNodeName() const;
 
     /**
      * Check if current node is NODE_TEXT (throw exception if it's not) and get node data (text content).
@@ -399,11 +452,10 @@ class XMLReader {
     std::string requireText();
 
     /**
-     * Call requireNext() and read all text elements even if they are separated by comments. In the end require closing of a tag.
-     * Throw exception no text is read or there is anything else than closing tag afterwards.
+     * Read text inside current tag. Move parser to end of current tag.
      * \return read text
      */
-    std::string requireTextUntilEnd();
+    std::string requireTextInCurrentTag();
 
     /**
      * Call requireNext() and next check if current element is text. Throw exception if it's not.
@@ -413,12 +465,6 @@ class XMLReader {
     inline T requireText() {
         return boost::lexical_cast<T>(requireText());
     }
-
-    /*
-     * Skip XML comments.
-     * @return @c true if read non-comment or @c false if XML data end
-     */
-    //bool skipComments();
 
     /**
      * Skip everything up to element with required type on required level.

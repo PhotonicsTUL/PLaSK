@@ -210,22 +210,22 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
         else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
-            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextUntilEnd().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input);
+            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input);
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(name, func) \
         else if (reader.getNodeName() == name) \
-            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextUntilEnd().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input);
+            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input);
 
 #   else
         PyCompilerFlags flags { CO_FUTURE_DIVISION };
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
         else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
-            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextUntilEnd().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
+            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(name, func) \
         else if (reader.getNodeName() == name) \
-            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextUntilEnd().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
+            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
 
 #   endif
     while (reader.requireTagOrEnd()) {
