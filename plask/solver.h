@@ -268,14 +268,18 @@ For interpolated fields they will look like in the following example:
             // [...] compute the light intensity
         }
 
-        return interpolate(*mesh, computed_light_intensity, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
-            // interpolate your data to the requested mesh
+        // automatically interpolate your data to the requested mesh
+        return interpolate(*mesh, computed_light_intensity, WrappedMesh<2>(destination_mesh, this->geometry),
+                           defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
     }
 \endcode
 
 The important objects of the above method are the first and the last lines. In the former one, we check if the computations have been performed
 and are up-to-date (remember, we have cleared the value of \c outNeff in \c onInvalidate()). Otherwise we throw an exception. In the last line
 we use plask::interpolate function to interpolate our data to the receiver mesh (which is provided as \c destination_mesh argument).
+
+Helper class WrappedMesh helps to automatically consider mirror and periodic boundaries, so the requested points will be wrapped into
+your computational domain correctly. And defInterpolation changes DEFAULT_INTERPOLATION method to some real one.
 
 Our solver can perform computations now. However, if it has any configuration to load, we can read it from XML file. To do this, we should
 reimplement \c loadConfiguration method. It reads the configuration from the current XML file using plask::XMLReader, by walking through

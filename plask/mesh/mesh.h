@@ -69,11 +69,11 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
         return 1;
     }
 
-    plask::Vec<3, double> at(std::size_t index) const {
+    virtual plask::Vec<3, double> at(std::size_t index) const {
         return point;
     }
 
-    virtual void writeXML(XMLElement& object) const;
+    virtual void writeXML(XMLElement& object) const {
         object.attr("type", "point3d"); // this is required attribute for the provided object
         object.addTag("point")
                .attr("c0", point.c0)

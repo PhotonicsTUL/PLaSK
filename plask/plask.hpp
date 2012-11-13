@@ -85,6 +85,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "geometry/border.h"
 
 #include "mesh/mesh.h"
+#include "mesh/wrapped.h"
 #include "mesh/interpolation.h"
 #include "mesh/boundary_conditions.h"
 #include "mesh/regular.h"

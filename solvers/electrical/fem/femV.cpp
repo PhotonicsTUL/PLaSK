@@ -134,9 +134,6 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandS
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, band=%2%)", mAOrder, mABand);
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto tTemperature = inTemperature(iMesh);
-
     std::fill_n(oA.data, mABand*mAOrder, 0.); // zero the matrix
     oLoad.fill(0.);
 
@@ -157,29 +154,15 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandS
         double tElemWidth = tE.getUpper0() - tE.getLower0();
         double tElemHeight = tE.getUpper1() - tE.getLower1();
 
-        // point and material in the middle of the element
-        Vec<2,double> tMidPoint = tE.getMidpoint();
-
         double tKx, tKy;
-
-        auto tMaterial = geometry->getMaterial(tMidPoint);
-        auto tRoles = geometry->getRolesAt(tMidPoint);
-        if (tRoles.find("active") != tRoles.end()) {
-            if (mLoopNo == 0)
-                mCond[i] = std::make_pair(mCondJuncX0, mCondJuncY0);
-            else {
-                auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-                double tDact = 1e-6 * tLeaf->getBoundingBox().height();
-                double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                                        / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
-                mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
-            }
-        } else if (tRoles.find("p-contact") != tRoles.end()) {
-            mCond[i] = std::make_pair(mCondPcontact, mCondPcontact);
-        } else if (tRoles.find("n-contact") != tRoles.end()) {
-            mCond[i] = std::make_pair(mCondNcontact, mCondNcontact);
-        } else
-            mCond[i] = tMaterial->cond(tTemperature[i]);
+        Vec<2,double> tMidPoint = tE.getMidpoint();
+        if (mLoopNo != 0 && geometry->hasRoleAt("active", tMidPoint)) {
+            auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
+            double tDact = 1e-6 * tLeaf->getBoundingBox().height();
+            double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
+                                                    / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
+            mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
+        }
         std::tie(tKx, tKy) = mCond[i];
 
         tKx *= tElemHeight; tKx /= tElemWidth;
@@ -233,9 +216,6 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Ban
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, band=%2%)", mAOrder, mABand);
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto tTemperature = inTemperature(iMesh);
-
     std::fill_n(oA.data, mABand*mAOrder, 0.); // zero the matrix
     oLoad.fill(0.);
 
@@ -256,29 +236,17 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Ban
         double tElemWidth = tE.getUpper0() - tE.getLower0();
         double tElemHeight = tE.getUpper1() - tE.getLower1();
 
-        // point and material in the middle of the element
         Vec<2,double> tMidPoint = tE.getMidpoint();
         double r = tMidPoint.rad_r();
 
         double tKx, tKy;
-
-        auto tRoles = geometry->getRolesAt(tMidPoint);
-        if (tRoles.find("active") != tRoles.end()) {
-            if (mLoopNo == 0)
-                mCond[i] = std::make_pair(mCondJuncX0, mCondJuncY0);
-            else {
-                auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-                double tDact = 1e-6 * tLeaf->getBoundingBox().height();
-                double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                                        / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
-                mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
-            }
-        } else if (tRoles.find("p-contact") != tRoles.end()) {
-            mCond[i] = std::make_pair(mCondPcontact, mCondPcontact);
-        } else if (tRoles.find("n-contact") != tRoles.end()) {
-            mCond[i] = std::make_pair(mCondNcontact, mCondNcontact);
-        } else
-            mCond[i] = geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
+        if (mLoopNo != 0 && geometry->hasRoleAt("active", tMidPoint)) {
+            auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
+            double tDact = 1e-6 * tLeaf->getBoundingBox().height();
+            double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
+                                                    / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
+            mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
+        }
         std::tie(tKx, tKy) = mCond[i];
 
         tKx *= tElemHeight; tKx /= tElemWidth;
@@ -324,6 +292,30 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Ban
 
 }
 
+template<typename Geometry2DType>  void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
+{
+    auto iMesh = (this->mesh)->getMidpointsMesh();
+    auto tTemperature = inTemperature(iMesh);
+
+    for (auto tE: this->mesh->elements)
+    {
+        size_t i = tE.getIndex();
+        Vec<2,double> tMidPoint = tE.getMidpoint();
+
+        auto tRoles = this->geometry->getRolesAt(tMidPoint);
+        if (tRoles.find("active") != tRoles.end()) {
+            if (mLoopNo == 0) mCond[i] = std::make_pair(mCondJuncX0, mCondJuncY0);
+            // in other loops leave it as it was
+        } else if (tRoles.find("p-contact") != tRoles.end()) {
+            mCond[i] = std::make_pair(mCondPcontact, mCondPcontact);
+        } else if (tRoles.find("n-contact") != tRoles.end()) {
+            mCond[i] = std::make_pair(mCondNcontact, mCondNcontact);
+        } else
+            mCond[i] = this->geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
+    }
+}
+
+
 
 template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::compute(int iLoopLim)
 {
@@ -346,8 +338,10 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
 #   ifndef NDEBUG
         if (!mPotentials.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");
 #   endif
-    mPotentials = mPotentials.claim(); // FIXME should we call it or not? this is safer if someone else holds our potential, but reduces performance!
+    mPotentials = mPotentials.claim();
     DataVector<double> tV(mAOrder);
+
+    saveConductivities();
 
     do {
         setMatrix(tA, tV, tVConst);
@@ -509,30 +503,30 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 }
 
 
-template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials(const MeshD<2> &dst_mesh, InterpolationMethod method) const
+template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const
 {
     if (!mPotentials) throw NoValue("Potentials");
     this->writelog(LOG_DETAIL, "Getting potentials");
     if (method == DEFAULT_INTERPOLATION)  method = INTERPOLATION_LINEAR;
-    return interpolate(*(this->mesh), mPotentials, dst_mesh, method);
+    return interpolate(*(this->mesh), mPotentials, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
 
-template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(const MeshD<2> &dst_mesh, InterpolationMethod method)
+template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
     if (!mPotentials) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Getting current densities");
     if (!mCurrentDensities) saveCurrentDensities();
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-    return interpolate(*((this->mesh)->getMidpointsMesh()), mCurrentDensities, dst_mesh, method);
+    return interpolate(*((this->mesh)->getMidpointsMesh()), mCurrentDensities, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
 
-template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(const MeshD<2> &dst_mesh, InterpolationMethod method)
+template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
     if (!mPotentials) throw NoValue("Heat densities");
     this->writelog(LOG_DETAIL, "Getting heat densities");
     if (!mHeatDensities) saveHeatDensities(); // we will compute fluxes only if they are needed
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-    return interpolate(*((this->mesh)->getMidpointsMesh()), mHeatDensities, dst_mesh, method);
+    return interpolate(*((this->mesh)->getMidpointsMesh()), mHeatDensities, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
 
 

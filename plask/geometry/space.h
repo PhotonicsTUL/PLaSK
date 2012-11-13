@@ -118,7 +118,7 @@ struct Geometry: public GeometryObject {
      * @param direction direction to check
      * @return @c true only if structure is symmetric in given @p direction
      */
-    bool isSymmetric(DIRECTION direction) const {
+    virtual bool isSymmetric(DIRECTION direction) const {
         return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
     }
 
@@ -929,6 +929,11 @@ public:
 
     const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
 
+    virtual bool isSymmetric(DIRECTION direction) const {
+        if (direction == DIRECTION_TRAN) return true;
+        return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
+    }
+
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
     void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const;
@@ -936,7 +941,7 @@ public:
   protected:
 
     virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) {
-        const char* directions[3][2] = { {"back", "front"}, {"inner", "outer"}, {"bottom", "top"} };
+        const char* directions[3][2] = { {"cw", "ccw"}, {"inner", "outer"}, {"bottom", "top"} };
         return directions[ax][orient];
     }
 

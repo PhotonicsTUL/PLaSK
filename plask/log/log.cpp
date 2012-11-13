@@ -20,11 +20,11 @@ static std::string logLevelHead(LogLevel level) {
         case LOG_CRITICAL_ERROR:return "\033[31;01mCRITICAL ERROR";
         case LOG_ERROR:         return "\033[31;01mERROR         ";
         case LOG_WARNING:       return "\033[31mWARNING       ";
-        case LOG_INFO:          return "\033[34mINFO          ";
+        case LOG_INFO:          return "\033[36mINFO          ";
         case LOG_RESULT:        return "\033[32mRESULT        ";
         case LOG_DATA:          return "\033[33mDATA          ";
-        case LOG_DETAIL:        return "\033[30mDETAIL        ";
-        case LOG_DEBUG:         return "\033[37mDEBUG         ";
+        case LOG_DETAIL:        return "\033[00mDETAIL        ";
+        case LOG_DEBUG:         return "\033[30;01;03mDEBUG         ";
 #     endif
     }
     return "";

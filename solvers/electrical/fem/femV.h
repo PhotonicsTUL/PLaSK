@@ -64,6 +64,9 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst
                   );
 
+    /// Save conductivities (excluding active region)
+    void saveConductivities();
+
     /// Update stored potentials and calculate corrections
     void savePotentials(DataVector<double>& iV);
 
