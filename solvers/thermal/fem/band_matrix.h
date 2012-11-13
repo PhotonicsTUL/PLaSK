@@ -23,11 +23,11 @@ namespace plask { namespace solvers { namespace thermal {
  */
 struct BandSymMatrix {
 
-    std::size_t order;  ///< order of the matrix, i.e. number of columns or rows
+    std::size_t size;  ///< order of the matrix, i.e. number of columns or rows
     std::size_t band1;  ///< size of the band reduced by one
     double* data;       ///< pointer to data
 
-    BandSymMatrix(std::size_t rank, std::size_t band): order(rank), band1(band-1), data(new double[rank*band]) {}
+    BandSymMatrix(std::size_t rank, std::size_t band): size(rank), band1(band-1), data(new double[rank*band]) {}
     BandSymMatrix(const BandSymMatrix&) = delete; // this object is non-copyable
     ~BandSymMatrix() { delete[] data; }
 
@@ -37,7 +37,7 @@ struct BandSymMatrix {
      * \param c index of the element column
      */
     size_t index(std::size_t r, std::size_t c) {
-        assert(r < order && c < order);
+        assert(r < size && c < size);
         if (r < c) {
             assert(c - r <= band1);
 #	    if UPLO == 'U'

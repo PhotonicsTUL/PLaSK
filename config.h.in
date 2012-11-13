@@ -18,8 +18,10 @@
 #endif
 #ifdef _WIN32
 #    define F77SUB extern "C" __declspec(dllimport) void
+#    define F77FUN(RT) extern "C" __declspec(dllimport) RT
 #else
 #    define F77SUB extern "C" void
+#    define F77FUN(RT) extern "C" RT
 #endif
 
 

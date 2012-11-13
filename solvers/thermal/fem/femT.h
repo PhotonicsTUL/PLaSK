@@ -28,9 +28,9 @@ struct Radiation
 
 /// Choice of matrix factorization algorithms
 enum Algorithm {
-    ALGORITHM_SLOW,	///< slow algorithm using BLAS level 2
-    ALGORITHM_BLOCK	///< block algorithm (thrice faster, however a little prone to failures)
-    //ITERATIVE_ALGORITHM
+    ALGORITHM_SLOW,     ///< slow algorithm using BLAS level 2
+    ALGORITHM_BLOCK,    ///< block algorithm (thrice faster, however a little prone to failures)
+    ALGORITHM_ITERATIVE ///< iterative algorithm using preconditioned conjugate gradient method
 };
 
 /// Type of the returned correction
@@ -81,7 +81,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     void saveHeatFluxes(); // [W/m^2]
 
     /// Matrix solver
-    int solveMatrix(BandSymMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(BandSymMatrix& iA, DataVector<double>& ioB);
 
     /// Initialize the solver
     virtual void onInitialize();

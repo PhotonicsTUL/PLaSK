@@ -1,4 +1,5 @@
 #include "femT.h"
+#include "dcg.h"
 
 namespace plask { namespace solvers { namespace thermal {
 
@@ -61,8 +62,8 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
                 std::string tValue = *tAlgo; boost::algorithm::to_lower(tValue);
                 if (tValue == "slow") mAlgorithm = ALGORITHM_SLOW;
                 else if (tValue == "block") mAlgorithm = ALGORITHM_SLOW;
-                //else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
-                else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\" or \"slow\"");
+                else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
+                else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\", \"slow\", or \"iterative\"");
             }
             source.requireTagEnd();
         } else
@@ -266,7 +267,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymM
     }
 
 #ifndef NDEBUG
-    double* tAend = oA.data + oA.order * oA.band1;
+    double* tAend = oA.data + oA.size * oA.band1;
     for (double* pa = oA.data; pa != tAend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
@@ -403,7 +404,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
     }
 
 #ifndef NDEBUG
-    double* tAend = oA.data + oA.order * oA.band1;
+    double* tAend = oA.data + oA.size * oA.band1;
     for (double* pa = oA.data; pa != tAend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
@@ -442,10 +443,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
     do {
         setMatrix(tA, tT, tTConst, tHFConst, tConvection, tRadiation);
 
-        int tInfo = solveMatrix(tA, tT);
-
-        if (tInfo > 0)
-            throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", tInfo);
+        solveMatrix(tA, tT);
 
         saveTemperatures(tT);
 
@@ -473,7 +471,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
 }
 
 
-template<typename Geometry2DType> int FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(BandSymMatrix& iA, DataVector<double>& ioB)
+template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(BandSymMatrix& iA, DataVector<double>& ioB)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -481,23 +479,48 @@ template<typename Geometry2DType> int FiniteElementMethodThermal2DSolver<Geometr
 
     // Factorize matrix
     switch (mAlgorithm) {
+
         case ALGORITHM_SLOW:
-            dpbtf2(UPLO, iA.order, iA.band1, iA.data, iA.band1+1, info);
-            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtf2 has illegal value", this->getId(), -info);
+            //Factorize
+            dpbtf2(UPLO, iA.size, iA.band1, iA.data, iA.band1+1, info);
+            if (info < 0)
+                throw CriticalException("%1%: Argument %2% of dpbtf2 has illegal value", this->getId(), -info);
+            else if (info > 0)
+                throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
+            // Find solutions
+            dpbtrs(UPLO, iA.size, iA.band1, 1, iA.data, iA.band1+1, ioB.data(), ioB.size(), info);
+            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
             break;
+
         case ALGORITHM_BLOCK:
-            dpbtrf(UPLO, iA.order, iA.band1, iA.data, iA.band1+1, info);
-            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
+            //Factorize
+            dpbtrf(UPLO, iA.size, iA.band1, iA.data, iA.band1+1, info);
+            if (info < 0)
+                throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
+            else if (info > 0)
+                throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
+            // Find solutions
+            dpbtrs(UPLO, iA.size, iA.band1, 1, iA.data, iA.band1+1, ioB.data(), ioB.size(), info);
+            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+            break;
+
+        case ALGORITHM_ITERATIVE:
+            AtimesDSB atimes(iA);
+            MsolveJacobiDSB msolve(iA);
+            DataVector<double> oX = mTemperatures.copy(); // We use previous temperatures as initial solution
+            double err;
+            try {
+                int iter = solveDCG(iA.size, atimes, msolve, oX.data(), ioB.data(), err); //TODO add parameters for tolerance and maximum iterations
+                this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
+            } catch (DCGError err) {
+                throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", err.what());
+            }
+            ioB = oX;
+
             break;
     }
-    if (info > 0) return info;
-
-    // Find solutions
-    dpbtrs(UPLO, iA.order, iA.band1, 1, iA.data, iA.band1+1, ioB.data(), ioB.size(), info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
 
     // now iA contains factorized matrix and ioB the solutions
-    return info;
 }
 
 
