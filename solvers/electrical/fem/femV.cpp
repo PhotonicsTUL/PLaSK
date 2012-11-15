@@ -483,7 +483,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             double tDVy = 0.5e6 * (- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
                                 / (tE.getUpper1() - tE.getLower1()); // [grad(dV)] = V/m
             auto tMidPoint = tE.getMidpoint();
-            auto tRoles =this->geometry->getRolesAt(tMidPoint);
+            auto tRoles = this->geometry->getRolesAt(tMidPoint);
             if (tRoles.find("active") != tRoles.end()) {
                 if (!tDact) {
                     auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));

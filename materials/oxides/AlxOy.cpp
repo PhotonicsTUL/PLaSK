@@ -20,7 +20,7 @@ MI_PROPERTY(AlxOy, thermk,
             MISource("M. Le Du et al., Electronics Letters 42 (2006) 65-66"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlxOy::thermk(double T, double t) const {
+std::pair<double,double> AlxOy::thermk(double T) const {
     return ( std::make_pair(0.7, 0.7) );
 }
 

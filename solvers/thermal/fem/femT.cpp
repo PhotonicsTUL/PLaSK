@@ -62,8 +62,9 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
                 std::string tValue = *tAlgo; boost::algorithm::to_lower(tValue);
                 if (tValue == "slow") mAlgorithm = ALGORITHM_SLOW;
                 else if (tValue == "block") mAlgorithm = ALGORITHM_SLOW;
-                else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
-                else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\", \"slow\", or \"iterative\"");
+                //else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
+                //else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\", \"slow\", or \"iterative\"");
+                else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\" or \"slow\"");
             }
             source.requireTagEnd();
         } else
