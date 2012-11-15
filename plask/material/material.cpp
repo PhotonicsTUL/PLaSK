@@ -119,7 +119,7 @@ std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Material::nR_tensor
 double Material::cp(double T) const { throwNotImplemented("cp(double T)"); return 0; }
 
 std::pair<double,double> Material::thermk(double T) const { throwNotImplemented("thermk(double T)"); return std::make_pair(0.,0.); }
-std::pair<double,double> Material::thermk(double T, double thickness) const { throwNotImplemented("thermk(double T, double t)"); return std::make_pair(0.,0.); }
+std::pair<double,double> Material::thermk(double T, double thickness) const { return thermk(T); }
 
 double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); return 0; }
 
