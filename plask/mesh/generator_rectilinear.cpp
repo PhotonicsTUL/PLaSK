@@ -179,20 +179,20 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
         if (reader.getNodeName() == "prediv") {
             boost::optional<size_t> into = reader.getAttribute<size_t>("by");
             if (into) {
-                if (reader.hasAttribute("hor_by")) throw XMLConflictingAttributesException(reader, "by", "hor_by");
-                if (reader.hasAttribute("vert_by")) throw XMLConflictingAttributesException(reader, "by", "vert_by");
+                if (reader.hasAttribute("by0")) throw XMLConflictingAttributesException(reader, "by", "by0");
+                if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
                 result->setPreDivision(*into);
             } else
-                result->setPreDivision(reader.getAttribute<size_t>("hor_by", 1), reader.getAttribute<size_t>("vert_by", 1));
+                result->setPreDivision(reader.getAttribute<size_t>("by0", 1), reader.getAttribute<size_t>("by1", 1));
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
             boost::optional<size_t> into = reader.getAttribute<size_t>("by");
             if (into) {
-                if (reader.hasAttribute("hor_by")) throw XMLConflictingAttributesException(reader, "by", "hor_by");
-                if (reader.hasAttribute("vert_by")) throw XMLConflictingAttributesException(reader, "by", "vert_by");
+                if (reader.hasAttribute("by0")) throw XMLConflictingAttributesException(reader, "by", "by0");
+                if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
                 result->setPostDivision(*into);
             } else
-                result->setPostDivision(reader.getAttribute<size_t>("hor_by", 1), reader.getAttribute<size_t>("vert_by", 1));
+                result->setPostDivision(reader.getAttribute<size_t>("by0", 1), reader.getAttribute<size_t>("by1", 1));
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "dont_limit_change") {
             result->limit_change = false;

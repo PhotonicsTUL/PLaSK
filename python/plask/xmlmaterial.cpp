@@ -124,7 +124,7 @@ class PythonEvalMaterial : public Material
     virtual double B(double T) const { PYTHON_EVAL_CALL_1(double, B, T) }
     virtual double C(double T) const { PYTHON_EVAL_CALL_1(double, C, T) }
     virtual double D(double T) const { PYTHON_EVAL_CALL_1(double, D, T) }
-    virtual DDPair thermk(double T) const {PYTHON_EVAL_CALL_1(DDPair, thermk, T) }
+    virtual DDPair thermk(double T) const { const double t = INFINITY; PYTHON_EVAL_CALL_2(DDPair, thermk, T, t) }
     virtual DDPair thermk(double T, double t)  const { PYTHON_EVAL_CALL_2(DDPair, thermk, T, t) }
     virtual double dens(double T) const { PYTHON_EVAL_CALL_1(double, dens, T) }
     virtual double cp(double T) const { PYTHON_EVAL_CALL_1(double, cp, T) }

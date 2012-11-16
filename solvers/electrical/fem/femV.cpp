@@ -460,7 +460,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             size_t tLoRghtNo = tE.getUpLoIndex();
             size_t tUpLeftNo = tE.getLoUpIndex();
             size_t tUpRghtNo = tE.getUpUpIndex();
-            if (this->geometry->hasRoleAt("insulator", tE.getMidpoint()))
+            if (this->geometry->hasRoleAt("cold", tE.getMidpoint()))
                 mHeatDensities[i] = 0.;
             else {
                 double tDVx = 0.5e6 * (- mPotentials[tLoLeftNo] + mPotentials[tLoRghtNo] - mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
@@ -494,7 +494,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                 }
                 double tJy = mCond[i].second * fabs(tDVy); // [j] = A/m²
                 mHeatDensities[i] = phys::h_J * phys::c * tJy / ( phys::qe * real(inWavelength())*1e-9 * *tDact );
-            } else if (tRoles.find("insulator") != tRoles.end())
+            } else if (tRoles.find("cold") != tRoles.end())
                 mHeatDensities[i] = 0.;
             else
                 mHeatDensities[i] = mCond[i].first * tDVx*tDVx + mCond[i].second * tDVy*tDVy;

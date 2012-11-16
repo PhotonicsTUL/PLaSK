@@ -71,10 +71,10 @@ namespace detail {
             dcomplex vals[5];
             int idx[5] = { 0, 1, 2, 3, 4 };
             auto seq = py::object(py::handle<>(py::borrowed(obj)));
-            if (py::len(seq) == 2) { idx[2] = 1; idx[3] = idx[4] = -1; }
+            if (py::len(seq) == 2) { idx[1] = 0; idx[2] = 1; idx[3] = idx[4] = -1; }
             else if (py::len(seq) == 3) { idx[3] = idx[4] = -1; }
             else if (py::len(seq) != 5)
-                throw TypeError("float or sequence of exactly 2, 3, or 5 complex required");
+                throw TypeError("sequence of exactly 2, 3, or 5 complex required");
             for (int i = 0; i < 5; ++i) {
                 if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
                 else vals[i] = 0.;
@@ -104,26 +104,47 @@ class PythonMaterial : public Material
         return py::extract<T>(py::object(py::detail::borrowed_reference(self)).attr(attribute));
     }
 
-    bool overriden(char const* name) const
+    PyMethodObject* overriden(char const* name) const
     {
         py::converter::registration const& r = py::converter::registered<Material>::converters;
         PyTypeObject* class_object = r.get_class_object();
-        if (self)
-        {
-            if (py::handle<> m = py::handle<>(py::allow_null(::PyObject_GetAttrString(self, const_cast<char*>(name))))) {
-                PyObject* borrowed_f = 0;
-                if (PyMethod_Check(m.get()) && ((PyMethodObject*)m.get())->im_self == self && class_object->tp_dict != 0)
-                    borrowed_f = PyDict_GetItemString(class_object->tp_dict, const_cast<char*>(name));
-                if (borrowed_f != ((PyMethodObject*)m.get())->im_func) return true;
+        if (self) {
+            if (PyObject* mo = PyObject_GetAttrString(self, const_cast<char*>(name))) {
+                if (PyMethod_Check(mo)) {
+                    PyMethodObject* m = (PyMethodObject*)mo;
+                    PyObject* borrowed_f = nullptr;
+                    if(m->im_self == self && class_object->tp_dict != 0)
+                        borrowed_f = PyDict_GetItemString(class_object->tp_dict, const_cast<char*>(name));
+                    if (borrowed_f != m->im_func) return m;
+                }
             }
         }
-        return false;
+        return nullptr;
     }
 
     template <typename R, typename F, typename... Args>
     inline R override(const char* name, F f, Args... args) const {
         if (overriden(name)) return py::call_method<R>(self, name, args...);
         return ((*base).*f)(args...);
+    }
+
+    DDPair call_thermk(double T, double t) const {
+        PyMethodObject* m = overriden("thermk");
+        if (m) {
+            if(PyObject* fc = PyObject_GetAttrString(m->im_func, "func_code")) {
+                if(PyObject* ac = PyObject_GetAttrString(fc, "co_argcount")) {
+                    const int count = PyInt_AsLong(ac);
+                    if (count == 2) return py::call_method<DDPair>(self, "thermk", T);
+                    else if (count == 3) return py::call_method<DDPair>(self, "thermk", T, t);
+                    else if (count < 2) throw TypeError("thermk() takes at least 2 arguments (%1%) given", count);
+                    else throw TypeError("thermk() takes at most 3 arguments (%1%) given", count);
+                    Py_DECREF(ac);
+                }
+                Py_DECREF(fc);
+            }
+
+        }
+        return base->thermk(T);
     }
 
   public:
@@ -211,11 +232,8 @@ class PythonMaterial : public Material
     virtual double B(double T) const { return override<double>("B", &Material::B, T); }
     virtual double C(double T) const { return override<double>("C", &Material::C, T); }
     virtual double D(double T) const { return override<double>("D", &Material::D, T); }
-    virtual DDPair thermk(double T) const {
-        if (overriden("thermk")) return py::call_method<DDPair>(self, "thermk", T, py::object());
-        return base->thermk(T);
-    }
-    virtual DDPair thermk(double T, double t) const { return override<DDPair>("thermk", (DDPair (Material::*)(double, double) const) &Material::thermk, T, t); }
+    virtual DDPair thermk(double T) const { return call_thermk(T, INFINITY); }
+    virtual DDPair thermk(double T, double t) const { return call_thermk(T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
     virtual double cp(double T) const { return override<double>("cp", &Material::cp, T); }
     virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
@@ -587,8 +605,7 @@ void initMaterials() {
         .def("B", &Material::B, (py::arg("T")=300.), "Get radiative recombination coefficient B [m**3/s]")
         .def("C", &Material::C, (py::arg("T")=300.), "Get Auger recombination coefficient C [m**6/s]")
         .def("D", &Material::D, (py::arg("T")=300.), "Get ambipolar diffusion coefficient D [m**2/s]")
-        .def("thermk", (DDPair (Material::*)(double) const)&Material::thermk, (py::arg("T")=300.), "Get thermal conductivity [W/(m*K)]")
-        .def("thermk", (DDPair (Material::*)(double, double) const)&Material::thermk, (py::arg("T")=300., py::arg("thickness")), "Get thermal conductivity [W/(m*K)]")
+        .def("thermk", (DDPair (Material::*)(double, double) const)&Material::thermk, (py::arg("T")=300., py::arg("thickness")=INFINITY), "Get thermal conductivity [W/(m*K)]")
         .def("dens", &Material::dens, (py::arg("T")=300.), "Get density [kg/m**3]")
         .def("cp", &Material::cp, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
         .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nr")

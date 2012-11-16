@@ -36,7 +36,7 @@ class ReceiverTest(unittest.TestCase):
         data = plask.Data(v, self.mesh2)
         self.assertEqual( data.dtype, plask.vector2f )
         self.solver.inVectors = data
-        self.assertEqual( self.solver.showVectors(), "[1, 5]: [1, 10]\n[3, 5]: [2, 20]\n[1, 15]: [3, 30]\n[3, 15]: [4, 40]\n" )
+        self.assertEqual( self.solver.show_vectors(), "[1, 5]: [1, 10]\n[3, 5]: [2, 20]\n[1, 15]: [3, 30]\n[3, 15]: [4, 40]\n" )
         self.assertEqual( sys.getrefcount(v), 3 )
         del data
         self.assertEqual( sys.getrefcount(v), 3 )

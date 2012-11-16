@@ -196,7 +196,7 @@ def read_dan(fname):
 
         # doping
         line = input.next()
-        doping, dopant = float(line[0]), line[1]
+        doping, dopant = 1e-6 * float(line[0]), line[1]
 
         # heat conductivity
         line = input.next()
@@ -204,7 +204,7 @@ def read_dan(fname):
         kappa_t = line[2].lower()
 
         # create custom material if necessary
-        if sigma_t not in ('n','p') or kappa_t not in ('n','p'):
+        if sigma_t not in ('n','p','j') or kappa_t not in ('n','p'):
             material = Material()
             if sigma_t not in ('n','p'):
                 material.sigma = sigma
@@ -214,11 +214,18 @@ def read_dan(fname):
                 material.kappa = kappa
             else:
                 material.base = parse_material_name(mat, kappa[0], dopant)
-            if sigma_t in ('n','p') or kappa_t in ('n','p'):
-                mat = unique_material_name() # the given name is the one from database
-            while mat in materials and materials[mat] != material:
-                mat = unique_material_name()
-            materials[mat] = material
+            found = False
+            for mk,mv in materials.items():
+                if material == mv:
+                    found = True
+                    mat = mk
+                    break
+            if not found:
+                if sigma_t in ('n','p') or kappa_t in ('n','p'):
+                    mat = unique_material_name() # the given name is the one from database
+                while mat in materials and materials[mat] != material:
+                    mat = unique_material_name()
+                materials[mat] = material
         else:
             mat = parse_material_name(mat, kappa[0], dopant)
 
@@ -231,7 +238,7 @@ def read_dan(fname):
         if ht == -200:
             r.role = 'active'
         elif ht == 0:
-            r.role = 'insulator'
+            r.role = 'cold'
         elif ht == -1:
             r.name = unique_object_name()
             heats[r.name] = float(line[1])
@@ -304,10 +311,12 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         geomore = ''
 
     # materials
+    materials = list(materials.items())
+    materials.sort(key=lambda t: t[0])
     if materials:
         out('<materials>')
-        for mat in materials:
-            materials[mat].write(ofile, mat)
+        for mn,mat in materials:
+            mat.write(ofile, mn)
         out('</materials>\n')
 
     # geometry

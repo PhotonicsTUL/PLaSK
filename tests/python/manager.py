@@ -31,11 +31,11 @@ class Manager(unittest.TestCase):
                 </mesh>
                 <generator type="rectilinear2d" method="divide" name="test">
                     <prediv by="4"/>
-                    <postdiv hor_by="2" vert_by="3"/>
+                    <postdiv by0="2" by1="3"/>
                     <warnings missing="false"/>
                 </generator>
                 <generator type="rectilinear2d" method="divide" name="refined">
-                    <postdiv hor_by="2"/>
+                    <postdiv by0="2"/>
                     <warnings multiple="no"/>
                     <refinements>
                         <vertical object="Block-3" pos="1.0"/>
@@ -109,7 +109,7 @@ class Manager(unittest.TestCase):
             <plask>
                 <grids>
                     <generator type="rectilinear2d" method="divide" name="test">
-                        <postdiv by="4" hor_by="2" vert_by="3"/>
+                        <postdiv by="4" by0="2" by1="3"/>
                     </generator>
                 </grids>
             </plask>

@@ -78,7 +78,7 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertIn(3, b)
         self.assertEqual( list(b), [0, 3] )
 
-        self.assertEqual( plasktest.testBoundary(self.mesh2, lambda mesh,i: i in [2,3]), [2, 3] )
+        self.assertEqual( plasktest.test_boundary(self.mesh2, lambda mesh,i: i in [2,3]), [2, 3] )
 
 
     def testDivideGenerator(self):

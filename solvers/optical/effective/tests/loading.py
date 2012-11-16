@@ -27,7 +27,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
                 </mesh>
                 <generator type="rectilinear2d" method="divide" name="div">
                     <prediv by="4"/>
-                    <postdiv hor_by="2" vert_by="3"/>
+                    <postdiv by0="2" by1="3"/>
                 </generator>
             </grids>
             <solvers>

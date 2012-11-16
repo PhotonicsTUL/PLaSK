@@ -53,6 +53,16 @@ double materialVBO(std::string m, plask::MaterialsDB& DB, double T) {
     return mat->VBO(T);
 }
 
+std::pair<double,double> materialThermk1(std::string m, plask::MaterialsDB& DB, double T) {
+    plask::shared_ptr<plask::Material> mat = DB.get(m);
+    return mat->thermk(T);
+}
+
+std::pair<double,double> materialThermk2(std::string m, plask::MaterialsDB& DB, double T, double t) {
+    plask::shared_ptr<plask::Material> mat = DB.get(m);
+    return mat->thermk(T, t);
+}
+
 double call_chi(plask::shared_ptr<plask::Material> mat, std::string p) {
     return mat->chi(p[0]);
 }
@@ -198,26 +208,28 @@ struct MeshTest {
 
 BOOST_PYTHON_MODULE(plasktest)
 {
-    py::def("getVecs", &getVecs);
+    py::def("get_vecs", &getVecs);
 
-    py::def("addMyMaterial", &addMyMaterial);
+    py::def("add_my_material", &addMyMaterial);
 
-    py::def("materialName", &materialName);
-    py::def("materialVBO", &materialVBO);
+    py::def("material_name", &materialName);
+    py::def("material_VBO", &materialVBO);
+    py::def("material_thermk", &materialThermk1);
+    py::def("material_thermk", &materialThermk2);
 
     py::def("call_chi", &call_chi);
 
     py::def("print_ptr", &print_ptr);
 
-    py::def("getExtrusion", &getExtrusion);
+    py::def("get_extrusion", &getExtrusion);
 
-    py::def("isEmpty", &isEmpy);
+    py::def("is_empty", &isEmpy);
 
-    py::def("materialTypeId", &materialTypeId);
+    py::def("material_typeid", &materialTypeId);
 
-    py::def("NrTensor", &NrTensor);
+    py::def("nR_tensor", &NrTensor);
 
-    py::def("testBoundary", &testBoundary);
+    py::def("test_boundary", &testBoundary);
 
     plask::python::ExportSolver<SpaceTest>("SpaceTest")
         .def("initialize", &SpaceTest::initialize)
@@ -228,7 +240,7 @@ BOOST_PYTHON_MODULE(plasktest)
         .add_receiver("inTemperature", &SimpleSolver::inTemperature, "Test receiver")
         .add_provider("outIntensity", &SimpleSolver::outIntensity, "Test provider")
         .add_receiver("inVectors", &SimpleSolver::inVectors, "Test provider")
-        .def("showVectors", &SimpleSolver::showVectors)
+        .def("show_vectors", &SimpleSolver::showVectors)
     ;
 
     {

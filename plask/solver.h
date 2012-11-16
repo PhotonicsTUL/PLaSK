@@ -195,8 +195,7 @@ will be put in initialized state (hence, subsequent calls to computational metho
 \code
   protected:
 
-    virtual void onInitialize()
-    {
+    virtual void onInitialize() {
         if (!geometry) throw NoGeometryException(getId());  // test if the user has provided geometry
         if (!mesh) throw NoMeshException(getId());          // test if the user has provided the mesh
         // do any memory allocations or your internal matrices, etc.
@@ -208,8 +207,7 @@ the results of your computations becomes outdated and the sizes of some matrices
 state and, similarly to the initialization, the virtual method \b onInvalidate() is called. This method may look like this:
 
 \code
-    virtual void onInvalidate()
-    {
+    virtual void onInvalidate() {
         outNeff.invalidate();               // clear the computed value
         computed_light_intensity.reset();   // free the light intensity array
         // you may free the memory allocated in onInitialize unless you use some containers with automatic memory management
@@ -230,8 +228,7 @@ of your providers, to notify the connected receivers about the change. Here is t
 \code
   public:
 
-      void compute()
-      {
+      void compute() {
           initCalculation(); // calls onInitialize if necessary and puts solver in initialized state
 
           computed_light_intensity.reset(); // clear the previously computed light intensity (if any)
@@ -258,8 +255,7 @@ For interpolated fields they will look like in the following example:
 \code
   protected:
 
-    const DataVector<double> getIntensity(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION)
-    {
+    DataVector<const double> getIntensity(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION) {
         if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME); // this is one possible indication that the solver is in invalidated state
 
         if (computed_light_intensity.size() == 0)    // we need to compute the light intensity
