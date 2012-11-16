@@ -382,12 +382,11 @@ bool DiffusionCylindricalSolver::CylindricalMES()
     return _convergence;
 }
 
-//const DataVector<double> DiffusionCylindricalSolver::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method )
-//{
+const DataVector<double> DiffusionCylindricalSolver::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method ) {
 //    // ...
 //
 //    return interpolate(*mesh, computed_concentration, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
-//}
+}
 
 void DiffusionCylindricalSolver::loadConfiguration(XMLReader& reader, Manager& manager)
 {
