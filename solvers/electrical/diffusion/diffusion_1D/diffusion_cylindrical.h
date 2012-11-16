@@ -135,7 +135,7 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         std::vector<Box2D> detectQuantumWells();
         double getZQWCoordinate();
         virtual void onInitialize();
-        virtual void onInvalidate();
+        //virtual void onInvalidate();
 
         const DataVector<double> getConcentration(const plask::MeshD<2>&, plask::InterpolationMethod ); // method providing concentration from inside to the provider (outConcentration)
 
