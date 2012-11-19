@@ -29,7 +29,8 @@ struct AlN_Mg: public AlN {
 private:
     double NA,
            Nf_RT,
-		   mob_RT;
+		   mob_RT,
+           cond_RT;
 
 };
 

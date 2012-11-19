@@ -13,44 +13,19 @@ std::string AlN_Mg::str() const { return StringBuilder("AlN").dopant("Mg", NA); 
 MI_PARENT(AlN_Mg, AlN)
 
 AlN_Mg::AlN_Mg(DopingAmountType Type, double Val) {
-    if (Type == CARRIER_CONCENTRATION) {
-        Nf_RT = Val;
-        NA = 6.4e9;
-    }
-    else {
-        Nf_RT = 6.4e9;
-        NA = Val;
-    }
-    //mobRT(Nf_RT),
-    mob_RT = 1.7;
+    Nf_RT = 2e11;    
+    mob_RT = 10;
+    cond_RT = 3e-5;    
 }
 
-MI_PROPERTY(AlN_Mg, mob,
-            MISource("Y. Taniyasu et al., Nature Letters 44 (2006) 325"),
-            MIArgumentRange(MaterialInfo::T, 300, 400)
-			)
-std::pair<double,double> AlN_Mg::mob(double T) const {
-    double tMob = 5.377e3*pow(mob_RT,-1.506);
-    return (std::make_pair(tMob,tMob));
-}
-
-MI_PROPERTY(AlN_Mg, Nf,
-            MISource("Taniyasu Y, Nature Letters 44 (2006) 325"),
-            MIArgumentRange(MaterialInfo::T, 300, 400)
-            )
-double AlN_Mg::Nf(double T) const {
-    return ( 6.689e-55*pow(Nf_RT,2.187e1) );
-}
-
-double AlN_Mg::Dop() const {
-    return NA;
-}
-
-MI_PROPERTY(AlN_Mg, cond,
-            MIArgumentRange(MaterialInfo::T, 300, 400)
+MI_PROPERTY(AlN_Mg, cond,            
+            MISource("K. B. Nam et al., Appl. Phys. Lett. 83 (2003) 878"),
+            MISource("M. L. Nakarmi et al., Appl. Phys. Lett. 89 (2006) 152120"),
+            MIArgumentRange(MaterialInfo::T, 300, 900)
             )
 std::pair<double,double> AlN_Mg::cond(double T) const {
-    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
+    double tCond = 3e-5*pow((T/300.),9.75);    
+    return (std::make_pair(tCondt, tCond));
 }
 
 MI_PROPERTY(AlN_Mg, absp,

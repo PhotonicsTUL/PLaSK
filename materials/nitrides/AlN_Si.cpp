@@ -15,10 +15,10 @@ MI_PARENT(AlN_Si, AlN)
 AlN_Si::AlN_Si(DopingAmountType Type, double Val) {
     if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;
-        ND = 6.197E-19*pow(Val,1.805);
+        ND = 1.223e10*pow(Val,5.540e-1);
     }
     else {
-        Nf_RT = 1.223e10*pow(Val,5.540e-1);;
+        Nf_RT = 6.197E-19*pow(Val,1.805);
         ND = Val;
     }
     //mobRT(Nf_RT),
@@ -31,7 +31,7 @@ MI_PROPERTY(AlN_Si, mob,
             MIComment("based on 4 papers (2004-2008): Si-doped AlN")
 			)
 std::pair<double,double> AlN_Si::mob(double T) const {
-    double tMob = mob_RT * (1.486 -T*0.00162);
+    double tMob = mob_RT * (1.486 - T*0.00162);
     return (std::make_pair(tMob,tMob));
 }
 
