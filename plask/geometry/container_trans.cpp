@@ -143,8 +143,9 @@ void calcOptimalSplitOffset(const std::vector< WithBB<DIMS> >& inputSortedByLo, 
 //warning: this destroy inpu vectors
 CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
                          std::vector< WithBB<2> >& inputSortedByLoC0, std::vector< WithBB<2> >& inputSortedByHiC0,
-                         std::vector< WithBB<2> >& inputSortedByLoC1, std::vector< WithBB<2> >& inputSortedByHiC1) {
-    if (input.size() < MIN_CHILD_TO_TRY_SPLIT) return new LeafCacheNode<2>(input);
+                         std::vector< WithBB<2> >& inputSortedByLoC1, std::vector< WithBB<2> >& inputSortedByHiC1,
+                         int max_depth = 16) {
+    if (input.size() < MIN_CHILD_TO_TRY_SPLIT || max_depth == 0) return new LeafCacheNode<2>(input);
     double bestOffset;
     int bestDir;
     int bestValue = std::numeric_limits<int>::max();  //we will minimalize this value
@@ -160,9 +161,9 @@ CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
     inPlaceSplit<2>(inputSortedByHiC0, inputSortedByHiC0_over_offset, bestDir, bestOffset);
     inPlaceSplit<2>(inputSortedByLoC1, inputSortedByLoC1_over_offset, bestDir, bestOffset);
     inPlaceSplit<2>(inputSortedByHiC1, inputSortedByHiC1_over_offset, bestDir, bestOffset);
-    CacheNode<2>* lo = buildCache(input, inputSortedByLoC0, inputSortedByHiC0, inputSortedByLoC1, inputSortedByHiC1);
+    CacheNode<2>* lo = buildCache(input, inputSortedByLoC0, inputSortedByHiC0, inputSortedByLoC1, inputSortedByHiC1, --max_depth);
     //here inputs could be delete
-    CacheNode<2>* hi = buildCache(input_over_offset, inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset, inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset);
+    CacheNode<2>* hi = buildCache(input_over_offset, inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset, inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset, --max_depth);
     if (bestDir == 0) return new InternalCacheNode<2, 0>(bestOffset, lo, hi);
     assert(bestDir == 1);
     return new InternalCacheNode<2, 1>(bestOffset, lo, hi);
