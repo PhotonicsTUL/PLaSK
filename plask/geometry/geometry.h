@@ -203,6 +203,7 @@ Good base classes for geometries objects are, for example:
 #include "leaf.h"
 #include "transform.h"
 #include "container.h"
+#include "container_trans.h"
 
 namespace plask {
 
