@@ -25,7 +25,7 @@ MI_PROPERTY(AlN_Mg, cond,
             )
 std::pair<double,double> AlN_Mg::cond(double T) const {
     double tCond = 3e-5*pow((T/300.),9.75);    
-    return (std::make_pair(tCondt, tCond));
+    return (std::make_pair(tCond, tCond)); //TODO was std::make_pair(tCondt, tCond) - compilation error
 }
 
 MI_PROPERTY(AlN_Mg, absp,
