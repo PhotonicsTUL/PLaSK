@@ -1,54 +1,10 @@
 #include "container_trans.h"
 
+#include <cstdlib>  //abs
+
 namespace plask {
 
 // ---- cache: ----
-
-template <int DIMS>
-struct EmptyLeafCacheNode: public CacheNode<DIMS> {
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
-        return shared_ptr<Material>();
-    }
-};
-
-template <int DIMS>
-struct LeafCacheNode: public CacheNode<DIMS> {
-    
-    /// Type of the vector holding container children
-    typedef std::vector< shared_ptr<Translation<DIMS> > > ChildVectorT;
-
-    ChildVectorT children;
-    
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
-        for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
-            shared_ptr<Material> r = (*child_it)->getMaterial(p);
-            if (r != nullptr) return r;
-        }
-        return shared_ptr<Material>();
-    }
-};
-
-/// Instances of this template represents all internal nodes of cache
-template <int DIMS, int dir>
-struct InternalCacheNode: public CacheNode<DIMS> {
-    
-    double offset;  ///< split coordinate
-    CacheNode<DIMS>* lo;  ///< includes all objects which has lower coordinate <= offset
-    CacheNode<DIMS>* hi;  ///< includes all objects which has higher coordinate > offset
-        
-    InternalCacheNode(const double& offset, CacheNode<DIMS>* lo, CacheNode<DIMS>* hi)
-        : offset(offset), lo(lo), hi(hi)
-    {}
-    
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
-        return p[dir] <= offset ? lo->getMaterial(p) : hi->getMaterial(p);
-    }
-    
-    virtual ~InternalCacheNode() {
-        delete lo;
-        delete hi;
-    }
-};
 
 /// Geometry object + his bounding box.
 template <int DIMS>
@@ -68,43 +24,170 @@ struct WithBB {
     
 };
 
+template <int DIMS, int dir>
+bool compare_by_lower(const WithBB<DIMS>& a, const WithBB<DIMS>& b) {
+    return a.boundingBox.lower[dir] < b.boundingBox.lower[dir];
+}
+
+template <int DIMS, int dir>
+bool compare_by_upper(const WithBB<DIMS>& a, const WithBB<DIMS>& b) {
+    return a.boundingBox.upper[dir] < b.boundingBox.upper[dir];
+}
+
 template <int DIMS>
-void inPlaceSplit(std::vector< const WithBB<DIMS> >& inputAndLo, std::vector< const WithBB<DIMS> >& hi, int dir, double offset) {
-    std::vector< const WithBB<DIMS> > lo;
-    for (const WithBB<DIMS>& i: inputAndLo) {
-        if (i.boundingBox.lower[dir] <= offset) lo.push_back(i);
-        if (i.boundingBox.higher[dir] > offset) hi.push_back(i);
+struct EmptyLeafCacheNode: public CacheNode<DIMS> {
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+        return shared_ptr<Material>();
+    }
+};
+
+template <int DIMS>
+struct LeafCacheNode: public CacheNode<DIMS> {
+    
+    /// Type of the vector holding container children
+    typedef std::vector< shared_ptr<const Translation<DIMS> > > ChildVectorT;
+
+    ChildVectorT children;
+    
+    LeafCacheNode(const std::vector< WithBB<DIMS> >& children_with_bb) {
+        children.reserve(children_with_bb.size());
+        for (const WithBB<DIMS>& c: children_with_bb)
+            children.push_back(c.obj);
+    }
+    
+    LeafCacheNode(const std::vector< shared_ptr< Translation<DIMS> > >& childr) {
+        children.reserve(childr.size());
+        for (const shared_ptr< Translation<DIMS> >& c: childr)
+            children.push_back(c);
+    }
+    
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+        for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
+            shared_ptr<Material> r = (*child_it)->getMaterial(p);
+            if (r != nullptr) return r;
+        }
+        return shared_ptr<Material>();
+    }
+};
+
+/// Instances of this template represents all internal nodes of cache
+template <int DIMS, int dir>
+struct InternalCacheNode: public CacheNode<DIMS> {
+    
+    double offset;  ///< split coordinate
+    CacheNode<DIMS>* lo;  ///< includes all objects which has lower coordinate < offset
+    CacheNode<DIMS>* hi;  ///< includes all objects which has higher coordinate >= offset
+        
+    InternalCacheNode(const double& offset, CacheNode<DIMS>* lo, CacheNode<DIMS>* hi)
+        : offset(offset), lo(lo), hi(hi)
+    {}
+    
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+        return p[dir] < offset ? lo->getMaterial(p) : hi->getMaterial(p);
+    }
+    
+    virtual ~InternalCacheNode() {
+        delete lo;
+        delete hi;
+    }
+};
+
+template <int DIMS>
+void inPlaceSplit(std::vector< WithBB<DIMS> >& inputAndLo, std::vector< WithBB<DIMS> >& hi, int dir, double offset) {
+    std::vector< WithBB<DIMS> > lo;
+    for (WithBB<DIMS>& i: inputAndLo) {
+        if (i.boundingBox.lower[dir] < offset) lo.push_back(i);
+        if (i.boundingBox.upper[dir] >= offset) hi.push_back(i);
     }
     std::swap(lo, inputAndLo);
 }
 
+/**
+ * Calculate optimal spliting offset in given direction.
+ * @param inputSortedByLo, inputSortedByHi input vector sorted by lo and hi boxes coordinates (in inputDir)
+ * @param inputDir searched direction
+ * @param bestDir, bestOffset, bestValue parameters of earlier best point, eventualy changed
+ */
 template <int DIMS>
-void calcOptimalSplitOffset(const std::vector< const WithBB<DIMS> >& inputSortedByLo, const std::vector< const WithBB<DIMS> >& inputSortedByHi,
-                            int inputDir, int& bestDir, double& bestOffset, int& bestCommon, int& bestDiff)
+void calcOptimalSplitOffset(const std::vector< WithBB<DIMS> >& inputSortedByLo, const std::vector< WithBB<DIMS> >& inputSortedByHi,
+                            int inputDir, int& bestDir, double& bestOffset, int& bestValue)
 {
-    
+    const int max_allowed_size = inputSortedByLo.size() - 4;
+    std::size_t i_hi = 0;
+    for (std::size_t i_lo = 1; i_lo < inputSortedByLo.size(); ++i_lo) {
+        const double& offset = inputSortedByLo[i_lo].boundingBox.lower[inputDir];
+        while (i_lo+1 < inputSortedByLo.size() && inputSortedByLo[i_lo+1].boundingBox.lower[inputDir] == offset)
+            ++i_lo;   //can has more obj. with this lo coordinate
+        //now: obj. from [0, i_lo) will be added to lo set
+        if (i_lo > max_allowed_size)
+            return; //too much obj in lo, i_lo will be increased so we can return
+        while (i_hi < inputSortedByHi.size() && inputSortedByHi[i_hi].boundingBox.upper[inputDir] < offset)
+            ++i_hi;
+        //now: obj. from [i_hi, inputSortedByHi.size()) will be added to hi set
+        const int hi_size = inputSortedByHi.size() - i_hi;
+        if (hi_size > max_allowed_size)
+            continue;   //too much obj in hi, we must wait for higher i_hi
+        //common part is: [i_hi, i_lo)
+        const int value = (i_lo - i_hi) * 3  //this is number of common obj in two sets * 3, we want to minimalize this
+                   + std::abs(hi_size - i_lo);    //diffrent of set sizes, we also want to minimalize this
+        if (value < bestValue) {
+            bestValue = value;
+            bestOffset = offset;
+            bestDir = inputDir;
+        }
+    }
 }
 
-CacheNode<2>* buildCache2D(std::vector< WithBB<2> > input,
-                           std::vector< WithBB<2> > inputSortedByLoC0, std::vector< WithBB<2> > inputSortedByHiC0,
-                           std::vector< WithBB<2> > inputSortedByLoC1, std::vector< WithBB<2> > inputSortedByHiC1) {
-    //if (input.size() < 8)
+#define MIN_CHILD_TO_TRY_SPLIT 16
+
+//warning: this destroy inpu vectors
+CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
+                         std::vector< WithBB<2> >& inputSortedByLoC0, std::vector< WithBB<2> >& inputSortedByHiC0,
+                         std::vector< WithBB<2> >& inputSortedByLoC1, std::vector< WithBB<2> >& inputSortedByHiC1) {
+    if (input.size() < MIN_CHILD_TO_TRY_SPLIT) return new LeafCacheNode<2>(input);
     double bestOffset;
     int bestDir;
-    int bestCommon;
-    int bestDiff;
-    //calcOptimalSplitOffset
-    //calcOptimalSplitOffset
-    //if (bestDiff < 2)
-    //inPlaceSplit
-    //CacheNode<2>* lo = buildCache2D()
-    //CacheNode<2>* hi = buildCache2D()
-    //if (bestDir == 0) return new InternalCacheNode<2, 0>(bestOffset, lo, hi);
+    int bestValue = std::numeric_limits<int>::max();  //we will minimalize this value
+    calcOptimalSplitOffset(inputSortedByLoC0, inputSortedByHiC0, 0, bestDir, bestOffset, bestValue);
+    calcOptimalSplitOffset(inputSortedByLoC1, inputSortedByHiC1, 1, bestDir, bestOffset, bestValue);
+    if (bestValue == std::numeric_limits<int>::max())   //there are no enought good split point
+        return new LeafCacheNode<2>(input);                //so we will not split more
+    std::vector< WithBB<2> > input_over_offset,
+            inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset,
+            inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset;
+    inPlaceSplit<2>(input, input_over_offset, bestDir, bestOffset);
+    inPlaceSplit<2>(inputSortedByLoC0, inputSortedByLoC0_over_offset, bestDir, bestOffset);
+    inPlaceSplit<2>(inputSortedByHiC0, inputSortedByHiC0_over_offset, bestDir, bestOffset);
+    inPlaceSplit<2>(inputSortedByLoC1, inputSortedByLoC1_over_offset, bestDir, bestOffset);
+    inPlaceSplit<2>(inputSortedByHiC1, inputSortedByHiC1_over_offset, bestDir, bestOffset);
+    CacheNode<2>* lo = buildCache(input, inputSortedByLoC0, inputSortedByHiC0, inputSortedByLoC1, inputSortedByHiC1);
+    //here inputs could be delete
+    CacheNode<2>* hi = buildCache(input_over_offset, inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset, inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset);
+    if (bestDir == 0) return new InternalCacheNode<2, 0>(bestOffset, lo, hi);
     assert(bestDir == 1);
-    //return new InternalCacheNode<2, 1>(bestOffset, lo, hi);
+    return new InternalCacheNode<2, 1>(bestOffset, lo, hi);
 }
 
-
+CacheNode<2>* buildCache(const GeometryObjectContainer<2>::TranslationVector& children) {
+    if (children.empty()) return new EmptyLeafCacheNode<2>();
+    if (children.size() < MIN_CHILD_TO_TRY_SPLIT) return new LeafCacheNode<2>(children);
+    std::vector< WithBB<2> > input,
+            inputSortedByLoC0, inputSortedByHiC0,
+            inputSortedByLoC1, inputSortedByHiC1;
+    input.reserve(children.size());
+    for (auto& c: children) input.emplace_back(c);
+    inputSortedByLoC0 = input;
+    std::sort(inputSortedByLoC0.begin(), inputSortedByLoC0.end(), compare_by_lower<2, 0>);
+    inputSortedByLoC1 = input;
+    std::sort(inputSortedByLoC1.begin(), inputSortedByLoC1.end(), compare_by_lower<2, 1>);
+    inputSortedByHiC0 = input;
+    std::sort(inputSortedByHiC0.begin(), inputSortedByHiC0.end(), compare_by_upper<2, 0>);
+    inputSortedByHiC1 = input;
+    std::sort(inputSortedByHiC1.begin(), inputSortedByHiC1.end(), compare_by_upper<2, 1>);
+    return buildCache(input, 
+                      inputSortedByLoC0, inputSortedByHiC0,
+                      inputSortedByLoC1, inputSortedByHiC1);
+}
 
 
 // ---- container: ----
