@@ -5,6 +5,14 @@
 
 namespace plask {
 
+template <int DIMS>
+struct CacheNode {
+    
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const = 0;
+        
+    virtual ~CacheNode() {}
+};
+
 /**
  * Geometry objects container in which every child has an associated translation vector.
  * @ingroup GEOMETRY_OBJ

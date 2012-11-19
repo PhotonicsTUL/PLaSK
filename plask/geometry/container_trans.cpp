@@ -2,6 +2,113 @@
 
 namespace plask {
 
+// ---- cache: ----
+
+template <int DIMS>
+struct EmptyLeafCacheNode: public CacheNode<DIMS> {
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+        return shared_ptr<Material>();
+    }
+};
+
+template <int DIMS>
+struct LeafCacheNode: public CacheNode<DIMS> {
+    
+    /// Type of the vector holding container children
+    typedef std::vector< shared_ptr<Translation<DIMS> > > ChildVectorT;
+
+    ChildVectorT children;
+    
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+        for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
+            shared_ptr<Material> r = (*child_it)->getMaterial(p);
+            if (r != nullptr) return r;
+        }
+        return shared_ptr<Material>();
+    }
+};
+
+/// Instances of this template represents all internal nodes of cache
+template <int DIMS, int dir>
+struct InternalCacheNode: public CacheNode<DIMS> {
+    
+    double offset;  ///< split coordinate
+    CacheNode<DIMS>* lo;  ///< includes all objects which has lower coordinate <= offset
+    CacheNode<DIMS>* hi;  ///< includes all objects which has higher coordinate > offset
+        
+    InternalCacheNode(const double& offset, CacheNode<DIMS>* lo, CacheNode<DIMS>* hi)
+        : offset(offset), lo(lo), hi(hi)
+    {}
+    
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
+        return p[dir] <= offset ? lo->getMaterial(p) : hi->getMaterial(p);
+    }
+    
+    virtual ~InternalCacheNode() {
+        delete lo;
+        delete hi;
+    }
+};
+
+/// Geometry object + his bounding box.
+template <int DIMS>
+struct WithBB {
+    
+    shared_ptr<const Translation<DIMS> > obj;
+
+    typename Primitive<DIMS>::Box boundingBox;
+    
+    WithBB() {}
+    
+    WithBB(shared_ptr<const Translation<DIMS> > obj, const typename Primitive<DIMS>::Box& boundingBox)
+        : obj(obj), boundingBox(boundingBox) {}
+    
+    WithBB(shared_ptr<const Translation<DIMS> > obj)
+        : obj(obj), boundingBox(obj->getBoundingBox()) {}
+    
+};
+
+template <int DIMS>
+void inPlaceSplit(std::vector< const WithBB<DIMS> >& inputAndLo, std::vector< const WithBB<DIMS> >& hi, int dir, double offset) {
+    std::vector< const WithBB<DIMS> > lo;
+    for (const WithBB<DIMS>& i: inputAndLo) {
+        if (i.boundingBox.lower[dir] <= offset) lo.push_back(i);
+        if (i.boundingBox.higher[dir] > offset) hi.push_back(i);
+    }
+    std::swap(lo, inputAndLo);
+}
+
+template <int DIMS>
+void calcOptimalSplitOffset(const std::vector< const WithBB<DIMS> >& inputSortedByLo, const std::vector< const WithBB<DIMS> >& inputSortedByHi,
+                            int inputDir, int& bestDir, double& bestOffset, int& bestCommon, int& bestDiff)
+{
+    
+}
+
+CacheNode<2>* buildCache2D(std::vector< WithBB<2> > input,
+                           std::vector< WithBB<2> > inputSortedByLoC0, std::vector< WithBB<2> > inputSortedByHiC0,
+                           std::vector< WithBB<2> > inputSortedByLoC1, std::vector< WithBB<2> > inputSortedByHiC1) {
+    //if (input.size() < 8)
+    double bestOffset;
+    int bestDir;
+    int bestCommon;
+    int bestDiff;
+    //calcOptimalSplitOffset
+    //calcOptimalSplitOffset
+    //if (bestDiff < 2)
+    //inPlaceSplit
+    //CacheNode<2>* lo = buildCache2D()
+    //CacheNode<2>* hi = buildCache2D()
+    //if (bestDir == 0) return new InternalCacheNode<2, 0>(bestOffset, lo, hi);
+    assert(bestDir == 1);
+    //return new InternalCacheNode<2, 1>(bestOffset, lo, hi);
+}
+
+
+
+
+// ---- container: ----
+
 template <>
 void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     shared_ptr<Translation<2>> child_tran = children[child_index];
