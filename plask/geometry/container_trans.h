@@ -40,6 +40,10 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
                 ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("container" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
+    TranslationContainer(): cache(nullptr) {}
+    
+    ~TranslationContainer() { delete cache; }
+    
     virtual std::string getTypeName() const { return NAME; }
 
     /**
@@ -53,6 +57,7 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
         shared_ptr<TranslationT> trans_geom(new TranslationT(el, translation));
         this->connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
+        invalidateCache();
         this->fireChildrenInserted(children.size()-1, children.size());
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
@@ -68,11 +73,56 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, translation);
     }
+    
+    //methods overwrite to use cache:
+    //TODO more
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
+        ensureHasCache();
+        return cache->getMaterial(p);
+    }
+    
+    //some methods must be overwrite to invalidate cache:
+    virtual void onChildChanged(const GeometryObject::Event& evt) {
+        if (evt.isResize()) invalidateCache();
+        GeometryObjectContainer<dim>::onChildChanged(evt);
+    }
+    
+    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+        if (GeometryObjectContainer<dim>::removeIfTUnsafe(predicate)) {
+            invalidateCache();
+            return true;
+        } else
+            return false;
+    }
+    
+    virtual void removeAtUnsafe(std::size_t index) {
+        invalidateCache();
+        GeometryObjectContainer<dim>::removeAtUnsafe(index);
+    }
 
     virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
 protected:
     virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    
+    void invalidateCache();
+    
+    void ensureHasCache();
+    
+    void ensureHasCache() const {   //TODO thread safty implementation
+        const_cast<TranslationContainer<dim>*>(this)->ensureHasCache();
+        /*
+        if (!cache) { //cache must be atomic!
+            enter to critical section
+            if (!cache) //check egain, someone could build cache when we waited for enter to critical section
+                cache = buildCache(children);
+            exit from critical section
+        }
+        */
+    }
+    
+private:
+    CacheNode<dim>* cache;  //TODO ? atomic pointer
 
 };
 

@@ -192,6 +192,11 @@ CacheNode<2>* buildCache(const GeometryObjectContainer<2>::TranslationVector& ch
                       inputSortedByLoC1, inputSortedByHiC1);
 }
 
+CacheNode<3>* buildCache(const GeometryObjectContainer<3>::TranslationVector& children) {
+    //TODO implementation simillar to 2D version (after testing this 2D version)
+    return new LeafCacheNode<3>(children);
+}
+
 
 // ---- container: ----
 
@@ -208,6 +213,18 @@ void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_chi
     if (child_tran->translation.lon() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.lon());
     if (child_tran->translation.tran() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran());
     if (child_tran->translation.vert() != 0.0) dest_xml_child_tag.attr(axes.getNameForVert(), child_tran->translation.vert());
+}
+
+template <int dim>
+void TranslationContainer<dim>::invalidateCache() {
+    delete cache;
+    cache = nullptr;
+}
+
+template <int dim>
+void TranslationContainer<dim>::ensureHasCache() {
+    if (!cache)
+        cache = buildCache(children);
 }
 
 template <int dim>
