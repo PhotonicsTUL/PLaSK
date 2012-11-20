@@ -140,7 +140,7 @@ void calcOptimalSplitOffset(const std::vector< WithBB<DIMS> >& inputSortedByLo, 
 
 #define MIN_CHILD_TO_TRY_SPLIT 16
 
-//warning: this destroy inpu vectors
+//warning: this destroy inputs vectors
 CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
                          std::vector< WithBB<2> >& inputSortedByLoC0, std::vector< WithBB<2> >& inputSortedByHiC0,
                          std::vector< WithBB<2> >& inputSortedByLoC1, std::vector< WithBB<2> >& inputSortedByHiC1,
@@ -153,6 +153,8 @@ CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
     calcOptimalSplitOffset(inputSortedByLoC1, inputSortedByHiC1, 1, bestDir, bestOffset, bestValue);
     if (bestValue == std::numeric_limits<int>::max())   //there are no enought good split point
         return new LeafCacheNode<2>(input);                //so we will not split more
+    CacheNode<2> *lo, *hi;
+    {
     std::vector< WithBB<2> > input_over_offset,
             inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset,
             inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset;
@@ -161,9 +163,9 @@ CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
     inPlaceSplit<2>(inputSortedByHiC0, inputSortedByHiC0_over_offset, bestDir, bestOffset);
     inPlaceSplit<2>(inputSortedByLoC1, inputSortedByLoC1_over_offset, bestDir, bestOffset);
     inPlaceSplit<2>(inputSortedByHiC1, inputSortedByHiC1_over_offset, bestDir, bestOffset);
-    CacheNode<2>* lo = buildCache(input, inputSortedByLoC0, inputSortedByHiC0, inputSortedByLoC1, inputSortedByHiC1, --max_depth);
-    //here inputs could be delete
-    CacheNode<2>* hi = buildCache(input_over_offset, inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset, inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset, --max_depth);
+    hi = buildCache(input_over_offset, inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset, inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset, max_depth-1);
+    }   //here inputs over_offset are deleted
+    lo = buildCache(input, inputSortedByLoC0, inputSortedByHiC0, inputSortedByLoC1, inputSortedByHiC1, max_depth-1);
     if (bestDir == 0) return new InternalCacheNode<2, 0>(bestOffset, lo, hi);
     assert(bestDir == 1);
     return new InternalCacheNode<2, 1>(bestOffset, lo, hi);
