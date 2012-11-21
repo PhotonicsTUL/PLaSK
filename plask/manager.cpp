@@ -240,59 +240,67 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
                    const LoadFunCallbackT& load_from,
                    const std::function<bool(const std::string& section_name)>& section_filter)
 {
-    reader.requireTag(TAG_NAME_ROOT);
-    reader.removeAlienNamespaceAttr();  //eventual schema decl. will be removed
-    reader.requireTag();
+    try {
+        reader.requireTag(TAG_NAME_ROOT);
+        reader.removeAlienNamespaceAttr();  //eventual schema decl. will be removed
+        reader.requireTag();
 
-    if (reader.getNodeName() == TAG_NAME_MATERIALS) {
-        if (section_filter(TAG_NAME_MATERIALS)) {
-            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadMaterials(reader, materialsSource);
-        } else
-            reader.gotoEndOfCurrentTag();
-        if (!reader.requireTagOrEnd()) return;
-    }
+        if (reader.getNodeName() == TAG_NAME_MATERIALS) {
+            if (section_filter(TAG_NAME_MATERIALS)) {
+                if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadMaterials(reader, materialsSource);
+            } else
+                reader.gotoEndOfCurrentTag();
+            if (!reader.requireTagOrEnd()) return;
+        }
 
-    if (reader.getNodeName() == TAG_NAME_GEOMETRY) {
-        if (section_filter(TAG_NAME_GEOMETRY)) {
-            if (!tryLoadFromExternal(reader, materialsSource, load_from)) {
-                GeometryReader greader(*this, reader, materialsSource);
-                loadGeometry(greader);
-            }
-        } else
-            reader.gotoEndOfCurrentTag();
-        if (!reader.requireTagOrEnd()) return;
-    }
+        if (reader.getNodeName() == TAG_NAME_GEOMETRY) {
+            if (section_filter(TAG_NAME_GEOMETRY)) {
+                if (!tryLoadFromExternal(reader, materialsSource, load_from)) {
+                    GeometryReader greader(*this, reader, materialsSource);
+                    loadGeometry(greader);
+                }
+            } else
+                reader.gotoEndOfCurrentTag();
+            if (!reader.requireTagOrEnd()) return;
+        }
 
-    if (reader.getNodeName() == TAG_NAME_GRIDS) {
-        if (section_filter(TAG_NAME_GRIDS)) {
-            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadGrids(reader);
-        } else
-            reader.gotoEndOfCurrentTag();
-        if (!reader.requireTagOrEnd()) return;
-    }
+        if (reader.getNodeName() == TAG_NAME_GRIDS) {
+            if (section_filter(TAG_NAME_GRIDS)) {
+                if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadGrids(reader);
+            } else
+                reader.gotoEndOfCurrentTag();
+            if (!reader.requireTagOrEnd()) return;
+        }
 
-    if (reader.getNodeName() == TAG_NAME_SOVERS) {
-        if (section_filter(TAG_NAME_SOVERS)) {
-            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadSolvers(reader);
-        } else
-            reader.gotoEndOfCurrentTag();
-        if (!reader.requireTagOrEnd()) return;
-    }
+        if (reader.getNodeName() == TAG_NAME_SOVERS) {
+            if (section_filter(TAG_NAME_SOVERS)) {
+                if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadSolvers(reader);
+            } else
+                reader.gotoEndOfCurrentTag();
+            if (!reader.requireTagOrEnd()) return;
+        }
 
-    if (reader.getNodeName() == TAG_NAME_CONNECTS) {
-        if (section_filter(TAG_NAME_CONNECTS)) {
-            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadConnects(reader);
-        } else
-            reader.gotoEndOfCurrentTag();
-        if (!reader.requireTagOrEnd()) return;
-    }
+        if (reader.getNodeName() == TAG_NAME_CONNECTS) {
+            if (section_filter(TAG_NAME_CONNECTS)) {
+                if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadConnects(reader);
+            } else
+                reader.gotoEndOfCurrentTag();
+            if (!reader.requireTagOrEnd()) return;
+        }
 
-    if (reader.getNodeName() == TAG_NAME_SCRIPT) {
-        if (section_filter(TAG_NAME_SCRIPT)) {
-            if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadScript(reader);
-        } else
-            reader.gotoEndOfCurrentTag();
-        if (!reader.requireTagOrEnd()) return;
+        if (reader.getNodeName() == TAG_NAME_SCRIPT) {
+            if (section_filter(TAG_NAME_SCRIPT)) {
+                if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadScript(reader);
+            } else
+                reader.gotoEndOfCurrentTag();
+            if (!reader.requireTagOrEnd()) return;
+        }
+    } catch (const XMLException&) {
+        throw;
+    } catch (const std::exception& err) {
+        throw XMLException(reader, err.what());
+    } catch (...) {
+        throw XMLException(reader, "Unrecognized exception");
     }
 }
 

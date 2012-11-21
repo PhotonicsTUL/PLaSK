@@ -317,7 +317,7 @@ foreach(lst ${lst_lists})
     add_custom_command(OUTPUT ${PLASK_PATH}/${lst}
                        COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${lst} ${PLASK_PATH}/${lst}
                        DEPENDS ${CMAKE_SOURCE_DIR}/${lst})
-    list(APPEND solvers_lst_copied ${PLASK_PATH}/${lst})
+    list(APPEND solvers_lst_files ${PLASK_PATH}/${lst})
     get_filename_component(lst_dir ${lst} PATH)
     install(FILES ${PLASK_PATH}/${lst} DESTINATION lib/plask/${lst_dir} COMPONENT solvers)
     if(BUILD_PYTHON)
@@ -325,13 +325,10 @@ foreach(lst ${lst_lists})
         add_custom_command(OUTPUT ${PLASK_PATH}/${lst_dir}/__init__.py
                            COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_BINARY_DIR}/CMakeFiles/solvers_lst.py ${PLASK_PATH} ${lst_native_dir}
                            DEPENDS ${PLASK_PATH}/${lst})
-        list(APPEND solvers_init_copied ${PLASK_PATH}/${lst_dir}/__init__.py)
+        list(APPEND solvers_lst_files ${PLASK_PATH}/${lst_dir}/__init__.py)
     endif()
 endforeach()
-add_custom_target(solvers-lst ALL DEPENDS ${solvers_lst_copied})
-if(BUILD_PYTHON)
-    add_custom_target(solvers-init ALL DEPENDS ${solvers_init_copied})
-endif()
+add_custom_target(solvers-lst ALL DEPENDS ${solvers_lst_files})
 
 # Build solvers
 set(solvers_test_targets "")
@@ -372,7 +369,7 @@ if(BUILD_TESTING)
     if(BUILD_PYTHON)
         file(GLOB_RECURSE python_tests_module_src FOLLOW_SYMLINKS tests/python/*.cpp)
 
-        set(plask_test_depends ${plask_test_depends} plask solvers-init)
+        set(plask_test_depends ${plask_test_depends} plask)
 
         if(WIN32)
             add_library(plask-test-python SHARED ${python_tests_module_src})

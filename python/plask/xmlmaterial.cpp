@@ -220,12 +220,16 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         PyCompilerFlags flags { CO_FUTURE_DIVISION };
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) \
-        else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) \
-            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
+        else if (reader.getNodeName() == BOOST_PP_STRINGIZE(func)) { \
+            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags); \
+            if (constructor->func == nullptr)  throw XMLException(format("XML line %1% in <%2%>", reader.getLineNr(), BOOST_PP_STRINGIZE(func)), "Material parameter syntax error"); \
+        }
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(name, func) \
-        else if (reader.getNodeName() == name) \
-            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags);
+        else if (reader.getNodeName() == name) { \
+            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input, &flags); \
+            if (constructor->func == nullptr)  throw XMLException(format("XML line %1% in <%2%>", reader.getLineNr(), name), "Material parameter syntax error"); \
+        }
 
 #   endif
     while (reader.requireTagOrEnd()) {

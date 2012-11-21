@@ -11,7 +11,7 @@ XMLException::XMLException(const XMLReader& reader, const std::string& msg):
                        ": " + msg) {}
 
 XMLException::XMLException(const std::string& where, const std::string& msg):
-    std::runtime_error("In " + where + ": " + msg) {}
+    std::runtime_error(where + ": " + msg) {}
 
 XMLException::XMLException(const std::string& msg): std::runtime_error(msg) {}
 
