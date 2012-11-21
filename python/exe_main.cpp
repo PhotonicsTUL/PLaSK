@@ -235,7 +235,7 @@ int main(int argc, const char *argv[])
     }
 
     // Test if we should use the file or start an interactive mode
-    if(argc > 1 && !force_interactive) { // load commands from file
+    if(argc > 1 && !force_interactive && argv[1][0] != 0) { // load commands from file
 
         py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
         py::incref(globals.ptr());
@@ -258,10 +258,12 @@ int main(int argc, const char *argv[])
             // Detect if the file is Python script or PLaSK input
 
             // check file extension
-            std::string ext = filename.substr(filename.length()-4);
-            if (ext == ".xpl") xml_input.reset(true);
-            else if (ext == ".xml") xml_input.reset(true);
-            else if (ext.substr(2) == ".py") xml_input.reset(false);
+            try {
+                std::string ext = filename.substr(filename.length()-4);
+                if (ext == ".xpl") xml_input.reset(true);
+                else if (ext == ".xml") xml_input.reset(true);
+                else if (ext.substr(2) == ".py") xml_input.reset(false);
+            } catch (std::out_of_range) {}
 
             if (!xml_input) {
                 // check first char (should be '<' in XML)
