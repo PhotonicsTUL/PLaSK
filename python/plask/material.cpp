@@ -104,8 +104,7 @@ class PythonMaterial : public Material
         return py::extract<T>(py::object(py::detail::borrowed_reference(self)).attr(attribute));
     }
 
-    PyMethodObject* overriden(char const* name) const
-    {
+    PyMethodObject* overriden(char const* name) const {
         py::converter::registration const& r = py::converter::registered<Material>::converters;
         PyTypeObject* class_object = r.get_class_object();
         if (self) {
@@ -131,7 +130,11 @@ class PythonMaterial : public Material
     DDPair call_thermk(double T, double t) const {
         PyMethodObject* m = overriden("thermk");
         if (m) {
+#if PY_VERSION_HEX >= 0x03000000
+            if(PyObject* fc = PyObject_GetAttrString(m->im_func, "__code__")) {
+#else
             if(PyObject* fc = PyObject_GetAttrString(m->im_func, "func_code")) {
+#endif
                 if(PyObject* ac = PyObject_GetAttrString(fc, "co_argcount")) {
                     const int count = PyInt_AsLong(ac);
                     if (count == 2) return py::call_method<DDPair>(self, "thermk", T);
@@ -142,7 +145,6 @@ class PythonMaterial : public Material
                 }
                 Py_DECREF(fc);
             }
-
         }
         return base->thermk(T);
     }

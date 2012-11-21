@@ -261,7 +261,10 @@ bool XMLReader::requireTagOrEnd(const std::string& name) {
 
 void XMLReader::requireTagEnd() {
     requireNext();
-    if (getNodeType() != NODE_ELEMENT_END)
+    if (getNodeType() == NODE_ELEMENT) {
+        path.pop_back();
+        throw XMLUnexpectedElementException(*this, "</" + path.back() + ">");
+    } else if (getNodeType() != NODE_ELEMENT_END)
         throw XMLUnexpectedElementException(*this, "</" + path.back() + ">");
 }
 
