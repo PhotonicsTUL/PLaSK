@@ -93,8 +93,10 @@ class Material(object):
 
 
 ownmats = {
-#    'pAlGan': 'Al(0.2)GaN:Si',
-
+    'LED_nGaN': "GaN:Si",
+    'LED_active': "In(0.06)GaN",
+    'LED_pAlGaN': "Al(0.17)GaN:Mg",
+    'LED_pGaN': "GaN:Mg",
 }
 
 def parse_material_name(mat, comp, dopant):
@@ -238,7 +240,7 @@ def read_dan(fname):
         if ht == -200:
             r.role = 'active'
         elif ht == 0:
-            r.role = 'cold'
+            r.role = 'noheat'
         elif ht == -1:
             r.name = unique_object_name()
             heats[r.name] = float(line[1])
@@ -413,7 +415,8 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             else:
                 out('actlevel = %g' % actlevel)
             out('actgrid = mesh.Rectilinear2D(plotgrid.axis0, [actlevel])')
-            out('plotgrid.axis1.insert(actlevel)\n')
+            out('plotgrid.axis1.insert(actlevel)')
+        out('')
 
         if therm:
             out('temperature = THERMAL.outTemperature(plotgrid)')

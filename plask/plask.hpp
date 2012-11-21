@@ -80,6 +80,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "geometry/leaf.h"
 #include "geometry/transform_space_cartesian.h"
 #include "geometry/transform_space_cylindric.h"
+#include "geometry/translation_container.h"
 #include "geometry/container.h"
 #include "geometry/reader.h"
 #include "geometry/border.h"

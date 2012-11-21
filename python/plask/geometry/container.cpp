@@ -3,6 +3,7 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <plask/geometry/container.h>
+#include <plask/geometry/translation_container.h>
 
 
 namespace plask { namespace python {

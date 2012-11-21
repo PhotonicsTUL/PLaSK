@@ -1,4 +1,4 @@
-#include "container_trans.h"
+#include "translation_container.h"
 
 #include <cstdlib>  //abs
 
@@ -8,29 +8,29 @@ namespace plask {
 
 /// Geometry object + his bounding box.
 template <int DIMS>
-struct WithBB {
-    
+struct GeometryObjectBBox {
+
     shared_ptr<const Translation<DIMS> > obj;
 
     typename Primitive<DIMS>::Box boundingBox;
-    
-    WithBB() {}
-    
-    WithBB(shared_ptr<const Translation<DIMS> > obj, const typename Primitive<DIMS>::Box& boundingBox)
+
+    GeometryObjectBBox() {}
+
+    GeometryObjectBBox(shared_ptr<const Translation<DIMS> > obj, const typename Primitive<DIMS>::Box& boundingBox)
         : obj(obj), boundingBox(boundingBox) {}
-    
-    WithBB(shared_ptr<const Translation<DIMS> > obj)
+
+    GeometryObjectBBox(shared_ptr<const Translation<DIMS> > obj)
         : obj(obj), boundingBox(obj->getBoundingBox()) {}
-    
+
 };
 
 template <int DIMS, int dir>
-bool compare_by_lower(const WithBB<DIMS>& a, const WithBB<DIMS>& b) {
+bool compare_by_lower(const GeometryObjectBBox<DIMS>& a, const GeometryObjectBBox<DIMS>& b) {
     return a.boundingBox.lower[dir] < b.boundingBox.lower[dir];
 }
 
 template <int DIMS, int dir>
-bool compare_by_upper(const WithBB<DIMS>& a, const WithBB<DIMS>& b) {
+bool compare_by_upper(const GeometryObjectBBox<DIMS>& a, const GeometryObjectBBox<DIMS>& b) {
     return a.boundingBox.upper[dir] < b.boundingBox.upper[dir];
 }
 
@@ -43,24 +43,24 @@ struct EmptyLeafCacheNode: public CacheNode<DIMS> {
 
 template <int DIMS>
 struct LeafCacheNode: public CacheNode<DIMS> {
-    
+
     /// Type of the vector holding container children
     typedef std::vector< shared_ptr<const Translation<DIMS> > > ChildVectorT;
 
     ChildVectorT children;
-    
-    LeafCacheNode(const std::vector< WithBB<DIMS> >& children_with_bb) {
+
+    LeafCacheNode(const std::vector< GeometryObjectBBox<DIMS> >& children_with_bb) {
         children.reserve(children_with_bb.size());
-        for (const WithBB<DIMS>& c: children_with_bb)
+        for (const GeometryObjectBBox<DIMS>& c: children_with_bb)
             children.push_back(c.obj);
     }
-    
+
     LeafCacheNode(const std::vector< shared_ptr< Translation<DIMS> > >& childr) {
         children.reserve(childr.size());
         for (const shared_ptr< Translation<DIMS> >& c: childr)
             children.push_back(c);
     }
-    
+
     virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
         for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
             shared_ptr<Material> r = (*child_it)->getMaterial(p);
@@ -73,19 +73,19 @@ struct LeafCacheNode: public CacheNode<DIMS> {
 /// Instances of this template represents all internal nodes of cache
 template <int DIMS, int dir>
 struct InternalCacheNode: public CacheNode<DIMS> {
-    
+
     double offset;  ///< split coordinate
     CacheNode<DIMS>* lo;  ///< includes all objects which has lower coordinate < offset
     CacheNode<DIMS>* hi;  ///< includes all objects which has higher coordinate >= offset
-        
+
     InternalCacheNode(const double& offset, CacheNode<DIMS>* lo, CacheNode<DIMS>* hi)
         : offset(offset), lo(lo), hi(hi)
     {}
-    
+
     virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
         return p[dir] < offset ? lo->getMaterial(p) : hi->getMaterial(p);
     }
-    
+
     virtual ~InternalCacheNode() {
         delete lo;
         delete hi;
@@ -93,9 +93,9 @@ struct InternalCacheNode: public CacheNode<DIMS> {
 };
 
 template <int DIMS>
-void inPlaceSplit(std::vector< WithBB<DIMS> >& inputAndLo, std::vector< WithBB<DIMS> >& hi, int dir, double offset) {
-    std::vector< WithBB<DIMS> > lo;
-    for (WithBB<DIMS>& i: inputAndLo) {
+void inPlaceSplit(std::vector< GeometryObjectBBox<DIMS> >& inputAndLo, std::vector< GeometryObjectBBox<DIMS> >& hi, int dir, double offset) {
+    std::vector< GeometryObjectBBox<DIMS> > lo;
+    for (GeometryObjectBBox<DIMS>& i: inputAndLo) {
         if (i.boundingBox.lower[dir] < offset) lo.push_back(i);
         if (i.boundingBox.upper[dir] >= offset) hi.push_back(i);
     }
@@ -109,7 +109,7 @@ void inPlaceSplit(std::vector< WithBB<DIMS> >& inputAndLo, std::vector< WithBB<D
  * @param bestDir, bestOffset, bestValue parameters of earlier best point, eventualy changed
  */
 template <int DIMS>
-void calcOptimalSplitOffset(const std::vector< WithBB<DIMS> >& inputSortedByLo, const std::vector< WithBB<DIMS> >& inputSortedByHi,
+void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& inputSortedByLo, const std::vector< GeometryObjectBBox<DIMS> >& inputSortedByHi,
                             int inputDir, int& bestDir, double& bestOffset, int& bestValue)
 {
     const int max_allowed_size = inputSortedByLo.size() - 4;
@@ -141,9 +141,9 @@ void calcOptimalSplitOffset(const std::vector< WithBB<DIMS> >& inputSortedByLo, 
 #define MIN_CHILD_TO_TRY_SPLIT 16
 
 //warning: this destroy inputs vectors
-CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
-                         std::vector< WithBB<2> >& inputSortedByLoC0, std::vector< WithBB<2> >& inputSortedByHiC0,
-                         std::vector< WithBB<2> >& inputSortedByLoC1, std::vector< WithBB<2> >& inputSortedByHiC1,
+CacheNode<2>* buildCache(std::vector< GeometryObjectBBox<2> >& input,
+                         std::vector< GeometryObjectBBox<2> >& inputSortedByLoC0, std::vector< GeometryObjectBBox<2> >& inputSortedByHiC0,
+                         std::vector< GeometryObjectBBox<2> >& inputSortedByLoC1, std::vector< GeometryObjectBBox<2> >& inputSortedByHiC1,
                          int max_depth = 16) {
     if (input.size() < MIN_CHILD_TO_TRY_SPLIT || max_depth == 0) return new LeafCacheNode<2>(input);
     double bestOffset;
@@ -155,7 +155,7 @@ CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
         return new LeafCacheNode<2>(input);                //so we will not split more
     CacheNode<2> *lo, *hi;
     {
-    std::vector< WithBB<2> > input_over_offset,
+    std::vector< GeometryObjectBBox<2> > input_over_offset,
             inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset,
             inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset;
     inPlaceSplit<2>(input, input_over_offset, bestDir, bestOffset);
@@ -174,7 +174,7 @@ CacheNode<2>* buildCache(std::vector< WithBB<2> >& input,
 CacheNode<2>* buildCache(const GeometryObjectContainer<2>::TranslationVector& children) {
     if (children.empty()) return new EmptyLeafCacheNode<2>();
     if (children.size() < MIN_CHILD_TO_TRY_SPLIT) return new LeafCacheNode<2>(children);
-    std::vector< WithBB<2> > input,
+    std::vector< GeometryObjectBBox<2> > input,
             inputSortedByLoC0, inputSortedByHiC0,
             inputSortedByLoC1, inputSortedByHiC1;
     input.reserve(children.size());
@@ -187,7 +187,7 @@ CacheNode<2>* buildCache(const GeometryObjectContainer<2>::TranslationVector& ch
     std::sort(inputSortedByHiC0.begin(), inputSortedByHiC0.end(), compare_by_upper<2, 0>);
     inputSortedByHiC1 = input;
     std::sort(inputSortedByHiC1.begin(), inputSortedByHiC1.end(), compare_by_upper<2, 1>);
-    return buildCache(input, 
+    return buildCache(input,
                       inputSortedByLoC0, inputSortedByHiC0,
                       inputSortedByLoC1, inputSortedByHiC1);
 }
