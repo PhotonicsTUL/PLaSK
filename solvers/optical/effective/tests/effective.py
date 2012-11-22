@@ -46,7 +46,6 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
     def testComputations(self):
         self.solver.inWavelength = 1000.
-
         self.solver.symmetry = "+"
         self.solver.polarization = "TE"
         self.assertAlmostEqual( self.solver.compute(1.15), 1.1502818, 6)

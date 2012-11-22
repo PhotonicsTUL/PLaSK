@@ -13,18 +13,33 @@ std::string AlN_Mg::str() const { return StringBuilder("AlN").dopant("Mg", NA); 
 MI_PARENT(AlN_Mg, AlN)
 
 AlN_Mg::AlN_Mg(DopingAmountType Type, double Val) {
-    Nf_RT = 2e11;    
-    mob_RT = 10;
-    cond_RT = 3e-5;    
+    Nf_RT = 2e11;
+    mob_RT = 10.;
+    cond_RT = 3e-5;
+    NA = 2e19;
 }
 
-MI_PROPERTY(AlN_Mg, cond,            
+std::pair<double,double> AlN_Mg::mob(double T) const {
+    return std::make_pair<>(mob_RT, mob_RT);
+}
+
+double AlN_Mg::Nf(double T) const {
+    return Nf_RT;
+}
+
+
+double AlN_Mg::Dop() const {
+    return NA;
+}
+
+
+MI_PROPERTY(AlN_Mg, cond,
             MISource("K. B. Nam et al., Appl. Phys. Lett. 83 (2003) 878"),
             MISource("M. L. Nakarmi et al., Appl. Phys. Lett. 89 (2006) 152120"),
             MIArgumentRange(MaterialInfo::T, 300, 900)
             )
 std::pair<double,double> AlN_Mg::cond(double T) const {
-    double tCond = 3e-5*pow((T/300.),9.75);    
+    double tCond = 3e-5*pow((T/300.),9.75);
     return (std::make_pair(tCond, tCond)); //TODO was std::make_pair(tCondt, tCond) - compilation error
 }
 

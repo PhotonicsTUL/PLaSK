@@ -29,6 +29,7 @@ void register_python_log()
     LOG_ENUM(RESULT);
     LOG_ENUM(DATA);
     LOG_ENUM(DETAIL);
+    LOG_ENUM(ERROR_DETAIL);
     LOG_ENUM(DEBUG);
 
     py::def("print_log", (void(*)(LogLevel, const std::string&))&writelog, "Print log message into specified log level", (py::arg("level"), "msg"));

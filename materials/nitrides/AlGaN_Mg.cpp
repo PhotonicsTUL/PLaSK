@@ -15,8 +15,8 @@ MI_PARENT(AlGaN_Mg, AlGaN)
 AlGaN_Mg::AlGaN_Mg(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaN(Comp), mGaN_Mg(Type,Val), mAlN_Mg(Type,Val)
 {
     if (Type == CARRIER_CONCENTRATION)
-        //NA = mAlN_Mg.Dop()*Al + mGaN_Mg.Dop()*Ga;
         NA = mGaN_Mg.Dop();
+        //NA = mAlN_Mg.Dop()*Al + mGaN_Mg.Dop()*Ga;
     else
         NA = Val;
 }
@@ -35,7 +35,8 @@ MI_PROPERTY(AlGaN_Mg, Nf,
             MISource("linear interpolation: Mg-doped GaN, AlN")
             )
 double AlGaN_Mg::Nf(double T) const {
-    return ( mAlN_Mg.Nf(T)*Al + mGaN_Mg.Nf(T)*Ga );
+    return mGaN_Mg.Nf(T);
+    //return mAlN_Mg.Nf(T)*Al + mGaN_Mg.Nf(T)*Ga;
 }
 
 double AlGaN_Mg::Dop() const {

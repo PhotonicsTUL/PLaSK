@@ -159,30 +159,18 @@ int handlePythonException(unsigned startline=0) {
     if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
 
     if (original_traceback) {
-        std::stack<PyTracebackObject*> tb_stack;
-
         PyTracebackObject* traceback = original_traceback;
-        while (traceback->tb_next != NULL) {
-            tb_stack.push(traceback);
-            traceback = traceback->tb_next;
-        }
-
-        int lineno = startline + traceback->tb_lineno;
-        std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-        std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
-        if (funcname == "<module>" && tb_stack.empty()) funcname = "<script>";
-        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
-
-        while (!tb_stack.empty()) {
-            traceback = tb_stack.top();
-            tb_stack.pop();
+        while (traceback) {
             int lineno = startline + traceback->tb_lineno;
             std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
             std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
-            if (funcname == "<module>" && tb_stack.empty()) funcname = "<script>";
-            plask::writelog(plask::LOG_DETAIL, "called from: %1%, line %2%, function '%3%'", filename, lineno, funcname);
+            if (funcname == "<module>" && traceback == original_traceback) funcname = "<script>";
+            if (traceback->tb_next)
+                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+            else
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
+            traceback = traceback->tb_next;
         }
-
     } else {
         plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
     }

@@ -9,14 +9,15 @@
 namespace plask {
 
 enum LogLevel {
-    LOG_CRITICAL_ERROR, // these errors are handled by exceptions, but this is for completeness
-    LOG_ERROR,          // non-critical errors (e.g. failed convergence etc.), user can decide if the program should continue
-    LOG_WARNING,        // warning
-    LOG_INFO,           // basic log level, gives general information on the program flow
-    LOG_RESULT,         // single value results (also provided with provider mechanism) for easy tracking
-    LOG_DATA,           // intermediate data/results, mainly for presentation in live plots
-    LOG_DETAIL,         // less important details on computations (i.e. recomputations of Jacobian in Broyden method)
-    LOG_DEBUG           // pretty much everything
+    LOG_CRITICAL_ERROR, ///< Exceptions and errors unconditionally interrupting program flow
+    LOG_ERROR,          ///< Non-critical errors (e.g. failed convergence etc.), user can decide if the program should continue
+    LOG_WARNING,        ///< Warning
+    LOG_INFO,           ///< Basic log level, gives general information on the program flow
+    LOG_RESULT,         ///< Single value results (also provided with provider mechanism) for easy tracking
+    LOG_DATA,           ///< Intermediate data/results, mainly for presentation in live plots
+    LOG_DETAIL,         ///< Less important details on computations (i.e. recomputations of Jacobian in Broyden method)
+    LOG_ERROR_DETAIL,   ///< Details of an error (e.g. stack trace)
+    LOG_DEBUG           ///< Pretty much everything
 };
 
 
