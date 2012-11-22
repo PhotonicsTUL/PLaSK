@@ -90,7 +90,6 @@ def load(source, destination=None):
 
 ## ##  ## ##
 
-
 try:
     from plask.pylab import *
 except ImportError:
@@ -105,3 +104,11 @@ except ImportError:
     has_hdf5 = False
 else:
     has_hdf5 = True
+
+
+## ##  ## ##
+#TODO dedeluxe
+try:
+    from plask.deluxe import *
+except ImportError:
+    pass

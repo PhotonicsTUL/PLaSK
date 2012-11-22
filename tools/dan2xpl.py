@@ -396,7 +396,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('verr = 10.')
         out('ELECTRICAL.compute(1)')
         out('THERMAL.compute(1)')
-        out('while terr > 0.05 or verr > 0.001:')
+        out('while terr > THERMAL.corrlim or verr > ELECTRICAL.corrlim:')
         out('    verr = ELECTRICAL.compute(6)')
         out('    terr = THERMAL.compute(1)')
     else:
@@ -473,8 +473,10 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
                 out('    plot(actgrid.axis0, abs(acurrent.array()[0,:,1]))')
                 out('    xlabel(u"%s [\\xb5m]")' % axes[0])
                 out('    ylabel("current density [kA/cm$^2$]")')
-                out('    for x in mesh.Rectilinear2D.SimpleGenerator()(GEO.main.child).axis0:')
+                out('    simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.child)')
+                out('    for x in simplemesh.axis0:')
                 out('        axvline(x, ls=":", color="k")')
+                out('    xlim(0., simplemesh.axis0[-2])')
                 out('    gcf().canvas.set_window_title("Current density in the active region")')
         out('\n    show()')
 
