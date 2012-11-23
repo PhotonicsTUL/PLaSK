@@ -24,20 +24,19 @@ struct GeometryObjectBBox {
 
 };
 
-template <int DIMS, int dir>
-bool compare_by_lower(const GeometryObjectBBox<DIMS>& a, const GeometryObjectBBox<DIMS>& b) {
-    return a.boundingBox.lower[dir] < b.boundingBox.lower[dir];
-}
-
-template <int DIMS, int dir>
-bool compare_by_upper(const GeometryObjectBBox<DIMS>& a, const GeometryObjectBBox<DIMS>& b) {
-    return a.boundingBox.upper[dir] < b.boundingBox.upper[dir];
-}
-
 template <int DIMS>
 struct EmptyLeafCacheNode: public CacheNode<DIMS> {
+
     virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
         return shared_ptr<Material>();
+    }
+
+    virtual bool includes(const Vec<DIMS>& p) const {
+        return false;
+    }
+
+    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const {
+        return GeometryObject::Subtree();
     }
 };
 
@@ -68,6 +67,25 @@ struct LeafCacheNode: public CacheNode<DIMS> {
         }
         return shared_ptr<Material>();
     }
+
+    virtual bool includes(const Vec<DIMS>& p) const {
+        for (auto child: children) if (child->includes(p)) return true;
+        return false;
+    }
+
+    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const {
+        GeometryObject::Subtree result;
+        for (auto child = children.rbegin(); child != children.rend(); ++child) {
+            GeometryObject::Subtree child_path = (*child)->getPathsAt(point, all);
+            if (!child_path.empty()) {
+                result.children.push_back(std::move(child_path));
+                if (!all) break;
+            }
+        }
+        if (!result.children.empty())
+            result.object = caller;
+        return result;
+    }
 };
 
 /// Instances of this template represents all internal nodes of cache
@@ -84,6 +102,14 @@ struct InternalCacheNode: public CacheNode<DIMS> {
 
     virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const {
         return p[dir] < offset ? lo->getMaterial(p) : hi->getMaterial(p);
+    }
+
+    virtual bool includes(const Vec<DIMS>& p) const {
+        return p[dir] < offset ? lo->includes(p) : hi->includes(p);
+    }
+
+    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &p, bool all) const {
+        return p[dir] < offset ? lo->getPathsAt(caller, p, all) : hi->getPathsAt(caller, p, all);
     }
 
     virtual ~InternalCacheNode() {

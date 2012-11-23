@@ -8,10 +8,19 @@
 
 namespace plask {
 
+/**
+ * Base class for cache and nodes of cache.
+ *
+ * It has some methods similar to this in GeometryObjectContainer API and is used by TranslationContainer.
+ */
 template <int DIMS>
 struct CacheNode {
     
     virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const = 0;
+
+    virtual bool includes(const Vec<DIMS>& p) const = 0;
+
+    virtual GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const = 0;
         
     virtual ~CacheNode() {}
 };
@@ -78,9 +87,16 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
     }
     
     //methods overwrite to use cache:
-    //TODO more
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
         return ensureHasCache()->getMaterial(p);
+    }
+
+    virtual bool includes(const DVec& p) const {
+        return ensureHasCache()->includes(p);
+    }
+
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const {
+        return ensureHasCache()->getPathsAt(this->shared_from_this(), point, all);
     }
     
     //some methods must be overwrite to invalidate cache:
@@ -107,14 +123,31 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
 protected:
     virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
     
+    /// Destroy geometry cache, this should be called when children was changed (it will be rebuild by first operation which use it).
     void invalidateCache();
     
+    /**
+     * Construct cache if it not exists and return it.
+     * @return non-null pointer to cache
+     */
     CacheNode<dim>* ensureHasCache();
     
+    /**
+     * Construct cache if it not exists and return it.
+     *
+     * This method is thread-safty (can be call by many threads at once, and only first call will build the cache).
+     * @return non-null pointer to cache
+     */
     CacheNode<dim>* ensureHasCache() const;
     
 private:
+    /**
+     * Cache which allow to do some geometry operation (like getMaterial) much faster if this container has many children.
+     * It is create by first operation which use it (see ensureHasCache method), and destroy on each change of children (see invalidateCache method).
+     */
     std::atomic<CacheNode<dim>*> cache;
+
+    /// Mutex used by const version of ensureHasCache.
     boost::mutex cache_mutex;
 
 };
