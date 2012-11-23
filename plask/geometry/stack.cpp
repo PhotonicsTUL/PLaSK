@@ -1,6 +1,6 @@
 #include "stack.h"
 
-#define baseH_attr "base"
+#define baseH_attr "shift"
 #define repeat_attr "repeat"
 #define require_equal_heights_attr "flat"
 

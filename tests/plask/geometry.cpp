@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         initDumbMaterialDb(materialsDB);
         plask::Manager manager;
         manager.loadFromXMLString(
-                    "<plask><geometry><cartesian2d name=\"space\" length=\"1\" axes=\"xy\" left=\"mirror\"><stack repeat=\"5\" base=\"10\" name=\"multistack\">"
+                    "<plask><geometry><cartesian2d name=\"space\" length=\"1\" axes=\"xy\" left=\"mirror\"><stack repeat=\"5\" shift=\"10\" name=\"multistack\">"
                     "<child x=\"0\"><block name=\"block-5-3\" x=\"5\" y=\"3\" material=\"Al\" /></child>"
                     "<child x=\"0\" path=\"p,other,'yet-another-one'\"><ref name=\"block-5-3\" /></child>"
                     "</stack></cartesian2d></geometry></plask>", materialsDB);

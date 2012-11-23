@@ -1,0 +1,688 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass scrreprt
+\begin_preamble
+\usepackage{xcolor}
+\usepackage{amsbsy}
+
+%keywordstyle={\pmb}
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding global
+\font_roman utopia
+\font_sans default
+\font_typewriter lmtt
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement h
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_title "PLaSK User Manual"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize a4paper
+\use_geometry true
+\use_amsmath 1
+\use_esint 0
+\use_mhchem 0
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\index Indeks
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2.5cm
+\topmargin 2.2cm
+\rightmargin 2.5cm
+\bottommargin 2.8cm
+\footskip 1.5cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\listings_params "backgroundcolor={\color{gray!3}},basicstyle={\ttfamily},columns=flexible,commentstyle={\it},frame=shadowbox,language=Python,rulesepcolor={\color{gray}},showstringspaces=false"
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+PLaSK User Guide
+\end_layout
+
+\begin_layout Date
+v.
+ 0.1
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+Preface
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+P
+\series default
+hotonic 
+\series bold
+La
+\series default
+ser 
+\series bold
+S
+\series default
+imulation 
+\series bold
+K
+\series default
+it is a comprehensive tool for numerical analysis of broad range of physical
+ phenomena in photonic devices.
+ It has been designed for simulating mainly semiconductor lasers, however
+ the range of the covered devices is much larger and includes e.g.
+ transistors, light emitting diodes, photodetectors, etc.
+ Due to its modular nature it is possible to perform computations of virtually
+ any physical phenomenon in micro-scale structures.
+\end_layout
+
+\begin_layout Standard
+PLaSK has been originally developed in a Photonics Group of Lodz Institute
+ of Technology, which has many-year experience in numerical analysis of
+ semiconductor lasers.
+ Such structures, due to their complex structure, often fail to be correctly
+ simulated by popular general-purpose software.
+ However, in designing PLaSK we have taken special care to consider all
+ the special cases of semiconductor lasers and to choose (or invent where
+ necessary) appropriate algorithms.
+\end_layout
+
+\begin_layout Standard
+This manual presents the software and gives instructions on using it.
+ It is structured as follows: First there is a quick start guide, which
+ gives brief overview on the whole software, instructs how to install it,
+ and introduces its main features in a form of short tutorials and examples.
+ The second part describes in detail all the elements of the input data
+ file and presents complete manual of all the general features available
+ in the software.
+ The third part covers usage of graphical user interface and, finally, the
+ last part lists all the default computational solvers and gives the complete
+ reference to their usage.
+\end_layout
+
+\begin_layout Part
+Quick start guide
+\end_layout
+
+\begin_layout Chapter
+Introduction
+\end_layout
+
+\begin_layout Section
+Installation
+\end_layout
+
+\begin_layout Subsection
+Windows
+\end_layout
+
+\begin_layout Standard
+Just unzip provided file to the folder of your choice.
+ The full installer will be provided in some distant future.
+\end_layout
+
+\begin_layout Subsection
+Linux systems
+\end_layout
+
+\begin_layout Subsubsection
+DEB based distros (Debian, Ubuntu, Mint, etc.)
+\end_layout
+
+\begin_layout Standard
+Run the following commands:
+\begin_inset listings
+lstparams "language=bash"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+$ sudo apt-get g++ libboost-all-dev libexpat1-dev subversion cmake 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+  cmake-qt-gui doxygen libeigen3-dev libopenblas-dev liblapack-dev 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+  liblapacke-dev libfftw3-dev python python-numpy python-scipy 
+\backslash
+
+\end_layout
+
+\begin_layout Plain Layout
+
+  python-matplotlib python-h5py python-pyside python-ipython
+\end_layout
+
+\begin_layout Plain Layout
+
+$ cd Twój/wybrany/katalog/na/projekt
+\end_layout
+
+\begin_layout Plain Layout
+
+$ svn checkout https://phys.p.lodz.pl/svn/plask/trunk .
+\end_layout
+
+\begin_layout Plain Layout
+
+$ mkdir build
+\end_layout
+
+\begin_layout Plain Layout
+
+$ cd build
+\end_layout
+
+\begin_layout Plain Layout
+
+$ cmake ..
+\end_layout
+
+\begin_layout Plain Layout
+
+$ make -j4
+\end_layout
+
+\begin_layout Plain Layout
+
+$ sudo make install
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+And so far that's all.
+\end_layout
+
+\begin_layout Subsubsection
+RPM based distros
+\end_layout
+
+\begin_layout Section
+Running plask
+\end_layout
+
+\begin_layout Standard
+In general PLaSK is standalone command line program.
+ It can be run from the command line by typing 
+\family typewriter
+plask
+\family default
+ in the shell
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+To be able to do so on Windows, you must add the folder 
+\family typewriter
+bin
+\family default
+ from the PLaSK install folder (e.g.
+ 
+\family typewriter
+c:
+\backslash
+Program
+\begin_inset space \thinspace{}
+\end_inset
+
+
+\begin_inset space \thinspace{}
+\end_inset
+
+Files
+\begin_inset space \thinspace{}
+\end_inset
+
+
+\backslash
+PLaSK
+\backslash
+bin
+\family default
+) to the environment variable Path.
+\end_layout
+
+\end_inset
+
+.
+ If run without any parameter, it will open a simple interactive shell where
+ you can type Python commands for immediate execution.
+ In order to run prepared script (saved either in 
+\family typewriter
+.xpl
+\family default
+ or 
+\family typewriter
+.py
+\family default
+ file) simply add its name as the first parameter.
+ Further parameters are optional and will be available to the Python script
+ as 
+\family typewriter
+sys.argv
+\family default
+.
+ In the following example 
+\family typewriter
+vcsel.xpl
+\family default
+ is the input file an 10 some parameter:
+\end_layout
+
+\begin_layout Standard
+In Linux shell or MACOS terminal:
+\begin_inset listings
+lstparams "language=bash"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+joe@cray:~/laser$ plask vcsel.xpl 10
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In Windows from the Command Prompt:
+\begin_inset listings
+lstparams "language=bash"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+C:
+\backslash
+Users
+\backslash
+joe
+\backslash
+laser> "C:
+\backslash
+Program Files
+\backslash
+PLaSK
+\backslash
+bin
+\backslash
+plask.exe" vcsel.xpl 10
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Such command-line invocation can be used to run PLaSK locally, but is also
+ useful in HPC clusters with any kind of batch queue.
+ In the latter case make sure that you provide the command 
+\family typewriter
+plask
+\family default
+ 
+\emph on
+your_file.xpl
+\emph default
+ to the queue, adding absolute or relative paths to files where necessary.
+ PLaSK looks for all its system files in location relative to the main binary,
+ so there is no need to install it in a default system locations (although
+ this is recommended).
+ The following example shows how to add the command to the queue in a popular
+ batch system Torque (it is assumed that PLaSK is installed in user home
+ directory in the subdirectory 
+\family typewriter
+plask
+\family default
+):
+\begin_inset listings
+lstparams "language=bash"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+joe@cray:~$ echo $HOME/plask/bin/plask laser/vcsel.xpl 10 | qsub -N vcsel
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In Windows there is a 
+\family typewriter
+PLaSK.bat
+\family default
+ file provided in the ZIP archive to make it easier to run the binary from
+ the Explorer.
+ Simply double-click its icon to open the interactive shell, or drag the
+ input file to run the saved script.
+\end_layout
+
+\begin_layout Standard
+The alternative method of running PLaSK will be by using launcher system
+ in the graphical user interface.
+ However, such a system is not implemented at the present moment.
+\end_layout
+
+\begin_layout Chapter
+Tutorials and examples
+\end_layout
+
+\begin_layout Section
+Thermo-electrical modeling of simple edge-emitting diode
+\end_layout
+
+\begin_layout Standard
+blablabla...
+\end_layout
+
+\begin_layout Standard
+PLaSK uses XML as a format of its input files.
+ By default they have standard extension 
+\family typewriter
+.xpl
+\family default
+ (which you may consider as a shortcut from 
+\series bold
+
+\begin_inset Quotes eld
+\end_inset
+
+X
+\series default
+ML in 
+\series bold
+PL
+\series default
+aSK
+\begin_inset Quotes erd
+\end_inset
+
+).
+ They contain definition of custom materials, analyzed structure geometry,
+ configuration of the computational solvers and a Python script defining
+ the step-by-step operations to perform during computations.
+ However, it is a common situation that these operations remain the same
+ for a
+\begin_inset space ~
+\end_inset
+
+large number of different analyzed devices.
+ Hence, it is possible to save them in a separate file with an extension
+ 
+\family typewriter
+.py
+\family default
+ that is just a Python script and use the XPL only for definition of the
+ structure
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Actually it is possible to run the computations without creating XPL file
+ at all, as everything can be defined using Python, however, this option
+ will be presented later.
+\end_layout
+
+\end_inset
+
+.
+ We will demonstrate such option in the next tutorial in section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Thermo-electrical-of-GaAs"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=XML"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<plask xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+\end_layout
+
+\begin_layout Plain Layout
+
+        xsi:noNamespaceSchemaLocation="http://phys.p.lodz.pl/plask/plask.xsd">
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Thermo-electrical-of-GaAs"
+
+\end_inset
+
+Thermo-electrical of gallium-arsenide VCSEL
+\end_layout
+
+\begin_layout Section
+Scalar optical modeling of simple rectangular waveguide
+\end_layout
+
+\begin_layout Section
+Searching threshold gain of a step-profile VCSEL
+\end_layout
+
+\begin_layout Section
+Searching threshold of a real gallium nitride array
+\end_layout
+
+\begin_layout Part
+PLaSK reference manual
+\end_layout
+
+\begin_layout Chapter
+General concepts of PLaSK
+\end_layout
+
+\begin_layout Chapter
+Geometry specification
+\end_layout
+
+\begin_layout Section
+Specifying geometry in XPL file
+\end_layout
+
+\begin_layout Section
+Creating geometry from Python
+\end_layout
+
+\begin_layout Section
+Reference of geometry objects
+\end_layout
+
+\begin_layout Chapter
+Managing Materials
+\end_layout
+
+\begin_layout Section
+Materials in PLaSK
+\end_layout
+
+\begin_layout Section
+Compiled material libraries
+\end_layout
+
+\begin_layout Section
+Custom material class in Python
+\end_layout
+
+\begin_layout Section
+Custom materials in XPL
+\end_layout
+
+\begin_layout Chapter
+Computational solvers
+\end_layout
+
+\begin_layout Section
+Solvers overview
+\end_layout
+
+\begin_layout Section
+Specifying solvers in XPL file
+\end_layout
+
+\begin_layout Section
+Creating and managing solvers from Python
+\end_layout
+
+\begin_layout Section
+Running computations
+\end_layout
+
+\begin_layout Chapter
+Other useful utilities
+\end_layout
+
+\begin_layout Section
+Creating plots of the results
+\end_layout
+
+\begin_layout Section
+Storing and retrieving results
+\end_layout
+
+\begin_layout Part
+Graphical User Interface
+\end_layout
+
+\begin_layout Part
+Available solvers
+\end_layout
+
+\begin_layout Chapter
+Thermal model
+\end_layout
+
+\begin_layout Chapter
+Electrical model
+\end_layout
+
+\begin_layout Chapter
+Gain model
+\end_layout
+
+\begin_layout Chapter
+Optical model
+\end_layout
+
+\begin_layout Chapter
+Strain model
+\end_layout
+
+\begin_layout Chapter
+Dynamic models
+\end_layout
+
+\begin_layout Chapter
+\start_of_appendix
+Units in PLaSK
+\end_layout
+
+\begin_layout Chapter
+Formal specification of the XPL file
+\end_layout
+
+\begin_layout Chapter
+Reference of the Python library
+\end_layout
+
+\begin_layout Chapter
+Typical usage scenarios
+\end_layout
+
+\end_body
+\end_document

@@ -1,11 +1,11 @@
 ﻿## root element, includes sections which describe any aspects of experiment
 start = element plask {
-	materials?,
-	geometry?,
-	grids?,
-	solvers?,
-	connects?,
-	script?
+    materials?,
+    geometry?,
+    grids?,
+    solvers?,
+    connects?,
+    script?
 }
 
 
@@ -14,20 +14,20 @@ start = element plask {
 ## materials section, allows to define new materials
 materials = element materials {
 (
-	include_attr |
-	## define new material
-	element material {
-		## name of defined material
-		attribute name { text },
-		(
-			## base class of defined material, all undefined properties are inharited from this class
-			attribute base { text } |
-			## kind of defined material
-			attribute kind { text }
-		),
-		## property of defined material
-		element (lattC|Eg|CBO|VBO|Dso|Mso|Me|Me_v|Me_l|Mhh|Mhh_v|Mhh_l|Mlh|Mlh_v|Mlh_l|Mh|Mh_v|Mh_l|eps|chi|Nc|Ni|Nf|EactD|EactA|mob|cond|cond_v|cond_l|res|res_v|res_l|A|B|C|D|condT|condT_v|condT_l|dens|specHeat|nr|absp|Nr|Nr_tensor) { text }*
-	}*
+    include_attr |
+    ## define new material
+    element material {
+        ## name of defined material
+        attribute name { text },
+        (
+            ## base class of defined material, all undefined properties are inharited from this class
+            attribute base { text } |
+            ## kind of defined material
+            attribute kind { text }
+        ),
+        ## property of defined material
+        element (lattC|Eg|CBO|VBO|Dso|Mso|Me|Mhh|Mlh|Mh|ac|av|b|c11|c12|eps|chi|Nc|Nv|Ni|Nf|EactD|EactA|mob|cond|A|B|C|D|thermk|dens|cp|nr|absp|nR|nR_tensor) { text }*
+    }*
 )
 }
 
@@ -37,34 +37,34 @@ materials = element materials {
 ## geometry section, allows to describe structure of device
 geometry = element geometry {
 (
-	include_attr |
-	(
-	# cartesian geometry in 2D space
-	element cartesian2d {
-		name_attr?,
-		(  (length_attr?, geometry_object2d) | extrusion  )
-	} |
-	# cylindrical geometry in 2D space
-	element (cylindrical|cylindrical2d) { name_attr?, geometry_object2d } |
-	# cartesian geometry in 3D space
-	element cartesian3d { name_attr?, geometry_object3d }
-	)*
+    include_attr |
+    (
+    # cartesian geometry in 2D space
+    element cartesian2d {
+        name_attr?,
+        (  (length_attr?, geometry_object2d) | extrusion  )
+    } |
+    # cylindrical geometry in 2D space
+    element (cylindrical|cylindrical2d) { name_attr?, geometry_object2d } |
+    # cartesian geometry in 3D space
+    element cartesian3d { name_attr?, geometry_object3d }
+    )*
 )
 }
 
 ## allow to insert again earlier defined object
 ref = element ref {
-	## name of earlier defined object which should be inserted here
-	name_attr
+    ## name of earlier defined object which should be inserted here
+    name_attr
 }
 
 geom_elem_common.attlist = name_attr?,
-	## change names of axes in subtree represented by this element
-	attribute axes { text }?	#TODO enumerate values
+    ## change names of axes in subtree represented by this element
+    attribute axes { text }?    #TODO enumerate values
 
 geom_child_common.attlist =
-	## names of paths which should lies on edge represented by this element
-	attribute path { text }?
+    ## names of paths which should lies on edge represented by this element
+    attribute path { text }?
 
 ## length, size of object in 3rd dimension
 length_attr = attribute length { xsd:double }
@@ -82,19 +82,19 @@ lonTranAxes_text_attr = attribute (y|x|r|tran|z|p|lon) { text }
 material_attr = attribute material { text }
 
 
-# ====== extrusion ====== 
+# ====== extrusion ======
 
 ## 3D geometry object which are extend of 2D object (child) in lon direction
 extrusion = element extrusion { geom_elem_common.attlist, length_attr, geometry_object2d }
 
 
-# ====== revolution ====== 
+# ====== revolution ======
 
 ## 3D geometry object which is an effect of revolving a 2D object (child) around the up axis
 revolution = element revolution { geom_elem_common.attlist, geometry_object2d }
 
 
-# ====== block ====== 
+# ====== block ======
 
 block.attlist = geom_elem_common.attlist, material_attr, anyAxes_double_attr*
 
@@ -111,7 +111,7 @@ block3d = element (block3d|cuboid) { block.attlist }
 block_as_3d = element (block|block3d|cuboid) { block.attlist }
 
 
-# ====== translation ====== 
+# ====== translation ======
 
 translation.attlist = geom_elem_common.attlist, anyAxes_double_attr*
 translation2d.content = translation.attlist, geometry_object2d
@@ -131,30 +131,30 @@ translation3d = element translation3d { translation3d.content }
 translation_as_3d = element (translation|translation3d) { translation3d.content }
 
 
-# ====== container (with translations) ====== 
+# ====== container (with translations) ======
 
 container2d.content = geom_elem_common.attlist,
-	(   element child { geom_child_common.attlist, anyAxes_double_attr*, geometry_object2d } | geometry_object2d   )*
+    (   element child { geom_child_common.attlist, anyAxes_double_attr*, geometry_object2d } | geometry_object2d   )*
 container2d = element (container2d) { container2d.content }
 container_as_2d = element (container|container2d) { container2d.content }
 container3d.content = geom_elem_common.attlist,
-	(   element child { geom_child_common.attlist, anyAxes_double_attr*, geometry_object3d } | geometry_object3d   )*
+    (   element child { geom_child_common.attlist, anyAxes_double_attr*, geometry_object3d } | geometry_object3d   )*
 container3d = element (container3d) { container3d.content }
 container_as_3d = element (container|container3d) { container3d.content }
 
 
-# ====== stacks ====== 
+# ====== stacks ======
 
 geom_anystack_common.attlist = geom_elem_common.attlist,
-	## height where should start first object (default value is: 0)
-	attribute from { xsd:double }?
+    ## height where should start first object (default value is: 0)
+    attribute shift { xsd:double }?
 
 geom_stack_common.attlist = geom_anystack_common.attlist,
-	## how many times all stack should be repeated (default value is: 1)
-	attribute repeat { xsd:integer }?
+    ## how many times all stack should be repeated (default value is: 1)
+    attribute repeat { xsd:integer }?
 
 stack2d.content = geom_stack_common.attlist,
-	(   element child {geom_child_common.attlist, tranAxes_text_attr?, geometry_object2d} | geometry_object2d   )
+    (   element child {geom_child_common.attlist, tranAxes_text_attr?, geometry_object2d} | geometry_object2d   )
 
 ## container which have children in stack/layers (2D)
 stack2d = element (stack2d) { stack2d.content }
@@ -162,7 +162,7 @@ stack2d = element (stack2d) { stack2d.content }
 ## container which have children in stack/layers (2D)
 stack_as_2d = element (stack|stack2d) { stack2d.content }
 stack3d.content = geom_stack_common.attlist,
-	(   element child {geom_child_common.attlist, lonTranAxes_text_attr?, geometry_object3d} | geometry_object3d   )
+    (   element child {geom_child_common.attlist, lonTranAxes_text_attr?, geometry_object3d} | geometry_object3d   )
 
 ## container which have children in stack/layers (3D)
 stack3d = element (stack3d) { stack3d.content }
@@ -172,49 +172,49 @@ stack_as_3d = element (stack|stack3d) { stack3d.content }
 
 ## horizontal stack
 shelf = element (shelf|shelf2d) {
-	geom_anystack_common.attlist,
-	## if true reader will check if all elements have same heights and will throw exception if not (false by default)
-	attribute flat { xsd:boolean }?,
-	(   element child {geom_child_common.attlist, geometry_object2d} | geometry_object2d   )
+    geom_anystack_common.attlist,
+    ## if true reader will check if all elements have same heights and will throw exception if not (false by default)
+    attribute flat { xsd:boolean }?,
+    (   element child {geom_child_common.attlist, geometry_object2d} | geometry_object2d   )
 }
 
 
-# ====== copy ====== 
+# ====== copy ======
 
 ## name of object to modify
 object_attr = attribute object { text }
 
 ## modifed copy of choosed element
 copy = element copy {
-	## name of this object (name of copy)
-	name_attr?,
-	## name of object to copy
-	attribute from { text },
-	(
-		## replace some objects in subtree of copy by solid blocks, prevent size (of bouding-box)
-		element toblock {
-			## name of object to replace
-			object_attr,
-			## material of block
-			material_attr
-		} |
-		## replace some objects in subtree of copy by another objects
-		element replace {
-			## name of replaced object
-			object_attr,
-			(
-				## name of object which should replace choosen object
-				attribute to { text } |
-				geometry_object
-			)
-		} |
-		## delete some objects from subtree of copy
-		element delete {object_attr}
-	)*
+    ## name of this object (name of copy)
+    name_attr?,
+    ## name of object to copy
+    attribute from { text },
+    (
+        ## replace some objects in subtree of copy by solid blocks, prevent size (of bouding-box)
+        element toblock {
+            ## name of object to replace
+            object_attr,
+            ## material of block
+            material_attr
+        } |
+        ## replace some objects in subtree of copy by another objects
+        element replace {
+            ## name of replaced object
+            object_attr,
+            (
+                ## name of object which should replace choosen object
+                attribute to { text } |
+                geometry_object
+            )
+        } |
+        ## delete some objects from subtree of copy
+        element delete {object_attr}
+    )*
 }
 
 
-# ====== groups of geometry elements ====== 
+# ====== groups of geometry elements ======
 
 ## geometry element in 2D space
 geometry_object2d = (block_as_2d|translation_as_2d|container_as_2d|stack_as_2d|shelf|copy|ref)
@@ -232,24 +232,24 @@ geometry_object = (block2d|block3d|translation2d|translation3d|container2d|conta
 ## grids section, allows to describe meshes and generators of mashes
 grids = element grids {
 (
-	include_attr | (generator | mesh)*
+    include_attr | (generator | mesh)*
 )
 }
 
 ## mesh generator
 generator = element generator {
-	name_attr, type_attr, anyAttribute*, anyElement*
-	
+    name_attr, type_attr, anyAttribute*, anyElement*
+
 }
 
 ## create mesh
 mesh = element mesh {
-	## name of mesh instance
-	name_attr,
-	## mesh type
-	type_attr,
-	anyAttribute*,
-	anyElement*
+    ## name of mesh instance
+    name_attr,
+    ## mesh type
+    type_attr,
+    anyAttribute*,
+    anyElement*
 }
 
 
@@ -259,18 +259,18 @@ mesh = element mesh {
 ## solvers section, allows create instances of solvers and includes solver-specyfic configuration
 solvers = element solvers {
 (
-	include_attr |
-	## create solver instance
-	element * {
-		## name for solver instance
-		name_attr,
-		## name of solver type
-		attribute solver { text },
-		## library name
-		attribute lib { text }?,
-		anyAttribute,
-		anyElement
-	}*
+    include_attr |
+    ## create solver instance
+    element * {
+        ## name for solver instance
+        name_attr,
+        ## name of solver type
+        attribute solver { text },
+        ## library name
+        attribute lib { text }?,
+        anyAttribute,
+        anyElement
+    }*
 )
 }
 
@@ -279,14 +279,14 @@ solvers = element solvers {
 ## connects section, describe initial connections between providers and receivers
 connects = element connects {
 (
-	include_attr |
-	## create provider-receiver connection
-	element connect {
-		## name of input provider (in format: solver_name.provider_name)
-		attribute in {text},
-		## name of output provider (in format: solver_name.provider_name)
-		attribute out {text}
-	}*
+    include_attr |
+    ## create provider-receiver connection
+    element connect {
+        ## name of input provider (in format: solver_name.provider_name)
+        attribute in {text},
+        ## name of output provider (in format: solver_name.provider_name)
+        attribute out {text}
+    }*
 )
 }
 
@@ -300,7 +300,7 @@ script = element script { (include_attr | text) }
 # ========== utils, commons ==========
 
 anyElement = element * {
-	(anyAttribute | text | anyElement)*
+    (anyAttribute | text | anyElement)*
 }
 
 anyAttribute = attribute * { text }
