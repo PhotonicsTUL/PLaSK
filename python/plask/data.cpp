@@ -190,7 +190,7 @@ static PyObject* DataVectorWrap_ArrayImpl(const DataVectorWrap<T,dim>* self) {
 }
 
 template <typename T, int dim>
-static py::object DataVectorWrap_Array(py::object oself, py::object dtype) {
+static py::object DataVectorWrap_Array(py::object oself) {
     const DataVectorWrap<T,dim>* self = py::extract<const DataVectorWrap<T,dim>*>(oself);
 
     if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
@@ -203,7 +203,7 @@ static py::object DataVectorWrap_Array(py::object oself, py::object dtype) {
     if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for %1%)",
                                         (dim == 2)? "mesh.RegularMesh2D or mesh.RectilinearMesh2D" : "mesh.RegularMesh3D or mesh.RectilinearMesh3D");
 
-    confirm_array<T>(arr, oself, dtype);
+    // confirm_array<T>(arr, oself, dtype);
     return py::object(py::handle<>(arr));
 }
 
@@ -321,7 +321,7 @@ void register_data_vector() {
         .def("__contains__", &DataVectorWrap_contains<const T,dim>)
         .def("__iter__", py::range(&DataVectorWrap_begin<const T,dim>, &DataVectorWrap_end<const T,dim>))
         .def("__array__", &DataVectorWrap__array__<const T,dim>, py::arg("dtype")=py::object())
-        .def("array", &DataVectorWrap_Array<const T,dim>, "Array formatted by the mesh", py::arg("dtype")=py::object())
+        .add_property("array", &DataVectorWrap_Array<const T,dim>, "Array formatted by the mesh")
         .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values")
     ;
 }

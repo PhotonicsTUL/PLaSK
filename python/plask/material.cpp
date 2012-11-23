@@ -127,27 +127,27 @@ class PythonMaterial : public Material
         return ((*base).*f)(args...);
     }
 
-    DDPair call_thermk(double T, double t) const {
-        PyMethodObject* m = overriden("thermk");
-        if (m) {
-#if PY_VERSION_HEX >= 0x03000000
-            if(PyObject* fc = PyObject_GetAttrString(m->im_func, "__code__")) {
-#else
-            if(PyObject* fc = PyObject_GetAttrString(m->im_func, "func_code")) {
-#endif
-                if(PyObject* ac = PyObject_GetAttrString(fc, "co_argcount")) {
-                    const int count = PyInt_AsLong(ac);
-                    if (count == 2) return py::call_method<DDPair>(self, "thermk", T);
-                    else if (count == 3) return py::call_method<DDPair>(self, "thermk", T, t);
-                    else if (count < 2) throw TypeError("thermk() takes at least 2 arguments (%1%) given", count);
-                    else throw TypeError("thermk() takes at most 3 arguments (%1%) given", count);
-                    Py_DECREF(ac);
-                }
-                Py_DECREF(fc);
-            }
-        }
-        return base->thermk(T);
-    }
+    // DDPair call_thermk(double T, double t) const {
+    //     PyMethodObject* m = overriden("thermk");
+    //     if (m) {
+    //         #if PY_VERSION_HEX >= 0x03000000
+    //         if(PyObject* fc = PyObject_GetAttrString(m->im_func, "__code__")) {
+    //         #else
+    //         if(PyObject* fc = PyObject_GetAttrString(m->im_func, "func_code")) {
+    //         #endif
+    //             if(PyObject* ac = PyObject_GetAttrString(fc, "co_argcount")) {
+    //                 const int count = PyInt_AsLong(ac);
+    //                 if (count == 2) return py::call_method<DDPair>(self, "thermk", T);
+    //                 else if (count == 3) return py::call_method<DDPair>(self, "thermk", T, t);
+    //                 else if (count < 2) throw TypeError("thermk() takes at least 2 arguments (%1%) given", count);
+    //                 else throw TypeError("thermk() takes at most 3 arguments (%1%) given", count);
+    //                 Py_DECREF(ac);
+    //             }
+    //             Py_DECREF(fc);
+    //         }
+    //     }
+    //     return base->thermk(T);
+    // }
 
   public:
     PythonMaterial () : base(new EmptyMaterial) {}
@@ -234,8 +234,10 @@ class PythonMaterial : public Material
     virtual double B(double T) const { return override<double>("B", &Material::B, T); }
     virtual double C(double T) const { return override<double>("C", &Material::C, T); }
     virtual double D(double T) const { return override<double>("D", &Material::D, T); }
-    virtual DDPair thermk(double T) const { return call_thermk(T, INFINITY); }
-    virtual DDPair thermk(double T, double t) const { return call_thermk(T, t); }
+    // virtual DDPair thermk(double T) const { return call_thermk(T, INFINITY); }
+    // virtual DDPair thermk(double T, double t) const { return call_thermk(T, t); }
+    virtual DDPair thermk(double T) const { return thermk(T, INFINITY); }
+    virtual DDPair thermk(double T, double t) const { return override<DDPair>("thermk", (DDPair(Material::*)(double,double)const)&Material::thermk, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
     virtual double cp(double T) const { return override<double>("cp", &Material::cp, T); }
     virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }

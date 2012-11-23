@@ -32,12 +32,12 @@ def plot_field(field, levels=None, **kwargs):
     #TODO documentation
     if levels is None:
         if type(field.mesh == plask.mesh.Regular2D):
-            result = imshow(field.array(), origin='lower', extent=[field.mesh.axis0[0], field.mesh.axis0[-1], field.mesh.axis1[0], field.mesh.axis1[-1]], **kwargs)
+            result = imshow(field.array, origin='lower', extent=[field.mesh.axis0[0], field.mesh.axis0[-1], field.mesh.axis1[0], field.mesh.axis1[-1]], **kwargs)
         else:
             if 'aspect' in kwargs:
                 kwargs = kwargs.copy()
                 set_aspect(kwargs.pop('aspect'))
-            adata = field.array()
+            adata = field.array
             data = adata[:-1,:-1]; data += adata[1:,:-1]; data += adata[:-1,1:]; data += adata[1:,1:]; data *= 0.25
             del adata
             result = pcolor(array(field.mesh.axis0), array(field.mesh.axis1), data, **kwargs)
@@ -45,7 +45,7 @@ def plot_field(field, levels=None, **kwargs):
         if 'cmap' in kwargs and type(kwargs['cmap']) == str: # contourf requires that cmap were cmap instance, not a string
             kwargs = kwargs.copy()
             kwargs['cmap'] = get_cmap(kwargs['cmap'])
-        result = contourf(field.mesh.axis0, field.mesh.axis1, field.array(), levels, antialiased=True, **kwargs)
+        result = contourf(field.mesh.axis0, field.mesh.axis1, field.array, levels, antialiased=True, **kwargs)
     return result
 
 
@@ -53,7 +53,7 @@ def plot_vectors(field, color='w', angles='xy', scale_units='xy', **kwargs):
     '''Plot vector field'''
     #TODO documentation
     m = field.mesh
-    quiver(m.axis0, m.axis1, field.array()[:,:,0], field.array()[:,:,1],
+    quiver(m.axis0, m.axis1, field.array[:,:,0], field.array[:,:,1],
            color=color, angles=angles, scale_units=scale_units, **kwargs)
 
 
