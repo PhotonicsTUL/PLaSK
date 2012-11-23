@@ -3,6 +3,9 @@
 
 #include "container.h"
 
+#include <boost/thread.hpp>
+#include <atomic>
+
 namespace plask {
 
 template <int DIMS>
@@ -77,8 +80,7 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
     //methods overwrite to use cache:
     //TODO more
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        ensureHasCache();
-        return cache->getMaterial(p);
+        return ensureHasCache()->getMaterial(p);
     }
     
     //some methods must be overwrite to invalidate cache:
@@ -107,22 +109,13 @@ protected:
     
     void invalidateCache();
     
-    void ensureHasCache();
+    CacheNode<dim>* ensureHasCache();
     
-    void ensureHasCache() const {   //TODO thread safty implementation
-        const_cast<TranslationContainer<dim>*>(this)->ensureHasCache();
-        /*
-        if (!cache) { //cache must be atomic!
-            enter to critical section
-            if (!cache) //check egain, someone could build cache when we waited for enter to critical section
-                cache = buildCache(children);
-            exit from critical section
-        }
-        */
-    }
+    CacheNode<dim>* ensureHasCache() const;
     
 private:
-    CacheNode<dim>* cache;  //TODO ? atomic pointer
+    std::atomic<CacheNode<dim>*> cache;
+    boost::mutex cache_mutex;
 
 };
 
