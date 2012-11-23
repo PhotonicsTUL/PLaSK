@@ -92,6 +92,27 @@ struct InternalCacheNode: public CacheNode<DIMS> {
     }
 };
 
+/*template <int DIMS>
+inline CacheNode<DIMS>* constructInternalNode(int dir, const double& offset, CacheNode<DIMS>* lo, CacheNode<DIMS>* hi) {
+    static_assert(0, "DIMS must be 2 or 3");
+}
+
+template <>*/
+inline CacheNode<2>* constructInternalNode(int dir, const double& offset, CacheNode<2>* lo, CacheNode<2>* hi) {
+    if (dir == 0) return new InternalCacheNode<2, 0>(offset, lo, hi);
+    assert(dir == 1);
+    return new InternalCacheNode<2, 1>(offset, lo, hi);
+}
+
+//template <>
+inline CacheNode<3>* constructInternalNode(int dir, const double& offset, CacheNode<3>* lo, CacheNode<3>* hi) {
+    if (dir == 0) return new InternalCacheNode<3, 0>(offset, lo, hi);
+    if (dir == 1) return new InternalCacheNode<3, 1>(offset, lo, hi);
+    assert(dir == 2);
+    return new InternalCacheNode<3, 2>(offset, lo, hi);
+}
+
+
 template <int DIMS>
 void inPlaceSplit(std::vector< GeometryObjectBBox<DIMS> >& inputAndLo, std::vector< GeometryObjectBBox<DIMS> >& hi, int dir, double offset) {
     std::vector< GeometryObjectBBox<DIMS> > lo;
@@ -140,61 +161,59 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
 
 #define MIN_CHILD_TO_TRY_SPLIT 16
 
-//warning: this destroy inputs vectors
-CacheNode<2>* buildCache(std::vector< GeometryObjectBBox<2> >& input,
-                         std::vector< GeometryObjectBBox<2> >& inputSortedByLoC0, std::vector< GeometryObjectBBox<2> >& inputSortedByHiC0,
-                         std::vector< GeometryObjectBBox<2> >& inputSortedByLoC1, std::vector< GeometryObjectBBox<2> >& inputSortedByHiC1,
-                         int max_depth = 16) {
-    if (input.size() < MIN_CHILD_TO_TRY_SPLIT || max_depth == 0) return new LeafCacheNode<2>(input);
+/**
+ * Build cache.
+ * @param input 1 + DIMS * 2 vectors sorted by:
+ *  - 0 - in oryginal order,
+ *  - dir*2 + 1 (for dim = 0 ... DIMS-1) - sorted by lower bound of bouding box in direction dir,
+ *  - dir*2 + 2 (for dim = 0 ... DIMS-1) - sorted by upper bound of bouding box in direction dir.
+ * Warning: this fynction change (destroy) inputs vectors.
+ * @param max_depth maximum depth
+ * @return constructed cache
+ */
+template <int DIMS>
+inline CacheNode<DIMS>* buildCacheR(std::vector< GeometryObjectBBox<DIMS> >* input, int max_depth = 16) {
+    if (input[0].size() < MIN_CHILD_TO_TRY_SPLIT || max_depth == 0) return new LeafCacheNode<DIMS>(input[0]);
     double bestOffset;
     int bestDir;
     int bestValue = std::numeric_limits<int>::max();  //we will minimalize this value
-    calcOptimalSplitOffset(inputSortedByLoC0, inputSortedByHiC0, 0, bestDir, bestOffset, bestValue);
-    calcOptimalSplitOffset(inputSortedByLoC1, inputSortedByHiC1, 1, bestDir, bestOffset, bestValue);
+    for (int dim = DIMS; dim < DIMS; ++dim)
+        calcOptimalSplitOffset(input[dim*2 + 1], input[dim*2 + 2], dim, bestDir, bestOffset, bestValue);
     if (bestValue == std::numeric_limits<int>::max())   //there are no enought good split point
-        return new LeafCacheNode<2>(input);                //so we will not split more
-    CacheNode<2> *lo, *hi;
+        return new LeafCacheNode<DIMS>(input[0]);                //so we will not split more
+    CacheNode<DIMS> *lo, *hi;
     {
-    std::vector< GeometryObjectBBox<2> > input_over_offset,
-            inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset,
-            inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset;
-    inPlaceSplit<2>(input, input_over_offset, bestDir, bestOffset);
-    inPlaceSplit<2>(inputSortedByLoC0, inputSortedByLoC0_over_offset, bestDir, bestOffset);
-    inPlaceSplit<2>(inputSortedByHiC0, inputSortedByHiC0_over_offset, bestDir, bestOffset);
-    inPlaceSplit<2>(inputSortedByLoC1, inputSortedByLoC1_over_offset, bestDir, bestOffset);
-    inPlaceSplit<2>(inputSortedByHiC1, inputSortedByHiC1_over_offset, bestDir, bestOffset);
-    hi = buildCache(input_over_offset, inputSortedByLoC0_over_offset, inputSortedByHiC0_over_offset, inputSortedByLoC1_over_offset, inputSortedByHiC1_over_offset, max_depth-1);
-    }   //here inputs over_offset are deleted
-    lo = buildCache(input, inputSortedByLoC0, inputSortedByHiC0, inputSortedByLoC1, inputSortedByHiC1, max_depth-1);
-    if (bestDir == 0) return new InternalCacheNode<2, 0>(bestOffset, lo, hi);
-    assert(bestDir == 1);
-    return new InternalCacheNode<2, 1>(bestOffset, lo, hi);
+    std::vector< GeometryObjectBBox<DIMS> > input_over_offset[1 + DIMS * 2];
+    for (int dim = DIMS; dim < 1 + DIMS * 2; ++dim)
+        inPlaceSplit<DIMS>(input[dim], input_over_offset[dim], bestDir, bestOffset);
+    hi = buildCacheR(input_over_offset, max_depth-1);
+    }   //here input_over_offset is deleted
+    lo = buildCacheR(input, max_depth-1);
+    return constructInternalNode(bestDir, bestOffset, lo, hi);
 }
 
-CacheNode<2>* buildCache(const GeometryObjectContainer<2>::TranslationVector& children) {
-    if (children.empty()) return new EmptyLeafCacheNode<2>();
-    if (children.size() < MIN_CHILD_TO_TRY_SPLIT) return new LeafCacheNode<2>(children);
-    std::vector< GeometryObjectBBox<2> > input,
-            inputSortedByLoC0, inputSortedByHiC0,
-            inputSortedByLoC1, inputSortedByHiC1;
-    input.reserve(children.size());
-    for (auto& c: children) input.emplace_back(c);
-    inputSortedByLoC0 = input;
-    std::sort(inputSortedByLoC0.begin(), inputSortedByLoC0.end(), compare_by_lower<2, 0>);
-    inputSortedByLoC1 = input;
-    std::sort(inputSortedByLoC1.begin(), inputSortedByLoC1.end(), compare_by_lower<2, 1>);
-    inputSortedByHiC0 = input;
-    std::sort(inputSortedByHiC0.begin(), inputSortedByHiC0.end(), compare_by_upper<2, 0>);
-    inputSortedByHiC1 = input;
-    std::sort(inputSortedByHiC1.begin(), inputSortedByHiC1.end(), compare_by_upper<2, 1>);
-    return buildCache(input,
-                      inputSortedByLoC0, inputSortedByHiC0,
-                      inputSortedByLoC1, inputSortedByHiC1);
-}
-
-CacheNode<3>* buildCache(const GeometryObjectContainer<3>::TranslationVector& children) {
-    //TODO implementation simillar to 2D version (after testing this 2D version)
-    return new LeafCacheNode<3>(children);
+template <int DIMS>
+CacheNode<DIMS>* buildCache(const typename GeometryObjectContainer<DIMS>::TranslationVector& children) {
+    if (children.empty()) return new EmptyLeafCacheNode<DIMS>();
+    if (children.size() < MIN_CHILD_TO_TRY_SPLIT) return new LeafCacheNode<DIMS>(children);
+    std::vector< GeometryObjectBBox<DIMS> > input[1 + DIMS * 2];
+    input[0].reserve(children.size());
+    for (auto& c: children) input[0].emplace_back(c);
+    for (int dir = 0; dir < DIMS; ++dir) {
+        input[2*dir + 1] = input[0];
+        std::sort(input[2*dir + 1].begin(), input[2*dir + 1].end(),
+                [dir](const GeometryObjectBBox<DIMS>& a, const GeometryObjectBBox<DIMS>& b) {
+                    return a.boundingBox.lower[dir] < b.boundingBox.lower[dir];
+                }
+        );
+        input[2*dir + 2] = input[0];
+        std::sort(input[2*dir + 2].begin(), input[2*dir + 2].end(),
+                [dir](const GeometryObjectBBox<DIMS>& a, const GeometryObjectBBox<DIMS>& b) {
+                    return a.boundingBox.upper[dir] < b.boundingBox.upper[dir];
+                }
+        );
+    }
+    return buildCacheR<DIMS>(input);
 }
 
 
@@ -224,7 +243,7 @@ void TranslationContainer<dim>::invalidateCache() {
 template <int dim>
 void TranslationContainer<dim>::ensureHasCache() {
     if (!cache)
-        cache = buildCache(children);
+        cache = buildCache<dim>(children);
 }
 
 template <int dim>
