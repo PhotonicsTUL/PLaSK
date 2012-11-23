@@ -219,6 +219,11 @@ CacheNode<DIMS>* buildCache(const typename GeometryObjectContainer<DIMS>::Transl
 
 // ---- container: ----
 
+template <int dim>
+TranslationContainer<dim>::~TranslationContainer() {
+    delete cache.load();
+}
+
 template <>
 void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     shared_ptr<Translation<2>> child_tran = children[child_index];
@@ -236,7 +241,7 @@ void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_chi
 
 template <int dim>
 void TranslationContainer<dim>::invalidateCache() {
-    delete cache;
+    delete cache.load();
     cache = nullptr;
 }
 

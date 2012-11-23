@@ -45,7 +45,7 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
 
     TranslationContainer(): cache(nullptr) {}
     
-    ~TranslationContainer() { delete cache; }
+    ~TranslationContainer();
     
     virtual std::string getTypeName() const { return NAME; }
 
