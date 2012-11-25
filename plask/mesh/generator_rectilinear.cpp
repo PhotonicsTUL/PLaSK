@@ -211,7 +211,7 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
                                   Primitive<2>::DIRECTION_TRAN : Primitive<2>::DIRECTION_VERT;
                 weak_ptr<GeometryObjectD<2>> object =
                     manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
-                double pos = reader.requireAttribute<double>("pos");
+                double pos = reader.requireAttribute<double>("at");
                 auto path = reader.getAttribute("path");
                 if (path) result->addRefinement(direction, object, manager.requirePathHints(*path), pos);
                 else result->addRefinement(direction, object, pos);

@@ -56,7 +56,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param postdiv1 Final mesh division in vertical direction (0 means the same as horizontal)
     **/
     RectilinearMesh2DDivideGenerator(size_t prediv0=1, size_t postdiv0=1, size_t prediv1=0, size_t postdiv1=0) :
-        limit_change(true), warn_multiple(true), warn_outside(true)
+        limit_change(true), warn_multiple(true), warn_missing(true), warn_outside(true)
     {
         pre_divisions[0] = prediv0;
         pre_divisions[1] = prediv1? prediv1 : prediv0;

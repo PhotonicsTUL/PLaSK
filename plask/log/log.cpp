@@ -52,10 +52,10 @@ namespace plask {
             switch (level) {
                 case LOG_ERROR:         color(BRIGHT_RED); return "ERROR         ";
                 case LOG_CRITICAL_ERROR:color(BRIGHT_RED); return "CRITICAL ERROR";
-                case LOG_WARNING:       color(BRIGHT_MAGENTA); return "WARNING       ";
-                case LOG_INFO:          color(CYAN); return "INFO          ";
+                case LOG_WARNING:       color(BROWN); return "WARNING       ";
+                case LOG_INFO:          color(BRIGHT_BLUE); return "INFO          ";
                 case LOG_RESULT:        color(GREEN); return "RESULT        ";
-                case LOG_DATA:          color(BROWN); return "DATA          ";
+                case LOG_DATA:          color(CYAN); return "DATA          ";
                 case LOG_DETAIL:        color((Colors)DEFAULT); return "DETAIL        ";
                 case LOG_ERROR_DETAIL:  color(RED); return "ERROR DETAIL  ";
                 case LOG_DEBUG:         color(GRAY); return "DEBUG         ";
@@ -96,10 +96,10 @@ namespace plask {
                 switch (level) {
                     case LOG_CRITICAL_ERROR:return BRIGHT_RED "CRITICAL ERROR";
                     case LOG_ERROR:         return BRIGHT_RED "ERROR         ";
-                    case LOG_WARNING:       return BRIGHT_MAGENTA "WARNING       ";
-                    case LOG_INFO:          return CYAN "INFO          ";
+                    case LOG_WARNING:       return BROWN "WARNING       ";
+                    case LOG_INFO:          return BRIGHT_BLUE "INFO          ";
                     case LOG_RESULT:        return GREEN "RESULT        ";
-                    case LOG_DATA:          return BROWN "DATA          ";
+                    case LOG_DATA:          return CYAN "DATA          ";
                     case LOG_DETAIL:        return DEFAULT "DETAIL        ";
                     case LOG_ERROR_DETAIL:  return RED "ERROR DETAIL  ";
                     case LOG_DEBUG:         return GRAY "DEBUG         ";

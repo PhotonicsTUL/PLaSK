@@ -47,7 +47,7 @@ def save_field(field, file, name='', mode='a'):
     else:
         dest = file
 
-    data = dest.create_dataset('data', data=field.array())
+    data = dest.create_dataset('data', data=field.array)
 
     n = len(axes)
     mesh = dest.create_group('mesh')

@@ -151,15 +151,9 @@ class Material(unittest.TestCase):
 
 
     def testThermK(self):
-        # @material.simple
-        # class Therm1(material.Material):
-        #     def thermk(self, T): return T
-
         @material.simple
-        class Therm2(material.Material):
+        class Therm(material.Material):
             def thermk(self, T, t): return T + t
 
-        # self.assertEqual( ptest.material_thermk("Therm1", materialdb, 300.), (300.,300.) )
-        # self.assertEqual( ptest.material_thermk("Therm1", materialdb, 300., 2.), (300.,300.) )
-        self.assertEqual( ptest.material_thermk("Therm2", materialdb, 300.), (infty,infty) )
-        self.assertEqual( ptest.material_thermk("Therm2", materialdb, 300., 2.), (302.,302.) )
+        self.assertEqual( ptest.material_thermk("Therm", materialdb, 300.), (infty,infty) )
+        self.assertEqual( ptest.material_thermk("Therm", materialdb, 300., 2.), (302.,302.) )

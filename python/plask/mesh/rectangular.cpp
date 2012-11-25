@@ -652,21 +652,21 @@ void register_mesh_rectangular()
             .def_readwrite("warn_missing", &RectilinearMesh2DDivideGenerator::warn_missing, "Warn if refining path does not point to any object")
             .def_readwrite("warn_ouside", &RectilinearMesh2DDivideGenerator::warn_outside, "Warn if refining line is outside of its object")
             .def("add_refinement", &RectilinearMesh2DDivideGenerator_addRefinement1, "Add a refining line inside the object",
-                (py::arg("axis"), "object", "path", "pos"))
+                (py::arg("axis"), "object", "path", "at"))
             .def("add_refinement", &RectilinearMesh2DDivideGenerator_addRefinement2, "Add a refining line inside the object",
-                (py::arg("axis"), "object", "pos"))
+                (py::arg("axis"), "object", "at"))
             .def("add_refinement", &RectilinearMesh2DDivideGenerator_addRefinement3, "Add a refining line inside the object",
-                (py::arg("axis"), "subtree", "pos"))
+                (py::arg("axis"), "subtree", "at"))
             .def("add_refinement", &RectilinearMesh2DDivideGenerator_addRefinement4, "Add a refining line inside the object",
-                (py::arg("axis"), "path", "pos"))
+                (py::arg("axis"), "path", "at"))
             .def("remove_refinement", &RectilinearMesh2DDivideGenerator_removeRefinement1, "Remove the refining line from the object",
-                (py::arg("axis"), "object", "path", "pos"))
+                (py::arg("axis"), "object", "path", "at"))
             .def("remove_refinement", &RectilinearMesh2DDivideGenerator_removeRefinement2, "Remove the refining line from the object",
-                (py::arg("axis"), "object", "pos"))
+                (py::arg("axis"), "object", "at"))
             .def("remove_refinement", &RectilinearMesh2DDivideGenerator_removeRefinement3, "Remove the refining line from the object",
-                (py::arg("axis"), "subtree", "pos"))
+                (py::arg("axis"), "subtree", "at"))
             .def("remove_refinement", &RectilinearMesh2DDivideGenerator_removeRefinement4, "Remove the refining line from the object",
-                (py::arg("axis"), "path", "pos"))
+                (py::arg("axis"), "path", "at"))
             .def("remove_refinements", &RectilinearMesh2DDivideGenerator_removeRefinements1, "Remove the all refining lines from the object",
                 (py::arg("object"), py::arg("path")=py::object()))
             .def("remove_refinements", &RectilinearMesh2DDivideGenerator_removeRefinements2, "Remove the all refining lines from the object",
