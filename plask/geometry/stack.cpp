@@ -377,8 +377,8 @@ struct HeightReader {
     }
     
     template <typename StackPtrT>
-    void setBaseHeight(StackPtrT stack) {
-        if (whereWasZeroTag >= 0) stack->setZeroHeightBefore(stack->getRealChildrenCount() - whereWasZeroTag);
+    void setBaseHeight(StackPtrT stack, bool reverse) {
+        if (whereWasZeroTag >= 0) stack->setZeroHeightBefore(reverse ? stack->getRealChildrenCount() - whereWasZeroTag : whereWasZeroTag);
     }
 };
 
@@ -409,7 +409,7 @@ shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
                 result->push_front(reader.readObject< typename StackContainer<2>::ChildType >());
             }
     );
-    height_reader.setBaseHeight(result);
+    height_reader.setBaseHeight(result, true);
     return result;
 }
 
@@ -436,7 +436,7 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
                 result->push_front(reader.readObject< typename StackContainer<3>::ChildType >());
             }
     );
-    height_reader.setBaseHeight(result);
+    height_reader.setBaseHeight(result, true);
     return result;
 }
 
@@ -454,10 +454,10 @@ shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
             },
             [&]() {
                 if (height_reader.tryReadZero(result)) return;
-                result->push_front(reader.readObject< ShelfContainer2D::ChildType >());
+                result->push_back(reader.readObject< ShelfContainer2D::ChildType >());
             }
     );
-    height_reader.setBaseHeight(result);
+    height_reader.setBaseHeight(result, false);
     if (requireEqHeights) result->ensureFlat();
     return result;
 }
