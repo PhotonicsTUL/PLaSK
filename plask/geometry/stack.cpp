@@ -22,6 +22,15 @@ void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBase
 }
 
 template <int dim, int growingDirection>
+void StackContainerBaseImpl<dim, growingDirection>::setZeroHeightBefore(std::size_t index)
+{
+    std::size_t h_count = stackHeights.size();
+    if (index >= h_count)
+        throw OutOfBoundException("setZeroHeightBefore", "index", index, 0, h_count-1);
+    setBaseHeight(stackHeights[0] - stackHeights[index]);
+}
+
+template <int dim, int growingDirection>
 std::size_t StackContainerBaseImpl<dim, growingDirection>::getInsertionIndexForHeight(double height) const {
     return std::lower_bound(stackHeights.begin(), stackHeights.end(), height) - stackHeights.begin();
 }

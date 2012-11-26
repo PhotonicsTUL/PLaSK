@@ -48,8 +48,15 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
     /**
      * Set height where should start first object. Call changed.
+     * @param newBaseHeight where lower bound of the lowest object should be
      */
     void setBaseHeight(double newBaseHeight);
+    
+    /**
+     * Set height where should start first object. Call changed.
+     * @param index index of object which lower bound should lie at height 0
+     */
+    void setZeroHeightBefore(std::size_t index);
 
     std::size_t getInsertionIndexForHeight(double height) const;
 
