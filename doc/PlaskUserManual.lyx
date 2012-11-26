@@ -60,11 +60,11 @@
 \shortcut idx
 \color #008000
 \end_index
-\leftmargin 2.5cm
-\topmargin 2.2cm
-\rightmargin 2.5cm
-\bottommargin 2.8cm
-\footskip 1.5cm
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 2cm
+\bottommargin 2.4cm
+\footskip 1.2cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation skip
@@ -73,7 +73,7 @@
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
-\listings_params "backgroundcolor={\color{gray!3}},basicstyle={\ttfamily},columns=flexible,commentstyle={\it},frame=shadowbox,language=Python,rulesepcolor={\color{gray}},showstringspaces=false"
+\listings_params "backgroundcolor={\color{gray!3}},basicstyle={\ttfamily\small},columns=fullflexible,commentstyle={\it},frame=shadowbox,keepspaces=true,language=Python,rulesepcolor={\color{gray}},showstringspaces=false"
 \tracking_changes false
 \output_changes false
 \html_math_output 0
@@ -266,6 +266,12 @@ RPM based distros
 \end_layout
 
 \begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Running-plask"
+
+\end_inset
+
 Running plask
 \end_layout
 
@@ -448,11 +454,37 @@ Thermo-electrical modeling of simple edge-emitting diode
 \end_layout
 
 \begin_layout Standard
-blablabla...
+This tutorial presents basic usage of PLaSK.
+ It shows how to define the basic geometry and how to perform computations
+ using solvers.
+ During the tutorial creation of all parts of the input file is described
+ step-by-step, together with the discussion of it meaning.
+ Before starting following the instructions described here, please make
+ sure that PLaSK is installed correctly and create a separate working directory
+ for the data and the results.
+ We assume that you are able to launch the main binary as described in section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Running-plask"
+
+\end_inset
+
+.
+ In order to begin, you need to open your favorite text editor and create
+ a file named 
+\family typewriter
+tutorial1.xpl
+\family default
+.
+ Save it (an empty file at the moment) in the directory you have just created.
 \end_layout
 
 \begin_layout Standard
-PLaSK uses XML as a format of its input files.
+In general, PLaSK uses XML as a format of its input files.
  By default they have standard extension 
 \family typewriter
 .xpl
@@ -517,6 +549,73 @@ reference "sec:Thermo-electrical-of-GaAs"
 \end_layout
 
 \begin_layout Standard
+In XML every element is described by 
+\emph on
+tags
+\emph default
+, which are denoted by 
+\family typewriter
+<
+\family default
+…
+\family typewriter
+>
+\family default
+ brackets.
+ Tags always have some name and may optionally contain some attributes and
+ content.
+ Attributes are always put together with the tag name inside the 
+\family typewriter
+<
+\family default
+…
+\family typewriter
+>
+\family default
+ brackets, i.e.
+ 
+\family typewriter
+<tag attr1="value1" attr2="value2">
+\family default
+.
+ On the other hand, the tag content is always put after the brackets and
+ must end with the 
+\family typewriter
+</tag>
+\family default
+ element.
+ Inside the tag content you may put text or some other tags, depending on
+ the kind of input you want (and more importantly may) to enter.
+ If a tag does not have any content, this must be indicated by putting the
+ 
+\family typewriter
+/
+\family default
+ character before the closing bracket (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ 
+\family typewriter
+<tag/>
+\family default
+).
+ Tag attributes are still allowed in such a case.
+\end_layout
+
+\begin_layout Standard
+After reading this very brief introduction to XML syntax, you start writing
+ your first PLaSK input file.
+ First you have to define the main tag 
+\family typewriter
+<plask>
+\family default
+.
+ Everything you write will be the content of this tag:
+\end_layout
+
+\begin_layout Standard
 \begin_inset listings
 lstparams "language=XML"
 inline false
@@ -524,17 +623,557 @@ status open
 
 \begin_layout Plain Layout
 
-<plask xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<plask>
 \end_layout
 
 \begin_layout Plain Layout
 
-        xsi:noNamespaceSchemaLocation="http://phys.p.lodz.pl/plask/plask.xsd">
+\end_layout
+
+\begin_layout Plain Layout
+
+  <!-- Here you will put all the content of your file.
+ -->
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+</plask>
 \end_layout
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The strange characters 
+\family typewriter
+<!--
+\family default
+ and 
+\family typewriter
+-->
+\family default
+ in the above example mark the beginning and the end of the comment, respectivel
+y.
+ So you van use them in your file to write your notes, or to temporarily
+ disable any part of the file.
+ 
+\end_layout
+
+\begin_layout Standard
+Inside the main tag you may define the following sections: 
+\family typewriter
+materials
+\family default
+, 
+\family typewriter
+geometry
+\family default
+, 
+\family typewriter
+grids
+\family default
+, 
+\family typewriter
+solvers
+\family default
+, 
+\family typewriter
+connects
+\family default
+, and 
+\family typewriter
+script
+\family default
+.
+ All these sections are optional, however, if present, they must follow
+ in the order specified above.
+ You will learn the roles of these sections in this and the following tutorials.
+ In details, they are described in Part
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "part:PLaSK-reference-manual"
+
+\end_inset
+
+ of this manual.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename tutorial1-geometry.svg
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:tutorial1-geometry"
+
+\end_inset
+
+Simple edge-emitting gallium-arsenide diode modeled in 
+\family typewriter
+tutorial1.xpl
+\family default
+ file.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Geometry
+\end_layout
+
+\begin_layout Standard
+In this tutorial we start with the geometry section.
+ It describes the geometry of the structure.
+ We want to define a
+\begin_inset space ~
+\end_inset
+
+simple gallium arsenide edge-emitting diode, presented in Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:tutorial1-geometry"
+
+\end_inset
+
+.
+ It can be modeled as a two-dimensional Cartesian structure, hence, we begin
+ by specifying the 
+\emph on
+geometry
+\emph default
+ section and Cartesian two-dimensional geometry type:
+\begin_inset listings
+lstparams "language=XML"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<plask>
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+<geometry>
+\end_layout
+
+\begin_layout Plain Layout
+
+  <cartesian2d axes="xy" left="mirror" name="main">
+\end_layout
+
+\begin_layout Plain Layout
+
+    <!-- Here we put the geometry definition.
+ -->
+\end_layout
+
+\begin_layout Plain Layout
+
+  </cartesian2d>
+\end_layout
+
+\begin_layout Plain Layout
+
+</geometry>
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+</plask>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+axes
+\family default
+ attribute of means that we will use the 
+\begin_inset Formula $xy$
+\end_inset
+
+ axes in our geometry definition i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ is the name of the horizontal axis and 
+\begin_inset Formula $y$
+\end_inset
+
+ of the vertical one.
+ As the structure has mirror symmetry in the 
+\begin_inset Formula $x$
+\end_inset
+
+-direction, it is sufficient to model only half of it and the left edge
+ of the computational domain is the mirror, which is indicated by the 
+\family typewriter
+left="mirror"
+\family default
+ attribute.
+ The last attribute 
+\family typewriter
+name
+\family default
+ simply gives the geometry name (
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+main
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+) for later reference.
+\end_layout
+
+\begin_layout Standard
+Due to the nature of the structure, it is the most natural to describe it
+ as a stack of layers.
+ Each layer is shifted to the left side of the stack (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ to the symmetry plane), which is a default.
+ Hence, the structure definition will be (from now on we will skip 
+\family typewriter
+<plask>
+\family default
+…
+\family typewriter
+</plask>
+\family default
+ main tag from listings, although you must remember to keep them in your
+ file):
+\begin_inset listings
+lstparams "language=XML"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<geometry>
+\end_layout
+
+\begin_layout Plain Layout
+
+  <cartesian2d axes="xy" left="mirror" name="main">
+\end_layout
+
+\begin_layout Plain Layout
+
+    <stack shift="-3000">
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block x="1.5" y="1.350" material="Al(0.3)GaAs:C=1e20"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block x="150" y="0.150" material="Al(0.3)GaAs:C=1e20"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block x="150" y="0.150" material="GaAs"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block x="150" y="0.007" material="In(0.2)GaAs" role="active"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block x="150" y="0.150" material="GaAs"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block x="150" y="0.150" material="Al(0.3)GaAs:Si=5e19"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block x="150" y="1.500" material="GaAs:Si=5e19"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block x="5000" y="3000" material="Cu"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+    </stack>
+\end_layout
+
+\begin_layout Plain Layout
+
+  </cartesian2d>
+\end_layout
+
+\begin_layout Plain Layout
+
+</geometry>
+\end_layout
+
+\end_inset
+
+In the above listing, two new tags appeared.
+ One is 
+\family typewriter
+<stack>
+\family default
+ and means that its whole content should be organized in the vertical stack,
+ starting from top to bottom.
+ By default, the stack coordinate system is set in a such way that 
+\begin_inset Formula $y=0$
+\end_inset
+
+ is at the bottom of the stack.
+ However, we want to have 
+\begin_inset Formula $y=0$
+\end_inset
+
+, at the top of the heatsink, so we shift the whole stack (or in other words
+ set its base level) to -3000
+\begin_inset space \thinspace{}
+\end_inset
+
+µm.
+ At this point it is important to say that PLaSK uses fixed units for all
+ physical quantities and they are summarized in Appendix
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Units-in-PLaSK"
+
+\end_inset
+
+.
+ For example all spatial dimensions must be given in micrometers, as this
+ matches the typical dimensions of most photonic devices.
+\end_layout
+
+\begin_layout Standard
+Another new tag is 
+\family typewriter
+<block>
+\family default
+, which means a rectangular block.
+ As this tag has no further content, is is finished with 
+\family typewriter
+/>
+\family default
+.
+ 
+\family typewriter
+x
+\family default
+ and 
+\family typewriter
+y
+\family default
+ attributes give dimensions of the blocks.
+ Their positions is determined automatically to form a compact left-aligned
+ stack.
+ As different layers have different widths, the empty space will be automaticall
+y filled with air to form a rectangular computational domain
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Actually this is true only for rectangular meshes.
+ There are special mesh types in PLaSK, which can skip empty areas from
+ computations.
+\end_layout
+
+\end_inset
+
+.
+ Attribute 
+\family typewriter
+material
+\family default
+ gives information about the material of each block.
+ As there is no 
+\family typewriter
+materials
+\family default
+ section in our input file, the material parameters will be taken from default
+ database (more on this in chapter
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Materials"
+
+\end_inset
+
+).
+ The value of this attribute contains the name of the material, composition
+ of tertiary compounds and doping information.
+ For example 
+\family typewriter
+Al(0.3)GaAs:C=1e20
+\family default
+ means Al
+\begin_inset Formula $_{0.3}$
+\end_inset
+
+Ga
+\begin_inset Formula $_{0.7}$
+\end_inset
+
+As (missing amount of gallium is computed automatically) doped with carbon
+ and dopant concentration 
+\begin_inset Formula $1\!\times\!10^{20}\,\mathrm{cm}^{-3}$
+\end_inset
+
+ (doping concentration is always given in 
+\begin_inset Formula $\mathrm{cm}^{-3}$
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+You might have also noticed another attribute 
+\family typewriter
+role="active"
+\family default
+ in one of the blocks.
+ This is an information for the phenomenological electrical solver, which
+ we are going to use for this structure, that the marked object is the active
+ layer and the voltage drop on this layer should be computed using the diode
+ equation instead on the Ohm's law.
+ In general 
+\family typewriter
+role
+\family default
+ attributes can be used to provide additional information about the roles
+ of some objects (or groups—the role could be given to the whole stack if
+ desired) and are interpreted by solvers.
+ You should refer to the particular solver documentation for the details
+ of what roles should be given to what objects.
+\end_layout
+
+\begin_layout Subsection*
+Mesh definition
+\end_layout
+
+\begin_layout Standard
+Having the analyzed structure geometry defined, we must put the 
+\family typewriter
+grids
+\family default
+ section.
+ Its content strongly depends on the solvers we are going to use.
+ As we plan to perform thermo-electrical calculations, we choose thermal
+ solver 
+\family typewriter
+thermal.Rectangular2D
+\family default
+ and phenomenological electrical solver 
+\family typewriter
+electrical.Beta2D
+\family default
+.
+ Details of this solvers are presented in chapter
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Solvers"
+
+\end_inset
+
+.
+ For now it is important that both of them require user-provided rectilinear
+ mesh, so we define a generator for such mesh in the 
+\family typewriter
+grids
+\family default
+ section.
+\end_layout
+
+\begin_layout Standard
+In PLaSK user-defined meshes can be specified in two ways.
 \end_layout
 
 \begin_layout Section
@@ -544,7 +1183,7 @@ name "sec:Thermo-electrical-of-GaAs"
 
 \end_inset
 
-Thermo-electrical of gallium-arsenide VCSEL
+Thermo-electrical model of gallium-arsenide VCSEL
 \end_layout
 
 \begin_layout Section
@@ -560,6 +1199,12 @@ Searching threshold of a real gallium nitride array
 \end_layout
 
 \begin_layout Part
+\begin_inset CommandInset label
+LatexCommand label
+name "part:PLaSK-reference-manual"
+
+\end_inset
+
 PLaSK reference manual
 \end_layout
 
@@ -584,6 +1229,12 @@ Reference of geometry objects
 \end_layout
 
 \begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Materials"
+
+\end_inset
+
 Managing Materials
 \end_layout
 
@@ -604,6 +1255,12 @@ Custom materials in XPL
 \end_layout
 
 \begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Solvers"
+
+\end_inset
+
 Computational solvers
 \end_layout
 
@@ -669,6 +1326,12 @@ Dynamic models
 
 \begin_layout Chapter
 \start_of_appendix
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Units-in-PLaSK"
+
+\end_inset
+
 Units in PLaSK
 \end_layout
 

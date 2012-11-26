@@ -111,11 +111,21 @@ MI_PROPERTY(GaAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
             MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 300, 900)
-            )
+           )
 std::pair<double,double> GaAs::thermk(double T, double t) const {
     double tCondT = 45.*pow((300./T),1.25);
     return ( std::make_pair(tCondT, tCondT) );
 }
+
+MI_PROPERTY(GaAs, cond,
+            MISource("http://www.ioffe.ru/SVA/NSM/Semicond/GaAs/electric.html"),
+            MIComment("Carrier concentration estimated")
+           )
+std::pair<double,double> GaAs::cond(double T) const {
+    double c = 1e2 * phys::qe * 8000.* pow((300./T), 2./3.) * 1e16;
+    return std::make_pair(c, c);
+}
+
 
 MI_PROPERTY(GaAs, nr,
             MISource(""),

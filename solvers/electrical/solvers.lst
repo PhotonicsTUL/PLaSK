@@ -1,2 +1,8 @@
+fem.Beta2D
+fem.BetaCyl
+
+fem.DriftDiffusion2D
+fem.DriftDiffusionCyl
+
 fem.Fem2D
 fem.FemCyl

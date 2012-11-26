@@ -530,8 +530,8 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
 }
 
 
-template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Fem2D"; }
-template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.FemCyl"; }
+template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Beta2D"; }
+template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.BetaCyl"; }
 
 template struct FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>;
 template struct FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>;

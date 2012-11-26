@@ -91,10 +91,11 @@ at this level is crucial!
   to the PLaSK \link naming naming convention \endlink for C++, although all the methods in the classes and class fields
   should have \c lower_case_with_underscores names. However, names of providers and receivers _must_ match the ones from C++.
   .
-- Python names of your classes should rather reflect the method used, not the analyzed phenomena (in the user inerface
-  they are prefixed with the category). Furthermore they must be suffixed with \c 2D, \c 3D, or \c Cyl, which states
-  the type of the geometry of the solver. So the correct name for e.g. a thermal solver in a 2D Cartesian geometry
-  would be \c Fem2D. User would see it as <code>thermal.Fem2D</code>.
+- Python names of your classes should rather reflect some characteristic properties of the solver, not the analyzed
+  phenomena (in the user interface they are prefixed with the category). Furthermore they must be suffixed with
+  \c 2D, \c 3D, or \c Cyl, which states the type of the geometry of the solver. So the correct name for e.g.
+  a thermal solver using rectangular mesh in a 2D Cartesian geometry would be \c Rectangular2D. User would see it as
+  <code>thermal.Rectangular2D</code>.
   .
 - XML configuration tag names must match the Python class properties for accessing the same configuration parameter
   (the usual rules for class fields names apply). The possible exceptions are stated below

@@ -350,14 +350,14 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
     if therm or electr:
         out('<solvers>')
         if therm:
-            out('  <thermal solver="Fem%s" name="THERMAL">' % suffix)
+            out('  <thermal solver="Rectangular%s" name="THERMAL">' % suffix)
             out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             save_boundaries('temperature')
             save_boundaries('convection')
             save_boundaries('radiation')
             out('  </thermal>')
         if electr:
-            out('  <electrical solver="Fem%s" name="ELECTRICAL">' % suffix)
+            out('  <electrical solver="Beta%s" name="ELECTRICAL">' % suffix)
             out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             if pnjcond is not None:
                 out('    <junction pnjcond="%g,%g" heat="wavelength"/>' % tuple(pnjcond))

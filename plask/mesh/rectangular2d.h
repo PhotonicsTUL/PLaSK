@@ -893,7 +893,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
     /**
      * Parse boundary from XML tag in format:
-     * \<place dir="i.e. left" [of="object name" [path="path name"] [geometry="name of geometry which is used by solver"]]/>
+     * \<place side="i.e. left" [object="object name" [path="path name"] [geometry="name of geometry which is used by the solver"]]/>
      * @param boundary_desc XML reader which point to tag to read (after read it will be moved to end of this tag)
      * @param enviroment parser enviroment
      * @param getXBoundary function which creates simple boundary, with edge of mesh, i.e. getLeftBoundary
@@ -902,7 +902,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      */
     static Boundary parseBoundaryFromXML(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment, Boundary (*getXBoundary)(),
                                          Boundary (*getXOfBoundary)(shared_ptr<const GeometryD<2>>, shared_ptr<const GeometryObject>, const PathHints*)) {
-        boost::optional<std::string> of = boundary_desc.getAttribute("of");
+        boost::optional<std::string> of = boundary_desc.getAttribute("object");
         if (!of) {
             boundary_desc.requireTagEnd();
             return getXBoundary();
@@ -915,7 +915,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
                 geometry = dynamic_pointer_cast< const plask::GeometryD<2> >(enviroment.geometry);
                 if (!geometry)
                     throw Exception("Cannot parse %1% of \"%2%\" object. Geometry is not known (\"geometry\" attribute can be used to provide this information).",
-                                    boundary_desc.requireAttribute("dir"), *of);
+                                    boundary_desc.requireAttribute("side"), *of);
             }
             boost::optional<std::string> path_name = boundary_desc.getAttribute("path");
             boundary_desc.requireTagEnd();

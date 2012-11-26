@@ -1,2 +1,6 @@
+fem.Rectangular2D
+fem.RectangularCyl
+
+
 fem.Fem2D
 fem.FemCyl
