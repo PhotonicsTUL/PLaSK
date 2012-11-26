@@ -378,7 +378,7 @@ struct HeightReader {
     
     template <typename StackPtrT>
     void setBaseHeight(StackPtrT stack) {
-        if (whereWasZeroTag >= 0) stack->setZeroHeightBefore(whereWasZeroTag);
+        if (whereWasZeroTag >= 0) stack->setZeroHeightBefore(stack->getRealChildrenCount() - whereWasZeroTag);
     }
 };
 
