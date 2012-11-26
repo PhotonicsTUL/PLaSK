@@ -372,7 +372,7 @@ shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
                     new StackContainer<2>(baseH)
                 );
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-    read_children<StackContainer<2>>(reader,
+    read_children(reader,
             [&]() -> PathHints::Hint {
                 boost::optional<std::string> aligner_str = reader.source.getAttribute(reader.getAxisTranName());
                 if (aligner_str) {
@@ -382,8 +382,8 @@ shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
                    return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), *default_aligner);
                 }
             },
-            [&](const shared_ptr<typename StackContainer<2>::ChildType>& child) {
-                result->push_front(child);
+            [&]() {
+                result->push_front(reader.readObject< typename StackContainer<2>::ChildType >());
             }
     );
     return result;
@@ -398,7 +398,7 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
                     new StackContainer<3>(baseH)
                 );
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    read_children<StackContainer<3>>(reader,
+    read_children(reader,
             [&]() {
                 return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
                                           align::fromStr<align::DIRECTION_LONG, align::DIRECTION_TRAN>(
@@ -406,8 +406,8 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
                                               reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")
                                           ));
             },
-            [&](const shared_ptr<typename StackContainer<3>::ChildType>& child) {
-                result->push_front(child);
+            [&]() {
+                result->push_front(reader.readObject< typename StackContainer<3>::ChildType >());
             }
     );
     return result;
@@ -420,12 +420,12 @@ shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
     shared_ptr< ShelfContainer2D > result(new ShelfContainer2D(reader.source.getAttribute(baseH_attr, 0.0)));
     bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, false);
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-    read_children<StackContainer<2>>(reader,
+    read_children(reader,
             [&]() {
                 return result->push_back(reader.readExactlyOneChild< typename ShelfContainer2D::ChildType >());
             },
-            [&](const shared_ptr<typename ShelfContainer2D::ChildType>& child) {
-                result->push_back(child);
+            [&]() {
+                result->push_front(reader.readObject< ShelfContainer2D::ChildType >());
             }
     );
     if (requireEqHeights) result->ensureFlat();

@@ -262,46 +262,29 @@ public:
 };
 
 /**
- * Read children, construct ConstructedType::ChildType for each, call child_param_read if children is in \<child\> tag.
+ * Read children, call child_param_read if children is in \<child\> tag and without_child_param_read if there was no \<child\> tag.
  * Read "path" parameter from each \<child\> tag.
  * @param reader reader
- * @param child_param_read functor called for each \<child\> tag, without parameters, should create child, add it to container and return PathHints::Hint
- * @param without_child_param_add functor called for each children (when there was no \<child\> tag), as paremter it take one geometry object (child) of type ConstructedType::ChildType
+ * @param child_param_read functor called for each \<child\> tag, without parameters, should create child, add it to container and return PathHints::Hint (and move reader.source to end of current, \<child\>, tag)
+ * @param without_child_param_read functor called for each children (when there was no \<child\> tag), should create child, add it to container, and move reader.source to end of current tag
  */
-template <typename ConstructedType, typename ChildParamF, typename WithoutChildParamF>
-inline void read_children(GeometryReader& reader, ChildParamF child_param_read, WithoutChildParamF without_child_param_add) {
-
-    std::string container_tag_name = reader.source.getNodeName();
-
-    while (reader.source.read()) {
-        switch (reader.source.getNodeType()) {
-
-            case XMLReader::NODE_ELEMENT_END:
-                if (reader.source.getNodeName() != container_tag_name)
-                    throw XMLUnexpectedElementException(reader.source, "</" + container_tag_name + ">");
-                return; // container has been read
-
-            case XMLReader::NODE_ELEMENT:
-                if (reader.source.getNodeName() == "child") {
-                    boost::optional<std::string> paths_str = reader.source.getAttribute("path");
-                    PathHints::Hint hint = child_param_read();  //this call readExactlyOneChild
-                    if (paths_str) {
-                        auto paths = splitEscIterator(*paths_str, ',');
-                        for (auto& path: paths) {
-                            BadId::throwIfBad("path", path, '-');
-                            reader.manager.pathHints[path].addHint(hint);
-                        }
-                    }
-                } else {
-                    without_child_param_add(reader.readObject< typename ConstructedType::ChildType >());
+template <typename ChildParamF, typename WithoutChildParamF>
+inline void read_children(GeometryReader& reader, ChildParamF child_param_read, WithoutChildParamF without_child_param_read) {
+    while (reader.source.requireTagOrEnd()) {
+        if (reader.source.getNodeName() == "child") {
+            boost::optional<std::string> paths_str = reader.source.getAttribute("path");
+            PathHints::Hint hint = child_param_read();  //this call readExactlyOneChild
+            if (paths_str) {
+                auto paths = splitEscIterator(*paths_str, ',');
+                for (auto& path: paths) {
+                    BadId::throwIfBad("path", path, '-');
+                    reader.manager.pathHints[path].addHint(hint);
                 }
-                break;
-
-            default:
-                throw XMLUnexpectedElementException(reader.source, "<child> or geometry object tag");
+            }
+        } else {
+            without_child_param_read();
         }
     }
-    throw XMLUnexpectedEndException(reader.source);
 }
 
 

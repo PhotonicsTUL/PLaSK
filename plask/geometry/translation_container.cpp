@@ -304,15 +304,15 @@ template struct TranslationContainer<3>;
 shared_ptr<GeometryObject> read_TranslationContainer2D(GeometryReader& reader) {
     shared_ptr< TranslationContainer<2> > result(new TranslationContainer<2>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-    read_children<TranslationContainer<2>>(reader,
+    read_children(reader,
         [&]() -> PathHints::Hint {
             TranslationContainer<2>::DVec translation;
             translation.tran() = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
             translation.vert() = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
             return result->add(reader.readExactlyOneChild< typename TranslationContainer<2>::ChildType >(), translation);
         },
-        [&](const shared_ptr<typename TranslationContainer<2>::ChildType>& child) {
-            result->add(child);
+        [&]() {
+            result->add(reader.readObject< typename TranslationContainer<2>::ChildType >());
         }
     );
     return result;
@@ -321,7 +321,7 @@ shared_ptr<GeometryObject> read_TranslationContainer2D(GeometryReader& reader) {
 shared_ptr<GeometryObject> read_TranslationContainer3D(GeometryReader& reader) {
     shared_ptr< TranslationContainer<3> > result(new TranslationContainer<3>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    read_children<TranslationContainer<3>>(reader,
+    read_children(reader,
         [&]() -> PathHints::Hint {
             TranslationContainer<3>::DVec translation;
             translation.c0 = reader.source.getAttribute(reader.getAxisName(0), 0.0);
@@ -329,8 +329,8 @@ shared_ptr<GeometryObject> read_TranslationContainer3D(GeometryReader& reader) {
             translation.c2 = reader.source.getAttribute(reader.getAxisName(2), 0.0);
             return result->add(reader.readExactlyOneChild< typename TranslationContainer<3>::ChildType >(), translation);
         },
-        [&](const shared_ptr<typename TranslationContainer<3>::ChildType>& child) {
-            result->add(child);
+        [&]() {
+            result->add(reader.readObject< typename TranslationContainer<3>::ChildType >());
         }
     );
     return result;
