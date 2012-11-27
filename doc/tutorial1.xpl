@@ -58,61 +58,13 @@ while terr > therm.corrlim or verr > electr.corrlim:
 
 print_log(LOG_INFO, "Calculations finished!")
 
-<!--plotgrid = MSG.plots(GEO.main.child)
+temp = therm.outTemperature(therm.mesh)
 
-temperature = therm.outTemperature(plotgrid)
-heats = therm.inHeatDensity(plotgrid)
-voltage = electr.outPotential(plotgrid)
-current = electr.outCurrentDensity(plotgrid)
+plot_field(temp, 12)
+plot_geometry(GEO["main"], color='w')
+colorbar()
 
-if has_hdf5:
-    import sys, os
-    h5file = h5py.File(os.path.splitext(sys.argv[0])[0]+".h5", "w")
-    save_field(temperature, h5file, "Temperature")
-    save_field(heats, h5file, "HeatDensity")
-    save_field(voltage, h5file, "Voltage")
-    save_field(current, h5file, "CurrentDenstity")
-    h5file.close
-
-if has_pylab:
-    plot_geometry(GEO.main, set_limits=True)
-    defmesh = MSG.default(GEO.main.child)
-    plot_mesh(defmesh, color="0.75")
-    plot_boundary(electr.voltage_boundary, defmesh, color="b", marker="D")
-    plot_boundary(therm.temperature_boundary, defmesh, color="r")
-    plot_boundary(therm.convection_boundary, defmesh, color="g")
-    plot_boundary(therm.radiation_boundary, defmesh, color="y")
-    gcf().canvas.set_window_title("Default mesh")
-
-    figure()
-    plot_field(temperature, 16)
-    colorbar()
-    plot_geometry(GEO.main, color="w")
-    gcf().canvas.set_window_title("Temperature")
-
-    figure()
-    plot_field(heats, 16)
-    colorbar()
-    plot_geometry(GEO.main, color="w")
-    gcf().canvas.set_window_title("Heat sources density")
-
-    figure()
-    plot_field(voltage, 16)
-    colorbar()
-    plot_geometry(GEO.main, color="w")
-    gcf().canvas.set_window_title("Electric potential")
-
-    #figure()
-    #plot(actgrid.axis0, abs(acurrent.array[0,:,1]))
-    #xlabel(u"x [\xb5m]")
-    #ylabel("current density [kA/cm$^2$]")
-    #simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.child)
-    #for x in simplemesh.axis0:
-    #    axvline(x, ls=":", color="k")
-    #xlim(0., 2*simplemesh.axis0[-2])
-    #gcf().canvas.set_window_title("Current density in the active region")
-
-    show()-->
+show()
 
 </script>
 

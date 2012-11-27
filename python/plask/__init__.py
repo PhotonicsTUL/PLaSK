@@ -93,14 +93,16 @@ def load(source, destination=None):
 try:
     from plask.pylab import *
 except ImportError:
-    has_pylab = False
     from numpy import *
+    print_log(LOG_WARNING, "plask.pylab could not be imported. You won't be able to make professionally-looking plots. Install matploltlib to resove this issue.")
+    has_pylab = False
 else:
     has_pylab = True
 
 try:
     from plask.hdf5 import *
 except ImportError:
+    print_log(LOG_WARNING, "plask.hdf5 cound not be imported. Your won't be able to save fields to HDF5 files. Install h5py to resolve this issue.")
     has_hdf5 = False
 else:
     has_hdf5 = True

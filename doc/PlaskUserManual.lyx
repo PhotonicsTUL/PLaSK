@@ -463,8 +463,7 @@ This tutorial presents basic usage of PLaSK.
  During the tutorial creation of all parts of the input file is described
  step-by-step, together with the discussion of it meaning.
  Before starting following the instructions described here, please make
- sure that PLaSK is installed correctly and create a separate working directory
- for the data and the results.
+ sure that PLaSK is installed correctly and create a separate working directory.
  We assume that you are able to launch the main binary as described in section
 \begin_inset space ~
 \end_inset
@@ -544,7 +543,7 @@ Actually it is possible to run the computations without creating XPL file
 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sec:Thermo-electrical-of-GaAs"
+reference "sec:Thermo-electrical-GaAs-VCSEL"
 
 \end_inset
 
@@ -883,11 +882,7 @@ name
 \begin_inset Quotes eld
 \end_inset
 
-
-\family typewriter
 main
-\family default
-
 \begin_inset Quotes erd
 \end_inset
 
@@ -1070,12 +1065,8 @@ Actually this is true only for rectangular meshes.
 material
 \family default
  gives information about the material of each block.
- As there is no 
-\family typewriter
-materials
-\family default
- section in our input file, the material parameters will be taken from default
- database (more on this in chapter
+ As there is no materials section in our input file, the material parameters
+ will be taken from default database (more on this in chapter
 \begin_inset space ~
 \end_inset
 
@@ -1309,7 +1300,7 @@ status open
 \end_layout
 
 \begin_layout Standard
-Here we have defined the generator for 
+Here we have defined the generator for a mesh of type 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1321,7 +1312,7 @@ rectilinear2d
 \begin_inset Quotes erd
 \end_inset
 
- mesh using 
+, using 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1338,7 +1329,7 @@ divide
  
 \emph default
 method (i.e.
- described 
+ 
 \emph on
 DivideGenerator
 \emph default
@@ -1373,11 +1364,8 @@ reference "chap:Meshes"
 \end_inset
 
 ) and says that, after ensuring that two adjacent cells do not differ more
- than twice in size, each mesh element should be divided 
-\family typewriter
-by
-\family default
- 2 along each axis (i.
+ than twice in size, each mesh element should be divided by 2 along each
+ axis (i.
 \begin_inset space \thinspace{}
 \end_inset
 
@@ -1390,10 +1378,6 @@ DivideGenerator
 \emph default
  makes the manual final mesh division by two sufficient.
  Later on we may plot the resulted mesh and fine-tune the 
-\begin_inset Quotes eld
-\end_inset
-
-
 \family typewriter
 postdiv
 \begin_inset space \thinspace{}
@@ -1401,10 +1385,6 @@ postdiv
 
 by
 \family default
-
-\begin_inset Quotes eld
-\end_inset
-
  value in the XPL file, add more configuration parameters (we will do this
  in the next tutorial), or even automatically tune the generator from the
  Python script.
@@ -1522,9 +1502,9 @@ solver
 thermal.Static2D
 \family default
  solver and named it 
-\family typewriter
-THERMAL
-\family default
+\emph on
+therm
+\emph default
 .
  This solver will be visible as a variable in the Python script and its
  name will be exactly the name specified here in the attribute 
@@ -1675,7 +1655,7 @@ status open
 \end_layout
 
 \begin_layout Standard
-You motice the additional tag 
+You notice the additional tag 
 \family typewriter
 <junction>
 \family default
@@ -2543,7 +2523,7 @@ electr.corrlim
 
 \begin_layout Standard
 Having written the input file (including script) so far I suggest you to
- save it and run the computations with PLaSK i a way described in section
+ save it and run the computations with PLaSK in a way described in section
 \begin_inset space ~
 \end_inset
 
@@ -2738,10 +2718,211 @@ compute
 K.
 \end_layout
 
+\begin_layout Subsection*
+Showing results
+\end_layout
+
+\begin_layout Standard
+In order to show the results, we need to retrieve the relevant information
+ from the solvers.
+ In PLaSK this can be done by using solver providers.
+ Apart from connecting them to receivers, they can be directly called as
+ normal methods.
+ For example, in order to obtain the temperature distribution, you can issue
+ the command: 
+\family typewriter
+therm.outTemperature(
+\family default
+\emph on
+mymesh
+\family typewriter
+\emph default
+)
+\family default
+, where 
+\emph on
+mymesh
+\emph default
+ is any mesh, on which you want to know the field distribution.
+ It may be the same mesh that was used for computations, although does not
+ need to.
+ In the latter case, PLaSK will automatically interpolate data for you.
+\end_layout
+
+\begin_layout Standard
+For now, let us obtain the temperature on the same mesh it was computed.
+ So, add the following line at the end of the script section:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+temp = therm.outTemperature(therm.mesh)
+\end_layout
+
+\end_inset
+
+This will assign the temperature distribution on the working mesh of the
+ solver 
+\emph on
+therm
+\emph default
+ (given by 
+\family typewriter
+therm.mesh
+\family default
+) to the variable 
+\emph on
+temp
+\emph default
+.
+ Having done this we can get the maximum temperature simply as 
+\family typewriter
+maxtemp
+\begin_inset space \thinspace{}
+\end_inset
+
+=
+\begin_inset space \thinspace{}
+\end_inset
+
+max(temp)
+\family default
+, save it to HDF5 file, or plot as a color map.
+ Let us do the latter, using 12 color bands to indicate temperature.
+ In addition we plot the wireframe of the analyzed structure, so we have
+ some visual location reference, and add the temperature colorbar:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+plot_field(temp, 12)
+\end_layout
+
+\begin_layout Plain Layout
+
+plot_geometry(GEO["main"])
+\end_layout
+
+\begin_layout Plain Layout
+
+colorbar()
+\end_layout
+
+\end_inset
+
+In the second line above, there is a global dictionary 
+\family typewriter
+GEO
+\family default
+, which contains all geometries defined in the XPL file, with keys matching
+ the value of the attribute `name' of each geometry.
+ Hence, 
+\family typewriter
+GEO["main"]
+\family default
+ is simply Python representation of our diode geometry described in the
+ beginning of this tutorial
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+For your convenience it can be also accessed as 
+\family typewriter
+GEO.main
+\end_layout
+
+\end_inset
+
+.
+ The rest of the code responsible for plotting the temperature should be
+ self-explanatory.
+\end_layout
+
+\begin_layout Standard
+In order to see the plots, you should at the command at the end of your
+ script
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+
+\family typewriter
+\size normal
+show()
+\family default
+\size default
+ will probably not work if you run PLaSK remotely or using any batch system.
+ In such case, you should replace it with 
+\family typewriter
+savefig("
+\family default
+\emph on
+filename
+\family typewriter
+\emph default
+")
+\family default
+ in order to save the figure directly to disk.
+ However, you should also adjust the plot ranges in advance: 
+\family typewriter
+xlim(0,
+\begin_inset space \thinspace{}
+\end_inset
+
+150); ylim(0,
+\begin_inset space \thinspace{}
+\end_inset
+
+305)
+\end_layout
+
+\end_inset
+
+:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+show()
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When you run the file with PLaSK, you should see the window with the plot.
+ You can use the controls available in this windows to zoom or move the
+ figure (try zooming the top left corner, where the actual diode active
+ structure is located).
+ You can also click the button with a small disk shown on it, to save the
+ currently visible image to disk.
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Before concluding this tutorial, let us make a second figure.
+ This time, it will be two-dimensional plot of the current density in the
+ active region.
+\end_layout
+
 \begin_layout Section
 \begin_inset CommandInset label
 LatexCommand label
-name "sec:Thermo-electrical-of-GaAs"
+name "sec:Thermo-electrical-GaAs-VCSEL"
 
 \end_inset
 
