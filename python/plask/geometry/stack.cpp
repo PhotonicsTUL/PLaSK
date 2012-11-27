@@ -53,7 +53,7 @@ void register_geometry_container_stack()
         .def("append", &ShelfContainer2D::push_back, (py::arg("child")), "Append new object to the container")
         .def("prepend", &ShelfContainer2D::push_front, (py::arg("child")), "Prepend new object to the container")
         .def("insert", &ShelfContainer2D::insert, (py::arg("child"), "pos"), "Insert new object to the container")
-        .add_property("flat", &ShelfContainer2D::isFlat, "True if all children has the same height (the top line is flat)")
+        .add_property("isflat", &ShelfContainer2D::isFlat, "True if all children has the same height (the top line is flat)")
     ;
     py::scope().attr("Shelf") = py::scope().attr("Shelf2D");
 }

@@ -94,8 +94,8 @@ at this level is crucial!
 - Python names of your classes should rather reflect some characteristic properties of the solver, not the analyzed
   phenomena (in the user interface they are prefixed with the category). Furthermore they must be suffixed with
   \c 2D, \c 3D, or \c Cyl, which states the type of the geometry of the solver. So the correct name for e.g.
-  a thermal solver using rectangular mesh in a 2D Cartesian geometry would be \c Rectangular2D. User would see it as
-  <code>thermal.Rectangular2D</code>.
+  a electrica solver using beta approximation of the junction in a 2D Cartesian geometry would be \c Beta2D.
+  User would see it as <code>electrical.Beta2D</code>.
   .
 - XML configuration tag names must match the Python class properties for accessing the same configuration parameter
   (the usual rules for class fields names apply). The possible exceptions are stated below

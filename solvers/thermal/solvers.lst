@@ -1,5 +1,5 @@
-fem.Rectangular2D
-fem.RectangularCyl
+fem.Static2D
+fem.StaticCyl
 
 
 fem.Fem2D

@@ -8,13 +8,13 @@ using namespace plask::solvers::thermal;
 
 static shared_ptr<FiniteElementMethodThermal2DSolver<Geometry2DCartesian>> Fem2D(const std::string& name) {
     auto result = make_shared<FiniteElementMethodThermal2DSolver<Geometry2DCartesian>>(name);
-    result->writelog(LOG_WARNING, "'thermal.Fem2D' name is depreciated! Use 'thermal.Rectangular2D' instead.");
+    result->writelog(LOG_WARNING, "'thermal.Fem2D' name is depreciated! Use 'thermal.Static2D' instead.");
     return result;
 }
 
 static shared_ptr<FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>> FemCyl(const std::string& name) {
     auto result = make_shared<FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>>(name);
-    result->writelog(LOG_WARNING, "'thermal.FemCyl' name is depreciated! Use 'thermal.RectangularCyl' instead.");
+    result->writelog(LOG_WARNING, "'thermal.FemCyl' name is depreciated! Use 'thermal.StaticCyl' instead.");
     return result;
 }
 
@@ -49,7 +49,7 @@ BOOST_PYTHON_MODULE(fem)
         .def_readwrite("ambient", &Radiation::mTAmb2)
     ;
 
-    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Rectangular2D", "Finite element thermal solver for 2D Cartesian Geometry.")
+    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
         RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
@@ -67,7 +67,7 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
     }
 
-    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "RectangularCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
+    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
         RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");

@@ -25,17 +25,16 @@
 </grids>
 
 <solvers>
-  <thermal solver="Rectangular2D" name="THERMAL">
+  <thermal solver="Static2D" name="therm">
     <geometry ref="main"/>
     <mesh ref="default"/>
     <temperature>
       <condition value="300.0" place="bottom"/>
     </temperature>
   </thermal>
-  <electrical solver="Beta2D" name="ELECTRICAL">
+  <electrical solver="Beta2D" name="electr">
     <geometry ref="main"/>
     <mesh ref="default"/>
-    <junction pnjcond="1e-06,0.2"/>
     <voltage>
       <condition value="1.0"><place object="top-layer" side="top"/></condition>
       <condition value="0.0"><place object="substrate" side="bottom"/></condition>
@@ -44,26 +43,26 @@
 </solvers>
 
 <connects>
-  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>
+  <connect in="electr.inTemperature" out="therm.outTemperature"/>
+  <connect in="therm.inHeatDensity" out="electr.outHeatDensity"/>
 </connects>
 
 <script>
-ELECTRICAL.js = 1.1
-ELECTRICAL.beta = 21.
+electr.js = 1.1
+electr.beta = 21.
 
-verr = ELECTRICAL.compute(1)
-terr = THERMAL.compute(1)
-while terr > THERMAL.corrlim or verr > ELECTRICAL.corrlim:
-    verr = ELECTRICAL.compute(6)
-    terr = THERMAL.compute(1)
+verr = electr.compute(1)
+terr = therm.compute(1)
+while terr > therm.corrlim or verr > electr.corrlim:
+    verr = electr.compute(6)
+    terr = therm.compute(1)
 
 plotgrid = MSG.plots(GEO.main.child)
 
-temperature = THERMAL.outTemperature(plotgrid)
-heats = THERMAL.inHeatDensity(plotgrid)
-voltage = ELECTRICAL.outPotential(plotgrid)
-current = ELECTRICAL.outCurrentDensity(plotgrid)
+temperature = therm.outTemperature(plotgrid)
+heats = therm.inHeatDensity(plotgrid)
+voltage = electr.outPotential(plotgrid)
+current = electr.outCurrentDensity(plotgrid)
 
 if has_hdf5:
     import sys, os
@@ -78,10 +77,10 @@ if has_pylab:
     plot_geometry(GEO.main, set_limits=True)
     defmesh = MSG.default(GEO.main.child)
     plot_mesh(defmesh, color="0.75")
-    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, color="b", marker="D")
-    plot_boundary(THERMAL.temperature_boundary, defmesh, color="r")
-    plot_boundary(THERMAL.convection_boundary, defmesh, color="g")
-    plot_boundary(THERMAL.radiation_boundary, defmesh, color="y")
+    plot_boundary(electr.voltage_boundary, defmesh, color="b", marker="D")
+    plot_boundary(therm.temperature_boundary, defmesh, color="r")
+    plot_boundary(therm.convection_boundary, defmesh, color="g")
+    plot_boundary(therm.radiation_boundary, defmesh, color="y")
     gcf().canvas.set_window_title("Default mesh")
 
     figure()

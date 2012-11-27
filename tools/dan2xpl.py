@@ -350,7 +350,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
     if therm or electr:
         out('<solvers>')
         if therm:
-            out('  <thermal solver="Rectangular%s" name="THERMAL">' % suffix)
+            out('  <thermal solver="Static%s" name="THERMAL">' % suffix)
             out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             save_boundaries('temperature')
             save_boundaries('convection')

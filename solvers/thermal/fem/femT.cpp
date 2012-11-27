@@ -600,8 +600,8 @@ template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodT
 }
 
 
-template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::getClassName() const { return "thermal.Rectangular2D"; }
-template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::getClassName() const { return "thermal.RectangularCyl"; }
+template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::getClassName() const { return "thermal.Static2D"; }
+template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::getClassName() const { return "thermal.StaticCyl"; }
 
 template struct FiniteElementMethodThermal2DSolver<Geometry2DCartesian>;
 template struct FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>;
