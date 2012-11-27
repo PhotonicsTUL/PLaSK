@@ -738,7 +738,7 @@ status open
 \begin_layout Plain Layout
 \begin_inset CommandInset label
 LatexCommand label
-name "fig:tutorial1-geometry"
+name "fig:Tutorial1-geometry"
 
 \end_inset
 
@@ -777,7 +777,7 @@ simple gallium arsenide edge-emitting diode, presented in Figure
 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "fig:tutorial1-geometry"
+reference "fig:Tutorial1-geometry"
 
 \end_inset
 
@@ -1589,7 +1589,8 @@ The other solver we use is
 electrical.Beta2D
 \family default
 .
- Its configuration is very similar to the above one:
+ Its configuration is very similar to the above one, with some additional
+ configuration:
 \begin_inset listings
 inline false
 status open
@@ -1607,6 +1608,11 @@ status open
 \begin_layout Plain Layout
 
     <mesh ref="default"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+    <junction beta="19" js="1"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -1665,7 +1671,50 @@ status open
 
 \end_inset
 
-Here we have two boundary conditions, specifying electric potential (voltage)
+
+\end_layout
+
+\begin_layout Standard
+You motice the additional tag 
+\family typewriter
+<junction>
+\family default
+ with attributes 
+\family typewriter
+beta
+\family default
+ and 
+\family typewriter
+js
+\family default
+.
+ These are custom parameters of Beta2D electrical solver and they set values
+ for phenomenological junction coefficient 
+\begin_inset Formula $\beta$
+\end_inset
+
+ and reverse current density 
+\begin_inset Formula $j_{s}$
+\end_inset
+
+.
+ Their meaning is described in section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Solver-electrical-beta"
+
+\end_inset
+
+.
+ At this moment just leave their values as in the example.
+\end_layout
+
+\begin_layout Standard
+Next, we have two boundary conditions, specifying electric potential (voltage)
  at the top side of the object named 
 \begin_inset Quotes eld
 \end_inset
@@ -1871,24 +1920,6 @@ Running computations
 \end_layout
 
 \begin_layout Standard
-At this point, you have prepared all the data needed to perform thermo-electrica
-l analysis of the sample device.
- Listing 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "lis:listing-of-tutorial1.xpl"
-
-\end_inset
-
- shows the review of what we have created so far.
- The only missing part is the 
-\family typewriter
-<script>
-\family default
- section, which should be the last section of the file.
-\end_layout
-
-\begin_layout Standard
 \begin_inset listings
 lstparams "float=p,language=XML"
 inline false
@@ -1901,7 +1932,7 @@ status open
 \begin_layout Plain Layout
 \begin_inset CommandInset label
 LatexCommand label
-name "lis:listing-of-tutorial1.xpl"
+name "lis:Listing-of-tutorial1.xpl"
 
 \end_inset
 
@@ -1909,7 +1940,7 @@ Listing of
 \family typewriter
 tutorial1.xpl
 \family default
- without the script section.
+ with empty script section.
 \end_layout
 
 \end_inset
@@ -2017,21 +2048,6 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-  <generator type="rectilinear2d" method="divide" name="plots">
-\end_layout
-
-\begin_layout Plain Layout
-
-    <postdiv by="10"/>
-\end_layout
-
-\begin_layout Plain Layout
-
-  </generator>
-\end_layout
-
-\begin_layout Plain Layout
-
 </grids>
 \end_layout
 
@@ -2042,6 +2058,10 @@ tutorial1.xpl
 \begin_layout Plain Layout
 
 <solvers>
+\end_layout
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -2081,6 +2101,10 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
+\end_layout
+
+\begin_layout Plain Layout
+
   <electrical solver="Beta2D" name="electr">
 \end_layout
 
@@ -2092,6 +2116,11 @@ tutorial1.xpl
 \begin_layout Plain Layout
 
     <mesh ref="default"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+    <junction beta="19" js="1"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -2141,6 +2170,10 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
+\end_layout
+
+\begin_layout Plain Layout
+
 </solvers>
 \end_layout
 
@@ -2174,12 +2207,535 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
+<script>
+\end_layout
+
+\begin_layout Plain Layout
+
+<!-- Here will go the script presented in the rest of this tutorial -->
+\end_layout
+
+\begin_layout Plain Layout
+
+</script>
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
 </plask>
 \end_layout
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+At this point, you have prepared all the data needed to perform thermo-electrica
+l analysis of the sample device.
+ Listing
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Listing-of-tutorial1.xpl"
+
+\end_inset
+
+ shows the review of what we have created so far.
+ The only missing part is the 
+\family typewriter
+<script>
+\family default
+ section, which should be the last section of the file.
+ In this section you define operations you want to perform: computations
+ and presentation of the results.
+ It is a script written in very easy-to-learn programming language Python.
+ If you want to be able to write advanced programs for analysis of your
+ structures (e.
+\begin_inset space \thinspace{}
+\end_inset
+
+g.
+ automatic optimization) you can find useful tutorials in the internet.
+ A good starting point would be: 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://docs.python.org/2/tutorial/}
+\end_layout
+
+\end_inset
+
+, which covers Python basics.
+\begin_inset Newline newline
+\end_inset
+
+Other useful resources are:
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://www.scipy.org/Tentative_NumPy_Tutorial}
+\end_layout
+
+\end_inset
+
+,
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://docs.scipy.org/doc/scipy/reference/tutorial/index.html}
+\end_layout
+
+\end_inset
+
+, and
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://matplotlib.org/users/pyplot_tutorial.html}
+\end_layout
+
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+They give simple introduction to performing advanced scientific computations
+ in Python and making professionally looking plots using Matlab-like interface.
+\end_layout
+
+\begin_layout Standard
+However, in order to just use PLaSK and perform basic computations, you
+ do not need any knowledge of Python other than presented in this manual.
+ Even so, the Python syntax is so simple and readable that you should have
+ no problems reading and understanding moderately advanced scripts and writing
+ simple ones on your own.
+\end_layout
+
+\begin_layout Standard
+As you have noticed, there is already a 
+\family typewriter
+<script>
+\family default
+ section in Listing
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Listing-of-tutorial1.xpl"
+
+\end_inset
+
+.
+ All the Python code presented from now on in this tutorial must be put
+ inside this section.
+ Hence, we will skip the XML elements from the examples.
+\end_layout
+
+\begin_layout Standard
+In our tutorial we want to self-consistently compute temperature and electric
+ current distribution.
+ Having all the solvers set in the XPL file, we just need to launch calculations
+:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+verr = electr.compute(1)
+\end_layout
+
+\begin_layout Plain Layout
+
+terr = therm.compute(1) 
+\end_layout
+
+\end_inset
+
+As Python uses indentation to indicate blocks of the code, it is important
+ not to insert any spaces in the beginning of the two above lines.
+ Their meaning is as follows:
+\end_layout
+
+\begin_layout Enumerate
+run single computations of the solver 
+\emph on
+electr
+\emph default
+ and store the maximum change of computed voltage in variable 
+\emph on
+verr
+\emph default
+,
+\end_layout
+
+\begin_layout Enumerate
+run single computations of the solver 
+\emph on
+therm
+\emph default
+ and store the maximum change of computed voltage in variable 
+\emph on
+terr.
+\end_layout
+
+\begin_layout Standard
+Both used solvers apply finite element method for their computations.
+ However, the temperature dependence of the thermal and electrical conductivitie
+s and current dependence of the effective electrical conductivity in the
+ active region make the whole problem a nonlinear one.
+ Hence, the finite-element computations have to be repeated until the convergenc
+e is achieved.
+ The values returned by 
+\family typewriter
+compute
+\family default
+ methods of both solvers indicate error of such convergence i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ you should keep computing as long as any of them is larger than some desired
+ limit.
+ Solvers can do this automatically, but as we want to achieve mutual convergence
+ of two connected solvers, we have to take the control ourselves.
+ For this reason we pass integer number 
+\begin_inset Formula $n=1$
+\end_inset
+
+ as arguments of the methods, which means: do not perform more than 
+\begin_inset Formula $n$
+\end_inset
+
+ loops, even if the convergence is not achieved.
+\end_layout
+
+\begin_layout Standard
+After initial calculations, we may run further computations in a loop, which
+ is repeated until both returned errors are smaller than the default limits:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+while terr > therm.corrlim or verr > electr.corrlim:
+\end_layout
+
+\begin_layout Plain Layout
+
+    verr = electr.compute(6)
+\end_layout
+
+\begin_layout Plain Layout
+
+    terr = therm.compute(1)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+print_log(LOG_INFO, "Calculations finished!")
+\end_layout
+
+\end_inset
+
+Notice that the content of the loop is indented after the semicolon.
+ This is how Python knows what should go inside the loop.
+ The line without indentation will be executed after the loop and, in this
+ case, it simply prints a custom log message.
+\end_layout
+
+\begin_layout Standard
+This time we allow to run maximum 6 loop iterations of the electrical solver
+ interchanged with a single iteration of the thermal one.
+ The reason for such a choice is the fact that the electrical solver converges
+ much slower than the thermal one, so we need to let it run more times.
+ You are free to change the limit and see how quickly the whole system converges.
+ You may even skip the limit at all (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ type 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+electr.compute()
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+), in which case the electrical computations will be performed until convergence
+ is reached for the current temperature.
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+therm.corrlim
+\family default
+ and 
+\family typewriter
+electr.corrlim
+\family default
+ are default values of the convergence limits for the solvers (they can
+ be adjuster either in the 
+\family typewriter
+<solvers>
+\family default
+ section or in the Python script).
+ Hence, we repeat the loop until any of the returned errors is larger than
+ the appropriate limit.
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Having written the input file (including script) so far I suggest you to
+ save it and run the computations with PLaSK i a way described in section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Running-plask"
+
+\end_inset
+
+ i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+\end_layout
+
+\begin_layout Standard
+In Linux shell or MACOS terminal:
+\begin_inset listings
+lstparams "language=bash"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+joe@cray:~/laser$ plask tutorial1.xpl
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In Windows from the Command Prompt (assuming you have installed PLaSK in
+ 
+\begin_inset Quotes eld
+\end_inset
+
+C:
+\backslash
+Program Files
+\backslash
+PLaSK
+\backslash
+
+\begin_inset Quotes erd
+\end_inset
+
+):
+\begin_inset listings
+lstparams "language=bash"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+C:
+\backslash
+Users
+\backslash
+joe
+\backslash
+laser> "C:
+\backslash
+Program Files
+\backslash
+PLaSK
+\backslash
+bin
+\backslash
+plask.exe" tutorial1.xpl
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+You should see a lot of logs, but no results.
+ This is not strange as we did not give any instructions to output the results.
+ However, take a look at the end of the logs:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+INFO          : electr:electrical.Beta2D: Running electrical calculations
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : therm:thermal.Static2D: Getting temperatures
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : interpolate: Running LINEAR interpolation
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : electr:electrical.Beta2D: Setting up matrix system (size=2077,
+ band=33)
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : electr:electrical.Beta2D: Solving matrix system
+\end_layout
+
+\begin_layout Plain Layout
+
+RESULT        : electr:electrical.Beta2D: Loop 1(32): DeltaV=1.147V, update=0.000V(
+1.299%)
+\end_layout
+
+\begin_layout Plain Layout
+
+INFO          : therm:thermal.Static2D: Running thermal calculations
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=2077,
+ band=33)
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : electr:electrical.Beta2D: Getting heat densities
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : electr:electrical.Beta2D: Computing heat densities
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : interpolate: Running LINEAR interpolation
+\end_layout
+
+\begin_layout Plain Layout
+
+DETAIL        : therm:thermal.Static2D: Solving matrix system
+\end_layout
+
+\begin_layout Plain Layout
+
+RESULT        : therm:thermal.Static2D: Loop 1(10): max(T)=315.224K, update=0.048K(
+0.015%)
+\end_layout
+
+\begin_layout Plain Layout
+
+INFO          : Calculations finished!
+\end_layout
+
+\end_inset
+
+In the last line you can see the message 
+\begin_inset Quotes eld
+\end_inset
+
+Calculations finished!
+\begin_inset Quotes erd
+\end_inset
+
+, which you printed yourself in the script.
+ Before this, there is a lot of information given by solvers.
+ The very interesting one is the one before the last, reported by the thermal
+ solver (see 
+\family typewriter
+therm:thermal.Static2D:
+\family default
+ in this line) which gives the number of iterations, number of total iterations,
+ the maximum computed temperature in the structure, and the maximum temperature
+ update since the last call to the 
+\family typewriter
+compute
+\family default
+ method.
+ The convergence is achieved, since the default temperature change limit
+ is 0.1
+\begin_inset space \thinspace{}
+\end_inset
+
+K.
 \end_layout
 
 \begin_layout Section
@@ -2338,6 +2894,20 @@ Thermal model
 
 \begin_layout Chapter
 Electrical model
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Solver-electrical-beta"
+
+\end_inset
+
+Phenomenological junction 
+\begin_inset Formula $\beta$
+\end_inset
+
+ model
 \end_layout
 
 \begin_layout Chapter

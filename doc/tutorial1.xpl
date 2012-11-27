@@ -48,16 +48,17 @@
 </connects>
 
 <script>
-electr.js = 1.1
-electr.beta = 21.
 
 verr = electr.compute(1)
 terr = therm.compute(1)
+
 while terr > therm.corrlim or verr > electr.corrlim:
     verr = electr.compute(6)
     terr = therm.compute(1)
 
-plotgrid = MSG.plots(GEO.main.child)
+print_log(LOG_INFO, "Calculations finished!")
+
+<!--plotgrid = MSG.plots(GEO.main.child)
 
 temperature = therm.outTemperature(plotgrid)
 heats = therm.inHeatDensity(plotgrid)
@@ -111,7 +112,7 @@ if has_pylab:
     #xlim(0., 2*simplemesh.axis0[-2])
     #gcf().canvas.set_window_title("Current density in the active region")
 
-    show()
+    show()-->
 
 </script>
 
