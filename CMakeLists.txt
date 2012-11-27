@@ -302,7 +302,7 @@ if(BUILD_PYTHON)
         "for l in lst:\n"
         "    l = l.strip()\n"
         "    if not l: continue\n"
-        "    data = { 'cat': sys.argv[2].split(pth.sep)[1] }\n"
+        "    data = { 'cat': sys.argv[2].split('/')[1] }\n"
         "    data['lib'], data['cls'] = l.split('.')\n"
         "    out.write('''\n"
         "def %(cls)s(*args, **kwargs):\n"
@@ -321,9 +321,8 @@ foreach(lst ${lst_lists})
     get_filename_component(lst_dir ${lst} PATH)
     install(FILES ${PLASK_PATH}/${lst} DESTINATION lib/plask/${lst_dir} COMPONENT solvers)
     if(BUILD_PYTHON)
-        file(TO_NATIVE_PATH ${lst_dir} lst_native_dir)
         add_custom_command(OUTPUT ${PLASK_PATH}/${lst_dir}/__init__.py
-                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_BINARY_DIR}/CMakeFiles/solvers_lst.py ${PLASK_PATH} ${lst_native_dir}
+                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_BINARY_DIR}/CMakeFiles/solvers_lst.py ${PLASK_PATH} ${lst_dir}
                            DEPENDS ${PLASK_PATH}/${lst})
         list(APPEND solvers_lst_files ${PLASK_PATH}/${lst_dir}/__init__.py)
     endif()
