@@ -12,6 +12,7 @@ namespace py = boost::python;
 
 #include <plask/exceptions.h>
 #include <plask/utils/system.h>
+#include "plask/python_globals.h"
 #include "plask/python_manager.h"
 
 #ifdef _WIN32
@@ -82,9 +83,6 @@ static py::object initPlask(int argc, const char* argv[])
     py::object plaskcore = py::import("plaskcore");
 
     sys.attr("modules")["plask.plaskcore"] = plaskcore;
-
-    // Import numpy for materials
-    from_import_all("numpy", plask::python::xml_globals);
 
     // Add program arguments to sys.argv
     if (argc > 0) {
@@ -237,6 +235,10 @@ int main(int argc, const char *argv[])
             from_import_all("plask", globals);
         }
 
+        // Set global namespace for materials
+        plask::python::xml_globals = py::dict(plask.attr("__dict__")).copy();
+        plask::python::xml_globals["plask"] = plask;
+
         unsigned scriptline = 0;
 
         try {
@@ -276,6 +278,17 @@ int main(int argc, const char *argv[])
                 scriptline = manager->scriptline;
                 // manager->script = plask::python::PythonManager::removeSpaces(manager->script);
                 plask::python::PythonManager::export_dict(globals["__manager__"], globals);
+
+                // Set default axes if all loaded geometries share the same
+                boost::optional<plask::AxisNames> axes;
+                for (const auto& geometry: manager->roots) {
+                    if (!axes) axes.reset(geometry->axisNames);
+                    else if (geometry->axisNames != *axes) {
+                        axes.reset();
+                        break;
+                    }
+                }
+                if (axes) plask::python::config.axes = *axes;
 
                 PyObject* result = NULL;
 #               if PY_VERSION_HEX >= 0x03000000

@@ -343,7 +343,7 @@ sys.argv
 \family typewriter
 vcsel.xpl
 \family default
- is the input file an 10 some parameter:
+ is the input file the number 10 a some parameter:
 \end_layout
 
 \begin_layout Standard
@@ -440,6 +440,68 @@ PLaSK.bat
  the Explorer.
  Simply double-click its icon to open the interactive shell, or drag the
  input file to run the saved script.
+\end_layout
+
+\begin_layout Standard
+If you run PLaSK without any parameters, you enter interactive mode.
+ Do so and once you see the prompt type (type only commands, not the prompt
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+If you do not have IPython installed, you will see a different prompt.
+ It will look like this: '
+\family typewriter
+>>>
+\family default
+'
+\end_layout
+
+\end_inset
+
+):
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+In[1]: help(plask)
+\end_layout
+
+\end_inset
+
+You will see a Python documentation for PLaSK.
+ Press 'q' to return back to the interactive shell.
+ In the interactive mode you can run the script in any XPL file by typing:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+In[2]: run("your_file.xpl")
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To exit the shell type:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+In[3]: exit()
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -925,7 +987,7 @@ status open
 
 \begin_layout Plain Layout
 
-    <stack shift="-3000">
+    <stack shift="-1000">
 \end_layout
 
 \begin_layout Plain Layout
@@ -945,7 +1007,8 @@ status open
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.007" material="In(0.2)GaAs" role="active"/>
+      <block x="150" y="0.007" material="In(0.2)GaAs" role="active" name="junction
+"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -955,17 +1018,17 @@ status open
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.150" material="Al(0.3)GaAs:Si=5e19"/>
+      <block x="150" y="1.500" material="Al(0.3)GaAs:Si=5e19"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="1.500" material="GaAs:Si=5e19" name="substrate"/>
+      <block x="150" y="300" material="GaAs:Si=5e19" name="substrate"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="5000" y="3000" material="Cu"/>
+      <block x="1000" y="1000" material="Cu"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -1002,7 +1065,7 @@ In the above listing, two new tags appeared.
 \end_inset
 
 , at the top of the heatsink, so we shift the whole stack (or in other words
- set its base level) to –3000
+ set its base level) to –1000
 \begin_inset space \thinspace{}
 \end_inset
 
@@ -1105,7 +1168,7 @@ As (missing amount of gallium is computed automatically) doped with carbon
 \end_layout
 
 \begin_layout Standard
-Two of the blocks are given names 
+Three of the blocks are given names 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1117,7 +1180,7 @@ top-layer
 \begin_inset Quotes erd
 \end_inset
 
- and 
+, 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1129,9 +1192,33 @@ substrate
 \begin_inset Quotes erd
 \end_inset
 
+, and 
+\begin_inset Quotes eld
+\end_inset
+
+
+\family typewriter
+junction
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
  for the future reference.
- They will be used to specify boundary conditions for the electrical solver
- at the edges of these blocks.
+ 
+\emph on
+Top-layer
+\emph default
+ and 
+\emph on
+substrate
+\emph default
+ will be used to specify boundary conditions for the electrical solver at
+ the edges of these blocks, while we will need 
+\emph on
+junction
+\emph default
+ to make plots of the computed current a little easier.
 \end_layout
 
 \begin_layout Standard
@@ -1944,7 +2031,7 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-    <stack shift="-3000">
+    <stack shift="-1000">
 \end_layout
 
 \begin_layout Plain Layout
@@ -1964,7 +2051,8 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.007" material="In(0.2)GaAs" role="active"/>
+      <block x="150" y="0.007" material="In(0.2)GaAs" role="active" name="junction
+"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -1974,17 +2062,17 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.150" material="Al(0.3)GaAs:Si=5e19" name="substrate"/>
+      <block x="150" y="1.500" material="Al(0.3)GaAs:Si=5e19"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="1.500" material="GaAs:Si=5e19"/>
+      <block x="150" y="300" material="GaAs:Si=5e19" name="substrate"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="5000" y="3000" material="Cu"/>
+      <block x="1000" y="1000" material="Cu"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -2192,7 +2280,15 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
+\end_layout
+
+\begin_layout Plain Layout
+
 <!-- Here will go the script presented in the rest of this tutorial -->
+\end_layout
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \begin_layout Plain Layout
@@ -2550,7 +2646,7 @@ status open
 
 \begin_layout Plain Layout
 
-joe@cray:~/laser$ plask tutorial1.xpl
+joe@cray:~/tutorials$ plask tutorial1.xpl
 \end_layout
 
 \end_inset
@@ -2588,7 +2684,7 @@ Users
 \backslash
 joe
 \backslash
-laser> "C:
+tutorials> "C:
 \backslash
 Program Files
 \backslash
@@ -2629,8 +2725,8 @@ DETAIL        : interpolate: Running LINEAR interpolation
 
 \begin_layout Plain Layout
 
-DETAIL        : electr:electrical.Beta2D: Setting up matrix system (size=2077,
- band=33)
+DETAIL        : electr:electrical.Beta2D: Setting up matrix system (size=1675,
+ band=27)
 \end_layout
 
 \begin_layout Plain Layout
@@ -2640,8 +2736,8 @@ DETAIL        : electr:electrical.Beta2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : electr:electrical.Beta2D: Loop 1(32): DeltaV=1.147V, update=0.000V(
-1.299%)
+RESULT        : electr:electrical.Beta2D: Loop 1(41): DeltaV=1.123V, update=0.000V(
+0.173%)
 \end_layout
 
 \begin_layout Plain Layout
@@ -2651,8 +2747,8 @@ INFO          : therm:thermal.Static2D: Running thermal calculations
 
 \begin_layout Plain Layout
 
-DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=2077,
- band=33)
+DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=1675,
+ band=27)
 \end_layout
 
 \begin_layout Plain Layout
@@ -2677,13 +2773,17 @@ DETAIL        : therm:thermal.Static2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : therm:thermal.Static2D: Loop 1(10): max(T)=315.224K, update=0.048K(
-0.015%)
+RESULT        : therm:thermal.Static2D: Loop 1(21): max(T)=369.853K, update=0.045K(
+0.012%)
 \end_layout
 
 \begin_layout Plain Layout
 
 INFO          : Calculations finished!
+\end_layout
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \end_inset
@@ -2792,7 +2892,7 @@ max(temp)
 , save it to HDF5 file, or plot as a color map.
  Let us do the latter, using 12 color bands to indicate temperature.
  In addition we plot the wireframe of the analyzed structure, so we have
- some visual location reference, and add the temperature colorbar:
+ some visual location reference, and add the temperature color-bar:
 \begin_inset listings
 inline false
 status open
@@ -2804,7 +2904,7 @@ plot_field(temp, 12)
 
 \begin_layout Plain Layout
 
-plot_geometry(GEO["main"])
+plot_geometry(GEO["main"], color="w")
 \end_layout
 
 \begin_layout Plain Layout
@@ -2838,12 +2938,84 @@ GEO.main
 \end_inset
 
 .
+ Additional parameter 
+\family typewriter
+color
+\family default
+ of the 
+\family typewriter
+plot_geometry
+\family default
+ command makes the geometry wireframe plotted white instead of the default
+ black.
  The rest of the code responsible for plotting the temperature should be
  self-explanatory.
 \end_layout
 
 \begin_layout Standard
-In order to see the plots, you should at the command at the end of your
+Apart from the results it may be also useful to see the computational mesh.
+ In order to do this, we create a new plot window using 
+\family typewriter
+figure()
+\family default
+ command and plot the structure together with the computational mesh (actually
+ the mesh is the same for both solvers, so you may get it from either one):
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+figure()
+\end_layout
+
+\begin_layout Plain Layout
+
+plot_geometry(GEO["main"], set_limits=True)
+\end_layout
+
+\begin_layout Plain Layout
+
+plot_mesh(electr.mesh)
+\end_layout
+
+\end_inset
+
+Additional argument 
+\family typewriter
+set_limits
+\family default
+ of 
+\family typewriter
+plot_geometry
+\family default
+ set to true ensures that the axes limits will be adjusted to match the
+ whole structure.
+ In the previous figure it was automatically done by 
+\family typewriter
+plot_field
+\family default
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Actually 
+\family typewriter
+plot_field
+\family default
+ sets the axes limit to the area covered by the mesh on which the field
+ was computed.
+ However, in this case it just covers the whole structure.
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+In order to see the plots, you should add the command at the end of your
  script
 \begin_inset Foot
 status collapsed
@@ -2898,7 +3070,7 @@ show()
 \end_layout
 
 \begin_layout Standard
-When you run the file with PLaSK, you should see the window with the plot.
+When you run the file with PLaSK, you should see two windows with the plots.
  You can use the controls available in this windows to zoom or move the
  figure (try zooming the top left corner, where the actual diode active
  structure is located).
@@ -2917,6 +3089,283 @@ When you run the file with PLaSK, you should see the window with the plot.
 Before concluding this tutorial, let us make a second figure.
  This time, it will be two-dimensional plot of the current density in the
  active region.
+ For this we need to know the vertical position of the active layer.
+ We could compute it manually, knowing that we have set bottom of the GaAs
+ substrate at level 0.
+ By summing the layer thicknesses we get that the bottom edge of the active
+ layer is located at position 
+\begin_inset Formula $y=301.650\,\text{µm}$
+\end_inset
+
+.
+ However, much better approach would be to determine this value automatically.
+ You may remember that we have given the name 
+\emph on
+junction
+\emph default
+ to the active layer.
+ In Python script we can refer to it as 
+\family typewriter
+OBJ[''junction'']
+\family default
+, so 
+\family typewriter
+OBJ
+\family default
+ is a dictionary similar to 
+\family typewriter
+GEO
+\family default
+, which holds all the named objects.
+ We can obtain the position of the bottom left corner of this block by adding
+ command (put it directly before the 
+\family typewriter
+show()
+\family default
+):
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+pos = GEO["main"].get_object_positions(OBJ["junction"])[0]
+\end_layout
+
+\end_inset
+
+
+\family typewriter
+get_object_positions
+\family default
+ is a method of the geometry, which returns the list of positions of geometry
+ object given as its argument.
+ Is is a list and not a single value, as a single object may appear in the
+ geometry several times (we will investigate such situation in the next
+ tutorial).
+ Hence, zero in brackets 
+\family typewriter
+[0]
+\family default
+ at the end of the line extracts the first element of this list (in Python
+ all lists are indexed starting from zero).
+ In this way, 
+\family typewriter
+pos
+\family default
+ is the two-dimensional vector indicating the position of the active layer
+\end_layout
+
+\begin_layout Standard
+Now, we can extract the vertical component of the active layer position
+ as 
+\family typewriter
+pos.y
+\family default
+.
+ Next, we want to create a
+\begin_inset space ~
+\end_inset
+
+one-dimensional mesh spanning all over the active region:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
+\end_layout
+
+\end_inset
+
+Frankly speaking the created mesh is still a two-dimensional mesh, however,
+ it has only one row.
+ The thing that looks like a function invocation 
+\family typewriter
+mesh.Rectilinear2D
+\family default
+ is a two-dimensinal rectilinear mesh class
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Specifically, 
+\family typewriter
+mesh
+\family default
+ is a Python module and 
+\family typewriter
+Rectilinear2D
+\family default
+ a class defined inside of this module.
+\end_layout
+
+\end_inset
+
+ and by invoking it as a function, we create a particular instance of this
+ class.
+ Provided arguments are lists of the mesh points along 
+\begin_inset Formula $x$
+\end_inset
+
+ and 
+\begin_inset Formula $y$
+\end_inset
+
+ axes.
+ If you have used Matlab, you should be familiar with the function 
+\family typewriter
+linspace
+\family default
+.
+ It returns a list of 1000 points (indicated by its third argument) spanning
+ from –150
+\begin_inset space \thinspace{}
+\end_inset
+
+µm to 150
+\begin_inset space \thinspace{}
+\end_inset
+
+µm (first and second arguments).
+ Along 
+\begin_inset Formula $y$
+\end_inset
+
+ axis we have only one point at the level of the active layer.
+ Mind that you can correctly get fields for negative values of 
+\begin_inset Formula $x$
+\end_inset
+
+, because you have specified 
+\family typewriter
+left=''mirror''
+\family default
+ in the geometry declaration.
+\end_layout
+
+\begin_layout Standard
+Now, we can obtain the current density from the receiver of solver 
+\emph on
+electr
+\emph default
+:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+current = electr.outCurrentDensity(junction_mesh)
+\end_layout
+
+\end_inset
+
+Now current can be considered as a one-dimesional array.
+ However, it contains all the components of the current density vector,
+ while we want to plot only the vertical component, which is perpendicular
+ to the junction.
+ So we may use Python so called 
+\emph on
+list comprehension
+\emph default
+ construct to transform one list into another:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+curry = [ abs(j.y) for j in current ]
+\end_layout
+
+\end_inset
+
+The above line means: make list consisting of absolute values of 
+\family typewriter
+j.y
+\family default
+, where 
+\family typewriter
+j
+\family default
+ becomes consequently each element of the array 
+\family typewriter
+current
+\family default
+ and store the resulting list in variable 
+\family typewriter
+curry
+\family default
+.
+ Now, we can make a new figure and plot current density versus 
+\begin_inset Formula $x$
+\end_inset
+
+-axis:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+figure()
+\end_layout
+
+\begin_layout Plain Layout
+
+plot(junction_mesh.axis0, curry)
+\end_layout
+
+\begin_layout Plain Layout
+
+xlabel("$x [um]")
+\end_layout
+
+\begin_layout Plain Layout
+
+ylabel("current density [kA/cm$^2$]")
+\end_layout
+
+\end_inset
+
+
+\family typewriter
+junction.axis0
+\family default
+ gives the list of points in the horizontal axis of the two-dimensional
+ mesh i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ axis 
+\begin_inset Formula $x$
+\end_inset
+
+.
+ The last two lines add labels to the plot axes (see, you can use basic
+ LaTeX in the labels).
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Ensure that the commands to create the last figure are before 
+\family typewriter
+show()
+\family default
+.
+ Save your file and run it wih PLaSK.
+ You should see three figures now.
+ Zoom them to your liking and save the images, successfully finishing this
+ tutorial.
 \end_layout
 
 \begin_layout Section

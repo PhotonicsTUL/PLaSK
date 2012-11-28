@@ -163,7 +163,7 @@ class Manager(unittest.TestCase):
                 </material>
                 <material name="XmlMat:Mg" base="GaN:Mg">
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
-                    <absp>T * dc</absp>
+                    <absp>T * self.dc</absp>
                 </material>
                 <material name="XmlMatSimple" kind="dielectric">
                     <nr>3.5</nr>

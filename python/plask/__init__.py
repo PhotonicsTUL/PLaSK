@@ -88,13 +88,25 @@ def load(source, destination=None):
     same = lst and lst.count(lst[0]) == len(lst)
     if same: config.axes = lst[0]
 
+def run(source):
+    '''Load and run the code from the XPL file.
+
+       'source' is the name of the XPL file or open file object.
+    '''
+    import sys
+    env = globals().copy()
+    env['plask'] = sys.modules["plask"]
+    load(source, env)
+    exec(env['__script__'], env)
+
+
 ## ##  ## ##
 
 try:
     from plask.pylab import *
 except ImportError:
     from numpy import *
-    print_log(LOG_WARNING, "plask.pylab could not be imported. You won't be able to make professionally-looking plots. Install matploltlib to resove this issue.")
+    print_log(LOG_WARNING, "plask.pylab could not be imported. You won't be able to make professionally-looking plots. Install matplotlib to resolve this issue.")
     has_pylab = False
 else:
     has_pylab = True

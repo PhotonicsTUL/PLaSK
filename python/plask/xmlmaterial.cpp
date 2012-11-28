@@ -62,21 +62,23 @@ class PythonEvalMaterial : public Material
     shared_ptr<PythonEvalMaterialConstructor> cls;
     shared_ptr<Material> base;
 
-    py::dict globals;
+    py::object self;
 
     template <typename RETURN>
     RETURN call(PyCodeObject *fun, const py::dict& locals) const {
-        PyObject* result = PyEval_EvalCode(fun, globals.ptr(), locals.ptr());
+        PyObject* result = PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr());
         if (!result) throw py::error_already_set();
         return py::extract<RETURN>(result);
     }
 
   public:
 
-    PythonEvalMaterial(const shared_ptr<PythonEvalMaterialConstructor>& constructor, const shared_ptr<Material>& base, const py::dict& params) :
+    PythonEvalMaterial(const shared_ptr<PythonEvalMaterialConstructor>& constructor, const shared_ptr<Material>& base,
+                       const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) :
         cls(constructor), base(base) {
-        globals = xml_globals.copy(); // should be __main__ instead of numpy?
-        globals.update(params);
+        self = py::object(base);
+        if (doping_amount_type == Material::DOPANT_CONCENTRATION) self.attr("dc") = doping_amount;
+        else if (doping_amount_type == Material::CARRIER_CONCENTRATION) self.attr("cc") = doping_amount;
     }
 
     // Here there are overridden methods from Material class
@@ -87,12 +89,12 @@ class PythonEvalMaterial : public Material
 
 #   define PYTHON_EVAL_CALL_1(rtype, fun, arg1) \
         if (cls->fun == NULL) return base->fun(arg1); \
-        py::dict locals; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; \
+        py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; \
         return call<rtype>(cls->fun, locals);
 
 #   define PYTHON_EVAL_CALL_2(rtype, fun, arg1, arg2) \
         if (cls->fun == NULL) return base->fun(arg1, arg2); \
-        py::dict locals; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
+        py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         return call<rtype>(cls->fun, locals);
 
     virtual double lattC(double T, char x) const { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
@@ -131,18 +133,18 @@ class PythonEvalMaterial : public Material
     virtual double nr(double wl, double T) const { PYTHON_EVAL_CALL_2(double, nr, wl, T) }
     virtual double absp(double wl, double T) const { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
     virtual dcomplex nR(double wl, double T) const {
-        py::dict locals; locals["wl"] = wl; locals["T"] = T;
+        py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->nR != NULL) {
-            PyObject* result = PyEval_EvalCode(cls->nR, globals.ptr(), locals.ptr());
+            PyObject* result = PyEval_EvalCode(cls->nR, xml_globals.ptr(), locals.ptr());
             if (!result) throw py::error_already_set();
             return py::extract<dcomplex>(result);
         }
         else return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
     }
     virtual NrTensorT nR_tensor(double wl, double T) const {
-        py::dict locals; locals["wl"] = wl; locals["T"] = T;
+        py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->nR != NULL) {
-            PyObject* result = PyEval_EvalCode(cls->nR_tensor, globals.ptr(), locals.ptr());
+            PyObject* result = PyEval_EvalCode(cls->nR_tensor, xml_globals.ptr(), locals.ptr());
             if (!result) throw py::error_already_set();
             return py::extract<NrTensorT>(result);
         } else {
@@ -158,10 +160,7 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
     shared_ptr<Material> base_obj;
     if (base != "") base_obj = this->db->get(base, doping_amount_type, doping_amount);
     else base_obj = make_shared<EmptyMaterial>();
-    py::dict params;
-    if (doping_amount_type == Material::DOPANT_CONCENTRATION) params["dc"] = doping_amount;
-    else if (doping_amount_type == Material::CARRIER_CONCENTRATION) params["cc"] = doping_amount;
-    return make_shared<PythonEvalMaterial>(self.lock(), base_obj, params);
+    return make_shared<PythonEvalMaterial>(self.lock(), base_obj, composition, doping_amount_type, doping_amount);
 }
 
 

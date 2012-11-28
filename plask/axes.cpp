@@ -4,7 +4,7 @@
 
 namespace plask {
 
-AxisNames::AxisNames(const std::string &c0_name, const std::string &c1_name, const std::string &c2_name)
+AxisNames::AxisNames(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name)
     : byIndex{c0_name, c1_name, c2_name} {}
 
 std::size_t AxisNames::operator [](const std::string &name) const {

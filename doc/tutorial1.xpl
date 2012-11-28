@@ -2,15 +2,15 @@
 
 <geometry>
   <cartesian2d axes="xy" left="mirror" name="main">
-    <stack shift="-3000">
+    <stack shift="-1000">
       <block x="1.5" y="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
       <block x="150" y="0.150" material="Al(0.3)GaAs:C=1e20"/>
       <block x="150" y="0.150" material="GaAs"/>
-      <block x="150" y="0.007" material="In(0.2)GaAs" role="active"/>
+      <block x="150" y="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
       <block x="150" y="0.150" material="GaAs"/>
-      <block x="150" y="0.150" material="Al(0.3)GaAs:Si=5e19" name="substrate"/>
-      <block x="150" y="1.500" material="GaAs:Si=5e19"/>
-      <block x="5000" y="3000" material="Cu"/>
+      <block x="150" y="1.500" material="Al(0.3)GaAs:Si=5e19"/>
+      <block x="150" y="300" material="GaAs:Si=5e19" name="substrate"/>
+      <block x="1000" y="1000" material="Cu"/>
     </stack>
   </cartesian2d>
 </geometry>
@@ -18,9 +18,6 @@
 <grids>
   <generator type="rectilinear2d" method="divide" name="default">
     <postdiv by="2"/>
-  </generator>
-  <generator type="rectilinear2d" method="divide" name="plots">
-    <postdiv by="10"/>
   </generator>
 </grids>
 
@@ -63,6 +60,20 @@ temp = therm.outTemperature(therm.mesh)
 plot_field(temp, 12)
 plot_geometry(GEO["main"], color='w')
 colorbar()
+
+figure()
+plot_geometry(GEO["main"], set_limits=True)
+plot_mesh(electr.mesh)
+
+pos = GEO["main"].get_object_positions(OBJ["junction"])[0]
+junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
+current = electr.outCurrentDensity(junction_mesh)
+curry = [ abs(j.y) for j in current ]
+
+figure()
+plot(junction_mesh.axis0, curry)
+xlabel("$x$ [um]")
+ylabel("current density [kA/cm$^2$]")
 
 show()
 

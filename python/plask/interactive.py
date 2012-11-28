@@ -98,6 +98,8 @@ def _init_python_session(argv=[]):
     for line in preexec_lines:
         console.runsource(line)
 
+    console.runsource("from sys import exit")
+
     import sys
     sys.argv = argv
     if argv and argv != ['']:
@@ -158,7 +160,7 @@ def interact(ipython=None, argv=[]):
         try:
             mainloop()
         except SystemExit:
-            sys.stdout.write('PLaSK exiting...')
+            sys.stdout.write('PLaSK exiting...\n')
             return
     else:
         ip.write(banner)
