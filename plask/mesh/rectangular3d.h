@@ -955,6 +955,55 @@ private:
             return this->mesh.axis0.size() * this->mesh.axis1.size();
         }
     };
+    
+    public:
+    /**
+     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to axis0[0].
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex0LoBoundary() {
+        return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex0Boundary(mesh, 0);} );
+    }
+    
+    /**
+     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to axis0[axis0.size()-1].
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex0HiBoundary() {
+        return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex0Boundary(mesh, mesh.axis0.size()-1);} );
+    }
+    
+    /**
+     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[0].
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex1LoBoundary() {
+        return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex1Boundary(mesh, 0);} );
+    }
+    
+    /**
+     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[axis1.size()-1].
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex1HiBoundary() {
+        return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex1Boundary(mesh, mesh.axis1.size()-1);} );
+    }
+    
+    /**
+     * Get boundary which shows one plane in mesh, which has 2 coordinate equals to axis2[0].
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex2LoBoundary() {
+        return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex2Boundary(mesh, 0);} );
+    }
+    
+    /**
+     * Get boundary which shows one plane in mesh, which has 2 coordinate equals to axis2[axis2.size()-1].
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex2HiBoundary() {
+        return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex2Boundary(mesh, mesh.axis2.size()-1);} );
+    }
 };
 
 template <typename Mesh1D,typename DataT>    //for any data type
