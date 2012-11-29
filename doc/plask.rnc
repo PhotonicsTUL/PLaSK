@@ -153,8 +153,10 @@ geom_stack_common.attlist = geom_anystack_common.attlist,
     ## how many times all stack should be repeated (default value is: 1)
     attribute repeat { xsd:integer }?
 
+zero = element zero { empty }
+
 stack2d.content = geom_stack_common.attlist,
-    (   element child {geom_child_common.attlist, tranAxes_text_attr?, geometry_object2d} | geometry_object2d   )
+    (   element child {geom_child_common.attlist, tranAxes_text_attr?, geometry_object2d} | geometry_object2d | zero  )	#TODO zero should be alowed once
 
 ## container which have children in stack/layers (2D)
 stack2d = element (stack2d) { stack2d.content }
@@ -162,7 +164,7 @@ stack2d = element (stack2d) { stack2d.content }
 ## container which have children in stack/layers (2D)
 stack_as_2d = element (stack|stack2d) { stack2d.content }
 stack3d.content = geom_stack_common.attlist,
-    (   element child {geom_child_common.attlist, lonTranAxes_text_attr?, geometry_object3d} | geometry_object3d   )
+    (   element child {geom_child_common.attlist, lonTranAxes_text_attr?, geometry_object3d} | geometry_object3d | zero   )
 
 ## container which have children in stack/layers (3D)
 stack3d = element (stack3d) { stack3d.content }
@@ -175,7 +177,7 @@ shelf = element (shelf|shelf2d) {
     geom_anystack_common.attlist,
     ## if true reader will check if all elements have same heights and will throw exception if not (false by default)
     attribute flat { xsd:boolean }?,
-    (   element child {geom_child_common.attlist, geometry_object2d} | geometry_object2d   )
+    (   element child {geom_child_common.attlist, geometry_object2d} | geometry_object2d | zero )
 }
 
 
