@@ -114,7 +114,7 @@ else:
 try:
     from plask.hdf5 import *
 except ImportError:
-    print_log(LOG_WARNING, "plask.hdf5 cound not be imported. Your won't be able to save fields to HDF5 files. Install h5py to resolve this issue.")
+    print_log(LOG_WARNING, "plask.hdf5 could not be imported. Your won't be able to save fields to HDF5 files. Install h5py to resolve this issue.")
     has_hdf5 = False
 else:
     has_hdf5 = True

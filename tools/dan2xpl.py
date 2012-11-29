@@ -147,7 +147,7 @@ def read_dan(fname):
     # Header
     name = input.next()[0]                      # structure name (will be used for output file)
     matdb = input.next()[0]                     # materials database spec (All by default)
-    line = input.next()                         # symmetry (0: Cartesian2D, 1: cylindrical) type and length
+    line = input.next()                         # symmetry (0: Cartesian2D, 1: Cylindrical2D) type and length
     sym = int(line[0])
     length = float(line[1])
     setting = int(input.next()[0])              # setting (10,11 - temporal calculations, 100,100 - 3D)
