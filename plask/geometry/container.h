@@ -83,7 +83,7 @@ public:
 
     /// Called by child.change signal, call this change
     virtual void onChildChanged(const GeometryObject::Event& evt) {
-        this->fireChanged(evt.flagsForParent());
+        this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
     }
 
     /// Connect onChildChanged to current child change signal

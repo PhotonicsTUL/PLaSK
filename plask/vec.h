@@ -73,8 +73,6 @@ inline Vec<dst_dim, T> vec(const Vec<src_dim, T>& src) {
     return details::VecDimConverter<dst_dim, T>::get(src);
 }
 
-
-
 }
 
 #endif // PLASK__VEC_H

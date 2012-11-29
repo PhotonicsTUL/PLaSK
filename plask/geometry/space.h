@@ -199,7 +199,7 @@ class GeometryD: public Geometry {
     void onChildChanged(const GeometryObject::Event& evt) {
         if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
         //comipler should optimized out dim == 2 condition checking
-        fireChanged(dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
+        fireChanged(evt.oryginalSource(), dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
     }
 
     /// Disconnect onChildChanged from current child change signal

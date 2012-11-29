@@ -40,7 +40,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
 
     /// Called by child.change signal, call this change
     virtual void onChildChanged(const GeometryObject::Event& evt) {
-        this->fireChanged(evt.flagsForParent());
+        this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
     }
 
     /// Connect onChildChanged to current child change signal
@@ -64,6 +64,12 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * @return child
      */
     inline shared_ptr<ChildType> getChild() const { return _child; }
+
+    /**
+     * Get type of child.
+     * @return type of child
+     */
+    inline GeometryObject::Type getChildType() const { return _child->getType(); }
 
     /**
      * Set new child.

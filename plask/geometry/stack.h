@@ -83,7 +83,15 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     /// Called by child.change signal, update heights call this change
     void onChildChanged(const GeometryObject::Event& evt) {
         if (evt.isResize()) updateAllHeights(); //TODO optimization: find evt source index and update size from this index to back
-        this->fireChanged(evt.flagsForParent());
+        this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
+    }
+
+    /**
+     * Get height of stack.
+     * @return height of stack, size of stack in growing direction
+     */
+    double getHeight() const {
+        return stackHeights.back() - stackHeights.front();
     }
 
   protected:
@@ -186,6 +194,19 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el);
     }
+
+    /**
+     * Add gap to shelf top.
+     * @param size size of gap
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint addGap(double size);
+
+    /*
+     * Try resize gap which have given index.
+     * @param gap_index
+     */
+    //void resizeGap(std::size_t gap_index, double new_size);
 
     /**
      * Add child to shelf top.

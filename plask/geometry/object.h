@@ -51,7 +51,8 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
         TYPE_TRANSFORM = 1,    ///< transform object (has one child)
         TYPE_SPACE_CHANGER = 2,///< transform object which changing its space, typically changing number of dimensions (has one child)
         TYPE_CONTAINER = 3,    ///< container (can have more than one child)
-        TYPE_GEOMETRY = 4      ///< geometry / space
+        TYPE_GEOMETRY = 4,     ///< geometry / space
+        TYPE_SEPARATOR = 5     ///< objects of this type are used internaly, mainly as separators
     };
 
     /**
@@ -62,7 +63,11 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      * Note: when object is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to subroles of GeometryObject,
      * because source() is already partially deleted.
      */
-    struct Event: public EventWithSourceAndFlags<GeometryObject> {
+    class Event: public EventWithSourceAndFlags<GeometryObject> {
+
+        const GeometryObject& _oryginalSource;
+
+    public:
 
         /// Event flags (which describes event properties).
         enum Flags {
@@ -134,11 +139,26 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
         bool hasChangedBorders() const { return hasFlag(BORDERS); }
 
         /**
+         * Get oryginal source of event which can differ from source if event was delegated.
+         * @return oryginal source of event
+         */
+        const GeometryObject& oryginalSource() const { return _oryginalSource; }
+
+        /**
          * Construct event.
-         * @param source source of event
+         * @param source source and oryginal source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryObject& source, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags) {}
+        explicit Event(GeometryObject& source, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _oryginalSource(source) {}
+
+        /**
+         * Construct event.
+         * @param source source of event
+         * @param oryginalSource oryginal source of event
+         * @param flags which describes event's properties
+         */
+        explicit Event(GeometryObject& source, const GeometryObject& oryginalSource, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _oryginalSource(oryginalSource) {}
+
     };
 
     /**

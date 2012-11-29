@@ -1,4 +1,5 @@
 #include "stack.h"
+#include "separator.h"
 
 #define baseH_attr "shift"
 #define repeat_attr "repeat"
@@ -176,6 +177,9 @@ shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::v
 template struct StackContainer<2>;
 template struct StackContainer<3>;
 
+PathHints::Hint ShelfContainer2D::addGap(double size) {
+    return addUnsafe(make_shared<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(size));
+}
 
 bool ShelfContainer2D::isFlat() const {
     if (children.size() < 2) return true;
@@ -370,7 +374,7 @@ struct HeightReader {
     
     bool tryReadZero(shared_ptr<plask::GeometryObject> stack) {
         if (reader.getNodeName() != "zero") return false;
-        if (whereWasZeroTag != -1) throw XMLException(reader, "Base height has been already choosen.");
+        if (whereWasZeroTag != -1) throw XMLException(reader, "Base height has been already chosen.");
         reader.requireTagEnd();
         whereWasZeroTag = stack->getRealChildrenCount();
         return true;
@@ -445,6 +449,9 @@ static GeometryReader::RegisterObjectReader stack3D_reader(StackContainer<3>::NA
 
 shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
+    //TODO migrate to gap which can update self
+    shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> total_size_gap;  //gap which can change total size
+    double required_total_size;  //required total size, valid only if total_size_gap is not nullptr
     shared_ptr< ShelfContainer2D > result(new ShelfContainer2D(reader.source.getAttribute(baseH_attr, 0.0)));
     bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, false);
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
@@ -454,9 +461,29 @@ shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
             },
             [&]() {
                 if (height_reader.tryReadZero(result)) return;
+                if (reader.source.getNodeName() == Gap1D<2, Primitive<2>::DIRECTION_TRAN>::NAME) {
+                    boost::optional<double> total_size_attr = reader.source.getAttribute<double>("total");
+                    if (total_size_attr) {  //total size provided?
+                        if (total_size_gap)
+                            throw XMLException(reader.source, "Total size has been already chosen.");
+                        required_total_size = *total_size_attr;
+                        total_size_gap =
+                                static_pointer_cast<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(
+                                     static_pointer_cast<Translation<2>>(result->addGap(0.0).second)->getChild()
+                                );
+                    } else {
+                        result->addGap(reader.source.requireAttribute<double>(Gap1D<2, Primitive<2>::DIRECTION_TRAN>::XML_SIZE_ATTR));
+                    }
+                    return;
+                }
                 result->push_back(reader.readObject< ShelfContainer2D::ChildType >());
             }
     );
+    if (total_size_gap) {
+        if (required_total_size < result->getHeight())
+            throw Exception("Required total width of shelf is lower than sum of children and gaps widths.");
+        total_size_gap->setSize(required_total_size - result->getHeight());
+    }
     height_reader.setBaseHeight(result, false);
     if (requireEqHeights) result->ensureFlat();
     return result;

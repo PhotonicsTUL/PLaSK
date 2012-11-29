@@ -52,7 +52,7 @@ struct ObjectWrapper {
      *
      * Subclasses of this can includes additional information about specific type of event.
      */
-    struct Event: public EventWithSourceAndFlags<ObjectWrapper> {
+    struct Event: public plask::EventWithSourceAndFlags<ObjectWrapper> {
 
         /// Event flags (which describes event properties).
         typedef plask::GeometryObject::Event::Flags Flags;

@@ -9,6 +9,7 @@ QString toStr(plask::GeometryObject::Type type) {
     case plask::GeometryObject::TYPE_SPACE_CHANGER: return QObject::tr("space changer");
     case plask::GeometryObject::TYPE_TRANSFORM: return QObject::tr("transform");
     case plask::GeometryObject::TYPE_GEOMETRY: return QObject::tr("geometry");
+    case plask::GeometryObject::TYPE_SEPARATOR: return QObject::tr("separator");
     }
     return QString();
 }

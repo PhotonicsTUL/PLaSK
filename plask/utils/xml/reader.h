@@ -318,12 +318,20 @@ class XMLReader {
     void removeAlienNamespaceAttr();
 
     /**
-     * Returns the name of the current node.
+     * Returns the name of the current node (tag).
      *
      * Throw exception if it is not defined.
      * @return name of the current node
      */
     std::string getNodeName() const;
+
+    /**
+     * Returns the name of the current node (tag).
+     *
+     * Throw exception if it is not defined.
+     * @return name of the current node
+     */
+    inline std::string getTagName() const { return getNodeName(); }
 
     /**
      * Check if current node is NODE_TEXT (throw exception if it's not) and get node data (text content).
