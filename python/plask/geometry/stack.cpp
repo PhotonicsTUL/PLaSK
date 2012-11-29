@@ -17,6 +17,7 @@ void register_geometry_container_stack()
         .def("append", &StackContainer<2>::push_back, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Append new object to the container")
         .def("prepend", &StackContainer<2>::push_front, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Prepend new object to the container")
         .def("insert", &StackContainer<2>::insert, (py::arg("child"), "pos", py::arg("align")=StackContainer<2>::DefaultAligner()), "Insert new object to the container")
+        .def("set_zero_below", &StackContainer<2>::setZeroHeightBefore, py::arg("index"), "Set zero below item with index 'index'")
     ;
 
     py::class_<StackContainer<3>, shared_ptr<StackContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>("Stack3D",
@@ -26,6 +27,8 @@ void register_geometry_container_stack()
         py::init<double>((py::arg("shift")=0.)))
         .def("append", &StackContainer<3>::push_back, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Append new object to the container")
         .def("prepend", &StackContainer<3>::push_front, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Prepend new object to the container")
+        .def("insert", &StackContainer<3>::insert, (py::arg("child"), "pos", py::arg("align")=StackContainer<3>::DefaultAligner()), "Insert new object to the container")
+        .def("set_zero_below", &StackContainer<3>::setZeroHeightBefore, py::arg("index"), "Set zero below item with index 'index'")
     ;
 
     // Multi-stack constainer
@@ -53,6 +56,7 @@ void register_geometry_container_stack()
         .def("append", &ShelfContainer2D::push_back, (py::arg("child")), "Append new object to the container")
         .def("prepend", &ShelfContainer2D::push_front, (py::arg("child")), "Prepend new object to the container")
         .def("insert", &ShelfContainer2D::insert, (py::arg("child"), "pos"), "Insert new object to the container")
+        .def("set_zero_before", &StackContainer<3>::setZeroHeightBefore, py::arg("index"), "Set zero left of item with index 'index'")
         .add_property("isflat", &ShelfContainer2D::isFlat, "True if all children has the same height (the top line is flat)")
     ;
     py::scope().attr("Shelf") = py::scope().attr("Shelf2D");

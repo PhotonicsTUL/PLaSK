@@ -40,6 +40,8 @@ def write_dan(name, allm=True):
     else:
         raise TypeError("3D geometry not supported")
    
+    outl("0                             ustawienie_poziome")
+   
     leafs = geo.get_leafs()
     boxes = geo.get_leafs_bboxes()
     
@@ -53,6 +55,7 @@ def write_dan(name, allm=True):
         mat = geo.get_material(point)
         mn, dp, dc = parse_material(mat)
         outl(mn)
+        noheat = geo.child.has_role('noheat', point)
         # second line
         if geo.child.has_role('active', point):
             mt = 'j'
@@ -60,8 +63,11 @@ def write_dan(name, allm=True):
             #TODO get it from the solver
         elif allm or mat.cond(300.) == mat.cond(400.):
             mt = 'm'
-            try: cx, cy = mat.cond(300.)
-            except NotImplementedError: cx, cy = mat.air.cond(300.)
+            try:
+                cx, cy = mat.cond(300.)
+            except NotImplementedError:
+                cx, cy = mat.air.cond(300.)
+                noheat = True
         else:
             raise NotImplementedError("Allowing not constant maters is not implemented")
         outl( "%s %s %s       przewodnosc_wlasciwa" % (pad(cx,15), pad(cy,15), mt) )
@@ -70,13 +76,16 @@ def write_dan(name, allm=True):
         # fourth line
         if allm or mat.thermk(300.) == material.thermk(400.):
             mt = 'm'
-            try: kx, ky = mat.thermk(300.)
-            except NotImplementedError: kx, ky = material.air.thermk(300.)
+            try:
+                kx, ky = mat.thermk(300.)
+            except NotImplementedError:
+                kx, ky = material.air.thermk(300.)
+                noheat = True
         else:
             raise NotImplementedError("Allowing not constant materials is not implemented")
-        outl( "%s %s %s       przewodnosc_wlasciwa" % (pad(kx,15), pad(ky,15), mt) )
+        outl( "%s %s %s       przewodnosc_cieplna" % (pad(kx,15), pad(ky,15), mt) )
         # firth line
-        if geo.child.has_role('noheat', point):
+        if noheat:
             outl("0               0.0                     wydajnosc_zrodel_ciepla")
         elif geo.child.has_role('active', point):
             outl("-200            0.0                     wydajnosc_zrodel_ciepla")
@@ -91,7 +100,8 @@ def write_dan(name, allm=True):
     outl("0                                       warunki_brzegowe_konwekcja")      #TODO
     outl("0                                       warunki_brzegowe_strumien")       #TODO
     outl("0                                       warunki_brzegowe_radiacja")       #TODO
-    
+    outl("0                                       linie_uzgodnienia_siatki")        #TODO
+
     outl("KONIEC")
              
 

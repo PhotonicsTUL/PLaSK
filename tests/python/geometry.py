@@ -176,6 +176,16 @@ class Containers(unittest.TestCase):
         self.assertEqual( stack.get_material(0,0,1), self.aln)
         self.assertEqual( stack.get_material(0,0,3), self.gan)
 
+    def testStackZero(self):
+        stack = plask.geometry.Stack2D()
+        stack.append(self.block1)
+        stack.append(self.block1)
+        stack.append(self.block1)
+        self.assertEqual( stack.bbox, geometry.Box2D(0,0, 5,9) )
+        stack.set_zero_below(2)
+        self.assertEqual( stack.bbox, geometry.Box2D(0,-6, 5,3) )
+
+
     def testRoles(self):
         stack = plask.geometry.Stack2D()
         stack.append(self.block1)
