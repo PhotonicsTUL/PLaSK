@@ -474,6 +474,7 @@ shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
                     } else {
                         result->addGap(reader.source.requireAttribute<double>(Gap1D<2, Primitive<2>::DIRECTION_TRAN>::XML_SIZE_ATTR));
                     }
+                    reader.source.requireTagEnd();
                     return;
                 }
                 result->push_back(reader.readObject< ShelfContainer2D::ChildType >());
