@@ -165,6 +165,10 @@ class Manager(unittest.TestCase):
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
                     <absp>T * self.dc</absp>
                 </material>
+                <material name="XmlMatMg20" base="GaN:Mg=1e20">
+                    <nr>1. + 0.001*T + 0.0001*wl</nr>
+                    <absp>T * self.dc</absp>
+                </material>
                 <material name="XmlMatSimple" kind="dielectric">
                     <nr>3.5</nr>
                     <absp>0.</absp>
@@ -182,3 +186,6 @@ class Manager(unittest.TestCase):
         mad = plask.material.XmlMat(dp="Mg", dc=1e18)
         self.assertEqual( mad.cond(300), material.GaN(dp="Mg", dc=1e18).cond(300) )
         self.assertEqual( mad.absp(900, 300), 300 * 1e18 )
+
+        mad20 = plask.material.XmlMatMg20()
+        self.assertEqual( mad20.cond(300), material.GaN(dp="Mg", dc=1e20).cond(300) )

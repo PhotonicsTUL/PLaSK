@@ -158,7 +158,12 @@ class PythonEvalMaterial : public Material
 
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     shared_ptr<Material> base_obj;
-    if (base != "") base_obj = this->db->get(base, doping_amount_type, doping_amount);
+    if (base != "") {
+        if (base.find("=") != std::string::npos)
+            base_obj = this->db->get(base);
+        else
+            base_obj = this->db->get(base, doping_amount_type, doping_amount);
+    }
     else base_obj = make_shared<EmptyMaterial>();
     return make_shared<PythonEvalMaterial>(self.lock(), base_obj, composition, doping_amount_type, doping_amount);
 }
