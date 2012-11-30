@@ -15,8 +15,20 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
             outCarriersConcentration( this, &DiffusionCylindricalSolver::getConcentration ){}
 
         virtual std::string getClassName() const { return "DiffusionCylindrical1D"; }
-        void Compute();
+        void compute(bool initial, bool threshold);
         virtual void loadConfiguration(XMLReader&, Manager&);
+
+		double r_min;              // maximum radius value (right boundary value)
+        double r_max;              // maximum radius value (right boundary value)
+        double no_points;          // number of mesh points
+
+        double relative_accuracy;                   // dokladnosc wzgledna
+        std::string interpolation_method;         // metoda interpolacji
+        int max_mesh_change;                  // maksymalna liczba zmian dr
+        int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
+        std::string mes_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
+        std::string symmetry_type;                 // VCSEL or EEL
+
 
     private:
 //        plask::DataVector<double> ?; // some internal vector used in calculations
@@ -27,17 +39,14 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
 
 		plask::shared_ptr< plask::Material> QW_material;
 
-		double r_min;              // maximum radius value (right boundary value)
-        double r_max;              // maximum radius value (right boundary value)
-        double no_points;          // number of mesh points
         double z;                  // z coordinate of active region
 
         bool initial_computation;
         bool threshold_computation;
 
-        std::vector<Box2D> detected_QW;
+        double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
 
-        std::string symmetry_type;                 // VCSEL or EEL
+        std::vector<Box2D> detected_QW;
 
         plask::RegularMesh1D mesh;                  // radius vector (computation mesh)
         plask::DataVector<const Vec<2>> j_on_the_mesh;    // current density vector provided by inCurrentDensity reciever
@@ -51,14 +60,10 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
 //        std::vector<std::string> wektorObliczen;    // przechowuje informacje o kolejnosci wykonywanych obliczen
 //
 //
-        std::string mes_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
+
 //
 //        std::string rodzajObliczen;       // rodzaj wykonywanych obliczen
-        double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
-        double relative_accuracy;                   // dokladnosc wzgledna
-        std::string interpolation_method;         // metoda interpolacji
-        int max_mesh_change;                  // maksymalna liczba zmian dr
-        int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
+
 //
 //        /**********************************************************************/
 //
@@ -82,6 +87,7 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         double nSecondDeriv(int i);                          // druga pochodna n po r
 
         bool CylindricalMES();
+        void determineQwWidth();
 //
 //        /********** KONFIGURACJA *********/
 //

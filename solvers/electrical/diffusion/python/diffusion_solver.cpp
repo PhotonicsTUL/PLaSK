@@ -17,10 +17,13 @@ using namespace plask::solvers::diffusion_cylindrical;
  */
 BOOST_PYTHON_MODULE(diffusion)
 {
-     {CLASS(DiffusionCylindricalSolver, "DiffusionCylindrical1D", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
-//         METHOD(python_method_name, method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
+     {CLASS(DiffusionCylindricalSolver, "DiffusionCyl", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
+         METHOD(compute, compute, "Perform the computation", arg("initial")=true, arg("threshold")=true);
 //         RO_FIELD(field_name, "Short documentation"); // read-only field
-//         RW_FIELD(field_name, "Short documentation"); // read-write field
+         RW_FIELD(no_points, "Points on the mesh"); // read-write field
+         RW_FIELD(r_min, "Left border of the mesh"); // read-write field
+         RW_FIELD(r_max, "Right border of the mesh"); // read-write field
+//         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
          RECEIVER(inCurrentDensity, "Current density vector perpendicular to the active region"); // receiver in the solver

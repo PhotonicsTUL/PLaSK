@@ -10,11 +10,17 @@ namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
 void DiffusionCylindricalSolver::onInitialize()
 {
-    initial_computation = true;
-    threshold_computation = true;
+    symmetry_type = "VCSEL";
+    mes_method = "parabolic";
+    relative_accuracy = 0.01;
+//    interpolation_method = "linear";
+    max_mesh_change = 5;
+    max_iterations = 50;
+    global_QW_width = 0.0;
 
     detected_QW = detectQuantumWells();
     z = getZQWCoordinate();
+
 }
 
 //virtual void DiffusionCylindricalSolver::onInvalidate()
@@ -22,17 +28,29 @@ void DiffusionCylindricalSolver::onInitialize()
 //    // body
 //}
 
-void DiffusionCylindricalSolver::Compute()
+void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
 {
+    initial_computation = initial;
+    threshold_computation = threshold;
+
     initCalculation();
+    determineQwWidth();
 
     int points = no_points;
+
+    std::cerr << "z = " << z << "     initial_computation =  " << initial_computation << "\n";
+    std::cerr << "threshold_computation = " << threshold_computation << "     global_QW_width =  " << global_QW_width << "\n";
+    std::cerr << "max_mesh_change = " << max_mesh_change << "     max_iterations =  " << max_iterations << "\n";
+    std::cerr << "mes_method = " << mes_method << "     symmetry_type =  " << symmetry_type << "\n";
 
     int mesh_change = 0;
 
     bool convergence = true;
 
-    mesh = plask::RegularMesh1D( r_min, r_max, no_points );
+    if (points%2 == 0)
+        points += 1;
+
+    mesh = plask::RegularMesh1D( r_min, r_max, points );
     RegularMesh2D mesh2( mesh, plask::RegularMesh1D( z, z, 1 ) );
 
     T_on_the_mesh = inTemperature(mesh2);      // data temperature vector provided by inTemperature reciever
@@ -43,7 +61,7 @@ void DiffusionCylindricalSolver::Compute()
 
     do
     {
-        if(!convergence && (mesh_change < max_mesh_change))
+        if( !convergence )
         {
             points *= 2.0;
 
@@ -51,12 +69,11 @@ void DiffusionCylindricalSolver::Compute()
                 points += 1;
 
             mesh.reset( r_min, r_max, points );
-//            mesh2.reset( mesh, plask::RegularMesh1D( z, z, 1 ) )
-
+            mesh2.axis0.reset( r_min, r_max, points );
             T_on_the_mesh = inTemperature(mesh2);      // data temperature vector provided by inTemperature reciever
             j_on_the_mesh = inCurrentDensity(mesh2);   // data current density vector provided by inCurrentDensity reciever
-//            n_present.reset(mesh.size(), 0.0);
-//            n_previous.reset(mesh.size(), 0.0);
+            n_present.reset(mesh.size(), 0.0);
+            n_previous.reset(mesh.size(), 0.0);
             mesh_change += 1;
         }
         if (initial_computation)
@@ -72,7 +89,7 @@ void DiffusionCylindricalSolver::Compute()
                 initial_computation = false;
             }
         }
-        else
+        if (threshold_computation)
         {
             std::cout << "Threshold computation: ";
 
@@ -86,7 +103,7 @@ void DiffusionCylindricalSolver::Compute()
 
         }
     }
-    while( !(convergence && !initial_computation && !threshold_computation) );
+    while( (initial_computation || threshold_computation) && (mesh_change < max_mesh_change) );
 
 
 
@@ -150,21 +167,23 @@ bool DiffusionCylindricalSolver::CylindricalMES()
         if (mes_method == "linear")
         {
             A_matrix.reset();
-            A_matrix.reset(2*mesh.size());
+            A_matrix.reset(2*mesh.size(), 0.0);
         }
         else if (mes_method == "parabolic")
         {
             A_matrix.reset();
-            A_matrix.reset(3*mesh.size());
+            A_matrix.reset(3*mesh.size(), 0.0);
         }
 
-        RHS_vector.reset();
-        RHS_vector.reset(mesh.size());
+//        RHS_vector.reset();
+        RHS_vector.reset(mesh.size(), 0.0);
 
-        X_vector.reset();
-        X_vector.reset(mesh.size());
+//        X_vector.reset();
+        X_vector.reset(mesh.size(), 0.0);
 
-        n_previous = n_present;
+        n_previous = n_present.copy();
+
+//        std::cerr << "n_previous = " << n_previous << "\n";
 
         if (initial_computation)
         {
@@ -185,13 +204,22 @@ bool DiffusionCylindricalSolver::CylindricalMES()
 
 //                RS = rightSide(i, T, n_previous[i]); // instead of rightSide(i, T, 0) ?
 
-                X_vector[i] = -B/(3.0*C) - (pow(2.0,1.0/3.0)*(- B*B + 3.0*A*C))/(3.0*C*pow(-2.0*B*B*B +
-						9.0*A*B*C + 27.0*C*C*rightSide(i) + sqrt(4.0*pow(- B*B + 3.0*A*C,3.0) +
-						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*rightSide(i),2.0)),1.0/3.0)) +
-						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*rightSide(i) + sqrt(4.0*pow(-B*B +
-						3.0*A*C,3.0) + pow(-2.0*B*B*B + 9.0*A*B*C +
-						27.0*C*C*rightSide(i),2.0)),1.0/3.0)/(3.0*pow(2.0,1.0/3.0)*C);
+//                X_vector[i] = -B/(3.0*C) - (pow(2.0,1.0/3.0)*(- B*B + 3.0*A*C))/(3.0*C*pow(-2.0*B*B*B +
+//						9.0*A*B*C + 27.0*C*C*rightSide(i) + sqrt(4.0*pow(- B*B + 3.0*A*C,3.0) +
+//						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*rightSide(i),2.0)),1.0/3.0)) +
+//						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*rightSide(i) + sqrt(4.0*pow(-B*B +
+//						3.0*A*C,3.0) + pow(-2.0*B*B*B + 9.0*A*B*C +
+//						27.0*C*C*rightSide(i),2.0)),1.0/3.0)/(3.0*pow(2.0,1.0/3.0)*C);
+//                double X_part = 9*C*sqrt(27*C*C*rightSide(i)*rightSide(i) + (4*B*B*B-18*A*B*C)*rightSide(i) + 4*A*A*A*C - A*A*B*B);
+//                X_vector[i] = (pow(X_part, 2/3) - pow(2,1/3)*pow(3,1/6)*B*pow(X_part, 1/3) - pow(2,2/3)*pow(3,4/3)*A*C + pow(2,2/3)*pow(3,1/3)*B*B)/(pow(2,1/3)*pow(3,7/6)*C*pow(X_part, 1/3));
+                double X_part = pow(sqrt(27*C*C*rightSide(i)*rightSide(i) + (4*B*B*B-18*A*B*C)*rightSide(i) + 4*A*A*A*C - A*A*B*B)/(2*pow(3,3/2)*C*C) + (-27*C*C*rightSide(i) + 9*A*B*C - 2*B*B*B)/(54*C*C*C),1/3);
+                X_vector[i] = X_part - (3*A*C - B*B)/X_part - B/(3*C);
             }
+//            for (int i = 0; i< mesh.size(); i++)
+//                std::cerr << "X_vector = " << X_vector[i] << "\n";
+            _convergence = true;
+            n_present = X_vector.copy();
+            std::cerr << "n_present = " << this->n_present[100] << "     n_previous = " << n_previous[100] << "\n";
         }
         else
         {
@@ -220,8 +248,8 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                     r1 = mesh[i];
                     r2 = mesh[i+1];
 
-                    double j1 = j_on_the_mesh[0][i];
-                    double j2 = j_on_the_mesh[0][i+1];
+                    double j1 = abs(j_on_the_mesh[i][1]*1e+3);
+                    double j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
 
                     K = DiffusionCylindricalSolver::K(T);
 //                    K = (this->*KPointer)(i, T, n0);
@@ -261,12 +289,11 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                 lapack_kd = 1;
                 lapack_ldab = 2;
                 lapack_nrhs = 1;
-//                lapack_ldb = (int)mesh.size();
 
                 dpbtrf_(uplo, lapack_n, lapack_kd, A_matrix.begin(), lapack_ldab, info_f);    // faktoryzacja macierzy A
                 dpbtrs_(uplo, lapack_n, lapack_kd, lapack_nrhs, A_matrix.begin(), lapack_ldab, RHS_vector.begin(), lapack_ldb, info_s);    // rozwi�zywanie Ax = B
 
-                X_vector = RHS_vector;
+                X_vector = RHS_vector.copy();
             }
             else if (mes_method == "parabolic")  // 02.10.2012 Marcin Gebski
             {
@@ -285,7 +312,6 @@ bool DiffusionCylindricalSolver::CylindricalMES()
 //                    E = (this->*EPointer)(2*i + 1, T, n0);      // warto�� w w��le �rodkowym elementu
                     F = DiffusionCylindricalSolver::F(2*i + 1, T, n0);
                     E = DiffusionCylindricalSolver::E(T, n0);
-
 
                     if ( symmetry_type == "VCSEL") //VCSEL
                     {
@@ -310,9 +336,9 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                     A_matrix[6*i + 2] += k11e;
                     A_matrix[6*i + 4] += k12e;
                     A_matrix[6*i + 6] += k13e;
-                    A_matrix[6*i + 5]+= k22e;
+                    A_matrix[6*i + 5] += k22e;
                     A_matrix[6*i + 7] += k23e;
-                    A_matrix[6*i + 8]+= k33e;
+                    A_matrix[6*i + 8] += k33e;
                     A_matrix[6*i + 3] += 0;                         // k24 = 0 - dope�nienie g�rnej wst�gi
 
                     RHS_vector[2*i] += p1e;
@@ -325,67 +351,81 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                 lapack_kd = 2;
                 lapack_ldab = 3;
                 lapack_nrhs = 1;
-//                lapack_ldb = (int)mesh.size();
 
                 dpbtrf_(uplo, lapack_n, lapack_kd, A_matrix.begin(), lapack_ldab, info_f);    // faktoryzacja macierzy A
                 dpbtrs_(uplo, lapack_n, lapack_kd, lapack_nrhs, A_matrix.begin(), lapack_ldab, RHS_vector.begin(), lapack_ldb, info_s);    // rozwi�zywanie Ax = B
 
-                X_vector = RHS_vector;
+                X_vector = RHS_vector.copy();
             }
-        }
-        n_present = X_vector;
 
-//        double tolerance = 5e21;
-//        double absolute_accuracy = -leftSideInitial(0, 300.0, tolerance);
-        double absolute_error = 0.0;
-        double relative_error = 0.0;
+            n_present = X_vector.copy();
+std::cerr << "n_present = " << this->n_present[100] << "     n_previous = " << n_previous[100] << "\n";
 
-        if (mes_method == "linear")  // 02.10.2012 Marcin Gebski
-        {
-            _convergence = true;
-            for (int i = 0; i < mesh.size(); i++)
+            double absolute_error = 0.0;
+            double relative_error = 0.0;
+
+/****************** RPSMES: ******************/
+
+//            double tolerance = 5e+15;
+//            double n_tolerance = this->QW_material->A(300)*tolerance + this->QW_material->B(300)*tolerance*tolerance + this->QW_material->C(300)*tolerance*tolerance*tolerance;
+
+/****************** end RPSMES: ******************/
+
+            if (mes_method == "linear")  // 02.10.2012 Marcin Gebski
             {
-                n0 = n_present[i];
-                T = T_on_the_mesh[i];
-                L = leftSide(i, T, n0);
-                R = rightSide(i);
+                _convergence = true;
+                for (int i = 0; i < mesh.size(); i++)
+                {
+                    n0 = n_present[i];
+                    T = T_on_the_mesh[i];
+                    L = leftSide(i, T, n0);
+                    R = rightSide(i);
 
-                absolute_error = L - R;
-                relative_error = absolute_error/R;
+                    absolute_error = L - R;
+                    relative_error = absolute_error/R;
 //                if ( (absolute_accuracy < fabs( absolute_error ) ) && ( relative_accuracy < relative_error ) )
-                if ( relative_accuracy < relative_error )
-                    _convergence = false;
+                    if ( relative_accuracy < relative_error )
+                        _convergence = false;
+                }
             }
-        }
-        else if (mes_method == "parabolic")
-        {
-            _convergence = true;
-            for (int i = 0; i < (mesh.size() - 1)/2 ; i++)
+            else if (mes_method == "parabolic")
             {
-                n0 = n_present[2*i + 1];
-                T = T_on_the_mesh[2*i + 1];
-                L = leftSide(2*i + 1, T, n0);
-                R = rightSide(2*i + 1);
+                double dn = 0.0;
+                double dn_relative = 0.0;
+                _convergence = true;
+                for (int i = 0; i < (mesh.size() - 1)/2 ; i++)
+                {
+                    n0 = n_present[2*i + 1];
+                    T = T_on_the_mesh[2*i + 1];
+                    L = leftSide(2*i + 1, T, n0);
+                    R = rightSide(2*i + 1);
 
-                absolute_error = L - R;
-                relative_error = absolute_error/R;
+                    absolute_error = L - R;
+                    relative_error = absolute_error/R;
+
+//                    if ( n0 > dn )
+                        dn = n0 - n_previous[2*i + 1];
+                        dn_relative = abs(dn/n0);
+//                    if ( abs( n_present[2*i + 1] - n_present[2*i] )/n_present[2*i + 1] > dn )
+//                        dn = abs(n_present[2*i + 1] - n_present[2*i])/n_present[2*i + 1];
 //                if ( (absolute_accuracy < fabs( absolute_error ) ) && ( relative_accuracy < relative_error ) )
-                if ( relative_accuracy < relative_error )
-                    _convergence = false;
+                    if ( (relative_accuracy < relative_error) || (dn_relative < absolute_error) ) // (n_tolerance < absolute_error)
+                        _convergence = false;
+                }
             }
+            iterations += 1;
         }
-        iterations += 1;
+
     }
-
-    while (!_convergence || (iterations < max_iterations));
+    while ( !_convergence && (iterations < max_iterations));
 
     return _convergence;
 }
 
-const DataVector<double> DiffusionCylindricalSolver::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method ) {
-//    // ...
-//
-//    return interpolate(*mesh, computed_concentration, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
+const DataVector<double> DiffusionCylindricalSolver::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION )
+{
+    RegularMesh2D mesh2( mesh, plask::RegularMesh1D( z, z, 1 ) );
+    return interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
 }
 
 void DiffusionCylindricalSolver::loadConfiguration(XMLReader& reader, Manager& manager)
@@ -398,7 +438,6 @@ void DiffusionCylindricalSolver::loadConfiguration(XMLReader& reader, Manager& m
         {
             symmetry_type = reader.getAttribute<std::string>("symmetry_type", symmetry_type);
             mes_method = reader.getAttribute<std::string>("mes_method", mes_method);
-            global_QW_width = reader.getAttribute<double>("global_QW_width", global_QW_width);
             relative_accuracy = reader.getAttribute<double>("relative_accuracy", relative_accuracy);
             interpolation_method = reader.getAttribute<std::string>("interpolation_method", interpolation_method);
             max_mesh_change = reader.getAttribute<int>("max_mesh_change", max_mesh_change);
@@ -450,7 +489,7 @@ double DiffusionCylindricalSolver::E(double T, double n0)
 double DiffusionCylindricalSolver::F(int i, double T, double n0)
 {
     if ((mes_method == "old_linear") || (mes_method == "parabolic"))  // 02.10.2012 Marcin Gebski
-    return (+ j_on_the_mesh[0][i]/(plask::phys::qe*global_QW_width) + this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
+    return (+ abs(j_on_the_mesh[i][1]*1e+3)/(plask::phys::qe*global_QW_width) + this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
 
     else if (mes_method == "linear")  // 02.10.2012 Marcin Gebski
     return (this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
@@ -532,7 +571,7 @@ double DiffusionCylindricalSolver::leftSide(int i, double T, double n)
 
 double DiffusionCylindricalSolver::rightSide(int i)
 {
-  return -j_on_the_mesh[0][i]/(plask::phys::qe*global_QW_width);
+    return -abs(j_on_the_mesh[i][1])*1e+3/(plask::phys::qe*global_QW_width);
 }
 
 std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
@@ -545,25 +584,32 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
     // Now compact each row (it can contain only one QW and each must start and end in the same point)
     double left, right;
     bool foundQW = false;
-    for (int j = 0; j < points->axis1.size(); ++j) {
+    for (int j = 0; j < points->axis1.size(); ++j)
+    {
         bool inQW = false;
-        for (int i = 0; i < points->axis0.size(); ++i) {
+        for (int i = 0; i < points->axis0.size(); ++i)
+        {
             auto point = points->at(i,j);
             auto tags = geometry->getRolesAt(point);
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
-            if (QW && !inQW) { // QW start
-                if (foundQW) {
-		    if (left != mesh->axis0[i])
-			throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
-		    if (geometry->getMaterial(point) != QW_material)
-			throw Exception("In this solver all quantum wells must be constructed of a single material");
-		} else {
-		    QW_material = geometry->getMaterial(point);
-		}
+            if (QW && !inQW)
+            { // QW start
+                if (foundQW)
+                {
+                    if (left != mesh->axis0[i])
+                        throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
+                    if (geometry->getMaterial(point) != QW_material)
+                        throw Exception("In this solver all quantum wells must be constructed of a single material");
+                }
+                else
+                {
+                    QW_material = geometry->getMaterial(point);
+                }
                 left = mesh->axis0[i];
                 inQW = true;
             }
-            if (!QW && inQW) { // QW end
+            if (!QW && inQW)
+            { // QW end
                 if (foundQW && right != mesh->axis0[i])
                     throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
                 right = mesh->axis0[i];
@@ -572,7 +618,8 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
                 inQW = false;
             }
         }
-        if (inQW) { // handle situation when QW spans to the end of the structure
+        if (inQW)
+        { // handle situation when QW spans to the end of the structure
             if (foundQW && right != mesh->axis0[points->axis0.size()])
                 throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
             right = mesh->axis0[points->axis0.size()];
@@ -608,6 +655,15 @@ double DiffusionCylindricalSolver::getZQWCoordinate()
         throw Exception("Active region error: no_QW = 0!");
 
     return coordinate;
+}
+
+void DiffusionCylindricalSolver::determineQwWidth()
+{
+    for (int i = 0; i< detected_QW.size(); i++)
+    {
+        global_QW_width += ( this->detected_QW[i].upper[1] - this->detected_QW[i].lower[1] );
+    }
+    global_QW_width *= 1e-4;
 }
 
 }}} //namespaces
