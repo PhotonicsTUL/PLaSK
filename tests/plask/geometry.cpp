@@ -97,6 +97,22 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2D(0.0, 0.0, 5.0, 8.0));
     }
 
+    BOOST_FIXTURE_TEST_CASE(shelf, Leafs2D) {
+        plask::shared_ptr<plask::ShelfContainer2D> shelf(new plask::ShelfContainer2D(0.0));
+        shelf->add(block_5_3);
+        shelf->addGap(10.0);
+        shelf->add(block_5_3);
+        BOOST_CHECK(shelf->isFlat());
+        BOOST_CHECK_EQUAL(shelf->getBoundingBox(), plask::Box2D(0.0, 0.0, 20.0, 3.0));
+        BOOST_CHECK_EQUAL(shelf->getMaterial(plask::vec(2.0, 2.0)), dumbMaterial);
+        BOOST_CHECK(!shelf->getMaterial(plask::vec(7.0, 2.0)));    //no material in gap
+        shelf->add(block_5_4);
+        BOOST_CHECK(!shelf->isFlat());
+        BOOST_CHECK_EQUAL(shelf->getBoundingBox(), plask::Box2D(0.0, 0.0, 25.0, 4.0));
+        shelf->setZeroHeightBefore(2);
+        BOOST_CHECK_EQUAL(shelf->getBoundingBox(), plask::Box2D(-15.0, 0.0, 10.0, 4.0));
+    }
+
     BOOST_AUTO_TEST_CASE(manager_loading) {
         plask::MaterialsDB materialsDB;
         initDumbMaterialDb(materialsDB);

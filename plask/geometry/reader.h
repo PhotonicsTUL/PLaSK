@@ -25,6 +25,8 @@ class GeometryReader {
 
   public:
 
+    static constexpr const char* XML_NAME_ATTR = "name";    ///< name of object's/geometry's name attribute in XML
+
     /**
      * Create new geometry object with parameters reading from XML source.
      *
@@ -204,7 +206,38 @@ class GeometryReader {
      * @return object with given name
      * @throw NoSuchGeometryObject if object was not found
      */
-    shared_ptr<GeometryObject> requireElementWithName(const std::string& name) const;
+    shared_ptr<GeometryObject> requireObjectWithName(const std::string& name) const;
+
+    /**
+     * Add name of object to register.
+     *
+     * It throws excepetion in case of names conflict.
+     * @param name name of given @p object (can be auto-generated: in form '#'+number)
+     * @param object geometry object
+     */
+    void registerObjectName(const std::string& name, shared_ptr<GeometryObject> object);
+
+    /**
+     * Add name of object to register. Do nothing if @p name has no value.
+     *
+     * It throws excepetion in case of names conflict.
+     * @param name name of given @p object (can be auto-generated: in form '#'+number)
+     * @param object geometry object
+     */
+    void registerObjectName(const boost::optional<std::string>& name, shared_ptr<GeometryObject> object) {
+        if (name) registerObjectName(*name, object);
+    }
+
+    /**
+     * Add name of object to register. Do nothing if @p name has no value.
+     *
+     * It throws excepetion in case of names conflict.
+     * @param name name of given @p object (can be auto-generated: in form '#'+number)
+     * @param object geometry object
+     */
+    void registerObjectName(const boost::optional<const std::string>& name, shared_ptr<GeometryObject> object) {
+        if (name) registerObjectName(*name, object);
+    }
 
 };
 

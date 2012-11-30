@@ -44,12 +44,12 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     std::string nodeName = source.getNodeName();
 
     if (nodeName == "ref") {
-        shared_ptr<GeometryObject> result = requireElementWithName(source.requireAttribute("name"));
+        shared_ptr<GeometryObject> result = requireObjectWithName(source.requireAttribute(XML_NAME_ATTR));
         source.requireTagEnd();
         return result;
     }
 
-    boost::optional<std::string> name = source.getAttribute("name");    // read name
+    boost::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);    // read name
     if (name && !isAutoName(*name))
         BadId::throwIfBad("geometry object", *name, '-');
 
@@ -58,16 +58,16 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     shared_ptr<GeometryObject> new_object;    //new object will be constructed
 
     if (nodeName == "copy") {   //TODO(?) move code of copy to virtual method of manager to allow custom support for it in GUI
-        shared_ptr<GeometryObject> from = requireElementWithName(source.requireAttribute("from"));
+        shared_ptr<GeometryObject> from = requireObjectWithName(source.requireAttribute("from"));
         GeometryObject::CompositeChanger changers;
         while (source.requireTagOrEnd()) {
             const std::string operation_name = source.getNodeName();
             if (operation_name == "replace") {
-                shared_ptr<GeometryObject> op_from = requireElementWithName(source.requireAttribute("object"));
+                shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
                 shared_ptr<GeometryObject> to;
                 boost::optional<std::string> to_name = source.getAttribute("to");
                 if (to_name) {
-                    to = requireElementWithName(*to_name);
+                    to = requireObjectWithName(*to_name);
                 } else {
                     source.requireTag();
                     to = readObject();
@@ -76,7 +76,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                 changers.append(new GeometryObject::ReplaceChanger(op_from, to, vec(0.0, 0.0, 0.0)));
                 source.requireTagEnd();
             } else if (operation_name == "toblock") {
-                shared_ptr<GeometryObject> op_from = requireElementWithName(source.requireAttribute("object"));
+                shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
                 shared_ptr<Material> blockMaterial = getMaterial(source.requireAttribute("material"));
                 changers.append(new GeometryObject::ToBlockChanger(op_from, blockMaterial));
                 source.requireTagEnd();
@@ -98,15 +98,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
         new_object = reader_it->second(*this); //and rest (but while reading this subtree, name is not registred yet)
     }
 
-    if (name) { //if have name, register it (add it to map of names)
-        if (isAutoName(*name)) {
-            if (!autoNamedObjects.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(*name, new_object)).second)
-                throw NamesConflictException("Auto-named geometry object", *name);
-        } else {    //normal name
-            if (!manager.namedObjects.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(*name, new_object)).second)
-                throw NamesConflictException("Geometry object", *name);
-        }
-    }
+    registerObjectName(name, new_object);
 
     if (roles) {  // if have some roles
         new_object->clearRoles();  // in case of copied object: overwrite
@@ -130,7 +122,7 @@ shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild() {
 shared_ptr<Geometry> GeometryReader::readGeometry() {
     ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
     std::string nodeName = source.getNodeName();
-    boost::optional<std::string> name = source.getAttribute("name");
+    boost::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);
     if (name) BadId::throwIfBad("geometry", *name, '-');
 //    std::string src = source.requireAttribute("over");
     // TODO read subspaces from XML
@@ -175,13 +167,23 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     return result;
 }
 
-shared_ptr<GeometryObject> GeometryReader::requireElementWithName(const std::string &name) const {
+shared_ptr<GeometryObject> GeometryReader::requireObjectWithName(const std::string &name) const {
     if (isAutoName(name)) {
         auto it = autoNamedObjects.find(name);
         if (it == autoNamedObjects.end()) throw NoSuchGeometryObject(name);
         return it->second;
     } else
         return manager.requireGeometryObject(name);
+}
+
+void GeometryReader::registerObjectName(const std::string &name, shared_ptr<GeometryObject> object) {
+    if (isAutoName(name)) {
+        if (!autoNamedObjects.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(name, object)).second)
+            throw NamesConflictException("Auto-named geometry object", name);
+    } else {    //normal name
+        if (!manager.namedObjects.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(name, object)).second)
+            throw NamesConflictException("Geometry object", name);
+    }
 }
 
 }   // namespace plask
