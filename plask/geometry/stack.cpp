@@ -466,19 +466,26 @@ shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
             },
             [&]() {
                 if (height_reader.tryReadZero(result)) return;
+                shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> this_gap;
                 if (reader.source.getNodeName() == Gap1D<2, Primitive<2>::DIRECTION_TRAN>::NAME) {
                     boost::optional<double> total_size_attr = reader.source.getAttribute<double>("total");
                     if (total_size_attr) {  //total size provided?
                         if (total_size_gap)
                             throw XMLException(reader.source, "Total size has been already chosen.");
                         required_total_size = *total_size_attr;
-                        total_size_gap =
+                        total_size_gap = this_gap =
                                 static_pointer_cast<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(
                                      static_pointer_cast<Translation<2>>(result->addGap(0.0).second)->getChild()
                                 );
                     } else {
-                        result->addGap(reader.source.requireAttribute<double>(Gap1D<2, Primitive<2>::DIRECTION_TRAN>::XML_SIZE_ATTR));
+                        this_gap =
+                        static_pointer_cast<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(
+                            static_pointer_cast<Translation<2>>(
+                                result->addGap(reader.source.requireAttribute<double>(Gap1D<2, Primitive<2>::DIRECTION_TRAN>::XML_SIZE_ATTR)).second
+                            )->getChild()
+                        );
                     }
+                    reader.registerObjectNameFromCurrentNode(this_gap);
                     reader.source.requireTagEnd();
                     return;
                 }

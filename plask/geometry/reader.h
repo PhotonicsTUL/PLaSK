@@ -26,6 +26,7 @@ class GeometryReader {
   public:
 
     static constexpr const char* XML_NAME_ATTR = "name";    ///< name of object's/geometry's name attribute in XML
+    static constexpr const char* XML_AXES_ATTR = "axes";    ///< name of axes attribute in XML
 
     /**
      * Create new geometry object with parameters reading from XML source.
@@ -213,7 +214,7 @@ class GeometryReader {
      *
      * It throws excepetion in case of names conflict.
      * @param name name of given @p object (can be auto-generated: in form '#'+number)
-     * @param object geometry object
+     * @param object geometry object which should be available by given @p name
      */
     void registerObjectName(const std::string& name, shared_ptr<GeometryObject> object);
 
@@ -222,7 +223,7 @@ class GeometryReader {
      *
      * It throws excepetion in case of names conflict.
      * @param name name of given @p object (can be auto-generated: in form '#'+number)
-     * @param object geometry object
+     * @param object geometry object which should be available by given @p name
      */
     void registerObjectName(const boost::optional<std::string>& name, shared_ptr<GeometryObject> object) {
         if (name) registerObjectName(*name, object);
@@ -233,10 +234,22 @@ class GeometryReader {
      *
      * It throws excepetion in case of names conflict.
      * @param name name of given @p object (can be auto-generated: in form '#'+number)
-     * @param object geometry object
+     * @param object geometry object which should be available by given @p name
      */
     void registerObjectName(const boost::optional<const std::string>& name, shared_ptr<GeometryObject> object) {
         if (name) registerObjectName(*name, object);
+    }
+
+
+    /**
+     * Add name of object to register. Read name from current, XML source tag.
+     * Do nothing if name attribute is not available.
+     *
+     * It throws excepetion in case of names conflict.
+     * @param object geometry object which should be available by name which was read from current tag
+     */
+    void registerObjectNameFromCurrentNode(shared_ptr<GeometryObject> object) {
+        registerObjectName(source.getAttribute(XML_NAME_ATTR), object);
     }
 
 };

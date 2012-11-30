@@ -16,7 +16,7 @@ void GeometryReader::registerObjectReader(const std::string &tag_name, object_re
 
 GeometryReader::ReadAxisNames::ReadAxisNames(GeometryReader &reader)
     : reader(reader), old(reader.axisNames) {
-    boost::optional<std::string> axis = reader.source.getAttribute("axes");
+    boost::optional<std::string> axis = reader.source.getAttribute(XML_AXES_ATTR);
     if (axis) reader.axisNames = &AxisNames::axisNamesRegister.get(*axis);
 }
 
