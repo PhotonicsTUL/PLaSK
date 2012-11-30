@@ -2049,7 +2049,7 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-    <stack shift="-1000">
+    <stack>
 \end_layout
 
 \begin_layout Plain Layout
@@ -2086,6 +2086,11 @@ tutorial1.xpl
 \begin_layout Plain Layout
 
       <block x="150" y="300" material="GaAs:Si=5e19" name="substrate"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <zero/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -2148,10 +2153,6 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-\end_layout
-
-\begin_layout Plain Layout
-
   <thermal solver="Static2D" name="therm">
 \end_layout
 
@@ -2183,10 +2184,6 @@ tutorial1.xpl
 \begin_layout Plain Layout
 
   </thermal>
-\end_layout
-
-\begin_layout Plain Layout
-
 \end_layout
 
 \begin_layout Plain Layout
@@ -2256,10 +2253,6 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-\end_layout
-
-\begin_layout Plain Layout
-
 </solvers>
 \end_layout
 
@@ -2298,15 +2291,7 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-\end_layout
-
-\begin_layout Plain Layout
-
 <!-- Here will go the script presented in the rest of this tutorial -->
-\end_layout
-
-\begin_layout Plain Layout
-
 \end_layout
 
 \begin_layout Plain Layout

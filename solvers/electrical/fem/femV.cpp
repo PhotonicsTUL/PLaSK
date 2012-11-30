@@ -260,16 +260,18 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Ban
         tK42 = tK31 = - (tKx + tKy) / 6.;
         tK32 = tK41 = (tKx - 2. * tKy) / 6.;
 
+        double tKr = tKy * tElemWidth / 12.;
+
         // set stiffness matrix
-        oA(tLoLeftNo, tLoLeftNo) += r * tK11;
-        oA(tLoRghtNo, tLoRghtNo) += r * tK22;
-        oA(tUpRghtNo, tUpRghtNo) += r * tK33;
-        oA(tUpLeftNo, tUpLeftNo) += r * tK44;
+        oA(tLoLeftNo, tLoLeftNo) += r * tK11 - tKr;
+        oA(tLoRghtNo, tLoRghtNo) += r * tK22 + tKr;
+        oA(tUpRghtNo, tUpRghtNo) += r * tK33 + tKr;
+        oA(tUpLeftNo, tUpLeftNo) += r * tK44 - tKr;
 
         oA(tLoRghtNo, tLoLeftNo) += r * tK21;
         oA(tUpRghtNo, tLoLeftNo) += r * tK31;
-        oA(tUpLeftNo, tLoLeftNo) += r * tK41;
-        oA(tUpRghtNo, tLoRghtNo) += r * tK32;
+        oA(tUpLeftNo, tLoLeftNo) += r * tK41 + tKr;
+        oA(tUpRghtNo, tLoRghtNo) += r * tK32 - tKr;
         oA(tUpLeftNo, tLoRghtNo) += r * tK42;
         oA(tUpLeftNo, tUpRghtNo) += r * tK43;
     }

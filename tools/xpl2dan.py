@@ -3,7 +3,7 @@
 import sys
 import os
 
-def pad(val, l=7):
+def pad(val, l=11):
     s = str(val)
     return s + ''.join([' ']*max(l-len(s), 0))
 
@@ -14,39 +14,52 @@ def parse_material(mat):
     dp, dc = mat[i].split('=')
     if dp[-2] == ' ': dp = dp[:-2] # there is no common way to get dopant concentration from carriers concentration
     return mat[0], dp, float(dc)
-    
-    
-def write_dan(name, allm=True):
+
+
+def write_dan(name, manager, allm=True):
     '''Write dan files for given prefix
-    
+
        'allm' indicates whether consider all materials as ones with constant values
     '''
 
-    print("Writing %s_temp.dan" % name)
+    print_log(LOG_INFO, "Writing %s_temp.dan" % name)
     ofile = open(name+'_temp.dan', 'w')
     def out(text):
         ofile.write(text + ' ')
     def outl(text):
         ofile.write(text + '\n')
 
-    geo = GEO.values()[0]
-        
+    geo = manager.geometries.values()[0]
+
     outl(name)
-    outl("All             material_lasera")
+    outl("All                     laser_material")
     if type(geo) == geometry.Cylindrical2D:
-        outl("1       1       symetria_osiowa_i_dlugosc_lasera")
+        outl("1           1           axis_symmetry_and_laser_length")
     elif type(geo) == geometry.Cartesian2D:
-        outl("0       %g      symetria_osiowa_i_dlugosc_lasera" % geometry.extrusion.length)
+        outl("0           %g          axis_symmetry_and_laser_length" % geo.extrusion.length)
     else:
         raise TypeError("3D geometry not supported")
-   
-    outl("0                             ustawienie_poziome")
-   
+
+    outl("0                       horizontal_setting")
+
     leafs = geo.get_leafs()
     boxes = geo.get_leafs_bboxes()
-    
-    outl("%s 1e-6    ilosc_obszarow_i_skala_wymiarowania" % pad(len(leafs)))
-    
+
+    outl("%s 1e-6        number_or_regions_and_dimension_scale" % pad(len(leafs)))
+
+    if len(manager.profiles) != 0:
+        print_log(LOG_WARNING, "Cannot determine where constant profiles defined in the XPL file are used.")
+        print_log(LOG_WARNING, "You must add constant heats to the '%s_temp.dan' manually." % name)
+
+    # Determine solvers
+    thermal = None
+    electrical = None
+    for solver in manager.solvers.values():
+        if type(solver).__module__.split('.')[0] == "thermal":
+            thermal = solver
+        elif type(solver).__module__ == 'electrical.fem': # or  type(solver).__module__ == 'electrical.other_relevant_lib':
+            electrical = solver
+
     for i,(obj,box) in enumerate(zip(leafs, boxes)):
         # first line
         out("\n" + pad(i+1))
@@ -59,20 +72,22 @@ def write_dan(name, allm=True):
         # second line
         if geo.child.has_role('active', point):
             mt = 'j'
-            cx, cy = 1e-6, 0.2
-            #TODO get it from the solver
+            if electrical is not None:
+                cx, cy = electrical.pnjcond
+            else:
+                cx, cy = 1e-6, 0.2
         elif allm or mat.cond(300.) == mat.cond(400.):
             mt = 'm'
             try:
                 cx, cy = mat.cond(300.)
             except NotImplementedError:
-                cx, cy = mat.air.cond(300.)
+                cx, cy = material.air.cond(300.)
                 noheat = True
         else:
             raise NotImplementedError("Allowing not constant maters is not implemented")
-        outl( "%s %s %s       przewodnosc_wlasciwa" % (pad(cx,15), pad(cy,15), mt) )
+        outl( "%s %s %s           electrical_conductivity" % (pad(cx,23), pad(cy,23), mt) )
         # third line
-        outl( "%s %s koncentracja_domieszka" % (pad(dc,31), pad(dp)) )
+        outl( "%s %s doping_concentration" % (pad(dc,47), pad(dp)) )
         # fourth line
         if allm or mat.thermk(300.) == material.thermk(400.):
             mt = 'm'
@@ -83,52 +98,62 @@ def write_dan(name, allm=True):
                 noheat = True
         else:
             raise NotImplementedError("Allowing not constant materials is not implemented")
-        outl( "%s %s %s       przewodnosc_cieplna" % (pad(kx,15), pad(ky,15), mt) )
-        # firth line
+        outl( "%s %s %s           thermal_conductivity" % (pad(kx,23), pad(ky,23), mt) )
+        # fifth line
         if noheat:
-            outl("0               0.0                     wydajnosc_zrodel_ciepla")
+            outl("0                                               0.0         no_heat_sources")
         elif geo.child.has_role('active', point):
-            outl("-200            0.0                     wydajnosc_zrodel_ciepla")
-        # TODO constant heats
+            outl("-200                                            0.0         junction_heat")
         else:
-            outl("-100            0.0                     wydajnosc_zrodel_ciepla")
+            outl("-100                                            0.0         joules_heat")
 
     outl("")
-    
-    outl("0                                       warunki_brzegowe_potencjal")      #TODO
-    outl("0                                       warunki_brzegowe_temperatura")    #TODO
-    outl("0                                       warunki_brzegowe_konwekcja")      #TODO
-    outl("0                                       warunki_brzegowe_strumien")       #TODO
-    outl("0                                       warunki_brzegowe_radiacja")       #TODO
-    outl("0                                       linie_uzgodnienia_siatki")        #TODO
 
-    outl("KONIEC")
-             
+    def parse_boundary(solver, name):
+        lines = []
+        if solver is not None:
+            for i,(bound,value) in enumerate(eval("solver.%s_boundary" % name)):
+                points = [ solver.mesh[i] for i in bound(solver.mesh) ]
+                if points:
+                    xx = [ p[0] for p in points ]
+                    yy = [ p[1] for p in points ]
+                    samex = xx.count(xx[0]) == len(xx)
+                    samey = yy.count(yy[0]) == len(yy)
+                    if not (samex or samey):
+                        print_log(LOG_WARNING, "Boundary no %d for %s is not straight line. Skipping it. Add it manually." % (i,name))
+                    else:
+                        lines.append("%s %s %s %s %s %s_boundary" % (pad(min(xx)), pad(min(yy)), pad(max(xx)), pad(max(yy)), pad(value), name))
+        outl("%s boundary_conditions_%s" % (pad(len(lines),59),name))
+        for line in lines:
+            outl(line)
+
+    parse_boundary(electrical, 'voltage')
+    parse_boundary(thermal, 'temperature')
+    parse_boundary(thermal, 'convection')
+    parse_boundary(thermal, 'heatflux')
+    parse_boundary(thermal, 'radiation')
+
+    outl("0                                                           mesh_lines")        #TODO (mesh generator refinements)
+
+    outl("THE_END")
+
 
 if __name__ == "__main__":
-
-    code = 0
 
     try:
         iname = sys.argv[1]
     except IndexError:
-        sys.stderr.write("Usage: %s input_file_temp.dan\n" % sys.argv[0])
-        code = 2
+        print_log(LOG_CRITICAL_ERROR, "Usage: %s input_file.xpl\n" % sys.argv[0])
+        sys.exit(2)
     else:
         dest_dir = os.path.dirname(iname)
         name = os.path.join(dest_dir, iname[:-4])
 
-        try:
-            load(iname)
-            if len(GEO) != 1:
-                raise ValueError("More than one geometry defined in %s" % iname)
-            write_dan(name)
-        except Exception as err:
-            import traceback as tb
-            tb.print_exc()
-            #sys.stderr.write("\n%s: %s\n" % (err.__class__.__name__, err))
-            code = 1
-        else:
-            print("\nDone!")
+        manager = plask.Manager()
+        manager.load(iname)
+        if len(manager.geometries) != 1:
+            raise ValueError("More than one geometry defined in %s" % iname)
+        write_dan(name, manager)
 
-    sys.exit(code)
+        print_log(LOG_INFO, "Done!")
+
