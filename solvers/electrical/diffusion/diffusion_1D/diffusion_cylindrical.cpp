@@ -11,11 +11,11 @@ namespace plask { namespace solvers { namespace diffusion_cylindrical {
 void DiffusionCylindricalSolver::onInitialize()
 {
     symmetry_type = "VCSEL";
-    mes_method = "parabolic";
+//    mes_method = "parabolic";
     relative_accuracy = 0.01;
 //    interpolation_method = "linear";
     max_mesh_change = 5;
-    max_iterations = 50;
+    max_iterations = 20;
     global_QW_width = 0.0;
 
     detected_QW = detectQuantumWells();
@@ -245,8 +245,8 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                     T = T_on_the_mesh[i+1];
                     n0 = n_previous[i+1];
 
-                    r1 = mesh[i];
-                    r2 = mesh[i+1];
+                    r1 = mesh[i]*1e-4;
+                    r2 = mesh[i+1]*1e-4;
 
                     double j1 = abs(j_on_the_mesh[i][1]*1e+3);
                     double j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
@@ -303,8 +303,8 @@ bool DiffusionCylindricalSolver::CylindricalMES()
                     T = T_on_the_mesh[2*i + 1];                 // warto�� w w��le �rodkowym elementu
                     n0 = n_previous[2*i + 1];                // warto�� w w��le �rodkowym elementu
 
-                    r1 = mesh[2*i];
-                    r3 = mesh[2*i + 2];
+                    r1 = mesh[2*i]*1e-4;
+                    r3 = mesh[2*i + 2]*1e-4;
 
                     K = DiffusionCylindricalSolver::K(T);
 //                    K = (this->*KPointer)(2*i + 1, T, n0);      // warto�� w w��le �rodkowym elementu
@@ -506,7 +506,7 @@ double DiffusionCylindricalSolver::F(int i, double T, double n0)
 double DiffusionCylindricalSolver::nSecondDeriv(int i)
 {
     double n_second_deriv;     // druga pochodna n po r
-    double dr = (r_max - r_min)/(double)no_points;
+    double dr = (r_max - r_min)*1e-4/(double)no_points;
 
     if (mes_method != "parabolic")  // 02.10.2012 Marcin Gebski
     {
@@ -519,9 +519,9 @@ double DiffusionCylindricalSolver::nSecondDeriv(int i)
             n_central = n_present[i];
 
             if (symmetry_type == "VCSEL")
-                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/mesh[i] * (n_right - n_left) / (2*dr);
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
             else if (symmetry_type == "EEL")
-                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/mesh[i];
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4);
         }
         else if (i == 0)     // punkt r = 0
         {
@@ -538,17 +538,17 @@ double DiffusionCylindricalSolver::nSecondDeriv(int i)
             n_central = n_present[i];
 
             if (symmetry_type == "VCSEL")
-                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/mesh[i] * (n_right - n_left) / (2*dr);
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
             else if (symmetry_type == "EEL")
-                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/mesh[i];
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4);
         }
     }
     else if (mes_method == "parabolic")  // 02.10.2012 Marcin Gebski
     {
         if (symmetry_type == "VCSEL")
-            n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/pow(mesh[i+1] - mesh[i-1],2)) + (1.0/mesh[i]) * (1.0/(mesh[i+1]-mesh[i-1])) * (n_present[i+1] - n_present[i-1]);
+            n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/pow((mesh[i+1] - mesh[i-1])*1e-4,2)) + (1.0/(mesh[i]*1e-4)) * (1.0/((mesh[i+1]-mesh[i-1])*1e-4)) * (n_present[i+1] - n_present[i-1]);
         else if (symmetry_type == "EEL")
-            n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/pow(mesh[i+1] - mesh[i-1],2));
+            n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/pow((mesh[i+1] - mesh[i-1])*1e-4,2));
     }
 
     return n_second_deriv;
