@@ -184,9 +184,9 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymM
         double tKx, tKy;
         auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
         if (tLeaf)
-            std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height());
+            std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height()));
         else
-            std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
+            std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp));
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -321,9 +321,9 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSy
         double tKx, tKy;
         auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
         if (tLeaf)
-            std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height());
+            std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height()));
         else
-            std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
+            std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp));
 
         tKx = tKx * tElemHeight / tElemWidth;
         tKy = tKy * tElemWidth / tElemHeight;
@@ -571,9 +571,9 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
                         this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf)
                      );
         if (tLeaf)
-            std::tie(tKx,tKy) = tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height());
+            std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height()));
         else
-            std::tie(tKx,tKy) = tMaterial->thermk(tTemp);
+            std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp));
 
 
         mHeatFluxes[tE.getIndex()] = vec(

@@ -13,9 +13,9 @@ MI_PROPERTY(Cu, cond,
             MIComment("fit from: ?Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-std::pair<double,double> Cu::cond(double T) const {
+Tensor2<double> Cu::cond(double T) const {
     double tCond = 1. / (6.81e-11*(T-300.)+1.726e-8);
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 MI_PROPERTY(Cu, thermk,
@@ -23,9 +23,9 @@ MI_PROPERTY(Cu, thermk,
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-std::pair<double,double> Cu::thermk(double T, double t) const {
+Tensor2<double> Cu::thermk(double T, double t) const {
     double tCondT = 400.8*pow((300./T),0.073);
-    return ( std::make_pair(tCondT, tCondT) );
+    return ( Tensor2<double>(tCondT, tCondT) );
 }
 
 MI_PROPERTY(Cu, absp,

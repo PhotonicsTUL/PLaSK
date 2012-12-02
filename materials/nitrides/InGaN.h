@@ -21,7 +21,7 @@ struct InGaN: public Semiconductor {
     InGaN(const Material::Composition& Comp);
     virtual std::string name() const;
     virtual std::string str() const;
-    virtual std::pair<double,double> thermk(double T, double t) const;
+    virtual Tensor2<double> thermk(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
     virtual double Eg(double T, char point) const;

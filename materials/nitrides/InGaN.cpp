@@ -20,10 +20,10 @@ MI_PROPERTY(InGaN, thermk,
             MISource("B. N. Pantha et al., Applied Physics Letters 92 (2008) 042112"),
             MIComment("based on data for In: 16% - 36%")
             )
-std::pair<double,double> InGaN::thermk(double T, double t) const {
-    double lCondT = 1/(In/mInN.thermk(T).first + Ga/mGaN.thermk(T,t).first + In*Ga*0.215*exp(7.913*In)),
-           vCondT = 1/(In/mInN.thermk(T).second + Ga/mGaN.thermk(T,t).second + In*Ga*0.215*exp(7.913*In));
-    return(std::make_pair(lCondT,vCondT));
+Tensor2<double> InGaN::thermk(double T, double t) const {
+    double lCondT = 1/(In/mInN.thermk(T).c00 + Ga/mGaN.thermk(T,t).c00 + In*Ga*0.215*exp(7.913*In)),
+           vCondT = 1/(In/mInN.thermk(T).c11 + Ga/mGaN.thermk(T,t).c11 + In*Ga*0.215*exp(7.913*In));
+    return(Tensor2<double>(lCondT,vCondT));
  }
 
 MI_PROPERTY(InGaN, absp,

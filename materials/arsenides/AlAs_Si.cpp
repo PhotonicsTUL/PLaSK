@@ -30,8 +30,8 @@ AlAs_Si::AlAs_Si(DopingAmountType Type, double Val) {
 MI_PROPERTY(AlAs_Si, mob,
             MIComment("TODO")
             )
-std::pair<double,double> AlAs_Si::mob(double T) const {
-    return ( std::make_pair(mob_RT,mob_RT) );
+Tensor2<double> AlAs_Si::mob(double T) const {
+    return ( Tensor2<double>(mob_RT,mob_RT) );
 }
 
 MI_PROPERTY(AlAs_Si, Nf,
@@ -48,9 +48,9 @@ double AlAs_Si::Dop() const {
 MI_PROPERTY(AlAs_Si, cond,
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs_Si::cond(double T) const {
+Tensor2<double> AlAs_Si::cond(double T) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 static MaterialsDB::Register<AlAs_Si> materialDB_register_AlAs_Si;

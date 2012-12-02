@@ -45,28 +45,28 @@ double GaInP::Dso(double T) const {
 MI_PROPERTY(GaInP, Me,
             MISource("nonlinear interpolation: GaP, InP")
             )
-std::pair<double,double> GaInP::Me(double T, char point) const {
-    double lMe = Ga*mGaP.Me(T,point).first + In*mInP.Me(T,point).first - Ga*In*0.01854,
-           vMe = Ga*mGaP.Me(T,point).second + In*mInP.Me(T,point).second - Ga*In*0.01854;
-    return ( std::make_pair(lMe,vMe) );
+Tensor2<double> GaInP::Me(double T, char point) const {
+    double lMe = Ga*mGaP.Me(T,point).c00 + In*mInP.Me(T,point).c00 - Ga*In*0.01854,
+           vMe = Ga*mGaP.Me(T,point).c11 + In*mInP.Me(T,point).c11 - Ga*In*0.01854;
+    return ( Tensor2<double>(lMe,vMe) );
 }
 
 MI_PROPERTY(GaInP, Mhh,
             MISource("linear interpolation: GaP, InP")
             )
-std::pair<double,double> GaInP::Mhh(double T, char point) const {
-    double lMhh = Ga*mGaP.Mhh(T,point).first + In*mInP.Mhh(T,point).first,
-           vMhh = Ga*mGaP.Mhh(T,point).second + In*mInP.Mhh(T,point).second;
-    return ( std::make_pair(lMhh,vMhh) );
+Tensor2<double> GaInP::Mhh(double T, char point) const {
+    double lMhh = Ga*mGaP.Mhh(T,point).c00 + In*mInP.Mhh(T,point).c00,
+           vMhh = Ga*mGaP.Mhh(T,point).c11 + In*mInP.Mhh(T,point).c11;
+    return ( Tensor2<double>(lMhh,vMhh) );
 }
 
 MI_PROPERTY(GaInP, Mlh,
             MISource("linear interpolation: GaP, InP")
             )
-std::pair<double,double> GaInP::Mlh(double T, char point) const {
-    double lMlh = Ga*mGaP.Mlh(T,point).first + In*mInP.Mlh(T,point).first,
-           vMlh = Ga*mGaP.Mlh(T,point).second + In*mInP.Mlh(T,point).second;
-    return ( std::make_pair(lMlh,vMlh) );
+Tensor2<double> GaInP::Mlh(double T, char point) const {
+    double lMlh = Ga*mGaP.Mlh(T,point).c00 + In*mInP.Mlh(T,point).c00,
+           vMlh = Ga*mGaP.Mlh(T,point).c11 + In*mInP.Mlh(T,point).c11;
+    return ( Tensor2<double>(lMlh,vMlh) );
 }
 
 MI_PROPERTY(GaInP, ac,
@@ -140,10 +140,10 @@ double GaInP::D(double T) const {
 MI_PROPERTY(GaInP, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
             )
-std::pair<double,double> GaInP::thermk(double T, double t) const {
-    double lCondT = 1./(Ga/mGaP.thermk(T,t).first + In/mInP.thermk(T,t).first + Ga*In*0.72),
-           vCondT = 1./(Ga/mGaP.thermk(T,t).second + In/mInP.thermk(T,t).second + Ga*In*0.72);
-    return ( std::make_pair(lCondT,vCondT) );
+Tensor2<double> GaInP::thermk(double T, double t) const {
+    double lCondT = 1./(Ga/mGaP.thermk(T,t).c00 + In/mInP.thermk(T,t).c00 + Ga*In*0.72),
+           vCondT = 1./(Ga/mGaP.thermk(T,t).c11 + In/mInP.thermk(T,t).c11 + Ga*In*0.72);
+    return ( Tensor2<double>(lCondT,vCondT) );
 }
 
 MI_PROPERTY(GaInP, nr,

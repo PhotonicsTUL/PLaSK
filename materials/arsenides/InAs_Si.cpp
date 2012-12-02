@@ -19,8 +19,8 @@ InAs_Si::InAs_Si(DopingAmountType Type, double Val) {
 MI_PROPERTY(InAs_Si, mob,
             MIComment("TODO")
             )
-std::pair<double,double> InAs_Si::mob(double T) const {
-    return ( std::make_pair(mob_RT,mob_RT) );
+Tensor2<double> InAs_Si::mob(double T) const {
+    return ( Tensor2<double>(mob_RT,mob_RT) );
 }
 
 MI_PROPERTY(InAs_Si, Nf,
@@ -37,9 +37,9 @@ double InAs_Si::Dop() const {
 MI_PROPERTY(InAs_Si, cond,
 			MIComment("no temperature dependence")
             )
-std::pair<double,double> InAs_Si::cond(double T) const {
+Tensor2<double> InAs_Si::cond(double T) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 static MaterialsDB::Register<InAs_Si> materialDB_register_InAs_Si;

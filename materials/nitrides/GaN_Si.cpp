@@ -30,9 +30,9 @@ MI_PROPERTY(GaN_Si, mob,
             MIArgumentRange(MaterialInfo::T, 270, 400),
             MIComment("based on 7 papers (1996-2007): undoped/Si-doped GaN/c-sapphire")
             )
-std::pair<double,double> GaN_Si::mob(double T) const {
+Tensor2<double> GaN_Si::mob(double T) const {
     double tMob = mob_RT*(1.486-T*0.00162);
-    return (std::make_pair(tMob,tMob));
+    return (Tensor2<double>(tMob,tMob));
 }
 
 MI_PROPERTY(GaN_Si, Nf,
@@ -52,8 +52,8 @@ double GaN_Si::Dop() const {
 MI_PROPERTY(GaN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
-std::pair<double,double> GaN_Si::cond(double T) const {
-    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
+Tensor2<double> GaN_Si::cond(double T) const {
+    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(GaN_Si, thermk,
@@ -61,11 +61,11 @@ MI_PROPERTY(GaN_Si, thermk,
             MISource("Y. Oshima et al., Phys. Status Solidi C 4 (2007) 2215"),
             MIComment("Nf: 1e18 - 1e19 cm^-3")
             )
-std::pair<double,double> GaN_Si::thermk(double T, double t) const {
+Tensor2<double> GaN_Si::thermk(double T, double t) const {
     double fun_Nf = 2.18*std::pow(Nf_RT,-0.022);
     auto p = GaN::thermk(T,t);
-    p.first *= fun_Nf;
-    p.second *= fun_Nf;
+    p.c00 *= fun_Nf;
+    p.c11 *= fun_Nf;
     return p;
  }
 

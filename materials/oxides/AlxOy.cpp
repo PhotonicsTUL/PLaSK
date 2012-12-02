@@ -12,16 +12,16 @@ MI_PROPERTY(AlxOy, cond,
             MISource("A. Inoue et al., Journal of Materials Science 22 (1987) 2063-2068"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlxOy::cond(double T) const {
-    return ( std::make_pair(1e-7, 1e-7) );
+Tensor2<double> AlxOy::cond(double T) const {
+    return ( Tensor2<double>(1e-7, 1e-7) );
 }
 
 MI_PROPERTY(AlxOy, thermk,
             MISource("M. Le Du et al., Electronics Letters 42 (2006) 65-66"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlxOy::thermk(double T) const {
-    return ( std::make_pair(0.7, 0.7) );
+Tensor2<double> AlxOy::thermk(double T) const {
+    return ( Tensor2<double>(0.7, 0.7) );
 }
 
 MI_PROPERTY(AlxOy, absp,

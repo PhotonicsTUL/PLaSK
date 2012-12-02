@@ -18,12 +18,12 @@ struct InN: public Semiconductor {
     static constexpr const char* NAME = "InN";
 
     virtual std::string name() const;
-    virtual std::pair<double,double> thermk(double T) const;
+    virtual Tensor2<double> thermk(double T) const;
     virtual double lattC(double T, char x) const;
     virtual double Eg(double T, char point) const;
-    virtual std::pair<double,double> Me(double T, char point) const;
-    virtual std::pair<double,double> Mhh(double T, char point) const;
-    virtual std::pair<double,double> Mlh(double T, char point) const;
+    virtual Tensor2<double> Me(double T, char point) const;
+    virtual Tensor2<double> Mhh(double T, char point) const;
+    virtual Tensor2<double> Mlh(double T, char point) const;
 
 };
 

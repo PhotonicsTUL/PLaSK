@@ -25,15 +25,15 @@ AlGaAs_C::AlGaAs_C(const Material::Composition& Comp, DopingAmountType Type, dou
         NA = Val;
     }
     double fx2 = 0.66 / (1. + pow(Al/0.21,3.)) + 0.34; // (1.00-0.34) / (1. + pow(Al/0.21,3.)) + 0.34;
-    mob_RT = mGaAs_C.mob(300.).first * fx2;
+    mob_RT = mGaAs_C.mob(300.).c00 * fx2;
 }
 
 MI_PROPERTY(AlGaAs_C, mob,
             MISource("based on 4 papers 1991-2000 about C-doped AlGaAs"),
             MISource("based on C-doped GaAs")
             )
-std::pair<double,double> AlGaAs_C::mob(double T) const {
-    return ( std::make_pair(mob_RT, mob_RT) );
+Tensor2<double> AlGaAs_C::mob(double T) const {
+    return ( Tensor2<double>(mob_RT, mob_RT) );
 }
 
 MI_PROPERTY(AlGaAs_C, Nf,
@@ -48,9 +48,9 @@ double AlGaAs_C::Dop() const {
     return ( NA );
 }
 
-std::pair<double,double> AlGaAs_C::cond(double T) const {
+Tensor2<double> AlGaAs_C::cond(double T) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 static MaterialsDB::Register<AlGaAs_C> materialDB_register_AlGaAs_C;

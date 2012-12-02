@@ -40,11 +40,11 @@ MI_PROPERTY(InP, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> InP::Me(double T, char point) const {
-    std::pair<double,double> tMe(0., 0.);
+Tensor2<double> InP::Me(double T, char point) const {
+    Tensor2<double> tMe(0., 0.);
     if (point == 'G') {
-        tMe.first = 0.07927;
-        tMe.second = 0.07927;
+        tMe.c00 = 0.07927;
+        tMe.c11 = 0.07927;
     }
     return ( tMe );
 }
@@ -53,8 +53,8 @@ MI_PROPERTY(InP, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> InP::Mhh(double T, char point) const {
-    std::pair<double,double> tMhh(0.46, 0.46); // [001]
+Tensor2<double> InP::Mhh(double T, char point) const {
+    Tensor2<double> tMhh(0.46, 0.46); // [001]
     return ( tMhh );
 }
 
@@ -62,8 +62,8 @@ MI_PROPERTY(InP, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> InP::Mlh(double T, char point) const {
-    std::pair<double,double> tMlh(0.12, 0.12);
+Tensor2<double> InP::Mlh(double T, char point) const {
+    Tensor2<double> tMlh(0.12, 0.12);
     return ( tMlh );
 }
 
@@ -113,9 +113,9 @@ MI_PROPERTY(InP, thermk,
             MISource("L. Piskorski, unpublished"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 300, 800)
             )
-std::pair<double,double> InP::thermk(double T, double t) const {
+Tensor2<double> InP::thermk(double T, double t) const {
     double tCondT = 68.*pow((300./T),1.5);
-    return ( std::make_pair(tCondT, tCondT) );
+    return ( Tensor2<double>(tCondT, tCondT) );
 }
 
 MI_PROPERTY(InP, nr,

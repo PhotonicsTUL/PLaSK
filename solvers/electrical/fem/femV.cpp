@@ -71,7 +71,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                     auto tConds = splitString2(*tCondJunc0, ',');
                     boost::trim(tConds.first);
                     boost::trim(tConds.second);
-                    if (tConds.second != "") {
+                    if (tConds.first != "") {
                         mCondJuncX0 = boost::lexical_cast<double>(tConds.first);
                         mCondJuncY0 = boost::lexical_cast<double>(tConds.second);
                     } else
@@ -154,16 +154,16 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandS
         double tElemWidth = tE.getUpper0() - tE.getLower0();
         double tElemHeight = tE.getUpper1() - tE.getLower1();
 
-        double tKx, tKy;
         Vec<2,double> tMidPoint = tE.getMidpoint();
         if (mLoopNo != 0 && geometry->hasRoleAt("active", tMidPoint)) {
             auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
             double tDact = 1e-6 * tLeaf->getBoundingBox().height();
-            double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
+            double tJy = 0.5e6 * mCond[i].c11 * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
                                                     / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
             mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
         }
-        std::tie(tKx, tKy) = mCond[i];
+        double tKx = mCond[i].c00;
+        double tKy = mCond[i].c11;
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -239,15 +239,15 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Ban
         Vec<2,double> tMidPoint = tE.getMidpoint();
         double r = tMidPoint.rad_r();
 
-        double tKx, tKy;
         if (mLoopNo != 0 && geometry->hasRoleAt("active", tMidPoint)) {
             auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
             double tDact = 1e-6 * tLeaf->getBoundingBox().height();
-            double tJy = 0.5e6 * mCond[i].second * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
+            double tJy = 0.5e6 * mCond[i].c11 * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
                                                     / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
             mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
         }
-        std::tie(tKx, tKy) = mCond[i];
+        double tKx = mCond[i].c00;
+        double tKy = mCond[i].c11;
 
         tKx *= tElemHeight; tKx /= tElemWidth;
         tKy *= tElemWidth; tKy /= tElemHeight;
@@ -445,7 +445,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                              / (tE.getUpper0() - tE.getLower0()); // [j] = kA/cm²
         double tDVy = - 0.05 * (- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
                              / (tE.getUpper1() - tE.getLower1()); // [j] = kA/cm²
-        mCurrentDensities[i] = vec(mCond[i].first * tDVx, mCond[i].second * tDVy);
+        mCurrentDensities[i] = vec(mCond[i].c00 * tDVx, mCond[i].c11 * tDVy);
     }
 }
 
@@ -469,7 +469,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                                     / (tE.getUpper0() - tE.getLower0()); // [grad(dV)] = V/m
                 double tDVy = 0.5e6 * (- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
                                     / (tE.getUpper1() - tE.getLower1()); // [grad(dV)] = V/m
-                mHeatDensities[i] = mCond[i].first * tDVx*tDVx + mCond[i].second * tDVy*tDVy;
+                mHeatDensities[i] = mCond[i].c00 * tDVx*tDVx + mCond[i].c11 * tDVy*tDVy;
             }
         }
     } else {
@@ -494,12 +494,12 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                         this->writelog(LOG_DEBUG, "active layer thickness = %1%nm", 1e9 * *tDact);
                     #endif
                 }
-                double tJy = mCond[i].second * fabs(tDVy); // [j] = A/m²
+                double tJy = mCond[i].c11 * fabs(tDVy); // [j] = A/m²
                 mHeatDensities[i] = phys::h_J * phys::c * tJy / ( phys::qe * real(inWavelength())*1e-9 * *tDact );
             } else if (tRoles.find("noheat") != tRoles.end())
                 mHeatDensities[i] = 0.;
             else
-                mHeatDensities[i] = mCond[i].first * tDVx*tDVx + mCond[i].second * tDVy*tDVy;
+                mHeatDensities[i] = mCond[i].c00 * tDVx*tDVx + mCond[i].c11 * tDVy*tDVy;
         }
     }
 }

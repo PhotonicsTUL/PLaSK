@@ -13,9 +13,9 @@ MI_PROPERTY(Au, cond,
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-std::pair<double,double> Au::cond(double T) const {
+Tensor2<double> Au::cond(double T) const {
     double tCond = 1. / (8.38e-11*(T-300.)+2.279e-8);
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 MI_PROPERTY(Au, thermk,
@@ -23,9 +23,9 @@ MI_PROPERTY(Au, thermk,
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-std::pair<double,double> Au::thermk(double T, double t) const {
+Tensor2<double> Au::thermk(double T, double t) const {
     double tCondT = -0.064*(T-300.)+317.1;
-    return ( std::make_pair(tCondT, tCondT) );
+    return ( Tensor2<double>(tCondT, tCondT) );
 }
 
 MI_PROPERTY(Au, absp,

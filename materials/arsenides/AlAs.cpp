@@ -40,11 +40,11 @@ MI_PROPERTY(AlAs, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::Me(double T, char point) const {
-    std::pair<double,double> tMe(0., 0.);
+Tensor2<double> AlAs::Me(double T, char point) const {
+    Tensor2<double> tMe(0., 0.);
     if (point == 'G') {
-        tMe.first = 0.124;
-        tMe.second = 0.124;
+        tMe.c00 = 0.124;
+        tMe.c11 = 0.124;
     }
     return ( tMe );
 }
@@ -53,8 +53,8 @@ MI_PROPERTY(AlAs, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::Mhh(double T, char point) const {
-    std::pair<double,double> tMhh(0.51, 0.51); // [001]
+Tensor2<double> AlAs::Mhh(double T, char point) const {
+    Tensor2<double> tMhh(0.51, 0.51); // [001]
     return ( tMhh );
 }
 
@@ -62,8 +62,8 @@ MI_PROPERTY(AlAs, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::Mlh(double T, char point) const {
-    std::pair<double,double> tMlh(0.18, 0.18);
+Tensor2<double> AlAs::Mlh(double T, char point) const {
+    Tensor2<double> tMlh(0.18, 0.18);
     return ( tMlh );
 }
 
@@ -111,8 +111,8 @@ MI_PROPERTY(AlAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AlAs::thermk(double T, double t) const {
-    return(std::make_pair(91., 91.));
+Tensor2<double> AlAs::thermk(double T, double t) const {
+    return(Tensor2<double>(91., 91.));
 }
 
 static MaterialsDB::Register<AlAs> materialDB_register_AlAs;

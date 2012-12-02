@@ -22,7 +22,7 @@ double Air::CBO(double T, char point) const { throwNotApplicable("CBO(double T, 
 
 double Air::chi(double T, char point) const { throwNotApplicable("chi(double T, char point)"); return 0; }
 
-std::pair<double,double> Air::cond(double T) const { return std::make_pair(1e-6,1e-6); }
+Tensor2<double> Air::cond(double T) const { return 1e-6; }
 
 Material::ConductivityType Air::condtype() const { return Material::CONDUCTIVITY_OTHER; }
 
@@ -41,15 +41,15 @@ double Air::eps(double T) const { return 1.0; }
 
 double Air::lattC(double T, char x) const { throwNotApplicable("lattC(double T, char x)"); return 0; }
 
-std::pair<double,double> Air::Me(double T, char point) const { throwNotApplicable("Me(double T, char point)"); return std::make_pair(0.,0.); }
+Tensor2<double> Air::Me(double T, char point) const { throwNotApplicable("Me(double T, char point)"); return 0.; }
 
-std::pair<double,double> Air::Mh(double T, char EqType) const { throwNotApplicable("Mh(double T, char EqType)"); return std::make_pair(0.,0.); }
+Tensor2<double> Air::Mh(double T, char EqType) const { throwNotApplicable("Mh(double T, char EqType)"); return 0.; }
 
-std::pair<double,double> Air::Mhh(double T, char point) const { throwNotApplicable("Mhh(double T, char point)"); return std::make_pair(0.,0.); }
+Tensor2<double> Air::Mhh(double T, char point) const { throwNotApplicable("Mhh(double T, char point)"); return 0.; }
 
-std::pair<double,double> Air::Mlh(double T, char point) const { throwNotApplicable("B(double T)"); return std::make_pair(0.,0.); }
+Tensor2<double> Air::Mlh(double T, char point) const { throwNotApplicable("B(double T)"); return 0.; }
 
-std::pair<double,double> Air::mob(double T) const { throwNotApplicable("mob(double T)"); return std::make_pair(0.,0.); }
+Tensor2<double> Air::mob(double T) const { throwNotApplicable("mob(double T)"); return 0.; }
 
 double Air::Mso(double T) const { throwNotApplicable("Mso(double T)"); return 0; }
 
@@ -64,8 +64,8 @@ double Air::nr(double wl, double T) const { return 1.; }
 
 double Air::cp(double T) const { throwNotApplicable("cp(double T)"); return 0; }
 
-std::pair<double,double> Air::thermk(double T) const { return std::make_pair(5e-5,5e-5); }
-std::pair<double,double> Air::thermk(double T, double thickness) const { return std::make_pair(5e-5,5e-5); }
+Tensor2<double> Air::thermk(double T) const { return 5e-5; }
+Tensor2<double> Air::thermk(double T, double thickness) const { return 5e-5; }
 
 double Air::VBO(double T) const { throwNotApplicable("VBO(double T)"); return 0; }
 

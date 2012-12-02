@@ -19,8 +19,8 @@ AlN_Mg::AlN_Mg(DopingAmountType Type, double Val) {
     NA = 2e19;
 }
 
-std::pair<double,double> AlN_Mg::mob(double T) const {
-    return std::make_pair<>(mob_RT, mob_RT);
+Tensor2<double> AlN_Mg::mob(double T) const {
+    return Tensor2<double>(mob_RT, mob_RT);
 }
 
 double AlN_Mg::Nf(double T) const {
@@ -38,9 +38,9 @@ MI_PROPERTY(AlN_Mg, cond,
             MISource("M. L. Nakarmi et al., Appl. Phys. Lett. 89 (2006) 152120"),
             MIArgumentRange(MaterialInfo::T, 300, 900)
             )
-std::pair<double,double> AlN_Mg::cond(double T) const {
+Tensor2<double> AlN_Mg::cond(double T) const {
     double tCond = 3e-5*pow((T/300.),9.75);
-    return (std::make_pair(tCond, tCond)); //TODO was std::make_pair(tCondt, tCond) - compilation error
+    return (Tensor2<double>(tCond, tCond)); //TODO was Tensor2<double>(tCondt, tCond) - compilation error
 }
 
 MI_PROPERTY(AlN_Mg, absp,

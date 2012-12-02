@@ -12,18 +12,18 @@ MI_PROPERTY(In, cond,
             MISource("www.thinfilm.com"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> In::cond(double T) const {
+Tensor2<double> In::cond(double T) const {
     double tCond = 1.392e7;
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 MI_PROPERTY(In, thermk,
             MISource("www.lakeshore.com"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> In::thermk(double T, double t) const {
+Tensor2<double> In::thermk(double T, double t) const {
     double tCondT = 84.;
-    return ( std::make_pair(tCondT, tCondT) );
+    return ( Tensor2<double>(tCondT, tCondT) );
 }
 
 MI_PROPERTY(In, absp,

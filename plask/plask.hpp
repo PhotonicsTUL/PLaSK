@@ -61,6 +61,9 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "axes.h"
 #include "manager.h"
 
+#include "vector/tensor2.h"
+#include "vector/tensor3.h"
+
 #include "material/material.h"
 #include "material/db.h"
 #include "material/info.h"

@@ -13,8 +13,8 @@ std::string InN::name() const { return NAME; }
 MI_PROPERTY(InN, thermk,
             MISource("H. Tong et al., Proc. SPIE 7602 (2010) 76020U")
             )
-std::pair<double,double> InN::thermk(double T) const {
-    return(std::make_pair(126., 126.));
+Tensor2<double> InN::thermk(double T) const {
+    return(Tensor2<double>(126., 126.));
  }
 
 MI_PROPERTY(InN, lattC,
@@ -43,11 +43,11 @@ MI_PROPERTY(InN, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> InN::Me(double T, char point) const {
-    std::pair<double,double> tMe(0.,0.);
+Tensor2<double> InN::Me(double T, char point) const {
+    Tensor2<double> tMe(0.,0.);
     if (point == 'G') {
-        tMe.first = 0.065;
-        tMe.second = 0.068;
+        tMe.c00 = 0.065;
+        tMe.c11 = 0.068;
     }
     return (tMe);
 }
@@ -55,11 +55,11 @@ std::pair<double,double> InN::Me(double T, char point) const {
 MI_PROPERTY(InN, Mhh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-std::pair<double,double> InN::Mhh(double T, char point) const {
-    std::pair<double,double> tMhh(0.,0.);
+Tensor2<double> InN::Mhh(double T, char point) const {
+    Tensor2<double> tMhh(0.,0.);
     if (point == 'G') {
-        tMhh.first = 1.8116;
-        tMhh.second = 1.7007;
+        tMhh.c00 = 1.8116;
+        tMhh.c11 = 1.7007;
     }
     return (tMhh);
 }
@@ -67,11 +67,11 @@ std::pair<double,double> InN::Mhh(double T, char point) const {
 MI_PROPERTY(InN, Mlh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-std::pair<double,double> InN::Mlh(double T, char point) const {
-    std::pair<double,double> tMlh(0.,0.);
+Tensor2<double> InN::Mlh(double T, char point) const {
+    Tensor2<double> tMlh(0.,0.);
     if (point == 'G') {
-        tMlh.first = 1.8116;
-        tMlh.second = 0.0348;
+        tMlh.c00 = 1.8116;
+        tMlh.c11 = 0.0348;
     }
     return (tMlh);
 }

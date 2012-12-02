@@ -12,9 +12,9 @@ MI_PROPERTY(Ti, cond,
             MISource("N.D. Milosevic and K.D. Maglic, Thermophysical properties of solid phase titanium in a wide temperature range, High Temperatures-High Pressures, vol. 37, pp. 187-204, 2008."),
             MIArgumentRange(MaterialInfo::T, 250, 1100)
             )
-std::pair<double,double> Ti::cond(double T) const {
+Tensor2<double> Ti::cond(double T) const {
     double tCond = 1. / (6.17169e-8 + 9.010579e-10*T + 1.817669e-12*T*T - 1.225226e-15*T*T*T);
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 MI_PROPERTY(Ti, thermk,
@@ -22,9 +22,9 @@ MI_PROPERTY(Ti, thermk,
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-std::pair<double,double> Ti::thermk(double T, double t) const {
+Tensor2<double> Ti::thermk(double T, double t) const {
     double tCondT = 22.00*pow((300./T),0.24);
-    return ( std::make_pair(tCondT, tCondT) );
+    return ( Tensor2<double>(tCondT, tCondT) );
 }
 
 MI_PROPERTY(Ti, absp,

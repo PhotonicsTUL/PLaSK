@@ -25,10 +25,10 @@ MI_PROPERTY(AlGaN_Mg, mob,
             MISource("based on 7 papers 1994-2010 about Mg-doped AlGaN"),
             MISource("based on Mg-doped GaN and AlN")
             )
-std::pair<double,double> AlGaN_Mg::mob(double T) const {
-    double lMob = pow(Ga,28.856-16.793*(1-exp(-Al/0.056))-9.259*(1-exp(-Al/0.199)))*mGaN_Mg.mob(T).first,
-           vMob = pow(Ga,28.856-16.793*(1-exp(-Al/0.056))-9.259*(1-exp(-Al/0.199)))*mGaN_Mg.mob(T).second;
-    return (std::make_pair(lMob,vMob));
+Tensor2<double> AlGaN_Mg::mob(double T) const {
+    double lMob = pow(Ga,28.856-16.793*(1-exp(-Al/0.056))-9.259*(1-exp(-Al/0.199)))*mGaN_Mg.mob(T).c00,
+           vMob = pow(Ga,28.856-16.793*(1-exp(-Al/0.056))-9.259*(1-exp(-Al/0.199)))*mGaN_Mg.mob(T).c11;
+    return (Tensor2<double>(lMob,vMob));
 }
 
 MI_PROPERTY(AlGaN_Mg, Nf,
@@ -43,8 +43,8 @@ double AlGaN_Mg::Dop() const {
     return NA;
 }
 
-std::pair<double,double> AlGaN_Mg::cond(double T) const {
-    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
+Tensor2<double> AlGaN_Mg::cond(double T) const {
+    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(AlGaN_Mg, absp,

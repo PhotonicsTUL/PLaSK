@@ -53,12 +53,12 @@ double materialVBO(std::string m, plask::MaterialsDB& DB, double T) {
     return mat->VBO(T);
 }
 
-std::pair<double,double> materialThermk1(std::string m, plask::MaterialsDB& DB, double T) {
+plask::Tensor2<double> materialThermk1(std::string m, plask::MaterialsDB& DB, double T) {
     plask::shared_ptr<plask::Material> mat = DB.get(m);
     return mat->thermk(T);
 }
 
-std::pair<double,double> materialThermk2(std::string m, plask::MaterialsDB& DB, double T, double t) {
+plask::Tensor2<double> materialThermk2(std::string m, plask::MaterialsDB& DB, double T, double t) {
     plask::shared_ptr<plask::Material> mat = DB.get(m);
     return mat->thermk(T, t);
 }
@@ -83,7 +83,7 @@ std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
     return typeid(*material).name();
 }
 
-std::tuple<plask::dcomplex,plask::dcomplex,plask::dcomplex,plask::dcomplex,plask::dcomplex> NrTensor(plask::shared_ptr<plask::Material> material) {
+plask::Tensor3<plask::dcomplex> NrTensor(plask::shared_ptr<plask::Material> material) {
     return material->nR_tensor(1000., 300.);
 }
 

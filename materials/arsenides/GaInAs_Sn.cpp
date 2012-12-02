@@ -27,8 +27,8 @@ MI_PROPERTY(GaInAs_Sn, mob,
             MISource("TODO"),
             MISource("based on Si-doped GaInAs")
             )
-std::pair<double,double> GaInAs_Sn::mob(double T) const {
-    return ( std::make_pair(mob_RT, mob_RT) );
+Tensor2<double> GaInAs_Sn::mob(double T) const {
+    return ( Tensor2<double>(mob_RT, mob_RT) );
 }
 
 MI_PROPERTY(GaInAs_Sn, Nf,
@@ -46,9 +46,9 @@ double GaInAs_Sn::Dop() const {
 MI_PROPERTY(GaInAs_Sn, cond,
             MIComment("no temperature dependence")
             )
-std::pair<double,double> GaInAs_Sn::cond(double T) const {
+Tensor2<double> GaInAs_Sn::cond(double T) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 MI_PROPERTY(GaInAs_Sn, absp,

@@ -18,6 +18,9 @@ This file includes base classes for materials and material database class.
 #include "../phys/constants.h"
 #include "../phys/functions.h"
 
+#include "../vector/tensor2.h"
+#include "../vector/tensor3.h"
+
 namespace plask {
 
 /**
@@ -307,7 +310,7 @@ struct Material {
      * @param point point in Brillouin zone [-]
      * @return electron effective mass Me [\f$m_0\f$]
      */
-    virtual std::pair<double,double> Me(double T, char point) const;
+    virtual Tensor2<double> Me(double T, char point) const;
 
     /**
      * Get heavy hole effective mass Mhh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
@@ -315,7 +318,7 @@ struct Material {
      * @param point point in Brillouin zone [-]
      * @return heavy hole effective mass Mhh [\f$m_0\f$]
      */
-    virtual std::pair<double,double> Mhh(double T, char point) const;
+    virtual Tensor2<double> Mhh(double T, char point) const;
 
     /**
      * Get light hole effective mass Mlh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
@@ -323,7 +326,7 @@ struct Material {
      * @param point point in Brillouin zone [-]
      * @return light hole effective mass Mlh [\f$m_0\f$]
      */
-    virtual std::pair<double,double> Mlh(double T, char point) const;
+    virtual Tensor2<double> Mlh(double T, char point) const;
 
     /**
      * Get hole effective mass Mh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
@@ -331,7 +334,7 @@ struct Material {
      * @param EqType equation type [-]
      * @return hole effective mass Mh [\f$m_0\f$]
      */
-    virtual std::pair<double,double> Mh(double T, char point) const;
+    virtual Tensor2<double> Mh(double T, char point) const;
 
     /**
      * Get hydrostatic deformation potential for the conduction band ac [eV].
@@ -433,14 +436,14 @@ struct Material {
      * @param T temperature [K]
      * @return mobility [m^2/(V*s)]
      */
-    virtual std::pair<double,double> mob(double T) const;
+    virtual Tensor2<double> mob(double T) const;
 
     /**
      * Get electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
      * @param T temperature [K]
      * @return electrical conductivity sigma [S/m]
      */
-    virtual std::pair<double,double> cond(double T) const;
+    virtual Tensor2<double> cond(double T) const;
 
     /**
      * Get electrical conductivity type. In semiconductors this indicates what type of carriers \a Nf refers to.
@@ -481,7 +484,7 @@ struct Material {
      * @param T temperature [K]
      * @return thermal conductivity k[W/(m*K)]
      */
-    virtual std::pair<double,double> thermk(double T) const;
+    virtual Tensor2<double> thermk(double T) const;
 
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
@@ -489,7 +492,7 @@ struct Material {
      * @param thickness layer thickness [µm]
      * @return thermal conductivity k[W/(m*K)]
      */
-    virtual std::pair<double,double> thermk(double T, double thickness) const;
+    virtual Tensor2<double> thermk(double T, double thickness) const;
 
     /**
      * Get density [kg/m^3].
@@ -537,7 +540,7 @@ struct Material {
      * @param T temperature [K]
      * @return refractive index tensor nR[-]
      */
-    virtual std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> nR_tensor(double wl, double T) const;
+    virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const;
 
 protected:
     void throwNotImplemented(const std::string& method_name) const;
@@ -637,13 +640,13 @@ struct MixedMaterial: public Material {
 
     virtual double Mso(double T) const;
 
-    virtual std::pair<double,double> Me(double T, char point) const;
+    virtual Tensor2<double> Me(double T, char point) const;
 
-    virtual std::pair<double,double> Mhh(double T, char point) const;
+    virtual Tensor2<double> Mhh(double T, char point) const;
 
-    virtual std::pair<double,double> Mlh(double T, char point) const;
+    virtual Tensor2<double> Mlh(double T, char point) const;
 
-    virtual std::pair<double,double> Mh(double T, char EqType) const;
+    virtual Tensor2<double> Mh(double T, char EqType) const;
 
     virtual double ac(double T) const;
 
@@ -673,9 +676,9 @@ struct MixedMaterial: public Material {
 
     virtual double EactA(double T) const;
 
-    virtual std::pair<double,double> mob(double T) const;
+    virtual Tensor2<double> mob(double T) const;
 
-    virtual std::pair<double,double> cond(double T) const;
+    virtual Tensor2<double> cond(double T) const;
 
     virtual ConductivityType condtype() const;
 
@@ -687,9 +690,9 @@ struct MixedMaterial: public Material {
 
     virtual double D(double T) const;
 
-    virtual std::pair<double,double> thermk(double T) const;
+    virtual Tensor2<double> thermk(double T) const;
 
-    virtual std::pair<double,double> thermk(double T, double thickness) const;
+    virtual Tensor2<double> thermk(double T, double thickness) const;
 
     virtual double dens(double T) const;
 
@@ -701,7 +704,7 @@ struct MixedMaterial: public Material {
 
     virtual dcomplex nR(double wl, double T) const;
 
-    virtual std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> nR_tensor(double wl, double T) const;
+    virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const;
 
 private:
 
@@ -727,12 +730,12 @@ private:
      * @tparam Functor type of functor which can take const Material& argument, and return something which can be multiple by scalar, added, and assigned
      */
     template <typename Functor>
-    auto avg_pairs(Functor f) const -> std::pair<double, double> {
-        std::pair<double,double> w_sum(0., 0.);
+    auto avg_pairs(Functor f) const -> Tensor2<double> {
+        Tensor2<double> w_sum(0., 0.);
         for (auto& p: materials) {
-            std::pair<double,double> m = f(*std::get<0>(p));
-            w_sum.first += std::get<1>(p) * m.first;
-            w_sum.second += std::get<1>(p) * m.second;
+            Tensor2<double> m = f(*std::get<0>(p));
+            w_sum.c00 += std::get<1>(p) * m.c00;
+            w_sum.c11 += std::get<1>(p) * m.c11;
         }
         return w_sum;
     }

@@ -12,18 +12,18 @@ MI_PROPERTY(AuGe, cond,
             MISource("T. Som, P. Ayyub, D. Kabiraj, N. Kulkarni, V.N. Kulkarni and D.K. Avasthi, Formation of Au0.6Ge0.4 alloy induced by Au-ion irradiation of Au/Ge bilayer, Journal of Applied Physics, vol. 84, no. 2, pp. 3861-3863, 2004."),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AuGe::cond(double T) const {
+Tensor2<double> AuGe::cond(double T) const {
     double tCond = 1e8;
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 MI_PROPERTY(AuGe, thermk,
             MISource("www.thinfilm.com"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> AuGe::thermk(double T, double t) const {
+Tensor2<double> AuGe::thermk(double T, double t) const {
     double tCondT = 88.34;
-    return ( std::make_pair(tCondT, tCondT) );
+    return ( Tensor2<double>(tCondT, tCondT) );
 }
 
 MI_PROPERTY(AuGe, absp,

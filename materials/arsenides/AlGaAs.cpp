@@ -45,28 +45,28 @@ double AlGaAs::Dso(double T) const {
 MI_PROPERTY(AlGaAs, Me,
             MISource("linear interpolation: AlAs, GaAs")
             )
-std::pair<double,double> AlGaAs::Me(double T, char point) const {
-    double lMe = Al*mAlAs.Me(T,point).first + Ga*mGaAs.Me(T,point).first,
-           vMe = Al*mAlAs.Me(T,point).second + Ga*mGaAs.Me(T,point).second;
-    return ( std::make_pair(lMe,vMe) );
+Tensor2<double> AlGaAs::Me(double T, char point) const {
+    double lMe = Al*mAlAs.Me(T,point).c00 + Ga*mGaAs.Me(T,point).c00,
+           vMe = Al*mAlAs.Me(T,point).c11 + Ga*mGaAs.Me(T,point).c11;
+    return ( Tensor2<double>(lMe,vMe) );
 }
 
 MI_PROPERTY(AlGaAs, Mhh,
             MISource("linear interpolation: AlAs, GaAs")
             )
-std::pair<double,double> AlGaAs::Mhh(double T, char point) const {
-    double lMhh = Al*mAlAs.Mhh(T,point).first + Ga*mGaAs.Mhh(T,point).first,
-           vMhh = Al*mAlAs.Mhh(T,point).second + Ga*mGaAs.Mhh(T,point).second;
-    return ( std::make_pair(lMhh,vMhh) );
+Tensor2<double> AlGaAs::Mhh(double T, char point) const {
+    double lMhh = Al*mAlAs.Mhh(T,point).c00 + Ga*mGaAs.Mhh(T,point).c00,
+           vMhh = Al*mAlAs.Mhh(T,point).c11 + Ga*mGaAs.Mhh(T,point).c11;
+    return ( Tensor2<double>(lMhh,vMhh) );
 }
 
 MI_PROPERTY(AlGaAs, Mlh,
             MISource("linear interpolation: AlAs, GaAs")
             )
-std::pair<double,double> AlGaAs::Mlh(double T, char point) const {
-    double lMlh = Al*mAlAs.Mlh(T,point).first + Ga*mGaAs.Mlh(T,point).first,
-           vMlh = Al*mAlAs.Mlh(T,point).second + Ga*mGaAs.Mlh(T,point).second;
-    return ( std::make_pair(lMlh,vMlh) );
+Tensor2<double> AlGaAs::Mlh(double T, char point) const {
+    double lMlh = Al*mAlAs.Mlh(T,point).c00 + Ga*mGaAs.Mlh(T,point).c00,
+           vMlh = Al*mAlAs.Mlh(T,point).c11 + Ga*mGaAs.Mlh(T,point).c11;
+    return ( Tensor2<double>(lMlh,vMlh) );
 }
 
 MI_PROPERTY(AlGaAs, ac,
@@ -107,10 +107,10 @@ double AlGaAs::c12(double T) const {
 MI_PROPERTY(AlGaAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
             )
-std::pair<double,double> AlGaAs::thermk(double T, double t) const {
-    double lCondT = 1./(Al/mAlAs.thermk(T,t).first + Ga/mGaAs.thermk(T,t).first + Al*Ga*0.32),
-           vCondT = 1./(Al/mAlAs.thermk(T,t).second + Ga/mAlAs.thermk(T,t).second + Al*Ga*0.32);
-    return ( std::make_pair(lCondT,vCondT) );
+Tensor2<double> AlGaAs::thermk(double T, double t) const {
+    double lCondT = 1./(Al/mAlAs.thermk(T,t).c00 + Ga/mGaAs.thermk(T,t).c00 + Al*Ga*0.32),
+           vCondT = 1./(Al/mAlAs.thermk(T,t).c11 + Ga/mAlAs.thermk(T,t).c11 + Al*Ga*0.32);
+    return ( Tensor2<double>(lCondT,vCondT) );
 }
 
 MI_PROPERTY(AlGaAs, nr,

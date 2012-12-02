@@ -20,8 +20,8 @@ MI_PROPERTY(InP_Si, mob,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> InP_Si::mob(double T) const {
-    return ( std::make_pair(mob_RT,mob_RT) );
+Tensor2<double> InP_Si::mob(double T) const {
+    return ( Tensor2<double>(mob_RT,mob_RT) );
 }
 
 MI_PROPERTY(InP_Si, Nf,
@@ -39,9 +39,9 @@ double InP_Si::Dop() const {
 MI_PROPERTY(InP_Si, cond,
 			MIComment("no temperature dependence")
             )
-std::pair<double,double> InP_Si::cond(double T) const {
+Tensor2<double> InP_Si::cond(double T) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
-    return (std::make_pair(tCond, tCond));
+    return (Tensor2<double>(tCond, tCond));
 }
 
 MI_PROPERTY(InP_Si, absp,

@@ -13,19 +13,19 @@ MI_PROPERTY(GaN, cond,
             MISource("G. Koblmuller et al., Appl. Phys. Lett. 91 (2007) 221905"),
             MIArgumentRange(MaterialInfo::T, 270, 400)
             )
-std::pair<double,double> GaN::cond(double T) const {
+Tensor2<double> GaN::cond(double T) const {
     double tCond = 255*pow((T/300.),-0.18);
-    return (std::make_pair(tCond,tCond));
+    return (Tensor2<double>(tCond,tCond));
 }
 
 MI_PROPERTY(GaN, thermk,
             MISource("C. Mion et al., App. Phys. Lett. 89 (2006) 092123"),
             MIArgumentRange(MaterialInfo::T, 300, 450)
             )
-std::pair<double,double> GaN::thermk(double T, double t) const {
+Tensor2<double> GaN::thermk(double T, double t) const {
     double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12), //TODO change t to microns
            tCondT = 230*fun_t*pow((T/300.),-1.43);
-    return(std::make_pair(tCondT,tCondT));
+    return(Tensor2<double>(tCondT,tCondT));
  }
 
 MI_PROPERTY(GaN, absp,
@@ -74,11 +74,11 @@ MI_PROPERTY(GaN, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-std::pair<double,double> GaN::Me(double T, char point) const {
-    std::pair<double,double> tMe(0.,0.);
+Tensor2<double> GaN::Me(double T, char point) const {
+    Tensor2<double> tMe(0.,0.);
     if (point == 'G') {
-        tMe.first = 0.186;
-        tMe.second = 0.209;
+        tMe.c00 = 0.186;
+        tMe.c11 = 0.209;
     }
     return (tMe);
 }
@@ -86,11 +86,11 @@ std::pair<double,double> GaN::Me(double T, char point) const {
 MI_PROPERTY(GaN, Mhh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-std::pair<double,double> GaN::Mhh(double T, char point) const {
-    std::pair<double,double> tMhh(0.,0.);
+Tensor2<double> GaN::Mhh(double T, char point) const {
+    Tensor2<double> tMhh(0.,0.);
     if (point == 'G') {
-        tMhh.first = 1.886;
-        tMhh.second = 1.887;
+        tMhh.c00 = 1.886;
+        tMhh.c11 = 1.887;
     }
     return (tMhh);
 }
@@ -98,11 +98,11 @@ std::pair<double,double> GaN::Mhh(double T, char point) const {
 MI_PROPERTY(GaN, Mlh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-std::pair<double,double> GaN::Mlh(double T, char point) const {
-    std::pair<double,double> tMlh(0.,0.);
+Tensor2<double> GaN::Mlh(double T, char point) const {
+    Tensor2<double> tMlh(0.,0.);
     if (point == 'G') {
-        tMlh.first = 1.887;
-        tMlh.second = 0.1086;
+        tMlh.c00 = 1.887;
+        tMlh.c11 = 0.1086;
     }
     return (tMlh);
 }

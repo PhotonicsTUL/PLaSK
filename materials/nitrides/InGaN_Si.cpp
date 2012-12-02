@@ -24,10 +24,10 @@ MI_PROPERTY(InGaN_Si, mob,
             MISource("based on 3 papers 2007-2009 about Si-doped InGaN/GaN/c-sapphire"),
             MISource("based on Si-doped GaN and InN")
             )
-std::pair<double,double> InGaN_Si::mob(double T) const {
-    double lMob = 1/(In/mInN_Si.mob(T).first + Ga/mGaN_Si.mob(T).first + In*Ga*(-4.615E-21*Nf(T)+0.549)),
-           vMob = 1/(In/mInN_Si.mob(T).second + Ga/mGaN_Si.mob(T).second + In*Ga*(-4.615E-21*Nf(T)+0.549));
-    return (std::make_pair(lMob, vMob));
+Tensor2<double> InGaN_Si::mob(double T) const {
+    double lMob = 1/(In/mInN_Si.mob(T).c00 + Ga/mGaN_Si.mob(T).c00 + In*Ga*(-4.615E-21*Nf(T)+0.549)),
+           vMob = 1/(In/mInN_Si.mob(T).c11 + Ga/mGaN_Si.mob(T).c11 + In*Ga*(-4.615E-21*Nf(T)+0.549));
+    return (Tensor2<double>(lMob, vMob));
 }
 
 MI_PROPERTY(InGaN_Si, Nf,
@@ -41,18 +41,18 @@ double InGaN_Si::Dop() const {
     return ND;
 }
 
-std::pair<double,double> InGaN_Si::cond(double T) const {
-    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
+Tensor2<double> InGaN_Si::cond(double T) const {
+    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(InGaN_Si, thermk,
             MISeeClass<InGaN>(MaterialInfo::thermk),
             MIComment("Si doping dependence for GaN")
             )
-std::pair<double,double> InGaN_Si::thermk(double T, double t) const {
-    double lCondT = 1/(In/mInN_Si.thermk(T).first + Ga/mGaN_Si.thermk(T,t).first + In*Ga*0.215*exp(7.913*In)),
-           vCondT = 1/(In/mInN_Si.thermk(T).second + Ga/mGaN_Si.thermk(T,t).second + In*Ga*0.215*exp(7.913*In));
-    return(std::make_pair(lCondT, vCondT));
+Tensor2<double> InGaN_Si::thermk(double T, double t) const {
+    double lCondT = 1/(In/mInN_Si.thermk(T).c00 + Ga/mGaN_Si.thermk(T,t).c00 + In*Ga*0.215*exp(7.913*In)),
+           vCondT = 1/(In/mInN_Si.thermk(T).c11 + Ga/mGaN_Si.thermk(T,t).c11 + In*Ga*0.215*exp(7.913*In));
+    return(Tensor2<double>(lCondT, vCondT));
  }
 
 MI_PROPERTY(InGaN_Si, absp,

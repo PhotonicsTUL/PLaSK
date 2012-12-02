@@ -260,7 +260,7 @@ struct Vec<2, T> {
     }
 
     /**
-     * Print vector to stream using format (where c0 and c1 are vector coordinates): [c0, c1]
+     * Print vector to stream using format (where c0 and c1 are vector components): [c0, c1]
      * @param out print destination, output stream
      * @param to_print vector to print
      * @return out stream

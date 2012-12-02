@@ -136,8 +136,8 @@ namespace detail {
     template <> inline constexpr int typenum<const Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
     template <> inline constexpr int typenum<const Vec<3,double>>() { return NPY_DOUBLE; }
     template <> inline constexpr int typenum<const Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
-    template <> inline constexpr int typenum<const std::pair<double,double>>() { return NPY_DOUBLE; }
-    template <> inline constexpr int typenum<const std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const Tensor2<double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const Tensor3<dcomplex>>() { return NPY_CDOUBLE; }
 }
 
 
@@ -151,8 +151,8 @@ namespace detail {
     template<> inline py::handle<> dtype<dcomplex>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyComplex_Type))); }
     template<> inline py::handle<> dtype<Vec<2,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(py::converter::registry::lookup(py::type_id<Vec<2,dcomplex>>()).get_class_object()))); }
     template<> inline py::handle<> dtype<Vec<3,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(py::converter::registry::lookup(py::type_id<Vec<3,dcomplex>>()).get_class_object()))); }
-    template<> inline py::handle<> dtype<std::pair<double,double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
-    template<> inline py::handle<> dtype<std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
+    template<> inline py::handle<> dtype<Tensor2<double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
+    template<> inline py::handle<> dtype<Tensor3<dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
 }
 
 

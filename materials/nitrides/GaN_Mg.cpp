@@ -31,9 +31,9 @@ MI_PROPERTY(GaN_Mg, mob,
             MIComment("based on 9 papers (2000-2009): MBE-grown Mg-doped GaN"),
             MIComment("Nf: 2e17 - 6e18 cm^-3")
             )
-std::pair<double,double> GaN_Mg::mob(double T) const {
+Tensor2<double> GaN_Mg::mob(double T) const {
     double tMob = mob_RT * (T*T*2.495E-5 -T*2.268E-2 +5.557);
-    return (std::make_pair(tMob,tMob));
+    return (Tensor2<double>(tMob,tMob));
 }
 
 MI_PROPERTY(GaN_Mg, Nf,
@@ -53,8 +53,8 @@ double GaN_Mg::Dop() const {
 MI_PROPERTY(GaN_Mg, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
-std::pair<double,double> GaN_Mg::cond(double T) const {
-    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
+Tensor2<double> GaN_Mg::cond(double T) const {
+    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(GaN_Mg, absp,

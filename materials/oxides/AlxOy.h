@@ -17,8 +17,8 @@ struct AlxOy: public Dielectric {
     static constexpr const char* NAME = "AlxOy";
 
     virtual std::string name() const;
-    virtual std::pair<double,double> cond(double T) const;
-    virtual std::pair<double,double> thermk(double T) const;
+    virtual Tensor2<double> cond(double T) const;
+    virtual Tensor2<double> thermk(double T) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
 

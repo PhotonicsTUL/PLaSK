@@ -24,10 +24,10 @@ MI_PROPERTY(InGaN_Mg, mob,
             MISource("B. N. Pantha et al., Applied Physics Letters 95 (2009) 261904"),
             MISource("K. Aryal et al., Applied Physics Letters 96 (2010) 052110")
             )
-std::pair<double,double> InGaN_Mg::mob(double T) const {
-    double lMob = 1/(In/mInN_Mg.mob(T).first + Ga/mGaN_Mg.mob(T).first + In*Ga*(7.256E-19*Nf(T)+0.377)),
-           vMob = 1/(In/mInN_Mg.mob(T).second + Ga/mGaN_Mg.mob(T).second + In*Ga*(7.256E-19*Nf(T)+0.377));
-    return (std::make_pair(lMob, vMob));
+Tensor2<double> InGaN_Mg::mob(double T) const {
+    double lMob = 1/(In/mInN_Mg.mob(T).c00 + Ga/mGaN_Mg.mob(T).c00 + In*Ga*(7.256E-19*Nf(T)+0.377)),
+           vMob = 1/(In/mInN_Mg.mob(T).c11 + Ga/mGaN_Mg.mob(T).c11 + In*Ga*(7.256E-19*Nf(T)+0.377));
+    return (Tensor2<double>(lMob, vMob));
 }
 
 MI_PROPERTY(InGaN_Mg, Nf,
@@ -41,8 +41,8 @@ double InGaN_Mg::Dop() const {
     return NA;
 }
 
-std::pair<double,double> InGaN_Mg::cond(double T) const {
-    return (std::make_pair(1.602E-17*Nf(T)*mob(T).first, 1.602E-17*Nf(T)*mob(T).second));
+Tensor2<double> InGaN_Mg::cond(double T) const {
+    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(InGaN_Mg, absp,

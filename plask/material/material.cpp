@@ -62,13 +62,13 @@ double Material::chi(double T, char point) const { throwNotImplemented("chi(doub
 
 double Material::chi(char point) const { return chi(300., point); }
 
-std::pair<double,double> Material::cond(double T) const { throwNotImplemented("cond(double T)"); return std::make_pair(0.,0.); }
+Tensor2<double> Material::cond(double T) const { throwNotImplemented("cond(double T)"); return 0.; }
 
 Material::ConductivityType Material::condtype() const { return CONDUCTIVITY_UNDETERMINED; }
 
 double Material::D(double T) const {
     // Use Einstein coefficient here
-    return mob(T).first * T * 8.6173423e-5;  // D = µ kB T / e
+    return mob(T).c00 * T * 8.6173423e-5;  // D = µ kB T / e
 }
 
 double Material::dens(double T) const { throwNotImplemented("dens(double T)"); return 0; }
@@ -84,10 +84,10 @@ double Material::eps(double T) const { throwNotImplemented("eps(double T)"); ret
 
 double Material::lattC(double T, char x) const { throwNotImplemented("lattC(double T, char x)"); return 0; }
 
-std::pair<double,double> Material::Me(double T, char point) const { throwNotImplemented("Me(double T, char point)"); return std::make_pair(0.,0.); }
-std::pair<double,double> Material::Mh(double T, char point) const { throwNotImplemented("Mh(double T, char point)"); return std::make_pair(0.,0.); }
-std::pair<double,double> Material::Mhh(double T, char point) const { throwNotImplemented("Mhh(double T, char point)"); return std::make_pair(0.,0.); }
-std::pair<double,double> Material::Mlh(double T, char point) const { throwNotImplemented("Mlh(double T, char point)"); return std::make_pair(0.,0.); }
+Tensor2<double> Material::Me(double T, char point) const { throwNotImplemented("Me(double T, char point)"); return 0.; }
+Tensor2<double> Material::Mh(double T, char point) const { throwNotImplemented("Mh(double T, char point)"); return 0.; }
+Tensor2<double> Material::Mhh(double T, char point) const { throwNotImplemented("Mhh(double T, char point)"); return 0.; }
+Tensor2<double> Material::Mlh(double T, char point) const { throwNotImplemented("Mlh(double T, char point)"); return 0.; }
 
 double Material::ac(double T) const { throwNotImplemented("ac(double T)"); return 0; }
 double Material::av(double T) const { throwNotImplemented("av(double T)"); return 0; }
@@ -95,7 +95,7 @@ double Material::b(double T) const { throwNotImplemented("b(double T)"); return 
 double Material::c11(double T) const { throwNotImplemented("c11(double T)"); return 0; }
 double Material::c12(double T) const { throwNotImplemented("c12(double T)"); return 0; }
 
-std::pair<double,double> Material::mob(double T) const { throwNotImplemented("mob(double T)"); return std::make_pair(0.,0.); }
+Tensor2<double> Material::mob(double T) const { throwNotImplemented("mob(double T)"); return 0.; }
 
 double Material::Mso(double T) const { throwNotImplemented("Mso(double T)"); return 0; }
 
@@ -111,15 +111,14 @@ double Material::nr(double wl, double T) const { throwNotImplemented("nr(double 
 
 dcomplex Material::nR(double wl, double T) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
 
-std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> Material::nR_tensor(double wl, double T) const {
-    dcomplex n = nR(wl, T);
-    return std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex>(n, n, n, 0., 0.);
+Tensor3<dcomplex> Material::nR_tensor(double wl, double T) const {
+    return nR(wl, T);
 }
 
 double Material::cp(double T) const { throwNotImplemented("cp(double T)"); return 0; }
 
-std::pair<double,double> Material::thermk(double T) const { throwNotImplemented("thermk(double T)"); return std::make_pair(0.,0.); }
-std::pair<double,double> Material::thermk(double T, double thickness) const { return thermk(T); }
+Tensor2<double> Material::thermk(double T) const { throwNotImplemented("thermk(double T)"); return 0.; }
+Tensor2<double> Material::thermk(double T, double thickness) const { return thermk(T); }
 
 double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); return 0; }
 
@@ -350,7 +349,7 @@ double MixedMaterial::chi(char point) const {
     return avg([&](const Material& m) { return m.chi(point); });
 }
 
-std::pair<double,double> MixedMaterial::cond(double T) const {
+Tensor2<double> MixedMaterial::cond(double T) const {
     return avg_pairs([&](const Material& m) { return m.cond(T); });
 }
 
@@ -393,19 +392,19 @@ double MixedMaterial::lattC(double T, char x) const {
     return avg([&](const Material& m) { return m.lattC(T, x); });
 }
 
-std::pair<double,double> MixedMaterial::Me(double T, char point) const {
+Tensor2<double> MixedMaterial::Me(double T, char point) const {
     return avg_pairs([&](const Material& m) { return m.Me(T, point); });
 }
 
-std::pair<double,double> MixedMaterial::Mh(double T, char EqType) const {
+Tensor2<double> MixedMaterial::Mh(double T, char EqType) const {
     return avg_pairs([&](const Material& m) { return m.Mh(T, EqType); });
 }
 
-std::pair<double,double> MixedMaterial::Mhh(double T, char point) const {
+Tensor2<double> MixedMaterial::Mhh(double T, char point) const {
     return avg_pairs([&](const Material& m) { return m.Mhh(T, point); });
 }
 
-std::pair<double,double> MixedMaterial::Mlh(double T, char point) const  {
+Tensor2<double> MixedMaterial::Mlh(double T, char point) const  {
     return avg_pairs([&](const Material& m) { return m.Mlh(T, point); });
 }
 
@@ -429,7 +428,7 @@ double MixedMaterial::c12(double T) const {
     return avg([&](const Material& m) { return m.c12(T); });
 }
 
-std::pair<double,double> MixedMaterial::mob(double T) const {
+Tensor2<double> MixedMaterial::mob(double T) const {
     return avg_pairs([&](const Material& m) { return m.mob(T); });
 }
 
@@ -461,13 +460,13 @@ dcomplex MixedMaterial::nR(double wl, double T) const {
     return avg([&](const Material& m) { return m.nR(wl, T); });
 }
 
-std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> MixedMaterial::nR_tensor(double wl, double T) const {
-    std::tuple<dcomplex, dcomplex, dcomplex, dcomplex, dcomplex> result;
-    std::get<0>(result) = avg([&](const Material& m) { return std::get<0>(m.nR_tensor(wl, T)); });
-    std::get<1>(result) = avg([&](const Material& m) { return std::get<1>(m.nR_tensor(wl, T)); });
-    std::get<2>(result) = avg([&](const Material& m) { return std::get<2>(m.nR_tensor(wl, T)); });
-    std::get<3>(result) = avg([&](const Material& m) { return std::get<3>(m.nR_tensor(wl, T)); });
-    std::get<4>(result) = avg([&](const Material& m) { return std::get<4>(m.nR_tensor(wl, T)); });
+Tensor3<dcomplex> MixedMaterial::nR_tensor(double wl, double T) const {
+    Tensor3<dcomplex> result;
+    result.c00 = avg([&](const Material& m) { return m.nR_tensor(wl, T).c00; });
+    result.c11 = avg([&](const Material& m) { return m.nR_tensor(wl, T).c11; });
+    result.c22 = avg([&](const Material& m) { return m.nR_tensor(wl, T).c22; });
+    result.c01 = avg([&](const Material& m) { return m.nR_tensor(wl, T).c01; });
+    result.c11 = avg([&](const Material& m) { return m.nR_tensor(wl, T).c11; });
     return result;
 }
 
@@ -475,10 +474,10 @@ double MixedMaterial::cp(double T) const {
     return avg([&](const Material& m) { return m.cp(T); });
 }
 
-std::pair<double,double> MixedMaterial::thermk(double T) const {
+Tensor2<double> MixedMaterial::thermk(double T) const {
     return avg_pairs([&](const Material& m) { return m.thermk(T); });
 }
-std::pair<double,double> MixedMaterial::thermk(double T, double thickness) const {
+Tensor2<double> MixedMaterial::thermk(double T, double thickness) const {
     return avg_pairs([&](const Material& m) { return m.thermk(T, thickness); });
 }
 

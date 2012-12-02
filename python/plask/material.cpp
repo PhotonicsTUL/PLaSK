@@ -12,15 +12,12 @@
 
 namespace plask { namespace python {
 
-typedef std::pair<double,double> DDPair;
-typedef std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> NrTensorT;
-
 namespace detail {
-    struct DDpair_fromto_Python
+    struct Tensor2_fromto_Python
     {
-        DDpair_fromto_Python() {
-            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<DDPair>());
-            boost::python::to_python_converter<DDPair, DDpair_fromto_Python>();
+        Tensor2_fromto_Python() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<Tensor2<double>>());
+            boost::python::to_python_converter<Tensor2<double>, Tensor2_fromto_Python>();
         }
 
         static void* convertible(PyObject* obj) {
@@ -29,7 +26,7 @@ namespace detail {
         }
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<DDPair>*)data)->storage.bytes;
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<Tensor2<double>>*)data)->storage.bytes;
             double first, second;
             if (PyFloat_Check(obj) || PyInt_Check(obj)) {
                 first = second = py::extract<double>(obj);
@@ -42,12 +39,12 @@ namespace detail {
             } else {
                 throw TypeError("float or sequence of exactly two floats required");
             }
-            new(storage) DDPair(first, second);
+            new(storage) Tensor2<double>(first, second);
             data->convertible = storage;
         }
 
-        static PyObject* convert(const DDPair& pair)  {
-            py::tuple tuple = py::make_tuple(pair.first, pair.second);
+        static PyObject* convert(const Tensor2<double>& pair)  {
+            py::tuple tuple = py::make_tuple(pair.c00, pair.c11);
             return boost::python::incref(tuple.ptr());
         }
     };
@@ -56,8 +53,8 @@ namespace detail {
     struct ComplexTensor_fromto_Python
     {
         ComplexTensor_fromto_Python() {
-            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<NrTensorT>());
-            boost::python::to_python_converter<NrTensorT, ComplexTensor_fromto_Python>();
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<Tensor3<dcomplex>>());
+            boost::python::to_python_converter<Tensor3<dcomplex>, ComplexTensor_fromto_Python>();
         }
 
         static void* convertible(PyObject* obj) {
@@ -67,7 +64,7 @@ namespace detail {
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
             py::object src = py::object(py::handle<>(py::borrowed(obj)));
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<NrTensorT>*)data)->storage.bytes;
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<Tensor3<dcomplex>>*)data)->storage.bytes;
             dcomplex vals[5];
             int idx[5] = { 0, 1, 2, 3, 4 };
             auto seq = py::object(py::handle<>(py::borrowed(obj)));
@@ -79,12 +76,12 @@ namespace detail {
                 if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
                 else vals[i] = 0.;
             }
-            new(storage) NrTensorT(vals[0], vals[1], vals[2], vals[3], vals[4]);
+            new(storage) Tensor3<dcomplex>(vals[0], vals[1], vals[2], vals[3], vals[4]);
             data->convertible = storage;
         }
 
-        static PyObject* convert(const NrTensorT& src)  {
-            py::tuple tuple = py::make_tuple(std::get<0>(src), std::get<1>(src), std::get<2>(src), std::get<3>(src), std::get<4>(src));
+        static PyObject* convert(const Tensor3<dcomplex>& src)  {
+            py::tuple tuple = py::make_tuple(src.c00, src.c11, src.c22, src.c01, src.c10);
             return boost::python::incref(tuple.ptr());
         }
     };
@@ -127,7 +124,7 @@ class PythonMaterial : public Material
         return ((*base).*f)(args...);
     }
 
-    // DDPair call_thermk(double T, double t) const {
+    // Tensor2<double> call_thermk(double T, double t) const {
     //     PyMethodObject* m = overriden("thermk");
     //     if (m) {
     //         #if PY_VERSION_HEX >= 0x03000000
@@ -137,8 +134,8 @@ class PythonMaterial : public Material
     //         #endif
     //             if(PyObject* ac = PyObject_GetAttrString(fc, "co_argcount")) {
     //                 const int count = PyInt_AsLong(ac);
-    //                 if (count == 2) return py::call_method<DDPair>(self, "thermk", T);
-    //                 else if (count == 3) return py::call_method<DDPair>(self, "thermk", T, t);
+    //                 if (count == 2) return py::call_method<Tensor2<double>>(self, "thermk", T);
+    //                 else if (count == 3) return py::call_method<Tensor2<double>>(self, "thermk", T, t);
     //                 else if (count < 2) throw TypeError("thermk() takes at least 2 arguments (%1%) given", count);
     //                 else throw TypeError("thermk() takes at most 3 arguments (%1%) given", count);
     //                 Py_DECREF(ac);
@@ -211,10 +208,10 @@ class PythonMaterial : public Material
     virtual double VBO(double T) const { return override<double>("VBO", &Material::VBO, T); }
     virtual double Dso(double T) const { return override<double>("Dso", &Material::Dso, T); }
     virtual double Mso(double T) const { return override<double>("Mso", &Material::Mso, T); }
-    virtual DDPair Me(double T, const char Point) const { return override<DDPair>("Me", &Material::Me, T, Point); }
-    virtual DDPair Mhh(double T, const char Point) const { return override<DDPair>("Mhh", &Material::Mhh, T, Point); }
-    virtual DDPair Mlh(double T, const char Point) const { return override<DDPair>("Mlh", &Material::Mlh, T, Point); }
-    virtual DDPair Mh(double T, char EqType) const { return override<DDPair>("Mh", &Material::Mh, T, EqType); }
+    virtual Tensor2<double> Me(double T, const char Point) const { return override<Tensor2<double>>("Me", &Material::Me, T, Point); }
+    virtual Tensor2<double> Mhh(double T, const char Point) const { return override<Tensor2<double>>("Mhh", &Material::Mhh, T, Point); }
+    virtual Tensor2<double> Mlh(double T, const char Point) const { return override<Tensor2<double>>("Mlh", &Material::Mlh, T, Point); }
+    virtual Tensor2<double> Mh(double T, char EqType) const { return override<Tensor2<double>>("Mh", &Material::Mh, T, EqType); }
     virtual double ac(double T) const { return override<double>("ac", &Material::Mso, T); }
     virtual double av(double T) const { return override<double>("av", &Material::Mso, T); }
     virtual double b(double T) const { return override<double>("b", &Material::Mso, T); }
@@ -228,16 +225,16 @@ class PythonMaterial : public Material
     virtual double Nf(double T) const { return override<double>("Nf", &Material::Nf, T); }
     virtual double EactD(double T) const { return override<double>("EactD", &Material::EactD, T); }
     virtual double EactA(double T) const { return override<double>("EactA", &Material::EactA, T); }
-    virtual DDPair mob(double T) const { return override<DDPair>("mob", &Material::mob, T); }
-    virtual DDPair cond(double T) const { return override<DDPair>("cond", &Material::cond, T); }
+    virtual Tensor2<double> mob(double T) const { return override<Tensor2<double>>("mob", &Material::mob, T); }
+    virtual Tensor2<double> cond(double T) const { return override<Tensor2<double>>("cond", &Material::cond, T); }
     virtual double A(double T) const { return override<double>("A", &Material::A, T); }
     virtual double B(double T) const { return override<double>("B", &Material::B, T); }
     virtual double C(double T) const { return override<double>("C", &Material::C, T); }
     virtual double D(double T) const { return override<double>("D", &Material::D, T); }
-    // virtual DDPair thermk(double T) const { return call_thermk(T, INFINITY); }
-    // virtual DDPair thermk(double T, double t) const { return call_thermk(T, t); }
-    virtual DDPair thermk(double T) const { return thermk(T, INFINITY); }
-    virtual DDPair thermk(double T, double t) const { return override<DDPair>("thermk", (DDPair(Material::*)(double,double)const)&Material::thermk, T, t); }
+    // virtual Tensor2<double> thermk(double T) const { return call_thermk(T, INFINITY); }
+    // virtual Tensor2<double> thermk(double T, double t) const { return call_thermk(T, t); }
+    virtual Tensor2<double> thermk(double T) const { return thermk(T, INFINITY); }
+    virtual Tensor2<double> thermk(double T, double t) const { return override<Tensor2<double>>("thermk", (Tensor2<double>(Material::*)(double,double)const)&Material::thermk, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
     virtual double cp(double T) const { return override<double>("cp", &Material::cp, T); }
     virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
@@ -246,10 +243,10 @@ class PythonMaterial : public Material
         if (overriden("nR")) return py::call_method<dcomplex>(self, "nR", wl, T);
         return dcomplex(override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
     }
-    virtual NrTensorT nR_tensor(double wl, double T) const {
-        if (overriden("nR_tensor")) return py::call_method<NrTensorT>(self, "nR_tensor", wl, T);
+    virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
+        if (overriden("nR_tensor")) return py::call_method<Tensor3<dcomplex>>(self, "nR_tensor", wl, T);
         dcomplex n (override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
-        return NrTensorT(n, n, n, 0., 0.);
+        return Tensor3<dcomplex>(n, n, n, 0., 0.);
     }
 
     // End of overriden methods
@@ -609,7 +606,7 @@ void initMaterials() {
         .def("B", &Material::B, (py::arg("T")=300.), "Get radiative recombination coefficient B [m**3/s]")
         .def("C", &Material::C, (py::arg("T")=300.), "Get Auger recombination coefficient C [m**6/s]")
         .def("D", &Material::D, (py::arg("T")=300.), "Get ambipolar diffusion coefficient D [m**2/s]")
-        .def("thermk", (DDPair (Material::*)(double, double) const)&Material::thermk, (py::arg("T")=300., py::arg("thickness")=INFINITY), "Get thermal conductivity [W/(m*K)]")
+        .def("thermk", (Tensor2<double> (Material::*)(double, double) const)&Material::thermk, (py::arg("T")=300., py::arg("thickness")=INFINITY), "Get thermal conductivity [W/(m*K)]")
         .def("dens", &Material::dens, (py::arg("T")=300.), "Get density [kg/m**3]")
         .def("cp", &Material::cp, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
         .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nr")
@@ -623,7 +620,7 @@ void initMaterials() {
     register_exception<MaterialMethodNotApplicable>(PyExc_TypeError);
 
     // Make std::pair<double,double> and std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> understandable
-    detail::DDpair_fromto_Python();
+    detail::Tensor2_fromto_Python();
     detail::ComplexTensor_fromto_Python();
 
     py_enum<Material::Kind> MaterialKind("Kind", "Kind of the material"); MaterialKind

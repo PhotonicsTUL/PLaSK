@@ -6,9 +6,6 @@
 
 namespace plask { namespace python {
 
-typedef std::pair<double,double> DDPair;
-typedef std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> NrTensorT;
-
 /**
  * Wrapper for Material read from XML of type eval
  * For all virtual functions it calls Python derivatives
@@ -103,10 +100,10 @@ class PythonEvalMaterial : public Material
     virtual double VBO(double T) const { PYTHON_EVAL_CALL_1(double, VBO, T) }
     virtual double Dso(double T) const { PYTHON_EVAL_CALL_1(double, Dso, T) }
     virtual double Mso(double T) const { PYTHON_EVAL_CALL_1(double, Mso, T) }
-    virtual DDPair Me(double T, const char Point) const { PYTHON_EVAL_CALL_2(DDPair, Me, T, Point) }
-    virtual DDPair Mhh(double T, const char Point) const { PYTHON_EVAL_CALL_2(DDPair, Mhh, T, Point) }
-    virtual DDPair Mlh(double T, const char Point) const { PYTHON_EVAL_CALL_2(DDPair, Mlh, T, Point) }
-    virtual DDPair Mh(double T, char EqType) const { PYTHON_EVAL_CALL_2(DDPair, Mh, T, EqType) }
+    virtual Tensor2<double> Me(double T, const char Point) const { PYTHON_EVAL_CALL_2(Tensor2<double>, Me, T, Point) }
+    virtual Tensor2<double> Mhh(double T, const char Point) const { PYTHON_EVAL_CALL_2(Tensor2<double>, Mhh, T, Point) }
+    virtual Tensor2<double> Mlh(double T, const char Point) const { PYTHON_EVAL_CALL_2(Tensor2<double>, Mlh, T, Point) }
+    virtual Tensor2<double> Mh(double T, char EqType) const { PYTHON_EVAL_CALL_2(Tensor2<double>, Mh, T, EqType) }
     virtual double ac(double T) const { PYTHON_EVAL_CALL_1(double, ac, T) }
     virtual double av(double T) const { PYTHON_EVAL_CALL_1(double, av, T) }
     virtual double b(double T) const { PYTHON_EVAL_CALL_1(double, b, T) }
@@ -120,14 +117,14 @@ class PythonEvalMaterial : public Material
     virtual double Nf(double T) const { PYTHON_EVAL_CALL_1(double, Nf, T) }
     virtual double EactD(double T) const { PYTHON_EVAL_CALL_1(double, EactD, T) }
     virtual double EactA(double T) const { PYTHON_EVAL_CALL_1(double, EactA, T) }
-    virtual DDPair mob(double T) const { PYTHON_EVAL_CALL_1(DDPair, mob, T) }
-    virtual DDPair cond(double T) const { PYTHON_EVAL_CALL_1(DDPair, cond, T) }
+    virtual Tensor2<double> mob(double T) const { PYTHON_EVAL_CALL_1(Tensor2<double>, mob, T) }
+    virtual Tensor2<double> cond(double T) const { PYTHON_EVAL_CALL_1(Tensor2<double>, cond, T) }
     virtual double A(double T) const { PYTHON_EVAL_CALL_1(double, A, T) }
     virtual double B(double T) const { PYTHON_EVAL_CALL_1(double, B, T) }
     virtual double C(double T) const { PYTHON_EVAL_CALL_1(double, C, T) }
     virtual double D(double T) const { PYTHON_EVAL_CALL_1(double, D, T) }
-    virtual DDPair thermk(double T) const { const double t = INFINITY; PYTHON_EVAL_CALL_2(DDPair, thermk, T, t) }
-    virtual DDPair thermk(double T, double t)  const { PYTHON_EVAL_CALL_2(DDPair, thermk, T, t) }
+    virtual Tensor2<double> thermk(double T) const { const double t = INFINITY; PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, t) }
+    virtual Tensor2<double> thermk(double T, double t)  const { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, t) }
     virtual double dens(double T) const { PYTHON_EVAL_CALL_1(double, dens, T) }
     virtual double cp(double T) const { PYTHON_EVAL_CALL_1(double, cp, T) }
     virtual double nr(double wl, double T) const { PYTHON_EVAL_CALL_2(double, nr, wl, T) }
@@ -141,15 +138,15 @@ class PythonEvalMaterial : public Material
         }
         else return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
     }
-    virtual NrTensorT nR_tensor(double wl, double T) const {
+    virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->nR != NULL) {
             PyObject* result = PyEval_EvalCode(cls->nR_tensor, xml_globals.ptr(), locals.ptr());
             if (!result) throw py::error_already_set();
-            return py::extract<NrTensorT>(result);
+            return py::extract<Tensor3<dcomplex>>(result);
         } else {
             dcomplex n = nR(wl, T);
-            return NrTensorT(n, n, n, 0., 0.);
+            return Tensor3<dcomplex>(n, n, n, 0., 0.);
         }
     }
     // End of overridden methods

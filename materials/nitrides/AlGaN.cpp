@@ -20,10 +20,10 @@ MI_PROPERTY(AlGaN, thermk,
             MISource("B. C. Daly et al., Journal of Applied Physics 92 (2002) 3820"),
             MIComment("based on data for Al = 0.2, 0.45")
             )
-std::pair<double,double> AlGaN::thermk(double T, double t) const {
-    double lCondT = 1/(Al/mAlN.thermk(T,t).first + Ga/mGaN.thermk(T,t).first + Al*Ga*0.4),
-           vCondT = 1/(Al/mAlN.thermk(T,t).second + Ga/mGaN.thermk(T,t).second + Al*Ga*0.4);
-    return(std::make_pair(lCondT,vCondT));
+Tensor2<double> AlGaN::thermk(double T, double t) const {
+    double lCondT = 1/(Al/mAlN.thermk(T,t).c00 + Ga/mGaN.thermk(T,t).c00 + Al*Ga*0.4),
+           vCondT = 1/(Al/mAlN.thermk(T,t).c11 + Ga/mGaN.thermk(T,t).c11 + Al*Ga*0.4);
+    return Tensor2<double>(lCondT,vCondT);
  }
 
 MI_PROPERTY(AlGaN, absp,
@@ -33,7 +33,7 @@ MI_PROPERTY(AlGaN, absp,
             )
 double AlGaN::absp(double wl, double T) const {
     double a = 1239.84190820754/wl - Eg(T,'G');
-    return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
+    return 19000*exp(a/0.019) + 330*exp(a/0.07);
 }
 
 MI_PROPERTY(AlGaN, nr,

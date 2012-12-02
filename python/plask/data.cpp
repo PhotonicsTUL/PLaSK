@@ -25,8 +25,8 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<const Vec<2,dcomplex>>() { return 2; }
     template <> constexpr inline npy_intp type_dim<const Vec<3,double>>() { return 3; }
     template <> constexpr inline npy_intp type_dim<const Vec<3,dcomplex>>() { return 3; }
-    template <> constexpr inline npy_intp type_dim<const std::pair<double,double>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<const std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex>>() { return 5; }
+    template <> constexpr inline npy_intp type_dim<const Tensor2<double>>() { return 2; }
+    template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 5; }
 
 
     inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.axis1.size(), mesh.axis0.size() }; }
@@ -334,8 +334,8 @@ static inline void register_data_vectors_d() {
     register_data_vector<Vec<2,dcomplex>, dim>();
     register_data_vector<Vec<3,double>, dim>();
     register_data_vector<Vec<3,dcomplex>, dim>();
-    register_data_vector<std::pair<double,double>, dim>();
-    register_data_vector<std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex>, dim>();
+    register_data_vector<Tensor2<double>, dim>();
+    register_data_vector<Tensor3<dcomplex>, dim>();
 }
 
 void register_data_vectors() {

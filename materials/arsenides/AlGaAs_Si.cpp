@@ -28,16 +28,16 @@ AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, DopingAmountType Type, d
     }
     double fx2A = exp(-16.*Al*Al); // x < 0.5
     double fx2B = 0.054*Al-0.009; // else
-    if (Al < 0.5) mob_RT = mGaAs_Si.mob(300.).first * fx2A;
-    else mob_RT = mGaAs_Si.mob(300.).first * fx2B;
+    if (Al < 0.5) mob_RT = mGaAs_Si.mob(300.).c00 * fx2A;
+    else mob_RT = mGaAs_Si.mob(300.).c00 * fx2B;
 }
 
 MI_PROPERTY(AlGaAs_Si, mob,
             MISource("based on 3 papers 1982-1990 about Si-doped AlGaAs"),
             MISource("based on Si-doped GaAs")
             )
-std::pair<double,double> AlGaAs_Si::mob(double T) const {
-    return ( std::make_pair(mob_RT, mob_RT) );
+Tensor2<double> AlGaAs_Si::mob(double T) const {
+    return ( Tensor2<double>(mob_RT, mob_RT) );
 }
 
 MI_PROPERTY(AlGaAs_Si, Nf,
@@ -52,9 +52,9 @@ double AlGaAs_Si::Dop() const {
     return ( ND );
 }
 
-std::pair<double,double> AlGaAs_Si::cond(double T) const {
+Tensor2<double> AlGaAs_Si::cond(double T) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
-    return ( std::make_pair(tCond, tCond) );
+    return ( Tensor2<double>(tCond, tCond) );
 }
 
 static MaterialsDB::Register<AlGaAs_Si> materialDB_register_AlGaAs_Si;

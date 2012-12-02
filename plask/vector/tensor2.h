@@ -1,0 +1,190 @@
+#ifndef PLASK__TESNOR2_H
+#define PLASK__TESNOR2_H
+
+/** @file
+This file includes implementation of tensor in 2D space.
+*/
+
+#include <iostream>
+#include <boost/concept_check.hpp>
+
+#include "../math.h"
+
+namespace plask {
+
+/**
+ * Diagonal tensor with all lateral components equal.
+ */
+template <typename T>
+struct Tensor2 {
+
+    T c00, c11;
+
+    T& tran() { return c00; }
+    const T& tran() const { return c00; }
+
+    T& vert() { return c11; }
+    const T& vert() const { return c11; }
+
+    /// Construct uninitialized Tensor.
+    Tensor2() {}
+
+    /**
+     * Copy constructor from all other 2d tensors.
+     * @param p tensor to copy from
+     */
+    template <typename OtherT>
+    Tensor2(const Tensor2<OtherT>& p): c00(p.c00), c11(p.c11) {}
+
+    /**
+     * Construct isotropic tensor.
+     * @param val value
+     */
+    Tensor2(const T& val): c00(val), c11(val) {}
+
+    /**
+     * Construct tensor with given diagonal values.
+     * @param c00, c11 components
+     */
+    Tensor2(const T& c00, const T& c11): c00(c00), c11(c11) {}
+
+    /**
+     * Construct tensor components given in std::pair.
+     * @param comp components
+     */
+    template <typename T0, typename T1>
+    Tensor2(const std::pair<T0,T1>& comp): c00(comp.first), c11(comp.second) {}
+
+    /// Convert to std::tuple
+    operator std::tuple<T,T>() const {
+        return std::make_tuple(c00, c11);
+    }
+
+    /**
+     * Compare two tensors, this and @p p.
+     * @param p tensor to compare
+     * @return true only if this tensor and @p p have equals coordinates
+     */
+    template <typename OtherT>
+    bool operator==(const Tensor2<OtherT>& p) const { return p.c00 == c00 && p.c11 == c11; }
+
+    /**
+     * Compare two tensors, this and @p p.
+     * @param p tensor to compare
+     * @return true only if this tensor and @p p don't have equals coordinates
+     */
+    template <typename OtherT>
+    bool operator!=(const Tensor2<OtherT>& p) const { return p.c00 != c00 || p.c11 != c11; }
+
+    /**
+     * Calculate sum of two tesnors, @c this and @p to_add.
+     * @param to_add tensor to add, can have different data type (than result type will be found using C++ types promotions rules)
+     * @return tensors sum
+     */
+    template <typename OtherT>
+    auto operator+(const Tensor2<OtherT>& to_add) const -> Tensor2<decltype(c00 + to_add.c00)> {
+        return Tensor2<decltype(this->c00 + to_add.c00)>(c00 + to_add.c00, c11 + to_add.c11);
+    }
+
+    /**
+     * Increase coordinates of this tensor by coordinates of other tensor @p to_add.
+     * @param to_add tensor to add
+     * @return *this (after increase)
+     */
+    Tensor2<T>& operator+=(const Tensor2<T>& to_add) {
+        c00 += to_add.c00;
+        c11 += to_add.c11;
+        return *this;
+    }
+
+    /**
+     * Calculate difference of two tensors, @c this and @p to_sub.
+     * @param to_sub tensor to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
+     * @return tensors difference
+     */
+    template <typename OtherT>
+    auto operator-(const Tensor2<OtherT>& to_sub) const -> Tensor2<decltype(c00 - to_sub.c00)> {
+        return Tensor2<decltype(this->c00 - to_sub.c00)>(c00 - to_sub.c00, c11 - to_sub.c11);
+    }
+
+    /**
+     * Decrease coordinates of this tensor by coordinates of other tensor @p to_sub.
+     * @param to_sub tensor to subtract
+     * @return *this (after decrease)
+     */
+    Tensor2<T>& operator-=(const Tensor2<T>& to_sub) {
+        c00 -= to_sub.c00;
+        c11 -= to_sub.c11;
+        return *this;
+    }
+
+    /**
+     * Calculate this tensor multiplied by scalar @p scale.
+     * @param scale scalar
+     * @return this tensor multiplied by scalar
+     */
+    template <typename OtherT>
+    auto operator*(const OtherT scale) const -> Tensor2<decltype(c00*scale)> {
+        return Tensor2<decltype(c00*scale)>(c00 * scale, c11 * scale);
+    }
+
+    /**
+     * Multiple coordinates of this tensor by @p scalar.
+     * @param scalar scalar
+     * @return *this (after scale)
+     */
+    Tensor2<T>& operator*=(const T scalar) {
+        c00 *= scalar;
+        c11 *= scalar;
+        return *this;
+    }
+
+    /**
+     * Calculate this tensor divided by scalar @p scale.
+     * @param scale scalar
+     * @return this tensor divided by scalar
+     */
+    Tensor2<T> operator/(const T scale) const { return Tensor2<T>(c00 / scale, c11 / scale); }
+
+    /**
+     * Divide coordinates of this tensor by @p scalar.
+     * @param scalar scalar
+     * @return *this (after divide)
+     */
+    Tensor2<T>& operator/=(const T scalar) {
+        c00 /= scalar;
+        c11 /= scalar;
+        return *this;
+    }
+
+    /**
+     * Calculate tensor opposite to this.
+     * @return Tensor2<T>(-c00, -c11)
+     */
+    Tensor2<T> operator-() const {
+        return Tensor2<T>(-c00, -c11);
+    }
+
+    /**
+     * Print tensor to stream using format (where c00 and c11 are tensor components): [c00, c11]
+     * @param out print destination, output stream
+     * @param to_print tensor to print
+     * @return out stream
+     */
+    friend inline std::ostream& operator<<(std::ostream& out, const Tensor2<T>& to_print) {
+        return out << '(' << to_print.c00 << ", " <<  to_print.c00 << ", " << to_print.c11 << ')';
+    }
+
+};
+
+/**
+ * Calculate tensor conjugate.
+ * @param v a tensor
+ * @return conjugate tensor
+ */
+template <typename T>
+inline Tensor2<T> conj(const Tensor2<T>& v) { return Tensor2<T>(conj(v.c00), conj(v.c11)); }
+
+} //namespace plask
+
+#endif // PLASK__TESNOR2_H
