@@ -142,8 +142,8 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double getCondNcontact() const { return mCondNcontact; }
     void setCondNcontact(double iCondNcontact)  { mCondNcontact = iCondNcontact; }
 
-    std::pair<double,double> getCondJunc0() const { return std::make_pair(mCondJuncX0, mCondJuncY0); }
-    void setCondJunc0(const std::pair<double,double>& iCond)  { mCondJuncX0 = iCond.first; mCondJuncY0 = iCond.second; }
+    Tensor2<double> getCondJunc0() const { return Tensor2<double>(mCondJuncX0, mCondJuncY0); }
+    void setCondJunc0(const Tensor2<double>& iCond)  { mCondJuncX0 = iCond.c00; mCondJuncY0 = iCond.c11; }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 

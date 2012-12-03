@@ -53,7 +53,7 @@ namespace plask {
                 case LOG_ERROR:         color(BRIGHT_RED); return "ERROR         ";
                 case LOG_CRITICAL_ERROR:color(BRIGHT_RED); return "CRITICAL ERROR";
                 case LOG_WARNING:       color(BROWN); return "WARNING       ";
-                case LOG_INFO:          color(BRIGHT_BLUE); return "INFO          ";
+                case LOG_INFO:          color(BRIGHT_CYAN); return "INFO          ";
                 case LOG_RESULT:        color(GREEN); return "RESULT        ";
                 case LOG_DATA:          color(CYAN); return "DATA          ";
                 case LOG_DETAIL:        color((Colors)DEFAULT); return "DETAIL        ";
