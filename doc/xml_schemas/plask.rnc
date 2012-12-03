@@ -297,22 +297,42 @@ element mesh {
 
 # ========== solvers section ==========
 
+solver.geom = element geometry {
+	## name of geometry
+	attribute ref { text }
+}
+
+solver.mesh = element mesh {
+	## name of mesh
+	attribute ref { text }
+}
+
+solver.common = 
+	## name for solver instance
+        name_attr &
+	## library name
+        attribute lib { text }? &
+        ## name of solver type
+        attribute solver { text }
+
+solver.common.all =
+	solver.common &
+	solver.geom &
+	solver.mesh
+
+solver = element * {
+	solver.common,
+        anyAttribute,
+        anyElement
+    }
+
 solvers =
 ## solvers section, allows create instances of solvers and includes solver-specyfic configuration
 element solvers {
 (
     include_attr |
     ## create solver instance
-    element * {
-        ## name for solver instance
-        name_attr,
-        ## name of solver type
-        attribute solver { text },
-        ## library name
-        attribute lib { text }?,
-        anyAttribute,
-        anyElement
-    }*
+    solver*
 )
 }
 
@@ -360,3 +380,11 @@ type_attr =
 include_attr =
 	## allow to load section from external source: file with given name
 	attribute from { text }
+
+# TODO
+boundary_cond = anyElement & anyAttribute
+
+
+# ========== includes ==========
+
+include "solvers.rnc"

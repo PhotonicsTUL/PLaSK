@@ -1,0 +1,29 @@
+# custom solver definitions
+
+# ============ thermal FEM solver ============
+
+solver |= element thermal {
+	attribute solver { "Static2D" }	&
+	solver.common.all	&
+	element loop {
+		attribute inittemp { xsd:double }?,
+		attribute corrlim { xsd:double }?,
+		attribute corrtype { "absolute" | "abs" | "relative" | "rel" }?
+	} &
+	element matrix {
+		attribute bignum { xsd:double }?,
+		attribute algorithm { "slow" | "block" }?
+	} &
+	element temperature {
+		boundary_cond
+	} &
+	element heatflux {
+		boundary_cond
+	} &
+	element convection {
+		boundary_cond
+	} &
+	element radiation {
+		boundary_cond
+	}
+}
