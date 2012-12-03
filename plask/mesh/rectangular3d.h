@@ -1009,6 +1009,7 @@ private:
 template <typename Mesh1D, typename SrcT, typename DstT>    //for any data type
 struct InterpolationAlgorithm<RectangularMesh<3,Mesh1D>, SrcT, DstT, INTERPOLATION_LINEAR> {
     static void interpolate(const RectangularMesh<3,Mesh1D>& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DstT>& dst_vec) {
+        if (src_mesh.axis0.size() == 0 || src_mesh.axis1.size() == 0 || src_mesh.axis2.size() == 0) throw BadMesh("interpolate", "Source mesh empty");
         #pragma omp parallel for
         for (size_t i = 0; i < dst_mesh.size(); ++i)
             dst_vec[i] = src_mesh.interpolateLinear(src_vec, dst_mesh[i]);

@@ -105,12 +105,6 @@ struct Vec<3, T> {
     Vec(const Vec<3,OtherT>& p): c0(p.c0), c1(p.c1), c2(p.c2) {}
 
     /**
-     * Construct vector from single value (in case we have want to initialize with zeros)
-     * \param val initial value of both components
-     */
-    explicit Vec(const T& val) : c0(val), c1(val), c2(val) {}
-
-    /**
      * Construct vector with given components.
      * @param c0__lon, c1__tran, c2__up components
      */

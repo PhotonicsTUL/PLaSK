@@ -76,12 +76,6 @@ struct Vec<2,T> {
     Vec() {}
 
     /**
-     * Construct vector from single value (in case we have want to initialize with zeros)
-     * \param val initial value of both components
-     */
-    explicit Vec(const T& val) : c0(val), c1(val) {}
-
-    /**
      * Copy constructor from all other 2d vectors.
      * @param p vector to copy from
      */

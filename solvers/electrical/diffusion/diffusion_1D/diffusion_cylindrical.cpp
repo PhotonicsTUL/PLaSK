@@ -53,8 +53,8 @@ void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
     mesh = plask::RegularMesh1D( r_min, r_max, points );
     RegularMesh2D mesh2( mesh, plask::RegularMesh1D( z, z, 1 ) );
 
-    T_on_the_mesh = inTemperature(mesh2);      // data temperature vector provided by inTemperature reciever
-    j_on_the_mesh = inCurrentDensity(mesh2);   // data current density vector provided by inCurrentDensity reciever
+    T_on_the_mesh = inTemperature(mesh2, INTERPOLATION_HYMAN);      // data temperature vector provided by inTemperature reciever
+    j_on_the_mesh = inCurrentDensity(mesh2, INTERPOLATION_HYMAN);   // data current density vector provided by inCurrentDensity reciever
 
     n_present.reset(mesh.size(), 0.0);
     n_previous.reset(mesh.size(), 0.0);
@@ -70,8 +70,8 @@ void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
 
             mesh.reset( r_min, r_max, points );
             mesh2.axis0.reset( r_min, r_max, points );
-            T_on_the_mesh = inTemperature(mesh2);      // data temperature vector provided by inTemperature reciever
-            j_on_the_mesh = inCurrentDensity(mesh2);   // data current density vector provided by inCurrentDensity reciever
+            T_on_the_mesh = inTemperature(mesh2, INTERPOLATION_HYMAN);      // data temperature vector provided by inTemperature reciever
+            j_on_the_mesh = inCurrentDensity(mesh2, INTERPOLATION_HYMAN);   // data current density vector provided by inCurrentDensity reciever
             n_present.reset(mesh.size(), 0.0);
             n_previous.reset(mesh.size(), 0.0);
             mesh_change += 1;
