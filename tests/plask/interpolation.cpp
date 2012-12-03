@@ -11,10 +11,10 @@ namespace plask {
         virtual plask::Vec<2, double> at(std::size_t) const { return plask::vec(0.0, 0.0); }
     };
 
-    template <typename DataT>    //for any data type
-    struct InterpolationAlgorithm<DummyMesh, DataT, plask::INTERPOLATION_LINEAR> {
-        static void interpolate(const DummyMesh& src_mesh, const DataVector<const DataT>& src_vec,
-                                const plask::MeshD<DummyMesh::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
+    template <typename SrcT, typename DstT>    //for any data type
+    struct InterpolationAlgorithm<DummyMesh, SrcT, DstT, plask::INTERPOLATION_LINEAR> {
+        static void interpolate(const DummyMesh& src_mesh, const DataVector<const SrcT>& src_vec,
+                                const plask::MeshD<DummyMesh::DIM>& dst_mesh, DataVector<DstT>& dst_vec) {
             dst_vec[0] = src_vec[0] + 10;
         }
     };

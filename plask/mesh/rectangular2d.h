@@ -1339,9 +1339,9 @@ auto interpolateLinear2D(DataGetter2D data, const double& point_axis0, const dou
 }
 
 
-template <typename Mesh1D, typename DataT>    // for any data type
-struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<const DataT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DataT>& dst_vec) {
+template <typename Mesh1D, typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
         #pragma omp parallel for
         for (size_t i = 0; i < dst_mesh.size(); ++i)
             dst_vec[i] = src_mesh.interpolateLinear(src_vec, dst_mesh[i]);

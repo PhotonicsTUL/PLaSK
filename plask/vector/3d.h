@@ -15,7 +15,7 @@ This file includes implementation of vector in 3D space.
 namespace plask {
 
 /**
- * Vector in 3d space.
+ * Vector in 3D space.
  */
 template <typename T>
 struct Vec<3, T> {
@@ -103,6 +103,12 @@ struct Vec<3, T> {
      */
     template <typename OtherT>
     Vec(const Vec<3,OtherT>& p): c0(p.c0), c1(p.c1), c2(p.c2) {}
+
+    /**
+     * Construct vector from single value (in case we have want to initialize with zeros)
+     * \param val initial value of both components
+     */
+    explicit Vec(const T& val) : c0(val), c1(val), c2(val) {}
 
     /**
      * Construct vector with given components.
@@ -194,46 +200,46 @@ struct Vec<3, T> {
     }
 
     /**
-     * Calculate sum of two vectors, @c this and @p to_add.
-     * @param to_add vector to add, can have different data type (than result type will be found using C++ types promotions rules)
+     * Calculate sum of two vectors, @c this and @p other.
+     * @param other vector to add, can have different data type (than result type will be found using C++ types promotions rules)
      * @return vectors sum
      */
     template <typename OtherT>
-    auto operator+(const Vec<3,OtherT>& to_add) const -> Vec<3,decltype(c0 + to_add.c0)> {
-        return Vec<3,decltype(this->c0 + to_add.c0)>(c0 + to_add.c0, c1 + to_add.c1, c2 + to_add.c2);
+    auto operator+(const Vec<3,OtherT>& other) const -> Vec<3,decltype(c0 + other.c0)> {
+        return Vec<3,decltype(this->c0 + other.c0)>(c0 + other.c0, c1 + other.c1, c2 + other.c2);
     }
 
     /**
-     * Increase coordinates of this vector by coordinates of other vector @p to_add.
-     * @param to_add vector to add
+     * Increase coordinates of this vector by coordinates of other vector @p other.
+     * @param other vector to add
      * @return *this (after increase)
      */
-    Vec<3, T>& operator+=(const Vec<3,T>& to_add) {
-        c0 += to_add.c0;
-        c1 += to_add.c1;
-        c2 += to_add.c2;
+    Vec<3, T>& operator+=(const Vec<3,T>& other) {
+        c0 += other.c0;
+        c1 += other.c1;
+        c2 += other.c2;
         return *this;
     }
 
     /**
-     * Calculate difference of two vectors, @c this and @p to_sub.
-     * @param to_sub vector to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
+     * Calculate difference of two vectors, @c this and @p other.
+     * @param other vector to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
      * @return vectors difference
      */
     template <typename OtherT>
-    auto operator-(const Vec<3,OtherT>& to_sub) const -> Vec<3,decltype(c0 - to_sub.c0)> {
-        return Vec<3, decltype(this->c0 - to_sub.c0)>(c0 - to_sub. c0, c1 - to_sub. c1, c2 - to_sub.c2);
+    auto operator-(const Vec<3,OtherT>& other) const -> Vec<3,decltype(c0 - other.c0)> {
+        return Vec<3, decltype(this->c0 - other.c0)>(c0 - other. c0, c1 - other. c1, c2 - other.c2);
     }
 
     /**
-     * Decrease coordinates of this vector by coordinates of other vector @p to_sub.
-     * @param to_sub vector to subtract
+     * Decrease coordinates of this vector by coordinates of other vector @p other.
+     * @param other vector to subtract
      * @return *this (after decrease)
      */
-    Vec<3, T>& operator-=(const Vec<3, T>& to_sub) {
-        c0 -= to_sub.c0;
-        c1 -= to_sub.c1;
-        c2 -= to_sub.c2;
+    Vec<3, T>& operator-=(const Vec<3, T>& other) {
+        c0 -= other.c0;
+        c1 -= other.c1;
+        c2 -= other.c2;
         return *this;
     }
 
@@ -350,7 +356,7 @@ inline auto dot(const Vec<3,complex<double>>& v1, const Vec<3,complex<double>>& 
 }
 
 /**
- * Helper to create 3d vector.
+ * Helper to create 3D vector.
  * @param c0__lon, c1__tran, c2__up vector coordinates.
  */
 template <typename T>

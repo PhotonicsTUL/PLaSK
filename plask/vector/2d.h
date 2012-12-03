@@ -16,10 +16,10 @@ This file includes implementation of vector in 2D space.
 namespace plask {
 
 /**
- * Vector in 2d space.
+ * Vector in 2D space.
  */
 template <typename T>
-struct Vec<2, T> {
+struct Vec<2,T> {
 
     static const int DIMS = 2;
 
@@ -74,6 +74,12 @@ struct Vec<2, T> {
 
     /// Construct uninitialized vector.
     Vec() {}
+
+    /**
+     * Construct vector from single value (in case we have want to initialize with zeros)
+     * \param val initial value of both components
+     */
+    explicit Vec(const T& val) : c0(val), c1(val) {}
 
     /**
      * Copy constructor from all other 2d vectors.
@@ -171,44 +177,44 @@ struct Vec<2, T> {
     }
 
     /**
-     * Calculate sum of two vectors, @c this and @p to_add.
-     * @param to_add vector to add, can have different data type (than result type will be found using C++ types promotions rules)
+     * Calculate sum of two vectors, @c this and @p other.
+     * @param other vector to add, can have different data type (than result type will be found using C++ types promotions rules)
      * @return vectors sum
      */
     template <typename OtherT>
-    auto operator+(const Vec<2,OtherT>& to_add) const -> Vec<2,decltype(c0 + to_add.c0)> {
-        return Vec<2,decltype(this->c0 + to_add.c0)>(c0 + to_add.c0, c1 + to_add.c1);
+    auto operator+(const Vec<2,OtherT>& other) const -> Vec<2,decltype(c0 + other.c0)> {
+        return Vec<2,decltype(this->c0 + other.c0)>(c0 + other.c0, c1 + other.c1);
     }
 
     /**
-     * Increase coordinates of this vector by coordinates of other vector @p to_add.
-     * @param to_add vector to add
+     * Increase coordinates of this vector by coordinates of other vector @p other.
+     * @param other vector to add
      * @return *this (after increase)
      */
-    Vec<2,T>& operator+=(const Vec<2,T>& to_add) {
-        c0 += to_add.c0;
-        c1 += to_add.c1;
+    Vec<2,T>& operator+=(const Vec<2,T>& other) {
+        c0 += other.c0;
+        c1 += other.c1;
         return *this;
     }
 
     /**
-     * Calculate difference of two vectors, @c this and @p to_sub.
-     * @param to_sub vector to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
+     * Calculate difference of two vectors, @c this and @p other.
+     * @param other vector to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
      * @return vectors difference
      */
     template <typename OtherT>
-    auto operator-(const Vec<2,OtherT>& to_sub) const -> Vec<2,decltype(c0 - to_sub.c0)> {
-        return Vec<2,decltype(this->c0 - to_sub.c0)>(c0 - to_sub.c0, c1 - to_sub.c1);
+    auto operator-(const Vec<2,OtherT>& other) const -> Vec<2,decltype(c0 - other.c0)> {
+        return Vec<2,decltype(this->c0 - other.c0)>(c0 - other.c0, c1 - other.c1);
     }
 
     /**
-     * Decrease coordinates of this vector by coordinates of other vector @p to_sub.
-     * @param to_sub vector to subtract
+     * Decrease coordinates of this vector by coordinates of other vector @p other.
+     * @param other vector to subtract
      * @return *this (after decrease)
      */
-    Vec<2,T>& operator-=(const Vec<2,T>& to_sub) {
-        c0 -= to_sub.c0;
-        c1 -= to_sub.c1;
+    Vec<2,T>& operator-=(const Vec<2,T>& other) {
+        c0 -= other.c0;
+        c1 -= other.c1;
         return *this;
     }
 
@@ -313,7 +319,7 @@ inline auto dot(const Vec<2, complex<double>>& v1, const Vec<2,complex<double>>&
 }
 
 /**
- * Helper to create 2d vector.
+ * Helper to create 2D vector.
  * @param c0__tran, c1__up vector coordinates.
  */
 template <typename T>

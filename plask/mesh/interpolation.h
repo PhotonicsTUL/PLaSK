@@ -40,9 +40,9 @@ Your specialization must contain an implementation of the static method plask::I
 
 For example to implement @ref plask::INTERPOLATION_LINEAR "linear" interpolation for MyMeshType source mesh type using the same code for all possible data types, you write:
 @code
-template <typename DataT>    //for any data type
-struct plask::InterpolationAlgorithm<MyMeshType, DataT, plask::INTERPOLATION_LINEAR> {
-    static void interpolate(MyMeshType& src_mesh, const DataVector<const DataT>& src_vec, const plask::MeshD<MyMeshType::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
+template <typename SrcT, typename DstT>    // for any data type
+struct plask::InterpolationAlgorithm<MyMeshType, SrcT, DstT, plask::INTERPOLATION_LINEAR> {
+    static void interpolate(MyMeshType& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<MyMeshType::DIM>& dst_mesh, DataVector<DstT>& dst_vec) {
 
         // here comes your interpolation code
     }
@@ -85,10 +85,10 @@ namespace plask {
  */
 enum InterpolationMethod {
     DEFAULT_INTERPOLATION = 0,  ///< default interpolation (depends on source mesh)
-    INTERPOLATION_LINEAR = 1,   ///< linear interpolation
-    INTERPOLATION_SPLINE = 2,   ///< spline interpolation
-    INTERPOLATION_COSINE = 3,   ///< cosine interpolation
-    INTERPOLATION_FOURIER = 4,  ///< Fourier transform interpolation
+    INTERPOLATION_LINEAR,       ///< linear interpolation
+    INTERPOLATION_SPLINE,       ///< spline interpolation
+    INTERPOLATION_HYMAN,        ///< spline interpolation with Hyman monotonic filter and parabolic derivatives
+    INTERPOLATION_FOURIER,      ///< Fourier transform interpolation
     // ...add new interpolation algorithms here...
 #   ifndef DOXYGEN
     __ILLEGAL_INTERPOLATION_METHOD__  // necessary for metaprogram loop and automatic Python enums
@@ -99,7 +99,7 @@ static constexpr const char* interpolationMethodNames[] = {
     "DEFAULT",
     "LINEAR",
     "SPLINE",
-    "COSINE",
+    "HYMAN",
     "FOURIER",
     // ...attach new interpolation algorithm names here...
     "ILLEGAL"
@@ -118,50 +118,52 @@ inline InterpolationMethod defInterpolation(InterpolationMethod method) {
  * data type and the interpolation method.
  * @see @ref interpolation_write
  */
-template <typename SrcMeshT, typename DataT, InterpolationMethod method>
+template <typename SrcMeshT, typename SrcT, typename DstT, InterpolationMethod method>
 struct InterpolationAlgorithm
 {
-    static void interpolate(const SrcMeshT& src_mesh, const DataVector<const DataT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
+    static void interpolate(const SrcMeshT& src_mesh, const DataVector<const SrcT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DstT>& dst_vec) {
         std::string msg = "interpolate (source mesh type: ";
         msg += typeid(src_mesh).name();
         msg += ", interpolation method: ";
         msg += interpolationMethodNames[method];
         msg += ")";
         throw NotImplemented(msg);
-        //TODO iterate over dst_mesh and call InterpolationAlgorithmForPoint
     }
 };
 
 /**
- * Specilization of InterpolationAlgorithm showing elegant message if alogorithm default is used.
+ * Specialization of InterpolationAlgorithm showing elegant message if algorithm default is used.
  */
-template <typename SrcMeshT, typename DataT>
-struct InterpolationAlgorithm<SrcMeshT, DataT, DEFAULT_INTERPOLATION>
+template <typename SrcMeshT, typename SrcT, typename DstT>
+struct InterpolationAlgorithm<SrcMeshT, SrcT, DstT, DEFAULT_INTERPOLATION>
 {
-    static void interpolate(const SrcMeshT& src_mesh, const DataVector<const DataT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DataT>& dst_vec) {
-        throw CriticalException("interpolate(...) called for DEFAULT_INTERPOLATION method. "
-                                "To avoid it use 'defInterpolation<YOUR_DEFAULT_METHOD>(interpolation_method) in your provider.");
+    static void interpolate(const SrcMeshT& src_mesh, const DataVector<const SrcT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DstT>& dst_vec) {
+        throw CriticalException("interpolate(...) called for DEFAULT_INTERPOLATION method. Contact solver author to fix this issue."
+#ifndef NDEBUG
+                                "\n\nINFO FOR SOLVER AUTHOR: To avoid this error use 'defInterpolation<YOUR_DEFAULT_METHOD>(interpolation_method) in C++ code of the provider in your solver.\n"
+#endif
+                               );
     }
 };
 
 #ifndef DOXYGEN
 // The following structures are solely used for metaprogramming
-template <typename SrcMeshT, typename DataT, int iter>
+template <typename SrcMeshT, typename SrcT, typename DstT, int iter>
 struct __InterpolateMeta__
 {
-    inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                                   const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<typename std::remove_const<DataT>::type>& dst_vec, InterpolationMethod method) {
+    inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<const SrcT>& src_vec,
+                                   const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<typename std::remove_const<DstT>::type>& dst_vec, InterpolationMethod method) {
         if (int(method) == iter)
-            InterpolationAlgorithm<SrcMeshT, typename std::remove_const<DataT>::type, (InterpolationMethod)iter>::interpolate(src_mesh, DataVector<const DataT>(src_vec), dst_mesh, dst_vec);
+            InterpolationAlgorithm<SrcMeshT, SrcT, typename std::remove_const<DstT>::type, (InterpolationMethod)iter>::interpolate(src_mesh, DataVector<const SrcT>(src_vec), dst_mesh, dst_vec);
         else
-            __InterpolateMeta__<SrcMeshT, DataT, iter+1>::interpolate(src_mesh, src_vec, dst_mesh, dst_vec, method);
+            __InterpolateMeta__<SrcMeshT, SrcT, DstT, iter+1>::interpolate(src_mesh, src_vec, dst_mesh, dst_vec, method);
     }
 };
-template <typename SrcMeshT, typename DataT>
-struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
+template <typename SrcMeshT, typename SrcT, typename DstT>
+struct __InterpolateMeta__<SrcMeshT, SrcT, DstT, __ILLEGAL_INTERPOLATION_METHOD__>
 {
-    inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<typename std::remove_const<DataT>::type>& dst_vec, InterpolationMethod method) {
+    inline static void interpolate(const SrcMeshT& src_mesh, const DataVector<const SrcT>& src_vec,
+                const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<typename std::remove_const<DstT>::type>& dst_vec, InterpolationMethod method) {
         throw CriticalException("no such interpolation method");
     }
 };
@@ -181,9 +183,9 @@ struct __InterpolateMeta__<SrcMeshT, DataT, __ILLEGAL_INTERPOLATION_METHOD__>
  * @throw CriticalException if given interpolation method is not valid
  * @see @ref meshes_interpolation
  */
-template <typename SrcMeshT, typename DataT>
-DataVector<DataT> interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>& src_vec,
-                              const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
+template <typename SrcMeshT, typename SrcT, typename DstT=SrcT>
+DataVector<DstT> interpolate(const SrcMeshT& src_mesh, const DataVector<SrcT>& src_vec,
+                             const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
 {
     if (!src_vec.data()) throw NoValue(); // throw if we have been called with uninitialized data
     if (src_mesh.size() != src_vec.size())
@@ -191,9 +193,9 @@ DataVector<DataT> interpolate(const SrcMeshT& src_mesh, const DataVector<DataT>&
 
     if (&src_mesh == &dst_mesh) return src_vec; // meshes are identical, so just return src_vec
 
-    DataVector<typename std::remove_const<DataT>::type> result(dst_mesh.size());
+    DataVector<typename std::remove_const<DstT>::type> result(dst_mesh.size());
     writelog(LOG_DETAIL, std::string("interpolate: Running ") + interpolationMethodNames[method] + " interpolation");
-    __InterpolateMeta__<SrcMeshT, DataT, 0>::interpolate(src_mesh, src_vec, dst_mesh, result, method);
+    __InterpolateMeta__<SrcMeshT, SrcT, DstT, 0>::interpolate(src_mesh, src_vec, dst_mesh, result, method);
     return result;
 }
 

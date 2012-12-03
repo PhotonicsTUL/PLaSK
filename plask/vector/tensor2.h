@@ -77,44 +77,44 @@ struct Tensor2 {
     bool operator!=(const Tensor2<OtherT>& p) const { return p.c00 != c00 || p.c11 != c11; }
 
     /**
-     * Calculate sum of two tesnors, @c this and @p to_add.
-     * @param to_add tensor to add, can have different data type (than result type will be found using C++ types promotions rules)
+     * Calculate sum of two tesnors, @c this and @p other.
+     * @param other tensor to add, can have different data type (than result type will be found using C++ types promotions rules)
      * @return tensors sum
      */
     template <typename OtherT>
-    auto operator+(const Tensor2<OtherT>& to_add) const -> Tensor2<decltype(c00 + to_add.c00)> {
-        return Tensor2<decltype(this->c00 + to_add.c00)>(c00 + to_add.c00, c11 + to_add.c11);
+    auto operator+(const Tensor2<OtherT>& other) const -> Tensor2<decltype(c00 + other.c00)> {
+        return Tensor2<decltype(this->c00 + other.c00)>(c00 + other.c00, c11 + other.c11);
     }
 
     /**
-     * Increase coordinates of this tensor by coordinates of other tensor @p to_add.
-     * @param to_add tensor to add
+     * Increase coordinates of this tensor by coordinates of other tensor @p other.
+     * @param other tensor to add
      * @return *this (after increase)
      */
-    Tensor2<T>& operator+=(const Tensor2<T>& to_add) {
-        c00 += to_add.c00;
-        c11 += to_add.c11;
+    Tensor2<T>& operator+=(const Tensor2<T>& other) {
+        c00 += other.c00;
+        c11 += other.c11;
         return *this;
     }
 
     /**
-     * Calculate difference of two tensors, @c this and @p to_sub.
-     * @param to_sub tensor to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
+     * Calculate difference of two tensors, @c this and @p other.
+     * @param other tensor to subtract from this, can have different data type (than result type will be found using C++ types promotions rules)
      * @return tensors difference
      */
     template <typename OtherT>
-    auto operator-(const Tensor2<OtherT>& to_sub) const -> Tensor2<decltype(c00 - to_sub.c00)> {
-        return Tensor2<decltype(this->c00 - to_sub.c00)>(c00 - to_sub.c00, c11 - to_sub.c11);
+    auto operator-(const Tensor2<OtherT>& other) const -> Tensor2<decltype(c00 - other.c00)> {
+        return Tensor2<decltype(this->c00 - other.c00)>(c00 - other.c00, c11 - other.c11);
     }
 
     /**
-     * Decrease coordinates of this tensor by coordinates of other tensor @p to_sub.
-     * @param to_sub tensor to subtract
+     * Decrease coordinates of this tensor by coordinates of other tensor @p other.
+     * @param other tensor to subtract
      * @return *this (after decrease)
      */
-    Tensor2<T>& operator-=(const Tensor2<T>& to_sub) {
-        c00 -= to_sub.c00;
-        c11 -= to_sub.c11;
+    Tensor2<T>& operator-=(const Tensor2<T>& other) {
+        c00 -= other.c00;
+        c11 -= other.c11;
         return *this;
     }
 

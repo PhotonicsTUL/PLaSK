@@ -874,7 +874,7 @@ private:
         }
 
     };
-    
+
     struct FixedIndex0Boundary: public BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
@@ -901,7 +901,7 @@ private:
             return this->mesh.axis1.size() * this->mesh.axis2.size();
         }
     };
-    
+
     struct FixedIndex1Boundary: public BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
@@ -928,7 +928,7 @@ private:
             return this->mesh.axis0.size() * this->mesh.axis2.size();
         }
     };
-    
+
     struct FixedIndex2Boundary: public BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
@@ -955,7 +955,7 @@ private:
             return this->mesh.axis0.size() * this->mesh.axis1.size();
         }
     };
-    
+
     public:
     /**
      * Get boundary which shows one plane in mesh, which has 0 coordinate equals to axis0[0].
@@ -964,7 +964,7 @@ private:
     static Boundary getIndex0LoBoundary() {
         return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex0Boundary(mesh, 0);} );
     }
-    
+
     /**
      * Get boundary which shows one plane in mesh, which has 0 coordinate equals to axis0[axis0.size()-1].
      * @return boundary which show plane in mesh
@@ -972,7 +972,7 @@ private:
     static Boundary getIndex0HiBoundary() {
         return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex0Boundary(mesh, mesh.axis0.size()-1);} );
     }
-    
+
     /**
      * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[0].
      * @return boundary which show plane in mesh
@@ -980,7 +980,7 @@ private:
     static Boundary getIndex1LoBoundary() {
         return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex1Boundary(mesh, 0);} );
     }
-    
+
     /**
      * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[axis1.size()-1].
      * @return boundary which show plane in mesh
@@ -988,7 +988,7 @@ private:
     static Boundary getIndex1HiBoundary() {
         return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex1Boundary(mesh, mesh.axis1.size()-1);} );
     }
-    
+
     /**
      * Get boundary which shows one plane in mesh, which has 2 coordinate equals to axis2[0].
      * @return boundary which show plane in mesh
@@ -996,7 +996,7 @@ private:
     static Boundary getIndex2LoBoundary() {
         return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex2Boundary(mesh, 0);} );
     }
-    
+
     /**
      * Get boundary which shows one plane in mesh, which has 2 coordinate equals to axis2[axis2.size()-1].
      * @return boundary which show plane in mesh
@@ -1006,9 +1006,9 @@ private:
     }
 };
 
-template <typename Mesh1D,typename DataT>    //for any data type
-struct InterpolationAlgorithm<RectangularMesh<3,Mesh1D>, DataT, INTERPOLATION_LINEAR> {
-    static void interpolate(const RectangularMesh<3,Mesh1D>& src_mesh, const DataVector<const DataT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DataT>& dst_vec) {
+template <typename Mesh1D, typename SrcT, typename DstT>    //for any data type
+struct InterpolationAlgorithm<RectangularMesh<3,Mesh1D>, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static void interpolate(const RectangularMesh<3,Mesh1D>& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DstT>& dst_vec) {
         #pragma omp parallel for
         for (size_t i = 0; i < dst_mesh.size(); ++i)
             dst_vec[i] = src_mesh.interpolateLinear(src_vec, dst_mesh[i]);
