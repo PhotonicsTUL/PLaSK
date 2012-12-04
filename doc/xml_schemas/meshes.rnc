@@ -1,0 +1,58 @@
+rectilinear.axis.content = (
+	(attribute start { xsd:double },
+	 attribute stop { xsd:double },
+	 attribute num { xsd:nonNegativeInteger }) |
+	list { xsd:double* }
+)
+
+
+mesh |= element mesh {
+	mesh.common &
+	## mesh type
+	attribute type { "rectilinear2d" } &
+	element axis0 { rectilinear.axis.content }? &
+	element axis1 { rectilinear.axis.content }?	
+}
+
+mesh |= element mesh {
+	mesh.common &
+	## mesh type
+	attribute type { "rectilinear3d" } &
+	element axis0 { rectilinear.axis.content }? &
+	element axis1 { rectilinear.axis.content }? &	
+	element axis2 { rectilinear.axis.content }? 
+}
+
+generator |= element generator {
+	generator.common &
+	attribute type { "rectilinear2d" | "rectilinear3d" } &
+	attribute method { "simple" }
+}
+
+generator.rectilinear2d.divide.content = attribute by { xsd:nonNegativeInteger } | (attribute by0 { xsd:nonNegativeInteger }? &
+   attribute by1 { xsd:nonNegativeInteger }? )
+
+generator |= element generator {
+	generator.common &
+	attribute type { "rectilinear2d" } &
+	attribute method { "divide" } &
+	element prediv {
+		generator.rectilinear2d.divide.content
+	} ? &
+	element postdiv {
+		generator.rectilinear2d.divide.content
+	} ? &
+	element dont_limit_change { empty } ? &
+	element warnings {
+		attribute missing { xsd:boolean }? &
+		attribute multiple { xsd:boolean }? &
+		attribute outside { xsd:boolean }?
+	} ? &
+	element refinements {
+		element (vertical|horizontal|axis0|axis1) {
+			attribute object { text } &
+			attribute at { xsd:double } &
+			attribute path { text }?
+		}
+	}
+}

@@ -71,7 +71,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                     auto tConds = splitString2(*tCondJunc0, ',');
                     boost::trim(tConds.first);
                     boost::trim(tConds.second);
-                    if (tConds.first != "") {
+                    if (tConds.second != "") {
                         mCondJuncX0 = boost::lexical_cast<double>(tConds.first);
                         mCondJuncY0 = boost::lexical_cast<double>(tConds.second);
                     } else

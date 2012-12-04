@@ -166,8 +166,7 @@ void Manager::loadGrids(XMLReader &reader)
     }
 }
 
-shared_ptr<Solver> Manager::loadSolver(const std::string &category, const std::string &lib, const std::string &solver_name, const std::string& name) {
-    std::string lib_file_name = plaskSolversPath(category);
+shared_ptr<Solver> Manager::loadSolver(const std::string &, const std::string &, const std::string &, const std::string& name) {
     auto found = solvers.find(name);
     if (found == solvers.end())
         throw Exception("In C++ solvers ('%1%' in this case) must be created and added to Manager::solvers manually before reading XML.", name);

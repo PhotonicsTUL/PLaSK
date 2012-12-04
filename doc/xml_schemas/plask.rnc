@@ -277,21 +277,33 @@ element grids {
 )
 }
 
+generator.common =
+	## name
+	name_attr
+
 generator =
 ## mesh generator
 element generator {
-    name_attr, type_attr, anyAttribute*, anyElement*
+	generator.common,
+	type_attr,
+	## method
+	attribute method { text },
+	anyAttribute*,
+	anyElement*
 }
+
+mesh.common = 
+	## name of mesh instance
+	name_attr
 
 mesh =
 ## create mesh
 element mesh {
-    ## name of mesh instance
-    name_attr,
-    ## mesh type
-    type_attr,
-    anyAttribute*,
-    anyElement*
+	mesh.common,
+	## mesh type
+	type_attr,
+	anyAttribute*,
+	anyElement*
 }
 
 
@@ -317,8 +329,8 @@ solver.common =
 
 solver.common.all =
 	solver.common &
-	solver.geom &
-	solver.mesh
+	solver.geom? &
+	solver.mesh?
 
 solver = element * {
 	solver.common,
@@ -381,10 +393,27 @@ include_attr =
 	## allow to load section from external source: file with given name
 	attribute from { text }
 
-# TODO
-boundary_cond = anyElement & anyAttribute
+# content for boundary condition
+boundary_cond = element condition {
+	##Name of this place
+	attribute placename { text }? &
+	(
+	  ##Place description (format depends from mesh type)
+	  attribute place { text } |
+	  ##Name of earlier defined place to use
+	  attribute placeref { text } |
+	  ##Place description (format depends from mesh type)
+	  element place {
+		name_attr? &
+		anyAttribute* &
+		anyElement*
+	  }
+	) &
+	anyAttribute*
+}
 
 
 # ========== includes ==========
 
 include "solvers.rnc"
+include "meshes.rnc"
