@@ -170,7 +170,18 @@ int handlePythonException(unsigned startline=0) {
             traceback = traceback->tb_next;
         }
     } else {
-        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+        if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
+                std::string form = message;
+                std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
+                std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
+                try {
+                    int lineno = startline + boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                } catch (boost::bad_lexical_cast) {
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+                }
+        } else
+            plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
     }
     Py_XDECREF(pmessage);
     Py_XDECREF(type);
@@ -245,6 +256,8 @@ int main(int argc, const char *argv[])
             std::string filename = argv[1];
             boost::optional<bool> xml_input;
 
+            globals["__file__"] = filename;
+
             // Detect if the file is Python script or PLaSK input
 
             // check file extension
@@ -269,7 +282,6 @@ int main(int argc, const char *argv[])
             }
 
             if (*xml_input) {
-
                 auto manager = plask::make_shared<plask::python::PythonManager>();
                 globals["__manager__"] = py::object(manager);
                 FILE* file = std::fopen(filename.c_str(), "r");
@@ -306,8 +318,6 @@ int main(int argc, const char *argv[])
                 else Py_DECREF(result);
 
             } else {
-
-                globals["__file__"] = filename;
 #               if PY_VERSION_HEX >= 0x03000000
                     PyObject* pyfile = PyUnicode_FromString(filename.c_str());
                     FILE* file = _Py_fopen(pyfile, "r");
@@ -325,6 +335,7 @@ int main(int argc, const char *argv[])
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);
             }
+
         } catch (std::invalid_argument& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
             endPlask();

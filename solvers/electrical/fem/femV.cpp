@@ -95,7 +95,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
         else if (param == "contacts") {
             mCondPcontact = source.getAttribute<double>("pcond", mCondPcontact);
             mCondNcontact = source.getAttribute<double>("ncond", mCondNcontact);
-
+            source.requireTagEnd();
         }
 
         else
