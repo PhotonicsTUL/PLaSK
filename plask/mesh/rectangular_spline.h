@@ -8,40 +8,37 @@
 namespace plask {
 
 namespace detail {
-    template <typename T> inline void hyman(T& data, const T& a, const T& b) {
-        T lim = 3 * min(abs(a), abs(b));
-        if (data > lim) data = lim;
-        else if (data < -lim) data = -lim;
-    }
+    template <typename T> struct Hyman {
+        static void filter(T& data, const T& a, const T& b) {
+            T lim = 3 * min(abs(a), abs(b));
+            if (data > lim) data = lim;
+            else if (data < -lim) data = -lim;
+        }
+    };
 
-    template <> inline void hyman(dcomplex& data, const dcomplex& a, const dcomplex& b) {
-        double re = real(data), im = imag(data);
-        hyman(re, real(a), real(b));
-        hyman(im, real(a), real(b));
-        data = dcomplex(re, im);
-    }
+    template <> struct Hyman<dcomplex> {
+        static void filter(dcomplex& data, const dcomplex& a, const dcomplex& b) {
+            register double re = data.real(), im = data.imag();
+            Hyman<double>::filter(re, real(a), real(b));
+            Hyman<double>::filter(im, real(a), real(b));
+            data = dcomplex(re,im);
+        }
+    };
 
-    template <> inline void hyman(Vec<2,double>& data, const Vec<2,double>& a, const Vec<2,double>& b) {
-        hyman(data.c0, a.c0, b.c0);
-        hyman(data.c1, a.c1, b.c1);
-    }
+    template <typename T> struct Hyman<Vec<2,T>> {
+        static void filter(Vec<2,T>& data, const Vec<2,T>& a, const Vec<2,T>& b) {
+            Hyman<T>::filter(data.c0, a.c0, b.c0);
+            Hyman<T>::filter(data.c1, a.c1, b.c1);
+        }
+    };
 
-    template <> inline void hyman(Vec<3,double>& data, const Vec<3,double>& a, const Vec<3,double>& b) {
-        hyman(data.c0, a.c0, b.c0);
-        hyman(data.c1, a.c1, b.c1);
-        hyman(data.c2, a.c2, b.c2);
-    }
-
-    template <> inline void hyman(Vec<2,dcomplex>& data, const Vec<2,dcomplex>& a, const Vec<2,dcomplex>& b) {
-        hyman(data.c0, a.c0, b.c0);
-        hyman(data.c1, a.c1, b.c1);
-    }
-
-    template <> inline void hyman(Vec<3,dcomplex>& data, const Vec<3,dcomplex>& a, const Vec<3,dcomplex>& b) {
-        hyman(data.c0, a.c0, b.c0);
-        hyman(data.c1, a.c1, b.c1);
-        hyman(data.c2, a.c2, b.c2);
-    }
+    template <typename T> struct Hyman<Vec<3,T>> {
+        static void filter(Vec<3,T>& data, const Vec<3,T>& a, const Vec<3,T>& b) {
+            Hyman<T>::filter(data.c0, a.c0, b.c0);
+            Hyman<T>::filter(data.c1, a.c1, b.c1);
+            Hyman<T>::filter(data.c2, a.c2, b.c2);
+        }
+    };
 }
 
 template <typename Mesh1D, typename SrcT, typename DstT>
@@ -50,7 +47,8 @@ struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATI
     static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<const SrcT>& src_vec,
                             const plask::MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
 
-        static const SrcT ZERO = SrcT() * 0;
+        typedef typename std::remove_const<SrcT>::type DataT;
+
         const int n0 = src_mesh.axis0.size(),
                   n1 = src_mesh.axis1.size();
 
@@ -58,7 +56,7 @@ struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATI
 
         if (n0 > 1 && n1 > 1) {
 
-            DataVector<typename std::remove_const<SrcT>::type> diff0(src_mesh.size()), diff1(src_mesh.size());
+            DataVector<DataT> diff0(src_mesh.size()), diff1(src_mesh.size());
             std::vector<bool> have_diff(src_mesh.size(), false);
             for (int di = 0; di < dst_mesh.size(); ++di) {
                 Vec<2> p = dst_mesh[di];
@@ -85,16 +83,16 @@ struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATI
                                          dr = src_mesh.axis0[j0r] - src_mesh.axis0[j0],
                                          db = src_mesh.axis1[j1] - src_mesh.axis0[j1b],
                                          dt = src_mesh.axis1[j1t] - src_mesh.axis0[j1];
-                            const SrcT sl = dl? (src_vec[j] - src_vec[jl]) / dl : ZERO,
-                                       sr = dr? (src_vec[jr] - src_vec[j]) / dr : ZERO,
-                                       sb = db? (src_vec[j] - src_vec[jb]) / db : ZERO,
-                                       st = dt? (src_vec[jt] - src_vec[j]) / dt : ZERO;
+                            const DataT sl = dl? (src_vec[j] - src_vec[jl]) / dl : 0. * SrcT(),
+                                        sr = dr? (src_vec[jr] - src_vec[j]) / dr : 0. * SrcT(),
+                                        sb = db? (src_vec[j] - src_vec[jb]) / db : 0. * SrcT(),
+                                        st = dt? (src_vec[jt] - src_vec[j]) / dt : 0. * SrcT();
                             // Use parabolic estimation of the derivative
                             diff0[j] = (dl * sr  + dr * sl) / (dl + dr);
                             diff1[j] = (db * st  + dt * sb) / (db + dt);
                             // Hyman filter
-                            detail::hyman(diff0[j], sl, sr);
-                            detail::hyman(diff1[j], sb, st);
+                            detail::Hyman<DataT>::filter(diff0[j], sl, sr);
+                            detail::Hyman<DataT>::filter(diff1[j], sb, st);
                             // We have computed it
                             have_diff[j] = true;
                         }
@@ -125,7 +123,7 @@ struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATI
 
         } else if (n0 > 1) {
 
-            DataVector<typename std::remove_const<SrcT>::type> diff(src_mesh.size());
+            DataVector<DataT> diff(src_mesh.size());
             std::vector<bool> have_diff(src_mesh.size(), false);
             for (int di = 0; di < dst_mesh.size(); ++di) {
                 Vec<2> p = dst_mesh[di];
@@ -139,12 +137,12 @@ struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATI
                                   jb = min(j+1, n0-1);
                         const double da = src_mesh.axis0[j] - src_mesh.axis0[ja],
                                      db = src_mesh.axis0[jb] - src_mesh.axis0[j];
-                        const SrcT sa = da? (src_vec[j] - src_vec[ja]) / da : ZERO,
-                                   sb = db? (src_vec[jb] - src_vec[j]) / db : ZERO;
+                        const DataT sa = da? (src_vec[j] - src_vec[ja]) / da : 0. * SrcT(),
+                                    sb = db? (src_vec[jb] - src_vec[j]) / db : 0. * SrcT();
                         // Use parabolic estimation of the derivative
                         diff[j] = (da * sb  + db * sa) / (da + db);
                         // Hyman filter
-                        detail::hyman(diff[j], sa, sb);
+                        detail::Hyman<DataT>::filter(diff[j], sa, sb);
                         // We have computed it
                         have_diff[j] = true;
                     }
@@ -161,7 +159,7 @@ struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATI
 
         } else if (n1 > 1) {
 
-            DataVector<typename std::remove_const<SrcT>::type> diff(src_mesh.size());
+            DataVector<DataT> diff(src_mesh.size());
             std::vector<bool> have_diff(src_mesh.size(), false);
             for (int di = 0; di < dst_mesh.size(); ++di) {
                 Vec<2> p = dst_mesh[di];
@@ -175,12 +173,12 @@ struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATI
                                   jb = min(j+1, n1-1);
                         const double da = src_mesh.axis1[j] - src_mesh.axis1[ja],
                                      db = src_mesh.axis1[jb] - src_mesh.axis1[j];
-                        const SrcT sa = da? (src_vec[j] - src_vec[ja]) / da : ZERO,
-                                   sb = db? (src_vec[jb] - src_vec[j]) / db : ZERO;
+                        const DataT sa = da? (src_vec[j] - src_vec[ja]) / da : 0. * SrcT(),
+                                    sb = db? (src_vec[jb] - src_vec[j]) / db : 0. * SrcT();
                         // Use parabolic estimation of the derivative
                         diff[j] = (da * sb  + db * sa) / (da + db);
                         // Hyman filter
-                        detail::hyman(diff[j], sa, sb);
+                        detail::Hyman<DataT>::filter(diff[j], sa, sb);
                         // We have computed it
                         have_diff[j] = true;
                     }

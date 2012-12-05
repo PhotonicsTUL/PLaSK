@@ -52,7 +52,7 @@ inline static void register_config()
 
 }} // namespace plask::python
 
-BOOST_PYTHON_MODULE(plaskcore)
+BOOST_PYTHON_MODULE(_plask)
 {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());

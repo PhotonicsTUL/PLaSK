@@ -1,4 +1,4 @@
-﻿#include <cmath>
+#include <cmath>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 namespace py = boost::python;
@@ -21,15 +21,15 @@ namespace py = boost::python;
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
-    extern "C" PyObject* PyInit_plaskcore(void);
-#   define PLASK_MODULE PyInit_plaskcore
+    extern "C" PyObject* PyInit__plask(void);
+#   define PLASK_MODULE PyInit__plask
     inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
     inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
     inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
     inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
 #else
-    extern "C" void initplaskcore(void);
-#   define PLASK_MODULE initplaskcore
+    extern "C" void init_plask(void);
+#   define PLASK_MODULE init_plask
 #endif
 
 //******************************************************************************
@@ -62,7 +62,7 @@ static void from_import_all(const char* name, py::dict& globals)
 static py::object initPlask(int argc, const char* argv[])
 {
     // Initialize the plask module
-    if (PyImport_AppendInittab("plaskcore", &PLASK_MODULE) != 0) throw plask::CriticalException("No plaskcore module");
+    if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
 
     // Initialize Python
     Py_Initialize();
@@ -80,9 +80,9 @@ static py::object initPlask(int argc, const char* argv[])
     path.insert(2, plask_path + "solvers" );
     sys.attr("path") = path;
 
-    py::object plaskcore = py::import("plaskcore");
+    py::object _plask = py::import("_plask");
 
-    sys.attr("modules")["plask.plaskcore"] = plaskcore;
+    sys.attr("modules")["plask._plask"] = _plask;
 
     // Add program arguments to sys.argv
     if (argc > 0) {
@@ -96,7 +96,7 @@ static py::object initPlask(int argc, const char* argv[])
     // mainTS = PyEval_SaveThread();
     //PyEval_ReleaseLock();
 
-    return plaskcore;
+    return _plask;
 }
 
 //******************************************************************************

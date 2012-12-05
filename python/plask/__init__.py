@@ -7,7 +7,7 @@ physical phenomena with different models: thermal, electrical, quantum and optic
 PLaSK takes care of considering mutual interactions between these models and
 allows to easily perform complex self-consistent analysis of complete devices.
 '''
-from .plaskcore import *
+from ._plask import *
 
 ## ## plask.material ## ##
 

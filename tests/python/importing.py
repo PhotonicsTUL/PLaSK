@@ -10,7 +10,7 @@ if sys.version < "2.7":
 class Importing(unittest.TestCase):
 
     def setUp(self):
-        self.builtin = 'plaskcore' in sys.builtin_module_names
+        self.builtin = '_plask' in sys.builtin_module_names
 
     def testImporting(self):
         '''Check if plask is present'''
@@ -19,10 +19,13 @@ class Importing(unittest.TestCase):
         for p in sys.path:
             print("    %s" % p)
         import plask
-        self.assertIn('plask.plaskcore', sys.modules)
+        self.assertIn('plask._plask', sys.modules)
 
-        def use_plaskcore_directly(): print(plaskcore.__file__)
-        self.assertRaises(NameError, use_plaskcore_directly)
+        with self.assertRaises(NameError):
+            print(_plask.__file__)
+
+        with self.assertRaises(AttributeError):
+            print(plask._plask.__file__)
 
     def testAutoImported(self):
         '''Test if the plask is auto-imported to global namespace for plask binary'''

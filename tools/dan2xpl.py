@@ -7,7 +7,7 @@
 
       dan2xpl input_file_temp.dan
 
-    If the conversion is successful, the script writes
+    If the conversion is successful, the script writes XPL file with the structure and sample commands.
 '''
 import sys
 import os, os.path
