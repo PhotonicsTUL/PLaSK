@@ -216,10 +216,10 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
                                   Primitive<2>::DIRECTION_TRAN : Primitive<2>::DIRECTION_VERT;
                 weak_ptr<GeometryObjectD<2>> object = manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
                 PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
-                if (auto times = reader.getAttribute<unsigned>("times")) {
+                if (auto by = reader.getAttribute<unsigned>("by")) {
                     double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
-                    for (unsigned i = 1; i < *times; ++i) {
-                        double pos = objsize * i / *times;
+                    for (unsigned i = 1; i < *by; ++i) {
+                        double pos = objsize * i / *by;
                         result->addRefinement(direction, object, path, pos);
                     }
                 } else if (auto every = reader.getAttribute<double>("every")) {
@@ -229,7 +229,7 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
                 } else if (auto pos = reader.getAttribute<double>("at")) {
                     result->addRefinement(direction, object, path, *pos);
                 } else
-                    throw XMLNoAttrException(reader, "at', 'every', or 'times");
+                    throw XMLNoAttrException(reader, "at', 'every', or 'by");
                 reader.requireTagEnd();
             }
         } else throw XMLUnexpectedElementException(reader, "proper 'divide' generator configuration tag");
