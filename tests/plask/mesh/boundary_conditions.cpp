@@ -29,8 +29,8 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
     plask::Manager manager;
     manager.loadFromXMLString(
                 "<plask><geometry><cartesian2d name=\"space\" length=\"1\" axes=\"xy\"><stack>"
-                    "<block name=\"top\" x=\"5\" y=\"3\" material=\"Al\" />"
-                    "<block name=\"bottom\" x=\"5\" y=\"3\" material=\"Al\" />"
+                    "<block name=\"top\" dx=\"5\" dy=\"3\" material=\"Al\" />"
+                    "<block name=\"bottom\" dx=\"5\" dy=\"3\" material=\"Al\" />"
                 "</stack></cartesian2d></geometry></plask>", materialsDB); //repeat=\"2\"
     plask::RectilinearMesh2D::Boundary bottom_b = plask::RectilinearMesh2D::getBottomOfBoundary(manager.getGeometry<plask::GeometryD<2> >("space"), manager.getGeometryObject("bottom"));
     plask::RectilinearMesh2D mesh;

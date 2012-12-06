@@ -13,8 +13,8 @@ inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
 
 template <typename BlockType>
 inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
-    block.size.tran() = reader.source.requireAttribute<double>(reader.getAxisTranName());
-    block.size.vert() = reader.source.requireAttribute<double>(reader.getAxisUpName());
+    block.size.tran() = reader.source.requireAttribute<double>("d"+reader.getAxisTranName());
+    block.size.vert() = reader.source.requireAttribute<double>("d"+reader.getAxisUpName());
     setupLeaf(reader, block);
 }
 
@@ -44,7 +44,7 @@ shared_ptr<GeometryObject> read_block2D(GeometryReader& reader) {
 
 shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
     shared_ptr< Block<3> > block(new Block<3>());
-    block->size.lon() = reader.source.requireAttribute<double>(reader.getAxisLonName());
+    block->size.lon() = reader.source.requireAttribute<double>("d"+reader.getAxisLonName());
     setupBlock2D3D(reader, *block);
     return block;
 }

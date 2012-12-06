@@ -84,10 +84,11 @@ namespace plask {
  * @see @ref meshes_interpolation
  */
 enum InterpolationMethod {
-    DEFAULT_INTERPOLATION = 0,  ///< default interpolation (depends on source mesh)
-    INTERPOLATION_LINEAR,       ///< linear interpolation
-    INTERPOLATION_SPLINE,       ///< spline interpolation
-    INTERPOLATION_HYMAN,        ///< spline interpolation with Hyman monotonic filter and parabolic derivatives
+    DEFAULT_INTERPOLATION = 0,  ///< Default interpolation (depends on source mesh)
+    INTERPOLATION_NEAREST,      ///< Nearest neighbor interpolation
+    INTERPOLATION_LINEAR,       ///< Linear interpolation
+    INTERPOLATION_SPLINE,       ///< Spline interpolation
+    INTERPOLATION_HYMAN,        ///< Spline interpolation with Hyman monotonic filter and parabolic derivatives
     INTERPOLATION_FOURIER,      ///< Fourier transform interpolation
     // ...add new interpolation algorithms here...
 #   ifndef DOXYGEN
@@ -97,6 +98,7 @@ enum InterpolationMethod {
 
 static constexpr const char* interpolationMethodNames[] = {
     "DEFAULT",
+    "NEAREST",
     "LINEAR",
     "SPLINE",
     "HYMAN",

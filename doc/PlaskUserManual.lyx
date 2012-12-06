@@ -196,14 +196,15 @@ status open
 
 \begin_layout Plain Layout
 
-$ sudo apt-get g++ libboost-all-dev libexpat1-dev subversion cmake 
+$ sudo apt-get install g++ libboost-all-dev libexpat1-dev subversion 
 \backslash
 
 \end_layout
 
 \begin_layout Plain Layout
 
-  cmake-qt-gui doxygen libeigen3-dev libopenblas-dev liblapack-dev 
+  cmake cmake-qt-gui doxygen libeigen3-dev libopenblas-dev liblapack-dev
+ 
 \backslash
 
 \end_layout
@@ -217,7 +218,7 @@ $ sudo apt-get g++ libboost-all-dev libexpat1-dev subversion cmake
 
 \begin_layout Plain Layout
 
-  python-matplotlib python-h5py python-pyside python-ipython
+  python-matplotlib python-h5py python-pyside ipython libqt4-dev
 \end_layout
 
 \begin_layout Plain Layout

@@ -23,6 +23,127 @@ import matplotlib.pylab
 from matplotlib.pylab import *
 __doc__ += matplotlib.pylab.__doc__
 
+# Easier rc handling. Make conditional on matplotlib version if I manage to introduce it there
+if True:
+    class _subRC(object):
+        def __init__(self, group):
+            self.__dict__['_group'] = group
+
+        def __setattr__(self, attr, value):
+            name = _Rc.aliases.get(attr) or attr
+            key = self._group + '.' + name
+            if key not in rcParams:
+                raise KeyError('Unrecognized key "%s"' % key)
+            rcParams[key] = value
+
+        def __getattr__(self, attr):
+            name = _Rc.aliases.get(attr) or attr
+            newgroup = self._group + '.' + name
+            return _subRC(newgroup)
+
+    class _Rc(object):
+        """
+        Set the current rc params.  There are two alternative ways of using
+        this object.  One is to call it like a function::
+
+        rc(group, **kwargs)
+
+        Group is the grouping for the rc, eg. for ``lines.linewidth``
+        the group is ``lines``, for ``axes.facecolor``, the group is ``axes``,
+        and so on.  Group may also be a list or tuple of group names,
+        eg. (*xtick*, *ytick*).  *kwargs* is a dictionary attribute name/value
+        pairs, eg::
+
+        rc('lines', linewidth=2, color='r')
+
+        sets the current rc params and is equivalent to::
+
+        rcParams['lines.linewidth'] = 2
+        rcParams['lines.color'] = 'r'
+
+        The following aliases are available to save typing for interactive
+        users:
+
+        =====   =================
+        Alias   Property
+        =====   =================
+        'lw'    'linewidth'
+        'ls'    'linestyle'
+        'c'     'color'
+        'fc'    'facecolor'
+        'ec'    'edgecolor'
+        'mew'   'markeredgewidth'
+        'aa'    'antialiased'
+        'sans'  'sans-serif'
+        =====   =================
+
+        Thus you could abbreviate the above rc command as::
+
+            rc('lines', lw=2, c='r')
+
+
+        Note you can use python's kwargs dictionary facility to store
+        dictionaries of default parameters.  Eg, you can customize the
+        font rc as follows::
+
+        font = {'family' : 'monospace',
+                'weight' : 'bold',
+                'size'   : 'larger'}
+
+        rc('font', **font)  # pass in the font dict as kwargs
+
+        This enables you to easily switch between several configurations.
+        Use :func:`~matplotlib.pyplot.rcdefaults` to restore the default
+        rc params after changes.
+
+        Another way of using this object is to use the python syntax like::
+
+        rc.figure.subplot.top = 0.9
+
+        which is equivalent to::
+
+        rc('figure.subplot', top=0.9)
+        """
+
+        aliases = {
+            'lw'  : 'linewidth',
+            'ls'  : 'linestyle',
+            'c'   : 'color',
+            'fc'  : 'facecolor',
+            'ec'  : 'edgecolor',
+            'mew' : 'markeredgewidth',
+            'aa'  : 'antialiased',
+            'sans': 'sans-serif'
+        }
+
+        def __call__(self, group, **kwargs):
+            if matplotlib.is_string_like(group):
+                group = (group,)
+            for g in group:
+                for k,v in kwargs.items():
+                    name = _Rc.aliases.get(k) or k
+                    key = '%s.%s' % (g, name)
+                    if key not in rcParams:
+                        raise KeyError('Unrecognized key "%s" for group "%s" and name "%s"' %
+                                    (key, g, name))
+                    rcParams[key] = v
+
+        def __setattr__(self, attr, value):
+            key = _Rc.aliases.get(attr) or attr
+            if key not in rcParams:
+                raise KeyError('Unrecognized key "%s"' % key)
+            rcParams[key] = value
+
+        def __getattribute__(self, attr):
+            if attr[:2] != '__':
+                return _subRC(attr)
+            else:
+                raise AttributeError
+
+    rc = _Rc()
+    _Rc.__name__ = 'rc'
+
+
 import plask
 
 load = plask.load # make sure load is from PLasK not from pylab

@@ -48,7 +48,7 @@ class Region(object):
         if self.role: more += ' role="%s"' % self.role
         if self.name: more += ' name="%s"' % self.name
         locals().update(self.__dict__)
-        output.write('      <child %(a0)s="%(x0).4f" %(a1)s="%(y0).4f"><block %(a0)s="%(w)s" %(a1)s="%(h)s" material="%(material)s"%(more)s/></child>\n' % locals())
+        output.write('      <child %(a0)s="%(x0).4f" %(a1)s="%(y0).4f"><block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/></child>\n' % locals())
         if self.repeat:
             x = self.x0
             y = self.y0
@@ -331,7 +331,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
     # default mesh generator
     out('<grids>')
-    out('  <generator type="rectilinear2d" method="divide" name="default">\n    <postdiv by="2"/>\n  </generator>')
+    out('  <generator type="rectilinear2d" method="divide" name="default">\n    <postdiv by0="4" by1="2"/>\n  </generator>')
     out('  <generator type="rectilinear2d" method="divide" name="plots">\n    <postdiv by="10"/>\n  </generator>')
     out('</grids>\n')
 
@@ -383,7 +383,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('</connects>\n')
 
     ## script
-    out('<script>\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
+    out('<script><![CDATA[\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
 
     if electr:
         out('# Adjust the values below!')
@@ -425,7 +425,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('voltage = ELECTRICAL.outPotential(plotgrid)')
             out('current = ELECTRICAL.outCurrentDensity(plotgrid)')
             if actlevel is not False:
-                out('acurrent = ELECTRICAL.outCurrentDensity(actgrid)')
+                out('acurrent = ELECTRICAL.outCurrentDensity(actgrid, "HYMAN")')
 
         h5mode = 'w'
         out('\nif has_hdf5:')
@@ -438,7 +438,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('    save_field(voltage, h5file, "Voltage")')
             out('    save_field(current, h5file, "CurrentDenstity")')
 
-        out('    h5file.close')
+        out('    h5file.close()')
 
         out('\nif has_pylab:')
         out('    plot_geometry(GEO.main, set_limits=True)')
@@ -480,7 +480,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
                 out('    gcf().canvas.set_window_title("Current density in the active region")')
         out('\n    show()')
 
-    out('\n</script>\n')
+    out('\n]]></script>\n')
 
     out('</plask>')
 

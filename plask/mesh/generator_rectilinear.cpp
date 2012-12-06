@@ -8,6 +8,8 @@ namespace plask {
 
 shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
+    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: generating new mesh");
+
     auto mesh = make_shared<RectilinearMesh2D>();
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
@@ -27,8 +29,9 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
 
 shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
-    auto mesh = make_shared<RectilinearMesh3D>();
+    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: generating new mesh");
 
+    auto mesh = make_shared<RectilinearMesh3D>();
 
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
 
@@ -139,6 +142,8 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
 
 shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
+    writelog(LOG_DETAIL, "mesh.Rectilinear2D::DivideGenerator: generating new mesh");
+
     RectilinearMesh2D initial;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes) {
@@ -209,12 +214,22 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
                     throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, <vertical>, or <horizontal>");
                 auto direction = (reader.getNodeName() == "vertical" || reader.getNodeName() == "axis0")?
                                   Primitive<2>::DIRECTION_TRAN : Primitive<2>::DIRECTION_VERT;
-                weak_ptr<GeometryObjectD<2>> object =
-                    manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
-                double pos = reader.requireAttribute<double>("at");
-                auto path = reader.getAttribute("path");
-                if (path) result->addRefinement(direction, object, manager.requirePathHints(*path), pos);
-                else result->addRefinement(direction, object, pos);
+                weak_ptr<GeometryObjectD<2>> object = manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
+                PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
+                if (auto times = reader.getAttribute<unsigned>("times")) {
+                    double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
+                    for (unsigned i = 1; i < *times; ++i) {
+                        double pos = objsize * i / *times;
+                        result->addRefinement(direction, object, path, pos);
+                    }
+                } else if (auto every = reader.getAttribute<double>("every")) {
+                    double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
+                    for (double pos = *every; pos < objsize; pos += *every)
+                        result->addRefinement(direction, object, path, pos);
+                } else if (auto pos = reader.getAttribute<double>("at")) {
+                    result->addRefinement(direction, object, path, *pos);
+                } else
+                    throw XMLNoAttrException(reader, "at', 'every', or 'times");
                 reader.requireTagEnd();
             }
         } else throw XMLUnexpectedElementException(reader, "proper 'divide' generator configuration tag");
