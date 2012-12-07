@@ -462,7 +462,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             size_t tLoRghtNo = tE.getUpLoIndex();
             size_t tUpLeftNo = tE.getLoUpIndex();
             size_t tUpRghtNo = tE.getUpUpIndex();
-            if (this->geometry->hasRoleAt("noheat", tE.getMidpoint()))
+            auto tMidPoint = tE.getMidpoint();
+            if (this->geometry->getMaterial(tMidPoint)->kind() == Material::NONE || this->geometry->hasRoleAt("noheat", tMidPoint))
                 mHeatDensities[i] = 0.;
             else {
                 double tDVx = 0.5e6 * (- mPotentials[tLoLeftNo] + mPotentials[tLoRghtNo] - mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
@@ -496,7 +497,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                 }
                 double tJy = mCond[i].c11 * fabs(tDVy); // [j] = A/m²
                 mHeatDensities[i] = phys::h_J * phys::c * tJy / ( phys::qe * real(inWavelength())*1e-9 * *tDact );
-            } else if (tRoles.find("noheat") != tRoles.end())
+            } else if (this->geometry->getMaterial(tMidPoint)->kind() == Material::NONE || tRoles.find("noheat") != tRoles.end())
                 mHeatDensities[i] = 0.;
             else
                 mHeatDensities[i] = mCond[i].c00 * tDVx*tDVx + mCond[i].c11 * tDVy*tDVy;

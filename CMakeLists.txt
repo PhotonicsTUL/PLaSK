@@ -63,6 +63,7 @@ option(BUILD_GUI "Build GUI program (require QT)" OFF) # FIXME: install QT for w
 option(BUILD_DOCUMENTATION "Build doxygen documentation." OFF)
 
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
+cmake_dependent_option(BUILD_PYTHON_MODULE "Build Python interface as external module." OFF "BUILD_PYTHON" OFF)
 
 option(BUILD_TESTING "Build unit tests." ON)
 cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
@@ -204,13 +205,27 @@ if(BUILD_PYTHON)
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
     add_executable(plask python/exe_main.cpp ${python_plask_src})
-    if (WIN32)
+    if(WIN32)
             # For some reason MinGW wants to create import library for executable,
             # which overwrites libplask.dll.a. With this hack we name this useless
             # stuff libplask.exe.dll.a
             set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
     endif()
     target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+
+    if(BUILD_PYTHON_MODULE)
+        if(WIN32)
+            add_library(_plask SHARED ${python_plask_src})
+            set_target_properties(_plask PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}" SUFFIX ".pyd")
+            #install(TARGETS _plask RUNTIME DESTINATION lib/plask/python/plask COMPONENT core
+            #                       LIBRARY DESTINATION lib/plask/python/plask COMPONENT dev)
+        else()
+            add_library(_plask MODULE ${python_plask_src})
+            #install(TARGETS _plask LIBRARY DESTINATION lib/plask/python/plask COMPONENT core)
+        endif()
+        target_link_libraries(_plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+        set_target_properties(_plask PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PLASK_PYTHON_PATH} PREFIX "")
+    endif()
 
     if (DEFINED no_strict_aliasing_flag)
         set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
@@ -385,7 +400,7 @@ if(BUILD_TESTING)
         if (WIN32)
             target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
         else()
-            target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+            target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
         endif()
         set(plask_test_depends ${plask_test_depends} plask-test-python)
 

@@ -4,7 +4,7 @@ import unittest
 
 from numpy import *
 
-import plask.mesh
+import plask, plask.mesh
 import plasktest
 
 
@@ -111,6 +111,30 @@ class RectilinearMeshes(unittest.TestCase):
         stack.append(plask.geometry.Rectangle(1000., 150., None))
         mesh3 = generator3(stack)
         self.assertEqual( list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.] )
+
+
+    def testDivideGeneratorXML(self):
+        manager = plask.Manager()
+        manager.load('''
+        <plask>
+          <geometry>
+            <cartesian2d name="main" axes="xy">
+              <rectangle name="rect" dx="50" dy="5" material="GaAs"/>
+            </cartesian2d>
+          </geometry>
+          <grids>
+            <generator type="rectilinear2d" method="divide" name="refined">
+              <refinements>
+                <vertical object="rect" by="5"/>
+                <horizontal object="rect" every="1."/>
+              </refinements>
+            </generator>
+          </grids>
+        </plask>
+        ''')
+        msh = manager.mesh_generators['refined'](manager.objects['rect'])
+        self.assertEqual( list(msh.axis0), [0., 10., 20., 30., 40., 50.] )
+        self.assertEqual( list(msh.axis1), [0., 1., 2., 3., 4., 5.] )
 
 
     def testRegenerationInSolver(self):

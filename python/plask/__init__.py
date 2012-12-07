@@ -9,6 +9,8 @@ allows to easily perform complex self-consistent analysis of complete devices.
 '''
 from ._plask import *
 
+from ._plask import _print_exception
+
 ## ## plask.material ## ##
 
 materialdb = material.database = material.MaterialsDB.get_default()
@@ -64,6 +66,36 @@ del register_material
 material.simple = lambda mat, **kwargs: material.register_material(mat, complex=False, **kwargs)
 material.complex = lambda mat, **kwargs: material.register_material(mat, complex=True, **kwargs)
 
+## ## plask.geometry ## ##
+
+def Stack2D(repeat=None, shift=0.):
+    '''Stack2D(repeat=None, shift=0)
+           Create the stack, optionally repeating it 'repeat' times and with the bottom side
+           of the first object at the 'shift' position (in container local coordinates).
+
+           If 'repeat' is None, this function creates SingleStack2D and MultiStack2D, otherwise.
+    '''
+    if repeat is None:
+        return geometry.SingleStack2D(shift)
+    else:
+        return geometry.MultiStack2D(repeat, shift)
+geometry.Stack2D = Stack2D
+del Stack2D
+
+def Stack3D(repeat=None, shift=0.):
+    '''Stack3D(repeat=None, shift=0)
+           Create the stack, optionally repeating it 'repeat' times and with the bottom side
+           of the first object at the 'shift' position (in container local coordinates).
+
+           If 'repeat' is None, this function creates SingleStack3D and MultiStack3D, otherwise.
+    '''
+    if repeat is None:
+        return geometry.SingleStack3D(shift)
+    else:
+        return geometry.MultiStack3D(repeat, shift)
+geometry.Stack3D = Stack3D
+del Stack3D
+
 
 ## ## plask.manager ## ##
 
@@ -97,10 +129,35 @@ def run(source):
     env = globals().copy()
     env['plask'] = sys.modules["plask"]
     load(source, env)
-    exec(env['__script__'], env)
+    if type(source) == str:
+        filename = source
+    else:
+        try: filename = source.name
+        except: filename = "<source>"
+    try:
+        code = compile(env['__script__'], filename, 'exec')
+        exec(code, env)
+    except Exception as exc:
+        ety, eva, etb = sys.exc_info()
+        _print_exception(ety, eva, etb, env['__manager__'].scriptline, True)
 
 
 ## ##  ## ##
+
+def _showwarning(message, category, filename, lineno, file=None, line=None):
+    """
+    Implementation of showwarnings which redirects to PLaSK logs
+    """
+    try: lineno += __globals['__manager__'].scriptline
+    except KeyError: pass
+    print_log(LOG_WARNING, "%s, line %s: %s: %s" % (filename, lineno, category.__name__, message))
+
+import warnings
+warnings.showwarning = _showwarning
+del warnings
+
+## ##  ## ##
+
 
 try:
     from plask.pylab import *
@@ -121,8 +178,3 @@ else:
 
 
 ## ##  ## ##
-#TODO dedeluxe
-try:
-    from plask.deluxe import *
-except ImportError:
-    pass

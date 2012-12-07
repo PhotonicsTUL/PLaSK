@@ -8,8 +8,6 @@ namespace plask {
 
 shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: generating new mesh");
-
     auto mesh = make_shared<RectilinearMesh2D>();
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
@@ -22,15 +20,14 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
     }
 
     if (extend_to_zero) mesh->axis0.addPoint(0.);
-
     mesh->setOptimalIterationOrder();
+
+    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generated new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
     return mesh;
 }
 
 shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
-    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: generating new mesh");
-
     auto mesh = make_shared<RectilinearMesh3D>();
 
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
@@ -45,6 +42,8 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
     }
 
     mesh->setOptimalIterationOrder();
+
+    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generated new mesh (%1%x%2%x%3%)", mesh->axis0.size(), mesh->axis1.size(), mesh->axis2.size());
     return mesh;
 }
 
@@ -142,8 +141,6 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
 
 shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    writelog(LOG_DETAIL, "mesh.Rectilinear2D::DivideGenerator: generating new mesh");
-
     RectilinearMesh2D initial;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes) {
@@ -156,6 +153,8 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const s
     auto mesh = make_shared<RectilinearMesh2D>(get1DMesh(initial.axis0, geometry, 0), get1DMesh(initial.axis1, geometry, 1));
 
     mesh->setOptimalIterationOrder();
+
+    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generated new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
     return mesh;
 }
 

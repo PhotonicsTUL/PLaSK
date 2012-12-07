@@ -2,6 +2,7 @@
 
 #include "../utils/string.h"
 #include "../utils/dynlib/manager.h"
+#include "../log/log.h"
 
 #include <boost/filesystem.hpp>
 
@@ -105,13 +106,17 @@ void MaterialsDB::loadToDefault(const std::string &fileName_mainpart) {
 }
 
 void MaterialsDB::loadAllToDefault(const std::string& dir) {
-    boost::filesystem::directory_iterator iter(dir);
-    boost::filesystem::directory_iterator end;
-    while (iter != end) {
-        boost::filesystem::path p = iter->path();
-        if (boost::filesystem::is_regular_file(p))
-            DynamicLibraries::defaultLoad(p.string(), DynamicLibrary::DONT_CLOSE);
-        ++iter;
+    if (boost::filesystem::exists(dir) && boost::filesystem::is_directory(dir)) {
+        boost::filesystem::directory_iterator iter(dir);
+        boost::filesystem::directory_iterator end;
+        while (iter != end) {
+            boost::filesystem::path p = iter->path();
+            if (boost::filesystem::is_regular_file(p))
+                DynamicLibraries::defaultLoad(p.string(), DynamicLibrary::DONT_CLOSE);
+            ++iter;
+        }
+    } else {
+        writelog(LOG_WARNING, "MaterialsDB: '%1%' does not exist or is not a directory. Cannot load default materials.", dir);
     }
 }
 

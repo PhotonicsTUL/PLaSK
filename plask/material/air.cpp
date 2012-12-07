@@ -22,7 +22,7 @@ double Air::CBO(double T, char point) const { throwNotApplicable("CBO(double T, 
 
 double Air::chi(double T, char point) const { throwNotApplicable("chi(double T, char point)"); return 0; }
 
-Tensor2<double> Air::cond(double T) const { return 1e-6; }
+Tensor2<double> Air::cond(double T) const { return 1e-12; }
 
 Material::ConductivityType Air::condtype() const { return Material::CONDUCTIVITY_OTHER; }
 

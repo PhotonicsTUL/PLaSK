@@ -2,6 +2,7 @@
 
 #include "python_globals.h"
 #include <numpy/arrayobject.h>
+#include <frameobject.h> // for Python traceback
 
 #include <plask/version.h>
 #include <plask/exceptions.h>
@@ -47,6 +48,85 @@ inline static void register_config()
                       "String representing axis names")
     ;
     py::scope().attr("config") = config;
+}
+
+// Globals for XML material
+py::dict xml_globals;
+
+
+// Print Python exception to PLaSK logging system
+int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, bool second_is_script=false) {
+    PyTypeObject* type = (PyTypeObject*)otype;
+    PyTracebackObject* original_traceback = (PyTracebackObject*)otraceback;
+
+    if ((PyObject*)type == PyExc_SystemExit) {
+        int exitcode;
+        if (PyExceptionInstance_Check(value)) {
+            PyObject* code = PyObject_GetAttrString(value, "code");
+            if (code) { Py_DECREF(value); value = code; }
+        }
+        if (PyInt_Check(value))
+            exitcode = (int)PyInt_AsLong(value);
+        else {
+            std::cerr.flush();
+            std::cout.flush();
+            PyObject_Print(value, stderr, Py_PRINT_RAW);
+            PySys_WriteStderr("\n");
+            exitcode = 1;
+        }
+        PyErr_Clear();
+        return exitcode;
+    }
+
+    PyObject* pmessage = PyObject_Str(value);
+    const char* message = py::extract<const char*>(pmessage);
+
+    std::string error_name = type->tp_name;
+    if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
+
+    if (original_traceback) {
+        PyTracebackObject* traceback = original_traceback;
+        while (traceback) {
+            int lineno = startline + traceback->tb_lineno;
+            std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
+            std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
+            if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
+                funcname = "<script>";
+            if (traceback->tb_next)
+                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+            else {
+                if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
+                    plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+                    std::string form = message;
+                    std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
+                    std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
+                    try {
+                        int lineno = startline + boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
+                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                    } catch (boost::bad_lexical_cast) {
+                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+                    }
+                } else
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
+            }
+            traceback = traceback->tb_next;
+        }
+    } else {
+        if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
+                std::string form = message;
+                std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
+                std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
+                try {
+                    int lineno = startline + boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                } catch (boost::bad_lexical_cast) {
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+                }
+        } else
+            plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
+    }
+    Py_XDECREF(pmessage);
+    return 1;
 }
 
 
@@ -121,8 +201,16 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::XMLException>(xml_error);
     py::scope().attr("XMLError") = py::handle<>(py::incref(xml_error));
 
+    py::def("_print_exception", &printPythonException, "Print exception information to PLaSK logging system",
+            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("startline")=0, py::arg("second_is_script")=false));
+
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;
     scope.attr("version_major") = PLASK_VERSION_MAJOR;
     scope.attr("version_minor") = PLASK_VERSION_MINOR;
+
+    // Set global namespace for materials
+    plask::python::xml_globals = py::dict(scope.attr("__dict__")).copy();
+    plask::python::xml_globals["plask"] = scope;
+
 }

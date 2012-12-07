@@ -3,8 +3,6 @@
 #include <boost/python/stl_iterator.hpp>
 namespace py = boost::python;
 
-#include <frameobject.h> // For Python traceback
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -35,7 +33,7 @@ namespace py = boost::python;
 //******************************************************************************
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
-    py::dict xml_globals;       // globals for XML material
+    int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, bool second_is_script=false);
 }}
 
 //******************************************************************************
@@ -99,6 +97,7 @@ static py::object initPlask(int argc, const char* argv[])
     return _plask;
 }
 
+
 //******************************************************************************
 // This functions closes all matplotlib windows in order to avoid the annoying
 // 'Fatal Python error: PyEval_RestoreThread: NULL tstate' bug on Windows.
@@ -117,78 +116,25 @@ static inline void fixMatplotlibBug() {
 #endif
 }
 
+
 //******************************************************************************
-// Handle exception and exit
 int handlePythonException(unsigned startline=0) {
-    // Use our logging system to print exception
     PyObject* value;
-    PyTypeObject* type;
-    PyTracebackObject* original_traceback;
+    PyObject* type;
+    PyObject* original_traceback;
 
-    PyErr_Fetch((PyObject**)&type, (PyObject**)&value, (PyObject**)&original_traceback);
-    PyErr_NormalizeException((PyObject**)&type, (PyObject**)&value, (PyObject**)&original_traceback);
+    PyErr_Fetch(&type, &value,&original_traceback);
+    PyErr_NormalizeException(&type, &value, &original_traceback);
 
-    if ((PyObject*)type == PyExc_SystemExit) {
-        int exitcode;
-        if (PyExceptionInstance_Check(value)) {
-            PyObject* code = PyObject_GetAttrString(value, "code");
-            if (code) { Py_DECREF(value); value = code; }
-        }
-        if (PyInt_Check(value))
-            exitcode = (int)PyInt_AsLong(value);
-        else {
-            std::cerr.flush();
-            std::cout.flush();
-            PyObject_Print(value, stderr, Py_PRINT_RAW);
-            PySys_WriteStderr("\n");
-            exitcode = 1;
-        }
-        Py_XDECREF(type);
-        Py_XDECREF(value);
-        Py_XDECREF(original_traceback);
-        PyErr_Clear();
-        return exitcode;
-    }
+    int retval = plask::python::printPythonException(type, value, original_traceback, startline);
 
-    PyObject* pmessage = PyObject_Str(value);
-    const char* message = py::extract<const char*>(pmessage);
-
-    std::string error_name = type->tp_name;
-    if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
-
-    if (original_traceback) {
-        PyTracebackObject* traceback = original_traceback;
-        while (traceback) {
-            int lineno = startline + traceback->tb_lineno;
-            std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-            std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
-            if (funcname == "<module>" && traceback == original_traceback) funcname = "<script>";
-            if (traceback->tb_next)
-                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
-            else
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
-            traceback = traceback->tb_next;
-        }
-    } else {
-        if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
-                std::string form = message;
-                std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
-                std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
-                try {
-                    int lineno = startline + boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
-                } catch (boost::bad_lexical_cast) {
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
-                }
-        } else
-            plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
-    }
-    Py_XDECREF(pmessage);
     Py_XDECREF(type);
     Py_XDECREF(value);
     Py_XDECREF(original_traceback);
-    return 1;
+
+    return retval;
 }
+
 
 //******************************************************************************
 // Finalize Python interpreter
@@ -197,6 +143,7 @@ void endPlask() {
     fixMatplotlibBug();
     // Py_Finalize(); // Py_Finalize is not supported by Boost
 }
+
 
 //******************************************************************************
 int main(int argc, const char *argv[])
@@ -245,10 +192,6 @@ int main(int argc, const char *argv[])
         if (from_import) { // from plask import *
             from_import_all("plask", globals);
         }
-
-        // Set global namespace for materials
-        plask::python::xml_globals = py::dict(plask.attr("__dict__")).copy();
-        plask::python::xml_globals["plask"] = plask;
 
         unsigned scriptline = 0;
 

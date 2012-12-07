@@ -346,6 +346,7 @@ void register_manager() {
         .def_readonly("solvers", &PythonManager::solvers, "Dictionary of all named solvers")
         .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
         .def_readonly("script", &PythonManager::script, "Script read from XML file")
+        .def_readonly("scriptline", &PythonManager::scriptline, "First line of the script in the XML file")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
     manager.attr("obj") = manager.attr("objects");
