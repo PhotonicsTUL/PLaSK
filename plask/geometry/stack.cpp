@@ -458,7 +458,7 @@ shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
     shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> total_size_gap;  //gap which can change total size
     double required_total_size;  //required total size, valid only if total_size_gap is not nullptr
     shared_ptr< ShelfContainer2D > result(new ShelfContainer2D(reader.source.getAttribute(baseH_attr, 0.0)));
-    bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, false);
+    bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, true);
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children(reader,
             [&]() {
