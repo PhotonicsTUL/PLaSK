@@ -63,7 +63,11 @@ class PythonEvalMaterial : public Material
 
     template <typename RETURN>
     RETURN call(PyCodeObject *fun, const py::dict& locals) const {
-        PyObject* result = PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr());
+#       if PY_VERSION_HEX >= 0x03000000
+            PyObject* result = PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr());
+#       else
+            PyObject* result = PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr());
+#       endif
         if (!result) throw py::error_already_set();
         return py::extract<RETURN>(result);
     }
@@ -132,7 +136,11 @@ class PythonEvalMaterial : public Material
     virtual dcomplex nR(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->nR != NULL) {
-            PyObject* result = PyEval_EvalCode(cls->nR, xml_globals.ptr(), locals.ptr());
+#           if PY_VERSION_HEX >= 0x03000000
+                PyObject* result = PyEval_EvalCode((PyObject*)(cls->nR), xml_globals.ptr(), locals.ptr());
+#           else
+                PyObject* result = PyEval_EvalCode(cls->nR, xml_globals.ptr(), locals.ptr());
+#           endif
             if (!result) throw py::error_already_set();
             return py::extract<dcomplex>(result);
         }
@@ -141,7 +149,11 @@ class PythonEvalMaterial : public Material
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->nR != NULL) {
-            PyObject* result = PyEval_EvalCode(cls->nR_tensor, xml_globals.ptr(), locals.ptr());
+#           if PY_VERSION_HEX >= 0x03000000
+                PyObject* result = PyEval_EvalCode((PyObject*)(cls->nR_tensor), xml_globals.ptr(), locals.ptr());
+#           else
+                PyObject* result = PyEval_EvalCode(cls->nR_tensor, xml_globals.ptr(), locals.ptr());
+#           endif
             if (!result) throw py::error_already_set();
             return py::extract<Tensor3<dcomplex>>(result);
         } else {
