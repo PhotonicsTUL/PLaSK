@@ -775,6 +775,17 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         );
 
     }
+                
+    /**
+     * Calculate (using nearest neighbor interpolation) value of data in point using data in points describe by this mesh.
+     * @param data values of data in points describe by this mesh
+     * @param point point in which value should be calculate
+     * @return interpolated value in point @p point
+     */
+    template <typename RandomAccessContainer>
+    auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<3, double>& point) const -> typename std::remove_reference<decltype(data[0])>::type {
+        return data[this->index(axis0.findNearestIndex(point.c0), axis1.findNearestIndex(point.c1), axis2.findNearestIndex(point.c2))];
+    }
 
 private:
     // Common code for: left, right, bottom, top, front, back boundries:
@@ -1013,6 +1024,16 @@ struct InterpolationAlgorithm<RectangularMesh<3,Mesh1D>, SrcT, DstT, INTERPOLATI
         #pragma omp parallel for
         for (size_t i = 0; i < dst_mesh.size(); ++i)
             dst_vec[i] = src_mesh.interpolateLinear(src_vec, dst_mesh[i]);
+    }
+};
+
+template <typename Mesh1D, typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMesh<3,Mesh1D>, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static void interpolate(const RectangularMesh<3,Mesh1D>& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<3>& dst_mesh, DataVector<DstT>& dst_vec) {
+        if (src_mesh.axis0.size() == 0 || src_mesh.axis1.size() == 0 || src_mesh.axis2.size() == 0) throw BadMesh("interpolate", "Source mesh empty");
+        #pragma omp parallel for
+        for (size_t i = 0; i < dst_mesh.size(); ++i)
+            dst_vec[i] = src_mesh.interpolateNearestNeighbor(src_vec, dst_mesh[i]);
     }
 };
 
