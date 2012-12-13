@@ -894,8 +894,6 @@ private:
 
         FixedIndex0Boundary(const RectangularMesh<3,Mesh1D>& mesh, std::size_t level_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>>(mesh), level_axis0(level_axis0) {}
 
-        //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
-
         bool includes(std::size_t mesh_index) const {
             return this->mesh.index0(mesh_index) == level_axis0;
         }
@@ -910,6 +908,40 @@ private:
 
         std::size_t size() const {
             return this->mesh.axis1.size() * this->mesh.axis2.size();
+        }
+    };
+
+    struct FixedIndex0BoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>> {
+
+        typedef typename BoundaryLogicImpl::Iterator Iterator;
+
+        std::size_t level_axis0, beginAxis1, endAxis1, beginAxis2, endAxis2;
+
+        FixedIndex0BoundaryInRange(const RectangularMesh<3,Mesh1D>& mesh, std::size_t level_axis0, std::size_t beginAxis1, std::size_t endAxis1, std::size_t beginAxis2, std::size_t endAxis2)
+            : BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>>(mesh), level_axis0(level_axis0),
+              beginAxis1(beginAxis1), endAxis1(endAxis1), beginAxis2(beginAxis2), endAxis2(endAxis2)
+              {}
+
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index0(mesh_index) == level_axis0
+                    && in_range(this->mesh.index1(mesh_index), beginAxis1, endAxis1)
+                    && in_range(this->mesh.index2(mesh_index), beginAxis2, endAxis2);
+        }
+
+        Iterator begin() const {
+            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, beginAxis1, beginAxis2));
+        }
+
+        Iterator end() const {
+            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, endAxis1, endAxis2));
+        }
+
+        std::size_t size() const {
+            return (endAxis1 - beginAxis1) * (endAxis2 - beginAxis2);
+        }
+
+        bool empty() const {
+            return beginAxis1 == endAxis1 || beginAxis2 == endAxis2;
         }
     };
 
@@ -940,6 +972,41 @@ private:
         }
     };
 
+    struct FixedIndex1BoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>> {
+
+        typedef typename BoundaryLogicImpl::Iterator Iterator;
+
+        std::size_t level_axis1, beginAxis0, endAxis0, beginAxis2, endAxis2;
+
+        FixedIndex1BoundaryInRange(const RectangularMesh<3,Mesh1D>& mesh, std::size_t level_axis1, std::size_t beginAxis0, std::size_t endAxis0, std::size_t beginAxis2, std::size_t endAxis2)
+            : BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>>(mesh), level_axis1(level_axis1),
+              beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis2(beginAxis2), endAxis2(endAxis2)
+              {}
+
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index1(mesh_index) == level_axis1
+                    && in_range(this->mesh.index0(mesh_index), beginAxis0, endAxis0)
+                    && in_range(this->mesh.index2(mesh_index), beginAxis2, endAxis2);
+        }
+
+        Iterator begin() const {
+            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, beginAxis0, beginAxis2));
+        }
+
+        Iterator end() const {
+            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, endAxis0, endAxis2));
+        }
+
+        std::size_t size() const {
+            return (endAxis0 - beginAxis0) * (endAxis2 - beginAxis2);
+        }
+
+        bool empty() const {
+            return beginAxis0 == endAxis0 || beginAxis2 == endAxis2;
+        }
+    };
+
+
     struct FixedIndex2Boundary: public BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
@@ -966,6 +1033,41 @@ private:
             return this->mesh.axis0.size() * this->mesh.axis1.size();
         }
     };
+
+    struct FixedIndex2BoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>> {
+
+        typedef typename BoundaryLogicImpl::Iterator Iterator;
+
+        std::size_t level_axis2, beginAxis0, endAxis0, beginAxis1, endAxis1;
+
+        FixedIndex2BoundaryInRange(const RectangularMesh<3,Mesh1D>& mesh, std::size_t level_axis2, std::size_t beginAxis0, std::size_t endAxis0, std::size_t beginAxis1, std::size_t endAxis1)
+            : BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>>(mesh), level_axis2(level_axis2),
+              beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis1(beginAxis1), endAxis1(endAxis1)
+              {}
+
+        bool includes(std::size_t mesh_index) const {
+            return this->mesh.index2(mesh_index) == level_axis2
+                    && in_range(this->mesh.index0(mesh_index), beginAxis0, endAxis0)
+                    && in_range(this->mesh.index1(mesh_index), beginAxis1, endAxis1);
+        }
+
+        Iterator begin() const {
+            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, beginAxis0, beginAxis1));
+        }
+
+        Iterator end() const {
+            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, endAxis0, endAxis1));
+        }
+
+        std::size_t size() const {
+            return (endAxis0 - beginAxis0) * (endAxis1 - beginAxis1);
+        }
+
+        bool empty() const {
+            return beginAxis0 == endAxis0 || beginAxis1 == endAxis1;
+        }
+    };
+
 
     public:
     /**
