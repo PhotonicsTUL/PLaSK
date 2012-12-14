@@ -111,6 +111,33 @@ inline bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, cons
     return begInd != endInd;
 }
 
+/**
+ * Get boundary which lies on chosen edge of boxes.
+ * @param getBoxes functor which returns 0 or more boxes (vector of boxes)
+ * @param getBoundaryForBox functor which returns boundary for box given as parameter, it chooses edge of box (for example this may call getLeftOfBoundary, etc.)
+ * @return boundary which represents sum of boundaries returned by getBoundaryForBox for all boxes returned by getBoxes
+ * @tparam MeshType RectangularMesh...
+ */
+template <typename MeshType, typename GetBoxes, typename GetBoundaryForBox>
+inline typename MeshType::Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBoundaryForBox getBoundaryForBox) {
+    return typename MeshType::Boundary( [=](const MeshType& mesh) -> BoundaryWithMesh {
+        std::vector<typename MeshType::Boundary> boundaries;
+        std::vector<typename MeshType::Boundary::WithMesh> boundaries_with_meshes;
+        auto boxes = getBoxes(); // probably std::vector<BoxdirD>
+        for (auto& box: boxes) {
+            typename MeshType::Boundary boundary = getBoundaryForBox(box);
+            typename MeshType::Boundary::WithMesh boundary_with_mesh = boundary(mesh);
+            if (!boundary_with_mesh.empty()) {
+                boundaries.push_back(std::move(boundary));
+                boundaries_with_meshes.push_back(std::move(boundary_with_mesh));
+            }
+        }
+        if (boundaries.empty()) return new EmptyBoundaryImpl();
+        if (boundaries.size() == 1) return boundaries_with_meshes[0];
+        return new SumBoundaryImpl<MeshType>(std::move(boundaries_with_meshes));
+    } );
+}
+
 }   // namespace details
 
 /**
@@ -1077,32 +1104,6 @@ public:
     }
 
     /**
-     * Get boundary which lies on chosen edge of boxes.
-     * @param getBoxes functor which returns 0 or more boxes (vector of boxes)
-     * @param getBoundaryForBox functor which returns boundary for box given as parameter, it chooses edge of box (for example this may call getLeftOfBoundary, etc.)
-     * @return boundary which represents sum of boundaries returned by getBoundaryForBox for all boxes returned by getBoxes
-     */
-    template <typename GetBoxes, typename GetBoundaryForBox>
-    static Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBoundaryForBox getBoundaryForBox) {
-        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryWithMesh {
-            std::vector<RectangularMesh<2,Mesh1D>::Boundary> boundaries;
-            std::vector<typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh> boundaries_with_meshes;
-            auto boxes = getBoxes(); // probably std::vector<Box2D>
-            for (auto& box: boxes) {
-                RectangularMesh<2,Mesh1D>::Boundary boundary = getBoundaryForBox(box);
-                typename RectangularMesh<2,Mesh1D>::Boundary::WithMesh boundary_with_mesh = boundary(mesh);
-                if (!boundary_with_mesh.empty()) {
-                    boundaries.push_back(std::move(boundary));
-                    boundaries_with_meshes.push_back(std::move(boundary_with_mesh));
-                }
-            }
-            if (boundaries.empty()) return new EmptyBoundaryImpl();
-            if (boundaries.size() == 1) return boundaries_with_meshes[0];
-            return new SumBoundaryImpl<RectangularMesh<2,Mesh1D>>(std::move(boundaries_with_meshes));
-        } );
-    }
-
-    /**
      * Get boundary which lies on left edge of bounding-boxes of @p object (in @p geometry coordinates).
      * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
      * @param object object included in @p geomoetry
@@ -1110,7 +1111,7 @@ public:
      * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
      */
     static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return getBoundaryForBoxes(
+        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
             [=] { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
         );
@@ -1125,7 +1126,7 @@ public:
      */
     static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
         if (path) return getLeftOfBoundary(geometry, object, *path);
-        return getBoundaryForBoxes(
+        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
             [=] { return geometry->getObjectBoundingBoxes(object); },
             [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
         );
@@ -1139,7 +1140,7 @@ public:
      * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
      */
     static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return getBoundaryForBoxes(
+        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
             [=] { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
         );
@@ -1154,7 +1155,7 @@ public:
      */
     static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
         if (path) return getRightOfBoundary(geometry, object, *path);
-        return getBoundaryForBoxes(
+        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
             [=] { return geometry->getObjectBoundingBoxes(object); },
             [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
         );
@@ -1168,7 +1169,7 @@ public:
      * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
      */
     static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return getBoundaryForBoxes(
+        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
             [=] { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
         );
@@ -1183,7 +1184,7 @@ public:
      */
     static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
         if (path) return getBottomOfBoundary(geometry, object, *path);
-        return getBoundaryForBoxes(
+        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
             [=] { return geometry->getObjectBoundingBoxes(object); },
             [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
         );
@@ -1197,7 +1198,7 @@ public:
      * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
      */
     static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return getBoundaryForBoxes(
+        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
             [=] { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
         );
@@ -1212,7 +1213,7 @@ public:
      */
     static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
         if (path) return getTopOfBoundary(geometry, object, *path);
-        return getBoundaryForBoxes(
+        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
             [=] { return geometry->getObjectBoundingBoxes(object); },
             [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
         );
