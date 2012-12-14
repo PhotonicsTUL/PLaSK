@@ -16,7 +16,7 @@ void DiffusionCylindricalSolver::loadConfiguration(XMLReader& reader, Manager& m
 
         if (param == "config")
         {
-            fem_method = reader.enumAttribute<FemOrder>("order").value("linear", FEM_LINEAR).value("parabolic", FEM_PARABOLIC).get(fem_method);
+            fem_method = reader.enumAttribute<FemMethod>("fem_method").value("linear", FEM_LINEAR).value("parabolic", FEM_PARABOLIC).get(fem_method);
             relative_accuracy = reader.getAttribute<double>("accuracy", relative_accuracy);
             interpolation_method = reader.getAttribute<InterpolationMethod>("interpolation", interpolation_method);
             max_mesh_changes = reader.getAttribute<int>("maxrefines", max_mesh_changes);
@@ -45,6 +45,7 @@ void DiffusionCylindricalSolver::onInitialize()
     max_mesh_changes = 5;
     max_iterations = 20;
     global_QW_width = 0.0;
+    minor_concentration = 5.0e+15;
 
     detected_QW = detectQuantumWells();
     z = getZQWCoordinate();
@@ -65,9 +66,15 @@ void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
     determineQwWidth();
 
     writelog(LOG_INFO, "Computing lateral carriers diffusion");
+//
+//    std::cerr << "z = " << z << "     initial_computation =  " << initial_computation << "\n";
+//    std::cerr << "threshold_computation = " << threshold_computation << "     global_QW_width =  " << global_QW_width << "\n";
+//    std::cerr << "max_mesh_change = " << max_mesh_change << "     max_iterations =  " << max_iterations << "\n";
+//    std::cerr << "fem_method = " << fem_method << "\n";
 
-    writelog(LOG_DEBUG, "z: %1%, max. mesh changes: %2%, max. iterations: %3%%4%%5%",
-             z, max_mesh_changes, max_iterations, threshold_computation? ", threshold" : "", initial_computation? ", initial" : "");
+    writelog(LOG_DEBUG, "z: %1%, method: %6%, max. mesh changes: %2%, max. iterations: %3%%4%%5%",
+             z, max_mesh_changes, max_iterations, threshold_computation? ", threshold" : "", initial_computation? ", initial" : "",
+             fem_method==FEM_LINEAR?"linear":"parabolic");
 
     if (mesh.size() % 2 == 0) mesh.reset(mesh.first(), mesh.last(), mesh.size()+1);
 
@@ -81,8 +88,11 @@ void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
 
     int mesh_changes = 0;
     bool convergence = true;
-    do {
-        if(!convergence) {
+
+    do
+    {
+        if(!convergence)
+        {
             mesh_changes += 1;
             if (mesh_changes > max_mesh_changes)
                 throw ComputationError(getId(), "Maximum number of mesh refinements (%1%) reached", max_mesh_changes);
@@ -95,12 +105,14 @@ void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
             n_present.reset(mesh.size(), 0.0);
             n_previous.reset(mesh.size(), 0.0);
         }
-        if (initial_computation) {
+        if (initial_computation)
+        {
             writelog(LOG_DETAIL, "Initial computation");
             convergence = CylindricalFEM();
             if (convergence) initial_computation = false;
         }
-        if (threshold_computation) {
+        if (threshold_computation)
+        {
             writelog(LOG_DETAIL, "Threshold computation");
             convergence = CylindricalFEM();
             if (convergence) threshold_computation = false;
@@ -219,6 +231,7 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
 //                std::cerr << "X_vector = " << X_vector[i] << "\n";
             _convergence = true;
             n_present = X_vector.copy();
+
 #           ifndef NDEBUG
             writelog(LOG_DEBUG, "n_present = %1%, n_previous = %2%", this->n_present[100], n_previous[100]);
 #           endif
@@ -360,12 +373,9 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
 
             n_present = X_vector.copy();
 
-#           ifndef NDEBUG
-            writelog(LOG_DEBUG, "n_present = %1%, n_previous = %2%", this->n_present[100], n_previous[100]);
-#           endif
-
             double absolute_error = 0.0;
             double relative_error = 0.0;
+            double absolute_concentration_error =  abs(this->QW_material->A(T) * minor_concentration + this->QW_material->B(T) * pow(minor_concentration,2)+ this->QW_material->C(T) * pow(minor_concentration,3));
 
             /****************** RPSFEM: ******************/
             // double tolerance = 5e+15;
@@ -392,8 +402,13 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
             }
             else if (fem_method == FEM_PARABOLIC)
             {
-                double dn = 0.0;
-                double dn_relative = 0.0;
+//                double dn = 0.0;
+//                double dn_relative = 0.0;
+
+                double max_error = 0.0;
+                int max_error_point = 0.0;
+                double max_error_R = 0.0;
+
                 _convergence = true;
                 for (int i = 0; i < (mesh.size() - 1)/2 ; i++)
                 {
@@ -402,18 +417,26 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
                     L = leftSide(2*i + 1, T, n0);
                     R = rightSide(2*i + 1);
 
-                    absolute_error = L - R;
-                    relative_error = absolute_error/R;
+                    absolute_error = abs(L - R);
+                    relative_error = abs(absolute_error/R);
 
-                    // if ( n0 > dn )
-                    dn = n0 - n_previous[2*i + 1];
-                    dn_relative = abs(dn/n0);
-                    // if ( abs( n_present[2*i + 1] - n_present[2*i] )/n_present[2*i + 1] > dn )
-                       // dn = abs(n_present[2*i + 1] - n_present[2*i])/n_present[2*i + 1];
-                    // if ( (absolute_accuracy < fabs( absolute_error ) ) && ( relative_accuracy < relative_error ) )
-                    if ( (relative_accuracy < relative_error) || (dn_relative < absolute_error) ) // (n_tolerance < absolute_error)
+                    if ( max_error < absolute_error )
+                        max_error = absolute_error;
+                        max_error_point = mesh[2*i + 1];
+                        max_error_R = R;
+//                    if ( n0 > dn )
+//                        dn = n0 - n_previous[2*i + 1];
+//                        dn_relative = abs(dn/n0);
+//                    if ( abs( n_present[2*i + 1] - n_present[2*i] )/n_present[2*i + 1] > dn )
+//                        dn = abs(n_present[2*i + 1] - n_present[2*i])/n_present[2*i + 1];
+//                if ( (absolute_accuracy < fabs( absolute_error ) ) && ( relative_accuracy < relative_error ) )
+                    if ( (relative_accuracy < relative_error) && (absolute_concentration_error < absolute_error) ) // (n_tolerance < absolute_error)
                         _convergence = false;
                 }
+            #ifndef NDEBUG
+//            writelog(LOG_DEBUG, "points = %1%", "max_error = %2%", "in: %3%", "R = %4%", mesh.size(), max_error*(plask::phys::qe*this->global_QW_width), max_error_point, max_error_R*(plask::phys::qe*this->global_QW_width));
+            #endif
+std::cerr << "points = " << mesh.size() << "     max_error = " << max_error*(plask::phys::qe*this->global_QW_width) << "      in: " << max_error_point << "     R = " << max_error_R*(plask::phys::qe*this->global_QW_width)*1e-3 << "\n";
             }
             iterations += 1;
         }

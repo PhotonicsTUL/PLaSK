@@ -19,12 +19,12 @@ BOOST_PYTHON_MODULE(diffusion)
 {
     {CLASS(DiffusionCylindricalSolver, "DiffusionCyl", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
 
-        py_enum<__Class__::FemOrder>("FemOrder")
+        py_enum<__Class__::FemMethod>("FemMethod")
             .value("LINEAR", __Class__::FEM_LINEAR)
             .value("PARABOLIC", __Class__::FEM_PARABOLIC);
 
         METHOD(compute, compute, "Perform the computation", arg("initial")=true, arg("threshold")=true);
-        solver.def_readwrite("order", &__Class__::fem_method, "Finite-element order (linear of parabolic)");
+        solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         RW_FIELD(mesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
         solver.def_readwrite("interpolation", &__Class__::interpolation_method, "Interpolation method used for injection current");

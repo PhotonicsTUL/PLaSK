@@ -5,7 +5,7 @@ namespace plask { namespace solvers { namespace diffusion_cylindrical {
 class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCylindrical >
 {
     public:
-        enum FemOrder {
+        enum FemMethod {
             FEM_LINEAR,
             FEM_PARABOLIC
         };
@@ -21,7 +21,7 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         InterpolationMethod interpolation_method;   ///< Selected interpolation method
         int max_mesh_changes;                  // maksymalna liczba zmian dr
         int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
-        FemOrder fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
+        FemMethod fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
 
         DiffusionCylindricalSolver(const std::string& name=""):
             plask::SolverOver<plask::Geometry2DCylindrical> (name),
@@ -51,6 +51,7 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         bool threshold_computation;
 
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
+        double minor_concentration;
 
         std::vector<Box2D> detected_QW;
 

@@ -540,7 +540,7 @@ void register_mesh_rectangular()
         .def("__getitem__", &Regular1D__getitem__)
         .def("__str__", &Regular1D__str__)
         .def("__repr__", &Regular1D__repr__)
-        .def("resize", &RegularMesh1D_resize, "Change number of points in this mesh", (py::arg("count")))
+        .def("resize", &RegularMesh1D_resize, "Change number of points in this mesh", (py::arg("num")))
         .def(py::self == py::self)
         .def("__iter__", py::range(&RegularMesh1D::begin, &RegularMesh1D::end))
     ;
