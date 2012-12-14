@@ -19,6 +19,100 @@ This file includes rectilinear mesh for 2d space.
 
 namespace plask {
 
+namespace details {
+
+/**
+ * Helper used by getLeftOfBoundary, etc.
+ * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_lower,
+ *  undefined if @c false was returned
+ * @param[in] axis axis, 1D mesh
+ * @param[in] box_lower, box_upper position of lower and upper box edges
+ * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
+ */
+template <typename Mesh1D>
+inline bool getLineLo(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
+    assert(box_lower <= box_upper);
+    line = axis.findIndex(box_lower);
+    return line != axis.size() && axis[line] <= box_upper;
+}
+
+/**
+ * Helper used by getRightOfBoundary, etc.
+ * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_upper,
+ *  undefined if @c false was returned
+ * @param[in] axis axis, 1D mesh
+ * @param[in] box_lower, box_upper position of lower and upper box edges
+ * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
+ */
+template <typename Mesh1D>
+inline bool getLineHi(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
+    assert(box_lower <= box_upper);
+    line = axis.findIndex(box_upper);
+    if (line != axis.size() && axis[line] == box_upper) return true;
+    if (line == 0) return false;
+    --line;
+    return axis[line] >= box_lower;
+}
+
+/**
+ * Helper used by getLeftOfBoundary, etc.
+ * @param[out] begInd, endInd range [begInd, endInd) of indices in @p axis which show points which lie in bounds [@p box_lower, @p box_upper],
+ *      undefined if @c false was returned
+ * @param[in] axis axis, 1D mesh
+ * @param[in] box_lower, box_upper position of lower and upper box edges
+ * @return @c true only if some of @p axis points lies in bounds [@p box_lower, @p box_upper]
+ */
+template <typename Mesh1D>
+inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const Mesh1D& axis, double box_lower, double box_upper) {
+    assert(box_lower <= box_upper);
+    begInd = axis.findIndex(box_lower);
+    endInd = axis.findIndex(box_upper);
+    if (endInd != axis.size() && axis[endInd] == box_upper) ++endInd;    //endInd is exluded
+    return begInd != endInd;
+}
+
+/**
+ * Decrease @p index if @p real_pos is much closer to axis[index-1] than axis[index].
+ * @param[in] axis axis of mesh
+ * @param[in, out] index index such that axis[index] <= real_pos < axis[index+1], can be unchanged or decrement by one by this method
+ * @param[in] real_pos position
+ */
+template <typename Mesh1D>
+inline void tryMakeLower(const Mesh1D& axis, std::size_t& index, double real_pos) {
+    if (index == 0) return;
+    if ((real_pos - axis[index-1]) * 100.0 < (axis[index] - axis[index-1])) --index;
+}
+
+/**
+ * Increase @p index if @p real_pos is much closer to axis[index] than axis[index-1].
+ * @param[in] axis axis of mesh
+ * @param[in, out] index index such that axis[index-1] <= real_pos < axis[index], can be unchanged or increment by one by this method
+ * @param[in] real_pos position
+ */
+template <typename Mesh1D>
+inline void tryMakeHigher(const Mesh1D& axis, std::size_t& index, double real_pos) {
+    if (index == axis.size() || index == 0) return; //index == 0 means empty mesh
+    if ((axis[index] - real_pos) * 100.0 < (axis[index] - axis[index-1])) ++index;
+}
+
+/**
+ * Helper.
+ * @param[out] begInd, endInd range [begInd, endInd) of indices in @p axis which show points which lie or almost lie in bounds [@p box_lower, @p box_upper],
+ *      undefined if @c false was returned
+ * @param[in] axis axis, 1D mesh
+ * @param[in] box_lower, box_upper position of lower and upper box edges
+ * @return @c true only if some of @p axis points (almost) lies in bounds [@p box_lower, @p box_upper]
+ */
+template <typename Mesh1D>
+inline bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, const Mesh1D& axis, double box_lower, double box_upper) {
+    getIndexesInBounds(begInd, endInd, axis, box_lower, box_upper);
+    tryMakeLower(axis, begInd, box_lower);
+    tryMakeHigher(axis, endInd, box_upper);
+    return begInd != endInd;
+}
+
+}   // namespace details
+
 /**
  * Rectilinear mesh in 2D space.
  *
@@ -819,90 +913,6 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     };*/
 
     /**
-     * Helper used by getLeftOfBoundary, etc.
-     * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_lower,
-     *  undefined if @c false was returned
-     * @param[in] axis axis, 1D mesh
-     * @param[in] box_lower, box_upper position of lower and upper box edges
-     * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
-     */
-    static bool getLineLo(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
-        assert(box_lower <= box_upper);
-        line = axis.findIndex(box_lower);
-        return line != axis.size() && axis[line] <= box_upper;
-    }
-
-    /**
-     * Helper used by getRightOfBoundary, etc.
-     * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_upper,
-     *  undefined if @c false was returned
-     * @param[in] axis axis, 1D mesh
-     * @param[in] box_lower, box_upper position of lower and upper box edges
-     * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
-     */
-    static bool getLineHi(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
-        assert(box_lower <= box_upper);
-        line = axis.findIndex(box_upper);
-        if (line != axis.size() && axis[line] == box_upper) return true;
-        if (line == 0) return false;
-        --line;
-        return axis[line] >= box_lower;
-    }
-
-    /**
-     * Helper used by getLeftOfBoundary, etc.
-     * @param[out] begInd, endInd range [begInd, endInd) of indices in @p axis which show points which lie in bounds [@p box_lower, @p box_upper],
-     *      undefined if @c false was returned
-     * @param[in] axis axis, 1D mesh
-     * @param[in] box_lower, box_upper position of lower and upper box edges
-     * @return @c true only if some of @p axis points lies in bounds [@p box_lower, @p box_upper]
-     */
-    static bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const Mesh1D& axis, double box_lower, double box_upper) {
-        assert(box_lower <= box_upper);
-        begInd = axis.findIndex(box_lower);
-        endInd = axis.findIndex(box_upper);
-        if (endInd != axis.size() && axis[endInd] == box_upper) ++endInd;    //endInd is exluded
-        return begInd != endInd;
-    }
-
-    /**
-     * Decrease @p index if @p real_pos is much closer to axis[index-1] than axis[index].
-     * @param[in] axis axis of mesh
-     * @param[in, out] index index such that axis[index] <= real_pos < axis[index+1], can be unchanged or decrement by one by this method
-     * @param[in] real_pos position
-     */
-    static void tryMakeLower(const Mesh1D& axis, std::size_t& index, double real_pos) {
-        if (index == 0) return;
-        if ((real_pos - axis[index-1]) * 100.0 < (axis[index] - axis[index-1])) --index;
-    }
-
-    /**
-     * Increase @p index if @p real_pos is much closer to axis[index] than axis[index-1].
-     * @param[in] axis axis of mesh
-     * @param[in, out] index index such that axis[index-1] <= real_pos < axis[index], can be unchanged or increment by one by this method
-     * @param[in] real_pos position
-     */
-    static void tryMakeHigher(const Mesh1D& axis, std::size_t& index, double real_pos) {
-        if (index == axis.size() || index == 0) return; //index == 0 means empty mesh
-        if ((axis[index] - real_pos) * 100.0 < (axis[index] - axis[index-1])) ++index;
-    }
-
-    /**
-     * Helper.
-     * @param[out] begInd, endInd range [begInd, endInd) of indices in @p axis which show points which lie or almost lie in bounds [@p box_lower, @p box_upper],
-     *      undefined if @c false was returned
-     * @param[in] axis axis, 1D mesh
-     * @param[in] box_lower, box_upper position of lower and upper box edges
-     * @return @c true only if some of @p axis points (almost) lies in bounds [@p box_lower, @p box_upper]
-     */
-    static bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, const Mesh1D& axis, double box_lower, double box_upper) {
-        getIndexesInBounds(begInd, endInd, axis, box_lower, box_upper);
-        tryMakeLower(axis, begInd, box_lower);
-        tryMakeHigher(axis, endInd, box_upper);
-        return begInd != endInd;
-    }
-
-    /**
      * Parse boundary from XML tag in format:
      * \<place side="i.e. left" [object="object name" [path="path name"] [geometry="name of geometry which is used by the solver"]]/>
      * @param boundary_desc XML reader which point to tag to read (after read it will be moved to end of this tag)
@@ -980,7 +990,7 @@ public:
     static Boundary getVerticalBoundaryNear(double axis0_coord, double from, double to) {
         return Boundary( [axis0_coord, from, to](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
             std::size_t begInd, endInd;
-            if (!RectangularMesh<2,Mesh1D>::getIndexesInBoundsExt(begInd, endInd, mesh.axis1, from, to))
+            if (!details::getIndexesInBoundsExt(begInd, endInd, mesh.axis1, from, to))
                 return new EmptyBoundaryImpl();
             return new VerticalBoundaryInRange(mesh, mesh.axis0.findNearestIndex(axis0_coord), begInd, endInd);
         } );
@@ -1010,8 +1020,8 @@ public:
     static Boundary getLeftOfBoundary(const Box2D& box) {
         return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
-            if (RectangularMesh<2,Mesh1D>::getLineLo(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
-                RectangularMesh<2,Mesh1D>::getIndexesInBounds(begInd, endInd, mesh.axis1, box.lower.c1, box.upper.c1))
+            if (details::getLineLo(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd, endInd, mesh.axis1, box.lower.c1, box.upper.c1))
                 return new VerticalBoundaryInRange(mesh, line, begInd, endInd);
             else
                 return new EmptyBoundaryImpl();
@@ -1026,8 +1036,8 @@ public:
     static Boundary getRightOfBoundary(const Box2D& box) {
         return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
-            if (RectangularMesh<2,Mesh1D>::getLineHi(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
-                RectangularMesh<2,Mesh1D>::getIndexesInBounds(begInd, endInd, mesh.axis1, box.lower.c1, box.upper.c1))
+            if (details::getLineHi(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd, endInd, mesh.axis1, box.lower.c1, box.upper.c1))
                 return new VerticalBoundaryInRange(mesh, line, begInd, endInd);
             else
                 return new EmptyBoundaryImpl();
@@ -1042,8 +1052,8 @@ public:
     static Boundary getBottomOfBoundary(const Box2D& box) {
         return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
-            if (RectangularMesh<2,Mesh1D>::getLineLo(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
-                RectangularMesh<2,Mesh1D>::getIndexesInBounds(begInd, endInd, mesh.axis0, box.lower.c0, box.upper.c0))
+            if (details::getLineLo(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd, endInd, mesh.axis0, box.lower.c0, box.upper.c0))
                 return new HorizontalBoundaryInRange(mesh, line, begInd, endInd);
             else
                 return new EmptyBoundaryImpl();
@@ -1058,8 +1068,8 @@ public:
     static Boundary getTopOfBoundary(const Box2D& box) {
         return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
-            if (RectangularMesh<2,Mesh1D>::getLineHi(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
-                RectangularMesh<2,Mesh1D>::getIndexesInBounds(begInd, endInd, mesh.axis0, box.lower.c0, box.upper.c0))
+            if (details::getLineHi(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd, endInd, mesh.axis0, box.lower.c0, box.upper.c0))
                 return new HorizontalBoundaryInRange(mesh, line, begInd, endInd);
             else
                 return new EmptyBoundaryImpl();
@@ -1245,7 +1255,7 @@ public:
     static Boundary getHorizontalBoundaryNear(double axis1_coord, double from, double to) {
         return Boundary( [axis1_coord, from, to](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
             std::size_t begInd, endInd;
-            if (!RectangularMesh<2,Mesh1D>::getIndexesInBoundsExt(begInd, endInd, mesh.axis0, from, to))
+            if (!details::getIndexesInBoundsExt(begInd, endInd, mesh.axis0, from, to))
                 return new EmptyBoundaryImpl();
             return new HorizontalBoundaryInRange(mesh, mesh.axis1.findNearestIndex(axis1_coord), begInd, endInd);
         } );

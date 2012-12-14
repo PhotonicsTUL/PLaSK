@@ -1087,6 +1087,15 @@ private:
     }
 
     /**
+     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to @p line_nr_axis0.
+     * @param line_nr_axis0 index of axis0 mesh
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex0BoundaryAtLine(std::size_t line_nr_axis0) {
+        return Boundary( [line_nr_axis0](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex0Boundary(mesh, line_nr_axis0);} );
+    }
+
+    /**
      * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[0].
      * @return boundary which show plane in mesh
      */
@@ -1103,6 +1112,15 @@ private:
     }
 
     /**
+     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to @p line_nr_axis1.
+     * @param line_nr_axis1 index of axis1 mesh
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex1BoundaryAtLine(std::size_t line_nr_axis1) {
+        return Boundary( [line_nr_axis1](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex1Boundary(mesh, line_nr_axis1);} );
+    }
+
+    /**
      * Get boundary which shows one plane in mesh, which has 2 coordinate equals to axis2[0].
      * @return boundary which show plane in mesh
      */
@@ -1116,6 +1134,117 @@ private:
      */
     static Boundary getIndex2HiBoundary() {
         return Boundary( [](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex2Boundary(mesh, mesh.axis2.size()-1);} );
+    }
+
+    /**
+     * Get boundary which shows one plane in mesh, which has 2 coordinate equals to @p line_nr_axis2.
+     * @param line_nr_axis2 index of axis2 mesh
+     * @return boundary which show plane in mesh
+     */
+    static Boundary getIndex2BoundaryAtLine(std::size_t line_nr_axis2) {
+        return Boundary( [line_nr_axis2](const RectangularMesh<3,Mesh1D>& mesh) {return new FixedIndex2Boundary(mesh, line_nr_axis2);} );
+    }
+
+    /**
+     * Get boundary which has fixed index at axis 0 direction and lies on lower face of the @p box (at nearest lines inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which has fixed index at axis 0 direction and lies on lower face of the @p box
+     */
+    static Boundary getLoIndex0OfBoundary(const Box3D& box) {
+        return Boundary( [=](const RectangularMesh<3,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd1, endInd1, begInd2, endInd2;
+            if (details::getLineLo(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, mesh.axis1, box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd2, endInd2, mesh.axis2, box.lower.c2, box.upper.c2))
+                return new FixedIndex0BoundaryInRange(mesh, line, begInd1, endInd1, begInd2, endInd2);
+            else
+                return new EmptyBoundaryImpl();
+        } );
+    }
+
+    /**
+     * Get boundary which has fixed index at axis 0 direction and lies on higher face of the @p box (at nearest lines inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which has fixed index at axis 0 direction and lies on higher face of the @p box
+     */
+    static Boundary getHiIndex0OfBoundary(const Box3D& box) {
+        return Boundary( [=](const RectangularMesh<3,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd1, endInd1, begInd2, endInd2;
+            if (details::getLineHi(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, mesh.axis1, box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd2, endInd2, mesh.axis2, box.lower.c2, box.upper.c2))
+                return new FixedIndex0BoundaryInRange(mesh, line, begInd1, endInd1, begInd2, endInd2);
+            else
+                return new EmptyBoundaryImpl();
+        } );
+    }
+
+    /**
+     * Get boundary which has fixed index at axis 1 direction and lies on lower face of the @p box (at nearest lines inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which has fixed index at axis 1 direction and lies on lower face of the @p box
+     */
+    static Boundary getLoIndex1OfBoundary(const Box3D& box) {
+        return Boundary( [=](const RectangularMesh<3,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd0, endInd0, begInd2, endInd2;
+            if (details::getLineLo(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd0, endInd0, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd2, endInd2, mesh.axis2, box.lower.c2, box.upper.c2))
+                return new FixedIndex1BoundaryInRange(mesh, line, begInd0, endInd0, begInd2, endInd2);
+            else
+                return new EmptyBoundaryImpl();
+        } );
+    }
+
+    /**
+     * Get boundary which has fixed index at axis 1 direction and lies on higher face of the @p box (at nearest lines inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which has fixed index at axis 1 direction and lies on higher face of the @p box
+     */
+    static Boundary getHiIndex1OfBoundary(const Box3D& box) {
+        return Boundary( [=](const RectangularMesh<3,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd0, endInd0, begInd2, endInd2;
+            if (details::getLineHi(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd0, endInd0, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd2, endInd2, mesh.axis2, box.lower.c2, box.upper.c2))
+                return new FixedIndex1BoundaryInRange(mesh, line, begInd0, endInd0, begInd2, endInd2);
+            else
+                return new EmptyBoundaryImpl();
+        } );
+    }
+
+    /**
+     * Get boundary which has fixed index at axis 1 direction and lies on lower face of the @p box (at nearest lines inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which has fixed index at axis 1 direction and lies on lower face of the @p box
+     */
+    static Boundary getLoIndex2OfBoundary(const Box3D& box) {
+        return Boundary( [=](const RectangularMesh<3,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd0, endInd0, begInd1, endInd1;
+            if (details::getLineLo(line, mesh.axis2, box.lower.c2, box.upper.c2) &&
+                details::getIndexesInBounds(begInd0, endInd0, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, mesh.axis1, box.lower.c1, box.upper.c1))
+                return new FixedIndex2BoundaryInRange(mesh, line, begInd0, endInd0, begInd1, endInd1);
+            else
+                return new EmptyBoundaryImpl();
+        } );
+    }
+
+    /**
+     * Get boundary which has fixed index at axis 2 direction and lies on higher face of the @p box (at nearest lines inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which has fixed index at axis 2 direction and lies on higher face of the @p box
+     */
+    static Boundary getHiIndex2OfBoundary(const Box3D& box) {
+        return Boundary( [=](const RectangularMesh<3,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+            std::size_t line, begInd0, endInd0, begInd1, endInd1;
+            if (details::getLineHi(line, mesh.axis2, box.lower.c2, box.upper.c2) &&
+                details::getIndexesInBounds(begInd0, endInd0, mesh.axis0, box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, mesh.axis1, box.lower.c1, box.upper.c1))
+                return new FixedIndex2BoundaryInRange(mesh, line, begInd0, endInd0, begInd1, endInd1);
+            else
+                return new EmptyBoundaryImpl();
+        } );
     }
 };
 
