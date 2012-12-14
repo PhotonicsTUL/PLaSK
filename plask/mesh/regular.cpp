@@ -7,8 +7,8 @@ shared_ptr<RegularMesh2D> RegularMesh2D::getMidpointsMesh() {
     if (this->midpoints_cache) return this->midpoints_cache;
 
     this->midpoints_cache = make_shared<RegularMesh2D>(
-        RegularMesh1D(this->axis0.getFirst() + 0.5*this->axis0.getStep(), this->axis0.getLast() - 0.5*this->axis0.getStep(), this->axis0.size()-1),
-        RegularMesh1D(this->axis1.getFirst() + 0.5*this->axis1.getStep(), this->axis1.getLast() - 0.5*this->axis1.getStep(), this->axis1.size()-1)
+        RegularMesh1D(this->axis0.first() + 0.5*this->axis0.step(), this->axis0.last() - 0.5*this->axis0.step(), this->axis0.size()-1),
+        RegularMesh1D(this->axis1.first() + 0.5*this->axis1.step(), this->axis1.last() - 0.5*this->axis1.step(), this->axis1.size()-1)
     );
     return this->midpoints_cache;
 }
@@ -18,9 +18,9 @@ shared_ptr<RegularMesh3D> RegularMesh3D::getMidpointsMesh() {
     if (this->midpoints_cache) return this->midpoints_cache;
 
     this->midpoints_cache = make_shared<RegularMesh3D>(
-        RegularMesh1D(this->axis0.getFirst() + 0.5*this->axis0.getStep(), this->axis0.getLast() - 0.5*this->axis0.getStep(), this->axis0.size()-1),
-        RegularMesh1D(this->axis1.getFirst() + 0.5*this->axis1.getStep(), this->axis1.getLast() - 0.5*this->axis1.getStep(), this->axis1.size()-1),
-        RegularMesh1D(this->axis2.getFirst() + 0.5*this->axis2.getStep(), this->axis2.getLast() - 0.5*this->axis2.getStep(), this->axis2.size()-1)
+        RegularMesh1D(this->axis0.first() + 0.5*this->axis0.step(), this->axis0.last() - 0.5*this->axis0.step(), this->axis0.size()-1),
+        RegularMesh1D(this->axis1.first() + 0.5*this->axis1.step(), this->axis1.last() - 0.5*this->axis1.step(), this->axis1.size()-1),
+        RegularMesh1D(this->axis2.first() + 0.5*this->axis2.step(), this->axis2.last() - 0.5*this->axis2.step(), this->axis2.size()-1)
     );
     return this->midpoints_cache;
 }
@@ -29,16 +29,16 @@ shared_ptr<RegularMesh3D> RegularMesh3D::getMidpointsMesh() {
 template <>
 void RegularMesh2D::writeXML(XMLElement& object) const {
     object.attr("type", "regular2d");
-    object.addTag("axis0").attr("start", axis0.getFirst()).attr("stop", axis0.getLast()).attr("num", axis0.size());
-    object.addTag("axis1").attr("start", axis1.getFirst()).attr("stop", axis1.getLast()).attr("num", axis1.size());
+    object.addTag("axis0").attr("start", axis0.first()).attr("stop", axis0.last()).attr("num", axis0.size());
+    object.addTag("axis1").attr("start", axis1.first()).attr("stop", axis1.last()).attr("num", axis1.size());
 }
 
 template <>
 void RegularMesh3D::writeXML(XMLElement& object) const {
     object.attr("type", "regular3d");
-    object.addTag("axis0").attr("start", axis0.getFirst()).attr("stop", axis0.getLast()).attr("num", axis0.size());
-    object.addTag("axis1").attr("start", axis1.getFirst()).attr("stop", axis1.getLast()).attr("num", axis1.size());
-    object.addTag("axis2").attr("start", axis2.getFirst()).attr("stop", axis2.getLast()).attr("num", axis2.size());
+    object.addTag("axis0").attr("start", axis0.first()).attr("stop", axis0.last()).attr("num", axis0.size());
+    object.addTag("axis1").attr("start", axis1.first()).attr("stop", axis1.last()).attr("num", axis1.size());
+    object.addTag("axis2").attr("start", axis2.first()).attr("stop", axis2.last()).attr("num", axis2.size());
 }
 
 

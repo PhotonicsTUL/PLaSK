@@ -22,7 +22,7 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
     if (extend_to_zero) mesh->axis0.addPoint(0.);
     mesh->setOptimalIterationOrder();
 
-    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generated new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
+    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
     return mesh;
 }
 
@@ -43,7 +43,7 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
 
     mesh->setOptimalIterationOrder();
 
-    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generated new mesh (%1%x%2%x%3%)", mesh->axis0.size(), mesh->axis1.size(), mesh->axis2.size());
+    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0.size(), mesh->axis1.size(), mesh->axis2.size());
     return mesh;
 }
 
@@ -154,7 +154,7 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DDivideGenerator::generate(const s
 
     mesh->setOptimalIterationOrder();
 
-    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generated new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
+    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
     return mesh;
 }
 

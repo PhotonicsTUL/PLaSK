@@ -2,6 +2,7 @@
 #define PLASK__UTILS_XML_READER_H
 
 #include <string>
+#include <limits>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
@@ -59,6 +60,92 @@ class XMLReader {
 
         /// Empty, virtual destructor.
         virtual ~DataSource() {}
+    };
+
+    /// Enum attribute reader class
+    template <typename EnumT>
+    struct EnumAttributeReader {
+
+      protected:
+
+        XMLReader& reader;
+        const std::string& attr_name;
+        bool case_insensitive;
+
+        std::map<std::string, EnumT> values;
+        std::string help;
+
+        EnumT parse(std::string value) {
+            if (case_insensitive) boost::to_lower(value);
+            auto found = values.find(value);
+            if (found == values.end())
+                throw XMLBadAttrException(reader, attr_name, value, "one of " + help);
+            return found->second;
+        }
+
+      public:
+
+        /**
+         * Create enum attribute reader
+         * \param reader XML reader
+         * \param attr_name name of the attribute
+         * \param case_sensitive true if the attribute value should be case sensitive
+         **/
+        EnumAttributeReader(XMLReader& reader, const std::string& attr_name, bool case_sensitive=false):
+            reader(reader), attr_name(attr_name), case_insensitive(!case_sensitive) {}
+
+        /**
+         * Add allowed parameter
+         * \param key text representing the attribute value
+         * \param val value of the attribute
+         * \param min minimum number of letters in the attribute
+         **/
+        EnumAttributeReader& value(std::string key, EnumT val, size_t min=std::numeric_limits<std::size_t>::max()) {
+            if (case_insensitive) boost::to_lower(key);
+#           ifndef NDEBUG
+                if (values.find(key) != values.end()) throw XMLException(reader, "CODE ERROR: Attribute value \"" + key + "\" already defined.");
+#           endif
+            help += values.empty()? "\"" : ", \"";
+            values[key] = val;
+            if (min < key.length()) {
+                std::string skey = key.substr(0, min);
+#               ifndef NDEBUG
+                    if (values.find(skey) != values.end()) throw  XMLException(reader, "CODE ERROR: Attribute value \"" + skey + "\" already defined.");
+#               endif
+                values[skey] = val;
+                help += skey; help += "["; help += key.substr(min); help += "]";
+            } else
+                help += key;
+            help += "\"";
+            return *this;
+        }
+
+        /// Require attribute
+        EnumT require() {
+            return parse(reader.requireAttribute(attr_name));
+        }
+
+        /**
+         * Get attribute
+         * \return optional set if the attribute was specified
+         */
+        boost::optional<EnumT> get() {
+            boost::optional<std::string> value = reader.getAttribute(attr_name);
+            if (!value) return boost::optional<EnumT>();
+            return parse(*value);
+        }
+
+        /**
+         * Get attribute with default value
+         * \param default_value default value of the attribute
+         * \return optional set if the attribute was specified
+         */
+        EnumT get(EnumT default_value) {
+            boost::optional<std::string> value = reader.getAttribute(attr_name);
+            if (!value) return default_value;
+            return parse(*value);
+        }
+
     };
 
   private:
@@ -311,6 +398,16 @@ class XMLReader {
      * @return @c true only if current node has attribute with given @p name
      */
     bool hasAttribute(const std::string& name) const { return getAttribute(name); }
+
+    /**
+     * Create EnumAttributeReader
+     * \param attr_name name of the attribute
+     * \param case_sensitive true if the attribute value should be case sensitive
+     */
+    template <typename EnumT>
+    EnumAttributeReader<EnumT> enumAttribute(const std::string attr_name, bool case_sensitive=false) {
+        return EnumAttributeReader<EnumT>(*this, attr_name, case_sensitive);
+    }
 
     /**
      * Remove from attributes all attributes which are not in default (empty) namespace.

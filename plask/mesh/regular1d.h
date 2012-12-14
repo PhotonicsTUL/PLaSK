@@ -19,7 +19,7 @@ namespace plask {
  */
 class RegularMesh1D {
 
-    double lo, step;
+    double lo, _step;
     std::size_t points_count;
 
   public:
@@ -41,11 +41,11 @@ class RegularMesh1D {
 
     /// Construct uninitialized mesh.
     RegularMesh1D():
-        lo(0.), step(0.), points_count(0), owner(nullptr) {}
+        lo(0.), _step(0.), points_count(0), owner(nullptr) {}
 
     /// Copy constructor. It does not copy owner
     RegularMesh1D(const RegularMesh1D& src):
-        lo(src.lo), step(src.step), points_count(src.points_count), owner(nullptr) {}
+        lo(src.lo), _step(src._step), points_count(src.points_count), owner(nullptr) {}
 
     /**
      * Construct mesh with given paramters.
@@ -54,13 +54,13 @@ class RegularMesh1D {
      * @param points_count number of points in mesh
      */
     RegularMesh1D(double first, double last, std::size_t points_count):
-        lo(first), step( (last - first) / ((points_count>1)?(points_count-1):1.) ),
+        lo(first), _step( (last - first) / ((points_count>1)?(points_count-1):1.) ),
         points_count(points_count), owner(nullptr) {}
 
     /// Assign a new mesh. This operation preserves the \a owner.
     RegularMesh1D& operator=(const RegularMesh1D& src) {
         bool resized = points_count != src.points_count;
-        lo = src.lo; step = src.step; points_count = src.points_count;
+        lo = src.lo; _step = src._step; points_count = src.points_count;
         if (owner) {
             if (resized) owner->fireResized();
             else owner->fireChanged();
@@ -76,7 +76,7 @@ class RegularMesh1D {
      */
     void reset(double first, double last, std::size_t points_count) {
         lo = first;
-        step = (last - first) / ((points_count>1)?(points_count-1):1.);
+        _step = (last - first) / ((points_count>1)?(points_count-1):1.);
         bool resized = this->points_count != points_count;
         this->points_count = points_count;
         if (owner) {
@@ -88,17 +88,17 @@ class RegularMesh1D {
     /**
      * @return coordinate of the first point in the mesh
      */
-    double getFirst() const { return lo; }
+    double first() const { return lo; }
 
     /**
      * @return coordinate of the last point in the mesh
      */
-    double getLast() const { return lo + step * (points_count-1); }
+    double last() const { return lo + _step * (points_count-1); }
 
     /**
      * @return distance between two neighboring points in the mesh
      */
-    double getStep() const { return step; }
+    double step() const { return _step; }
 
     /// @return number of points in the mesh
     std::size_t size() const { return points_count; }
@@ -110,7 +110,7 @@ class RegularMesh1D {
      * @return @c true only if this mesh and @p to_compare represents the same set of points
      */
     bool operator==(const RegularMesh1D& to_compare) const {
-        return this->lo == to_compare.lo && this->step == to_compare.step && this->points_count == to_compare.points_count;
+        return this->lo == to_compare.lo && this->_step == to_compare._step && this->points_count == to_compare.points_count;
     }
 
     /**
@@ -137,7 +137,7 @@ class RegularMesh1D {
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    const double operator[](std::size_t index) const { return lo + index * step; }
+    const double operator[](std::size_t index) const { return lo + index * _step; }
 
     /**
      * Remove all points from mesh.
@@ -155,7 +155,7 @@ class RegularMesh1D {
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
     std::size_t findIndex(double to_find) const {
-        return clamp(int(std::ceil((to_find - lo) / step)), 0, int(points_count));
+        return clamp(int(std::ceil((to_find - lo) / _step)), 0, int(points_count));
     }
 
     /**

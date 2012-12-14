@@ -173,7 +173,7 @@ struct Material {
      * @param end points just after last charcter of string, must be: begin < end
      * @return parsed object name and ammount (NaN if there was no information about ammount)
      */
-    static std::pair<std::string, double> getFirstCompositionObject(const char*& begin, const char* end);
+    static std::pair<std::string, double> firstCompositionObject(const char*& begin, const char* end);
 
     /**
      * Change NaN-s in material composition to calculated amounts.

@@ -133,7 +133,7 @@ static std::string Regular1D__str__(const RegularMesh1D& self) {
 }
 
 static std::string Regular1D__repr__(const RegularMesh1D& self) {
-    return format("Regular1D(%1%, %2%, %3%)", self.getFirst(), self.getLast(), self.size());
+    return format("Regular1D(%1%, %2%, %3%)", self.first(), self.last(), self.size());
 }
 
 static double Regular1D__getitem__(const RegularMesh1D& self, int i) {
@@ -143,15 +143,15 @@ static double Regular1D__getitem__(const RegularMesh1D& self, int i) {
 }
 
 static void RegularMesh1D_resize(RegularMesh1D& self, int count) {
-    self.reset(self.getFirst(), self.getLast(), count);
+    self.reset(self.first(), self.last(), count);
 }
 
 static void RegularMesh1D_setFirst(RegularMesh1D& self, double first) {
-    self.reset(first, self.getLast(), self.size());
+    self.reset(first, self.last(), self.size());
 }
 
 static void RegularMesh1D_setLast(RegularMesh1D& self, double last) {
-    self.reset(self.getFirst(), last, self.size());
+    self.reset(self.first(), last, self.size());
 }
 
 
@@ -532,9 +532,9 @@ void register_mesh_rectangular()
         )
         .def("__init__", py::make_constructor(&Regular1D__init__empty))
         .def("__init__", py::make_constructor(&Regular1D__init__params, py::default_call_policies(), (py::arg("start"), "stop", "num")))
-        .add_property("start", &RegularMesh1D::getFirst, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
-        .add_property("stop", &RegularMesh1D::getLast, &RegularMesh1D_setLast, "Position of the end of the mesh")
-        .add_property("step", &RegularMesh1D::getStep)
+        .add_property("start", &RegularMesh1D::first, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
+        .add_property("stop", &RegularMesh1D::last, &RegularMesh1D_setLast, "Position of the end of the mesh")
+        .add_property("step", &RegularMesh1D::step)
         .def("__len__", &RegularMesh1D::size)
         .def("__nonzero__", __nonempty__<RegularMesh1D>)
         .def("__getitem__", &Regular1D__getitem__)

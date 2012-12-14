@@ -45,27 +45,19 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
         else if (param == "loop") {
             mTInit = source.getAttribute<double>("inittemp", mTInit);
             mTCorrLim = source.getAttribute<double>("corrlim", mTCorrLim);
-            auto tCorrType = source.getAttribute("corrtype");
-            if (tCorrType) {
-                std::string tValue = *tCorrType; boost::algorithm::to_lower(tValue);
-                if (tValue == "absolute" || tValue == "abs") mCorrType = CORRECTION_ABSOLUTE;
-                else if (tValue == "relative" || tValue == "rel") mCorrType = CORRECTION_RELATIVE;
-                else throw XMLBadAttrException(source, "corrtype", *tCorrType, + "\"abs[olute]\" or \"rel[ative]\"");
-            }
+            mCorrType = source.enumAttribute<CorrectionType>("corrtype")
+                .value("absolute", CORRECTION_ABSOLUTE, 3)
+                .value("relative", CORRECTION_RELATIVE, 3)
+                .get(mCorrType);
             source.requireTagEnd();
         }
 
         else if (param == "matrix") {
             mBigNum = source.getAttribute<double>("bignum", mBigNum);
-            auto tAlgo = source.getAttribute("algorithm");
-            if (tAlgo) {
-                std::string tValue = *tAlgo; boost::algorithm::to_lower(tValue);
-                if (tValue == "slow") mAlgorithm = ALGORITHM_SLOW;
-                else if (tValue == "block") mAlgorithm = ALGORITHM_SLOW;
-                //else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
-                //else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\", \"slow\", or \"iterative\"");
-                else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\" or \"slow\"");
-            }
+            mAlgorithm = source.enumAttribute<Algorithm>("algorithm")
+                .value("block", ALGORITHM_BLOCK)
+                .value("slow", ALGORITHM_SLOW)
+                .get(mAlgorithm);
             source.requireTagEnd();
         } else
             this->parseStandardConfiguration(source, manager);

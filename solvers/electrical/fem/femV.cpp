@@ -39,26 +39,19 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
         else if (param == "loop") {
             mVCorrLim = source.getAttribute<double>("corrlim", mVCorrLim);
-            auto tCorrType = source.getAttribute("corrtype");
-            if (tCorrType) {
-                std::string tValue = *tCorrType; boost::algorithm::to_lower(tValue);
-                if (tValue == "absolute" || tValue == "abs") mCorrType = CORRECTION_ABSOLUTE;
-                else if (tValue == "relative" || tValue == "rel") mCorrType = CORRECTION_RELATIVE;
-                else throw XMLBadAttrException(source, "corrtype", *tCorrType, + "\"abs[olute]\" or \"rel[ative]\"");
-            }
+            mCorrType = source.enumAttribute<CorrectionType>("corrtype")
+                .value("absolute", CORRECTION_ABSOLUTE, 3)
+                .value("relative", CORRECTION_RELATIVE, 3)
+                .get(mCorrType);
             source.requireTagEnd();
         }
 
         else if (param == "matrix") {
             mBigNum = source.getAttribute<double>("bignum", mBigNum);
-            auto tAlgo = source.getAttribute("algorithm");
-            if (tAlgo) {
-                std::string tValue = *tAlgo; boost::algorithm::to_lower(tValue);
-                if (tValue == "slow") mAlgorithm = ALGORITHM_SLOW;
-                else if (tValue == "block") mAlgorithm = ALGORITHM_SLOW;
-                //else if (tValue == "iterative") mAlgorithm = ALGORITHM_ITERATIVE;
-                else throw XMLBadAttrException(source, "algorithm", *tAlgo, + "\"block\" or \"slow\"");
-            }
+            mAlgorithm = source.enumAttribute<Algorithm>("algorithm")
+                .value("block", ALGORITHM_BLOCK)
+                .value("slow", ALGORITHM_SLOW)
+                .get(mAlgorithm);
             source.requireTagEnd();
         }
 
@@ -82,13 +75,10 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             }
             auto tWavelength = source.getAttribute<double>("wavelength");
             if (tWavelength) inWavelength = *tWavelength;
-            auto tHeamMethod = source.getAttribute("heat");
-            if (tHeamMethod) {
-                std::string tValue = *tHeamMethod; boost::algorithm::to_lower(tValue);
-                if (tValue == "joules") mHeatMethod = HEAT_JOULES;
-                else if (tValue == "wavelength") mHeatMethod = HEAT_BANDGAP;
-                else throw XMLBadAttrException(source, "heat", *tHeamMethod, + "\"joules\" or \"wavelength\"");
-            }
+           mHeatMethod = source.enumAttribute<HeatMethod>("heat")
+                .value("joules", HEAT_JOULES)
+                .value("wavelength", HEAT_BANDGAP)
+                .get(mHeatMethod);
             source.requireTagEnd();
         }
 

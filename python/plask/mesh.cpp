@@ -13,8 +13,8 @@ void register_mesh_rectangular();
 void register_mesh()
 {
     py_enum<InterpolationMethod> pyInterpolationMethod("interpolation", "Available interpolation methods.");
-    for (int i = (int)DEFAULT_INTERPOLATION; i != (int)__ILLEGAL_INTERPOLATION_METHOD__; ++i) {
-        pyInterpolationMethod.value(interpolationMethodNames[i], (InterpolationMethod)i);
+    for (unsigned method = DEFAULT_INTERPOLATION; method != __ILLEGAL_INTERPOLATION_METHOD__; ++method) {
+        pyInterpolationMethod.value(interpolationMethodNames[method], (InterpolationMethod)method);
     }
 
     py::object mesh_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.mesh"))) };

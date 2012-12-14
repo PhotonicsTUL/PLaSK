@@ -83,7 +83,7 @@ namespace plask {
  * Supported interpolation methods.
  * @see @ref meshes_interpolation
  */
-enum InterpolationMethod {
+enum InterpolationMethod: unsigned {
     DEFAULT_INTERPOLATION = 0,  ///< Default interpolation (depends on source mesh)
     INTERPOLATION_NEAREST,      ///< Nearest neighbor interpolation
     INTERPOLATION_LINEAR,       ///< Linear interpolation
@@ -202,5 +202,21 @@ DataVector<DstT> interpolate(const SrcMeshT& src_mesh, const DataVector<SrcT>& s
 }
 
 } // namespace plask
+
+
+namespace boost {
+
+    template <>
+    inline plask::InterpolationMethod lexical_cast<plask::InterpolationMethod, std::string>(const std::string& arg) {
+        std::string val = arg; to_upper(val);
+        for (unsigned i = plask::DEFAULT_INTERPOLATION+1; i != plask::__ILLEGAL_INTERPOLATION_METHOD__; ++i) {
+            if (val == plask::interpolationMethodNames[i]) return (plask::InterpolationMethod)i;
+        }
+        throw bad_lexical_cast(typeid(std::string), typeid(plask::InterpolationMethod));
+    }
+
+}
+
+
 
 #endif  //PLASK__INTERPOLATION_H

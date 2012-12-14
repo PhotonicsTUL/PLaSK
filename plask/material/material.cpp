@@ -191,7 +191,7 @@ double toDouble(const std::string& s) {
     }
 }
 
-std::pair<std::string, double> Material::getFirstCompositionObject(const char*& begin, const char* end) {
+std::pair<std::string, double> Material::firstCompositionObject(const char*& begin, const char* end) {
     std::pair<std::string, double> result;
     const char* comp_end = getObjectEnd(begin, end);
     if (comp_end == begin)
@@ -217,7 +217,7 @@ Material::Composition Material::parseComposition(const char* begin, const char* 
     std::set<int> groups;
     int prev_g = -1;
     while (begin != end) {
-        auto c = getFirstCompositionObject(begin, end);
+        auto c = firstCompositionObject(begin, end);
         int g = objectGroup(c.first);
         if (g != prev_g) {
             if (!groups.insert(g).second)

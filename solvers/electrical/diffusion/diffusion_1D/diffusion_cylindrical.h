@@ -5,39 +5,45 @@ namespace plask { namespace solvers { namespace diffusion_cylindrical {
 class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCylindrical >
 {
     public:
+        enum FemOrder {
+            FEM_LINEAR,
+            FEM_PARABOLIC
+        };
+
         plask::ReceiverFor<plask::CurrentDensity2D, plask::Geometry2DCylindrical> inCurrentDensity;
         plask::ReceiverFor<plask::Temperature, plask::Geometry2DCylindrical> inTemperature;
 
         plask::ProviderFor<plask::CarriersConcentration, plask::Geometry2DCylindrical>::Delegate outCarriersConcentration;
 
-        DiffusionCylindricalSolver ( const std::string& name="" ):
-            plask::SolverOver< plask::Geometry2DCylindrical > (name),
-            outCarriersConcentration( this, &DiffusionCylindricalSolver::getConcentration ){}
+        plask::RegularMesh1D mesh;                  ///< Radial mesh
+
+        double relative_accuracy;                   ///< Relative accuracy
+        InterpolationMethod interpolation_method;   ///< Selected interpolation method
+        int max_mesh_changes;                  // maksymalna liczba zmian dr
+        int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
+        FemOrder fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
+
+        DiffusionCylindricalSolver(const std::string& name=""):
+            plask::SolverOver<plask::Geometry2DCylindrical> (name),
+            outCarriersConcentration(this, &DiffusionCylindricalSolver::getConcentration),
+            interpolation_method(INTERPOLATION_HYMAN)
+            {}
 
         virtual std::string getClassName() const { return "DiffusionCylindrical1D"; }
-        void compute(bool initial, bool threshold);
+
         virtual void loadConfiguration(XMLReader&, Manager&);
 
-		double r_min;              // maximum radius value (right boundary value)
-        double r_max;              // maximum radius value (right boundary value)
-        double no_points;          // number of mesh points
-
-        double relative_accuracy;                   // dokladnosc wzgledna
-        std::string interpolation_method;         // metoda interpolacji
-        int max_mesh_change;                  // maksymalna liczba zmian dr
-        int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
-        std::string mes_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
-        std::string symmetry_type;                 // VCSEL or EEL
+        void compute(bool initial, bool threshold);
 
 
-    private:
+    protected:
 //        plask::DataVector<double> ?; // some internal vector used in calculations
 
 /************************************************************************************************/
 
-		static constexpr double hk = plask::phys::h_J/M_PI;      // stala plancka/2pi
+        static constexpr double hk = plask::phys::h_J/M_PI;      // stala plancka/2pi
 
-		plask::shared_ptr< plask::Material> QW_material;
+        plask::shared_ptr< plask::Material> QW_material;
 
         double z;                  // z coordinate of active region
 
@@ -48,7 +54,6 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
 
         std::vector<Box2D> detected_QW;
 
-        plask::RegularMesh1D mesh;                  // radius vector (computation mesh)
         plask::DataVector<const Vec<2>> j_on_the_mesh;    // current density vector provided by inCurrentDensity reciever
         plask::DataVector<const double> T_on_the_mesh;    // temperature vector provided by inTemperature reciever
 
@@ -67,7 +72,7 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
 //
 //        /**********************************************************************/
 //
-        //FUNKCJIE POTRZEBNE DO ROZWIAZANIA ROWNANIA
+        // Methods for solving equation
         // K*n" -  E*n = -F
 
         double K(double T);
@@ -86,58 +91,9 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         double rightSide(int i);         // prawa strona rownania dla rozkladu poczatkowego i progowego
         double nSecondDeriv(int i);                          // druga pochodna n po r
 
-        bool CylindricalMES();
+        bool CylindricalFEM();
         void determineQwWidth();
-//
-//        /********** KONFIGURACJA *********/
-//
-//        std::string doubleToString(const double x);
-//            // konwersja double na string
-//
-//
-//
-///*!!!!*/std::vector<std::vector<double> >  dyfuzja_1D();
-///*!!!!*/bool rozklad(std::string rodzObliczen);     // wyznacza rozklad koncentracji nosnikow
-//
-//
-///*!!!!*/bool wczytajDane(std::string dataFile, std::string typ = "text");
-//            //funkcja wczytujaca dane z pliku i umieszczajaca je w tablicy dwuwymiarowej
-//
-//        std::string getSymmetryType();
-//
-//        void setCalculationType(std::string ctype);     // rodzaj wykonywanych obliczen
-//        std::string getCalculationType();
-//
-//        void setTotalQWsWidth(const double qw);     // ustawianie calkowitej szerokosci QWs w ob. czynnym
-//        double getTotalQWsWidth();
-//
-//        void setPrecision(const double prec);     // ustawianie wzglednej dokladnosci obliczen
-//        double getPrecision();
-//
-//        void setdr(const double _dr);     // ustawianie stalej podzialu obszaru czynnego
-//        double getdr();
-//
-//        void setInterpolationMethod(std::string _interpMetoda);     // wybor metody interpolacji
-//        std::string getInterpolationMethod();
-//
-//        void setMaxIterations(const int iter);    // maksymalna liczba iteracji
-//        int getMaxIterations();
-//
-//        void setMaxdrReductions(const int red);   // maksymalna liczba zmian kroku podzialu ob. czynnego
-//        int getMaxdrReductions();
-//
-//        void setrMin();     // ustawianie rMin
-//        double getrMin();
-//
-//        void setrMax();     // ustawianie rMin
-//        double getrMax();
-//
-//        void setMesMethod(std::string ftype);         // metoda obliczen MES
-//        std::string getMesMethod();
 
-/************************************************************************************************/
-
-    protected:
         std::vector<Box2D> detectQuantumWells();
         double getZQWCoordinate();
         virtual void onInitialize();
@@ -146,4 +102,6 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         const DataVector<double> getConcentration(const plask::MeshD<2>&, plask::InterpolationMethod ); // method providing concentration from inside to the provider (outConcentration)
 
 }; // class DiffusionCylindricalSolver
+
+
 }}} //namespace plask::solvers::diffusion_cylindrical
