@@ -19,15 +19,175 @@ element materials {
     ## define new material
     element material {
         ## name of defined material
-        attribute name { text },
+        attribute name { text } &
         (
             ## base class of defined material, all undefined properties are inharited from this class
             attribute base { text } |
             ## kind of defined material
             attribute kind { text }
-        ),
-        ## property of defined material
-        element (lattC|Eg|CBO|VBO|Dso|Mso|Me|Mhh|Mlh|Mh|ac|av|b|c11|c12|eps|chi|Nc|Nv|Ni|Nf|EactD|EactA|mob|cond|A|B|C|D|thermk|dens|cp|nr|absp|nR|nR_tensor) { text }*
+        ) &
+
+	## Lattice constant [A]; parameters:
+	## T - temperature [K],
+	## x - lattice parameter [-].
+	element (lattC) { text }?	&
+
+	## Energy gap Eg [eV]; parameters:
+	## T - temperature [K],
+	## point - point in the Brillouin zone [-].
+	element (Eg) { text }?		&
+
+	## Conduction band offset CBO [eV]; parameters:
+	## T - temperature [K],
+	## point - point in the Brillouin zone [-].
+	element (CBO) { text }?		&
+
+	## Valance band offset VBO[eV]; parameters:
+	## T - temperature [K],
+	## valance - band offset VBO[eV].
+	element (VBO) { text }?		&
+
+	## Split-off energy Dso [eV]; parameters:
+	## T - temperature [K].
+	element (Dso) { text }?		&
+
+	## Split-off mass Mso [m_0]; parameters:
+	## T - temperature [K].
+	element (Mso) { text }?		&
+
+	## Electron effective mass Me in in-plane (lateral) and cross-plane (vertical) direction [m_0]; parameters:
+	## T - temperature [K],
+	## point - point in the Brillouin zone [-].
+	element (Me) { text }?		&
+
+	## Heavy hole effective mass Mhh in in-plane (lateral) and cross-plane (vertical) direction [m_0]; parameters:
+	## T - temperature [K],
+	## point - point in the Brillouin zone [-].
+	element (Mhh) { text }?		&
+
+	## Light hole effective mass Mlh in in-plane (lateral) and cross-plane (vertical) direction [m_0]; parameters:
+	## T - temperature [K],
+	## point - point in the Brillouin zone [-].
+	element (Mlh) { text }?		&
+
+	## Hole effective mass Mh in in-plane (lateral) and cross-plane (vertical) direction [m_0]; parameters:
+	## T - temperature [K],
+	## EqType - equation type [-].
+	element (Mh) { text }?		&
+
+	## Hydrostatic deformation potential for the conduction band ac [eV]; parameters:
+	## T - temperature [K].
+	element (ac) { text }?		&
+
+	## Hydrostatic deformation potential for the valence band av [eV]; parameters:
+	## T - temperature [K].
+	element (av) { text }?		&
+
+	## Shear deformation potential b [eV]; parameters:
+	## T - temperature [K].
+	element (b) { text }?		&
+
+	## Elastic constant c11 [GPa]; parameters:
+	## T - temperature [K].
+	element (c11) { text }?		&
+
+	## elastic constant c12 [GPa]; parameters:
+	## T - temperature [K].
+	element (c12) { text }?		&
+
+	## Dielectric constant EpsR [-]; parameters:
+	## T - temperature [K].
+	element (eps) { text }?		&
+
+	## Electron affinity Chi[eV]; parameters:
+	## T - temperature [K],
+	## point - point in the Brillouin zone [-].
+	element (eps) { text }?		&
+
+	## Effective density of states in the conduction band Nc [cm^(-3)]; parameters:
+	## T - temperature [K],
+	## point - point in the Brillouin zone [-].
+	element (Nc) { text }?		&
+
+	## Effective density of states in the valance band Nv [cm^(-3)]; parameters:
+	## T - temperature [K].
+	element (Nv) { text }?		&
+
+	## Intrinsic carrier concentration Ni [cm^(-3)]; parameters:
+	## T - temperature [K].
+	element (Ni) { text }?		&
+
+	## Free carrier concentration N [cm^(-3)]; parameters:
+	## T - temperature [K].
+	element (Nf) { text }?		&
+
+	## Donor ionisation energy EactD [eV]; parameters:
+	## T - temperature [K].
+	element (EactD) { text }?	&
+
+	## Acceptor ionisation energy EactA [eV]; parameters:
+	## T - temperature [K].
+	element (EactA) { text }?	&
+
+	## Mobility in-plane (lateral) and cross-plane (vertical) direction [m^2/(V*s)]; parameters:
+	## T - temperature [K].
+	element (mob) { text }?		&
+
+	## Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m]; parameters:
+	## T - temperature [K].
+	element (cond) { text }?	&
+
+	## Electrical conductivity type. In semiconductors this indicates what type of carriers Nf refers to.
+	element (condtype) { text }?	&
+
+	## Monomolecular recombination coefficient A [1/s]; parameters:
+	## T - temperature [K].
+	element (A) { text }?		&
+
+	## Radiative recombination coefficient B [m^3/s]; parameters:
+	## T - temperature [K].
+	element (B) { text }?		&
+
+	## Auger recombination coefficient C [m^6/s]; parameters:
+	## T - temperature [K].
+	element (C) { text }?		&
+
+	## Ambipolar diffusion coefficient D [m^2/s]; parameters:
+	## T - temperature [K].
+	element (D) { text }?		&
+
+	## Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)]; parameters:
+	## T - temperature [K],
+	## thickness - layer thickness [µm].
+	element (thermk) { text }?	&
+
+	## Density [kg/m^3]; parameters:
+	## T - temperature [K].
+	element (dens) { text }?	&
+
+	## Specific heat at constant pressure [J/(kg*K)]; parameters:
+	## T - temperature [K].
+	element (cp) { text }?		&
+
+	## Refractive index nR [-]; parameters:
+	## wl - Wavelength [nm],
+	## T - temperature [K].
+	element (nr) { text }?		&
+
+	## Absorption coefficient alpha [cm^(-1)]; parameters:
+	## wl - Wavelength [nm],
+	## T - temperature [K].
+	element (absp) { text }?	&
+
+	## Refractive index nR [-]; parameters:
+	## wl - Wavelength [nm],
+	## T - temperature [K].
+	element (nR) { text }?		&
+
+	## Anisotropic refractive index tensor nR [-]. Tensor must have the form [n_0, n_3, 0 / n_4, n_1, 0 / 0, 0, n_2] where n_i is i-th object of the returned tuple; parameters:
+	## wl - Wavelength [nm],
+	## T - temperature [K].
+	element (nR_tensor) { text }?
     }*
 )
 }

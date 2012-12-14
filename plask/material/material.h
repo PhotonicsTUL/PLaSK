@@ -459,9 +459,9 @@ struct Material {
     virtual double A(double T) const;
 
     /**
-     * Get radiative recombination coefficient B[m^3/s].
+     * Get radiative recombination coefficient B [m^3/s].
      * @param T temperature [K]
-     * @return radiative recombination coefficient B[m^3/s]
+     * @return radiative recombination coefficient B [m^3/s]
      */
     virtual double B(double T) const;
 
@@ -473,9 +473,9 @@ struct Material {
     virtual double C(double T) const;
 
     /**
-     * Get ambipolar diffusion coefficient D[m^2/s].
+     * Get ambipolar diffusion coefficient D [m^2/s].
      * @param T temperature [K]
-     * @return ambipolar diffusion coefficient D[m^2/s]
+     * @return ambipolar diffusion coefficient D [m^2/s]
      */
     virtual double D(double T) const;
 
@@ -543,7 +543,16 @@ struct Material {
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const;
 
 protected:
+    /**
+     * Throw exception with information that method with name @p method_name is not implemented for this material.
+     * @param method_name name of method which is not implemented
+     */
     void throwNotImplemented(const std::string& method_name) const;
+
+    /**
+     * Throw exception with information that method with name @p method_name is not applicable for this material.
+     * @param method_name name of method which is not applicable
+     */
     void throwNotApplicable(const std::string& method_name) const;
 
 };
