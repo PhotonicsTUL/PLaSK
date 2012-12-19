@@ -288,6 +288,10 @@ the consecutive tags. It is important to call \c parseStandardConfiguration if y
                 newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
                 newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
                 newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
+                mewton.method = reader.enumAttribute<MethodEnumType>("method") // MethodEnumType is some declared enum
+                    .value("raphson", METHOD_RAPHSON) // METHOD_RAPHSON is one of the enum values
+                    .value("secant", METHOD_SECANT, 3) // METHOD_SECANT can be selected with "secant" or its first 3 letters ("sec")
+                    .get(mewton.method);
                 reader.requireTagEnd();
             } else if (reader.getNodeName() == "wavelength") {
                 std::string = reader.requireTextUntilEnd();
