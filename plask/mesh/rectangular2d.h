@@ -138,6 +138,40 @@ inline typename MeshType::Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBou
     } );
 }
 
+/**
+ * Parse boundary from XML tag in format:
+ * \<place side="i.e. left" [object="object name" [path="path name"] [geometry="name of geometry which is used by the solver"]]/>
+ * @param boundary_desc XML reader which point to tag to read (after read it will be moved to end of this tag)
+ * @param enviroment parser enviroment
+ * @param getXBoundary function which creates simple boundary, with edge of mesh, i.e. getLeftBoundary
+ * @param getXOfBoundary function which creates simple boundary, with edge of object, i.e. getLeftOfBoundary
+ * @return boundary which was read
+ */
+template <typename Boundary, int DIM>
+inline Boundary parseBoundaryFromXML(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment, Boundary (*getXBoundary)(),
+                                     Boundary (*getXOfBoundary)(shared_ptr<const GeometryD<DIM>>, shared_ptr<const GeometryObject>, const PathHints*)) {
+    boost::optional<std::string> of = boundary_desc.getAttribute("object");
+    if (!of) {
+        boundary_desc.requireTagEnd();
+        return getXBoundary();
+    } else {
+        plask::shared_ptr< const plask::GeometryD<DIM> > geometry;
+        boost::optional<std::string> geom_name = boundary_desc.getAttribute("geometry");
+        if (geom_name)
+            geometry = enviroment.manager.requireGeometry<const plask::GeometryD<DIM>>(*geom_name);
+        else {
+            geometry = dynamic_pointer_cast< const plask::GeometryD<DIM> >(enviroment.geometry);
+            if (!geometry)
+                throw Exception("Cannot parse %1% of \"%2%\" object. Geometry is not known (\"geometry\" attribute can be used to provide this information).",
+                                boundary_desc.requireAttribute("side"), *of);
+        }
+        boost::optional<std::string> path_name = boundary_desc.getAttribute("path");
+        boundary_desc.requireTagEnd();
+        return getXOfBoundary(geometry, enviroment.manager.requireGeometryObject(*of),
+                              path_name ? &enviroment.manager.requirePathHints(*path_name) : nullptr);
+    }
+}
+
 }   // namespace details
 
 /**
@@ -939,39 +973,6 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         }
     };*/
 
-    /**
-     * Parse boundary from XML tag in format:
-     * \<place side="i.e. left" [object="object name" [path="path name"] [geometry="name of geometry which is used by the solver"]]/>
-     * @param boundary_desc XML reader which point to tag to read (after read it will be moved to end of this tag)
-     * @param enviroment parser enviroment
-     * @param getXBoundary function which creates simple boundary, with edge of mesh, i.e. getLeftBoundary
-     * @param getXOfBoundary function which creates simple boundary, with edge of object, i.e. getLeftOfBoundary
-     * @return boundary which was read
-     */
-    static Boundary parseBoundaryFromXML(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment, Boundary (*getXBoundary)(),
-                                         Boundary (*getXOfBoundary)(shared_ptr<const GeometryD<2>>, shared_ptr<const GeometryObject>, const PathHints*)) {
-        boost::optional<std::string> of = boundary_desc.getAttribute("object");
-        if (!of) {
-            boundary_desc.requireTagEnd();
-            return getXBoundary();
-        } else {
-            plask::shared_ptr< const plask::GeometryD<2> > geometry;
-            boost::optional<std::string> geom_name = boundary_desc.getAttribute("geometry");
-            if (geom_name)
-                geometry = enviroment.manager.requireGeometry<const plask::GeometryD<2>>(*geom_name);
-            else {
-                geometry = dynamic_pointer_cast< const plask::GeometryD<2> >(enviroment.geometry);
-                if (!geometry)
-                    throw Exception("Cannot parse %1% of \"%2%\" object. Geometry is not known (\"geometry\" attribute can be used to provide this information).",
-                                    boundary_desc.requireAttribute("side"), *of);
-            }
-            boost::optional<std::string> path_name = boundary_desc.getAttribute("path");
-            boundary_desc.requireTagEnd();
-            return getXOfBoundary(geometry, enviroment.manager.requireGeometryObject(*of),
-                                  path_name ? &enviroment.manager.requirePathHints(*path_name) : nullptr);
-        }
-    }
-
 public:
     // boundaries:
 
@@ -1293,13 +1294,13 @@ public:
             throw XMLConflictingAttributesException(boundary_desc, "size", "line");
         } else if (side) {
             if (*side == "bottom")
-                return parseBoundaryFromXML(boundary_desc, enviroment, &getBottomBoundary, &getBottomOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, enviroment, &getBottomBoundary, &getBottomOfBoundary);
             if (*side == "left")
-                return parseBoundaryFromXML(boundary_desc, enviroment, &getLeftBoundary, &getLeftOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, enviroment, &getLeftBoundary, &getLeftOfBoundary);
             if (*side == "right")
-                return parseBoundaryFromXML(boundary_desc, enviroment, &getRightBoundary, &getRightOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, enviroment, &getRightBoundary, &getRightOfBoundary);
             if (*side == "top")
-                return parseBoundaryFromXML(boundary_desc, enviroment, &getTopBoundary, &getTopOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, enviroment, &getTopBoundary, &getTopOfBoundary);
             throw XMLBadAttrException(boundary_desc, "side", *side);
         } else if (line) {
             double at = boundary_desc.requireAttribute<double>("at"),

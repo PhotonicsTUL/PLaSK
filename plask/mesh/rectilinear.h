@@ -25,8 +25,11 @@ inline Boundary<RectilinearMesh2D> parseBoundary<RectilinearMesh2D>(XMLReader& b
 /// Three-dimensional rectilinear mesh type
 typedef RectangularMesh<3, RectilinearMesh1D> RectilinearMesh3D;
 
-//template <>
-//inline Boundary<RectilinearMesh3D> parseBoundary<RectilinearMesh3D>(const std::string& boundary_desc) { return RectilinearMesh3D::getBoundary(boundary_desc); }
+template <>
+inline Boundary<RectilinearMesh3D> parseBoundary<RectilinearMesh3D>(const std::string& boundary_desc, plask::BoundaryParserEnviroment) { return RectilinearMesh3D::getBoundary(boundary_desc); }
+
+template <>
+inline Boundary<RectilinearMesh3D> parseBoundary<RectilinearMesh3D>(XMLReader& boundary_desc, BoundaryParserEnviroment env) { return RectilinearMesh3D::getBoundary(boundary_desc, env); }
 
 } // namespace  plask
 

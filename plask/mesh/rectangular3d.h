@@ -1420,6 +1420,50 @@ private:
             [](const Box3D& box) { return RectangularMesh<3,Mesh1D>::getHiIndex2OfBoundary(box); }
         );
     }
+
+    static Boundary getBoundary(const std::string& boundary_desc) {
+        if (boundary_desc == "c0lo") return getIndex0LoBoundary();
+        if (boundary_desc == "c0hi") return getIndex0HiBoundary();
+        if (boundary_desc == "c1lo") return getIndex1LoBoundary();
+        if (boundary_desc == "c1hi") return getIndex1HiBoundary();
+        if (boundary_desc == "c2lo") return getIndex2LoBoundary();
+        if (boundary_desc == "c2hi") return getIndex2HiBoundary();
+        return Boundary();
+    }
+
+    static Boundary getBoundary(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment) {
+        auto side = boundary_desc.requireAttribute("side");
+       /* auto side = boundary_desc.getAttribute("side");
+        auto line = boundary_desc.getAttribute("line");
+        if (side && line) {
+            throw XMLConflictingAttributesException(boundary_desc, "size", "line");
+        } else if (side)*/ {
+            if (side == "c0lo")
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getIndex0LoBoundary, &getLoIndex0OfBoundary);
+            if (side == "c0hi")
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getIndex0HiBoundary, &getHiIndex0OfBoundary);
+            if (side == "c0lo")
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getIndex1LoBoundary, &getLoIndex1OfBoundary);
+            if (side == "c0hi")
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getIndex1HiBoundary, &getHiIndex1OfBoundary);
+            if (side == "c0lo")
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getIndex2LoBoundary, &getLoIndex2OfBoundary);
+            if (side == "c0hi")
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getIndex2HiBoundary, &getHiIndex2OfBoundary);
+            throw XMLBadAttrException(boundary_desc, "side", side);
+        } /*else if (line) {
+            double at = boundary_desc.requireAttribute<double>("at"),
+                   start = boundary_desc.requireAttribute<double>("start"),
+                   stop = boundary_desc.requireAttribute<double>("stop");
+            boundary_desc.requireTagEnd();
+            if (*line == "vertical")
+                return getVerticalBoundaryNear(at, start, stop);
+            if (*line == "horizontal")
+                return getHorizontalBoundaryNear(at, start, stop);
+            throw XMLBadAttrException(boundary_desc, "line", *line);
+        }*/
+        return Boundary();
+    }
 };
 
 template <typename Mesh1D, typename SrcT, typename DstT>    //for any data type
