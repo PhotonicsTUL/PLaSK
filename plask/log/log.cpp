@@ -19,12 +19,6 @@ namespace plask {
         CONSOLE_SCREEN_BUFFER_INFO csbi;
         unsigned short BACKGROUND, DEFAULT;
 
-        StderrLogger() {
-            GetConsoleScreenBufferInfo(hstderr, &csbi);
-            BACKGROUND = csbi.wAttributes & 0xF0;
-            DEFAULT = csbi.wAttributes & 0x0F;
-        }
-
         enum Colors: unsigned short
         {
             BLACK = 0,
@@ -65,6 +59,12 @@ namespace plask {
         }
 
       public:
+
+        StderrLogger() {
+            GetConsoleScreenBufferInfo(hstderr, &csbi);
+            BACKGROUND = csbi.wAttributes & 0xF0;
+            DEFAULT = csbi.wAttributes & 0x0F;
+        }
 
         virtual void writelog(LogLevel level, const std::string& msg) {
             fprintf(stderr, "%s: %s\n", head(level), msg.c_str());
