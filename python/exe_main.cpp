@@ -200,7 +200,12 @@ int main(int argc, const char *argv[])
             globals["plask"] = plask;                           // import plask
             if (from_import) from_import_all("plask", globals); // from plask import *
             py::object qtconsole = py::import("plask.qtconsole");
+
+            // Set the logger
+            plask::default_logger = std::unique_ptr<plask::Logger>(new plask::python::PythonSysLogger);
+
             py::object widget = qtconsole.attr("run_app")(globals);
+
         } catch (py::error_already_set) { // This should not happen
             int exitcode = handlePythonException();
             endPlask();

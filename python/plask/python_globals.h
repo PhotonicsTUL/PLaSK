@@ -192,7 +192,7 @@ template <> inline std::string spaceSuffix<Geometry3D>() { return "3D"; }
 
 
 // ----------------------------------------------------------------------------------------------------------------------
-// Config
+/// Config class
 struct Config
 {
     // Current axis names
@@ -221,6 +221,23 @@ struct Config
 extern Config config;
 
 
+// ----------------------------------------------------------------------------------------------------------------------
+// Config
+/// Class writing logs to Python sys.stderr
+class PythonSysLogger: public plask::Logger {
+
+    static const char* head(plask::LogLevel level);
+
+    py::object sys;
+
+  public:
+
+    virtual void writelog(plask::LogLevel level, const std::string& msg);
+
+};
+
+
 }} // namespace plask::python
+
 
 #endif // PLASK__PYTHON_GLOBALS_H

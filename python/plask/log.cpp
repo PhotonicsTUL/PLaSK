@@ -44,4 +44,44 @@ void register_python_log()
     ;
 }
 
+#define DEFAULT "\033[00m"
+#define BLACK   "\033[30m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define BROWN  "\033[33m"
+#define BLUE    "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN    "\033[36m"
+#define WHITE   "\033[37m"
+#define GRAY   "\033[30;01m"
+#define BRIGHT_RED     "\033[31;01m"
+#define BRIGHT_GREEN   "\033[32;01m"
+#define YELLOW  "\033[33;01m"
+#define BRIGHT_BLUE    "\033[34;01m"
+#define BRIGHT_MAGENTA "\033[35;01m"
+#define BRIGHT_CYAN    "\033[36;01m"
+#define BRIGHT_WHITE   "\033[37;01m"
+const char* PythonSysLogger::head(LogLevel level) {
+    switch (level) {
+        case LOG_CRITICAL_ERROR:return BRIGHT_RED "CRITICAL ERROR";
+        case LOG_ERROR:         return BRIGHT_RED "ERROR         ";
+        case LOG_WARNING:       return BROWN "WARNING       ";
+        case LOG_INFO:          return BRIGHT_BLUE "INFO          ";
+        case LOG_RESULT:        return GREEN "RESULT        ";
+        case LOG_DATA:          return CYAN "DATA          ";
+        case LOG_DETAIL:        return DEFAULT "DETAIL        ";
+        case LOG_ERROR_DETAIL:  return RED "ERROR DETAIL  ";
+        case LOG_DEBUG:         return GRAY "DEBUG         ";
+    }
+    return "UNSPECIFIED   "; // mostly to silence compiler warning than to use in the real life
+}
+
+void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
+    PySys_WriteStderr("%s: %s" DEFAULT "\n", head(level), msg.c_str());
+}
+
+
+
+
+
 }} // namespace plask::python

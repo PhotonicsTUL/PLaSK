@@ -12,8 +12,9 @@ using namespace std;
 namespace plask {
 
 #ifdef _WIN32
-    /// Class wrting colorful log into stderr
-    struct StderrLogger {
+
+    /// Class writing colorful log into stderr
+    class StderrLogger: public Logger {
         static const HANDLE hstderr;
         CONSOLE_SCREEN_BUFFER_INFO csbi;
         unsigned short BACKGROUND, DEFAULT;
@@ -48,7 +49,7 @@ namespace plask {
             SetConsoleTextAttribute(hstderr, BACKGROUND | fg);
         }
 
-        std::string head(LogLevel level) {
+        const char* head(LogLevel level) {
             switch (level) {
                 case LOG_ERROR:         color(BRIGHT_RED); return "ERROR         ";
                 case LOG_CRITICAL_ERROR:color(BRIGHT_RED); return "CRITICAL ERROR";
@@ -63,35 +64,41 @@ namespace plask {
             return "UNSPECIFIED   "; // mostly to silence compiler warning than to use in the real life
         }
 
-        void writelog(LogLevel level, const std::string& msg) {
-            fprintf(stderr, "%s: %s\n", head(level).c_str(), msg.c_str());
+      public:
+
+        virtual void writelog(LogLevel level, const std::string& msg) {
+            fprintf(stderr, "%s: %s\n", head(level), msg.c_str());
             SetConsoleTextAttribute(hstderr, csbi.wAttributes);
         }
     };
     const HANDLE StderrLogger::hstderr = GetStdHandle(STD_ERROR_HANDLE);
+
 #else
-    #define DEFAULT "\033[00m"
-    #define BLACK   "\033[30m"
-    #define RED     "\033[31m"
-    #define GREEN   "\033[32m"
-    #define BROWN  "\033[33m"
-    #define BLUE    "\033[34m"
-    #define MAGENTA "\033[35m"
-    #define CYAN    "\033[36m"
-    #define WHITE   "\033[37m"
-    #define GRAY   "\033[30;01m"
-    #define BRIGHT_RED     "\033[31;01m"
-    #define BRIGHT_GREEN   "\033[32;01m"
-    #define YELLOW  "\033[33;01m"
-    #define BRIGHT_BLUE    "\033[34;01m"
-    #define BRIGHT_MAGENTA "\033[35;01m"
-    #define BRIGHT_CYAN    "\033[36;01m"
-    #define BRIGHT_WHITE   "\033[37;01m"
-    /// Class wrting colorful log into stderr
-    struct StderrLogger {
+
+    /// Class writing colorful log into stderr
+    class StderrLogger: public Logger {
+
+        #define DEFAULT "\033[00m"
+        #define BLACK   "\033[30m"
+        #define RED     "\033[31m"
+        #define GREEN   "\033[32m"
+        #define BROWN  "\033[33m"
+        #define BLUE    "\033[34m"
+        #define MAGENTA "\033[35m"
+        #define CYAN    "\033[36m"
+        #define WHITE   "\033[37m"
+        #define GRAY   "\033[30;01m"
+        #define BRIGHT_RED     "\033[31;01m"
+        #define BRIGHT_GREEN   "\033[32;01m"
+        #define YELLOW  "\033[33;01m"
+        #define BRIGHT_BLUE    "\033[34;01m"
+        #define BRIGHT_MAGENTA "\033[35;01m"
+        #define BRIGHT_CYAN    "\033[36;01m"
+        #define BRIGHT_WHITE   "\033[37;01m"
+
         static const bool tty;
 
-        static std::string head(LogLevel level) {
+        static const char* head(LogLevel level) {
             if (tty) {
                 switch (level) {
                     case LOG_CRITICAL_ERROR:return BRIGHT_RED "CRITICAL ERROR";
@@ -120,17 +127,21 @@ namespace plask {
             return "UNSPECIFIED   "; // mostly to silence compiler warning than to use in the real life
         }
 
-        static void writelog(LogLevel level, const std::string& msg) {
-            fprintf(stderr, "%s: %s%s\n", head(level).c_str(), msg.c_str(), tty? DEFAULT : "");
+      public:
+
+        virtual void writelog(LogLevel level, const std::string& msg) {
+            fprintf(stderr, "%s: %s%s\n", head(level), msg.c_str(), tty? DEFAULT : "");
         }
     };
     const bool StderrLogger::tty = isatty(fileno(stderr));
+
 #endif
-StderrLogger stderrLogger;
+
+std::unique_ptr<Logger> default_logger { new StderrLogger() };
 
 void writelog(LogLevel level, const std::string& msg) {
     #pragma omp critical(writelog)
-    stderrLogger.writelog(level, msg);
+    default_logger->writelog(level, msg);
 }
 
 } // namespace plask

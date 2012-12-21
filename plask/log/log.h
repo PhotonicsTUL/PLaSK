@@ -20,7 +20,11 @@ enum LogLevel {
     LOG_DEBUG           ///< Pretty much everything
 };
 
-
+/**
+ * Log a message
+ * \param level log level to log
+ * \param msg log message
+ */
 void writelog(LogLevel level, const std::string& msg);
 
 /**
@@ -33,6 +37,27 @@ template<typename... Args>
 inline void writelog(LogLevel level, const std::string& msg, Args&&... params) {
     writelog(level, format(msg, std::forward<Args>(params)...));
 }
+
+/**
+ * Abstract class that is base for all loggers
+ */
+struct Logger {
+
+    virtual ~Logger() {}
+
+    /**
+     * Log a message
+     * \param level log level to log
+     * \param msg log message
+     */
+    virtual void writelog(LogLevel level, const std::string& msg) = 0;
+
+};
+
+/**
+ * Pointer to the logger
+ */
+extern std::unique_ptr<Logger> default_logger;
 
 }   // namespace plask
 
