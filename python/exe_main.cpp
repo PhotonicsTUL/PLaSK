@@ -30,6 +30,9 @@ namespace py = boost::python;
 #   define PLASK_MODULE init_plask
 #endif
 
+py::dict globals;
+
+
 //******************************************************************************
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
@@ -37,7 +40,7 @@ namespace plask { namespace python {
 }}
 
 //******************************************************************************
-static void from_import_all(const char* name, py::dict& globals)
+static void from_import_all(const char* name, py::dict& dest)
 {
     py::object module = py::import(name);
     py::dict module_dict = py::dict(module.attr("__dict__"));
@@ -51,7 +54,7 @@ static void from_import_all(const char* name, py::dict& globals)
     }
     py::stl_input_iterator<std::string> begin(all), end;
     for (auto item = begin; item != end; item++) {
-        if ((*item)[0] != '_') globals[*item] = module_dict[*item];
+        if ((*item)[0] != '_') dest[*item] = module_dict[*item];
     }
 }
 
@@ -155,12 +158,17 @@ int main(int argc, const char *argv[])
     // Test if we want to import plask into global namespace
     bool from_import = true;
     bool force_interactive = false;
+    bool use_qtconsole = false;
+
     while (argc > 1) {
         if (std::string(argv[1]) == "-n") {
             from_import = false;
             --argc; ++argv;
         } else if (std::string(argv[1]) == "-i") {
             force_interactive = true;
+            --argc; ++argv;
+        } else if (std::string(argv[1]) == "-q") {
+            use_qtconsole = true;
             --argc; ++argv;
         } else break;
     }
@@ -169,29 +177,48 @@ int main(int argc, const char *argv[])
     try {
         initPlask(argc-1, argv+1);
     } catch (plask::CriticalException) {
-        std::cerr << "CriticalError: Cannot import plask builtin module.\n";
+        plask::writelog(plask::LOG_CRITICAL_ERROR, "Cannot import plask builtin module.");
         endPlask();
         return 101;
     } catch (py::error_already_set) {
-        PyErr_Print();
+        handlePythonException();
         endPlask();
         return 102;
     }
 
-    // Test if we should use the file or start an interactive mode
-    if(argc > 1 && !force_interactive && argv[1][0] != 0) { // load commands from file
+    // Test if we should lauch qt console, use the file or start an interactive mode
+    if (use_qtconsole) { // start the Qt console
 
-        py::dict globals = py::dict(py::import("__main__").attr("__dict__"));
-        py::incref(globals.ptr());
+        if (argc != 1 || force_interactive) {
+            plask::writelog(plask::LOG_CRITICAL_ERROR, "QtConsole must be started without any other parameters");
+            return 103;
+        }
+
+        try {
+            py::object plask = py::import("plask");
+            plask.attr("__globals") = globals;
+            globals["plask"] = plask;                           // import plask
+            if (from_import) from_import_all("plask", globals); // from plask import *
+            py::object qtconsole = py::import("plask.qtconsole");
+            py::object widget = qtconsole.attr("run_app")(globals);
+        } catch (py::error_already_set) { // This should not happen
+            int exitcode = handlePythonException();
+            endPlask();
+            return exitcode;
+        } catch (...) {
+            return 0;
+        }
+
+    } else if(argc > 1 && !force_interactive && argv[1][0] != 0) { // load commands from file
+
+        globals = py::dict(py::import("__main__").attr("__dict__"));
+        // py::incref(globals.ptr());
 
         // Add plask to the global namespace
         py::object plask = py::import("plask");
         plask.attr("__globals") = globals;
-
-        globals["plask"] = plask; // import plask
-        if (from_import) { // from plask import *
-            from_import_all("plask", globals);
-        }
+        globals["plask"] = plask;                           // import plask
+        if (from_import) from_import_all("plask", globals); // from plask import *
 
         unsigned scriptline = 0;
 

@@ -63,6 +63,7 @@ void register_geometry_container_stack()
         .def("prepend", &ShelfContainer2D::push_front, (py::arg("child")), "Prepend new object to the container")
         .def("insert", &ShelfContainer2D::insert, (py::arg("child"), "pos"), "Insert new object to the container")
         .def("set_zero_before", &StackContainer<3>::setZeroHeightBefore, py::arg("index"), "Set zero left of item with index 'index'")
+        .def("append_gap", &ShelfContainer2D::addGap, py::arg("size"), "Add gap of the size 'size' to the end of the shelf")
         .add_property("isflat", &ShelfContainer2D::isFlat, "True if all children has the same height (the top line is flat)")
     ;
     py::scope().attr("Shelf") = py::scope().attr("Shelf2D");
