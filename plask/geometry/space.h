@@ -25,7 +25,7 @@ struct Geometry: public GeometryObject {
     /// Axis names for this geometry
     AxisNames axisNames;
 
-    enum DIRECTION {
+    enum Direction {
         DIRECTION_LONG = Primitive<3>::DIRECTION_LONG,
         DIRECTION_TRAN = Primitive<3>::DIRECTION_TRAN,
         DIRECTION_VERT = Primitive<3>::DIRECTION_VERT
@@ -54,18 +54,18 @@ struct Geometry: public GeometryObject {
 
     /**
      * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
-     * @param direction see DIRECTION
+     * @param direction see Direction
      * @param border_lo new border strategy for lower border in given @p direction
      * @param border_hi new border strategy for higher border in given @p direction
      */
-    virtual void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi) = 0;
+    virtual void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) = 0;
 
     /**
      * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
-     * @param direction see DIRECTION
+     * @param direction see Direction
      * @param border_to_set new border strategy for given borders
      */
-    virtual void setBorders(DIRECTION direction, const border::Strategy& border_to_set) {
+    virtual void setBorders(Direction direction, const border::Strategy& border_to_set) {
         setBorders(direction, border_to_set, border_to_set);
     }
 
@@ -88,11 +88,11 @@ struct Geometry: public GeometryObject {
 
     /**
      * Set border or throw exception if this border can't be set for this calculation space or direction.
-     * @param direction see DIRECTION
+     * @param direction see Direction
      * @param higher @c true for higher bound, @c false for lower
      * @param border_to_set new border strategy for given border
      */
-    virtual void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set) = 0;
+    virtual void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) = 0;
 
     //void setBorders(const std::function< std::unique_ptr<border::Strategy> >(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames);
 
@@ -107,18 +107,18 @@ struct Geometry: public GeometryObject {
 
     /**
      * Get border strategy or throw exception if border can't be get for this calculation space or direction.
-     * @param direction see DIRECTION
+     * @param direction see Direction
      * @param higher @c true for higher bound, @c false for lower
      * @return border strategy for given border
      */
-    virtual const border::Strategy& getBorder(DIRECTION direction, bool higher) const = 0;
+    virtual const border::Strategy& getBorder(Direction direction, bool higher) const = 0;
 
     /**
      * Check if structure in given direction is symmetric, i.e. one of border in this direction is mirror.
      * @param direction direction to check
      * @return @c true only if structure is symmetric in given @p direction
      */
-    virtual bool isSymmetric(DIRECTION direction) const {
+    virtual bool isSymmetric(Direction direction) const {
         return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
     }
 
@@ -127,7 +127,7 @@ struct Geometry: public GeometryObject {
      * @param direction direction to check
      * @return @c true only if structure is periodic in given @p direction
      */
-    bool isPeriodic(DIRECTION direction) const {
+    bool isPeriodic(Direction direction) const {
         return getBorder(direction, false).type() == border::Strategy::PERIODIC && getBorder(direction, true).type() == border::Strategy::PERIODIC;
     }
 
@@ -712,7 +712,7 @@ public:
      * \param border_lo new strategy for the border with lower coordinate
      * \param border_hi new strategy for the border with higher coordinate
      */
-    void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
     /**
      * Set strategies for a border in specified direction
@@ -720,9 +720,9 @@ public:
      * \param higher indicates whether higher- or lower-coordinate border is to be set
      * \param border_to_set new strategy for the border with higher coordinate
      */
-    void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
+    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set);
 
-    const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
+    const border::Strategy& getBorder(Direction direction, bool higher) const;
 
     /**
      * Set material on the positive side of the axis along the extrusion.
@@ -811,7 +811,7 @@ class Geometry2DCylindrical: public GeometryD<2> {
     border::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, border::UniversalStrategy> innerouter;
     border::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
-    static void ensureBoundDirIsProper(DIRECTION direction, bool hi) {
+    static void ensureBoundDirIsProper(Direction direction, bool hi) {
         Primitive<3>::ensureIsValid2DDirection(direction);
     }
 
@@ -921,15 +921,15 @@ public:
 //         return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
 //     }
 
-    void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
-    void setBorders(DIRECTION direction, const border::Strategy& border_to_set);
+    void setBorders(Direction direction, const border::Strategy& border_to_set);
 
-    void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
+    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set);
 
-    const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
+    const border::Strategy& getBorder(Direction direction, bool higher) const;
 
-    virtual bool isSymmetric(DIRECTION direction) const {
+    virtual bool isSymmetric(Direction direction) const {
         if (direction == DIRECTION_TRAN) return true;
         return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
     }
@@ -1018,9 +1018,9 @@ public:
      * \param border_lo new strategy for the border with lower coordinate
      * \param border_hi new strategy for the border with higher coordinate
      */
-    void setBorders(DIRECTION direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
+    void setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi);
 
-    void setBorders(DIRECTION direction, const border::Strategy& border_to_set);
+    void setBorders(Direction direction, const border::Strategy& border_to_set);
 
     /**
      * Set strategies for a border in specified direction
@@ -1028,9 +1028,9 @@ public:
      * \param higher indicates whether higher- or lower-coordinate border is to be set
      * \param border_to_set new strategy for the border with higher coordinate
      */
-    void setBorder(DIRECTION direction, bool higher, const border::Strategy& border_to_set);
+    void setBorder(Direction direction, bool higher, const border::Strategy& border_to_set);
 
-    const border::Strategy& getBorder(DIRECTION direction, bool higher) const;
+    const border::Strategy& getBorder(Direction direction, bool higher) const;
 
     /**
      * Construct geometry over given 3D @p child object.

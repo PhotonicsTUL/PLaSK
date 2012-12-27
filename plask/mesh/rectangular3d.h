@@ -77,60 +77,122 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
         typedef typename Mesh1D::PointType PointType;
 
+        /// \return long index of the element
+        inline std::size_t getIndex0() const { return index0; }
+
+        /// \return tran index of the element
+        inline std::size_t getIndex1() const { return index1; }
+
+        /// \return vert index of the element
+        inline std::size_t getIndex2() const { return index2; }
+
+        /// \return long index of the left edge of the element
         inline std::size_t getLowerIndex0() const { return index0; }
 
+        /// \return tran index of the left edge of the element
         inline std::size_t getLowerIndex1() const { return index1; }
 
+        /// \return vert index of the bottom edge of the element
         inline std::size_t getLowerIndex2() const { return index2; }
 
+        /// \return long coordinate of the left edge of the element
         inline PointType getLower0() const { return mesh.axis0[index0]; }
 
+        /// \return tran coordinate of the left edge of the element
         inline PointType getLower1() const { return mesh.axis1[index1]; }
 
+        /// \return vert coordinate of the bottom edge of the element
         inline PointType getLower2() const { return mesh.axis2[index2]; }
 
+        /// \return long index of the right edge of the element
         inline std::size_t getUpperIndex0() const { return index0+1; }
 
+        /// \return tran index of the right edge of the element
         inline std::size_t getUpperIndex1() const { return index1+1; }
 
+        /// \return vert index of the top edge of the element
         inline std::size_t getUpperIndex2() const { return index2+1; }
 
+        /// \return long coordinate of the right edge of the element
         inline PointType getUpper0() const { return mesh.axis0[getUpperIndex0()]; }
 
+        /// \return tran coordinate of the right edge of the element
         inline PointType getUpper1() const { return mesh.axis1[getUpperIndex1()]; }
 
-        inline PointType getUpper2() const { return mesh.axis2[getUpperIndex2()]; }
+        /// \return vert coordinate of the top edge of the element
+         inline PointType getUpper2() const { return mesh.axis2[getUpperIndex2()]; }
 
+        /// \return size of the element in the long direction
         inline PointType getSize0() const { return getUpper0() - getLower0(); }
 
+        /// \return size of the element in the tran direction
         inline PointType getSize1() const { return getUpper1() - getLower1(); }
 
+        /// \return size of the element in the vert direction
         inline PointType getSize2() const { return getUpper2() - getLower2(); }
 
+        /// \return vector indicating size of the element
         inline Vec<3, PointType> getSize() const { return getUpUpUp() - getLoLoLo(); }
 
+        /// \return position of the middle of the element
         inline Vec<3, PointType> getMidpoint() const { return mesh.getElementMidpoint(index0, index1, index2); }
 
-        /// @return this element index
+        /// @return index of this element
         inline std::size_t getIndex() const { return mesh.getElementIndexFromLowIndex(getLoLoLoIndex()); }
 
+        /// \return this element as rectangular box
         inline Box3D toBox() const { return mesh.getElementBox(index0, index1, index2); }
 
+        /// \return total volume of this element
+        inline PointType getVolume() const { return getSize0() * getSize1() * getSize2(); }
+
+        /// \return index of the lower left back corner of this element
         inline std::size_t getLoLoLoIndex() const { return mesh.index(getLowerIndex0(), getLowerIndex1(), getLowerIndex2()); }
 
-        //inline std::size_t getLoUpIndex() const { return mesh.index(getLowerIndex0(), getUpperIndex1()); }
+        /// \return index of the lower left front corner of this element
+        inline std::size_t getUpLoLoIndex() const { return mesh.index(getUpperIndex0(), getLowerIndex1(), getLowerIndex2()); }
 
-        //inline std::size_t getUpLoIndex() const { return mesh.index(getUpperIndex0(), getLowerIndex1()); }
+        /// \return index of the lower right back corner of this element
+        inline std::size_t getLoUpLoIndex() const { return mesh.index(getLowerIndex0(), getUpperIndex1(), getLowerIndex2()); }
 
+        /// \return index of the lower right front corner of this element
+        inline std::size_t getUpUpLoIndex() const { return mesh.index(getUpperIndex0(), getUpperIndex1(), getLowerIndex2()); }
+
+        /// \return index of the upper left back corner of this element
+        inline std::size_t getLoLoUpIndex() const { return mesh.index(getLowerIndex0(), getLowerIndex1(), getUpperIndex2()); }
+
+        /// \return index of the upper left front corner of this element
+        inline std::size_t getUpLoUpIndex() const { return mesh.index(getUpperIndex0(), getLowerIndex1(), getUpperIndex2()); }
+
+        /// \return index of the upper right back corner of this element
+        inline std::size_t getLoUpUpIndex() const { return mesh.index(getLowerIndex0(), getUpperIndex1(), getUpperIndex2()); }
+
+        /// \return index of the upper right front corner of this element
         inline std::size_t getUpUpUpIndex() const { return mesh.index(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
 
-        inline Vec<3, PointType> getLoLoLo() const { return mesh(getLowerIndex0(), getLowerIndex1(), getLowerIndex2()); }
+        /// \return position of the lower left back corner of this element
+        inline Vec<3,PointType> getLoLoLo() const { return mesh(getLowerIndex0(), getLowerIndex1(), getLowerIndex2()); }
 
-        //inline Vec<2, PointType> getLoUp() const { return mesh(getLowerIndex0(), getUpperIndex1()); }
+        /// \return position of the lower left front corner of this element
+        inline Vec<3,PointType> getUpLoLo() const { return mesh(getUpperIndex0(), getLowerIndex1(), getLowerIndex2()); }
 
-        //inline Vec<2, PointType> getUpLo() const { return mesh(getUpperIndex0(), getLowerIndex1()); }
+        /// \return position of the lower right back corner of this element
+        inline Vec<3,PointType> getLoUpLo() const { return mesh(getLowerIndex0(), getUpperIndex1(), getLowerIndex2()); }
 
-        inline Vec<3, PointType> getUpUpUp() const { return mesh(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
+        /// \return position of the lower right front corner of this element
+        inline Vec<3,PointType> getUpUpLo() const { return mesh(getUpperIndex0(), getUpperIndex1(), getLowerIndex2()); }
+
+        /// \return position of the upper left back corner of this element
+        inline Vec<3,PointType> getLoLoUp() const { return mesh(getLowerIndex0(), getLowerIndex1(), getUpperIndex2()); }
+
+        /// \return position of the upper left front corner of this element
+        inline Vec<3,PointType> getUpLoUp() const { return mesh(getUpperIndex0(), getLowerIndex1(), getUpperIndex2()); }
+
+        /// \return position of the upper right back corner of this element
+        inline Vec<3,PointType> getLoUpUp() const { return mesh(getLowerIndex0(), getUpperIndex1(), getUpperIndex2()); }
+
+        /// \return position of the upper right front corner of this element
+        inline Vec<3,PointType> getUpUpUp() const { return mesh(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
 
     };
 
@@ -154,6 +216,13 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
          * @return @p i-th element
          */
         Element operator[](std::size_t i) const { return Element(*mesh, i); }
+
+        /**
+         * Get element with indices \p i0, \p i1, and \p i2.
+         * \param i element index
+         * \return element with indices \p i0, \p i1, and \p i2
+         */
+        Element operator()(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*mesh, i0, i1, i2); }
 
         /**
          * Get number of elements.
@@ -775,7 +844,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         );
 
     }
-                
+
     /**
      * Calculate (using nearest neighbor interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh

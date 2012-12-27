@@ -113,6 +113,19 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double compute(int iLoopLim=1);
 
     /**
+     * Integrate vertical total current at certain level.
+     * \param iVertIndex vertical index of the element smesh to perform integration at
+     * \return computed total current
+     */
+    double integrateCurrent(size_t iVertIndex);
+
+    /**
+     * Integrate vertical total current flowing vertically through active region
+     * \return computed total current
+     */
+    double getTotalCurrent();
+
+    /**
      * Get max absolute correction for temperature
      * \return get max absolute correction for temperature
      **/

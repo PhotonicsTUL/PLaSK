@@ -88,7 +88,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     /// \return map of refinements
     /// \param direction direction of the refinements
-    const Refinements& getRefinements(Primitive<2>::DIRECTION direction) const {
+    const Refinements& getRefinements(Primitive<2>::Direction direction) const {
         return refinements[std::size_t(direction)];
     }
 
@@ -99,7 +99,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path additional path hints pointing to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
+    void addRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
         auto key = std::make_pair(object, path);
         refinements[std::size_t(direction)][key].insert(position);
         clearCache();
@@ -111,7 +111,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param object refined object
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryObjectD<2>>& object, double position) {
+    void addRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, double position) {
         addRefinement(direction, object, PathHints(), position);
     }
 
@@ -121,7 +121,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path path to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(Primitive<2>::DIRECTION direction, const Path& path, double position) {
+    void addRefinement(Primitive<2>::Direction direction, const Path& path, double position) {
         addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
     }
 
@@ -131,7 +131,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param subtree subtree to the refined object (only the last path is used)
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(Primitive<2>::DIRECTION direction, const GeometryObject::Subtree& subtree, double position) {
+    void addRefinement(Primitive<2>::Direction direction, const GeometryObject::Subtree& subtree, double position) {
         auto path = subtree.getLastPath();
         addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
     }
@@ -143,7 +143,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path additional path hints pointing to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
+    void removeRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
         auto key = std::make_pair(object, path);
         auto ref = refinements[std::size_t(direction)].find(key);
         if (ref == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMesh2DDivideGenerator", "There are no refinements for specified geometry object.");
@@ -160,7 +160,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param object refined object
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(Primitive<2>::DIRECTION direction, const weak_ptr<const GeometryObjectD<2>>& object, double position) {
+    void removeRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, double position) {
         removeRefinement(direction, object, PathHints(), position);
     }
 
@@ -170,7 +170,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path path to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(Primitive<2>::DIRECTION direction, const Path& path, double position) {
+    void removeRefinement(Primitive<2>::Direction direction, const Path& path, double position) {
         removeRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
     }
 
@@ -180,7 +180,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param subtree subtree to the refined object (only the last path is used)
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(Primitive<2>::DIRECTION direction, const GeometryObject::Subtree& subtree, double position) {
+    void removeRefinement(Primitive<2>::Direction direction, const GeometryObject::Subtree& subtree, double position) {
         auto path = subtree.getLastPath();
         removeRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
     }

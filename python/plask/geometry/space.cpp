@@ -218,7 +218,7 @@ struct BordersProxy : public std::map<std::string, py::object> {
 };
 
 
-inline static py::object _border(const Geometry& self, Geometry::DIRECTION direction, bool higher) {
+inline static py::object _border(const Geometry& self, Geometry::Direction direction, bool higher) {
     auto str = self.getBorder(direction, higher).str();
     return (str=="null") ? py::object() : py::object(str);
 }

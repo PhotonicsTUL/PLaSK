@@ -50,14 +50,14 @@ QString ExtrusionWrapper::toStr() const {
     auto& el = this->c();
     return QString(QObject::tr("extrusion %1\nlength: %2"))
         .arg(this->name.isEmpty() ? "" : (" \"" + this->name + "\""))
-            .arg(el.length);
+        .arg(el.getLength());
 }
 
 void ExtrusionWrapper::setupPropertiesBrowser(BrowserWithManagers &managers, QtAbstractPropertyBrowser &dst) {
     ObjectWrapperFor< plask::Extrusion >::setupPropertiesBrowser(managers, dst);
 
     QtProperty *length = managers.doubl.addProperty("length");
-    managers.doubl.setValue(length, this->c().length);
+    managers.doubl.setValue(length, this->c().getLength());
     dst.addProperty(length);
     managers.connectDouble(length, [&](const double &v) { this->c().setLength(v); });
 }

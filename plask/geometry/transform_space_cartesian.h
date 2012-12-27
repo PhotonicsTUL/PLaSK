@@ -9,11 +9,13 @@ namespace plask {
  * Represent 3D geometry object which are extend of 2D object (child) in lon direction.
  * @ingroup GEOMETRY_OBJ
  */
-struct Extrusion: public GeometryObjectTransformSpace<3, 2>/*, public Geometry*/ {
-
-    typedef GeometryObjectTransformSpace<3, 2>::ChildType ChildType;
+class Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     double length;
+
+  public:
+
+    typedef GeometryObjectTransformSpace<3, 2>::ChildType ChildType;
 
     // Size of the calculation space.
     // spaceSize;
@@ -25,6 +27,8 @@ struct Extrusion: public GeometryObjectTransformSpace<3, 2>/*, public Geometry*/
     static constexpr const char* NAME = "extrusion";
 
     virtual std::string getTypeName() const { return NAME; }
+
+    double getLength() const { return length; }
 
     /**
      * Set length and inform observers.
@@ -56,7 +60,7 @@ struct Extrusion: public GeometryObjectTransformSpace<3, 2>/*, public Geometry*/
 
     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path = 0) const;
 
-private:
+  private:
     /// @return true only if p can be inside this, false if for sure its not inside
     bool canBeInside(const DVec& p) const { return 0.0 <= p.lon() || p.lon() <= length; }
 

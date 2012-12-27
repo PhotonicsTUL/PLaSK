@@ -16,24 +16,24 @@ namespace align {
 /**
  * Directions of aligners activity, same as vec<3, T> directions.
  */
-enum DIRECTION {
+enum Direction {
     DIRECTION_LONG,
     DIRECTION_TRAN,
     DIRECTION_VERT
 };
 
-template <DIRECTION direction> struct Aligner2D;
+template <Direction direction> struct Aligner2D;
 
 /**
  * Helper class used to for implementation of Aligner2D.
  * Don't use directly, use Aligner2D instead.
  * @tparam _direction direction of activity
  */
-template <DIRECTION _direction>
+template <Direction _direction>
 struct Aligner2DBase {
 
     ///Direction of activity.
-    static const DIRECTION direction = _direction;
+    static const Direction direction = _direction;
 
     /**
      * Get translation for aligned obiect.
@@ -75,7 +75,7 @@ struct Aligner2DBase {
  * Base class for one direction aligner in 2d space.
  * @tparam _direction direction of activity
  */
-template <DIRECTION direction>
+template <Direction direction>
 struct Aligner2D: public Aligner2DBase<direction> {};
 
 /**
@@ -113,7 +113,7 @@ struct Aligner2D<DIRECTION_TRAN>: public Aligner2DBase<DIRECTION_TRAN> {
 /**
  * Alginer which place object in constant place.
  */
-template <DIRECTION direction>
+template <Direction direction>
 struct TranslationAligner2D: public Aligner2D<direction> {
 
     /// Translation of aligned object in aligner activity direction.
@@ -135,14 +135,14 @@ struct TranslationAligner2D: public Aligner2D<direction> {
 /**
  * Base class for two directions aligner in 3d space.
  */
-template <DIRECTION _direction1, DIRECTION _direction2>
+template <Direction _direction1, Direction _direction2>
 struct Aligner3D {
 
     static_assert(_direction1 != _direction2, "Wrong Aligner3D template parameters, two different directions are required.");
 
     virtual ~Aligner3D() {}
 
-    static const DIRECTION direction1 = _direction1, direction2 = _direction2;
+    static const Direction direction1 = _direction1, direction2 = _direction2;
 
     /**
      * Set object translation in directions of aligner activity.
@@ -180,7 +180,7 @@ struct Aligner3D {
 
 };
 
-template <DIRECTION direction1, DIRECTION direction2>
+template <Direction direction1, Direction direction2>
 struct TranslationAligner3D: public Aligner3D<direction1, direction2> {
 
     ///Translations in aligner directions.
@@ -208,7 +208,7 @@ struct TranslationAligner3D: public Aligner3D<direction1, direction2> {
 /**
  * Aligner 3d which compose and use two 2d aligners.
  */
-template <DIRECTION direction1, DIRECTION direction2>
+template <Direction direction1, Direction direction2>
 class ComposeAligner3D: public Aligner3D<direction1, direction2> {
 
     Aligner2D<direction1>* dir1aligner;
@@ -262,7 +262,7 @@ public:
 
 };
 
-template <DIRECTION direction1, DIRECTION direction2>
+template <Direction direction1, Direction direction2>
 inline ComposeAligner3D<direction1, direction2> operator&(const Aligner2D<direction1>& dir1aligner, const Aligner2D<direction2>& dir2aligner) {
     return ComposeAligner3D<direction1, direction2>(dir1aligner, dir2aligner);
 }
@@ -280,7 +280,7 @@ struct FRONT { static constexpr const char* value = "front"; };
 struct BACK { static constexpr const char* value = "back"; };
 struct CENTER { static constexpr const char* value = "center"; };
 
-template <DIRECTION direction, alignStrategy strategy, typename name_tag>
+template <Direction direction, alignStrategy strategy, typename name_tag>
 struct Aligner2DImpl: public Aligner2D<direction> {
 
     virtual double getAlign(double low, double hi) const {
@@ -294,7 +294,7 @@ struct Aligner2DImpl: public Aligner2D<direction> {
     virtual std::string str() const { return name_tag::value; }
 };
 
-template <DIRECTION direction1, alignStrategy strategy1, typename str_tag1, DIRECTION direction2, alignStrategy strategy2, typename str_tag2>
+template <Direction direction1, alignStrategy strategy1, typename str_tag1, Direction direction2, alignStrategy strategy2, typename str_tag2>
 struct Aligner3DImpl: public Aligner3D<direction1, direction2> {
 
     virtual void align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
@@ -349,7 +349,7 @@ namespace details {
  * @param str string which describes 2d aligner
  * @tparam direction direction
  */
-template <DIRECTION direction>
+template <Direction direction>
 Aligner2D<direction>* fromStr(const std::string& str);
 
 template <>
@@ -358,7 +358,7 @@ inline Aligner2D<DIRECTION_TRAN>* fromStr<DIRECTION_TRAN>(const std::string& str
 template <>
 inline Aligner2D<DIRECTION_LONG>* fromStr<DIRECTION_LONG>(const std::string& str) { return details::lonAlignerFromString(str); }
 
-template <DIRECTION direction>
+template <Direction direction>
 inline std::unique_ptr<Aligner2D<direction>> fromStrUnique(const std::string& str) {
      return std::unique_ptr<Aligner2D<direction>>(fromStr<direction>(str));
 }
@@ -379,7 +379,7 @@ Aligner3D<align::DIRECTION_LONG, align::DIRECTION_TRAN>* alignerFromString(std::
  * @param str2 string which describes 2d aligner in the second direction
  * @return pointer to the constructed 3d aligner
  **/
-template <DIRECTION direction1, DIRECTION direction2>
+template <Direction direction1, Direction direction2>
 inline ComposeAligner3D<direction1, direction2> fromStr(const std::string& str1, const std::string& str2) {
     std::unique_ptr<Aligner2D<direction1>> a1(fromStr<direction1>(str1));
     std::unique_ptr<Aligner2D<direction2>> a2(fromStr<direction2>(str2));

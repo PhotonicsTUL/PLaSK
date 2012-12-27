@@ -52,6 +52,7 @@ BOOST_PYTHON_MODULE(fem)
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "Beta2D", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
+        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region");
         RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
         RO_PROPERTY(relcorr, getMaxRelVCorr, "Maximum relative correction for potential");
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");

@@ -336,49 +336,49 @@ void RectilinearMesh2DDivideGenerator_setPostDivision(RectilinearMesh2DDivideGen
 void RectilinearMesh2DDivideGenerator_addRefinement1(RectilinearMesh2DDivideGenerator& self, const std::string& axis, GeometryObjectD<2>& object, const PathHints& path, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.addRefinement(Primitive<2>::DIRECTION(i), dynamic_pointer_cast<GeometryObjectD<2>>(object.shared_from_this()), path, position);
+    self.addRefinement(Primitive<2>::Direction(i), dynamic_pointer_cast<GeometryObjectD<2>>(object.shared_from_this()), path, position);
 }
 
 void RectilinearMesh2DDivideGenerator_addRefinement2(RectilinearMesh2DDivideGenerator& self, const std::string& axis, GeometryObjectD<2>& object, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.addRefinement(Primitive<2>::DIRECTION(i), dynamic_pointer_cast<GeometryObjectD<2>>(object.shared_from_this()), position);
+    self.addRefinement(Primitive<2>::Direction(i), dynamic_pointer_cast<GeometryObjectD<2>>(object.shared_from_this()), position);
 }
 
 void RectilinearMesh2DDivideGenerator_addRefinement3(RectilinearMesh2DDivideGenerator& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.addRefinement(Primitive<2>::DIRECTION(i), subtree, position);
+    self.addRefinement(Primitive<2>::Direction(i), subtree, position);
 }
 
 void RectilinearMesh2DDivideGenerator_addRefinement4(RectilinearMesh2DDivideGenerator& self, const std::string& axis, Path path, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.addRefinement(Primitive<2>::DIRECTION(i), path, position);
+    self.addRefinement(Primitive<2>::Direction(i), path, position);
 }
 
 void RectilinearMesh2DDivideGenerator_removeRefinement1(RectilinearMesh2DDivideGenerator& self, const std::string& axis, GeometryObjectD<2>& object, const PathHints& path, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.removeRefinement(Primitive<2>::DIRECTION(i), dynamic_pointer_cast<GeometryObjectD<2>>(object.shared_from_this()), path, position);
+    self.removeRefinement(Primitive<2>::Direction(i), dynamic_pointer_cast<GeometryObjectD<2>>(object.shared_from_this()), path, position);
 }
 
 void RectilinearMesh2DDivideGenerator_removeRefinement2(RectilinearMesh2DDivideGenerator& self, const std::string& axis, GeometryObjectD<2>& object, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.removeRefinement(Primitive<2>::DIRECTION(i), dynamic_pointer_cast<GeometryObjectD<2>>(object.shared_from_this()), position);
+    self.removeRefinement(Primitive<2>::Direction(i), dynamic_pointer_cast<GeometryObjectD<2>>(object.shared_from_this()), position);
 }
 
 void RectilinearMesh2DDivideGenerator_removeRefinement3(RectilinearMesh2DDivideGenerator& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.removeRefinement(Primitive<2>::DIRECTION(i), subtree, position);
+    self.removeRefinement(Primitive<2>::Direction(i), subtree, position);
 }
 
 void RectilinearMesh2DDivideGenerator_removeRefinement4(RectilinearMesh2DDivideGenerator& self, const std::string& axis, Path path, double position) {
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
-    self.removeRefinement(Primitive<2>::DIRECTION(i), path, position);
+    self.removeRefinement(Primitive<2>::Direction(i), path, position);
 }
 
 
@@ -398,7 +398,7 @@ py::dict RectilinearMesh2DDivideGenerator_listRefinements(const RectilinearMesh2
     int i = config.axes[axis] - 1;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     py::dict refinements;
-    for (auto refinement: self.getRefinements(Primitive<2>::DIRECTION(i))) {
+    for (auto refinement: self.getRefinements(Primitive<2>::Direction(i))) {
         py::object object { const_pointer_cast<GeometryObjectD<2>>(refinement.first.first.lock()) };
         auto pth = refinement.first.second;
         py::object path;

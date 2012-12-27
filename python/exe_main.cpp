@@ -168,7 +168,9 @@ int main(int argc, const char *argv[])
             force_interactive = true;
             --argc; ++argv;
         } else if (std::string(argv[1]) == "-q") {
+#           ifndef _WIN32
             use_qtconsole = true;
+#           endif
             --argc; ++argv;
         } else break;
     }

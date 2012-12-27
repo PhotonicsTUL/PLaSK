@@ -235,7 +235,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
                      n2 = real(geometry->getBackMaterial()->nR(lambda, 300.));
         const double R1 = abs((n-n1) / (n+n1)),
                      R2 = abs((n-n2) / (n+n2));
-        return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->length);
+        return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->getLength());
     }
 
     /**

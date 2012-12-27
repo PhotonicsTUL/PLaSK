@@ -36,7 +36,7 @@ void register_geometry_changespace()
         "as a part of the 3D geometry tree.\n\n"
         "Extrusion(child, length=infinity)\n    Create new extrusion of given length with provided child",
         py::init<shared_ptr<GeometryObjectD<2>>,double>((py::arg("child"), py::arg("length")=INFINITY)))
-        .def_readwrite("length", &Extrusion::length, "Length of the extrusion in the longitudinal direction")
+        .add_property<>("length", &Extrusion::getLength, &Extrusion::setLength, "Length of the extrusion in the longitudinal direction")
     ;
 
     py::class_<Revolution, shared_ptr<Revolution>, py::bases<GeometryObjectTransformSpace<3,2>>, boost::noncopyable>("Revolution",

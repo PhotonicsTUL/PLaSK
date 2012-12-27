@@ -496,6 +496,47 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 }
 
 
+template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::integrateCurrent(size_t iVertIndex)
+{
+    if (!mPotentials) throw NoValue("Current densities");
+    this->writelog(LOG_DETAIL, "Computing total current");
+    if (!mCurrentDensities) saveCurrentDensities();
+    double result = 0.;
+    for (size_t i = 0; i < mesh->axis0.size()-1; ++i) {
+        auto element = mesh->elements(i, iVertIndex);
+        result += mCurrentDensities[element.getIndex()].c1 * element.getSize0();
+    }
+    return result * geometry->getExtrusion()->getLength() * 0.01; // kA/cm² µm² -->  mA
+}
+
+template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t iVertIndex)
+{
+    if (!mPotentials) throw NoValue("Current densities");
+    this->writelog(LOG_DETAIL, "Computing total current");
+    if (!mCurrentDensities) saveCurrentDensities();
+    double result = 0.;
+    for (size_t i = 0; i < mesh->axis0.size()-1; ++i) {
+        auto element = mesh->elements(i, iVertIndex);
+        double rin = element.getLower0(), rout = element.getUpper0();
+        result += mCurrentDensities[element.getIndex()].c1 * (rout*rout - rin*rin);
+    }
+    return result * M_PI * 0.01; // kA/cm² µm² -->  mA
+}
+
+template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent()
+{
+    // Find the average of the active region
+    size_t level = 0, num = 0;
+    for (auto element: this->mesh->elements)
+        if (this->geometry->hasRoleAt("active", element.getMidpoint())) {
+            level += element.getLowerIndex1();
+            ++num;
+        }
+    level /= num;
+    return integrateCurrent(level);
+}
+
+
 template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const
 {
     if (!mPotentials) throw NoValue("Potentials");
@@ -510,7 +551,7 @@ template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodE
     this->writelog(LOG_DETAIL, "Getting current densities");
     if (!mCurrentDensities) saveCurrentDensities();
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-    return interpolate(*((this->mesh)->getMidpointsMesh()), mCurrentDensities, WrappedMesh<2>(dst_mesh, this->geometry), method);
+    return interpolate(*(this->mesh->getMidpointsMesh()), mCurrentDensities, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
 
 template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
@@ -519,8 +560,9 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
     this->writelog(LOG_DETAIL, "Getting heat densities");
     if (!mHeatDensities) saveHeatDensities(); // we will compute fluxes only if they are needed
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-    return interpolate(*((this->mesh)->getMidpointsMesh()), mHeatDensities, WrappedMesh<2>(dst_mesh, this->geometry), method);
+    return interpolate(*(this->mesh->getMidpointsMesh()), mHeatDensities, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
+
 
 
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Beta2D"; }
