@@ -67,7 +67,6 @@ static py::object initPlask(int argc, const char* argv[])
 
     // Initialize Python
     Py_Initialize();
-    //PyEval_InitThreads();
 
     // Add search paths
     py::object sys = py::import("sys");
@@ -158,7 +157,7 @@ int main(int argc, const char *argv[])
     // Test if we want to import plask into global namespace
     bool from_import = true;
     bool force_interactive = false;
-    bool use_qtconsole = false;
+    const char* command = nullptr;
 
     while (argc > 1) {
         if (std::string(argv[1]) == "-n") {
@@ -167,11 +166,11 @@ int main(int argc, const char *argv[])
         } else if (std::string(argv[1]) == "-i") {
             force_interactive = true;
             --argc; ++argv;
-        } else if (std::string(argv[1]) == "-q") {
-#           ifndef _WIN32
-            use_qtconsole = true;
-#           endif
+        } else if (std::string(argv[1]) == "-c") {
+            command = argv[2];
+            argv[2] = "-c";
             --argc; ++argv;
+            break;
         } else break;
     }
 
@@ -188,25 +187,31 @@ int main(int argc, const char *argv[])
         return 102;
     }
 
-    // Test if we should lauch qt console, use the file or start an interactive mode
-    if (use_qtconsole) { // start the Qt console
-
-        if (argc != 1 || force_interactive) {
-            plask::writelog(plask::LOG_CRITICAL_ERROR, "QtConsole must be started without any other parameters");
-            return 103;
-        }
+    // Test if we should run commans specified in the command line, use the file or start an interactive mode
+    if (command) { // run external command
 
         try {
+            globals = py::dict(py::import("__main__").attr("__dict__"));
             py::object plask = py::import("plask");
             plask.attr("__globals") = globals;
             globals["plask"] = plask;                           // import plask
             if (from_import) from_import_all("plask", globals); // from plask import *
-            py::object qtconsole = py::import("plask.qtconsole");
 
             // Set the logger
             plask::default_logger = std::unique_ptr<plask::Logger>(new plask::python::PythonSysLogger);
 
-            py::object widget = qtconsole.attr("run_app")(globals);
+            PyObject* result = NULL;
+#           if PY_VERSION_HEX >= 0x03000000
+                PyObject* code = Py_CompileString(command, "-c", Py_file_input);
+                if (code) result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
+#           else
+                PyCompilerFlags flags { CO_FUTURE_DIVISION };
+                PyObject* code = Py_CompileStringFlags(command, "-c", Py_file_input, &flags);
+                if (code) result = PyEval_EvalCode((PyCodeObject*)code, globals.ptr(), globals.ptr());
+#           endif
+            Py_XDECREF(code);
+            if (!result) py::throw_error_already_set();
+            else Py_DECREF(result);
 
         } catch (py::error_already_set) { // This should not happen
             int exitcode = handlePythonException();
@@ -332,6 +337,9 @@ int main(int argc, const char *argv[])
         }
 
     } else { // start the interactive console
+
+        // Set the logger
+        plask::default_logger = std::unique_ptr<plask::Logger>(new plask::python::PythonSysLogger);
 
         try {
             py::object interactive = py::import("plask.interactive");
