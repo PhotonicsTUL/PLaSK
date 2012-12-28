@@ -219,12 +219,17 @@ void EffectiveFrequencyCylSolver::stageOne()
 
                 // nR = nr + i/(4π) λ g
                 // Ng = nR - λ dN/dλ = nR - λ dn/dλ - i/(4π) λ^2 dg/dλ
-                nrCache[ix][iy] = material->nR(lam, T);
-                ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->nR(lam2, T) - material->nR(lam1, T)) * ih2;
                 double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh->index(ix, iy-1)];
-                double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain_slope[midmesh->index(ix, iy-1)];
-                ngCache[ix][iy] -= dcomplex(0., (isnan(gs))? 0. : 7.95774715459e-09 * lam*lam * gs);
-                nrCache[ix][iy] += dcomplex(0., isnan(g)? 0. : 7.95774715459e-09 * lam * g);
+                if (isnan(g)) {
+                    nrCache[ix][iy] = material->nR(lam, T);
+                    ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->nR(lam2, T) - material->nR(lam1, T)) * ih2;
+                } else { // we ignore the material absorption as it should be considered in the gain already
+                    double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain_slope[midmesh->index(ix, iy-1)];
+                    double nr = real(material->nR(lam, T));
+                    double ng = real(nrCache[ix][iy] - lam * (material->nR(lam2, T) - material->nR(lam1, T)) * ih2);
+                    nrCache[ix][iy] = dcomplex(nr, 7.95774715459e-09 * lam * g);
+                    ngCache[ix][iy] = dcomplex(ng, isnan(gs)? 0. : - 7.95774715459e-09 * lam*lam * gs);
+                }
             }
         }
 

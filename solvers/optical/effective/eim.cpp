@@ -196,8 +196,11 @@ void EffectiveIndex2DSolver::stageOne()
                 if (iy < ysize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = ysize-2; y1 = mesh->axis1[ty1] + 2.*outdist; }
                 double T = 0.25 * ( temp[mesh->index(tx0,ty0)] + temp[mesh->index(tx0,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
-                nrCache[ix][iy] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->nR(w, T)
-                                + dcomplex(0., isnan(g)? 0. : w * g * 7.95774715459e-09);
+                if (isnan(g))
+                    nrCache[ix][iy] = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->nR(w, T);
+                else // we ignore the material absorption as it should be considered in the gain already
+                    nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)))->nR(w, T)),
+                                                w * g * 7.95774715459e-09 );
             }
         }
         if (xbegin == 1) nrCache[0] = nrCache[1];
