@@ -7,10 +7,15 @@ from PySide import QtCore
 import sys
 import atexit
 
+import plask
+
 def event_loop(kernel):
     kernel.timer = QtCore.QTimer()
     kernel.timer.timeout.connect(kernel.do_one_iteration)
     kernel.timer.start(1000*kernel._poll_interval)
+
+def app_exit():
+    QtCore.QCoreApplication.instance().quit()
 
 def default_kernel_app():
     app = IPKernelApp.instance()
@@ -26,21 +31,26 @@ def default_manager(kernel):
     atexit.register(manager.cleanup_connection_file)
     return manager
 
-def console_widget(manager):
+def console_widget(kernel, manager):
     try: # Ipython v0.13
-        widget = RichIPythonWidget(gui_completion='droplist')
+        widget = RichIPythonWidget(gui_completion='droplist', config=kernel.config)
     except TraitError:  # IPython v0.12
-        widget = RichIPythonWidget(gui_completion=True)
+        widget = RichIPythonWidget(gui_completion=True, config=kernel.config)
     widget.kernel_manager = manager
     return widget
 
 def terminal_widget(globals):
     kernel_app = default_kernel_app()
     manager = default_manager(kernel_app)
-    widget = console_widget(manager)
+    widget = console_widget(kernel_app, manager)
 
-    #update namespace
-    kernel_app.shell.user_ns.update(globals)
+    # Update namespace
+    for k in kernel_app.shell.user_ns:
+        if k not in globals: globals[k] = kernel_app.shell.user_ns[k]
+    kernel_app.shell.user_ns = globals
+
+    # Set exit command
+    kernel_app.shell.user_ns['exit'] = kernel_app.shell.user_ns['quit'] = app_exit
 
     kernel_app.start()
     return widget
@@ -54,4 +64,7 @@ def run_app(globals):
     app.exec_()
 
 if __name__ == "__main__":
-    run_app(globals())
+    globals = { 'plask': plask }
+    for k in plask.__dict__:
+        if k[0] != '_': globals[k] = plask.__dict__[k]
+    run_app(globals)
