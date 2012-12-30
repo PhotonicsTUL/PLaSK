@@ -222,38 +222,6 @@ struct Config
 extern Config config;
 
 
-// ----------------------------------------------------------------------------------------------------------------------
-// Config
-/// Class writing logs to Python sys.stderr
-struct PythonSysLogger: public plask::Logger {
-
-    enum ColorMode {
-        COLOR_NONE,
-        COLOR_ANSI
-#       ifdef _WIN32
-        , COLOR_WINDOWS
-#       endif
-    };
-
-    ColorMode color;
-
-#   ifdef _WIN32
-        static const HANDLE hstderr;
-        CONSOLE_SCREEN_BUFFER_INFO csbi;
-        unsigned short COL_BACKGROUND, COL_DEFAULT;
-
-        void setcolor(unsigned short fg)
-#   endif
-
-    const char* head(plask::LogLevel level);
-
-    PythonSysLogger();
-
-    virtual void writelog(plask::LogLevel level, const std::string& msg);
-
-};
-
-
 }} // namespace plask::python
 
 

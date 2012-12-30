@@ -10,6 +10,7 @@ namespace py = boost::python;
 
 #include <plask/exceptions.h>
 #include <plask/utils/system.h>
+#include <plask/log/log.h>
 #include "plask/python_globals.h"
 #include "plask/python_manager.h"
 
@@ -36,7 +37,11 @@ py::dict globals;
 //******************************************************************************
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
+
     int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, bool second_is_script=false);
+
+    shared_ptr<Logger> makePythonLogger();
+
 }}
 
 //******************************************************************************
@@ -188,7 +193,7 @@ int main(int argc, const char *argv[])
     }
 
     // Set the Python logger
-    plask::default_logger = plask::shared_ptr<plask::Logger>(new plask::python::PythonSysLogger);
+    plask::default_logger = plask::python::makePythonLogger();
 
     // Test if we should run commans specified in the command line, use the file or start an interactive mode
     if (command) { // run external command

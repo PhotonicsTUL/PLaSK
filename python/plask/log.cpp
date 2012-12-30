@@ -5,6 +5,12 @@
 #include <plask/log/log.h>
 #include <plask/log/data.h>
 
+#ifdef _WIN32
+#    include <windows.h>
+#else
+#   include <unistd.h>
+#endif
+
 namespace plask { namespace python {
 
 #define LOG_ENUM(v) loglevel.value(BOOST_PP_STRINGIZE(v), LOG_##v); scope.attr(BOOST_PP_STRINGIZE(LOG_##v)) = loglevel.attr(BOOST_PP_STRINGIZE(v));
@@ -45,9 +51,39 @@ void register_python_log()
     ;
 }
 
+// Logger
+/// Class writing logs to Python sys.stderr
+struct PythonSysLogger: public plask::Logger {
+
+    enum ColorMode {
+        COLOR_NONE,
+        COLOR_ANSI
+#       ifdef _WIN32
+        , COLOR_WINDOWS
+#       endif
+    };
+
+    ColorMode color;
+
+#   ifdef _WIN32
+        static const HANDLE hstderr;
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        unsigned short COL_BACKGROUND, COL_DEFAULT;
+
+        void setcolor(unsigned short fg);
+#   endif
+
+    const char* head(plask::LogLevel level);
+
+    PythonSysLogger();
+
+    virtual void writelog(plask::LogLevel level, const std::string& msg);
+
+};
+
 #ifdef _WIN32
 
-    const HANDLE StderrLogger::hstderr = GetStdHandle(STD_ERROR_HANDLE);
+    const HANDLE PythonSysLogger::hstderr = GetStdHandle(STD_ERROR_HANDLE);
 
     PythonSysLogger::PythonSysLogger(): color(PythonSysLogger::COLOR_WINDOWS) {
                 GetConsoleScreenBufferInfo(hstderr, &csbi);
@@ -156,6 +192,10 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
     }
 }
 
+
+shared_ptr<Logger> makePythonLogger() {
+    return shared_ptr<Logger>(new PythonSysLogger);
+}
 
 py::object getLoggingColor(const Config&) {
     auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger);
