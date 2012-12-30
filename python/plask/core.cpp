@@ -39,14 +39,18 @@ static inline bool plask_import_array() {
 Config config;
 AxisNames Config::axes = AxisNames::axisNamesRegister.get("xyz");
 
+py::object getLoggingColor(const Config&);
+void setLoggingColor(Config&, std::string color);
+
 inline static void register_config()
 {
-    py::class_<Config>("config", "Global PLaSK configuration.", py::no_init)
+    py::class_<Config> config_class("config", "Global PLaSK configuration.", py::no_init);
+    config_class
         .def("__str__", &Config::__str__)
         .def("__repr__", &Config::__repr__)
         .add_property("axes", &Config::axes_name, &Config::set_axes,
                       "String representing axis names")
-    ;
+        .add_property("log_colors", &getLoggingColor, &setLoggingColor, "Type of log coloring");
     py::scope().attr("config") = config;
 }
 

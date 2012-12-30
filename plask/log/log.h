@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 
+#include "../memory.h"
 #include "../utils/format.h"
 
 namespace plask {
@@ -57,7 +58,7 @@ struct Logger {
 /**
  * Pointer to the logger
  */
-extern std::unique_ptr<Logger> default_logger;
+extern shared_ptr<Logger> default_logger;
 
 }   // namespace plask
 

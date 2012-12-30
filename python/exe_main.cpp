@@ -187,6 +187,9 @@ int main(int argc, const char *argv[])
         return 102;
     }
 
+    // Set the Python logger
+    plask::default_logger = plask::shared_ptr<plask::Logger>(new plask::python::PythonSysLogger);
+
     // Test if we should run commans specified in the command line, use the file or start an interactive mode
     if (command) { // run external command
 
@@ -196,9 +199,6 @@ int main(int argc, const char *argv[])
             plask.attr("__globals") = globals;
             globals["plask"] = plask;                           // import plask
             if (from_import) from_import_all("plask", globals); // from plask import *
-
-            // Set the logger
-            plask::default_logger = std::unique_ptr<plask::Logger>(new plask::python::PythonSysLogger);
 
             PyObject* result = NULL;
 #           if PY_VERSION_HEX >= 0x03000000
@@ -338,8 +338,8 @@ int main(int argc, const char *argv[])
 
     } else { // start the interactive console
 
-        // Set the logger
-        plask::default_logger = std::unique_ptr<plask::Logger>(new plask::python::PythonSysLogger);
+        py::object sys = py::import("sys");
+        sys.attr("executable") = plask::exePathAndName();
 
         try {
             py::object interactive = py::import("plask.interactive");

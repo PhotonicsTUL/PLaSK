@@ -137,7 +137,7 @@ namespace plask {
 
 #endif
 
-std::unique_ptr<Logger> default_logger { new StderrLogger() };
+shared_ptr<Logger> default_logger { new StderrLogger() };
 
 void writelog(LogLevel level, const std::string& msg) {
     #pragma omp critical(writelog)

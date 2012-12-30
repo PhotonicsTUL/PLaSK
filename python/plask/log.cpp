@@ -1,4 +1,5 @@
 #include "python_globals.h"
+#include <boost/algorithm/string.hpp>
 #include <boost/python/enum.hpp>
 
 #include <plask/log/log.h>
@@ -44,42 +45,148 @@ void register_python_log()
     ;
 }
 
-#define DEFAULT "\033[00m"
-#define BLACK   "\033[30m"
-#define RED     "\033[31m"
-#define GREEN   "\033[32m"
-#define BROWN  "\033[33m"
-#define BLUE    "\033[34m"
-#define MAGENTA "\033[35m"
-#define CYAN    "\033[36m"
-#define WHITE   "\033[37m"
-#define GRAY   "\033[30;01m"
-#define BRIGHT_RED     "\033[31;01m"
-#define BRIGHT_GREEN   "\033[32;01m"
-#define YELLOW  "\033[33;01m"
-#define BRIGHT_BLUE    "\033[34;01m"
-#define BRIGHT_MAGENTA "\033[35;01m"
-#define BRIGHT_CYAN    "\033[36;01m"
-#define BRIGHT_WHITE   "\033[37;01m"
-const char* PythonSysLogger::head(LogLevel level) {
-    switch (level) {
-        case LOG_CRITICAL_ERROR:return BRIGHT_RED "CRITICAL ERROR";
-        case LOG_ERROR:         return BRIGHT_RED "ERROR         ";
-        case LOG_WARNING:       return BROWN "WARNING       ";
-        case LOG_INFO:          return BRIGHT_BLUE "INFO          ";
-        case LOG_RESULT:        return GREEN "RESULT        ";
-        case LOG_DATA:          return CYAN "DATA          ";
-        case LOG_DETAIL:        return DEFAULT "DETAIL        ";
-        case LOG_ERROR_DETAIL:  return RED "ERROR DETAIL  ";
-        case LOG_DEBUG:         return GRAY "DEBUG         ";
+#ifdef _WIN32
+
+    const HANDLE StderrLogger::hstderr = GetStdHandle(STD_ERROR_HANDLE);
+
+    PythonSysLogger::PythonSysLogger(): color(PythonSysLogger::COLOR_WINDOWS) {
+                GetConsoleScreenBufferInfo(hstderr, &csbi);
+                COL_BACKGROUND = csbi.wAttributes & 0xF0;
+                COL_DEFAULT = csbi.wAttributes & 0x0F;
     }
+
+#   define COL_BLACK 0
+#   define COL_BLUE 1
+#   define COL_GREEN 2
+#   define COL_CYAN 3
+#   define COL_RED 4
+#   define COL_MAGENTA 5
+#   define COL_BROWN 6
+#   define COL_WHITE 7
+#   define COL_GRAY 8
+#   define COL_BRIGHT_BLUE 9
+#   define COL_BRIGHT_GREEN 10
+#   define COL_BRIGHT_CYAN 11
+#   define COL_BRIGHT_RED 12
+#   define COL_BRIGHT_MAGENTA 13
+#   define COL_YELLOW 14
+#   define COL_BRIGHT_WHITE 15
+
+    inline void PythonSysLogger::setcolor(unsigned short fg) {
+        SetConsoleTextAttribute(hstderr, COL_BACKGROUND | fg);
+    }
+
+#else
+
+    PythonSysLogger::PythonSysLogger(): color(isatty(fileno(stderr))? PythonSysLogger::COLOR_ANSI : PythonSysLogger::COLOR_NONE)
+    {
+    }
+
+#endif
+
+#define ANSI_DEFAULT "\033[00m"
+#define ANSI_BLACK   "\033[30m"
+#define ANSI_RED     "\033[31m"
+#define ANSI_GREEN   "\033[32m"
+#define ANSI_BROWN  "\033[33m"
+#define ANSI_BLUE    "\033[34m"
+#define ANSI_MAGENTA "\033[35m"
+#define ANSI_CYAN    "\033[36m"
+#define ANSI_WHITE   "\033[37m"
+#define ANSI_GRAY   "\033[30;01m"
+#define ANSI_BRIGHT_RED     "\033[31;01m"
+#define ANSI_BRIGHT_GREEN   "\033[32;01m"
+#define ANSI_YELLOW  "\033[33;01m"
+#define ANSI_BRIGHT_BLUE    "\033[34;01m"
+#define ANSI_BRIGHT_MAGENTA "\033[35;01m"
+#define ANSI_BRIGHT_CYAN    "\033[36;01m"
+#define ANSI_BRIGHT_WHITE   "\033[37;01m"
+const char* PythonSysLogger::head(LogLevel level) {
+    if (color == PythonSysLogger::COLOR_ANSI)
+        switch (level) {
+            case LOG_CRITICAL_ERROR:return ANSI_BRIGHT_RED  "CRITICAL ERROR";
+            case LOG_ERROR:         return ANSI_BRIGHT_RED  "ERROR         ";
+            case LOG_WARNING:       return ANSI_BROWN       "WARNING       ";
+            case LOG_INFO:          return ANSI_BRIGHT_BLUE "INFO          ";
+            case LOG_RESULT:        return ANSI_GREEN       "RESULT        ";
+            case LOG_DATA:          return ANSI_CYAN        "DATA          ";
+            case LOG_DETAIL:        return ANSI_DEFAULT     "DETAIL        ";
+            case LOG_ERROR_DETAIL:  return ANSI_RED         "ERROR DETAIL  ";
+            case LOG_DEBUG:         return ANSI_GRAY        "DEBUG         ";
+        }
+#ifdef _WIN32
+    else if (color == PythonSysLogger::COLOR_WINDOWS)
+        switch (level) {
+            case LOG_ERROR:         setcolor(COL_BRIGHT_RED); return "ERROR         ";
+            case LOG_CRITICAL_ERROR:setcolor(COL_BRIGHT_RED); return "CRITICAL ERROR";
+            case LOG_WARNING:       setcolor(COL_BROWN); return "WARNING       ";
+            case LOG_INFO:          setcolor(COL_BRIGHT_CYAN); return "INFO          ";
+            case LOG_RESULT:        setcolor(COL_GREEN); return "RESULT        ";
+            case LOG_DATA:          setcolor(COL_CYAN); return "DATA          ";
+            case LOG_DETAIL:        setcolor(COL_DEFAULT); return "DETAIL        ";
+            case LOG_ERROR_DETAIL:  setcolor(COL_RED); return "ERROR DETAIL  ";
+            case LOG_DEBUG:         setcolor(COL_GRAY); return "DEBUG         ";
+        }
+#endif
+    else
+        switch (level) {
+            case LOG_CRITICAL_ERROR:return "CRITICAL ERROR";
+            case LOG_ERROR:         return "ERROR         ";
+            case LOG_WARNING:       return "WARNING       ";
+            case LOG_INFO:          return "INFO          ";
+            case LOG_RESULT:        return "RESULT        ";
+            case LOG_DATA:          return "DATA          ";
+            case LOG_DETAIL:        return "DETAIL        ";
+            case LOG_ERROR_DETAIL:  return "ERROR DETAIL  ";
+            case LOG_DEBUG:         return "DEBUG         ";
+        }
     return "UNSPECIFIED   "; // mostly to silence compiler warning than to use in the real life
 }
 
 void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
-    PySys_WriteStderr("%s: %s" DEFAULT "\n", head(level), msg.c_str());
+    if (color == PythonSysLogger::COLOR_ANSI) {
+        PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
+#ifdef _WIN32
+    } else if (color == PythonSysLogger::COLOR_WINDOWS) {
+        PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
+        SetConsoleTextAttribute(hstderr, csbi.wAttributes);
+#endif
+    } else {
+        PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
+    }
 }
 
+
+py::object getLoggingColor(const Config&) {
+    auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger);
+    if (logger)
+        switch (logger->color) {
+            case PythonSysLogger::COLOR_ANSI: return py::str("ansi");
+            case PythonSysLogger::COLOR_NONE: return py::str("none");
+#           ifdef _WIN32
+            case PythonSysLogger::COLOR_WINDOWS: return py::str("windows");
+#           endif
+        }
+    return py::object();
+}
+
+void setLoggingColor(Config&, std::string color) {
+    boost::to_lower(color);
+    if (auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger)) {
+        if (color == "ansi")
+            logger->color = PythonSysLogger::COLOR_ANSI;
+#       ifdef _WIN32
+        else if (color == "windows")
+            logger->color = PythonSysLogger::COLOR_WINDOWS;
+#       endif
+        else if (color == "none")
+            logger->color = PythonSysLogger::COLOR_NONE;
+        else
+            throw ValueError("Wrong logging color type specification.");
+        return;
+    }
+    throw TypeError("Setting color type for current logging system does not make sense.");
+}
 
 
 

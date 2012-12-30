@@ -24,6 +24,7 @@ namespace boost { namespace python {
 #include <plask/vec.h>
 #include <plask/axes.h>
 #include <plask/geometry/space.h>
+#include <plask/log/log.h>
 
 #include "python_enum.h"
 
@@ -224,13 +225,29 @@ extern Config config;
 // ----------------------------------------------------------------------------------------------------------------------
 // Config
 /// Class writing logs to Python sys.stderr
-class PythonSysLogger: public plask::Logger {
+struct PythonSysLogger: public plask::Logger {
 
-    static const char* head(plask::LogLevel level);
+    enum ColorMode {
+        COLOR_NONE,
+        COLOR_ANSI
+#       ifdef _WIN32
+        , COLOR_WINDOWS
+#       endif
+    };
 
-    py::object sys;
+    ColorMode color;
 
-  public:
+#   ifdef _WIN32
+        static const HANDLE hstderr;
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        unsigned short COL_BACKGROUND, COL_DEFAULT;
+
+        void setcolor(unsigned short fg)
+#   endif
+
+    const char* head(plask::LogLevel level);
+
+    PythonSysLogger();
 
     virtual void writelog(plask::LogLevel level, const std::string& msg);
 
