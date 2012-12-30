@@ -146,8 +146,6 @@ if True:
 
 import plask
 
-load = plask.load # make sure load is from PLasK not from pylab
-
 def plot_field(field, levels=None, **kwargs):
     '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation

@@ -99,7 +99,7 @@ del Stack3D
 
 ## ## plask.manager ## ##
 
-def load(source, destination=None):
+def load_xpl(source, destination=None):
     #TODO documentation
     if destination is None:
         try:
@@ -120,7 +120,7 @@ def load(source, destination=None):
     same = lst and lst.count(lst[0]) == len(lst)
     if same: config.axes = lst[0]
 
-def run(source):
+def run_xpl(source):
     '''Load and run the code from the XPL file.
 
        'source' is the name of the XPL file or open file object.
@@ -128,7 +128,7 @@ def run(source):
     import sys
     env = globals().copy()
     env['plask'] = sys.modules["plask"]
-    load(source, env)
+    load_xpl(source, env)
     if type(source) == str:
         filename = source
     else:
