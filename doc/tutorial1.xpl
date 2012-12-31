@@ -3,15 +3,15 @@
 <geometry>
   <cartesian2d axes="xy" left="mirror" name="main">
     <stack>
-      <block x="1.5" y="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
-      <block x="150" y="0.150" material="Al(0.3)GaAs:C=1e20"/>
-      <block x="150" y="0.150" material="GaAs"/>
-      <block x="150" y="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
-      <block x="150" y="0.150" material="GaAs"/>
-      <block x="150" y="1.500" material="Al(0.3)GaAs:Si=5e19"/>
-      <block x="150" y="300" material="GaAs:Si=5e19" name="substrate"/>
+      <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
+      <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
+      <block dx="150" dy="0.150" material="GaAs"/>
+      <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
+      <block dx="150" dy="0.150" material="GaAs"/>
+      <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
+      <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
       <zero/>
-      <block x="1000" y="1000" material="Cu"/>
+      <block dx="1000" dy="1000" material="Cu"/>
     </stack>
   </cartesian2d>
 </geometry>

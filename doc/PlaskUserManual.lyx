@@ -993,38 +993,38 @@ status open
 
 \begin_layout Plain Layout
 
-      <block x="1.5" y="1.350" material="Al(0.3)GaAs:C=1e20 name="top-layer""/>
+      <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20 name="top-layer""/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.150" material="Al(0.3)GaAs:C=1e20"/>
+      <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.150" material="GaAs"/>
+      <block dx="150" dy="0.150" material="GaAs"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.007" material="In(0.2)GaAs" role="active" name="junction
-"/>
+      <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="juncti
+on"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.150" material="GaAs"/>
+      <block dx="150" dy="0.150" material="GaAs"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="1.500" material="Al(0.3)GaAs:Si=5e19"/>
+      <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="300" material="GaAs:Si=5e19" name="substrate"/>
+      <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -1034,7 +1034,7 @@ status open
 
 \begin_layout Plain Layout
 
-      <block x="1000" y="1000" material="Cu"/>
+      <block dx="1000" dy="1000" material="Cu"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -1090,11 +1090,11 @@ Another new tag is
 .
  
 \family typewriter
-x
+dx
 \family default
  and 
 \family typewriter
-y
+dy
 \family default
  attributes give dimensions of the blocks.
  Their positions is determined automatically to form a compact left-aligned
@@ -2055,38 +2055,38 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-      <block x="1.5" y="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
+      <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.150" material="Al(0.3)GaAs:C=1e20"/>
+      <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.150" material="GaAs"/>
+      <block dx="150" dy="0.150" material="GaAs"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.007" material="In(0.2)GaAs" role="active" name="junction
-"/>
+      <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="juncti
+on"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="0.150" material="GaAs"/>
+      <block dx="150" dy="0.150" material="GaAs"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="1.500" material="Al(0.3)GaAs:Si=5e19"/>
+      <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
 \end_layout
 
 \begin_layout Plain Layout
 
-      <block x="150" y="300" material="GaAs:Si=5e19" name="substrate"/>
+      <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -2096,7 +2096,7 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-      <block x="1000" y="1000" material="Cu"/>
+      <block dx="1000" dy="1000" material="Cu"/>
 \end_layout
 
 \begin_layout Plain Layout

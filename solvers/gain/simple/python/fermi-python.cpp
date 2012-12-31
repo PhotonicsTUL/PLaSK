@@ -15,7 +15,7 @@ using namespace plask::solvers::fermi;
  * The \a solver_name should be changed to match the name of the directory with our solver
  * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
  */
-BOOST_PYTHON_MODULE(solver_name)
+BOOST_PYTHON_MODULE(simple)
 {
     {CLASS(FermiGainSolver<Geometry2DCartesian>, "Fermi2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
         RECEIVER(inTemperature, "Temperature distribution along 'x' direction in the active region");
