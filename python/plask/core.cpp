@@ -39,8 +39,24 @@ static inline bool plask_import_array() {
 Config config;
 AxisNames Config::axes = AxisNames::axisNamesRegister.get("xyz");
 
-py::object getLoggingColor(const Config&);
-void setLoggingColor(Config&, std::string color);
+static LoggingConfig getLoggingConfig(const Config&) {
+    return LoggingConfig();
+}
+
+std::string Config::__str__() const {
+    return  "axes:               " + axes_name()
+        + "\nlogging.coloring:   " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
+        + "\nlogging.output:     " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__str__")()));
+    ;
+}
+
+std::string Config:: __repr__() const {
+    return
+        format("config.axes = '%s'", axes_name()) +
+            + "\nlogging.coloring = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
+            + "\nlogging.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
+    ;
+}
 
 inline static void register_config()
 {
@@ -50,9 +66,10 @@ inline static void register_config()
         .def("__repr__", &Config::__repr__)
         .add_property("axes", &Config::axes_name, &Config::set_axes,
                       "String representing axis names")
-        .add_property("log_colors", &getLoggingColor, &setLoggingColor, "Type of log coloring");
+        .add_property("logging", &getLoggingConfig, "Settings of the logging system");
     py::scope().attr("config") = config;
 }
+
 
 // Globals for XML material
 py::dict xml_globals;

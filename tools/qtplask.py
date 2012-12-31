@@ -16,7 +16,8 @@ preexec_lines = [
 'from __future__ import division',
 'from numpy import *',
 'import plask',
-'plask.config.log_colors = "ansi"',
+'plask.config.logging.output = "stdout"',
+'plask.config.logging.coloring = "ansi"',
 'plask.__globals = globals()',
 'from plask import *', #TODO rely on command-line option
 ]

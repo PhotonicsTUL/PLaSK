@@ -25,32 +25,6 @@ int Data2DLog_count(LogOO& self, py::object arg, py::object val) {
     return self.count(py::extract<std::string>(py::str(arg)), py::extract<std::string>(py::str(val)));
 }
 
-void register_python_log()
-{
-    py_enum<LogLevel> loglevel("loglevel", "Log levels used in PLaSK");
-    py::scope scope;
-    LOG_ENUM(CRITICAL_ERROR);
-    LOG_ENUM(ERROR);
-    LOG_ENUM(WARNING);
-    LOG_ENUM(INFO);
-    LOG_ENUM(RESULT);
-    LOG_ENUM(DATA);
-    LOG_ENUM(DETAIL);
-    LOG_ENUM(ERROR_DETAIL);
-    LOG_ENUM(DEBUG);
-
-    py::def("print_log", (void(*)(LogLevel, const std::string&))&writelog, "Print log message into specified log level", (py::arg("level"), "msg"));
-
-    py::class_<LogOO>("DataLog2",
-        "Class used to log relations between two variables (argument and value)\n\n"
-        "DataLog2(prefix, arg_name, val_name)\n    Create log with specified prefix, name, and argument and value names\n",
-        py::init<std::string,std::string,std::string,std::string>((py::arg("prefix"), "name", "arg_name", "val_name")))
-        .def("__call__", &Data2DLog__call__, (py::arg("arg"), "val"), "Log value pair")
-        .def("count", &Data2DLog_count, (py::arg("arg"), "val"), "Log value pair and count successive logs")
-        .def("reset", &LogOO::resetCounter, "Reset logs counter")
-    ;
-}
-
 // Logger
 /// Class writing logs to Python sys.stderr
 struct PythonSysLogger: public plask::Logger {
@@ -63,14 +37,17 @@ struct PythonSysLogger: public plask::Logger {
 #       endif
     };
 
+    enum Dest {
+        DEST_STDERR,
+        DEST_STDOUT
+    };
+
     ColorMode color;
+    Dest dest;
 
 #   ifdef _WIN32
-        static const HANDLE hstderr;
-        CONSOLE_SCREEN_BUFFER_INFO csbi;
-        unsigned short COL_BACKGROUND, COL_DEFAULT;
-
-        void setcolor(unsigned short fg);
+        unsigned short setcolor(unsigned short fg);
+        unsigned short previous_color;
 #   endif
 
     const char* head(plask::LogLevel level);
@@ -83,13 +60,7 @@ struct PythonSysLogger: public plask::Logger {
 
 #ifdef _WIN32
 
-    const HANDLE PythonSysLogger::hstderr = GetStdHandle(STD_ERROR_HANDLE);
-
-    PythonSysLogger::PythonSysLogger(): color(PythonSysLogger::COLOR_WINDOWS) {
-                GetConsoleScreenBufferInfo(hstderr, &csbi);
-                COL_BACKGROUND = csbi.wAttributes & 0xF0;
-                COL_DEFAULT = csbi.wAttributes & 0x0F;
-    }
+    PythonSysLogger::PythonSysLogger(): color(PythonSysLogger::COLOR_WINDOWS), dest(DEST_STDERR) {}
 
 #   define COL_BLACK 0
 #   define COL_BLUE 1
@@ -109,14 +80,16 @@ struct PythonSysLogger: public plask::Logger {
 #   define COL_BRIGHT_WHITE 15
 
     inline void PythonSysLogger::setcolor(unsigned short fg) {
-        SetConsoleTextAttribute(hstderr, COL_BACKGROUND | fg);
+        HANDLE handle = GetStdHandle((dest==DEST_STDERR)?STD_ERROR_HANDLE:STD_OUTPUT_HANDLE);
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        GetConsoleScreenBufferInfo(handle, &csbi);
+        previous_color = csbi.wAttributes;
+        SetConsoleTextAttribute(handle, (csbi.wAttributes & 0xF0) | fg);
     }
 
 #else
 
-    PythonSysLogger::PythonSysLogger(): color(isatty(fileno(stderr))? PythonSysLogger::COLOR_ANSI : PythonSysLogger::COLOR_NONE)
-    {
-    }
+    PythonSysLogger::PythonSysLogger(): color(isatty(fileno(stderr))? PythonSysLogger::COLOR_ANSI : PythonSysLogger::COLOR_NONE), dest(DEST_STDERR) {}
 
 #endif
 
@@ -180,15 +153,26 @@ const char* PythonSysLogger::head(LogLevel level) {
 }
 
 void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
-    if (color == PythonSysLogger::COLOR_ANSI) {
-        PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
+    if (color == COLOR_ANSI) {
+        if (dest == DEST_STDERR)
+            PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
+        else
+            PySys_WriteStdout("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
 #ifdef _WIN32
-    } else if (color == PythonSysLogger::COLOR_WINDOWS) {
-        PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
-        SetConsoleTextAttribute(hstderr, csbi.wAttributes);
+    } else if (color == COLOR_WINDOWS) {
+        if (dest == DEST_STDERR) {
+            PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
+            SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), previous_color);
+        } else {
+            PySys_WriteStdout("%s: %s\n", head(level), msg.c_str());
+            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), previous_color);
+        }
 #endif
     } else {
-        PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
+        if (dest == DEST_STDERR)
+            PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
+        else
+            PySys_WriteStdout("%s: %s\n", head(level), msg.c_str());
     }
 }
 
@@ -197,7 +181,8 @@ shared_ptr<Logger> makePythonLogger() {
     return shared_ptr<Logger>(new PythonSysLogger);
 }
 
-py::object getLoggingColor(const Config&) {
+
+py::object LoggingConfig::getLoggingColor() const {
     auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger);
     if (logger)
         switch (logger->color) {
@@ -210,7 +195,7 @@ py::object getLoggingColor(const Config&) {
     return py::object();
 }
 
-void setLoggingColor(Config&, std::string color) {
+void LoggingConfig::setLoggingColor(std::string color) {
     boost::to_lower(color);
     if (auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger)) {
         if (color == "ansi")
@@ -222,12 +207,71 @@ void setLoggingColor(Config&, std::string color) {
         else if (color == "none")
             logger->color = PythonSysLogger::COLOR_NONE;
         else
-            throw ValueError("Wrong logging color type specification.");
+            throw ValueError("Wrong logging coloring specification.");
         return;
     }
-    throw TypeError("Setting color type for current logging system does not make sense.");
+    throw TypeError("Setting coloring for current logging system does not make sense.");
 }
 
+py::object LoggingConfig::getLoggingDest() const {
+    auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger);
+    if (logger)
+        switch (logger->dest) {
+            case PythonSysLogger::DEST_STDERR: return py::str("stderr");
+            case PythonSysLogger::DEST_STDOUT: return py::str("stdout");
+        }
+    return py::object();
+}
+
+void LoggingConfig::setLoggingDest(py::object dest) {
+    if (auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger)) {
+        py::object sys = py::import("sys");
+        std::string dst;
+        try { dst = py::extract<std::string>(dest); }
+        catch (py::error_already_set) { PyErr_Clear(); }
+        if (dest == sys.attr("stderr") || dst == "stderr" || dst == "sys.stderr")
+            logger->dest = PythonSysLogger::DEST_STDERR;
+        if (dest == sys.attr("stdout") || dst == "stdout" || dst == "sys.stdout")
+            logger->dest = PythonSysLogger::DEST_STDOUT;
+        else
+            throw ValueError("Logging output can only be sys.stderr or sys.stdout.");
+        return;
+    }
+    throw TypeError("Setting output for current logging system does not make sense.");
+}
+
+
+
+void register_python_log()
+{
+    py_enum<LogLevel> loglevel("loglevel", "Log levels used in PLaSK");
+    py::scope scope;
+    LOG_ENUM(CRITICAL_ERROR);
+    LOG_ENUM(ERROR);
+    LOG_ENUM(WARNING);
+    LOG_ENUM(INFO);
+    LOG_ENUM(RESULT);
+    LOG_ENUM(DATA);
+    LOG_ENUM(DETAIL);
+    LOG_ENUM(ERROR_DETAIL);
+    LOG_ENUM(DEBUG);
+
+    py::def("print_log", (void(*)(LogLevel, const std::string&))&writelog, "Print log message into specified log level", (py::arg("level"), "msg"));
+
+    py::class_<LogOO>("DataLog2",
+        "Class used to log relations between two variables (argument and value)\n\n"
+        "DataLog2(prefix, arg_name, val_name)\n    Create log with specified prefix, name, and argument and value names\n",
+        py::init<std::string,std::string,std::string,std::string>((py::arg("prefix"), "name", "arg_name", "val_name")))
+        .def("__call__", &Data2DLog__call__, (py::arg("arg"), "val"), "Log value pair")
+        .def("count", &Data2DLog_count, (py::arg("arg"), "val"), "Log value pair and count successive logs")
+        .def("reset", &LogOO::resetCounter, "Reset logs counter")
+    ;
+
+    py::class_<LoggingConfig>("LoggingConfig", "Settings of the logging system", py::no_init)
+        .add_property("coloring", &LoggingConfig::getLoggingColor, &LoggingConfig::setLoggingColor, "Output coloring type")
+        .add_property("output", &LoggingConfig::getLoggingDest, &LoggingConfig::setLoggingDest, "Output destination")
+    ;
+}
 
 
 

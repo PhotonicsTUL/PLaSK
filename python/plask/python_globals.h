@@ -193,31 +193,33 @@ template <> inline std::string spaceSuffix<Geometry3D>() { return "3D"; }
 
 
 // ----------------------------------------------------------------------------------------------------------------------
+/// Class for setting logging configuration
+struct LoggingConfig
+{
+    py::object getLoggingColor() const;
+    void setLoggingColor(std::string color);
+
+    py::object getLoggingDest() const;
+    void setLoggingDest(py::object dest);
+};
+
+
 /// Config class
 struct Config
 {
     // Current axis names
     static AxisNames axes;
 
-    std::string axes_name() {
+    std::string axes_name() const {
         return axes.str();
     }
     void set_axes(std::string axis) {
         axes = AxisNames::axisNamesRegister.get(axis);
     }
 
-    std::string __str__() {
-        return std::string()
-            + "axes:   " + axes_name();
-        ;
-    }
+    std::string __str__() const;
 
-    std::string __repr__() {
-        return
-            format("config.axes = '%s'", axes_name())
-        ;
-    }
-
+    std::string __repr__() const;
 };
 extern Config config;
 
