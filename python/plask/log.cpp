@@ -46,7 +46,7 @@ struct PythonSysLogger: public plask::Logger {
     Dest dest;
 
 #   ifdef _WIN32
-        unsigned short setcolor(unsigned short fg);
+        void setcolor(unsigned short fg);
         unsigned short previous_color;
 #   endif
 
@@ -132,7 +132,7 @@ const char* PythonSysLogger::head(LogLevel level) {
             case LOG_INFO:          setcolor(COL_BRIGHT_CYAN); return "INFO          ";
             case LOG_RESULT:        setcolor(COL_GREEN); return "RESULT        ";
             case LOG_DATA:          setcolor(COL_CYAN); return "DATA          ";
-            case LOG_DETAIL:        setcolor(COL_DEFAULT); return "DETAIL        ";
+            case LOG_DETAIL:        return "DETAIL        ";
             case LOG_ERROR_DETAIL:  setcolor(COL_RED); return "ERROR DETAIL  ";
             case LOG_DEBUG:         setcolor(COL_GRAY); return "DEBUG         ";
         }
