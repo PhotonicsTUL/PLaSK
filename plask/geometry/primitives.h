@@ -429,7 +429,7 @@ struct Primitive<3> {
 
     static void ensureIsValid2DDirection(unsigned direction) {
         if (direction != DIRECTION_TRAN && direction != DIRECTION_VERT)
-            throw DimensionError("bad 2D direction index, %s was given but allowed are: 0, 1.", direction);
+            throw DimensionError("bad 2D direction index, %s was given but allowed are: 1 (DIRECTION_TRAN), 2 (DIRECTION_VERT).", direction);
     }
 };
 

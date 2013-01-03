@@ -39,8 +39,8 @@ template <Direction direction> struct Aligner2D;
 
 /**
  * Base class for aligners which work in one direction.
- * Almost always Aligner2D should be used instead of this.
  * @tparam _direction direction of activity
+ * @see Aligner2D
  */
 template <Direction _direction>
 struct OneDirectionAligner {
@@ -65,13 +65,13 @@ struct OneDirectionAligner {
      * Clone this aligner.
      * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
      */
-    virtual Aligner2D<direction>* clone() const = 0;
+    virtual OneDirectionAligner<direction>* clone() const = 0;
 
     /**
      * Clone this aligner.
      * @return copy of this aligner, construted using operator @c new, and wrapped by std::unique_ptr
      */
-    std::unique_ptr< Aligner2D<direction> > cloneUnique() const { return std::unique_ptr< Aligner2D<direction> >(clone()); }
+    std::unique_ptr< OneDirectionAligner<direction> > cloneUnique() const { return std::unique_ptr< Aligner2D<direction> >(clone()); }
 
     /**
      * Get string representation of this aligner.
@@ -116,10 +116,36 @@ struct Aligner2D: public OneDirectionAligner<direction> {
             return toAlign.translation[direction2D] = this->getAlign(0.0, 0.0);
     }
 
+    /**
+     * Clone this aligner.
+     * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
+     */
+    virtual Aligner2D<direction>* clone() const = 0;
+
+    /**
+     * Clone this aligner.
+     * @return copy of this aligner, construted using operator @c new, and wrapped by std::unique_ptr
+     */
+    std::unique_ptr< Aligner2D<direction> > cloneUnique() const { return std::unique_ptr< Aligner2D<direction> >(clone()); }
+
 };
 
 template <>
-struct Aligner2D<Primitive<3>::DIRECTION_LONG>: public OneDirectionAligner<Primitive<3>::DIRECTION_LONG> {};
+struct Aligner2D<Primitive<3>::DIRECTION_LONG>: public OneDirectionAligner<Primitive<3>::DIRECTION_LONG> {
+
+    /**
+     * Clone this aligner.
+     * @return copy of this aligner, construted using operator @c new, caller must delete this copy after use
+     */
+    virtual Aligner2D<direction>* clone() const = 0;
+
+    /**
+     * Clone this aligner.
+     * @return copy of this aligner, construted using operator @c new, and wrapped by std::unique_ptr
+     */
+    std::unique_ptr< Aligner2D<direction> > cloneUnique() const { return std::unique_ptr< Aligner2D<direction> >(clone()); }
+
+};
 
 /**
  * Alginer which place object in constant place.
