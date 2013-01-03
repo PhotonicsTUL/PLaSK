@@ -8,8 +8,8 @@
 
 namespace plask { namespace python {
 
-typedef align::Aligner2D<Primitive<3>::DIRECTION_TRAN> A2;
-typedef align::Aligner2D<Primitive<3>::DIRECTION_LONG> A2l;
+typedef align::OneDirectionAligner<Primitive<3>::DIRECTION_TRAN> A2;
+typedef align::OneDirectionAligner<Primitive<3>::DIRECTION_LONG> A2l;
 typedef align::Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> A3;
 
 namespace detail {
@@ -79,7 +79,7 @@ void register_geometry_aligners()
     scope.attr("__doc__") =
         "This solver lists available aligners for geometry containers."; //TODO maybe more extensive description
 
-    py::class_<A2, shared_ptr<A2>, boost::noncopyable>("Aligner2D", "Base for all 2D aligners", py::no_init)
+    py::class_<A2, shared_ptr<A2>, boost::noncopyable>("Aligner2D", "Base for all 2D aligners", py::no_init)    //TODO Aligner2D -> OneDirectionAligner
             .def(py::self & py::other<A2l>())
     ;
 

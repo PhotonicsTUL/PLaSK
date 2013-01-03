@@ -433,6 +433,10 @@ struct Primitive<3> {
     }
 };
 
+constexpr inline Primitive<2>::Direction direction2Dto3D(Primitive<3>::Direction dir3D) {
+    return Primitive<2>::Direction(dir3D - 1);
+}
+
 } // namespace plask
 
 #endif

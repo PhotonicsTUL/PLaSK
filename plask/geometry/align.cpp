@@ -8,7 +8,7 @@ namespace align {
 
 namespace details {
 
-Aligner2D<Primitive<3>::DIRECTION_TRAN>* transAlignerFromString(std::string str) {
+OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>* transAlignerFromString(std::string str) {
     boost::algorithm::to_lower(str);
     if (str == "left" || str == "l") return new Left();
     if (str == "right" || str == "r") return new Right();
@@ -16,7 +16,7 @@ Aligner2D<Primitive<3>::DIRECTION_TRAN>* transAlignerFromString(std::string str)
     return new Tran(boost::lexical_cast<double>(str));
 }
 
-Aligner2D<Primitive<3>::DIRECTION_LONG>* lonAlignerFromString(std::string str) {
+OneDirectionAligner<Primitive<3>::DIRECTION_LONG>* lonAlignerFromString(std::string str) {
     boost::algorithm::to_lower(str);
     if (str == "front" || str == "f") return new Front();
     if (str == "back" || str == "b") return new Back();

@@ -7,7 +7,7 @@
 
 namespace plask {
 
-template <int dim, int growingDirection>
+template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBaseHeight) {
     if (getBaseHeight() == newBaseHeight) return;
     double diff = newBaseHeight - getBaseHeight();
@@ -22,7 +22,7 @@ void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBase
     //TODO: block connection to not react on children changed, call children[i]->fireChanged(GeometryObject::Event::RESIZE); for each child, call this->fireChanged(GeometryObject::Event::RESIZE delegate;
 }
 
-template <int dim, int growingDirection>
+template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::setZeroHeightBefore(std::size_t index)
 {
     std::size_t h_count = stackHeights.size();
@@ -31,12 +31,12 @@ void StackContainerBaseImpl<dim, growingDirection>::setZeroHeightBefore(std::siz
     setBaseHeight(stackHeights[0] - stackHeights[index]);
 }
 
-template <int dim, int growingDirection>
+template <int dim, typename Primitive<dim>::Direction growingDirection>
 std::size_t StackContainerBaseImpl<dim, growingDirection>::getInsertionIndexForHeight(double height) const {
     return std::lower_bound(stackHeights.begin(), stackHeights.end(), height) - stackHeights.begin();
 }
 
-template <int dim, int growingDirection>
+template <int dim, typename Primitive<dim>::Direction growingDirection>
 const shared_ptr<typename StackContainerBaseImpl<dim, growingDirection>::TranslationT>
 StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) const {
     auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
@@ -48,19 +48,19 @@ StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) 
     return children[it-stackHeights.begin()-1];
 }
 
-template <int dim, int growingDirection>
+template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::removeAtUnsafe(std::size_t index) {
     GeometryObjectContainer<dim>::removeAtUnsafe(index);
     stackHeights.pop_back();
     updateAllHeights(index);
 }
 
-template <int dim, int growingDirection>
+template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
     dest_xml_object.attr(baseH_attr, getBaseHeight());
 }
 
-template <int dim, int growingDirection>
+template <int dim, typename Primitive<dim>::Direction growingDirection>
 bool StackContainerBaseImpl<dim, growingDirection>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
     if (GeometryObjectContainer<dim>::removeIfTUnsafe(predicate)) {
         this->rebuildStackHeights();
@@ -394,7 +394,7 @@ struct HeightReader {
 shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
-    std::unique_ptr<align::Aligner2D<Primitive<3>::DIRECTION_TRAN>> default_aligner(
+    std::unique_ptr<align::OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>> default_aligner(
           align::fromStr<Primitive<3>::DIRECTION_TRAN>(reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")));
 
     shared_ptr< StackContainer<2> > result(
@@ -407,7 +407,7 @@ shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
             [&]() -> PathHints::Hint {
                 boost::optional<std::string> aligner_str = reader.source.getAttribute(reader.getAxisTranName());
                 if (aligner_str) {
-                   std::unique_ptr<align::Aligner2D<Primitive<3>::DIRECTION_TRAN>> aligner(align::fromStr<Primitive<3>::DIRECTION_TRAN>(*aligner_str));
+                   std::unique_ptr<align::OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>> aligner(align::fromStr<Primitive<3>::DIRECTION_TRAN>(*aligner_str));
                    return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), *aligner);
                 } else {
                    return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), *default_aligner);
