@@ -31,7 +31,7 @@ static void setupAlignerEditor(plask::StackContainer<2>& s, std::size_t index, B
     dst.addProperty(align);
     managers.connectString(align, [index, &s](const QString& v) {
         try {
-           s.setAlignerAt(index, *plask::align::fromStrUnique<plask::align::DIRECTION_TRAN>(v.toStdString()));
+           s.setAlignerAt(index, *plask::align::fromStrUnique<plask::Primitive<3>::DIRECTION_TRAN>(v.toStdString()));
         } catch (std::exception& e) {
            //QMessageBox::critical();
         }

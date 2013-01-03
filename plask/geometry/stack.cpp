@@ -394,8 +394,8 @@ struct HeightReader {
 shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
-    std::unique_ptr<align::Aligner2D<align::DIRECTION_TRAN>> default_aligner(
-          align::fromStr<align::DIRECTION_TRAN>(reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")));
+    std::unique_ptr<align::Aligner2D<Primitive<3>::DIRECTION_TRAN>> default_aligner(
+          align::fromStr<Primitive<3>::DIRECTION_TRAN>(reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")));
 
     shared_ptr< StackContainer<2> > result(
                     reader.source.hasAttribute(repeat_attr) ?
@@ -407,7 +407,7 @@ shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
             [&]() -> PathHints::Hint {
                 boost::optional<std::string> aligner_str = reader.source.getAttribute(reader.getAxisTranName());
                 if (aligner_str) {
-                   std::unique_ptr<align::Aligner2D<align::DIRECTION_TRAN>> aligner(align::fromStr<align::DIRECTION_TRAN>(*aligner_str));
+                   std::unique_ptr<align::Aligner2D<Primitive<3>::DIRECTION_TRAN>> aligner(align::fromStr<Primitive<3>::DIRECTION_TRAN>(*aligner_str));
                    return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), *aligner);
                 } else {
                    return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), *default_aligner);
@@ -435,7 +435,7 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
     read_children(reader,
             [&]() {
                 return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
-                                          align::fromStr<align::DIRECTION_LONG, align::DIRECTION_TRAN>(
+                                          align::fromStr<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>(
                                               reader.source.getAttribute<std::string>(reader.getAxisLonName(), "b"),
                                               reader.source.getAttribute<std::string>(reader.getAxisTranName(), "l")
                                           ));
