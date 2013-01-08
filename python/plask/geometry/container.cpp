@@ -35,7 +35,7 @@ static shared_ptr<GeometryObject> Container__getitem__int(py::object oself, int 
         throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
             std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
     }
-    return self->getChildAt(i);
+    return self->getChildNo(i);
 }
 
 template <int dim>

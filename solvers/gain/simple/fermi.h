@@ -15,6 +15,18 @@ namespace plask { namespace solvers { namespace fermi {
 template <typename GeometryType>
 struct FermiGainSolver: public SolverOver<GeometryType>
 {
+    /// Structure containing information about each active region
+    struct ActiveRegionInfo {
+        shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
+        Vec<2> origin;                          ///< Location of the active region stack origin
+        std::vector<bool> areQW;                ///< Flags indicating which layers are quantum wells
+        shared_ptr<Material> bottom;            ///< Material below the active region
+        shared_ptr<Material> top;               ///< Material above the active region
+        ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
+    };
+
+    std::vector<ActiveRegionInfo> regions;  ///< List of active regions
+
     /**
      * Our own implementation of receivers.
      * As this solver does not have explicit compute function, we must trigger outGain change
@@ -64,10 +76,10 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     virtual void onInvalidate();
 
     /**
-     * Detect location and materials of quantum wells.
-     * Store the results in the class fields
+     * Detect active regions.
+     * Store information about them in the \p regions field.
      */
-    void detectQuantumWells();
+    void detectActiveRegions();
 
     /**
      * Compute gain at given point. This method is called multiple times when the gain is being provided

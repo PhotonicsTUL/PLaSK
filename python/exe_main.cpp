@@ -196,7 +196,7 @@ int main(int argc, const char *argv[])
     plask::default_logger = plask::python::makePythonLogger();
 
     // Test if we should run commans specified in the command line, use the file or start an interactive mode
-    if (command) { // run external command
+    if (command) { // run command specified in the command line
 
         try {
             globals = py::dict(py::import("__main__").attr("__dict__"));

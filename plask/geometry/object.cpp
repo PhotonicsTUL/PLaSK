@@ -101,7 +101,7 @@ void GeometryObject::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCal
     writeXMLAttr(tag, axes);
     const std::size_t child_count = getRealChildrenCount();
     for (std::size_t i = 0; i < child_count; ++i)
-        getRealChildAt(i)->writeXML(tag, write_cb, axes);
+        getRealChildNo(i)->writeXML(tag, write_cb, axes);
 }
 
 template<int DIMS>
@@ -133,7 +133,7 @@ bool GeometryObject::isInSubtree(const GeometryObject &el) const {
     if (&el == this) return true;
     std::size_t c = getRealChildrenCount();
     for (std::size_t i = 0; i < c; ++i)
-        if (getRealChildAt(i)->isInSubtree(el))
+        if (getRealChildNo(i)->isInSubtree(el))
             return true;
     return false;
 }
@@ -185,8 +185,8 @@ std::size_t GeometryObject::getRealChildrenCount() const {
     return getChildrenCount();
 }
 
-shared_ptr<GeometryObject> GeometryObject::getRealChildAt(std::size_t child_nr) const {
-    return getChildAt(child_nr);
+shared_ptr<GeometryObject> GeometryObject::getRealChildNo(std::size_t child_no) const {
+    return getChildNo(child_no);
 }
 
 void GeometryObject::removeAtUnsafe(std::size_t) {
@@ -196,7 +196,7 @@ void GeometryObject::removeAtUnsafe(std::size_t) {
 void GeometryObject::forEachRealObjectInSubtree(std::function<bool (const GeometryObject &)> callback) const {
     if (!callback(*this)) return;
     std::size_t size = getRealChildrenCount();
-    for (std::size_t i = 0; i < size; ++i) getRealChildAt(i)->forEachRealObjectInSubtree(callback);
+    for (std::size_t i = 0; i < size; ++i) getRealChildNo(i)->forEachRealObjectInSubtree(callback);
 }
 
 // --- GeometryObjectD ---

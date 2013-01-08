@@ -88,8 +88,8 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
 
     virtual std::size_t getChildrenCount() const { return 0; }
 
-    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const {
-        throw OutOfBoundException("GeometryObjectLeaf::getChildAt", "child_nr");
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
+        throw OutOfBoundsException("GeometryObjectLeaf::getChildNo", "child_no");
     }
 
     virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const {

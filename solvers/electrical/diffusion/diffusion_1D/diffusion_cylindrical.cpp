@@ -572,9 +572,10 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
 
     std::vector<Box2D> results;
 
-    // Now compact each row (it can contain only one QW and each must start and end in the same point)
+    // Compact each row (it can contain only one QW and each must start and end in the same point)
     double left = 0., right = 0.;
     bool foundQW = false;
+    bool had_active = false;
     for (int j = 0; j < points->axis1.size(); ++j)
     {
         bool inQW = false;
@@ -583,14 +584,17 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
             auto point = points->at(i,j);
             auto tags = geometry->getRolesAt(point);
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
-            if (QW && !inQW)
-            { // QW start
+            bool active = tags.find("active") != tags.end();
+            if (QW && !active)
+                throw Exception("%1%: All marked quantum wells must belong to marked active region.", getId());
+            if (QW && !inQW)        // QW start
+            {
                 if (foundQW)
                 {
                     if (left != mesh->axis0[i])
-                        throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
+                        throw Exception("%1%: Quantum wells not vertically aligned.", getId());
                     if (geometry->getMaterial(point) != QW_material)
-                        throw Exception("In this solver all quantum wells must be constructed of a single material");
+                        throw Exception("%1%: Quantum wells of multiple materials not supported.", getId());
                 }
                 else
                 {
@@ -599,20 +603,26 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
                 left = mesh->axis0[i];
                 inQW = true;
             }
-            if (!QW && inQW)
-            { // QW end
+            if (!QW && inQW)        // QW end
+            {
                 if (foundQW && right != mesh->axis0[i])
-                    throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
+                    throw Exception("%1%: Quantum wells not vertically aligned.", getId());
                 right = mesh->axis0[i];
                 results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
                 foundQW = true;
                 inQW = false;
             }
+            if (active)
+            {
+                if (had_active && j > 0 && !this->geometry->hasRoleAt("active", points->at(i,j-1)))
+                    throw Exception("%1%: Multiple active regions not supported.", getId());
+                had_active = true;
+            }
         }
         if (inQW)
         { // handle situation when QW spans to the end of the structure
             if (foundQW && right != mesh->axis0[points->axis0.size()])
-                throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
+                throw Exception("%1%: Quantum wells not vertically aligned.", getId());
             right = mesh->axis0[points->axis0.size()];
             results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
             foundQW = true;

@@ -51,7 +51,7 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
      * @param newBaseHeight where lower bound of the lowest object should be
      */
     void setBaseHeight(double newBaseHeight);
-    
+
     /**
      * Set height where should start first object. Call changed.
      * @param index index of object which lower bound should lie at height 0
@@ -203,7 +203,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
     PathHints::Hint addGap(double size);
 
     /*
-     * Try resize gap which have given index.
+     * Try to resize gap which have given index.
      * @param gap_index
      */
     //void resizeGap(std::size_t gap_index, double new_size);
@@ -406,23 +406,23 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         return insertUnsafe(el, 0, aligner);
     }
 
-    const Aligner& getAlignerAt(std::size_t child_nr) const {
-        this->ensureIsValidChildNr(child_nr, "getAlignerAt");
-        return *aligners[child_nr];
+    const Aligner& getAlignerAt(std::size_t child_no) const {
+        this->ensureIsValidChildNr(child_no, "getAlignerAt");
+        return *aligners[child_no];
     }
 
-    void setAlignerAt(std::size_t child_nr, const Aligner& aligner);
+    void setAlignerAt(std::size_t child_no, const Aligner& aligner);
 
     /*
      * Set new aligner.
-     * @param child_nr (real) child number for which aligner will be set
+     * @param child_no (real) child number for which aligner will be set
      * @param aligner new aligner for given child, this pointer will be delete by this stack and it can be used only in one stack, for one child
      */
-    /*void setAlignerAtMove(std::size_t child_nr, Aligner* aligner) {
-        this->ensureIsValidChildNr(child_nr, "setAlignerAtMove");
-        if (aligners[child_nr] == aligner) return; //protected for self assign
-        aligners[child_nr] = aligner;
-        aligners[child_nr]->align(*children[child_nr]);
+    /*void setAlignerAtMove(std::size_t child_no, Aligner* aligner) {
+        this->ensureIsValidChildNr(child_no, "setAlignerAtMove");
+        if (aligners[child_no] == aligner) return; //protected for self assign
+        aligners[child_no] = aligner;
+        aligners[child_no]->align(*children[child_no]);
         this->fireChanged(GeometryObject::Event::RESIZE);
     }*/
 
@@ -549,14 +549,14 @@ class MultiStackContainer: public StackContainer<dim> {
 
     virtual std::size_t getChildrenCount() const { return children.size() * repeat_count; }
 
-    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const;
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const;
 
     virtual std::size_t getRealChildrenCount() const {
         return StackContainer<dim>::getChildrenCount();
     }
 
-    virtual shared_ptr<GeometryObject> getRealChildAt(std::size_t child_nr) const {
-        return StackContainer<dim>::getChildAt(child_nr);
+    virtual shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const {
+        return StackContainer<dim>::getChildNo(child_no);
     }
 
     void setRepeatCount(unsigned new_repeat_count) {

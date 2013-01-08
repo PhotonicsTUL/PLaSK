@@ -60,14 +60,14 @@ struct NotImplemented: public Exception {
 /**
  * This exception is thrown when some value (function argument) is out of bound.
  */
-struct OutOfBoundException: public Exception {
+struct OutOfBoundsException: public Exception {
 
-    OutOfBoundException(const std::string& where, const std::string& argname)
-        : Exception("%1%: argument %2% out of bound", where, argname) {}
+    OutOfBoundsException(const std::string& where, const std::string& argname)
+        : Exception("%1%: argument %2% out of bounds", where, argname) {}
 
     template <typename BoundTypeWas, typename BoundTypeLo, typename BoundTypeHi>
-    OutOfBoundException(const std::string& where, const std::string& argname, const BoundTypeWas& was, const BoundTypeLo& lo, const BoundTypeHi& hi)
-        : Exception("%1%: argument %2% out of bound, should be between %3% and %4%, but was %5%", where, argname, lo, hi, was) {}
+    OutOfBoundsException(const std::string& where, const std::string& argname, const BoundTypeWas& was, const BoundTypeLo& lo, const BoundTypeHi& hi)
+        : Exception("%1%: argument %2% out of bounds, should be between %3% and %4%, but was %5%", where, argname, lo, hi, was) {}
 };
 
 /**

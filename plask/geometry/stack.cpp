@@ -27,7 +27,7 @@ void StackContainerBaseImpl<dim, growingDirection>::setZeroHeightBefore(std::siz
 {
     std::size_t h_count = stackHeights.size();
     if (index >= h_count)
-        throw OutOfBoundException("setZeroHeightBefore", "index", index, 0, h_count-1);
+        throw OutOfBoundsException("setZeroHeightBefore", "index", index, 0, h_count-1);
     setBaseHeight(stackHeights[0] - stackHeights[index]);
 }
 
@@ -102,12 +102,12 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
 }
 
 template <int dim>
-void StackContainer<dim>::setAlignerAt(std::size_t child_nr, const Aligner& aligner) {
-    this->ensureIsValidChildNr(child_nr, "setAlignerAt");
-    if (aligners[child_nr].get() == &aligner) return; //protected against self assigment
-    aligners[child_nr] = aligner.cloneUnique();
-    aligners[child_nr]->align(*children[child_nr]);
-    children[child_nr]->fireChanged();
+void StackContainer<dim>::setAlignerAt(std::size_t child_no, const Aligner& aligner) {
+    this->ensureIsValidChildNr(child_no, "setAlignerAt");
+    if (aligners[child_no].get() == &aligner) return; //protected against self assigment
+    aligners[child_no] = aligner.cloneUnique();
+    aligners[child_no]->align(*children[child_no]);
+    children[child_no]->fireChanged();
 }
 
 template <int dim>
@@ -168,9 +168,9 @@ void StackContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag
 template <int dim>
 shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< StackContainer<dim> > result = make_shared< StackContainer<dim> >(this->getBaseHeight());
-    for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
-        if (children_after_change[child_nr].first)
-            result->addUnsafe(children_after_change[child_nr].first, *this->aligners[child_nr]);
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        if (children_after_change[child_no].first)
+            result->addUnsafe(children_after_change[child_no].first, *this->aligners[child_no]);
     return result;
 }
 
@@ -225,9 +225,9 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
 
 shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< ShelfContainer2D > result = make_shared< ShelfContainer2D >(this->getBaseHeight());
-    for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
-        if (children_after_change[child_nr].first)
-            result->addUnsafe(children_after_change[child_nr].first);
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        if (children_after_change[child_no].first)
+            result->addUnsafe(children_after_change[child_no].first);
     return result;
 }
 
@@ -326,11 +326,11 @@ GeometryObject::Subtree MultiStackContainer<dim>::getPathsTo(const GeometryObjec
         const std::size_t size = result.children.size();   // original size
         const double stackHeight = stackHeights.back() - stackHeights.front();
         for (unsigned r = 1; r < repeat_count; ++r)
-            for (std::size_t org_child_nr = 0; org_child_nr < size; ++org_child_nr) {
-                auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_nr].object)));
+            for (std::size_t org_child_no = 0; org_child_no < size; ++org_child_no) {
+                auto& org_child = const_cast<Translation<dim>&>(static_cast<const Translation<dim>&>(*(result.children[org_child_no].object)));
                 shared_ptr<Translation<dim>> new_child = org_child.copyShallow();
                 new_child->translation.vert() += stackHeight;
-                result.children.push_back(GeometryObject::Subtree(new_child, result.children[org_child_nr].children));
+                result.children.push_back(GeometryObject::Subtree(new_child, result.children[org_child_no].children));
             }
     }
     return result;
@@ -347,11 +347,11 @@ template class MultiStackContainer<2>;
 template class MultiStackContainer<3>;
 
 template <int dim>
-shared_ptr<GeometryObject> MultiStackContainer<dim>::getChildAt(std::size_t child_nr) const {
-    if (child_nr >= getChildrenCount()) throw OutOfBoundException("getChildAt", "child_nr", child_nr, 0, getChildrenCount()-1);
-    if (child_nr < children.size()) return children[child_nr];
-    auto result = children[child_nr % children.size()]->copyShallow();
-    result->translation.vert() += (child_nr / children.size()) * (stackHeights.back() - stackHeights.front());
+shared_ptr<GeometryObject> MultiStackContainer<dim>::getChildNo(std::size_t child_no) const {
+    if (child_no >= getChildrenCount()) throw OutOfBoundsException("getChildNo", "child_no", child_no, 0, getChildrenCount()-1);
+    if (child_no < children.size()) return children[child_no];
+    auto result = children[child_no % children.size()]->copyShallow();
+    result->translation.vert() += (child_no / children.size()) * (stackHeights.back() - stackHeights.front());
     return result;
 }
 
@@ -364,9 +364,9 @@ void MultiStackContainer<dim>::writeXMLAttr(XMLWriter::Element &dest_xml_object,
 template <int dim>
 shared_ptr<GeometryObject> MultiStackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
     shared_ptr< MultiStackContainer<dim> > result = make_shared< MultiStackContainer<dim> >(this->repeat_count, this->getBaseHeight());
-    for (std::size_t child_nr = 0; child_nr < children.size(); ++child_nr)
-        if (children_after_change[child_nr].first)
-            result->addUnsafe(children_after_change[child_nr].first, this->getAlignerAt(child_nr));
+    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+        if (children_after_change[child_no].first)
+            result->addUnsafe(children_after_change[child_no].first, this->getAlignerAt(child_no));
     return result;
 }
 

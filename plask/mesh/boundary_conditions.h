@@ -115,7 +115,7 @@ public:
      * This method has linear time complexity.
      * @param index index of element
      * @return reference to boundary condition with given @p index
-     * @throw OutOfBoundException if @p index is not valid
+     * @throw OutOfBoundsException if @p index is not valid
      */
     Element& operator[](std::size_t index) {
         return container[index];
@@ -127,7 +127,7 @@ public:
      * This method has linear time complexity.
      * @param index index of element
      * @return const reference to boundary condition with given @p index
-     * @throw OutOfBoundException if @p index is not valid
+     * @throw OutOfBoundsException if @p index is not valid
      */
     const Element& operator[](std::size_t index) const {
         return container[index];
@@ -248,11 +248,11 @@ public:
      * This method has linear time complexity.
      * @param index index of element
      * @return reference to boundary condition with given @p index
-     * @throw OutOfBoundException if @p index is not valid
+     * @throw OutOfBoundsException if @p index is not valid
      */
     Element& operator[](std::size_t index) {
         iterator i = getIteratorForIndex(index);
-        if (i == end()) OutOfBoundException("BoundaryConditions[]", "index");
+        if (i == end()) OutOfBoundsException("BoundaryConditions[]", "index");
         return *i;
     }
 
@@ -262,11 +262,11 @@ public:
      * This method has linear time complexity.
      * @param index index of element
      * @return const reference to boundary condition with given @p index
-     * @throw OutOfBoundException if @p index is not valid
+     * @throw OutOfBoundsException if @p index is not valid
      */
     const Element& operator[](std::size_t index) const {
         const_iterator i = getIteratorForIndex(index);
-        if (i == end()) OutOfBoundException("BoundaryConditions::at", "index");
+        if (i == end()) OutOfBoundsException("BoundaryConditions::at", "index");
         return *i;
     }
 
@@ -362,7 +362,7 @@ public:
      */
     void erase(std::size_t index) {
         iterator i = getIteratorForIndex(index);
-        if (i == end()) OutOfBoundException("BoundaryConditions[]", "index");
+        if (i == end()) OutOfBoundsException("BoundaryConditions[]", "index");
         erase(i);
     }
 

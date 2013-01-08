@@ -126,8 +126,8 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
 
     virtual std::size_t getChildrenCount() const { return hasChild() ? 1 : 0; }
 
-    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const {
-        if (!hasChild() || child_nr > 0) throw OutOfBoundException("GeometryObjectTransform::getChildAt", "child_nr");
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
+        if (!hasChild() || child_no > 0) throw OutOfBoundsException("GeometryObjectTransform::getChildNo", "child_no");
         return _child;
     }
 

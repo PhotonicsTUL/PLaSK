@@ -50,67 +50,83 @@ void FermiGainSolver<GeometryType>::onInvalidate() // This will be called when e
 
 
 template <typename GeometryType>
-void FermiGainSolver<GeometryType>::detectQuantumWells()
+void FermiGainSolver<GeometryType>::detectActiveRegions()
 {
     shared_ptr<RectilinearMesh2D> mesh = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild());
     shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
 
-    std::vector<Box2D> results;
+    size_t ileft = 0, iright = points->axis0.size();
+    shared_ptr<Material> prev_material;
+    bool in_active = false;
 
-    shared_ptr<Material> QW_material; //TODO
-
-    // Now compact each row (it can contain only one QW and each must start and end in the same point)
-    double left = 0., right = 0.;
-    bool foundQW = false;
-    for (int j = 0; j < points->axis1.size(); ++j)
+    for (size_t r = 0; r < points->axis1.size(); ++r)
     {
-        bool inQW = false;
-        for (int i = 0; i < points->axis0.size(); ++i)
-        {
-            auto point = points->at(i,j);
+        bool had_active = false; // indicates if we had active region in this layer
+        shared_ptr<Material> layer_material;
+        bool layer_QW = false;
+
+        for (size_t c = 0; c < points->axis0.size(); ++c) { // In the (possible) active region
+            auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
-            bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
-            if (QW && !inQW)
-            { // QW start
-                if (foundQW)
-                {
-                    if (left != mesh->axis0[i])
-                        throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
-                    if (this->geometry->getMaterial(point) != QW_material)
-                        throw Exception("In this solver all quantum wells must be constructed of a single material");
+            bool active = tags.find("active") != tags.end();
+            bool QW = tags.find("QW") != tags.end()/* || tags.find("QD") != tags.end()*/;
+
+            if (QW && !active)
+                throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
+
+            if (c < ileft) {
+                if (active)
+                    throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
+            } else if (c >= iright) {
+                if (active)
+                    throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
+            } else {
+                // Here we are inside potential active region
+                if (active) {
+                    if (!in_active) { // active region is starting set-up new region info
+                        regions.emplace_back(mesh->at(r,c));
+                        if (r > 0) regions.back().bottom = this->geometry->getMaterial(points->at(c,r-1));
+                        ileft = c;
+                    }
+                    if (!had_active) {
+                        layer_material = this->geometry->getMaterial(point);
+                        layer_QW = QW;
+                    } else {
+                        if (layer_material != this->geometry->getMaterial(point))
+                            throw Exception("%1%: Non-uniform active region layer.", this->getId());
+                        if (layer_QW != QW)
+                            throw Exception("%1%: Quantum-well role of the active region layer not consistent.", this->getId());
+                    }
+                } else {
+                    if (!in_active)
+                        iright = c;
+                    else
+                        throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
                 }
-                else
-                {
-                    QW_material = this->geometry->getMaterial(point);
-                }
-                left = mesh->axis0[i];
-                inQW = true;
-            }
-            if (!QW && inQW)
-            { // QW end
-                if (foundQW && right != mesh->axis0[i])
-                    throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
-                right = mesh->axis0[i];
-                results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
-                foundQW = true;
-                inQW = false;
+                had_active |= active;
             }
         }
-        if (inQW)
-        { // handle situation when QW spans to the end of the structure
-            if (foundQW && right != mesh->axis0[points->axis0.size()])
-                throw Exception("This solver can only handle quantum wells of identical size located exactly one above another");
-            right = mesh->axis0[points->axis0.size()];
-            results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
-            foundQW = true;
-            inQW = false;
+        in_active = had_active;
+
+        // Now fill-in the layer info
+        double h = mesh->axis1[r+1] - mesh->axis1[r];
+        double w = mesh->axis1[iright] - mesh->axis1[ileft];
+        ActiveRegionInfo* region = regions.empty()? nullptr : &regions.back();
+        shared_ptr<Block<2>> last;
+        if (region) {
+            size_t n = region->layers->getChildrenCount();
+            if (n > 0) last = dynamic_pointer_cast<Block<2>>(region->layers->getChildNo(n-1));
         }
+        if (region && last && layer_material == last->material && layer_QW == region->areQW.back()) {
+            assert(last->size.c0 == w);
+            last->setSize(w, last->size.c1 + h);
+        } else {
+            region->layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), layer_material));
+            region->areQW.push_back(layer_QW);
+        }
+        if (!in_active && region && !region->top)
+            region->top = layer_material;
     }
-
-    // Compact results in vertical direction
-    //TODO
-
-    //return results; TODO
 }
 
 

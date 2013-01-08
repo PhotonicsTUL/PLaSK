@@ -307,13 +307,13 @@ public:
     }
 
     /**
-     * Get child_nr-th child of this.
-     * @param child_nr must be 0
+     * Get child_no-th child of this.
+     * @param child_no must be 0
      * @return child of this
      */
-    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const {
-        //if (!hasChild() || child_nr > 0) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
-        if (child_nr >= getChildrenCount()) throw OutOfBoundException("Geometry::getChildAt", "child_nr");
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
+        //if (!hasChild() || child_no > 0) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
+        if (child_no >= getChildrenCount()) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
         return getChild();
     }
 

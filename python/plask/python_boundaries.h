@@ -29,7 +29,7 @@ struct RegisterBoundaryConditions {
     static void __setitem__1(BoundaryConditionsT& self, int i, py::tuple object) {
         if (i < 0) i = self.size() + i;
         auto iter = self.getIteratorForIndex(i);
-        if (iter == self.end()) OutOfBoundException("BoundaryConditions[]", "index");
+        if (iter == self.end()) OutOfBoundsException("BoundaryConditions[]", "index");
         try {
             if (py::len(object) != 2) throw py::error_already_set();
             typename MeshT::Boundary boundary = py::extract<typename MeshT::Boundary>(object[0]);
@@ -59,7 +59,7 @@ struct RegisterBoundaryConditions {
 
     static void insert(BoundaryConditionsT& self, int i, const typename MeshT::Boundary& boundary, ValueT value) {
         if (i < 0) i = self.size() + i;
-        if (i < 0 || i >= (int)self.size()) OutOfBoundException("BoundaryConditions[]", "index");
+        if (i < 0 || i >= (int)self.size()) OutOfBoundsException("BoundaryConditions[]", "index");
         self.insert(i, ConditionT(boundary, value));
     }
 

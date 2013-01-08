@@ -249,7 +249,7 @@ private:
         std::size_t chCount = object->wrappedObject->getRealChildrenCount();
         if (chCount == 0) lowerObject = plask::shared_ptr<ObjectWrapper>();
         else {
-            lowerObject = ext(object->wrappedObject->getRealChildAt(0));
+            lowerObject = ext(object->wrappedObject->getRealChildNo(0));
             connectOnChanged(lowerObject);
         }
     }

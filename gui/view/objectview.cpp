@@ -107,7 +107,7 @@ QModelIndex ObjectViewer::indexAt(const QPoint &point) const
 
     const std::size_t ch_count = e->getRealChildrenCount();
     for (std::size_t i = 0; i < ch_count; ++i) {
-        plask::shared_ptr<plask::GeometryObjectD<2> > ch = e->getRealChildAt(i)->asD<2>();
+        plask::shared_ptr<plask::GeometryObjectD<2> > ch = e->getRealChildNo(i)->asD<2>();
         if (ch && ch->getBoundingBox().includes(model_point))
             return model()->index(i, 0, rootIndex());
     }
@@ -334,7 +334,7 @@ void ObjectViewer::setSelection(const QRect &rect, QItemSelectionModel::Selectio
     if (e) {
         const std::size_t ch_count = e->getRealChildrenCount();
         for (std::size_t i = 0; i < ch_count; ++i) {
-            plask::shared_ptr<plask::GeometryObjectD<2> > ch = e->getRealChildAt(i)->asD<2>();
+            plask::shared_ptr<plask::GeometryObjectD<2> > ch = e->getRealChildNo(i)->asD<2>();
             if (ch && ch->getBoundingBox().intersects(model_sel))
                 indexes.append(model()->index(i, 0, rootIndex()));
         }

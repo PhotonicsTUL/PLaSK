@@ -770,10 +770,10 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
 
     /**
      * Get child with given index.
-     * @param child_nr index of child to get
-     * @return child with index @p child_nr
+     * @param child_no index of child to get
+     * @return child with index @p child_no
      */
-    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const = 0;
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const = 0;
 
     /**
      * Get number of real (physicaly stored) children in geometry graph.
@@ -786,11 +786,11 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     /**
      * Get real (physicaly stored) child with given index.
      *
-     * By default call getChildAt(child_nr), but objects of some types (like multi-stack) redefine this.
-     * @param child_nr index of real child to get
-     * @return child with index @p child_nr
+     * By default call getChildNo(child_no), but objects of some types (like multi-stack) redefine this.
+     * @param child_no index of real child to get
+     * @return child with index @p child_no
      */
-    virtual shared_ptr<GeometryObject> getRealChildAt(std::size_t child_nr) const;
+    virtual shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const;
 
     /**
      * Remove child at given @p index.
@@ -844,7 +844,7 @@ private:
     struct ChildGetter {    //used by begin(), end()
         shared_ptr<const GeometryObject> el;
         ChildGetter(const shared_ptr<const GeometryObject>& el): el(el) {}
-        shared_ptr<GeometryObject> operator()(std::size_t index) const { return el->getChildAt(index); }
+        shared_ptr<GeometryObject> operator()(std::size_t index) const { return el->getChildNo(index); }
     };
 
 public:
@@ -897,15 +897,15 @@ protected:
 
     /**
      * Check if given @p index is valid child index and throw exception of it is not.
-     * @param child_nr index to check
+     * @param child_no index to check
      * @param method_name caller method name which is used to format excption message
      * @param arg_name name of index argument in caller method, used to format excption message
-     * @throw OutOfBoundException if index is not valid
+     * @throw OutOfBoundsException if index is not valid
      */
-    void ensureIsValidChildNr(std::size_t child_nr, const char* method_name = "getChildAt", const char* arg_name = "child_nr") const {
+    void ensureIsValidChildNr(std::size_t child_no, const char* method_name = "getChildNo", const char* arg_name = "child_no") const {
         std::size_t children_count = getRealChildrenCount();
-        if (child_nr >= children_count)
-            throw OutOfBoundException(method_name, arg_name, child_nr, 0, children_count-1);
+        if (child_no >= children_count)
+            throw OutOfBoundsException(method_name, arg_name, child_no, 0, children_count-1);
     }
 
     /// Inform observers that children list was changed (also that this is resized)

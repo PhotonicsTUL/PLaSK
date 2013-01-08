@@ -25,7 +25,7 @@ void ObjectWrapper::draw(QPainter& painter, bool paintBorders) const {
         }
     } else {
         for (std::size_t i = 0; i < toDraw.getChildrenCount(); ++i)
-            ext(toDraw.getChildAt(i))->draw(painter, paintBorders);
+            ext(toDraw.getChildNo(i))->draw(painter, paintBorders);
     }
 }
 
@@ -61,7 +61,7 @@ void ObjectWrapper::drawReal(QPainter &painter) const
     plask::GeometryObject& toDraw = *wrappedObject;
     if (toDraw.isContainer()) {
         for (std::size_t i = 0; i < toDraw.getRealChildrenCount(); ++i)
-            ext(toDraw.getRealChildAt(i))->draw(painter);
+            ext(toDraw.getRealChildNo(i))->draw(painter);
     } else
         draw(painter, false);
 }
@@ -116,9 +116,9 @@ void ObjectWrapper::setupPropertiesBrowser(BrowserWithManagers& managers, QtAbst
 }
 
 void ObjectWrapper::setupPropertiesBrowserForChild(std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
-    plask::shared_ptr<plask::GeometryObject> e = wrappedObject->getRealChildAt(index);
+    plask::shared_ptr<plask::GeometryObject> e = wrappedObject->getRealChildNo(index);
     if (e->getRealChildrenCount() == 0) return;
-    ext(e->getRealChildAt(0))->setupPropertiesBrowser(managers, dst);
+    ext(e->getRealChildNo(0))->setupPropertiesBrowser(managers, dst);
 }
 
 /*QPixmap drawMiniature(const plask::GeometryObject& toDraw, qreal w, qreal h) {

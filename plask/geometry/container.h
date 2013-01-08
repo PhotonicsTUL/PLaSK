@@ -178,14 +178,14 @@ public:
 
     virtual std::size_t getChildrenCount() const { return children.size(); }
 
-    virtual shared_ptr<GeometryObject> getChildAt(std::size_t child_nr) const {
-        this->ensureIsValidChildNr(child_nr);
-        return children[child_nr];
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
+        this->ensureIsValidChildNr(child_no);
+        return children[child_no];
     }
 
-    virtual shared_ptr<TranslationT> getTranslationOfRealChildAt(std::size_t child_nr) const {
-        this->ensureIsValidChildNr(child_nr);
-        return children[child_nr];
+    virtual shared_ptr<TranslationT> getTranslationOfRealChildAt(std::size_t child_no) const {
+        this->ensureIsValidChildNr(child_no);
+        return children[child_no];
     }
 
     virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const;

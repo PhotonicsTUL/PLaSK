@@ -25,10 +25,10 @@ void GeometryTreeItem::appendChildrenItemsHelper(const plask::shared_ptr<plask::
     std::size_t chCount = elem->getRealChildrenCount();
     if (elem->isContainer()) {
         for (std::size_t i = 0; i < chCount; ++i)
-            childItems.emplace_back(new InContainerTreeItem(this, ext(elem->getRealChildAt(i))));
+            childItems.emplace_back(new InContainerTreeItem(this, ext(elem->getRealChildNo(i))));
     } else {
         for (std::size_t i = 0; i < chCount; ++i)   //should be 0 or 1 child here
-            childItems.emplace_back(new GeometryTreeItem(this, ext(elem->getRealChildAt(i))));
+            childItems.emplace_back(new GeometryTreeItem(this, ext(elem->getRealChildNo(i))));
     }
 }
 
@@ -71,7 +71,7 @@ plask::shared_ptr<ObjectWrapper> GeometryTreeItem::parent() {
 GeometryTreeItem::GeometryTreeItem(GeometryTreeItem* parentItem, std::size_t index)
 : model(parentItem->model), childrenInitialized(false), miniatureInitialized(false), parentItem(parentItem)/*, inParentIndex(index)*/ {
     if (auto parent_ptr = parent()) {
-        auto child = ext(parent_ptr->wrappedObject->getRealChildAt(index));
+        auto child = ext(parent_ptr->wrappedObject->getRealChildNo(index));
         object = child;
         connectOnChanged(child);
         //constructChildrenItems(child);
@@ -181,7 +181,7 @@ bool GeometryTreeItem::tryInsert(plask::shared_ptr<plask::GeometryObject> object
     auto this_elem = getLowerWrappedObject();
     if (this_elem->tryInsert(object, index)) {
        // childItems.emplace(childItems.begin() + index,
-       //                   new InContainerTreeItem(this, ext(this_elem->wrappedObject->getRealChildAt(index)), index));
+       //                   new InContainerTreeItem(this, ext(this_elem->wrappedObject->getRealChildNo(index)), index));
         //deinitializeChildren();
         return true;
     } else
@@ -203,7 +203,7 @@ int GeometryTreeItem::tryInsertRow2D(const GeometryObjectCreator &to_insert, con
     int index = this_elem->tryInsertNearPoint2D(to_insert, point);
     if (index >= 0) {
        // childItems.emplace(childItems.begin() + index,
-       //                   new InContainerTreeItem(this, ext(this_elem->wrappedObject->getRealChildAt(index)), index));
+       //                   new InContainerTreeItem(this, ext(this_elem->wrappedObject->getRealChildNo(index)), index));
      //   deinitializeChildren();
     }
     return index;
@@ -220,13 +220,13 @@ plask::Box2D GeometryTreeItem::getInsertPlace2D(const GeometryObjectCreator &to_
     if (auto elem = object.lock()) {
         std::size_t chCount = elem->getRealChildrenCount();
         if (chCount == 0) return;
-        appendChildrenItemsHelper(elem->getRealChildAt(0));
+        appendChildrenItemsHelper(elem->getRealChildNo(0));
     }
 }*/
 
 QString InContainerTreeItem::objectText(plask::shared_ptr<ObjectWrapper> object) const {
     if (object->wrappedObject->getRealChildrenCount() == 0) return object->toStr();
-    QString result = ext(object->wrappedObject->getRealChildAt(0))->toStr();
+    QString result = ext(object->wrappedObject->getRealChildNo(0))->toStr();
     result += "\nat ";
     if (object->wrappedObject->getDimensionsCount() == 2) {
         result += toStr(static_cast<plask::Translation<2>&>(*object->wrappedObject).translation);
@@ -241,7 +241,7 @@ void InContainerTreeItem::fillPropertyBrowser(BrowserWithManagers& browser) {
         p->setupPropertiesBrowserForChild(indexInParent(), browser);
     } else {
         if (object->wrappedObject->getRealChildrenCount() == 0) return;
-        ext(object->wrappedObject->getRealChildAt(0))->setupPropertiesBrowser(browser);
+        ext(object->wrappedObject->getRealChildNo(0))->setupPropertiesBrowser(browser);
     }
 }
 
