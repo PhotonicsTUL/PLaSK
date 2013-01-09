@@ -8,7 +8,7 @@ F77SUB dpbtrs_(const char& uplo, const int& n, const int& kd, const int& nrhs, d
 
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
-void DiffusionCylindricalSolver::loadConfiguration(XMLReader& reader, Manager& manager)
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     while (reader.requireTagOrEnd())
     {
@@ -33,13 +33,13 @@ void DiffusionCylindricalSolver::loadConfiguration(XMLReader& reader, Manager& m
             reader.requireTagEnd();
         }
         else
-            parseStandardConfiguration(reader, manager);
+            this->parseStandardConfiguration(reader, manager);
     }
 
 }
 
 
-void DiffusionCylindricalSolver::onInitialize()
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onInitialize()
 {
     relative_accuracy = 0.01;
     max_mesh_changes = 5;
@@ -57,12 +57,12 @@ void DiffusionCylindricalSolver::onInitialize()
 //    // body
 //}
 
-void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(bool initial, bool threshold)
 {
     initial_computation = initial;
     threshold_computation = threshold;
 
-    initCalculation();
+    this->initCalculation();
     determineQwWidth();
 
     writelog(LOG_INFO, "Computing lateral carriers diffusion");
@@ -72,9 +72,17 @@ void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
 //    std::cerr << "max_mesh_change = " << max_mesh_change << "     max_iterations =  " << max_iterations << "\n";
 //    std::cerr << "fem_method = " << fem_method << "\n";
 
-    writelog(LOG_DEBUG, "z: %1%, method: %6%, max. mesh changes: %2%, max. iterations: %3%%4%%5%",
-             z, max_mesh_changes, max_iterations, threshold_computation? ", threshold" : "", initial_computation? ", initial" : "",
-             fem_method==FEM_LINEAR?"linear":"parabolic");
+    writelog(LOG_DEBUG, "QW position z = %1%, computation method: %2%", z, fem_method==FEM_LINEAR?"linear":"parabolic");
+
+    writelog(LOG_DEBUG, "max. mesh changes: %1%, max. iterations: %2%", max_mesh_changes, max_iterations);
+
+    writelog(LOG_DEBUG, "threshold computation: %1%", threshold_computation? "true" : "false");
+
+    writelog(LOG_DEBUG, "initial computation: %1%", initial_computation? "true" : "false");
+
+//    writelog(LOG_DEBUG, "QW position z = %1%, method: %6%, max. mesh changes: %2%, max. iterations: %3%%4%%5%",
+//             z, max_mesh_changes, max_iterations, threshold_computation? ", threshold" : "", initial_computation? ", initial" : "",
+//             fem_method==FEM_LINEAR?"linear":"parabolic");
 
     if (mesh.size() % 2 == 0) mesh.reset(mesh.first(), mesh.last(), mesh.size()+1);
 
@@ -95,7 +103,7 @@ void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
         {
             mesh_changes += 1;
             if (mesh_changes > max_mesh_changes)
-                throw ComputationError(getId(), "Maximum number of mesh refinements (%1%) reached", max_mesh_changes);
+                throw ComputationError(this->getId(), "Maximum number of mesh refinements (%1%) reached", max_mesh_changes);
             size_t new_size = 2.0 * mesh.size() + 1;
             writelog(LOG_DETAIL, "Refining mesh (new mesh size: %1%)", new_size);
             mesh.reset(mesh.first(), mesh.last(), new_size);
@@ -125,7 +133,7 @@ void DiffusionCylindricalSolver::compute(bool initial, bool threshold)
     outCarriersConcentration.fireChanged();
 }
 
-bool DiffusionCylindricalSolver::CylindricalFEM()
+template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geometry2DType>::CylindricalFEM()
 {
 //    Computation of K*n" - E*n = -F
     bool _convergence;
@@ -214,27 +222,34 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
                 B = this->QW_material->B(T);
                 C = this->QW_material->C(T);
 
-//                RS = rightSide(i, T, n_previous[i]); // instead of rightSide(i, T, 0) ?
-
+                double RS = rightSide(i); // instead of rightSide(i, T, 0) ?
+X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*pow(3.0,3./2.)*C*C)+(-27*C*C*RS+9*A*B*C-2*B*B*B)/
+(54*C*C*C)),1./3.)-(3*A*C-B*B)/pow(9*C*C*(sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/
+(2*pow(3.0,3./2.)*C*C)+(-27*C*C*RS+9*A*B*C-2*B*B*B)/(54*C*C*C)),1./3.)-B/(3*C);
 //                X_vector[i] = -B/(3.0*C) - (pow(2.0,1.0/3.0)*(- B*B + 3.0*A*C))/(3.0*C*pow(-2.0*B*B*B +
-//						9.0*A*B*C + 27.0*C*C*rightSide(i) + sqrt(4.0*pow(- B*B + 3.0*A*C,3.0) +
-//						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*rightSide(i),2.0)),1.0/3.0)) +
-//						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*rightSide(i) + sqrt(4.0*pow(-B*B +
+//						9.0*A*B*C + 27.0*C*C*RS + sqrt(4.0*pow(- B*B + 3.0*A*C,3.0) +
+//						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*RS,2.0)),1.0/3.0)) +
+//						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*RS + sqrt(4.0*pow(-B*B +
 //						3.0*A*C,3.0) + pow(-2.0*B*B*B + 9.0*A*B*C +
-//						27.0*C*C*rightSide(i),2.0)),1.0/3.0)/(3.0*pow(2.0,1.0/3.0)*C);
+//						27.0*C*C*RS,2.0)),1.0/3.0)/(3.0*pow(2.0,1.0/3.0)*C);
 //                double X_part = 9*C*sqrt(27*C*C*rightSide(i)*rightSide(i) + (4*B*B*B-18*A*B*C)*rightSide(i) + 4*A*A*A*C - A*A*B*B);
-//                X_vector[i] = (pow(X_part, 2/3) - pow(2,1/3)*pow(3,1/6)*B*pow(X_part, 1/3) - pow(2,2/3)*pow(3,4/3)*A*C + pow(2,2/3)*pow(3,1/3)*B*B)/(pow(2,1/3)*pow(3,7/6)*C*pow(X_part, 1/3));
-                double X_part = pow(sqrt(27*C*C*rightSide(i)*rightSide(i) + (4*B*B*B-18*A*B*C)*rightSide(i) + 4*A*A*A*C - A*A*B*B)/(2*pow(3,3/2)*C*C) + (-27*C*C*rightSide(i) + 9*A*B*C - 2*B*B*B)/(54*C*C*C),1/3);
-                X_vector[i] = X_part - (3*A*C - B*B)/X_part - B/(3*C);
+//                X_vector[i] = (pow(X_part, 2./3.) - pow(2,1./3.)*pow(3,1./6.)*B*pow(X_part, 1./3.) - pow(2,2./3.)*pow(3,4./3.)*A*C + pow(2,2./3.)*pow(3,1./3.)*B*B)/(pow(2,1./3.)*pow(3,7./6.)*C*pow(X_part, 1./3.));
+//                double X_part = pow(sqrt(27*C*C*rightSide(i)*rightSide(i) + (4*B*B*B-18*A*B*C)*rightSide(i) + 4*A*A*A*C - A*A*B*B)/(2*pow(3,3/2)*C*C) + (-27*C*C*rightSide(i) + 9*A*B*C - 2*B*B*B)/(54*C*C*C),1/3);
+//                X_vector[i] = X_part - (3*A*C - B*B)/X_part - B/(3*C);
             }
-//            for (int i = 0; i< mesh.size(); i++)
-//                std::cerr << "X_vector = " << X_vector[i] << "\n";
             _convergence = true;
             n_present = X_vector.copy();
 
-#           ifndef NDEBUG
-            writelog(LOG_DEBUG, "n_present = %1%, n_previous = %2%", this->n_present[100], n_previous[100]);
-#           endif
+//#           ifndef NDEBUG
+//            writelog(LOG_DEBUG, "n_present = %1%, n_previous = %2%", this->n_present[100], n_previous[100]);
+            for (int i = 0; i< mesh.size(); i++)
+            {
+                std::cerr << "i = " << i << "\n";
+                std::cerr << "pow = " << X_vector[i] << "\n";
+                std::cerr << "sqrt = " << 4.0*pow(-B*B + 3.0*A*C,3.0) + pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*rightSide(i),2.0) << "\n";
+            }
+//                std::cerr << "rightSide(i) = " << rightSide(i) << "\n";
+//#           endif
         }
         else
         {
@@ -266,10 +281,10 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
                     double j1 = abs(j_on_the_mesh[i][1]*1e+3);
                     double j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
 
-                    K = DiffusionCylindricalSolver::K(T);
+                    K = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(T);
 //                    K = (this->*KPointer)(i, T, n0);
-                    F = DiffusionCylindricalSolver::F(i, T, n0);
-                    E = DiffusionCylindricalSolver::E(T, n0);
+                    F = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(i, T, n0);
+                    E = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(T, n0);
 
                     // if ( symmetry_type == "VCSEL") {
 
@@ -320,12 +335,12 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
                     r1 = mesh[2*i]*1e-4;
                     r3 = mesh[2*i + 2]*1e-4;
 
-                    K = DiffusionCylindricalSolver::K(T);
+                    K = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(T);
                     // K = (this->*KPointer)(2*i + 1, T, n0);      // value in the middle node
                     // F = (this->*FPointer)(2*i + 1, T, n0);      // value in the middle node
                     // E = (this->*EPointer)(2*i + 1, T, n0);      // value in the middle node
-                    F = DiffusionCylindricalSolver::F(2*i + 1, T, n0);
-                    E = DiffusionCylindricalSolver::E(T, n0);
+                    F = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(2*i + 1, T, n0);
+                    E = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(T, n0);
 
                     // if ( symmetry_type == "VCSEL") { //VCSEL
 
@@ -344,7 +359,7 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
 
                     // }
 
-                    //  Fill matrix macA columnwise: //29.06.2012 r. Marcin Gebski
+                    //  Fill matrix A_matrix columnwise: //29.06.2012 r. Marcin Gebski
 
                     A_matrix[6*i + 2] += k11e;
                     A_matrix[6*i + 4] += k12e;
@@ -375,7 +390,7 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
 
             double absolute_error = 0.0;
             double relative_error = 0.0;
-            double absolute_concentration_error =  abs(this->QW_material->A(T) * minor_concentration + this->QW_material->B(T) * pow(minor_concentration,2)+ this->QW_material->C(T) * pow(minor_concentration,3));
+            double absolute_concentration_error =  abs(this->QW_material->A(T) * minor_concentration + this->QW_material->B(T) * minor_concentration*minor_concentration+ this->QW_material->C(T) * minor_concentration*minor_concentration*minor_concentration);
 
             /****************** RPSFEM: ******************/
             // double tolerance = 5e+15;
@@ -405,7 +420,8 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
 //                double dn = 0.0;
 //                double dn_relative = 0.0;
 
-                double max_error = 0.0;
+                double max_error_absolute = 0.0;
+                double max_error_relative = 0.0;
                 int max_error_point = 0.0;
                 double max_error_R = 0.0;
 
@@ -420,10 +436,12 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
                     absolute_error = abs(L - R);
                     relative_error = abs(absolute_error/R);
 
-                    if ( max_error < absolute_error )
-                        max_error = absolute_error;
+                    if ( max_error_relative < relative_error )
+                        max_error_relative = relative_error;
+                        max_error_absolute = absolute_error;
                         max_error_point = mesh[2*i + 1];
                         max_error_R = R;
+
 //                    if ( n0 > dn )
 //                        dn = n0 - n_previous[2*i + 1];
 //                        dn_relative = abs(dn/n0);
@@ -431,12 +449,16 @@ bool DiffusionCylindricalSolver::CylindricalFEM()
 //                        dn = abs(n_present[2*i + 1] - n_present[2*i])/n_present[2*i + 1];
 //                if ( (absolute_accuracy < fabs( absolute_error ) ) && ( relative_accuracy < relative_error ) )
                     if ( (relative_accuracy < relative_error) && (absolute_concentration_error < absolute_error) ) // (n_tolerance < absolute_error)
+                    {
+//                        std::clog<<"reler = "<<relative_error<<"\tabser = "<<absolute_error<<"\ti = "<< i <<std::endl;
                         _convergence = false;
+                        break;
+                    }
                 }
             #ifndef NDEBUG
 //            writelog(LOG_DEBUG, "points = %1%", "max_error = %2%", "in: %3%", "R = %4%", mesh.size(), max_error*(plask::phys::qe*this->global_QW_width), max_error_point, max_error_R*(plask::phys::qe*this->global_QW_width));
             #endif
-std::cerr << "points = " << mesh.size() << "     max_error = " << max_error*(plask::phys::qe*this->global_QW_width) << "      in: " << max_error_point << "     R = " << max_error_R*(plask::phys::qe*this->global_QW_width)*1e-3 << "\n";
+//std::cerr << "points = " << absolute_concentration_error << "     max_error_relative = " << max_error_relative << "      max_error_absolute = " << max_error_absolute << "     R = " << max_error_R << "\n"; //*(plask::phys::qe*this->global_QW_width)*1e-3
             }
             iterations += 1;
         }
@@ -446,13 +468,13 @@ std::cerr << "points = " << mesh.size() << "     max_error = " << max_error*(pla
     return _convergence;
 }
 
-const DataVector<double> DiffusionCylindricalSolver::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION )
+template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION )
 {
     RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z, z, 1));
     return interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
 }
 
-double DiffusionCylindricalSolver::K(double T)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(double T)
 {
     double product = 0.0;
     if (threshold_computation)
@@ -472,13 +494,13 @@ double DiffusionCylindricalSolver::K(double T)
 //}
 
 
-double DiffusionCylindricalSolver::E(double T, double n0)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(double T, double n0)
 {
     return (this->QW_material->A(T) + 2*this->QW_material->B(T)*n0 + 3*this->QW_material->C(T)*n0*n0);
 }
 
 
-double DiffusionCylindricalSolver::F(int i, double T, double n0)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(int i, double T, double n0)
 {
     if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
         return (+ abs(j_on_the_mesh[i][1]*1e+3)/(plask::phys::qe*global_QW_width) + this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
@@ -494,7 +516,7 @@ double DiffusionCylindricalSolver::F(int i, double T, double n0)
 //}
 
 
-double DiffusionCylindricalSolver::nSecondDeriv(int i)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::nSecondDeriv(int i)
 {
     double n_second_deriv;     // second derivative with respect to r
     double dr = (mesh.last() - mesh.first())*1e-4/(double)mesh.size();
@@ -550,7 +572,7 @@ double DiffusionCylindricalSolver::nSecondDeriv(int i)
 //    return D(T)*nSecondDeriv(i) -( A(T) * n + B(T) * n*n + C(T) * n*n*n);
 //}
 
-double DiffusionCylindricalSolver::leftSide(int i, double T, double n)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(int i, double T, double n)
 {
     double product = -( this->QW_material->A(T) * n + this->QW_material->B(T) * n*n + this->QW_material->C(T) * n*n*n);
 
@@ -560,14 +582,14 @@ double DiffusionCylindricalSolver::leftSide(int i, double T, double n)
     return product;
 }
 
-double DiffusionCylindricalSolver::rightSide(int i)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(int i)
 {
     return -abs(j_on_the_mesh[i][1])*1e+3/(plask::phys::qe*global_QW_width);
 }
 
-std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
+template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::detectQuantumWells()
 {
-    shared_ptr<RectilinearMesh2D> mesh = makeGeometryGrid(geometry->getChild());
+    shared_ptr<RectilinearMesh2D> mesh = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild());
     shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
 
     std::vector<Box2D> results;
@@ -582,7 +604,7 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
         for (int i = 0; i < points->axis0.size(); ++i)
         {
             auto point = points->at(i,j);
-            auto tags = geometry->getRolesAt(point);
+            auto tags = this->geometry->getRolesAt(point);
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
             bool active = tags.find("active") != tags.end();
             if (QW && !active)
@@ -593,12 +615,12 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
                 {
                     if (left != mesh->axis0[i])
                         throw Exception("%1%: Quantum wells not vertically aligned.", getId());
-                    if (geometry->getMaterial(point) != QW_material)
+                    if (this->geometry->getMaterial(point) != QW_material)
                         throw Exception("%1%: Quantum wells of multiple materials not supported.", getId());
                 }
                 else
                 {
-                    QW_material = geometry->getMaterial(point);
+                    QW_material = this->geometry->getMaterial(point);
                 }
                 left = mesh->axis0[i];
                 inQW = true;
@@ -636,7 +658,7 @@ std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
     return results;
 }
 
-double DiffusionCylindricalSolver::getZQWCoordinate()
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getZQWCoordinate()
 {
     double coordinate = 0.0;
     int no_QW = detected_QW.size();
@@ -658,7 +680,7 @@ double DiffusionCylindricalSolver::getZQWCoordinate()
     return coordinate;
 }
 
-void DiffusionCylindricalSolver::determineQwWidth()
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::determineQwWidth()
 {
     for (int i = 0; i< detected_QW.size(); i++)
     {
@@ -666,5 +688,11 @@ void DiffusionCylindricalSolver::determineQwWidth()
     }
     global_QW_width *= 1e-4;
 }
+
+template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "DiffusionCart"; }
+template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "DiffusionCyl"; }
+
+template struct FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
+template struct FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>;
 
 }}} //namespaces

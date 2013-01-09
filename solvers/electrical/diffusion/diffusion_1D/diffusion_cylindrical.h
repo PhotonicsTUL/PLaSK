@@ -2,7 +2,8 @@
 
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
-class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCylindrical >
+template<typename Geometry2DType>
+class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2DType > //plask::Geometry2DCylindrical
 {
     public:
         enum FemMethod {
@@ -10,10 +11,10 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
             FEM_PARABOLIC
         };
 
-        plask::ReceiverFor<plask::CurrentDensity2D, plask::Geometry2DCylindrical> inCurrentDensity;
-        plask::ReceiverFor<plask::Temperature, plask::Geometry2DCylindrical> inTemperature;
+        plask::ReceiverFor<plask::CurrentDensity2D, Geometry2DType> inCurrentDensity;
+        plask::ReceiverFor<plask::Temperature, Geometry2DType> inTemperature;
 
-        plask::ProviderFor<plask::CarriersConcentration, plask::Geometry2DCylindrical>::Delegate outCarriersConcentration;
+        typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 
         plask::RegularMesh1D mesh;                  ///< Radial mesh
 
@@ -23,13 +24,13 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
         int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
         FemMethod fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
 
-        DiffusionCylindricalSolver(const std::string& name=""):
-            plask::SolverOver<plask::Geometry2DCylindrical> (name),
-            outCarriersConcentration(this, &DiffusionCylindricalSolver::getConcentration),
+        FiniteElementMethodDiffusion2DSolver<Geometry2DType>(const std::string& name=""):
+            plask::SolverOver<Geometry2DType> (name),
+            outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
             interpolation_method(INTERPOLATION_HYMAN)
             {}
 
-        virtual std::string getClassName() const { return "DiffusionCylindrical1D"; }
+        virtual std::string getClassName() const;
 
         virtual void loadConfiguration(XMLReader&, Manager&);
 
@@ -102,7 +103,7 @@ class DiffusionCylindricalSolver: public plask::SolverOver < plask::Geometry2DCy
 
         const DataVector<double> getConcentration(const plask::MeshD<2>&, plask::InterpolationMethod ); // method providing concentration from inside to the provider (outConcentration)
 
-}; // class DiffusionCylindricalSolver
+}; // class FiniteElementMethodDiffusion2DSolver
 
 
 }}} //namespace plask::solvers::diffusion_cylindrical
