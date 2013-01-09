@@ -19,10 +19,23 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     struct ActiveRegionInfo {
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
-        std::vector<bool> areQW;                ///< Flags indicating which layers are quantum wells
+        std::vector<bool> isQW;                 ///< Flags indicating which layers are quantum wells
         shared_ptr<Material> bottom;            ///< Material below the active region
         shared_ptr<Material> top;               ///< Material above the active region
         ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
+        /// \return material of \p n-th layer
+        shared_ptr<Material> getLayerMaterial(size_t n) const {
+            auto block = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(layers->getChildNo(n))->getChild());
+            return block->material;
+        }
+        /// \return translated block of \p n-th layer
+        Box2D getLayerBox(size_t n) const {
+            return static_pointer_cast<GeometryObjectD<2>>(layers->getChildNo(n))->getBoundingBox() + origin;
+        }
+        /// \return bounding box of the whole active region
+        Box2D getBoundingBox() const {
+            return layers->getBoundingBox() + origin;
+        }
     };
 
     std::vector<ActiveRegionInfo> regions;  ///< List of active regions
@@ -66,6 +79,9 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     virtual std::string getClassName() const;
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
+
+    /// Main computation function TODO: is this necessary in this solver?
+    void compute();
 
   protected:
 

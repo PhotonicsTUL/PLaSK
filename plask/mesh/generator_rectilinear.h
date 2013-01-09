@@ -7,6 +7,23 @@
 
 namespace plask {
 
+/**
+ * Generate grid along edges of bounding boxes of all geometry elements
+ * \param geometry given geometry
+ * \return generated mesh
+ */
+shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry);
+
+/**
+ * Generate grid along edges of bounding boxes of all geometry elements
+ * \param geometry given geometry
+ * \return generated mesh
+ */
+shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry);
+
+/**
+ * Generator of basic 2D geometry grid
+ */
 class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
     /// Should we add horizontal line at zero
@@ -24,6 +41,9 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D
 };
 
 
+/**
+ * Generator of basic 2D geometry grid
+ */
 struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3D> {
 
     virtual shared_ptr<RectilinearMesh3D> generate(const shared_ptr<GeometryObjectD<3>>& geometry);

@@ -567,7 +567,7 @@ double DiffusionCylindricalSolver::rightSide(int i)
 
 std::vector<Box2D> DiffusionCylindricalSolver::detectQuantumWells()
 {
-    shared_ptr<RectilinearMesh2D> mesh = RectilinearMesh2DSimpleGenerator()(geometry->getChild());
+    shared_ptr<RectilinearMesh2D> mesh = makeGeometryGrid(geometry->getChild());
     shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
 
     std::vector<Box2D> results;

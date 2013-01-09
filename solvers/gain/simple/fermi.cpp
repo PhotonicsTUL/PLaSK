@@ -36,6 +36,8 @@ void FermiGainSolver<GeometryType>::onInitialize() // In this function check if 
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
 
+    detectActiveRegions();
+
     //TODO
 
     outGain.fireChanged();
@@ -48,15 +50,22 @@ void FermiGainSolver<GeometryType>::onInvalidate() // This will be called when e
     //TODO (if needed)
 }
 
+template <typename GeometryType>
+void FermiGainSolver<GeometryType>::compute()
+{
+    this->initCalculation(); // This must be called before any calculation!
+}
+
+
+
 
 template <typename GeometryType>
 void FermiGainSolver<GeometryType>::detectActiveRegions()
 {
-    shared_ptr<RectilinearMesh2D> mesh = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild());
+    shared_ptr<RectilinearMesh2D> mesh = makeGeometryGrid(this->geometry->getChild());
     shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
 
     size_t ileft = 0, iright = points->axis0.size();
-    shared_ptr<Material> prev_material;
     bool in_active = false;
 
     for (size_t r = 0; r < points->axis1.size(); ++r)
@@ -83,12 +92,12 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
             } else {
                 // Here we are inside potential active region
                 if (active) {
-                    if (!in_active) { // active region is starting set-up new region info
-                        regions.emplace_back(mesh->at(r,c));
-                        if (r > 0) regions.back().bottom = this->geometry->getMaterial(points->at(c,r-1));
-                        ileft = c;
-                    }
                     if (!had_active) {
+                        if (!in_active) { // active region is starting set-up new region info
+                            regions.emplace_back(mesh->at(c,r));
+                            if (r > 0) regions.back().bottom = this->geometry->getMaterial(points->at(c,r-1));
+                            ileft = c;
+                        }
                         layer_material = this->geometry->getMaterial(point);
                         layer_QW = QW;
                     } else {
@@ -97,7 +106,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                         if (layer_QW != QW)
                             throw Exception("%1%: Quantum-well role of the active region layer not consistent.", this->getId());
                     }
-                } else {
+                } else if (had_active) {
                     if (!in_active)
                         iright = c;
                     else
@@ -110,22 +119,28 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
 
         // Now fill-in the layer info
         double h = mesh->axis1[r+1] - mesh->axis1[r];
-        double w = mesh->axis1[iright] - mesh->axis1[ileft];
+        double w = mesh->axis0[iright] - mesh->axis0[ileft];
         ActiveRegionInfo* region = regions.empty()? nullptr : &regions.back();
-        shared_ptr<Block<2>> last;
         if (region) {
-            size_t n = region->layers->getChildrenCount();
-            if (n > 0) last = dynamic_pointer_cast<Block<2>>(region->layers->getChildNo(n-1));
+            if (in_active) {
+                size_t n = region->layers->getChildrenCount();
+                shared_ptr<Block<2>> last;
+                if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
+                assert(!last || last->size.c0 == w);
+                if (last && layer_material == last->material && layer_QW == region->isQW.back()) {
+                    last->setSize(w, last->size.c1 + h);
+                } else {
+                    region->layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), layer_material));
+                    region->isQW.push_back(layer_QW);
+                }
+            } else {
+                if (!region->top) {
+                    region->top = layer_material;
+                    ileft = 0;
+                    iright = points->axis0.size();
+                }
+            }
         }
-        if (region && last && layer_material == last->material && layer_QW == region->areQW.back()) {
-            assert(last->size.c0 == w);
-            last->setSize(w, last->size.c1 + h);
-        } else {
-            region->layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), layer_material));
-            region->areQW.push_back(layer_QW);
-        }
-        if (!in_active && region && !region->top)
-            region->top = layer_material;
     }
 }
 

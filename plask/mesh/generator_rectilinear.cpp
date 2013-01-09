@@ -6,7 +6,7 @@
 
 namespace plask {
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = make_shared<RectilinearMesh2D>();
 
@@ -19,14 +19,20 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
         mesh->axis1.addPoint(box.upper.c1);
     }
 
-    if (extend_to_zero) mesh->axis0.addPoint(0.);
     mesh->setOptimalIterationOrder();
 
+    return mesh;
+}
+
+shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+{
+    auto mesh = makeGeometryGrid(geometry);
+    if (extend_to_zero) mesh->axis0.addPoint(0.);
     writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
     return mesh;
 }
 
-shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
+shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh = make_shared<RectilinearMesh3D>();
 
@@ -43,9 +49,16 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
 
     mesh->setOptimalIterationOrder();
 
+    return mesh;
+}
+
+shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
+{
+    auto mesh = makeGeometryGrid(geometry);
     writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0.size(), mesh->axis1.size(), mesh->axis2.size());
     return mesh;
 }
+
 
 
 RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryObjectD<2>>& geometry, size_t dir)

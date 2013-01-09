@@ -58,8 +58,8 @@ find_package(PLaSK)
 enable_testing()
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #set(SOLVER_TEST_DEPENDS mytest)
-#add_test(solvers/foo/bar mytest)
-#add_python_test(solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
+#add_test(solvers/foo/bar ${PLASK_SOLVER_PATH}/mytest)
+#add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
 
 
 # Build everything the default way.

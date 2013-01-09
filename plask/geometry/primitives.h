@@ -112,6 +112,20 @@ struct Box2D {
 
     /**
      * Get translated copy of this.
+     * @param translation_vec translation vector
+     * @return this translated by @p translation_vec
+     */
+    Box2D operator+(const Vec<2,double>& translation_vec) const { return Box2D(lower + translation_vec, upper + translation_vec); }
+
+    /**
+     * Get translated copy of this.
+     * @param translation_vec translation vector
+     * @return this translated by @p translation_vec
+     */
+    Box2D operator-(const Vec<2,double>& translation_vec) const { return Box2D(lower - translation_vec, upper - translation_vec); }
+
+    /**
+     * Get translated copy of this.
      * @param trasnalation_in_up_dir translation in up direction
      * @return this translated up by @p trasnalation_in_up_dir
      */
@@ -122,6 +136,18 @@ struct Box2D {
      * @param translation_vec translation vector
      */
     void translate(const Vec<2,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+
+    /**
+     * Translate this by @p translation_vec.
+     * @param translation_vec translation vector
+     */
+    Box2D& operator+=(const Vec<2,double>& translation_vec) { lower += translation_vec; upper -= translation_vec; return *this; }
+
+    /**
+     * Translate this by @p translation_vec.
+     * @param translation_vec translation vector
+     */
+    Box2D& operator-=(const Vec<2,double>& translation_vec) { lower -= translation_vec; upper -= translation_vec; return *this; }
 
     /**
      * Translate this up by @p trasnalation_in_up_dir.
@@ -272,7 +298,26 @@ struct Box3D {
      */
     void makeInclude(const Box3D& other);
 
+    /**
+     * Get translated copy of this.
+     * @param translation_vec translation vector
+     * @return this translated by @p translation_vec
+     */
     Box3D translated(const Vec<3,double>& translation_vec) const { return Box3D(lower + translation_vec, upper + translation_vec); }
+
+    /**
+     * Get translated copy of this.
+     * @param translation_vec translation vector
+     * @return this translated by @p translation_vec
+     */
+    Box3D operator+(const Vec<3,double>& translation_vec) const { return Box3D(lower + translation_vec, upper + translation_vec); }
+
+    /**
+     * Get translated copy of this.
+     * @param translation_vec translation vector
+     * @return this translated by @p translation_vec
+     */
+    Box3D operator-(const Vec<3,double>& translation_vec) const { return Box3D(lower - translation_vec, upper - translation_vec); }
 
     /**
      * Get translated copy of this.
@@ -282,7 +327,23 @@ struct Box3D {
     Box3D translatedUp(const double trasnalation_in_up_dir) const {
         Box3D r = *this; r.translateUp(trasnalation_in_up_dir); return r; }
 
+    /**
+     * Translate this by @p translation_vec.
+     * @param translation_vec translation vector
+     */
     void translate(const Vec<3,double>& translation_vec) { lower += translation_vec; upper += translation_vec; }
+
+    /**
+     * Translate this by @p translation_vec.
+     * @param translation_vec translation vector
+     */
+    Box3D& operator+=(const Vec<3,double>& translation_vec) { lower += translation_vec; upper -= translation_vec; return *this; }
+
+    /**
+     * Translate this by @p translation_vec.
+     * @param translation_vec translation vector
+     */
+    Box3D& operator-=(const Vec<3,double>& translation_vec) { lower -= translation_vec; upper -= translation_vec; return *this; }
 
     /**
      * Translate this up by @p trasnalation_in_up_dir.

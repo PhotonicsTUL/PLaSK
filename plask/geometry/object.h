@@ -776,7 +776,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const = 0;
 
     /**
-     * Get number of real (physicaly stored) children in geometry graph.
+     * Get number of real (physically stored) children in geometry graph.
      *
      * By default call getChildrenCount(), but objects of some types (like multi-stack) redefine this.
      * @return number of real children
@@ -784,7 +784,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     virtual std::size_t getRealChildrenCount() const;
 
     /**
-     * Get real (physicaly stored) child with given index.
+     * Get real (physically stored) child with given index.
      *
      * By default call getChildNo(child_no), but objects of some types (like multi-stack) redefine this.
      * @param child_no index of real child to get

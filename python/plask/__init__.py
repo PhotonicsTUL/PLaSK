@@ -11,7 +11,9 @@ from ._plask import *
 
 from ._plask import _print_exception
 
+
 ## ## plask.material ## ##
+
 
 materialdb = material.database = material.MaterialsDB.get_default()
 
@@ -66,7 +68,9 @@ del register_material
 material.simple = lambda mat, **kwargs: material.register_material(mat, complex=False, **kwargs)
 material.complex = lambda mat, **kwargs: material.register_material(mat, complex=True, **kwargs)
 
+
 ## ## plask.geometry ## ##
+
 
 def Stack2D(repeat=None, shift=0.):
     '''Stack2D(repeat=None, shift=0)
@@ -99,6 +103,7 @@ del Stack3D
 
 ## ## plask.manager ## ##
 
+
 def load_xpl(source, destination=None):
     #TODO documentation
     if destination is None:
@@ -119,6 +124,7 @@ def load_xpl(source, destination=None):
     lst = [ manager.geometries[g].axes for g in manager.geometries ]
     same = lst and lst.count(lst[0]) == len(lst)
     if same: config.axes = lst[0]
+loadxpl = load_xpl
 
 def run_xpl(source):
     '''Load and run the code from the XPL file.
@@ -140,9 +146,11 @@ def run_xpl(source):
     except Exception as exc:
         ety, eva, etb = sys.exc_info()
         _print_exception(ety, eva, etb, env['__manager__'].scriptline, True)
+runxpl = run_xpl
 
 
 ## ##  ## ##
+
 
 def _showwarning(message, category, filename, lineno, file=None, line=None):
     """
@@ -155,6 +163,7 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
 import warnings
 warnings.showwarning = _showwarning
 del warnings
+
 
 ## ##  ## ##
 
