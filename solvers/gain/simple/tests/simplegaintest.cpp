@@ -31,18 +31,25 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     active1->push_front(well);
     active1->push_front(barrier);
 
-    auto cladding = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.1)GaAs"));
+    auto cladding1 = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.1)GaAs"));
+    auto cladding2 = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.2)GaAs"));
 
     auto nothing = make_shared<Block<2>>(Vec<2>(2., 5.));
     auto shelf = make_shared<ShelfContainer2D>();
     shelf->push_back(nothing);
     shelf->push_back(active1);
 
-    stack->push_front(cladding);
+    auto active2 = make_shared<StackContainer<2>>();
+    active2->addRole("active");
+    active2->push_back(well);
+
+    stack->push_front(cladding2);
+    stack->push_front(active2);
+    stack->push_front(cladding1);
     stack->push_front(active1);
-    stack->push_front(cladding);
+    stack->push_front(cladding2);
     stack->push_front(shelf);
-    stack->push_front(cladding);
+    stack->push_front(cladding1);
 
     auto geometry = make_shared<Geometry2DCartesian>(stack, 1000.);
 
@@ -51,7 +58,7 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     solver.setGeometry(geometry);
     solver.compute();
 
-    BOOST_CHECK_EQUAL(solver.regions.size(), 2);
+    BOOST_CHECK_EQUAL(solver.regions.size(), 3);
     BOOST_CHECK_EQUAL(solver.regions[0].origin, Vec<2>(2., 20.));
     BOOST_CHECK_EQUAL(solver.regions[1].origin, Vec<2>(0., 74.));
 
@@ -65,6 +72,11 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     BOOST_CHECK_EQUAL(solver.regions[0].getLayerBox(1), Box2D(2., 25., 12., 32.));
     BOOST_CHECK_EQUAL(solver.regions[0].getBoundingBox(), Box2D(2., 20., 12., 54.));
     BOOST_CHECK_EQUAL(solver.regions[1].getLayerBox(1), Box2D(0., 79., 10., 86.));
+
+    BOOST_CHECK_EQUAL(solver.regions[2].layers->getChildrenCount(), 3);
+    BOOST_CHECK_EQUAL(solver.regions[2].isQW.size(), 3);
+    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(0), cladding1->material);
+    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(2), cladding2->material);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

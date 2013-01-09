@@ -20,8 +20,6 @@ struct FermiGainSolver: public SolverOver<GeometryType>
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
         std::vector<bool> isQW;                 ///< Flags indicating which layers are quantum wells
-        shared_ptr<Material> bottom;            ///< Material below the active region
-        shared_ptr<Material> top;               ///< Material above the active region
         ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
         /// \return material of \p n-th layer
         shared_ptr<Material> getLayerMaterial(size_t n) const {
