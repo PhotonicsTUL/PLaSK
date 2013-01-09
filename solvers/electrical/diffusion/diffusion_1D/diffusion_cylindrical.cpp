@@ -608,15 +608,15 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
             bool active = tags.find("active") != tags.end();
             if (QW && !active)
-                throw Exception("%1%: All marked quantum wells must belong to marked active region.", getId());
+                throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
             if (QW && !inQW)        // QW start
             {
                 if (foundQW)
                 {
                     if (left != mesh->axis0[i])
-                        throw Exception("%1%: Quantum wells not vertically aligned.", getId());
+                        throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
                     if (this->geometry->getMaterial(point) != QW_material)
-                        throw Exception("%1%: Quantum wells of multiple materials not supported.", getId());
+                        throw Exception("%1%: Quantum wells of multiple materials not supported.", this->getId());
                 }
                 else
                 {
@@ -628,7 +628,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             if (!QW && inQW)        // QW end
             {
                 if (foundQW && right != mesh->axis0[i])
-                    throw Exception("%1%: Quantum wells not vertically aligned.", getId());
+                    throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
                 right = mesh->axis0[i];
                 results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
                 foundQW = true;
@@ -637,14 +637,14 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             if (active)
             {
                 if (had_active && j > 0 && !this->geometry->hasRoleAt("active", points->at(i,j-1)))
-                    throw Exception("%1%: Multiple active regions not supported.", getId());
+                    throw Exception("%1%: Multiple active regions not supported.", this->getId());
                 had_active = true;
             }
         }
         if (inQW)
         { // handle situation when QW spans to the end of the structure
             if (foundQW && right != mesh->axis0[points->axis0.size()])
-                throw Exception("%1%: Quantum wells not vertically aligned.", getId());
+                throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
             right = mesh->axis0[points->axis0.size()];
             results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
             foundQW = true;
