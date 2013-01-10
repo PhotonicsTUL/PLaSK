@@ -78,7 +78,7 @@ struct Box2D {
     void fix();
 
     /**
-     * Check if the point is inside box.
+     * Check if the point is inside the box.
      * @param p point
      * @return true only if point is inside this box
      */

@@ -471,7 +471,22 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
 template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method)
 {
     RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z, z, 1));
-    return interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
+    auto concentration = interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
+    // Make sure we have concentration only in the quantum wells
+    //TODO maybe more optimal approach would be reasonable?
+    size_t i = 0;
+    for (auto point: destination_mesh)
+    {
+        bool inqw = false;
+        for (auto QW: detected_QW)
+            if (QW.includes(point))
+            {
+                inqw = true;
+                break;
+            }
+        if (!inqw) concentration[i] = NAN;
+        ++i;
+    }
 }
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(double T)
@@ -615,7 +630,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
                 if (foundQW)
                 {
                     if (left != mesh->axis0[c])
-                        throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
+                        throw Exception("%1%: Left edge of quantum wells not vertically aligned.", this->getId());
                     if (this->geometry->getMaterial(point) != QW_material)
                         throw Exception("%1%: Quantum wells of multiple materials not supported.", this->getId());
                 }
@@ -629,7 +644,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             if (!QW && inQW)        // QW end
             {
                 if (foundQW && right != mesh->axis0[c])
-                    throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
+                    throw Exception("%1%: Right edge of quantum wells not vertically aligned.", this->getId());
                 right = mesh->axis0[c];
                 results.push_back(Box2D(left, mesh->axis1[r], right, mesh->axis1[r+1]));
                 foundQW = true;
@@ -643,7 +658,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
         if (inQW)
         { // handle situation when QW spans to the end of the structure
             if (foundQW && right != mesh->axis0[points->axis0.size()])
-                throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
+                throw Exception("%1%: Right edge of quantum wells not vertically aligned.", this->getId());
             right = mesh->axis0[points->axis0.size()];
             results.push_back(Box2D(left, mesh->axis1[r], right, mesh->axis1[r+1]));
             foundQW = true;

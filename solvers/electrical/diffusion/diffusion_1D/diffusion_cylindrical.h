@@ -44,7 +44,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         static constexpr double hk = plask::phys::h_J/M_PI;      // stala plancka/2pi
 
-        plask::shared_ptr< plask::Material> QW_material;
+        plask::shared_ptr<plask::Material> QW_material;
 
         double z;                  // z coordinate of active region
 
