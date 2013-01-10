@@ -116,13 +116,13 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         if (initial_computation)
         {
             writelog(LOG_DETAIL, "Initial computation");
-            convergence = CylindricalFEM();
+            convergence = MatrixFEM();
             if (convergence) initial_computation = false;
         }
         if (threshold_computation)
         {
             writelog(LOG_DETAIL, "Threshold computation");
-            convergence = CylindricalFEM();
+            convergence = MatrixFEM();
             if (convergence) threshold_computation = false;
         }
     }
@@ -133,7 +133,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     outCarriersConcentration.fireChanged();
 }
 
-template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geometry2DType>::CylindricalFEM()
+template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geometry2DType>::MatrixFEM()
 {
 //    Computation of K*n" - E*n = -F
     bool _convergence;
@@ -145,15 +145,15 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
 
     // linear FEM elements variables:
 
-    double r1 = 0.0, r2 = 0.0;
-    double k11e = 0, k12e = 0, k22e = 0;
-    double p1e = 0, p2e = 0;
+//    double r1 = 0.0, r2 = 0.0;
+//    double k11e = 0, k12e = 0, k22e = 0;
+//    double p1e = 0, p2e = 0;
 
     // parabolic FEM elements variables:
 
-    double r3 = 0.0;
-    double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
-    double p3e = 0.0;
+//    double r3 = 0.0;
+//    double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
+//    double p3e = 0.0;
 
     double T = 0.0;
     double n0 = 0.0;
@@ -162,19 +162,12 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
     double B = 0.0;
     double C = 0.0;
 
-    double K = 0.0;
-    double E = 0.0;
-    double F = 0.0;
+//    double K = 0.0;
+//    double E = 0.0;
+//    double F = 0.0;
 
     double L = 0.0;
     double R = 0.0;
-
-//    double (DiffusionCylindricalSolver::*KPointer)(size_t,double,double);
-//    double (DiffusionCylindricalSolver::*EPointer)(size_t,double,double);
-//    double (DiffusionCylindricalSolver::*FPointer)(size_t,double,double);
-
-//    double (DiffusionCylindricalSolver::*LPointer)(size_t,double,double);
-//    double (DiffusionCylindricalSolver::*RPointer)(size_t,double,double);
 
     // equation AX = RHS
 
@@ -195,25 +188,13 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
             A_matrix.reset(3*mesh.size(), 0.0);
         }
 
-//        RHS_vector.reset();
         RHS_vector.reset(mesh.size(), 0.0);
-
-//        X_vector.reset();
         X_vector.reset(mesh.size(), 0.0);
 
         n_previous = n_present.copy();
 
-//        std::cerr << "n_previous = " << n_previous << "\n";
-
         if (initial_computation)
         {
-//            KPointer = &DiffusionCylindricalSolver::KInitial;
-//            EPointer = &DiffusionCylindricalSolver::E;
-//            FPointer = &DiffusionCylindricalSolver::F;
-
-//            LPointer = &DiffusionCylindricalSolver::leftSideInitial;
-//            RPointer = &DiffusionCylindricalSolver::rightSide;
-
             for (int i = 0; i < mesh.size(); i++)
             {
                 T = T_on_the_mesh[i];
@@ -240,8 +221,6 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
             _convergence = true;
             n_present = X_vector.copy();
 
-//#           ifndef NDEBUG
-//            writelog(LOG_DEBUG, "n_present = %1%, n_previous = %2%", this->n_present[100], n_previous[100]);
             for (int i = 0; i< mesh.size(); i++)
             {
                 std::cerr << "i = " << i << "\n";
@@ -253,13 +232,6 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
         }
         else
         {
-//            KPointer = &DiffusionCylindricalSolver::KThreshold;
-//            EPointer = &DiffusionCylindricalSolver::E;
-//            FPointer = &DiffusionCylindricalSolver::F;
-
-//            LPointer = &DiffusionCylindricalSolver::leftSideThreshold;
-//            RPointer = &DiffusionCylindricalSolver::rightSide;
-
             const char uplo = 'U';
             int lapack_n = 0;
             int lapack_kd = 0;
@@ -269,51 +241,50 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
 
             if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
             {
-                for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
-                {
+//                for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
+//                {
+//
+//                    T = T_on_the_mesh[i+1];
+//                    n0 = n_previous[i+1];
+//
+//                    r1 = mesh[i]*1e-4;
+//                    r2 = mesh[i+1]*1e-4;
+//
+//                    double j1 = abs(j_on_the_mesh[i][1]*1e+3);
+//                    double j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
+//
+//                    K = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(T);
+//                    F = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(i, T, n0);
+//                    E = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(T, n0);
+//
+//                    K = 4*K/((r2-r1)*(r2-r1));
+//
+//                    k11e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r1-r2)/3);
+//                    k12e = M_PI*(r2-r1)/4*((-K+E)*(r1+r2) - E*(  r1+r2)/3);
+//                    k22e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r2-r1)/3);
+//
+//                    p1e  = M_PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
+//                    p2e  = M_PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
+//
+//
+//                    // } else {
+//                    // k11e =  K/(r2-r1) + E*(r2-r1)/3;
+//                    // k12e = -K/(r2-r1) + E*(r2-r1)/6;
+//                    // k22e =  K/(r2-r1) + E*(r2-r1)/3;
+//                    // p1e  =  F*(r2-r1)/2;
+//                    // p2e  =  F*(r2-r1)/2;
+//                    // }
+//
+//                    A_matrix[2*i + 1] += k11e;
+//                    A_matrix[2*i + 2] += k12e;
+//                    A_matrix[2*i + 3] += k22e;
+//
+//                    RHS_vector[i] += p1e;
+//                    RHS_vector[i+1] += p2e;
+//
+//                } // end loop over all elements
 
-                    T = T_on_the_mesh[i+1];
-                    n0 = n_previous[i+1];
-
-                    r1 = mesh[i]*1e-4;
-                    r2 = mesh[i+1]*1e-4;
-
-                    double j1 = abs(j_on_the_mesh[i][1]*1e+3);
-                    double j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
-
-                    K = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(T);
-//                    K = (this->*KPointer)(i, T, n0);
-                    F = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(i, T, n0);
-                    E = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(T, n0);
-
-                    // if ( symmetry_type == "VCSEL") {
-
-                    K = 4*K/((r2-r1)*(r2-r1));
-
-                    k11e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r1-r2)/3);
-                    k12e = M_PI*(r2-r1)/4*((-K+E)*(r1+r2) - E*(  r1+r2)/3);
-                    k22e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r2-r1)/3);
-
-                    p1e  = M_PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
-                    p2e  = M_PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
-
-
-                    // } else {
-                    // k11e =  K/(r2-r1) + E*(r2-r1)/3;
-                    // k12e = -K/(r2-r1) + E*(r2-r1)/6;
-                    // k22e =  K/(r2-r1) + E*(r2-r1)/3;
-                    // p1e  =  F*(r2-r1)/2;
-                    // p2e  =  F*(r2-r1)/2;
-                    // }
-
-                    A_matrix[2*i + 1] += k11e;
-                    A_matrix[2*i + 2] += k12e;
-                    A_matrix[2*i + 3] += k22e;
-
-                    RHS_vector[i] += p1e;
-                    RHS_vector[i+1] += p2e;
-
-                } // end loop over all elements
+                FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
                 lapack_n = lapack_ldb = (int)mesh.size();
                 lapack_kd = 1;
@@ -327,53 +298,49 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
             }
             else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
             {
-                for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
-                {
-                    T = T_on_the_mesh[2*i + 1];              // value in the middle node
-                    n0 = n_previous[2*i + 1];                // value in the middle node
+//                for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
+//                {
+//                    T = T_on_the_mesh[2*i + 1];              // value in the middle node
+//                    n0 = n_previous[2*i + 1];                // value in the middle node
+//
+//                    r1 = mesh[2*i]*1e-4;
+//                    r3 = mesh[2*i + 2]*1e-4;
+//
+//                    K = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(T);
+//                    F = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(2*i + 1, T, n0);
+//                    E = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(T, n0);
+//
+//
+//                    double Cnst = M_PI*(r3-r1)/30;
+//
+//                    k11e = Cnst*(10*K*(11*r1+3*r3)/((r3-r1)*(r3-r1)) + E*(7*r1+r3));
+//                    k12e = Cnst*(-40*K*(3*r1+r3)/((r3-r1)*(r3-r1)) + 4*E*r1);            // = k21e
+//                    k13e = Cnst*(10*K*(r1+r3)/((r3-r1)*(r3-r1)) - E*(r1+r3));            // = k31e
+//                    k22e = Cnst*(160*K*(r1+r3)/((r3-r1)*(r3-r1)) + 16*E*(r1+r3));
+//                    k23e = Cnst*(-40*K*(r1+3*r3)/((r3-r1)*(r3-r1)) + 4*E*r3);            // = k32e
+//                    k33e = Cnst*(10*K*(3*r1+11*r3)/((r3-r1)*(r3-r1)) + E*(r1+7*r3));
+//
+//                    p1e = Cnst*10*F*r1;
+//                    p2e = Cnst*20*F*(r1+r3);
+//                    p3e = Cnst*10*F*r3;
+//
+//                    //  Fill matrix A_matrix columnwise: //29.06.2012 r. Marcin Gebski
+//
+//                    A_matrix[6*i + 2] += k11e;
+//                    A_matrix[6*i + 4] += k12e;
+//                    A_matrix[6*i + 6] += k13e;
+//                    A_matrix[6*i + 5] += k22e;
+//                    A_matrix[6*i + 7] += k23e;
+//                    A_matrix[6*i + 8] += k33e;
+//                    A_matrix[6*i + 3] += 0;                         // k24 = 0 - fill top band
+//
+//                    RHS_vector[2*i] += p1e;
+//                    RHS_vector[2*i+1] += p2e;
+//                    RHS_vector[2*i+2] += p3e;
+//
+//                } // end loop over all elements
 
-                    r1 = mesh[2*i]*1e-4;
-                    r3 = mesh[2*i + 2]*1e-4;
-
-                    K = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(T);
-                    // K = (this->*KPointer)(2*i + 1, T, n0);      // value in the middle node
-                    // F = (this->*FPointer)(2*i + 1, T, n0);      // value in the middle node
-                    // E = (this->*EPointer)(2*i + 1, T, n0);      // value in the middle node
-                    F = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(2*i + 1, T, n0);
-                    E = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(T, n0);
-
-                    // if ( symmetry_type == "VCSEL") { //VCSEL
-
-                    double Cnst = M_PI*(r3-r1)/30;
-
-                    k11e = Cnst*(10*K*(11*r1+3*r3)/((r3-r1)*(r3-r1)) + E*(7*r1+r3));
-                    k12e = Cnst*(-40*K*(3*r1+r3)/((r3-r1)*(r3-r1)) + 4*E*r1);            // = k21e
-                    k13e = Cnst*(10*K*(r1+r3)/((r3-r1)*(r3-r1)) - E*(r1+r3));            // = k31e
-                    k22e = Cnst*(160*K*(r1+r3)/((r3-r1)*(r3-r1)) + 16*E*(r1+r3));
-                    k23e = Cnst*(-40*K*(r1+3*r3)/((r3-r1)*(r3-r1)) + 4*E*r3);            // = k32e
-                    k33e = Cnst*(10*K*(3*r1+11*r3)/((r3-r1)*(r3-r1)) + E*(r1+7*r3));
-
-                    p1e = Cnst*10*F*r1;
-                    p2e = Cnst*20*F*(r1+r3);
-                    p3e = Cnst*10*F*r3;
-
-                    // }
-
-                    //  Fill matrix A_matrix columnwise: //29.06.2012 r. Marcin Gebski
-
-                    A_matrix[6*i + 2] += k11e;
-                    A_matrix[6*i + 4] += k12e;
-                    A_matrix[6*i + 6] += k13e;
-                    A_matrix[6*i + 5] += k22e;
-                    A_matrix[6*i + 7] += k23e;
-                    A_matrix[6*i + 8] += k33e;
-                    A_matrix[6*i + 3] += 0;                         // k24 = 0 - fill top band
-
-                    RHS_vector[2*i] += p1e;
-                    RHS_vector[2*i+1] += p2e;
-                    RHS_vector[2*i+2] += p3e;
-
-                } // end loop over all elements
+                FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
                 lapack_n = lapack_ldb = (int)mesh.size();
                 lapack_kd = 2;
@@ -468,6 +435,227 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
     return _convergence;
 }
 
+template<>
+void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(DataVector<double> A_matrix, DataVector<double> RHS_vector)
+{
+    // linear FEM elements variables:
+
+    double r1 = 0.0, r2 = 0.0;
+    double k11e = 0, k12e = 0, k22e = 0;
+    double p1e = 0, p2e = 0;
+
+    // parabolic FEM elements variables:
+
+    double T = 0.0;
+    double n0 = 0.0;
+
+    double K = 0.0;
+    double E = 0.0;
+    double F = 0.0;
+
+    if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
+    {
+//        double j1 = 0.0;
+//        double j2 = 0.0;
+
+        for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
+        {
+
+            T = T_on_the_mesh[i+1];
+            n0 = n_previous[i+1];
+
+            r1 = mesh[i]*1e-4;
+            r2 = mesh[i+1]*1e-4;
+
+//            j1 = abs(j_on_the_mesh[i][1]*1e+3);
+//            j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
+
+            K = this->K(T);
+            F = this->F(i, T, n0);
+            E = this->E(T, n0);
+
+            k11e = K/(r2-r1) + E*(r2-r1)/3;
+            k12e = -K/(r2-r1) + E*(r2-r1)/6;
+            k22e = K/(r2-r1) + E*(r2-r1)/3;
+
+            p1e = F*(r2-r1)/2;
+            p2e = p1e;
+
+            A_matrix[2*i + 1] += k11e;
+            A_matrix[2*i + 2] += k12e;
+            A_matrix[2*i + 3] += k22e;
+
+            RHS_vector[i] += p1e;
+            RHS_vector[i+1] += p2e;
+
+        } // end loop over all elements
+    }
+    else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
+    {
+        double r3 = 0.0;
+        double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
+        double p3e = 0.0;
+
+        for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
+        {
+            T = T_on_the_mesh[2*i + 1];              // value in the middle node
+            n0 = n_previous[2*i + 1];                // value in the middle node
+
+            r1 = mesh[2*i]*1e-4;
+            r3 = mesh[2*i + 2]*1e-4;
+
+            K = this->K(T);
+            F = this->F(2*i + 1, T, n0);
+            E = this->E(T, n0);
+
+            K = K/((r3-r1)*(r3-r1));
+            double Cnst = (r3-r1)/30;
+
+            k11e = Cnst*(70*K + 4*E);
+            k12e = Cnst*(-80*K + 2*E);         // = k21e
+            k13e = Cnst*(10*K - E);            // = k31e
+            k22e = Cnst*(160*K + 16*E);
+            k23e = k12e;                       // = k32e
+            k33e = Cnst*(70*K + 16*E);
+
+            p1e = F*(r3-r1)/6;
+            p2e = 2*F*(r3-r1)/3;
+            p3e = p1e;
+
+            //  Fill matrix A_matrix columnwise: //29.06.2012 r. Marcin Gebski
+
+            A_matrix[6*i + 2] += k11e;
+            A_matrix[6*i + 4] += k12e;
+            A_matrix[6*i + 6] += k13e;
+            A_matrix[6*i + 5] += k22e;
+            A_matrix[6*i + 7] += k23e;
+            A_matrix[6*i + 8] += k33e;
+            A_matrix[6*i + 3] += 0;                         // k24 = 0 - fill top band
+
+            RHS_vector[2*i] += p1e;
+            RHS_vector[2*i+1] += p2e;
+            RHS_vector[2*i+2] += p3e;
+
+        } // end loop over all elements
+    }
+}
+
+template<>
+void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices(DataVector<double> A_matrix, DataVector<double> RHS_vector)
+{
+    // linear FEM elements variables:
+
+    double r1 = 0.0, r2 = 0.0;
+    double k11e = 0, k12e = 0, k22e = 0;
+    double p1e = 0, p2e = 0;
+
+    // parabolic FEM elements variables:
+
+    double T = 0.0;
+    double n0 = 0.0;
+
+    double K = 0.0;
+    double E = 0.0;
+    double F = 0.0;
+
+    if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
+    {
+        double j1 = 0.0;
+        double j2 = 0.0;
+
+        for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
+        {
+
+            T = T_on_the_mesh[i+1];
+            n0 = n_previous[i+1];
+
+            r1 = mesh[i]*1e-4;
+            r2 = mesh[i+1]*1e-4;
+
+            j1 = abs(j_on_the_mesh[i][1]*1e+3);
+            j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
+
+            K = this->K(T);
+            F = this->F(i, T, n0);
+            E = this->E(T, n0);
+
+            K = 4*K/((r2-r1)*(r2-r1));
+
+            k11e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r1-r2)/3);
+            k12e = M_PI*(r2-r1)/4*((-K+E)*(r1+r2) - E*(  r1+r2)/3);
+            k22e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r2-r1)/3);
+
+            p1e  = M_PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
+            p2e  = M_PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
+
+
+                    // } else {
+                    // k11e =  K/(r2-r1) + E*(r2-r1)/3;
+                    // k12e = -K/(r2-r1) + E*(r2-r1)/6;
+                    // k22e =  K/(r2-r1) + E*(r2-r1)/3;
+                    // p1e  =  F*(r2-r1)/2;
+                    // p2e  =  F*(r2-r1)/2;
+                    // }
+
+            A_matrix[2*i + 1] += k11e;
+            A_matrix[2*i + 2] += k12e;
+            A_matrix[2*i + 3] += k22e;
+
+            RHS_vector[i] += p1e;
+            RHS_vector[i+1] += p2e;
+
+        } // end loop over all elements
+    }
+    else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
+    {
+        double r3 = 0.0;
+        double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
+        double p3e = 0.0;
+
+        for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
+        {
+            T = T_on_the_mesh[2*i + 1];              // value in the middle node
+            n0 = n_previous[2*i + 1];                // value in the middle node
+
+            r1 = mesh[2*i]*1e-4;
+            r3 = mesh[2*i + 2]*1e-4;
+
+            K = this->K(T);
+            F = this->F(2*i + 1, T, n0);
+            E = this->E(T, n0);
+
+
+            double Cnst = M_PI*(r3-r1)/30;
+
+            k11e = Cnst*(10*K*(11*r1+3*r3)/((r3-r1)*(r3-r1)) + E*(7*r1+r3));
+            k12e = Cnst*(-40*K*(3*r1+r3)/((r3-r1)*(r3-r1)) + 4*E*r1);            // = k21e
+            k13e = Cnst*(10*K*(r1+r3)/((r3-r1)*(r3-r1)) - E*(r1+r3));            // = k31e
+            k22e = Cnst*(160*K*(r1+r3)/((r3-r1)*(r3-r1)) + 16*E*(r1+r3));
+            k23e = Cnst*(-40*K*(r1+3*r3)/((r3-r1)*(r3-r1)) + 4*E*r3);            // = k32e
+            k33e = Cnst*(10*K*(3*r1+11*r3)/((r3-r1)*(r3-r1)) + E*(r1+7*r3));
+
+            p1e = Cnst*10*F*r1;
+            p2e = Cnst*20*F*(r1+r3);
+            p3e = Cnst*10*F*r3;
+
+            //  Fill matrix A_matrix columnwise: //29.06.2012 r. Marcin Gebski
+
+            A_matrix[6*i + 2] += k11e;
+            A_matrix[6*i + 4] += k12e;
+            A_matrix[6*i + 6] += k13e;
+            A_matrix[6*i + 5] += k22e;
+            A_matrix[6*i + 7] += k23e;
+            A_matrix[6*i + 8] += k33e;
+            A_matrix[6*i + 3] += 0;                         // k24 = 0 - fill top band
+
+            RHS_vector[2*i] += p1e;
+            RHS_vector[2*i+1] += p2e;
+            RHS_vector[2*i+2] += p3e;
+
+        } // end loop over all elements
+    }
+}
+
 template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method)
 {
     RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z, z, 1));
@@ -487,6 +675,7 @@ template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDi
         if (!inqw) concentration[i] = NAN;
         ++i;
     }
+    return concentration;
 }
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(double T)
@@ -496,18 +685,6 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
         product += this->QW_material->D(T);
     return product;        // for initial distribution there is no diffusion
 }
-
-//double DiffusionCylindricalSolver::KInitial(int i, double T, double n0)
-//{
-//    return 0;        // dla rozkladu poczatkowego nie zachodzi dyfuzja
-//}
-//
-//
-//double DiffusionCylindricalSolver::KThreshold(int i, double T, double n0)
-//{
-//    return D(T);
-//}
-
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(double T, double n0)
 {

@@ -77,6 +77,8 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         // Methods for solving equation
         // K*n" -  E*n = -F
 
+        void createMatrices(plask::DataVector<double> A_matrix, plask::DataVector<double> RHS_vector);
+
         double K(double T);
 //        double KInitial(size_t i, double T, double n0);	// K dla rozkladu poczatkowego
 //        double KThreshold(size_t i, double T, double n0);    // K postaci D(T)
@@ -93,7 +95,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         double rightSide(int i);         // prawa strona rownania dla rozkladu poczatkowego i progowego
         double nSecondDeriv(int i);                          // druga pochodna n po r
 
-        bool CylindricalFEM();
+        bool MatrixFEM();
         void determineQwWidth();
 
         std::vector<Box2D> detectQuantumWells();
