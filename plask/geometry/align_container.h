@@ -115,7 +115,7 @@ public:
      * @param place trasnalation of child in all directions but alignDirection
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Coordinates& place);
+    PathHints::Hint addUnsafe(shared_ptr<ChildType> el, const Coordinates& place);
 
     /**
      * Add new child (translated) to end of children vector.
@@ -124,7 +124,7 @@ public:
      * @param translation trasnalation of child in all directions, alignDirection coordinate of this direction will be ignored and overwrite by alginer
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Vec<dim, double>& translation);
+    PathHints::Hint addUnsafe(shared_ptr<ChildType> el, const Vec<dim, double>& translation = Primitive<dim>::ZERO_VEC);
 
     /**
      * Add new child (trasnlated) to end of children vector.
@@ -145,7 +145,7 @@ public:
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(const shared_ptr<ChildType>& el, const Vec<dim, double>& translation) {
+    PathHints::Hint add(const shared_ptr<ChildType>& el, const Vec<dim, double>& translation = Primitive<dim>::ZERO_VEC) {
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, translation);
     }

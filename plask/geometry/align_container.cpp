@@ -58,7 +58,7 @@ shared_ptr<GeometryObject> AlignContainer<dim, alignDirection>::changedVersionFo
 }
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(const shared_ptr<AlignContainer<dim, alignDirection>::ChildType>& el, const AlignContainer<dim, alignDirection>::Coordinates& place) {
+PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(shared_ptr<AlignContainer<dim, alignDirection>::ChildType> el, const AlignContainer<dim, alignDirection>::Coordinates& place) {
     shared_ptr<AlignContainer<dim, alignDirection>::TranslationT> trans_geom = this->newChild(el, place);
     this->children.push_back(trans_geom);
     this->fireChildrenInserted(children.size()-1, children.size());
@@ -66,7 +66,7 @@ PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(const shared_ptr<
 }
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(const shared_ptr<AlignContainer<dim, alignDirection>::ChildType>& el, const Vec<dim, double>& translation) {
+PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(shared_ptr<AlignContainer<dim, alignDirection>::ChildType> el, const Vec<dim, double>& translation) {
     shared_ptr<AlignContainer<dim, alignDirection>::TranslationT> trans_geom = this->newChild(el, translation);
     this->children.push_back(trans_geom);
     this->fireChildrenInserted(children.size()-1, children.size());
@@ -81,26 +81,47 @@ template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
 
 // ---- containers readers: ----
 
-template <Primitive<2>::Direction alignDirection>
-shared_ptr<GeometryObject> read_AlignContainer2D(GeometryReader& reader) {
+inline double readPlace(GeometryReader& reader, Primitive<2>::Direction skipDirection) {
+    return reader.source.getAttribute(reader.getAxisName(1-skipDirection), 0.0);
+}
+
+inline Vec<3, double> readPlace(GeometryReader& reader, Primitive<3>::Direction skipDirection) {
+    Vec<3, double> result;
+    for (int i = 0; i < 3; ++i)
+        if (i != skipDirection)
+            result[i] = reader.source.getAttribute(reader.getAxisName(i), 0.0);
+    return result;
+}
+
+template <int dim, typename Primitive<dim>::Direction alignDirection>
+shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader) {
     std::unique_ptr<align::OneDirectionAligner<direction3D(alignDirection)>>
         aligner(align::fromStrUnique<direction3D(alignDirection)>(reader.source.requireAttribute("align")));
-    shared_ptr< AlignContainer<2, alignDirection> > result(new AlignContainer<2, alignDirection>(*aligner));
-    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
+    shared_ptr< AlignContainer<dim, alignDirection> > result(new AlignContainer<dim, alignDirection>(*aligner));
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
         [&]() -> PathHints::Hint {
-            return result->add(reader.readExactlyOneChild< typename AlignContainer<2, alignDirection>::ChildType >(),
-                      reader.source.getAttribute(reader.getAxisName(1-alignDirection), 0.0));
+            return result->add(reader.readExactlyOneChild< typename AlignContainer<dim, alignDirection>::ChildType >(),
+                                readPlace(reader, alignDirection));
         },
         [&]() {
-            result->add(reader.readObject< typename AlignContainer<2, alignDirection>::ChildType >(), 0.0);
+            result->add(reader.readObject< typename AlignContainer<dim, alignDirection>::ChildType >());
         }
     );
     return result;
 }
 
-static GeometryReader::RegisterObjectReader align_container2Dtran_reader(AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::NAME, read_AlignContainer2D<Primitive<2>::DIRECTION_TRAN>);
-static GeometryReader::RegisterObjectReader align_container2Dvert_reader(AlignContainer<2, Primitive<2>::DIRECTION_VERT>::NAME, read_AlignContainer2D<Primitive<2>::DIRECTION_VERT>);
+static GeometryReader::RegisterObjectReader align_container2Dtran_reader(AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::NAME,
+                                                                         read_AlignContainer<2, Primitive<2>::DIRECTION_TRAN>);
+static GeometryReader::RegisterObjectReader align_container2Dvert_reader(AlignContainer<2, Primitive<2>::DIRECTION_VERT>::NAME,
+                                                                         read_AlignContainer<2, Primitive<2>::DIRECTION_VERT>);
+
+static GeometryReader::RegisterObjectReader align_container3Dlong_reader(AlignContainer<3, Primitive<3>::DIRECTION_LONG>::NAME,
+                                                                         read_AlignContainer<3, Primitive<3>::DIRECTION_LONG>);
+static GeometryReader::RegisterObjectReader align_container3Dtran_reader(AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::NAME,
+                                                                         read_AlignContainer<3, Primitive<3>::DIRECTION_TRAN>);
+static GeometryReader::RegisterObjectReader align_container3Dvert_reader(AlignContainer<3, Primitive<3>::DIRECTION_VERT>::NAME,
+                                                                         read_AlignContainer<3, Primitive<3>::DIRECTION_VERT>);
 
 
 }   // namespace plask
