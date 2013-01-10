@@ -28,7 +28,7 @@ std::string exePathAndName();
 std::string exePath();
 
 /**
- * Get path one step above the current program executable file.
+ * Get enviroment verible PLASK_PREFIX_PATH (should be without rearmost '/' or '\\') or, if it is not set, path one step above the current program executable file.
  * @return path one step above from program executable
  */
 std::string prefixPath();

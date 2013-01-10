@@ -1,4 +1,5 @@
 #include "system.h"
+#include <cstdlib>
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 
@@ -42,6 +43,8 @@ std::string exePath() {
 }
 
 std::string prefixPath() {
+    const char* prefixPath = getenv("PLASK_PREFIX_PATH");
+    if (prefixPath) return prefixPath;
     return dirUp(exePath());
 }
 

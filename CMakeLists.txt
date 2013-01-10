@@ -171,8 +171,8 @@ add_subdirectory(extlib/camos)
 
 # ---------- plask library --------------------------------------------
 
-#add_library(libplask SHARED ${plask_src} ${plask_headers})
-add_library(libplask SHARED ${plask_src})
+add_library(libplask SHARED ${plask_src} ${plask_headers})
+#add_library(libplask SHARED ${plask_src})
 target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES}) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
     target_link_libraries(libplask kernel32)
