@@ -455,8 +455,8 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
 
     if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
     {
-//        double j1 = 0.0;
-//        double j2 = 0.0;
+        double j1 = 0.0;
+        double j2 = 0.0;
 
         for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
         {
@@ -467,8 +467,8 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
             r1 = mesh[i]*1e-4;
             r2 = mesh[i+1]*1e-4;
 
-//            j1 = abs(j_on_the_mesh[i][1]*1e+3);
-//            j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
+            j1 = abs(j_on_the_mesh[i][1]*1e+3);
+            j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
 
             K = this->K(T);
             F = this->F(i, T, n0);
@@ -478,8 +478,8 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
             k12e = -K/(r2-r1) + E*(r2-r1)/6;
             k22e = K/(r2-r1) + E*(r2-r1)/3;
 
-            p1e = F*(r2-r1)/2;
-            p2e = p1e;
+            p1e = ((r2-r1)/2)*(F + (2*j1+j2)/(3*plask::phys::qe*global_QW_width));
+            p2e = ((r2-r1)/2)*(F + (2*j2+j1)/(3*plask::phys::qe*global_QW_width));
 
             A_matrix[2*i + 1] += k11e;
             A_matrix[2*i + 2] += k12e;
@@ -710,11 +710,12 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::nSecondDeriv(int i)
 {
-    double n_second_deriv;     // second derivative with respect to r
-    double dr = (mesh.last() - mesh.first())*1e-4/(double)mesh.size();
+    double n_second_deriv = 0.0;     // second derivative with respect to r
+    double dr = 0.0;
 
     if (fem_method != FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
     {
+        dr = (mesh.last() - mesh.first())*1e-4/(double)mesh.size();
         double n_right = 0, n_left = 0, n_central = 0;  // n values for derivative: right-side, left-side, central
 
         if ( (i > 0) && (i <  mesh.size() - 1) )     // middle of the range
@@ -723,10 +724,10 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
             n_left = n_present[i-1];
             n_central = n_present[i];
 
-            // if (symmetry_type == "VCSEL")
-            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
-            //else if (symmetry_type == "EEL")
-            //    n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4);
+            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(mesh[i]*1e-4);
+
+            if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
         }
         else if (i == 0)     // punkt r = 0
         {
@@ -742,18 +743,19 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
             n_left = n_present[i-1];    // podobnie jak we wczesniejszym warunku
             n_central = n_present[i];
 
-            // if (symmetry_type == "VCSEL")
-            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
-            // else if (symmetry_type == "EEL")
-            //     n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4);
+            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(mesh[i]*1e-4);
+
+            if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
         }
     }
     else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
     {
-        // if (symmetry_type == "VCSEL")
-        n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/pow((mesh[i+1] - mesh[i-1])*1e-4,2)) + (1.0/(mesh[i]*1e-4)) * (1.0/((mesh[i+1]-mesh[i-1])*1e-4)) * (n_present[i+1] - n_present[i-1]);
-        // else if (symmetry_type == "EEL")
-        //     n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/pow((mesh[i+1] - mesh[i-1])*1e-4,2));
+        dr = (mesh[i+1] - mesh[i-1])*1e-4;
+        n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/(dr*dr));
+
+        if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
+            n_second_deriv += (1.0/(mesh[i]*1e-4)) * (1.0/dr) * (n_present[i+1] - n_present[i-1]); // adding cylindrical component of laplace operator
     }
 
     return n_second_deriv;
