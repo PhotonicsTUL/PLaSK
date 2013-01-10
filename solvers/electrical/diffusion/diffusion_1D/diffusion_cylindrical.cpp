@@ -468,7 +468,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
     return _convergence;
 }
 
-template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION )
+template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method)
 {
     RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z, z, 1));
     return interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
@@ -597,13 +597,14 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
     // Compact each row (it can contain only one QW and each must start and end in the same point)
     double left = 0., right = 0.;
     bool foundQW = false;
-    bool had_active = false;
-    for (int j = 0; j < points->axis1.size(); ++j)
+    bool had_active = false, after_active = false;
+    for (int r = 0; r < points->axis1.size(); ++r)
     {
         bool inQW = false;
-        for (int i = 0; i < points->axis0.size(); ++i)
+        bool active_row = false;
+        for (int c = 0; c < points->axis0.size(); ++c)
         {
-            auto point = points->at(i,j);
+            auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
             bool active = tags.find("active") != tags.end();
@@ -613,7 +614,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             {
                 if (foundQW)
                 {
-                    if (left != mesh->axis0[i])
+                    if (left != mesh->axis0[c])
                         throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
                     if (this->geometry->getMaterial(point) != QW_material)
                         throw Exception("%1%: Quantum wells of multiple materials not supported.", this->getId());
@@ -622,23 +623,21 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
                 {
                     QW_material = this->geometry->getMaterial(point);
                 }
-                left = mesh->axis0[i];
+                left = mesh->axis0[c];
                 inQW = true;
             }
             if (!QW && inQW)        // QW end
             {
-                if (foundQW && right != mesh->axis0[i])
+                if (foundQW && right != mesh->axis0[c])
                     throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
-                right = mesh->axis0[i];
-                results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
+                right = mesh->axis0[c];
+                results.push_back(Box2D(left, mesh->axis1[r], right, mesh->axis1[r+1]));
                 foundQW = true;
                 inQW = false;
             }
-            if (active)
-            {
-                if (had_active && j > 0 && !this->geometry->hasRoleAt("active", points->at(i,j-1)))
-                    throw Exception("%1%: Multiple active regions not supported.", this->getId());
-                had_active = true;
+            if (active) {
+                active_row = had_active = true;
+                if (after_active)  throw Exception("%1%: Multiple active regions not supported.", this->getId());
             }
         }
         if (inQW)
@@ -646,10 +645,11 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             if (foundQW && right != mesh->axis0[points->axis0.size()])
                 throw Exception("%1%: Quantum wells not vertically aligned.", this->getId());
             right = mesh->axis0[points->axis0.size()];
-            results.push_back(Box2D(left, mesh->axis1[j], right, mesh->axis1[j+1]));
+            results.push_back(Box2D(left, mesh->axis1[r], right, mesh->axis1[r+1]));
             foundQW = true;
             inQW = false;
         }
+        if (!active_row && had_active) after_active = true;
     }
 
     // Compact results in vertical direction
@@ -692,7 +692,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "DiffusionCart"; }
 template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "DiffusionCyl"; }
 
-template struct FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
-template struct FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>;
+template class FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
+template class FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>;
 
 }}} //namespaces

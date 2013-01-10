@@ -35,9 +35,9 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     auto cladding2 = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.2)GaAs"));
 
     auto nothing = make_shared<Block<2>>(Vec<2>(2., 5.));
-    auto shelf = make_shared<ShelfContainer2D>();
-    shelf->push_back(nothing);
-    shelf->push_back(active1);
+    auto shelf1 = make_shared<ShelfContainer2D>();
+    shelf1->push_back(nothing);
+    shelf1->push_back(active1);
 
     auto active2 = make_shared<StackContainer<2>>();
     active2->addRole("active");
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     stack->push_front(cladding1);
     stack->push_front(active1);
     stack->push_front(cladding2);
-    stack->push_front(shelf);
+    stack->push_front(shelf1);
     stack->push_front(cladding1);
 
     auto geometry = make_shared<Geometry2DCartesian>(stack, 1000.);
