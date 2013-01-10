@@ -170,6 +170,8 @@ template <typename GeometryType>
 double FermiGainSolver<GeometryType>::computeGain(const Vec<2>& point, double wavelenght)
 {
     this->initCalculation(); // This must be called before any calculation!
+
+    return 0;   //TODO 0 implementation
 }
 
 
@@ -178,7 +180,7 @@ const DataVector<const double> FermiGainSolver<GeometryType>::getGain(const Mesh
 
     //TODO
 
-
+    return DataVector<const double>();   //TODO 0 implementation
 }
 
 

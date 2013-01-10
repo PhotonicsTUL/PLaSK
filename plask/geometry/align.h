@@ -364,6 +364,12 @@ typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_LONG, details::
 typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_LONG, details::centerToZero, details::CENTER> LonCenter;
 typedef TranslationOneDirectionAligner<Primitive<3>::DIRECTION_LONG> Lon;
 
+//2d vert. aligners:
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::lowToZero, details::BACK> Bottom;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::hiToZero, details::FRONT> Top;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::centerToZero, details::CENTER> VertCenter;
+typedef TranslationOneDirectionAligner<Primitive<3>::DIRECTION_VERT> Vert;
+
 //3d lon/tran aligners:
 typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::hiToZero, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::lowToZero, details::LEFT> FrontLeft;
 typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::hiToZero, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::hiToZero, details::RIGHT> FrontRight;
@@ -381,6 +387,7 @@ typedef TranslationAligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTI
 namespace details {
     OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>* transAlignerFromString(std::string str);
     OneDirectionAligner<Primitive<3>::DIRECTION_LONG>* lonAlignerFromString(std::string str);
+    OneDirectionAligner<Primitive<3>::DIRECTION_VERT>* vertAlignerFromString(std::string str);
 }
 
 /**
@@ -396,6 +403,9 @@ inline OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>* fromStr<Primitive<3>::
 
 template <>
 inline OneDirectionAligner<Primitive<3>::DIRECTION_LONG>* fromStr<Primitive<3>::DIRECTION_LONG>(const std::string& str) { return details::lonAlignerFromString(str); }
+
+template <>
+inline OneDirectionAligner<Primitive<3>::DIRECTION_VERT>* fromStr<Primitive<3>::DIRECTION_VERT>(const std::string& str) { return details::vertAlignerFromString(str); }
 
 template <Direction direction>
 inline std::unique_ptr<OneDirectionAligner<direction>> fromStrUnique(const std::string& str) {

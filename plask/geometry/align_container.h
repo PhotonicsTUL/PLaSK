@@ -8,23 +8,58 @@ This file includes containers of geometries objects which align all children in 
 #include "container.h"
 #include "align.h"
 #include "../utils/metaprog.h"
+#include <utility>
 
 namespace plask {
 
 /**
  * Containers of geometries objects which align all children in one direction (typically to top/left/center)
  * and allow to explicitly choose coordinates in other directions.
+ * @ingroup GEOMETRY_OBJ
  */
-//TODO implementation
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-class AlignContainer: public GeometryObjectContainer<dim> {
+struct AlignContainer: public GeometryObjectContainer<dim> {
 
-    typedef typename chooseType<dim-2, align::OneDirectionAligner<direction2Dto3D(alignDirection)>, align::OneDirectionAligner<alignDirection> >::type Aligner;
+    typedef align::OneDirectionAligner<direction3D(alignDirection)> Aligner;
 
+    typedef typename chooseType<dim-2, double, std::pair<double, double> >::type Coordinates;
+
+    /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
+    typedef typename GeometryObjectContainer<dim>::DVec DVec;
+
+    /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
+    typedef typename GeometryObjectContainer<dim>::Box Box;
+
+    /// Type of this child.
+    typedef typename GeometryObjectContainer<dim>::ChildType ChildType;
+
+    /// Type of translation geometry object in space of this.
+    typedef typename GeometryObjectContainer<dim>::TranslationT TranslationT;
+
+    using GeometryObjectContainer<dim>::children;
+    using GeometryObjectContainer<dim>::shared_from_this;
+
+private:
     /**
      * Aligner which is use to align object in alignDirection.
      */
     std::unique_ptr<Aligner> aligner;
+
+    /**
+     * Create new translation object.
+     * @param el
+     * @param place
+     * @return
+     */
+    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Coordinates& place);
+
+    /**
+     * Create and setup new child (translation object).
+     * @param el
+     * @param place
+     * @return
+     */
+    shared_ptr<TranslationT> newChild(const shared_ptr<ChildType>& el, const Coordinates& place);
 
 public:
 
@@ -34,17 +69,50 @@ public:
 
     /// Called by child.change signal, update heights call this change
     void onChildChanged(const GeometryObject::Event& evt) {
-        if (evt.isResize()) aligner->align(evt.source());
+        if (evt.isResize()) aligner->align(const_cast<TranslationT&>(evt.source<TranslationT>()));
         GeometryObjectContainer<dim>::onChildChanged(evt);
     }
 
+    /**
+     * Get aligner which is use to align object in alignDirection.
+     * @return aligner which is use to align object
+     */
     const Aligner& getAligner() const {
         return *aligner;
     }
 
-    void setAligner(const Aligner& new_aligner) const {
+    /**
+     * Set aligner which will be used to align object in alignDirection.
+     * @param new_aligner new aligner to use
+     */
+    void setAligner(const Aligner& new_aligner) {
         aligner = new_aligner.cloneUnique();
     }
+
+    /**
+     * Add new child (translated) to end of children vector.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el new child
+     * @param place trasnalation of child in all directions but alignDirection
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Coordinates& place);
+
+    /**
+     * Add new child (trasnlated) to end of children vector.
+     * @param el new child
+     * @param place trasnalation of child in all directions but alignDirection
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint add(const shared_ptr<ChildType>& el, const Coordinates& place) {
+        this->ensureCanHaveAsChild(*el);
+        return addUnsafe(el, place);
+    }
+
+    //void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;    //this attributes
+
+   //void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;   //child attributes
 
 };
 

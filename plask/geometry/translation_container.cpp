@@ -250,6 +250,16 @@ TranslationContainer<dim>::~TranslationContainer() {
     delete cache.load();
 }
 
+template <int dim>
+PathHints::Hint TranslationContainer<dim>::addUnsafe(const shared_ptr<TranslationContainer<dim>::ChildType>& el, const TranslationContainer<dim>::DVec& translation) {
+    shared_ptr<TranslationContainer<dim>::TranslationT> trans_geom(new TranslationContainer<dim>::TranslationT(el, translation));
+    this->connectOnChildChanged(*trans_geom);
+    children.push_back(trans_geom);
+    invalidateCache();
+    this->fireChildrenInserted(children.size()-1, children.size());
+    return PathHints::Hint(shared_from_this(), trans_geom);
+}
+
 template <>
 void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     shared_ptr<Translation<2>> child_tran = children[child_index];

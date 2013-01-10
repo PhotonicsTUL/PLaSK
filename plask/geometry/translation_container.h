@@ -65,14 +65,7 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
      * @param translation trasnalation of child
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
-        shared_ptr<TranslationT> trans_geom(new TranslationT(el, translation));
-        this->connectOnChildChanged(*trans_geom);
-        children.push_back(trans_geom);
-        invalidateCache();
-        this->fireChildrenInserted(children.size()-1, children.size());
-        return PathHints::Hint(shared_from_this(), trans_geom);
-    }
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC);
 
     /**
      * Add new child (trasnlated) to end of children vector.

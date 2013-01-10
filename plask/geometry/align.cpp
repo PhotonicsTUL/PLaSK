@@ -24,6 +24,14 @@ OneDirectionAligner<Primitive<3>::DIRECTION_LONG>* lonAlignerFromString(std::str
     return new Lon(boost::lexical_cast<double>(str));
 }
 
+OneDirectionAligner<Primitive<3>::DIRECTION_VERT>* vertAlignerFromString(std::string str) {
+    boost::algorithm::to_lower(str);
+    if (str == "bottom" || str == "b") return new Bottom();
+    if (str == "top" || str == "t") return new Top();
+    if (str == "center" || str == "c" || str == "vertcenter" || str == "m" || str == "middle") return new VertCenter();
+    return new Vert(boost::lexical_cast<double>(str));
+}
+
 }   // namespace details
 
 Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>* aligner3DFromString(std::string str) {
