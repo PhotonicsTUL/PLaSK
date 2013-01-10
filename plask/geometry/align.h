@@ -8,6 +8,7 @@ This file includes aligners.
 #include "transform.h"
 #include <memory>   //unique_ptr
 #include <boost/lexical_cast.hpp>
+#include "../utils/xml.h"
 
 namespace plask {
 
@@ -46,7 +47,7 @@ template <Direction direction> struct OneDirectionAligner;
 template <Direction _direction>
 struct OneDirectionAlignerBase {
 
-    ///Direction of activity.
+    /// Direction of activity.
     static const Direction direction = _direction;
 
     /**
