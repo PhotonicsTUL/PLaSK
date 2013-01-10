@@ -154,9 +154,9 @@ public:
         return NAME;
     }
 
-    //void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;    //this attributes
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;    //this attributes
 
-   //void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;   //child attributes
+    void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;   //child attributes
 
 };
 

@@ -1,5 +1,7 @@
 #include "align_container.h"
 
+#define align_attr "align"
+
 namespace plask {
 
 template<>
@@ -73,6 +75,18 @@ PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(shared_ptr<AlignC
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
 
+template <int dim, typename Primitive<dim>::Direction alignDirection>
+void AlignContainer<dim, alignDirection>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    dest_xml_object.attr(align_attr, this->getAligner().str());
+}
+
+template <int dim, typename Primitive<dim>::Direction alignDirection>
+void AlignContainer<dim, alignDirection>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
+    for (int d = 0; d < dim; ++d)
+        if (d != alignDirection)
+            dest_xml_child_tag.attr(axes[direction3D(typename Primitive<dim>::Direction(d))], children[child_index]->translation[d]);
+}
+
 template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
 template struct AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
 template struct AlignContainer<3, Primitive<3>::DIRECTION_LONG>;
@@ -96,7 +110,7 @@ inline Vec<3, double> readPlace(GeometryReader& reader, Primitive<3>::Direction 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
 shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader) {
     std::unique_ptr<align::OneDirectionAligner<direction3D(alignDirection)>>
-        aligner(align::fromStrUnique<direction3D(alignDirection)>(reader.source.requireAttribute("align")));
+        aligner(align::fromStrUnique<direction3D(alignDirection)>(reader.source.requireAttribute(align_attr)));
     shared_ptr< AlignContainer<dim, alignDirection> > result(new AlignContainer<dim, alignDirection>(*aligner));
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
