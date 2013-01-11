@@ -6,4 +6,6 @@ fem.DriftDiffusionCyl
 
 fem.Fem2D
 fem.FemCyl
+
+diffusion.Diffusion2D
 diffusion.DiffusionCyl

@@ -31,14 +31,14 @@ BOOST_PYTHON_MODULE(diffusion)
         solver.def_readwrite("maxrefines", &__Class__::max_mesh_changes, "Maximum number of allowed mesh refinements");
         solver.def_readwrite("maxiters", &__Class__::max_iterations, "Maximum number of allowed iterations before attempting to refine mesh");
         RECEIVER(inCurrentDensity, "Current density vector perpendicular to the active region"); // receiver in the solver
-        RECEIVER(inTemperature, "Temperature distribution along 'r' direction in the active region"); // receiver in the solver
-        PROVIDER(outCarriersConcentration, "Carrier pairs concentration along 'r' direction in the active region"); // provider in the solver
+        RECEIVER(inTemperature, "Temperature distribution"); // receiver in the solver
+        PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
 //         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
      }
-     {CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>, "DiffusionCart", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
+     {CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>, "Diffusion2D", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
 
         py_enum<__Class__::FemMethod>("FemMethod")
             .value("LINEAR", __Class__::FEM_LINEAR)
@@ -52,8 +52,8 @@ BOOST_PYTHON_MODULE(diffusion)
         solver.def_readwrite("maxrefines", &__Class__::max_mesh_changes, "Maximum number of allowed mesh refinements");
         solver.def_readwrite("maxiters", &__Class__::max_iterations, "Maximum number of allowed iterations before attempting to refine mesh");
         RECEIVER(inCurrentDensity, "Current density vector perpendicular to the active region"); // receiver in the solver
-        RECEIVER(inTemperature, "Temperature distribution along 'r' direction in the active region"); // receiver in the solver
-        PROVIDER(outCarriersConcentration, "Carrier pairs concentration along 'r' direction in the active region"); // provider in the solver
+        RECEIVER(inTemperature, "Temperature distribution"); // receiver in the solver
+        PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property

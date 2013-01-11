@@ -883,7 +883,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     global_QW_width *= 1e-4;
 }
 
-template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "DiffusionCart"; }
+template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "Diffusion2D"; }
 template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "DiffusionCyl"; }
 
 template class FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
