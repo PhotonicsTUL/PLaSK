@@ -77,7 +77,7 @@ PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(shared_ptr<AlignC
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
 void AlignContainer<dim, alignDirection>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
-    dest_xml_object.attr(align_attr, this->getAligner().str());
+    this->getAligner().writeToXML(dest_xml_object, axes);
 }
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
