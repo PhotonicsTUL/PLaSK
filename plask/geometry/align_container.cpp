@@ -109,7 +109,7 @@ inline Vec<3, double> readPlace(GeometryReader& reader, Primitive<3>::Direction 
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
 shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader) {
-    std::unique_ptr<align::OneDirectionAligner<direction3D(alignDirection)>>
+/*    std::unique_ptr<align::OneDirectionAligner<direction3D(alignDirection)>>
         aligner(align::fromStrUnique<direction3D(alignDirection)>(reader.source.requireAttribute(align_attr)));
     shared_ptr< AlignContainer<dim, alignDirection> > result(new AlignContainer<dim, alignDirection>(*aligner));
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
@@ -122,7 +122,7 @@ shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader) {
             result->add(reader.readObject< typename AlignContainer<dim, alignDirection>::ChildType >());
         }
     );
-    return result;
+    return result;*/    //TODO new implementation
 }
 
 static GeometryReader::RegisterObjectReader align_container2Dtran_reader(AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::NAME,

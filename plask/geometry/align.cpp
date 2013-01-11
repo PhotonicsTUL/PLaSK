@@ -8,33 +8,46 @@ namespace align {
 
 namespace details {
 
-OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>* transAlignerFromString(std::string str) {
-    boost::algorithm::to_lower(str);
-    if (str == "left" || str == "l") return new Left();
-    if (str == "right" || str == "r") return new Right();
-    if (str == "center" || str == "c" || str == "m" || str == "middle") return new Center();
-    return new Tran(boost::lexical_cast<double>(str));
+template <typename AlignerType, Primitive<3>::Direction dir>
+inline void tryGetOneDirectionAligner(std::unique_ptr<OneDirectionAligner<dir>>& ans, boost::optional<double> param) {
+    if (!param) return;
+    if (ans) throw Exception("multiple specification of aligner in direction %1%", dir);
+    ans.reset(new AlignerType(*param));
 }
 
-OneDirectionAligner<Primitive<3>::DIRECTION_LONG>* lonAlignerFromString(std::string str) {
-    boost::algorithm::to_lower(str);
-    if (str == "front" || str == "f") return new Front();
-    if (str == "back" || str == "b") return new Back();
-    if (str == "center" || str == "c" || str == "loncenter" || str == "m" || str == "middle") return new LonCenter();
-    return new Lon(boost::lexical_cast<double>(str));
+std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>> transAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
+    std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>> result;
+    tryGetOneDirectionAligner<Left>(result, dic(LEFT::value));
+    tryGetOneDirectionAligner<Right>(result, dic(RIGHT::value));
+    tryGetOneDirectionAligner<TranCenter>(result, dic(TRAN_CENTER::value));
+    tryGetOneDirectionAligner<TranCenter>(result, dic("trancenter"));
+    tryGetOneDirectionAligner<Tran>(result, dic(axis_name));
+    return result;
 }
 
-OneDirectionAligner<Primitive<3>::DIRECTION_VERT>* vertAlignerFromString(std::string str) {
-    boost::algorithm::to_lower(str);
-    if (str == "bottom" || str == "b") return new Bottom();
-    if (str == "top" || str == "t") return new Top();
-    if (str == "center" || str == "c" || str == "vertcenter" || str == "m" || str == "middle") return new VertCenter();
-    return new Vert(boost::lexical_cast<double>(str));
+std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_LONG>> lonAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
+    std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_LONG>> result;
+    tryGetOneDirectionAligner<Front>(result, dic(FRONT::value));
+    tryGetOneDirectionAligner<Back>(result, dic(BACK::value));
+    tryGetOneDirectionAligner<LonCenter>(result, dic(LON_CENTER::value));
+    tryGetOneDirectionAligner<LonCenter>(result, dic("loncenter"));
+    tryGetOneDirectionAligner<Lon>(result, dic(axis_name));
+    return result;
+}
+
+std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_VERT>> vertAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
+    std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_VERT>> result;
+    tryGetOneDirectionAligner<Top>(result, dic(TOP::value));
+    tryGetOneDirectionAligner<Bottom>(result, dic(BOTTOM::value));
+    tryGetOneDirectionAligner<VertCenter>(result, dic(VERT_CENTER::value));
+    tryGetOneDirectionAligner<VertCenter>(result, dic("vertcenter"));
+    tryGetOneDirectionAligner<Vert>(result, dic(axis_name));
+    return result;
 }
 
 }   // namespace details
 
-Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>* aligner3DFromString(std::string str) {
+/*Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>* aligner3DFromString(std::string str) {
     boost::algorithm::to_lower(str);
          if (str == "front left" || str == "fl" || str == "left front" || str == "lf") return new FrontLeft();
     else if (str == "center left" || str == "cl" || str == "left center" || str == "lc") return new CenterLeft();
@@ -47,7 +60,7 @@ Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>* aligner3D
     else if (str == "back right" || str == "br" || str == "right back" || str == "rb") return new BackRight();
     throw BadInput("alignerFromString", "Wrong aligner specification");
     return nullptr;
-}
+}*/
 
 
 

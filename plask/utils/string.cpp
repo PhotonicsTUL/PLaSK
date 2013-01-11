@@ -1,6 +1,15 @@
 #include "string.h"
 
+#include <boost/lexical_cast.hpp>
+
 namespace plask {
+
+Printable::~Printable() {
+}
+
+std::string Printable::str() const {
+    return boost::lexical_cast<std::string>(*this);
+}
 
 std::pair<std::string, std::string> splitString2(const std::string& to_split, char splitter) {
     std::string::size_type p = to_split.find(splitter);

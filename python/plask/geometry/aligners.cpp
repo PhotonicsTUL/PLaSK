@@ -33,9 +33,10 @@ namespace detail {
             // Grab pointer to memory into which to construct the new Aligner
             void* storage = ((boost::python::converter::rvalue_from_python_storage<A2>*)data)->storage.bytes;
 
-            if (str == "left" || str == "l") new(storage) align::Left();
-            else if (str == "right" || str == "r") new(storage) align::Right();
-            else if (str == "center" || str == "c") new(storage) align::Center();
+            //TODO reimplementation:
+            if (str == "left" || str == "l") new(storage) align::Left(0.0);
+            else if (str == "right" || str == "r") new(storage) align::Right(0.0);
+            else if (str == "center" || str == "c") new(storage) align::Center(0.0);
             else {
                 throw ValueError("wrong alignment specification");
             }
@@ -51,7 +52,8 @@ namespace detail {
             // Grab pointer to memory into which to construct the new Aligner
             void* storage = ((boost::python::converter::rvalue_from_python_storage<A3>*)data)->storage.bytes;
 
-                 if (str == "front left" || str == "fl" || str == "left front" || str == "lf") new(storage) align::FrontLeft();
+            //TODO must be reimplemented using ComposeAligner3D
+            /*   if (str == "front left" || str == "fl" || str == "left front" || str == "lf") new(storage) align::FrontLeft();
             else if (str == "center left" || str == "cl" || str == "left center" || str == "lc") new(storage) align::CenterLeft();
             else if (str == "back left" || str == "bl" || str == "left back" || str == "lb") new(storage) align::BackLeft();
             else if (str == "front center" || str == "fc" || str == "center front" || str == "lf") new(storage) align::FrontCenter();
@@ -62,7 +64,7 @@ namespace detail {
             else if (str == "back right" || str == "br" || str == "right back" || str == "rb") new(storage) align::BackRight();
             else {
                 throw ValueError("wrong alignment specification");
-            }
+            }*/
 
             // Stash the memory chunk pointer for later use by boost.python
             data->convertible = storage;
@@ -109,22 +111,25 @@ void register_geometry_aligners()
                                                      py::init<double>((py::arg("lon")=0.))
                                                     );
 
-    py::class_<align::LonTran, shared_ptr<align::LonTran>, py::bases<A3>>("LonTran",
+    //TODO aligner for two directions are provided intependend now and use ComposeAligner3D
+    /*py::class_<align::LonTran, shared_ptr<align::LonTran>, py::bases<A3>>("LonTran",
                                                      "Three-dimensional aligner with arbitrary child shift\n\n"
                                                      "LonTran(lon_shift=0.0, tran_shift=0.0)\n    create aligner with child shifted to [lon, tran]\n",
                                                      py::init<double, double>((py::arg("lon")=0., py::arg("tran")=0.))
-                                                    );
+                                                    );*/
 
-    py::class_<align::Left, shared_ptr<align::Left>, py::bases<A2>>("Left", "Two-dimensional aligner: left");
+    //TODO this now requires double argument
+   /* py::class_<align::Left, shared_ptr<align::Left>, py::bases<A2>>("Left", "Two-dimensional aligner: left");
     py::class_<align::Right, shared_ptr<align::Right>, py::bases<A2>>("Right", "Two-dimensional aligner: right");
     py::class_<align::Center, shared_ptr<align::Center>, py::bases<A2>> center("Center", "Two-dimensional aligner: center");
     scope.attr("TranCenter") = center;
 
     py::class_<align::Front, shared_ptr<align::Front>, py::bases<A2l>>("Front", "Longitudal aligner: front");
     py::class_<align::Back, shared_ptr<align::Back>, py::bases<A2l>>("Back", "Longitudal aligner: back");
-    py::class_<align::LonCenter, shared_ptr<align::LonCenter>, py::bases<A2l>>("LonCenter", "Longitudal aligner: center");
+    py::class_<align::LonCenter, shared_ptr<align::LonCenter>, py::bases<A2l>>("LonCenter", "Longitudal aligner: center");*/
 
-    py::class_<align::FrontLeft, shared_ptr<align::FrontLeft>, py::bases<A3>>("FrontLeft", "Three-dimesional aligner: front left");
+    //TODO aligner for two directions are provided intependend now and use ComposeAligner3D
+/*    py::class_<align::FrontLeft, shared_ptr<align::FrontLeft>, py::bases<A3>>("FrontLeft", "Three-dimesional aligner: front left");
     py::class_<align::FrontRight, shared_ptr<align::FrontRight>, py::bases<A3>>("FrontRight", "Three-dimesional aligner: front right");
     py::class_<align::FrontCenter, shared_ptr<align::FrontCenter>, py::bases<A3>>("FrontCenter", "Three-dimesional aligner: front center");
     py::class_<align::BackLeft, shared_ptr<align::BackLeft>, py::bases<A3>>("BackLeft", "Three-dimesional aligner: back left");
@@ -132,7 +137,7 @@ void register_geometry_aligners()
     py::class_<align::BackCenter, shared_ptr<align::BackCenter>, py::bases<A3>>("BackCenter", "Three-dimesional aligner: back center");
     py::class_<align::CenterLeft, shared_ptr<align::CenterLeft>, py::bases<A3>>("CenterLeft", "Three-dimesional aligner: center left");
     py::class_<align::CenterRight, shared_ptr<align::CenterRight>, py::bases<A3>>("CenterRight", "Three-dimesional aligner: center right");
-    py::class_<align::CenterCenter, shared_ptr<align::CenterCenter>, py::bases<A3>>("CenterCenter", "Three-dimesional aligner: center");
+    py::class_<align::CenterCenter, shared_ptr<align::CenterCenter>, py::bases<A3>>("CenterCenter", "Three-dimesional aligner: center");*/
 
     // Register string conventers
     detail::Aligners_from_Python();

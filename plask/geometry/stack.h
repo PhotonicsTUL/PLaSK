@@ -270,7 +270,7 @@ template <int dim>
 struct StackContainer: public StackContainerBaseImpl<dim> {
 
     typedef typename chooseType<dim-2, align::OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>, align::Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> >::type Aligner;
-    typedef typename chooseType<dim-2, align::Left, align::BackLeft>::type DefaultAligner;
+    static const Aligner& DefaultAligner();
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
     typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;

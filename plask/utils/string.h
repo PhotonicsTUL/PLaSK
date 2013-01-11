@@ -16,6 +16,37 @@ This file includes string and parsers utils.
 namespace plask {
 
 /**
+ * Base class / helper for printable classes with virtual print method.
+ */
+struct Printable {
+    
+    /**
+     * Print this to stream @p out.
+     * @param out print destination, output stream
+     */
+    virtual void print(std::ostream& out) const = 0;
+    
+    virtual ~Printable();
+    
+    /**
+     * Print this to stream using print method.
+     * @param out print destination, output stream
+     * @param to_print vector to print
+     * @return out stream
+     */
+    friend inline std::ostream& operator<<(std::ostream& out, const Printable& to_print) {
+        to_print.print(out);
+        return out;
+    }
+    
+    /**
+     * Get string representation of this using print method.
+     * @return string representation of this
+     */
+    std::string str() const;
+};
+
+/**
  * Split string to two parts: before @a spliter and after @a spliter.
  * If @a spliter is not included in string return pair: @a to_split and empty string.
  * @param to_split string to split

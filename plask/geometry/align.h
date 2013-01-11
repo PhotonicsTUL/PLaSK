@@ -45,10 +45,19 @@ template <Direction direction> struct OneDirectionAligner;
  * @see OneDirectionAligner
  */
 template <Direction _direction>
-struct OneDirectionAlignerBase {
+struct OneDirectionAlignerBase: public Printable {
 
     /// Direction of activity.
     static const Direction direction = _direction;
+    
+    /// Coordinate to which this aligner align.
+    double coordinate;
+    
+    /**
+     * Construct new aligner.
+     * @param coordinate coordinate to which this aligner align.
+     */
+    OneDirectionAlignerBase(double coordinate): coordinate(coordinate) {}
 
     /**
      * Get translation for aligned obiect.
@@ -75,11 +84,7 @@ struct OneDirectionAlignerBase {
      */
     std::unique_ptr< OneDirectionAligner<direction> > cloneUnique() const { return std::unique_ptr< OneDirectionAligner<direction> >(clone()); }
 
-    /**
-     * Get string representation of this aligner.
-     * @return string representation of this aligner
-     */
-    virtual std::string str() const = 0;
+
     
     /**
      * Set object coordinate in direction of aligner activity.
@@ -105,9 +110,6 @@ struct OneDirectionAlignerBase {
             return toAlign.translation[direction] = this->getAlign(0.0, 0.0);
     }
 
-    /// Virtual destructor. Do nothing.
-    virtual ~OneDirectionAlignerBase() {}
-
 };
 
 /**
@@ -119,6 +121,8 @@ struct OneDirectionAligner: public OneDirectionAlignerBase<direction> {
     enum { direction2D = DirectionTo2D<direction>::value };
 
     using OneDirectionAlignerBase<direction>::align;
+    
+    OneDirectionAligner<direction>(double coordinate): OneDirectionAlignerBase<direction>(coordinate) {}
     
     /**
      * Set object coordinate in direction of aligner activity.
@@ -148,35 +152,33 @@ struct OneDirectionAligner: public OneDirectionAlignerBase<direction> {
 
 template <>
 struct OneDirectionAligner<Primitive<3>::DIRECTION_LONG>: public OneDirectionAlignerBase<Primitive<3>::DIRECTION_LONG> {
+    OneDirectionAligner<Primitive<3>::DIRECTION_LONG>(double coordinate): OneDirectionAlignerBase<Primitive<3>::DIRECTION_LONG>(coordinate) {}
 };
 
 /**
- * Alginer which place object in constant place.
+ * Alginer which place zero of object in constant, chosen place.
  */
 template <Direction direction>
-struct TranslationOneDirectionAligner: public OneDirectionAligner<direction> {
+struct SetZeroOneDirectionAligner: public OneDirectionAligner<direction> {
 
-    /// Translation of aligned object in aligner activity direction.
-    double translation;
-
-    TranslationOneDirectionAligner(double translation): translation(translation) {}
+    SetZeroOneDirectionAligner(double translation): OneDirectionAligner<direction>(translation) {}
 
     virtual double getAlign(double low, double hi) const {
-        return translation;
+        return this->coordinate;
     }
 
     bool useBounds() const { return false; }
 
-    TranslationOneDirectionAligner* clone() const { return new TranslationOneDirectionAligner(translation); }
+    SetZeroOneDirectionAligner* clone() const { return new SetZeroOneDirectionAligner(this->coordinate); }
 
-    virtual std::string str() const { return boost::lexical_cast<std::string>(translation); }
+    virtual void print(std::ostream& out) const { out << "align zero in direction " << direction << " to " << this->coordinate; }
 };
 
 /**
  * Base class for two directions aligner in 3d space.
  */
 template <Direction _direction1, Direction _direction2>
-struct Aligner3D {
+struct Aligner3D: public Printable {
 
     static_assert(_direction1 != _direction2, "Wrong Aligner3D template parameters, two different directions are required.");
 
@@ -215,12 +217,13 @@ struct Aligner3D {
      */
     std::unique_ptr< Aligner3D<direction1, direction2> > cloneUnique() const { return std::unique_ptr< Aligner3D<direction1, direction2> >(clone()); }
 
-    virtual std::string strFirstDirection() const = 0;
-    virtual std::string strSecondDirection() const = 0;
+    //virtual std::string str() const = 0;
+    /*virtual std::string strFirstDirection() const = 0;
+    virtual std::string strSecondDirection() const = 0;*/
 
 };
 
-template <Direction direction1, Direction direction2>
+/*template <Direction direction1, Direction direction2>
 struct TranslationAligner3D: public Aligner3D<direction1, direction2> {
 
     ///Translations in aligner directions.
@@ -243,7 +246,7 @@ struct TranslationAligner3D: public Aligner3D<direction1, direction2> {
 
     virtual std::string strFirstDirection() const { return boost::lexical_cast<std::string>(dir1translation); }
     virtual std::string strSecondDirection() const { return boost::lexical_cast<std::string>(dir2translation); }
-};
+};*/
 
 /**
  * Aligner 3d which compose and use two 2d aligners.
@@ -296,45 +299,70 @@ public:
     virtual ComposeAligner3D<direction1, direction2>* clone() const {
         return new ComposeAligner3D<direction1, direction2>(*this);
     }
-
-    virtual std::string strFirstDirection() const { return dir1aligner->str(); }
-    virtual std::string strSecondDirection() const { return dir2aligner->str(); }
+    
+    virtual void print(std::ostream& out) const { out << *dir1aligner << ", " << dir2aligner; }
 
 };
 
-template <Direction direction1, Direction direction2>
-inline ComposeAligner3D<direction1, direction2> operator&(const OneDirectionAligner<direction1>& dir1aligner, const OneDirectionAligner<direction2>& dir2aligner) {
-    return ComposeAligner3D<direction1, direction2>(dir1aligner, dir2aligner);
+inline ComposeAligner3D<Primitive<3>::Direction(0), Primitive<3>::Direction(1)> operator&(const OneDirectionAligner<Primitive<3>::Direction(0)>& dir1aligner, const OneDirectionAligner<Primitive<3>::Direction(1)>& dir2aligner) {
+    return ComposeAligner3D<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>(dir1aligner, dir2aligner);
+}
+
+inline ComposeAligner3D<Primitive<3>::Direction(0), Primitive<3>::Direction(1)> operator&(const OneDirectionAligner<Primitive<3>::Direction(1)>& dir1aligner, const OneDirectionAligner<Primitive<3>::Direction(0)>& dir2aligner) {
+    return ComposeAligner3D<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>(dir2aligner, dir1aligner);
+}
+
+inline ComposeAligner3D<Primitive<3>::Direction(0), Primitive<3>::Direction(2)> operator&(const OneDirectionAligner<Primitive<3>::Direction(0)>& dir1aligner, const OneDirectionAligner<Primitive<3>::Direction(2)>& dir2aligner) {
+    return ComposeAligner3D<Primitive<3>::Direction(0), Primitive<3>::Direction(2)>(dir1aligner, dir2aligner);
+}
+
+inline ComposeAligner3D<Primitive<3>::Direction(0), Primitive<3>::Direction(2)> operator&(const OneDirectionAligner<Primitive<3>::Direction(2)>& dir1aligner, const OneDirectionAligner<Primitive<3>::Direction(0)>& dir2aligner) {
+    return ComposeAligner3D<Primitive<3>::Direction(0), Primitive<3>::Direction(2)>(dir2aligner, dir1aligner);
+}
+
+inline ComposeAligner3D<Primitive<3>::Direction(1), Primitive<3>::Direction(2)> operator&(const OneDirectionAligner<Primitive<3>::Direction(1)>& dir1aligner, const OneDirectionAligner<Primitive<3>::Direction(2)>& dir2aligner) {
+    return ComposeAligner3D<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>(dir1aligner, dir2aligner);
+}
+
+inline ComposeAligner3D<Primitive<3>::Direction(1), Primitive<3>::Direction(2)> operator&(const OneDirectionAligner<Primitive<3>::Direction(2)>& dir1aligner, const OneDirectionAligner<Primitive<3>::Direction(1)>& dir2aligner) {
+    return ComposeAligner3D<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>(dir2aligner, dir1aligner);
 }
 
 namespace details {
 
-typedef double alignStrategy(double lo, double hi);
-inline double lowToZero(double lo, double hi) { return -lo; }
-inline double hiToZero(double lo, double hi) { return -hi; }
-inline double centerToZero(double lo, double hi) { return -(lo+hi)/2.0; }
+typedef double alignStrategy(double lo, double hi, double coordinate);
+inline double lowToCoordinate(double lo, double hi, double coordinate) { return coordinate -lo; }
+inline double hiToCoordinate(double lo, double hi, double coordinate) { return coordinate -hi; }
+inline double centerToCoordinate(double lo, double hi, double coordinate) { return coordinate -(lo+hi)/2.0; }
 
 struct LEFT { static constexpr const char* value = "left"; };
 struct RIGHT { static constexpr const char* value = "right"; };
 struct FRONT { static constexpr const char* value = "front"; };
 struct BACK { static constexpr const char* value = "back"; };
-struct CENTER { static constexpr const char* value = "center"; };
+struct TOP { static constexpr const char* value = "top"; };
+struct BOTTOM { static constexpr const char* value = "bottom"; };
+struct TRAN_CENTER { static constexpr const char* value = "tcenter"; };
+struct LON_CENTER { static constexpr const char* value = "lcenter"; };
+struct VERT_CENTER { static constexpr const char* value = "vcenter"; };
 
 template <Direction direction, alignStrategy strategy, typename name_tag>
 struct OneDirectionAlignerImpl: public OneDirectionAligner<direction> {
 
+    OneDirectionAlignerImpl(double coordinate): OneDirectionAligner<direction>(coordinate) {}
+    
     virtual double getAlign(double low, double hi) const {
-        return strategy(low, hi);
+        return strategy(low, hi, this->coordinate);
     }
 
     virtual OneDirectionAlignerImpl<direction, strategy, name_tag>* clone() const {
-        return new OneDirectionAlignerImpl<direction, strategy, name_tag>();
+        return new OneDirectionAlignerImpl<direction, strategy, name_tag>(this->coordinate);
     }
 
-    virtual std::string str() const { return name_tag::value; }
+    //virtual std::string str() const { return name_tag::value; }
+    virtual void print(std::ostream& out) const { out << "align " << name_tag::value << " to " << this->coordinate; }
 };
 
-template <Direction direction1, alignStrategy strategy1, typename str_tag1, Direction direction2, alignStrategy strategy2, typename str_tag2>
+/*template <Direction direction1, alignStrategy strategy1, typename str_tag1, Direction direction2, alignStrategy strategy2, typename str_tag2>
 struct Aligner3DImpl: public Aligner3D<direction1, direction2> {
 
     virtual void align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
@@ -348,79 +376,109 @@ struct Aligner3DImpl: public Aligner3D<direction1, direction2> {
 
     virtual std::string strFirstDirection() const { return str_tag1::value; }
     virtual std::string strSecondDirection() const { return str_tag2::value; }
-};
+};*/
 
 }   // namespace details
 
 //2d trans. aligners:
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_TRAN, details::lowToZero, details::LEFT> Left;
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_TRAN, details::hiToZero, details::RIGHT> Right;
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_TRAN, details::centerToZero, details::CENTER> TranCenter;
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_TRAN, details::centerToZero, details::CENTER> Center;
-typedef TranslationOneDirectionAligner<Primitive<3>::DIRECTION_TRAN> Tran;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_TRAN, details::lowToCoordinate, details::LEFT> Left;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_TRAN, details::hiToCoordinate, details::RIGHT> Right;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_TRAN, details::centerToCoordinate, details::TRAN_CENTER> TranCenter;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_TRAN, details::centerToCoordinate, details::TRAN_CENTER> Center;
+typedef SetZeroOneDirectionAligner<Primitive<3>::DIRECTION_TRAN> Tran;
 
 //2d lon. aligners:
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_LONG, details::hiToZero, details::FRONT> Front;
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_LONG, details::lowToZero, details::BACK> Back;
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_LONG, details::centerToZero, details::CENTER> LonCenter;
-typedef TranslationOneDirectionAligner<Primitive<3>::DIRECTION_LONG> Lon;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_LONG, details::hiToCoordinate, details::FRONT> Front;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_LONG, details::lowToCoordinate, details::BACK> Back;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_LONG, details::centerToCoordinate, details::LON_CENTER> LonCenter;
+typedef SetZeroOneDirectionAligner<Primitive<3>::DIRECTION_LONG> Lon;
 
 //2d vert. aligners:
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::lowToZero, details::BACK> Bottom;
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::hiToZero, details::FRONT> Top;
-typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::centerToZero, details::CENTER> VertCenter;
-typedef TranslationOneDirectionAligner<Primitive<3>::DIRECTION_VERT> Vert;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::lowToCoordinate, details::BOTTOM> Bottom;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::hiToCoordinate, details::TOP> Top;
+typedef details::OneDirectionAlignerImpl<Primitive<3>::DIRECTION_VERT, details::centerToCoordinate, details::VERT_CENTER> VertCenter;
+typedef SetZeroOneDirectionAligner<Primitive<3>::DIRECTION_VERT> Vert;
 
 //3d lon/tran aligners:
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::hiToZero, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::lowToZero, details::LEFT> FrontLeft;
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::hiToZero, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::hiToZero, details::RIGHT> FrontRight;
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::hiToZero, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::centerToZero, details::CENTER> FrontCenter;
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::lowToZero, details::BACK, Primitive<3>::DIRECTION_TRAN, details::lowToZero, details::LEFT> BackLeft;
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::lowToZero, details::BACK, Primitive<3>::DIRECTION_TRAN, details::hiToZero, details::RIGHT> BackRight;
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::lowToZero, details::BACK, Primitive<3>::DIRECTION_TRAN, details::centerToZero, details::CENTER> BackCenter;
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::centerToZero, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::lowToZero, details::LEFT> CenterLeft;
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::centerToZero, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::hiToZero, details::RIGHT> CenterRight;
-typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::centerToZero, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::centerToZero, details::CENTER> CenterCenter;
-typedef TranslationAligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> LonTran;
+/*typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::hiToCoordinate, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::lowToCoordinate, details::LEFT> FrontLeft;
+typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::hiToCoordinate, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::hiToCoordinate, details::RIGHT> FrontRight;
+typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::hiToCoordinate, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::centerToCoordinate, details::CENTER> FrontCenter;
+typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::lowToCoordinate, details::BACK, Primitive<3>::DIRECTION_TRAN, details::lowToCoordinate, details::LEFT> BackLeft;
+typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::lowToCoordinate, details::BACK, Primitive<3>::DIRECTION_TRAN, details::hiToCoordinate, details::RIGHT> BackRight;
+typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::lowToCoordinate, details::BACK, Primitive<3>::DIRECTION_TRAN, details::centerToCoordinate, details::CENTER> BackCenter;
+typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::centerToCoordinate, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::lowToCoordinate, details::LEFT> CenterLeft;
+typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::centerToCoordinate, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::hiToCoordinate, details::RIGHT> CenterRight;
+typedef details::Aligner3DImpl<Primitive<3>::DIRECTION_LONG, details::centerToCoordinate, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::centerToCoordinate, details::CENTER> CenterCenter;
+typedef TranslationAligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> LonTran;*/
 //typedef ComposeAligner3D<DIR3D_LON, DIR3D_TRAN> NFLR;
 //TODO mixed variants
 
+typedef std::function<boost::optional<double>(const std::string& name)> Dictionary;
+
 namespace details {
-    OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>* transAlignerFromString(std::string str);
-    OneDirectionAligner<Primitive<3>::DIRECTION_LONG>* lonAlignerFromString(std::string str);
-    OneDirectionAligner<Primitive<3>::DIRECTION_VERT>* vertAlignerFromString(std::string str);
+    std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>> transAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
+    std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_LONG>> lonAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
+    std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_VERT>> vertAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
 }
 
 /**
- * Construct 2d aligner in given direction from string.
- * @param str string which describes 2d aligner
+ * Construct 2d aligner in given direction from dictionary.
+ *
+ * Throw excpetion if @p dic includes information about multiple aligners in given @p direction.
+ * @param dictionary dictionary which can describes 2D aligner
+ * @param axis_name name of axis in given @p direction
+ * @return parsed aligner or nullptr if no information found
  * @tparam direction direction
  */
 template <Direction direction>
-OneDirectionAligner<direction>* fromStr(const std::string& str);
+std::unique_ptr<OneDirectionAligner<direction>> fromDictionary(Dictionary dic, const std::string& axis_name);
 
 template <>
-inline OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>* fromStr<Primitive<3>::DIRECTION_TRAN>(const std::string& str) { return details::transAlignerFromString(str); }
-
-template <>
-inline OneDirectionAligner<Primitive<3>::DIRECTION_LONG>* fromStr<Primitive<3>::DIRECTION_LONG>(const std::string& str) { return details::lonAlignerFromString(str); }
-
-template <>
-inline OneDirectionAligner<Primitive<3>::DIRECTION_VERT>* fromStr<Primitive<3>::DIRECTION_VERT>(const std::string& str) { return details::vertAlignerFromString(str); }
-
-template <Direction direction>
-inline std::unique_ptr<OneDirectionAligner<direction>> fromStrUnique(const std::string& str) {
-     return std::unique_ptr<OneDirectionAligner<direction>>(fromStr<direction>(str));
+inline std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>> fromDictionary<Primitive<3>::DIRECTION_TRAN>(Dictionary dic, const std::string& axis_name) {
+    return details::transAlignerFromDictionary(dic, axis_name);
 }
 
+template <>
+inline std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_LONG>> fromDictionary<Primitive<3>::DIRECTION_LONG>(Dictionary dic, const std::string& axis_name) {
+    return details::lonAlignerFromDictionary(dic, axis_name);
+}
+
+template <>
+inline std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_VERT>> fromDictionary<Primitive<3>::DIRECTION_VERT>(Dictionary dic, const std::string& axis_name) {
+    return details::vertAlignerFromDictionary(dic, axis_name);
+}
+
+/**
+ * Construct 2d aligner in given direction from dictionary.
+ *
+ * Throw excpetion if @p dic includes information about multiple aligners in given @p direction.
+ * @param dictionary dictionary which can describes 2D aligner
+ * @param axis_names names of axes
+ * @return parsed aligner or nullptr if no information found
+ * @tparam direction direction
+ */
+template <Direction direction>
+std::unique_ptr<OneDirectionAligner<direction>> fromDictionary(Dictionary dic, const AxisNames& axis_names) {
+    return fromDictionary<direction>(dic, axis_names[direction]);                               
+}
+
+template <Direction direction>
+inline std::unique_ptr<OneDirectionAligner<direction>> fromXML(const XMLReader& reader, const std::string& axis_name) {
+     return fromDictionary<direction>([&](const std::string& s) { return reader.getAttribute<double>(s); }, axis_name);
+}
+
+template <Direction direction>
+inline std::unique_ptr<OneDirectionAligner<direction>> fromXML(const XMLReader& reader, const AxisNames& axis_names) {
+    return fromXML<direction>(reader, axis_names[direction]);
+}
 
 /**
  * Construct 3d aligner from single string
  *
  * @param str string which describes 3d aligner
  * @return pointer to the constructed aligner
- **/
-Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>* alignerFromString(std::string str);
+ */
+//Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>* alignerFromString(std::string str);
 
 /**
  * Construct 3d aligner from two strings describing alignment in two directions
@@ -428,12 +486,14 @@ Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>* alignerFr
  * @param str1 string which describes 2d aligner in the first direction
  * @param str2 string which describes 2d aligner in the second direction
  * @return pointer to the constructed 3d aligner
- **/
+ */
 template <Direction direction1, Direction direction2>
-inline ComposeAligner3D<direction1, direction2> fromStr(const std::string& str1, const std::string& str2) {
-    std::unique_ptr<OneDirectionAligner<direction1>> a1(fromStr<direction1>(str1));
-    std::unique_ptr<OneDirectionAligner<direction2>> a2(fromStr<direction2>(str2));
-    return ComposeAligner3D<direction1, direction2>(*a1, *a2);
+inline ComposeAligner3D<direction1, direction2> fromDictionary(Dictionary dic) {
+    std::unique_ptr<OneDirectionAligner<direction1>> a1 = fromDictionary<direction1>(dic);
+    if (!a1) throw Exception("Aligner for direction %1% was not defined.", direction1);
+    std::unique_ptr<OneDirectionAligner<direction1>> a2 = fromDictionary<direction2>(dic);
+    if (!a2) throw Exception("Aligner for direction %1% was not defined.", direction2);
+    return ComposeAligner3D<direction1, direction2>(a1->release(), a2->release());
 }
 
 }   // namespace align
