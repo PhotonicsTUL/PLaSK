@@ -84,8 +84,6 @@ struct OneDirectionAlignerBase: public Printable {
      */
     std::unique_ptr< OneDirectionAligner<direction> > cloneUnique() const { return std::unique_ptr< OneDirectionAligner<direction> >(clone()); }
 
-
-    
     /**
      * Set object coordinate in direction of aligner activity.
      *
@@ -109,6 +107,13 @@ struct OneDirectionAlignerBase: public Printable {
         else
             return toAlign.translation[direction] = this->getAlign(0.0, 0.0);
     }
+    
+    /**
+     * Write this aligner to XML.
+     * @param dest tag where attributes describing this should be appended
+     * @param axis_names name of axes
+     */
+    virtual void writeToXML(XMLElement& dest, const AxisNames& axis_names) const = 0;
 
 };
 
@@ -172,6 +177,10 @@ struct SetZeroOneDirectionAligner: public OneDirectionAligner<direction> {
     SetZeroOneDirectionAligner* clone() const { return new SetZeroOneDirectionAligner(this->coordinate); }
 
     virtual void print(std::ostream& out) const { out << "align zero in direction " << direction << " to " << this->coordinate; }
+    
+    virtual void writeToXML(XMLElement& dest, const AxisNames& axis_names) const {
+        dest.attr(axis_names[direction], this->coordinate);
+    }
 };
 
 /**
@@ -216,10 +225,8 @@ struct Aligner3D: public Printable {
      * @return copy of this aligner, construted using operator @c new, and wrapped by std::unique_ptr
      */
     std::unique_ptr< Aligner3D<direction1, direction2> > cloneUnique() const { return std::unique_ptr< Aligner3D<direction1, direction2> >(clone()); }
-
-    //virtual std::string str() const = 0;
-    /*virtual std::string strFirstDirection() const = 0;
-    virtual std::string strSecondDirection() const = 0;*/
+    
+    virtual void writeToXML(XMLElement& dest, const AxisNames& axis_names) const = 0;
 
 };
 
@@ -301,6 +308,11 @@ public:
     }
     
     virtual void print(std::ostream& out) const { out << *dir1aligner << ", " << dir2aligner; }
+    
+    virtual void writeToXML(XMLElement& dest, const AxisNames& axis_names) const {
+        dir1aligner->writeToXML(dest, axis_names);
+        dir2aligner->writeToXML(dest, axis_names);
+    }
 
 };
 
@@ -360,6 +372,10 @@ struct OneDirectionAlignerImpl: public OneDirectionAligner<direction> {
 
     //virtual std::string str() const { return name_tag::value; }
     virtual void print(std::ostream& out) const { out << "align " << name_tag::value << " to " << this->coordinate; }
+    
+    virtual void writeToXML(XMLElement& dest, const AxisNames& axis_names) const {
+        dest.attr(name_tag::value, this->coordinate);
+    }
 };
 
 /*template <Direction direction1, alignStrategy strategy1, typename str_tag1, Direction direction2, alignStrategy strategy2, typename str_tag2>

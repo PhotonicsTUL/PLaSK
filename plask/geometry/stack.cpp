@@ -165,16 +165,9 @@ void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_object, Geomet
     }
 }
 
-template <>
-void StackContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
-    dest_xml_child_tag.attr(axes.getNameForTran(), aligners[child_index]->str());
-}
-
-template <>
-void StackContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
-    //TODO
-    //dest_xml_child_tag.attr(axes.getNameForLong(), aligners[child_index]->str());
-    //dest_xml_child_tag.attr(axes.getNameForTran(), aligners[child_index]->str());
+template <int dim>
+void StackContainer<dim>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
+    aligners[child_index]->writeToXML(dest_xml_child_tag, axes);
 }
 
 template <int dim>

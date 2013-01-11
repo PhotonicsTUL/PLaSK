@@ -21,7 +21,7 @@ std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_TRAN>> transAlignerF
     tryGetOneDirectionAligner<Right>(result, dic(RIGHT::value));
     tryGetOneDirectionAligner<TranCenter>(result, dic(TRAN_CENTER::value));
     tryGetOneDirectionAligner<TranCenter>(result, dic("trancenter"));
-    tryGetOneDirectionAligner<TranCenter>(result, dic(axis_name + "center"));
+    if (axis_name != "tran") tryGetOneDirectionAligner<TranCenter>(result, dic(axis_name + "center"));
     tryGetOneDirectionAligner<TranCenter>(result, dic(axis_name + "-center"));
     tryGetOneDirectionAligner<Tran>(result, dic(axis_name));
     return result;
@@ -33,7 +33,7 @@ std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_LONG>> lonAlignerFro
     tryGetOneDirectionAligner<Back>(result, dic(BACK::value));
     tryGetOneDirectionAligner<LonCenter>(result, dic(LON_CENTER::value));
     tryGetOneDirectionAligner<LonCenter>(result, dic("loncenter"));
-    tryGetOneDirectionAligner<LonCenter>(result, dic(axis_name + "center"));
+    if (axis_name != "lon") tryGetOneDirectionAligner<LonCenter>(result, dic(axis_name + "center"));
     tryGetOneDirectionAligner<LonCenter>(result, dic(axis_name + "-center"));
     tryGetOneDirectionAligner<Lon>(result, dic(axis_name));
     return result;
@@ -45,7 +45,7 @@ std::unique_ptr<OneDirectionAligner<Primitive<3>::DIRECTION_VERT>> vertAlignerFr
     tryGetOneDirectionAligner<Bottom>(result, dic(BOTTOM::value));
     tryGetOneDirectionAligner<VertCenter>(result, dic(VERT_CENTER::value));
     tryGetOneDirectionAligner<VertCenter>(result, dic("vertcenter"));
-    tryGetOneDirectionAligner<VertCenter>(result, dic(axis_name + "center"));
+    if (axis_name != "vert") tryGetOneDirectionAligner<VertCenter>(result, dic(axis_name + "center"));
     tryGetOneDirectionAligner<VertCenter>(result, dic(axis_name + "-center"));
     tryGetOneDirectionAligner<Vert>(result, dic(axis_name));
     return result;
