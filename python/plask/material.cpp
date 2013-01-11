@@ -218,7 +218,7 @@ class PythonMaterial : public Material
     virtual double c11(double T) const { return override<double>("c11", &Material::Mso, T); }
     virtual double c12(double T) const {return override<double>("c12", &Material::Mso, T); }
     virtual double eps(double T) const { return override<double>("eps", &Material::eps, T); }
-    virtual double chi(double T, const char Point) const { return override<double>("chi", (double (Material::*)(double, char) const) &Material::chi, T, Point); }
+    virtual double chi(double T, const char Point) const { return override<double>("chi", &Material::chi, T, Point); }
     virtual double Nc(double T, const char Point) const { return override<double>("Nc", &Material::Nc, T, Point); }
     virtual double Nv(double T) const { return override<double>("Nv", &Material::Nv, T); }
     virtual double Ni(double T) const { return override<double>("Ni", &Material::Ni, T); }
@@ -230,23 +230,35 @@ class PythonMaterial : public Material
     virtual double A(double T) const { return override<double>("A", &Material::A, T); }
     virtual double B(double T) const { return override<double>("B", &Material::B, T); }
     virtual double C(double T) const { return override<double>("C", &Material::C, T); }
-    virtual double D(double T) const { return override<double>("D", &Material::D, T); }
-    // virtual Tensor2<double> thermk(double T) const { return call_thermk(T, INFINITY); }
-    // virtual Tensor2<double> thermk(double T, double t) const { return call_thermk(T, t); }
-    virtual Tensor2<double> thermk(double T) const { return thermk(T, INFINITY); }
-    virtual Tensor2<double> thermk(double T, double t) const { return override<Tensor2<double>>("thermk", (Tensor2<double>(Material::*)(double,double)const)&Material::thermk, T, t); }
+    virtual double D(double T) const {
+        try {
+            return override<double>("D", &Material::D, T);
+        } catch (NotImplemented) {
+            return mob(T).c00 * T * 8.6173423e-5;  // D = µ kB T / e
+        }
+    }
+    virtual Tensor2<double> thermk(double T, double t) const { return override<Tensor2<double>>("thermk", &Material::thermk, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
     virtual double cp(double T) const { return override<double>("cp", &Material::cp, T); }
     virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
     virtual double absp(double wl, double T) const { return override<double>("absp", &Material::absp, wl, T); }
     virtual dcomplex nR(double wl, double T) const {
         if (overriden("nR")) return py::call_method<dcomplex>(self, "nR", wl, T);
-        return dcomplex(override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+        if (overriden("nr") || overriden("absp"))
+            return dcomplex(override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+        return base->nR(wl, T);
     }
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
         if (overriden("nR_tensor")) return py::call_method<Tensor3<dcomplex>>(self, "nR_tensor", wl, T);
-        dcomplex n (override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
-        return Tensor3<dcomplex>(n, n, n, 0., 0.);
+        if (overriden("nR")) {
+            dcomplex n = py::call_method<dcomplex>(self, "nR", wl, T);
+            return Tensor3<dcomplex>(n, n, n, 0., 0.);
+        }
+        if (overriden("nr") || overriden("absp")) {
+            dcomplex n (override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+            return Tensor3<dcomplex>(n, n, n, 0., 0.);
+        }
+        return base->nR_tensor(wl, T);
     }
 
     // End of overriden methods

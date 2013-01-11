@@ -20,7 +20,7 @@ MI_PROPERTY(AlxOy, thermk,
             MISource("M. Le Du et al., Electronics Letters 42 (2006) 65-66"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlxOy::thermk(double T) const {
+Tensor2<double> AlxOy::thermk(double T, double thickness) const {
     return ( Tensor2<double>(0.7, 0.7) );
 }
 

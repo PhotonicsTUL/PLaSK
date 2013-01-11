@@ -61,13 +61,15 @@ class PythonEvalMaterial : public Material
 
     py::object self;
 
+#if PY_VERSION_HEX >= 0x03000000
+#   define PY_EVAL(fun) PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr())
+#else
+#   define PY_EVAL(fun) PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr())
+#endif
+
     template <typename RETURN>
     RETURN call(PyCodeObject *fun, const py::dict& locals) const {
-#       if PY_VERSION_HEX >= 0x03000000
-            PyObject* result = PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr());
-#       else
-            PyObject* result = PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr());
-#       endif
+        PyObject* result = PY_EVAL(fun);
         if (!result) throw py::error_already_set();
         return py::extract<RETURN>(result);
     }
@@ -126,8 +128,13 @@ class PythonEvalMaterial : public Material
     virtual double A(double T) const { PYTHON_EVAL_CALL_1(double, A, T) }
     virtual double B(double T) const { PYTHON_EVAL_CALL_1(double, B, T) }
     virtual double C(double T) const { PYTHON_EVAL_CALL_1(double, C, T) }
-    virtual double D(double T) const { PYTHON_EVAL_CALL_1(double, D, T) }
-    virtual Tensor2<double> thermk(double T) const { const double t = INFINITY; PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, t) }
+    virtual double D(double T) const {
+        try {
+            PYTHON_EVAL_CALL_1(double, D, T)
+        } catch (NotImplemented) {
+            return mob(T).c00 * T * 8.6173423e-5;  // D = µ kB T / e
+        }
+    }
     virtual Tensor2<double> thermk(double T, double t)  const { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, t) }
     virtual double dens(double T) const { PYTHON_EVAL_CALL_1(double, dens, T) }
     virtual double cp(double T) const { PYTHON_EVAL_CALL_1(double, cp, T) }
@@ -136,33 +143,32 @@ class PythonEvalMaterial : public Material
     virtual dcomplex nR(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->nR != NULL) {
-#           if PY_VERSION_HEX >= 0x03000000
-                PyObject* result = PyEval_EvalCode((PyObject*)(cls->nR), xml_globals.ptr(), locals.ptr());
-#           else
-                PyObject* result = PyEval_EvalCode(cls->nR, xml_globals.ptr(), locals.ptr());
-#           endif
+            PyObject* result = PY_EVAL(cls->nR);
             if (!result) throw py::error_already_set();
             return py::extract<dcomplex>(result);
         }
-        else return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
+        if (cls->nr != NULL || cls->absp != NULL)
+            return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
+        return base->nR(wl, T);
     }
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
-        if (cls->nR != NULL) {
-#           if PY_VERSION_HEX >= 0x03000000
-                PyObject* result = PyEval_EvalCode((PyObject*)(cls->nR_tensor), xml_globals.ptr(), locals.ptr());
-#           else
-                PyObject* result = PyEval_EvalCode(cls->nR_tensor, xml_globals.ptr(), locals.ptr());
-#           endif
+        if (cls->nR_tensor != NULL) {
+            PyObject* result = PY_EVAL(cls->nR_tensor);
             if (!result) throw py::error_already_set();
             return py::extract<Tensor3<dcomplex>>(result);
-        } else {
+        }
+        if (cls->nR != NULL) {
             dcomplex n = nR(wl, T);
             return Tensor3<dcomplex>(n, n, n, 0., 0.);
         }
+        if (cls->nr != NULL || cls->absp != NULL) {
+            dcomplex n(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
+            return Tensor3<dcomplex>(n, n, n, 0., 0.);
+        }
+        return base->nR_tensor(wl, T);
     }
     // End of overridden methods
-
 };
 
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {

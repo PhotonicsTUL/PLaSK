@@ -18,7 +18,7 @@ struct AlxOy: public Dielectric {
 
     virtual std::string name() const;
     virtual Tensor2<double> cond(double T) const;
-    virtual Tensor2<double> thermk(double T) const;
+    virtual Tensor2<double> thermk(double T, double thickness=INFINITY) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
 

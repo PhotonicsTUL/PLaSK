@@ -13,7 +13,7 @@ std::string InN::name() const { return NAME; }
 MI_PROPERTY(InN, thermk,
             MISource("H. Tong et al., Proc. SPIE 7602 (2010) 76020U")
             )
-Tensor2<double> InN::thermk(double T) const {
+Tensor2<double> InN::thermk(double T, double) const {
     return(Tensor2<double>(126., 126.));
  }
 

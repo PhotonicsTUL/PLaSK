@@ -51,7 +51,7 @@ namespace detail {
             // Grab pointer to memory into which to construct the new Aligner
             void* storage = ((boost::python::converter::rvalue_from_python_storage<A3>*)data)->storage.bytes;
 
-                if (str == "front left" || str == "fl" || str == "left front" || str == "lf") new(storage) align::FrontLeft();
+                 if (str == "front left" || str == "fl" || str == "left front" || str == "lf") new(storage) align::FrontLeft();
             else if (str == "center left" || str == "cl" || str == "left center" || str == "lc") new(storage) align::CenterLeft();
             else if (str == "back left" || str == "bl" || str == "left back" || str == "lb") new(storage) align::BackLeft();
             else if (str == "front center" || str == "fc" || str == "center front" || str == "lf") new(storage) align::FrontCenter();

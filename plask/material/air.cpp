@@ -64,7 +64,6 @@ double Air::nr(double wl, double T) const { return 1.; }
 
 double Air::cp(double T) const { throwNotApplicable("cp(double T)"); return 0; }
 
-Tensor2<double> Air::thermk(double T) const { return 5e-5; }
 Tensor2<double> Air::thermk(double T, double thickness) const { return 5e-5; }
 
 double Air::VBO(double T) const { throwNotApplicable("VBO(double T)"); return 0; }

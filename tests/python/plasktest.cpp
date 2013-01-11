@@ -64,7 +64,7 @@ plask::Tensor2<double> materialThermk2(std::string m, plask::MaterialsDB& DB, do
 }
 
 double call_chi(plask::shared_ptr<plask::Material> mat, std::string p) {
-    return mat->chi(p[0]);
+    return mat->chi(300, p[0]);
 }
 
 void print_ptr(py::object o) {

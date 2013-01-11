@@ -226,7 +226,7 @@ struct Material {
      * Split object name to objects.
      * @param begin, end [begin, end) string or range in string, for example "AlGaN"
      * @return vector of parsed objects (for "AlGaN" result is ["Al", "Ga", "N"])
-     * @throw MaterialParseException when name is ill-formated
+     * @throw MaterialParseException when name is ill-formatted
      */
     static std::vector<std::string> parseObjectsNames(const char* begin, const char* end);
 
@@ -242,16 +242,16 @@ struct Material {
     virtual ~Material() {}
 
     /**
-     * Get short (without composition and dopping amounts) name of material.
+     * Get short (without composition and doping amounts) name of material.
      * @return material name
      */
     virtual std::string name() const = 0;
 
     /**
-     * Get full (with composition and dopping amounts) name of material.
+     * Get full (with composition and doping amounts) name of material.
      *
      * Default implementation returns name, which is fine only for simple materials.
-     * @return material name with informations about composition and dopping
+     * @return material name with information about composition and doping
      * @see NameBuilder
      */
     virtual std::string str() const;
@@ -386,8 +386,6 @@ struct Material {
      */
     virtual double chi(double T, char point) const;
 
-    virtual double chi(char point) const;
-
     /**
      * Get effective density of states in the conduction band Nc [cm^(-3)].
      * @param T temperature [K]
@@ -482,17 +480,10 @@ struct Material {
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
      * @param T temperature [K]
-     * @return thermal conductivity k[W/(m*K)]
-     */
-    virtual Tensor2<double> thermk(double T) const;
-
-    /**
-     * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
-     * @param T temperature [K]
      * @param thickness layer thickness [µm]
      * @return thermal conductivity k[W/(m*K)]
      */
-    virtual Tensor2<double> thermk(double T, double thickness) const;
+    virtual Tensor2<double> thermk(double T, double thickness=INFINITY) const;
 
     /**
      * Get density [kg/m^3].
@@ -670,8 +661,6 @@ struct MixedMaterial: public Material {
     virtual double eps(double T) const;
 
     virtual double chi(double T, char point) const;
-
-    virtual double chi(char point) const;
 
     virtual double Nc(double T, char point) const;
 

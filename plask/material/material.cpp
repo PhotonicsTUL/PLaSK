@@ -60,8 +60,6 @@ double Material::CBO(double T, char point) const { throwNotImplemented("CBO(doub
 
 double Material::chi(double T, char point) const { throwNotImplemented("chi(double T, char point)"); return 0; }
 
-double Material::chi(char point) const { return chi(300., point); }
-
 Tensor2<double> Material::cond(double T) const { throwNotImplemented("cond(double T)"); return 0.; }
 
 Material::ConductivityType Material::condtype() const { return CONDUCTIVITY_UNDETERMINED; }
@@ -117,8 +115,7 @@ Tensor3<dcomplex> Material::nR_tensor(double wl, double T) const {
 
 double Material::cp(double T) const { throwNotImplemented("cp(double T)"); return 0; }
 
-Tensor2<double> Material::thermk(double T) const { throwNotImplemented("thermk(double T)"); return 0.; }
-Tensor2<double> Material::thermk(double T, double thickness) const { return thermk(T); }
+Tensor2<double> Material::thermk(double T, double thickness) const { throwNotImplemented("thermk(double T)"); return 0.; }
 
 double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); return 0; }
 
@@ -343,10 +340,6 @@ double MixedMaterial::CBO(double T, char point) const {
 
 double MixedMaterial::chi(double T, char point) const {
     return avg([&](const Material& m) { return m.chi(T, point); });
-}
-
-double MixedMaterial::chi(char point) const {
-    return avg([&](const Material& m) { return m.chi(point); });
 }
 
 Tensor2<double> MixedMaterial::cond(double T) const {
