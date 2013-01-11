@@ -263,6 +263,12 @@ class XMLReader {
     void initParser();
 
   public:
+    
+    /**
+     * Throw exception which include information about current position in XML and typically describe logic error in XML file.
+     * @param msg custom part of exception message
+     */
+    void throwException(const std::string& msg) { return throw XMLException(*this, msg); }
 
     /**
      * Construct XML reader to read XML from given source.

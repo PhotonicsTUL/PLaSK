@@ -21,12 +21,8 @@ template <int dim, typename Primitive<dim>::Direction alignDirection>
 struct AlignContainer: public GeometryObjectContainer<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
-                (direction3D(alignDirection) == Primitive<3>::DIRECTION_TRAN ? "tran" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : "vert" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                (   //dim == 3:
-                    direction3D(alignDirection) == Primitive<3>::DIRECTION_LONG ? "long" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D :
-                   (direction3D(alignDirection) == Primitive<3>::DIRECTION_TRAN ? "tran" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D :
-                                                                     "vert" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
-                );
+                ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+                ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
     typedef align::OneDirectionAligner<direction3D(alignDirection)> Aligner;
 
