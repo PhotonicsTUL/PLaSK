@@ -24,7 +24,7 @@ struct AlignContainer: public GeometryObjectContainer<dim> {
                 ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    typedef align::OneDirectionAligner<direction3D(alignDirection)> Aligner;
+    typedef align::AxisAligner<direction3D(alignDirection)> Aligner;
 
     typedef typename chooseType<dim-2, double, std::pair<double, double> >::type Coordinates;
 

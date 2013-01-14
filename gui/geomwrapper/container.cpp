@@ -27,11 +27,11 @@ void StackWrapper<dim>::setupPropertiesBrowser(BrowserWithManagers& managers, Qt
 
 static void setupAlignerEditor(plask::StackContainer<2>& s, std::size_t index, BrowserWithManagers& managers, QtAbstractPropertyBrowser& dst) {
     QtProperty *align = managers.aligner.addProperty("align");
-    managers.aligner.setValue(align, QString(s.getAlignerAt(index).str().c_str()));
+    //managers.aligner.setValue(align, QString(s.getAlignerAt(index).str().c_str())); TODO
     dst.addProperty(align);
     managers.connectString(align, [index, &s](const QString& v) {
         try {
-           //TODO aligner editor must be reimplement after changing aligners which have extra double argument now
+           //TODO aligner editor must be reimplemented after changing aligners which have extra double argument now
            //s.setAlignerAt(index, *plask::align::fromStrUnique<plask::Primitive<3>::DIRECTION_TRAN>(v.toStdString()));
         } catch (std::exception& e) {
            //QMessageBox::critical();

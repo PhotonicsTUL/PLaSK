@@ -120,7 +120,7 @@ shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild() {
 }
 
 shared_ptr<Geometry> GeometryReader::readGeometry() {
-    ReadAxisNames axis_reader(*this);   //try set up new axis names, store old, and restore old on end of block
+    ReadAxisNames axis_reader(*this);   // try set up new axis names, store old, and restore old on end of block
     std::string nodeName = source.getNodeName();
     boost::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);
     if (name) BadId::throwIfBad("geometry", *name, '-');
