@@ -223,6 +223,10 @@ struct Config
 };
 extern Config config;
 
+// ----------------------------------------------------------------------------------------------------------------------
+
+/// Helper for parsing arguments in raw_function
+void parseKwargs(const std::string& fname, py::list args, py::dict kwargs, const std::vector<std::string>& names);
 
 }} // namespace plask::python
 

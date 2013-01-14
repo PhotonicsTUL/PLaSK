@@ -14,108 +14,93 @@ typedef align::Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_T
 
 namespace detail {
 
-//     template <typename AlignerT>
-//     struct Aligner_to_Python {
-//         static PyObject* convert(const AlignerT& aligner) {
-//             py::dict dict;
-//             for (auto i: aligner.asDict(config.axes)) {
-//                 dict[i.first] = i.second;
-//             }
-//             return py::incref(dict.ptr());
-//         }
-//     };
-//
-//     static void* aligner_convertible(PyObject* obj) {
-//         if (!PyDict_Check(obj)) return 0;
-//         return obj;
-//     }
-//
-//     static void construct2(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-//         // Grab pointer to memory into which to construct the new Aligner
-//         void* storage = ((boost::python::converter::rvalue_from_python_storage<AlignerT>*)data)->storage.bytes;
-//
-//         py::dict dict = py::handle<>(obj);
-//         py::stl_input_iterator<std::string> begin(dict), end;
-//         std::map<std::string, double> map;
-//         for (auto key = begin; key != end; ++key)
-//             map[key] = py::extract<double>(dict[key]);
-//
-//         if (str == "left" || str == "l") new(storage) align::Left(0.0);
-//
-//         // Stash the memory chunk pointer for later use by boost.python
-//         data->convertible = storage;
-//     }
+    template <typename AlignerT>
+    struct Aligner_to_Python {
+        static PyObject* convert(const AlignerT& aligner) {
+            py::dict dict;
+            for (auto i: aligner.asDict(config.axes)) {
+                dict[i.first] = i.second;
+            }
+            return py::incref(dict.ptr());
+        }
+    };
+
+    static void* aligner_convertible(PyObject* obj) {
+        if (!PyDict_Check(obj)) return 0;
+        return obj;
+    }
+
+    template <typename AlignerT> struct AlignerFromDictionary;
+
+    template <align::Direction direction>
+    struct AlignerFromDictionary<align::AxisAligner<direction>> {
+        template <typename Dict>
+        static align::AxisAligner<direction> get(Dict dict) {
+            return align::fromDictionary<direction>(dict, config.axes);
+        }
+    };
+
+    template <align::Direction direction1, align::Direction direction2>
+    struct AlignerFromDictionary<align::Aligner3D<direction1,direction2>> {
+        template <typename Dict>
+        static align::Aligner3D<direction1,direction2> get(Dict dict) {
+            return align::fromDictionary<direction1,direction2>(dict, config.axes);
+        }
+    };
+
+    template <typename AlignerT>
+    static void aligner_construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        // Grab pointer to memory into which to construct the new Aligner
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<AlignerT>*)data)->storage.bytes;
+
+        std::map<std::string, double> map;
+
+        PyObject *key, *value;
+        Py_ssize_t pos = 0;
+        while (PyDict_Next(obj, &pos, &key, &value)) {
+            map[py::extract<std::string>(key)] = py::extract<double>(value);
+        }
+
+        auto aligner = new(storage) AlignerT;
+
+        *aligner = AlignerFromDictionary<AlignerT>::get([&](const std::string& name) -> boost::optional<double> {
+                                                            boost::optional<double> result;
+                                                            auto found = map.find(name);
+                                                            if (found != map.end()) {
+                                                                result.reset(found->second);
+                                                                map.erase(found);
+                                                            }
+                                                            return result;
+                                                        });
+
+        if (!map.empty()) throw KeyError(map.begin()->first);
+
+        // Stash the memory chunk pointer for later use by boost.python
+        data->convertible = storage;
+    }
 }
 
 void register_geometry_aligners()
 {
-//     py::object align_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.geometry.align"))) };
-//     py::scope().attr("align") = align_module;
-//     py::scope scope = align_module;
-//
-//     scope.attr("__doc__") =
-//         "This solver lists available aligners for geometry containers."; //TODO maybe more extensive description
-//
-//     py::class_<A2, shared_ptr<A2>, boost::noncopyable>("Aligner2D", "Base for all 2D aligners", py::no_init)    //TODO Aligner2D -> AxisAligner
-//             .def(py::self & py::other<A2l>())
-//     ;
-//
-//     py::class_<A2l, shared_ptr<A2l>, boost::noncopyable>("AlignerLon", "Base for all longitudal aligners", py::no_init)
-//         .def(py::self & py::other<A2>())
-//     ;
-//
-//     py::class_<A3, shared_ptr<A3>, boost::noncopyable>("Aligner3D", "Base for all 3D aligners", py::no_init);
-//
-//     py::class_<align::ComposeAligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>,
-//                shared_ptr<align::ComposeAligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>>,
-//                py::bases<A3>>("ComposedAligner3D", "Three-dimensional aligner composed of two 2D aligners", py::no_init);
-//     py::class_<align::ComposeAligner3D<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_LONG>,
-//                shared_ptr<align::ComposeAligner3D<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_LONG>>,
-//                py::bases<A3>>("ComposedAligner3D", "Three-dimensional  aligner composed of two 2D aligners", py::no_init);
-//
-//
-//     py::class_<align::Tran, shared_ptr<align::Tran>, py::bases<A2>>("Tran",
-//                                                      "Two-dimensional aligner with arbitrary child shift\n\n"
-//                                                      "Tran(tran=0.0)\n    create aligner with child shifted to shift\n",
-//                                                      py::init<double>((py::arg("tran")=0.))
-//                                                     );
-//
-//     py::class_<align::Long, shared_ptr<align::Long>, py::bases<A2l>>("Long",
-//                                                      "Aligner with arbitrary longitudal child shift for construction of 3D aligners\n\n"
-//                                                      "Lon(lon=0.0)\n    create aligner with child shifted to shift\n",
-//                                                      py::init<double>((py::arg("lon")=0.))
-//                                                     );
-//
-//     //TODO aligner for two directions are provided intependend now and use ComposeAligner3D
-//     /*py::class_<align::LonTran, shared_ptr<align::LonTran>, py::bases<A3>>("LonTran",
-//                                                      "Three-dimensional aligner with arbitrary child shift\n\n"
-//                                                      "LonTran(lon_shift=0.0, tran_shift=0.0)\n    create aligner with child shifted to [lon, tran]\n",
-//                                                      py::init<double, double>((py::arg("lon")=0., py::arg("tran")=0.))
-//                                                     );*/
-//
-//     //TODO this now requires double argument
-//    /* py::class_<align::Left, shared_ptr<align::Left>, py::bases<A2>>("Left", "Two-dimensional aligner: left");
-//     py::class_<align::Right, shared_ptr<align::Right>, py::bases<A2>>("Right", "Two-dimensional aligner: right");
-//     py::class_<align::Center, shared_ptr<align::Center>, py::bases<A2>> center("Center", "Two-dimensional aligner: center");
-//     scope.attr("TranCenter") = center;
-//
-//     py::class_<align::Front, shared_ptr<align::Front>, py::bases<A2l>>("Front", "Longitudal aligner: front");
-//     py::class_<align::Back, shared_ptr<align::Back>, py::bases<A2l>>("Back", "Longitudal aligner: back");
-//     py::class_<align::LongCenter, shared_ptr<align::LongCenter>, py::bases<A2l>>("LongCenter", "Longitudal aligner: center");*/
-//
-//     //TODO aligner for two directions are provided intependend now and use ComposeAligner3D
-// /*    py::class_<align::FrontLeft, shared_ptr<align::FrontLeft>, py::bases<A3>>("FrontLeft", "Three-dimesional aligner: front left");
-//     py::class_<align::FrontRight, shared_ptr<align::FrontRight>, py::bases<A3>>("FrontRight", "Three-dimesional aligner: front right");
-//     py::class_<align::FrontCenter, shared_ptr<align::FrontCenter>, py::bases<A3>>("FrontCenter", "Three-dimesional aligner: front center");
-//     py::class_<align::BackLeft, shared_ptr<align::BackLeft>, py::bases<A3>>("BackLeft", "Three-dimesional aligner: back left");
-//     py::class_<align::BackRight, shared_ptr<align::BackRight>, py::bases<A3>>("BackRight", "Three-dimesional aligner: back right");
-//     py::class_<align::BackCenter, shared_ptr<align::BackCenter>, py::bases<A3>>("BackCenter", "Three-dimesional aligner: back center");
-//     py::class_<align::CenterLeft, shared_ptr<align::CenterLeft>, py::bases<A3>>("CenterLeft", "Three-dimesional aligner: center left");
-//     py::class_<align::CenterRight, shared_ptr<align::CenterRight>, py::bases<A3>>("CenterRight", "Three-dimesional aligner: center right");
-//     py::class_<align::CenterCenter, shared_ptr<align::CenterCenter>, py::bases<A3>>("CenterCenter", "Three-dimesional aligner: center");*/
-//
-//     // Register string conventers
-//     detail::Aligners_from_Python();
+    const Primitive<3>::Direction L = Primitive<3>::DIRECTION_LONG;
+    const Primitive<3>::Direction T = Primitive<3>::DIRECTION_TRAN;
+    const Primitive<3>::Direction V = Primitive<3>::DIRECTION_VERT;
+
+    py::to_python_converter<align::AxisAligner<L>, detail::Aligner_to_Python<align::AxisAligner<L>>>();
+    py::to_python_converter<align::AxisAligner<T>, detail::Aligner_to_Python<align::AxisAligner<T>>>();
+    py::to_python_converter<align::AxisAligner<V>, detail::Aligner_to_Python<align::AxisAligner<V>>>();
+
+    py::to_python_converter<align::Aligner3D<L,T>, detail::Aligner_to_Python<align::Aligner3D<L,T>>>();
+    py::to_python_converter<align::Aligner3D<L,V>, detail::Aligner_to_Python<align::Aligner3D<L,V>>>();
+    py::to_python_converter<align::Aligner3D<T,V>, detail::Aligner_to_Python<align::Aligner3D<T,V>>>();
+
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::AxisAligner<L>>, py::type_id<align::AxisAligner<L>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::AxisAligner<T>>, py::type_id<align::AxisAligner<T>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::AxisAligner<V>>, py::type_id<align::AxisAligner<V>>());
+
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner3D<L,T>>, py::type_id<align::Aligner3D<L,T>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner3D<L,V>>, py::type_id<align::Aligner3D<L,V>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner3D<T,V>>, py::type_id<align::Aligner3D<T,V>>());
 
 }
 

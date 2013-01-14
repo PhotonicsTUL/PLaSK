@@ -95,9 +95,9 @@ class Containers(unittest.TestCase):
 
     def testAligners(self):
         stack = plask.geometry.Stack2D()
-        stack.append(self.block1, "C")
-        stack.append(self.block1, "L")
-        stack.append(self.block1, "R")
+        stack.append(self.block1, ycenter=0)
+        stack.append(self.block1, left=0)
+        stack.append(self.block1, right=0)
         self.assertEqual( stack.get_material(-1.0, 1.0), self.gan )
         self.assertEqual( stack.get_material(2.6, 1.0), None )
         self.assertEqual( stack.get_material(4.9, 4.0), self.gan )
@@ -150,10 +150,10 @@ class Containers(unittest.TestCase):
 
 
         stack = plask.geometry.Stack3D()
-        stack.append(self.cube1, "c") # to be removed by object
-        stack.append(self.cube2, "c") # to be removed by index
-        h = stack.append(self.cube2, "c") # to be removed by hint
-        stack.append(self.cube1, "c")
+        stack.append(self.cube1, xcenter=0, ycenter=0) # to be removed by object
+        stack.append(self.cube2, xcenter=0, ycenter=0) # to be removed by index
+        h = stack.append(self.cube2, xcenter=0, ycenter=0) # to be removed by hint
+        stack.append(self.cube1, xcenter=0, ycenter=0)
         self.assertEqual( len(stack), 4 )
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,8) )
         self.assertEqual( stack.get_material(0,0,5), self.aln)
@@ -171,7 +171,7 @@ class Containers(unittest.TestCase):
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,2) )
 
         self.assertEqual( stack.get_material(0,0,1), self.gan)
-        stack.prepend(self.cube2, "cc")
+        stack.prepend(self.cube2, xcenter=0, ycenter=0)
         self.assertEqual( stack.bbox, plask.geometry.Box3D(-2,-2,0, 2,2,4) )
         self.assertEqual( stack.get_material(0,0,1), self.aln)
         self.assertEqual( stack.get_material(0,0,3), self.gan)

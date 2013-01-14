@@ -1,9 +1,50 @@
 #include "geometry.h"
+#include <boost/python/raw_function.hpp>
 
 #include <plask/geometry/stack.h>
 
 
 namespace plask { namespace python {
+
+template <typename StackT>
+PathHints::Hint Stack_push_back(py::tuple targs, py::dict kwargs) {
+    py::dict aligners = kwargs.copy();
+    py::list args = py::list(targs);
+    parseKwargs("append", args, aligners, {"self", "child"});
+    StackT* self = py::extract<StackT*>(args[0]);
+    shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
+    if (py::len(aligners) == 0)
+        return self->push_back(child);
+    else
+        return self->push_back(child, py::extract<typename StackT::Aligner>(aligners));
+}
+
+template <typename StackT>
+PathHints::Hint Stack_push_front(py::tuple targs, py::dict kwargs) {
+    py::dict aligners = kwargs.copy();
+    py::list args = py::list(targs);
+    parseKwargs("prepend", args, aligners, {"self", "child"});
+    StackT* self = py::extract<StackT*>(args[0]);
+    shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
+    if (py::len(aligners) == 0)
+        return self->push_front(child);
+    else
+        return self->push_front(child, py::extract<typename StackT::Aligner>(aligners));
+}
+
+template <typename StackT>
+PathHints::Hint Stack_insert(py::tuple targs, py::dict kwargs) {
+    py::dict aligners = kwargs.copy();
+    py::list args = py::list(targs);
+    parseKwargs("insert", args, aligners, {"self", "child", "pos"});
+    StackT* self = py::extract<StackT*>(args[0]);
+    shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
+    size_t pos = py::extract<size_t>(args[2]);
+    if (py::len(aligners) == 0)
+        return self->insert(child, pos);
+    else
+        return self->insert(child, pos, py::extract<typename StackT::Aligner>(aligners));
+}
 
 void register_geometry_container_stack()
 {
@@ -15,9 +56,9 @@ void register_geometry_container_stack()
         "    Create the stack with the bottom side of the first object at the 'shift' position (in container local coordinates).\n\n"
         "See geometry.Stack2D().\n",
         py::init<double>((py::arg("shift")=0.)))
-        .def("append", &StackContainer<2>::push_back, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Append new object to the container")
-        .def("prepend", &StackContainer<2>::push_front, (py::arg("child"), py::arg("align")=StackContainer<2>::DefaultAligner()), "Prepend new object to the container")
-        .def("insert", &StackContainer<2>::insert, (py::arg("child"), "pos", py::arg("align")=StackContainer<2>::DefaultAligner()), "Insert new object to the container")
+        .def("append", py::raw_function(&Stack_push_back<StackContainer<2>>), "Append new object to the container")
+        .def("prepend", py::raw_function(&Stack_push_front<StackContainer<2>>), "Prepend new object to the container")
+        .def("insert", py::raw_function(&Stack_insert<StackContainer<2>>), "Insert new object to the container")
         .def("set_zero_below", &StackContainer<2>::setZeroHeightBefore, py::arg("index"), "Set zero below item with index 'index'")
     ;
 
@@ -27,9 +68,9 @@ void register_geometry_container_stack()
         "    Create the stack with the bottom side of the first object at the 'shift' position (in container local coordinates).\n\n"
         "See geometry.Stack3D().\n",
         py::init<double>((py::arg("shift")=0.)))
-        .def("append", &StackContainer<3>::push_back, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Append new object to the container")
-        .def("prepend", &StackContainer<3>::push_front, (py::arg("child"), py::arg("align")=StackContainer<3>::DefaultAligner()), "Prepend new object to the container")
-        .def("insert", &StackContainer<3>::insert, (py::arg("child"), "pos", py::arg("align")=StackContainer<3>::DefaultAligner()), "Insert new object to the container")
+        .def("append", py::raw_function(&Stack_push_back<StackContainer<3>>), "Append new object to the container")
+        .def("prepend", py::raw_function(&Stack_push_front<StackContainer<3>>), "Prepend new object to the container")
+        .def("insert", py::raw_function(&Stack_insert<StackContainer<3>>), "Insert new object to the container")
         .def("set_zero_below", &StackContainer<3>::setZeroHeightBefore, py::arg("index"), "Set zero below item with index 'index'")
     ;
 

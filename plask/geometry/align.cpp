@@ -11,7 +11,7 @@ namespace details {
 template <Primitive<3>::Direction dir, AxisAligner<dir> AlignerType(double coordinate)>
 inline void tryGetAxisAligner(AxisAligner<dir>& ans, boost::optional<double> param) {
     if (!param) return;
-    if (ans.isNull()) throw Exception("multiple specification of aligner in direction %1%", dir);
+    if (!ans.isNull()) throw Exception("multiple specification of aligner in direction %1%", dir);
     ans = AlignerType(*param);
 }
 
