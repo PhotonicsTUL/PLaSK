@@ -75,8 +75,8 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
 
     BOOST_FIXTURE_TEST_CASE(multistack2D, Leafs2D) {
         plask::shared_ptr<plask::MultiStackContainer<2>> multistack(new plask::MultiStackContainer<2>(5, 10.0));
-        multistack->add(block_5_3, plask::align::Tran(0.0));
-        plask::PathHints p; p += multistack->add(block_5_3, plask::align::Tran(0.0));
+        multistack->add(block_5_3, plask::align::tran(0.0));
+        plask::PathHints p; p += multistack->add(block_5_3, plask::align::tran(0.0));
         test_multi_stack(multistack, p);
         BOOST_CHECK_EQUAL(multistack->getMaterial(plask::vec(4.0, 39.0)), dumbMaterial);
     }
@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
     BOOST_FIXTURE_TEST_CASE(stack2D, Leafs2D) {
         plask::shared_ptr<plask::StackContainer<2>> stack(new plask::StackContainer<2>(0.0));
         for (int i = 0; i < 3; ++i) {
-            stack->add(block_5_3, plask::align::Tran(0.0));
-            stack->add(block_5_4, plask::align::Tran(0.0));
+            stack->add(block_5_3, plask::align::tran(0.0));
+            stack->add(block_5_4, plask::align::tran(0.0));
         }   //3x(3+4)=21
         BOOST_CHECK_EQUAL(stack->getRealChildrenCount(), 6);
         BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2D(0.0, 0.0, 5.0, 21.0));

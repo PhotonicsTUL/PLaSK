@@ -132,6 +132,8 @@ struct HolderRef {
 
     public:
 
+    HolderRef() {}
+
     /**
      * @brief Construct a holder with given @p held object.
      * @param held object to hold
@@ -141,6 +143,8 @@ struct HolderRef {
     bool isNotNull() const { return held; }
 
     bool isNull() const { return !held; }
+
+    void reset(T* new_held) { this->held.reset(new_held); }
 
 };
 

@@ -85,13 +85,13 @@ StackContainer<dim>::StackContainer(const StackContainer& to_copy)
 
 template <>
 const StackContainer<2>::Aligner& StackContainer<2>::DefaultAligner() {
-    static align::Left leftZeroAl(0);
+    static auto leftZeroAl = align::left(0);
     return leftZeroAl;
 }
 
 template <>
 const StackContainer<3>::Aligner& StackContainer<3>::DefaultAligner() {
-    static auto leftBackAl = align::Left(0) & align::Back(0);
+    static auto leftBackAl = align::left(0) & align::back(0);
     return leftBackAl;
 }
 
@@ -101,7 +101,7 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
     shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.vert(), bb);
     this->connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
-    aligners.insert(aligners.begin() + pos, aligner.cloneUnique());
+    aligners.insert(aligners.begin() + pos, aligner);
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
     const double delta = bb.upper.vert() - bb.lower.vert();
     for (std::size_t i = pos + 1; i < children.size(); ++i) {
@@ -116,9 +116,9 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
 template <int dim>
 void StackContainer<dim>::setAlignerAt(std::size_t child_no, const Aligner& aligner) {
     this->ensureIsValidChildNr(child_no, "setAlignerAt");
-    if (aligners[child_no].get() == &aligner) return; //protected against self assigment
-    aligners[child_no] = aligner.cloneUnique();
-    aligners[child_no]->align(*children[child_no]);
+    //TODO if (aligners[child_no].get() == &aligner) return; //protected against self assigment
+    aligners[child_no] = aligner;
+    aligners[child_no].align(*children[child_no]);
     children[child_no]->fireChanged();
 }
 
@@ -167,7 +167,7 @@ void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_object, Geomet
 
 template <int dim>
 void StackContainer<dim>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
-    aligners[child_index]->writeToXML(dest_xml_child_tag, axes);
+    aligners[child_index].writeToXML(dest_xml_child_tag, axes);
 }
 
 template <int dim>
@@ -175,7 +175,7 @@ shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::v
     shared_ptr< StackContainer<dim> > result = make_shared< StackContainer<dim> >(this->getBaseHeight());
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
-            result->addUnsafe(children_after_change[child_no].first, *this->aligners[child_no]);
+            result->addUnsafe(children_after_change[child_no].first, this->aligners[child_no]);
     return result;
 }
 
@@ -399,9 +399,9 @@ struct HeightReader {
 shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
-    std::unique_ptr<align::AxisAligner<Primitive<3>::DIRECTION_TRAN>> default_aligner(
-          align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames));
-    if (!default_aligner) default_aligner.reset(StackContainer<2>::DefaultAligner().clone());
+    align::AxisAligner<Primitive<3>::DIRECTION_TRAN> default_aligner =
+          align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
+    if (default_aligner.isNull()) default_aligner = StackContainer<2>::DefaultAligner();
 
     shared_ptr< StackContainer<2> > result(
                     reader.source.hasAttribute(repeat_attr) ?
@@ -411,8 +411,8 @@ shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children(reader,
             [&]() -> PathHints::Hint {
-                std::unique_ptr<align::AxisAligner<Primitive<3>::DIRECTION_TRAN>> aligner = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
-                return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), aligner ? *aligner : *default_aligner);
+                align::AxisAligner<Primitive<3>::DIRECTION_TRAN> aligner = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
+                      return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), !aligner.isNull() ? aligner : default_aligner);
             },
             [&]() {
                 if (height_reader.tryReadZero(result)) return;
@@ -427,12 +427,12 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
 
-    std::unique_ptr<align::AxisAligner<Primitive<3>::DIRECTION_LONG>> default_aligner_0(
+    align::AxisAligner<Primitive<3>::DIRECTION_LONG> default_aligner_0(
           align::fromXML<Primitive<3>::DIRECTION_LONG>(reader.source, *reader.axisNames));
-    if (!default_aligner_0) default_aligner_0.reset(new align::Back(0));
-    std::unique_ptr<align::AxisAligner<Primitive<3>::DIRECTION_TRAN>> default_aligner_1(
+    if (default_aligner_0.isNull()) default_aligner_0 = align::back(0);
+    align::AxisAligner<Primitive<3>::DIRECTION_TRAN> default_aligner_1(
           align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames));
-    if (!default_aligner_1) default_aligner_1.reset(new align::Left(0));
+    if (default_aligner_1.isNull()) default_aligner_1 = align::left(0);
 
     shared_ptr< StackContainer<3> > result(
                     reader.source.hasAttribute(repeat_attr) ?
@@ -442,12 +442,12 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
             [&]() -> PathHints::Hint {
-                std::unique_ptr<align::AxisAligner<Primitive<3>::DIRECTION_LONG>> aligner_0 = align::fromXML<Primitive<3>::DIRECTION_LONG>(reader.source, *reader.axisNames);
-                std::unique_ptr<align::AxisAligner<Primitive<3>::DIRECTION_TRAN>> aligner_1 = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
+                align::AxisAligner<Primitive<3>::DIRECTION_LONG> aligner_0 = align::fromXML<Primitive<3>::DIRECTION_LONG>(reader.source, *reader.axisNames);
+                align::AxisAligner<Primitive<3>::DIRECTION_TRAN> aligner_1 = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
 
                 return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
-                                          *(aligner_0 ? aligner_0 : default_aligner_0) &
-                                          *(aligner_1 ? aligner_1 : default_aligner_1)
+                                        (!aligner_0.isNull() ? aligner_0 : default_aligner_0) &
+                                        (!aligner_1.isNull() ? aligner_1 : default_aligner_1)
                                           );
             },
             [&]() -> void {

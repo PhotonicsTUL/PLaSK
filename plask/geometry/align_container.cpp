@@ -37,7 +37,7 @@ shared_ptr<AlignContainer<3, Primitive<3>::DIRECTION_VERT>::TranslationT> AlignC
 template <int dim, typename Primitive<dim>::Direction alignDirection>
 shared_ptr<typename AlignContainer<dim, alignDirection>::TranslationT> AlignContainer<dim, alignDirection>::newChild(const shared_ptr<typename AlignContainer<dim, alignDirection>::ChildType>& el, const AlignContainer<dim, alignDirection>::Coordinates& place) {
     shared_ptr<AlignContainer<dim, alignDirection>::TranslationT> trans_geom = this->newTranslation(el, place);
-    this->aligner->align(*trans_geom);
+    this->aligner.align(*trans_geom);
     this->connectOnChildChanged(*trans_geom);
     return trans_geom;
 }
@@ -45,7 +45,7 @@ shared_ptr<typename AlignContainer<dim, alignDirection>::TranslationT> AlignCont
 template <int dim, typename Primitive<dim>::Direction alignDirection>
 shared_ptr<typename AlignContainer<dim, alignDirection>::TranslationT> AlignContainer<dim, alignDirection>::newChild(const shared_ptr<typename AlignContainer<dim, alignDirection>::ChildType>& el, const Vec<dim, double>& translation) {
     shared_ptr<AlignContainer<dim, alignDirection>::TranslationT> trans_geom = make_shared<TranslationT>(el, translation);
-    this->aligner->align(*trans_geom);
+    this->aligner.align(*trans_geom);
     this->connectOnChildChanged(*trans_geom);
     return trans_geom;
 }
@@ -124,25 +124,25 @@ shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const ali
 }
 
 shared_ptr<GeometryObject> read_AlignContainer2D(GeometryReader& reader) {
-    { std::unique_ptr<align::AxisAligner<direction3D(Primitive<2>::Direction(0))>> aligner(
+    { align::AxisAligner<direction3D(Primitive<2>::Direction(0))> aligner(
           align::fromXML<direction3D(Primitive<2>::Direction(0))>(reader.source, *reader.axisNames));
-      if (aligner) return read_AlignContainer<2, Primitive<2>::Direction(0)>(reader, *aligner); }
-    { std::unique_ptr<align::AxisAligner<direction3D(Primitive<2>::Direction(1))>> aligner(
+      if (!aligner.isNull()) return read_AlignContainer<2, Primitive<2>::Direction(0)>(reader, aligner); }
+    { align::AxisAligner<direction3D(Primitive<2>::Direction(1))> aligner(
           align::fromXML<direction3D(Primitive<2>::Direction(1))>(reader.source, *reader.axisNames));
-      if (aligner) return read_AlignContainer<2, Primitive<2>::Direction(1)>(reader, *aligner); }
+      if (!aligner.isNull()) return read_AlignContainer<2, Primitive<2>::Direction(1)>(reader, aligner); }
     throw XMLException(reader.source, "missing aligner description attribute");
 }
 
 shared_ptr<GeometryObject> read_AlignContainer3D(GeometryReader& reader) {
-    { std::unique_ptr<align::AxisAligner<direction3D(Primitive<3>::Direction(0))>> aligner(
+    { align::AxisAligner<direction3D(Primitive<3>::Direction(0))> aligner(
           align::fromXML<direction3D(Primitive<3>::Direction(0))>(reader.source, *reader.axisNames));
-      if (aligner) return read_AlignContainer<3, Primitive<3>::Direction(0)>(reader, *aligner); }
-    { std::unique_ptr<align::AxisAligner<direction3D(Primitive<3>::Direction(1))>> aligner(
+      if (!aligner.isNull()) return read_AlignContainer<3, Primitive<3>::Direction(0)>(reader, aligner); }
+    { align::AxisAligner<direction3D(Primitive<3>::Direction(1))> aligner(
           align::fromXML<direction3D(Primitive<3>::Direction(1))>(reader.source, *reader.axisNames));
-      if (aligner) return read_AlignContainer<3, Primitive<3>::Direction(1)>(reader, *aligner); }
-    { std::unique_ptr<align::AxisAligner<direction3D(Primitive<3>::Direction(2))>> aligner(
+      if (!aligner.isNull()) return read_AlignContainer<3, Primitive<3>::Direction(1)>(reader, aligner); }
+    { align::AxisAligner<direction3D(Primitive<3>::Direction(2))> aligner(
           align::fromXML<direction3D(Primitive<3>::Direction(2))>(reader.source, *reader.axisNames));
-      if (aligner) return read_AlignContainer<3, Primitive<3>::Direction(2)>(reader, *aligner); }
+      if (!aligner.isNull()) return read_AlignContainer<3, Primitive<3>::Direction(2)>(reader, aligner); }
     throw XMLException(reader.source, "missing aligner description attribute");
 }
 

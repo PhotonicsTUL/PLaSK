@@ -289,7 +289,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     virtual std::string getTypeName() const { return NAME; }
 
   private:
-    std::vector< std::unique_ptr<Aligner> > aligners;
+    std::vector< Aligner > aligners;
 
     /**
      * Get translation object over given object @p el.
@@ -368,7 +368,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         this->connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
         stackHeights.push_back(next_height);
-        aligners.push_back(aligner.cloneUnique());
+        aligners.push_back(aligner);
         this->fireChildrenInserted(children.size()-1, children.size());
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
@@ -408,7 +408,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
     const Aligner& getAlignerAt(std::size_t child_no) const {
         this->ensureIsValidChildNr(child_no, "getAlignerAt");
-        return *aligners[child_no];
+        return aligners[child_no];
     }
 
     void setAlignerAt(std::size_t child_no, const Aligner& aligner);

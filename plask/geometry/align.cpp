@@ -8,46 +8,46 @@ namespace align {
 
 namespace details {
 
-template <typename AlignerType, Primitive<3>::Direction dir>
-inline void tryGetAxisAligner(std::unique_ptr<AxisAligner<dir>>& ans, boost::optional<double> param) {
+template <Primitive<3>::Direction dir, AxisAligner<dir> AlignerType(double coordinate)>
+inline void tryGetAxisAligner(AxisAligner<dir>& ans, boost::optional<double> param) {
     if (!param) return;
-    if (ans) throw Exception("multiple specification of aligner in direction %1%", dir);
-    ans.reset(new AlignerType(*param));
+    if (ans.isNull()) throw Exception("multiple specification of aligner in direction %1%", dir);
+    ans = AlignerType(*param);
 }
 
-std::unique_ptr<AxisAligner<Primitive<3>::DIRECTION_TRAN>> transAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
-    std::unique_ptr<AxisAligner<Primitive<3>::DIRECTION_TRAN>> result;
-    tryGetAxisAligner<Left>(result, dic(LEFT::value));
-    tryGetAxisAligner<Right>(result, dic(RIGHT::value));
-    tryGetAxisAligner<TranCenter>(result, dic(TRAN_CENTER::value));
-    tryGetAxisAligner<TranCenter>(result, dic("trancenter"));
-    if (axis_name != "tran") tryGetAxisAligner<TranCenter>(result, dic(axis_name + "center"));
+AxisAligner<Primitive<3>::DIRECTION_TRAN> transAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
+    AxisAligner<Primitive<3>::DIRECTION_TRAN> result;
+    tryGetAxisAligner<Primitive<3>::DIRECTION_TRAN, left>(result, dic(LEFT::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_TRAN, right>(result, dic(RIGHT::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_TRAN, tranCenter>(result, dic(TRAN_CENTER::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_TRAN, tranCenter>(result, dic("trancenter"));
+    if (axis_name != "tran") tryGetAxisAligner<Primitive<3>::DIRECTION_TRAN, tranCenter>(result, dic(axis_name + "center"));
 //     tryGetAxisAligner<TranCenter>(result, dic(axis_name + "-center"));
-    tryGetAxisAligner<Tran>(result, dic(axis_name));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_TRAN, tran>(result, dic(axis_name));
     return result;
 }
 
-std::unique_ptr<AxisAligner<Primitive<3>::DIRECTION_LONG>> lonAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
-    std::unique_ptr<AxisAligner<Primitive<3>::DIRECTION_LONG>> result;
-    tryGetAxisAligner<Front>(result, dic(FRONT::value));
-    tryGetAxisAligner<Back>(result, dic(BACK::value));
-    tryGetAxisAligner<LongCenter>(result, dic(LON_CENTER::value));
-    tryGetAxisAligner<LongCenter>(result, dic("longcenter"));
-    if (axis_name != "long") tryGetAxisAligner<LongCenter>(result, dic(axis_name + "center"));
+AxisAligner<Primitive<3>::DIRECTION_LONG> lonAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
+    AxisAligner<Primitive<3>::DIRECTION_LONG> result;
+    tryGetAxisAligner<Primitive<3>::DIRECTION_LONG, front>(result, dic(FRONT::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_LONG, back>(result, dic(BACK::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_LONG, lonCenter>(result, dic(LON_CENTER::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_LONG, lonCenter>(result, dic("longcenter"));
+    if (axis_name != "long") tryGetAxisAligner<Primitive<3>::DIRECTION_LONG, lonCenter>(result, dic(axis_name + "center"));
 //     tryGetAxisAligner<LongCenter>(result, dic(axis_name + "-center"));
-    tryGetAxisAligner<Long>(result, dic(axis_name));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_LONG, lon>(result, dic(axis_name));
     return result;
 }
 
-std::unique_ptr<AxisAligner<Primitive<3>::DIRECTION_VERT>> vertAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
-    std::unique_ptr<AxisAligner<Primitive<3>::DIRECTION_VERT>> result;
-    tryGetAxisAligner<Top>(result, dic(TOP::value));
-    tryGetAxisAligner<Bottom>(result, dic(BOTTOM::value));
-    tryGetAxisAligner<VertCenter>(result, dic(VERT_CENTER::value));
-    tryGetAxisAligner<VertCenter>(result, dic("vertcenter"));
-    if (axis_name != "vert") tryGetAxisAligner<VertCenter>(result, dic(axis_name + "center"));
+AxisAligner<Primitive<3>::DIRECTION_VERT> vertAlignerFromDictionary(Dictionary dic, const std::string& axis_name) {
+    AxisAligner<Primitive<3>::DIRECTION_VERT> result;
+    tryGetAxisAligner<Primitive<3>::DIRECTION_VERT, top>(result, dic(TOP::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_VERT, bottom>(result, dic(BOTTOM::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_VERT, vertCenter>(result, dic(VERT_CENTER::value));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_VERT, vertCenter>(result, dic("vertcenter"));
+    if (axis_name != "vert") tryGetAxisAligner<Primitive<3>::DIRECTION_VERT, vertCenter>(result, dic(axis_name + "center"));
 //     tryGetAxisAligner<VertCenter>(result, dic(axis_name + "-center"));
-    tryGetAxisAligner<Vert>(result, dic(axis_name));
+    tryGetAxisAligner<Primitive<3>::DIRECTION_VERT, vert>(result, dic(axis_name));
     return result;
 }
 

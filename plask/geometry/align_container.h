@@ -26,6 +26,10 @@ struct AlignContainer: public GeometryObjectContainer<dim> {
 
     typedef align::AxisAligner<direction3D(alignDirection)> Aligner;
 
+/*    typedef typename chooseType<dim-2,
+            align::OneDirectionAligner<direction3D(DirectionWithout<3, direction3D(alignDirection)>::value2D)>,
+            align::Aligner3D<DirectionWithout<3, direction3D(alignDirection)>::valueLower, DirectionWithout<3, direction3D(alignDirection)>::valueHigher>::type ChildAligner;*/
+
     typedef typename chooseType<dim-2, double, std::pair<double, double> >::type Coordinates;
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
@@ -47,7 +51,7 @@ private:
     /**
      * Aligner which is use to align object in alignDirection.
      */
-    std::unique_ptr<Aligner> aligner;
+    Aligner aligner;
 
     /**
      * Create new translation object.
@@ -79,12 +83,12 @@ protected:
 public:
 
     AlignContainer(const Aligner& aligner)
-        : aligner(aligner.cloneUnique())
+        : aligner(aligner)
     {}
 
     /// Called by child.change signal, update heights call this change
     void onChildChanged(const GeometryObject::Event& evt) {
-        if (evt.isResize()) aligner->align(const_cast<TranslationT&>(evt.source<TranslationT>()));
+        if (evt.isResize()) aligner.align(const_cast<TranslationT&>(evt.source<TranslationT>()));
         GeometryObjectContainer<dim>::onChildChanged(evt);
     }
 
@@ -93,7 +97,7 @@ public:
      * @return aligner which is use to align object
      */
     const Aligner& getAligner() const {
-        return *aligner;
+        return aligner;
     }
 
     /**
@@ -101,7 +105,7 @@ public:
      * @param new_aligner new aligner to use
      */
     void setAligner(const Aligner& new_aligner) {
-        aligner = new_aligner.cloneUnique();
+        aligner = new_aligner;
     }
 
     /**
