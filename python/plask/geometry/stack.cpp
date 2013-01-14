@@ -7,43 +7,37 @@
 namespace plask { namespace python {
 
 template <typename StackT>
-PathHints::Hint Stack_push_back(py::tuple targs, py::dict kwargs) {
-    py::dict aligners = kwargs.copy();
-    py::list args = py::list(targs);
-    parseKwargs("append", args, aligners, {"self", "child"});
+PathHints::Hint Stack_push_back(py::tuple args, py::dict kwargs) {
+    parseKwargs("append", args, kwargs, {"self", "child"});
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
-    if (py::len(aligners) == 0)
+    if (py::len(kwargs) == 0)
         return self->push_back(child);
     else
-        return self->push_back(child, py::extract<typename StackT::Aligner>(aligners));
+        return self->push_back(child, py::extract<typename StackT::Aligner>(kwargs));
 }
 
 template <typename StackT>
-PathHints::Hint Stack_push_front(py::tuple targs, py::dict kwargs) {
-    py::dict aligners = kwargs.copy();
-    py::list args = py::list(targs);
-    parseKwargs("prepend", args, aligners, {"self", "child"});
+PathHints::Hint Stack_push_front(py::tuple args, py::dict kwargs) {
+    parseKwargs("prepend", args, kwargs, {"self", "child"});
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
-    if (py::len(aligners) == 0)
+    if (py::len(kwargs) == 0)
         return self->push_front(child);
     else
-        return self->push_front(child, py::extract<typename StackT::Aligner>(aligners));
+        return self->push_front(child, py::extract<typename StackT::Aligner>(kwargs));
 }
 
 template <typename StackT>
-PathHints::Hint Stack_insert(py::tuple targs, py::dict kwargs) {
-    py::dict aligners = kwargs.copy();
-    py::list args = py::list(targs);
-    parseKwargs("insert", args, aligners, {"self", "child", "pos"});
+PathHints::Hint Stack_insert(py::tuple args, py::dict kwargs) {
+    parseKwargs("insert", args, kwargs, {"self", "child", "pos"});
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
     size_t pos = py::extract<size_t>(args[2]);
-    if (py::len(aligners) == 0)
+    if (py::len(kwargs) == 0)
         return self->insert(child, pos);
     else
-        return self->insert(child, pos, py::extract<typename StackT::Aligner>(aligners));
+        return self->insert(child, pos, py::extract<typename StackT::Aligner>(kwargs));
 }
 
 void register_geometry_container_stack()
