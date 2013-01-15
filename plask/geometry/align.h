@@ -9,6 +9,7 @@ This file includes aligners.
 #include <boost/lexical_cast.hpp>
 #include "../utils/xml.h"
 #include "../memory.h"
+#include "../utils/metaprog.h"
 
 namespace plask {
 
@@ -296,6 +297,8 @@ struct PositionAligner1DImpl: public Aligner1DImpl<direction> {
 template <Direction _direction1, Direction _direction2>
 class Aligner2D {
 
+    static_assert(_direction1 < _direction2, "In Aligner2D first direction must have lower index than second one. Try swap Aligner2D template parameters.");
+
     Aligner1D<_direction1> dir1aligner;
     Aligner1D<_direction2> dir2aligner;
 
@@ -399,6 +402,8 @@ public:
         dir2aligner.writeToXML(dest, axis_names);
     }
 
+    bool isNull() { return dir1aligner.isNull() || dir2aligner.isNull(); }
+
 };
 
 inline Aligner2D<Primitive<3>::Direction(0), Primitive<3>::Direction(1)> operator&(const Aligner1D<Primitive<3>::Direction(0)>& dir1aligner, const Aligner1D<Primitive<3>::Direction(1)>& dir2aligner) {
@@ -481,19 +486,16 @@ inline Aligner1D<Primitive<3>::DIRECTION_VERT> top(double coordinate) { return n
 inline Aligner1D<Primitive<3>::DIRECTION_VERT> vertCenter(double coordinate) { return new details::Aligner1DCustomImpl<Primitive<3>::DIRECTION_VERT, details::centerToCoordinate, details::VERT_CENTER>(coordinate); }
 inline Aligner1D<Primitive<3>::DIRECTION_VERT> vert(double coordinate) { return new details::PositionAligner1DImpl<Primitive<3>::DIRECTION_VERT>(coordinate); }
 
-//3D lon/tran aligners:
-/*typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::hiToCoordinate, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::lowToCoordinate, details::LEFT> FrontLeft;
-typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::hiToCoordinate, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::hiToCoordinate, details::RIGHT> FrontRight;
-typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::hiToCoordinate, details::FRONT, Primitive<3>::DIRECTION_TRAN, details::centerToCoordinate, details::CENTER> FrontCenter;
-typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::lowToCoordinate, details::BACK, Primitive<3>::DIRECTION_TRAN, details::lowToCoordinate, details::LEFT> BackLeft;
-typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::lowToCoordinate, details::BACK, Primitive<3>::DIRECTION_TRAN, details::hiToCoordinate, details::RIGHT> BackRight;
-typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::lowToCoordinate, details::BACK, Primitive<3>::DIRECTION_TRAN, details::centerToCoordinate, details::CENTER> BackCenter;
-typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::centerToCoordinate, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::lowToCoordinate, details::LEFT> CenterLeft;
-typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::centerToCoordinate, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::hiToCoordinate, details::RIGHT> CenterRight;
-typedef details::Aligner2DImpl<Primitive<3>::DIRECTION_LONG, details::centerToCoordinate, details::CENTER, Primitive<3>::DIRECTION_TRAN, details::centerToCoordinate, details::CENTER> CenterCenter;
-typedef TranslationAligner2D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> LonTran;*/
-//typedef Aligner2D<DIR3D_LON, DIR3D_TRAN> NFLR;
-//TODO mixed variants
+template<Primitive<3>::Direction dir>
+using LowerBoundImpl = details::Aligner1DCustomImpl<dir, details::lowToCoordinate, typename chooseType<dir, details::BACK, details::LEFT, details::BOTTOM>::type>;
+
+/**
+ * Get aligner with align in one direction to lower bound.
+ * @return aligner with align to lower bound in given direction, equal to left, back, or bottom.
+ * @tparam dir direction
+ */
+template <Primitive<3>::Direction dir> inline Aligner1D<dir> lowerBoundZero() { return new LowerBoundImpl<dir>(0.0); }
+template <Primitive<3>::Direction dir1, Primitive<3>::Direction dir2> inline Aligner2D<dir1, dir2> lowerBoundZero() { return lowerBoundZero<dir1> & lowerBoundZero<dir2>; }
 
 typedef std::function<boost::optional<double>(const std::string& name)> Dictionary;
 
@@ -544,9 +546,32 @@ Aligner1D<direction> fromDictionary(Dictionary dic, const AxisNames& axis_names)
     return fromDictionary<direction>(dic, axis_names[direction]);
 }
 
+/**
+ * Construct 2d aligner in given direction from dictionary.
+ *
+ * Throw exception if @p dic includes information about multiple aligners in given @p direction.
+ * @param dictionary dictionary which can describes 2D aligner
+ * @param axis_names names of axes
+ * @param default_aligner default aligners, returned when there is no information about aligner in @p dictionary
+ * @return parsed aligner
+ * @tparam direction direction
+ */
+template <Direction direction>
+Aligner1D<direction> fromDictionary(Dictionary dic, const AxisNames& axis_names, Aligner1D<direction> default_aligner) {
+    Aligner1D<direction> result = fromDictionary<direction>(dic, axis_names[direction]);
+    if (result.isNull()) result = default_aligner;
+    return result;
+}
+
+struct DictionaryFromXML {
+    const XMLReader& reader;
+    DictionaryFromXML(const XMLReader& reader): reader(reader) {}
+    boost::optional<double> operator()(const std::string& s) const { return reader.getAttribute<double>(s); }
+};
+
 template <Direction direction>
 inline Aligner1D<direction> fromXML(const XMLReader& reader, const std::string& axis_name) {
-     return fromDictionary<direction>([&](const std::string& s) { return reader.getAttribute<double>(s); }, axis_name);
+    return fromDictionary<direction>(DictionaryFromXML(reader), axis_name);
 }
 
 template <Direction direction>
@@ -554,28 +579,71 @@ inline Aligner1D<direction> fromXML(const XMLReader& reader, const AxisNames& ax
     return fromXML<direction>(reader, axis_names[direction]);
 }
 
-/**
- * Construct 3D aligner from single string
- *
- * @param str string which describes 3d aligner
- * @return pointer to the constructed aligner
- */
-//Aligner2D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN>* alignerFromString(std::string str);
+template <Direction direction>
+inline Aligner1D<direction> fromXML(const XMLReader& reader, const AxisNames& axis_names, Aligner1D<direction> default_aligner) {
+    return fromDictionary<direction>(DictionaryFromXML(reader), axis_names, default_aligner);
+}
 
 /**
- * Construct 3D aligner from two strings describing alignment in two directions
- *
- * @param str1 string which describes 2D aligner in the first direction
- * @param str2 string which describes 2D aligner in the second direction
- * @return pointer to the constructed 3D aligner
+ * Construct 2 direction aligner from dictionary.
+ * @param dictionary dictionary which describes required 2, 1 directions aligner
+ * @param axes names of axes
+ * @return constructed aligner
  */
-template <Direction direction1, Direction direction2, typename Axes>
-inline Aligner2D<direction1, direction2> fromDictionary(Dictionary dic, const Axes& axes) {
+template <Direction direction1, Direction direction2>
+inline Aligner2D<direction1, direction2> fromDictionary(Dictionary dic, const AxisNames& axes) {
     Aligner1D<direction1> a1 = fromDictionary<direction1>(dic, axes);
     if (a1.isNull()) throw Exception("No aligner for axis%1% defined.", direction1);
     Aligner1D<direction2> a2 = fromDictionary<direction2>(dic, axes);
     if (a2.isNull()) throw Exception("No aligner for axis%1% defined.", direction2);
     return Aligner2D<direction1, direction2>(a1, a2);
+}
+
+template <Direction direction1, Direction direction2>
+inline Aligner2D<direction1, direction2> fromXML(const XMLReader& reader, const AxisNames& axes) {
+    return fromDictionary<direction1, direction2>(DictionaryFromXML(reader), axes);
+}
+
+/**
+ * Construct 2 direction aligner from dictionary.
+ * @param dictionary dictionary which describes required 2, 1 directions aligner
+ * @param axes names of axes
+ * @param default1, default2 default aligners in direction 1 and 2, used when there is no information about aligner in some direction in @p dictionary
+ * @return constructed aligner
+ */
+template <Direction direction1, Direction direction2, typename Axes>
+inline Aligner2D<direction1, direction2> fromDictionary(Dictionary dic, const Axes& axes, Aligner1D<direction1> default1, Aligner1D<direction2> default2) {
+    return Aligner2D<direction1, direction2>(fromDictionary(dic, axes, default1), fromDictionary(dic, axes, default2));
+}
+
+template <Direction direction1, Direction direction2>
+inline Aligner2D<direction1, direction2> fromXML(const XMLReader& reader, const AxisNames& axes, Aligner1D<direction1> default1, Aligner1D<direction2> default2) {
+    return fromDictionary<direction1, direction2>(DictionaryFromXML(reader), axes, default1, default2);
+}
+
+/**
+ * Align @p toAlign by aligner1 and aligner2.
+ *
+ * It is equal to, but possibly faster than:
+ * @code
+ * aligner1.align(toAlign);
+ * aligner2.align(toAlign);
+ * @endcode
+ * It calculates bounding box of toAlign only once and only if it is required by any aligner.
+ *
+ * @param toAlign object to align, translation in 2D or 3D
+ * @param aligner1, aligner2 aligners
+ */
+template <typename TranslationT, typename Aligner1T, typename Aligner2T>
+void align(TranslationT& toAlign, const Aligner1T& aligner1, const Aligner2T& aligner2) {
+    if (aligner1.useBounds() || aligner2.useBounds()) {
+        auto bb = toAlign.getChild()->getBoundingBox();
+        aligner1.align(toAlign, bb);
+        aligner2.align(toAlign, bb);
+    } else {
+        aligner1.align(toAlign);
+        aligner2.align(toAlign);
+    }
 }
 
 }   // namespace align

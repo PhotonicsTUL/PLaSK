@@ -287,7 +287,106 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
     }
 }
 
+/**
+ * Template of base class for containers which have aligners, one per child.
+ *
+ * It define proper remove methods and some, protected, helpers.
+ * @tparam ParentType container type to inharit from
+ * @tparam ChildAlignerType aligner type
+ */
+template <typename ParentType, typename ChildAlignerType>
+struct WithAligners: public ParentType {
 
+    typedef ChildAlignerType ChildAligner;
+    typedef typename ParentType::TranslationT TranslationT;
+
+protected:
+    using ParentType::children;
+
+    std::vector< ChildAligner > aligners;
+
+    PathHints::Hint _insertUnsafe(shared_ptr<TranslationT> to_insert, const std::size_t pos, ChildAligner aligner) {
+        this->ensureIsValidInserPosition(pos, "insertUnsafe");
+        this->children.insert(children.begin() + pos, to_insert);
+        aligners.insert(aligners.begin() + pos, aligner);
+        this->connectOnChildChanged(*to_insert);
+        this->fireChildrenInserted(pos, pos+1);
+        return PathHints::Hint(this->shared_from_this(), to_insert);
+    }
+
+    PathHints::Hint _insert(shared_ptr<TranslationT> to_insert, const std::size_t pos, ChildAligner aligner) {
+        this->ensureCanHaveAsChild(*to_insert);
+        return _insertUnsafe(to_insert, pos, aligner);
+    }
+
+    PathHints::Hint _addUnsafe(shared_ptr<TranslationT> to_add, ChildAligner aligner) {
+        this->children.push_back(to_add);
+        aligners.push_back(aligner);
+        this->connectOnChildChanged(*to_add);
+        this->fireChildrenInserted(children.size()-1, children.size());
+        return PathHints::Hint(this->shared_from_this(), to_add);
+    }
+
+    PathHints::Hint _add(shared_ptr<TranslationT> to_add, ChildAligner aligner) {
+        this->ensureCanHaveAsChild(*to_add);
+        addUnsafe(to_add, aligner);
+        return PathHints::Hint(this->shared_from_this(), to_add);
+    }
+
+    ChildAligner getAlignerFor(shared_ptr<const TranslationT> child) {
+        auto it = std::find(children.begin(), children.end(), child);
+        return it != children.end() ? aligners[it - children.begin()] : ChildAligner();
+    }
+
+    ChildAligner getAlignerFor(TranslationT& child) {
+        auto it = std::find(children.begin(), children.end(), static_pointer_cast<const TranslationT>(child.shared_from_this()));
+        return it != children.end() ? aligners[it - children.begin()] : ChildAligner();
+    }
+
+    void align(shared_ptr<TranslationT> child) {
+        auto it = std::find(children.begin(), children.end(), child);
+        if (it != children.end()) aligners[it - children.begin()].align(*child);
+    }
+
+    void align(TranslationT& child) {
+        align(static_pointer_cast<TranslationT>(child.shared_from_this()));
+    }
+
+public:
+
+    /// Called by child.change signal, update heights call this change
+    void onChildChanged(const GeometryObject::Event& evt) {
+        if (evt.isResize()) align(const_cast<TranslationT&>(evt.source<TranslationT>()));
+        ParentType::onChildChanged(evt);
+    }
+
+    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
+        auto dst = this->children.begin();
+        auto al_dst = aligners.begin();
+        auto al_src = aligners.begin();
+        for (auto i: children) {
+            if (predicate(i))
+                this->disconnectOnChildChanged(*i);
+            else {
+                *dst++ = i;
+                *al_dst++ = std::move(*al_src);
+            }
+            ++al_src;
+        }
+        if (dst != children.end()) {
+            children.erase(dst, children.end());
+            aligners.erase(al_dst, aligners.end());
+            return true;
+        } else
+            return false;
+    }
+
+    virtual void removeAtUnsafe(std::size_t index) {
+        ParentType::removeAtUnsafe(index);
+        aligners.erase(aligners.begin() + index);
+    }
+
+};
 
 }	// namespace plask
 

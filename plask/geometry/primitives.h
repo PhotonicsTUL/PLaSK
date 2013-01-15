@@ -508,11 +508,13 @@ struct DirectionWithout {};
 template <>
 struct DirectionWithout<2, Primitive<2>::DIRECTION_TRAN> {
     static const Primitive<2>::Direction value = Primitive<2>::DIRECTION_VERT;
+    static const Primitive<3>::Direction value3d = Primitive<3>::DIRECTION_VERT;
 };
 
 template <>
 struct DirectionWithout<2, Primitive<2>::DIRECTION_VERT> {
     static const Primitive<2>::Direction value = Primitive<2>::DIRECTION_TRAN;
+    static const Primitive<3>::Direction value3d = Primitive<3>::DIRECTION_TRAN;
 };
 
 template <>
@@ -520,6 +522,9 @@ struct DirectionWithout<3, Primitive<3>::DIRECTION_LONG> {
     static const unsigned value = Primitive<3>::DIRECTION_TRAN | Primitive<3>::DIRECTION_VERT;
     static const Primitive<3>::Direction valueLower = Primitive<3>::DIRECTION_TRAN;
     static const Primitive<3>::Direction valueHigher = Primitive<3>::DIRECTION_VERT;
+
+    //should be not usedm but sometimes it is usefull to make compilation possible
+    static const Primitive<2>::Direction value2D = Primitive<2>::Direction(Primitive<2>::DIRECTION_VERT | Primitive<2>::DIRECTION_VERT);
 };
 
 template <>

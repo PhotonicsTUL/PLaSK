@@ -4,49 +4,36 @@
 
 namespace plask {
 
-template<>
-shared_ptr<AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::TranslationT> AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::newTranslation(
-        const shared_ptr<AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::ChildType>& el, const double& place) {
-    return make_shared<TranslationT>(el, vec(0.0, place));
+template <>
+AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::ChildAligner AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::defaultAligner() {
+    return align::bottom(0.0);
 }
 
-template<>
-shared_ptr<AlignContainer<2, Primitive<2>::DIRECTION_VERT>::TranslationT> AlignContainer<2, Primitive<2>::DIRECTION_VERT>::newTranslation(
-        const shared_ptr<AlignContainer<2, Primitive<2>::DIRECTION_VERT>::ChildType>& el, const double& place) {
-    return make_shared<TranslationT>(el, vec(place, 0.0));
+template <>
+AlignContainer<2, Primitive<2>::DIRECTION_VERT>::ChildAligner AlignContainer<2, Primitive<2>::DIRECTION_VERT>::defaultAligner() {
+    return align::left(0.0);
 }
 
-template<>
-shared_ptr<AlignContainer<3, Primitive<3>::DIRECTION_LONG>::TranslationT> AlignContainer<3, Primitive<3>::DIRECTION_LONG>::newTranslation(
-        const shared_ptr<AlignContainer<3, Primitive<3>::DIRECTION_LONG>::ChildType>& el, const std::pair<double, double>& place) {
-    return make_shared<TranslationT>(el, vec(0.0, place.first, place.second));
+template <>
+AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::defaultAligner() {
+    return align::bottom(0.0) & align::back(0.0);
 }
 
-template<>
-shared_ptr<AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::TranslationT> AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::newTranslation(
-        const shared_ptr<AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::ChildType>& el, const std::pair<double, double>& place) {
-    return make_shared<TranslationT>(el, vec(place.first, 0.0, place.second));
+template <>
+AlignContainer<3, Primitive<3>::DIRECTION_VERT>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_VERT>::defaultAligner() {
+    return align::left(0.0) & align::back(0.0);
 }
 
-template<>
-shared_ptr<AlignContainer<3, Primitive<3>::DIRECTION_VERT>::TranslationT> AlignContainer<3, Primitive<3>::DIRECTION_VERT>::newTranslation(
-        const shared_ptr<AlignContainer<3, Primitive<3>::DIRECTION_VERT>::ChildType>& el, const std::pair<double, double>& place) {
-    return make_shared<TranslationT>(el, vec(place.first, place.second, 0.0));
+template <>
+AlignContainer<3, Primitive<3>::DIRECTION_LONG>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_LONG>::defaultAligner() {
+    return align::left(0.0) & align::bottom(0.0);
 }
+
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-shared_ptr<typename AlignContainer<dim, alignDirection>::TranslationT> AlignContainer<dim, alignDirection>::newChild(const shared_ptr<typename AlignContainer<dim, alignDirection>::ChildType>& el, const AlignContainer<dim, alignDirection>::Coordinates& place) {
-    shared_ptr<AlignContainer<dim, alignDirection>::TranslationT> trans_geom = this->newTranslation(el, place);
-    this->aligner.align(*trans_geom);
-    this->connectOnChildChanged(*trans_geom);
-    return trans_geom;
-}
-
-template <int dim, typename Primitive<dim>::Direction alignDirection>
-shared_ptr<typename AlignContainer<dim, alignDirection>::TranslationT> AlignContainer<dim, alignDirection>::newChild(const shared_ptr<typename AlignContainer<dim, alignDirection>::ChildType>& el, const Vec<dim, double>& translation) {
-    shared_ptr<AlignContainer<dim, alignDirection>::TranslationT> trans_geom = make_shared<TranslationT>(el, translation);
-    this->aligner.align(*trans_geom);
-    this->connectOnChildChanged(*trans_geom);
+shared_ptr<typename AlignContainer<dim, alignDirection>::TranslationT> AlignContainer<dim, alignDirection>::newTranslation(const shared_ptr<typename AlignContainer<dim, alignDirection>::ChildType>& el, ChildAligner aligner) {
+    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el);
+    align::align(*trans_geom, this->aligner, aligner);
     return trans_geom;
 }
 
@@ -55,24 +42,14 @@ shared_ptr<GeometryObject> AlignContainer<dim, alignDirection>::changedVersionFo
     shared_ptr< AlignContainer<dim, alignDirection> > result = make_shared< AlignContainer<dim, alignDirection> >(this->getAligner());
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
-            result->addUnsafe(children_after_change[child_no].first, children[child_no]->translation + vec<dim, double>(children_after_change[child_no].second));
+            result->addUnsafe(children_after_change[child_no].first,
+                              this->aligners[child_no]);
     return result;
 }
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(shared_ptr<AlignContainer<dim, alignDirection>::ChildType> el, const AlignContainer<dim, alignDirection>::Coordinates& place) {
-    shared_ptr<AlignContainer<dim, alignDirection>::TranslationT> trans_geom = this->newChild(el, place);
-    this->children.push_back(trans_geom);
-    this->fireChildrenInserted(children.size()-1, children.size());
-    return PathHints::Hint(shared_from_this(), trans_geom);
-}
-
-template <int dim, typename Primitive<dim>::Direction alignDirection>
-PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(shared_ptr<AlignContainer<dim, alignDirection>::ChildType> el, const Vec<dim, double>& translation) {
-    shared_ptr<AlignContainer<dim, alignDirection>::TranslationT> trans_geom = this->newChild(el, translation);
-    this->children.push_back(trans_geom);
-    this->fireChildrenInserted(children.size()-1, children.size());
-    return PathHints::Hint(shared_from_this(), trans_geom);
+PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(shared_ptr<AlignContainer<dim, alignDirection>::ChildType> el, ChildAligner aligner) {
+    return this->_addUnsafe(newTranslation(el, aligner), aligner);
 }
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
@@ -95,16 +72,17 @@ template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
 
 // ---- containers readers: ----
 
-inline double readPlace(GeometryReader& reader, Primitive<2>::Direction skipDirection) {
-    return reader.source.getAttribute(reader.getAxisName(1-skipDirection), 0.0);
+template <Primitive<2>::Direction skipDirection>
+inline typename AlignContainer<2, skipDirection>::ChildAligner readPlace(GeometryReader& reader) {
+    return align::fromXML(reader.source, *reader.axisNames, align::lowerBoundZero<DirectionWithout<2, skipDirection>::value3d>());
 }
 
-inline Vec<3, double> readPlace(GeometryReader& reader, Primitive<3>::Direction skipDirection) {
-    Vec<3, double> result;
-    for (int i = 0; i < 3; ++i)
-        if (i != skipDirection)
-            result[i] = reader.source.getAttribute(reader.getAxisName(i), 0.0);
-    return result;
+template <Primitive<3>::Direction skipDirection>
+inline typename AlignContainer<3, skipDirection>::ChildAligner readPlace(GeometryReader& reader) {
+    return align::fromXML(reader.source, *reader.axisNames,
+                          align::lowerBoundZero<DirectionWithout<3, skipDirection>::valueLower>(),
+                          align::lowerBoundZero<DirectionWithout<3, skipDirection>::valueHigher>()
+                          );
 }
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
@@ -114,7 +92,7 @@ shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const ali
     read_children(reader,
         [&]() -> PathHints::Hint {
             return result->add(reader.readExactlyOneChild< typename AlignContainer<dim, alignDirection>::ChildType >(),
-                                readPlace(reader, alignDirection));
+                                readPlace<alignDirection>(reader));
         },
         [&]() {
             result->add(reader.readObject< typename AlignContainer<dim, alignDirection>::ChildType >());
