@@ -305,6 +305,7 @@ protected:
 
     std::vector< ChildAligner > aligners;
 
+    ///Do everything, but align to_insert by aligner.
     PathHints::Hint _insertUnsafe(shared_ptr<TranslationT> to_insert, const std::size_t pos, ChildAligner aligner) {
         this->ensureIsValidInserPosition(pos, "insertUnsafe");
         this->children.insert(children.begin() + pos, to_insert);
@@ -354,7 +355,7 @@ protected:
 
 public:
 
-    /// Called by child.change signal, update heights call this change
+    /// Called by child.change signal
     void onChildChanged(const GeometryObject::Event& evt) {
         if (evt.isResize()) align(const_cast<TranslationT&>(evt.source<TranslationT>()));
         ParentType::onChildChanged(evt);
