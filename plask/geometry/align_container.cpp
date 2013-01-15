@@ -59,9 +59,7 @@ void AlignContainer<dim, alignDirection>::writeXMLAttr(XMLWriter::Element& dest_
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
 void AlignContainer<dim, alignDirection>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
-    for (int d = 0; d < dim; ++d)
-        if (d != alignDirection)
-            dest_xml_child_tag.attr(axes[direction3D(typename Primitive<dim>::Direction(d))], children[child_index]->translation[d]);
+    childAligners[child_index].writeToXML(dest_xml_child_tag, axes);
 }
 
 template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
