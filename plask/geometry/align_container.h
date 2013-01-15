@@ -24,11 +24,12 @@ struct AlignContainer: public GeometryObjectContainer<dim> {
                 ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    typedef align::AxisAligner<direction3D(alignDirection)> Aligner;
+    typedef align::Aligner1D<direction3D(alignDirection)> Aligner;
 
-/*    typedef typename chooseType<dim-2,
-            align::OneDirectionAligner<direction3D(DirectionWithout<3, direction3D(alignDirection)>::value2D)>,
-            align::Aligner3D<DirectionWithout<3, direction3D(alignDirection)>::valueLower, DirectionWithout<3, direction3D(alignDirection)>::valueHigher>::type ChildAligner;*/
+    /*typedef chooseType<dim-2,
+            align::Aligner1D<direction3D(DirectionWithout<3, direction3D(alignDirection)>::value2D)>,
+            align::Aligner2D<DirectionWithout<3, direction3D(alignDirection)>::valueLower, DirectionWithout<3, direction3D(alignDirection)>::valueHigher>
+            ::type ChildAligner;*/
 
     typedef typename chooseType<dim-2, double, std::pair<double, double> >::type Coordinates;
 

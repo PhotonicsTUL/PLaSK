@@ -269,7 +269,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
 template <int dim>
 struct StackContainer: public StackContainerBaseImpl<dim> {
 
-    typedef typename chooseType<dim-2, align::AxisAligner<Primitive<3>::DIRECTION_TRAN>, align::Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> >::type Aligner;
+    typedef typename chooseType<dim-2, align::Aligner1D<Primitive<3>::DIRECTION_TRAN>, align::Aligner2D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> >::type Aligner;
     static const Aligner& DefaultAligner();
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;

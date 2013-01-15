@@ -8,9 +8,9 @@
 
 namespace plask { namespace python {
 
-typedef align::AxisAligner<Primitive<3>::DIRECTION_TRAN> A2;
-typedef align::AxisAligner<Primitive<3>::DIRECTION_LONG> A2l;
-typedef align::Aligner3D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> A3;
+typedef align::Aligner1D<Primitive<3>::DIRECTION_TRAN> A2;
+typedef align::Aligner1D<Primitive<3>::DIRECTION_LONG> A2l;
+typedef align::Aligner2D<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> A3;
 
 namespace detail {
 
@@ -33,17 +33,17 @@ namespace detail {
     template <typename AlignerT> struct AlignerFromDictionary;
 
     template <align::Direction direction>
-    struct AlignerFromDictionary<align::AxisAligner<direction>> {
+    struct AlignerFromDictionary<align::Aligner1D<direction>> {
         template <typename Dict>
-        static align::AxisAligner<direction> get(Dict dict) {
+        static align::Aligner1D<direction> get(Dict dict) {
             return align::fromDictionary<direction>(dict, config.axes);
         }
     };
 
     template <align::Direction direction1, align::Direction direction2>
-    struct AlignerFromDictionary<align::Aligner3D<direction1,direction2>> {
+    struct AlignerFromDictionary<align::Aligner2D<direction1,direction2>> {
         template <typename Dict>
-        static align::Aligner3D<direction1,direction2> get(Dict dict) {
+        static align::Aligner2D<direction1,direction2> get(Dict dict) {
             return align::fromDictionary<direction1,direction2>(dict, config.axes);
         }
     };
@@ -86,21 +86,21 @@ void register_geometry_aligners()
     const Primitive<3>::Direction T = Primitive<3>::DIRECTION_TRAN;
     const Primitive<3>::Direction V = Primitive<3>::DIRECTION_VERT;
 
-    py::to_python_converter<align::AxisAligner<L>, detail::Aligner_to_Python<align::AxisAligner<L>>>();
-    py::to_python_converter<align::AxisAligner<T>, detail::Aligner_to_Python<align::AxisAligner<T>>>();
-    py::to_python_converter<align::AxisAligner<V>, detail::Aligner_to_Python<align::AxisAligner<V>>>();
+    py::to_python_converter<align::Aligner1D<L>, detail::Aligner_to_Python<align::Aligner1D<L>>>();
+    py::to_python_converter<align::Aligner1D<T>, detail::Aligner_to_Python<align::Aligner1D<T>>>();
+    py::to_python_converter<align::Aligner1D<V>, detail::Aligner_to_Python<align::Aligner1D<V>>>();
 
-    py::to_python_converter<align::Aligner3D<L,T>, detail::Aligner_to_Python<align::Aligner3D<L,T>>>();
-    py::to_python_converter<align::Aligner3D<L,V>, detail::Aligner_to_Python<align::Aligner3D<L,V>>>();
-    py::to_python_converter<align::Aligner3D<T,V>, detail::Aligner_to_Python<align::Aligner3D<T,V>>>();
+    py::to_python_converter<align::Aligner2D<L,T>, detail::Aligner_to_Python<align::Aligner2D<L,T>>>();
+    py::to_python_converter<align::Aligner2D<L,V>, detail::Aligner_to_Python<align::Aligner2D<L,V>>>();
+    py::to_python_converter<align::Aligner2D<T,V>, detail::Aligner_to_Python<align::Aligner2D<T,V>>>();
 
-    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::AxisAligner<L>>, py::type_id<align::AxisAligner<L>>());
-    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::AxisAligner<T>>, py::type_id<align::AxisAligner<T>>());
-    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::AxisAligner<V>>, py::type_id<align::AxisAligner<V>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner1D<L>>, py::type_id<align::Aligner1D<L>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner1D<T>>, py::type_id<align::Aligner1D<T>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner1D<V>>, py::type_id<align::Aligner1D<V>>());
 
-    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner3D<L,T>>, py::type_id<align::Aligner3D<L,T>>());
-    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner3D<L,V>>, py::type_id<align::Aligner3D<L,V>>());
-    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner3D<T,V>>, py::type_id<align::Aligner3D<T,V>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner2D<L,T>>, py::type_id<align::Aligner2D<L,T>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner2D<L,V>>, py::type_id<align::Aligner2D<L,V>>());
+    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<align::Aligner2D<T,V>>, py::type_id<align::Aligner2D<T,V>>());
 
 }
 

@@ -399,7 +399,7 @@ struct HeightReader {
 shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
-    align::AxisAligner<Primitive<3>::DIRECTION_TRAN> default_aligner =
+    align::Aligner1D<Primitive<3>::DIRECTION_TRAN> default_aligner =
           align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
     if (default_aligner.isNull()) default_aligner = StackContainer<2>::DefaultAligner();
 
@@ -411,7 +411,7 @@ shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children(reader,
             [&]() -> PathHints::Hint {
-                align::AxisAligner<Primitive<3>::DIRECTION_TRAN> aligner = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
+                align::Aligner1D<Primitive<3>::DIRECTION_TRAN> aligner = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
                       return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), !aligner.isNull() ? aligner : default_aligner);
             },
             [&]() {
@@ -427,10 +427,10 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
 
-    align::AxisAligner<Primitive<3>::DIRECTION_LONG> default_aligner_0(
+    align::Aligner1D<Primitive<3>::DIRECTION_LONG> default_aligner_0(
           align::fromXML<Primitive<3>::DIRECTION_LONG>(reader.source, *reader.axisNames));
     if (default_aligner_0.isNull()) default_aligner_0 = align::back(0);
-    align::AxisAligner<Primitive<3>::DIRECTION_TRAN> default_aligner_1(
+    align::Aligner1D<Primitive<3>::DIRECTION_TRAN> default_aligner_1(
           align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames));
     if (default_aligner_1.isNull()) default_aligner_1 = align::left(0);
 
@@ -442,8 +442,8 @@ shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
             [&]() -> PathHints::Hint {
-                align::AxisAligner<Primitive<3>::DIRECTION_LONG> aligner_0 = align::fromXML<Primitive<3>::DIRECTION_LONG>(reader.source, *reader.axisNames);
-                align::AxisAligner<Primitive<3>::DIRECTION_TRAN> aligner_1 = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
+                align::Aligner1D<Primitive<3>::DIRECTION_LONG> aligner_0 = align::fromXML<Primitive<3>::DIRECTION_LONG>(reader.source, *reader.axisNames);
+                align::Aligner1D<Primitive<3>::DIRECTION_TRAN> aligner_1 = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
 
                 return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
                                         (!aligner_0.isNull() ? aligner_0 : default_aligner_0) &
