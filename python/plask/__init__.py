@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
 '''
-PLaSK (Photonic Laser Simultion Kit) is a comprehensive toolkit for simulation
+PLaSK (Photonic Laser Simulation Kit) is a comprehensive toolkit for simulation
 of various micro-scale photonic devices. It is particularly well suited for
 analysis of semiconductor lasers, as it allows to perform simulations of various
 physical phenomena with different models: thermal, electrical, quantum and optical.
 PLaSK takes care of considering mutual interactions between these models and
 allows to easily perform complex self-consistent analysis of complete devices.
 '''
-from ._plask import *
 
+import sys as _sys
+import os as _os
+
+_os.environ["PLASK_PREFIX_PATH"] = _os.path.join(*__file__.split(_os.sep)[:-5])
+
+from ._plask import *
 from ._plask import _print_exception
 
+_sys.path.insert(2, _os.path.join(lib_path, "solvers"))
 
 ## ## plask.material ## ##
 
@@ -77,7 +83,7 @@ def Stack2D(repeat=None, shift=0.):
            Create the stack, optionally repeating it 'repeat' times and with the bottom side
            of the first object at the 'shift' position (in container local coordinates).
 
-           If 'repeat' is None, this function creates SingleStack2D and MultiStack2D, otherwise.
+           If 'repeat' is None, this function creates SingleStack2D and MultiStack2D otherwise.
     '''
     if repeat is None:
         return geometry.SingleStack2D(shift)
@@ -91,7 +97,7 @@ def Stack3D(repeat=None, shift=0.):
            Create the stack, optionally repeating it 'repeat' times and with the bottom side
            of the first object at the 'shift' position (in container local coordinates).
 
-           If 'repeat' is None, this function creates SingleStack3D and MultiStack3D, otherwise.
+           If 'repeat' is None, this function creates SingleStack3D and MultiStack3D otherwise.
     '''
     if repeat is None:
         return geometry.SingleStack3D(shift)
@@ -131,9 +137,8 @@ def run_xpl(source):
 
        'source' is the name of the XPL file or open file object.
     '''
-    import sys
     env = globals().copy()
-    env['plask'] = sys.modules["plask"]
+    env['plask'] = _sys.modules["plask"]
     load_xpl(source, env)
     if type(source) == str:
         filename = source
@@ -144,7 +149,7 @@ def run_xpl(source):
         code = compile(env['__script__'], filename, 'exec')
         exec(code, env)
     except Exception as exc:
-        ety, eva, etb = sys.exc_info()
+        ety, eva, etb = _sys.exc_info()
         _print_exception(ety, eva, etb, env['__manager__'].scriptline, True)
 runxpl = run_xpl
 
@@ -172,7 +177,7 @@ try:
     from plask.pylab import *
 except ImportError:
     from numpy import *
-    print_log(LOG_WARNING, "plask.pylab could not be imported. You won't be able to make professionally-looking plots. Install matplotlib to resolve this issue.")
+    print_log(LOG_WARNING, "plask.pylab could not be imported. You will not be able to make professionally-looking plots. Install matplotlib to resolve this issue.")
     has_pylab = False
 else:
     has_pylab = True
@@ -180,7 +185,7 @@ else:
 try:
     from plask.hdf5 import *
 except ImportError:
-    print_log(LOG_WARNING, "plask.hdf5 could not be imported. Your won't be able to save fields to HDF5 files. Install h5py to resolve this issue.")
+    print_log(LOG_WARNING, "plask.hdf5 could not be imported. Your will not be able to save fields to HDF5 files. Install h5py to resolve this issue.")
     has_hdf5 = False
 else:
     has_hdf5 = True

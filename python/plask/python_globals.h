@@ -226,7 +226,42 @@ extern Config config;
 // ----------------------------------------------------------------------------------------------------------------------
 
 /// Helper for parsing arguments in raw_function
-void parseKwargs(const std::string& fname, py::tuple& args, py::dict& kwargs, const std::vector<std::string>& names);
+// Helpers for parsing kwargs
+namespace detail
+{
+    template <size_t i>
+    static inline void _parse_kwargs(py::list& arglist, py::dict& kwargs) {}
+
+    template <size_t i, typename... Names>
+    static inline void _parse_kwargs(py::list& arglist, py::dict& kwargs, const std::string& name, const Names&... names) {
+        py::object oname(name);
+        if (kwargs.has_key(oname))
+        {
+            if (i < py::len(arglist)) {
+                throw name;
+            } else {
+                arglist.append(kwargs[oname]);
+                py::delitem(kwargs, oname);
+            }
+        }
+        _parse_kwargs<i+1>(arglist, kwargs, names...);
+    }
+}
+
+template <typename... Names>
+static inline void parseKwargs(const std::string& fname, py::tuple& args, py::dict& kwargs, const Names&... names) {
+    kwargs = kwargs.copy();
+    py::list arglist(args);
+    try {
+        detail::_parse_kwargs<0>(arglist, kwargs, names...);
+    } catch (const std::string& name) {
+        throw TypeError("%1%() got multiple values for keyword argument '%2%'", fname, name);
+    }
+    if (py::len(arglist) != sizeof...(names))
+        throw TypeError("%1%() takes exactly %2% non-keyword arguments (%3% given)", fname, sizeof...(names), py::len(arglist));
+    args = py::tuple(arglist);
+}
+
 
 }} // namespace plask::python
 

@@ -75,29 +75,6 @@ inline static void register_config()
 py::dict xml_globals;
 
 
-// Helper
-void parseKwargs(const std::string& fname, py::tuple& args, py::dict& kwargs, const std::vector<std::string>& names) {
-    kwargs = kwargs.copy();
-    py::list arglist;
-    for (size_t i = 0; i < py::len(args); ++i)
-        if (kwargs.has_key(names[i]))
-            throw TypeError("%1%() got multiple values for keyword argument '%2%'", fname, names[i]);
-        else
-            arglist.append(args[i]);
-    for (size_t i = py::len(args); i < names.size(); ++i) {
-        try {
-            py::object name(names[i]);
-            arglist.append(kwargs[name]);
-            py::delitem(kwargs, name);
-        }
-        catch (py::error_already_set) {}
-    }
-    if (py::len(arglist) != names.size())
-        throw TypeError("%1%() takes exactly %2% non-keyword arguments (%3% given)", fname, names.size(), py::len(arglist));
-    args = py::tuple(arglist);
-}
-
-
 // Print Python exception to PLaSK logging system
 int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, bool second_is_script=false) {
     PyTypeObject* type = (PyTypeObject*)otype;
@@ -257,4 +234,6 @@ BOOST_PYTHON_MODULE(_plask)
     plask::python::xml_globals = py::dict(scope.attr("__dict__")).copy();
     plask::python::xml_globals["plask"] = scope;
 
+    scope.attr("prefix") = plask::prefixPath();
+    scope.attr("lib_path") = plask::plaskLibPath();
 }

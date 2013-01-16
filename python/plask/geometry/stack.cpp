@@ -8,7 +8,7 @@ namespace plask { namespace python {
 
 template <typename StackT>
 PathHints::Hint Stack_push_back(py::tuple args, py::dict kwargs) {
-    parseKwargs("append", args, kwargs, {"self", "child"});
+    parseKwargs("append", args, kwargs, "self", "child");
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
     if (py::len(kwargs) == 0)
@@ -19,7 +19,7 @@ PathHints::Hint Stack_push_back(py::tuple args, py::dict kwargs) {
 
 template <typename StackT>
 PathHints::Hint Stack_push_front(py::tuple args, py::dict kwargs) {
-    parseKwargs("prepend", args, kwargs, {"self", "child"});
+    parseKwargs("prepend", args, kwargs, "self", "child");
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
     if (py::len(kwargs) == 0)
@@ -30,7 +30,7 @@ PathHints::Hint Stack_push_front(py::tuple args, py::dict kwargs) {
 
 template <typename StackT>
 PathHints::Hint Stack_insert(py::tuple args, py::dict kwargs) {
-    parseKwargs("insert", args, kwargs, {"self", "child", "pos"});
+    parseKwargs("insert", args, kwargs, "self", "child", "pos");
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
     size_t pos = py::extract<size_t>(args[2]);

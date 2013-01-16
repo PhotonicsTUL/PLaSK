@@ -80,9 +80,8 @@ static py::object initPlask(int argc, const char* argv[])
     std::string plask_path = plask::prefixPath();
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "lib";
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "plask";
-    plask_path += plask::FILE_PATH_SEPARATOR;
-    path.insert(1, plask_path + "python" );
-    path.insert(2, plask_path + "solvers" );
+    plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "python";
+    path.insert(1, plask_path);
     sys.attr("path") = path;
 
     py::object _plask = py::import("_plask");

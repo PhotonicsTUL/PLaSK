@@ -84,7 +84,7 @@ inline typename AlignContainer<3, skipDirection>::ChildAligner readPlace(Geometr
 }
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const align::Aligner1D<direction3D(alignDirection)>& aligner) {
+shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const align::Aligner<direction3D(alignDirection)>& aligner) {
     shared_ptr< AlignContainer<dim, alignDirection> > result(new AlignContainer<dim, alignDirection>(aligner));
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
@@ -100,23 +100,23 @@ shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const ali
 }
 
 shared_ptr<GeometryObject> read_AlignContainer2D(GeometryReader& reader) {
-    { align::Aligner1D<direction3D(Primitive<2>::Direction(0))> aligner(
+    { align::Aligner<direction3D(Primitive<2>::Direction(0))> aligner(
           align::fromXML<direction3D(Primitive<2>::Direction(0))>(reader.source, *reader.axisNames));
       if (!aligner.isNull()) return read_AlignContainer<2, Primitive<2>::Direction(0)>(reader, aligner); }
-    { align::Aligner1D<direction3D(Primitive<2>::Direction(1))> aligner(
+    { align::Aligner<direction3D(Primitive<2>::Direction(1))> aligner(
           align::fromXML<direction3D(Primitive<2>::Direction(1))>(reader.source, *reader.axisNames));
       if (!aligner.isNull()) return read_AlignContainer<2, Primitive<2>::Direction(1)>(reader, aligner); }
     throw XMLException(reader.source, "missing aligner description attribute");
 }
 
 shared_ptr<GeometryObject> read_AlignContainer3D(GeometryReader& reader) {
-    { align::Aligner1D<direction3D(Primitive<3>::Direction(0))> aligner(
+    { align::Aligner<direction3D(Primitive<3>::Direction(0))> aligner(
           align::fromXML<direction3D(Primitive<3>::Direction(0))>(reader.source, *reader.axisNames));
       if (!aligner.isNull()) return read_AlignContainer<3, Primitive<3>::Direction(0)>(reader, aligner); }
-    { align::Aligner1D<direction3D(Primitive<3>::Direction(1))> aligner(
+    { align::Aligner<direction3D(Primitive<3>::Direction(1))> aligner(
           align::fromXML<direction3D(Primitive<3>::Direction(1))>(reader.source, *reader.axisNames));
       if (!aligner.isNull()) return read_AlignContainer<3, Primitive<3>::Direction(1)>(reader, aligner); }
-    { align::Aligner1D<direction3D(Primitive<3>::Direction(2))> aligner(
+    { align::Aligner<direction3D(Primitive<3>::Direction(2))> aligner(
           align::fromXML<direction3D(Primitive<3>::Direction(2))>(reader.source, *reader.axisNames));
       if (!aligner.isNull()) return read_AlignContainer<3, Primitive<3>::Direction(2)>(reader, aligner); }
     throw XMLException(reader.source, "missing aligner description attribute");
