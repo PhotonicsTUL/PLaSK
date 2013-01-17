@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+version = '0.1'
+
+copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group"
+
 import sys
 import os
 import signal
@@ -22,6 +26,13 @@ preexec_lines = [
 'from plask import *', #TODO rely on command-line option
 ]
 
+import IPython.core.usage
+IPython.core.usage.default_gui_banner = '''\
+PLaSK 0.1 --- Photonic Laser Simulation Kit
+(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group
+
+Package 'plask' is already imported into global namespace.
+'''
 
 #def show_widget():
     #app = QtGui.QApplication([])

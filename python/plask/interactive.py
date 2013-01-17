@@ -34,7 +34,9 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGE.
 """
 
-BANNER = '''\
+import plask
+
+BANNER = plask.banner + '''\
 
 You are entering interactive mode of PLaSK.
 Package 'plask' is already imported'''

@@ -19,17 +19,29 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     struct ActiveRegionInfo {
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
-        std::vector<bool> isQW;                 ///< Flags indicating which layers are quantum wells
         ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
+
+        /// \return number of layers in the active region with surrounding barriers
+        size_t size() const {
+            return layers->getChildrenCount();
+        }
+
         /// \return material of \p n-th layer
         shared_ptr<Material> getLayerMaterial(size_t n) const {
-            auto block = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(layers->getChildNo(n))->getChild());
+            auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
             return block->material;
         }
-        /// \return translated block of \p n-th layer
+
+        /// \return translated bounding box of \p n-th layer
         Box2D getLayerBox(size_t n) const {
-            return static_pointer_cast<GeometryObjectD<2>>(layers->getChildNo(n))->getBoundingBox() + origin;
+            return static_cast<GeometryObjectD<2>*>(layers->getChildNo(n).get())->getBoundingBox() + origin;
         }
+
+        /// \return \p true if given layer is quantum well
+        bool isQW(size_t n) const {
+            return static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild()->hasRole("QW");
+        }
+
         /// \return bounding box of the whole active region
         Box2D getBoundingBox() const {
             return layers->getBoundingBox() + origin;

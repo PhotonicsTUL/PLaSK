@@ -8,6 +8,9 @@ PLaSK takes care of considering mutual interactions between these models and
 allows to easily perform complex self-consistent analysis of complete devices.
 '''
 
+copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group"
+
+
 import sys as _sys
 import os as _os
 
@@ -16,10 +19,15 @@ _os.environ["PLASK_PREFIX_PATH"] = _os.path.join(*__file__.split(_os.sep)[:-5])
 from ._plask import *
 from ._plask import _print_exception
 
+banner = '''\
+PLaSK %s --- Photonic Laser Simulation Kit
+%s
+''' % (version, copyright)
+
 _sys.path.insert(2, _os.path.join(lib_path, "solvers"))
 
-## ## plask.material ## ##
 
+## ## plask.material ## ##
 
 materialdb = material.database = material.MaterialsDB.get_default()
 
@@ -77,7 +85,6 @@ material.complex = lambda mat, **kwargs: material.register_material(mat, complex
 
 ## ## plask.geometry ## ##
 
-
 def Stack2D(repeat=None, shift=0.):
     '''Stack2D(repeat=None, shift=0)
            Create the stack, optionally repeating it 'repeat' times and with the bottom side
@@ -108,7 +115,6 @@ del Stack3D
 
 
 ## ## plask.manager ## ##
-
 
 def load_xpl(source, destination=None):
     #TODO documentation
@@ -156,7 +162,6 @@ runxpl = run_xpl
 
 ## ##  ## ##
 
-
 def _showwarning(message, category, filename, lineno, file=None, line=None):
     """
     Implementation of showwarnings which redirects to PLaSK logs
@@ -171,7 +176,6 @@ del warnings
 
 
 ## ##  ## ##
-
 
 try:
     from plask.pylab import *

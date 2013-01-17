@@ -120,7 +120,6 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                             double h = mesh->axis1[r] - mesh->axis1[r-1];
                             region.origin += Vec<2>(0., -h);
                             region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
-                            region.isQW.push_back(false);
                         }
                     }
                     else
@@ -141,27 +140,27 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                 shared_ptr<Block<2>> last;
                 if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
                 assert(!last || last->size.c0 == w);
-                if (last && layer_material == last->material && layer_QW == region->isQW.back()) {
+                if (last && layer_material == last->material && layer_QW == region->isQW(region->size()-1)) {
                     last->setSize(w, last->size.c1 + h);
                 } else {
-                    region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), layer_material));
-                    region->isQW.push_back(layer_QW);
+                    auto layer = make_shared<Block<2>>(Vec<2>(w,h), layer_material);
+                    if (layer_QW) layer->addRole("QW");
+                    region->layers->push_back(layer);
                 }
             } else {
-                if (region->isQW.back()) { // top layer of the active region is quantum well, add the next layer
+                if (region->isQW(region->size()-1)) { // top layer of the active region is quantum well, add the next layer
                     auto top_material = this->geometry->getMaterial(points->at(ileft,r));
                     for (size_t cc = ileft; cc < iright; ++cc)
                         if (this->geometry->getMaterial(points->at(cc,r)) != top_material)
                             throw Exception("%1%: Material above quantum well not uniform.", this->getId());
                     region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), top_material));
-                    region->isQW.push_back(false);
                 }
                 ileft = 0;
                 iright = points->axis0.size();
             }
         }
     }
-    if (!regions.empty() && regions.back().isQW.back())
+    if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
         throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
 }
 
