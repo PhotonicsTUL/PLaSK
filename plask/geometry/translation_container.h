@@ -25,13 +25,18 @@ struct CacheNode {
     virtual ~CacheNode() {}
 };
 
+template <int dim> 
+using TranslationContainerChildAligner = typename chooseType<dim-2,
+        align::Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>,
+        align::Aligner<>
+    >::type;
+
 /**
  * Geometry objects container in which every child has an associated translation vector.
  * @ingroup GEOMETRY_OBJ
  */
-//TODO some implementation are naive, and can be done faster with some caches
 template < int dim >
-struct TranslationContainer: public GeometryObjectContainer<dim> {
+struct TranslationContainer: public WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectContainer<dim>::DVec DVec;
@@ -41,6 +46,9 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
 
     /// Type of this child.
     typedef typename GeometryObjectContainer<dim>::ChildType ChildType;
+    
+    /// Type of child aligner.
+    typedef TranslationContainerChildAligner<dim> ChildAligner;
 
     /// Type of translation geometry object in space of this.
     typedef typename GeometryObjectContainer<dim>::TranslationT TranslationT;
@@ -57,7 +65,27 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
     ~TranslationContainer();
     
     virtual std::string getTypeName() const { return NAME; }
+    
+    /**
+     * Add new child (translated) to end of children vector.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
+     * @param el new child
+     * @param aligner
+     * @return path hint, see @ref geometry_paths
+     */
+    PathHints::Hint addUnsafe(shared_ptr<ChildType> el, ChildAligner aligner);
 
+    /**
+     * Add new child (trasnlated) to end of children vector.
+     * @param el new child
+     * @param aligner
+     * @return path hint, see @ref geometry_paths
+     * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
+     */
+    PathHints::Hint add(shared_ptr<ChildType> el, ChildAligner aligner) {
+        this->ensureCanHaveAsChild(*el);
+        return addUnsafe(el, aligner);
+    }
     /**
      * Add new child (translated) to end of children vector.
      * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after adding the new child.
@@ -65,7 +93,7 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
      * @param translation trasnalation of child
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC);
+    PathHints::Hint addUnsafe(shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC);
 
     /**
      * Add new child (trasnlated) to end of children vector.
@@ -74,7 +102,7 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(const shared_ptr<ChildType>& el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
+    PathHints::Hint add(shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, translation);
     }
@@ -95,11 +123,11 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
     //some methods must be overwrite to invalidate cache:
     virtual void onChildChanged(const GeometryObject::Event& evt) {
         if (evt.isResize()) invalidateCache();
-        GeometryObjectContainer<dim>::onChildChanged(evt);
+        WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>>::onChildChanged(evt);
     }
     
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
-        if (GeometryObjectContainer<dim>::removeIfTUnsafe(predicate)) {
+        if (WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>>::removeIfTUnsafe(predicate)) {
             invalidateCache();
             return true;
         } else
@@ -108,7 +136,7 @@ struct TranslationContainer: public GeometryObjectContainer<dim> {
     
     virtual void removeAtUnsafe(std::size_t index) {
         invalidateCache();
-        GeometryObjectContainer<dim>::removeAtUnsafe(index);
+        WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>>::removeAtUnsafe(index);
     }
 
     virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
@@ -134,6 +162,8 @@ protected:
     CacheNode<dim>* ensureHasCache() const;
     
 private:
+    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, ChildAligner aligner);
+    
     /**
      * Cache which allow to do some geometry operation (like getMaterial) much faster if this container has many children.
      * It is create by first operation which use it (see ensureHasCache method), and destroy on each change of children (see invalidateCache method).

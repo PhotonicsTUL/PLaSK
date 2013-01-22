@@ -298,14 +298,11 @@ struct PositionAlignerImpl: public AlignerImpl<direction> {
  */
 template <Direction _direction1, Direction _direction2>
 struct AlignerBase2D {
-  protected:
 
     static_assert(_direction1 < _direction2, "Wrong Aligner template parameters, two different directions are required and first direction must have lower index than second one. Try swap Aligner template parameters.");
 
     Aligner<_direction1> dir1aligner;
     Aligner<_direction2> dir2aligner;
-
-  public:
 
     static const Direction direction1 = _direction1, direction2 = _direction2;
 
@@ -469,13 +466,10 @@ struct Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>: publ
  */
 template <>
 struct Aligner<> {
-  protected:
 
     Aligner<Primitive<3>::DIRECTION_LONG> dir1aligner;
     Aligner<Primitive<3>::DIRECTION_TRAN> dir2aligner;
     Aligner<Primitive<3>::DIRECTION_VERT> dir3aligner;
-
-  public:
 
     Aligner() {}
 
@@ -561,7 +555,7 @@ struct Aligner<> {
 
 };
 
-
+//two 1D aligners gives 2D aligner
 inline Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)> operator&(const Aligner<Primitive<3>::Direction(0)>& dir1aligner, const Aligner<Primitive<3>::Direction(1)>& dir2aligner) {
     return Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>(dir1aligner, dir2aligner);
 }
@@ -585,6 +579,32 @@ inline Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)> operator&
 inline Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)> operator&(const Aligner<Primitive<3>::Direction(2)>& dir1aligner, const Aligner<Primitive<3>::Direction(1)>& dir2aligner) {
     return Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>(dir2aligner, dir1aligner);
 }
+
+//1D aligner & 2D aligner = 3D aligner
+inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>& dir12aligner, const Aligner<Primitive<3>::Direction(0)>& dir0aligner) {
+    return Aligner<>(dir0aligner, dir12aligner.dir1aligner, dir12aligner.dir2aligner);
+}
+
+inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(0)>& dir0aligner, const Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>& dir12aligner) {
+    return dir12aligner & dir0aligner;
+}
+
+inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(2)>& dir02aligner, const Aligner<Primitive<3>::Direction(1)>& dir1aligner) {
+    return Aligner<>(dir02aligner.dir1aligner, dir1aligner, dir02aligner.dir2aligner);
+}
+
+inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(1)>& dir1aligner, const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(2)>& dir02aligner) {
+    return dir02aligner & dir1aligner;
+}
+
+inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>& dir01aligner, const Aligner<Primitive<3>::Direction(2)>& dir2aligner) {
+    return Aligner<>(dir01aligner.dir1aligner, dir01aligner.dir2aligner, dir2aligner);
+}
+
+inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(2)>& dir2aligner, const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>& dir01aligner) {
+    return dir01aligner & dir2aligner;
+}
+
 
 namespace details {
 
@@ -641,6 +661,14 @@ inline Aligner<Primitive<3>::DIRECTION_VERT> bottom(double coordinate) { return 
 inline Aligner<Primitive<3>::DIRECTION_VERT> top(double coordinate) { return new details::AlignerCustomImpl<Primitive<3>::DIRECTION_VERT, details::hiToCoordinate, details::TOP>(coordinate); }
 inline Aligner<Primitive<3>::DIRECTION_VERT> vertCenter(double coordinate) { return new details::AlignerCustomImpl<Primitive<3>::DIRECTION_VERT, details::centerToCoordinate, details::VERT_CENTER>(coordinate); }
 inline Aligner<Primitive<3>::DIRECTION_VERT> vert(double coordinate) { return new details::PositionAlignerImpl<Primitive<3>::DIRECTION_VERT>(coordinate); }
+
+inline Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT> fromVector(const Vec<2, double>& v) {
+    return tran(v.tran()) & vert(v.vert());
+}
+
+inline Aligner<> fromVector(const Vec<3, double>& v) {
+    return lon(v.lon()) & tran(v.tran()) & vert(v.vert());
+}
 
 template<Primitive<3>::Direction dir>
 using LowerBoundImpl = details::AlignerCustomImpl<dir, details::lowToCoordinate, typename chooseType<dir, details::BACK, details::LEFT, details::BOTTOM>::type>;

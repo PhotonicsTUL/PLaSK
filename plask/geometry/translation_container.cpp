@@ -251,13 +251,20 @@ TranslationContainer<dim>::~TranslationContainer() {
 }
 
 template <int dim>
-PathHints::Hint TranslationContainer<dim>::addUnsafe(const shared_ptr<TranslationContainer<dim>::ChildType>& el, const TranslationContainer<dim>::DVec& translation) {
-    shared_ptr<TranslationContainer<dim>::TranslationT> trans_geom(new TranslationContainer<dim>::TranslationT(el, translation));
+PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<TranslationContainer<dim>::ChildType> el, ChildAligner aligner) {
+    invalidateCache();
+    return this->_addUnsafe(newTranslation(el, aligner), aligner);
+}
+
+template <int dim>
+PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<TranslationContainer<dim>::ChildType> el, const TranslationContainer<dim>::DVec& translation) {
+    /*shared_ptr<TranslationContainer<dim>::TranslationT> trans_geom(new TranslationContainer<dim>::TranslationT(el, translation));
     this->connectOnChildChanged(*trans_geom);
     children.push_back(trans_geom);
     invalidateCache();
     this->fireChildrenInserted(children.size()-1, children.size());
-    return PathHints::Hint(shared_from_this(), trans_geom);
+    return PathHints::Hint(shared_from_this(), trans_geom);*/
+    return this->addUnsafe(el, align::fromVector(translation));
 }
 
 template <>
@@ -304,6 +311,13 @@ shared_ptr<GeometryObject> TranslationContainer<dim>::changedVersionForChildren(
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first, children[child_no]->translation + vec<dim, double>(children_after_change[child_no].second));
     return result;
+}
+
+template <int dim>
+shared_ptr<typename TranslationContainer<dim>::TranslationT> TranslationContainer<dim>::newTranslation(const shared_ptr<typename TranslationContainer<dim>::ChildType>& el, ChildAligner aligner) {
+    shared_ptr<TranslationT> trans_geom = make_shared<TranslationT>(el);
+    aligner.align(*trans_geom);
+    return trans_geom;
 }
 
 template struct TranslationContainer<2>;

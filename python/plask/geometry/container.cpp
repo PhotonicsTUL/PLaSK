@@ -111,8 +111,8 @@ void register_geometry_container()
      "Container in which every child has an associated translation vector\n\n"
      "TranslationContainer2D()\n    Create a new container"
     )
-        .def("append", &TranslationContainer<2>::add, (py::arg("child"), py::arg("translation")=Vec<2,double>(0.,0.)),
-             "Add new object to the container with provided translation vector")
+        /*.def("append", &TranslationContainer<2>::add, (py::arg("child"), py::arg("translation")=Vec<2,double>(0.,0.)),
+             "Add new object to the container with provided translation vector")*/  //TODO this is overload, also version with aligner must by support
         .def("append", &TranslationContainer2_add, (py::arg("child"), "c0", "c1"),
              "Add new object to the container with tranlastion [c0,c1]")
     ;
@@ -122,8 +122,8 @@ void register_geometry_container()
      "Container in which every child has an associated translation vector\n\n"
      "TranslationContainer3D()\n    Create a new container"
     )
-        .def("append", &TranslationContainer<3>::add, (py::arg("child"), py::arg("translation")=Vec<3,double>(0.,0.,0.)),
-             "Add new object to the container with provided translation vector")
+        /*.def("append", &TranslationContainer<3>::add, (py::arg("child"), py::arg("translation")=Vec<3,double>(0.,0.,0.)),
+             "Add new object to the container with provided translation vector")*/ //TODO this is overload, also version with aligner must by support
         .def("append", &TranslationContainer3_add, (py::arg("child"), "c0", "c1", "c2"),
              "Add new object to the container with translation [c0,c1,c2]")
     ;

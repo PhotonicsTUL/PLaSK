@@ -12,17 +12,19 @@ This file includes containers of geometries objects which align all children in 
 
 namespace plask {
 
+template <int dim, typename Primitive<dim>::Direction alignDirection> 
+using AlignContainerChildAligner = typename chooseType<dim-2,
+        align::Aligner<direction3D(DirectionWithout<3, direction3D(alignDirection)>::value2D)>,
+        align::Aligner<DirectionWithout<3, direction3D(alignDirection)>::valueLower, DirectionWithout<3, direction3D(alignDirection)>::valueHigher>
+    >::type;
+
 /**
  * Containers of geometries objects which align all children in one direction (typically to top/left/center)
  * and allow to explicitly choose coordinates in other directions.
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-struct AlignContainer: public WithAligners<GeometryObjectContainer<dim>,
-        typename chooseType<dim-2,
-            align::Aligner<direction3D(DirectionWithout<3, direction3D(alignDirection)>::value2D)>,
-            align::Aligner<DirectionWithout<3, direction3D(alignDirection)>::valueLower, DirectionWithout<3, direction3D(alignDirection)>::valueHigher>
-        >::type> {
+struct AlignContainer: public WithAligners<GeometryObjectContainer<dim>, AlignContainerChildAligner<dim, alignDirection>> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
@@ -30,10 +32,7 @@ struct AlignContainer: public WithAligners<GeometryObjectContainer<dim>,
 
     typedef align::Aligner<direction3D(alignDirection)> Aligner;
 
-    typedef typename chooseType<dim-2,
-            align::Aligner<direction3D(DirectionWithout<3, direction3D(alignDirection)>::value2D)>,
-            align::Aligner<DirectionWithout<3, direction3D(alignDirection)>::valueLower, DirectionWithout<3, direction3D(alignDirection)>::valueHigher>
-        >::type ChildAligner;
+    typedef AlignContainerChildAligner<dim, alignDirection> ChildAligner;
 
     static ChildAligner defaultAligner();
 
