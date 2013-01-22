@@ -139,7 +139,7 @@ struct TranslationContainer: public WithAligners<GeometryObjectContainer<dim>, T
         WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>>::removeAtUnsafe(index);
     }
 
-    virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
+    //virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
 
 protected:
     virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;

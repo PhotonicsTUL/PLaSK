@@ -386,6 +386,10 @@ public:
         ParentType::removeAtUnsafe(index);
         aligners.erase(aligners.begin() + index);
     }
+    
+    void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
+        aligners[child_index].writeToXML(dest_xml_child_tag, axes);
+    }
 
 };
 

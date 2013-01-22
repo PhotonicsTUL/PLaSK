@@ -57,10 +57,10 @@ void AlignContainer<dim, alignDirection>::writeXMLAttr(XMLWriter::Element& dest_
     this->getAligner().writeToXML(dest_xml_object, axes);
 }
 
-template <int dim, typename Primitive<dim>::Direction alignDirection>
+/*template <int dim, typename Primitive<dim>::Direction alignDirection>
 void AlignContainer<dim, alignDirection>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     childAligners[child_index].writeToXML(dest_xml_child_tag, axes);
-}
+}*/
 
 template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
 template struct AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
@@ -70,7 +70,7 @@ template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
 
 // ---- containers readers: ----
 
-template <Primitive<2>::Direction skipDirection>
+/*template <Primitive<2>::Direction skipDirection>
 inline typename AlignContainer<2, skipDirection>::ChildAligner readPlace(GeometryReader& reader) {
     return align::fromXML(reader.source, *reader.axisNames, align::lowerBoundZero<DirectionWithout<2, skipDirection>::value3d>());
 }
@@ -81,7 +81,7 @@ inline typename AlignContainer<3, skipDirection>::ChildAligner readPlace(Geometr
                           align::lowerBoundZero<DirectionWithout<3, skipDirection>::valueLower>(),
                           align::lowerBoundZero<DirectionWithout<3, skipDirection>::valueHigher>()
                           );
-}
+}*/
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
 shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const align::Aligner<direction3D(alignDirection)>& aligner) {
@@ -90,7 +90,7 @@ shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const ali
     read_children(reader,
         [&]() -> PathHints::Hint {
             return result->add(reader.readExactlyOneChild< typename AlignContainer<dim, alignDirection>::ChildType >(),
-                                readPlace<alignDirection>(reader));
+                               align::fromXML(reader.source, *reader.axisNames, result->defaultAligner()));
         },
         [&]() {
             result->add(reader.readObject< typename AlignContainer<dim, alignDirection>::ChildType >());

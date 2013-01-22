@@ -267,7 +267,7 @@ PathHints::Hint TranslationContainer<dim>::addUnsafe(shared_ptr<TranslationConta
     return this->addUnsafe(el, align::fromVector(translation));
 }
 
-template <>
+/*template <>
 void TranslationContainer<2>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
     shared_ptr<Translation<2>> child_tran = children[child_index];
     if (child_tran->translation.tran() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran());
@@ -280,7 +280,7 @@ void TranslationContainer<3>::writeXMLChildAttr(XMLWriter::Element &dest_xml_chi
     if (child_tran->translation.lon() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.lon());
     if (child_tran->translation.tran() != 0.0) dest_xml_child_tag.attr(axes.getNameForTran(), child_tran->translation.tran());
     if (child_tran->translation.vert() != 0.0) dest_xml_child_tag.attr(axes.getNameForVert(), child_tran->translation.vert());
-}
+}*/
 
 template <int dim>
 void TranslationContainer<dim>::invalidateCache() {
