@@ -245,8 +245,8 @@ struct Aligner<_direction>: public AlignerBase<_direction> {
      * @param toAlign trasnlation to set, should have child, which is an object to align
      * @param childBoundingBox bounding box of object to align
      */
-    inline double align(Translation<2>& toAlign, const Box2D& childBoundingBox) const {
-        return toAlign.translation[direction2D] = this->getAlign(childBoundingBox.lower[direction2D], childBoundingBox.upper[direction2D]);
+    void align(Translation<2>& toAlign, const Box2D& childBoundingBox) const {
+        toAlign.translation[direction2D] = this->getAlign(childBoundingBox.lower[direction2D], childBoundingBox.upper[direction2D]);
     }
 
     /**
@@ -255,11 +255,11 @@ struct Aligner<_direction>: public AlignerBase<_direction> {
      * This version is called if caller doesn't know child bounding box.
      * @param toAlign trasnlation to set, should have child, which is an object to align
      */
-    double align(Translation<2>& toAlign) const {
+    void align(Translation<2>& toAlign) const {
         if (this->useBounds())
-            return this->align(toAlign, toAlign.getChild()->getBoundingBox());
+            this->align(toAlign, toAlign.getChild()->getBoundingBox());
         else
-            return toAlign.translation[direction2D] = this->getAlign(0.0, 0.0);
+            toAlign.translation[direction2D] = this->getAlign(0.0, 0.0);
     }
 
 };
@@ -294,13 +294,13 @@ struct PositionAlignerImpl: public AlignerImpl<direction> {
 }   // namespace details
 
 /**
- * Two directions aligner in 3D space, compose and use two 2D aligners.
+ * Base class for two directions aligner in 3D space, compose and use two 2D aligners.
  */
 template <Direction _direction1, Direction _direction2>
-struct Aligner<_direction1,_direction2> {
-  private:
+struct AlignerBase2D {
+  protected:
 
-    static_assert(_direction1 < _direction2, "In Aligner first direction must have lower index than second one. Try swap Aligner template parameters.");
+    static_assert(_direction1 < _direction2, "Wrong Aligner template parameters, two different directions are required and first direction must have lower index than second one. Try swap Aligner template parameters.");
 
     Aligner<_direction1> dir1aligner;
     Aligner<_direction2> dir2aligner;
@@ -309,11 +309,9 @@ struct Aligner<_direction1,_direction2> {
 
     static const Direction direction1 = _direction1, direction2 = _direction2;
 
-    static_assert(_direction1 != _direction2, "Wrong Aligner template parameters, two different directions are required.");
+    AlignerBase2D() {}
 
-    Aligner<_direction1,_direction2>() {}
-
-    Aligner<_direction1,_direction2>(const Aligner<direction1>& dir1aligner, const Aligner<direction2>& dir2aligner)
+    AlignerBase2D(const Aligner<direction1>& dir1aligner, const Aligner<direction2>& dir2aligner)
         : dir1aligner(dir1aligner), dir2aligner(dir2aligner) {}
 
     /* Aligner(const Aligner<direction1, direction2>& toCopy)
@@ -408,6 +406,161 @@ struct Aligner<_direction1,_direction2> {
     bool isNull() { return dir1aligner.isNull() || dir2aligner.isNull(); }
 
 };
+
+/**
+ * Two directions aligner in 3D space, compose and use two 1D aligners.
+ */
+template <Direction _direction1, Direction _direction2>
+struct Aligner<_direction1, _direction2>: public AlignerBase2D<_direction1, _direction2> {
+
+    Aligner() {}
+
+    Aligner(const Aligner<_direction1>& dir1aligner, const Aligner<_direction2>& dir2aligner)
+        : AlignerBase2D<_direction1, _direction2>(dir1aligner, dir2aligner) {}
+
+};
+
+/**
+ * Two directions aligner in 2D and 3D space, compose and use two 1D aligners.
+ *
+ * Version in direction tran-vert can align in 2D translations.
+ */
+template <>
+struct Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>: public AlignerBase2D<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT> {
+
+    Aligner() {}
+
+    Aligner(const Aligner<Primitive<3>::DIRECTION_TRAN>& dir1aligner, const Aligner<Primitive<3>::DIRECTION_VERT>& dir2aligner)
+        : AlignerBase2D<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>(dir1aligner, dir2aligner) {}
+    
+    using AlignerBase2D<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>::align;
+    
+    /**
+     * Set object coordinate in direction of aligner activity.
+     *
+     * This version is called if caller knows child bounding box.
+     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param childBoundingBox bounding box of object to align
+     */
+    void align(Translation<2>& toAlign, const Box2D& childBoundingBox) const {
+        toAlign.translation[0] = this->dir1aligner.getAlign(childBoundingBox.lower[0], childBoundingBox.upper[0]);
+        toAlign.translation[1] = this->dir2aligner.getAlign(childBoundingBox.lower[1], childBoundingBox.upper[1]);
+    }
+
+    /**
+     * Set object translation in direction of aligner activity.
+     *
+     * This version is called if caller doesn't know child bounding box.
+     * @param toAlign trasnlation to set, should have child, which is an object to align
+     */
+    void align(Translation<2>& toAlign) const {
+        if (this->useBounds())
+            this->align(toAlign, toAlign.getChild()->getBoundingBox());
+        else {
+            toAlign.translation[0] = this->dir1aligner.getAlign(0.0, 0.0);
+            toAlign.translation[1] = this->dir2aligner.getAlign(0.0, 0.0);
+        }
+    }
+
+};
+
+/**
+ * Three directions aligner in 3D space, compose and use three 1D aligners.
+ */
+template <>
+struct Aligner<> {
+  protected:
+
+    Aligner<Primitive<3>::DIRECTION_LONG> dir1aligner;
+    Aligner<Primitive<3>::DIRECTION_TRAN> dir2aligner;
+    Aligner<Primitive<3>::DIRECTION_VERT> dir3aligner;
+
+  public:
+
+    Aligner() {}
+
+    Aligner(const Aligner<Primitive<3>::DIRECTION_LONG>& dir1aligner, const Aligner<Primitive<3>::DIRECTION_TRAN>& dir2aligner, const Aligner<Primitive<3>::DIRECTION_VERT>& dir3aligner)
+        : dir1aligner(dir1aligner), dir2aligner(dir2aligner), dir3aligner(dir3aligner) {}
+
+    /**
+     * Check if this aligner getAlign use bounding box in calculation.
+     * @return @c true only if this aligner use bounding box, @c false if is ignored
+     */
+    bool useBounds() const { return dir1aligner.useBounds() || dir2aligner.useBounds() || dir3aligner.useBounds(); }
+
+    /**
+     * Set object translation in directions of aligner activity.
+     *
+     * This version is called if caller knows child bounding box.
+     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param childBoundingBox bounding box of object to align
+     */
+    virtual void align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
+         toAlign.translation[0] = dir1aligner.getAlign(childBoundingBox.lower[0], childBoundingBox.upper[0]);
+         toAlign.translation[1] = dir2aligner.getAlign(childBoundingBox.lower[1], childBoundingBox.upper[1]);
+         toAlign.translation[2] = dir3aligner.getAlign(childBoundingBox.lower[2], childBoundingBox.upper[2]);
+    }
+
+    /**
+     * Set object translation in directions of aligner activity.
+     *
+     * This version is called if caller doesn't know child bounding box.
+     * @param toAlign trasnlation to set, should have child, which is an object to align
+     */
+    virtual void align(Translation<3>& toAlign) const {
+        if (useBounds())
+            align(toAlign, toAlign.getChild()->getBoundingBox());
+        else {
+            toAlign.translation[0] = dir1aligner.getAlign(0.0, 0.0);
+            toAlign.translation[1] = dir2aligner.getAlign(0.0, 0.0);
+            toAlign.translation[2] = dir3aligner.getAlign(0.0, 0.0);
+        }
+    }
+
+   /**
+    * Print this to stream.
+    * @param out print destination, output stream
+    * @param to_print aligner to print
+    * @return out stream
+    */
+    friend inline std::ostream& operator<<(std::ostream& out, const Aligner<>& to_print) {
+        return out << to_print.dir1aligner << ", " << to_print.dir2aligner << ", " << to_print.dir3aligner;
+    }
+
+   /**
+    * Get string representation of this using print method.
+    * @return string representation of this
+    */
+    std::string str() const { return boost::lexical_cast<std::string>(*this); }
+
+    /**
+     * Get aligner as dictionary
+     * \param axis_names name of axes
+     * \return string:double map representing the aligner
+     */
+    virtual std::map<std::string,double> asDict(const AxisNames& axis_names) const {
+        std::map<std::string,double> dict;
+        dict[dir1aligner.key(axis_names)] = dir1aligner.getCoordinate();
+        dict[dir2aligner.key(axis_names)] = dir2aligner.getCoordinate();
+        dict[dir3aligner.key(axis_names)] = dir3aligner.getCoordinate();
+        return dict;
+    }
+
+    /**
+     * Write this aligner to XML.
+     * @param dest tag where attributes describing this should be appended
+     * @param axis_names name of axes
+     */
+    virtual void writeToXML(XMLElement& dest, const AxisNames& axis_names) const {
+        dir1aligner.writeToXML(dest, axis_names);
+        dir2aligner.writeToXML(dest, axis_names);
+        dir3aligner.writeToXML(dest, axis_names);
+    }
+
+    bool isNull() { return dir1aligner.isNull() || dir2aligner.isNull() || dir3aligner.isNull(); }
+
+};
+
 
 inline Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)> operator&(const Aligner<Primitive<3>::Direction(0)>& dir1aligner, const Aligner<Primitive<3>::Direction(1)>& dir2aligner) {
     return Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>(dir1aligner, dir2aligner);
