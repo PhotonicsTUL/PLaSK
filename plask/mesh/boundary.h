@@ -552,6 +552,9 @@ inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
 struct Manager;
 struct Geometry;
 
+/**
+ * Hold informations which can by used by boundary parser.
+ */
 struct BoundaryParserEnviroment {
 
     Manager& manager;   ///< XML manager
@@ -572,6 +575,7 @@ struct BoundaryParserEnviroment {
  * @endcode
  * are responsible to parse boundary from string for this mesh type.
  * @param boundary_desc boundary description, depends from type of mesh
+ * @param enviroment informations which can by used by parser
  * @return parsed boundary or Boundary<MeshType>() if can't parse given string
  */
 template <typename MeshType>
@@ -589,6 +593,7 @@ inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc, Bounda
  * @endcode
  * are responsible to parse boundary from XML for this mesh type.
  * @param boundary_desc boundary description, depends from type of mesh
+ * @param enviroment informations which can by used by parser
  * @return parsed boundary or Boundary<MeshType>() if can't parse given tag
  */
 template <typename MeshType>

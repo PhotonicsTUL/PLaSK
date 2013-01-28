@@ -237,7 +237,7 @@ public:
 
 // RectilinearMesh1D method templates implementation
 template <typename RandomAccessContainer>
-auto RectilinearMesh1D::interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type {
+inline auto RectilinearMesh1D::interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
     if (index == size()) return data[index - 1];     //TODO what should it do if mesh is empty?
     if (index == 0 || points[index] == point) return data[index]; // hit exactly

@@ -341,7 +341,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         /**
          * Get element with indices \p i0 and \p i1.
-         * \param i element index
+         * \param i0, i1 element index
          * \return element with indices \p i0 and \p i1
          */
         Element operator()(std::size_t i0, std::size_t i1) const { return Element(*mesh, i0, i1); }

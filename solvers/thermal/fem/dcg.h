@@ -32,14 +32,15 @@ struct DCGError: public std::exception {
  * on the symmetric positive definte system Ax = b.
  *
  * \param[in] n Size of system to be iterated (ie A is nxn).
- * \param[in] atimes(x, y) Functor that calculates y = A x, given an x vector. Throw exception if an error occures.
- * \param[in] msolve(z, r) Functor that solves M z = r for z, given a vector r. Throw exception if an error occures.
+ * \param[in] atimes (x, y) Functor that calculates y = A x, given an x vector. Throw exception if an error occures.
+ * \param[in] msolve (z, r) Functor that solves M z = r for z, given a vector r. Throw exception if an error occures.
  * \param[in,out] x Initial guess of the solution.  If no information on the solution is available then use a zero vector or b.
  * \param[in] b Right hand side.
+ * \param[out] err L2 norm of the relative residual error estimate (||b-Ax||/||b||)².
+ *
+ *                 This estimate of the true error is not always very accurate.
  * \param[in] eps Requested error tollerence.  System is iterated until ||b-Ax||/||b|| < eps.  Normal choice is 1.e-8.
  * \param[in] itmax Maximum number of iterations the user is willing to allow. Default value is 100.
- * \param[out] err L2 norm of the relative residual error estimate (||b-Ax||/||b||)².
- *                 This estimate of the true error is not always very accurate.
  * \return number of iterations
  * \throw DCGError
  */

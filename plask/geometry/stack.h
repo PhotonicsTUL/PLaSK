@@ -258,6 +258,8 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
     }
 
     virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+
+    virtual void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const;
 };
 
 

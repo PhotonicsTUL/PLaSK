@@ -142,7 +142,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
-     * If it is not proper mode, exception is throw
+     * If it is not proper mode, exception is throw.
      *
      * \param clambda complex wavelength of the mode
      */
@@ -150,9 +150,10 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
-     * If it is not proper mode, exception is throw
+     * If it is not proper mode, exception is throw.
      *
      * \param lambda wavelength of the mode
+     * \param extinction
      */
     inline void setMode(double lambda, double extinction) {
         setMode(dcomplex(lambda, - lambda*lambda / (2*M_PI) * extinction));

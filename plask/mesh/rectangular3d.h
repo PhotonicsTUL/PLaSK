@@ -206,8 +206,13 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         typedef IndexedIterator<const Elements, Element> const_iterator;
         typedef const_iterator iterator;
 
+        /// Mesh which elements will be accessable by this.
         const RectangularMesh<3,Mesh1D>* mesh;
 
+        /**
+         * Create wrapper which allow to access to FEM-like elements of given @p mesh.
+         * @param mesh mesh which elements will be accessable by this
+         */
         Elements(const RectangularMesh<3,Mesh1D>* mesh): mesh(mesh) {}
 
         /**
@@ -219,7 +224,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
         /**
          * Get element with indices \p i0, \p i1, and \p i2.
-         * \param i element index
+         * \param i0, i1, i2 element index
          * \return element with indices \p i0, \p i1, and \p i2
          */
         Element operator()(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*mesh, i0, i1, i2); }
@@ -724,7 +729,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
     /**
      * Get second coordinate of point in center of Elements.
-     * @param index1 index of Elements (axis1 index)
+     * @param index2 index of Elements (axis2 index)
      * @return second coordinate of point point in center of Elements with given index
      */
     double getElementMidpoint2(std::size_t index2) const { return 0.5 * (axis2[index2] + axis2[index2+1]); }

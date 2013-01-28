@@ -690,39 +690,39 @@ namespace details {
 }
 
 /**
- * Construct 2d aligner in given direction from dictionary.
+ * Construct aligner in given direction from dictionary.
  *
  * Throw excpetion if @p dic includes information about multiple aligners in given @p direction.
- * @param dictionary dictionary which can describes 2D aligner
+ * @param dictionary dictionary which can describe aligner
  * @param axis_name name of axis in given @p direction
- * @return parsed aligner or nullptr if no information found
+ * @return parsed aligner or @c nullptr if no information about aligner was found in @p dictionary
  * @tparam direction direction
  */
 template <Direction direction>
-Aligner<direction> fromDictionary(Dictionary dic, const std::string& axis_name);
+Aligner<direction> fromDictionary(Dictionary dictionary, const std::string& axis_name);
 
 template <>
-inline Aligner<Primitive<3>::DIRECTION_TRAN> fromDictionary<Primitive<3>::DIRECTION_TRAN>(Dictionary dic, const std::string& axis_name) {
-    return details::transAlignerFromDictionary(dic, axis_name);
+inline Aligner<Primitive<3>::DIRECTION_TRAN> fromDictionary<Primitive<3>::DIRECTION_TRAN>(Dictionary dictionary, const std::string& axis_name) {
+    return details::transAlignerFromDictionary(dictionary, axis_name);
 }
 
 template <>
-inline Aligner<Primitive<3>::DIRECTION_LONG> fromDictionary<Primitive<3>::DIRECTION_LONG>(Dictionary dic, const std::string& axis_name) {
-    return details::lonAlignerFromDictionary(dic, axis_name);
+inline Aligner<Primitive<3>::DIRECTION_LONG> fromDictionary<Primitive<3>::DIRECTION_LONG>(Dictionary dictionary, const std::string& axis_name) {
+    return details::lonAlignerFromDictionary(dictionary, axis_name);
 }
 
 template <>
-inline Aligner<Primitive<3>::DIRECTION_VERT> fromDictionary<Primitive<3>::DIRECTION_VERT>(Dictionary dic, const std::string& axis_name) {
-    return details::vertAlignerFromDictionary(dic, axis_name);
+inline Aligner<Primitive<3>::DIRECTION_VERT> fromDictionary<Primitive<3>::DIRECTION_VERT>(Dictionary dictionary, const std::string& axis_name) {
+    return details::vertAlignerFromDictionary(dictionary, axis_name);
 }
 
 /**
- * Construct 2d aligner in given direction from dictionary.
+ * Construct aligner in given direction from dictionary.
  *
  * Throw exception if @p dic includes information about multiple aligners in given @p direction.
- * @param dictionary dictionary which can describes 2D aligner
+ * @param dictionary dictionary which can describe aligner
  * @param axis_names names of axes
- * @return parsed aligner or nullptr if no information found
+ * @return parsed aligner or @c nullptr if no information about aligner was found in @p dictionary
  * @tparam direction direction
  */
 template <Direction direction>
@@ -731,22 +731,25 @@ Aligner<direction> fromDictionary(Dictionary dic, const AxisNames& axis_names) {
 }
 
 /**
- * Construct 2d aligner in given direction from dictionary.
+ * Construct aligner in given direction from dictionary.
  *
  * Throw exception if @p dic includes information about multiple aligners in given @p direction.
  * @param dictionary dictionary which can describes 2D aligner
  * @param axis_names names of axes
  * @param default_aligner default aligners, returned when there is no information about aligner in @p dictionary
- * @return parsed aligner
+ * @return parsed aligner or @p default_aligner if no information about aligner was found in @p dictionary
  * @tparam direction direction
  */
 template <Direction direction>
-Aligner<direction> fromDictionary(Dictionary dic, const AxisNames& axis_names, Aligner<direction> default_aligner) {
-    Aligner<direction> result = fromDictionary<direction>(dic, axis_names[direction]);
+Aligner<direction> fromDictionary(Dictionary dictionary, const AxisNames& axis_names, Aligner<direction> default_aligner) {
+    Aligner<direction> result = fromDictionary<direction>(dictionary, axis_names[direction]);
     if (result.isNull()) result = default_aligner;
     return result;
 }
 
+/**
+ * Allow to use XMLReader as dictionary which is required by aligners parsing functions.
+ */
 struct DictionaryFromXML {
     const XMLReader& reader;
     DictionaryFromXML(const XMLReader& reader): reader(reader) {}
@@ -769,8 +772,11 @@ inline Aligner<direction> fromXML(const XMLReader& reader, const AxisNames& axis
 }
 
 /**
- * Construct 2 direction aligner from dictionary.
- * @param dictionary dictionary which describes required 2, 1 directions aligner
+ * Construct 2 directions aligner from dictionary.
+ *
+ * Throw exception if there is no information about one of this direction in @p dic,
+ * or when some direction is described multiple times.
+ * @param dic dictionary which describes required aligner in 2 directions
  * @param axes names of axes
  * @return constructed aligner
  */
@@ -783,6 +789,15 @@ inline Aligner<direction1, direction2> fromDictionary(Dictionary dic, const Axis
     return Aligner<direction1, direction2>(a1, a2);
 }
 
+/**
+ * Construct 2 directions aligner from XML.
+ *
+ * Throw exception if there is no information about one of this direction in @p reader,
+ * or when some direction is described multiple times.
+ * @param reader XML reader which point to tag which attributes describe required aligner in 2 directions
+ * @param axes names of axes
+ * @return constructed aligner
+ */
 template <Direction direction1, Direction direction2>
 inline Aligner<direction1, direction2> fromXML(const XMLReader& reader, const AxisNames& axes) {
     return fromDictionary<direction1, direction2>(DictionaryFromXML(reader), axes);
@@ -790,16 +805,27 @@ inline Aligner<direction1, direction2> fromXML(const XMLReader& reader, const Ax
 
 /**
  * Construct 2 direction aligner from dictionary.
- * @param dictionary dictionary which describes required 2, 1 direction aligners
+ *
+ * Throw exception if some direction is described multiple times.
+ * @param dictionary dictionary which describes required aligner in 2 directions
  * @param axes names of axes
- * @param default default aligner in direction 1 and 2, used when there is no information about aligner in some direction in @p dictionary
+ * @param default2D default aligners, used when there is no information about aligner in some direction in @p dictionary
  * @return constructed aligner
  */
 template <Direction direction1, Direction direction2>
-inline Aligner<direction1, direction2> fromDictionary(Dictionary dic, const AxisNames& axes, Aligner<direction1, direction2> default2D) {
-    return Aligner<direction1, direction2>(fromDictionary(dic, axes, default2D.dir1aligner), fromDictionary(dic, axes, default2D.dir2aligner));
+inline Aligner<direction1, direction2> fromDictionary(Dictionary dictionary, const AxisNames& axes, Aligner<direction1, direction2> default2D) {
+    return Aligner<direction1, direction2>(fromDictionary(dictionary, axes, default2D.dir1aligner), fromDictionary(dictionary, axes, default2D.dir2aligner));
 }
 
+/**
+ * Construct 2 direction aligner from XML.
+ *
+ * Throw exception if some direction is described multiple times.
+ * @param reader XML reader which point to tag which attributes describe required aligner in 2 directions
+ * @param axes names of axes
+ * @param default2D default aligners, used when there is no information about aligner in some direction in @p reader
+ * @return constructed aligner
+ */
 template <Direction direction1, Direction direction2>
 inline Aligner<direction1, direction2> fromXML(const XMLReader& reader, const AxisNames& axes, Aligner<direction1, direction2> default2D) {
     return fromDictionary<direction1, direction2>(DictionaryFromXML(reader), axes, default2D);
@@ -807,35 +833,58 @@ inline Aligner<direction1, direction2> fromXML(const XMLReader& reader, const Ax
 
 /**
  * Construct 3 direction aligner from dictionary.
- * @param dictionary dictionary which describes required 3, 1 direction aligners
- * @param axes names of axes
+ *
+ * Throw exception if there is no information about one of this direction in @p dic,
+ * or when some direction is described multiple times.
+ * @param dictionary dictionary which describes required aligner in 3 directions
+ * @param axis_names names of axes
  * @return constructed aligner
  */
-inline Aligner<> fromDictionary(Dictionary dic, const AxisNames& axes) {
-    Aligner<Primitive<3>::Direction(0)> a0 = fromDictionary<Primitive<3>::Direction(0)>(dic, axes);
+inline Aligner<> fromDictionary(Dictionary dictionary, const AxisNames& axis_names) {
+    Aligner<Primitive<3>::Direction(0)> a0 = fromDictionary<Primitive<3>::Direction(0)>(dictionary, axis_names);
     if (a0.isNull()) throw Exception("No aligner for axis%1% defined.", 0);
-    Aligner<Primitive<3>::Direction(1)> a1 = fromDictionary<Primitive<3>::Direction(1)>(dic, axes);
+    Aligner<Primitive<3>::Direction(1)> a1 = fromDictionary<Primitive<3>::Direction(1)>(dictionary, axis_names);
     if (a1.isNull()) throw Exception("No aligner for axis%1% defined.", 1);
-    Aligner<Primitive<3>::Direction(2)> a2 = fromDictionary<Primitive<3>::Direction(2)>(dic, axes);
+    Aligner<Primitive<3>::Direction(2)> a2 = fromDictionary<Primitive<3>::Direction(2)>(dictionary, axis_names);
     if (a2.isNull()) throw Exception("No aligner for axis%1% defined.", 2);
     return Aligner<>(a0, a1, a2);
 }
 
+/**
+ * Construct 3 direction aligner from XML.
+ *
+ * Throw exception if there is no information about one of this direction in @p reader,
+ * or when some direction is described multiple times.
+ * @param reader XML reader which point to tag which attributes describe required aligner in 3 directions
+ * @param axes names of axes
+ * @return constructed aligner
+ */
 inline Aligner<> fromXML(const XMLReader& reader, const AxisNames& axes) {
     return fromDictionary(DictionaryFromXML(reader), axes);
 }
 
 /**
  * Construct 3 direction aligner from dictionary.
- * @param dictionary dictionary which describes required 3, 1 direction aligners
+ *
+ * Throw exception if some direction is described multiple times.
+ * @param dic dictionary which describes required aligner in 3 directions
  * @param axes names of axes
- * @param default default aligner in all directions, used when there is no information about aligner in some direction in @p dictionary
+ * @param default3D default aligner in all directions, used when there is no information about aligner in some direction in @p dictionary
  * @return constructed aligner
  */
 inline Aligner<> fromDictionary(Dictionary dic, const AxisNames& axes, Aligner<> default3D) {
     return Aligner<>(fromDictionary(dic, axes, default3D.dir1aligner), fromDictionary(dic, axes, default3D.dir2aligner), fromDictionary(dic, axes, default3D.dir3aligner));
 }
 
+/**
+ * Construct 3 direction aligner from XML.
+ *
+ * Throw exception if some direction is described multiple times.
+ * @param reader XML reader which point to tag which attributes describe required aligner in 3 directions
+ * @param axes names of axes
+ * @param default3D default aligner in all directions, used when there is no information about aligner in some direction in @p reader
+ * @return constructed aligner
+ */
 inline Aligner<> fromXML(const XMLReader& reader, const AxisNames& axes, Aligner<> default3D) {
     return fromDictionary(DictionaryFromXML(reader), axes, default3D);
 }

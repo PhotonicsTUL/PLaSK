@@ -334,7 +334,7 @@ struct Material {
      * @param EqType equation type [-]
      * @return hole effective mass Mh [\f$m_0\f$]
      */
-    virtual Tensor2<double> Mh(double T, char point) const;
+    virtual Tensor2<double> Mh(double T, char EqType) const;
 
     /**
      * Get hydrostatic deformation potential for the conduction band ac [eV].

@@ -236,6 +236,10 @@ shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vect
     return result;
 }
 
+void ShelfContainer2D::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+    dest_xml_object.attr(require_equal_heights_attr, false);
+}
+
 
 template <int dim>
 bool MultiStackContainer<dim>::reduceHeight(double& height) const {

@@ -104,7 +104,7 @@ struct MaterialsDB {
          * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPANT
          * @return created material
          */
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double dopant_amount) const = 0;
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType dopant_amount_type, double dopant_amount) const = 0;
 
         virtual ~MaterialConstructor() {}
     };

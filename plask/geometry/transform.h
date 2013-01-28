@@ -244,6 +244,7 @@ struct Translation: public GeometryObjectTransform<dim> {
      * - if child is translation it is equal to Translation(child_or_translation->getChild(), child_or_translation->translation + translation)
      * - in other it is equal to Translation(child_or_translation, translation)
      * @param child_or_translation child, potential Translation
+     * @param translation extra translation
      * @return constructed translation
      */
     static shared_ptr<Translation<dim>> compress(shared_ptr< GeometryObjectD<dim> > child_or_translation = shared_ptr< GeometryObjectD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC);

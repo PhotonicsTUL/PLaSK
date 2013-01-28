@@ -83,7 +83,7 @@ double Material::eps(double T) const { throwNotImplemented("eps(double T)"); ret
 double Material::lattC(double T, char x) const { throwNotImplemented("lattC(double T, char x)"); return 0; }
 
 Tensor2<double> Material::Me(double T, char point) const { throwNotImplemented("Me(double T, char point)"); return 0.; }
-Tensor2<double> Material::Mh(double T, char point) const { throwNotImplemented("Mh(double T, char point)"); return 0.; }
+Tensor2<double> Material::Mh(double T, char EqType) const { throwNotImplemented("Mh(double T, char EqType)"); return 0.; }
 Tensor2<double> Material::Mhh(double T, char point) const { throwNotImplemented("Mhh(double T, char point)"); return 0.; }
 Tensor2<double> Material::Mlh(double T, char point) const { throwNotImplemented("Mlh(double T, char point)"); return 0.; }
 
