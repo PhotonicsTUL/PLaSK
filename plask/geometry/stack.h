@@ -161,7 +161,6 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
  * Horizontal stack.
  * @ingroup GEOMETRY_OBJ
  */
-//TODO it is not possible to save flat requiment to XML!
 struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
     /// Type of this child.
@@ -172,6 +171,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
 
 private:
     /// Gap which is update to make all shelf to have given, total width
+    //TODO use it, support in remove
     shared_ptr<TranslationT> resizableGap;
 
 public:
