@@ -400,71 +400,33 @@ struct HeightReader {
     }
 };
 
-shared_ptr<GeometryObject> read_StackContainer2D(GeometryReader& reader) {
+template <int dim>
+shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
-    align::Aligner<Primitive<3>::DIRECTION_TRAN> default_aligner =
-          align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
-    if (default_aligner.isNull()) default_aligner = StackContainer<2>::DefaultAligner();
+    auto default_aligner = align::fromXML(reader.source, *reader.axisNames, StackContainer<dim>::DefaultAligner());
 
-    shared_ptr< StackContainer<2> > result(
+    shared_ptr< StackContainer<dim> > result(
                     reader.source.hasAttribute(repeat_attr) ?
-                    new MultiStackContainer<2>(reader.source.getAttribute(repeat_attr, 1), baseH) :
-                    new StackContainer<2>(baseH)
+                    new MultiStackContainer<dim>(reader.source.getAttribute(repeat_attr, 1), baseH) :
+                    new StackContainer<dim>(baseH)
                 );
-    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
             [&]() -> PathHints::Hint {
-                align::Aligner<Primitive<3>::DIRECTION_TRAN> aligner = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
-                      return result->push_front(reader.readExactlyOneChild< typename StackContainer<2>::ChildType >(), !aligner.isNull() ? aligner : default_aligner);
+                return result->push_front(reader.readExactlyOneChild< typename StackContainer<dim>::ChildType >(), align::fromXML(reader.source, *reader.axisNames, default_aligner));
             },
             [&]() {
                 if (height_reader.tryReadZero(result)) return;
-                result->push_front(reader.readObject< typename StackContainer<2>::ChildType >());
+                result->push_front(reader.readObject< typename StackContainer<dim>::ChildType >());
             }
     );
     height_reader.setBaseHeight(result, true);
     return result;
 }
 
-shared_ptr<GeometryObject> read_StackContainer3D(GeometryReader& reader) {
-    HeightReader height_reader(reader.source);
-    const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
-
-    align::Aligner<Primitive<3>::DIRECTION_LONG> default_aligner_0(
-          align::fromXML<Primitive<3>::DIRECTION_LONG>(reader.source, *reader.axisNames));
-    if (default_aligner_0.isNull()) default_aligner_0 = align::back(0);
-    align::Aligner<Primitive<3>::DIRECTION_TRAN> default_aligner_1(
-          align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames));
-    if (default_aligner_1.isNull()) default_aligner_1 = align::left(0);
-
-    shared_ptr< StackContainer<3> > result(
-                    reader.source.hasAttribute(repeat_attr) ?
-                    new MultiStackContainer<3>(reader.source.getAttribute(repeat_attr, 1), baseH) :
-                    new StackContainer<3>(baseH)
-                );
-    GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    read_children(reader,
-            [&]() -> PathHints::Hint {
-                align::Aligner<Primitive<3>::DIRECTION_LONG> aligner_0 = align::fromXML<Primitive<3>::DIRECTION_LONG>(reader.source, *reader.axisNames);
-                align::Aligner<Primitive<3>::DIRECTION_TRAN> aligner_1 = align::fromXML<Primitive<3>::DIRECTION_TRAN>(reader.source, *reader.axisNames);
-
-                return result->push_front(reader.readExactlyOneChild< typename StackContainer<3>::ChildType >(),
-                                        (!aligner_0.isNull() ? aligner_0 : default_aligner_0) &
-                                        (!aligner_1.isNull() ? aligner_1 : default_aligner_1)
-                                          );
-            },
-            [&]() -> void {
-                if (height_reader.tryReadZero(result)) return;
-                result->push_front(reader.readObject< typename StackContainer<3>::ChildType >());
-            }
-    );
-    height_reader.setBaseHeight(result, true);
-    return result;
-}
-
-static GeometryReader::RegisterObjectReader stack2D_reader(StackContainer<2>::NAME, read_StackContainer2D);
-static GeometryReader::RegisterObjectReader stack3D_reader(StackContainer<3>::NAME, read_StackContainer3D);
+static GeometryReader::RegisterObjectReader stack2D_reader(StackContainer<2>::NAME, read_StackContainer<2>);
+static GeometryReader::RegisterObjectReader stack3D_reader(StackContainer<3>::NAME, read_StackContainer<3>);
 
 shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
