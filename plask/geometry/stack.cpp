@@ -401,7 +401,7 @@ struct HeightReader {
 };
 
 template <int dim>
-shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
+static shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
     auto default_aligner = align::fromXML(reader.source, *reader.axisNames, StackContainer<dim>::DefaultAligner());
@@ -428,7 +428,7 @@ shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
 static GeometryReader::RegisterObjectReader stack2D_reader(StackContainer<2>::NAME, read_StackContainer<2>);
 static GeometryReader::RegisterObjectReader stack3D_reader(StackContainer<3>::NAME, read_StackContainer<3>);
 
-shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
+static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
     HeightReader height_reader(reader.source);
     //TODO migrate to gap which can update self
     shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> total_size_gap;  //gap which can change total size

@@ -164,6 +164,17 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 //TODO it is not possible to save flat requiment to XML!
 struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
+    /// Type of this child.
+    typedef typename StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>::ChildType ChildType;
+
+    /// Type of translation geometry elment in space of this.
+    typedef typename StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>::TranslationT TranslationT;
+
+private:
+    shared_ptr<TranslationT> resizableGap;
+
+public:
+
     ShelfContainer2D(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
 
     static constexpr const char* NAME = "shelf";
