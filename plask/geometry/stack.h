@@ -171,6 +171,7 @@ struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTIO
     typedef typename StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>::TranslationT TranslationT;
 
 private:
+    /// Gap which is update to make all shelf to have given, total width
     shared_ptr<TranslationT> resizableGap;
 
 public:
