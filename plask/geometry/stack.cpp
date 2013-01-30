@@ -414,7 +414,8 @@ static shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
             [&]() -> PathHints::Hint {
-                return result->push_front(reader.readExactlyOneChild< typename StackContainer<dim>::ChildType >(), align::fromXML(reader.source, *reader.axisNames, default_aligner));
+                auto aligner = align::fromXML(reader.source, *reader.axisNames, default_aligner);
+                return result->push_front(reader.readExactlyOneChild<typename StackContainer<dim>::ChildType>(), aligner);
             },
             [&]() {
                 if (height_reader.tryReadZero(result)) return;

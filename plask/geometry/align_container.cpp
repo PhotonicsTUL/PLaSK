@@ -89,8 +89,8 @@ shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const ali
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
         [&]() -> PathHints::Hint {
-            return result->add(reader.readExactlyOneChild< typename AlignContainer<dim, alignDirection>::ChildType >(),
-                               align::fromXML(reader.source, *reader.axisNames, result->defaultAligner()));
+            auto aligner = align::fromXML(reader.source, *reader.axisNames, result->defaultAligner());
+            return result->add(reader.readExactlyOneChild< typename AlignContainer<dim, alignDirection>::ChildType >(), aligner);
         },
         [&]() {
             result->add(reader.readObject< typename AlignContainer<dim, alignDirection>::ChildType >());

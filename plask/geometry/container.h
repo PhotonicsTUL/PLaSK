@@ -273,7 +273,7 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
     while (reader.source.requireTagOrEnd()) {
         if (reader.source.getNodeName() == "child") {
             boost::optional<std::string> paths_str = reader.source.getAttribute("path");
-            PathHints::Hint hint = child_param_read();  //this call readExactlyOneChild
+            PathHints::Hint hint = child_param_read();  // this calls readExactlyOneChild
             if (paths_str) {
                 auto paths = splitEscIterator(*paths_str, ',');
                 for (auto& path: paths) {
@@ -386,7 +386,7 @@ public:
         ParentType::removeAtUnsafe(index);
         aligners.erase(aligners.begin() + index);
     }
-    
+
     void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
         aligners[child_index].writeToXML(dest_xml_child_tag, axes);
     }
