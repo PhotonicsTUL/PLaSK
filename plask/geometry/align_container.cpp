@@ -70,19 +70,6 @@ template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
 
 // ---- containers readers: ----
 
-/*template <Primitive<2>::Direction skipDirection>
-inline typename AlignContainer<2, skipDirection>::ChildAligner readPlace(GeometryReader& reader) {
-    return align::fromXML(reader.source, *reader.axisNames, align::lowerBoundZero<DirectionWithout<2, skipDirection>::value3d>());
-}
-
-template <Primitive<3>::Direction skipDirection>
-inline typename AlignContainer<3, skipDirection>::ChildAligner readPlace(GeometryReader& reader) {
-    return align::fromXML(reader.source, *reader.axisNames,
-                          align::lowerBoundZero<DirectionWithout<3, skipDirection>::valueLower>(),
-                          align::lowerBoundZero<DirectionWithout<3, skipDirection>::valueHigher>()
-                          );
-}*/
-
 template <int dim, typename Primitive<dim>::Direction alignDirection>
 shared_ptr<GeometryObject> read_AlignContainer(GeometryReader& reader, const align::Aligner<direction3D(alignDirection)>& aligner) {
     shared_ptr< AlignContainer<dim, alignDirection> > result(new AlignContainer<dim, alignDirection>(aligner));
