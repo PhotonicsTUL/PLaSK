@@ -444,9 +444,11 @@ endif(BUILD_DOCUMENTATION)
 
 # ----------===== Optional tools =====--------------------------------------------
 
-install(FILES tools/dan2xpl.py DESTINATION bin COMPONENT tools RENAME dan2xpl)
-install(FILES tools/xpl2dan.py DESTINATION bin COMPONENT tools RENAME xpl2dan)
-install(FILES tools/qtplask.py DESTINATION bin COMPONENT tools RENAME qtplask)
+set(script_permissions "OWNER_WRITE;OWNER_READ;OWNER_EXECUTE;GROUP_READ;GROUP_EXECUTE;WORLD_READ;WORLD_EXECUTE")
+
+install(FILES tools/dan2xpl.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT tools RENAME dan2xpl)
+install(FILES tools/xpl2dan.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT tools RENAME xpl2dan)
+install(FILES tools/qtplask.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT tools RENAME qtplask)
 # TODO Make it better for windows (e.g. compile exes)
 
 # ----------===== Packaging =====--------------------------------------------
