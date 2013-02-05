@@ -1,8 +1,6 @@
 #ifndef AMOS_H
 #define AMOS_H
 
-#include <plask/plask.hpp>
-
 extern "C" void zairy(const double& zr, const double& zi, const long& id, const long& kode,
                       double& air, double& aii, long& nz, long& ierr);
 

@@ -299,7 +299,7 @@ struct PositionAlignerImpl: public AlignerImpl<direction> {
 template <Direction _direction1, Direction _direction2>
 struct AlignerBase2D {
 
-    static_assert(_direction1 < _direction2, "Wrong Aligner template parameters, two different directions are required and first direction must have lower index than second one. Try swap Aligner template parameters.");
+    static_assert(_direction1 < _direction2, "Wrong Aligner template parameters, two different directions are required and first direction must have lower index than second one. Try swapping Aligner template parameters.");
 
     Aligner<_direction1> dir1aligner;
     Aligner<_direction2> dir2aligner;
@@ -429,9 +429,9 @@ struct Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>: publ
 
     Aligner(const Aligner<Primitive<3>::DIRECTION_TRAN>& dir1aligner, const Aligner<Primitive<3>::DIRECTION_VERT>& dir2aligner)
         : AlignerBase2D<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>(dir1aligner, dir2aligner) {}
-    
+
     using AlignerBase2D<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>::align;
-    
+
     /**
      * Set object coordinate in direction of aligner activity.
      *

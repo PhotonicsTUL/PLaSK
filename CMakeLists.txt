@@ -9,7 +9,7 @@ set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in J
 set(VERSION_MINOR 1)            # MINOR version (bump up by one on visible feature change)
 # set(VERSION_REVISION 1)       # REVISION number (leave undefined unless really needed, it's normally set to svn revision)
 
-# ---------- common options --------------------------------------------
+# ---------- Common options --------------------------------------------
 
 set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas")
@@ -76,10 +76,10 @@ set(PYTHON_VERSION "" CACHE STRING "Python version to use")
 
 # ---------- External libraries --------------------------------------------
 if(WIN32)
-	get_filename_component(compliler_prefix_path ${CMAKE_CXX_COMPILER} PATH)
-	get_filename_component(compliler_prefix_path ${compliler_prefix_path} PATH) # get rid of bin
-	#TODO test how it should look like if we use MSVC
-	list(APPEND CMAKE_SYSTEM_PREFIX_PATH ${compliler_prefix_path})
+    get_filename_component(compliler_prefix_path ${CMAKE_CXX_COMPILER} PATH)
+    get_filename_component(compliler_prefix_path ${compliler_prefix_path} PATH) # get rid of bin
+    #TODO test how it should look like if we use MSVC
+    list(APPEND CMAKE_SYSTEM_PREFIX_PATH ${compliler_prefix_path})
 endif()
 
 if(BUILD_PYTHON)
@@ -142,10 +142,10 @@ endif()
 include(${CMAKE_SOURCE_DIR}/cmake/CheckFortran.cmake)
 if (CMAKE_Fortran_COMPILER)
     enable_language(Fortran)
-	include(FortranCInterface)
-	FortranCInterface_HEADER("${CMAKE_BINARY_DIR}/include/plask/f77.h" MACRO_NAMESPACE "F77_")
+    include(FortranCInterface)
+    FortranCInterface_HEADER("${CMAKE_BINARY_DIR}/include/plask/f77.h" MACRO_NAMESPACE "F77_")
 else ()
-	message("Unable to determine Fortran name mangling scheme! Using the most probable version.")
+    message("Unable to determine Fortran name mangling scheme! Using the most probable version.")
 endif()
 
 
@@ -163,13 +163,13 @@ file(GLOB_RECURSE python_plask_py python/plask/*.py)
 file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 
 
-# ---------- external libraries built by us -----------------------------------------
+# ---------- External libraries built by us -----------------------------------------
 
 # CAMOS
 add_subdirectory(extlib/camos)
 
 
-# ---------- plask library --------------------------------------------
+# ---------- PLaSK library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_headers})
 #add_library(libplask SHARED ${plask_src})
@@ -194,7 +194,7 @@ install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/pla
 
 set(PLaSK_LIBRARIES libplask)
 
-# ---------- default materials --------------------------------------------
+# ---------- Default materials --------------------------------------------
 
 add_subdirectory(materials)
 
@@ -272,7 +272,7 @@ if(BUILD_GUI)
 endif(BUILD_GUI)
 
 
-# ---------- macro for testing --------------------------------------------
+# ---------- Macro for testing --------------------------------------------
 if(WIN32)
     set(ENV_PATH $ENV{PATH})
     string(REPLACE ";" "\;" ENV_PATH "${ENV_PATH}")
@@ -362,7 +362,7 @@ foreach(solv ${solvers})
     endif()
 endforeach()
 
-# ----------===== unit tests =====--------------------------------------------
+# ----------===== Unit tests =====--------------------------------------------
 if(BUILD_TESTING)
 
     set(plask_test_depends ${material_targets} solvers-lst) # we need materials for testing
@@ -423,14 +423,14 @@ if(BUILD_TESTING)
 
 endif(BUILD_TESTING)
 
-# ----------===== documentation (api) =====--------------------------------------------
+# ----------===== Documentation (api) =====--------------------------------------------
 find_package(Doxygen)
 
 if(BUILD_DOCUMENTATION)
     if(DOXYGEN_FOUND)
         file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_BINARY_DIR})
         add_custom_target(doc ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
-        install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION share COMPONENT dev-doc
+        install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION share/doc/plask-dev-doc COMPONENT dev-doc
                 PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
     else()
         message("Doxygen not found. Building without documentation.")
@@ -442,21 +442,47 @@ else(BUILD_DOCUMENTATION)
 endif(BUILD_DOCUMENTATION)
 
 
-# ----------===== packaging =====--------------------------------------------
+# ----------===== Optional tools =====--------------------------------------------
+
+install(FILES tools/dan2xpl.py DESTINATION bin COMPONENT tools RENAME dan2xpl)
+install(FILES tools/xpl2dan.py DESTINATION bin COMPONENT tools RENAME xpl2dan)
+install(FILES tools/qtplask.py DESTINATION bin COMPONENT tools RENAME qtplask)
+# TODO Make it better for windows (e.g. compile exes)
+
+# ----------===== Packaging =====--------------------------------------------
+
+# This is ugly! Although somehow useful for quick dirty package generation
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Photonic LAser Simulation Kit")
-set(CPACK_PACKAGE_VENDOR "Photonics Group, Technical University of Lodz")
-#set(CPACK_PACKAGE_DESCRIPTION_FILE ${CMAKE_SOURCE_DIR}/ABOUT)
+set(CPACK_PACKAGE_VENDOR "Photonics Group, Lodz University of Technology")
+file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_PACKAGE_DESCRIPTION)
 
 set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_REVISION})
 
 set(CPACK_GENERATOR "DEB;NSIS")
+
 set(CPACK_PACKAGE_FILE_NAME "plask" CACHE STRING "Package basename")
 mark_as_advanced(CPACK_PACKAGE_FILE_NAME)
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Maciej Dems <maciej.dems@p.lodz.pl>")
-set(CPACK_DEB_COMPONENT_INSTALL ON)
+
+if(UNIX)
+    file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_PREFIX}/usr/lib/plask")
+    file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_PREFIX}/usr/lib/plask -type f -name \"*.pyc\" -delete")
+
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v/100000,v/100%1000,v/10%10]))"
+                    OUTPUT_VARIABLE boostver)
+
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Maciej Dems <maciej.dems@p.lodz.pl>")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "Science")
+    file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_DEBIAN_PACKAGE_DESCRIPTION)
+    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Photonic LAser Simulation Kit\n${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, libblas.so.3, liblapack.so.3")
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
+    # set(CPACK_DEB_COMPONENT_INSTALL ON) # no postinst/prerm scripts are added if this is turned on
+endif()
+
+
 
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "plask-${VERSION}" CACHE INTERNAL "tarball basename")
 set(CPACK_SOURCE_GENERATOR "TBZ2")
