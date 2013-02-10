@@ -465,8 +465,8 @@ set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_REVISION})
 
 set(CPACK_GENERATOR "DEB;NSIS")
 
-set(CPACK_PACKAGE_FILE_NAME "plask" CACHE STRING "Package basename")
-mark_as_advanced(CPACK_PACKAGE_FILE_NAME)
+# set(CPACK_PACKAGE_FILE_NAME "plask" CACHE STRING "Package basename")
+# mark_as_advanced(CPACK_PACKAGE_FILE_NAME)
 
 if(UNIX)
     file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_PREFIX}/usr/lib/plask")
