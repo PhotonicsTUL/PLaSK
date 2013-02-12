@@ -115,6 +115,10 @@ Tensor2<double> AlAs::thermk(double T, double t) const {
     return(Tensor2<double>(91., 91.));
 }
 
+bool AlAs::isEqual(const Material &other) const {
+    return true;
+}
+
 static MaterialsDB::Register<AlAs> materialDB_register_AlAs;
 
 }       // namespace plask
