@@ -113,6 +113,10 @@ Tensor3<dcomplex> Material::nR_tensor(double wl, double T) const {
     return nR(wl, T);
 }
 
+bool Material::operator ==(const Material &other) const {
+    return typeid(*this) == typeid(other) && this->isEqual(other);
+}
+
 double Material::cp(double T) const { throwNotImplemented("cp(double T)"); return 0; }
 
 Tensor2<double> Material::thermk(double T, double thickness) const { throwNotImplemented("thermk(double T)"); return 0.; }
@@ -476,6 +480,10 @@ Tensor2<double> MixedMaterial::thermk(double T, double thickness) const {
 
 double MixedMaterial::VBO(double T) const  {
     return avg([&](const Material& m) { return m.VBO(T); });
+}
+
+bool Material::isEqual(const Material &other) const {
+    return this->str() == other.str();
 }
 
 }   // namespace plask

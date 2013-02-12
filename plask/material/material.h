@@ -533,7 +533,49 @@ struct Material {
      */
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const;
 
+    /**
+     * Check if this material is equal to @a other (checks type and uses isEqual).
+     * @param other other material
+     * @return @c true only if this is equal to @p other
+     */
+    bool operator==(const Material& other) const;
+
+    /**
+     * Check if this material is equal to @a other (checks type and uses isEqual).
+     * @param other other material
+     * @return @c true only if this is equal to @p other, @c false in case of other is nullptr
+     */
+    bool operator==(shared_ptr<const Material> other) const {
+        return other ? this->operator==(other) : false;
+    }
+
+    /**
+     * Check if this material is deifferent from @a other (checks type and uses isEqual).
+     * @param other other material
+     * @return @c true only if this is not equal to @p other
+     */
+    bool operator!=(const Material& other) const { return ! this->operator==(other); }
+
+    /**
+     * Check if this material is deifferent from @a other (checks type and uses isEqual).
+     * @param other other material
+     * @return @c true only if this is not equal to @p other, @c true in case of other is nullptr
+     */
+    bool operator!=(shared_ptr<const Material> other) const { return ! this->operator==(other); }
+
 protected:
+
+    /**
+     * Check if this material is equal to @a other.
+     *
+     * Default implementation compares string representation of this and other.
+     * For simple materials (without parameters) this should just returns true.
+     * @param other other material witch has the same type as this
+     * (in implementation you can safty static_cast it to type of this)
+     * @return @c true only if this is equal to @p other
+     */
+    virtual bool isEqual(const Material& other) const;
+
     /**
      * Throw exception with information that method with name @p method_name is not implemented for this material.
      * @param method_name name of method which is not implemented

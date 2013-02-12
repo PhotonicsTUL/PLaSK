@@ -48,6 +48,8 @@ struct Air: public Material {
     virtual double cp(double T) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
+protected:
+    virtual bool isEqual(const Material& other) const;
 };
 
 

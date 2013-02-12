@@ -68,6 +68,9 @@ Tensor2<double> Air::thermk(double T, double thickness) const { return 5e-5; }
 
 double Air::VBO(double T) const { throwNotApplicable("VBO(double T)"); return 0; }
 
+bool Air::isEqual(const Material &other) const {
+    return true;
+}
 
 static MaterialsDB::Register<Air> materialDB_register_Air;
 
