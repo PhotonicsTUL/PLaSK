@@ -64,6 +64,11 @@ double GaInAs_Sn::absp(double wl, double T) const {
     return ( tAbsp );
 }
 
+bool GaInAs_Sn::isEqual(const Material &other) const {
+    const GaInAs_Sn& o = static_cast<const GaInAs_Sn&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<GaInAs_Sn> materialDB_register_GaInAs_Sn;
 
 } // namespace plask

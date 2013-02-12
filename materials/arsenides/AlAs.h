@@ -29,7 +29,8 @@ struct AlAs: public Semiconductor {
     virtual double c11(double T) const;
     virtual double c12(double T) const;
     virtual Tensor2<double> thermk(double T, double t) const;
-
+protected:
+    virtual bool isEqual(const Material& other) const;
 };
 
 } // namespace plask

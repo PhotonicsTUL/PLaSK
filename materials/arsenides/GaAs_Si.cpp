@@ -61,6 +61,11 @@ double GaAs_Si::absp(double wl, double T) const {
     return ( tAbsp );
 }
 
+bool GaAs_Si::isEqual(const Material &other) const {
+    const GaAs_Si& o = static_cast<const GaAs_Si&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<GaAs_Si> materialDB_register_GaAs_Si;
 
 } // namespace plask

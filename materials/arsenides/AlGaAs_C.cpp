@@ -53,6 +53,11 @@ Tensor2<double> AlGaAs_C::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+bool AlGaAs_C::isEqual(const Material &other) const {
+    const AlGaAs_C& o = static_cast<const AlGaAs_C&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<AlGaAs_C> materialDB_register_AlGaAs_C;
 
 } // namespace plask

@@ -127,6 +127,11 @@ double GaInAs::absp(double wl, double T) const {
     return ( 0. );
 }
 
+bool GaInAs::isEqual(const Material &other) const {
+    const GaInAs& o = static_cast<const GaInAs&>(other);
+    return o.Ga == this->Ga && o.In == this->In;
+}
+
 static MaterialsDB::Register<GaInAs> materialDB_register_GaInAs;
 
 } // namespace plask

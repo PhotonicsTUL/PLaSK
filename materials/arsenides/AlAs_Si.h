@@ -25,6 +25,9 @@ struct AlAs_Si: public AlAs {
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const;
 
+protected:
+    virtual bool isEqual(const Material& other) const;
+
 private:
     double ND,
            Nf_RT,

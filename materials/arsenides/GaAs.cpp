@@ -126,6 +126,10 @@ Tensor2<double> GaAs::cond(double T) const {
     return Tensor2<double>(c, c);
 }
 
+bool GaAs::isEqual(const Material &other) const {
+    return true;
+}
+
 
 MI_PROPERTY(GaAs, nr,
             MISource(""),

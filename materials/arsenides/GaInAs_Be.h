@@ -28,6 +28,9 @@ struct GaInAs_Be: public GaInAs {
     virtual Tensor2<double> cond(double T) const;
     virtual double absp(double wl, double T) const;
 
+protected:
+    virtual bool isEqual(const Material& other) const;
+
 private:
     double NA,
            Nf_RT,

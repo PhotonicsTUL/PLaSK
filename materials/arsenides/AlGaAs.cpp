@@ -127,6 +127,11 @@ double AlGaAs::absp(double wl, double T) const {
     return ( 0. );
 }
 
+bool AlGaAs::isEqual(const Material &other) const {
+    const AlGaAs& o = static_cast<const AlGaAs&>(other);
+    return o.Al == this->Al && o.Ga == this->Ga;
+}
+
 static MaterialsDB::Register<AlGaAs> materialDB_register_AlGaAs;
 
 } // namespace plask

@@ -117,6 +117,10 @@ Tensor2<double> InAs::thermk(double T, double t) const {
     return(Tensor2<double>(tCondT, tCondT));
 }
 
+bool InAs::isEqual(const Material &other) const {
+    return true;
+}
+
 static MaterialsDB::Register<InAs> materialDB_register_InAs;
 
 } // namespace plask

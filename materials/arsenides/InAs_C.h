@@ -25,6 +25,9 @@ struct InAs_C: public InAs {
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const;
 
+protected:
+    virtual bool isEqual(const Material& other) const;
+
 private:
     double NA,
            Nf_RT,

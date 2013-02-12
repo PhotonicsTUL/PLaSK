@@ -42,6 +42,11 @@ Tensor2<double> InAs_C::cond(double T) const {
     return (Tensor2<double>(tCond, tCond));
 }
 
+bool InAs_C::isEqual(const Material &other) const {
+    const InAs_C& o = static_cast<const InAs_C&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<InAs_C> materialDB_register_InAs_C;
 
 } // namespace plask

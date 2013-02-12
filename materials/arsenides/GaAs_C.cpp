@@ -67,6 +67,11 @@ double GaAs_C::absp(double wl, double T) const {
     return ( tAbsp );
 }
 
+bool GaAs_C::isEqual(const Material &other) const {
+    const GaAs_C& o = static_cast<const GaAs_C&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<GaAs_C> materialDB_register_GaAs_C;
 
 } // namespace plask

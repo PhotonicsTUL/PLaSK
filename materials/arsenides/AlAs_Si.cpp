@@ -53,6 +53,11 @@ Tensor2<double> AlAs_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+bool AlAs_Si::isEqual(const Material &other) const {
+    const AlAs_Si& o = static_cast<const AlAs_Si&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<AlAs_Si> materialDB_register_AlAs_Si;
 
 } // namespace plask
