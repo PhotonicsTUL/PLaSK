@@ -13,11 +13,18 @@ namespace plask {
 
 /**
  * Non-diagonal tensor with all non-diagonal lateral projection.
+ * [ c00 c01  0  ]
+ * [ c10 c11  0  ]
+ * [  0   0  c22 ]
  */
 template <typename T>
 struct Tensor3 {
 
-    T c00, c11, c22, c01, c10;
+    T c00, ///< Value of the tensor in LONG direction
+      c11, ///< Value of the tensor in TRAN direction
+      c22, ///< Value of the tensor in VERT direction
+      c01, ///< Non-diagonal component
+      c10; ///< Non-diagonal component
 
     T& tran() { return c00; }
     const T& lon() const { return c00; }

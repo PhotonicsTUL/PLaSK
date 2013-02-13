@@ -34,7 +34,8 @@ class GeometryObjects(unittest.TestCase):
 
     def setUp(self):
         @plask.material.simple
-        class Mat(plask.material.Material): pass
+        class Mat(plask.material.Material):
+            pass
 
         self.mat = Mat()
         self.block53 = plask.geometry.Block2D(5,3, self.mat)
@@ -43,7 +44,7 @@ class GeometryObjects(unittest.TestCase):
         '''Test rectangle'''
         self.assertEqual( self.block53.bbox.upper, plask.vec(5.0, 3.0) )
         self.assertEqual( self.block53.bbox.lower, plask.vec(0.0, 0.0) )
-        self.assertEqual( self.block53.get_material(plask.vec(4.0, 2.0)), self.mat)
+        self.assertIs( self.block53.get_material(plask.vec(4.0, 2.0)), self.mat)
         self.assertIsNone( self.block53.get_material(plask.vec(6.0, 2.0)));
 
 

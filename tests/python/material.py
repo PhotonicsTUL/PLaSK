@@ -157,3 +157,32 @@ class Material(unittest.TestCase):
 
         self.assertEqual( ptest.material_thermk("Therm", materialdb, 300.), (infty,infty) )
         self.assertEqual( ptest.material_thermk("Therm", materialdb, 300., 2.), (302.,302.) )
+
+
+    def testComparison(self):
+
+        @material.simple
+        class Mat(material.Material):
+            def __init__(self, base, val):
+                super(Mat, self).__init__(base)
+                self.val = val
+        m1 = Mat("GaAs", 1)
+        m2 = Mat("GaAs", 2)
+        m3 = Mat("AlAs", 1)
+        m4 = Mat("GaAs", 1)
+        self.assertNotEqual(m1, m2)
+        self.assertNotEqual(m1, m3)
+        self.assertEqual(m1, m4)
+
+        @material.simple
+        class Nat(material.Material):
+            def __init__(self, val):
+                super(Nat, self).__init__()
+                self.val = val
+            def __eq__(self, other):
+                return self.val != other.val
+        n1 = Nat(1)
+        n2 = Nat(2)
+        n3 = Nat(1)
+        self.assertTrue(ptest.compareMaterials(n1, n2))
+        self.assertFalse(ptest.compareMaterials(n1, n3))

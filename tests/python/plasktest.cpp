@@ -87,6 +87,10 @@ plask::Tensor3<plask::dcomplex> NrTensor(plask::shared_ptr<plask::Material> mate
     return material->nR_tensor(1000., 300.);
 }
 
+bool compareMaterials(plask::shared_ptr<plask::Material>  m1, plask::shared_ptr<plask::Material>  m2) {
+    return *m1 == *m2;
+}
+
 //// Boundary conditions /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 py::list testBoundary(const plask::RectilinearMesh2D& mesh, const typename plask::RectilinearMesh2D::Boundary& boundary) {
@@ -228,6 +232,8 @@ BOOST_PYTHON_MODULE(plasktest)
     py::def("material_typeid", &materialTypeId);
 
     py::def("nR_tensor", &NrTensor);
+
+    py::def("compareMaterials", &compareMaterials);
 
     py::def("test_boundary", &testBoundary);
 

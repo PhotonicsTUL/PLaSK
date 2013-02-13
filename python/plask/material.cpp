@@ -148,21 +148,21 @@ class PythonMaterial : public Material
 
   public:
     PythonMaterial () : base(new EmptyMaterial) {}
-    PythonMaterial (shared_ptr<Material> base) : base(base) {}
+    PythonMaterial (shared_ptr<Material> base) : base(base) {
+        if (!base) base = shared_ptr<Material>(new EmptyMaterial);
+    }
 
     static shared_ptr<Material> __init__(py::tuple args, py::dict kwargs) {
-        if (py::len(args) > 2 || py::len(kwargs) != 0) {
-            throw TypeError("wrong number of arguments");
+        int len = py::len(args);
+        if (len > 2 || py::len(kwargs) != 0) {
+            throw TypeError("__init__ takes at most 2 arguments (%d given)", len);
         }
         PythonMaterial* ptr;
-        int len = py::len(args);
         if (len == 2) {
             shared_ptr<Material> base = py::extract<shared_ptr<Material>>(args[1]);
             ptr = new PythonMaterial(base);
-        } else if (len == 1) {
-            ptr = new PythonMaterial();
         } else {
-            throw TypeError("__init__ takes at most 2 arguments (%d given)", len);
+            ptr = new PythonMaterial();
         }
         auto sptr = shared_ptr<Material>(ptr);
         ptr->self = py::object(args[0]).ptr();  // key line !!!
@@ -171,6 +171,16 @@ class PythonMaterial : public Material
 
 
     // Here there are overridden methods from Material class
+
+    virtual bool isEqual(const Material& other) const {
+        auto theother = static_cast<const PythonMaterial&>(other);
+        py::object oself { py::detail::borrowed_reference(self) },
+                   oother { py::object(py::detail::borrowed_reference(theother.self)) };
+
+        if (overriden("__eq__")) return py::call_method<bool>(self, "__eq__", oother);
+
+        return *base == *theother.base && oself.attr("__dict__") == oother.attr("__dict__");
+    }
 
     virtual std::string name() const {
         py::object cls = py::object(py::detail::borrowed_reference(self)).attr("__class__");
@@ -587,6 +597,7 @@ void initMaterials() {
         .add_property("kind", &Material::kind)
         .def("__str__", &Material__str__)
         .def("__repr__", &Material__repr__)
+        .def("__eq__", (bool(Material::*)(const Material&)const)&Material::operator==)
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")), "Get lattice constant [A]")
         .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("point")='G'), "Get energy gap Eg [eV]")
@@ -604,7 +615,7 @@ void initMaterials() {
         .def("c11", &Material::c11, (py::arg("T")=300.), "Get elastic constant c11 [GPa]")
         .def("c12", &Material::c12, (py::arg("T")=300.), "Get elastic constant c12 [GPa]")
         .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
-        .def("chi", (double (Material::*)(double, char) const)&Material::chi, (py::arg("T")=300., py::arg("point")='G'), "Get electron affinity Chi [eV]")
+        .def("chi", &Material::chi, (py::arg("T")=300., py::arg("point")='G'), "Get electron affinity Chi [eV]")
         .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")
         .def("Nv", &Material::Nv, (py::arg("T")=300.), "Get effective density of states in the valence band Nv [m**(-3)]")
         .def("Ni", &Material::Ni, (py::arg("T")=300.), "Get intrinsic carrier concentration Ni [m**(-3)]")
@@ -618,7 +629,7 @@ void initMaterials() {
         .def("B", &Material::B, (py::arg("T")=300.), "Get radiative recombination coefficient B [m**3/s]")
         .def("C", &Material::C, (py::arg("T")=300.), "Get Auger recombination coefficient C [m**6/s]")
         .def("D", &Material::D, (py::arg("T")=300.), "Get ambipolar diffusion coefficient D [m**2/s]")
-        .def("thermk", (Tensor2<double> (Material::*)(double, double) const)&Material::thermk, (py::arg("T")=300., py::arg("thickness")=INFINITY), "Get thermal conductivity [W/(m*K)]")
+        .def("thermk", &Material::thermk, (py::arg("T")=300., py::arg("thickness")=INFINITY), "Get thermal conductivity [W/(m*K)]")
         .def("dens", &Material::dens, (py::arg("T")=300.), "Get density [kg/m**3]")
         .def("cp", &Material::cp, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
         .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nr")

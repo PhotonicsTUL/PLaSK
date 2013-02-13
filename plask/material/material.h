@@ -797,6 +797,7 @@ struct RotatedMaterial: public Material {
 struct EmptyMaterial : public Material {
     virtual std::string name() const { return ""; }
     virtual Material::Kind kind() const { return Material::NONE; }
+    virtual bool isEqual(const Material&) const { return true; } // all empty materials are always equal
 };
 
 

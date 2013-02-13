@@ -810,7 +810,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
                 {
                     if (left != mesh->axis0[c])
                         throw Exception("%1%: Left edge of quantum wells not vertically aligned.", this->getId());
-                    if (this->geometry->getMaterial(point) != QW_material)
+                    if (*this->geometry->getMaterial(point) != *QW_material)
                         throw Exception("%1%: Quantum wells of multiple materials not supported.", this->getId());
                 }
                 else

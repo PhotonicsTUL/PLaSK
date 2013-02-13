@@ -14,11 +14,14 @@ namespace plask {
 
 /**
  * Diagonal tensor with all lateral components equal.
+ * [ c00  0  ]
+ * [  0  c11 ]
  */
 template <typename T>
 struct Tensor2 {
 
-    T c00, c11;
+    T c00, ///< Value of the tensor in lateral direction
+      c11; ///< Value of the tensor in vertical direction
 
     T& tran() { return c00; }
     const T& tran() const { return c00; }

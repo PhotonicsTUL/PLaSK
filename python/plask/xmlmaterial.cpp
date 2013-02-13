@@ -59,6 +59,9 @@ class PythonEvalMaterial : public Material
     shared_ptr<PythonEvalMaterialConstructor> cls;
     shared_ptr<Material> base;
 
+    Material::DopingAmountType doping_amount_type;
+    double doping_amount;
+
     py::object self;
 
 #if PY_VERSION_HEX >= 0x03000000
@@ -78,13 +81,21 @@ class PythonEvalMaterial : public Material
 
     PythonEvalMaterial(const shared_ptr<PythonEvalMaterialConstructor>& constructor, const shared_ptr<Material>& base,
                        const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) :
-        cls(constructor), base(base) {
+        cls(constructor), base(base), doping_amount_type(doping_amount_type), doping_amount(doping_amount) {
         self = py::object(base);
         if (doping_amount_type == Material::DOPANT_CONCENTRATION) self.attr("dc") = doping_amount;
         else if (doping_amount_type == Material::CARRIER_CONCENTRATION) self.attr("cc") = doping_amount;
     }
 
     // Here there are overridden methods from Material class
+
+    virtual bool isEqual(const Material& other) const {
+        auto theother = static_cast<const PythonEvalMaterial&>(other);
+        return
+            cls == theother.cls &&
+            doping_amount_type == theother.doping_amount_type &&
+            doping_amount == theother.doping_amount;
+    }
 
     virtual std::string name() const { return cls->materialName; }
     virtual Material::Kind kind() const { return (cls->kind == Material::NONE)? base->kind() : cls->kind; }

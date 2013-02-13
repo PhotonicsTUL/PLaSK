@@ -100,7 +100,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                         layer_material = this->geometry->getMaterial(point);
                         layer_QW = QW;
                     } else {
-                        if (layer_material != this->geometry->getMaterial(point))
+                        if (*layer_material != *this->geometry->getMaterial(point))
                             throw Exception("%1%: Non-uniform active region layer.", this->getId());
                         if (layer_QW != QW)
                             throw Exception("%1%: Quantum-well role of the active region layer not consistent.", this->getId());
@@ -113,7 +113,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                                 throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
                             auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
                             for (size_t cc = ileft; cc < iright; ++cc)
-                                if (this->geometry->getMaterial(points->at(cc,r-1)) != bottom_material)
+                                if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
                                     throw Exception("%1%: Material below quantum well not uniform.", this->getId());
                             auto& region = regions.back();
                             double w = mesh->axis0[iright] - mesh->axis0[ileft];
@@ -140,7 +140,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                 shared_ptr<Block<2>> last;
                 if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
                 assert(!last || last->size.c0 == w);
-                if (last && layer_material == last->material && layer_QW == region->isQW(region->size()-1)) {
+                if (last && *layer_material == *last->material && layer_QW == region->isQW(region->size()-1)) {
                     last->setSize(w, last->size.c1 + h);
                 } else {
                     auto layer = make_shared<Block<2>>(Vec<2>(w,h), layer_material);
@@ -151,7 +151,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                 if (region->isQW(region->size()-1)) { // top layer of the active region is quantum well, add the next layer
                     auto top_material = this->geometry->getMaterial(points->at(ileft,r));
                     for (size_t cc = ileft; cc < iright; ++cc)
-                        if (this->geometry->getMaterial(points->at(cc,r)) != top_material)
+                        if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
                             throw Exception("%1%: Material above quantum well not uniform.", this->getId());
                     region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), top_material));
                 }
