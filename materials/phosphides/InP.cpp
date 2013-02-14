@@ -134,6 +134,10 @@ double InP::absp(double wl, double T) const {
     return ( 0. );
 }
 
+bool InP::isEqual(const Material &other) const {
+    return true;
+}
+
 static MaterialsDB::Register<InP> materialDB_register_InP;
 
 } // namespace plask

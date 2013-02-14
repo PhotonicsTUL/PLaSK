@@ -31,6 +31,10 @@ struct AlN: public Semiconductor {
     virtual double Mlh_l(double T, char point) const;
     virtual double Mlh_v(double T, char point) const;
 */
+
+protected:
+    virtual bool isEqual(const Material& other) const;
+
 };
 
 

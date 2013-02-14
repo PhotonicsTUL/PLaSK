@@ -35,6 +35,10 @@ double Ti::absp(double wl, double T) const {
     return ( 1e3 );
 }
 
+bool Ti::isEqual(const Material &other) const {
+    return true;
+}
+
 MI_PROPERTY(Ti, nr,
             MISource(""),
             MIComment("TODO")

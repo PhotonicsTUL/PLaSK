@@ -77,7 +77,7 @@ double GaInAs_Zn::absp(double wl, double T) const {
 
 bool GaInAs_Zn::isEqual(const Material &other) const {
     const GaInAs_Zn& o = static_cast<const GaInAs_Zn&>(other);
-    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && GaInAs::isEqual(other);
 }
 
 static MaterialsDB::Register<GaInAs_Zn> materialDB_register_GaInAs_Zn;

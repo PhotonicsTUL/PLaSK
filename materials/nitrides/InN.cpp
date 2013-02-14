@@ -76,6 +76,10 @@ Tensor2<double> InN::Mlh(double T, char point) const {
     return (tMlh);
 }
 
+bool InN::isEqual(const Material &other) const {
+    return true;
+}
+
 MaterialsDB::Register<InN> materialDB_register_InN;
 
 }       // namespace plask

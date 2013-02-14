@@ -52,6 +52,11 @@ Tensor2<double> InN_Mg::cond(double T) const {
     return (Tensor2<double>(cond_RT,cond_RT));
 }
 
+bool InN_Mg::isEqual(const Material &other) const {
+    const InN_Mg& o = static_cast<const InN_Mg&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && o.cond_RT == this->cond_RT && InN::isEqual(other);
+}
+
 MaterialsDB::Register<InN_Mg> materialDB_register_InN_Mg;
 
 }       // namespace plask

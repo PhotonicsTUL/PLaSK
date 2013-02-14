@@ -67,6 +67,11 @@ double InP_Zn::absp(double wl, double T) const {
     return ( tAbsp );
 }
 
+bool InP_Zn::isEqual(const Material &other) const {
+    const InP_Zn& o = static_cast<const InP_Zn&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<InP_Zn> materialDB_register_InP_Zn;
 
 } // namespace plask

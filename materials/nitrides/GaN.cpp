@@ -107,6 +107,10 @@ Tensor2<double> GaN::Mlh(double T, char point) const {
     return (tMlh);
 }
 
+bool GaN::isEqual(const Material &other) const {
+    return true;
+}
+
 static MaterialsDB::Register<GaN> materialDB_register_GaN;
 
 }       // namespace plask

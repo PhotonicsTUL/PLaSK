@@ -66,6 +66,11 @@ double GaN_Mg::absp(double wl, double T) const {
     return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.000*b)) );
 }
 
+bool GaN_Mg::isEqual(const Material &other) const {
+    const GaN_Mg& o = static_cast<const GaN_Mg&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && o.cond_RT == this->cond_RT;
+}
+
 static MaterialsDB::Register<GaN_Mg> materialDB_register_Mg;
 
 }       // namespace plask

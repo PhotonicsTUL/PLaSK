@@ -27,6 +27,9 @@ struct GaN: public Semiconductor {
     virtual Tensor2<double> Mhh(double T, char point) const;
     virtual Tensor2<double> Mlh(double T, char point) const;
 
+protected:
+    virtual bool isEqual(const Material& other) const;
+
 };
 
 

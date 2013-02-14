@@ -80,6 +80,11 @@ double GaN_Si::absp(double wl, double T) const {
     return ( 5.61*exp(Nf(T)/1.92e19) + 124.08 );
 }
 
+bool GaN_Si::isEqual(const Material &other) const {
+    const GaN_Si& o = static_cast<const GaN_Si&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 MI_PROPERTY(GaN_Si, nr,
             MISeeClass<GaN>(MaterialInfo::nr),
             MISource("Perlin Unipress 11.2011 unpublished"),

@@ -34,6 +34,10 @@ double AuGe::absp(double wl, double T) const {
     return ( 1e3 );
 }
 
+bool AuGe::isEqual(const Material &other) const {
+    return true;
+}
+
 MI_PROPERTY(AuGe, nr,
             MISource(""),
             MIComment("TODO")

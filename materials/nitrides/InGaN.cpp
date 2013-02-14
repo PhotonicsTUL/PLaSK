@@ -69,6 +69,11 @@ double InGaN::lattC(double T, char x) const {
     return (tLattC);
 }
 
+bool InGaN::isEqual(const Material &other) const {
+    const InGaN& o = static_cast<const InGaN&>(other);
+    return o.In == this->In;
+}
+
 static MaterialsDB::Register<InGaN> materialDB_register_InGaN;
 
 }       // namespace plask

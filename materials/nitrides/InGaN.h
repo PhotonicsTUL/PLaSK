@@ -28,6 +28,9 @@ struct InGaN: public Semiconductor {
     virtual double lattC(double T, char x) const;
 
 protected:
+    virtual bool isEqual(const Material& other) const;
+
+protected:
     double In,
            Ga;
 

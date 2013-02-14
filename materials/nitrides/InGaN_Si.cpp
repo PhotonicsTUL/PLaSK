@@ -65,6 +65,12 @@ double InGaN_Si::absp(double wl, double T) const {
     return ( (19000+4000*b)*exp(a/(0.019+0.001*b)) + (330+200*b)*exp(a/(0.07+0.016*b)) );
 }
 
+bool InGaN_Si::isEqual(const Material &other) const {
+    const InGaN_Si& o = static_cast<const InGaN_Si&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && InGaN::isEqual(other);
+}
+
+
 static MaterialsDB::Register<InGaN_Si> materialDB_register_InGaN_Si;
 
 }       // namespace plask

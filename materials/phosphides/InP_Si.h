@@ -26,6 +26,9 @@ struct InP_Si: public InP {
     virtual Tensor2<double> cond(double T) const;
     virtual double absp(double wl, double T) const;
 
+protected:
+    virtual bool isEqual(const Material& other) const;
+
 private:
     double ND,
            Nf_RT,

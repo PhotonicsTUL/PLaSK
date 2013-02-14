@@ -73,6 +73,10 @@ Tensor2<double> AlN::Me(double T, char point) const {
     return (tMe);
 }
 
+bool AlN::isEqual(const Material &other) const {
+    return true;
+}
+
 static MaterialsDB::Register<AlN> materialDB_register_AlN;
 
 }       // namespace plask

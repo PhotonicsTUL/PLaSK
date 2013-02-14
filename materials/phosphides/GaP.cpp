@@ -133,6 +133,10 @@ double GaP::absp(double wl, double T) const {
     return ( 0. );
 }
 
+bool GaP::isEqual(const Material &other) const {
+    return true;
+}
+
 static MaterialsDB::Register<GaP> materialDB_register_GaP;
 
 } // namespace plask

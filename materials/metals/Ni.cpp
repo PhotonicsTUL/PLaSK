@@ -36,6 +36,10 @@ double Ni::absp(double wl, double T) const {
     return ( 1e3 );
 }
 
+bool Ni::isEqual(const Material &other) const {
+    return true;
+}
+
 MI_PROPERTY(Ni, nr,
             MISource(""),
             MIComment("TODO")

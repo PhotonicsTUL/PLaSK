@@ -29,6 +29,9 @@ struct AlGaN_Si: public AlGaN {
     virtual Tensor2<double> thermk(double T, double t) const;
     virtual double absp(double wl, double T) const;
 
+protected:
+    virtual bool isEqual(const Material& other) const;
+
 private:
     double ND,
            Nf_RT;

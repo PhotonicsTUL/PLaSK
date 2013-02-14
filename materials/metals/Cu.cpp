@@ -36,6 +36,10 @@ double Cu::absp(double wl, double T) const {
     return ( 1e3 );
 }
 
+bool Cu::isEqual(const Material &other) const {
+    return true;
+}
+
 MI_PROPERTY(Cu, nr,
             MISource(""),
             MIComment("TODO")

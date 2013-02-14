@@ -41,6 +41,9 @@ struct GaInP: public Semiconductor {
     virtual double absp(double wl, double T) const;
 
 protected:
+    virtual bool isEqual(const Material& other) const;
+
+protected:
     double Ga,
            In;
 

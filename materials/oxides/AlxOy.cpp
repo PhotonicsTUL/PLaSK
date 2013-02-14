@@ -32,6 +32,10 @@ double AlxOy::absp(double wl, double T) const {
     return ( 0. );
 }
 
+bool AlxOy::isEqual(const Material &other) const {
+    return true;
+}
+
 MI_PROPERTY(AlxOy, nr,
             MISource("T.Kitatani et al., Japanese Journal of Applied Physics (part1) 41 (2002) 2954-2957"),
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),

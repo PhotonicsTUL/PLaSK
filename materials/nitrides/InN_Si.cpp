@@ -48,6 +48,11 @@ Tensor2<double> InN_Si::cond(double T) const {
     return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
 }
 
+bool InN_Si::isEqual(const Material &other) const {
+    const InN_Si& o = static_cast<const InN_Si&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && InN::isEqual(other);
+}
+
 MaterialsDB::Register<InN_Si> materialDB_register_InN_Si;
 
 }       // namespace plask

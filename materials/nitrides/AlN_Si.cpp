@@ -64,6 +64,11 @@ double AlN_Si::absp(double wl, double T) const {
     return ( (19000+400*b)*exp(a/(0.019+0.001*b)) + (330+200*b)*exp(a/(0.07+0.016*b)) );
 }
 
+bool AlN_Si::isEqual(const Material &other) const {
+    const AlN_Si& o = static_cast<const AlN_Si&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<AlN_Si> materialDB_register_AlN_Si;
 
 }       // namespace plask

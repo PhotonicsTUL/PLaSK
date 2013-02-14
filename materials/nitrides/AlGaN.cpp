@@ -71,6 +71,11 @@ double AlGaN::lattC(double T, char x) const {
     return (tLattC);
 }
 
+bool AlGaN::isEqual(const Material &other) const {
+    const AlGaN& o = static_cast<const AlGaN&>(other);
+    return o.Al == this->Al;
+}
+
 static MaterialsDB::Register<AlGaN> materialDB_register_AlGaN;
 
 }       // namespace plask

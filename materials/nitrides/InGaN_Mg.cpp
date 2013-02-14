@@ -55,6 +55,11 @@ double InGaN_Mg::absp(double wl, double T) const {
     return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.0008*b)) );
 }
 
+bool InGaN_Mg::isEqual(const Material &other) const {
+    const InGaN_Mg& o = static_cast<const InGaN_Mg&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && InGaN::isEqual(other);
+}
+
 static MaterialsDB::Register<InGaN_Mg> materialDB_register_InGaN_Mg;
 
 }       // namespace plask

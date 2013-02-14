@@ -61,6 +61,11 @@ double InP_Be::absp(double wl, double T) const {
     return ( tAbsp );
 }
 
+bool InP_Be::isEqual(const Material &other) const {
+    const InP_Be& o = static_cast<const InP_Be&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<InP_Be> materialDB_register_InP_Be;
 
 } // namespace plask

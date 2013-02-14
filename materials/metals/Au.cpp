@@ -36,6 +36,10 @@ double Au::absp(double wl, double T) const {
     return ( 1e3 );
 }
 
+bool Au::isEqual(const Material &other) const {
+    return true;
+}
+
 MI_PROPERTY(Au, nr,
             MISource(""),
             MIComment("TODO")

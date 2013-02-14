@@ -34,6 +34,10 @@ double In::absp(double wl, double T) const {
     return ( 1e3 );
 }
 
+bool In::isEqual(const Material &other) const {
+    return true;
+}
+
 MI_PROPERTY(In, nr,
             MISource(""),
             MIComment("TODO")

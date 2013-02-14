@@ -24,6 +24,10 @@ struct InN_Mg: public InN {
 	virtual double Nf(double T) const; //TODO change to cm^(-3)
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const;
+
+protected:
+    virtual bool isEqual(const Material& other) const;
+
 private:
     double NA,
            Nf_RT,

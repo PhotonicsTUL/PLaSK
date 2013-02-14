@@ -63,7 +63,7 @@ double GaAs_Zn::absp(double wl, double T) const {
 
 bool GaAs_Zn::isEqual(const Material &other) const {
     const GaAs_Zn& o = static_cast<const GaAs_Zn&>(other);
-    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && GaAs::isEqual(other);
 }
 
 static MaterialsDB::Register<GaAs_Zn> materialDB_register_GaAs_Zn;

@@ -21,7 +21,8 @@ struct AuGe: public Metal {
     virtual Tensor2<double> thermk(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
-
+protected:
+    virtual bool isEqual(const Material& other) const;
 };
 
 

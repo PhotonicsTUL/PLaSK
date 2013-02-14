@@ -65,6 +65,11 @@ double AlGaN_Si::absp(double wl, double T) const {
     return ( (19000+4000*b)*exp(a/(0.019+0.001*b)) + (330+200*b)*exp(a/(0.07+0.016*b)) );
 }
 
+bool AlGaN_Si::isEqual(const Material &other) const {
+    const AlGaN_Si& o = static_cast<const AlGaN_Si&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && AlGaN::isEqual(other);
+}
+
 static MaterialsDB::Register<AlGaN_Si> materialDB_register_AlGaN_Si;
 
 }       // namespace plask

@@ -22,6 +22,8 @@ struct Ni: public Metal {
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
 
+protected:
+    virtual bool isEqual(const Material& other) const;
 };
 
 

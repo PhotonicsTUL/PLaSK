@@ -61,6 +61,11 @@ double InP_Si::absp(double wl, double T) const {
     return ( tAbsp );
 }
 
+bool InP_Si::isEqual(const Material &other) const {
+    const InP_Si& o = static_cast<const InP_Si&>(other);
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+}
+
 static MaterialsDB::Register<InP_Si> materialDB_register_InP_Si;
 
 } // namespace plask

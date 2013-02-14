@@ -57,6 +57,11 @@ double AlGaN_Mg::absp(double wl, double T) const {
     return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.0008*b)) );
 }
 
+bool AlGaN_Mg::isEqual(const Material &other) const {
+    const AlGaN_Mg& o = static_cast<const AlGaN_Mg&>(other);
+    return o.NA == this->NA && o.Nf_RT == this->Nf_RT && AlGaN::isEqual(other);
+}
+
 static MaterialsDB::Register<AlGaN_Mg> materialDB_register_AlGaN_Mg;
 
 }       // namespace plask

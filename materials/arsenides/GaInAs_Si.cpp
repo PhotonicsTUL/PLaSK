@@ -73,7 +73,7 @@ double GaInAs_Si::absp(double wl, double T) const {
 
 bool GaInAs_Si::isEqual(const Material &other) const {
     const GaInAs_Si& o = static_cast<const GaInAs_Si&>(other);
-    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT;
+    return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && GaInAs::isEqual(other);
 }
 
 static MaterialsDB::Register<GaInAs_Si> materialDB_register_GaInAs_Si;

@@ -36,6 +36,10 @@ double Pt::absp(double wl, double T) const {
     return ( 1e3 );
 }
 
+bool Pt::isEqual(const Material &other) const {
+    return true;
+}
+
 MI_PROPERTY(Pt, nr,
             MISource(""),
             MIComment("TODO")
