@@ -150,6 +150,12 @@ int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
     return 1;
 }
 
+// Default options for docstrings
+py::docstring_options doc_options(
+    true,   // show user defined
+    true,   // show py signatures
+    false   // show cpp signatures
+);
 
 }} // namespace plask::python
 
@@ -157,6 +163,7 @@ BOOST_PYTHON_MODULE(_plask)
 {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
+
 
     py::scope scope; // Default scope
 
