@@ -50,11 +50,11 @@ void FermiGainSolver<GeometryType>::onInvalidate() // This will be called when e
     //TODO (if needed)
 }
 
-template <typename GeometryType>
-void FermiGainSolver<GeometryType>::compute()
-{
-    this->initCalculation(); // This must be called before any calculation!
-}
+//template <typename GeometryType>
+//void FermiGainSolver<GeometryType>::compute()
+//{
+//    this->initCalculation(); // This must be called before any calculation!
+//}
 
 
 
@@ -74,7 +74,8 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
         shared_ptr<Material> layer_material;
         bool layer_QW = false;
 
-        for (size_t c = 0; c < points->axis0.size(); ++c) { // In the (possible) active region
+        for (size_t c = 0; c < points->axis0.size(); ++c)
+        { // In the (possible) active region
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
             bool active = tags.find("active") != tags.end();
@@ -83,32 +84,46 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
             if (QW && !active)
                 throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
 
-            if (c < ileft) {
+            if (c < ileft)
+            {
                 if (active)
                     throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
-            } else if (c >= iright) {
+            }
+            else if (c >= iright)
+            {
                 if (active)
                     throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
-            } else {
+            }
+            else
+            {
                 // Here we are inside potential active region
-                if (active) {
-                    if (!had_active) {
-                        if (!in_active) { // active region is starting set-up new region info
+                if (active)
+                {
+                    if (!had_active)
+                    {
+                        if (!in_active)
+                        { // active region is starting set-up new region info
                             regions.emplace_back(mesh->at(c,r));
                             ileft = c;
                         }
                         layer_material = this->geometry->getMaterial(point);
                         layer_QW = QW;
-                    } else {
+                    }
+                    else
+                    {
                         if (*layer_material != *this->geometry->getMaterial(point))
                             throw Exception("%1%: Non-uniform active region layer.", this->getId());
                         if (layer_QW != QW)
                             throw Exception("%1%: Quantum-well role of the active region layer not consistent.", this->getId());
                     }
-                } else if (had_active) {
-                    if (!in_active) {
+                }
+                else if (had_active)
+                {
+                    if (!in_active)
+                    {
                         iright = c;
-                        if (layer_QW) { // quantum well is at the egde of the active region, add one row below it
+                        if (layer_QW)
+                        { // quantum well is at the egde of the active region, add one row below it
                             if (r == 0)
                                 throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
                             auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
@@ -132,23 +147,31 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
 
         // Now fill-in the layer info
         ActiveRegionInfo* region = regions.empty()? nullptr : &regions.back();
-        if (region) {
+        if (region)
+        {
             double h = mesh->axis1[r+1] - mesh->axis1[r];
             double w = mesh->axis0[iright] - mesh->axis0[ileft];
-            if (in_active) {
+            if (in_active)
+            {
                 size_t n = region->layers->getChildrenCount();
                 shared_ptr<Block<2>> last;
                 if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
                 assert(!last || last->size.c0 == w);
-                if (last && *layer_material == *last->material && layer_QW == region->isQW(region->size()-1)) {
+                if (last && layer_material == last->material && layer_QW == region->isQW(region->size()-1))
+                {
                     last->setSize(w, last->size.c1 + h);
-                } else {
+                }
+                else
+                {
                     auto layer = make_shared<Block<2>>(Vec<2>(w,h), layer_material);
                     if (layer_QW) layer->addRole("QW");
                     region->layers->push_back(layer);
                 }
-            } else {
-                if (region->isQW(region->size()-1)) { // top layer of the active region is quantum well, add the next layer
+            }
+            else
+            {
+                if (region->isQW(region->size()-1))
+                { // top layer of the active region is quantum well, add the next layer
                     auto top_material = this->geometry->getMaterial(points->at(ileft,r));
                     for (size_t cc = ileft; cc < iright; ++cc)
                         if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
@@ -166,20 +189,71 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
 
 
 template <typename GeometryType>
-double FermiGainSolver<GeometryType>::computeGain(const Vec<2>& point, double wavelenght)
+const DataVector<const double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
 {
     this->initCalculation(); // This must be called before any calculation!
 
-    return 0;   //TODO 0 implementation
+    DataVector<const double> gainOnMesh;
+
+    for (int act=0; act<regions.size(); i++)
+    {
+        for (int i=0; i<dst_mesh.size(); i++)
+        {
+            setParameters(wavelenght, dst_mesh[i]);
+            gainOnMesh[i] = gainModule.Get_gain_at(wavelenght);
+        }
+    }
+
+    return gainOnMesh;
 }
 
 
 template <typename GeometryType>
-const DataVector<const double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod) {
+void FermiGainSolver<GeometryType>::setParameters(double wavelenght, typename GeometryType::CoordsType point, ActiveRegionInfo active)
+{
+    /// Material data base
+    std::vector<plask::shared_ptr<plask::Material>> QW_material, Bar_material;
 
-    //TODO
+    for (int i=0; i<active.size(); i++)
+    {
+        if (active.isQW(i) == true)
+        {
+            QW_material =
+        }
+    }
 
-    return DataVector<const double>();   //TODO 0 implementation
+    gainModule.Set_refr_index(this->QW_material->nr(wavelength, T));
+
+    gainModule.Set_electron_mass_in_plain(this->QW_material->Me(T,"g")->c11);
+    gainModule.Set_electron_mass_transverse(this->QW_material->Me(T, "g")->c00);
+    gainModule.Set_heavy_hole_mass_in_plain(this->QW_material->Mhh(T, "g")->c11);
+    gainModule.Set_heavy_hole_mass_transverse(this->QW_material->Mhh(T, "g")->c00);
+    gainModule.Set_light_hole_mass_in_plain(this->QW_material->lh(T, "g")->c11);
+    gainModule.Set_light_hole_mass_transverse(this->QW_material->lh(T, "g")->c00);
+    gainModule.Set_electron_mass_in_barrier(0.067);
+    gainModule.Set_heavy_hole_mass_in_barrier(0.33);
+    gainModule.Set_light_hole_mass_in_barrier(0.09);
+//    gainModule.Set_barrier_width(15);
+    gainModule.Set_momentum_matrix_element(0.);
+
+    gainModule.Set_well_width(80);
+    gainModule.Set_waveguide_width(1000);
+    gainModule.Set_split_off(.3272);
+    gainModule.Set_bandgap(1.212);
+    gainModule.Set_conduction_depth(0.13097);
+    gainModule.Set_valence_depth(0.07965);
+
+    gainModule.Set_cond_waveguide_depth(0.1);
+    gainModule.Set_vale_waveguide_depth(0.1);
+
+    gainModule.Set_temperature(300);
+
+    gainModule.Set_lifetime(0.5);
+    gainModule.Set_koncentr(5e17);
+
+    gainModule.Set_first_point(1.19);
+    gainModule.Set_last_point(1.4);
+    gainModule.Set_step(.001);
 }
 
 

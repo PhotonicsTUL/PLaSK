@@ -6,6 +6,7 @@
 #define PLASK__SOLVER_GAIN_FERMI_H
 
 #include <plask/plask.hpp>
+#include "gainQW.h"
 
 namespace plask { namespace solvers { namespace fermi {
 
@@ -16,34 +17,40 @@ template <typename GeometryType>
 struct FermiGainSolver: public SolverOver<GeometryType>
 {
     /// Structure containing information about each active region
-    struct ActiveRegionInfo {
+    struct ActiveRegionInfo
+    {
         shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
         Vec<2> origin;                          ///< Location of the active region stack origin
         ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
 
         /// \return number of layers in the active region with surrounding barriers
-        size_t size() const {
+        size_t size() const
+        {
             return layers->getChildrenCount();
         }
 
         /// \return material of \p n-th layer
-        shared_ptr<Material> getLayerMaterial(size_t n) const {
+        shared_ptr<Material> getLayerMaterial(size_t n) const
+        {
             auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
             return block->material;
         }
 
         /// \return translated bounding box of \p n-th layer
-        Box2D getLayerBox(size_t n) const {
+        Box2D getLayerBox(size_t n) const
+        {
             return static_cast<GeometryObjectD<2>*>(layers->getChildNo(n).get())->getBoundingBox() + origin;
         }
 
         /// \return \p true if given layer is quantum well
-        bool isQW(size_t n) const {
+        bool isQW(size_t n) const
+        {
             return static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild()->hasRole("QW");
         }
 
         /// \return bounding box of the whole active region
-        Box2D getBoundingBox() const {
+        Box2D getBoundingBox() const
+            {
             return layers->getBoundingBox() + origin;
         }
     };
@@ -60,17 +67,20 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     {
         FermiGainSolver<GeometryType>* parent;
 
-        MyReceiverFor(FermiGainSolver<GeometryType>* parent): parent(parent) {}
+        MyReceiverFor(FermiGainSolver<GeometryType>* par): parent(par) {}
 
-        template <typename T> MyReceiverFor& operator=(const T& rhs) {
+        template <typename T> MyReceiverFor& operator=(const T& rhs)
+        {
             ReceiverFor<Property, GeometryType>::operator=(rhs); return *this;
         }
 
-        template <typename T> MyReceiverFor& operator=(T&& rhs) {
+        template <typename T> MyReceiverFor& operator=(T&& rhs)
+        {
             ReceiverFor<Property, GeometryType>::operator=(std::forward<T>(rhs)); return *this;
         }
 
-        virtual void onChange() {
+        virtual void onChange()
+        {
             parent->outGain.fireChanged();  // the input changed, so we inform the world that everybody should get the new gain
         }
     };
@@ -91,9 +101,12 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
 
     /// Main computation function TODO: is this necessary in this solver?
-    void compute();
+//    void compute();
 
   protected:
+
+    /// External gain module (Michal Wasiak)
+    QW::gain gainModule;
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -106,14 +119,6 @@ struct FermiGainSolver: public SolverOver<GeometryType>
      * Store information about them in the \p regions field.
      */
     void detectActiveRegions();
-
-    /**
-     * Compute gain at given point. This method is called multiple times when the gain is being provided
-     * \param point point to compute gain at
-     * \param wavelenght wavelenght to compute gain for
-     * \return computed gain
-     */
-    double computeGain(const Vec<2>& point, double wavelenght);
 
     /**
      * Method computing the gain on the mesh (called by gain provider)
