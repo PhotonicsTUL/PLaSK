@@ -237,7 +237,7 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
 
             if (!Bar_material)
             {
-                Bar_material == active.getLayerMaterial(i-1);
+                Bar_material = active.getLayerMaterial(i-1);
                 BarBox = active.getLayerBox(i-1);
             }
             else if (Bar_material != active.getLayerMaterial(i+1))
@@ -284,13 +284,6 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
 //    gainModule.Set_first_point(1.19);
 //    gainModule.Set_last_point(1.4);
 //    gainModule.Set_step(.001);
-}
-
-
-template<typename GeometryType>
-double FermiGainSolver<GeometryType>::determineBoxWidth(plask::Box2D materialBox)
-{
-    return  materialBox.upper[1] - materialBox.lower[1];
 }
 
 

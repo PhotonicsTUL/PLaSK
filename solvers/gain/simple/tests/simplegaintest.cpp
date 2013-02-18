@@ -12,6 +12,13 @@ using namespace plask::solvers::fermi;
 #   define V "/"
 #endif
 
+struct TheSolver: public FermiGainSolver<Geometry2DCartesian>
+{
+    TheSolver(const std::string name=""): FermiGainSolver<Geometry2DCartesian>(name) {}
+
+   void detect_active_regions() { detectActiveRegions(); }
+};
+
 BOOST_AUTO_TEST_SUITE(gain)
 
 BOOST_AUTO_TEST_CASE(detect_active_region)
@@ -53,10 +60,10 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
 
     auto geometry = make_shared<Geometry2DCartesian>(stack, 1000.);
 
-    FermiGainSolver<Geometry2DCartesian> solver("gaintest");
+    TheSolver solver("gaintest");
 
     solver.setGeometry(geometry);
-//    solver.compute();
+    solver.detect_active_regions();
 
     BOOST_CHECK_EQUAL(solver.regions.size(), 3);
     BOOST_CHECK_EQUAL(solver.regions[0].origin, Vec<2>(2., 20.));

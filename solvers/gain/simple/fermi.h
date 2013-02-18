@@ -103,8 +103,6 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// Main computation function TODO: is this necessary in this solver?
 //    void compute();
 
-    double determineBoxWidth(plask::Box2D materialBox);
-
   protected:
 
     /// External gain module (Michal Wasiak)
@@ -123,6 +121,16 @@ struct FermiGainSolver: public SolverOver<GeometryType>
      * Store information about them in the \p regions field.
      */
     void detectActiveRegions();
+
+    /**
+     * Compute width of the box
+     * \param materialBox box to compute the width of
+     * \return width of the box
+     */
+    double determineBoxWidth(plask::Box2D materialBox)
+    {
+        return  materialBox.upper[1] - materialBox.lower[1];
+    }
 
     /**
      * Method computing the gain on the mesh (called by gain provider)
