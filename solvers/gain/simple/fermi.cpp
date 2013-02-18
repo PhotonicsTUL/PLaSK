@@ -12,10 +12,12 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverO
 
 
 template <typename GeometryType>
-void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager) {
+void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager)
+{
     // Load a configuration parameter from XML.
     // Below you have an example
-    while (reader.requireTagOrEnd()) {
+    while (reader.requireTagOrEnd())
+    {
 //         std::string param = reader.getNodeName();
 //         if (param == "newton") {
 //             newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
@@ -193,14 +195,17 @@ const DataVector<const double> FermiGainSolver<GeometryType>::getGain(const Mesh
 {
     this->initCalculation(); // This must be called before any calculation!
 
-    DataVector<const double> gainOnMesh;
+    DataVector<const double> nOnMesh = inCarriersConcentration(dst_mesh); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(dst_mesh); // temperature on the mesh
+    DataVector<double> gainOnMesh(dst_mesh.size(), NAN);
 
-    for (int act=0; act<regions.size(); i++)
+    for (int act=0; act<regions.size(); act++)
     {
         for (int i=0; i<dst_mesh.size(); i++)
         {
-            setParameters(wavelenght, dst_mesh[i]);
-            gainOnMesh[i] = gainModule.Get_gain_at(wavelenght);
+            setParameters(wavelength, TOnMesh[i], nOnMesh[i], regions[act]);
+            gainOnMesh[i] = gainModule.Get_gain_at(wavelength);
+            writelog(LOG_DEBUG, "point = %1%", "gain = %2%", dst_mesh[i], gainOnMesh[i]);
         }
     }
 
@@ -209,51 +214,83 @@ const DataVector<const double> FermiGainSolver<GeometryType>::getGain(const Mesh
 
 
 template <typename GeometryType>
-void FermiGainSolver<GeometryType>::setParameters(double wavelenght, typename GeometryType::CoordsType point, ActiveRegionInfo active)
+void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, double n, ActiveRegionInfo active)
 {
     /// Material data base
-    std::vector<plask::shared_ptr<plask::Material>> QW_material, Bar_material;
+    plask::shared_ptr<plask::Material> QW_material, Bar_material;
+    plask::Box2D QWBox, BarBox;
 
     for (int i=0; i<active.size(); i++)
     {
         if (active.isQW(i) == true)
         {
-            QW_material =
+            if (!QW_material)
+            {
+                QW_material = active.getLayerMaterial(i);
+                QWBox = active.getLayerBox(i);
+            }
+            else if (QW_material != active.getLayerMaterial(i))
+            {
+                throw Exception("%1%: Multiple quantum wells materials in active region.", this->getId());
+                break;
+            }
+
+            if (!Bar_material)
+            {
+                Bar_material == active.getLayerMaterial(i-1);
+                BarBox = active.getLayerBox(i-1);
+            }
+            else if (Bar_material != active.getLayerMaterial(i+1))
+            {
+                throw Exception("%1%: Multiple barriers materials in active region.", this->getId());
+                break;
+            }
+
         }
     }
 
-    gainModule.Set_refr_index(this->QW_material->nr(wavelength, T));
+    gainModule.Set_temperature(T);
+    gainModule.Set_koncentr(n);
 
-    gainModule.Set_electron_mass_in_plain(this->QW_material->Me(T,"g")->c11);
-    gainModule.Set_electron_mass_transverse(this->QW_material->Me(T, "g")->c00);
-    gainModule.Set_heavy_hole_mass_in_plain(this->QW_material->Mhh(T, "g")->c11);
-    gainModule.Set_heavy_hole_mass_transverse(this->QW_material->Mhh(T, "g")->c00);
-    gainModule.Set_light_hole_mass_in_plain(this->QW_material->lh(T, "g")->c11);
-    gainModule.Set_light_hole_mass_transverse(this->QW_material->lh(T, "g")->c00);
-    gainModule.Set_electron_mass_in_barrier(0.067);
-    gainModule.Set_heavy_hole_mass_in_barrier(0.33);
-    gainModule.Set_light_hole_mass_in_barrier(0.09);
+    gainModule.Set_refr_index(QW_material->nr(wavelength, T));
+
+    gainModule.Set_electron_mass_in_plain(QW_material->Me(T,'G').c11);
+    gainModule.Set_electron_mass_transverse(QW_material->Me(T, 'G').c00);
+    gainModule.Set_heavy_hole_mass_in_plain(QW_material->Mhh(T, 'G').c11);
+    gainModule.Set_heavy_hole_mass_transverse(QW_material->Mhh(T, 'G').c00);
+    gainModule.Set_light_hole_mass_in_plain(QW_material->Mlh(T, 'G').c11);
+    gainModule.Set_light_hole_mass_transverse(QW_material->Mlh(T, 'G').c00);
+
+    gainModule.Set_electron_mass_in_barrier(Bar_material->Me(T, 'G').c11);
+    gainModule.Set_heavy_hole_mass_in_barrier(Bar_material->Mhh(T, 'G').c11);
+    gainModule.Set_light_hole_mass_in_barrier(Bar_material->Mlh(T, 'G').c11);
 //    gainModule.Set_barrier_width(15);
-    gainModule.Set_momentum_matrix_element(0.);
 
-    gainModule.Set_well_width(80);
-    gainModule.Set_waveguide_width(1000);
-    gainModule.Set_split_off(.3272);
-    gainModule.Set_bandgap(1.212);
-    gainModule.Set_conduction_depth(0.13097);
-    gainModule.Set_valence_depth(0.07965);
+    gainModule.Set_well_width(determineBoxWidth(QWBox));
+    gainModule.Set_waveguide_width(determineBoxWidth(BarBox));
+
+    gainModule.Set_split_off(QW_material->Dso(T));
+    gainModule.Set_bandgap(QW_material->Eg(T, 'G'));
+    gainModule.Set_conduction_depth(QW_material->CBO(T, 'G'));
+    gainModule.Set_valence_depth(QW_material->CBO(T, 'G'));
 
     gainModule.Set_cond_waveguide_depth(0.1);
     gainModule.Set_vale_waveguide_depth(0.1);
 
-    gainModule.Set_temperature(300);
-
     gainModule.Set_lifetime(0.5);
-    gainModule.Set_koncentr(5e17);
+    gainModule.Set_momentum_matrix_element(10.0);
+//    gainModule.Set_momentum_matrix_element(gainModule.element());
 
-    gainModule.Set_first_point(1.19);
-    gainModule.Set_last_point(1.4);
-    gainModule.Set_step(.001);
+//    gainModule.Set_first_point(1.19);
+//    gainModule.Set_last_point(1.4);
+//    gainModule.Set_step(.001);
+}
+
+
+template<typename GeometryType>
+double FermiGainSolver<GeometryType>::determineBoxWidth(plask::Box2D materialBox)
+{
+    return  materialBox.upper[1] - materialBox.lower[1];
 }
 
 

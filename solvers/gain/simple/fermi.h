@@ -103,10 +103,14 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// Main computation function TODO: is this necessary in this solver?
 //    void compute();
 
+    double determineBoxWidth(plask::Box2D materialBox);
+
   protected:
 
     /// External gain module (Michal Wasiak)
     QW::gain gainModule;
+
+    void setParameters(double wavelength, double T, double n, ActiveRegionInfo active);
 
     /// Initialize the solver
     virtual void onInitialize();

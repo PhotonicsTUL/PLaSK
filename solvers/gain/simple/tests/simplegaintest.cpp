@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     FermiGainSolver<Geometry2DCartesian> solver("gaintest");
 
     solver.setGeometry(geometry);
-    solver.compute();
+//    solver.compute();
 
     BOOST_CHECK_EQUAL(solver.regions.size(), 3);
     BOOST_CHECK_EQUAL(solver.regions[0].origin, Vec<2>(2., 20.));
