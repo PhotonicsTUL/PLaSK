@@ -8,6 +8,7 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverO
     outGain(this, &FermiGainSolver<GeometryType>::getGain) // getDelegated will be called whether provider value is requested
 {
     inTemperature = 300.; // temperature receiver has some sensible value
+//    lambda = 0.98;
 }
 
 
@@ -191,7 +192,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
 
 
 template <typename GeometryType>
-const DataVector<const double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
+const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
 {
     this->initCalculation(); // This must be called before any calculation!
 
@@ -201,11 +202,17 @@ const DataVector<const double> FermiGainSolver<GeometryType>::getGain(const Mesh
 
     for (int act=0; act<regions.size(); act++)
     {
+        writelog(LOG_DEBUG, "Po for I (204), act = %1%", act);
         for (int i=0; i<dst_mesh.size(); i++)
         {
-            setParameters(wavelength, TOnMesh[i], nOnMesh[i], regions[act]);
-            gainOnMesh[i] = gainModule.Get_gain_at(wavelength);
-            writelog(LOG_DEBUG, "point = %1%", "gain = %2%", dst_mesh[i], gainOnMesh[i]);
+            if (!isnan(nOnMesh[i]))
+            {
+//                writelog(LOG_DEBUG, "Po for II (207), i = %1%", i);
+                setParameters(wavelength, TOnMesh[i], nOnMesh[i], regions[act]);
+//                writelog(LOG_DEBUG, "Po setParameters");
+                gainOnMesh[i] = gainModule.Get_gain_at(wavelength);
+//                writelog(LOG_DEBUG, "point = %1%, gain = %2%", dst_mesh[i], gainOnMesh[i]);
+            }
         }
     }
 
@@ -266,19 +273,79 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
     gainModule.Set_light_hole_mass_in_barrier(Bar_material->Mlh(T, 'G').c11);
 //    gainModule.Set_barrier_width(15);
 
-    gainModule.Set_well_width(determineBoxWidth(QWBox));
-    gainModule.Set_waveguide_width(determineBoxWidth(BarBox));
+    gainModule.Set_well_width(determineBoxWidth(QWBox)*1e+4);
+    gainModule.Set_waveguide_width(determineBoxWidth(BarBox)*1e+4);
 
     gainModule.Set_split_off(QW_material->Dso(T));
     gainModule.Set_bandgap(QW_material->Eg(T, 'G'));
     gainModule.Set_conduction_depth(QW_material->CBO(T, 'G'));
-    gainModule.Set_valence_depth(QW_material->CBO(T, 'G'));
+    gainModule.Set_valence_depth(QW_material->VBO(T));
 
     gainModule.Set_cond_waveguide_depth(0.1);
     gainModule.Set_vale_waveguide_depth(0.1);
 
     gainModule.Set_lifetime(0.5);
-    gainModule.Set_momentum_matrix_element(10.0);
+    gainModule.Set_momentum_matrix_element(8.0);
+
+
+    std::cout<<gainModule.Get_temperature()<<std::endl;
+    std::cout<<gainModule.Get_koncentr()<<std::endl;
+
+    std::cout<<gainModule.Get_refr_index()<<std::endl;
+
+    std::cout<<gainModule.Get_electron_mass_in_plain()<<std::endl;
+    std::cout<<gainModule.Get_electron_mass_transverse()<<std::endl;
+    std::cout<<gainModule.Get_heavy_hole_mass_in_plain()<<std::endl;
+    std::cout<<gainModule.Get_heavy_hole_mass_transverse()<<std::endl;
+    std::cout<<gainModule.Get_light_hole_mass_in_plain()<<std::endl;
+    std::cout<<gainModule.Get_light_hole_mass_transverse()<<std::endl;
+
+    std::cout<<gainModule.Get_electron_mass_in_barrier()<<std::endl;
+    std::cout<<gainModule.Get_heavy_hole_mass_in_barrier()<<std::endl;
+    std::cout<<gainModule.Get_light_hole_mass_in_barrier()<<std::endl;
+//    gainModule.Set_barrier_width(15);
+
+    std::cout<<gainModule.Get_well_width()<<std::endl;
+    std::cout<<gainModule.Get_waveguide_width()<<std::endl;
+
+    std::cout<<gainModule.Get_split_off()<<std::endl;
+    std::cout<<gainModule.Get_bandgap()<<std::endl;
+    std::cout<<gainModule.Get_conduction_depth()<<std::endl;
+    std::cout<<gainModule.Get_valence_depth()<<std::endl;
+
+    std::cout<<gainModule.Get_cond_waveguide_depth()<<std::endl;
+    std::cout<<gainModule.Get_vale_waveguide_depth()<<std::endl;
+
+    std::cout<<gainModule.Get_lifetime()<<std::endl;
+    std::cout<<gainModule.Get_momentum_matrix_element()<<std::endl;
+
+//    std::cout<<"\nPoziomy:\n";
+//    int nr=0;
+//    double poziom;
+//    do
+//    {
+//        poziom = gainModule.Get_electron_level_depth(nr);
+//        std::cout<<poziom<<"\n";
+//        nr++;
+//    }
+//    while(poziom>0);
+//    nr=0;
+//    do
+//    {
+//        poziom = gainModule.Get_heavy_hole_level_depth(nr);
+//        std::cout<<poziom<<"\n";
+//        nr++;
+//    }
+//    while(poziom>0);
+//    nr=0;
+//    do
+//    {
+//        poziom = gainModule.Get_light_hole_level_depth(nr);
+//        std::cout<<poziom<<"\n";
+//        nr++;
+//    }
+//    while(poziom>0);
+//    std::cout<<"\nqFlc = "<<gainModule.Get_qFlc()<<"\nqFlv = "<<gainModule.Get_qFlv()<<std::flush;
 //    gainModule.Set_momentum_matrix_element(gainModule.element());
 
 //    gainModule.Set_first_point(1.19);

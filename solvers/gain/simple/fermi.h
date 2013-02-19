@@ -108,6 +108,10 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// External gain module (Michal Wasiak)
     QW::gain gainModule;
 
+//    double lambda_start;
+//    double lambda_stop;
+//    double lambda;
+
     void setParameters(double wavelength, double T, double n, ActiveRegionInfo active);
 
     /// Initialize the solver
@@ -138,7 +142,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
      * \param wavelenght wavelenght to compute gain for
      * \return gain distribution
      */
-    const DataVector<const double> getGain(const MeshD<2>& dst_mesh, double wavelenght, InterpolationMethod=DEFAULT_INTERPOLATION);
+    const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=DEFAULT_INTERPOLATION);
 
 };
 
