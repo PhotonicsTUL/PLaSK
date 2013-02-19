@@ -251,14 +251,15 @@ bool MultiStackContainer<dim>::reduceHeight(double& height) const {
     return true;
 }
 
-template <int dim>
+//TODO good but unused
+/*template <int dim>
 bool MultiStackContainer<dim>::intersects(const Box& area) const {
     const double minusZeroBasedStackHeight = stackHeights.front() - stackHeights.back();
     for (unsigned r = 0; r < repeat_count; ++r)
         if (UpperClass::intersects(area.translatedUp(minusZeroBasedStackHeight*r)))
             return true;
     return false;
-}
+}*/
 
 template <int dim>
 void MultiStackContainer<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {

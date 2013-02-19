@@ -7,9 +7,10 @@ bool Revolution::includes(const GeometryObjectD< 3 >::DVec& p) const {
     return getChild()->includes(childVec(p));
 }
 
-bool Revolution::intersects(const Box& area) const {
+
+/*bool Revolution::intersects(const Box& area) const {
     return getChild()->intersects(childBox(area));
-}
+}*/
 
 Revolution::Box Revolution::getBoundingBox() const {
     return parentBox(getChild()->getBoundingBox());
@@ -47,11 +48,11 @@ GeometryObject::Subtree Revolution::getPathsAt(const DVec& point, bool all) cons
 //         dest.emplace_back(new Revolution(const_pointer_cast<GeometryObjectD<2>>(c)));
 // }
 
-Box2D Revolution::childBox(const plask::Box3D& r) {
+/*Box2D Revolution::childBox(const plask::Box3D& r) {
     Box2D result(childVec(r.lower), childVec(r.upper));
     result.fix();
     return result;
-}
+}*/ //TODO bugy
 
 Box3D Revolution::parentBox(const ChildBox& r) {
     return Box3D(

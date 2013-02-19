@@ -45,6 +45,9 @@ inline constexpr auto operator*(const OtherT& scale, const Vec<dim,T>& v) -> dec
 template <int dim, typename T>
 inline double abs(const Vec<dim,T>& v) { return sqrt(abs2<dim,T>(v)); }
 
+template <>
+inline double abs<2, double>(const Vec<2,double>& v) { return std::hypot(v.c0, v.c1); }
+
 namespace details {
 
     //construct vector in dim space
@@ -71,6 +74,24 @@ namespace details {
 template <int dst_dim, typename T, int src_dim>
 inline Vec<dst_dim, T> vec(const Vec<src_dim, T>& src) {
     return details::VecDimConverter<dst_dim, T>::get(src);
+}
+
+/**
+ * Rotate @p v over up axis to lie on lon-tran plane.
+ * @param r vector in 3D space
+ * @return vector in 2D space, after rotation, with tran()>=0 and vert()==v.vert()
+ */
+inline Vec<2, double> rotateToLonTranAbs(const Vec<3, double>& v) {
+    return vec(std::hypot(v.lon(), v.tran()), v.vert());
+}
+
+/**
+ * Rotate @p v over up axis to lie on lon-tran plane.
+ * @param r vector in 3D space
+ * @return vector in 2D space, after rotation, with sign of tran() same as v.tran() and vert()==v.vert()
+ */
+inline Vec<2, double> rotateToLonTranSgn(const Vec<3, double>& v) {
+    return vec(std::copysign(std::hypot(v.lon(), v.tran()), v.tran()), v.vert());
 }
 
 }

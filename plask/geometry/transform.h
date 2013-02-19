@@ -261,9 +261,10 @@ struct Translation: public GeometryObjectTransform<dim> {
         return getChild()->includes(p-translation);
     }
 
-    virtual bool intersects(const Box& area) const {
+    //TODO to use (impl. is good) or remove
+    /*virtual bool intersects(const Box& area) const {
         return getChild()->intersects(area.translated(-translation));
-    }
+    }*/
 
     using GeometryObjectTransform<dim>::getPathsTo;
 

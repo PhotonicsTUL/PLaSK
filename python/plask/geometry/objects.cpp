@@ -189,8 +189,8 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
         .def("includes", &MethodsD<dim>::includes, GeometryObjectD_vector_args<dim>::args(),
              "Return True if the geometry object includes a point (in local coordinates)")
 
-        .def("intersects", &GeometryObjectD<dim>::intersects, (py::arg("area")),
-             "Return True if the geometry object has common points (in local coordinates) with an area")
+        /*.def("intersects", &GeometryObjectD<dim>::intersects, (py::arg("area")),
+             "Return True if the geometry object has common points (in local coordinates) with an area")*/  //TODO unused now, to uncomment ot remove
 
         .def("get_material", &GeometryObjectD<dim>::getMaterial, (py::arg("point")),
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")

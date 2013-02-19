@@ -112,10 +112,11 @@ public:
         return false;
     }
 
-    virtual bool intersects(const Box& area) const {
+    //TODO to use (impl. is good) or remove
+    /*virtual bool intersects(const Box& area) const {
         for (auto child: children) if (child->intersects(area)) return true;
         return false;
-    }
+    }*/
 
     virtual Box getBoundingBox() const;
 

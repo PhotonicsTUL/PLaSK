@@ -6,7 +6,7 @@ namespace plask {
 //initialization common for all leafs
 template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
-    leaf.material = reader.getMaterial(reader.source.requireAttribute("material"));
+    leaf.material = reader.requireMaterial();
     //XML::requireTagEndOrEmptyTag(reader.source, reader.source.getNodeName());
     reader.source.requireTagEnd();
 }
@@ -22,7 +22,7 @@ template <>
 void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr(axes.getNameForTran(), size.tran())
                     .attr(axes.getNameForVert(), size.vert())
-                    .attr("material", material->str());
+                    .attr(GeometryReader::XML_MATERIAL_ATTR, material->str());
 }
 
 template <>
@@ -30,7 +30,7 @@ void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames
     dest_xml_object.attr(axes.getNameForLong(), size.lon())
                     .attr(axes.getNameForTran(), size.tran())
                     .attr(axes.getNameForVert(), size.vert())
-                    .attr("material", material->str());
+                    .attr(GeometryReader::XML_MATERIAL_ATTR, material->str());
 }
 
 template struct Block<2>;

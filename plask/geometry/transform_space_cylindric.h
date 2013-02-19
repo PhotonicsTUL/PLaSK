@@ -24,7 +24,8 @@ struct Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     virtual bool includes(const DVec& p) const;
 
-    virtual bool intersects(const Box& area) const;
+    //TODO good but unused
+    //virtual bool intersects(const Box& area) const;
 
     virtual Box getBoundingBox() const;
 
@@ -48,15 +49,15 @@ private:
      * @return vector in child space
      */
     static Vec<2, double> childVec(const Vec<3, double>& v) {
-        return vec(sqrt(v.lon()*v.lon() + v.tran()*v.tran()), v.vert());
+        return rotateToLonTranAbs(v);
     }
 
-    /**
+    /*
      * Convert rectangle @p r to space of child.
      * @param r cuboid in parent (this) space
      * @return rectangle in child space
      */
-    static ChildBox childBox(const Box& r);
+    //static ChildBox childBox(const Box& r);
 
     /**
      * Convert rectangle @p r to space of parent (this).

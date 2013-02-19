@@ -38,7 +38,8 @@ class Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     virtual bool includes(const DVec& p) const;
 
-    virtual bool intersects(const Box& area) const;
+    //TODO good but unused
+    //virtual bool intersects(const Box& area) const;
 
     virtual Box getBoundingBox() const;
 

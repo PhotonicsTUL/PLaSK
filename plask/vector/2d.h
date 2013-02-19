@@ -280,41 +280,42 @@ template <typename T>
 inline constexpr Vec<2,T> conj(const Vec<2,T>& v) { return Vec<2,T>(conj(v.c0), conj(v.c1)); }
 
 /**
- * Compute dot product of two vectors @p v1 and @p v2
+ * Compute dot product of two vectors @p v1 and @p v2.
  * @param v1 first vector
  * @param v2 second vector
  * @return dot product v1·v2
  */
 template <typename T1, typename T2>
 inline auto dot(const Vec<2,T1>& v1, const Vec<2,T2>& v2) -> decltype(v1.c0*v2.c0) {
-    return v1.c0 * v2.c0 + v1.c1 * v2.c1;
+    return fma(v1.c0, v2.c0, v1.c1 * v2.c1);
 }
 
 /**
- * Compute dot product of two vectors @p v1 and @p v2
+ * Compute dot product of two vectors @p v1 and @p v2.
  * @param v1 first vector
  * @param v2 second vector
  * @return dot product v1·v2
  */
 template <>
 inline auto dot(const Vec<2,double>& v1, const Vec<2,complex<double>>& v2) -> decltype(v1.c0*v2.c0) {
-    return v1.c0 * conj(v2.c0) + v1.c1 * conj(v2.c1);
+    return fma(v1.c0, conj(v2.c0), v1.c1 * conj(v2.c1));
 }
 
 /**
- * Compute dot product of two vectors @p v1 and @p v2
+ * Compute dot product of two vectors @p v1 and @p v2.
  * @param v1 first vector
  * @param v2 second vector
  * @return dot product v1·v2
  */
 template <>
 inline auto dot(const Vec<2,complex<double>>& v1, const Vec<2,complex<double>>& v2) -> decltype(v1.c0*v2.c0) {
-    return v1.c0 * conj(v2.c0) + v1.c1 * conj(v2.c1);
+    return fma(v1.c0, conj(v2.c0), v1.c1 * conj(v2.c1));
 }
 
 /**
  * Helper to create 2D vector.
- * @param c0__tran, c1__up vector coordinates.
+ * @param c0__tran, c1__up vector coordinates
+ * @return constructed vector
  */
 template <typename T>
 inline constexpr Vec<2,T> vec(const T c0__tran, const T c1__up) {

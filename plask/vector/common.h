@@ -43,6 +43,17 @@ namespace axis {
     const std::size_t up_index = 2;
 }   // axis
 
+/*
+ * Rotate @p r over up axis to lie on lon-tran plane.
+ * @param r cuboid
+ * @return rectangle
+ */
+/**static Block2D rotateToLonTran(const Block3D& r) {
+    Box2D result(childVec(r.lower), childVec(r.upper));
+    result.fix();
+    return result;
+}*/
+
 }   // namespace plask
 
 #endif // PLASK__VECTOR__COMMON_H

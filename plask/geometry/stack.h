@@ -525,7 +525,8 @@ class MultiStackContainer: public StackContainer<dim> {
         return UpperClass::getChildForHeight(height);
     }*/
 
-    virtual bool intersects(const Box& area) const;
+    //TODO good but unused
+    //virtual bool intersects(const Box& area) const;
 
     virtual Box getBoundingBox() const {
         Box result = UpperClass::getBoundingBox();

@@ -99,6 +99,29 @@ const bool in_range(const T& v, const T& beg, const T& end) {
     return beg <= v && v < end;
 }
 
+/**
+ * Wrapper over std::fma witch works for all types.
+ * For float, double and long double it calls std::fma, and for rest it just calculate to_mult_1 * to_mult_2 + to_sum.
+ * @param to_mult_1, to_mult_2, to_sum
+ * @return result of to_mult_1 * to_mult_2 + to_sum, typically with better precision
+ */
+template <typename T1, typename T2, typename T3>
+auto inline fma(T1 to_mult_1, T2 to_mult_2, T3 to_sum) -> decltype(to_mult_1*to_mult_2+to_sum) {
+    return to_mult_1 * to_mult_2 + to_sum;
+}
+
+inline float fma(float to_mult_1, float to_mult_2, float to_sum) {
+    return std::fma(to_mult_1, to_mult_2, to_sum);
+}
+
+inline double fma(double to_mult_1, double to_mult_2, double to_sum) {
+    return std::fma(to_mult_1, to_mult_2, to_sum);
+}
+
+inline long double fma(long double to_mult_1, long double to_mult_2, long double to_sum) {
+    return std::fma(to_mult_1, to_mult_2, to_sum);
+}
+
 } // namespace plask
 
 #endif // PLASK__NUMBERS_H

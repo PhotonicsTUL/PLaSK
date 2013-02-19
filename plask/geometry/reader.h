@@ -27,6 +27,7 @@ class GeometryReader {
 
     static constexpr const char* XML_NAME_ATTR = "name";    ///< name of object's/geometry's name attribute in XML
     static constexpr const char* XML_AXES_ATTR = "axes";    ///< name of axes attribute in XML
+    static constexpr const char* XML_MATERIAL_ATTR = "material";    ///< name of material attribute in XML
 
     /**
      * Create new geometry object with parameters reading from XML source.
@@ -136,6 +137,16 @@ class GeometryReader {
      */
     shared_ptr<Material> getMaterial(const std::string& material_full_name) const {
         return materialSource(material_full_name);
+    }
+
+    /**
+     * Read material from XML source (from attribute with name XML_MATERIAL_ATTR).
+     *
+     * Throw exception if there is no XML_MATERIAL_ATTR attribute or can't get material (no material with given name, etc.).
+     * @return material which was read
+     */
+    shared_ptr<Material> requireMaterial() const {
+        return getMaterial(source.requireAttribute(XML_MATERIAL_ATTR));
     }
 
     /**

@@ -969,12 +969,13 @@ struct GeometryObjectD: public GeometryObject {
      */
     virtual bool includes(const DVec& point) const = 0;
 
-    /**
+    /*
      * Check if this geometry object includes some point from given @a area.
      * @param area rectangular area
      * @return true only if this geometry includes some points from @a area
      */
-    virtual bool intersects(const Box& area) const = 0;
+    //TODO unused - to use and implement in subclasses (most have impl.) or to remove
+    //virtual bool intersects(const Box& area) const = 0;
 
     /**
      * Calculate minimal rectangle which includes all points of geometry object.

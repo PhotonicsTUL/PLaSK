@@ -15,9 +15,9 @@ bool Extrusion::includes(const DVec& p) const {
     return canBeInside(p) && getChild()->includes(childVec(p));
 }
 
-bool Extrusion::intersects(const Box& area) const {
+/*bool Extrusion::intersects(const Box& area) const {
     return canIntersect(area) && getChild()->intersects(childBox(area));
-}
+}*/
 
 Extrusion::Box Extrusion::getBoundingBox() const {
     return parentBox(getChild()->getBoundingBox());
