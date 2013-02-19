@@ -10,11 +10,9 @@ namespace plask {
  *
  * Center of cylinders' base lies in point (0.0, 0.0, 0.0)
  */
-class Cylinder: public GeometryObjectLeaf<3> {
+struct Cylinder: public GeometryObjectLeaf<3> {
 
     double radius, height;
-
-public:
 
     static constexpr const char* NAME = "cylinder";
 
@@ -29,6 +27,35 @@ public:
     //virtual bool intersects(const Box& area) const;
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+
+    /**
+     * Set radius and inform observers about changes.
+     * @param new_radius new radius to set
+     */
+    void setRadius(double new_radius) {
+        this->radius = new_radius;
+        this->fireChanged(GeometryObject::Event::RESIZE);
+    }
+
+    /**
+     * Set height and inform observers about changes.
+     * @param new_height new height to set
+     */
+    void setHeight(double new_height) {
+        this->height = new_height;
+        this->fireChanged(GeometryObject::Event::RESIZE);
+    }
+
+    /**
+     * Set radius and height and inform observers about changes.
+     * @param radius new radius to set
+     * @param height new height to set
+     */
+    void resize(double radius, double height) {
+        this->radius = radius;
+        this->height = height;
+        this->fireChanged(GeometryObject::Event::RESIZE);
+    }
 
 };
 

@@ -234,6 +234,7 @@ length_attr =
 	## length, size of object in 3rd dimension
 	attribute length { xsd:double }
 
+#TODO change to aligners in many places
 anyAxes_double_attr =
 	## size/translation in given direction
 	attribute (x|y|z|p|r|lon|tran|up) { xsd:double }
@@ -285,6 +286,16 @@ block_as_3d =
 	## cuboid object filled with one material
 	element (block|block3d|cuboid) { block.attlist }
 
+# ====== cylinder ======
+
+cylinder =
+	## Cylinders with center of base at point (0.0, 0.0, 0.0)
+	element(cylinder) { geom_elem_common.attlist, material_attr,
+		## height of cylinder
+		attribute (height) { xsd:double },
+		## radius of cylinder base
+		attribute (radius) { xsd:double }
+	}
 
 # ====== translation ======
 
@@ -373,6 +384,7 @@ element (shelf|shelf2d) {
     )
 }
 
+#TODO align container
 
 # ====== copy ======
 
@@ -419,7 +431,7 @@ geometry_object2d =
 
 geometry_object3d =
 	## geometry element in 3D space
-	(block_as_3d|translation_as_3d|container_as_3d|stack_as_3d|extrusion|revolution|copy|ref)
+	(block_as_3d|cylinder|translation_as_3d|container_as_3d|stack_as_3d|extrusion|revolution|copy|ref)
 
 geometry_object =
 	## any geometry element (often space must be provided as suffix)
