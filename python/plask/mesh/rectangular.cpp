@@ -155,8 +155,10 @@ static void RegularMesh1D_setLast(RegularMesh1D& self, double last) {
 }
 
 
-
-
+template <typename To, typename From=To>
+static shared_ptr<To> Mesh__init__(const From& from) {
+    return make_shared<To>(from);
+}
 
 
 template <typename MeshT>
@@ -450,6 +452,8 @@ void register_mesh_rectangular()
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RectilinearMesh2D>, py::default_call_policies(), (py::arg("ordering")="10")))
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RectilinearMesh2D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="10")))
         .def("__init__", py::make_constructor(&RectilinearMesh2D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="10")))
+        .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh2D, RegularMesh2D>, py::default_call_policies(), py::arg("src")))
+        .def("copy", &Mesh__init__<RectilinearMesh2D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RectilinearMesh2D::axis0, "The first (transverse) axis of the mesh")
         .def_readwrite("axis1", &RectilinearMesh2D::axis1, "The second (vertical) axis of the mesh")
         .add_property("major_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh2D::*)())&RectilinearMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
@@ -501,6 +505,8 @@ void register_mesh_rectangular()
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RectilinearMesh3D>, py::default_call_policies(), (py::arg("ordering")="210")))
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="210")))
         .def("__init__", py::make_constructor(&RectilinearMesh3D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="210")))
+        .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh3D, RegularMesh3D>, py::default_call_policies(), py::arg("src")))
+        .def("copy", &Mesh__init__<RectilinearMesh3D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RectilinearMesh3D::axis0, "The first (longitudinal) axis of the mesh")
         .def_readwrite("axis1", &RectilinearMesh3D::axis1, "The second (transverse) axis of the mesh")
         .def_readwrite("axis2", &RectilinearMesh3D::axis2, "The third (vertical) axis of the mesh")
@@ -556,6 +562,7 @@ void register_mesh_rectangular()
         ); regular2d
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RegularMesh2D>, py::default_call_policies(), (py::arg("ordering")="10")))
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="10")))
+        .def("copy", &Mesh__init__<RegularMesh2D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RegularMesh2D::axis0, "The first (transverse) axis of the mesh")
         .def_readwrite("axis1", &RegularMesh2D::axis1, "The second (vertical) axis of the mesh")
         .add_property("major_axis", py::make_function((RegularMesh1D&(RegularMesh2D::*)())&RegularMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
@@ -606,6 +613,7 @@ void register_mesh_rectangular()
         ); regular3d
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RegularMesh3D>, py::default_call_policies(), (py::arg("ordering")="210")))
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="210")))
+        .def("copy", &Mesh__init__<RegularMesh3D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RegularMesh3D::axis0, "The first (longitudinal) axis of the mesh")
         .def_readwrite("axis1", &RegularMesh3D::axis1, "The second (transverse) axis of the mesh")
         .def_readwrite("axis2", &RegularMesh3D::axis2, "The third (vertical) axis of the mesh")
