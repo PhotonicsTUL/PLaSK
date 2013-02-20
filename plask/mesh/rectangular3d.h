@@ -274,15 +274,22 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     }
 
     /// Copy constructor
-    RectangularMesh(const RectangularMesh& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {
+    RectangularMesh(const RectangularMesh<3,Mesh1D>& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {
         axis0.owner = this; axis1.owner = this; axis2.owner = this;
         setIterationOrder(src.getIterationOrder());
     }
 
     /// Move constructor
-    RectangularMesh(RectangularMesh&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), axis2(std::move(src.axis2)), elements(this) {
+    RectangularMesh(RectangularMesh<3,Mesh1D>&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), axis2(std::move(src.axis2)), elements(this) {
         axis0.owner = this; axis1.owner = this; axis2.owner = this;
         setIterationOrder(src.getIterationOrder());
+    }
+
+    /// Construct from different mesh type
+    template <typename OtherMesh1D>
+    RectangularMesh(const RectangularMesh<3,OtherMesh1D>& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {
+        axis0.owner = this; axis1.owner = this; axis2.owner = this;
+        setIterationOrder(IterationOrder(src.getIterationOrder()));
     }
 
     /**

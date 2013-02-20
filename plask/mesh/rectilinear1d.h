@@ -13,6 +13,7 @@ This file includes rectilinear mesh for 1d space.
 #include "../vec.h"
 #include "../utils/iterators.h"
 #include "../utils/interpolation.h"
+#include "regular1d.h"
 
 namespace plask {
 
@@ -96,6 +97,13 @@ public:
     /// Move constructor. It does not move owner.
     RectilinearMesh1D(RectilinearMesh1D&& src): points(std::move(src.points)), owner(nullptr) {}
 
+    /// Copy constructor from RegularMesh1D
+    RectilinearMesh1D(const RegularMesh1D& src): owner(nullptr) {
+        points.reserve(src.size());
+        for (auto i: src) points.push_back(i);
+        std::sort(points.begin(), points.end());
+    }
+
     /**
      * Construct mesh with given points.
      * It use algorithm which has logarithmic time complexity.
@@ -138,6 +146,22 @@ public:
         }
         return *this;
     }
+
+    /// Assign a new mesh. This operation preserves the \a owner.
+    RectilinearMesh1D& operator=(const RegularMesh1D& src) {
+        bool resized = size() != src.size();
+        points.clear();
+        points.reserve(src.size());
+        for (auto i: src)
+            points.push_back(i);
+        std::sort(points.begin(), points.end());
+        if (owner) {
+            if (resized) owner->fireResized();
+            else owner->fireChanged();
+        }
+        return *this;
+    }
+
 
     /**
      * Compares meshes

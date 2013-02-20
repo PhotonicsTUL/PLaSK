@@ -545,6 +545,7 @@ void register_mesh_rectangular()
         .def("__iter__", py::range(&RegularMesh1D::begin, &RegularMesh1D::end))
     ;
     detail::Regular1D_from_Tuple();
+    py::implicitly_convertible<RegularMesh1D, RectilinearMesh1D>();
 
     py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>> regular2d("Regular2D",
         "Two-dimensional mesh\n\n"
@@ -593,6 +594,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
     ;
     ExportBoundary<RegularMesh2D> { regular2d };
+    py::implicitly_convertible<RegularMesh2D, RectilinearMesh2D>();
 
     py::class_<RegularMesh3D, shared_ptr<RegularMesh3D>, py::bases<MeshD<3>>, boost::noncopyable>regular3d("Regular3D",
         "Two-dimensional mesh\n\n"
@@ -627,6 +629,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
     ;
     ExportBoundary<RegularMesh3D> { regular3d };
+    py::implicitly_convertible<RegularMesh3D, RectilinearMesh3D>();
 
     ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");
     {
