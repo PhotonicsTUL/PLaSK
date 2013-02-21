@@ -98,10 +98,11 @@ public:
     RectilinearMesh1D(RectilinearMesh1D&& src): points(std::move(src.points)), owner(nullptr) {}
 
     /// Copy constructor from RegularMesh1D
-    RectilinearMesh1D(const RegularMesh1D& src): owner(nullptr) {
-        points.reserve(src.size());
-        for (auto i: src) points.push_back(i);
-        std::sort(points.begin(), points.end());
+    RectilinearMesh1D(const RegularMesh1D& src): points(src.size()), owner(nullptr) {
+        if (src.step() < 0.0)
+            std::reverse_copy(src.begin(), src.end(), points.begin());
+        else
+            std::copy(src.begin(), src.end(), points.begin());
     }
 
     /**
