@@ -20,7 +20,7 @@ Aligner<Primitive<3>::DIRECTION_TRAN> transAlignerFromDictionary(Dictionary dic,
     tryGetAligner<Primitive<3>::DIRECTION_TRAN, left>(result, dic(LEFT::value));
     tryGetAligner<Primitive<3>::DIRECTION_TRAN, right>(result, dic(RIGHT::value));
     tryGetAligner<Primitive<3>::DIRECTION_TRAN, tranCenter>(result, dic(TRAN_CENTER::value));
-    tryGetAligner<Primitive<3>::DIRECTION_TRAN, tranCenter>(result, dic("trancenter"));
+    //tryGetAligner<Primitive<3>::DIRECTION_TRAN, tranCenter>(result, dic("trancenter"));
     if (axis_name != "tran") tryGetAligner<Primitive<3>::DIRECTION_TRAN, tranCenter>(result, dic(axis_name + "center"));
 //     tryGetAligner<TranCenter>(result, dic(axis_name + "-center"));
     tryGetAligner<Primitive<3>::DIRECTION_TRAN, tran>(result, dic(axis_name));
@@ -32,7 +32,7 @@ Aligner<Primitive<3>::DIRECTION_LONG> lonAlignerFromDictionary(Dictionary dic, c
     tryGetAligner<Primitive<3>::DIRECTION_LONG, front>(result, dic(FRONT::value));
     tryGetAligner<Primitive<3>::DIRECTION_LONG, back>(result, dic(BACK::value));
     tryGetAligner<Primitive<3>::DIRECTION_LONG, lonCenter>(result, dic(LON_CENTER::value));
-    tryGetAligner<Primitive<3>::DIRECTION_LONG, lonCenter>(result, dic("longcenter"));
+    //tryGetAligner<Primitive<3>::DIRECTION_LONG, lonCenter>(result, dic("longcenter"));
     if (axis_name != "long") tryGetAligner<Primitive<3>::DIRECTION_LONG, lonCenter>(result, dic(axis_name + "center"));
 //     tryGetAligner<LongCenter>(result, dic(axis_name + "-center"));
     tryGetAligner<Primitive<3>::DIRECTION_LONG, lon>(result, dic(axis_name));
@@ -44,7 +44,7 @@ Aligner<Primitive<3>::DIRECTION_VERT> vertAlignerFromDictionary(Dictionary dic, 
     tryGetAligner<Primitive<3>::DIRECTION_VERT, top>(result, dic(TOP::value));
     tryGetAligner<Primitive<3>::DIRECTION_VERT, bottom>(result, dic(BOTTOM::value));
     tryGetAligner<Primitive<3>::DIRECTION_VERT, vertCenter>(result, dic(VERT_CENTER::value));
-    tryGetAligner<Primitive<3>::DIRECTION_VERT, vertCenter>(result, dic("vertcenter"));
+    //tryGetAligner<Primitive<3>::DIRECTION_VERT, vertCenter>(result, dic("vertcenter"));
     if (axis_name != "vert") tryGetAligner<Primitive<3>::DIRECTION_VERT, vertCenter>(result, dic(axis_name + "center"));
 //     tryGetAligner<VertCenter>(result, dic(axis_name + "-center"));
     tryGetAligner<Primitive<3>::DIRECTION_VERT, vert>(result, dic(axis_name));

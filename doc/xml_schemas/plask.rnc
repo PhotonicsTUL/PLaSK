@@ -234,18 +234,24 @@ length_attr =
 	## length, size of object in 3rd dimension
 	attribute length { xsd:double }
 
-#TODO change to aligners in many places
 anyAxes_double_attr =
 	## size/translation in given direction
 	attribute (x|y|z|p|r|lon|tran|up) { xsd:double }
 
-tranAxes_text_attr =
-	## size/translation in tran direction
-	attribute (y|x|r|tran) { text }
+aligner_tran_attr =
+	## location in tran. direction
+	attribute (left|right|trancenter|rcenter|ycenter|xcenter|tran|r|y|x) { xsd:double }
 
-lonTranAxes_text_attr =
-	## size/translation in lon or tran direction
-	attribute (y|x|r|tran|z|p|lon) { text }
+aligner_long_attr =
+	## location in long. direction
+	attribute (front|back|longcenter|pcenter|xcenter|zcenter|long|p|x|z) { xsd:double }
+
+aligner_vert_attr =
+	## location in vert. direction
+	attribute (top|bottom|vertcenter|zcenter|ycenter|vert|z|y) { xsd:double }
+
+aligner_any_attr =
+	aligner_tran_attr|aligner_long_attr|aligner_vert_attr
 
 material_attr =
 	## name (and composition) of material, e.g. "air", "AlN", "Al(0.2)GaN", "Al(0.2)GaN:Mg=7e18"
@@ -324,14 +330,23 @@ translation_as_3d =
 # ====== container (with translations) ======
 
 container2d.content = geom_elem_common.attlist,
-    (   element child { geom_child_common.attlist, anyAxes_double_attr*, geometry_object2d } | geometry_object2d   )*
+    (   element child { geom_child_common.attlist, aligner_any_attr*, geometry_object2d } | geometry_object2d   )*
 container2d = element (container2d) { container2d.content }
 container_as_2d = element (container|container2d) { container2d.content }
 container3d.content = geom_elem_common.attlist,
-    (   element child { geom_child_common.attlist, anyAxes_double_attr*, geometry_object3d } | geometry_object3d   )*
+    (   element child { geom_child_common.attlist, aligner_any_attr*, geometry_object3d } | geometry_object3d   )*
 container3d = element (container3d) { container3d.content }
 container_as_3d = element (container|container3d) { container3d.content }
 
+# ====== align container ======
+align_container2d.content = geom_elem_common.attlist, (aligner_tran_attr|aligner_vert_attr),
+    (   element child { geom_child_common.attlist, (aligner_tran_attr|aligner_vert_attr)?, geometry_object2d } | geometry_object2d   )*
+align_container2d = element (align2d) { align_container2d.content }
+align_container_as_2d = element (align|align2d) { align_container2d.content }
+align_container3d.content = geom_elem_common.attlist, aligner_any_attr,
+    (   element child { geom_child_common.attlist, aligner_any_attr*, geometry_object2d } | geometry_object3d   )*
+align_container3d = element (align3d) { align_container3d.content }
+align_container_as_3d = element (align|align3d) { align_container3d.content }
 
 # ====== stacks ======
 
@@ -347,8 +362,8 @@ zero =
     ## set zero height to be in this place
     element zero { empty }
 
-stack2d.content = geom_stack_common.attlist, 
-	((  element child {geom_child_common.attlist, tranAxes_text_attr?, geometry_object2d} | geometry_object2d  )* & zero?)
+stack2d.content = geom_stack_common.attlist, aligner_tran_attr?, 
+	((  element child {geom_child_common.attlist, aligner_tran_attr?, geometry_object2d} | geometry_object2d  )* & zero?)
 
 stack2d =
 	## container which have children in stack/layers (2D)
@@ -357,8 +372,8 @@ stack2d =
 stack_as_2d =
 	## container which have children in stack/layers (2D)
 	element (stack|stack2d) { stack2d.content }
-stack3d.content = geom_stack_common.attlist,
- 	((  element child {geom_child_common.attlist, lonTranAxes_text_attr?, geometry_object3d} | geometry_object3d  )* & zero?)
+stack3d.content = geom_stack_common.attlist, aligner_tran_attr?, aligner_long_attr?,
+ 	((  element child {geom_child_common.attlist, aligner_tran_attr?, aligner_long_attr?, geometry_object3d} | geometry_object3d  )* & zero?)
 
 ## container which have children in stack/layers (3D)
 stack3d = element (stack3d) { stack3d.content }
@@ -427,15 +442,15 @@ element copy {
 
 geometry_object2d =
 	## geometry element in 2D space
-	(block_as_2d|translation_as_2d|container_as_2d|stack_as_2d|shelf|copy|ref)
+	(block_as_2d|translation_as_2d|container_as_2d|align_container_as_2d|stack_as_2d|shelf|copy|ref)
 
 geometry_object3d =
 	## geometry element in 3D space
-	(block_as_3d|cylinder|translation_as_3d|container_as_3d|stack_as_3d|extrusion|revolution|copy|ref)
+	(block_as_3d|cylinder|translation_as_3d|container_as_3d|align_container_as_3d|stack_as_3d|extrusion|revolution|copy|ref)
 
 geometry_object =
 	## any geometry element (often space must be provided as suffix)
-	(block2d|block3d|translation2d|translation3d|container2d|container3d|stack2d|stack3d|shelf|extrusion|revolution|copy|ref)
+	(block2d|block3d|translation2d|translation3d|container2d|container3d|align_container2d|align_container3d|stack2d|stack3d|shelf|extrusion|revolution|copy|ref)
 
 
 
