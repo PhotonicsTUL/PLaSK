@@ -27,6 +27,7 @@ BOOST_PYTHON_MODULE(diffusion)
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         RW_FIELD(mesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
+        solver.def_readwrite("absolute_accuracy", &__Class__::minor_concentration, "Required absolute minimal concentration accuracy");
         solver.def_readwrite("interpolation", &__Class__::interpolation_method, "Interpolation method used for injection current");
         solver.def_readwrite("maxrefines", &__Class__::max_mesh_changes, "Maximum number of allowed mesh refinements");
         solver.def_readwrite("maxiters", &__Class__::max_iterations, "Maximum number of allowed iterations before attempting to refine mesh");
@@ -48,6 +49,7 @@ BOOST_PYTHON_MODULE(diffusion)
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         RW_FIELD(mesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
+        solver.def_readwrite("absolute_accuracy", &__Class__::minor_concentration, "Required absolute minimal concentration accuracy");
         solver.def_readwrite("interpolation", &__Class__::interpolation_method, "Interpolation method used for injection current");
         solver.def_readwrite("maxrefines", &__Class__::max_mesh_changes, "Maximum number of allowed mesh refinements");
         solver.def_readwrite("maxiters", &__Class__::max_iterations, "Maximum number of allowed iterations before attempting to refine mesh");

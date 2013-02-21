@@ -23,6 +23,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         int max_mesh_changes;                  // maksymalna liczba zmian dr
         int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
         FemMethod fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
+        double minor_concentration;
 
         FiniteElementMethodDiffusion2DSolver<Geometry2DType>(const std::string& name=""):
             plask::SolverOver<Geometry2DType> (name),
@@ -52,7 +53,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         bool threshold_computation;
 
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
-        double minor_concentration;
+        int iterations;
 
         std::vector<Box2D> detected_QW;
 

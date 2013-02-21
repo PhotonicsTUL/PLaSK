@@ -83,7 +83,7 @@ namespace QW{
     ldouble Get_light_hole_level_depth(int);
     ldouble Get_light_hole_level_from_bottom(int);
     int Get_number_of_electron_levels();
-    int Get_number_of_heavy_hole_levels();    
+    int Get_number_of_heavy_hole_levels();
     int Get_number_of_light_hole_levels();
     void Set_electron_mass_in_plain(ldouble);
     ldouble Get_electron_mass_in_plain();
@@ -116,6 +116,9 @@ namespace QW{
     ldouble Find_max_gain();
     ldouble Find_max_gain_n(std::vector<std::vector<ldouble> > &, ldouble);
     ~gain();
+
+    // Marcin Gebski 21.02.2013
+    void runPrzygobl();
 
   private:
     static int Break;

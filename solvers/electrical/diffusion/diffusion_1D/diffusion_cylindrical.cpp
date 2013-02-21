@@ -46,6 +46,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     max_iterations = 20;
     global_QW_width = 0.0;
     minor_concentration = 5.0e+15;
+    iterations = 0;
 
     detected_QW = detectQuantumWells();
     z = getZQWCoordinate();
@@ -65,24 +66,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     this->initCalculation();
     determineQwWidth();
 
-    writelog(LOG_INFO, "Computing lateral carriers diffusion");
-//
-//    std::cerr << "z = " << z << "     initial_computation =  " << initial_computation << "\n";
-//    std::cerr << "threshold_computation = " << threshold_computation << "     global_QW_width =  " << global_QW_width << "\n";
-//    std::cerr << "max_mesh_change = " << max_mesh_change << "     max_iterations =  " << max_iterations << "\n";
-//    std::cerr << "fem_method = " << fem_method << "\n";
-
-    writelog(LOG_DEBUG, "QW position z = %1%, computation method: %2%", z, fem_method==FEM_LINEAR?"linear":"parabolic");
-
-    writelog(LOG_DEBUG, "max. mesh changes: %1%, max. iterations: %2%", max_mesh_changes, max_iterations);
-
-    writelog(LOG_DEBUG, "threshold computation: %1%", threshold_computation? "true" : "false");
-
-    writelog(LOG_DEBUG, "initial computation: %1%", initial_computation? "true" : "false");
-
-//    writelog(LOG_DEBUG, "QW position z = %1%, method: %6%, max. mesh changes: %2%, max. iterations: %3%%4%%5%",
-//             z, max_mesh_changes, max_iterations, threshold_computation? ", threshold" : "", initial_computation? ", initial" : "",
-//             fem_method==FEM_LINEAR?"linear":"parabolic");
+    this->writelog(LOG_INFO, "Computing lateral carriers diffusion using %1% FEM method", fem_method==FEM_LINEAR?"linear":"parabolic");
 
     if (mesh.size() % 2 == 0) mesh.reset(mesh.first(), mesh.last(), mesh.size()+1);
 
@@ -115,20 +99,20 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         }
         if (initial_computation)
         {
-            writelog(LOG_DETAIL, "Initial computation");
+            this->writelog(LOG_DETAIL, "Conducting initial computations");
             convergence = MatrixFEM();
             if (convergence) initial_computation = false;
         }
         if (threshold_computation)
         {
-            writelog(LOG_DETAIL, "Threshold computation");
+            this->writelog(LOG_DETAIL, "Conducting threshold computations");
             convergence = MatrixFEM();
             if (convergence) threshold_computation = false;
         }
     }
     while(initial_computation || threshold_computation);
 
-    /* calculation... */
+    this->writelog(LOG_DETAIL, "Converged after %1% mesh refinements and %2% computational loops", mesh_changes, iterations);
 
     outCarriersConcentration.fireChanged();
 }
@@ -137,23 +121,11 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
 {
 //    Computation of K*n" - E*n = -F
     bool _convergence;
-    int iterations = 0;
+    iterations = 0;
 
     // LAPACK factorization (dpbtrf) and equation solver (dpbtrs) info variables:
     int info_f = 0;
     int info_s = 0;
-
-    // linear FEM elements variables:
-
-//    double r1 = 0.0, r2 = 0.0;
-//    double k11e = 0, k12e = 0, k22e = 0;
-//    double p1e = 0, p2e = 0;
-
-    // parabolic FEM elements variables:
-
-//    double r3 = 0.0;
-//    double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
-//    double p3e = 0.0;
 
     double T = 0.0;
     double n0 = 0.0;
@@ -161,10 +133,6 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
     double A = 0.0;
     double B = 0.0;
     double C = 0.0;
-
-//    double K = 0.0;
-//    double E = 0.0;
-//    double F = 0.0;
 
     double L = 0.0;
     double R = 0.0;
@@ -197,6 +165,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
         {
             for (int i = 0; i < mesh.size(); i++)
             {
+
                 T = T_on_the_mesh[i];
 
                 A = this->QW_material->A(T);
@@ -220,15 +189,6 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
             }
             _convergence = true;
             n_present = X_vector.copy();
-
-            for (int i = 0; i< mesh.size(); i++)
-            {
-                std::cerr << "i = " << i << "\n";
-                std::cerr << "pow = " << X_vector[i] << "\n";
-                std::cerr << "sqrt = " << 4.0*pow(-B*B + 3.0*A*C,3.0) + pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*rightSide(i),2.0) << "\n";
-            }
-//                std::cerr << "rightSide(i) = " << rightSide(i) << "\n";
-//#           endif
         }
         else
         {
@@ -241,49 +201,6 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
 
             if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
             {
-//                for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
-//                {
-//
-//                    T = T_on_the_mesh[i+1];
-//                    n0 = n_previous[i+1];
-//
-//                    r1 = mesh[i]*1e-4;
-//                    r2 = mesh[i+1]*1e-4;
-//
-//                    double j1 = abs(j_on_the_mesh[i][1]*1e+3);
-//                    double j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
-//
-//                    K = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(T);
-//                    F = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(i, T, n0);
-//                    E = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(T, n0);
-//
-//                    K = 4*K/((r2-r1)*(r2-r1));
-//
-//                    k11e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r1-r2)/3);
-//                    k12e = M_PI*(r2-r1)/4*((-K+E)*(r1+r2) - E*(  r1+r2)/3);
-//                    k22e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r2-r1)/3);
-//
-//                    p1e  = M_PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
-//                    p2e  = M_PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
-//
-//
-//                    // } else {
-//                    // k11e =  K/(r2-r1) + E*(r2-r1)/3;
-//                    // k12e = -K/(r2-r1) + E*(r2-r1)/6;
-//                    // k22e =  K/(r2-r1) + E*(r2-r1)/3;
-//                    // p1e  =  F*(r2-r1)/2;
-//                    // p2e  =  F*(r2-r1)/2;
-//                    // }
-//
-//                    A_matrix[2*i + 1] += k11e;
-//                    A_matrix[2*i + 2] += k12e;
-//                    A_matrix[2*i + 3] += k22e;
-//
-//                    RHS_vector[i] += p1e;
-//                    RHS_vector[i+1] += p2e;
-//
-//                } // end loop over all elements
-
                 FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
                 lapack_n = lapack_ldb = (int)mesh.size();
@@ -298,48 +215,6 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
             }
             else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
             {
-//                for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
-//                {
-//                    T = T_on_the_mesh[2*i + 1];              // value in the middle node
-//                    n0 = n_previous[2*i + 1];                // value in the middle node
-//
-//                    r1 = mesh[2*i]*1e-4;
-//                    r3 = mesh[2*i + 2]*1e-4;
-//
-//                    K = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(T);
-//                    F = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(2*i + 1, T, n0);
-//                    E = FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(T, n0);
-//
-//
-//                    double Cnst = M_PI*(r3-r1)/30;
-//
-//                    k11e = Cnst*(10*K*(11*r1+3*r3)/((r3-r1)*(r3-r1)) + E*(7*r1+r3));
-//                    k12e = Cnst*(-40*K*(3*r1+r3)/((r3-r1)*(r3-r1)) + 4*E*r1);            // = k21e
-//                    k13e = Cnst*(10*K*(r1+r3)/((r3-r1)*(r3-r1)) - E*(r1+r3));            // = k31e
-//                    k22e = Cnst*(160*K*(r1+r3)/((r3-r1)*(r3-r1)) + 16*E*(r1+r3));
-//                    k23e = Cnst*(-40*K*(r1+3*r3)/((r3-r1)*(r3-r1)) + 4*E*r3);            // = k32e
-//                    k33e = Cnst*(10*K*(3*r1+11*r3)/((r3-r1)*(r3-r1)) + E*(r1+7*r3));
-//
-//                    p1e = Cnst*10*F*r1;
-//                    p2e = Cnst*20*F*(r1+r3);
-//                    p3e = Cnst*10*F*r3;
-//
-//                    //  Fill matrix A_matrix columnwise: //29.06.2012 r. Marcin Gebski
-//
-//                    A_matrix[6*i + 2] += k11e;
-//                    A_matrix[6*i + 4] += k12e;
-//                    A_matrix[6*i + 6] += k13e;
-//                    A_matrix[6*i + 5] += k22e;
-//                    A_matrix[6*i + 7] += k23e;
-//                    A_matrix[6*i + 8] += k33e;
-//                    A_matrix[6*i + 3] += 0;                         // k24 = 0 - fill top band
-//
-//                    RHS_vector[2*i] += p1e;
-//                    RHS_vector[2*i+1] += p2e;
-//                    RHS_vector[2*i+2] += p3e;
-//
-//                } // end loop over all elements
-
                 FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
                 lapack_n = lapack_ldb = (int)mesh.size();
@@ -377,20 +252,16 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
 
                     absolute_error = L - R;
                     relative_error = absolute_error/R;
-                    //if ( (absolute_accuracy < fabs( absolute_error ) ) && ( relative_accuracy < relative_error ) )
                     if ( relative_accuracy < relative_error )
                         _convergence = false;
                 }
             }
             else if (fem_method == FEM_PARABOLIC)
             {
-//                double dn = 0.0;
-//                double dn_relative = 0.0;
-
-                double max_error_absolute = 0.0;
+//                double max_error_absolute = 0.0;
                 double max_error_relative = 0.0;
-                int max_error_point = 0.0;
-                double max_error_R = 0.0;
+//                int max_error_point = 0.0;
+//                double max_error_R = 0.0;
 
                 _convergence = true;
                 for (int i = 0; i < (mesh.size() - 1)/2 ; i++)
@@ -405,27 +276,16 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
 
                     if ( max_error_relative < relative_error )
                         max_error_relative = relative_error;
-                        max_error_absolute = absolute_error;
-                        max_error_point = mesh[2*i + 1];
-                        max_error_R = R;
+//                        max_error_absolute = absolute_error;
+//                        max_error_point = mesh[2*i + 1];
+//                        max_error_R = R;
 
-//                    if ( n0 > dn )
-//                        dn = n0 - n_previous[2*i + 1];
-//                        dn_relative = abs(dn/n0);
-//                    if ( abs( n_present[2*i + 1] - n_present[2*i] )/n_present[2*i + 1] > dn )
-//                        dn = abs(n_present[2*i + 1] - n_present[2*i])/n_present[2*i + 1];
-//                if ( (absolute_accuracy < fabs( absolute_error ) ) && ( relative_accuracy < relative_error ) )
                     if ( (relative_accuracy < relative_error) && (absolute_concentration_error < absolute_error) ) // (n_tolerance < absolute_error)
                     {
-//                        std::clog<<"reler = "<<relative_error<<"\tabser = "<<absolute_error<<"\ti = "<< i <<std::endl;
                         _convergence = false;
                         break;
                     }
                 }
-            #ifndef NDEBUG
-//            writelog(LOG_DEBUG, "points = %1%", "max_error = %2%", "in: %3%", "R = %4%", mesh.size(), max_error*(plask::phys::qe*this->global_QW_width), max_error_point, max_error_R*(plask::phys::qe*this->global_QW_width));
-            #endif
-//std::cerr << "points = " << absolute_concentration_error << "     max_error_relative = " << max_error_relative << "      max_error_absolute = " << max_error_absolute << "     R = " << max_error_R << "\n"; //*(plask::phys::qe*this->global_QW_width)*1e-3
             }
             iterations += 1;
         }
@@ -588,15 +448,6 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
             p1e  = M_PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
             p2e  = M_PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
 
-
-                    // } else {
-                    // k11e =  K/(r2-r1) + E*(r2-r1)/3;
-                    // k12e = -K/(r2-r1) + E*(r2-r1)/6;
-                    // k22e =  K/(r2-r1) + E*(r2-r1)/3;
-                    // p1e  =  F*(r2-r1)/2;
-                    // p2e  =  F*(r2-r1)/2;
-                    // }
-
             A_matrix[2*i + 1] += k11e;
             A_matrix[2*i + 2] += k12e;
             A_matrix[2*i + 3] += k22e;
@@ -702,11 +553,6 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
         throw Exception("Wrong diffusion equation RHS!");
 }
 
-//double DiffusionCylindricalSolver::leftSideInitial(int i, double T, double n)
-//{
-//    return -( A(T) * n + B(T) * n*n + C(T) * n*n*n);
-//}
-
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::nSecondDeriv(int i)
 {
@@ -761,10 +607,6 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return n_second_deriv;
 }
 
-//double DiffusionCylindricalSolver::leftSideThreshold(int i, double T, double n)
-//{
-//    return D(T)*nSecondDeriv(i) -( A(T) * n + B(T) * n*n + C(T) * n*n*n);
-//}
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(int i, double T, double n)
 {

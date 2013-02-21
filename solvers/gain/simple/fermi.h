@@ -101,7 +101,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
 
     /// Main computation function TODO: is this necessary in this solver?
-//    void compute();
+    void determineLevels(double T, double n);
 
   protected:
 

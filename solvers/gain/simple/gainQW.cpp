@@ -1098,6 +1098,12 @@ void gain::przygobl() /// przygotuj obliczenia (znajduje kp fermiego, poziomy en
   std::cerr<<"\nqflv1="<<Efv<<"\n";*/
   ustawione='t';
 }
+/*****************************************************************************/
+// Marcin Gebski 21.02.2013
+void gain::runPrzygobl()
+{
+    this->przygobl();
+}
 /*****************************************************************************
 void gain::przygobl2()
 {

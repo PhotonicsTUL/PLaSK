@@ -207,8 +207,6 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
     for (int act=0; act<regions.size(); act++)
     {
-        this->writelog(LOG_DETAIL, "Evaluating energy levels for active region nr %1%:", act+1);
-
         for (int i=0; i<dst_mesh.size(); i++)
         {
             if (!isnan(nOnMesh[i]))
@@ -217,58 +215,6 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
                 gainOnMesh[i] = gainModule.Get_gain_at(nm_to_eV(wavelength));
             }
         }
-
-        writelog(LOG_RESULT, "Conduction band quasi-Fermi level (from the band edge) = %1% eV", gainModule.Get_qFlc());
-        writelog(LOG_RESULT, "Valence band quasi-Fermi level (from the band edge) = %1% eV", gainModule.Get_qFlv());
-
-        int j=0;
-        double level;
-
-        do
-        {
-            level = gainModule.Get_electron_level_depth(j);
-            if (level > 0)
-                writelog(LOG_RESULT, "Electron level %1%. (from the conduction band edge) = %2% eV", j+1, level);
-            j++;
-        }
-        while(level>0);
-
-        j=0;
-        do
-        {
-            level = gainModule.Get_heavy_hole_level_depth(j);
-            if (level > 0)
-                writelog(LOG_RESULT, "Heavy hole level %1%. (from the valence band edge) = %2% eV", j+1, level);
-            j++;
-        }
-        while(level>0);
-
-        j=0;
-        do
-        {
-            level = gainModule.Get_light_hole_level_depth(j);
-            if (level > 0)
-                writelog(LOG_RESULT, "Light hole level %1%. (from the valence band edge) = %2% eV", j+1, level);
-            j++;
-        }
-        while(level>0);
-//        nr=0;
-//        do
-//        {
-//            poziom = gainModule.Get_heavy_hole_level_depth(nr);
-//            std::cout<<poziom<<"\n";
-//            nr++;
-//        }
-//        while(poziom>0);
-//        nr=0;
-//        do
-//        {
-//            poziom = gainModule.Get_light_hole_level_depth(nr);
-//            std::cout<<poziom<<"\n";
-//            nr++;
-//        }
-//        while(poziom>0);
-
 //        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
 
@@ -308,7 +254,6 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
                 throw Exception("%1%: Multiple barriers materials in active region.", this->getId());
                 break;
             }
-
         }
     }
 
@@ -337,8 +282,8 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
     gainModule.Set_conduction_depth(QW_material->CBO(T, 'G'));
     gainModule.Set_valence_depth(QW_material->VBO(T));
 
-    gainModule.Set_cond_waveguide_depth(0.1);
-    gainModule.Set_vale_waveguide_depth(0.1);
+    gainModule.Set_cond_waveguide_depth(0.26);
+    gainModule.Set_vale_waveguide_depth(0.13);
 
     gainModule.Set_lifetime(0.5);
     gainModule.Set_momentum_matrix_element(8.0);
@@ -387,6 +332,71 @@ double FermiGainSolver<GeometryType>::nm_to_eV(double wavelength)
 {
     return (plask::phys::h_eV*plask::phys::c)/(wavelength*1e-9);
 }
+
+
+template <typename GeometryType>
+void FermiGainSolver<GeometryType>::determineLevels(double T, double n)
+{
+    this->initCalculation(); // This must be called before any calculation!
+
+    if (regions.size() == 1)
+        this->writelog(LOG_INFO, "Found %1% active region", regions.size());
+    else
+        this->writelog(LOG_INFO, "Found %1% active regions", regions.size());
+
+    for (int act=0; act<regions.size(); act++)
+    {
+        this->writelog(LOG_DETAIL, "Evaluating energy levels for active region nr %1%:", act+1);
+
+        setParameters(0.0, T, n, regions[act]); //wavelength=0.0 - no refractive index needs to be calculated (any will do)
+        gainModule.runPrzygobl();
+
+        writelog(LOG_RESULT, "Conduction band quasi-Fermi level (from the band edge) = %1% eV", gainModule.Get_qFlc());
+        writelog(LOG_RESULT, "Valence band quasi-Fermi level (from the band edge) = %1% eV", gainModule.Get_qFlv());
+
+        int j=0;
+        double level;
+
+        writelog(LOG_DETAIL, "Electron energy levels (from the conduction band edge):");
+
+        do
+        {
+            level = gainModule.Get_electron_level_depth(j);
+            if (level > 0)
+//                writelog(LOG_RESULT, "%1%. electron level (from the conduction band edge) = %2% eV", j+1, level);
+                writelog(LOG_RESULT, "%1%. %2% eV", j+1, level);
+            j++;
+        }
+        while(level>0);
+
+        writelog(LOG_DETAIL, "Heavy hole energy levels (from the valence band edge):");
+
+        j=0;
+        do
+        {
+            level = gainModule.Get_heavy_hole_level_depth(j);
+            if (level > 0)
+//                writelog(LOG_RESULT, "%1%. heavy hole level (from the valence band edge) = %2% eV", j+1, level);
+                writelog(LOG_RESULT, "%1%. %2% eV", j+1, level);
+            j++;
+        }
+        while(level>0);
+
+        writelog(LOG_DETAIL, "Light hole energy levels (from the valence band edge):");
+
+        j=0;
+        do
+        {
+            level = gainModule.Get_light_hole_level_depth(j);
+            if (level > 0)
+//                writelog(LOG_RESULT, "%1%. light hole level (from the valence band edge) = %2% eV", j+1, level);
+                writelog(LOG_RESULT, "%1%. %2% eV", j+1, level);
+            j++;
+        }
+        while(level>0);
+    }
+}
+
 
 
 template <> std::string FermiGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.Fermi2D"; }
