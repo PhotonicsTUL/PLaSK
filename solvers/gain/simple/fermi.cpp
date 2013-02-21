@@ -200,20 +200,76 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     DataVector<const double> TOnMesh = inTemperature(dst_mesh); // temperature on the mesh
     DataVector<double> gainOnMesh(dst_mesh.size(), NAN);
 
+    if (regions.size() == 1)
+        this->writelog(LOG_INFO, "Found %1% active region", regions.size());
+    else
+        this->writelog(LOG_INFO, "Found %1% active regions", regions.size());
+
     for (int act=0; act<regions.size(); act++)
     {
-        writelog(LOG_DEBUG, "Po for I (204), act = %1%", act);
+        this->writelog(LOG_DETAIL, "Evaluating energy levels for active region nr %1%:", act+1);
+
         for (int i=0; i<dst_mesh.size(); i++)
         {
             if (!isnan(nOnMesh[i]))
             {
-//                writelog(LOG_DEBUG, "Po for II (207), i = %1%", i);
                 setParameters(wavelength, TOnMesh[i], nOnMesh[i], regions[act]);
-//                writelog(LOG_DEBUG, "Po setParameters");
-                gainOnMesh[i] = gainModule.Get_gain_at(wavelength);
-//                writelog(LOG_DEBUG, "point = %1%, gain = %2%", dst_mesh[i], gainOnMesh[i]);
+                gainOnMesh[i] = gainModule.Get_gain_at(nm_to_eV(wavelength));
             }
         }
+
+        writelog(LOG_RESULT, "Conduction band quasi-Fermi level (from the band edge) = %1% eV", gainModule.Get_qFlc());
+        writelog(LOG_RESULT, "Valence band quasi-Fermi level (from the band edge) = %1% eV", gainModule.Get_qFlv());
+
+        int j=0;
+        double level;
+
+        do
+        {
+            level = gainModule.Get_electron_level_depth(j);
+            if (level > 0)
+                writelog(LOG_RESULT, "Electron level %1%. (from the conduction band edge) = %2% eV", j+1, level);
+            j++;
+        }
+        while(level>0);
+
+        j=0;
+        do
+        {
+            level = gainModule.Get_heavy_hole_level_depth(j);
+            if (level > 0)
+                writelog(LOG_RESULT, "Heavy hole level %1%. (from the valence band edge) = %2% eV", j+1, level);
+            j++;
+        }
+        while(level>0);
+
+        j=0;
+        do
+        {
+            level = gainModule.Get_light_hole_level_depth(j);
+            if (level > 0)
+                writelog(LOG_RESULT, "Light hole level %1%. (from the valence band edge) = %2% eV", j+1, level);
+            j++;
+        }
+        while(level>0);
+//        nr=0;
+//        do
+//        {
+//            poziom = gainModule.Get_heavy_hole_level_depth(nr);
+//            std::cout<<poziom<<"\n";
+//            nr++;
+//        }
+//        while(poziom>0);
+//        nr=0;
+//        do
+//        {
+//            poziom = gainModule.Get_light_hole_level_depth(nr);
+//            std::cout<<poziom<<"\n";
+//            nr++;
+//        }
+//        while(poziom>0);
+
+//        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
 
     return gainOnMesh;
@@ -288,69 +344,48 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
     gainModule.Set_momentum_matrix_element(8.0);
 
 
-    std::cout<<gainModule.Get_temperature()<<std::endl;
-    std::cout<<gainModule.Get_koncentr()<<std::endl;
+//    std::cout<<gainModule.Get_temperature()<<std::endl;
+//    std::cout<<gainModule.Get_koncentr()<<std::endl;
+//
+//    std::cout<<gainModule.Get_refr_index()<<std::endl;
+//
+//    std::cout<<gainModule.Get_electron_mass_in_plain()<<std::endl;
+//    std::cout<<gainModule.Get_electron_mass_transverse()<<std::endl;
+//    std::cout<<gainModule.Get_heavy_hole_mass_in_plain()<<std::endl;
+//    std::cout<<gainModule.Get_heavy_hole_mass_transverse()<<std::endl;
+//    std::cout<<gainModule.Get_light_hole_mass_in_plain()<<std::endl;
+//    std::cout<<gainModule.Get_light_hole_mass_transverse()<<std::endl;
+//
+//    std::cout<<gainModule.Get_electron_mass_in_barrier()<<std::endl;
+//    std::cout<<gainModule.Get_heavy_hole_mass_in_barrier()<<std::endl;
+//    std::cout<<gainModule.Get_light_hole_mass_in_barrier()<<std::endl;
+////    gainModule.Set_barrier_width(15);
+//
+//    std::cout<<gainModule.Get_well_width()<<std::endl;
+//    std::cout<<gainModule.Get_waveguide_width()<<std::endl;
+//
+//    std::cout<<gainModule.Get_split_off()<<std::endl;
+//    std::cout<<gainModule.Get_bandgap()<<std::endl;
+//    std::cout<<gainModule.Get_conduction_depth()<<std::endl;
+//    std::cout<<gainModule.Get_valence_depth()<<std::endl;
+//
+//    std::cout<<gainModule.Get_cond_waveguide_depth()<<std::endl;
+//    std::cout<<gainModule.Get_vale_waveguide_depth()<<std::endl;
+//
+//    std::cout<<gainModule.Get_lifetime()<<std::endl;
+//    std::cout<<gainModule.Get_momentum_matrix_element()<<std::endl;
 
-    std::cout<<gainModule.Get_refr_index()<<std::endl;
-
-    std::cout<<gainModule.Get_electron_mass_in_plain()<<std::endl;
-    std::cout<<gainModule.Get_electron_mass_transverse()<<std::endl;
-    std::cout<<gainModule.Get_heavy_hole_mass_in_plain()<<std::endl;
-    std::cout<<gainModule.Get_heavy_hole_mass_transverse()<<std::endl;
-    std::cout<<gainModule.Get_light_hole_mass_in_plain()<<std::endl;
-    std::cout<<gainModule.Get_light_hole_mass_transverse()<<std::endl;
-
-    std::cout<<gainModule.Get_electron_mass_in_barrier()<<std::endl;
-    std::cout<<gainModule.Get_heavy_hole_mass_in_barrier()<<std::endl;
-    std::cout<<gainModule.Get_light_hole_mass_in_barrier()<<std::endl;
-//    gainModule.Set_barrier_width(15);
-
-    std::cout<<gainModule.Get_well_width()<<std::endl;
-    std::cout<<gainModule.Get_waveguide_width()<<std::endl;
-
-    std::cout<<gainModule.Get_split_off()<<std::endl;
-    std::cout<<gainModule.Get_bandgap()<<std::endl;
-    std::cout<<gainModule.Get_conduction_depth()<<std::endl;
-    std::cout<<gainModule.Get_valence_depth()<<std::endl;
-
-    std::cout<<gainModule.Get_cond_waveguide_depth()<<std::endl;
-    std::cout<<gainModule.Get_vale_waveguide_depth()<<std::endl;
-
-    std::cout<<gainModule.Get_lifetime()<<std::endl;
-    std::cout<<gainModule.Get_momentum_matrix_element()<<std::endl;
-
-//    std::cout<<"\nPoziomy:\n";
-//    int nr=0;
-//    double poziom;
-//    do
-//    {
-//        poziom = gainModule.Get_electron_level_depth(nr);
-//        std::cout<<poziom<<"\n";
-//        nr++;
-//    }
-//    while(poziom>0);
-//    nr=0;
-//    do
-//    {
-//        poziom = gainModule.Get_heavy_hole_level_depth(nr);
-//        std::cout<<poziom<<"\n";
-//        nr++;
-//    }
-//    while(poziom>0);
-//    nr=0;
-//    do
-//    {
-//        poziom = gainModule.Get_light_hole_level_depth(nr);
-//        std::cout<<poziom<<"\n";
-//        nr++;
-//    }
-//    while(poziom>0);
-//    std::cout<<"\nqFlc = "<<gainModule.Get_qFlc()<<"\nqFlv = "<<gainModule.Get_qFlv()<<std::flush;
-//    gainModule.Set_momentum_matrix_element(gainModule.element());
 
 //    gainModule.Set_first_point(1.19);
 //    gainModule.Set_last_point(1.4);
 //    gainModule.Set_step(.001);
+}
+
+
+template <typename GeometryType>
+double FermiGainSolver<GeometryType>::nm_to_eV(double wavelength)
+{
+    return (plask::phys::h_eV*plask::phys::c)/(wavelength*1e-9);
 }
 
 

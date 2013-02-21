@@ -113,6 +113,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 //    double lambda;
 
     void setParameters(double wavelength, double T, double n, ActiveRegionInfo active);
+    double nm_to_eV(double wavelength);
 
     /// Initialize the solver
     virtual void onInitialize();
