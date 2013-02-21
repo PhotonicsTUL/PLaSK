@@ -70,6 +70,10 @@ cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 
 option(USE_OMP "Use OpenMP" ON)
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+    option(USE_GLIBCXX_PARALLEL "use the libstdc++ parallel mode (experimental in libstdc++v3)" OFF)
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
 #option (PACK_EXE "Self-pack and strip executables." OFF)  # compress exe
 
 set(PYTHON_VERSION "" CACHE STRING "Python version to use")
@@ -102,7 +106,7 @@ if(BUILD_PYTHON)
     endif()
 endif(BUILD_PYTHON)
 
-if(USE_OMP)
+if(USE_OMP OR USE_GLIBCXX_PARALLEL) # compile with OpenMP
     find_package(OpenMP 3.0)
     if(OPENMP_FOUND)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -110,6 +114,9 @@ if(USE_OMP)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
         set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+        if(USE_GLIBCXX_PARALLEL)
+            add_definitions(-D_GLIBCXX_PARALLEL -march=native)
+        endif(USE_GLIBCXX_PARALLEL)
     endif()
 endif()
 
