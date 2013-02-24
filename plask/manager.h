@@ -117,7 +117,7 @@ private:
     static constexpr const char* TAG_NAME_MATERIALS = "materials";  ///< name of XML tag of section with materials
     static constexpr const char* TAG_NAME_GEOMETRY = "geometry";    ///< name of XML tag of section with geometry
     static constexpr const char* TAG_NAME_GRIDS = "grids";          ///< name of XML tag of section with grids (meshes and generators)
-    static constexpr const char* TAG_NAME_SOVERS = "solvers";       ///< name of XML tag of section with solvers
+    static constexpr const char* TAG_NAME_SOLVERS = "solvers";       ///< name of XML tag of section with solvers
     static constexpr const char* TAG_NAME_CONNECTS = "connects";    ///< name of XML tag of section with provides-receiver connections
     static constexpr const char* TAG_NAME_SCRIPT = "script";        ///< name of XML tag of section with (python) script
 

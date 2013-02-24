@@ -20,11 +20,11 @@ namespace plask {
 std::string exePathAndName() {
 #ifdef PLASK_SYSTEM_WINDOWS
     char result[ MAX_PATH ];
-    return std::string( result, GetModuleFileName( NULL, result, MAX_PATH ) );
+    return std::string(result, GetModuleFileName( NULL, result, MAX_PATH ));
 #else
-    char result[ PATH_MAX ];
-    ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-    return std::string( result, (count > 0) ? count : 0 );
+    char path[ PATH_MAX ];
+    ssize_t count = readlink( "/proc/self/exe", path, PATH_MAX );
+    return std::string(path, (count > 0) ? count : 0);
 #endif
 }
 
@@ -43,9 +43,12 @@ std::string exePath() {
 }
 
 std::string prefixPath() {
-    const char* prefixPath = getenv("PLASK_PREFIX_PATH");
-    if (prefixPath) return prefixPath;
-    return dirUp(exePath());
+    static std::string prefixPath;
+    if (!prefixPath.empty()) return prefixPath;
+    if (const char* envPath = getenv("PLASK_PREFIX_PATH")) {
+        return prefixPath = envPath;
+    } else
+        return prefixPath = dirUp(exePath());
 }
 
 std::string plaskLibPath() {

@@ -202,6 +202,8 @@ void Manager::loadSolvers(XMLReader& reader) {
             }
             lib.reset(libs[solver_name]);
         }
+        if (lib->empty())
+            throw XMLException(reader, format("Cannot determine library for %1%.%2% solver", reader.getNodeName(), solver_name));
         shared_ptr<Solver> solver = loadSolver(reader.getNodeName(), *lib, solver_name, name);
         solver->loadConfiguration(reader, *this);
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
@@ -271,8 +273,8 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
             if (!reader.requireTagOrEnd()) return;
         }
 
-        if (reader.getNodeName() == TAG_NAME_SOVERS) {
-            if (section_filter(TAG_NAME_SOVERS)) {
+        if (reader.getNodeName() == TAG_NAME_SOLVERS) {
+            if (section_filter(TAG_NAME_SOLVERS)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadSolvers(reader);
             } else
                 reader.gotoEndOfCurrentTag();
