@@ -19,6 +19,11 @@ namespace boost { namespace python {
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <numpy/ndarraytypes.h>
 
+#if defined(_WIN32) && defined(hypot)
+#   undef hypot
+#endif
+
+
 #include <plask/exceptions.h>
 #include <plask/math.h>
 #include <plask/vec.h>

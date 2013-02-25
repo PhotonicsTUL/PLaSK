@@ -1,8 +1,7 @@
-#include "geometry.h"
-#include "../../util/raw_constructor.h"
-
 #include <plask/geometry/align_container.h>
 
+#include "geometry.h"
+#include "../../util/raw_constructor.h"
 
 namespace plask { namespace python {
 
