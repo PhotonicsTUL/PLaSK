@@ -147,6 +147,11 @@ struct ProviderFor: public ProviderImpl<PropertyT, typename PropertyT::ValueType
 
 };
 //TODO redefine ProviderFor using template aliases (require gcc 4.7), and than fix ReceiverFor
+//template <typename PropertyT, typename SpaceT = void>
+//using ProviderFor = ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>;
+
+
+
 
 /**
  * Specializations of this class are implementations of Receiver for given property tag.

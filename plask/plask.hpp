@@ -114,5 +114,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "providers/optical.h"
 #include "providers/gain.h"
 
+#include "filters/filter.h"
+
 
 #endif // PLASK__PLASK_HPP

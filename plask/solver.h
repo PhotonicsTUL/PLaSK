@@ -28,7 +28,7 @@ Note that typically, solvers are used from python scripts.
 
 @section solvers_writing How to write a new calculation solver?
 To write solver you should:
--# If you write an official solver for PLaSK, create a subdirectory streucture in directory solvers. The subdirectories
+-# If you write an official solver for PLaSK, create a subdirectory structure in directory solvers. The subdirectories
    in solvers should have a form \b solvers/category/your_solver, e.g. \b solvers/optical/FDTD.
    It is also possible to write fully external solvers by PLaSK users, using the descpription below (TODO).
 -# Copy solvers/skel/CMakeLists.txt from to your subdirectory. You may edit the copied file to suit your needs.
@@ -483,6 +483,10 @@ class Solver {
 
   public:
 
+    /**
+     * Construct uninitialized solver.
+     * @param name Id of the instance of this solver
+     */
     Solver(const std::string& name=""): solver_name(name), initialized(false) {}
 
     /// Virtual destructor (for subclassing). Do nothing.
