@@ -144,17 +144,17 @@ ldouble gain::metsiecz(ldouble (gain::*wf)(ldouble,ldouble *),ldouble xl,ldouble
       x=(xl*yp-xp*yl)/(yp-yl);
       y=(this->*wf)(x,param);
       if( y*yl>0 )
-	{
-	  yl=y;
-	  xl=x;
-	  if(yl*(this->*wf)(xl+prec,param)<=0) pt=0;
-	}
+        {
+          yl=y;
+          xl=x;
+          if(yl*(this->*wf)(xl+prec,param)<=0) pt=0;
+        }
       else
-	{
-	  yp=y;
-	  xp=x;
-	  if(yp*(this->*wf)(xp-prec,param)<=0) pt=0;
-	}
+        {
+          yp=y;
+          xp=x;
+          if(yp*(this->*wf)(xp-prec,param)<=0) pt=0;
+        }
     }while(pt);
   return x;
 }
@@ -210,19 +210,19 @@ ldouble * gain::znajdzpoziomy(nosnik & no) /// przy pomocy gdziepoziomy znajduje
       int n=(int)ceill(szer*sqrtl(2*no.masa_w_kier_prost*no.gleb)/M_PI);
       wsk=new ldouble [n+1];
       if(!wsk)
-	exit(1);
+        exit(1);
       ldouble p,q;
       p=mniej(this->krance(1,no.gleb,no.masa_w_kier_prost),(ldouble)0);
       ldouble fp=this->gdziepoziomy(p,par);
       q=p;
       do
-	{
-	  q=(q-no.gleb)/2;
-	}while(this->gdziepoziomy(q,par)*fp>0);
+        {
+          q=(q-no.gleb)/2;
+        }while(this->gdziepoziomy(q,par)*fp>0);
       wsk[0]=this->metsiecz(& gain::gdziepoziomy,q,p,par);
       int i;
       for(i=1;i<=n-2;i++)
-	wsk[i]=this->metsiecz(& gain::gdziepoziomy,this->krance(i,no.gleb,no.masa_w_kier_prost),this->krance(i+1,no.gleb,no.masa_w_kier_prost),par);
+        wsk[i]=this->metsiecz(& gain::gdziepoziomy,this->krance(i,no.gleb,no.masa_w_kier_prost),this->krance(i+1,no.gleb,no.masa_w_kier_prost),par);
       wsk[n-1]=(n>1)?this->metsiecz(& gain::gdziepoziomy,this->krance(n-1,no.gleb,no.masa_w_kier_prost),0.0,par):wsk[0];
       wsk[n]=1;
     }
@@ -254,56 +254,56 @@ ldouble * gain::znajdzpoziomy2(nosnik & no) /// j.w. dla podwójnej studni
       //      std::cerr<<"\n po pierwszym\n";
       wsk[1]=this->metsiecz(& gain::gdziepoziomy2B,-no.gleb+przes,p,par);
       if(wsk[0]>wsk[1])
-	{
-	  pom=wsk[0];
-	  wsk[0]=wsk[1];
-	  wsk[1]=pom;
-	}
+        {
+          pom=wsk[0];
+          wsk[0]=wsk[1];
+          wsk[1]=pom;
+        }
       int i;
       for(i=1;i<=n-2;i++)
-	{
-	  wsk[2*i]=this->metsiecz(& gain::gdziepoziomy2A,this->krance(i,no.gleb,no.masa_w_kier_prost),this->krance(i+1,no.gleb,no.masa_w_kier_prost),par);
-	  wsk[2*i+1]=this->metsiecz(& gain::gdziepoziomy2B,this->krance(i,no.gleb,no.masa_w_kier_prost),this->krance(i+1,no.gleb,no.masa_w_kier_prost),par);
-	  if(wsk[2*i]>wsk[2*i+1])
-	    {
-	      pom=wsk[2*i];
-	      wsk[2*i]=wsk[2*i+1];
-	      wsk[2*i+1]=pom;
-	    }
-	}
+        {
+          wsk[2*i]=this->metsiecz(& gain::gdziepoziomy2A,this->krance(i,no.gleb,no.masa_w_kier_prost),this->krance(i+1,no.gleb,no.masa_w_kier_prost),par);
+          wsk[2*i+1]=this->metsiecz(& gain::gdziepoziomy2B,this->krance(i,no.gleb,no.masa_w_kier_prost),this->krance(i+1,no.gleb,no.masa_w_kier_prost),par);
+          if(wsk[2*i]>wsk[2*i+1])
+            {
+              pom=wsk[2*i];
+              wsk[2*i]=wsk[2*i+1];
+              wsk[2*i+1]=pom;
+            }
+        }
       ostkr=this->krance(n-1,no.gleb,no.masa_w_kier_prost);
       //          std::cerr<<"\nA "<<this->gdziepoziomy2A(ostkr,par)<<" "<<this->gdziepoziomy2A(ostkr/2,par)<<" "<<this->gdziepoziomy2A(0.,par)<<"\n";
       if(gdziepoziomy2A(ostkr,par)*gdziepoziomy2A(0.0,par)<0)
-	{
-	  wsk[2*n-2]=this->metsiecz(& gain::gdziepoziomy2A,ostkr,0.0,par);
-	  //		  std::cerr<<"\nOstatni A="<<wsk[2*n-2]<<"\n";
-	}
+        {
+          wsk[2*n-2]=this->metsiecz(& gain::gdziepoziomy2A,ostkr,0.0,par);
+          //                  std::cerr<<"\nOstatni A="<<wsk[2*n-2]<<"\n";
+        }
       else wsk[2*n-2]=1;
       //    std::cerr<<"\nB "<<this->gdziepoziomy2B(ostkr,par)<<" "<<this->gdziepoziomy2B(ostkr/2,par)<<" "<<this->gdziepoziomy2B(-przes,par)<<"\n";
       if(gdziepoziomy2B(ostkr,par)*gdziepoziomy2B(-przes,par)<0)
-	{
-	  wsk[2*n-1]=this->metsiecz(& gain::gdziepoziomy2B,ostkr,-przes,par);
-	  //  std::cerr<<"\nOstatni B="<<wsk[2*n-1]<<"\n";
-	}
+        {
+          wsk[2*n-1]=this->metsiecz(& gain::gdziepoziomy2B,ostkr,-przes,par);
+          //  std::cerr<<"\nOstatni B="<<wsk[2*n-1]<<"\n";
+        }
       else wsk[2*n-1]=1;
       if(wsk[2*n-2]>wsk[2*n-1])
-	{
-	  pom=wsk[2*n-2];
-	  wsk[2*i]=wsk[2*n-1];
-	  wsk[2*n-1]=pom;
-	}
+        {
+          pom=wsk[2*n-2];
+          wsk[2*i]=wsk[2*n-1];
+          wsk[2*n-1]=pom;
+        }
     }
   else
     {
       if(gdziepoziomy2A(p,par)*gdziepoziomy2A(-no.gleb+przes,par)<0)
-	{
-	  wsk[0]=this->metsiecz(& gain::gdziepoziomy2A,-no.gleb+przes,p,par);
-	}
+        {
+          wsk[0]=this->metsiecz(& gain::gdziepoziomy2A,-no.gleb+przes,p,par);
+        }
       else wsk[0]=1;
       if(gdziepoziomy2B(p,par)*gdziepoziomy2B(-no.gleb+przes,par)<0)
-	{
-	  wsk[1]=this->metsiecz(& gain::gdziepoziomy2B,-no.gleb+przes,p,par);
-	}
+        {
+          wsk[1]=this->metsiecz(& gain::gdziepoziomy2B,-no.gleb+przes,p,par);
+        }
       else wsk[1]=1;
     }
     wsk[2*n]=1;
@@ -323,11 +323,11 @@ ldouble gain::gdzieqflc(ldouble ef,ldouble *) /// zero wyznacza kwazi poziom fer
   if(el.gleb_fal>0)
     {
       for(int j=(int)ceill(szer_fal*sqrtl(2*el.masabar*el.gleb_fal)/M_PI);j>=1;j--)
-	{
-	  k = j*M_PI/(szer_fal);
-	  en=k*k/(2*el.masabar)+el.gleb;
-	  f+=szer/szer_fal*(el.masabar*kT)/M_PI*logl(1+expl(-(en-ef)/(kB*T)));// spin jest
-	}
+        {
+          k = j*M_PI/(szer_fal);
+          en=k*k/(2*el.masabar)+el.gleb;
+          f+=szer/szer_fal*(el.masabar*kT)/M_PI*logl(1+expl(-(en-ef)/(kB*T)));// spin jest
+        }
     } // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
   //  f*=szer/szer_fal;  // stosunek objêto¶ci falowodu i studni
   //  std::clog<<"\nkocwbar = "<<f;
@@ -392,22 +392,22 @@ ldouble gain::gdzieqflv(ldouble ef,ldouble *) /// zero wyznacza kwazi poziom fer
   if(lh.gleb_fal>0)
     {
       for(int j=(int)ceill(szer_fal*sqrtl(2*lh.masabar*lh.gleb_fal)/M_PI);j>=1;j--)
-	{
-	  k = j*M_PI/(szer_fal);
-	  en=k*k/(2*lh.masabar)+lh.gleb;
-	  f+=szer/szer_fal*lh.masabar*kT/M_PI*logl(1+expl((-en-ef)/(kB*T)));
-	}
+        {
+          k = j*M_PI/(szer_fal);
+          en=k*k/(2*lh.masabar)+lh.gleb;
+          f+=szer/szer_fal*lh.masabar*kT/M_PI*logl(1+expl((-en-ef)/(kB*T)));
+        }
     }
   //  f*=szer/szer_fal;  // stosunek objêto¶ci falowodu i studni
   f+=szer*gam32*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
   if(hh.gleb_fal>0)
     {
       for(int j=(int)ceill(szer_fal*sqrtl(2*hh.masabar*hh.gleb_fal)/M_PI);j>=1;j--)
-	{
-	  k = j*M_PI/(szer_fal);
-	  en= k*k/(2*hh.masabar)+hh.gleb;
-	  f+=szer/szer_fal*hh.masabar*kT/M_PI*logl(1+expl((-en-ef)/(kB*T)));
-	} // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
+        {
+          k = j*M_PI/(szer_fal);
+          en= k*k/(2*hh.masabar)+hh.gleb;
+          f+=szer/szer_fal*hh.masabar*kT/M_PI*logl(1+expl((-en-ef)/(kB*T)));
+        } // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
     }
   barkonc_v=f/szer;
   //  std::clog<<"\nkocvwbar = "<<f;
@@ -707,7 +707,7 @@ ldouble gain::wzmoc_z_posz(ldouble t) /// wykonuje całkę (splot) z funkcją do
       ldpar[0]=E0;
       ldpar[3]=(ldouble)i;
       if(E0<t+32*b)
-	g+=Mt*Prost(& gain::dosplotu,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
+        g+=Mt*Prost(& gain::dosplotu,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
       i++;
       Ec=el.pozoddna(i);
       Ev=hh.pozoddna(i);
@@ -724,7 +724,7 @@ ldouble gain::wzmoc_z_posz(ldouble t) /// wykonuje całkę (splot) z funkcją do
       ldpar[0]=E0;
       ldpar[3]=(ldouble)i;
       if(E0<t+32*b)
-	g+=Mt*Prost(& gain::dosplotu,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
+        g+=Mt*Prost(& gain::dosplotu,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
       i++;
       Ec=el.pozoddna(i);
       Ev=lh.pozoddna(i);
@@ -762,7 +762,7 @@ ldouble gain::wzmoc_z_posz2(ldouble t)
       ldpar[0]=E0;
       ldpar[3]=(ldouble)i;
       if(E0<t+32*b)
-	g+=Mt*Prost(& gain::dosplotu2,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
+        g+=Mt*Prost(& gain::dosplotu2,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
       i++;
       Ec=el.pozoddna(i);
       Ev=hh.pozoddna(i);
@@ -779,7 +779,7 @@ ldouble gain::wzmoc_z_posz2(ldouble t)
       ldpar[0]=E0;
       ldpar[3]=(ldouble)i;
       if(E0<t+32*b)
-	g+=Mt*Prost(& gain::dosplotu2,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
+        g+=Mt*Prost(& gain::dosplotu2,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
       i++;
       Ec=el.pozoddna(i);
       Ev=lh.pozoddna(i);
@@ -819,7 +819,7 @@ ldouble gain::wzmoc_z_posz_n(ldouble t, ldouble sumszer)
       ldpar[0]=E0;
       ldpar[3]=(ldouble)i;
       if(E0<t+32*b)
-	g+=Mt*Prost(& gain::dosplotu_n,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
+        g+=Mt*Prost(& gain::dosplotu_n,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
       i++;
       Ec=el.pozoddna(i);
       Ev=hh.pozoddna(i);
@@ -836,7 +836,7 @@ ldouble gain::wzmoc_z_posz_n(ldouble t, ldouble sumszer)
       ldpar[0]=E0;
       ldpar[3]=(ldouble)i;
       if(E0<t+32*b)
-	g+=Mt*Prost(& gain::dosplotu_n,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
+        g+=Mt*Prost(& gain::dosplotu_n,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
       i++;
       Ec=el.pozoddna(i);
       Ev=lh.pozoddna(i);
@@ -895,7 +895,7 @@ ldouble gain::spont_z_posz(ldouble t) /// to samo co wzmoc_posz tylko, że spont
       ldpar[0]=E0;
       ldpar[3]=(ldouble)i;
       if(E0<t+32*b)
-	g+=Mt*Prost(& gain::dosplotu_spont,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
+        g+=Mt*Prost(& gain::dosplotu_spont,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
       i++;
       Ec=el.pozoddna(i);
       Ev=hh.pozoddna(i);
@@ -912,7 +912,7 @@ ldouble gain::spont_z_posz(ldouble t) /// to samo co wzmoc_posz tylko, że spont
       ldpar[0]=E0;
       ldpar[3]=(ldouble)i;
       if(E0<t+32*b)
-	g+=Mt*Prost(& gain::dosplotu_spont,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
+        g+=Mt*Prost(& gain::dosplotu_spont,M,-mniej(-E0,-t+32*b),t+32*b,param,epsb);
       i++;
       Ec=el.pozoddna(i);
       Ev=lh.pozoddna(i);
@@ -1316,10 +1316,10 @@ ldouble gain::Find_max_gain() /// szuka maksimum wzmocnienia
   for(unsigned int i=1;i<=min.size()-1;i++)
     {
       if(Get_gain_at(m)<Get_gain_at(min[i]))
-	{
-	  m=min[i];
-	  gdzie=i;
-	}
+        {
+          m=min[i];
+          gdzie=i;
+        }
     }
   double max=0;
   if(Get_gain_at(m)>0)
@@ -1334,14 +1334,14 @@ ldouble gain::Find_max_gain() /// szuka maksimum wzmocnienia
       gsl_min_fminimizer_set(s,&F,m,l,u);
       int stat_it, stat_przedz;
       do{
-	iter++;
-	stat_it=gsl_min_fminimizer_iterate(s);
-	m=gsl_min_fminimizer_minimum(s);
-	l=gsl_min_fminimizer_x_lower(s);
-	u=gsl_min_fminimizer_x_upper(s);
-	stat_przedz=gsl_min_test_interval(l,u,1e-5,0);
-	if(stat_przedz==GSL_SUCCESS)
-	  max=m;
+        iter++;
+        stat_it=gsl_min_fminimizer_iterate(s);
+        m=gsl_min_fminimizer_minimum(s);
+        l=gsl_min_fminimizer_x_lower(s);
+        u=gsl_min_fminimizer_x_upper(s);
+        stat_przedz=gsl_min_test_interval(l,u,1e-5,0);
+        if(stat_przedz==GSL_SUCCESS)
+          max=m;
       }while(iter<it_max && stat_przedz!=GSL_SUCCESS);
     }
   else max=-1.;
@@ -1375,10 +1375,10 @@ ldouble gain::Find_max_gain_n(std::vector<std::vector<ldouble> > & zewpoziomy, l
   for(unsigned int i=1;i<=min.size()-1;i++)
     {
       if(Get_gain_at_n(m, zewpoziomy, sumaszer)<Get_gain_at_n(min[i], zewpoziomy, sumaszer))
-	{
-	  m=min[i];
-	  gdzie=i;
-	}
+        {
+          m=min[i];
+          gdzie=i;
+        }
     }
   double max=0;
   if(Get_gain_at_n(m, zewpoziomy, sumaszer)>0)
@@ -1393,14 +1393,14 @@ ldouble gain::Find_max_gain_n(std::vector<std::vector<ldouble> > & zewpoziomy, l
       gsl_min_fminimizer_set(s,&F,m,l,u);
       int stat_it, stat_przedz;
       do{
-	iter++;
-	stat_it=gsl_min_fminimizer_iterate(s);
-	m=gsl_min_fminimizer_minimum(s);
-	l=gsl_min_fminimizer_x_lower(s);
-	u=gsl_min_fminimizer_x_upper(s);
-	stat_przedz=gsl_min_test_interval(l,u,1e-5,0);
-	if(stat_przedz==GSL_SUCCESS)
-	  max=m;
+        iter++;
+        stat_it=gsl_min_fminimizer_iterate(s);
+        m=gsl_min_fminimizer_minimum(s);
+        l=gsl_min_fminimizer_x_lower(s);
+        u=gsl_min_fminimizer_x_upper(s);
+        stat_przedz=gsl_min_test_interval(l,u,1e-5,0);
+        if(stat_przedz==GSL_SUCCESS)
+          max=m;
       }while(iter<it_max && stat_przedz!=GSL_SUCCESS);
     }
   else max=-1.;

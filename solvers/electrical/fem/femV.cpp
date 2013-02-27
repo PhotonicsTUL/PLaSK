@@ -118,7 +118,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
 
 template<>
-void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandSymMatrix& oA, DataVector<double>& oLoad,
+void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst
                   )
 {
@@ -200,7 +200,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(BandS
 
 
 template<>
-void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(BandSymMatrix& oA, DataVector<double>& oLoad,
+void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst
                   )
 {
@@ -322,7 +322,7 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
     this->writelog(LOG_INFO, "Running electrical calculations");
 
     int tLoop = 0;
-    BandSymMatrix tA(mAOrder, mABand);
+    DpbMatrix tA(mAOrder, mABand);
 
     double tMaxMaxAbsVCorr = 0.,
            tMaxMaxRelVCorr = 0.;
@@ -369,7 +369,7 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
 }
 
 
-template<typename Geometry2DType> int FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(BandSymMatrix& iA, DataVector<double>& ioB)
+template<typename Geometry2DType> int FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& iA, DataVector<double>& ioB)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 

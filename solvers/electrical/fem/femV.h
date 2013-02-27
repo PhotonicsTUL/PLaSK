@@ -60,7 +60,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     DataVector<double> mHeatDensities;              ///< Computed and cached heat source densities
 
     /// Set stiffness matrix + load vector
-    void setMatrix(BandSymMatrix& oA, DataVector<double>& oLoad,
+    void setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst
                   );
 
@@ -77,7 +77,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     void saveHeatDensities();
 
     /// Matrix solver
-    int solveMatrix(BandSymMatrix& iA, DataVector<double>& ioB);
+    int solveMatrix(DpbMatrix& iA, DataVector<double>& ioB);
 
     /// Initialize the solver
     virtual void onInitialize();

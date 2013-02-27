@@ -2,20 +2,11 @@
 #define PLASK__MODULE_THERMAL_BAND_MATRIX_H
 
 #include <cstddef>
+#include <plask/plask.hpp>
 
 #define UPLO 'L'
 
-// LAPACK routines to solve set of linear equations
-#define dpbtrf F77_GLOBAL(dpbtrf,DPBTRF)
-F77SUB dpbtrf(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
-
-#define dpbtf2 F77_GLOBAL(dpbtf2,DPBTF2)
-F77SUB dpbtf2(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
-
-#define dpbtrs F77_GLOBAL(dpbtrs,DPBTRS)
-F77SUB dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
-
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace solvers { namespace thermal3d {
 
 /**
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.
@@ -23,13 +14,22 @@ namespace plask { namespace solvers { namespace thermal {
  */
 struct DpbMatrix {
 
-    std::size_t size;  ///< order of the matrix, i.e. number of columns or rows
-    std::size_t band1;  ///< size of the band reduced by one
-    double* data;       ///< pointer to data
+    std::size_t size;   ///< Order of the matrix, i.e. number of columns or rows
+    std::size_t band1;  ///< Size of the band reduced by one
+    double* data;       ///< Pointer to data
 
+    DpbMatrix(): size(0), band1(0), data(nullptr) {}
     DpbMatrix(std::size_t rank, std::size_t band): size(rank), band1(band-1), data(new double[rank*band]) {}
     DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
     ~DpbMatrix() { delete[] data; }
+
+    /// Init the existing matrix
+    void init(std::size_t rank, std::size_t band) {
+        if (data) throw CriticalException("DpbMatrix already initialized");
+        size = rank;
+        band1 = band - 1;
+        data = new double[rank*band];
+    }
 
     /**
      * Return index in data array
@@ -65,6 +65,14 @@ struct DpbMatrix {
     }
 };
 
-}}} // namespace plask::solver::thermal
+struct SparseBandMatrix {
+    std::size_t size;   ///< Order of the matrix, i.e. number of columns or rows
+    std::size_t bands;  ///< Number of the nonzero bands
+    std::size_t *band;  ///< Vector of non-zero bad numbers
+
+    double** data;      ///< Data stored in the matrix
+};
+
+}}} // namespace plask::solver::thermal3d
 
 #endif // PLASK__MODULE_THERMAL_BAND_MATRIX_H

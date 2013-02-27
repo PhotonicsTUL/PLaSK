@@ -6,17 +6,17 @@ using namespace plask::python;
 #include "../femT.h"
 using namespace plask::solvers::thermal;
 
-static shared_ptr<FiniteElementMethodThermal2DSolver<Geometry2DCartesian>> Fem2D(const std::string& name) {
-    auto result = make_shared<FiniteElementMethodThermal2DSolver<Geometry2DCartesian>>(name);
-    result->writelog(LOG_WARNING, "'thermal.Fem2D' name is depreciated! Use 'thermal.Static2D' instead.");
-    return result;
-}
-
-static shared_ptr<FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>> FemCyl(const std::string& name) {
-    auto result = make_shared<FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>>(name);
-    result->writelog(LOG_WARNING, "'thermal.FemCyl' name is depreciated! Use 'thermal.StaticCyl' instead.");
-    return result;
-}
+// static shared_ptr<FiniteElementMethodThermal2DSolver<Geometry2DCartesian>> Fem2D(const std::string& name) {
+//     auto result = make_shared<FiniteElementMethodThermal2DSolver<Geometry2DCartesian>>(name);
+//     result->writelog(LOG_WARNING, "'thermal.Fem2D' name is depreciated! Use 'thermal.Static2D' instead.");
+//     return result;
+// }
+//
+// static shared_ptr<FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>> FemCyl(const std::string& name) {
+//     auto result = make_shared<FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>>(name);
+//     result->writelog(LOG_WARNING, "'thermal.FemCyl' name is depreciated! Use 'thermal.StaticCyl' instead.");
+//     return result;
+// }
 
 
 
@@ -85,7 +85,7 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
     }
 
-    // Add methods to create classes using depreciate names
-    py::def("Fem2D", Fem2D, py::arg("name")="");
-    py::def("FemCyl", FemCyl, py::arg("name")="");
+//     // Add methods to create classes using depreciate names
+//     py::def("Fem2D", Fem2D, py::arg("name")="");
+//     py::def("FemCyl", FemCyl, py::arg("name")="");
 }

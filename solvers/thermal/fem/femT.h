@@ -30,7 +30,6 @@ struct Radiation
 enum Algorithm {
     ALGORITHM_SLOW,     ///< slow algorithm using BLAS level 2
     ALGORITHM_BLOCK,    ///< block algorithm (thrice faster, however a little prone to failures)
-    ALGORITHM_ITERATIVE ///< iterative algorithm using preconditioned conjugate gradient method
 };
 
 /// Type of the returned correction
@@ -67,7 +66,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     DataVector<Vec<2,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
-    void setMatrix(BandSymMatrix& oA, DataVector<double>& oLoad,
+    void setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iTConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iHFConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& iConvection,
@@ -81,7 +80,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     void saveHeatFluxes(); // [W/m^2]
 
     /// Matrix solver
-    void solveMatrix(BandSymMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(DpbMatrix& iA, DataVector<double>& ioB);
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -94,10 +93,10 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     CorrectionType mCorrType; ///< Type of the returned correction
 
     // Boundary conditions
-    BoundaryConditions<RectilinearMesh2D,double> mTConst; ///< Boundary cindition of constant temperature [K]
-    BoundaryConditions<RectilinearMesh2D,double> mHFConst; ///< Boundary cindition of constant heat flux [W/m^2]
-    BoundaryConditions<RectilinearMesh2D,Convection> mConvection; ///< Boundary cindition of convection
-    BoundaryConditions<RectilinearMesh2D,Radiation> mRadiation; ///< Boundary cindition of radiation
+    BoundaryConditions<RectilinearMesh2D,double> mTConst; ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectilinearMesh2D,double> mHFConst; ///< Boundary condition of constant heat flux [W/m^2]
+    BoundaryConditions<RectilinearMesh2D,Convection> mConvection; ///< Boundary condition of convection
+    BoundaryConditions<RectilinearMesh2D,Radiation> mRadiation; ///< Boundary condition of radiation
 
     typename ProviderFor<Temperature, Geometry2DType>::Delegate outTemperature;
 
@@ -152,12 +151,12 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
 template <> inline solvers::thermal::Convection parseBoundaryValue<solvers::thermal::Convection>(const XMLReader& tag_with_value)
 {
-    return solvers::thermal::Convection(tag_with_value.requireAttribute<double>("coefficient"), tag_with_value.requireAttribute<double>("Tamb"));
+    return solvers::thermal::Convection(tag_with_value.requireAttribute<double>("coeff"), tag_with_value.requireAttribute<double>("ambient"));
 }
 
 template <> inline solvers::thermal::Radiation parseBoundaryValue<solvers::thermal::Radiation>(const XMLReader& tag_with_value)
 {
-    return solvers::thermal::Radiation(tag_with_value.requireAttribute<double>("emissivity"), tag_with_value.requireAttribute<double>("Tamb"));
+    return solvers::thermal::Radiation(tag_with_value.requireAttribute<double>("emissivity"), tag_with_value.requireAttribute<double>("ambient"));
 }
 
 } // namespace plask

@@ -223,7 +223,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
 
 template <typename GeometryType>
-void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, double n, ActiveRegionInfo active)
+void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, double n, const ActiveRegionInfo& active)
 {
     /// Material data base
     plask::shared_ptr<plask::Material> QW_material, Bar_material;

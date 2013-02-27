@@ -1,5 +1,4 @@
 #include "femT.h"
-#include "dcg.h"
 
 namespace plask { namespace solvers { namespace thermal {
 
@@ -135,7 +134,7 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh2D,Con
 
 
 template<>
-void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymMatrix& oA, DataVector<double>& oLoad,
+void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iTConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iHFConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& iConvection,
@@ -271,7 +270,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(BandSymM
 
 
 template<>
-void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(BandSymMatrix& oA, DataVector<double>& oLoad,
+void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iTConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iHFConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& iConvection,
@@ -424,7 +423,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
     this->writelog(LOG_INFO, "Running thermal calculations");
 
     int tLoop = 0;
-    BandSymMatrix tA(mAOrder, mABand);
+    DpbMatrix tA(mAOrder, mABand);
 
     double tMaxMaxAbsTCorr = 0.,
            tMaxMaxRelTCorr = 0.;
@@ -466,7 +465,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(BandSymMatrix& iA, DataVector<double>& ioB)
+template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& iA, DataVector<double>& ioB)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -497,21 +496,6 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
             // Find solutions
             dpbtrs(UPLO, iA.size, iA.band1, 1, iA.data, iA.band1+1, ioB.data(), ioB.size(), info);
             if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
-            break;
-
-        case ALGORITHM_ITERATIVE:
-            AtimesDSB atimes(iA);
-            MsolveJacobiDSB msolve(iA);
-            DataVector<double> oX = mTemperatures.copy(); // We use previous temperatures as initial solution
-            double err;
-            try {
-                int iter = solveDCG(iA.size, atimes, msolve, oX.data(), ioB.data(), err); //TODO add parameters for tolerance and maximum iterations
-                this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
-            } catch (DCGError err) {
-                throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", err.what());
-            }
-            ioB = oX;
-
             break;
     }
 

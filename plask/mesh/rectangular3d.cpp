@@ -37,7 +37,7 @@ void RectangularMesh<3,Mesh1D>::setIterationOrder(IterationOrder iterationOrder)
         case ORDER_##o1##o2##o3: \
             index_f = index_##o1##o2##o3; index0_f = index0_##o1##o2##o3; \
             index1_f = index1_##o1##o2##o3; index2_f = index2_##o1##o2##o3; \
-            major_axis = &axis##o1; middle_axis = &axis##o2; minor_axis = &axis##o3; \
+            major_axis = &axis##o1; medium_axis = &axis##o2; minor_axis = &axis##o3; \
             break;
     switch (iterationOrder) {
         RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(0,1,2)
@@ -48,7 +48,7 @@ void RectangularMesh<3,Mesh1D>::setIterationOrder(IterationOrder iterationOrder)
         RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(2,1,0)
         default:
             index_f = index_210; index0_f = index0_210;  index1_f = index1_210; index2_f = index2_210;
-            major_axis = &axis2; middle_axis = &axis1; minor_axis = &axis0;
+            major_axis = &axis2; medium_axis = &axis1; minor_axis = &axis0;
     }
     this->fireChanged();
 }

@@ -34,7 +34,7 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     index012_ft* index1_f;
     index012_ft* index2_f;
     Mesh1D* minor_axis;
-    Mesh1D* middle_axis;
+    Mesh1D* medium_axis;
     Mesh1D* major_axis;
 
     shared_ptr<RectangularMesh<3,Mesh1D>> midpoints_cache; ///< cache for midpoints mesh
@@ -470,13 +470,13 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
     }
 
     /// \return middle (between major and minor) axis
-    inline const Mesh1D& middleAxis() const {
-        return *middle_axis;
+    inline const Mesh1D& mediumAxis() const {
+        return *medium_axis;
     }
 
     /// \return middle (between major and minor) axis
-    inline Mesh1D& middleAxis() {
-        return *middle_axis;
+    inline Mesh1D& mediumAxis() {
+        return *medium_axis;
     }
 
     /// \return minor (changing fastes) axis
@@ -558,16 +558,16 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t majorIndex(std::size_t mesh_index) const {
-        return mesh_index / minorAxis().size() / middleAxis().size();
+        return mesh_index / minorAxis().size() / mediumAxis().size();
     }
 
     /**
      * Calculate index of middle axis using given mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of middle axis, from 0 to middleAxis.size()-1
+     * @return index of middle axis, from 0 to mediumAxis.size()-1
      */
     inline std::size_t middleIndex(std::size_t mesh_index) const {
-        return (mesh_index / minorAxis().size()) % middleAxis().size();
+        return (mesh_index / minorAxis().size()) % mediumAxis().size();
     }
 
     /**
@@ -674,8 +674,8 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
         const std::size_t minor_size_minus_1 = minor_axis->size()-1;
-        const std::size_t elements_per_level = minor_size_minus_1 * (middle_axis->size()-1);
-        return element_index + (element_index / elements_per_level) * (middle_axis->size() + minor_size_minus_1)
+        const std::size_t elements_per_level = minor_size_minus_1 * (medium_axis->size()-1);
+        return element_index + (element_index / elements_per_level) * (medium_axis->size() + minor_size_minus_1)
                             + (element_index % elements_per_level) / minor_size_minus_1;
     }
 
@@ -685,8 +685,8 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      * @return index of element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
-        const std::size_t verticles_per_level = minor_axis->size() * middle_axis->size();
-        return mesh_index_of_el_bottom_left - (mesh_index_of_el_bottom_left / verticles_per_level) * (middle_axis->size() + minor_axis->size() - 1)
+        const std::size_t verticles_per_level = minor_axis->size() * medium_axis->size();
+        return mesh_index_of_el_bottom_left - (mesh_index_of_el_bottom_left / verticles_per_level) * (medium_axis->size() + minor_axis->size() - 1)
                 - (mesh_index_of_el_bottom_left % verticles_per_level) / minor_axis->size();
     }
 

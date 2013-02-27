@@ -17,7 +17,7 @@ F77SUB daxpy(const int& n, const double& sa, const double* sx, const int& incx, 
 F77SUB dsbmv(const char& uplo, const int& n, const int& k, const double& alpha, const double* a, const int& lda,
              const double* x, const int& incx, const double& beta, double* y, const int& incy); // y = alpha*A*x + beta*y,
 
-namespace plask { namespace solvers { namespace thermal {
+namespace plask { namespace solvers { namespace thermal3d {
 
 /// Error code of solveDCG
 struct DCGError: public std::exception {
@@ -142,29 +142,37 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
 
 
 /**
- * Multicplication functor for symmetric banded matrix using BLAS dsbmv
+ * Multiplication functor for symmetric banded matrix
  */
-struct AtimesDSB {
-    const BandSymMatrix* matrix;
-    AtimesDSB(const BandSymMatrix& matrix): matrix(&matrix) {}
+struct Atimes {
+
+    const SparseBandMatrix* matrix;
+
+    Atimes(const SparseBandMatrix& matrix): matrix(&matrix) {}
+
     void operator()(double* x, double* y) { // y = A x
-        dsbmv(UPLO, matrix->size, matrix->band1, 1., matrix->data, matrix->band1+1, x, 1, 0., y, 1);
+
+
     }
+
 };
 
 /**
- * Jacobi preconditioner for symmetrix banded matrix (i.e. diagonal scaling)
+ * Jacobi preconditioner for symmetric banded matrix (i.e. diagonal scaling)
  */
-struct MsolveJacobiDSB {
-    const BandSymMatrix* matrix;
-    MsolveJacobiDSB(const BandSymMatrix& matrix): matrix(&matrix) {}
+struct MsolveJacobi {
+
+    const SparseBandMatrix* matrix;
+
+    MsolveJacobi(const SparseBandMatrix& matrix): matrix(&matrix) {}
+
     void operator()(double* z, double* r) { // z = inv(M) r
-        int dstep = matrix->band1 + 1;
         double* zend = z + matrix->size;
-        for (double* m = matrix->data; z < zend; ++z, ++r, m += dstep) {
+        for (double* m = matrix->data[0]; z < zend; ++z, ++r, ++m) {
             *z = *r / *m;
         }
     }
+
 };
 
 }}} // namespace plask::solvers::thermal

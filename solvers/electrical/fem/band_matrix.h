@@ -22,15 +22,15 @@ namespace plask { namespace solvers { namespace electrical {
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.
  * Data is stored in LAPACK format.
  */
-struct BandSymMatrix {
+struct DpbMatrix {
 
     std::size_t size;  ///< order of the matrix, i.e. number of columns or rows
     std::size_t band1;  ///< size of the band reduced by one
     double* data;       ///< pointer to data
 
-    BandSymMatrix(std::size_t rank, std::size_t band): size(rank), band1(band-1), data(new double[rank*band]) {}
-    BandSymMatrix(const BandSymMatrix&) = delete; // this object is non-copyable
-    ~BandSymMatrix() { delete[] data; }
+    DpbMatrix(std::size_t rank, std::size_t band): size(rank), band1(band-1), data(new double[rank*band]) {}
+    DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
+    ~DpbMatrix() { delete[] data; }
 
     /**
      * Return index in data array

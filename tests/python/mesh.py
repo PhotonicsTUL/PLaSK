@@ -61,7 +61,7 @@ class RectilinearMeshes(unittest.TestCase):
                                                 [2,10,100], [2,10,200], [2,20,100], [2,20,200],
                                                 [3,10,100], [3,10,200], [3,20,100], [3,20,200]] )
         self.assertEqual( m.minor_axis,  m.axis2 )
-        self.assertEqual( m.middle_axis, m.axis1 )
+        self.assertEqual( m.medium_axis, m.axis1 )
         self.assertEqual( m.major_axis,  m.axis0 )
         for i in range(len(m)):
             self.assertEqual( m.minor_index(i),  m.index2(i) )
