@@ -167,15 +167,16 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
     // Set stiffness matrix and load vector
     for (auto elem: this->mesh->elements)
     {
-        // Nodes numbers for the current element
-        size_t i1 = elem.getLoLoLoIndex();          //   z y            7-----8
-        size_t i2 = elem.getUpLoLoIndex();          //   |/__x         /|    /|
-        size_t i3 = elem.getLoUpLoIndex();          //                5-----6 |
-        size_t i4 = elem.getUpUpLoIndex();          //                | 3---|-4
-        size_t i5 = elem.getLoLoUpIndex();          //                |/    |/
-        size_t i6 = elem.getUpLoUpIndex();          //                1-----2
-        size_t i7 = elem.getLoUpUpIndex();          //
-        size_t i8 = elem.getUpUpUpIndex();          //
+        // nodes numbers for the current element
+        size_t idx[8];
+        idx[0] = elem.getLoLoLoIndex();          //   z y            6-----7
+        idx[1] = elem.getUpLoLoIndex();          //   |/__x         /|    /|
+        idx[2] = elem.getLoUpLoIndex();          //                4-----5 |
+        idx[3] = elem.getUpUpLoIndex();          //                | 2---|-3
+        idx[4] = elem.getLoLoUpIndex();          //                |/    |/
+        idx[5] = elem.getUpLoUpIndex();          //                0-----1
+        idx[6] = elem.getLoUpUpIndex();          //
+        idx[7] = elem.getUpUpUpIndex();          //
 
         // element size
         double dx = elem.getUpper0() - elem.getLower0();
@@ -187,8 +188,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
         auto material = geometry->getMaterial(middle);
 
         // average temperature on the element
-        double temp = 0.125 * (temperatures[i1] + temperatures[i2] + temperatures[i3] + temperatures[i4] +
-                               temperatures[i5] + temperatures[i6] + temperatures[i7] + temperatures[i8]);
+        double temp = 0.; for (int i = 0; i < 8; ++i) temp += temperatures[idx[i]]; temp *= 0.125;
 
         // thermal conductivity
         double kx, ky, kz;
@@ -203,18 +203,32 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
         kz *= dx;   kz *= dy;   kz /= dz;
 
         // load vector: heat densities
-        double F = 0.125e-18 * dx * dy * dz * heats[elem.getIndex()]; // 1e-18 -> to transform µm³ into m³
+        double f = 0.125e-18 * dx * dy * dz * heats[elem.getIndex()]; // 1e-18 -> to transform µm³ into m³
 
         // set symmetric matrix components
-//         double K
+        double K[8][8];
+        K[0][0] = K[1][1] = K[2][2] = K[3][3] = K[4][4] = K[5][5] = K[6][6] = K[7][7] = (kx + ky + kz) / 9.;
 
-//         tK44 = tK33 = tK22 = tK11 = (k + kz) / 3.;
-//         tK43 = tK21 = (-2. * k + kz) / 6.;
-//         tK42 = tK31 = - (k + kz) / 6.;
-//         tK32 = tK41 = (k - 2. * kz) / 6.;
-//
-//         double tF1 = F, tF2 = F, tF3 = F, tF4 = F;
-//
+        K[1][0] = K[3][2] = K[5][4] = K[7][6] = (-2.*kx +    ky +    kz) / 18.;
+        K[2][0] = K[3][1] = K[6][4] = K[7][5] = (    kx - 2.*ky +    kz) / 18.;
+        K[4][0] = K[5][1] = K[6][2] = K[7][3] = (    kx +    ky - 2.*kz) / 18.;
+
+        K[4][2] = K[5][3] = K[6][0] = K[7][1] = (    kx - 2.*ky - 2.*kz) / 36.;
+        K[4][1] = K[5][0] = K[6][3] = K[7][2] = (-2.*kx +    ky - 2.*kz) / 36.;
+        K[2][1] = K[3][0] = K[6][5] = K[7][4] = (-2.*kx - 2.*ky +    kz) / 36.;
+
+        K[4][3] = K[5][2] = K[6][1] = K[7][0] = -(kx + ky + kz) / 36.;
+
+        //double F[8];
+        //std::fill_n(F, 8, f);
+
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j <= i; ++j) {
+                A(i,j) += K[i][j];
+            }
+            B[i] = f; //TODO boundary conditions
+        }
+
 //         //// boundary conditions: heat flux
 //         //setBoundaries<double>(iHFConst, ll, lr, ur, ul, width, height,
 //         //                tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
@@ -249,43 +263,15 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 //         //                [](double,Radiation,Radiation,size_t,size_t){return 0.;}, // K diagonal
 //         //                [](double,Radiation,Radiation,size_t,size_t){return 0.;}  // K off-diagonal
 //         //                );
-//
-//         // set stiffness matrix
-//         oA(ll, ll) += tK11;
-//         oA(lr, lr) += tK22;
-//         oA(ur, ur) += tK33;
-//         oA(ul, ul) += tK44;
-//
-//         oA(lr, ll) += tK21;
-//         oA(ur, ll) += tK31;
-//         oA(ul, ll) += tK41;
-//         oA(ur, lr) += tK32;
-//         oA(ul, lr) += tK42;
-//         oA(ul, ur) += tK43;
-//
-//         // set load vector
-//         oLoad[ll] += tF1;
-//         oLoad[lr] += tF2;
-//         oLoad[ur] += tF3;
-//         oLoad[ul] += tF4;
-//     }
-//
-//     // boundary conditions of the first kind
-//     for (auto tCond: iTConst) {
-//         for (auto tIndex: tCond.place) {
-//             oA(tIndex, tIndex) += mBigNum;
-//             oLoad[tIndex] += tCond.value * mBigNum;
-//         }
     }
-    //
-    // #ifndef NDEBUG
-    //     double* tAend = oA.data + oA.size * oA.bands;
-    //     for (double* pa = oA.data; pa != tAend; ++pa) {
-    //         if (isnan(*pa) || isinf(*pa))
-    //             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
-    //     }
-    // #endif
-    //
+
+    // boundary conditions of the first kind
+    for (auto cond: btemperature) {
+        for (auto idx: cond.place) {
+            A(idx, idx) += bignum;
+            B[idx] += cond.value * bignum;
+        }
+    }
 }
 
 template <typename MatrixT>
