@@ -1,3 +1,5 @@
+#include <type_traits>
+
 #include "femT.h"
 
 #include "band_matrix.h"
@@ -146,8 +148,8 @@ void FiniteElementMethodThermal3DSolver::setAlgorithm(Algorithm alg) {
 //     }
 // }
 
-
-void FiniteElementMethodThermal3DSolver::setMatrixBlock(DpbMatrix& A, DataVector<double>& B,
+template <typename MatrixT>
+void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectilinearMesh3D,Convection>& bconvection,
@@ -281,17 +283,8 @@ void FiniteElementMethodThermal3DSolver::setMatrixBlock(DpbMatrix& A, DataVector
 //
 }
 
-void FiniteElementMethodThermal3DSolver::setMatrixIterative(SparseBandMatrix& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
-                  )
-{
-}
-
-
-double FiniteElementMethodThermal3DSolver::compute(int loops)
+template <typename MatrixT>
+double FiniteElementMethodThermal3DSolver::doCompute(int loops)
 {
     this->initCalculation();
 
@@ -308,12 +301,7 @@ double FiniteElementMethodThermal3DSolver::compute(int loops)
     int loop = 0;
     size_t size = mesh->size();
 
-    DpbMatrix dpbA;
-    SparseBandMatrix spA;
-    switch (algorithm) {
-        case ALGORITHM_BLOCK: dpbA.init(size, (this->mesh->mediumAxis().size()+1) * this->mesh->minorAxis().size() + 2); break;
-//         case ALGORITHM_ITERATIVE: spA.init(size, 26); break; TODO
-    }
+    MatrixT A(size, mesh->mediumAxis().size(), mesh->minorAxis().size());
 
     double max_abscorr = 0.,
            max_relcorr = 0.;
@@ -325,16 +313,8 @@ double FiniteElementMethodThermal3DSolver::compute(int loops)
     DataVector<double> T(size);
 
     do {
-        switch (algorithm) {
-            case ALGORITHM_BLOCK:
-                setMatrixBlock(dpbA, T, btemperature, bheatflux, bconvection, bradiation);
-                solveMatrixBlock(dpbA, T);
-                break;
-            case ALGORITHM_ITERATIVE:
-                setMatrixIterative(spA, T, btemperature, bheatflux, bconvection, bradiation);
-                solveMatrixIterative(spA, T);
-                break;
-        }
+        setMatrix(A, T, btemperature, bheatflux, bconvection, bradiation);
+        solveMatrix(A, T);
 
         saveTemperatures(T);
 
@@ -362,7 +342,16 @@ double FiniteElementMethodThermal3DSolver::compute(int loops)
 }
 
 
-void FiniteElementMethodThermal3DSolver::solveMatrixBlock(DpbMatrix& A, DataVector<double>& B)
+double FiniteElementMethodThermal3DSolver::compute(int loops) {
+    switch (algorithm) {
+        case ALGORITHM_BLOCK: return doCompute<DpbMatrix>(loops);
+        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
+    }
+}
+
+
+
+void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -383,7 +372,7 @@ void FiniteElementMethodThermal3DSolver::solveMatrixBlock(DpbMatrix& A, DataVect
 }
 
 
-void FiniteElementMethodThermal3DSolver::solveMatrixIterative(SparseBandMatrix& A, DataVector<double>& B)
+void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 

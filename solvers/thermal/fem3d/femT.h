@@ -57,7 +57,7 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     DataVector<Vec<3,double>> fluxes;           ///< Computed (only when needed) heat fluxes on our own mesh
 
     /**
-     * Set stiffness matrix and load vector for block algorithm
+     * Set stiffness matrix and load vector
      * \param[out] A matrix to fill-in
      * \param[out] B load vector
      * \param constT boundary conditions: constant temperature
@@ -65,28 +65,13 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
      * \param convection boundary conditions: convention
      * \param radiation boundary conditions: radiation
      **/
-    void setMatrixBlock(DpbMatrix& A, DataVector<double>& B,
-                        const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature,
-                        const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bheatflux,
-                        const BoundaryConditionsWithMesh<RectilinearMesh3D,Convection>& bconvection,
-                        const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
-                       );
-
-    /**
-     * Set stiffness matrix and load vector for block algorithm
-     * \param[out] A matrix to fill-in
-     * \param[out] B load vector
-     * \param constT boundary conditions: constant temperature
-     * \param constHF boundary conditions: constant heat flux
-     * \param convection boundary conditions: convention
-     * \param radiation boundary conditions: radiation
-     **/
-    void setMatrixIterative(SparseBandMatrix& A, DataVector<double>& B,
-                            const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature,
-                            const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bheatflux,
-                            const BoundaryConditionsWithMesh<RectilinearMesh3D,Convection>& bconvection,
-                            const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
-                           );
+    template <typename MatrixT>
+    void setMatrix(MatrixT& A, DataVector<double>& B,
+                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectilinearMesh3D,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
+                  );
 
     /// Update stored temperatures and calculate corrections
     void saveTemperatures(DataVector<double>& T);
@@ -95,16 +80,19 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     void saveHeatFluxes(); // [W/m^2]
 
     /// Matrix solver for block algorithm
-    void solveMatrixBlock(DpbMatrix& A, DataVector<double>& B);
+    void solveMatrix(DpbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver for iterative algorithm
-    void solveMatrixIterative(SparseBandMatrix& A, DataVector<double>& B);
+    void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
 
     /// Initialize the solver
     virtual void onInitialize();
 
     /// Invalidate the data
     virtual void onInvalidate();
+
+    template <typename MatrixT>
+    double doCompute(int loops=1);
 
   public:
 
