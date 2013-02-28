@@ -15,7 +15,7 @@ namespace plask { namespace solvers { namespace thermal3d {
 struct DpbMatrix {
 
     const size_t size;  ///< Order of the matrix, i.e. number of columns or rows
-    const size_t band1; ///< Size of the band reduced by one
+    const size_t bands; ///< Size of the band reduced by one
     double* data;       ///< Pointer to data
 
     /**
@@ -25,7 +25,7 @@ struct DpbMatrix {
      * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
      */
     DpbMatrix(size_t rank, size_t major, size_t minor):
-        size(rank), band1(major+minor+1), data(new double[rank*(major+minor+2)]) {}
+        size(rank), bands(major+minor+1), data(new double[rank*(major+minor+2)]) {}
 
     DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
 
@@ -39,18 +39,18 @@ struct DpbMatrix {
     size_t index(size_t r, size_t c) {
         assert(r < size && c < size);
         if (r < c) {
-            assert(c - r <= band1);
+            assert(c - r <= bands);
 #           if UPLO == 'U'
-                return band1 * c + r + band1;
+                return bands * c + r + bands;
 #           else
-                return band1 * r + c;
+                return bands * r + c;
 #           endif
         } else {
-            assert(r - c <= band1);
+            assert(r - c <= bands);
 #           if UPLO == 'U'
-                return band1 * r + c + band1;
+                return bands * r + c + bands;
 #           else
-                return band1 * c + r;
+                return bands * c + r;
 #           endif
         }
     }
@@ -66,7 +66,7 @@ struct DpbMatrix {
 
     /// Clear the matrix
     void clear() {
-        std::fill_n(data, size * (band1+1), 0.);
+        std::fill_n(data, size * (bands+1), 0.);
     }
 };
 
@@ -75,6 +75,8 @@ struct SparseBandMatrix {
     size_t bno[14];     ///< Vector of non-zero band numbers (shift from diagonal)
 
     double* data[14];   ///< Data stored in the matrix
+
+    static constexpr size_t bands = 13;
 
     /**
      * Create matrix

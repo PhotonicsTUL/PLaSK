@@ -156,95 +156,99 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
                    const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
                   )
 {
-//     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, band=%2%)", mAOrder, mABand);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%)", A.size, A.bands);
+
+    auto heats = inHeatDensity(mesh->getMidpointsMesh());
+
+    // zero the matrix and the load vector
+    A.clear();
+    B.fill(0.);
+
+    // Set stiffness matrix and load vector
+    for (auto elem: this->mesh->elements)
+    {
+        // Nodes numbers for the current element
+        size_t i1 = elem.getLoLoLoIndex();          //   z y            7-----8
+        size_t i2 = elem.getUpLoLoIndex();          //   |/__x         /|    /|
+        size_t i3 = elem.getLoUpLoIndex();          //                5-----6 |
+        size_t i4 = elem.getUpUpLoIndex();          //                | 3---|-4
+        size_t i5 = elem.getLoLoUpIndex();          //                |/    |/
+        size_t i6 = elem.getUpLoUpIndex();          //                1-----2
+        size_t i7 = elem.getLoUpUpIndex();          //
+        size_t i8 = elem.getUpUpUpIndex();          //
+
+        // element size
+        double dx = elem.getUpper0() - elem.getLower0();
+        double dy = elem.getUpper1() - elem.getLower1();
+        double dz = elem.getUpper2() - elem.getLower2();
+
+        // point and material in the middle of the element
+        Vec<3> middle = elem.getMidpoint();
+        auto material = geometry->getMaterial(middle);
+
+        // average temperature on the element
+        double temp = 0.125 * (temperatures[i1] + temperatures[i2] + temperatures[i3] + temperatures[i4] +
+                               temperatures[i5] + temperatures[i6] + temperatures[i7] + temperatures[i8]);
+
+        // thermal conductivity
+        double kx, ky, kz;
+        auto leaf = dynamic_pointer_cast<const GeometryObjectD<3>>(geometry->getMatchingAt(middle, &GeometryObject::PredicateIsLeaf));
+        if (leaf)
+            std::tie(ky,kz) = std::tuple<double,double>(material->thermk(temp, leaf->getBoundingBox().height()));
+        else
+            std::tie(ky,kz) = std::tuple<double,double>(material->thermk(temp));
+
+        kx = ky/dx; kx = ky*dy; kx = ky*dz;
+        ky *= dx;   ky /= dy;   ky *= dz;
+        kz *= dx;   kz *= dy;   kz /= dz;
+
+        // load vector: heat densities
+        double F = 0.125e-18 * dx * dy * dz * heats[elem.getIndex()]; // 1e-18 -> to transform µm³ into m³
+
+        // set symmetric matrix components
+//         double K
+
+//         tK44 = tK33 = tK22 = tK11 = (k + kz) / 3.;
+//         tK43 = tK21 = (-2. * k + kz) / 6.;
+//         tK42 = tK31 = - (k + kz) / 6.;
+//         tK32 = tK41 = (k - 2. * kz) / 6.;
 //
-//     auto iMesh = (this->mesh)->getMidpointsMesh();
-//     auto tHeatDensities = inHeatDensity(iMesh);
+//         double tF1 = F, tF2 = F, tF3 = F, tF4 = F;
 //
-//     // zero the matrix and the load vector
-//     A.clear();
-//     oLoad.fill(0.);
-//
-//     std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
-//
-//     // Set stiffness matrix and load vector
-//     for (auto tE: this->mesh->elements)
-//     {
-//         // nodes numbers for the current element
-//         size_t ll = tE.getLoLoIndex();
-//         size_t lr = tE.getUpLoIndex();
-//         size_t ul = tE.getLoUpIndex();
-//         size_t ur = tE.getUpUpIndex();
-//
-//         // element size
-//         double tElemWidth = tE.getUpper0() - tE.getLower0();
-//         double tElemHeight = tE.getUpper1() - tE.getLower1();
-//
-//         // point and material in the middle of the element
-//         Vec<2,double> tMidPoint = tE.getMidpoint();
-//         auto tMaterial = geometry->getMaterial(tMidPoint);
-//
-//         // average temperature on the element
-//         double tTemp = 0.25 * (temperatures[ll] + temperatures[lr] + temperatures[ul] + temperatures[ur]);
-//
-//         // thermal conductivity
-//         double tKx, tKy;
-//         auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-//         if (tLeaf)
-//             std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height()));
-//         else
-//             std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp));
-//
-//         tKx *= tElemHeight; tKx /= tElemWidth;
-//         tKy *= tElemWidth; tKy /= tElemHeight;
-//
-//         // load vector: heat densities
-//         double tF = 0.25e-12 * tElemWidth * tElemHeight * tHeatDensities[tE.getIndex()]; // 1e-12 -> to transform µm² into m²
-//
-//         // set symmetric matrix components
-//         double tK44, tK33, tK22, tK11, tK43, tK21, tK42, tK31, tK32, tK41;
-//
-//         tK44 = tK33 = tK22 = tK11 = (tKx + tKy) / 3.;
-//         tK43 = tK21 = (-2. * tKx + tKy) / 6.;
-//         tK42 = tK31 = - (tKx + tKy) / 6.;
-//         tK32 = tK41 = (tKx - 2. * tKy) / 6.;
-//
-//         double tF1 = tF, tF2 = tF, tF3 = tF, tF4 = tF;
-//
-//         // boundary conditions: heat flux
-//         setBoundaries<double>(iHFConst, ll, lr, ur, ul, tElemWidth, tElemHeight,
-//                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-//                       [](double len, double val, double, size_t, size_t) { // F
-//                           return - 0.5e-6 * len * val;
-//                       },
-//                       [](double,double,double,size_t,size_t){return 0.;}, // K diagonal
-//                       [](double,double,double,size_t,size_t){return 0.;}  // K off-diagonal
-//                      );
-//
-//         // boundary conditions: convection
-//         setBoundaries<Convection>(iConvection, ll, lr, ur, ul, tElemWidth, tElemHeight,
-//                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-//                       [](double len, Convection val, Convection, size_t, size_t) { // F
-//                           return 0.5e-6 * len * val.mConvCoeff * val.mTAmb1;
-//                       },
-//                       [](double len, Convection val1, Convection val2, size_t, size_t) { // K diagonal
-//                           return (val1.mConvCoeff + val2.mConvCoeff) * len / 3.;
-//                       },
-//                       [](double len, Convection val1, Convection val2, size_t, size_t) { // K off-diagonal
-//                           return (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
-//                       }
-//                      );
-//
-//         // boundary conditions: radiation
-//         setBoundaries<Radiation>(iRadiation, ll, lr, ur, ul, tElemWidth, tElemHeight,
-//                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-//                       [this](double len, Radiation val, Radiation, size_t i, size_t) -> double { // F
-//                           double a = val.mTAmb2; a = a*a;
-//                           double T = this->temperatures[i]; T = T*T;
-//                           return - 0.5e-6 * len * val.mSurfEmiss * phys::SB * (T*T - a*a);},
-//                       [](double,Radiation,Radiation,size_t,size_t){return 0.;}, // K diagonal
-//                       [](double,Radiation,Radiation,size_t,size_t){return 0.;}  // K off-diagonal
-//                      );
+//         //// boundary conditions: heat flux
+//         //setBoundaries<double>(iHFConst, ll, lr, ur, ul, width, height,
+//         //                tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
+//         //                [](double len, double val, double, size_t, size_t) { // F
+//         //                    return - 0.5e-6 * len * val;
+//         //                },
+//         //                [](double,double,double,size_t,size_t){return 0.;}, // K diagonal
+//         //                [](double,double,double,size_t,size_t){return 0.;}  // K off-diagonal
+//         //                );
+//         //
+//         //// boundary conditions: convection
+//         //setBoundaries<Convection>(iConvection, ll, lr, ur, ul, width, height,
+//         //                tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
+//         //                [](double len, Convection val, Convection, size_t, size_t) { // F
+//         //                    return 0.5e-6 * len * val.mConvCoeff * val.mTAmb1;
+//         //                },
+//         //                [](double len, Convection val1, Convection val2, size_t, size_t) { // K diagonal
+//         //                    return (val1.mConvCoeff + val2.mConvCoeff) * len / 3.;
+//         //                },
+//         //                [](double len, Convection val1, Convection val2, size_t, size_t) { // K off-diagonal
+//         //                    return (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
+//         //                }
+//         //                );
+//         //
+//         //// boundary conditions: radiation
+//         //setBoundaries<Radiation>(iRadiation, ll, lr, ur, ul, width, height,
+//         //                tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
+//         //                [this](double len, Radiation val, Radiation, size_t i, size_t) -> double { // F
+//         //                    double a = val.mTAmb2; a = a*a;
+//         //                    double T = this->temperatures[i]; T = T*T;
+//         //                    return - 0.5e-6 * len * val.mSurfEmiss * phys::SB * (T*T - a*a);},
+//         //                [](double,Radiation,Radiation,size_t,size_t){return 0.;}, // K diagonal
+//         //                [](double,Radiation,Radiation,size_t,size_t){return 0.;}  // K off-diagonal
+//         //                );
 //
 //         // set stiffness matrix
 //         oA(ll, ll) += tK11;
@@ -272,16 +276,16 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 //             oA(tIndex, tIndex) += mBigNum;
 //             oLoad[tIndex] += tCond.value * mBigNum;
 //         }
-//     }
-//
-// #ifndef NDEBUG
-//     double* tAend = oA.data + oA.size * oA.band1;
-//     for (double* pa = oA.data; pa != tAend; ++pa) {
-//         if (isnan(*pa) || isinf(*pa))
-//             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
-//     }
-// #endif
-//
+    }
+    //
+    // #ifndef NDEBUG
+    //     double* tAend = oA.data + oA.size * oA.bands;
+    //     for (double* pa = oA.data; pa != tAend; ++pa) {
+    //         if (isnan(*pa) || isinf(*pa))
+    //             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
+    //     }
+    // #endif
+    //
 }
 
 template <typename MatrixT>
@@ -359,17 +363,17 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<do
     int info = 0;
 
     // Factorize matrix
-    dpbtrf(UPLO, A.size, A.band1, A.data, A.band1+1, info);
+    dpbtrf(UPLO, A.size, A.bands, A.data, A.bands+1, info);
     if (info < 0)
         throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
-    dpbtrs(UPLO, A.size, A.band1, 1, A.data, A.band1+1, B.data(), B.size(), info);
+    dpbtrs(UPLO, A.size, A.bands, 1, A.data, A.bands+1, B.data(), B.size(), info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
 
-    // now A contains factorized matrix and B the solutions
+    // now A contains the factorized matrix and B the solutions
 }
 
 
@@ -422,7 +426,7 @@ void FiniteElementMethodThermal3DSolver::saveHeatFluxes()
     for (auto el: this->mesh->elements)
     {
         Vec<3,double> midpoint = el.getMidpoint();
-        auto tMaterial = this->geometry->getMaterial(midpoint);
+        auto material = this->geometry->getMaterial(midpoint);
 
         size_t lll = el.getLoLoLoIndex();
         size_t llu = el.getLoLoUpIndex();
@@ -437,19 +441,22 @@ void FiniteElementMethodThermal3DSolver::saveHeatFluxes()
                                temperatures[ull] + temperatures[ulu] + temperatures[uul] + temperatures[uuu]);
 
         double kxy, kz;
-        std::tie(kxy,kz) = std::tuple<double,double>(tMaterial->thermk(temp));
-        //TODO add dependence on layer thickness
+        auto leaf = dynamic_pointer_cast<const GeometryObjectD<3>>(geometry->getMatchingAt(midpoint, &GeometryObject::PredicateIsLeaf));
+        if (leaf)
+            std::tie(kxy,kz) = std::tuple<double,double>(material->thermk(temp, leaf->getBoundingBox().height()));
+        else
+            std::tie(kz,kz) = std::tuple<double,double>(material->thermk(temp));
 
         fluxes[el.getIndex()] = vec(
             - 0.25e6 * kxy * (- temperatures[lll] - temperatures[llu] - temperatures[lul] - temperatures[luu]
                               + temperatures[ull] + temperatures[ulu] + temperatures[uul] + temperatures[uuu])
-                / (el.getUpper0() - el.getLower0()), // 1e6 - from um to m
+                / (el.getUpper0() - el.getLower0()), // 1e6 - from µm to m
             - 0.25e6 * kxy * (- temperatures[lll] - temperatures[llu] + temperatures[lul] + temperatures[luu]
                               - temperatures[ull] - temperatures[ulu] + temperatures[uul] + temperatures[uuu])
-                / (el.getUpper1() - el.getLower1()), // 1e6 - from um to m
+                / (el.getUpper1() - el.getLower1()), // 1e6 - from µm to m
             - 0.25e6 * kz  * (- temperatures[lll] + temperatures[llu] - temperatures[lul] + temperatures[luu]
                               - temperatures[ull] + temperatures[ulu] - temperatures[uul] + temperatures[uuu])
-                / (el.getUpper2() - el.getLower2()) // 1e6 - from um to m
+                / (el.getUpper2() - el.getLower2()) // 1e6 - from µm to m
         );
     }
 }

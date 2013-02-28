@@ -189,7 +189,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(DpbMa
     }
 
 #ifndef NDEBUG
-    double* tAend = oA.data + oA.size * oA.band1;
+    double* tAend = oA.data + oA.size * oA.bands;
     for (double* pa = oA.data; pa != tAend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1% (%2%)", pa-oA.data, isnan(*pa)?"nan":"inf");
@@ -275,7 +275,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Dpb
     }
 
 #ifndef NDEBUG
-    double* tAend = oA.data + oA.size * oA.band1;
+    double* tAend = oA.data + oA.size * oA.bands;
     for (double* pa = oA.data; pa != tAend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
@@ -378,18 +378,18 @@ template<typename Geometry2DType> int FiniteElementMethodElectrical2DSolver<Geom
     // Factorize matrix
     switch (mAlgorithm) {
         case ALGORITHM_SLOW:
-            dpbtf2(UPLO, iA.size, iA.band1, iA.data, iA.band1+1, info);
+            dpbtf2(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, info);
             if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtf2 has illegal value", this->getId(), -info);
             break;
         case ALGORITHM_BLOCK:
-            dpbtrf(UPLO, iA.size, iA.band1, iA.data, iA.band1+1, info);
+            dpbtrf(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, info);
             if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
             break;
     }
     if (info > 0) return info;
 
     // Find solutions
-    dpbtrs(UPLO, iA.size, iA.band1, 1, iA.data, iA.band1+1, ioB.data(), ioB.size(), info);
+    dpbtrs(UPLO, iA.size, iA.bands, 1, iA.data, iA.bands+1, ioB.data(), ioB.size(), info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
 
     // now iA contains factorized matrix and ioB the solutions

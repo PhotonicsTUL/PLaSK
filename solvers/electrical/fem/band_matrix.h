@@ -25,10 +25,10 @@ namespace plask { namespace solvers { namespace electrical {
 struct DpbMatrix {
 
     std::size_t size;  ///< order of the matrix, i.e. number of columns or rows
-    std::size_t band1;  ///< size of the band reduced by one
+    std::size_t bands;  ///< size of the band reduced by one
     double* data;       ///< pointer to data
 
-    DpbMatrix(std::size_t rank, std::size_t band): size(rank), band1(band-1), data(new double[rank*band]) {}
+    DpbMatrix(std::size_t rank, std::size_t band): size(rank), bands(band-1), data(new double[rank*band]) {}
     DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
     ~DpbMatrix() { delete[] data; }
 
@@ -40,18 +40,18 @@ struct DpbMatrix {
     size_t index(std::size_t r, std::size_t c) {
         assert(r < size && c < size);
         if (r < c) {
-            assert(c - r <= band1);
+            assert(c - r <= bands);
 #           if UPLO == 'U'
-                return band1 * c + r + band1;
+                return bands * c + r + bands;
 #           else
-                return band1 * r + c;
+                return bands * r + c;
 #           endif
         } else {
-            assert(r - c <= band1);
+            assert(r - c <= bands);
 #           if UPLO == 'U'
-                return band1 * r + c + band1;
+                return bands * r + c + bands;
 #           else
-                return band1 * c + r;
+                return bands * c + r;
 #           endif
         }
     }
