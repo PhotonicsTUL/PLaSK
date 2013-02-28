@@ -101,7 +101,7 @@ using ChangeSpaceFilter = ChangeSpaceFilterImpl<PropertyT, typename PropertyT::V
  * inputSpaceType - must be Geometry2D...
  */
 template <typename PropertyT>
-struct ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry2DCartesian, Geometry3D> {
+struct ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3D, Geometry2DCartesian> {
 
     Box3D bbox; ///<calculate using geometries, should be recalculated on changes
 
