@@ -6,6 +6,15 @@
 
 namespace plask {
 
+//FilterBlock concept: has ResultType, has ParameterType, has ExtraParameters..., and ResultType operator()(ParameterType, ExtraParameters...)
+//or optional<ResultType> operator()(ParameterType, ExtraParameters...) ??
+//can be Receiver
+/*template <>
+struct FilterBlock {
+}; ??*/
+
+
+
 /**
  * Filter is a special kind of Solver which solves the problem using another Solver.
  *
@@ -88,7 +97,24 @@ struct ChangeSpaceFilterImpl<PropertyT, ValueT, FIELD_PROPERTY, inputSpaceType, 
 template <typename PropertyT, typename inputSpaceType, typename outputSpaceType>
 using ChangeSpaceFilter = ChangeSpaceFilterImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, inputSpaceType, outputSpaceType, typename PropertyT::ExtraParams>;
 
+/**
+ * inputSpaceType - must be Geometry2D...
+ */
 template <typename PropertyT>
+struct ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry2DCartesian, Geometry3D> {
+
+    Box3D bbox; ///<calculate using geometries, should be recalculated on changes
+
+    Vec<3, double> translation; ///<calculate using geometries, should be recalculated on changes
+
+    //TODO geometries, path
+
+    /// Value provided outside an extrusion.
+    typename PropertyT::ValueType outsideValue;
+
+};
+
+/*template <typename PropertyT>
 struct ExtrusionBase: public ChangeSpaceFilter<PropertyT, Geometry2DCartesian, Geometry3D> {
 
     typedef typename PropertyT::ValueType ValueType;
@@ -126,7 +152,7 @@ struct ExtrusionFilterImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolde
 };
 
 template <typename PropertyT, typename inputSpaceType, typename outputSpaceType>
-using ExtrusionFilter = ExtrusionFilterImpl<PropertyT, PropertyT::propertyType, typename PropertyT::ExtraParams>;
+using ExtrusionFilter = ExtrusionFilterImpl<PropertyT, PropertyT::propertyType, typename PropertyT::ExtraParams>;*/
 
 //TODO 3D -> 2D reduction by using constant extra coordinate
 //przekrój
