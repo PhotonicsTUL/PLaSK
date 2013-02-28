@@ -103,16 +103,52 @@ using ChangeSpaceFilter = ChangeSpaceFilterImpl<PropertyT, typename PropertyT::V
 template <typename PropertyT>
 struct ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3D, Geometry2DCartesian> {
 
-    Box3D bbox; ///<calculate using geometries, should be recalculated on changes
+    Vec<3, double> translation; ///<place of extrusion inside outer 3D geometry, calculated using geometries, should be recalculated on changes
+    
+    double lonSize; ///<from extrusion
 
-    Vec<3, double> translation; ///<calculate using geometries, should be recalculated on changes
-
-    //TODO geometries, path
+    //TODO geometries, path? maybe only in geom. changes handler
 
     /// Value provided outside an extrusion.
     typename PropertyT::ValueType outsideValue;
 
-    //TODO boost::optional<Vec<3,double>> inputCoord(Vec<2,double> v);
+    /**
+     * Each point in 2D geometry is extruded to line in 3D geometry.
+     * @param v point in 2D geometry coordinates
+     * @return begin of line, in geometry 3D coordinates
+     */
+    Vec<3,double> lineBegin(const Vec<2,double>& v) const {
+        Vec<3, double> result = translation;
+        result.tran() += v.tran();
+        result.vert() += v.vert();
+        return result;
+    }
+    
+    /**
+     * Each point in 2D geometry is extruded to line in 3D geometry.
+     * @param v point in 2D geometry coordinates
+     * @return end of line, in geometry 3D coordinates
+     */
+    Vec<3,double> lineEnd(const Vec<2,double>& v) const {
+        Vec<3, double> result = translation;
+        result.tran() += v.tran();
+        result.vert() += v.vert();
+        result.lon() += lonSize;
+        return result;
+    }
+    
+    /**
+     * Each point in 2D geometry is extruded to line in 3D geometry.
+     * @param v point in 2D geometry coordinates
+     * @return middle of line, in geometry 3D coordinates
+     */
+    Vec<3,double> lineCenter(const Vec<2,double>& v) const {
+        Vec<3, double> result = translation;
+        result.tran() += v.tran();
+        result.vert() += v.vert();
+        result.lon() += lonSize * 0.5;
+        return result;
+    }
 
 };
 
