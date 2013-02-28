@@ -112,6 +112,8 @@ struct ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3
     /// Value provided outside an extrusion.
     typename PropertyT::ValueType outsideValue;
 
+    //TODO boost::optional<Vec<3,double>> inputCoord(Vec<2,double> v);
+
 };
 
 /*template <typename PropertyT>
