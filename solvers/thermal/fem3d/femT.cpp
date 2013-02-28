@@ -161,7 +161,8 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 //     auto iMesh = (this->mesh)->getMidpointsMesh();
 //     auto tHeatDensities = inHeatDensity(iMesh);
 //
-//     std::fill_n(oA.data, mABand*mAOrder, 0.); // zero the matrix
+//     // zero the matrix and the load vector
+//     A.clear();
 //     oLoad.fill(0.);
 //
 //     std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
@@ -301,7 +302,7 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
     int loop = 0;
     size_t size = mesh->size();
 
-    MatrixT A(size, mesh->mediumAxis().size(), mesh->minorAxis().size());
+    MatrixT A(size, mesh->mediumAxis().size()*mesh->minorAxis().size(), mesh->minorAxis().size());
 
     double max_abscorr = 0.,
            max_relcorr = 0.;
