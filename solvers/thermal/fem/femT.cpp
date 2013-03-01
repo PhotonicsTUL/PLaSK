@@ -212,10 +212,10 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
                           return 0.5e-6 * len * val.mConvCoeff * val.mTAmb1;
                       },
                       [](double len, Convection val1, Convection val2, size_t, size_t) { // K diagonal
-                          return (val1.mConvCoeff + val2.mConvCoeff) * len / 3.;
+                          return (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
                       },
                       [](double len, Convection val1, Convection val2, size_t, size_t) { // K off-diagonal
-                          return (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
+                          return (val1.mConvCoeff + val2.mConvCoeff) * len / 12.;
                       }
                      );
 

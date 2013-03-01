@@ -72,9 +72,9 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
     dcomplex k = k0 / (1. - v/2.); // get wavelength back from frequency parameter
     dcomplex lam = 2e3*M_PI / k;
     outWavelength = real(lam);
-    outExtinction = phys::c * imag(k);
+    outModalLoss = 1e7 * imag(k);
     outWavelength.fireChanged();
-    outExtinction.fireChanged();
+    outModalLoss.fireChanged();
     outIntensity.fireChanged();
     have_fields = false;
     return lam;
@@ -120,9 +120,9 @@ void EffectiveFrequencyCylSolver::setMode(dcomplex clambda)
     if (det > root.tolf_max) throw BadInput(getId(), "Provided wavelength does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting current mode to %1%", str(clambda));
     outWavelength = real(clambda);
-    outExtinction = phys::c * imag(2e3*M_PI/clambda);
+    outModalLoss = 1e7 * imag(2e3*M_PI/clambda);
     outWavelength.fireChanged();
-    outExtinction.fireChanged();
+    outModalLoss.fireChanged();
     outIntensity.fireChanged();
 }
 
@@ -151,9 +151,10 @@ void EffectiveFrequencyCylSolver::onInitialize()
 void EffectiveFrequencyCylSolver::onInvalidate()
 {
     outWavelength.invalidate();
-    outExtinction.invalidate();
+    outModalLoss.invalidate();
     have_fields = false;
     outWavelength.fireChanged();
+    outModalLoss.fireChanged();
     outIntensity.fireChanged();
 }
 

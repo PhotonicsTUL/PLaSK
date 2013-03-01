@@ -54,15 +54,25 @@ namespace plask {
  *
  * @see @ref solvers_writing; @ref providers; plask::ProviderFor
  */
+
+/**
+ * Temperature [K].
+ */
 struct Temperature: public ScalarFieldProperty {
     static constexpr const char* NAME = "temperature";
     static inline double getDefaultValue() { return 300.; }
 };
 
+/**
+ * Heat flux in 2D space [W/m].
+ */
 struct HeatFlux2D: public VectorFieldProperty<2> {
     static constexpr const char* NAME = "heat flux 2D";
 };
 
+/**
+ * Heat flux in 3D space [W/m²].
+ */
 struct HeatFlux3D: public VectorFieldProperty<3> {
     static constexpr const char* NAME = "heat flux 3D";
 };

@@ -204,7 +204,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     ProviderFor<Wavelength>::WithValue outWavelength;
 
     /// Provider for computed modal extinction
-    ProviderFor<Extinction>::WithValue outExtinction;
+    ProviderFor<ModalLoss>::WithValue outModalLoss;
 
     /// Provider of optical field
     ProviderFor<OpticalIntensity, Geometry2DCylindrical>::Delegate outIntensity;

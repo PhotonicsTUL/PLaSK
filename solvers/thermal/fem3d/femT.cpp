@@ -98,55 +98,42 @@ void FiniteElementMethodThermal3DSolver::setAlgorithm(Algorithm alg) {
     algorithm = alg;
 }
 
-// /**
-//     * Helper function for applying boundary conditions of element edges to stiffness matrix.
-//     * Boundary conditions must be set for both nodes at the element edge.
-//     * \param boundary_conditions boundary conditions holder
-//     * \param i1, i2, i3, i4 indices of the lower left, lower right, upper right, and upper left node
-//     * \param width width of the element
-//     * \param height height of the element
-//     * \param[out] F1, F2, F3, F4 references to the load vector components
-//     * \param[out] K11, K22, K33, K44, K12, K14, K24, K34 references to the stiffness matrix components
-//     * \param F_function function returning load vector component
-//     * \param Kmm_function function returning stiffness matrix diagonal component
-//     * \param Kmn_function function returning stiffness matrix off-diagonal component
-//     */
-// template <typename ConditionT>
-// static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh2D,ConditionT>& boundary_conditions,
-//                           size_t i1, size_t i2, size_t i3, size_t i4, double width, double height,
-//                           double& F1, double& F2, double& F3, double& F4,
-//                           double& K11, double& K22, double& K33, double& K44,
-//                           double& K12, double& K23, double& K34, double& K41,
-//                           const std::function<double(double,ConditionT,ConditionT,size_t,size_t)>& F_function,
-//                           const std::function<double(double,ConditionT,ConditionT,size_t,size_t)>& Kmm_function,
-//                           const std::function<double(double,ConditionT,ConditionT,size_t,size_t)>& Kmn_function
-//                          )
-// {
-//     auto val1 = boundary_conditions.getValue(i1);
-//     auto val2 = boundary_conditions.getValue(i2);
-//     auto val3 = boundary_conditions.getValue(i3);
-//     auto val4 = boundary_conditions.getValue(i4);
-//     if (val1 && val2) { // bottom
-//         F1 += F_function(width, *val1, *val2, i1, i2); F2 += F_function(width, *val2, *val1, i2, i1);
-//         K11 += Kmm_function(width, *val1, *val2, i1, i2); K22 += Kmm_function(width, *val2, *val1, i2, i1);
-//         K12 += Kmn_function(width, *val1, *val2, i1, i2);
-//     }
-//     if (val2 && val3) { // right
-//         F2 += F_function(height, *val2, *val3, i2, i3); F3 += F_function(height, *val3, *val2, i3, i2);
-//         K22 += Kmm_function(height, *val2, *val3, i2, i3); K33 += Kmm_function(height, *val3, *val2, i3, i2);
-//         K23 += Kmn_function(height, *val2, *val3, i2, i3);
-//     }
-//     if (val3 && val4) { // top
-//         F3 += F_function(width, *val3, *val4, i3, i4); F4 += F_function(width, *val4, *val3, i4, i3);
-//         K33 += Kmm_function(width, *val3, *val4, i3, i4); K44 += Kmm_function(width, *val4, *val3, i4, i3);
-//         K34 += Kmn_function(width, *val3, *val4, i3, i4);
-//     }
-//     if (val4 && val1) { // left
-//         F1 += F_function(height, *val1, *val4, i1, i4); F4 += F_function(height, *val4, *val1, i4, i1);
-//         K11 += Kmm_function(height, *val1, *val4, i1, i4); K44 += Kmm_function(height, *val4, *val1, i4, i1);
-//         K41 += Kmn_function(height, *val1, *val4, i1, i4);
-//     }
-// }
+/**
+    * Helper function for applying boundary conditions of element edges to stiffness matrix.
+    * Boundary conditions must be set for both nodes at the element edge.
+    * \param boundary_conditions boundary conditions holder
+    * \param idx indices of the element nodes
+    * \param dx, dy, dz dimentions of the element
+    * \param[out] F the load vector
+    * \param[out] K stiffness matrix
+    * \param F_function function returning load vector component
+    * \param K_function function returning stiffness matrix component
+    */
+template <typename ConditionT>
+static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh3D,ConditionT>& boundary_conditions,
+                          const size_t (&idx)[8], double dx, double dy, double dz, double (&F)[8], double (&K)[8][8],
+                          const std::function<double(double,ConditionT,size_t)>& F_function,
+                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t)>& K_function
+                         )
+{
+    boost::optional<ConditionT> values[8];
+    for (int i = 0; i < 8; ++i) values[i] = boundary_conditions.getValue(idx[i]);
+
+    constexpr int walls[6][4] = { {0,1,2,3}, {4,5,6,7}, {0,2,4,6}, {1,3,5,7}, {0,1,4,5}, {2,3,6,7} };
+    const double areas[3] = { dx*dy, dy*dz, dz*dx };
+
+    for (int side = 0; side < 6; ++side) {
+        const auto& wall = walls[side];
+        if (values[wall[0]] && values[wall[1]] && values[wall[2]] && values[wall[3]]) {
+            double area = areas[side/2];
+            for (int i = 0; i < 4; ++i) {
+                F[i] += F_function(area, *values[wall[i]], wall[i]);
+                for (int j = 0; j <= i; ++j) K[i][j] += K_function(area, *values[wall[i]], *values[wall[j]], wall[i], wall[j]);
+            }
+        }
+
+    }
+}
 
 template <typename MatrixT>
 void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
@@ -165,7 +152,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements)
+    for (auto elem: mesh->elements)
     {
         // nodes numbers for the current element
         size_t idx[8];
@@ -219,50 +206,43 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 
         K[4][3] = K[5][2] = K[6][1] = K[7][0] = -(kx + ky + kz) / 36.;
 
-        //double F[8];
-        //std::fill_n(F, 8, f);
+        double F[8];
+        std::fill_n(F, 8, f);
+
+        // boundary conditions: heat flux
+        setBoundaries<double>(bheatflux, idx, dx, dy, dz, F, K,
+                              [](double area, double value, size_t) { // F
+                                  return - 0.25e-12 * area * value;
+                              },
+                              [](double, double, double, size_t, size_t) { return 0.; }  // K
+                             );
+
+        // boundary conditions: convection
+        setBoundaries<Convection>(bconvection, idx, dx, dy, dz, F, K,
+                                  [](double area, Convection value, size_t) { // F
+                                      return 0.25e-12 * area * value.coeff * value.ambient;
+                                  },
+                                  [](double area, Convection value, Convection, size_t i1, size_t i2) { // K
+                                      return (i2 == i1)? 0.25e-12 * area * value.coeff : 0.;
+                                  }
+                                 );
+
+        // boundary conditions: radiation
+        setBoundaries<Radiation>(bradiation, idx, dx, dy, dz, F, K,
+                                 [this](double area, Radiation value, size_t i) -> double { // F
+                                     double a = value.ambient; a = a*a;
+                                     double T = this->temperatures[i]; T = T*T;
+                                     return - 0.25e-12 * area * value.emissivity * phys::SB * (T*T - a*a);},
+                                 [](double, Radiation, Radiation, size_t, size_t) {return 0.;} // K
+                                );
 
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j <= i; ++j) {
                 A(i,j) += K[i][j];
             }
-            B[i] = f; //TODO boundary conditions
+            B[i] += F[i]; //TODO boundary conditions
         }
 
-//         //// boundary conditions: heat flux
-//         //setBoundaries<double>(iHFConst, ll, lr, ur, ul, width, height,
-//         //                tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-//         //                [](double len, double val, double, size_t, size_t) { // F
-//         //                    return - 0.5e-6 * len * val;
-//         //                },
-//         //                [](double,double,double,size_t,size_t){return 0.;}, // K diagonal
-//         //                [](double,double,double,size_t,size_t){return 0.;}  // K off-diagonal
-//         //                );
-//         //
-//         //// boundary conditions: convection
-//         //setBoundaries<Convection>(iConvection, ll, lr, ur, ul, width, height,
-//         //                tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-//         //                [](double len, Convection val, Convection, size_t, size_t) { // F
-//         //                    return 0.5e-6 * len * val.mConvCoeff * val.mTAmb1;
-//         //                },
-//         //                [](double len, Convection val1, Convection val2, size_t, size_t) { // K diagonal
-//         //                    return (val1.mConvCoeff + val2.mConvCoeff) * len / 3.;
-//         //                },
-//         //                [](double len, Convection val1, Convection val2, size_t, size_t) { // K off-diagonal
-//         //                    return (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
-//         //                }
-//         //                );
-//         //
-//         //// boundary conditions: radiation
-//         //setBoundaries<Radiation>(iRadiation, ll, lr, ur, ul, width, height,
-//         //                tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-//         //                [this](double len, Radiation val, Radiation, size_t i, size_t) -> double { // F
-//         //                    double a = val.mTAmb2; a = a*a;
-//         //                    double T = this->temperatures[i]; T = T*T;
-//         //                    return - 0.5e-6 * len * val.mSurfEmiss * phys::SB * (T*T - a*a);},
-//         //                [](double,Radiation,Radiation,size_t,size_t){return 0.;}, // K diagonal
-//         //                [](double,Radiation,Radiation,size_t,size_t){return 0.;}  // K off-diagonal
-//         //                );
     }
 
     // boundary conditions of the first kind
