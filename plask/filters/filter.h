@@ -98,24 +98,58 @@ template <typename PropertyT, typename inputSpaceType, typename outputSpaceType>
 using ChangeSpaceFilter = ChangeSpaceFilterImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, inputSpaceType, outputSpaceType, typename PropertyT::ExtraParams>;
 
 /**
- * inputSpaceType - must be Geometry2D...
+ * Filter which recalculate field from 3D geometry to 2D cartesian geometry included in this 3D geometry.
+ *
+ * To use it, @p apply method must be implemented, see @ref ChangeSpaceFilter.
  */
 template <typename PropertyT>
-struct ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3D, Geometry2DCartesian> {
+class ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3D, Geometry2DCartesian> {
 
-    Vec<3, double> translation; ///<place of extrusion inside outer 3D geometry, calculated using geometries, should be recalculated on changes
+    boost::signals2::connection geomConnection;
     
-    double lonSize; ///<from extrusion
+public:
+    
+    /// Place of extrusion inside outer 3D geometry, calculated using geometries.
+    Vec<3, double> translation;
+    
+    /// Length of line in 3D geometry. This line is calculated for each point in inner 2D space. Length from extrusion.
+    double lonSize; 
+    
+    void getParameters(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints* path = nullptr) {
+        std::vector< Vec<3, double> > pos = outerInGeometry->getObjectPositions(innerOutGeometry, path);
+        if (pos.size() != 1) throw Exception("ChangeSpaceCartesian2Dto3D: innerOutGeometry has no unambiguous position in outerInGeometry.");
+        translation = pos[0];
+        lonSize = innerOutGeometry->getLength();
+    }
+    
+    ChangeSpaceCartesian2Dto3D(const Vec<3, double>& translation, double lonSize)
+        : translation(translation), lonSize(lonSize) {}
+    
+    ChangeSpaceCartesian2Dto3D(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry) {
+        getParameters(outerInGeometry, innerOutGeometry);
+        geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
+                if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry);
+        });
+    }
 
-    //TODO geometries, path? maybe only in geom. changes handler
-
-    /// Value provided outside an extrusion.
-    typename PropertyT::ValueType outsideValue;
+    ChangeSpaceCartesian2Dto3D(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints& path) {
+        getParameters(outerInGeometry, innerOutGeometry, &path);
+        geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
+                if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry, &path);
+        });
+    }
+    
+    ~ChangeSpaceCartesian2Dto3D() {
+        geomConnection.disconnect();
+    }
 
     /**
-     * Each point in 2D geometry is extruded to line in 3D geometry.
+     * Each point in 2D geometry is extruded to line segment in 3D geometry.
+     *
+     * If @c b is begin of this line segment, than each point inside this segment has coordinate
+     * which can be calulate by adding to @c b.lon() number in range [0.0, lonSize].
      * @param v point in 2D geometry coordinates
-     * @return begin of line, in geometry 3D coordinates
+     * @return begin of line segment, in geometry 3D coordinates
      */
     Vec<3,double> lineBegin(const Vec<2,double>& v) const {
         Vec<3, double> result = translation;
@@ -125,9 +159,10 @@ struct ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3
     }
     
     /**
-     * Each point in 2D geometry is extruded to line in 3D geometry.
+     * Each point in 2D geometry is extruded to line segment in 3D geometry.
      * @param v point in 2D geometry coordinates
-     * @return end of line, in geometry 3D coordinates
+     * @return end of line segment, in geometry 3D coordinates
+     * @see lineBegin(const Vec<2,double>&)
      */
     Vec<3,double> lineEnd(const Vec<2,double>& v) const {
         Vec<3, double> result = translation;
@@ -138,15 +173,17 @@ struct ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3
     }
     
     /**
-     * Each point in 2D geometry is extruded to line in 3D geometry.
+     * Each point in 2D geometry is extruded to line in segment 3D geometry.
      * @param v point in 2D geometry coordinates
-     * @return middle of line, in geometry 3D coordinates
+     * @param at position in line, from 0.0 to 1.0: 0.0 for line begin, 1.0 for line end
+     * @return point at line segment, in geometry 3D coordinates
+     * @see lineBegin(const Vec<2,double>&)
      */
-    Vec<3,double> lineCenter(const Vec<2,double>& v) const {
+    Vec<3,double> lineAt(const Vec<2,double>& v, double at) const {
         Vec<3, double> result = translation;
         result.tran() += v.tran();
         result.vert() += v.vert();
-        result.lon() += lonSize * 0.5;
+        result.lon() += lonSize * at;
         return result;
     }
 
