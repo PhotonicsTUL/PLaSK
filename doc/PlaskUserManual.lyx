@@ -606,7 +606,7 @@ Actually it is possible to run the computations without creating XPL file
 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sec:Thermo-electrical-GaAs-VCSEL"
+reference "sec:Optical-analysis-of-VCSEL"
 
 \end_inset
 
@@ -3375,23 +3375,59 @@ show()
 \begin_layout Section
 \begin_inset CommandInset label
 LatexCommand label
-name "sec:Thermo-electrical-GaAs-VCSEL"
+name "sec:Optical-analysis-of-VCSEL"
 
 \end_inset
 
-Thermo-electrical model of gallium-arsenide VCSEL
+Optical analysis of a step-profile VCSEL
+\end_layout
+
+\begin_layout Standard
+multistack
+\end_layout
+
+\begin_layout Standard
+py file separately
+\end_layout
+
+\begin_layout Standard
+EFM
+\end_layout
+
+\begin_layout Standard
+using scipy.optimize for fine-control of the loops
 \end_layout
 
 \begin_layout Section
-Scalar optical modeling of simple rectangular waveguide
+Finding threshold current of gallium-arsenide VCSEL
 \end_layout
 
-\begin_layout Section
-Searching threshold gain of a step-profile VCSEL
+\begin_layout Standard
+putting all the above together
+\end_layout
+
+\begin_layout Standard
+diffusion, gain
 \end_layout
 
 \begin_layout Section
 Searching threshold of a real gallium nitride array
+\end_layout
+
+\begin_layout Standard
+multiple geometries
+\end_layout
+
+\begin_layout Standard
+repeating objects
+\end_layout
+
+\begin_layout Standard
+paths
+\end_layout
+
+\begin_layout Standard
+filters
 \end_layout
 
 \begin_layout Part
@@ -3444,6 +3480,10 @@ Compiled material libraries
 
 \begin_layout Section
 Custom material class in Python
+\end_layout
+
+\begin_layout Standard
+If custom __init__ ALWAYS call superclass __init__.
 \end_layout
 
 \begin_layout Section

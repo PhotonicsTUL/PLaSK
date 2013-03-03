@@ -1,0 +1,13 @@
+[Desktop Entry]
+Comment=
+Exec=qtplask
+GenericName=Photonic Laser Simulation Kit — QtConsole
+Icon=plask
+MimeType=application/plask
+Name=PLaSK QtConsole
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+Categories=Science;Physics;Python;Qt;
