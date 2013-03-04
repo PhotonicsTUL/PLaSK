@@ -527,6 +527,24 @@ void register_mesh_rectangular()
         .def("set_optimal_ordering", &RectilinearMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh3D__getOrdering<RectilinearMesh3D>, &RectangularMesh3D__setOrdering<RectilinearMesh3D>, "Ordering of the points in this mesh")
         .def("get_midpoints", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
+        .add_static_property("front", &RectilinearMesh3D::getFrontBoundary, "Front side of the mesh for setting boundary conditions")
+        .add_static_property("back", &RectilinearMesh3D::getBackBoundary, "Back side of the mesh for setting boundary conditions")
+        .add_static_property("left", &RectilinearMesh3D::getLeftBoundary, "Left side of the mesh for setting boundary conditions")
+        .add_static_property("right", &RectilinearMesh3D::getRightBoundary, "Right side of the mesh for setting boundary conditions")
+        .add_static_property("top", &RectilinearMesh3D::getTopBoundary, "Top side of the mesh for setting boundary conditions")
+        .add_static_property("bottom", &RectilinearMesh3D::getBottomBoundary, "Bottom side of the mesh for setting boundary conditions")
+        .def("front_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getFrontOfBoundary,
+             "Get boundary in front of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("front_of")
+        .def("back_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getBackOfBoundary,
+             "Get boundary back of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("back_of")
+        .def("left_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
+             "Get boundary left of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("left_of")
+        .def("right_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
+             "Get boundary right of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("right_of")
+        .def("top_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
+             "Get boundary top of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("top_of")
+        .def("bottom_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
+             "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottom_of")
         .def(py::self == py::self)
     ;
     ExportBoundary<RectilinearMesh3D> { rectilinear3d };

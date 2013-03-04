@@ -27,24 +27,6 @@ There are two typical approaches to implementing new types of meshes:
 
 @see @ref interpolation_write @ref boundaries_impl
 
-@subsection meshes_write_adapters Using adapters to generate plask::Mesh implementation
-You can specialize adapter template to generate class which inheriting from plask::Mesh instantiation.
-
-To do this, you have to implement internal mesh representation class first.
-
-Typically internal mesh interface:
-- represents set of point in the same space as parent mesh;
-- allow for faster calculation than generic mesh interface, and often has more futures (methods);
-- can have different types (there are no common base class for internal interfaces).
-
-In most cases, mesh adapter has @c internal field which is internal mesh interface and use @c internal field methods to implement itself methods (especially, abstract methods of plask::Mesh).
-
-Your class must fulfill adapter templates requirements (it is one of adapter template parameters),
-and also can have extra methods for your internal use (for calculation).
-
-Adapter templates currently available in PLaSK (see its description for more details and examples):
-- plask::SimpleMeshAdapter
-
 @subsection meshes_write_direct Direct implementation of plask::MeshD\<DIM\>
 To implement a new mesh directly you have to write class inherited from the \c plask::MeshD\<DIM\>, where DIM (is equal 2 or 3) is a number of dimension of space your mesh is defined over.
 
@@ -340,69 +322,6 @@ inline typename MeshD<dim>::Iterator makeMeshIterator(IteratorType iter) {
     return typename MeshD<dim>::Iterator(new MeshIteratorWrapperImpl<IteratorType, dim>(iter));
 }
 
-
-/**
- *  Template which instantiation is a class inherited from plask::Mesh (it is a Mesh implementation).
- *
- *  It helds an @a internal mesh (of type InternalMeshType) and uses it to implement plask::Mesh methods.
- *  All constructors and -> calls are delegated to the @a internal mesh.
- *
- *  Example usage:
- *  @code
- *  // Create 3D mesh which uses std::vector of 3d points as internal representation:
- *  plask::SimpleMeshAdapter< std::vector< plask::Vec<3, double> >, 3 > mesh;
- *  // Append two points to vector:
- *  mesh.internal.push_back(plask::vec(1.0, 1.2, 3.0));
- *  mesh->push_back(plask::vec(3.0, 4.0, 0.0)); // mesh-> is a shortcut to mesh.internal.
- *  // Now, mesh contains two points:
- *  assert(mesh.size() == 2);
- *  @endcode
- *
- *  @tparam InternalMeshType Internal mesh type.
- *  It must:
- *  - allow for iterate (has begin() and end() methods) over Vec<dim, double>,
- *  - has size() method which return number of points in mesh.
- */
-//TODO needs getIndex in iterators or another iterator wrapper which calculate this
-template <typename InternalMeshType, int dim>
-struct SimpleMeshAdapter: public MeshD<dim> {
-
-    //typedef MeshIteratorWrapperImpl<typename InternalMeshType::const_iterator, dim> IteratorImpl;
-
-    /// Held internal, usually optimized, mesh.
-    InternalMeshType internal;
-
-    /**
-     * Delegate constructor to @a internal representation.
-     * @param params parameters for InternalMeshType constructor
-     */
-    template<typename ...Args>
-    SimpleMeshAdapter<InternalMeshType, dim>(Args&&... params)
-    : internal(std::forward<Args>(params)...) {
-    }
-
-    /**
-     * Delegate call to @a internal.
-     * @return <code>&internal</code>
-     */
-    InternalMeshType* operator->() {
-        return &internal;
-    }
-
-    /**
-     * Delegate call to @a internal.
-     * @return <code>&internal</code>
-     */
-    const InternalMeshType* operator->() const {
-        return &internal;
-    }
-
-    // MeshD<dim> methods implementation:
-    virtual std::size_t size() const { return internal.size(); }
-    virtual typename MeshD<dim>::Iterator begin() const { return makeMeshIterator(internal.begin()); }
-    virtual typename MeshD<dim>::Iterator end() const { return makeMeshIterator(internal.end()); }
-
-};
 
 /** Base template for rectangular mesh of any dimension */
 template <int dim, typename Mesh1D>
