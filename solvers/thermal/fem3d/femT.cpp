@@ -115,7 +115,7 @@ template <typename ConditionT>
 static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh3D,ConditionT>& boundary_conditions,
                           const size_t (&idx)[8], double dx, double dy, double dz, double (&F)[8], double (&K)[8][8],
                           const std::function<double(double,ConditionT,size_t)>& F_function,
-                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t)>& K_function
+                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t,bool)>& K_function
                          )
 {
     boost::optional<ConditionT> values[8];
@@ -130,7 +130,11 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh3D,Con
             double area = areas[side/2];
             for (int i = 0; i < 4; ++i) {
                 F[i] += F_function(area, *values[wall[i]], wall[i]);
-                for (int j = 0; j <= i; ++j) K[i][j] += K_function(area, *values[wall[i]], *values[wall[j]], wall[i], wall[j]);
+                for (int j = 0; j <= i; ++j) {
+                    int ij = i ^ j; // numbers on the single edge differ by one bit only, so detect different bits
+                    bool edge = (ij == 1 || ij == 2 || ij == 4);
+                    K[i][j] += K_function(area, *values[wall[i]], *values[wall[j]], wall[i], wall[j], edge);
+                }
             }
         }
 
@@ -216,7 +220,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
                               [](double area, double value, size_t) { // F
                                   return - 0.25e-12 * area * value;
                               },
-                              [](double, double, double, size_t, size_t) { return 0.; }  // K
+                              [](double, double, double, size_t, size_t, bool) { return 0.; }  // K
                              );
 
         // boundary conditions: convection
@@ -224,8 +228,9 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
                                   [](double area, Convection value, size_t) { // F
                                       return 0.25e-12 * area * value.coeff * value.ambient;
                                   },
-                                  [](double area, Convection value, Convection, size_t i1, size_t i2) { // K
-                                      return (i2 == i1)? 0.25e-12 * area * value.coeff : 0.;
+                                  [](double area, Convection value1, Convection value2, size_t i1, size_t i2, bool edge) -> double { // K
+                                      double v = 0.125e-12 * area * (value1.coeff + value2.coeff);
+                                      return v / (i2==i1? 9. : edge? 18. : 36.);
                                   }
                                  );
 
@@ -235,14 +240,14 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
                                      double a = value.ambient; a = a*a;
                                      double T = this->temperatures[i]; T = T*T;
                                      return - 0.25e-12 * area * value.emissivity * phys::SB * (T*T - a*a);},
-                                 [](double, Radiation, Radiation, size_t, size_t) {return 0.;} // K
+                                 [](double, Radiation, Radiation, size_t, size_t, bool) {return 0.;} // K
                                 );
 
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j <= i; ++j) {
                 A(i,j) += K[i][j];
             }
-            B[i] += F[i]; //TODO boundary conditions
+            B[i] += F[i];
         }
 
     }

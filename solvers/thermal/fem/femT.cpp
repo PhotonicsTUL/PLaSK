@@ -79,6 +79,7 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     mHeatFluxes.reset();
 }
 
+enum BoundarySide { LEFT, RIGHT, TOP, BOTTOM };
 
 /**
     * Helper function for applying boundary conditions of element edges to stiffness matrix.
@@ -99,9 +100,9 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh2D,Con
                           double& F1, double& F2, double& F3, double& F4,
                           double& K11, double& K22, double& K33, double& K44,
                           double& K12, double& K23, double& K34, double& K41,
-                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t)>& F_function,
-                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t)>& Kmm_function,
-                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t)>& Kmn_function
+                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t,BoundarySide)>& F_function,
+                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t,BoundarySide)>& Kmm_function,
+                          const std::function<double(double,ConditionT,ConditionT,size_t,size_t,BoundarySide)>& Kmn_function
                          )
 {
     auto val1 = boundary_conditions.getValue(i1);
@@ -109,24 +110,24 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh2D,Con
     auto val3 = boundary_conditions.getValue(i3);
     auto val4 = boundary_conditions.getValue(i4);
     if (val1 && val2) { // bottom
-        F1 += F_function(width, *val1, *val2, i1, i2); F2 += F_function(width, *val2, *val1, i2, i1);
-        K11 += Kmm_function(width, *val1, *val2, i1, i2); K22 += Kmm_function(width, *val2, *val1, i2, i1);
-        K12 += Kmn_function(width, *val1, *val2, i1, i2);
+        F1 += F_function(width, *val1, *val2, i1, i2, BOTTOM); F2 += F_function(width, *val2, *val1, i2, i1, BOTTOM);
+        K11 += Kmm_function(width, *val1, *val2, i1, i2, BOTTOM); K22 += Kmm_function(width, *val2, *val1, i2, i1, BOTTOM);
+        K12 += Kmn_function(width, *val1, *val2, i1, i2, BOTTOM);
     }
     if (val2 && val3) { // right
-        F2 += F_function(height, *val2, *val3, i2, i3); F3 += F_function(height, *val3, *val2, i3, i2);
-        K22 += Kmm_function(height, *val2, *val3, i2, i3); K33 += Kmm_function(height, *val3, *val2, i3, i2);
-        K23 += Kmn_function(height, *val2, *val3, i2, i3);
+        F2 += F_function(height, *val2, *val3, i2, i3, RIGHT); F3 += F_function(height, *val3, *val2, i3, i2, RIGHT);
+        K22 += Kmm_function(height, *val2, *val3, i2, i3, RIGHT); K33 += Kmm_function(height, *val3, *val2, i3, i2, RIGHT);
+        K23 += Kmn_function(height, *val2, *val3, i2, i3, RIGHT);
     }
     if (val3 && val4) { // top
-        F3 += F_function(width, *val3, *val4, i3, i4); F4 += F_function(width, *val4, *val3, i4, i3);
-        K33 += Kmm_function(width, *val3, *val4, i3, i4); K44 += Kmm_function(width, *val4, *val3, i4, i3);
-        K34 += Kmn_function(width, *val3, *val4, i3, i4);
+        F3 += F_function(width, *val3, *val4, i3, i4, TOP); F4 += F_function(width, *val4, *val3, i4, i3, TOP);
+        K33 += Kmm_function(width, *val3, *val4, i3, i4, TOP); K44 += Kmm_function(width, *val4, *val3, i4, i3, TOP);
+        K34 += Kmn_function(width, *val3, *val4, i3, i4, TOP);
     }
     if (val4 && val1) { // left
-        F1 += F_function(height, *val1, *val4, i1, i4); F4 += F_function(height, *val4, *val1, i4, i1);
-        K11 += Kmm_function(height, *val1, *val4, i1, i4); K44 += Kmm_function(height, *val4, *val1, i4, i1);
-        K41 += Kmn_function(height, *val1, *val4, i1, i4);
+        F1 += F_function(height, *val1, *val4, i1, i4, LEFT); F4 += F_function(height, *val4, *val1, i4, i1, LEFT);
+        K11 += Kmm_function(height, *val1, *val4, i1, i4, LEFT); K44 += Kmm_function(height, *val4, *val1, i4, i1, LEFT);
+        K41 += Kmn_function(height, *val1, *val4, i1, i4, LEFT);
     }
 }
 
@@ -198,23 +199,23 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
         // boundary conditions: heat flux
         setBoundaries<double>(iHFConst, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-                      [](double len, double val, double, size_t, size_t) { // F
+                      [](double len, double val, double, size_t, size_t, BoundarySide) { // F
                           return - 0.5e-6 * len * val;
                       },
-                      [](double,double,double,size_t,size_t){return 0.;}, // K diagonal
-                      [](double,double,double,size_t,size_t){return 0.;}  // K off-diagonal
+                      [](double, double, double, size_t, size_t, BoundarySide){return 0.;}, // K diagonal
+                      [](double, double, double, size_t, size_t, BoundarySide){return 0.;}  // K off-diagonal
                      );
 
         // boundary conditions: convection
         setBoundaries<Convection>(iConvection, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-                      [](double len, Convection val, Convection, size_t, size_t) { // F
+                      [](double len, Convection val, Convection, size_t, size_t, BoundarySide) { // F
                           return 0.5e-6 * len * val.mConvCoeff * val.mTAmb1;
                       },
-                      [](double len, Convection val1, Convection val2, size_t, size_t) { // K diagonal
+                      [](double len, Convection val1, Convection val2, size_t, size_t, BoundarySide) { // K diagonal
                           return (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
                       },
-                      [](double len, Convection val1, Convection val2, size_t, size_t) { // K off-diagonal
+                      [](double len, Convection val1, Convection val2, size_t, size_t, BoundarySide) { // K off-diagonal
                           return (val1.mConvCoeff + val2.mConvCoeff) * len / 12.;
                       }
                      );
@@ -222,12 +223,12 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
         // boundary conditions: radiation
         setBoundaries<Radiation>(iRadiation, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-                      [this](double len, Radiation val, Radiation, size_t i, size_t) -> double { // F
+                      [this](double len, Radiation val, Radiation, size_t i, size_t, BoundarySide) -> double { // F
                           double a = val.mTAmb2; a = a*a;
                           double T = this->mTemperatures[i]; T = T*T;
                           return - 0.5e-6 * len * val.mSurfEmiss * phys::SB * (T*T - a*a);},
-                      [](double,Radiation,Radiation,size_t,size_t){return 0.;}, // K diagonal
-                      [](double,Radiation,Radiation,size_t,size_t){return 0.;}  // K off-diagonal
+                      [](double, Radiation, Radiation, size_t, size_t, BoundarySide){return 0.;}, // K diagonal
+                      [](double, Radiation, Radiation, size_t, size_t, BoundarySide){return 0.;}  // K off-diagonal
                      );
 
         // set stiffness matrix
@@ -335,36 +336,52 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(DpbMat
         // boundary conditions: heat flux
         setBoundaries<double>(iHFConst, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-                      [](double len, double val, double, size_t, size_t) { // F
-                          return - 0.5e-6 * len * val;
+                      [&](double len, double val, double, size_t i1, size_t i2, BoundarySide side) -> double { // F
+                            if (side == LEFT) return - 0.5e-6 * len * val * tE.getLower0();
+                            else if (side == RIGHT) return - 0.5e-6 * len * val * tE.getUpper0();
+                            else return - 0.5e-6 * len * val * (r + (i1<i2? -len/6. : len/6.));
                       },
-                      [](double,double,double,size_t,size_t){return 0.;}, // K diagonal
-                      [](double,double,double,size_t,size_t){return 0.;}  // K off-diagonal
+                      [](double, double, double, size_t, size_t, BoundarySide){return 0.;}, // K diagonal
+                      [](double, double, double, size_t, size_t, BoundarySide){return 0.;}  // K off-diagonal
                      );
 
         // boundary conditions: convection
         setBoundaries<Convection>(iConvection, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-                      [](double len, Convection val, Convection, size_t, size_t) { // F
-                          return 0.5e-6 * len * val.mConvCoeff * val.mTAmb1;
+                      [&](double len, Convection val1, Convection val2, size_t i1, size_t i2, BoundarySide side) -> double { // F
+                          double a = 0.125e-6 * len * (val1.mConvCoeff + val2.mConvCoeff) * (val1.mTAmb1 + val2.mTAmb1);
+                            if (side == LEFT) return a * tE.getLower0();
+                            else if (side == RIGHT) return a * tE.getUpper0();
+                            else return a * (r + (i1<i2? -len/6. : len/6.));
+
                       },
-                      [](double len, Convection val1, Convection val2, size_t, size_t) { // K diagonal
-                          return (val1.mConvCoeff + val2.mConvCoeff) * len / 3.;
+                      [&](double len, Convection val1, Convection val2, size_t i1, size_t i2, BoundarySide side) -> double { // K diagonal
+                            double a = (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
+                            if (side == LEFT) return a * tE.getLower0();
+                            else if (side == RIGHT) return a * tE.getUpper0();
+                            else return a * (r + (i1<i2? -len/6. : len/6.));
                       },
-                      [](double len, Convection val1, Convection val2, size_t, size_t) { // K off-diagonal
-                          return (val1.mConvCoeff + val2.mConvCoeff) * len / 6.;
+                      [&](double len, Convection val1, Convection val2, size_t, size_t, BoundarySide side) -> double { // K off-diagonal
+                            double a = (val1.mConvCoeff + val2.mConvCoeff) * len / 12.;
+                            if (side == LEFT) return a * tE.getLower0();
+                            else if (side == RIGHT) return a * tE.getUpper0();
+                            else return a * r;
                       }
                      );
 
         // boundary conditions: radiation
         setBoundaries<Radiation>(iRadiation, tLoLeftNo, tLoRghtNo, tUpRghtNo, tUpLeftNo, tElemWidth, tElemHeight,
                       tF1, tF2, tF3, tF4, tK11, tK22, tK33, tK44, tK21, tK32, tK43, tK41,
-                      [this](double len, Radiation val, Radiation, size_t i, size_t) -> double { // F
-                          double a = val.mTAmb2; a = a*a;
-                          double T = this->mTemperatures[i]; T = T*T;
-                          return - 0.5e-6 * len * val.mSurfEmiss * phys::SB * (T*T - a*a);},
-                      [](double,Radiation,Radiation,size_t,size_t){return 0.;}, // K diagonal
-                      [](double,Radiation,Radiation,size_t,size_t){return 0.;}  // K off-diagonal
+                      [&,this](double len, Radiation val, Radiation, size_t i1,  size_t i2, BoundarySide side) -> double { // F
+                            double amb = val.mTAmb2; amb = amb*amb;
+                            double T = this->mTemperatures[i1]; T = T*T;
+                            double a = - 0.5e-6 * len * val.mSurfEmiss * phys::SB * (T*T - amb*amb);
+                            if (side == LEFT) return a * tE.getLower0();
+                            else if (side == RIGHT) return a * tE.getUpper0();
+                            else return a * (r + (i1<i2? -len/6. : len/6.));
+                      },
+                      [](double, Radiation, Radiation, size_t, size_t, BoundarySide){return 0.;}, // K diagonal
+                      [](double, Radiation, Radiation, size_t, size_t, BoundarySide){return 0.;}  // K off-diagonal
                      );
 
         double tKr = tKy * tElemWidth / 12.;
@@ -383,10 +400,10 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(DpbMat
         oA(tUpLeftNo, tUpRghtNo) += r * tK43;
 
         // set load vector
-        oLoad[tLoLeftNo] += r * tF1;
-        oLoad[tLoRghtNo] += r * tF2;
-        oLoad[tUpRghtNo] += r * tF3;
-        oLoad[tUpLeftNo] += r * tF4;
+        oLoad[tLoLeftNo] += tF1;
+        oLoad[tLoRghtNo] += tF2;
+        oLoad[tUpRghtNo] += tF3;
+        oLoad[tUpLeftNo] += tF4;
     }
 
     // boundary conditions of the first kind
