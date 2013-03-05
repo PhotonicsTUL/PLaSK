@@ -306,7 +306,7 @@ struct Translation: public GeometryObjectTransform<dim> {
     virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const;
 
     /**
-     * Get shallow, moved copy of this.
+     * Get shallow copy of this with diffrent translation.
      * @param new_translation translation vector of copy
      */
     shared_ptr<Translation<dim>> copyShallow(const DVec& new_translation) const {
