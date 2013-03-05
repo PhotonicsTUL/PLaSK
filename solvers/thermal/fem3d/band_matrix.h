@@ -76,7 +76,7 @@ struct SparseBandMatrix {
 
     double* data[14];   ///< Data stored in the matrix
 
-    static constexpr size_t bands = 13;
+    static const size_t bands;
 
     /**
      * Create matrix

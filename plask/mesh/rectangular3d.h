@@ -793,28 +793,28 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
 
         if (index2 == 0)
             return interpolateLinear2D(
-                [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1, 0)]; },
+                [&] (std::size_t i0, std::size_t i1) { return data[this->index(i0, i1, 0)]; },
                 point.c0, point.c1, axis0, axis1, index0, index1
             );
 
         if (index2 == axis0.size()) {
             --index2;
             return interpolateLinear2D(
-                [&] (std::size_t i0, std::size_t i1) { return data[index(i0, i1, index2)]; },
+                [&] (std::size_t i0, std::size_t i1) { return data[this->index(i0, i1, index2)]; },
                 point.c0, point.c1, axis0, axis1, index0, index1
             );
         }
 
         if (index1 == 0)
             return interpolateLinear2D(
-                [&] (std::size_t i0, std::size_t i2) { return data[index(i0, 0, i2)]; },
+                [&] (std::size_t i0, std::size_t i2) { return data[this->index(i0, 0, i2)]; },
                 point.c0, point.c2, axis0, axis2, index0, index2
             );
 
         if (index1 == axis1.size()) {
             --index1;
             return interpolateLinear2D(
-                [&] (std::size_t i0, std::size_t i2) { return data[index(i0, index1, i2)]; },
+                [&] (std::size_t i0, std::size_t i2) { return data[this->index(i0, index1, i2)]; },
                 point.c0, point.c2, axis0, axis2, index0, index2
             );
         }

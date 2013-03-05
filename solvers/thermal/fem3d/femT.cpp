@@ -18,6 +18,8 @@ F77SUB dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, do
 
 namespace plask { namespace solvers { namespace thermal3d {
 
+const size_t SparseBandMatrix::bands = 13;
+
 FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, RectilinearMesh3D>(name),
     algorithm(ALGORITHM_BLOCK),
