@@ -48,14 +48,14 @@ class Region(object):
         if self.role: more += ' role="%s"' % self.role
         if self.name: more += ' name="%s"' % self.name
         locals().update(self.__dict__)
-        output.write('      <child %(a0)s="%(x0).4f" %(a1)s="%(y0).4f"><block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/></child>\n' % locals())
+        output.write('      <item %(a0)s="%(x0).4f" %(a1)s="%(y0).4f"><block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/></item>\n' % locals())
         if self.repeat:
             x = self.x0
             y = self.y0
             for i in range(self.repeat):
                 x += self.shift[0]
                 y += self.shift[1]
-                output.write('      <child %(a0)s="%(x).4f" %(a1)s="%(y).4f"><ref name="%(name)s"/></child>\n' % locals())
+                output.write('      <item %(a0)s="%(x).4f" %(a1)s="%(y).4f"><ref name="%(name)s"/></item>\n' % locals())
 
 
 class Material(object):
@@ -409,7 +409,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('\nprint_log(LOG_INFO, "Total current: %.3gmA" % abs(ELECTRICAL.get_total_current()))')
 
     if therm or electr:
-        out('\nplotgrid = MSG.plots(GEO.main.child)')
+        out('\nplotgrid = MSG.plots(GEO.main.item)')
 
         if actlevel is not False:
             if actlevel is True:
@@ -445,7 +445,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
         out('\nif has_pylab:')
         out('    plot_geometry(GEO.main, set_limits=True)')
-        out('    defmesh = MSG.default(GEO.main.child)')
+        out('    defmesh = MSG.default(GEO.main.item)')
         out('    plot_mesh(defmesh, color="0.75")')
         if electr:
             out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, color="b", marker="D")')
@@ -476,7 +476,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
                 out('    plot(actgrid.axis0, abs(acurrent.array[0,:,1]))')
                 out('    xlabel(u"%s [\\xb5m]")' % axes[0])
                 out('    ylabel("current density [kA/cm$^2$]")')
-                out('    simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.child)')
+                out('    simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.item)')
                 out('    for x in simplemesh.axis0:')
                 out('        axvline(x, ls=":", color="k")')
                 out('    xlim(0., simplemesh.axis0[-2])')

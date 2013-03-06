@@ -3472,6 +3472,10 @@ PLaSK reference manual
 General concepts of PLaSK
 \end_layout
 
+\begin_layout Section
+Definitions
+\end_layout
+
 \begin_layout Chapter
 Geometry specification
 \end_layout
@@ -3628,8 +3632,12 @@ Strain model
 Dynamic models
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Part
 \start_of_appendix
+Appendices
+\end_layout
+
+\begin_layout Chapter
 \begin_inset CommandInset label
 LatexCommand label
 name "chap:Units-in-PLaSK"
@@ -3640,7 +3648,855 @@ Units in PLaSK
 \end_layout
 
 \begin_layout Chapter
-Formal specification of the XPL file
+Semi-formal specification of the XPL file
+\end_layout
+
+\begin_layout Standard
+XPL files follow XML specification.
+ Thus all the general rules of creating correct XML files apply top XPL
+ ones as well.
+ Please refer to the external documentation for information on XML syntax
+ and grammar
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Good resources are 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://www.w3.org/TR/REC-xml/}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+url{http://en.wikipedia.org/wiki/XML}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+.
+ Details specific to XPL are covered in this chapter.
+\end_layout
+
+\begin_layout Standard
+First of all each XML document must have a parent tag.
+ In XPL files such tag is named 
+\family typewriter
+<plask>
+\family default
+.
+ Thus, the all information in the data file are content of this tag and
+ have to be located between 
+\family typewriter
+<plask>
+\family default
+ and 
+\family typewriter
+</plask>
+\family default
+ tags.
+ Inside there are several sections that can be included in the XPL file:
+ 
+\family typewriter
+<materials>
+\family default
+, 
+\family typewriter
+<geometry>
+\family default
+, 
+\family typewriter
+<grids>
+\family default
+, 
+\family typewriter
+<solvers>
+\family default
+, 
+\family typewriter
+<connects>
+\family default
+, and 
+\family typewriter
+<script>
+\family default
+.
+ Each of them is optional, however, if present, they must be specified in
+ the order shown in the previous sentence.
+ Formal specification of each section follows:
+\end_layout
+
+\begin_layout Section
+Section <materials>
+\end_layout
+
+\begin_layout Standard
+In this section custom materials are defined.
+\end_layout
+
+\begin_layout Section
+Section <geometry>
+\end_layout
+
+\begin_layout Standard
+In this section geometries of the analyze structures are defined.
+ More than one geometry can be specified.
+ Inside each geometry tag there must be a single geometry object: usually
+ it is some container.
+ 
+\family typewriter
+<geometry>
+\family default
+ is the only section that can take an optional attribute 
+\family typewriter
+axes
+\family default
+ which specifies the default value of 
+\family typewriter
+axes
+\family default
+ attributes for all its elements.
+\end_layout
+
+\begin_layout Subsection
+Available elements
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<cartesian2d>
+\family default
+\series default
+ Two-dimensional Cartesian geometry.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+axes
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Specification of the axes.
+ Most popular values are 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+xy
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+yz
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+rz
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ (letters are names of the horizontal and vertical axis, respectively).
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+wszystkie możliwości
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+length
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Physical length of the extruded geometry for solvers that use this information.
+ (float
+\begin_inset space ~
+\end_inset
+
+[µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+name
+\family default
+\series default
+ Geometry name for further reference.
+ (unique identifier
+\begin_inset space ~
+\end_inset
+
+string)
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+Any object from section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:XPL-Geometry-objects-2D"
+
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<cylindrical2d>
+\family default
+\series default
+ Two-dimensional cylindrical geometry.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+axes
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Specification of the axes.
+ Most popular values are 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+xy
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+yz
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+rz
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ (letters are names of the horizontal and vertical axis, respectively).
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+wszystkie możliwości
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+name
+\family default
+\series default
+ Geometry name for further reference.
+ (unique identifier
+\begin_inset space ~
+\end_inset
+
+string)
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+Any object from section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:XPL-Geometry-objects-2D"
+
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<cartesian3d>
+\family default
+\series default
+ Three-dimensional Cartesian geometry.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+axes
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Specification of the axes.
+ Most popular values are 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+xy
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+yz
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+rz
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ (letters are names of the horizontal and vertical axis, respectively).
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+wszystkie możliwości
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+name
+\family default
+\series default
+ Geometry name for further reference.
+ (unique identifier
+\begin_inset space ~
+\end_inset
+
+string)
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+Any object from section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:XPL-Geometry-objects-2D"
+
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:XPL-Geometry-objects-2D"
+
+\end_inset
+
+Geometry objects 2D
+\end_layout
+
+\begin_layout Standard
+The following elements are specifying two-dimensional geometry objects for
+ use with 2D geometries.
+ Each of them can have an optional attribute 
+\family typewriter
+name
+\family default
+, which allows to give the name to the object for further reference (either
+ in the geometry specification or in the computational script).
+ The correct value of the object name is unique identifier string.
+\end_layout
+
+\begin_layout Subsubsection
+Containers
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<stack>
+\family default
+\series default
+ Stack organizing its elements on top of the other.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+repeat
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Number of repetitive occurrences of stack content.
+ This attribute allows to create periodic vertical structures (e.
+\begin_inset space \thinspace{}
+\end_inset
+
+g.
+ DBRs) easily.
+ Defaults to 1.
+ (integer)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+shift
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical position of the stack bottom edge in its local coordinates.
+ This attribute really makes sense only if the stack is the main element
+ of the geometry, as in such case its local coordinates define global geometry
+ coordinate system.
+ Defaults to 0.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+left
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Default alignment specification: position of the left edge of the bounding
+ boxes of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+right
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Default alignment specification: position of the right edge of the bounding
+ boxes of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+trancenter
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+Default alignment specification: position of the center of the bounding
+ boxes of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+\series default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ 
+\emph default
+is the transverse axis name: Alias for 
+\family typewriter
+trancenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the transverse axis name: Default alignment specification: position
+ of the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+Attributes 
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+ and 
+\begin_inset Formula $x$
+\end_inset
+
+ are mutally exclusive.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+Any number of other two-dimensional geometry object which are organized
+ in the vertical stack, ordered from top to bottom.
+ Each stack item can be enclosed in an additional tag 
+\family typewriter
+<item>
+\family default
+ that have an optional attribute 
+\family typewriter
+path
+\family default
+ specifying a path hint enabling distinguishing between multiple occurrences
+ of the same object (e.
+\begin_inset space \thinspace{}
+\end_inset
+
+g.
+ 
+\family typewriter
+<item path=
+\begin_inset Quotes erd
+\end_inset
+
+123
+\begin_inset Quotes erd
+\end_inset
+
+> <ref name=
+\begin_inset Quotes erd
+\end_inset
+
+other
+\begin_inset Quotes erd
+\end_inset
+
+/> </item>
+\family default
+).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+<zero/>
+\family default
+ This tag can appear as stack content only once.
+ If present, it indicates the vertical position of origin of the local coordinat
+e system.
+ Hence, it is an alternative method os specifying 
+\emph on
+shift
+\emph default
+ value.
+\end_layout
+
+\end_deeper
+\begin_layout Paragraph
+
+\family typewriter
+<shelf>
+\end_layout
+
+\begin_layout Subsubsection
+Transformations
+\end_layout
+
+\begin_layout Subsubsection
+Physical objects
+\end_layout
+
+\begin_layout Subsubsection
+Other
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:XPL-Geometry-objects-3D"
+
+\end_inset
+
+Geometry objects 3D
+\end_layout
+
+\begin_layout Section
+Section <grids>
+\end_layout
+
+\begin_layout Section
+Section <solvers>
+\end_layout
+
+\begin_layout Section
+Section <connects>
+\end_layout
+
+\begin_layout Section
+Section <script>
 \end_layout
 
 \begin_layout Chapter

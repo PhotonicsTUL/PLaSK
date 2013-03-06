@@ -70,9 +70,9 @@ def write_dan(name, manager, allm=True):
         mat = geo.get_material(point)
         mn, dp, dc = parse_material(mat)
         outl(mn)
-        noheat = geo.child.has_role('noheat', point)
+        noheat = geo.item.has_role('noheat', point)
         # second line
-        if geo.child.has_role('active', point):
+        if geo.item.has_role('active', point):
             mt = 'j'
             if electrical is not None:
                 cx, cy = electrical.pnjcond
@@ -104,7 +104,7 @@ def write_dan(name, manager, allm=True):
         # fifth line
         if noheat:
             outl("0                                               0.0         no_heat_sources")
-        elif geo.child.has_role('active', point):
+        elif geo.item.has_role('active', point):
             outl("-200                                            0.0         junction_heat")
         else:
             outl("-100                                            0.0         joules_heat")
