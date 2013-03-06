@@ -1,6 +1,7 @@
 #include "geometry.h"
 #include "../../util/py_set.h"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/python/raw_function.hpp>
 
 #include <plask/geometry/container.h>
 #include <plask/geometry/translation_container.h>
@@ -98,6 +99,17 @@ static PathHints::Hint TranslationContainer3_add
 }
 
 
+template <typename ContainerT>
+PathHints::Hint TranslationContainer_add(py::tuple args, py::dict kwargs) {
+    parseKwargs("append", args, kwargs, "self", "item");
+    ContainerT* self = py::extract<ContainerT*>(args[0]);
+    shared_ptr<typename ContainerT::ChildType> child = py::extract<shared_ptr<typename ContainerT::ChildType>>(args[1]);
+    if (py::len(kwargs) == 0)
+        return self->add(child);
+    else
+        return self->add(child, py::extract<typename ContainerT::ChildAligner>(kwargs));
+}
+
 
 void register_geometry_container_stack();
 
@@ -111,20 +123,26 @@ void register_geometry_container()
      "Container in which every child has an associated translation vector\n\n"
      "TranslationContainer2D()\n    Create a new container"
     )
-        /*.def("append", &TranslationContainer<2>::add, (py::arg("child"), py::arg("translation")=Vec<2,double>(0.,0.)),
-             "Add new object to the container with provided translation vector")*/  //TODO this is overload, also version with aligner must by support
-        .def("append", &TranslationContainer2_add, (py::arg("child"), "c0", "c1"),
+        .def("append", py::raw_function(&TranslationContainer_add<TranslationContainer<2>>),
+             "Add new object to the container with provided alignment")
+        .def("append", (PathHints::Hint(TranslationContainer<2>::*)(shared_ptr<TranslationContainer<2>::ChildType>,const Vec<2>&))&TranslationContainer<2>::add,
+             (py::arg("item"), py::arg("translation")=Vec<2>(0.,0.)),
+             "Add new object to the container with provided translation vector")
+        .def("append", &TranslationContainer2_add, (py::arg("item"), "c0", "c1"),
              "Add new object to the container with tranlastion [c0,c1]")
-    ;
+       ;
 
     py::class_<TranslationContainer<3>, shared_ptr<TranslationContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>
     ("TranslationContainer3D",
      "Container in which every child has an associated translation vector\n\n"
      "TranslationContainer3D()\n    Create a new container"
     )
-        /*.def("append", &TranslationContainer<3>::add, (py::arg("child"), py::arg("translation")=Vec<3,double>(0.,0.,0.)),
-             "Add new object to the container with provided translation vector")*/ //TODO this is overload, also version with aligner must by support
-        .def("append", &TranslationContainer3_add, (py::arg("child"), "c0", "c1", "c2"),
+        .def("append", py::raw_function(&TranslationContainer_add<TranslationContainer<2>>),
+             "Add new object to the container with provided alignment")
+        .def("append", (PathHints::Hint(TranslationContainer<3>::*)(shared_ptr<TranslationContainer<3>::ChildType>,const Vec<3>&))&TranslationContainer<3>::add,
+             (py::arg("item"), py::arg("translation")=Vec<3>(0.,0.,0.)),
+             "Add new object to the container with provided translation vector")
+        .def("append", &TranslationContainer3_add, (py::arg("item"), "c0", "c1", "c2"),
              "Add new object to the container with translation [c0,c1,c2]")
     ;
 

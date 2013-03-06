@@ -174,6 +174,30 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
     return space;
 }
 
+static shared_ptr<Geometry3D> Geometry3D__init__(py::tuple args, py::dict kwargs) {
+    int na = py::len(args);
+
+    shared_ptr <Geometry3D> space;
+
+    if (na == 2) {
+        if (kwargs.has_key("geometry")) throw TypeError("got multiple values for keyword argument 'geometry'");
+        shared_ptr<GeometryObjectD<3>> object = py::extract<shared_ptr<GeometryObjectD<3>>>(args[1]);
+        space = make_shared<Geometry3D>(object);
+    } else if (na == 1 && kwargs.has_key("geometry")) {
+        shared_ptr<GeometryObjectD<3>> object = py::extract<shared_ptr<GeometryObjectD<3>>>(kwargs["geometry"]);
+        space = make_shared<Geometry3D>(object);
+    } else {
+        throw TypeError("__init__() exactly 2 non-keyword arguments (%1%) given", na);
+    }
+
+    std::set<std::string> parsed_kwargs;
+    parsed_kwargs.insert("geometry");
+
+    _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
+
+    return space;
+}
+
 template <typename S>
 static typename Primitive<S::DIMS>::Box Space_childBoundingBox(const S& self) {
     return self.getChildBoundingBox();
@@ -241,6 +265,18 @@ static BordersProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical
     return borders;
 }
 
+static BordersProxy Geometry3D_getBorders(const Geometry2DCartesian& self) {
+    BordersProxy borders;
+    borders["back"] = _border(self, Geometry::DIRECTION_LONG, false);
+    borders["front"] = _border(self, Geometry::DIRECTION_LONG, true);
+    borders["left"] = _border(self, Geometry::DIRECTION_TRAN, false);
+    borders["right"] = _border(self, Geometry::DIRECTION_TRAN, true);
+    borders["top"] = _border(self, Geometry::DIRECTION_VERT, true);
+    borders["bottom"] = _border(self, Geometry::DIRECTION_VERT, false);
+    return borders;
+}
+
+
 // template <typename S>
 // static shared_ptr<S> Space_getSubspace(py::tuple args, py::dict kwargs) {
 //     const S* self = py::extract<S*>(args[0]);
@@ -290,7 +326,7 @@ void register_calculation_spaces() {
     ;
 
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",
-        "Geometry trunk in 2D Cartesian space\n\n"
+        "Geometry in 2D Cartesian space\n\n"
         "Cartesian2D(geometry, length=infty, **borders)\n"
         "    Create a space around the two-dimensional geometry object with given length.\n\n"
         "    'geometry' can be either a 2D geometry object or plask.geometry.Extrusion, in which case\n"
@@ -298,7 +334,7 @@ void register_calculation_spaces() {
         "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
         py::no_init)
         .def("__init__", raw_constructor(Geometry2DCartesian__init__, 1))
-        .add_property("child", &Geometry2DCartesian::getChild, "GeometryObject2D at the root of the tree")
+        .add_property("item", &Geometry2DCartesian::getChild, "GeometryObject2D at the root of the tree")
         .add_property("extrusion", &Geometry2DCartesian::getExtrusion, "Extrusion object at the very root of the tree")
         .add_property("bbox", &Space_childBoundingBox<Geometry2DCartesian>, "Minimal rectangle which includes all points of the geometry object")
         .def_readwrite("default_material", &Geometry2DCartesian::defaultMaterial, "Material of the 'empty' regions of the geometry")
@@ -328,15 +364,15 @@ void register_calculation_spaces() {
     ;
 
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
-        "Geometry trunk in 2D cylindrical space\n\n"
-        "Cylindircal2D(geometry, **borders)\n"
+        "Geometry in 2D cylindrical space\n\n"
+        "Cylindrical2D(geometry, **borders)\n"
         "    Create a space around the two-dimensional geometry object.\n\n"
         "    'geometry' can be either a 2D geometry object or plask.geometry.Revolution.\n"
         "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
         py::no_init)
         .def("__init__", raw_constructor(Geometry2DCylindrical__init__, 1))
-        .add_property("child", &Geometry2DCylindrical::getChild, "GeometryObject2D at the root of the tree")
-        .add_property("extrusion", &Geometry2DCylindrical::getRevolution, "Revolution object at the very root of the tree")
+        .add_property("item", &Geometry2DCylindrical::getChild, "GeometryObject2D at the root of the tree")
+        .add_property("revolution", &Geometry2DCylindrical::getRevolution, "Revolution object at the very root of the tree")
         .add_property("bbox", &Space_childBoundingBox<Geometry2DCylindrical>, "Minimal rectangle which includes all points of the geometry object")
         .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial, "Material of the 'empty' regions of the geometry")
         .add_property("borders", &Geometry2DCylindrical_getBorders, &Space_setBorders,
@@ -357,6 +393,38 @@ void register_calculation_spaces() {
              "Return subtree containing paths to all leafs covering specified point")
         .def("get_paths", &Space_getMaterial<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
+//              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
+    ;
+
+    py::class_<Geometry3D, shared_ptr<Geometry3D>, py::bases<Geometry>>("Cartesian3D",
+        "Geometry in 3D space\n\n"
+        "Cartesian3D(geometry, **borders)\n"
+        "    Create a space around the two-dimensional geometry object.\n\n"
+        "    'geometry' should be either a 3D geometry object.\n"
+        "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
+        py::no_init)
+        .def("__init__", raw_constructor(Geometry3D__init__, 1))
+        .add_property("item", &Geometry3D::getChild, "GeometryObject2D at the root of the tree")
+        .add_property("bbox", &Space_childBoundingBox<Geometry3D>, "Minimal rectangle which includes all points of the geometry object")
+        .def_readwrite("default_material", &Geometry3D::defaultMaterial, "Material of the 'empty' regions of the geometry")
+        .add_property("borders", &Geometry3D_getBorders, &Space_setBorders,
+                      "Dictionary specifying the type of the surroundings around the structure")
+        .def("get_material", &Geometry3D::getMaterial, "Return material at given point", (py::arg("point")))
+        .def("get_material", &Space_getMaterial<Geometry3D>::call, "Return material at given point", (py::arg("c0"), "c1", "c2"))
+        .def("get_leafs", &Space_getLeafs<Geometry3D>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
+        .def("get_leafs_positions", (std::vector<Vec<3>>(Geometry3D::*)(const PathHints&)const) &Geometry3D::getLeafsPositions,
+             (py::arg("path")=py::object()), "Calculate positions of all leafs")
+        .def("get_leafs_bboxes", (std::vector<Box3D>(Geometry3D::*)(const PathHints&)const) &Geometry3D::getLeafsBoundingBoxes,
+             (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
+        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry3D>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
+        .def("get_object_positions", (std::vector<Vec<3>>(Geometry3D::*)(const GeometryObject&, const PathHints&)const) &Geometry3D::getObjectPositions,
+             (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
+        .def("get_object_bboxes", (std::vector<Box3D>(Geometry3D::*)(const GeometryObject&, const PathHints&)const) &Geometry3D::getObjectBoundingBoxes,
+             (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
+        .def("get_paths", &Geometry3D::getPathsAt, (py::arg("point"), py::arg("all")=false),
+             "Return subtree containing paths to all leafs covering specified point")
+        .def("get_paths", &Space_getMaterial<Geometry3D>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("c2"), py::arg("all")=false))
+//         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry3D>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 

@@ -15,7 +15,7 @@ class Manager(unittest.TestCase):
             <geometry>
                 <cartesian2d name="Space-1" axes="xy">
                     <stack name="Stack-2">
-                        <child path="Path-4"><rectangle name="Block-3" dx="5" dy="2" material="GaN" /></child>
+                        <item path="Path-4"><rectangle name="Block-3" dx="5" dy="2" material="GaN" /></item>
                         <ref name="Block-3"/>
                     </stack>
                 </cartesian2d>
@@ -87,7 +87,7 @@ class Manager(unittest.TestCase):
                 <geometry>
                     <cartesian2d name="Space-1" axes="xy">
                         <stack name="Stack-2">
-                            <child path="Path-4"><rectangle name="Block-3" x="5" y="2" material="GaN" /></child>
+                            <item path="Path-4"><rectangle name="Block-3" x="5" y="2" material="GaN" /></item>
                             <ref name="Block-3"/>
                     </cartesian2d>
                 </geometry>

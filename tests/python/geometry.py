@@ -116,19 +116,19 @@ class Containers(unittest.TestCase):
         self.assertEqual( multistack.get_material(0.,10.), self.block1.get_material(0.,0.) )
 
         self.assertIn( self.block1, multistack )
-        # 5 * 2 childs = 10 objects, each have size 5x3, should be in [0, 10] - [5, 40]
+        # 5 * 2 items = 10 objects, each have size 5x3, should be in [0, 10] - [5, 40]
         self.assertEqual( multistack.bbox, plask.geometry.Box2D(0., 10.0, 5., 40.0) )
         self.assertEqual( multistack.get_material(1.0, 39.0), self.aln )
         self.assertIsNone( multistack.get_material(4.0, 41.0) )
-        self.assertEqual( multistack[0].child, self.block1 )
+        self.assertEqual( multistack[0].item, self.block1 )
         self.assertEqual( multistack[0].translation, plask.vec(0., 10.) )
-        self.assertEqual( multistack[9].child, self.block2 )
+        self.assertEqual( multistack[9].item, self.block2 )
         self.assertEqual( multistack[9].translation, plask.vec(0., 37.) )
         hints1 = plask.geometry.PathHints()
         hints1 += hint1
         self.assertEqual( len(multistack[hints1]), 1 )
-        self.assertEqual( multistack[hints1][0].child, self.block1 )
-        self.assertEqual( multistack[hint2][0].child, self.block2 )
+        self.assertEqual( multistack[hints1][0].item, self.block1 )
+        self.assertEqual( multistack[hint2][0].item, self.block2 )
 
     def testRemoval(self):
         '''Test if removing objects from container works. In addition test prepending objects'''
@@ -137,7 +137,7 @@ class Containers(unittest.TestCase):
         container.append(self.block2, 10,0)
         container.append(self.block1, 10,0) # to be removed by index
         container.append(self.block2, 5,0) # to be removed by object
-        self.assertEqual( container[0].child, self.block1 )
+        self.assertEqual( container[0].item, self.block1 )
         self.assertEqual( container.get_material(12,1), self.gan)
         del container[2]
         self.assertEqual( len(container), 3 )

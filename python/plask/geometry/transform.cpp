@@ -14,7 +14,7 @@ static bool Transfrom__contains__(const GeometryObjectTransform<dim>& self, shar
 /// Initialize class GeometryObjectTransform for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, "GeometryObjectTransform", "Base class for all "," transform nodes") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectTransform, GeometryObjectD<dim>)
-        .add_property("child",
+        .add_property("item",
                       (shared_ptr<typename GeometryObjectTransform<dim>::ChildType> (GeometryObjectTransform<dim>::*)()) &GeometryObjectTransform<dim>::getChild,
                       &GeometryObjectTransform<dim>::setChild, "Child of the transform object")
         .def("__contains__", &Transfrom__contains__<dim>)
@@ -35,14 +35,14 @@ template <> struct Translation_constructor2<2> {
     }
     const static py::detail::keywords<3> args;
 };
-const py::detail::keywords<3> Translation_constructor2<2>::args = (py::arg("child"), py::arg("c0"), py::arg("c1"));
+const py::detail::keywords<3> Translation_constructor2<2>::args = (py::arg("item"), py::arg("c0"), py::arg("c1"));
 template <> struct Translation_constructor2<3> {
     static inline shared_ptr<Translation<3>> call(shared_ptr<GeometryObjectD<3>> object, double c0, double c1, double c2) {
         return make_shared<Translation<3>>(object, Vec<3,double>(c0, c1, c2));
     }
     const static py::detail::keywords<4> args;
 };
-const py::detail::keywords<4> Translation_constructor2<3>::args = (py::arg("child"), py::arg("c0"), py::arg("c1"), py::arg("c2"));
+const py::detail::keywords<4> Translation_constructor2<3>::args = (py::arg("item"), py::arg("c0"), py::arg("c1"), py::arg("c2"));
 
 
 std::string GeometryObject__repr__(const shared_ptr<GeometryObject>& self);
@@ -71,7 +71,7 @@ static std::string Translation__repr__(const Translation<dim>& self) {
 DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transfer holds a translated geometry object together with translation vector ("," version)")
 {
     GEOMETRY_ELEMENT_23D(Translation, GeometryObjectTransform<dim>, py::no_init)
-    .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("child"), py::arg("translation"))))
+    .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("translation"))))
     .def("__init__", py::make_constructor(&Translation_constructor2<dim>::call, py::default_call_policies(), Translation_constructor2<dim>::args))
     .def_readwrite("translation", &Translation<dim>::translation, "Translation vector")
     .def("__str__", &Translation__str__<dim>)

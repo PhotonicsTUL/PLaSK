@@ -263,16 +263,16 @@ public:
 };
 
 /**
- * Read children, call child_param_read if children is in \<child\> tag and without_child_param_read if there was no \<child\> tag.
- * Read "path" parameter from each \<child\> tag.
+ * Read children, call child_param_read if children is in \<item\> tag and without_child_param_read if there was no \<item\> tag.
+ * Read "path" parameter from each \<item\> tag.
  * @param reader reader
- * @param child_param_read functor called for each \<child\> tag, without parameters, should create child, add it to container and return PathHints::Hint (and move reader.source to end of current, \<child\>, tag)
- * @param without_child_param_read functor called for each children (when there was no \<child\> tag), should create child, add it to container, and move reader.source to end of current tag
+ * @param child_param_read functor called for each \<item\> tag, without parameters, should create child, add it to container and return PathHints::Hint (and move reader.source to end of current, \<item\>, tag)
+ * @param without_child_param_read functor called for each children (when there was no \<item\> tag), should create child, add it to container, and move reader.source to end of current tag
  */
 template <typename ChildParamF, typename WithoutChildParamF>
 inline void read_children(GeometryReader& reader, ChildParamF child_param_read, WithoutChildParamF without_child_param_read) {
     while (reader.source.requireTagOrEnd()) {
-        if (reader.source.getNodeName() == "child") {
+        if (reader.source.getNodeName() == "item") {
             boost::optional<std::string> paths_str = reader.source.getAttribute("path");
             PathHints::Hint hint = child_param_read();  // this calls readExactlyOneChild
             if (paths_str) {

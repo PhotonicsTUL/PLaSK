@@ -86,7 +86,7 @@ XMLWriter::Element GeometryObject::WriteXMLCallback::makeTag(XMLElement &parent_
 }
 
 XMLElement GeometryObject::WriteXMLCallback::makeChildTag(XMLElement& container_tag, const GeometryObject& container, std::size_t index_of_child_in_parent) const {
-    XMLElement tag(container_tag, "child");
+    XMLElement tag(container_tag, "item");
     //TODO get paths
     return tag;
 }

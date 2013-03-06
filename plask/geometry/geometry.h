@@ -34,17 +34,17 @@ Example of XML which describes geometry:
     <cartesian2d name="cartesian geometry" length="2">
         <container2d name="trans_cont">
             <rectangle x="5" y="3" name="block_5_3" material="exampleMaterial"/>
-            <child x="3" y="3">
+            <item x="3" y="3">
                 <ref name="block_5_3"/>
-            </child>
+            </item>
         </container2d>
     </cartesian2d>
     <cylindrical name="cylindrical geometry">
         <stack2d repeat="4" name="mystack">
             <ref name="block_5_3"/>
-            <child x="-5">
+            <item x="-5">
                 <ref name="c1"/>
-            </child>
+            </item>
             <rectangle x="8" y="12" material="exampleMaterial"/>
         </stack2D>
      </cylindrical>

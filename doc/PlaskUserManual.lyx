@@ -408,11 +408,11 @@ your_file.xpl
 \emph default
  to the queue, adding absolute or relative paths to files where necessary.
  PLaSK looks for all its system files in location relative to the main binary,
- so there is no need to install it in a default system locations (although
- this is recommended).
- The following example shows how to add the command to the queue in a popular
- batch system Torque (it is assumed that PLaSK is installed in user home
- directory in the subdirectory 
+ so there is no need to install it in the default system location (although
+ it is recommended).
+ The following example shows how to add the command to the queue in a one
+ of popular batch systems like Torque or SGE (it is assumed that PLaSK is
+ installed in user home directory in the subdirectory 
 \family typewriter
 plask
 \family default
@@ -481,7 +481,7 @@ status open
 
 \begin_layout Plain Layout
 
-In[2]: run("your_file.xpl")
+In[2]: runxpl("your_file.xpl")
 \end_layout
 
 \end_inset
@@ -3407,11 +3407,19 @@ putting all the above together
 \end_layout
 
 \begin_layout Standard
+manual refinements of divide mesh generator
+\end_layout
+
+\begin_layout Standard
 diffusion, gain
 \end_layout
 
+\begin_layout Standard
+real-time structure modifications
+\end_layout
+
 \begin_layout Section
-Searching threshold of a real gallium nitride array
+Searching threshold of a gallium-nitride array
 \end_layout
 
 \begin_layout Standard
@@ -3428,6 +3436,26 @@ paths
 
 \begin_layout Standard
 filters
+\end_layout
+
+\begin_layout Section
+Optical analysis of photonic crystal slab waveguide
+\end_layout
+
+\begin_layout Standard
+3D
+\end_layout
+
+\begin_layout Standard
+lattice
+\end_layout
+
+\begin_layout Section
+Finding threshold current of photonic crystal VCSEL
+\end_layout
+
+\begin_layout Standard
+combining 2D and 3D geometries with filters
 \end_layout
 
 \begin_layout Part

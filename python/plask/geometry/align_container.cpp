@@ -16,7 +16,7 @@ static shared_ptr<AlignContainer<dim,direction>> AlignContainer__init__(py::tupl
 
 template <int dim, typename Primitive<dim>::Direction direction>
 PathHints::Hint AlignContainer_add(py::tuple args, py::dict kwargs) {
-    parseKwargs("append", args, kwargs, "self", "child");
+    parseKwargs("append", args, kwargs, "self", "item");
     typedef AlignContainer<dim,direction> AlignContainerT;
     AlignContainerT* self = py::extract<AlignContainerT*>(args[0]);
     shared_ptr<typename AlignContainerT::ChildType> child = py::extract<shared_ptr<typename AlignContainerT::ChildType>>(args[1]);

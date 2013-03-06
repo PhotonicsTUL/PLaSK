@@ -8,24 +8,24 @@ namespace plask { namespace python {
 
 template <typename StackT>
 PathHints::Hint Stack_push_back(py::tuple args, py::dict kwargs) {
-    parseKwargs("append", args, kwargs, "self", "child");
+    parseKwargs("append", args, kwargs, "self", "item");
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
     if (py::len(kwargs) == 0)
         return self->push_back(child);
     else
-        return self->push_back(child, py::extract<typename StackT::Aligner>(kwargs));
+        return self->push_back(child, py::extract<typename StackT::ChildAligner>(kwargs));
 }
 
 template <typename StackT>
 PathHints::Hint Stack_push_front(py::tuple args, py::dict kwargs) {
-    parseKwargs("prepend", args, kwargs, "self", "child");
+    parseKwargs("prepend", args, kwargs, "self", "item");
     StackT* self = py::extract<StackT*>(args[0]);
     shared_ptr<typename StackT::ChildType> child = py::extract<shared_ptr<typename StackT::ChildType>>(args[1]);
     if (py::len(kwargs) == 0)
         return self->push_front(child);
     else
-        return self->push_front(child, py::extract<typename StackT::Aligner>(kwargs));
+        return self->push_front(child, py::extract<typename StackT::ChildAligner>(kwargs));
 }
 
 template <typename StackT>
@@ -37,7 +37,7 @@ PathHints::Hint Stack_insert(py::tuple args, py::dict kwargs) {
     if (py::len(kwargs) == 0)
         return self->insert(child, pos);
     else
-        return self->insert(child, pos, py::extract<typename StackT::Aligner>(kwargs));
+        return self->insert(child, pos, py::extract<typename StackT::ChildAligner>(kwargs));
 }
 
 void register_geometry_container_stack()
@@ -94,12 +94,12 @@ void register_geometry_container_stack()
         "Shelf2D(shift=0)\n"
         "    Create the shelf with the left side of the first object at the shift position (in container local coordinates).",
         py::init<double>((py::arg("shift")=0.)))
-        .def("append", &ShelfContainer2D::push_back, (py::arg("child")), "Append new object to the container")
-        .def("prepend", &ShelfContainer2D::push_front, (py::arg("child")), "Prepend new object to the container")
-        .def("insert", &ShelfContainer2D::insert, (py::arg("child"), "pos"), "Insert new object to the container")
+        .def("append", &ShelfContainer2D::push_back, (py::arg("item")), "Append new object to the container")
+        .def("prepend", &ShelfContainer2D::push_front, (py::arg("item")), "Prepend new object to the container")
+        .def("insert", &ShelfContainer2D::insert, (py::arg("item"), "pos"), "Insert new object to the container")
         .def("set_zero_before", &StackContainer<3>::setZeroHeightBefore, py::arg("index"), "Set zero left of item with index 'index'")
         .def("append_gap", &ShelfContainer2D::addGap, py::arg("size"), "Add gap of the size 'size' to the end of the shelf")
-        .add_property("isflat", &ShelfContainer2D::isFlat, "True if all children has the same height (the top line is flat)")
+        .add_property("flat", &ShelfContainer2D::isFlat, "True if all children has the same height (the top line is flat)")
     ;
     py::scope().attr("Shelf") = py::scope().attr("Shelf2D");
 }

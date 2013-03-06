@@ -15,7 +15,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
             <geometry>
                 <cartesian2d name="Space-1" axes="xy">
                     <stack name="Stack-2">
-                        <child path="Path-4"><rectangle name="Block-3" dx="5" dy="2" material="GaN" /></child>
+                        <item path="Path-4"><rectangle name="Block-3" dx="5" dy="2" material="GaN" /></item>
                         <ref name="Block-3"/>
                     </stack>
                 </cartesian2d>
@@ -57,10 +57,10 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.assertEqual( self.solver1.id, "eff1:optical.EffectiveIndex2D" )
 
         self.assertEqual( self.solver1.geometry, self.manager.geo.Space_1 )
-        self.assertEqual( self.solver2.geometry.child, self.manager.obj.Stack_2 )
+        self.assertEqual( self.solver2.geometry.item, self.manager.obj.Stack_2 )
 
         self.assertEqual( self.solver1.mesh, self.manager.msh.lin )
-        self.assertEqual( self.solver2.mesh, self.manager.msg.div(self.manager.geo.Space_1.child) )
+        self.assertEqual( self.solver2.mesh, self.manager.msg.div(self.manager.geo.Space_1.item) )
 
         self.assertEqual( self.solver1.polarization, "TM" )
         self.assertEqual( self.solver1.root.tolx, 0.1 )

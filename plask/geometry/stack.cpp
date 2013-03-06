@@ -84,19 +84,19 @@ StackContainer<dim>::StackContainer(const StackContainer& to_copy)
 }*/
 
 template <>
-const StackContainer<2>::Aligner& StackContainer<2>::DefaultAligner() {
+const StackContainer<2>::ChildAligner& StackContainer<2>::DefaultAligner() {
     static auto leftZeroAl = align::left(0);
     return leftZeroAl;
 }
 
 template <>
-const StackContainer<3>::Aligner& StackContainer<3>::DefaultAligner() {
+const StackContainer<3>::ChildAligner& StackContainer<3>::DefaultAligner() {
     static auto leftBackAl = align::left(0) & align::back(0);
     return leftBackAl;
 }
 
 template <int dim>
-PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner) {
+PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner) {
     const auto bb = el->getBoundingBox();
     shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.vert(), bb);
     this->connectOnChildChanged(*trans_geom);
@@ -114,7 +114,7 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
 }
 
 template <int dim>
-void StackContainer<dim>::setAlignerAt(std::size_t child_no, const Aligner& aligner) {
+void StackContainer<dim>::setAlignerAt(std::size_t child_no, const ChildAligner& aligner) {
     this->ensureIsValidChildNr(child_no, "setAlignerAt");
     //TODO if (aligners[child_no].get() == &aligner) return; //protected against self assigment
     aligners[child_no] = aligner;

@@ -283,8 +283,8 @@ public:
 template <int dim>
 struct StackContainer: public StackContainerBaseImpl<dim> {
 
-    typedef typename chooseType<dim-2, align::Aligner<Primitive<3>::DIRECTION_TRAN>, align::Aligner<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> >::type Aligner;
-    static const Aligner& DefaultAligner();
+    typedef typename chooseType<dim-2, align::Aligner<Primitive<3>::DIRECTION_TRAN>, align::Aligner<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> >::type ChildAligner;
+    static const StackContainer<dim>::ChildAligner& DefaultAligner();
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
     typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;
@@ -303,7 +303,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     virtual std::string getTypeName() const { return NAME; }
 
   private:
-    std::vector< Aligner > aligners;
+    std::vector< ChildAligner > aligners;
 
     /**
      * Get translation object over given object @p el.
@@ -313,7 +313,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param elBB bouding box of @p el
      * @return translation over @p el
      */
-    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans, const Box& elBB) const {
+    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const ChildAligner& aligner, double up_trans, const Box& elBB) const {
         shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
         result->translation.vert() = up_trans;
         aligner.align(*result, elBB);
@@ -328,7 +328,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param up_trans translation in growing direction
      * @return translation over @p el
      */
-    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const Aligner& aligner, double up_trans) const {
+    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const ChildAligner& aligner, double up_trans) const {
         shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
         result->translation.vert() = up_trans;
         aligner.align(*result);
@@ -352,7 +352,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner());
+    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner = DefaultAligner());
 
     /**
      * Insert children to stack at given position.
@@ -362,7 +362,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos, const Aligner& aligner = DefaultAligner()) {
+    PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner = DefaultAligner()) {
         this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, pos, aligner);
     }
@@ -374,7 +374,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const ChildAligner& aligner = DefaultAligner()) {
         double el_translation, next_height;
         auto elBB = el->getBoundingBox();
         this->calcHeight(elBB, stackHeights.back(), el_translation, next_height);
@@ -394,7 +394,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(const shared_ptr<ChildType> &el, const Aligner& aligner = DefaultAligner()) {
+    PathHints::Hint add(const shared_ptr<ChildType> &el, const ChildAligner& aligner = DefaultAligner()) {
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, aligner);
     }
@@ -406,7 +406,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_back(const shared_ptr<ChildType> &el, const Aligner& aligner = DefaultAligner()) { return add(el, aligner); }
+    PathHints::Hint push_back(const shared_ptr<ChildType> &el, const ChildAligner& aligner = DefaultAligner()) { return add(el, aligner); }
 
     /**
      * Add child to stack bottom, move all other children up.
@@ -415,17 +415,17 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const Aligner& aligner = DefaultAligner()) {
+    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const ChildAligner& aligner = DefaultAligner()) {
         this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, 0, aligner);
     }
 
-    const Aligner& getAlignerAt(std::size_t child_no) const {
+    const ChildAligner& getAlignerAt(std::size_t child_no) const {
         this->ensureIsValidChildNr(child_no, "getAlignerAt");
         return aligners[child_no];
     }
 
-    void setAlignerAt(std::size_t child_no, const Aligner& aligner);
+    void setAlignerAt(std::size_t child_no, const ChildAligner& aligner);
 
     /*
      * Set new aligner.
