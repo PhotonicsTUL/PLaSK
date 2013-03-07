@@ -39,7 +39,7 @@ def update_factories():
         if mat == 'air': continue
         name = mat.split(":")[0]
         if name not in material.__dict__:
-            material.__dict__[name] = factory(name)
+            material.__dict__[name.replace('-', '_')] = factory(name)
 material.update_factories = update_factories
 del update_factories
 

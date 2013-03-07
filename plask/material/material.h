@@ -284,9 +284,9 @@ struct Material {
     virtual double CBO(double T, char point='G') const;
 
     /**
-     * Get valance band offset VBO[eV].
+     * Get valence band offset VBO[eV].
      * @param T temperature [K]
-     * @return valance band offset VBO[eV]
+     * @return valence band offset VBO[eV]
      */
     virtual double VBO(double T) const;
 

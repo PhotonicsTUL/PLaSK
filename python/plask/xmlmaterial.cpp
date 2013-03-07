@@ -208,7 +208,7 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
                                (kindname == "oxide" || kindname == "OXIDE")? Material::OXIDE :
                                (kindname == "dielectric" || kindname == "DIELECTRIC")? Material::DIELECTRIC :
                                (kindname == "metal" || kindname == "METAL")? Material::METAL :
-                               (kindname == "liquid crystal" || kindname == "LIQUID_CRYSTAL" || kindname == "LC")? Material::LIQUID_CRYSTAL :
+                               (kindname == "liquid crystal" || kindname == "liquid_crystal" || kindname == "LIQUID_CRYSTAL" || kindname == "LC")? Material::LIQUID_CRYSTAL :
                                 Material::NONE;
         if (kind == Material::NONE) throw XMLBadAttrException(reader, "kind", kindname);
 

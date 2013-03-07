@@ -102,7 +102,7 @@ element materials {
 	## Electron affinity Chi[eV]; parameters:
 	## T - temperature [K],
 	## point - point in the Brillouin zone [-].
-	element (eps) { text }?		&
+	element (chi) { text }?		&
 
 	## Effective density of states in the conduction band Nc [cm^(-3)]; parameters:
 	## T - temperature [K],
@@ -158,7 +158,7 @@ element materials {
 
 	## Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)]; parameters:
 	## T - temperature [K],
-	## thickness - layer thickness [µm].
+	## h - layer thickness [µm].
 	element (thermk) { text }?	&
 
 	## Density [kg/m^3]; parameters:

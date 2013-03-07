@@ -3648,7 +3648,7 @@ Units in PLaSK
 \end_layout
 
 \begin_layout Chapter
-Semi-formal specification of the XPL file
+XPL file reference
 \end_layout
 
 \begin_layout Standard
@@ -3749,9 +3749,1132 @@ Section <materials>
 \end_layout
 
 \begin_layout Standard
-In this section custom materials are defined.
+This section contains specification of custom materials that can be used
+ together with the library materials in the structure geometry.
+ The only allowed tag in this section---that can, however, appear more than
+ once---is the tag 
+\family typewriter
+\series bold
+<material>
+\family default
+\series default
+:
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<material>
+\family default
+\series default
+ Definition of a custom material.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Name of the material.
+ As all custom materials are simple materials, it can be an arbitrary identifier
+ string.
+ However, it may also contain a doping specification without the doping
+ amount.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+kind
+\family default
+ Kind of the new material.
+ Any of (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+semiconductor
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+dielectric
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+oxide
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+metal
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+liquid crystal
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+base
+\family default
+ Textual specification of the base material.
+ The doping amount information can be skipped from it, in which case the
+ doping amount will have to be specified when the custom material is used.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+The content of this element is the list of user-defined material properties.
+ Each element of such list is a tag specifying the particular property which
+ content is a mathematical expression computing this property.
+ Each such expression can use several variables: the ones specified below
+ next to each tag and 
+\family typewriter
+dc
+\family default
+ or 
+\family typewriter
+cc
+\family default
+ that will contain the user specified doping amounts: dopant or carriers
+ concentration, respectively (at most one of 
+\family typewriter
+cc
+\family default
+ or 
+\family typewriter
+dc
+\family default
+ is defined, never both).
+ 
+\end_layout
+
+\begin_layout Standard
+Some properties are anisotropic and can have different values for lateral
+ and vertical components.
+ In such case, two separate values may (but do not have to) be defined in
+ the contents of the material property tag and they should be separated
+ with a comma.
+\end_layout
+
+\begin_layout Standard
+The accepted material properties are as follows:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<A>
+\family default
+\series default
+ Monomolecular recombination coefficient A [1/s] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<absp>
+\family default
+\series default
+ Absorption coefficient 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ [cm
+\begin_inset Formula $^{-1}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+wl
+\family default
+ -- wavelength [nm], T -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<ac>
+\family default
+\series default
+ Hydrostatic deformation potential for the conduction band 
+\begin_inset Formula $a_{c}$
+\end_inset
+
+ [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<av>
+\family default
+\series default
+ Hydrostatic deformation potential for the valence band 
+\begin_inset Formula $a_{v}$
+\end_inset
+
+ [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<B>
+\family default
+\series default
+ Radiative recombination coefficient B [m
+\begin_inset Formula $^{3}$
+\end_inset
+
+/s] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<b>
+\family default
+\series default
+ Shear deformation potential b [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<C>
+\family default
+\series default
+ Auger recombination coefficient C [m
+\begin_inset Formula $^{6}$
+\end_inset
+
+/s] 
+\begin_inset Newline newline
+\end_inset
+
+variables: T -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<c11>
+\family default
+\series default
+ Elastic constant 
+\begin_inset Formula $c_{11}$
+\end_inset
+
+ [GPa] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<c12>
+\family default
+\series default
+ elastic constant 
+\begin_inset Formula $c_{12}$
+\end_inset
+
+ [GPa] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<CBO>
+\family default
+\series default
+ Conduction band offset CBO [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<chi>
+\family default
+\series default
+ Electron affinity 
+\begin_inset Formula $\chi$
+\end_inset
+
+ [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<cond>
+\family default
+\series default
+ Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical)
+ direction [S/m] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<condtype>
+\family default
+\series default
+ Electrical conductivity type.
+ In semiconductors this indicates what type of carriers 
+\family typewriter
+Nf
+\family default
+ refers to.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<cp>
+\family default
+\series default
+ Specific heat at constant pressure [J/(kg
+\begin_inset space \thinspace{}
+\end_inset
+
+K)] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<D>
+\family default
+\series default
+ Ambipolar diffusion coefficient D [m
+\begin_inset Formula $^{2}$
+\end_inset
+
+/s] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<dens>
+\family default
+\series default
+ Density [kg/m
+\begin_inset Formula $^{3}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Dso>
+\family default
+\series default
+ Split-off energy Dso [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<EactA>
+\family default
+\series default
+ Acceptor ionization energy 
+\begin_inset Formula $E_{\mathrm{act\, A}}$
+\end_inset
+
+ [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<EactD>
+\family default
+\series default
+ Donor ionization energy 
+\begin_inset Formula $E_{\mathrm{act\, D}}$
+\end_inset
+
+ [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Eg>
+\family default
+\series default
+ Energy gap 
+\begin_inset Formula $E_{g}$
+\end_inset
+
+ [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<eps>
+\family default
+\series default
+ Dielectric constant 
+\begin_inset Formula $\epsilon_{R}$
+\end_inset
+
+ [-] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<lattC>
+\family default
+\series default
+ Lattice constant [Å]
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+x
+\family default
+ -- lattice parameter [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Me>
+\family default
+\series default
+ Electron effective mass 
+\begin_inset Formula $M_{e}$
+\end_inset
+
+ in in-plane (lateral) and cross-plane (vertical) direction [
+\begin_inset Formula $m_{0}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Mh>
+\family default
+\series default
+ Hole effective mass 
+\begin_inset Formula $M_{h}$
+\end_inset
+
+ in in-plane (lateral) and cross-plane (vertical) direction [
+\begin_inset Formula $m_{0}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+EqType
+\family default
+ -- equation type [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Mhh>
+\family default
+\series default
+ Heavy hole effective mass 
+\begin_inset Formula $M_{hh}$
+\end_inset
+
+ in in-plane (lateral) and cross-plane (vertical) direction [
+\begin_inset Formula $m_{0}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Mlh>
+\family default
+\series default
+ Light hole effective mass 
+\begin_inset Formula $M_{lh}$
+\end_inset
+
+ in in-plane (lateral) and cross-plane (vertical) direction [
+\begin_inset Formula $m_{0}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mob>
+\family default
+\series default
+ Mobility in-plane (lateral) and cross-plane (vertical) direction [
+\begin_inset Formula $\mbox{m}^{2}/(\mbox{V}\,\mbox{s})$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Mso>
+\family default
+\series default
+ Split-off mass 
+\begin_inset Formula $M_{so}$
+\end_inset
+
+ [m_0] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Nc>
+\family default
+\series default
+ Effective density of states in the conduction band 
+\begin_inset Formula $N_{c}$
+\end_inset
+
+ [cm
+\begin_inset Formula $^{-3}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Nf>
+\family default
+\series default
+ Free carrier concentration 
+\begin_inset Formula $N$
+\end_inset
+
+ [cm
+\begin_inset Formula $^{-3}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Ni>
+\family default
+\series default
+ Intrinsic carrier concentration 
+\begin_inset Formula $N_{i}$
+\end_inset
+
+ [cm
+\begin_inset Formula $^{-3}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<nR>
+\family default
+\series default
+ Complex refractive index 
+\begin_inset Formula $n_{R}$
+\end_inset
+
+ [-] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+wl
+\family default
+ -- wavelength [nm], 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<nr>
+\family default
+\series default
+ Real refractive index 
+\begin_inset Formula $n_{R}$
+\end_inset
+
+ [-] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+wl
+\family default
+ -- wavelength [nm], 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<nR_tensor>
+\family default
+\series default
+ Anisotropic complex refractive index tensor 
+\begin_inset Formula $n_{R}$
+\end_inset
+
+ [-].
+ Tensor must have the form [
+\begin_inset Formula $n_{0}$
+\end_inset
+
+,
+\begin_inset Formula $n_{3}$
+\end_inset
+
+, 
+\begin_inset Formula $0$
+\end_inset
+
+ / 
+\begin_inset Formula $n_{4}$
+\end_inset
+
+, 
+\begin_inset Formula $n_{1}$
+\end_inset
+
+, 
+\begin_inset Formula $0$
+\end_inset
+
+ / 
+\begin_inset Formula $0$
+\end_inset
+
+, 
+\begin_inset Formula $0$
+\end_inset
+
+, 
+\begin_inset Formula $n_{2}$
+\end_inset
+
+] where 
+\begin_inset Formula $n_{i}$
+\end_inset
+
+ is 
+\begin_inset Formula $i$
+\end_inset
+
+-th object of the returned tuple.
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+wl
+\family default
+ -- wavelength [nm], 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+ 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<Nv>
+\family default
+\series default
+ Effective density of states in the valance band 
+\begin_inset Formula $N_{v}$
+\end_inset
+
+ [cm
+\begin_inset Formula $^{-3}$
+\end_inset
+
+] 
+\begin_inset Newline newline
+\end_inset
+
+variables: T -- temperature [K].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<thermk>
+\family default
+\series default
+ Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction
+ 
+\begin_inset Formula $k$
+\end_inset
+
+ 
+\begin_inset space \thinspace{}
+\end_inset
+
+[W/(m
+\begin_inset space \thinspace{}
+\end_inset
+
+K)] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K], 
+\family typewriter
+h
+\family default
+ -- layer thickness [µm].
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<VBO>
+\family default
+\series default
+ Valance band offset VBO [eV] 
+\begin_inset Newline newline
+\end_inset
+
+variables: 
+\family typewriter
+T
+\family default
+ -- temperature [K].
+\end_layout
+
+\end_deeper
 \begin_layout Section
 Section <geometry>
 \end_layout
@@ -3816,10 +4939,8 @@ Attributes
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 axes
 \family default
-\series default
  
 \size scriptsize
 (optional) 
@@ -3878,10 +4999,8 @@ wszystkie możliwości
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 length
 \family default
-\series default
  
 \size scriptsize
 (optional) 
@@ -3898,10 +5017,8 @@ Physical length of the extruded geometry for solvers that use this information.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 name
 \family default
-\series default
  Geometry name for further reference.
  (unique identifier
 \begin_inset space ~
@@ -3958,10 +5075,8 @@ Attributes
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 axes
 \family default
-\series default
  
 \size scriptsize
 (optional) 
@@ -4020,10 +5135,8 @@ wszystkie możliwości
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 name
 \family default
-\series default
  Geometry name for further reference.
  (unique identifier
 \begin_inset space ~
@@ -4503,9 +5616,9 @@ center
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
-: 
+:
 \end_layout
 
 \begin_layout Standard
@@ -4655,7 +5768,7 @@ bottom=
 \labelwidthstring 00.00.0000
 
 \bar under
-Content
+Contents
 \bar default
 : A single two-dimensional geometry object.
 \end_layout
@@ -4697,7 +5810,7 @@ name
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -4999,7 +6112,7 @@ center
 \labelwidthstring 00.00.0000
 
 \bar under
-Content
+Contents
 \bar default
 : A single two-dimensional geometry object.
 \end_layout
@@ -5083,7 +6196,7 @@ false
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -5383,7 +6496,7 @@ left=
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -5484,7 +6597,7 @@ center
 \labelwidthstring 00.00.0000
 
 \bar under
-Content
+Contents
 \bar default
 : A single two-dimensional geometry object.
 \end_layout
@@ -5589,7 +6702,7 @@ name
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -5791,7 +6904,7 @@ from
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -6354,7 +7467,7 @@ center
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 : 
 \end_layout
@@ -6542,7 +7655,7 @@ bottom=
 \labelwidthstring 00.00.0000
 
 \bar under
-Content
+Contents
 \bar default
 : A single three-dimensional geometry object.
 \end_layout
@@ -6584,7 +7697,7 @@ name
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -7013,7 +8126,7 @@ center
 \labelwidthstring 00.00.0000
 
 \bar under
-Content
+Contents
 \bar default
 : A single three-dimensional geometry object.
 \end_layout
@@ -7357,7 +8470,7 @@ back=
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -7482,7 +8595,7 @@ center
 \labelwidthstring 00.00.0000
 
 \bar under
-Content
+Contents
 \bar default
 : A single three-dimensional geometry object.
 \end_layout
@@ -7560,7 +8673,7 @@ length
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -7611,7 +8724,7 @@ name
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -7712,7 +8825,7 @@ name
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -7990,7 +9103,7 @@ from
 \begin_layout Standard
 
 \bar under
-Content
+Contents
 \bar default
 :
 \end_layout
@@ -8132,10 +9245,6 @@ Section <script>
 
 \begin_layout Chapter
 Reference of the Python library
-\end_layout
-
-\begin_layout Chapter
-Typical usage scenarios
 \end_layout
 
 \end_body
