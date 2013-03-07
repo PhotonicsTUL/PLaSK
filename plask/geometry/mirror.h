@@ -11,10 +11,9 @@ namespace plask {
 /**
  * Represent geometry object equal to its child with mirror reflection.
  * @tparam dim
- * @tparam flipDir 2D or 3D axis number
  * @ingroup GEOMETRY_OBJ
  */
-template <int dim, typename Primitive<dim>::Direction flipDir>
+template <int dim>
 class MirrorReflection: public GeometryObjectTransform<dim> {
     
     static constexpr const char* NAME = dim == 2 ?
@@ -36,8 +35,11 @@ class MirrorReflection: public GeometryObjectTransform<dim> {
     /**
      * @param child child geometry object, object to reflect
      */
-    explicit MirrorReflection(shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
-        : GeometryObjectTransform<dim>(child) {}
+    explicit MirrorReflection(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
+        : GeometryObjectTransform<dim>(child), flipDir(flipDir) {}
+
+    /// 2D or 3D axis number
+    typename Primitive<dim>::Direction flipDir;
 
     virtual Box getBoundingBox() const {
         return fliped(getChild()->getBoundingBox());
@@ -48,9 +50,9 @@ class MirrorReflection: public GeometryObjectTransform<dim> {
      * @param v vector
      * @return fliped version of @p v
      */
-    static DVec fliped(DVec v) { v[flipDir] = -v[flipDir]; return v; }
+    DVec fliped(DVec v) const { v[flipDir] = -v[flipDir]; return v; }
     
-    static Box fliped(Box res) {
+    Box fliped(Box res) const {
         double temp = res.lower[flipDir];
         res.lower[flipDir] = - res.upper[flipDir];
         res.upper[flipDir] = - temp;
@@ -79,8 +81,8 @@ class MirrorReflection: public GeometryObjectTransform<dim> {
      * Get shallow copy of this.
      * @return shallow copy of this
      */
-    shared_ptr<MirrorReflection<dim, flipDir>> copyShallow() const {
-         return shared_ptr<MirrorReflection<dim, flipDir>>(new MirrorReflection<dim, flipDir>(getChild()));
+    shared_ptr<MirrorReflection<dim>> copyShallow() const {
+         return shared_ptr<MirrorReflection<dim>>(new MirrorReflection<dim>(flipDir, getChild()));
     }
 
     virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const { return copyShallow(); }
