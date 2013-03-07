@@ -156,7 +156,7 @@ def run_xpl(source):
         exec(code, env)
     except Exception as exc:
         ety, eva, etb = _sys.exc_info()
-        _print_exception(ety, eva, etb, env['__manager__'].scriptline, True)
+        _print_exception(ety, eva, etb, env['__manager__'].scriptline, filename, True)
 runxpl = run_xpl
 
 

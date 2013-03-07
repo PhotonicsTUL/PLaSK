@@ -146,25 +146,28 @@ if True:
 
 import plask
 
-def plot_field(field, levels=None, **kwargs):
+def plot_field(field, levels=16, **kwargs):
     '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation
-    if levels is None:
-        if type(field.mesh == plask.mesh.Regular2D):
-            result = imshow(field.array, origin='lower', extent=[field.mesh.axis0[0], field.mesh.axis0[-1], field.mesh.axis1[0], field.mesh.axis1[-1]], **kwargs)
-        else:
-            if 'aspect' in kwargs:
-                kwargs = kwargs.copy()
-                set_aspect(kwargs.pop('aspect'))
-            adata = field.array
-            data = adata[:-1,:-1]; data += adata[1:,:-1]; data += adata[:-1,1:]; data += adata[1:,1:]; data *= 0.25
-            del adata
-            result = pcolor(array(field.mesh.axis0), array(field.mesh.axis1), data, **kwargs)
+
+    if type(field.mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
+        axis0 = field.mesh.axis0
+        axis1 = field.mesh.axis1
+        data = field.array
+    elif type(field.mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
+        axes = [ axis for i,axis in (field.mesh.axis0, field.mesh.axis1, field.mesh.axis2) if len(axis) > 1 ]
+        if len(axes) != 2:
+            raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
+        axis0, axis1 = axes
+        data = field.array.reshape((len(axis1), len(axis0)))
     else:
-        if 'cmap' in kwargs and type(kwargs['cmap']) == str: # contourf requires that cmap were cmap instance, not a string
-            kwargs = kwargs.copy()
-            kwargs['cmap'] = get_cmap(kwargs['cmap'])
-        result = contourf(field.mesh.axis0, field.mesh.axis1, field.array, levels, antialiased=True, **kwargs)
+        raise NotImplementedError("mesh type not supported")
+
+    if 'cmap' in kwargs and type(kwargs['cmap']) == str: # contourf requires that cmap were cmap instance, not a string
+        kwargs = kwargs.copy()
+        kwargs['cmap'] = get_cmap(kwargs['cmap'])
+
+    result = contourf(axis0, axis1, data, levels, antialiased=True, **kwargs)
     return result
 
 

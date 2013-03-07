@@ -76,7 +76,7 @@ py::dict xml_globals;
 
 
 // Print Python exception to PLaSK logging system
-int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, bool second_is_script=false) {
+int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false) {
     PyTypeObject* type = (PyTypeObject*)otype;
     PyTracebackObject* original_traceback = (PyTracebackObject*)otraceback;
 
@@ -108,8 +108,9 @@ int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
     if (original_traceback) {
         PyTracebackObject* traceback = original_traceback;
         while (traceback) {
-            int lineno = startline + traceback->tb_lineno;
+            int lineno = traceback->tb_lineno;
             std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
+            if (filename == scriptname) lineno += startline;
             std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";
@@ -230,7 +231,7 @@ BOOST_PYTHON_MODULE(_plask)
     py::scope().attr("XMLError") = py::handle<>(py::incref(xml_error));
 
     py::def("_print_exception", &printPythonException, "Print exception information to PLaSK logging system",
-            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("startline")=0, py::arg("second_is_script")=false));
+            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("startline")=0, py::arg("scriptname")="", py::arg("second_is_script")=false));
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;

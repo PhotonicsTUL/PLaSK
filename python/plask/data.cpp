@@ -113,7 +113,7 @@ static const typename DataVector<T>::const_iterator DataVectorWrap_end(const Dat
 
 template <typename T, int dim>
 static T DataVectorWrap_getitem(const DataVectorWrap<T,dim>& self, std::ptrdiff_t i) {
-    if (i < 0) i = self.size() - i;
+    if (i < 0) i += self.size();
     if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("index out of range");
     return self[i];
 }

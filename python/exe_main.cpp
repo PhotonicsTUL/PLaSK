@@ -38,7 +38,7 @@ py::dict globals;
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
 
-    int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, bool second_is_script=false);
+    int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
 
     shared_ptr<Logger> makePythonLogger();
 
@@ -124,7 +124,7 @@ static inline void fixMatplotlibBug() {
 
 
 //******************************************************************************
-int handlePythonException(unsigned startline=0) {
+int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) {
     PyObject* value;
     PyObject* type;
     PyObject* original_traceback;
@@ -132,7 +132,7 @@ int handlePythonException(unsigned startline=0) {
     PyErr_Fetch(&type, &value,&original_traceback);
     PyErr_NormalizeException(&type, &value, &original_traceback);
 
-    int retval = plask::python::printPythonException(type, value, original_traceback, startline);
+    int retval = plask::python::printPythonException(type, value, original_traceback, startline, scriptname);
 
     Py_XDECREF(type);
     Py_XDECREF(value);
@@ -335,7 +335,7 @@ int main(int argc, const char *argv[])
             endPlask();
             return 3;
         } catch (py::error_already_set) {
-            int exitcode = handlePythonException(scriptline);
+            int exitcode = handlePythonException(scriptline, argv[1]);
             endPlask();
             return exitcode;
         }
