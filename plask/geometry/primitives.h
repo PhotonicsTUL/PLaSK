@@ -203,6 +203,30 @@ struct Box2D {
         Vec<2, double> v = size();
         return v.c0 * v.c1;
     }
+
+    /**
+     * Change i-th coordinate to oposite (mirror).
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * @param flipDir number of coordinate
+     */
+    inline void flip(size_t flipDir) {
+        assert(flipDir < 2);
+        double temp = lower[flipDir];
+        lower[flipDir] = - upper[flipDir];
+        upper[flipDir] = - temp;
+    }
+
+    /**
+     * Get vector similar to this but with changed i-th coordinate to oposite.
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * @param flipDir number of coordinate
+     * @return box similar to this but with mirrored i-th coordinate
+     */
+    inline Box2D fliped(size_t i) {
+        Box2D res = *this;
+        res.flip(i);
+        return res;
+    }
 };
 
 /**
@@ -400,6 +424,29 @@ struct Box3D {
         return v.c0 * v.c1 * v.c2;
     }
 
+    /**
+     * Change i-th coordinate to oposite (mirror).
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * @param flipDir number of coordinate
+     */
+    inline void flip(size_t flipDir) {
+        assert(flipDir < 3);
+        double temp = lower[flipDir];
+        lower[flipDir] = - upper[flipDir];
+        upper[flipDir] = - temp;
+    }
+
+    /**
+     * Get vector similar to this but with changed i-th coordinate to oposite.
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * @param flipDir number of coordinate
+     * @return box similar to this but with mirrored i-th coordinate
+     */
+    inline Box3D fliped(size_t i) {
+        Box3D res = *this;
+        res.flip(i);
+        return res;
+    }
 };
 
 /**

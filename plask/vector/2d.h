@@ -260,6 +260,28 @@ struct Vec<2,T> {
     }
 
     /**
+     * Change i-th coordinate to oposite.
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * @param i number of coordinate
+     */
+    inline void flip(size_t i) {
+        assert(i < 2);
+        operator[](i) = -operator[](i);
+    }
+
+    /**
+     * Get vector similar to this but with changed i-th component to oposite.
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * @param i number of coordinate
+     * @return vector similar to this but with changed i-th component to oposite
+     */
+    inline Vec<2,T> fliped(size_t i) {
+        Vec<2,T> res = *this;
+        res.flip(i);
+        return res;
+    }
+
+    /**
      * Print vector to stream using format (where c0 and c1 are vector components): [c0, c1]
      * @param out print destination, output stream
      * @param to_print vector to print
