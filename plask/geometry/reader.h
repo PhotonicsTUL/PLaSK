@@ -172,7 +172,7 @@ class GeometryReader {
      * After call source reader point to end of tag which represent read object.
      * @return object which was read and create or to which reference was read
      * @throw NamesConflictException if object with read name already exists
-     * @throw NoSuchGeometryObject if ref object reference to object which not exists
+     * @throw NoSuchGeometryObject if 'again' object references to object which does not exists
      * @throw NoAttrException if XML tag has no required attributes
      */
     shared_ptr<GeometryObject> readObject();
@@ -192,7 +192,7 @@ class GeometryReader {
      * @tparam RequiredObjectType required type of object
      * @throw UnexpectedGeometryObjectTypeException if requested object is not of type RequiredObjectType
      * @throw NamesConflictException if object with read name already exists
-     * @throw NoSuchGeometryObject if ref object reference to object which not exists
+     * @throw NoSuchGeometryObject if 'again' object references to object which does not exists
      * @throw NoAttrException if XML tag has no required attributes
      */
     template <typename RequiredObjectType>

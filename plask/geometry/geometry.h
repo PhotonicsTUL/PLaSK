@@ -35,15 +35,15 @@ Example of XML which describes geometry:
         <container2d name="trans_cont">
             <rectangle x="5" y="3" name="block_5_3" material="exampleMaterial"/>
             <item x="3" y="3">
-                <ref name="block_5_3"/>
+                <again ref="block_5_3"/>
             </item>
         </container2d>
     </cartesian2d>
     <cylindrical name="cylindrical geometry">
         <stack2d repeat="4" name="mystack">
-            <ref name="block_5_3"/>
+            <again ref="block_5_3"/>
             <item x="-5">
-                <ref name="c1"/>
+                <again ref="c1"/>
             </item>
             <rectangle x="8" y="12" material="exampleMaterial"/>
         </stack2D>
@@ -58,7 +58,7 @@ Second geometry is cylindrical and has name "cylindrical geometry".
 Container in first geometry (described by the \c container2D tag), has name "trans_cont" (see \c name attribute) and has 2 (identical) children.
 They are actually the same rectangular block (\c rectangle tag) with name "block_5_3" and size 5x3 (see \c x and \c y attributes).
 Its first instance is locates at point (0, 0) (which is a default), and the second one is located at point (3, 3) (which is given in the \c child tag attributes).
-Second appearance of the block in container is given by the \c ref tag.
+Second appearance of the block in container is given by the \c again tag.
 This tag represents reference to an ealier defined object and it requires only one attribute,
 namely the name of the object which was earlier defined.
 

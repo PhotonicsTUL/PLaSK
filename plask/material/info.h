@@ -51,20 +51,20 @@ struct MaterialInfo {
         B,          ///< radiative recombination coefficient
         C,          ///< Auger recombination coefficient
         D,          ///< ambipolar diffusion coefficient
-        thermk,  ///< thermal conductivity
+        thermk,     ///< thermal conductivity
         dens,       ///< density
-        cp,   ///< specific heat at constant pressure
+        cp,         ///< specific heat at constant pressure
         nr,         ///< refractive index
         absp,       ///< absorption coefficient alpha
         nR          ///< refractive index
     };
 
-    ///Names of arguments for which range we need give
+    /// Names of arguments for which we need to give the ranges
     enum ARGUMENT_NAME {
-        T,          ///<temperature
-        thickness,  ///<thickness
-        wl,         ///<wavelength
-        doping      ///<doping
+        T,          ///< temperature
+        h,          ///< thickness
+        wl,         ///< wavelength
+        doping      ///< doping
     };
 
     /**
@@ -92,13 +92,13 @@ struct MaterialInfo {
 
     private:
 
-        ///Property arguments constraints (ranges)
+        /// Property arguments constraints (ranges)
         std::map<ARGUMENT_NAME, ArgumentRange> _argumentRange;
 
-        ///See also links to properties in another class.
+        /// See also links to properties in another class.
         std::vector<Link> _links;
 
-        ///Information about source of property calclulation algorithm
+        /// Information about source of property calclulation algorithm
         std::string _source;
 
         ///Other comments about property
@@ -116,7 +116,7 @@ struct MaterialInfo {
 
     public:
 
-        /// returned by getArgumentRange if there is no range for given argument, hold two NaNs
+        /// Returned by getArgumentRange if there is no range for given argument, hold two NaNs
         static const ArgumentRange NO_RANGE;
 
         PropertyInfo& setSource(const std::string& new_source) { this->_source = new_source; return *this; }
@@ -155,14 +155,14 @@ struct MaterialInfo {
 
     //const PropertyInfo& operator()(PROPERTY_NAME property) const;
 
-    ///Material info database
+    /// Material info database
     class DB {
 
     public:
 
         static DB& getDefault();
 
-        ///Material name -> material information
+        /// Material name -> material information
         std::map<std::string, MaterialInfo> materialInfo;
 
         /**

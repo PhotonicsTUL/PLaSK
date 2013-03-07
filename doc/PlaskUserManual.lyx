@@ -3761,19 +3761,31 @@ In this section geometries of the analyze structures are defined.
  More than one geometry can be specified.
  Inside each geometry tag there must be a single geometry object: usually
  it is some container.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+axes
+\family default
  
-\family typewriter
-<geometry>
-\family default
- is the only section that can take an optional attribute 
-\family typewriter
-axes
-\family default
- which specifies the default value of 
+\size scriptsize
+(optional) 
+\size default
+Default value of 
 \family typewriter
 axes
 \family default
- attributes for all its elements.
+ attribute for all geometries defined in this section.
 \end_layout
 
 \begin_layout Subsection
@@ -4192,15 +4204,26 @@ name
 Containers
 \end_layout
 
+\begin_layout Standard
+Containers are objects that contain multiple other geometry objects as their
+ items.
+ They organize them spatially in different manners depending on the type
+ of the container.
+\end_layout
+
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
 \series bold
-<stack>
+<align>
 \family default
 \series default
- Stack organizing its elements on top of the other.
+ Container that align its items according to specified rules specified in
+ its attributes.
+ The alignment for one axis only should be given.
+ As the objects in this container usually overlap, their order matters:
+ latter items overwrite the former ones.
 \end_layout
 
 \begin_deeper
@@ -4216,59 +4239,23 @@ Attributes
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
-repeat
+name
 \family default
-\series default
- 
-\size scriptsize
-(optional) 
-\size default
-Number of repetitive occurrences of stack content.
- This attribute allows to create periodic vertical structures (e.
-\begin_inset space \thinspace{}
-\end_inset
-
-g.
- DBRs) easily.
- Defaults to 1.
- (integer)
+ Object name for further reference.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
-shift
-\family default
-\series default
- 
-\size scriptsize
-(optional) 
-\size default
-Vertical position of the stack bottom edge in its local coordinates.
- This attribute really makes sense only if the stack is the main element
- of the geometry, as in such case its local coordinates define global geometry
- coordinate system.
- Defaults to 0.
- (float [µm])
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
 left
 \family default
-\series default
  
 \size scriptsize
 (optional) 
 \size default
-Default alignment specification: position of the left edge of the bounding
- boxes of each element.
+Horizontal alignment specification: position of the left edge of the bounding
+ box of each element.
  (float [µm])
 \end_layout
 
@@ -4276,16 +4263,14 @@ Default alignment specification: position of the left edge of the bounding
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 right
 \family default
-\series default
  
 \size scriptsize
 (optional) 
 \size default
-Default alignment specification: position of the right edge of the bounding
- boxes of each element.
+Horizontal alignment specification: position of the right edge of the bounding
+ box of each element.
  (float [µm])
 \end_layout
 
@@ -4293,16 +4278,14 @@ Default alignment specification: position of the right edge of the bounding
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 trancenter
 \family default
-\series default
  
 \size scriptsize
 (optional) 
 \size default
-Default alignment specification: position of the center of the bounding
- boxes of each element.
+Horizontal alignment specification: position of the center of the bounding
+ box of each element.
  (float [µm])
 \end_layout
 
@@ -4314,9 +4297,10 @@ Default alignment specification: position of the center of the bounding
 \begin_inset Formula $x$
 \end_inset
 
+
+\series default
 center
 \family default
-\series default
  
 \size scriptsize
 (optional) 
@@ -4357,8 +4341,603 @@ where
 \begin_inset Formula $x$
 \end_inset
 
- is the transverse axis name: Default alignment specification: position
+ is the transverse axis name: Horizontal alignment specification: position
  of the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+top
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the top edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+bottom
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the bottom edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+vertcenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the center of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $y$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $y$
+\end_inset
+
+ 
+\emph default
+is the vertical axis name: Alias for 
+\family typewriter
+vertcenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the vertical axis name: Vertical alignment specification: position of
+ the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+Exactly one of the 
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, 
+\begin_inset Formula $x$
+\end_inset
+
+, 
+\family typewriter
+top
+\family default
+, 
+\family typewriter
+bottom
+\family default
+, 
+\family typewriter
+vertcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $y$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $y$
+\end_inset
+
+ attributes must be given.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+: 
+\end_layout
+
+\begin_layout Standard
+The content of this element can any number of other two-dimensional geometry
+ object or 
+\family typewriter
+<item>
+\family default
+ elements which are organized in the vertical stack, ordered from top to
+ bottom.
+ 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+object
+\emph default
+ Two-dimensional geometry object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<item>
+\family default
+\series default
+ Tag that allows to specify additional item attributes.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Path hint enabling distinguishing between multiple occurrences of the same
+ object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+alignment
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+Any of the stack alignment specification attributes along the axis not specified
+ in the container attributes (
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+, 
+\begin_inset Formula $x$
+\end_inset
+
+
+\family typewriter
+center
+\family default
+, 
+\begin_inset Formula $x$
+\end_inset
+
+, 
+\family typewriter
+top
+\family default
+, 
+\family typewriter
+bottom
+\family default
+, 
+\family typewriter
+vertcenter
+\family default
+, 
+\begin_inset Formula $y$
+\end_inset
+
+
+\family typewriter
+center
+\family default
+, 
+\begin_inset Formula $y$
+\end_inset
+
+).
+ Specifies alignment of the item in the remaining direction.
+ Defaults to 
+\family typewriter
+left=
+\begin_inset Quotes erd
+\end_inset
+
+0
+\family default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\family typewriter
+bottom=
+\begin_inset Quotes erd
+\end_inset
+
+0
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Content
+\bar default
+: A single two-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<container>
+\family default
+\series default
+ Simple container in which all the items must have explicitly specified
+ position.
+ As the objects in this container may overlap, their order matters: latter
+ items overwrite the former ones.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<item>
+\family default
+\series default
+ Tag that allows to specify additional item attributes.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Path hint enabling distinguishing between multiple occurrences of the same
+ object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+left
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Horizontal alignment specification: position of the left edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+right
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Horizontal alignment specification: position of the right edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+trancenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Horizontal alignment specification: position of the center of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $x$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ 
+\emph default
+is the transverse axis name: Alias for 
+\family typewriter
+trancenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the transverse axis name: Horizontal alignment specification: position
+ of the origin of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+top
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the top edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+bottom
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the bottom edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+vertcenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the center of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $y$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $y$
+\end_inset
+
+ 
+\emph default
+is the vertical axis name: Alias for 
+\family typewriter
+vertcenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the vertical axis name: Vertical alignment specification: position of
+ the origin of the element.
  (float [µm])
 \end_layout
 
@@ -4383,11 +4962,122 @@ trancenter
 
 center
 \family default
- and 
+, and 
 \begin_inset Formula $x$
 \end_inset
 
- are mutally exclusive.
+ are mutually exclusive.
+ Attributes 
+\family typewriter
+top
+\family default
+, 
+\family typewriter
+bottom
+\family default
+, 
+\family typewriter
+vertcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $y$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $y$
+\end_inset
+
+ are mutually exclusive.
+ At least one alignment specification for each axis must be given.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Content
+\bar default
+: A single two-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<shelf>
+\family default
+\series default
+ Container organizing objects side-by-side to each other, like books on
+ a bookshelf.
+ Items on the shelf are all bottom-aligned.
+ Optionally it is possible to require that all the items have the same height
+ in order to avoid the vertical gaps.
+ However it is possible to insert intentional horizontal gaps to the shelf.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+flat
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+The value of this attribute can be either 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+true
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ of 
+\emph on
+
+\begin_inset Quotes eld
+\end_inset
+
+false
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+ It specifies whether all the items in the shelf are required to have the
+ same height (therefore the top edge of the shelf is flat).
+ Defaults to true.
 \end_layout
 
 \begin_layout Standard
@@ -4399,55 +5089,419 @@ Content
 \end_layout
 
 \begin_layout Standard
-Any number of other two-dimensional geometry object which are organized
- in the vertical stack, ordered from top to bottom.
- Each stack item can be enclosed in an additional tag 
-\family typewriter
-<item>
-\family default
- that have an optional attribute 
-\family typewriter
-path
-\family default
- specifying a path hint enabling distinguishing between multiple occurrences
- of the same object (e.
-\begin_inset space \thinspace{}
-\end_inset
-
-g.
+The content of this element can any number of other two-dimensional geometry
+ object which are organized horizontally adjacent to each other, starting
+ from the left.
  
-\family typewriter
-<item path=
-\begin_inset Quotes erd
-\end_inset
+\end_layout
 
-123
-\begin_inset Quotes erd
-\end_inset
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 
-> <ref name=
-\begin_inset Quotes erd
-\end_inset
-
-other
-\begin_inset Quotes erd
-\end_inset
-
-/> </item>
-\family default
-).
+\emph on
+object
+\emph default
+ Two-dimensional geometry object.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
+\series bold
+<gap/>
+\family default
+\series default
+ Horizontal gap between two objects.
+ The size of the gap can be specified either as the absolute value in µm
+ or as the total horizontal size of the shelf.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+size
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Size of the gap.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+total
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Total size of the shelf.
+ The gap will adjust automatically.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+Exactly one of the above attributes must be specified and only one gap in
+ the shelf can have the 
+\family typewriter
+total
+\family default
+ attribute.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<stack>
+\family default
+\series default
+ Stack organizing its elements on top of the other.
+ Horizontal alignment of the stack elements can be controlled by the alignment
+ attributes of the whole stack or its items.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+repeat
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Number of repetitive occurrences of stack content.
+ This attribute allows to create periodic vertical structures (e.
+\begin_inset space \thinspace{}
+\end_inset
+
+g.
+ DBRs) easily.
+ Defaults to 1.
+ (integer)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+shift
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical position of the stack bottom edge in its local coordinates.
+ This attribute really makes sense only if the stack is the main element
+ of the geometry, as in such case its local coordinates define global geometry
+ coordinate system.
+ Defaults to 0.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+left
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Default horizontal alignment specification: position of the left edge of
+ the bounding box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+right
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Default horizontal alignment specification: position of the right edge of
+ the bounding box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+trancenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Default horizontal alignment specification: position of the center of the
+ bounding box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $x$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ 
+\emph default
+is the transverse axis name: Alias for 
+\family typewriter
+trancenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the transverse axis name: Default horizontal alignment specification:
+ position of the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+Attributes 
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $x$
+\end_inset
+
+ are mutually exclusive.
+ Default alignment is 
+\family typewriter
+left=
+\begin_inset Quotes erd
+\end_inset
+
+0
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+The content of this element can any number of other two-dimensional geometry
+ object or 
+\family typewriter
+<item>
+\family default
+ elements which are organized in the vertical stack, ordered from top to
+ bottom.
+ 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+object
+\emph default
+ Two-dimensional geometry object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<item>
+\family default
+\series default
+ Tag that allows to specify additional item attributes.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Path hint enabling distinguishing between multiple occurrences of the same
+ object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+alignment
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+Any of the stack alignment specification attributes (
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+, 
+\begin_inset Formula $x$
+\end_inset
+
+
+\family typewriter
+center
+\family default
+, 
+\begin_inset Formula $x$
+\end_inset
+
+) that overrides the stack default for the particular item.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Content
+\bar default
+: A single two-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
 <zero/>
 \family default
+\series default
  This tag can appear as stack content only once.
  If present, it indicates the vertical position of origin of the local coordinat
 e system.
- Hence, it is an alternative method os specifying 
+ Hence, it is an alternative method of specifying 
 \emph on
 shift
 \emph default
@@ -4455,24 +5509,412 @@ shift
 \end_layout
 
 \end_deeper
-\begin_layout Paragraph
+\begin_layout Subsubsection
+Transforms
+\end_layout
+
+\begin_layout Standard
+Transforms always contain a single geometry object (possibly container)
+ as their content and perform some transformation of this object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 
 \family typewriter
-<shelf>
+\series bold
+<translation>
+\family default
+\series default
+ A simple shift of the object.
+ Note that the bounding box is shifted as well, so in containers that place
+ their items basing on their bounding boxes, this transformation will have
+ no effect.
 \end_layout
 
-\begin_layout Subsubsection
-Transformations
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+ where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the transverse axis name: Horizontal position of the origin of transformed
+ element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+ where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the vertical axis name: Vertical position of the origin of transformed
+ element.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+object
+\emph default
+ A single geometry object.
+\end_layout
+
+\end_deeper
 \begin_layout Subsubsection
 Physical objects
+\end_layout
+
+\begin_layout Standard
+Physical objects are the leafs of the geometry tree.
+ They represent actual objects that have some shape and defined material.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<block/>
+\family default
+\series default
+ Rectangular block.
+ Its origin is located at the lower left corner.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material
+\family default
+ Definition of the block material.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+d
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+ where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the transverse axis name: Horizontal dimension of the rectangle.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+d
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+ where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the vertical axis name: Vertical dimension of the rectangle.
+ (float [µm])
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<rectangle/>
+\family default
+\series default
+ Alias for 
+\family typewriter
+<block>
+\family default
+.
 \end_layout
 
 \begin_layout Subsubsection
 Other
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<again/>
+\family default
+\series default
+ This tag can be used to insert any previously defined and named (with the
+ 
+\family typewriter
+name
+\family default
+ attribute) two-dimensional object again in the geometry tree.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the referenced object.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<copy>
+\family default
+\series default
+ Modified copy of any previously defined and named (with the 
+\family typewriter
+name
+\family default
+ attribute) two-dimensional object.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+from
+\family default
+ Name of the source two-dimensional object to make modified copy of.
+ Usually it is some container that has some other named its items or sub-items.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+The content of this element contains the tags specifying desired modifications
+ of the source object.
+ The source object remains unchanged, but its copy has alternations described
+ by the following tags:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<delete/>
+\family default
+\series default
+ Delete some item or sub-item of the copied object.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the object to delete.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<replace/>
+\family default
+\series default
+ Replace some item or sub-item of the copied object with some other named
+ object specified anywhere earlier in the geometry.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the object to replace.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+to
+\family default
+ Name of the object to replace with.
+ This object does not need to be located in the subtree of the copied object.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<toblock/>
+\family default
+\series default
+ Replace some item or sub-item of the copied object with uniform block that
+ has dimensions exactly equal to the bounding box of the original element.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the object to replace with the the solid block.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material
+\family default
+ Material of the solid block.
+\end_layout
+
+\end_deeper
+\end_deeper
 \begin_layout Subsection
 \begin_inset CommandInset label
 LatexCommand label
@@ -4483,6 +5925,2195 @@ name "sub:XPL-Geometry-objects-3D"
 Geometry objects 3D
 \end_layout
 
+\begin_layout Subsubsection
+Containers
+\end_layout
+
+\begin_layout Standard
+Containers are objects that contain multiple other geometry objects as their
+ items.
+ They organize them spatially in different manners depending on the type
+ of the container.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<align>
+\family default
+\series default
+ Container that align its items according to specified rules specified in
+ its attributes.
+ The alignment for one axis only should be given.
+ As the objects in this container usually overlap, their order matters:
+ latter items overwrite the former ones.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+back
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the back edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+front
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the front edge of the
+ bounding box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+longcenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the center of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $x$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ 
+\emph default
+is the longitudinal axis name: Alias for 
+\family typewriter
+longcenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the longitudinal axis name: Longitudinal alignment specification: position
+ of the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+left
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the left edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+right
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the right edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+trancenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the center of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $y$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $y$
+\end_inset
+
+ 
+\emph default
+is the transverse axis name: Alias for 
+\family typewriter
+trancenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the transverse axis name: Transversal alignment specification: position
+ of the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+top
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the top edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+bottom
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the bottom edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+vertcenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the center of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $z$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $z$
+\end_inset
+
+ 
+\emph default
+is the vertical axis name: Alias for 
+\family typewriter
+vertcenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $z$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $z$
+\end_inset
+
+ is the vertical axis name: Vertical alignment specification: position of
+ the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+Exactly one of the 
+\family typewriter
+back
+\family default
+, 
+\family typewriter
+front
+\family default
+, 
+\family typewriter
+longcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, 
+\begin_inset Formula $x$
+\end_inset
+
+, 
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $y$
+\end_inset
+
+center
+\family default
+, 
+\begin_inset Formula $y$
+\end_inset
+
+, 
+\family typewriter
+top
+\family default
+, 
+\family typewriter
+bottom
+\family default
+, 
+\family typewriter
+vertcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $z$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $z$
+\end_inset
+
+ attributes must be given.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+: 
+\end_layout
+
+\begin_layout Standard
+The content of this element can any number of other three-dimensional geometry
+ object or 
+\family typewriter
+<item>
+\family default
+ elements which are organized in the vertical stack, ordered from top to
+ bottom.
+ 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+object
+\emph default
+ Three-dimensional geometry object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<item>
+\family default
+\series default
+ Tag that allows to specify additional item attributes.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Path hint enabling distinguishing between multiple occurrences of the same
+ object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+alignment
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+Any of the stack alignment specification attributes along the axis not specified
+ in the container attributes (
+\family typewriter
+back
+\family default
+, 
+\family typewriter
+front
+\family default
+, 
+\family typewriter
+longcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, 
+\begin_inset Formula $x$
+\end_inset
+
+, 
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+, 
+\begin_inset Formula $y$
+\end_inset
+
+
+\family typewriter
+center
+\family default
+, 
+\begin_inset Formula $y$
+\end_inset
+
+, 
+\family typewriter
+top
+\family default
+, 
+\family typewriter
+bottom
+\family default
+, 
+\family typewriter
+vertcenter
+\family default
+, 
+\begin_inset Formula $z$
+\end_inset
+
+
+\family typewriter
+center
+\family default
+, 
+\begin_inset Formula $z$
+\end_inset
+
+).
+ Specifies alignment of the item in the remaining direction.
+ Defaults to 
+\family typewriter
+back=
+\begin_inset Quotes erd
+\end_inset
+
+0
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+, 
+\family typewriter
+left=
+\begin_inset Quotes erd
+\end_inset
+
+0
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+, or 
+\family typewriter
+bottom=
+\begin_inset Quotes erd
+\end_inset
+
+0
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+ (excluding the alignment of the container from the list).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Content
+\bar default
+: A single three-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<container>
+\family default
+\series default
+ Simple container in which all the items must have explicitly specified
+ position.
+ As the objects in this container may overlap, their order matters: latter
+ items overwrite the former ones.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<item>
+\family default
+\series default
+ Tag that allows to specify additional item attributes.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Path hint enabling distinguishing between multiple occurrences of the same
+ object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+back
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the back edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+front
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the front edge of the
+ bounding box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+longcenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the center of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $x$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ 
+\emph default
+is the longitudinal axis name: Alias for 
+\family typewriter
+longcenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the longitudinal axis name: Longitudinal alignment specification: position
+ of the origin of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+left
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the left edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+right
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the right edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+trancenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the center of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $y$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $y$
+\end_inset
+
+ 
+\emph default
+is the transverse axis name: Alias for 
+\family typewriter
+trancenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the transverse axis name: Transversal alignment specification: position
+ of the origin of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+top
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the top edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+bottom
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the bottom edge of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+vertcenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Vertical alignment specification: position of the center of the bounding
+ box of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $z$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $z$
+\end_inset
+
+ 
+\emph default
+is the vertical axis name: Alias for 
+\family typewriter
+vertcenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $z$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $z$
+\end_inset
+
+ is the vertical axis name: Vertical alignment specification: position of
+ the origin of the element.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+Attributes 
+\family typewriter
+back
+\family default
+, 
+\family typewriter
+front
+\family default
+, 
+\family typewriter
+longcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $x$
+\end_inset
+
+ are mutually exclusive.
+ Attributes 
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $x$
+\end_inset
+
+ are mutually exclusive.
+ Attributes 
+\family typewriter
+top
+\family default
+, 
+\family typewriter
+bottom
+\family default
+, 
+\family typewriter
+vertcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $y$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $y$
+\end_inset
+
+ are mutually exclusive.
+ At least one alignment specification for each axis must be given.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Content
+\bar default
+: A single three-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<stack>
+\family default
+\series default
+ Stack organizing its elements on top of the other.
+ Horizontal alignments of the stack elements can be controlled by the alignment
+ attributes of the whole stack or its items.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+repeat
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Number of repetitive occurrences of stack content.
+ This attribute allows to create periodic vertical structures (e.
+\begin_inset space \thinspace{}
+\end_inset
+
+g.
+ DBRs) easily.
+ Defaults to 1.
+ (integer)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+back
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the back edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+front
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the front edge of the
+ bounding box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+longcenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Longitudinal alignment specification: position of the center of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $x$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $x$
+\end_inset
+
+ 
+\emph default
+is the longitudinal axis name: Alias for 
+\family typewriter
+longcenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the longitudinal axis name: Longitudinal alignment specification: position
+ of the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+left
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the left edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+right
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the right edge of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+trancenter
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Transversal alignment specification: position of the center of the bounding
+ box of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\begin_inset Formula $y$
+\end_inset
+
+
+\series default
+center
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+where
+\emph on
+ 
+\begin_inset Formula $y$
+\end_inset
+
+ 
+\emph default
+is the transverse axis name: Alias for 
+\family typewriter
+trancenter
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the transverse axis name: Transversal alignment specification: position
+ of the origin of each element.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+Attributes 
+\family typewriter
+back
+\family default
+, 
+\family typewriter
+front
+\family default
+, 
+\family typewriter
+longcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $x$
+\end_inset
+
+ are mutually exclusive.
+ Attributes 
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, and 
+\begin_inset Formula $x$
+\end_inset
+
+ are mutually exclusive.
+ Default alignment is 
+\family typewriter
+left=
+\begin_inset Quotes erd
+\end_inset
+
+0
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+ anb 
+\family typewriter
+back=
+\begin_inset Quotes erd
+\end_inset
+
+0
+\begin_inset Quotes erd
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+The content of this element can any number of other three-dimensional geometry
+ object or 
+\family typewriter
+<item>
+\family default
+ elements which are organized in the vertical stack, ordered from top to
+ bottom.
+ 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+object
+\emph default
+ Three-dimensional geometry object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<item>
+\family default
+\series default
+ Tag that allows to specify additional item attributes.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Path hint enabling distinguishing between multiple occurrences of the same
+ object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+alignment
+\emph default
+ 
+\size scriptsize
+(optional) 
+\size default
+Any of the stack alignment specification attributes (
+\family typewriter
+back
+\family default
+, 
+\family typewriter
+front
+\family default
+, 
+\family typewriter
+longcenter
+\family default
+,
+\family typewriter
+ 
+\begin_inset Formula $x$
+\end_inset
+
+center
+\family default
+, 
+\begin_inset Formula $x$
+\end_inset
+
+, 
+\family typewriter
+left
+\family default
+, 
+\family typewriter
+right
+\family default
+, 
+\family typewriter
+trancenter
+\family default
+, 
+\begin_inset Formula $y$
+\end_inset
+
+
+\family typewriter
+center
+\family default
+, 
+\begin_inset Formula $y$
+\end_inset
+
+) that overrides the stack default for the particular item.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Content
+\bar default
+: A single three-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<zero/>
+\family default
+\series default
+ This tag can appear as stack content only once.
+ If present, it indicates the vertical position of origin of the local coordinat
+e system.
+ Hence, it is an alternative method of specifying 
+\emph on
+shift
+\emph default
+ value.
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+Transforms
+\end_layout
+
+\begin_layout Standard
+Transforms always contain a single geometry object (possibly container)
+ as their content and perform some transformation of this object.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<extrusion>
+\family default
+\series default
+ Extrusion of two-dimensional object into third dimension.
+ 2D objects are defined in the plane defined by the transverse and vertical
+ axes.
+ Hence, the extrusion is performed into the longitudinal direction.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+length
+\family default
+ Length of the extrusion.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+object
+\emph default
+ A single two-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<revolution>
+\family default
+\series default
+ Revolution of the two-dimensional object around its local vertical axis.
+ The horizontal axis of the 2D object becomes a radial axis of the resulting
+ compound cylinder.
+ Vertical axes of the 2D object remains the vertical axis of the resulting
+ block.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+object
+\emph default
+ A single two-dimensional geometry object.
+ All the boundaries of its bounding box must have their horizontal coordinates
+ larger or equal to zero i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ all the object must be located at the right-hand half of the plane.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<translation>
+\family default
+\series default
+ A simple shift of the object.
+ Note that the bounding box is shifted as well, so in containers that place
+ their items basing on their bounding boxes, this transformation will have
+ no effect.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the transverse axis name: Horizontal position of the origin of transformed
+ element.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+\emph on
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+\series default
+\emph default
+ where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the vertical axis name: Vertical position of the origin of transformed
+ element.
+ (float [µm])
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\emph on
+object
+\emph default
+ A single three-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+Physical objects
+\end_layout
+
+\begin_layout Standard
+Physical objects are the leafs of the geometry tree.
+ They represent actual objects that have some shape and defined material.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<block/>
+\family default
+\series default
+ Rectangular block.
+ Its origin is located in the lower back left corner.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material
+\family default
+ Definition of the block material.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+d
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+ where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the longitudinal axis name: Longitudinal dimension of the cuboid.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+d
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+ where 
+\begin_inset Formula $y$
+\end_inset
+
+ is the transverse axis name: Transversal dimension of the cuboid.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+d
+\begin_inset Formula $z$
+\end_inset
+
+
+\family default
+ where 
+\begin_inset Formula $z$
+\end_inset
+
+ is the vertical axis name: Vertical dimension of the cuboid.
+ (float [µm])
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<cuboid/>
+\family default
+\series default
+ Alias for 
+\family typewriter
+<block>
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<cylinder/>
+\family default
+\series default
+ Cylinder with its base lying in the horizontal plane.
+ Its origin is located at the center of the lower circular base.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material
+\family default
+ Definition of the block material.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+radius
+\family default
+ Radius of the cylinder base.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+height
+\family default
+ Height of the cylinder.
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+Other
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<again/>
+\family default
+\series default
+ This tag can be used to insert any previously defined and named (with the
+ 
+\family typewriter
+name
+\family default
+ attribute) three-dimensional object again in the geometry tree.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the referenced object.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<copy>
+\family default
+\series default
+ Modified copy of any previously defined and named (with the 
+\family typewriter
+name
+\family default
+ attribute) three-dimensional object.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+from
+\family default
+ Name of the source two-dimensional object to make modified copy of.
+ Usually it is some container that has some other named its items or sub-items.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Content
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+The content of this element contains the tags specifying desired modifications
+ of the source object.
+ The source object remains unchanged, but its copy has alternations described
+ by the following tags:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<delete/>
+\family default
+\series default
+ Delete some item or sub-item of the copied object.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the object to delete.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<replace/>
+\family default
+\series default
+ Replace some item or sub-item of the copied object with some other named
+ object specified anywhere earlier in the geometry.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the object to replace.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+to
+\family default
+ Name of the object to replace with.
+ This object does not need to be located in the subtree of the copied object.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<toblock/>
+\family default
+\series default
+ Replace some item or sub-item of the copied object with uniform block that
+ has dimensions exactly equal to the bounding box of the original element.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the object to replace with the the solid block.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material
+\family default
+ Material of the solid block.
+\end_layout
+
+\end_deeper
+\end_deeper
 \begin_layout Section
 Section <grids>
 \end_layout

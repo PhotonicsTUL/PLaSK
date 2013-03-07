@@ -426,7 +426,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
         /**
          * Names of already saved objects.
          *
-         * Used to contruct \<ref ...> tags.
+         * Used to contruct \<again ...> tags.
          */
         std::map<const GeometryObject*, std::string> names_of_saved;
 
@@ -481,7 +481,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
          * @param el XML object
          * @return @c true only if @p el represents a reference
          */
-        static bool isRef(const XMLElement& el) { return el.getName() == "ref"; }
+        static bool isRef(const XMLElement& el) { return el.getName() == "again"; }
 
     };
 

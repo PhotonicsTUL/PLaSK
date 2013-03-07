@@ -16,7 +16,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
                 <cartesian2d name="Space-1" axes="xy">
                     <stack name="Stack-2">
                         <item path="Path-4"><rectangle name="Block-3" dx="5" dy="2" material="GaN" /></item>
-                        <ref name="Block-3"/>
+                        <again ref="Block-3"/>
                     </stack>
                 </cartesian2d>
             </geometry>

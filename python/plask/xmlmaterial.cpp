@@ -146,7 +146,7 @@ class PythonEvalMaterial : public Material
             return mob(T).c00 * T * 8.6173423e-5;  // D = µ kB T / e
         }
     }
-    virtual Tensor2<double> thermk(double T, double t)  const { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, t) }
+    virtual Tensor2<double> thermk(double T, double h)  const { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, h) }
     virtual double dens(double T) const { PYTHON_EVAL_CALL_1(double, dens, T) }
     virtual double cp(double T) const { PYTHON_EVAL_CALL_1(double, cp, T) }
     virtual double nr(double wl, double T) const { PYTHON_EVAL_CALL_2(double, nr, wl, T) }

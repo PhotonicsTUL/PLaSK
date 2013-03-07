@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         manager.loadFromXMLString(
                     "<plask><geometry><cartesian2d name=\"space\" length=\"1\" axes=\"xy\" left=\"mirror\"><stack repeat=\"5\" shift=\"10\" name=\"multistack\">"
                     "<item x=\"0\"><block name=\"block-5-3\" dx=\"5\" dy=\"3\" material=\"Al\" /></item>"
-                    "<item x=\"0\" path=\"p,other,'yet-another-one'\"><ref name=\"block-5-3\" /></item>"
+                    "<item x=\"0\" path=\"p,other,'yet-another-one'\"><again ref=\"block-5-3\" /></item>"
                     "</stack></cartesian2d></geometry></plask>", materialsDB);
         //BOOST_CHECK_EQUAL(manager.objects.size(), 3);
         BOOST_CHECK(manager.getGeometryObject("block-5-3") != nullptr);

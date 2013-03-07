@@ -119,7 +119,7 @@ bool Material::operator ==(const Material &other) const {
 
 double Material::cp(double T) const { throwNotImplemented("cp(double T)"); return 0; }
 
-Tensor2<double> Material::thermk(double T, double thickness) const { throwNotImplemented("thermk(double T)"); return 0.; }
+Tensor2<double> Material::thermk(double T, double h) const { throwNotImplemented("thermk(double T)"); return 0.; }
 
 double Material::VBO(double T) const { throwNotImplemented("VBO(double T)"); return 0; }
 
@@ -474,8 +474,8 @@ double MixedMaterial::cp(double T) const {
 Tensor2<double> MixedMaterial::thermk(double T) const {
     return avg_pairs([&](const Material& m) { return m.thermk(T); });
 }
-Tensor2<double> MixedMaterial::thermk(double T, double thickness) const {
-    return avg_pairs([&](const Material& m) { return m.thermk(T, thickness); });
+Tensor2<double> MixedMaterial::thermk(double T, double h) const {
+    return avg_pairs([&](const Material& m) { return m.thermk(T, h); });
 }
 
 double MixedMaterial::VBO(double T) const  {

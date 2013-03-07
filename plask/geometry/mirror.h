@@ -15,7 +15,7 @@ namespace plask {
  */
 template <int dim>
 struct MirrorReflection: public GeometryObjectTransform<dim> {
-    
+
     static constexpr const char* NAME = dim == 2 ?
                 ("mirrorReflection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("mirrorReflection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
@@ -44,14 +44,14 @@ struct MirrorReflection: public GeometryObjectTransform<dim> {
     virtual Box getBoundingBox() const {
         return fliped(getChild()->getBoundingBox());
     }
-    
+
     /**
      * Get fliped version of @p v.
      * @param v vector
      * @return fliped version of @p v
      */
     DVec fliped(DVec v) const { return v.fliped(flipDir); }
-    
+
     Box fliped(Box res) const { return res.fliped(flipDir); }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {

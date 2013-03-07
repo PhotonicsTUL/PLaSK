@@ -43,7 +43,7 @@ struct Air: public Material {
     virtual double B(double T) const;
     virtual double C(double T) const;
     virtual double D(double T) const;
-    virtual Tensor2<double> thermk(double T, double thickness) const;
+    virtual Tensor2<double> thermk(double T, double h) const;
     virtual double dens(double T) const;
     virtual double cp(double T) const;
     virtual double nr(double wl, double T) const;

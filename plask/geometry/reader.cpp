@@ -43,8 +43,8 @@ inline bool isAutoName(const std::string& name) { return !name.empty() && name[0
 shared_ptr<GeometryObject> GeometryReader::readObject() {
     std::string nodeName = source.getNodeName();
 
-    if (nodeName == "ref") {
-        shared_ptr<GeometryObject> result = requireObjectWithName(source.requireAttribute(XML_NAME_ATTR));
+    if (nodeName == "again") {
+        shared_ptr<GeometryObject> result = requireObjectWithName(source.requireAttribute("ref"));
         source.requireTagEnd();
         return result;
     }

@@ -214,18 +214,18 @@ element geometry {
 )
 }
 
-ref =
+again =
 ## allow to insert again earlier defined, named object
-element ref {
+element again {
     ## name of earlier defined object which should be inserted here
-    name_attr
+    attribute ref { text }
 }
 
 geom_elem_common.attlist = name_attr?,
     ## change names of axes in subtree represented by this element
     attribute axes { text }?    #TODO enumerate values
 
-geom_child_common.attlist =
+geom_item_common.attlist =
     ## names of paths which should lies on edge represented by this element
     attribute path { text }?
 
@@ -261,14 +261,14 @@ material_attr =
 # ====== extrusion ======
 
 extrusion =
-	## 3D geometry object which are extend of 2D object (child) in lon direction
+	## 3D geometry object which are extend of 2D object (item) in lon direction
 	element extrusion { geom_elem_common.attlist, length_attr, geometry_object2d }
 
 
 # ====== revolution ======
 
 revolution =
-	## 3D geometry object which is an effect of revolving a 2D object (child) around the up axis
+	## 3D geometry object which is an effect of revolving a 2D object (item) around the up axis
 	element revolution { geom_elem_common.attlist, geometry_object2d }
 
 
@@ -309,42 +309,42 @@ translation.attlist = geom_elem_common.attlist, anyAxes_double_attr*
 translation2d.content = translation.attlist, geometry_object2d
 
 translation2d =
-	## geometry object equal to its child (2D) translated by vector
+	## geometry object equal to its item (2D) translated by vector
 	element translation2d { translation2d.content }
 
 translation_as_2d =
-	## geometry object equal to its child (2D) translated by vector
+	## geometry object equal to its item (2D) translated by vector
 	element (translation|translation2d) { translation2d.content }
 
 translation3d.content = translation.attlist, geometry_object3d
 
 translation3d =
-	## geometry object equal to its child (3D) translated by vector
+	## geometry object equal to its item (3D) translated by vector
 	element translation3d { translation3d.content }
 
 translation_as_3d =
-	## geometry object equal to its child (3D) translated by vector
+	## geometry object equal to its item (3D) translated by vector
 	element (translation|translation3d) { translation3d.content }
 
 
 # ====== container (with translations) ======
 
 container2d.content = geom_elem_common.attlist,
-    (   element child { geom_child_common.attlist, aligner_any_attr*, geometry_object2d } | geometry_object2d   )*
+    (   element item { geom_item_common.attlist, aligner_any_attr*, geometry_object2d } | geometry_object2d   )*
 container2d = element (container2d) { container2d.content }
 container_as_2d = element (container|container2d) { container2d.content }
 container3d.content = geom_elem_common.attlist,
-    (   element child { geom_child_common.attlist, aligner_any_attr*, geometry_object3d } | geometry_object3d   )*
+    (   element item { geom_item_common.attlist, aligner_any_attr*, geometry_object3d } | geometry_object3d   )*
 container3d = element (container3d) { container3d.content }
 container_as_3d = element (container|container3d) { container3d.content }
 
 # ====== align container ======
 align_container2d.content = geom_elem_common.attlist, (aligner_tran_attr|aligner_vert_attr),
-    (   element child { geom_child_common.attlist, (aligner_tran_attr|aligner_vert_attr)?, geometry_object2d } | geometry_object2d   )*
+    (   element item { geom_item_common.attlist, (aligner_tran_attr|aligner_vert_attr)?, geometry_object2d } | geometry_object2d   )*
 align_container2d = element (align2d) { align_container2d.content }
 align_container_as_2d = element (align|align2d) { align_container2d.content }
 align_container3d.content = geom_elem_common.attlist, aligner_any_attr,
-    (   element child { geom_child_common.attlist, aligner_any_attr*, geometry_object2d } | geometry_object3d   )*
+    (   element item { geom_item_common.attlist, aligner_any_attr*, geometry_object2d } | geometry_object3d   )*
 align_container3d = element (align3d) { align_container3d.content }
 align_container_as_3d = element (align|align3d) { align_container3d.content }
 
@@ -362,24 +362,24 @@ zero =
     ## set zero height to be in this place
     element zero { empty }
 
-stack2d.content = geom_stack_common.attlist, aligner_tran_attr?, 
-	((  element child {geom_child_common.attlist, aligner_tran_attr?, geometry_object2d} | geometry_object2d  )* & zero?)
+stack2d.content = geom_stack_common.attlist, aligner_tran_attr?,
+	((  element item {geom_item_common.attlist, aligner_tran_attr?, geometry_object2d} | geometry_object2d  )* & zero?)
 
 stack2d =
-	## container which have children in stack/layers (2D)
+	## container which have itemren in stack/layers (2D)
 	element (stack2d) { stack2d.content }
 
 stack_as_2d =
-	## container which have children in stack/layers (2D)
+	## container which have itemren in stack/layers (2D)
 	element (stack|stack2d) { stack2d.content }
 stack3d.content = geom_stack_common.attlist, aligner_tran_attr?, aligner_long_attr?,
- 	((  element child {geom_child_common.attlist, aligner_tran_attr?, aligner_long_attr?, geometry_object3d} | geometry_object3d  )* & zero?)
+ 	((  element item {geom_item_common.attlist, aligner_tran_attr?, aligner_long_attr?, geometry_object3d} | geometry_object3d  )* & zero?)
 
-## container which have children in stack/layers (3D)
+## container which have itemren in stack/layers (3D)
 stack3d = element (stack3d) { stack3d.content }
 
 stack_as_3d =
-	## container which have children in stack/layers (3D)
+	## container which have itemren in stack/layers (3D)
 	element (stack|stack3d) { stack3d.content }
 
 shelf =
@@ -389,11 +389,11 @@ element (shelf|shelf2d) {
     ## if true reader will check if all elements have same heights and will throw exception if not (false by default)
     attribute flat { xsd:boolean }?,
     (
-    	(  element child {geom_child_common.attlist, geometry_object2d} | geometry_object2d  )*		&
+    	(  element item {geom_item_common.attlist, geometry_object2d} | geometry_object2d  )*		&
 	zero?												&
 	## gap with given size or witch allow to prevent given total size of shelf (only one gap of this type is allowed)
 	element gap { name_attr?, attribute (size|total) { xsd:double } }*
-	
+
 	#should be, but is not supported by xsd: gap witch allow to prevent given total size of shelf (only one gap of this type is allowed)
 	#element gap { name_attr?, attribute total { xsd:double } }?
     )
@@ -415,7 +415,7 @@ element copy {
     ## name of object to copy
     attribute from { text },
     (
-        ## replace some objects in subtree of copy by solid blocks, prevent size (of bouding-box)
+        ## replace some objects in subtree of copy by solid blocks, preserve size (of bounding-box)
         element toblock {
             ## name of object to replace
             object_attr,
@@ -442,15 +442,15 @@ element copy {
 
 geometry_object2d =
 	## geometry element in 2D space
-	(block_as_2d|translation_as_2d|container_as_2d|align_container_as_2d|stack_as_2d|shelf|copy|ref)
+	(block_as_2d|translation_as_2d|container_as_2d|align_container_as_2d|stack_as_2d|shelf|copy|again)
 
 geometry_object3d =
 	## geometry element in 3D space
-	(block_as_3d|cylinder|translation_as_3d|container_as_3d|align_container_as_3d|stack_as_3d|extrusion|revolution|copy|ref)
+	(block_as_3d|cylinder|translation_as_3d|container_as_3d|align_container_as_3d|stack_as_3d|extrusion|revolution|copy|again)
 
 geometry_object =
 	## any geometry element (often space must be provided as suffix)
-	(block2d|block3d|translation2d|translation3d|container2d|container3d|align_container2d|align_container3d|stack2d|stack3d|shelf|extrusion|revolution|copy|ref)
+	(block2d|block3d|translation2d|translation3d|container2d|container3d|align_container2d|align_container3d|stack2d|stack3d|shelf|extrusion|revolution|copy|again)
 
 
 
@@ -479,7 +479,7 @@ element generator {
 	anyElement*
 }
 
-mesh.common = 
+mesh.common =
 	## name of mesh instance
 	name_attr
 
@@ -498,15 +498,15 @@ element mesh {
 
 solver.geom = element geometry {
 	## name of geometry
-	attribute ref { text }
+	attribute again { text }
 }
 
 solver.mesh = element mesh {
 	## name of mesh
-	attribute ref { text }
+	attribute again { text }
 }
 
-solver.common = 
+solver.common =
 	## name for solver instance
         name_attr &
 	## library name

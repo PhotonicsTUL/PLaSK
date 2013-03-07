@@ -480,10 +480,10 @@ struct Material {
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
      * @param T temperature [K]
-     * @param thickness layer thickness [µm]
+     * @param h layer thickness [µm]
      * @return thermal conductivity k[W/(m*K)]
      */
-    virtual Tensor2<double> thermk(double T, double thickness=INFINITY) const;
+    virtual Tensor2<double> thermk(double T, double h=INFINITY) const;
 
     /**
      * Get density [kg/m^3].
@@ -732,7 +732,7 @@ struct MixedMaterial: public Material {
 
     virtual Tensor2<double> thermk(double T) const;
 
-    virtual Tensor2<double> thermk(double T, double thickness) const;
+    virtual Tensor2<double> thermk(double T, double h) const;
 
     virtual double dens(double T) const;
 

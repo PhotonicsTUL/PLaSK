@@ -59,8 +59,8 @@ std::vector<std::string> GeometryObject::WriteXMLCallback::getPathNames(const Ge
 XMLWriter::Element GeometryObject::WriteXMLCallback::makeTag(XMLElement &parent_tag, const GeometryObject &object, AxisNames &axesNames) {
     auto saved_name = names_of_saved.find(&object);
     if (saved_name != names_of_saved.end()) {
-        XMLWriter::Element ref(parent_tag, "ref");
-        ref.attr("name", saved_name->second);
+        XMLWriter::Element ref(parent_tag, "again");
+        ref.attr("ref", saved_name->second);
         return ref;
     }
     XMLWriter::Element tag(parent_tag, object.getTypeName());
