@@ -487,7 +487,7 @@ if(UNIX)
     file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_DEBIAN_PACKAGE_DESCRIPTION)
     set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Photonic LAser Simulation Kit\n${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, libblas.so.3, liblapack.so.3, python-numpy")
-    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython >= 0.13, ipython-qtconsole >= 0.13, python-matplotlib, python-h5py")
+    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython (>= 0.13), ipython-qtconsole (>= 0.13), python-matplotlib, python-h5py")
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
     # set(CPACK_DEB_COMPONENT_INSTALL ON) # no postinst/prerm scripts are added if this is turned on
 endif()
