@@ -146,7 +146,7 @@ if True:
 
 import plask
 
-def plot_field(field, levels=16, **kwargs):
+def plot_field(field, levels=16, antialiased=True, **kwargs):
     '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation
 
@@ -167,7 +167,7 @@ def plot_field(field, levels=16, **kwargs):
         kwargs = kwargs.copy()
         kwargs['cmap'] = get_cmap(kwargs['cmap'])
 
-    result = contourf(axis0, axis1, data, levels, antialiased=True, **kwargs)
+    result = contourf(axis0, axis1, data, levels, antialiased=antialiased, **kwargs)
     return result
 
 
