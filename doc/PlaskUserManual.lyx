@@ -2,16 +2,35 @@
 \lyxformat 413
 \begin_document
 \begin_header
-\textclass scrreprt
+\textclass scrbook
 \begin_preamble
 \usepackage{xcolor}
 \usepackage{amsbsy}
+
+\usepackage[toctextentriesindented]{tocstyle}
+
+% enables calculation of values,
+\usepackage{calc}
+
+% that links to image floats jumps
+% to the beginning of the float and 
+% not to its caption
+\usepackage[figure]{hypcap}
+
+
+% PDF-bookmark for the TOC is added
+\let\realtoc\tableofcontents
+\renewcommand\tableofcontents{%
+  \pdfbookmark[1]{\contentsname}{}
+  \realtoc
+ }
 
 %keywordstyle={\pmb}
 
 \clubpenalty=10000
 \widowpenalty=10000
 \end_preamble
+\options bibliography=totoc,index=totoc
 \use_default_options false
 \maintain_unincluded_children false
 \language english
@@ -20,33 +39,36 @@
 \fontencoding global
 \font_roman utopia
 \font_sans default
-\font_typewriter lmtt
+\font_typewriter beramono
 \font_default_family default
 \use_non_tex_fonts false
 \font_sc false
 \font_osf false
 \font_sf_scale 100
-\font_tt_scale 100
+\font_tt_scale 84
 
 \graphics default
 \default_output_format default
 \output_sync 0
 \bibtex_command default
 \index_command default
-\float_placement h
+\float_placement tbp
 \paperfontsize default
 \spacing single
 \use_hyperref true
 \pdf_title "PLaSK User Manual"
+\pdf_author "Maciej Dems"
+\pdf_keywords "PLaSK, user manual, modeling software"
 \pdf_bookmarks true
-\pdf_bookmarksnumbered false
-\pdf_bookmarksopen false
-\pdf_bookmarksopenlevel 1
+\pdf_bookmarksnumbered true
+\pdf_bookmarksopen true
+\pdf_bookmarksopenlevel 2
 \pdf_breaklinks false
 \pdf_pdfborder true
 \pdf_colorlinks false
 \pdf_backref false
 \pdf_pdfusetitle true
+\pdf_quoted_options "pdfpagelayout=OneColumn, pdfnewwindow=true, pdfstartview=XYZ, plainpages=false"
 \papersize a4paper
 \use_geometry true
 \use_amsmath 1
@@ -57,7 +79,7 @@
 \use_bibtopic false
 \use_indices false
 \paperorientation portrait
-\suppress_date false
+\suppress_date true
 \use_refstyle 0
 \index Indeks
 \shortcut idx
@@ -74,7 +96,7 @@
 \defskip medskip
 \quotes_language english
 \papercolumns 1
-\papersides 1
+\papersides 2
 \paperpagestyle default
 \listings_params "backgroundcolor={\color{gray!3}},basicstyle={\ttfamily\small},columns=fullflexible,commentstyle={\it},frame=shadowbox,keepspaces=true,language=Python,rulesepcolor={\color{gray}},showstringspaces=false"
 \tracking_changes false
@@ -96,6 +118,22 @@ v.
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+frontmatter
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset CommandInset toc
 LatexCommand tableofcontents
 
@@ -104,8 +142,52 @@ LatexCommand tableofcontents
 
 \end_layout
 
-\begin_layout Chapter
-Preface
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+lstlistoflistings
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+mainmatter
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+addchap{Preface}
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -156,10 +238,6 @@ This manual presents the software and gives instructions on using it.
  The third part covers usage of graphical user interface and, finally, the
  last part lists all the default computational solvers and gives the complete
  reference to their usage.
-\end_layout
-
-\begin_layout Part
-Quick start guide
 \end_layout
 
 \begin_layout Chapter
@@ -849,7 +927,17 @@ reference "fig:Tutorial1-geometry"
 \emph on
 geometry
 \emph default
- section and Cartesian two-dimensional geometry type:
+ section and Cartesian two-dimensional geometry type
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!Cartesian
+\end_layout
+
+\end_inset
+
+:
 \begin_inset listings
 lstparams "language=XML"
 inline false
@@ -1059,8 +1147,17 @@ In the above listing, two new tags appeared.
 \family typewriter
 <stack>
 \family default
- and means that its whole content should be organized in the vertical stack,
- starting from top to bottom.
+ and means that its whole content should be organized in the vertical stack
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!stack
+\end_layout
+
+\end_inset
+
+, starting from top to bottom.
  By default, the stack coordinate system is set in a such way that 
 \begin_inset Formula $y=0$
 \end_inset
@@ -1082,7 +1179,27 @@ Another new tag is
 \family typewriter
 <block>
 \family default
-, which means a rectangular block.
+, which means a rectangular block
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!block
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!rectangle
+\end_layout
+
+\end_inset
+
+.
  As this tag has no further content, is is finished with 
 \family typewriter
 />
@@ -1137,6 +1254,16 @@ reference "chap:Units-in-PLaSK"
 \family typewriter
 material
 \family default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material
+\end_layout
+
+\end_inset
+
  gives information about the material of each block.
  As there is no materials section in our input file, the material parameters
  will be taken from default database (more on this in chapter
@@ -2622,8 +2749,9 @@ electr.corrlim
 \end_layout
 
 \begin_layout Standard
-Having written the input file (including script) so far I suggest you to
- save it and run the computations with PLaSK in a way described in section
+Having whole written the input file (including script) so far I suggest
+ you to save it and run the computations with PLaSK in a way described in
+ section
 \begin_inset space ~
 \end_inset
 
@@ -3366,10 +3494,184 @@ Ensure that the commands to create the last figure are before
 show()
 \family default
 .
- Save your file and run it wih PLaSK.
+ Save your file (for your reference the whole script is shown in listng
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Listing-of-tutorial1-script"
+
+\end_inset
+
+) and run it wih PLaSK.
  You should see three figures now.
  Zoom them to your liking and save the images, successfully finishing this
  tutorial.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "float=bt,language=Python"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Listing-of-tutorial1-script"
+
+\end_inset
+
+Content of the script section from the file 
+\family typewriter
+tutorial1.xpl
+\family default
+.
+\end_layout
+
+\end_inset
+
+verr = electr.compute(1)
+\end_layout
+
+\begin_layout Plain Layout
+
+terr = therm.compute(1) 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+while terr > therm.corrlim or verr > electr.corrlim:
+\end_layout
+
+\begin_layout Plain Layout
+
+    verr = electr.compute(6)
+\end_layout
+
+\begin_layout Plain Layout
+
+    terr = therm.compute(1)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+print_log(LOG_INFO, "Calculations finished!")
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+temp = therm.outTemperature(therm.mesh)
+\end_layout
+
+\begin_layout Plain Layout
+
+plot_field(temp, 12)
+\end_layout
+
+\begin_layout Plain Layout
+
+plot_geometry(GEO["main"], color="w")
+\end_layout
+
+\begin_layout Plain Layout
+
+colorbar()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+figure()
+\end_layout
+
+\begin_layout Plain Layout
+
+plot_geometry(GEO["main"], set_limits=True)
+\end_layout
+
+\begin_layout Plain Layout
+
+plot_mesh(electr.mesh)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+pos = GEO["main"].get_object_positions(OBJ["junction"])[0]
+\end_layout
+
+\begin_layout Plain Layout
+
+junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
+\end_layout
+
+\begin_layout Plain Layout
+
+current = electr.outCurrentDensity(junction_mesh)
+\end_layout
+
+\begin_layout Plain Layout
+
+curry = [ abs(j.y) for j in current ]
+\end_layout
+
+\begin_layout Plain Layout
+
+figure()
+\end_layout
+
+\begin_layout Plain Layout
+
+plot(junction_mesh.axis0, curry)
+\end_layout
+
+\begin_layout Plain Layout
+
+xlabel("$x [um]")
+\end_layout
+
+\begin_layout Plain Layout
+
+ylabel("current density [kA/cm$^2$]")
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+show()
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -3456,16 +3758,6 @@ Finding threshold current of photonic crystal VCSEL
 
 \begin_layout Standard
 combining 2D and 3D geometries with filters
-\end_layout
-
-\begin_layout Part
-\begin_inset CommandInset label
-LatexCommand label
-name "part:PLaSK-reference-manual"
-
-\end_inset
-
-PLaSK reference manual
 \end_layout
 
 \begin_layout Chapter
@@ -3586,23 +3878,23 @@ Creating plots of the results
 Storing and retrieving results
 \end_layout
 
-\begin_layout Part
+\begin_layout Chapter
 Graphical User Interface
 \end_layout
 
-\begin_layout Part
+\begin_layout Chapter
 Available solvers
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Section
 Thermal model
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Section
 Electrical model
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:Solver-electrical-beta"
@@ -3616,28 +3908,24 @@ Phenomenological junction
  model
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Section
 Gain model
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Section
 Optical model
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Section
 Strain model
 \end_layout
 
-\begin_layout Chapter
+\begin_layout Section
 Dynamic models
 \end_layout
 
-\begin_layout Part
-\start_of_appendix
-Appendices
-\end_layout
-
 \begin_layout Chapter
+\start_of_appendix
 \begin_inset CommandInset label
 LatexCommand label
 name "chap:Units-in-PLaSK"
@@ -3652,7 +3940,27 @@ XPL file reference
 \end_layout
 
 \begin_layout Standard
-XPL files follow XML specification.
+XPL
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+XPL
+\end_layout
+
+\end_inset
+
+ files follow XML
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+XML
+\end_layout
+
+\end_inset
+
+ specification.
  Thus all the general rules of creating correct XML files apply top XPL
  ones as well.
  Please refer to the external documentation for information on XML syntax
@@ -3746,6 +4054,9 @@ First of all each XML document must have a parent tag.
 
 \begin_layout Section
 Section <materials>
+
+
+
 \end_layout
 
 \begin_layout Standard
@@ -3767,8 +4078,21 @@ This section contains specification of custom materials that can be used
 \family typewriter
 \series bold
 <material>
+
+
+
 \family default
 \series default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material
+\end_layout
+
+\end_inset
+
  Definition of a custom material.
 \end_layout
 
@@ -3930,7 +4254,20 @@ The accepted material properties are as follows:
 <A>
 \family default
 \series default
- Monomolecular recombination coefficient A [1/s] 
+
+
+
+ Monomolecular recombination coefficient
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!recombination coefficient
+\end_layout
+
+\end_inset
+
+ A [1/s] 
 \begin_inset Newline newline
 \end_inset
 
@@ -3949,7 +4286,20 @@ T
 <absp>
 \family default
 \series default
- Absorption coefficient 
+
+
+
+ Absorption coefficient
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!absorption coefficient
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $\alpha$
 \end_inset
 
@@ -3976,7 +4326,20 @@ wl
 <ac>
 \family default
 \series default
- Hydrostatic deformation potential for the conduction band 
+
+
+
+ Hydrostatic deformation potential
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!hydrostatic deformation potential
+\end_layout
+
+\end_inset
+
+ for the conduction band 
 \begin_inset Formula $a_{c}$
 \end_inset
 
@@ -3999,7 +4362,20 @@ T
 <av>
 \family default
 \series default
- Hydrostatic deformation potential for the valence band 
+
+
+
+ Hydrostatic deformation potential
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!hydrostatic deformation potential
+\end_layout
+
+\end_inset
+
+ for the valence band 
 \begin_inset Formula $a_{v}$
 \end_inset
 
@@ -4022,7 +4398,24 @@ T
 <B>
 \family default
 \series default
- Radiative recombination coefficient B [m
+
+
+
+ Radiative recombination coefficient
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!recombination coefficient
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $B$
+\end_inset
+
+ [m
 \begin_inset Formula $^{3}$
 \end_inset
 
@@ -4045,7 +4438,24 @@ T
 <b>
 \family default
 \series default
- Shear deformation potential b [eV] 
+
+
+
+ Shear deformation potential
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!deformation potential
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $b$
+\end_inset
+
+ [eV] 
 \begin_inset Newline newline
 \end_inset
 
@@ -4064,7 +4474,24 @@ T
 <C>
 \family default
 \series default
- Auger recombination coefficient C [m
+
+
+
+ Auger recombination coefficient
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!recombination coefficient
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $C$
+\end_inset
+
+ [m
 \begin_inset Formula $^{6}$
 \end_inset
 
@@ -4083,7 +4510,20 @@ variables: T -- temperature [K].
 <c11>
 \family default
 \series default
- Elastic constant 
+
+
+
+ Elastic constant
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!elastic constant
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $c_{11}$
 \end_inset
 
@@ -4106,7 +4546,20 @@ T
 <c12>
 \family default
 \series default
- elastic constant 
+
+
+
+ elastic constant
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!elastic constant
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $c_{12}$
 \end_inset
 
@@ -4129,7 +4582,20 @@ T
 <CBO>
 \family default
 \series default
- Conduction band offset CBO [eV] 
+
+
+
+ Conduction band offset
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!band offset
+\end_layout
+
+\end_inset
+
+ CBO [eV] 
 \begin_inset Newline newline
 \end_inset
 
@@ -4152,7 +4618,20 @@ point
 <chi>
 \family default
 \series default
- Electron affinity 
+
+
+
+ Electron affinity
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!electron affinity
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $\chi$
 \end_inset
 
@@ -4179,8 +4658,20 @@ point
 <cond>
 \family default
 \series default
- Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical)
- direction [S/m] 
+
+
+
+ Electrical conductivity
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!conductivity
+\end_layout
+
+\end_inset
+
+ sigma in-plane (lateral) and cross-plane (vertical) direction [S/m] 
 \begin_inset Newline newline
 \end_inset
 
@@ -4199,6 +4690,9 @@ T
 <condtype>
 \family default
 \series default
+
+
+
  Electrical conductivity type.
  In semiconductors this indicates what type of carriers 
 \family typewriter
@@ -4215,7 +4709,20 @@ Nf
 <cp>
 \family default
 \series default
- Specific heat at constant pressure [J/(kg
+
+
+
+ Specific heat
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!specific heat
+\end_layout
+
+\end_inset
+
+ at constant pressure [J/(kg
 \begin_inset space \thinspace{}
 \end_inset
 
@@ -4238,7 +4745,20 @@ T
 <D>
 \family default
 \series default
- Ambipolar diffusion coefficient D [m
+
+
+
+ Ambipolar diffusion coefficient
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!diffusion coefficient
+\end_layout
+
+\end_inset
+
+ D [m
 \begin_inset Formula $^{2}$
 \end_inset
 
@@ -4261,7 +4781,20 @@ T
 <dens>
 \family default
 \series default
- Density [kg/m
+
+
+
+ Density
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!density
+\end_layout
+
+\end_inset
+
+ [kg/m
 \begin_inset Formula $^{3}$
 \end_inset
 
@@ -4284,7 +4817,24 @@ T
 <Dso>
 \family default
 \series default
- Split-off energy Dso [eV] 
+
+
+
+ Split-off energy
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!split-off energy
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $D_{so}$
+\end_inset
+
+ [eV] 
 \begin_inset Newline newline
 \end_inset
 
@@ -4303,7 +4853,20 @@ T
 <EactA>
 \family default
 \series default
- Acceptor ionization energy 
+
+
+
+ Acceptor ionization energy
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!ionization energy
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $E_{\mathrm{act\, A}}$
 \end_inset
 
@@ -4326,7 +4889,20 @@ T
 <EactD>
 \family default
 \series default
- Donor ionization energy 
+
+
+
+ Donor ionization energy
+\begin_inset Index idx
+status open
+
+\begin_layout Plain Layout
+material!ionization energy
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $E_{\mathrm{act\, D}}$
 \end_inset
 
@@ -4349,7 +4925,20 @@ T
 <Eg>
 \family default
 \series default
- Energy gap 
+
+
+
+ Energy gap
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!energy gap
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $E_{g}$
 \end_inset
 
@@ -4376,7 +4965,20 @@ point
 <eps>
 \family default
 \series default
- Dielectric constant 
+
+
+
+ Dielectric permittivity
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!permittivity
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $\epsilon_{R}$
 \end_inset
 
@@ -4399,7 +5001,20 @@ T
 <lattC>
 \family default
 \series default
- Lattice constant [Å]
+
+
+
+ Lattice constant
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!lattice constant
+\end_layout
+
+\end_inset
+
+ [Å]
 \begin_inset Newline newline
 \end_inset
 
@@ -4422,7 +5037,20 @@ x
 <Me>
 \family default
 \series default
- Electron effective mass 
+
+
+
+ Electron effective mass
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!effective mass
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $M_{e}$
 \end_inset
 
@@ -4453,7 +5081,20 @@ point
 <Mh>
 \family default
 \series default
- Hole effective mass 
+
+
+
+ Hole effective mass
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!effective mass
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $M_{h}$
 \end_inset
 
@@ -4484,7 +5125,20 @@ EqType
 <Mhh>
 \family default
 \series default
- Heavy hole effective mass 
+
+
+
+ Heavy hole effective mass
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!effective mass
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $M_{hh}$
 \end_inset
 
@@ -4515,7 +5169,20 @@ point
 <Mlh>
 \family default
 \series default
- Light hole effective mass 
+
+
+
+ Light hole effective mass
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!effective mass
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $M_{lh}$
 \end_inset
 
@@ -4546,7 +5213,20 @@ point
 <mob>
 \family default
 \series default
- Mobility in-plane (lateral) and cross-plane (vertical) direction [
+
+
+
+ Mobility
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!mobility
+\end_layout
+
+\end_inset
+
+materi in-plane (lateral) and cross-plane (vertical) direction [
 \begin_inset Formula $\mbox{m}^{2}/(\mbox{V}\,\mbox{s})$
 \end_inset
 
@@ -4569,7 +5249,20 @@ T
 <Mso>
 \family default
 \series default
- Split-off mass 
+
+
+
+ Split-off mass
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!split-off mass
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $M_{so}$
 \end_inset
 
@@ -4592,7 +5285,20 @@ T
 <Nc>
 \family default
 \series default
- Effective density of states in the conduction band 
+
+
+
+ Effective density of states
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!density of states
+\end_layout
+
+\end_inset
+
+ in the conduction band 
 \begin_inset Formula $N_{c}$
 \end_inset
 
@@ -4623,7 +5329,20 @@ point
 <Nf>
 \family default
 \series default
- Free carrier concentration 
+
+
+
+ Free carrier concentration
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!carrier concentration
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $N$
 \end_inset
 
@@ -4650,7 +5369,20 @@ T
 <Ni>
 \family default
 \series default
- Intrinsic carrier concentration 
+
+
+
+ Intrinsic carrier concentration
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!carrier concentration
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $N_{i}$
 \end_inset
 
@@ -4677,7 +5409,20 @@ T
 <nR>
 \family default
 \series default
- Complex refractive index 
+
+
+
+ Complex refractive index
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!refractive index
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $n_{R}$
 \end_inset
 
@@ -4704,7 +5449,20 @@ T
 <nr>
 \family default
 \series default
- Real refractive index 
+
+
+
+ Real refractive index
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!refractive index
+\end_layout
+
+\end_inset
+
+ 
 \begin_inset Formula $n_{R}$
 \end_inset
 
@@ -4731,7 +5489,20 @@ T
 <nR_tensor>
 \family default
 \series default
- Anisotropic complex refractive index tensor 
+
+
+
+ Anisotropic complex refractive index
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!refractive index
+\end_layout
+
+\end_inset
+
+ tensor 
 \begin_inset Formula $n_{R}$
 \end_inset
 
@@ -4804,7 +5575,20 @@ T
 <Nv>
 \family default
 \series default
- Effective density of states in the valance band 
+
+
+
+ Effective density of states
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!density of states
+\end_layout
+
+\end_inset
+
+ in the valance band 
 \begin_inset Formula $N_{v}$
 \end_inset
 
@@ -4827,8 +5611,20 @@ variables: T -- temperature [K].
 <thermk>
 \family default
 \series default
- Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction
- 
+
+
+
+ Thermal conductivity
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!thermal conductivity
+\end_layout
+
+\end_inset
+
+ in in-plane (lateral) and cross-plane (vertical) direction 
 \begin_inset Formula $k$
 \end_inset
 
@@ -4863,7 +5659,20 @@ h
 <VBO>
 \family default
 \series default
- Valance band offset VBO [eV] 
+
+
+
+ Valance band offset
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+material!band offset
+\end_layout
+
+\end_inset
+
+ VBO [eV] 
 \begin_inset Newline newline
 \end_inset
 
@@ -4923,6 +5732,19 @@ Available elements
 <cartesian2d>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!Cartesian
+\end_layout
+
+\end_inset
+
  Two-dimensional Cartesian geometry.
 \end_layout
 
@@ -5059,6 +5881,19 @@ reference "sub:XPL-Geometry-objects-2D"
 <cylindrical2d>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!cylindrical
+\end_layout
+
+\end_inset
+
  Two-dimensional cylindrical geometry.
 \end_layout
 
@@ -5177,6 +6012,19 @@ reference "sub:XPL-Geometry-objects-2D"
 <cartesian3d>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!Cartesian
+\end_layout
+
+\end_inset
+
  Three-dimensional Cartesian geometry.
 \end_layout
 
@@ -5193,10 +6041,8 @@ Attributes
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 axes
 \family default
-\series default
  
 \size scriptsize
 (optional) 
@@ -5255,10 +6101,8 @@ wszystkie możliwości
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
 name
 \family default
-\series default
  Geometry name for further reference.
  (unique identifier
 \begin_inset space ~
@@ -5332,6 +6176,19 @@ Containers are objects that contain multiple other geometry objects as their
 <align>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!align
+\end_layout
+
+\end_inset
+
  Container that align its items according to specified rules specified in
  its attributes.
  The alignment for one axis only should be given.
@@ -5649,6 +6506,9 @@ object
 <item>
 \family default
 \series default
+
+
+
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -5783,6 +6643,19 @@ Contents
 <container>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!container
+\end_layout
+
+\end_inset
+
  Simple container in which all the items must have explicitly specified
  position.
  As the objects in this container may overlap, their order matters: latter
@@ -5823,6 +6696,9 @@ Contents
 <item>
 \family default
 \series default
+
+
+
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -6127,6 +7003,19 @@ Contents
 <shelf>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!shelf
+\end_layout
+
+\end_inset
+
  Container organizing objects side-by-side to each other, like books on
  a bookshelf.
  Items on the shelf are all bottom-aligned.
@@ -6225,6 +7114,9 @@ object
 <gap/>
 \family default
 \series default
+
+
+
  Horizontal gap between two objects.
  The size of the gap can be specified either as the absolute value in µm
  or as the total horizontal size of the shelf.
@@ -6288,6 +7180,19 @@ total
 <stack>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!stack
+\end_layout
+
+\end_inset
+
  Stack organizing its elements on top of the other.
  Horizontal alignment of the stack elements can be controlled by the alignment
  attributes of the whole stack or its items.
@@ -6529,6 +7434,9 @@ object
 <item>
 \family default
 \series default
+
+
+
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -6611,6 +7519,9 @@ Contents
 <zero/>
 \family default
 \series default
+
+
+
  This tag can appear as stack content only once.
  If present, it indicates the vertical position of origin of the local coordinat
 e system.
@@ -6639,6 +7550,19 @@ Transforms always contain a single geometry object (possibly container)
 <translation>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!translation
+\end_layout
+
+\end_inset
+
  A simple shift of the object.
  Note that the bounding box is shifted as well, so in containers that place
  their items basing on their bounding boxes, this transformation will have
@@ -6734,6 +7658,29 @@ Physical objects are the leafs of the geometry tree.
 <block/>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!block
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!rectangle
+\end_layout
+
+\end_inset
+
  Rectangular block.
  Its origin is located at the lower left corner.
 \end_layout
@@ -6810,6 +7757,9 @@ d
 <rectangle/>
 \family default
 \series default
+
+
+
  Alias for 
 \family typewriter
 <block>
@@ -6829,6 +7779,29 @@ Other
 <again/>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!again
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!reference
+\end_layout
+
+\end_inset
+
  This tag can be used to insert any previously defined and named (with the
  
 \family typewriter
@@ -6865,6 +7838,19 @@ ref
 <copy>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!copy
+\end_layout
+
+\end_inset
+
  Modified copy of any previously defined and named (with the 
 \family typewriter
 name
@@ -6924,6 +7910,9 @@ The content of this element contains the tags specifying desired modifications
 <delete/>
 \family default
 \series default
+
+
+
  Delete some item or sub-item of the copied object.
 \end_layout
 
@@ -6954,6 +7943,9 @@ object
 <replace/>
 \family default
 \series default
+
+
+
  Replace some item or sub-item of the copied object with some other named
  object specified anywhere earlier in the geometry.
 \end_layout
@@ -6995,6 +7987,9 @@ to
 <toblock/>
 \family default
 \series default
+
+
+
  Replace some item or sub-item of the copied object with uniform block that
  has dimensions exactly equal to the bounding box of the original element.
 \end_layout
@@ -7057,6 +8052,19 @@ Containers are objects that contain multiple other geometry objects as their
 <align>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!align
+\end_layout
+
+\end_inset
+
  Container that align its items according to specified rules specified in
  its attributes.
  The alignment for one axis only should be given.
@@ -7500,6 +8508,9 @@ object
 <item>
 \family default
 \series default
+
+
+
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -7670,6 +8681,19 @@ Contents
 <container>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!container
+\end_layout
+
+\end_inset
+
  Simple container in which all the items must have explicitly specified
  position.
  As the objects in this container may overlap, their order matters: latter
@@ -7710,6 +8734,9 @@ Contents
 <item>
 \family default
 \series default
+
+
+
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -8141,6 +9168,19 @@ Contents
 <stack>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!stack
+\end_layout
+
+\end_inset
+
  Stack organizing its elements on top of the other.
  Horizontal alignments of the stack elements can be controlled by the alignment
  attributes of the whole stack or its items.
@@ -8503,6 +9543,9 @@ object
 <item>
 \family default
 \series default
+
+
+
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -8609,6 +9652,9 @@ Contents
 <zero/>
 \family default
 \series default
+
+
+
  This tag can appear as stack content only once.
  If present, it indicates the vertical position of origin of the local coordinat
 e system.
@@ -8637,6 +9683,19 @@ Transforms always contain a single geometry object (possibly container)
 <extrusion>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!extrusion
+\end_layout
+
+\end_inset
+
  Extrusion of two-dimensional object into third dimension.
  2D objects are defined in the plane defined by the transverse and vertical
  axes.
@@ -8696,6 +9755,19 @@ object
 <revolution>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!revolution
+\end_layout
+
+\end_inset
+
  Revolution of the two-dimensional object around its local vertical axis.
  The horizontal axis of the 2D object becomes a radial axis of the resulting
  compound cylinder.
@@ -8754,6 +9826,19 @@ e.
 <translation>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!translation
+\end_layout
+
+\end_inset
+
  A simple shift of the object.
  Note that the bounding box is shifted as well, so in containers that place
  their items basing on their bounding boxes, this transformation will have
@@ -8857,6 +9942,29 @@ Physical objects are the leafs of the geometry tree.
 <block/>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!block
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!cuboid
+\end_layout
+
+\end_inset
+
  Rectangular block.
  Its origin is located in the lower back left corner.
 \end_layout
@@ -8951,6 +10059,9 @@ d
 <cuboid/>
 \family default
 \series default
+
+
+
  Alias for 
 \family typewriter
 <block>
@@ -8966,6 +10077,19 @@ d
 <cylinder/>
 \family default
 \series default
+
+
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!cylinder
+\end_layout
+
+\end_inset
+
  Cylinder with its base lying in the horizontal plane.
  Its origin is located at the center of the lower circular base.
 \end_layout
@@ -9028,6 +10152,26 @@ Other
 <again/>
 \family default
 \series default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!again
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!reference
+\end_layout
+
+\end_inset
+
  This tag can be used to insert any previously defined and named (with the
  
 \family typewriter
@@ -9064,6 +10208,16 @@ ref
 <copy>
 \family default
 \series default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!copy
+\end_layout
+
+\end_inset
+
  Modified copy of any previously defined and named (with the 
 \family typewriter
 name
@@ -9245,6 +10399,30 @@ Section <script>
 
 \begin_layout Chapter
 Reference of the Python library
+\end_layout
+
+\begin_layout Standard
+w
+\family typewriter
+w
+\family default
+ t
+\family typewriter
+t
+\family default
+ j
+\family typewriter
+j
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset index_print
+LatexCommand printindex
+type "idx"
+
+\end_inset
+
+
 \end_layout
 
 \end_body
