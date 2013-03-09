@@ -4054,9 +4054,6 @@ First of all each XML document must have a parent tag.
 
 \begin_layout Section
 Section <materials>
-
-
-
 \end_layout
 
 \begin_layout Standard
@@ -4078,9 +4075,6 @@ This section contains specification of custom materials that can be used
 \family typewriter
 \series bold
 <material>
-
-
-
 \family default
 \series default
 
@@ -4254,9 +4248,6 @@ The accepted material properties are as follows:
 <A>
 \family default
 \series default
-
-
-
  Monomolecular recombination coefficient
 \begin_inset Index idx
 status collapsed
@@ -4286,9 +4277,6 @@ T
 <absp>
 \family default
 \series default
-
-
-
  Absorption coefficient
 \begin_inset Index idx
 status collapsed
@@ -4326,9 +4314,6 @@ wl
 <ac>
 \family default
 \series default
-
-
-
  Hydrostatic deformation potential
 \begin_inset Index idx
 status collapsed
@@ -4362,9 +4347,6 @@ T
 <av>
 \family default
 \series default
-
-
-
  Hydrostatic deformation potential
 \begin_inset Index idx
 status collapsed
@@ -4398,9 +4380,6 @@ T
 <B>
 \family default
 \series default
-
-
-
  Radiative recombination coefficient
 \begin_inset Index idx
 status collapsed
@@ -4438,9 +4417,6 @@ T
 <b>
 \family default
 \series default
-
-
-
  Shear deformation potential
 \begin_inset Index idx
 status collapsed
@@ -4474,9 +4450,6 @@ T
 <C>
 \family default
 \series default
-
-
-
  Auger recombination coefficient
 \begin_inset Index idx
 status collapsed
@@ -4510,9 +4483,6 @@ variables: T -- temperature [K].
 <c11>
 \family default
 \series default
-
-
-
  Elastic constant
 \begin_inset Index idx
 status collapsed
@@ -4546,9 +4516,6 @@ T
 <c12>
 \family default
 \series default
-
-
-
  elastic constant
 \begin_inset Index idx
 status collapsed
@@ -4582,9 +4549,6 @@ T
 <CBO>
 \family default
 \series default
-
-
-
  Conduction band offset
 \begin_inset Index idx
 status collapsed
@@ -4618,9 +4582,6 @@ point
 <chi>
 \family default
 \series default
-
-
-
  Electron affinity
 \begin_inset Index idx
 status collapsed
@@ -4658,9 +4619,6 @@ point
 <cond>
 \family default
 \series default
-
-
-
  Electrical conductivity
 \begin_inset Index idx
 status collapsed
@@ -4690,9 +4648,6 @@ T
 <condtype>
 \family default
 \series default
-
-
-
  Electrical conductivity type.
  In semiconductors this indicates what type of carriers 
 \family typewriter
@@ -4709,9 +4664,6 @@ Nf
 <cp>
 \family default
 \series default
-
-
-
  Specific heat
 \begin_inset Index idx
 status collapsed
@@ -4745,9 +4697,6 @@ T
 <D>
 \family default
 \series default
-
-
-
  Ambipolar diffusion coefficient
 \begin_inset Index idx
 status collapsed
@@ -4781,9 +4730,6 @@ T
 <dens>
 \family default
 \series default
-
-
-
  Density
 \begin_inset Index idx
 status collapsed
@@ -4817,9 +4763,6 @@ T
 <Dso>
 \family default
 \series default
-
-
-
  Split-off energy
 \begin_inset Index idx
 status collapsed
@@ -4853,9 +4796,6 @@ T
 <EactA>
 \family default
 \series default
-
-
-
  Acceptor ionization energy
 \begin_inset Index idx
 status collapsed
@@ -4889,9 +4829,6 @@ T
 <EactD>
 \family default
 \series default
-
-
-
  Donor ionization energy
 \begin_inset Index idx
 status open
@@ -4925,9 +4862,6 @@ T
 <Eg>
 \family default
 \series default
-
-
-
  Energy gap
 \begin_inset Index idx
 status collapsed
@@ -4965,9 +4899,6 @@ point
 <eps>
 \family default
 \series default
-
-
-
  Dielectric permittivity
 \begin_inset Index idx
 status collapsed
@@ -5001,9 +4932,6 @@ T
 <lattC>
 \family default
 \series default
-
-
-
  Lattice constant
 \begin_inset Index idx
 status collapsed
@@ -5037,9 +4965,6 @@ x
 <Me>
 \family default
 \series default
-
-
-
  Electron effective mass
 \begin_inset Index idx
 status collapsed
@@ -5081,9 +5006,6 @@ point
 <Mh>
 \family default
 \series default
-
-
-
  Hole effective mass
 \begin_inset Index idx
 status collapsed
@@ -5125,9 +5047,6 @@ EqType
 <Mhh>
 \family default
 \series default
-
-
-
  Heavy hole effective mass
 \begin_inset Index idx
 status collapsed
@@ -5169,9 +5088,6 @@ point
 <Mlh>
 \family default
 \series default
-
-
-
  Light hole effective mass
 \begin_inset Index idx
 status collapsed
@@ -5213,9 +5129,6 @@ point
 <mob>
 \family default
 \series default
-
-
-
  Mobility
 \begin_inset Index idx
 status collapsed
@@ -5249,9 +5162,6 @@ T
 <Mso>
 \family default
 \series default
-
-
-
  Split-off mass
 \begin_inset Index idx
 status collapsed
@@ -5285,9 +5195,6 @@ T
 <Nc>
 \family default
 \series default
-
-
-
  Effective density of states
 \begin_inset Index idx
 status collapsed
@@ -5329,9 +5236,6 @@ point
 <Nf>
 \family default
 \series default
-
-
-
  Free carrier concentration
 \begin_inset Index idx
 status collapsed
@@ -5369,9 +5273,6 @@ T
 <Ni>
 \family default
 \series default
-
-
-
  Intrinsic carrier concentration
 \begin_inset Index idx
 status collapsed
@@ -5409,9 +5310,6 @@ T
 <nR>
 \family default
 \series default
-
-
-
  Complex refractive index
 \begin_inset Index idx
 status collapsed
@@ -5449,9 +5347,6 @@ T
 <nr>
 \family default
 \series default
-
-
-
  Real refractive index
 \begin_inset Index idx
 status collapsed
@@ -5489,9 +5384,6 @@ T
 <nR_tensor>
 \family default
 \series default
-
-
-
  Anisotropic complex refractive index
 \begin_inset Index idx
 status collapsed
@@ -5575,9 +5467,6 @@ T
 <Nv>
 \family default
 \series default
-
-
-
  Effective density of states
 \begin_inset Index idx
 status collapsed
@@ -5611,9 +5500,6 @@ variables: T -- temperature [K].
 <thermk>
 \family default
 \series default
-
-
-
  Thermal conductivity
 \begin_inset Index idx
 status collapsed
@@ -5659,9 +5545,6 @@ h
 <VBO>
 \family default
 \series default
-
-
-
  Valance band offset
 \begin_inset Index idx
 status collapsed
@@ -5732,9 +5615,6 @@ Available elements
 <cartesian2d>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -5882,9 +5762,6 @@ reference "sub:XPL-Geometry-objects-2D"
 \family default
 \series default
 
-
-
-
 \begin_inset Index idx
 status collapsed
 
@@ -6012,9 +5889,6 @@ reference "sub:XPL-Geometry-objects-2D"
 <cartesian3d>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -6176,9 +6050,6 @@ Containers are objects that contain multiple other geometry objects as their
 <align>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -6506,9 +6377,6 @@ object
 <item>
 \family default
 \series default
-
-
-
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -6532,8 +6400,8 @@ path
 \size scriptsize
 (optional) 
 \size default
-Path hint enabling distinguishing between multiple occurrences of the same
- object.
+Name of a path that can be later on used to distinguish between multiple
+ occurrences of the same object.
 \end_layout
 
 \begin_layout Labeling
@@ -6644,9 +6512,6 @@ Contents
 \family default
 \series default
 
-
-
-
 \begin_inset Index idx
 status collapsed
 
@@ -6696,9 +6561,6 @@ Contents
 <item>
 \family default
 \series default
-
-
-
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -6722,8 +6584,8 @@ path
 \size scriptsize
 (optional) 
 \size default
-Path hint enabling distinguishing between multiple occurrences of the same
- object.
+Name of a path that can be later on used to distinguish between multiple
+ occurrences of the same object.
 \end_layout
 
 \begin_layout Labeling
@@ -7004,9 +6866,6 @@ Contents
 \family default
 \series default
 
-
-
-
 \begin_inset Index idx
 status collapsed
 
@@ -7114,9 +6973,6 @@ object
 <gap/>
 \family default
 \series default
-
-
-
  Horizontal gap between two objects.
  The size of the gap can be specified either as the absolute value in µm
  or as the total horizontal size of the shelf.
@@ -7180,9 +7036,6 @@ total
 <stack>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -7434,9 +7287,6 @@ object
 <item>
 \family default
 \series default
-
-
-
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -7460,8 +7310,8 @@ path
 \size scriptsize
 (optional) 
 \size default
-Path hint enabling distinguishing between multiple occurrences of the same
- object.
+Name of a path that can be later on used to distinguish between multiple
+ occurrences of the same object.
 \end_layout
 
 \begin_layout Labeling
@@ -7519,9 +7369,6 @@ Contents
 <zero/>
 \family default
 \series default
-
-
-
  This tag can appear as stack content only once.
  If present, it indicates the vertical position of origin of the local coordinat
 e system.
@@ -7550,9 +7397,6 @@ Transforms always contain a single geometry object (possibly container)
 <translation>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -7659,9 +7503,6 @@ Physical objects are the leafs of the geometry tree.
 \family default
 \series default
 
-
-
-
 \begin_inset Index idx
 status collapsed
 
@@ -7757,9 +7598,6 @@ d
 <rectangle/>
 \family default
 \series default
-
-
-
  Alias for 
 \family typewriter
 <block>
@@ -7779,9 +7617,6 @@ Other
 <again/>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -7838,9 +7673,6 @@ ref
 <copy>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -7910,9 +7742,6 @@ The content of this element contains the tags specifying desired modifications
 <delete/>
 \family default
 \series default
-
-
-
  Delete some item or sub-item of the copied object.
 \end_layout
 
@@ -7943,9 +7772,6 @@ object
 <replace/>
 \family default
 \series default
-
-
-
  Replace some item or sub-item of the copied object with some other named
  object specified anywhere earlier in the geometry.
 \end_layout
@@ -7987,9 +7813,6 @@ to
 <toblock/>
 \family default
 \series default
-
-
-
  Replace some item or sub-item of the copied object with uniform block that
  has dimensions exactly equal to the bounding box of the original element.
 \end_layout
@@ -8052,9 +7875,6 @@ Containers are objects that contain multiple other geometry objects as their
 <align>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -8508,9 +8328,6 @@ object
 <item>
 \family default
 \series default
-
-
-
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -8534,8 +8351,8 @@ path
 \size scriptsize
 (optional) 
 \size default
-Path hint enabling distinguishing between multiple occurrences of the same
- object.
+Name of a path that can be later on used to distinguish between multiple
+ occurrences of the same object.
 \end_layout
 
 \begin_layout Labeling
@@ -8682,9 +8499,6 @@ Contents
 \family default
 \series default
 
-
-
-
 \begin_inset Index idx
 status collapsed
 
@@ -8734,9 +8548,6 @@ Contents
 <item>
 \family default
 \series default
-
-
-
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -8760,8 +8571,8 @@ path
 \size scriptsize
 (optional) 
 \size default
-Path hint enabling distinguishing between multiple occurrences of the same
- object.
+Name of a path that can be later on used to distinguish between multiple
+ occurrences of the same object.
 \end_layout
 
 \begin_layout Labeling
@@ -9169,9 +8980,6 @@ Contents
 \family default
 \series default
 
-
-
-
 \begin_inset Index idx
 status collapsed
 
@@ -9543,9 +9351,6 @@ object
 <item>
 \family default
 \series default
-
-
-
  Tag that allows to specify additional item attributes.
 \end_layout
 
@@ -9569,8 +9374,8 @@ path
 \size scriptsize
 (optional) 
 \size default
-Path hint enabling distinguishing between multiple occurrences of the same
- object.
+Name of a path that can be later on used to distinguish between multiple
+ occurrences of the same object.
 \end_layout
 
 \begin_layout Labeling
@@ -9652,9 +9457,6 @@ Contents
 <zero/>
 \family default
 \series default
-
-
-
  This tag can appear as stack content only once.
  If present, it indicates the vertical position of origin of the local coordinat
 e system.
@@ -9683,9 +9485,6 @@ Transforms always contain a single geometry object (possibly container)
 <extrusion>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -9756,9 +9555,6 @@ object
 \family default
 \series default
 
-
-
-
 \begin_inset Index idx
 status collapsed
 
@@ -9826,9 +9622,6 @@ e.
 <translation>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -9943,9 +9736,6 @@ Physical objects are the leafs of the geometry tree.
 \family default
 \series default
 
-
-
-
 \begin_inset Index idx
 status collapsed
 
@@ -10059,9 +9849,6 @@ d
 <cuboid/>
 \family default
 \series default
-
-
-
  Alias for 
 \family typewriter
 <block>
@@ -10077,9 +9864,6 @@ d
 <cylinder/>
 \family default
 \series default
-
-
-
 
 \begin_inset Index idx
 status collapsed
@@ -10385,6 +10169,1227 @@ material
 Section <grids>
 \end_layout
 
+\begin_layout Standard
+In this section one can define computational meshes for use by solvers.
+ It can be done by one of the two ways: either by specifying the mesh directly
+ or, by creating a
+\emph on
+ generator
+\emph default
+ that will automatically construct the required mesh basing on the structure
+ geometry when the calculations in the solver using particular generator
+ are about to begin.
+ Hence the two allowed tags in this section are 
+\family typewriter
+<mesh>
+\family default
+ and 
+\family typewriter
+<generator>
+\family default
+.
+ The contents of these tags are determined by the particular mesh or generator
+ type, while their attributes are always the same:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh>
+\family default
+\series default
+ Specification of the mesh
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Name of the mesh for reference in configuration of the solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+type
+\family default
+ Type of the mesh.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+The content of this element depends on the value of the 
+\family typewriter
+type
+\family default
+ tag.
+ See below for details.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<generator>
+\family default
+\series default
+ Specification of the mesh generator
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!generator
+\end_layout
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Name of the mesh for reference in configuration of the solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+type
+\family default
+ Type of the mesh to generate.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+method
+\family default
+ Generation method i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ the type of the generator.
+\end_layout
+
+\begin_layout Standard
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+The content of this element depends on the values of the 
+\family typewriter
+type
+\family default
+ and 
+\family typewriter
+method
+\family default
+ tag.
+ It specifies generator configuration (if any).
+ See below for details.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Possible <mesh> contents for different types
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh
+\begin_inset space ~
+\end_inset
+
+type=
+\begin_inset Quotes erd
+\end_inset
+
+regular2d
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional rectangular
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectangular
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!regular
+\end_layout
+
+\end_inset
+
+ mesh with regular intervals.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0/>
+\family default
+\series default
+ Specification of the horizontal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+start
+\family default
+ Position of the first point on the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+stop
+\family default
+ Position of the last point on the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+num
+\family default
+ Number of the equally distributed points along the axis.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1/>
+\family default
+\series default
+ Specification of the vertical axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+: see 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh
+\begin_inset space ~
+\end_inset
+
+type=
+\begin_inset Quotes erd
+\end_inset
+
+regular3d
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional rectangular
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectangular
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!regular
+\end_layout
+
+\end_inset
+
+ mesh with arbitrary intervals.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0>
+\family default
+\series default
+ Specification of the longitudinal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+start
+\family default
+ Position of the first point on the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+stop
+\family default
+ Position of the last point on the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+num
+\family default
+ Number of the equally distributed points along the axis.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1/>
+\family default
+\series default
+ Specification of the transversal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+: see 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis2/>
+\family default
+\series default
+ Specification of the vertical axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+: see 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh
+\begin_inset space ~
+\end_inset
+
+type=
+\begin_inset Quotes erd
+\end_inset
+
+rectilinear2d
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional rectangular
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectangular
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectilinear
+\end_layout
+
+\end_inset
+
+ mesh with regular intervals.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0>
+\family default
+\series default
+ Specification of the horizontal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+If any of the following attributes are specified, the points along this
+ axis are equally distributed like in regular meshes.
+ In such a case the contents must be empty.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+start
+\family default
+ Position of the first point on the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+stop
+\family default
+ Position of the last point on the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+num
+\family default
+ Number of the equally distributed points along the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+: Comma-separated list of the mesh points along this axis.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1>
+\family default
+\series default
+ Specification of the vertical axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+: see 
+\family typewriter
+<axis0>
+\family default
+.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh
+\begin_inset space ~
+\end_inset
+
+type=
+\begin_inset Quotes erd
+\end_inset
+
+rectilinear3d
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Three-dimensional rectangular
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectangular
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectilinear
+\end_layout
+
+\end_inset
+
+ mesh with regular intervals.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0>
+\family default
+\series default
+ Specification of the longitudinal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Standard
+If any of the following attributes are specified, the points along this
+ axis are equally distributed like in regular meshes.
+ In such a case the contents must be empty.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+start
+\family default
+ Position of the first point on the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+stop
+\family default
+ Position of the last point on the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+num
+\family default
+ Number of the equally distributed points along the axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+: Comma-separated list of the mesh points along this axis.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1/>
+\family default
+\series default
+ Specification of the transversal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+: see 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis2/>
+\family default
+\series default
+ Specification of the vertical axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+: see 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Subsection
+Possible <generator> contents for different types and methods
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!generator
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<generator type=
+\begin_inset Quotes erd
+\end_inset
+
+rectilinear2d
+\begin_inset Quotes erd
+\end_inset
+
+ method=
+\begin_inset Quotes erd
+\end_inset
+
+simple
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+Simple generator creating the rectangular rectilinear mesh lines at the
+ edges of bounding box of each object of the geometry.
+ This generator has no configuration.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<generator type=
+\begin_inset Quotes erd
+\end_inset
+
+rectilinear3d
+\begin_inset Quotes erd
+\end_inset
+
+ method=
+\begin_inset Quotes erd
+\end_inset
+
+simple
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+Simple generator creating the rectangular rectilinear mesh lines at the
+ edges of bounding box of each object of the geometry.
+ This generator has no configuration.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<generator type=
+\begin_inset Quotes erd
+\end_inset
+
+rectilinear2d
+\begin_inset Quotes erd
+\end_inset
+
+ method=
+\begin_inset Quotes erd
+\end_inset
+
+divide
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!generator!dividing
+\end_layout
+
+\end_inset
+
+Generator that divides each geometry object along both axes into a specified
+ number of elements, ensuring that two adjacent do not differ in size more
+ than twice.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<prediv/>
+\family default
+\series default
+ Set number of the initial divisions of each geometry object.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by0
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Number of parts each object is divided into along horizontal axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by1
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Number of parts each object is divided into along vertical axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Set values of 
+\family typewriter
+by0
+\family default
+
+\begin_inset space ~
+\end_inset
+
+and 
+\family typewriter
+by1
+\family default
+ both at once.
+ It this attribute is specified, no other ones are allowed.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<postdiv/>
+\family default
+\series default
+ Set number of the final divisions of each geometry object.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+: See 
+\family typewriter
+<prediv/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<refinements>
+\family default
+\series default
+ Specify list of additional refinements of the generated mesh.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+: 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0/>
+\family default
+\series default
+ Add refinement to the horizontal axis (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ additional vertical line).
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the geometry object to add additional division to.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\size scriptsize
+(optional) 
+\size default
+Path name, specifying particular instance of the object given in 
+\family typewriter
+object
+\family default
+ attribute.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+at
+\family default
+ Position of the refinement line in the local object coordinates.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1/>
+\family default
+\series default
+ Add refinement to the vertical axis (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ additional horizontal line).
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Attributes
+\bar default
+: See 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<vertical/>
+\family default
+\series default
+ Alias for 
+\family typewriter
+<axis0/>.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<horizontal/>
+\family default
+\series default
+ Alias for 
+\family typewriter
+<axis1/>.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<warnings/>
+\family default
+\series default
+ Control printing of the warnings.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\bar under
+Attributes
+\bar default
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+missing
+\family default
+ Warn if any refinement references to non-existing object.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+multiple
+\family default
+ Warn if any refinement references to multiple objects.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+outside
+\family default
+ Warn if refining line lies outside of the specified object.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\end_deeper
+\end_deeper
 \begin_layout Section
 Section <solvers>
 \end_layout
