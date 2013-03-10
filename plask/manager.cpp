@@ -33,7 +33,7 @@ PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
 }
 
 bool Manager::tryLoadFromExternal(XMLReader& reader, const MaterialsSource& materialsSource, const Manager::LoadFunCallbackT& load_from) {
-    boost::optional<std::string> from_attr = reader.getAttribute("from");
+    boost::optional<std::string> from_attr = reader.getAttribute("external");
     if (!from_attr) return false;
     load_from(*this, materialsSource, *from_attr, reader.getNodeName());
     return true;

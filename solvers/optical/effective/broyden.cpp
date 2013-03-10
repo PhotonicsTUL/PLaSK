@@ -263,7 +263,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     dcomplex oldx, oldF;
 
     // Main loop
-    for (int i = 0; i < par.maxiterations; i++) {
+    for (int i = 0; i < par.maxiter; i++) {
         oldx = x; oldF = F;
 
         if (restart) {                      // compute Broyden matrix as a Jacobian

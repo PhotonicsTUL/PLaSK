@@ -215,7 +215,7 @@ element geometry {
 }
 
 again =
-## allow to insert again earlier defined, named object
+## insert again a previously defined named object
 element again {
     ## name of earlier defined object which should be inserted here
     attribute ref { text }
@@ -498,12 +498,12 @@ element mesh {
 
 solver.geom = element geometry {
 	## name of geometry
-	attribute again { text }
+	attribute ref { text }
 }
 
 solver.mesh = element mesh {
 	## name of mesh
-	attribute again { text }
+	attribute ref { text }
 }
 
 solver.common =
@@ -542,13 +542,30 @@ connects =
 element connects {
 (
     include_attr |
-    ## create provider-receiver connection
-    element connect {
-        ## name of input provider (in format: solver_name.provider_name)
-        attribute in {text},
-        ## name of output provider (in format: solver_name.provider_name)
-        attribute out {text}
-    }*
+    (
+        ## create provider-receiver connection
+        element connect {
+            ## name of the receiver (in format: solver_name.provider_name)
+            attribute in {text},
+            ## name of the provider (in format: solver_name.provider_name)
+            attribute out {text}
+        }* &
+
+        ## create constant field profile on some goemetry object
+        element profile {
+            ## name of the receiver (in format: solver_name.provider_name)
+            attribute in { text } &
+            ## default value of the field
+            attribute default { text }? &
+
+            ## step profile on some geometry object
+            element step {
+                attribute object { text } &
+                attribute value { text } &
+                attribute path { text }?
+            }*
+        }*
+    )
 )
 }
 
@@ -577,25 +594,26 @@ type_attr =
 	attribute type { text }
 
 include_attr =
-	## allow to load section from external source: file with given name
-	attribute from { text }
+	## Allow to load section from external source: file with given name
+	attribute external { text }
 
 # content for boundary condition
 boundary_cond = element condition {
-	##Name of this place
+	## Name of this place
 	attribute placename { text }? &
 	(
-	  ##Place description (format depends from mesh type)
+	  ## Place description (format depends on mesh type)
 	  attribute place { text } |
-	  ##Name of earlier defined place to use
+	  ## Name of earlier defined place to use
 	  attribute placeref { text } |
-	  ##Place description (format depends from mesh type)
+	  ## Place description (format depends on mesh type)
 	  element place {
 		name_attr? &
 		anyAttribute* &
 		anyElement*
 	  }
 	) &
+	attribute value { text }
 	anyAttribute*
 }
 

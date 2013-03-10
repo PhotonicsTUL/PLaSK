@@ -175,6 +175,6 @@ BOOST_PYTHON_MODULE(effective)
         .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value")
         .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value")
         .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration")
-        .def_readwrite("maxiterations", &RootDigger::Params::maxiterations, "Maximum number of iterations")
+        .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations")
     ;
 }

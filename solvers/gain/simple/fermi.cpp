@@ -17,8 +17,8 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
 {
     // Load a configuration parameter from XML.
     // Below you have an example
-    while (reader.requireTagOrEnd())
-    {
+//     while (reader.requireTagOrEnd())
+//     {
 //         std::string param = reader.getNodeName();
 //         if (param == "newton") {
 //             newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
@@ -30,7 +30,8 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
 //             inWavelength.setValue(boost::lexical_cast<double>(wavelength));
 //         } else
 //             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <newton>, or <wavelength>");
-    }
+//     }
+    reader.requireTagEnd();
 }
 
 

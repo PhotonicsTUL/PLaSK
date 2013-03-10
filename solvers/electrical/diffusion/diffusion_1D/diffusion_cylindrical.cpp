@@ -18,6 +18,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         {
             fem_method = reader.enumAttribute<FemMethod>("fem_method").value("linear", FEM_LINEAR).value("parabolic", FEM_PARABOLIC).get(fem_method);
             relative_accuracy = reader.getAttribute<double>("accuracy", relative_accuracy);
+            minor_concentration = reader.getAttribute<double>("accuracy", minor_concentration);
             interpolation_method = reader.getAttribute<InterpolationMethod>("interpolation", interpolation_method);
             max_mesh_changes = reader.getAttribute<int>("maxrefines", max_mesh_changes);
             max_iterations = reader.getAttribute<int>("maxiters", max_iterations);

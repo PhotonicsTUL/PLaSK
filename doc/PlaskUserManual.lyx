@@ -29,6 +29,15 @@
 
 \clubpenalty=10000
 \widowpenalty=10000
+
+\makeatletter 
+\def\mynobreakpar{\par\nobreak\@afterheading} 
+\def\mynobreakline{\par\nobreak\vspace{-\parskip}\@afterheading\noindent} 
+\makeatother
+
+\newcommand{\Attributes}{\uline{Attributes}:\mynobreakpar}
+\newcommand{\Contents}{\uline{Contents}:\mynobreakpar}
+\newcommand{\opt}{{\scriptsize (optional) }}
 \end_preamble
 \options bibliography=totoc,index=totoc
 \use_default_options false
@@ -217,7 +226,7 @@ it is a comprehensive tool for numerical analysis of broad range of physical
 \end_layout
 
 \begin_layout Standard
-PLaSK has been originally developed in a Photonics Group of Lodz Institute
+PLaSK has been originally developed in a Photonics Group of Lodz University
  of Technology, which has many-year experience in numerical analysis of
  semiconductor lasers.
  Such structures, due to their complex structure, often fail to be correctly
@@ -354,7 +363,7 @@ name "sec:Running-plask"
 
 \end_inset
 
-Running plask
+Running PLaSK
 \end_layout
 
 \begin_layout Standard
@@ -401,8 +410,17 @@ bin
 \end_inset
 
 .
- If run without any parameter, it will open a simple interactive shell where
- you can type Python commands for immediate execution.
+ If run without any parameter, it will open a simple interactive shell
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+shell
+\end_layout
+
+\end_inset
+
+ where you can type Python commands for immediate execution.
  In order to run prepared script (saved either in 
 \family typewriter
 .xpl
@@ -412,8 +430,17 @@ bin
 .py
 \family default
  file) simply add its name as the first parameter.
- Further parameters are optional and will be available to the Python script
- as 
+ Further parameters are optional and will be available to the Python
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+Python
+\end_layout
+
+\end_inset
+
+ script as 
 \family typewriter
 sys.argv
 \family default
@@ -525,7 +552,7 @@ PLaSK.bat
 If you run PLaSK without any parameters, you enter interactive mode.
  Do so and once you see the prompt type (type only commands, not the prompt
 \begin_inset Foot
-status open
+status collapsed
 
 \begin_layout Plain Layout
 If you do not have IPython installed, you will see a different prompt.
@@ -632,6 +659,16 @@ In general, PLaSK uses XML as a format of its input files.
 \family typewriter
 .xpl
 \family default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+XPL
+\end_layout
+
+\end_inset
+
  (which you may consider as a shortcut from 
 \series bold
 
@@ -692,7 +729,17 @@ reference "sec:Optical-analysis-of-VCSEL"
 \end_layout
 
 \begin_layout Standard
-In XML every element is described by 
+In XML
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+XML
+\end_layout
+
+\end_inset
+
+ every element is described by 
 \emph on
 tags
 \emph default
@@ -838,18 +885,7 @@ script
  All these sections are optional, however, if present, they must follow
  in the order specified above.
  You will learn the roles of these sections in this and the following tutorials.
- In details, they are described in Part
-\begin_inset space ~
-\end_inset
-
-
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "part:PLaSK-reference-manual"
-
-\end_inset
-
- of this manual.
+ In details, they are described further in this manual.
 \end_layout
 
 \begin_layout Standard
@@ -1384,6 +1420,15 @@ Mesh definition
 \end_layout
 
 \begin_layout Standard
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh
+\end_layout
+
+\end_inset
+
 Having the analyzed structure geometry defined, we must put the 
 \family typewriter
 <grids>
@@ -1467,6 +1512,36 @@ The generator definition in XPL file is done using
 </plask>
 \family default
 ):
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!generator
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectangular
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectilinear
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1620,12 +1695,32 @@ Computational solvers
 
 \begin_layout Standard
 As the structure geometry and the mesh generator is defined, it is time
- to create computational solvers.
+ to create computational solvers
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+solver
+\end_layout
+
+\end_inset
+
+.
  As mentioned earlier, we use 
 \family typewriter
 thermal.Static2D
 \family default
- for thermal modeling (i.
+ for thermal
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+solver!thermal
+\end_layout
+
+\end_inset
+
+ modeling (i.
 \begin_inset space \thinspace{}
 \end_inset
 
@@ -1634,7 +1729,17 @@ e.
 \family typewriter
 electrical.Beta2D
 \family default
- to determine the current flow.
+ to determine the current flow
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+solver!electrical!beta
+\end_layout
+
+\end_inset
+
+.
  As, on the one hand, the temperature affects the material parameters (electrica
 l conductivity in particular) and, on the other hand, the current flow is
  the source of the Joules heat, we will need to run both solvers in self-consist
@@ -1774,7 +1879,17 @@ ref
 \family typewriter
 <temperature>
 \family default
- tag is to provide constant-temperature boundary conditions.
+ tag is to provide constant-temperature boundary conditions
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+boundary conditions
+\end_layout
+
+\end_inset
+
+.
  In this case, we have set 300
 \begin_inset space \thinspace{}
 \end_inset
@@ -1990,11 +2105,31 @@ Once the solvers are created, you have to connect them.
  In PLaSK data between solvers is exchanged using a system of 
 \emph on
 providers
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+providers
+\end_layout
+
+\end_inset
+
+
 \emph default
  and 
 \emph on
 receivers
 \emph default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+receivers
+\end_layout
+
+\end_inset
+
 .
  For example thermal solver have temperature provider called 
 \family typewriter
@@ -2463,7 +2598,17 @@ reference "lis:Listing-of-tutorial1.xpl"
  section, which should be the last section of the file.
  In this section you define operations you want to perform: computations
  and presentation of the results.
- It is a script written in very easy-to-learn programming language Python.
+ It is a script written in very easy-to-learn programming language Python
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+Python
+\end_layout
+
+\end_inset
+
+.
  If you want to be able to write advanced programs for analysis of your
  structures (e.
 \begin_inset space \thinspace{}
@@ -2955,6 +3100,15 @@ Showing results
 \end_layout
 
 \begin_layout Standard
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+Python!plotting
+\end_layout
+
+\end_inset
+
 In order to show the results, we need to retrieve the relevant information
  from the solvers.
  In PLaSK this can be done by using solver providers.
@@ -3697,6 +3851,10 @@ EFM
 \end_layout
 
 \begin_layout Standard
+step-profile
+\end_layout
+
+\begin_layout Standard
 using scipy.optimize for fine-control of the loops
 \end_layout
 
@@ -3966,31 +4124,38 @@ XML
  Please refer to the external documentation for information on XML syntax
  and grammar
 \begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-Good resources are 
-\begin_inset ERT
 status open
 
 \begin_layout Plain Layout
+Good resources are 
+\begin_inset Flex URL
+status collapsed
 
+\begin_layout Plain Layout
 
-\backslash
-url{http://www.w3.org/TR/REC-xml/}
+http://www.w3.org/TR/REC-xml/
 \end_layout
 
 \end_inset
 
- and 
-\begin_inset ERT
-status open
+, 
+\begin_inset Flex URL
+status collapsed
 
 \begin_layout Plain Layout
 
+http://en.wikipedia.org/wiki/XML
+\end_layout
 
-\backslash
-url{http://en.wikipedia.org/wiki/XML}
+\end_inset
+
+, and 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.w3schools.com/xml/
 \end_layout
 
 \end_inset
@@ -4049,7 +4214,32 @@ First of all each XML document must have a parent tag.
 .
  Each of them is optional, however, if present, they must be specified in
  the order shown in the previous sentence.
- Formal specification of each section follows:
+ Formal specification of each section is presented below.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Comment
+status open
+
+\begin_layout Plain Layout
+Instead of the section content, it is possible to use it as a single tag
+ with the attribute 
+\family typewriter
+external
+\family default
+, which has a name of some XML file as its value.
+ In such a case, the content of the relevant section is read from this external
+ file.
+ Its main tag should match the tag from the XPL file, in which the 
+\family typewriter
+from
+\family default
+ attribute is used.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -4091,13 +4281,20 @@ material
 \end_layout
 
 \begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -5579,11 +5776,19 @@ In this section geometries of the analyze structures are defined.
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -5593,9 +5798,18 @@ Attributes
 axes
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Default value of 
 \family typewriter
 axes
@@ -5630,11 +5844,19 @@ geometry!Cartesian
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -5644,9 +5866,18 @@ Attributes
 axes
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Specification of the axes.
  Most popular values are 
 \begin_inset Quotes eld
@@ -5704,9 +5935,18 @@ wszystkie możliwości
 length
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Physical length of the extruded geometry for solvers that use this information.
  (float
 \begin_inset space ~
@@ -5730,11 +5970,19 @@ string)
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -5776,11 +6024,19 @@ geometry!cylindrical
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -5790,9 +6046,18 @@ Attributes
 axes
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Specification of the axes.
  Most popular values are 
 \begin_inset Quotes eld
@@ -5858,11 +6123,19 @@ string)
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -5904,11 +6177,19 @@ geometry!Cartesian
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -5918,9 +6199,18 @@ Attributes
 axes
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Specification of the axes.
  Most popular values are 
 \begin_inset Quotes eld
@@ -5986,11 +6276,19 @@ string)
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -6069,11 +6367,19 @@ geometry!object!align
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -6089,12 +6395,31 @@ name
 \labelwidthstring 00.00.0000
 
 \family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 left
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Horizontal alignment specification: position of the left edge of the bounding
  box of each element.
  (float [µm])
@@ -6107,9 +6432,18 @@ Horizontal alignment specification: position of the left edge of the bounding
 right
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Horizontal alignment specification: position of the right edge of the bounding
  box of each element.
  (float [µm])
@@ -6122,9 +6456,18 @@ Horizontal alignment specification: position of the right edge of the bounding
 trancenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Horizontal alignment specification: position of the center of the bounding
  box of each element.
  (float [µm])
@@ -6143,9 +6486,18 @@ Horizontal alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -6175,9 +6527,18 @@ trancenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $x$
 \end_inset
@@ -6194,9 +6555,18 @@ where
 top
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the top edge of the bounding
  box of each element.
  (float [µm])
@@ -6209,9 +6579,18 @@ Vertical alignment specification: position of the top edge of the bounding
 bottom
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the bottom edge of the bounding
  box of each element.
  (float [µm])
@@ -6224,9 +6603,18 @@ Vertical alignment specification: position of the bottom edge of the bounding
 vertcenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the center of the bounding
  box of each element.
  (float [µm])
@@ -6245,9 +6633,18 @@ Vertical alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -6277,9 +6674,18 @@ vertcenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $y$
 \end_inset
@@ -6342,11 +6748,19 @@ center
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -6383,11 +6797,19 @@ object
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -6397,9 +6819,18 @@ Attributes
 path
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Name of a path that can be later on used to distinguish between multiple
  occurrences of the same object.
 \end_layout
@@ -6411,9 +6842,18 @@ Name of a path that can be later on used to distinguish between multiple
 alignment
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Any of the stack alignment specification attributes along the axis not specified
  in the container attributes (
 \family typewriter
@@ -6529,11 +6969,19 @@ geometry!object!container
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -6545,12 +6993,30 @@ name
  Object name for further reference.
 \end_layout
 
-\begin_layout Standard
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 
-\bar under
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -6567,11 +7033,19 @@ Contents
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -6581,9 +7055,18 @@ Attributes
 path
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Name of a path that can be later on used to distinguish between multiple
  occurrences of the same object.
 \end_layout
@@ -6595,9 +7078,18 @@ Name of a path that can be later on used to distinguish between multiple
 left
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Horizontal alignment specification: position of the left edge of the bounding
  box of the element.
  (float [µm])
@@ -6610,9 +7102,18 @@ Horizontal alignment specification: position of the left edge of the bounding
 right
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Horizontal alignment specification: position of the right edge of the bounding
  box of the element.
  (float [µm])
@@ -6625,9 +7126,18 @@ Horizontal alignment specification: position of the right edge of the bounding
 trancenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Horizontal alignment specification: position of the center of the bounding
  box of the element.
  (float [µm])
@@ -6646,9 +7156,18 @@ Horizontal alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -6678,9 +7197,18 @@ trancenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $x$
 \end_inset
@@ -6697,9 +7225,18 @@ where
 top
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the top edge of the bounding
  box of the element.
  (float [µm])
@@ -6712,9 +7249,18 @@ Vertical alignment specification: position of the top edge of the bounding
 bottom
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the bottom edge of the bounding
  box of the element.
  (float [µm])
@@ -6727,9 +7273,18 @@ Vertical alignment specification: position of the bottom edge of the bounding
 vertcenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the center of the bounding
  box of the element.
  (float [µm])
@@ -6748,9 +7303,18 @@ Vertical alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -6780,9 +7344,18 @@ vertcenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $y$
 \end_inset
@@ -6885,11 +7458,19 @@ geometry!object!shelf
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -6905,12 +7486,31 @@ name
 \labelwidthstring 00.00.0000
 
 \family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 flat
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 The value of this attribute can be either 
 \begin_inset Quotes eld
 \end_inset
@@ -6942,11 +7542,19 @@ false
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -6981,11 +7589,19 @@ object
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -6995,9 +7611,18 @@ Attributes
 size
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Size of the gap.
  (float [µm])
 \end_layout
@@ -7009,9 +7634,18 @@ Size of the gap.
 total
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Total size of the shelf.
  The gap will adjust automatically.
  (float [µm])
@@ -7053,11 +7687,19 @@ geometry!object!stack
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7073,12 +7715,31 @@ name
 \labelwidthstring 00.00.0000
 
 \family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 repeat
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Number of repetitive occurrences of stack content.
  This attribute allows to create periodic vertical structures (e.
 \begin_inset space \thinspace{}
@@ -7097,9 +7758,18 @@ g.
 shift
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical position of the stack bottom edge in its local coordinates.
  This attribute really makes sense only if the stack is the main element
  of the geometry, as in such case its local coordinates define global geometry
@@ -7115,9 +7785,18 @@ Vertical position of the stack bottom edge in its local coordinates.
 left
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Default horizontal alignment specification: position of the left edge of
  the bounding box of each element.
  (float [µm])
@@ -7130,9 +7809,18 @@ Default horizontal alignment specification: position of the left edge of
 right
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Default horizontal alignment specification: position of the right edge of
  the bounding box of each element.
  (float [µm])
@@ -7145,9 +7833,18 @@ Default horizontal alignment specification: position of the right edge of
 trancenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Default horizontal alignment specification: position of the center of the
  bounding box of each element.
  (float [µm])
@@ -7166,9 +7863,18 @@ Default horizontal alignment specification: position of the center of the
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -7198,9 +7904,18 @@ trancenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $x$
 \end_inset
@@ -7252,11 +7967,19 @@ left=
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -7293,11 +8016,19 @@ object
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7307,9 +8038,18 @@ Attributes
 path
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Name of a path that can be later on used to distinguish between multiple
  occurrences of the same object.
 \end_layout
@@ -7321,9 +8061,18 @@ Name of a path that can be later on used to distinguish between multiple
 alignment
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Any of the stack alignment specification attributes (
 \family typewriter
 left
@@ -7415,11 +8164,32 @@ geometry!object!translation
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+mynobreakpar
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7429,6 +8199,16 @@ Attributes
 name
 \family default
  Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
 \end_layout
 
 \begin_layout Labeling
@@ -7468,11 +8248,19 @@ name
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7528,11 +8316,19 @@ geometry!object!rectangle
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7542,6 +8338,16 @@ Attributes
 name
 \family default
  Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
 \end_layout
 
 \begin_layout Labeling
@@ -7648,11 +8454,19 @@ name
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7693,11 +8507,19 @@ name
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7713,6 +8535,16 @@ name
 \labelwidthstring 00.00.0000
 
 \family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 from
 \family default
  Name of the source two-dimensional object to make modified copy of.
@@ -7720,11 +8552,19 @@ from
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -7747,11 +8587,19 @@ The content of this element contains the tags specifying desired modifications
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7778,11 +8626,19 @@ object
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7819,11 +8675,19 @@ to
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7894,11 +8758,19 @@ geometry!object!align
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -7914,12 +8786,31 @@ name
 \labelwidthstring 00.00.0000
 
 \family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 back
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the back edge of the bounding
  box of each element.
  (float [µm])
@@ -7932,9 +8823,18 @@ Longitudinal alignment specification: position of the back edge of the bounding
 front
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the front edge of the
  bounding box of each element.
  (float [µm])
@@ -7947,9 +8847,18 @@ Longitudinal alignment specification: position of the front edge of the
 longcenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the center of the bounding
  box of each element.
  (float [µm])
@@ -7968,9 +8877,18 @@ Longitudinal alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -8000,9 +8918,18 @@ longcenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $x$
 \end_inset
@@ -8019,9 +8946,18 @@ where
 left
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the left edge of the bounding
  box of each element.
  (float [µm])
@@ -8034,9 +8970,18 @@ Transversal alignment specification: position of the left edge of the bounding
 right
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the right edge of the bounding
  box of each element.
  (float [µm])
@@ -8049,9 +8994,18 @@ Transversal alignment specification: position of the right edge of the bounding
 trancenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the center of the bounding
  box of each element.
  (float [µm])
@@ -8070,9 +9024,18 @@ Transversal alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -8102,9 +9065,18 @@ trancenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $y$
 \end_inset
@@ -8121,9 +9093,18 @@ where
 top
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the top edge of the bounding
  box of each element.
  (float [µm])
@@ -8136,9 +9117,18 @@ Vertical alignment specification: position of the top edge of the bounding
 bottom
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the bottom edge of the bounding
  box of each element.
  (float [µm])
@@ -8151,9 +9141,18 @@ Vertical alignment specification: position of the bottom edge of the bounding
 vertcenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the center of the bounding
  box of each element.
  (float [µm])
@@ -8172,9 +9171,18 @@ Vertical alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -8204,9 +9212,18 @@ vertcenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $z$
 \end_inset
@@ -8334,11 +9351,19 @@ object
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -8348,9 +9373,18 @@ Attributes
 path
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Name of a path that can be later on used to distinguish between multiple
  occurrences of the same object.
 \end_layout
@@ -8362,9 +9396,18 @@ Name of a path that can be later on used to distinguish between multiple
 alignment
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Any of the stack alignment specification attributes along the axis not specified
  in the container attributes (
 \family typewriter
@@ -8516,11 +9559,19 @@ geometry!object!container
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -8532,12 +9583,30 @@ name
  Object name for further reference.
 \end_layout
 
-\begin_layout Standard
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 
-\bar under
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -8554,11 +9623,19 @@ Contents
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -8568,9 +9645,18 @@ Attributes
 path
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Name of a path that can be later on used to distinguish between multiple
  occurrences of the same object.
 \end_layout
@@ -8582,9 +9668,18 @@ Name of a path that can be later on used to distinguish between multiple
 back
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the back edge of the bounding
  box of the element.
  (float [µm])
@@ -8597,9 +9692,18 @@ Longitudinal alignment specification: position of the back edge of the bounding
 front
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the front edge of the
  bounding box of the element.
  (float [µm])
@@ -8612,9 +9716,18 @@ Longitudinal alignment specification: position of the front edge of the
 longcenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the center of the bounding
  box of the element.
  (float [µm])
@@ -8633,9 +9746,18 @@ Longitudinal alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -8665,9 +9787,18 @@ longcenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $x$
 \end_inset
@@ -8684,9 +9815,18 @@ where
 left
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the left edge of the bounding
  box of the element.
  (float [µm])
@@ -8699,9 +9839,18 @@ Transversal alignment specification: position of the left edge of the bounding
 right
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the right edge of the bounding
  box of the element.
  (float [µm])
@@ -8714,9 +9863,18 @@ Transversal alignment specification: position of the right edge of the bounding
 trancenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the center of the bounding
  box of the element.
  (float [µm])
@@ -8735,9 +9893,18 @@ Transversal alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -8767,9 +9934,18 @@ trancenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $y$
 \end_inset
@@ -8786,9 +9962,18 @@ where
 top
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the top edge of the bounding
  box of the element.
  (float [µm])
@@ -8801,9 +9986,18 @@ Vertical alignment specification: position of the top edge of the bounding
 bottom
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the bottom edge of the bounding
  box of the element.
  (float [µm])
@@ -8816,9 +10010,18 @@ Vertical alignment specification: position of the bottom edge of the bounding
 vertcenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Vertical alignment specification: position of the center of the bounding
  box of the element.
  (float [µm])
@@ -8837,9 +10040,18 @@ Vertical alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -8869,9 +10081,18 @@ vertcenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $z$
 \end_inset
@@ -8996,11 +10217,19 @@ geometry!object!stack
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9016,12 +10245,31 @@ name
 \labelwidthstring 00.00.0000
 
 \family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 repeat
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Number of repetitive occurrences of stack content.
  This attribute allows to create periodic vertical structures (e.
 \begin_inset space \thinspace{}
@@ -9040,9 +10288,18 @@ g.
 back
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the back edge of the bounding
  box of each element.
  (float [µm])
@@ -9055,9 +10312,18 @@ Longitudinal alignment specification: position of the back edge of the bounding
 front
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the front edge of the
  bounding box of each element.
  (float [µm])
@@ -9070,9 +10336,18 @@ Longitudinal alignment specification: position of the front edge of the
 longcenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Longitudinal alignment specification: position of the center of the bounding
  box of each element.
  (float [µm])
@@ -9091,9 +10366,18 @@ Longitudinal alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -9123,9 +10407,18 @@ longcenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $x$
 \end_inset
@@ -9142,9 +10435,18 @@ where
 left
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the left edge of the bounding
  box of each element.
  (float [µm])
@@ -9157,9 +10459,18 @@ Transversal alignment specification: position of the left edge of the bounding
 right
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the right edge of the bounding
  box of each element.
  (float [µm])
@@ -9172,9 +10483,18 @@ Transversal alignment specification: position of the right edge of the bounding
 trancenter
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Transversal alignment specification: position of the center of the bounding
  box of each element.
  (float [µm])
@@ -9193,9 +10513,18 @@ Transversal alignment specification: position of the center of the bounding
 center
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where
 \emph on
  
@@ -9225,9 +10554,18 @@ trancenter
 \series default
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 where 
 \begin_inset Formula $y$
 \end_inset
@@ -9316,11 +10654,19 @@ back=
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -9357,11 +10703,19 @@ object
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9371,9 +10725,18 @@ Attributes
 path
 \family default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Name of a path that can be later on used to distinguish between multiple
  occurrences of the same object.
 \end_layout
@@ -9385,9 +10748,18 @@ Name of a path that can be later on used to distinguish between multiple
 alignment
 \emph default
  
-\size scriptsize
-(optional) 
-\size default
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
 Any of the stack alignment specification attributes (
 \family typewriter
 back
@@ -9503,11 +10875,19 @@ geometry!object!extrusion
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9523,17 +10903,35 @@ name
 \labelwidthstring 00.00.0000
 
 \family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 length
 \family default
  Length of the extrusion.
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9573,11 +10971,19 @@ geometry!object!revolution
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9589,12 +10995,30 @@ name
  Object name for further reference.
 \end_layout
 
-\begin_layout Standard
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
 
-\bar under
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9640,11 +11064,19 @@ geometry!object!translation
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9654,6 +11086,16 @@ Attributes
 name
 \family default
  Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
 \end_layout
 
 \begin_layout Labeling
@@ -9701,11 +11143,19 @@ name
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9761,11 +11211,19 @@ geometry!object!cuboid
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9775,6 +11233,16 @@ Attributes
 name
 \family default
  Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
 \end_layout
 
 \begin_layout Labeling
@@ -9880,11 +11348,19 @@ geometry!object!cylinder
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -9894,6 +11370,16 @@ Attributes
 name
 \family default
  Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
 \end_layout
 
 \begin_layout Labeling
@@ -9967,11 +11453,19 @@ name
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -10012,11 +11506,19 @@ name
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -10032,6 +11534,16 @@ name
 \labelwidthstring 00.00.0000
 
 \family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 from
 \family default
  Name of the source two-dimensional object to make modified copy of.
@@ -10039,11 +11551,19 @@ from
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -10066,11 +11586,19 @@ The content of this element contains the tags specifying desired modifications
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -10097,11 +11625,19 @@ object
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -10138,11 +11674,19 @@ to
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -10197,73 +11741,6 @@ In this section one can define computational meshes for use by solvers.
 
 \family typewriter
 \series bold
-<mesh>
-\family default
-\series default
- Specification of the mesh
-\begin_inset Index idx
-status collapsed
-
-\begin_layout Plain Layout
-mesh
-\end_layout
-
-\end_inset
-
-.
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\bar under
-Attributes
-\bar default
-:
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-name
-\family default
- Name of the mesh for reference in configuration of the solvers.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-type
-\family default
- Type of the mesh.
-\end_layout
-
-\begin_layout Standard
-
-\bar under
-Contents
-\bar default
-:
-\end_layout
-
-\begin_layout Standard
-The content of this element depends on the value of the 
-\family typewriter
-type
-\family default
- tag.
- See below for details.
-\end_layout
-
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
 <generator>
 \family default
 \series default
@@ -10284,11 +11761,19 @@ mesh!generator
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -10324,11 +11809,19 @@ e.
 \end_layout
 
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -10346,12 +11839,91 @@ method
 \end_layout
 
 \end_deeper
-\begin_layout Subsection
-Possible <mesh> contents for different types
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh>
+\family default
+\series default
+ Specification of the mesh
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Name of the mesh for reference in configuration of the solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+type
+\family default
+ Type of the mesh.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The content of this element depends on the value of the 
+\family typewriter
+type
+\family default
+ tag.
+ See below for details.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Possible <mesh> contents for different types
 \begin_inset Index idx
 status collapsed
 
@@ -10364,288 +11936,6 @@ mesh
 
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<mesh
-\begin_inset space ~
-\end_inset
-
-type=
-\begin_inset Quotes erd
-\end_inset
-
-regular2d
-\begin_inset Quotes erd
-\end_inset
-
->
-\family default
-\series default
- Two-dimensional rectangular
-\begin_inset Index idx
-status collapsed
-
-\begin_layout Plain Layout
-mesh!rectangular
-\end_layout
-
-\end_inset
-
-
-\begin_inset Index idx
-status collapsed
-
-\begin_layout Plain Layout
-mesh!regular
-\end_layout
-
-\end_inset
-
- mesh with regular intervals.
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\bar under
-Contents
-\bar default
-:
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<axis0/>
-\family default
-\series default
- Specification of the horizontal axis.
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\bar under
-Attributes
-\bar default
-:
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-start
-\family default
- Position of the first point on the axis.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-stop
-\family default
- Position of the last point on the axis.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-num
-\family default
- Number of the equally distributed points along the axis.
-\end_layout
-
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<axis1/>
-\family default
-\series default
- Specification of the vertical axis.
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\bar under
-Attributes
-\bar default
-: see 
-\family typewriter
-<axis0/>
-\family default
-.
-\end_layout
-
-\end_deeper
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<mesh
-\begin_inset space ~
-\end_inset
-
-type=
-\begin_inset Quotes erd
-\end_inset
-
-regular3d
-\begin_inset Quotes erd
-\end_inset
-
->
-\family default
-\series default
- Two-dimensional rectangular
-\begin_inset Index idx
-status collapsed
-
-\begin_layout Plain Layout
-mesh!rectangular
-\end_layout
-
-\end_inset
-
-
-\begin_inset Index idx
-status collapsed
-
-\begin_layout Plain Layout
-mesh!regular
-\end_layout
-
-\end_inset
-
- mesh with arbitrary intervals.
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\bar under
-Contents
-\bar default
-:
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<axis0>
-\family default
-\series default
- Specification of the longitudinal axis.
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\bar under
-Attributes
-\bar default
-:
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-start
-\family default
- Position of the first point on the axis.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-stop
-\family default
- Position of the last point on the axis.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-num
-\family default
- Number of the equally distributed points along the axis.
-\end_layout
-
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<axis1/>
-\family default
-\series default
- Specification of the transversal axis.
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\bar under
-Attributes
-\bar default
-: see 
-\family typewriter
-<axis0/>
-\family default
-.
-\end_layout
-
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<axis2/>
-\family default
-\series default
- Specification of the vertical axis.
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\bar under
-Attributes
-\bar default
-: see 
-\family typewriter
-<axis0/>
-\family default
-.
-\end_layout
-
-\end_deeper
-\end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
@@ -10692,11 +11982,19 @@ mesh!rectilinear
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -10712,11 +12010,19 @@ Contents
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -10732,6 +12038,7 @@ If any of the following attributes are specified, the points along this
 start
 \family default
  Position of the first point on the axis.
+ (float [µm])
 \end_layout
 
 \begin_layout Labeling
@@ -10741,6 +12048,7 @@ start
 stop
 \family default
  Position of the last point on the axis.
+ (float [µm])
 \end_layout
 
 \begin_layout Labeling
@@ -10750,6 +12058,7 @@ stop
 num
 \family default
  Number of the equally distributed points along the axis.
+ (integer)
 \end_layout
 
 \begin_layout Labeling
@@ -10776,11 +12085,19 @@ Contents
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-: see 
+\end_layout
+
+\end_inset
+
+ see 
 \family typewriter
 <axis0>
 \family default
@@ -10835,11 +12152,19 @@ mesh!rectilinear
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
@@ -10855,11 +12180,19 @@ Contents
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -10875,6 +12208,7 @@ If any of the following attributes are specified, the points along this
 start
 \family default
  Position of the first point on the axis.
+ (float [µm])
 \end_layout
 
 \begin_layout Labeling
@@ -10884,6 +12218,7 @@ start
 stop
 \family default
  Position of the last point on the axis.
+ (float [µm])
 \end_layout
 
 \begin_layout Labeling
@@ -10893,6 +12228,7 @@ stop
 num
 \family default
  Number of the equally distributed points along the axis.
+ (integer)
 \end_layout
 
 \begin_layout Labeling
@@ -10919,11 +12255,19 @@ Contents
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-: see 
+\end_layout
+
+\end_inset
+
+ see 
 \family typewriter
 <axis0/>
 \family default
@@ -10945,11 +12289,363 @@ Attributes
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-: see 
+\end_layout
+
+\end_inset
+
+ see 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh
+\begin_inset space ~
+\end_inset
+
+type=
+\begin_inset Quotes erd
+\end_inset
+
+regular2d
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional rectangular
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectangular
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!regular
+\end_layout
+
+\end_inset
+
+ mesh with regular intervals.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0/>
+\family default
+\series default
+ Specification of the horizontal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+start
+\family default
+ Position of the first point on the axis.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+stop
+\family default
+ Position of the last point on the axis.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+num
+\family default
+ Number of the equally distributed points along the axis.
+ (integer)
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1/>
+\family default
+\series default
+ Specification of the vertical axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ see 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh
+\begin_inset space ~
+\end_inset
+
+type=
+\begin_inset Quotes erd
+\end_inset
+
+regular3d
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional rectangular
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!rectangular
+\end_layout
+
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!regular
+\end_layout
+
+\end_inset
+
+ mesh with arbitrary intervals.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0>
+\family default
+\series default
+ Specification of the longitudinal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+start
+\family default
+ Position of the first point on the axis.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+stop
+\family default
+ Position of the last point on the axis.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+num
+\family default
+ Number of the equally distributed points along the axis.
+ (integer)
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1/>
+\family default
+\series default
+ Specification of the transversal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ see 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis2/>
+\family default
+\series default
+ Specification of the vertical axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ see 
 \family typewriter
 <axis0/>
 \family default
@@ -10960,10 +12656,6 @@ Attributes
 \end_deeper
 \begin_layout Subsection
 Possible <generator> contents for different types and methods
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
 \begin_inset Index idx
 status collapsed
 
@@ -10976,6 +12668,477 @@ mesh!generator
 
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<generator type=
+\begin_inset Quotes erd
+\end_inset
+
+rectilinear2d
+\begin_inset Quotes erd
+\end_inset
+
+ method=
+\begin_inset Quotes erd
+\end_inset
+
+divide
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!generator!dividing
+\end_layout
+
+\end_inset
+
+Generator that divides each geometry object along both axes into a specified
+ number of elements, ensuring that two adjacent do not differ in size more
+ than twice.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<prediv/>
+\family default
+\series default
+ Set number of the initial divisions of each geometry object.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by0
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Number of parts each object is divided into along horizontal axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by1
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Number of parts each object is divided into along vertical axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Set values of 
+\family typewriter
+by0
+\family default
+
+\begin_inset space ~
+\end_inset
+
+and 
+\family typewriter
+by1
+\family default
+ both at once.
+ It this attribute is specified, no other ones are allowed.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<postdiv/>
+\family default
+\series default
+ Set number of the final divisions of each geometry object.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<prediv/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<refinements>
+\family default
+\series default
+ Specify list of additional refinements of the generated mesh.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+: 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0/>
+\family default
+\series default
+ Add refinement to the horizontal axis (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ additional vertical line).
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the geometry object to add additional division to.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Path name, specifying particular instance of the object given in the 
+\family typewriter
+object
+\family default
+ attribute.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+at
+\family default
+ Position of the refinement line in the local object coordinates.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1/>
+\family default
+\series default
+ Add refinement to the vertical axis (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ additional horizontal line).
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<vertical/>
+\family default
+\series default
+ Alias for 
+\family typewriter
+<axis0/>.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<horizontal/>
+\family default
+\series default
+ Alias for 
+\family typewriter
+<axis1/>.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<warnings/>
+\family default
+\series default
+ Control printing of the warnings.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+missing
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Warn if any refinement references to non-existing object.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+multiple
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Warn if any refinement references to multiple objects.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+outside
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Warn if refining line lies outside of the specified object.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\end_deeper
+\end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
@@ -11042,202 +13205,409 @@ Simple generator creating the rectangular rectilinear mesh lines at the
  This generator has no configuration.
 \end_layout
 
+\begin_layout Section
+Section <solvers>
+\end_layout
+
+\begin_layout Standard
+In this section used computational solvers are defined and configured.
+ Also here, the data filters are set-up, as in general, they are only special
+ kinds of solvers.
+ Each XML element in this section correspond to separate solver.
+ The content of such element depends strongly on particular solver, while
+ its name and attributes are standard (although there are differences in
+ attributes of strict computational solvers and data filters).
+ The details of XML content of this section is presented below.
+\end_layout
+
+\begin_layout Standard
+The computational solvers are declared with an XML tag, which name is the
+ category of the solver, e.
+\begin_inset space \thinspace{}
+\end_inset
+
+g.
+ 
+\family typewriter
+thermal
+\family default
+, 
+\family typewriter
+electrical
+\family default
+, 
+\family typewriter
+gain
+\family default
+, or 
+\family typewriter
+optical
+\family default
+ and that has a standard set of attributes:
+\end_layout
+
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
 \series bold
-<generator type=
-\begin_inset Quotes erd
-\end_inset
-
-rectilinear2d
-\begin_inset Quotes erd
-\end_inset
-
- method=
-\begin_inset Quotes erd
-\end_inset
-
-divide
-\begin_inset Quotes erd
-\end_inset
-
+<
+\family default
+\emph on
+category
+\family typewriter
+\emph default
 >
 \family default
 \series default
-
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Index idx
-status collapsed
-
-\begin_layout Plain Layout
-mesh!generator!dividing
-\end_layout
-
-\end_inset
-
-Generator that divides each geometry object along both axes into a specified
- number of elements, ensuring that two adjacent do not differ in size more
- than twice.
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\bar under
-Contents
-\bar default
-:
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<prediv/>
-\family default
-\series default
- Set number of the initial divisions of each geometry object.
+ Definition of computational solver.
 \end_layout
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-by0
-\family default
- 
-\size scriptsize
-(optional) 
-\size default
-Number of parts each object is divided into along horizontal axis.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-by1
-\family default
- 
-\size scriptsize
-(optional) 
-\size default
-Number of parts each object is divided into along vertical axis.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-by
-\family default
- 
-\size scriptsize
-(optional) 
-\size default
-Set values of 
-\family typewriter
-by0
-\family default
-
-\begin_inset space ~
 \end_inset
 
-and 
-\family typewriter
-by1
-\family default
- both at once.
- It this attribute is specified, no other ones are allowed.
+
 \end_layout
 
-\end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
-<postdiv/>
+name
 \family default
-\series default
- Set number of the final divisions of each geometry object.
+ Solver name.
+ In Python script there is a automatically created solver object with such
+ name.
+ (identifier string)
 \end_layout
 
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\bar under
-Attributes
-\bar default
-: See 
-\family typewriter
-<prediv/>
-\family default
-.
-\end_layout
-
-\end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
-\series bold
-<refinements>
+solver
 \family default
-\series default
- Specify list of additional refinements of the generated mesh.
+ Actual solver type.
+ In Python script this defines the class of the solver object.
 \end_layout
 
-\begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
-\bar under
+\family typewriter
+lib
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Library in which this solver is implemented.
+ For most standard solvers, PLaSK can automatically determine its proper
+ value.
+ For other solver types this attribute is required.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
 Contents
-\bar default
-: 
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
+\end_inset
 
-\family typewriter
-\series bold
-<axis0/>
-\family default
-\series default
- Add refinement to the horizontal axis (i.
+
+\end_layout
+
+\begin_layout Standard
+The contents of each solver depends on the category and the solver type
+ (i.
 \begin_inset space \thinspace{}
 \end_inset
 
 e.
- additional vertical line).
+ the tag name and the value of the 
+\family typewriter
+solver
+\family default
+ attribute).
+ It is specified in the following subsections.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Boundary-conditions"
+
+\end_inset
+
+Boundary conditions
+\end_layout
+
+\begin_layout Standard
+Most of the solvers have some boundary conditions.
+ They differ by name or type, but all share the same structure: some value
+ is set at mesh points in some region (usually the edge of the whole geometry,
+ or the edge of some geometrical object.
+ Hence, the structure of boundary conditions is usually the same and looks
+ as follows
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+In some cases where structure of boundary conditions description is different,
+ it is shown in the reference of particular solver.
+\end_layout
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<
+\family default
+\emph on
+boundary
+\begin_inset space \thinspace{}
+\end_inset
+
+conditions
+\family typewriter
+\emph default
+>
+\family default
+\series default
+ Some boundary conditions
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+boundary conditions
+\end_layout
+
+\end_inset
+
+ specifications.
 \end_layout
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<condition>
+\family default
+\series default
+ Specification of one boundary condition.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+value
+\family default
+ Value of the boundary condition.
+ In some boundary condition value is given in different attributes.
+ In such case, this attribute should be replaced with the specific ones.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+placename
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt
+\end_layout
+
+\end_inset
+
+ Name of the boundary condition location for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+placeref
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+\family typewriter
+
+\backslash
+opt
+\end_layout
+
+\end_inset
+
+ Set location of boundary conditions to some location previously named with
+ 
+\family typewriter
+placename
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+place
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt
+\end_layout
+
+\end_inset
+
+ Set one of standard location of boundary condition.
+ The value of this attribute depends on the mesh.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<place>
+\family default
+\series default
+ Set location of boundary condition.
+ This tag can be used instead of the 
+\family typewriter
+place
+\family default
+ attribute if more detailed description of the boundary condition location
+ is required.
+ Its attributes are mesh-specific.
+ Below there are most common examples of attribute sets for rectangular
+ meshes:
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family sans
+\series bold
+Boundary conditions at the side of some object:
 \end_layout
 
 \begin_layout Labeling
@@ -11246,7 +13616,7 @@ Attributes
 \family typewriter
 object
 \family default
- Name of the geometry object to add additional division to.
+ Name of the geometry object to set boundary conditions at.
 \end_layout
 
 \begin_layout Labeling
@@ -11256,10 +13626,19 @@ object
 path
 \family default
  
-\size scriptsize
-(optional) 
-\size default
-Path name, specifying particular instance of the object given in 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Path name, specifying particular instance of the object given in the 
 \family typewriter
 object
 \family default
@@ -11270,10 +13649,244 @@ object
 \labelwidthstring 00.00.0000
 
 \family typewriter
+side
+\family default
+ Side of the object to set boundary conditions at.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+left
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+right
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+top
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+bottom
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+back
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+front
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+
+\family sans
+\series bold
+Boundary conditions at some line (2D meshes):
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+line
+\family default
+ Direction of the line.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+vertical
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+horizontal
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 at
 \family default
- Position of the refinement line in the local object coordinates.
- 
+ Location of the line i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ its position on the perpendicular axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+start
+\family default
+ Position of the start of the line on the parallel axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+stop
+\family default
+ Position of the end of the line on the parallel axis.
+\end_layout
+
+\end_deeper
+\end_deeper
+\end_deeper
+\begin_layout Subsection
+Thermal solvers
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<thermal
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+Static2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional static thermal solver in Cartesian geometry, based on finite-el
+ement method.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<geometry/>
+\family default
+\series default
+ Geometry for use by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the geometry defined in the 
+\family typewriter
+<geometry>
+\family default
+ section.
 \end_layout
 
 \end_deeper
@@ -11282,27 +13895,457 @@ at
 
 \family typewriter
 \series bold
-<axis1/>
+<mesh/>
 \family default
 \series default
- Add refinement to the vertical axis (i.
-\begin_inset space \thinspace{}
+ Mesh used by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
 \end_inset
 
-e.
- additional horizontal line).
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the mesh defined in the 
+\family typewriter
+<grids>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<loop/>
+\family default
+\series default
+ Configuration of the self-consistent loop.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+inittemp
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Initial temperature.
+ (float [K])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+corrlim
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Correction limit.
+ (float [K] or [%])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+corrtype
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Correction type.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+absolute
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+relative
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<matrix/>
+\family default
+\series default
+ Configuration of the matrix solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+algorithm
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Solution algorithm.
+ Defaults to 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+block
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+block
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+slow
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+bignum
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Large number for setting boundary conditions of the first kind.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<temperature>
+\family default
+\series default
+ Boundary conditions: constant temperature.
+ See subsection
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Boundary-conditions"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<heatflux>
+\family default
+\series default
+ Boundary conditions: constant heat flux.
+ See subsection
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Boundary-conditions"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<convection>
+\family default
+\series default
+ Boundary conditions: convection.
+ See subsection
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Boundary-conditions"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+This boundary condition does not have 
+\family typewriter
+value
+\family default
+ attribute.
+ Use 
+\family typewriter
+coeff
+\family default
+ for convection coefficient and 
+\family typewriter
+ambient
+\family default
+ for ambient temperature instead.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<radiation>
+\family default
+\series default
+ Boundary conditions: radiation.
+ See subsection
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Boundary-conditions"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+This boundary condition does not have 
+\family typewriter
+value
+\family default
+ attribute.
+ Use 
+\family typewriter
+emissivity
+\family default
+ for surface emissivity and 
+\family typewriter
+ambient
+\family default
+ for ambient temperature instead.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<thermal
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+StaticCyl
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional static thermal solver in cylindrical geometry, based on
+ finite-element method.
 \end_layout
 
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
 
-\bar under
-Attributes
-\bar default
-: See 
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+ See 
 \family typewriter
-<axis0/>
+<thermal solver=
+\begin_inset Quotes erd
+\end_inset
+
+Static2D
+\begin_inset Quotes erd
+\end_inset
+
+>
 \family default
 .
 \end_layout
@@ -11313,12 +14356,56 @@ Attributes
 
 \family typewriter
 \series bold
-<vertical/>
+<thermal
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+Static3D
+\begin_inset Quotes erd
+\end_inset
+
+>
 \family default
 \series default
- Alias for 
+ Three-dimensional static thermal solver, based on finite-element method.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+ See 
 \family typewriter
-<axis0/>.
+<thermal solver=
+\begin_inset Quotes erd
+\end_inset
+
+Static2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+ with the following change in the 
+\family typewriter
+<matrix/>
+\family default
+ element:
 \end_layout
 
 \begin_layout Labeling
@@ -11326,80 +14413,2589 @@ Attributes
 
 \family typewriter
 \series bold
-<horizontal/>
+<matrix/>
 \family default
 \series default
- Alias for 
-\family typewriter
-<axis1/>.
-\end_layout
-
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<warnings/>
-\family default
-\series default
- Control printing of the warnings.
+ Configuration of the matrix solver.
 \end_layout
 
 \begin_deeper
 \begin_layout Standard
+\begin_inset ERT
+status collapsed
 
-\bar under
+\begin_layout Plain Layout
+
+
+\backslash
 Attributes
-\bar default
-:
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
-missing
+algorithm
 \family default
- Warn if any refinement references to non-existing object.
- Defaults to true.
- (boolean)
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Solution algorithm.
+ Defaults to 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+block
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+block
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+iterative
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
-multiple
+bignum
 \family default
- Warn if any refinement references to multiple objects.
- Defaults to true.
- (boolean)
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Large number for setting boundary conditions of the first kind.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
 \family typewriter
-outside
+itererr
 \family default
- Warn if refining line lies outside of the specified object.
- Defaults to true.
- (boolean)
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Allowed residual error for the iterative algorithm.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+maxiter
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum number of iterations for iterative algorithm.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+preconditioner
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Preconditioner for the iterative (conjugate gradient) algorithm.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+jacobi
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+factor
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
 \end_layout
 
 \end_deeper
 \end_deeper
-\begin_layout Section
-Section <solvers>
+\begin_layout Subsection
+Electrical solvers
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<electrical
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+Beta2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional phenomenological solver in Cartesian geometry, based on
+ finite-element method.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<geometry/>
+\family default
+\series default
+ Geometry for use by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the geometry defined in the 
+\family typewriter
+<geometry>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh/>
+\family default
+\series default
+ Mesh used by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the mesh defined in the 
+\family typewriter
+<grids>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<loop/>
+\family default
+\series default
+ Configuration of the self-consistent loop.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+inittemp
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Initial temperature.
+ (float [K])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+corrlim
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Correction limit.
+ (float [K] or [%])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+corrtype
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Correction type.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+absolute
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+relative
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<matrix/>
+\family default
+\series default
+ Configuration of the matrix solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+algorithm
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Solution algorithm.
+ Defaults to 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+block
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+block
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+slow
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+bignum
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Large number for setting boundary conditions of the first kind.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<junction/>
+\family default
+\series default
+ Configuration of the effective model of p-n junction.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+js
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Reverse bias current density.
+ (float [A/m
+\begin_inset Formula $^{2}$
+\end_inset
+
+])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+beta
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Junction coefficient.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+pnjcond
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Initial conductivity of the junction.
+ (float or two floats [S/m])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+heat
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Method of determination of the heat generated in the junction.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+joules
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+wavelength
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+wavelength
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Emitted wavelength if 
+\family typewriter
+heat
+\family default
+ is set to 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+wavelength
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<contacts/>
+\family default
+\series default
+ Properties of the contacts.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+pcond
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+p-contact conductivity.
+ (float [S/m])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ncond
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+n-contact conductivity.
+ (float [S/m])
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<voltage>
+\family default
+\series default
+ Boundary conditions: electric potential.
+ See subsection
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Boundary-conditions"
+
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<electrical
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+BetaCyl
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional phenomenological solver in cylindrical geometry, based
+ on finite-element method.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<electrical solver=
+\begin_inset Quotes erd
+\end_inset
+
+Beta2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<electrical
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+Diffusion2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional diffusion solver in Cartesian geometry.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<geometry/>
+\family default
+\series default
+ Geometry for use by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the geometry defined in the 
+\family typewriter
+<geometry>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh/>
+\family default
+\series default
+ One-dimensional horizontal initial mesh used by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+start
+\family default
+ Position of the first mesh point.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+stop
+\family default
+ Position of the last mesh point.
+ (float [µm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+num
+\family default
+ Number of the mesh points.
+ (integer)
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<config/>
+\family default
+\series default
+ Configuration of the self-consistent loop.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+fem_method
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Order of the finite-element method.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+linear
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+parabolic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+accuracy
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Required relative accuracy.
+ (float [%])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+absolute_accuracy
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Required absolute minimal concentration accuracy.
+ (float [cm
+\begin_inset Formula $^{-3}$
+\end_inset
+
+])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+interpolation
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Current density interpolation method name.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+maxiters
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum number of allowed iterations before attempting to refine mesh.
+ (integer)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+maxrefines
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum number of allowed mesh refinements.
+ (integer)
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<electrical
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+DiffusionCyl
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Two-dimensional diffusion solver in cylindrical geometry.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<electrical solver=
+\begin_inset Quotes erd
+\end_inset
+
+Diffusion2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Gain solvers
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<gain
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+Fermi2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian
+ geometry.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<gain
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+FermiCyl
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Simple gain solver based on Fermi Golden Rule for two-dimensional cylindrical
+ geometry.
+\end_layout
+
+\begin_layout Subsection
+Optical solvers
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<optical
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+EffectiveIndex2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Scalar optical solver based on effective index method.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<geometry/>
+\family default
+\series default
+ Geometry for use by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the geometry defined in the 
+\family typewriter
+<geometry>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh/>
+\family default
+\series default
+ Mesh used by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the mesh defined in the 
+\family typewriter
+<grids>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mode>
+\family default
+\series default
+ Mode properties.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+polarization
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Light polatization.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+TE
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+TM
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+symmetry
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Mode symmetry with respect to vertical symmetry axis (if present).
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+none
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+positive
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+negative
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+wavelength
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Light wavelength.
+ (float [nm])
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<root>
+\family default
+\series default
+ Parameters of the global root-finding algorithm.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+tolx
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Tolerance on effective index.
+ (float [-])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+tolf_min
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Minimum value of the determinant sufficient to assume convergence.
+ (float [a.u.])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+tolf_max
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum value of the determinant required to assume convergence.
+ (float [a.u.])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+maxstep
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum step in one iteration of root finding.
+ (float [-])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+maxiter
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum number of root finding iterations.
+ (integer)
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<striperoot>
+\family default
+\series default
+ Parameters of root-finding algorithm for one stripe.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<root>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<outer>
+\family default
+\series default
+ Configuration of handling area outside of the computational domain.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+distance
+\family default
+ Distance from the computational domain boundaries where material for the
+ outermost layer is sampled.
+ (float [µm])
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<optical
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+EffectiveFrequencyCyl
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Scalar optical solver based on effective index method.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<geometry/>
+\family default
+\series default
+ Geometry for use by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the geometry defined in the 
+\family typewriter
+<geometry>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh/>
+\family default
+\series default
+ Mesh used by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the mesh defined in the 
+\family typewriter
+<grids>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mode>
+\family default
+\series default
+ Mode properties.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+m
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Angular mode number.
+ (integer)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+lam0
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Approximate wavelength.
+ (float [nm])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+k0
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Approximate normalized frequency.
+ (float [1/µm])
+\end_layout
+
+\begin_layout Standard
+Attributes 
+\family typewriter
+lam0
+\family default
+ and 
+\family typewriter
+k0
+\family default
+ are mutually exclusive.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<root>
+\family default
+\series default
+ Parameters of the global root-finding algorithm.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+tolx
+\family default
+ Tolerance on effective index.
+ (float [-])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+tolf_min
+\family default
+ Minimum value of the determinant sufficient to assume convergence.
+ (float [a.u.])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+tolf_max
+\family default
+ Maximum value of the determinant required to assume convergence.
+ (float [a.u.])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+maxstep
+\family default
+ Maximum step in one iteration of root finding.
+ (float [-])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+maxiter
+\family default
+ Maximum number of root finding iterations.
+ (integer)
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<striperoot>
+\family default
+\series default
+ Parameters of root-finding algorithm for one stripe.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<root>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<outer>
+\family default
+\series default
+ Configuration of handling area outside of the computational domain.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+distance
+\family default
+ Distance from the computational domain boundaries where material for the
+ outermost layer is sampled.
+ (float [µm])
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Subsection
+Data filters
 \end_layout
 
 \begin_layout Section
 Section <connects>
 \end_layout
 
+\begin_layout Standard
+The purpose of this section is to define the relations between solvers i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ the connections of providers and receivers.
+ In addition, you can attach a constant step-profile field here.
+ This can be achieved with two tags allowed in this section:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<connect>
+\family default
+\series default
+ Connect provider
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+providers
+\end_layout
+
+\end_inset
+
+ to receiver
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+receivers
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+in
+\family default
+ Receiver to connect in the format 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+solver_name.inReceiverName
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+out
+\family default
+ Provider to connect in the format 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+solver_name.outProviderName
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<profile>
+\family default
+\series default
+ Connect set of step profiles
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+step profile
+\end_layout
+
+\end_inset
+
+ to receiver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+in
+\family default
+ Receiver to connect in the format 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+solver_name.inReceiverName
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+default
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Default value of the field provided as step profile.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<step>
+\family default
+\series default
+ Declaration of a single step in the profile.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the geometry object to set the field step value at.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Path name, specifying particular instance of the object given in the 
+\family typewriter
+object
+\family default
+ attribute.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+value
+\family default
+ Value of the field at the specified object.
+\end_layout
+
+\end_deeper
+\end_deeper
 \begin_layout Section
 Section <script>
+\end_layout
+
+\begin_layout Standard
+This section contains only Python script that is run to do the computations.
+ No attributes nor other XML tags inside this section are allowed, just
+ the script.
+ You must remember that, as in Python the text indentation matters, the
+ first line of the script must begin in the first column (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ it cannot be indented in any way).
+\end_layout
+
+\begin_layout Standard
+In order to be able to easily use 
+\family typewriter
+<
+\family default
+ and 
+\family typewriter
+&
+\family default
+ characters in the script, it is recommended to put its content as XML CDATA
+ element as in the following example:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Python"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<script><![CDATA[
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+if 42 <= 6*9:
+\end_layout
+
+\begin_layout Plain Layout
+
+    print_log(LOG_INFO, "Live, universe, everything!")
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+]]></script>
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Chapter

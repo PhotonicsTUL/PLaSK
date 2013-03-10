@@ -67,7 +67,7 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("heat", &__Class__::mHeatMethod, "Chosen method used for computing heats");
         RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
-        RW_PROPERTY(js, getJs, setJs, "Reverse current [A/m²]");
+        RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
         RW_PROPERTY(pnjcond, getCondJunc0, setCondJunc0, "Conductivity of the n-contact");
@@ -89,7 +89,7 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("heat", &__Class__::mHeatMethod, "Chosen method used for computing heats");
         RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
-        RW_PROPERTY(js, getJs, setJs, "Reverse current [A/m²]");
+        RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
         RW_PROPERTY(pnjcond, getCondJunc0, setCondJunc0, "Initial conductivity of the p-n junction");

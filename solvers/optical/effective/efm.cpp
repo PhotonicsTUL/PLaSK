@@ -20,12 +20,12 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     root.tolf_min = 1.0e-12;
     root.tolf_max = 1.0e-8;
     root.maxstep = 0.1;
-    root.maxiterations = 500;
+    root.maxiter = 500;
     striperoot.tolx = 1.0e-9;
     striperoot.tolf_min = 1.0e-12;
     striperoot.tolf_max = 1.0e-8;
     striperoot.maxstep = 0.5;
-    striperoot.maxiterations = 500;
+    striperoot.maxiter = 500;
 }
 
 
@@ -46,14 +46,14 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             root.tolf_min = reader.getAttribute<double>("tolf_min", root.tolf_min);
             root.tolf_max = reader.getAttribute<double>("tolf_max", root.tolf_max);
             root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
-            root.maxiterations = reader.getAttribute<int>("maxiterations", root.maxstep);
+            root.maxiter = reader.getAttribute<int>("maxiter", root.maxstep);
             reader.requireTagEnd();
         } else if (param == "striperoot") {
             striperoot.tolx = reader.getAttribute<double>("tolx", striperoot.tolx);
             striperoot.tolf_min = reader.getAttribute<double>("tolf_min", striperoot.tolf_min);
             striperoot.tolf_max = reader.getAttribute<double>("tolf_max", striperoot.tolf_max);
             striperoot.maxstep = reader.getAttribute<double>("maxstep", striperoot.maxstep);
-            striperoot.maxiterations = reader.getAttribute<int>("maxiterations", striperoot.maxiterations);
+            striperoot.maxiter = reader.getAttribute<int>("maxiter", striperoot.maxiter);
             reader.requireTagEnd();
         } else if (param == "outer") {
             outdist = reader.requireAttribute<double>("distance");
