@@ -13243,7 +13243,7 @@ gain
 \family typewriter
 optical
 \family default
- and that has a standard set of attributes:
+ and that has the standard set of attributes:
 \end_layout
 
 \begin_layout Labeling
@@ -13510,7 +13510,6 @@ status collapsed
 
 \begin_layout Plain Layout
 
-\family typewriter
 
 \backslash
 opt
@@ -16981,7 +16980,7 @@ if 42 <= 6*9:
 
 \begin_layout Plain Layout
 
-    print_log(LOG_INFO, "Live, universe, everything!")
+    print_log(LOG_RESULT, "Life, the Universe and Everything!")
 \end_layout
 
 \begin_layout Plain Layout
