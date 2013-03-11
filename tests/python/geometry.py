@@ -54,6 +54,7 @@ class Transforms(unittest.TestCase):
     def setUp(self):
         self.mat = plask.material.GaN()
         self.block53 = plask.geometry.Block2D(5,3, self.mat)
+        plask.config.axes = 'xy'
 
     def testTranslation(self):
         '''Test translations of the objects'''
@@ -61,6 +62,13 @@ class Transforms(unittest.TestCase):
         self.assertEqual( translation.bbox, plask.geometry.Box2D(plask.vec(10, 20), plask.vec(15, 23)) )
         self.assertEqual( translation.get_material(12.0, 22.0), self.mat);
         self.assertIsNone( translation.get_material(4.0, 22.0));
+
+
+    def testFlipMirror(self):
+        self.assertEqual(plask.geometry.Flip2D(0, self.block53).bbox, plask.geometry.Box2D((-5, 0), (0, 3)))
+        self.assertEqual(plask.geometry.Flip2D('y', self.block53).bbox, plask.geometry.Box2D((0, -3), (5, 0)))
+        self.assertEqual(plask.geometry.Mirror2D(0, self.block53).bbox, plask.geometry.Box2D((-5, 0), (5, 3)))
+        self.assertEqual(plask.geometry.Mirror2D('y', self.block53).bbox, plask.geometry.Box2D((0, -3), (5, 3)))
 
 
 
@@ -93,6 +101,7 @@ class Containers(unittest.TestCase):
         self.block2 = plask.geometry.Block2D(5,3, self.aln)
         self.cube1 = plask.geometry.Block3D(4,4,2, self.gan)
         self.cube2 = plask.geometry.Block3D(4,4,2, self.aln)
+        plask.config.axes = 'yz'
 
     def testAligners(self):
         stack = plask.geometry.Stack2D()
@@ -194,5 +203,3 @@ class Containers(unittest.TestCase):
         self.block2.role = "something"
         self.assertIn( "something", stack.get_roles(2., 4.) )
         self.assertTrue( stack.has_role("something", 2., 4.) )
-
-

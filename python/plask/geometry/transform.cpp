@@ -1,6 +1,7 @@
 #include "geometry.h"
 
 #include <plask/geometry/transform.h>
+#include <plask/geometry/mirror.h>
 
 namespace plask { namespace python {
 
@@ -68,7 +69,7 @@ static std::string Translation__repr__(const Translation<dim>& self) {
     return format("plask.geometry.Translation%1%D%2%", dim, Translation__str__<dim>(self));
 }
 
-DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transfer holds a translated geometry object together with translation vector ("," version)")
+DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transform that holds a translated geometry object together with translation vector ("," version)")
 {
     GEOMETRY_ELEMENT_23D(Translation, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("translation"))))
@@ -76,6 +77,53 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transfer holds a trans
     .def_readwrite("translation", &Translation<dim>::translation, "Translation vector")
     .def("__str__", &Translation__str__<dim>)
     .def("__repr__", &Translation__repr__<dim>)
+    ;
+}
+
+
+template <typename Cls>
+shared_ptr<Cls> Mirror_constructor1(size_t axis, shared_ptr<typename Cls::ChildType> child) {
+    if (axis >= Cls::dim) throw ValueError("Wrong axis number.");
+    return make_shared<Cls>(typename Primitive<Cls::dim>::Direction(axis), child);
+}
+
+template <typename Cls>
+shared_ptr<Cls> Mirror_constructor2(const std::string& axis, shared_ptr<typename Cls::ChildType> child) {
+    size_t no = config.axes[axis] + Cls::dim - 3;
+    return make_shared<Cls>(typename Primitive<Cls::dim>::Direction(no), child);
+}
+
+template <typename Cls>
+std::string getFlipDir(const Cls& self) { return config.axes[self.flipDir]; }
+
+template <typename Cls>
+void setFlipDir(Cls& self, py::object val) {
+    try {
+        size_t no = config.axes[py::extract<std::string>(val)] + Cls::dim - 3;
+        self.flipDir = typename Primitive<Cls::dim>::Direction(no);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        size_t no = py::extract<size_t>(val);
+        if (no >= Cls::dim) throw ValueError("Wrong axis number.");
+        self.flipDir = typename Primitive<Cls::dim>::Direction(no);
+    }
+}
+
+DECLARE_GEOMETRY_ELEMENT_23D(Flip, "Flip", "Transfer that flips the geometry object along axis specified by name or number ("," version)")
+{
+    GEOMETRY_ELEMENT_23D(Flip, GeometryObjectTransform<dim>, py::no_init)
+    .def("__init__", py::make_constructor(&Mirror_constructor1<Flip<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
+    .def("__init__", py::make_constructor(&Mirror_constructor2<Flip<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
+    .add_property("axis", &getFlipDir<Flip<dim>>, &setFlipDir<Flip<dim>>, "Flip axis")
+    ;
+}
+
+DECLARE_GEOMETRY_ELEMENT_23D(Mirror, "Mirror", "Transfer that mirrors the geometry object along axis specified by name or number ("," version)")
+{
+    GEOMETRY_ELEMENT_23D(Mirror, GeometryObjectTransform<dim>, py::no_init)
+    .def("__init__", py::make_constructor(&Mirror_constructor1<Mirror<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
+    .def("__init__", py::make_constructor(&Mirror_constructor2<Mirror<dim>>, py::default_call_policies(), (py::arg("axis"), py::arg("item")=shared_ptr<GeometryObjectD<dim>>())))
+    .add_property("axis", &getFlipDir<Mirror<dim>>, &setFlipDir<Mirror<dim>>, "Mirror axis")
     ;
 }
 
@@ -90,6 +138,12 @@ void register_geometry_transform()
 
     init_Translation<2>();
     init_Translation<3>();
+
+    init_Flip<2>();
+    init_Flip<3>();
+
+    init_Mirror<2>();
+    init_Mirror<3>();
 }
 
 }} // namespace plask::python

@@ -8147,6 +8147,154 @@ Transforms always contain a single geometry object (possibly container)
 
 \family typewriter
 \series bold
+<flip>
+\family default
+\series default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!flip
+\end_layout
+
+\end_inset
+
+ Mirror reflection of the object along specified axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+axis
+\family default
+ Name of the inverted axis (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ perpendicular to the reflection plane).
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mirror>
+\family default
+\series default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!mirror
+\end_layout
+
+\end_inset
+
+ Object mirrored along specified axis.
+ In other words this is transformed object together with its flipped version.
+ The bounding box of the object cannot span at bot sides of zero along inverted
+ axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+ 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+axis
+\family default
+ Name of the inverted axis (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ perpendicular to the reflection plane).
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
 <translation>
 \family default
 \series default
@@ -10945,6 +11093,154 @@ Contents
 object
 \emph default
  A single two-dimensional geometry object.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<flip>
+\family default
+\series default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!flip
+\end_layout
+
+\end_inset
+
+ Mirror reflection of the object along specified axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+axis
+\family default
+ Name of the inverted axis (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ perpendicular to the reflection plane).
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mirror>
+\family default
+\series default
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+geometry!object!mirror
+\end_layout
+
+\end_inset
+
+ Object mirrored along specified axis.
+ In other words this is transformed object together with its flipped version.
+ The bounding box of the object cannot span at bot sides of zero along inverted
+ axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Object name for further reference.
+ 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+role
+\family default
+ Object role.
+ Important for some solvers.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+axis
+\family default
+ Name of the inverted axis (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ perpendicular to the reflection plane).
 \end_layout
 
 \end_deeper
