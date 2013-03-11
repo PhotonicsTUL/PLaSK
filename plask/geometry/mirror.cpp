@@ -22,15 +22,6 @@ void Flip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, st
     }
     const std::size_t s = getChild()->getPositions(predicate, path).size();
     for (std::size_t i = 0; i < s; ++i) dest.push_back(Primitive<dim>::NAN_VEC);   //we can't get proper position
-
-    /*if (predicate(*this)) {
-        dest.push_back(Primitive<dim>::ZERO_VEC);
-        return;
-    }
-    const std::size_t old_size = dest.size();
-    getChild()->getPositionsToVec(predicate, dest, path);
-    for (std::size_t i = old_size; i < dest.size(); ++i)
-        dest[i] = fliped(dest[i]);*/
 }
 
 template <int dim>

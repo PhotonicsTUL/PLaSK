@@ -2,6 +2,7 @@
 
 #include <plask/utils/xml.h>
 #include <plask/utils/xml/writer.h>
+#include <plask/utils/xml/reader.h>
 
 #include <plask/mesh/rectilinear.h>
 #include <plask/mesh/regular.h>
@@ -9,6 +10,24 @@
 #define HEADER "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 
 BOOST_AUTO_TEST_SUITE(xml) // MUST be the same as the file name
+
+BOOST_AUTO_TEST_CASE(xml_read) {
+    plask::XMLReader r(new std::stringstream("<tag a1=\"1\" a2=\"2.0\">3</tag>"));
+    r.registerParser([] (const std::string&) { return 0; });  //all int will be parsed as 0
+    BOOST_CHECK(r.read());
+    BOOST_CHECK(r.getNodeType() == plask::XMLReader::NODE_ELEMENT);
+    BOOST_CHECK_EQUAL(r.getTagName(), "tag");
+    BOOST_CHECK_EQUAL(r.getAttribute<int>("a1", 2), 0);
+    BOOST_CHECK_EQUAL(r.getAttribute<double>("a2", 1.0), 2.0);
+    BOOST_CHECK_EQUAL(r.getAttribute<double>("a3", 1.0), 1.0);
+    BOOST_CHECK(r.read());  //content
+    BOOST_CHECK(r.getNodeType() == plask::XMLReader::NODE_TEXT);
+    BOOST_CHECK_EQUAL(r.getTextContent<int>(), 0);
+    BOOST_CHECK_EQUAL(r.getTextContent<double>(), 3.0);
+    BOOST_CHECK(r.read());  //tag end
+    BOOST_CHECK(r.getNodeType() == plask::XMLReader::NODE_ELEMENT_END);
+    //BOOST_CHECK(!r.read()); //and nothing more, end
+}
 
 BOOST_AUTO_TEST_CASE(empty_xml) {
     std::stringstream ss;
