@@ -4,22 +4,6 @@
 
 namespace plask {
 
-AxisNames::AxisNames(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name)
-    : byIndex{c0_name, c1_name, c2_name} {}
-
-std::size_t AxisNames::operator [](const std::string &name) const {
-    if (byIndex[0] == name) return 0;
-    if (byIndex[1] == name) return 1;
-    if (byIndex[2] == name) return 2;
-    return 3;
-}
-
-std::string AxisNames::str() const {
-    if (byIndex[0].length() == 1 && byIndex[1].length() == 1 && byIndex[2].length() == 1)
-        return byIndex[0] + byIndex[1] + byIndex[2];
-    return byIndex[0] + "," + byIndex[1] + "," + byIndex[2];
-}
-
 const AxisNames& AxisNames::Register::get(const std::string &name) const {
     auto i = axisNames.find(removedChars(name, ",._ \t"));
     if (i == axisNames.end())
@@ -35,6 +19,35 @@ AxisNames::Register AxisNames::axisNamesRegister =
         ("p", "r", "z", "rz", "rad")
         ("l", "t", "v", "abs1")
         ("long", "tran", "vert", "absolute", "abs");
+
+
+AxisNames::AxisNames(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name)
+    : byIndex{c0_name, c1_name, c2_name} {}
+
+std::size_t AxisNames::operator [](const std::string &name) const {
+    if (byIndex[0] == name) return 0;
+    if (byIndex[1] == name) return 1;
+    if (byIndex[2] == name) return 2;
+    return 3;
+}
+
+Primitive<3>::Direction AxisNames::get3D(const std::string &name) const {
+    std::size_t res = operator [] (name);
+    if (res == 3) throw Exception("\"%1%\" is not proper axis name.", name);
+    return Primitive<3>::Direction(res);
+}
+
+Primitive<2>::Direction AxisNames::get2D(const std::string &name) const {
+    std::size_t res = operator [] (name);
+    if (res == 0 || res == 3) throw Exception("\"%1%\" is not proper 2D axis name.", name);
+    return Primitive<2>::Direction(res - 1);
+}
+
+std::string AxisNames::str() const {
+    if (byIndex[0].length() == 1 && byIndex[1].length() == 1 && byIndex[2].length() == 1)
+        return byIndex[0] + byIndex[1] + byIndex[2];
+    return byIndex[0] + "," + byIndex[1] + "," + byIndex[2];
+}
 
 const AxisNames& AxisNames::getAbsoluteNames() {
     return axisNamesRegister.get("abs");

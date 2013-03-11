@@ -1,9 +1,10 @@
 #include "mirror.h"
+#include "reader.h"
 
 namespace plask {
 
 template <int dim>
-void MirrorReflection<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+void Flip<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
         return;
@@ -14,7 +15,7 @@ void MirrorReflection<dim>::getBoundingBoxesToVec(const GeometryObject::Predicat
 }
 
 template <int dim>
-void MirrorReflection<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
+void Flip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
@@ -33,43 +34,15 @@ void MirrorReflection<dim>::getPositionsToVec(const GeometryObject::Predicate& p
 }
 
 template <int dim>
-shared_ptr<const GeometryObject> MirrorReflection<dim>::changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation) const {
-    shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
-    if (changer.apply(result, translation) || !this->hasChild()) return result;
-    //TODO impl.
- /*   Vec<3, double> returned_translation(0.0, 0.0, 0.0);
-    shared_ptr<const GeometryObject> new_child = this->getChild()->changedVersion(changer, &returned_translation);
-    Vec<dim, double> translation_we_will_do = vec<dim, double>(returned_translation);
-    if (new_child == getChild() && translation_we_will_do == Primitive<dim>::ZERO_VEC) return result;
-    if (translation)    //we will change translation (partially if dim==2) internaly, so we recommend no extra translation
-        *translation = returned_translation - vec<3, double>(translation_we_will_do); //still we can recommend translation in third direction
-    return shared_ptr<GeometryObject>(
-        new Translation<dim>(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)),
-                             this->translation + translation_we_will_do) );*/
-}
-
-template <int dim>
-void MirrorReflection<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+void Flip<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr("axis", axes[direction3D(flipDir)]);
 }
 
-template struct MirrorReflection<2>;
-template struct MirrorReflection<3>;
-
-/*template <int dim>
-shared_ptr<GeometryObject> read_MirrorReflection(GeometryReader& reader) {
-    GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    shared_ptr< MirrorReflection<dim> > res(reader.source.requireAttribute("axis"), new MirrorReflection<dim>());
-    return res;
-}
-
-static GeometryReader::RegisterObjectReader translation2D_reader(Translation<2>::NAME, read_MirrorReflection<2>);
-static GeometryReader::RegisterObjectReader translation3D_reader(Translation<3>::NAME, read_MirrorReflection<3>);*/
-
-
+template struct Flip<2>;
+template struct Flip<3>;
 
 template <int dim>
-void MirrorSymetry<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
+void Mirror<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
         return;
@@ -82,7 +55,7 @@ void MirrorSymetry<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& 
 }
 
 template <int dim>
-void MirrorSymetry<dim>::getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path) const {
+void Mirror<dim>::getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(this->shared_from_this());
         return;
@@ -95,7 +68,7 @@ void MirrorSymetry<dim>::getObjectsToVec(const GeometryObject::Predicate& predic
 }
 
 template <int dim>
-void MirrorSymetry<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
+void Mirror<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(Primitive<dim>::ZERO_VEC);
         return;
@@ -108,67 +81,56 @@ void MirrorSymetry<dim>::getPositionsToVec(const GeometryObject::Predicate& pred
 }
 
 template <int dim>
-GeometryObject::Subtree MirrorSymetry<dim>::getPathsTo(const GeometryObject& el, const PathHints* path) const {
+GeometryObject::Subtree Mirror<dim>::getPathsTo(const GeometryObject& el, const PathHints* path) const {
     GeometryObject::Subtree result = GeometryObjectTransform<dim>::getPathsTo(el, path);
     if (!result.empty() && !result.children.empty())    //result.children[0] == getChild()
-        result.children.push_back(GeometryObject::Subtree(make_shared<MirrorReflection<dim>>(flipDir, getChild()),
+        result.children.push_back(GeometryObject::Subtree(make_shared<Flip<dim>>(flipDir, getChild()),
                                                           result.children[0].children));
     return result;
 }
 
 template <int dim>
-GeometryObject::Subtree MirrorSymetry<dim>::getPathsAt(const MirrorSymetry<dim>::DVec &point, bool all) const {
+GeometryObject::Subtree Mirror<dim>::getPathsAt(const Mirror<dim>::DVec &point, bool all) const {
     return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(flipedIfNeg(point), all));
 }
 
 template <int dim>
-std::size_t MirrorSymetry<dim>::getChildrenCount() const {
+std::size_t Mirror<dim>::getChildrenCount() const {
     return this->hasChild() ? 2 : 0;
 }
 
 template <int dim>
-shared_ptr<GeometryObject> MirrorSymetry<dim>::getChildNo(std::size_t child_no) const {
+shared_ptr<GeometryObject> Mirror<dim>::getChildNo(std::size_t child_no) const {
     if (child_no >= getChildrenCount()) throw OutOfBoundsException("getChildNo", "child_no", child_no, 0, getChildrenCount()-1);
     //child_no is 0 or 1 now
     if (child_no == 0)
         return getChild();
     else
-        return make_shared<MirrorReflection<dim>>(flipDir, getChild());
+        return make_shared<Flip<dim>>(flipDir, getChild());
 }
 
 
 template <int dim>
-shared_ptr<const GeometryObject> MirrorSymetry<dim>::changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation) const {
-    shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
-    if (changer.apply(result, translation) || !this->hasChild()) return result;
-    //TODO impl.
- /*   Vec<3, double> returned_translation(0.0, 0.0, 0.0);
-    shared_ptr<const GeometryObject> new_child = this->getChild()->changedVersion(changer, &returned_translation);
-    Vec<dim, double> translation_we_will_do = vec<dim, double>(returned_translation);
-    if (new_child == getChild() && translation_we_will_do == Primitive<dim>::ZERO_VEC) return result;
-    if (translation)    //we will change translation (partially if dim==2) internaly, so we recommend no extra translation
-        *translation = returned_translation - vec<3, double>(translation_we_will_do); //still we can recommend translation in third direction
-    return shared_ptr<GeometryObject>(
-        new Translation<dim>(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)),
-                             this->translation + translation_we_will_do) );*/
-}
-
-template <int dim>
-void MirrorSymetry<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+void Mirror<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr("axis", axes[direction3D(flipDir)]);
 }
 
-template struct MirrorSymetry<2>;
-template struct MirrorSymetry<3>;
+template struct Mirror<2>;
+template struct Mirror<3>;
 
-/*template <int dim>
-shared_ptr<GeometryObject> read_MirrorReflection(GeometryReader& reader) {
-    GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    shared_ptr< MirrorReflection<dim> > res(reader.source.requireAttribute("axis"), new MirrorReflection<dim>());
-    return res;
+
+//--------- XML reading: Flip and Mirror ----------------
+
+template <typename GeometryType>
+shared_ptr<GeometryObject> read_flip_like(GeometryReader& reader) {
+    GeometryReader::SetExpectedSuffix suffixSetter(reader, GeometryType::dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    auto flipDir = reader.axisNames->get<GeometryType::dim>(reader.source.requireAttribute("axis"));
+    return make_shared< GeometryType >(flipDir, reader.readExactlyOneChild<typename GeometryType::ChildType>());
 }
 
-static GeometryReader::RegisterObjectReader translation2D_reader(Translation<2>::NAME, read_MirrorReflection<2>);
-static GeometryReader::RegisterObjectReader translation3D_reader(Translation<3>::NAME, read_MirrorReflection<3>);*/
+static GeometryReader::RegisterObjectReader flip2D_reader(Flip<2>::NAME, read_flip_like<Flip<2>>);
+static GeometryReader::RegisterObjectReader flip3D_reader(Flip<3>::NAME, read_flip_like<Flip<3>>);
+static GeometryReader::RegisterObjectReader mirror2D_reader(Mirror<2>::NAME, read_flip_like<Mirror<2>>);
+static GeometryReader::RegisterObjectReader mirror3D_reader(Mirror<3>::NAME, read_flip_like<Mirror<3>>);
 
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include "geometry/primitives.h"
 
 /** @file
 This file includes utils connected with names of axes.
@@ -113,6 +114,34 @@ struct AxisNames {
      */
     std::size_t operator[](const std::string& name) const;
 
+    /**
+     * Get axis index by name.
+     *
+     * Throws exception if @a name is not proper name of axis.
+     * @param name axis name
+     * @return index (from 0 to 2) of axis with given @p name
+     */
+    Primitive<3>::Direction get3D(const std::string& name) const;
+
+    /**
+     * Get axis index in 2D by name.
+     *
+     * Throws exception if @a name is not proper name of axis in 2D.
+     * @param name axis name
+     * @return index (from 0 to 1) of axis with given @p name
+     */
+    Primitive<2>::Direction get2D(const std::string& name) const;
+
+    /**
+     * Get axis index in 2D/3D by name.
+     *
+     * Throws exception if @a name is not proper name of axis in 2D/3D.
+     * @param name axis name
+     * @return index (from 0 to DIMS-1) of axis with given @p name
+     */
+    template <int DIMS>
+    typename Primitive<DIMS>::Direction get(const std::string& name) const;
+
     /// \return string representation of the axes for the register
     std::string str() const;
 
@@ -136,6 +165,9 @@ struct AxisNames {
      */
     bool operator!=(const AxisNames& to_compare) const { return !(*this == to_compare); }
 };
+
+template <> inline Primitive<2>::Direction AxisNames::get<2>(const std::string& name) const { return this->get2D(name); }
+template <> inline Primitive<3>::Direction AxisNames::get<3>(const std::string& name) const { return this->get3D(name); }
 
 
 

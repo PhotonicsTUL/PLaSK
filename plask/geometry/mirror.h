@@ -3,8 +3,8 @@
 
 #include "transform.h"
 
-//MirrorReflection - odbicie
-//MirrorSymetry - odbicie i klonowanie
+//Flip - odbicie
+//Mirror - odbicie i klonowanie
 
 namespace plask {
 
@@ -14,11 +14,11 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct MirrorReflection: public GeometryObjectTransform<dim> {
+struct Flip: public GeometryObjectTransform<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
-                ("mirrorReflection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("mirrorReflection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+                ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+                ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
     virtual std::string getTypeName() const { return NAME; }
 
@@ -35,7 +35,7 @@ struct MirrorReflection: public GeometryObjectTransform<dim> {
     /**
      * @param child child geometry object, object to reflect
      */
-    explicit MirrorReflection(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
+    explicit Flip(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
         : GeometryObjectTransform<dim>(child), flipDir(flipDir) {}
 
     /// 2D or 3D axis number
@@ -76,13 +76,11 @@ struct MirrorReflection: public GeometryObjectTransform<dim> {
      * Get shallow copy of this.
      * @return shallow copy of this
      */
-    shared_ptr<MirrorReflection<dim>> copyShallow() const {
-         return shared_ptr<MirrorReflection<dim>>(new MirrorReflection<dim>(flipDir, getChild()));
+    shared_ptr<Flip<dim>> copyShallow() const {
+         return shared_ptr<Flip<dim>>(new Flip<dim>(flipDir, getChild()));
     }
 
     virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const { return copyShallow(); }
-
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const;
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
@@ -93,11 +91,11 @@ struct MirrorReflection: public GeometryObjectTransform<dim> {
  */
 //TODO add checking of coordinates
 template <int dim>
-struct MirrorSymetry: public GeometryObjectTransform<dim> {
+struct Mirror: public GeometryObjectTransform<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
-                ("mirrorSymetry" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
-                ("mirrorSymetry" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+                ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
+                ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
     virtual std::string getTypeName() const { return NAME; }
 
@@ -114,7 +112,7 @@ struct MirrorSymetry: public GeometryObjectTransform<dim> {
     /**
      * @param child child geometry object, object to reflect
      */
-    explicit MirrorSymetry(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
+    explicit Mirror(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
         : GeometryObjectTransform<dim>(child), flipDir(flipDir) {}
 
     /// 2D or 3D axis number
@@ -177,13 +175,11 @@ struct MirrorSymetry: public GeometryObjectTransform<dim> {
      * Get shallow copy of this.
      * @return shallow copy of this
      */
-    shared_ptr<MirrorSymetry<dim>> copyShallow() const {
-         return shared_ptr<MirrorSymetry<dim>>(new MirrorSymetry<dim>(flipDir, getChild()));
+    shared_ptr<Mirror<dim>> copyShallow() const {
+         return shared_ptr<Mirror<dim>>(new Mirror<dim>(flipDir, getChild()));
     }
 
     virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const { return copyShallow(); }
-
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const;
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
