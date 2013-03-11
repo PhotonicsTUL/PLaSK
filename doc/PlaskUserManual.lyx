@@ -4500,7 +4500,11 @@ variables:
 \family typewriter
 wl
 \family default
- -- wavelength [nm], T -- temperature [K].
+ -- wavelength [nm], 
+\family typewriter
+T
+\family default
+ -- temperature [K].
 \end_layout
 
 \begin_layout Labeling
