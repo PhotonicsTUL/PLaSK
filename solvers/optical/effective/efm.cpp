@@ -216,16 +216,19 @@ void EffectiveFrequencyCylSolver::stageOne()
                 double T = 0.25 * ( temp[mesh->index(ix,ty0)] + temp[mesh->index(ix,ty1)] +
                                     temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
 
-                auto material = geometry->getMaterial(0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1)));
+                auto point = 0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1));
+                auto material = geometry->getMaterial(point);
+                auto roles = geometry->getRolesAt(point);
 
                 // nR = nr + i/(4π) λ g
                 // Ng = nR - λ dN/dλ = nR - λ dn/dλ - i/(4π) λ^2 dg/dλ
-                double g = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain[midmesh->index(ix, iy-1)];
-                if (isnan(g)) {
+                if ( ix == rsize-1 || iy == 0 || iy == zsize-1 ||
+                     (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) ) {
                     nrCache[ix][iy] = material->nR(lam, T);
                     ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->nR(lam2, T) - material->nR(lam1, T)) * ih2;
                 } else { // we ignore the material absorption as it should be considered in the gain already
-                    double gs = (ix == rsize-1 || iy == 0 || iy == zsize-1)? NAN : gain_slope[midmesh->index(ix, iy-1)];
+                    double g = gain[midmesh->index(ix, iy-1)];
+                    double gs = gain_slope[midmesh->index(ix, iy-1)];
                     double nr = real(material->nR(lam, T));
                     double ng = real(nrCache[ix][iy] - lam * (material->nR(lam2, T) - material->nR(lam1, T)) * ih2);
                     nrCache[ix][iy] = dcomplex(nr, 7.95774715459e-09 * lam * g);
