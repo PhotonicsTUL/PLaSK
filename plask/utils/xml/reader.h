@@ -163,6 +163,7 @@ class XMLReader {
     /// Source of data.
     DataSource* source;
 
+    //TODO move this functionality to external class, and fix bool support in XMLReader
     typedef std::function<boost::any(const std::string&)> type_parser;
 
     std::map<std::type_index, type_parser> parsers;
