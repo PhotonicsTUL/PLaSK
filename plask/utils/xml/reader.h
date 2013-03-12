@@ -18,17 +18,66 @@
 
 #include "exceptions.h"
 
-//this is copy paste from expat.h, it allow to not include expat.h in header
-#ifdef __cplusplus
+//this is copy paste from expat.h, this allows to not include expat.h in header
 extern "C" {
-#endif
-struct XML_ParserStruct;
-typedef struct XML_ParserStruct *XML_Parser;
-#ifdef __cplusplus
+    struct XML_ParserStruct;
+    typedef struct XML_ParserStruct *XML_Parser;
 }
-#endif
 
 namespace plask {
+
+/**
+ * Objects of this class allow to parse string value and interpret it as given type.
+ *
+ * By default boost::lexical_cast is used to parse, but this can be changed, for each required result type, to custom parser.
+ */
+class StringInterpreter {
+
+    typedef std::function<boost::any(const std::string&)> type_parser;
+
+    std::map<std::type_index, type_parser> parsers;
+
+public:
+
+    /**
+     * Parse given text @a str, interpret it as type @p RequiredType.
+     *
+     * For parsing, it uses registred interpreter or boost::lexical_cast.
+     *
+     * It throws exception in case of parsing error.
+     * @param str text to parse
+     * @return @p @a str interpreted as type @p RequiredType
+     */
+    template <typename RequiredType>
+    RequiredType get(const std::string& str) const {
+        auto i = parsers.find(std::type_index(typeid((RequiredType*)0)));
+        if (i != parsers.end())
+            return boost::any_cast<RequiredType>(i->second(str));
+        return boost::lexical_cast<RequiredType>(str);
+    }
+
+    /**
+     * Set parser to use (interpret attributes values, etc.) for conversion from std::string to type returned by @a parser.
+     * @param parser functor which can take std::string and return value of some type,
+     *                  or throws excpetion in case of parsing error
+     */
+    template <typename Functor>
+    void set(Functor parser) {
+        parsers[std::type_index(typeid((typename std::result_of<Functor(std::string)>::type*)0))] = parser;
+    }
+
+    /**
+     * Unset parser to use (interpret attributes values, etc.) for conversion from std::string to given @a type.
+     *
+     * Default lexical_cast will be used for given @a type after calling this.
+     * @tparam type type returned by parser to unregister
+     */
+    template <typename type>
+    void unset() {
+        parsers.erase(std::type_index(typeid((type*)0)));
+    }
+
+};
 
 /**
  * XML pull parser.
@@ -163,18 +212,11 @@ class XMLReader {
     /// Source of data.
     DataSource* source;
 
-    //TODO move this functionality to external class, and fix bool support in XMLReader
-    typedef std::function<boost::any(const std::string&)> type_parser;
-
-    std::map<std::type_index, type_parser> parsers;
-
     template <typename RequiredType>
-    RequiredType parse(const std::string& str) const {
-        auto i = parsers.find(std::type_index(typeid((RequiredType*)0)));
-        if (i != parsers.end())
-            return boost::any_cast<RequiredType>(i->second(str));
-        return boost::lexical_cast<RequiredType>(str);
+    RequiredType parse(const std::string& attr_str) const {
+        return stringInterpreter.get<RequiredType>(attr_str);
     }
+
 
     template <typename RequiredType>
     RequiredType parse(const std::string& attr_str, const std::string& attr_name) const {
@@ -291,6 +333,8 @@ class XMLReader {
     void initParser();
 
   public:
+
+    StringInterpreter stringInterpreter;
     
     /**
      * Throw exception which include information about current position in XML and typically describe logic error in XML file.
@@ -614,14 +658,6 @@ class XMLReader {
      */
     void gotoEndOfCurrentTag();
 
-    /**
-     * Register parser to use (interpret attributes values, etc.) for conversion from std::string to type returned by @a parser.
-     * @param parser functor which can take std::string and return value of some type
-     */
-    template <typename Functor>
-    void registerParser(Functor parser) {
-        parsers[std::type_index(typeid((typename std::result_of<Functor(std::string)>::type*)0))] = parser;
-    }
 };
 
 
