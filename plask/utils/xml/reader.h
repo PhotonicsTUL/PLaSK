@@ -37,7 +37,23 @@ class StringInterpreter {
 
     std::map<std::type_index, type_parser> parsers;
 
+    void set() {}   //do nothing, defined for stop of set recursion and default constructor
+
 public:
+
+    /**
+     * Construct StringInterpreter which uses given parsers for types returned by this parsers, and boost::lexical_cast for other types.
+     * @param parsers 0 or more custom parsers, functors which can take std::string and return value of some type,
+     *                  or throw excpetion in case of parsing error
+     */
+    template <typename... Functors>
+    StringInterpreter(Functors... parsers) { set(parsers...); }
+
+    StringInterpreter(StringInterpreter&&) = default;
+    StringInterpreter(const StringInterpreter&) = default;
+    StringInterpreter& operator=(StringInterpreter&&) = default;
+    StringInterpreter& operator=(const StringInterpreter&) = default;
+
 
     /**
      * Parse given text @a str, interpret it as type @p RequiredType.
@@ -57,13 +73,14 @@ public:
     }
 
     /**
-     * Set parser to use (interpret attributes values, etc.) for conversion from std::string to type returned by @a parser.
-     * @param parser functor which can take std::string and return value of some type,
-     *                  or throws excpetion in case of parsing error
+     * Set parsers to use (interpret attributes values, etc.) for conversion from std::string to type returned by each @a parser.
+     * @param parser1, rest_parsers 1 or more functors which can take std::string and return value of some type,
+     *                  or throw excpetion in case of parsing error
      */
-    template <typename Functor>
-    void set(Functor parser) {
-        parsers[std::type_index(typeid((typename std::result_of<Functor(std::string)>::type*)0))] = parser;
+    template <typename Functor1, typename... Functors>
+    void set(Functor1 parser1, Functors... rest_parsers) {
+        parsers[std::type_index(typeid((typename std::result_of<Functor1(std::string)>::type*)0))] = parser1;
+        set(rest_parsers...);
     }
 
     /**
@@ -286,6 +303,12 @@ class XMLReader {
     /// Attributes which was read in current tag.
     std::set<std::string> read_attributes;
 
+public:
+    /// Parsers used to interpret string values.
+    StringInterpreter stringInterpreter;
+
+private:
+
     /// true if the reader should check if there are no spurious attributes in the current element
     bool check_if_all_attributes_were_read;
 
@@ -313,14 +336,13 @@ class XMLReader {
     /**
      * Parse @p str as bool.
      * @param str string which represent bool: "0", "1", "yes", "no", "true", "false" (case insensive)
-     * @param name name of data use in case of exception throwing
      * @return bool parsed from @p str
      */
-    bool strToBool(std::string& str, const std::string& name) const {
+    static bool strToBool(std::string str) {
         boost::algorithm::to_lower(str);
         if (str == "yes" || str == "true" || str == "1") return true;
         else if (str == "no" || str == "false" || str == "0") return false;
-        else throw XMLBadAttrException(*this, name, str);
+        else throw XMLException("\"" + str + "\" is not valid bool value.");
     }
 
     /**
@@ -334,8 +356,6 @@ class XMLReader {
 
   public:
 
-    StringInterpreter stringInterpreter;
-    
     /**
      * Throw exception which include information about current position in XML and typically describe logic error in XML file.
      * @param msg custom part of exception message
@@ -659,27 +679,6 @@ class XMLReader {
     void gotoEndOfCurrentTag();
 
 };
-
-
-template <>
-inline bool XMLReader::getAttribute<bool>(const std::string& name, const bool& default_value) const {
-    boost::optional<std::string> ostr = getAttribute(name);
-    if (ostr) return strToBool(*ostr, name); else return default_value;
-}
-
-template <>
-inline boost::optional<bool> XMLReader::getAttribute<bool>(const std::string& name) const {
-    boost::optional<std::string> ostr = getAttribute(name);
-    if (ostr) return boost::optional<bool>(strToBool(*ostr, name)); else return boost::optional<bool>();
-}
-
-template <>
-inline bool XMLReader::requireAttribute<bool>(const std::string& name) const {
-    boost::optional<bool> result = getAttribute<bool>(name);
-    if (!result) throw XMLNoAttrException(*this, name);
-    return *result;
-}
-
 
 }   // namespace plask
 

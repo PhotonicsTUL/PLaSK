@@ -101,25 +101,25 @@ void XMLReader::initParser() {
 }
 
 XMLReader::XMLReader(DataSource* source):
-    source(source), check_if_all_attributes_were_read(true)
+    source(source), stringInterpreter(&XMLReader::strToBool), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(std::istream *istream):
-    source(new StreamDataSource(istream)), check_if_all_attributes_were_read(true)
+    source(new StreamDataSource(istream)), stringInterpreter(&XMLReader::strToBool), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(const char* file_name):
-    source(new StreamDataSource(new std::ifstream(file_name))), check_if_all_attributes_were_read(true)
+    source(new StreamDataSource(new std::ifstream(file_name))), stringInterpreter(&XMLReader::strToBool), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(FILE* file):
-    source(new CFileDataSource(file)), check_if_all_attributes_were_read(true)
+    source(new CFileDataSource(file)), stringInterpreter(&XMLReader::strToBool), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
@@ -131,6 +131,7 @@ XMLReader::XMLReader(XMLReader &&to_move)
       parser(to_move.parser),
       path(std::move(to_move.path)),
       read_attributes(std::move(to_move.read_attributes)),
+      stringInterpreter(std::move(to_move.stringInterpreter)),
       check_if_all_attributes_were_read(to_move.check_if_all_attributes_were_read)
 {
     to_move.parser = 0;
@@ -155,6 +156,7 @@ void XMLReader::swap(XMLReader &to_swap)
     std::swap(parser, to_swap.parser);
     std::swap(path, to_swap.path);
     std::swap(read_attributes, to_swap.read_attributes);
+    std::swap(stringInterpreter, to_swap.stringInterpreter);
     std::swap(check_if_all_attributes_were_read, to_swap.check_if_all_attributes_were_read);
 }
 
