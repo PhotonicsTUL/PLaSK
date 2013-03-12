@@ -649,7 +649,7 @@ class SolverOver: public Solver {
     void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
 
     /**
-     * This method is called when calculation space (geometry) was changed.
+     * This method is called when the geometry is changed.
      * It just calls invalidate(); but subclasses can customize it.
      * @param evt information about geometry changes
      */
@@ -670,7 +670,7 @@ class SolverOver: public Solver {
      */
     void setGeometry(const shared_ptr<SpaceT>& geometry) {
         if (geometry == this->geometry) return;
-        writelog(LOG_INFO, "Attaching geometry to the solver");
+        writelog(LOG_INFO, "Attaching geometry to solver");
         diconnectGeometry();
         this->geometry = geometry;
         if (this->geometry)
@@ -687,17 +687,35 @@ class SolverWithMesh: public SolverOver<SpaceT> {
 
     shared_ptr<MeshGeneratorOf<MeshT>> mesh_generator;
 
-    void diconnectMesh() {
+    void disconnectMesh() {
         if (this->mesh)
             this->mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
     }
 
+    void clearGenerator() {
+        if (this->mesh_generator)
+            this->mesh_generator->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onGeneratorChange);
+        mesh_generator.reset();
+    }
+
     virtual void regenerateMesh() {
         if (this->mesh_generator && this->geometry) {
-            auto gen = mesh_generator; // setMesh will reset generator
-            setMesh((*mesh_generator)(this->geometry->getChild()));
-            mesh_generator = gen;
+            auto mesh = (*mesh_generator)(this->geometry->getChild());
+            if (mesh == this->mesh) return;
+            disconnectMesh();
+            this->mesh = mesh;
+            if (this->mesh)
+                this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+            onMeshChange(typename MeshT::Event(*mesh, 0));
         }
+    }
+
+    /**
+     * This method is called when the mesh generator is changed.
+     * @param evt information about mesh changes
+     */
+    void onGeneratorChange(const typename MeshGeneratorOf<MeshT>::Event& evt) {
+        regenerateMesh();
     }
 
   protected:
@@ -713,7 +731,8 @@ class SolverWithMesh: public SolverOver<SpaceT> {
     SolverWithMesh(const std::string& name="") : SolverOver<SpaceT>(name) {}
 
     ~SolverWithMesh() {
-        diconnectMesh();
+        disconnectMesh();
+        clearGenerator();
     }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager);
@@ -721,7 +740,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
     void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
 
     /**
-     * This method is called when mesh was changed.
+     * This method is called when the mesh is changed.
      * It just calls invalidate(); but subclasses can customize it.
      * @param evt information about mesh changes
      */
@@ -748,15 +767,14 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * @param mesh new mesh
      */
     void setMesh(const shared_ptr<MeshT>& mesh) {
-        mesh_generator.reset();
+        clearGenerator();
         if (mesh == this->mesh) return;
-        this->writelog(LOG_INFO, "Attaching mesh to the solver");
-        diconnectMesh();
+        this->writelog(LOG_INFO, "Attaching mesh to solver");
+        disconnectMesh();
         this->mesh = mesh;
         if (this->mesh)
             this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
-        typename MeshT::Event event (*mesh, 0);
-        onMeshChange(event);
+        onMeshChange(typename MeshT::Event(*mesh, 0));
     }
 
     /**
@@ -764,7 +782,11 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * \param generator mesh generator
      */
     void setMesh(const shared_ptr<MeshGeneratorOf<MeshT>>& generator) {
+        clearGenerator();
+        this->writelog(LOG_INFO, "Attaching mesh generator to solver");
         mesh_generator = generator;
+        if (mesh_generator)
+            mesh_generator->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onGeneratorChange);
         regenerateMesh();
     }
 };
@@ -821,7 +843,7 @@ void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader
             auto found = manager.generators.find(*name);
             if (found != manager.generators.end()) {
                 auto generator = dynamic_pointer_cast<MeshGeneratorOf<MeshT>>(found->second);
-                if (!generator) throw BadInput(this->getId(), "Mesh '%1%' of wrong type.", *name);
+                if (!generator) throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type.", *name);
                 this->setMesh(generator);
             } else
                 throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found.", *name);

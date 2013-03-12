@@ -11,7 +11,7 @@ mesh |= element mesh {
 	## mesh type
 	attribute type { "rectilinear2d" } &
 	element axis0 { rectilinear.axis.content }? &
-	element axis1 { rectilinear.axis.content }?	
+	element axis1 { rectilinear.axis.content }?
 }
 
 mesh |= element mesh {
@@ -19,8 +19,8 @@ mesh |= element mesh {
 	## mesh type
 	attribute type { "rectilinear3d" } &
 	element axis0 { rectilinear.axis.content }? &
-	element axis1 { rectilinear.axis.content }? &	
-	element axis2 { rectilinear.axis.content }? 
+	element axis1 { rectilinear.axis.content }? &
+	element axis2 { rectilinear.axis.content }?
 }
 
 generator |= element generator {
@@ -42,7 +42,7 @@ generator |= element generator {
 	element postdiv {
 		generator.rectilinear2d.divide.content
 	} ? &
-	element dont_limit_change { empty } ? &
+	element no-gradual { empty } ? &
 	element warnings {
 		attribute missing { xsd:boolean }? &
 		attribute multiple { xsd:boolean }? &

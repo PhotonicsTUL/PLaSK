@@ -126,13 +126,51 @@ class XMLReader {
          * Throws exception if can't read.
          * @param buff destination buffer
          * @param buf_size size of @p buff
-         * @return number of bytes read, less than @p buf_size only on end of data
+         * @return number of bytes read, less than @p buf_size only at the end of data
          */
         virtual std::size_t read(char* buff, std::size_t buf_size) = 0;
 
         /// Empty, virtual destructor.
         virtual ~DataSource() {}
     };
+
+    /// Allows to read XML from standard C++ input stream (std::istream).
+    struct StreamDataSource: public DataSource {
+
+        /// Stream to read from.
+        std::unique_ptr<std::istream> input;
+
+        /**
+        * @param input stream to read from
+        */
+        StreamDataSource(std::istream* input): input(input) {}
+
+        /**
+        * @param input stream to read from
+        */
+        StreamDataSource(std::unique_ptr<std::istream>&& input): input(std::move(input)) {}
+
+        std::size_t read(char* buff, std::size_t buf_size);
+
+    };
+
+    /// Allows to read XML from old C FILE.
+    struct CFileDataSource: public DataSource {
+
+        /// Stream to read from.
+        FILE* desc;
+
+        /**
+        * @param desc stream to read from
+        */
+        CFileDataSource(FILE* desc): desc(desc) {}
+
+        ~CFileDataSource() { fclose(desc); }
+
+        std::size_t read(char* buff, std::size_t buf_size);
+
+    };
+
 
     /// Enum attribute reader class
     template <typename EnumT>

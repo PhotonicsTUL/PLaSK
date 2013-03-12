@@ -43,15 +43,15 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             reader.requireTagEnd();
         } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
-            root.tolf_min = reader.getAttribute<double>("tolf_min", root.tolf_min);
-            root.tolf_max = reader.getAttribute<double>("tolf_max", root.tolf_max);
+            root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
+            root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
             root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
             root.maxiter = reader.getAttribute<int>("maxiter", root.maxstep);
             reader.requireTagEnd();
         } else if (param == "striperoot") {
             striperoot.tolx = reader.getAttribute<double>("tolx", striperoot.tolx);
-            striperoot.tolf_min = reader.getAttribute<double>("tolf_min", striperoot.tolf_min);
-            striperoot.tolf_max = reader.getAttribute<double>("tolf_max", striperoot.tolf_max);
+            striperoot.tolf_min = reader.getAttribute<double>("tolf-min", striperoot.tolf_min);
+            striperoot.tolf_max = reader.getAttribute<double>("tolf-max", striperoot.tolf_max);
             striperoot.maxstep = reader.getAttribute<double>("maxstep", striperoot.maxstep);
             striperoot.maxiter = reader.getAttribute<int>("maxiter", striperoot.maxiter);
             reader.requireTagEnd();

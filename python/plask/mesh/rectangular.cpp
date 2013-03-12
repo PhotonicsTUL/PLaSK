@@ -306,8 +306,7 @@ void RectilinearMesh2DDivideGenerator_setPreDivision(RectilinearMesh2DDivideGene
     } catch (py::error_already_set) {
         PyErr_Clear();
         try {
-            if (!PySequence_Check(division.ptr()) || py::len(division) != 2)
-                throw py::error_already_set();
+            if (py::len(division) != 2) throw py::error_already_set();
             self.setPreDivision(py::extract<size_t>(division[0]), py::extract<size_t>(division[1]));
         } catch (py::error_already_set) {
             throw TypeError("division must be either a single positive integer or a sequence of two positive integers");
@@ -326,8 +325,7 @@ void RectilinearMesh2DDivideGenerator_setPostDivision(RectilinearMesh2DDivideGen
     } catch (py::error_already_set) {
         PyErr_Clear();
         try {
-            if (!PySequence_Check(division.ptr()) || py::len(division) != 2)
-                throw py::error_already_set();
+            if (py::len(division) != 2) throw py::error_already_set();
             self.setPostDivision(py::extract<size_t>(division[0]), py::extract<size_t>(division[1]));
         } catch (py::error_already_set) {
             throw TypeError("division must be either a single positive integer or a sequence of two positive integers");
@@ -662,13 +660,13 @@ void register_mesh_rectangular()
         py::scope scope = rectilinear2d;
 
         py::class_<RectilinearMesh2DSimpleGenerator, shared_ptr<RectilinearMesh2DSimpleGenerator>,
-                py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("SimpleGenerator",
+                py::bases<MeshGeneratorOf<RectilinearMesh2D>>, boost::noncopyable>("SimpleGenerator",
             "Generator of Rectilinear2D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
 
         py::class_<RectilinearMesh2DDivideGenerator, shared_ptr<RectilinearMesh2DDivideGenerator>,
-                py::bases<MeshGeneratorOf<RectilinearMesh2D>>>("DivideGenerator",
+                py::bases<MeshGeneratorOf<RectilinearMesh2D>>, boost::noncopyable>("DivideGenerator",
             "Generator of Rectilinear2D mesh by simple division of the geometry.\n\n"
             "DivideGenerator(division=1)\n"
             "    create generator with initial division of all geometry objects", py::init<size_t>(py::arg("division")=1))
@@ -676,7 +674,7 @@ void register_mesh_rectangular()
                         "initial division of all geometry objects")
             .add_property("postdiv", &RectilinearMesh2DDivideGenerator_getPostDivision, &RectilinearMesh2DDivideGenerator_setPostDivision,
                         "final division of all geometry objects")
-            .def_readwrite("limit_change", &RectilinearMesh2DDivideGenerator::limit_change, "Limit maximum adjacent objects size change to the factor of two")
+            .add_property("gradual", &RectilinearMesh2DDivideGenerator::getGradual, &RectilinearMesh2DDivideGenerator::setGradual, "Limit maximum adjacent objects size change to the factor of two")
             .def_readwrite("warn_multiple", &RectilinearMesh2DDivideGenerator::warn_multiple, "Warn if refining path points to more than one object")
             .def_readwrite("warn_missing", &RectilinearMesh2DDivideGenerator::warn_missing, "Warn if refining path does not point to any object")
             .def_readwrite("warn_ouside", &RectilinearMesh2DDivideGenerator::warn_outside, "Warn if refining line is outside of its object")
@@ -715,7 +713,7 @@ void register_mesh_rectangular()
         py::scope scope = rectilinear3d;
 
         py::class_<RectilinearMesh3DSimpleGenerator, shared_ptr<RectilinearMesh3DSimpleGenerator>,
-                py::bases<MeshGeneratorOf<RectilinearMesh3D>>>("SimpleGenerator",
+                py::bases<MeshGeneratorOf<RectilinearMesh3D>>, boost::noncopyable>("SimpleGenerator",
             "Generator of Rectilinear3D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;

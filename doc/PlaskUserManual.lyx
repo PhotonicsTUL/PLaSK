@@ -5377,7 +5377,11 @@ material!split-off mass
 \begin_inset Formula $M_{so}$
 \end_inset
 
- [m_0] 
+ [
+\begin_inset Formula $m_{0}$
+\end_inset
+
+] 
 \begin_inset Newline newline
 \end_inset
 
@@ -5582,7 +5586,7 @@ T
 
 \family typewriter
 \series bold
-<nR_tensor>
+<nR-tensor>
 \family default
 \series default
  Anisotropic complex refractive index
@@ -15785,7 +15789,7 @@ Attributes
 \labelwidthstring 00.00.0000
 
 \family typewriter
-fem_method
+fem-method
 \family default
  
 \begin_inset ERT
@@ -15855,7 +15859,7 @@ Required relative accuracy.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-absolute_accuracy
+abs-accuracy
 \family default
  
 \begin_inset ERT
@@ -16395,7 +16399,7 @@ Tolerance on effective index.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-tolf_min
+tolf-min
 \family default
  
 \begin_inset ERT
@@ -16418,7 +16422,7 @@ Minimum value of the determinant sufficient to assume convergence.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-tolf_max
+tolf-max
 \family default
  
 \begin_inset ERT
@@ -16835,7 +16839,7 @@ tolx
 \labelwidthstring 00.00.0000
 
 \family typewriter
-tolf_min
+tolf-min
 \family default
  Minimum value of the determinant sufficient to assume convergence.
  (float [a.u.])
@@ -16845,7 +16849,7 @@ tolf_min
 \labelwidthstring 00.00.0000
 
 \family typewriter
-tolf_max
+tolf-max
 \family default
  Maximum value of the determinant required to assume convergence.
  (float [a.u.])

@@ -331,7 +331,51 @@ class RectangularMesh {};
 /** Base class for every mesh generator */
 class MeshGenerator {
   public:
+
+    /// Mesh generator event.
+    typedef EventWithSourceAndFlags<MeshGenerator> Event;
+
+    /// Changed signal, fired when space was changed.
+    boost::signals2::signal<void(Event&)> changed;
+
+    /**
+     * Connect a method to changed signal.
+     * @param obj, method slot to connect, object and it's method
+     * @param at specifies where the slot should be connected:
+     *  - boost::signals2::at_front indicates that the slot will be connected at the front of the list or group of slots
+     *  - boost::signals2::at_back (default) indicates that the slot will be connected at the back of the list or group of slots
+     */
+    template <typename ClassT, typename methodT>
+    void changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
+        changed.connect(boost::bind(method, obj, _1), at);
+    }
+
+    template <typename ClassT, typename methodT>
+    void changedDisconnectMethod(ClassT* obj, methodT method) {
+        changed.disconnect(boost::bind(method, obj, _1));
+    }
+
+    /**
+     * Call changed with this as event source.
+     * @param event_constructor_params_without_source parameters for event constructor (without first - source)
+     */
+    template<typename EventT = Event, typename ...Args>
+    void fireChanged(Args&&... event_constructor_params_without_source) {
+        EventT evt(*this, std::forward<Args>(event_constructor_params_without_source)...);
+        onChange(evt);
+        changed(evt);
+    }
+
     virtual ~MeshGenerator() {}
+
+  protected:
+
+    /**
+     * This method is called when the generator is changed
+     * \param evt triggering event
+     */
+    virtual void onChange(const Event& evt) {}
+
 };
 
 /** Base class for specific mesh generator */
@@ -340,6 +384,8 @@ class MeshGeneratorOf: public MeshGenerator
 {
   protected:
     WeakCache<GeometryObject, MeshT, CacheRemoveOnEachChange> cache;
+
+    void onChange(const Event& evt) { clearCache(); }
 
   public:
     // Type of generated mesh

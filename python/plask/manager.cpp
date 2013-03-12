@@ -1,4 +1,6 @@
 #include <boost/algorithm/string.hpp>
+#include <cstring>
+#include <fstream>
 
 #include "python_globals.h"
 #include "python_manager.h"
@@ -12,30 +14,46 @@
 
 namespace plask { namespace python {
 
-void PythonManager::read(py::object src) {
+struct XMLPythonDataSource: public XMLReader::DataSource {
+
+    py::object file;
+
+    XMLPythonDataSource(const py::object& file): file(file) {}
+
+    virtual size_t read(char* buff, size_t buf_size) {
+        py::object readobj = file.attr("read")(buf_size);
+        const char* data = py::extract<const char*>(readobj);
+        size_t len = strlen(data);
+        if (len > buf_size) throw CriticalException("Too much data read");
+        std::copy_n(data, len, buff);
+        return len;
+    }
+
+    /// Empty, virtual destructor.
+    virtual ~XMLPythonDataSource() {}
+};
+
+void PythonManager::load(py::object src)
+{
+    XMLReader::DataSource* source;
+
     std::string str;
     try {
         str = py::extract<std::string>(src);
+        if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) // str is not XML (a filename probably)
+            source = new XMLReader::StreamDataSource(new std::ifstream(str));
+        else
+            source = new XMLReader::StreamDataSource(new std::istringstream(str));
     } catch (py::error_already_set) {
         PyErr_Clear();
-#       if PY_VERSION_HEX < 0x03000000 && !defined(__MINGW32__)
-            if (!PyFile_Check(src.ptr())) throw TypeError("argument is neither string nor a proper file-like object");
-            PyFileObject* pfile = (PyFileObject*)src.ptr();
-            auto file = PyFile_AsFile(src.ptr());
-            PyFile_IncUseCount(pfile);
-            loadFromFILE(file);
-            PyFile_DecUseCount(pfile);
-#       else
-            // TODO choose better solution if XML parser is changed from irrXML to something more robust
-            if (!PyObject_HasAttrString(src.ptr(),"read")) throw TypeError("argument is neither string nor a proper file-like object");
-            loadFromXMLString(py::extract<std::string>(src.attr("read")()));
-#       endif
-        return;
+        if (!PyObject_HasAttrString(src.ptr(),"read")) throw TypeError("argument is neither string nor a proper file-like object");
+        source = new XMLPythonDataSource(src);
     }
-    if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) // str is not XML (a filename probably)
-        loadFromFile(str, *materialsDB);
-    else
-        loadFromXMLString(str, *materialsDB);
+    XMLReader reader(source);
+
+    //TODO: add parsing variables
+
+    loadFromReader(reader);
 }
 
 shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) {
@@ -337,7 +355,7 @@ void register_manager() {
         "GeometryReader(materials=None)\n"
         "    Create manager with specified material database (if None, use default database)\n\n",
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
-        .def("load", &PythonManager::read, "Load data from source (can be a filename, file, or an XML string to read)", py::arg("source"))
+        .def("load", &PythonManager::load, "Load data from source (can be a filename, file, or an XML string to read)", py::arg("source"))
         .def_readonly("objects", &PythonManager::namedObjects, "Dictionary of all named geometry objects")
         .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
         .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")

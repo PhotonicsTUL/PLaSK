@@ -5,52 +5,21 @@
 
 namespace plask {
 
-/// Allow to read XML from standard C++ input stream (std::istream).
-struct StreamDataSource: public XMLReader::DataSource {
+std::size_t XMLReader::StreamDataSource::read(char* buff, std::size_t buf_size) {
+    input->read(buff, buf_size);
+    if (input->bad())
+        throw XMLException("XML reader: Can't read input data from C++ stream.");
+    return input->gcount();
+}
 
-    /// Stream to read from.
-    std::unique_ptr<std::istream> input;
-
-    /**
-     * @param input stream to read from
-     */
-    StreamDataSource(std::istream* input): input(input) {}
-
-    /**
-     * @param input stream to read from
-     */
-    StreamDataSource(std::unique_ptr<std::istream>&& input): input(std::move(input)) {}
-
-    std::size_t read(char* buff, std::size_t buf_size) {
-        input->read(buff, buf_size);
-        if (input->bad())
-            throw XMLException("XML reader: Can't read input data from C++ stream.");
-        return input->gcount();
+std::size_t XMLReader::CFileDataSource::read(char* buff, std::size_t buf_size) {
+    std::size_t read = fread(buff, sizeof(char), buf_size, desc);
+    if (read != buf_size && ferror(desc)) {
+        throw XMLException("XML reader: Can't read input data from C file.");
     }
+    return read;
+}
 
-};
-
-struct CFileDataSource: public XMLReader::DataSource {
-
-    /// Stream to read from.
-    FILE* desc;
-
-    /**
-     * @param desc stream to read from
-     */
-    CFileDataSource(FILE* desc): desc(desc) {}
-
-    ~CFileDataSource() { fclose(desc); }
-
-    std::size_t read(char* buff, std::size_t buf_size) {
-        std::size_t read = fread(buff, sizeof(char), buf_size, desc);
-        if (read != buf_size && ferror(desc)) {
-            throw XMLException("XML reader: Can't read input data from C file.");
-        }
-        return read;
-    }
-
-};
 
 void XMLReader::startTag(void *data, const char *element, const char **attribute) {
     State& state = reinterpret_cast<XMLReader*>(data)->appendState(NODE_ELEMENT, element);

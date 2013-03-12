@@ -239,7 +239,9 @@ BOOST_PYTHON_MODULE(_plask)
     scope.attr("version_minor") = PLASK_VERSION_MINOR;
 
     // Set global namespace for materials
-    plask::python::xml_globals = py::dict(scope.attr("__dict__")).copy();
+    py::object numpy = py::import("numpy");
+    plask::python::xml_globals = py::dict(numpy.attr("__dict__")).copy();
+    plask::python::xml_globals.update(scope.attr("__dict__"));
     plask::python::xml_globals["plask"] = scope;
 
     scope.attr("prefix") = plask::prefixPath();

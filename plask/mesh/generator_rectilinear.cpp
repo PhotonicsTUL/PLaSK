@@ -105,7 +105,7 @@ RectilinearMesh1D RectilinearMesh2DDivideGenerator::get1DMesh(const RectilinearM
     if (result.size() <= 2) return result;
 
     // Now ensure, that the grids do not change to quickly
-    if (limit_change) {
+    if (gradual) {
         size_t end = result.size()-2;
         double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
         for (size_t i = 0; i <= end;) {
@@ -211,8 +211,8 @@ static shared_ptr<MeshGenerator> readRectilinearMesh2DDivideGenerator(XMLReader&
             } else
                 result->setPostDivision(reader.getAttribute<size_t>("by0", 1), reader.getAttribute<size_t>("by1", 1));
             reader.requireTagEnd();
-        } else if (reader.getNodeName() == "dont_limit_change") {
-            result->limit_change = false;
+        } else if (reader.getNodeName() == "no-gradual") {
+            result->setGradual(false);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "warnings") {
             result->warn_missing = reader.getAttribute<bool>("missing", true);

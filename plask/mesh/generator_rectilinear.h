@@ -54,6 +54,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     size_t pre_divisions[2];
     size_t post_divisions[2];
+    bool gradual;
 
     typedef std::map<std::pair<weak_ptr<const GeometryObjectD<2>>,PathHints>, std::set<double>> Refinements;
 
@@ -63,7 +64,6 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
   public:
 
-    bool limit_change;  ///< Limit the change of size of adjacent objects to the factor of two
     bool warn_multiple, ///< Warn if a single refinement points to more than one object.
          warn_missing,     ///< Warn if a defined refinement points to object absent from provided geometry.
          warn_outside;  ///< Warn if a defined refinement takes place outside of the pointed object.
@@ -76,7 +76,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param postdiv1 Final mesh division in vertical direction (0 means the same as horizontal)
     **/
     RectilinearMesh2DDivideGenerator(size_t prediv0=1, size_t postdiv0=1, size_t prediv1=0, size_t postdiv1=0) :
-        limit_change(true), warn_multiple(true), warn_missing(true), warn_outside(true)
+        gradual(true), warn_multiple(true), warn_missing(true), warn_outside(true)
     {
         pre_divisions[0] = prediv0;
         pre_divisions[1] = prediv1? prediv1 : prediv0;
@@ -93,7 +93,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
     inline void setPreDivision(size_t div0, size_t div1=0) {
         pre_divisions[0] = div0;
         pre_divisions[1] = div1? div1 : div0;
-        clearCache();
+        fireChanged();
     }
 
     /// Get final division of the smallest object in the mesh
@@ -103,8 +103,18 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
     inline void setPostDivision(size_t div0, size_t div1=0) {
         post_divisions[0] = div0;
         post_divisions[1] = div1? div1 : div0;
-        clearCache();
+        fireChanged();
     }
+
+    /// \return true if the adjacent mesh elements cannot differ more than twice in size along each axis
+    bool getGradual() const { return gradual; }
+
+    /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
+    void setGradual(bool value) {
+        gradual = value;
+        fireChanged();
+    }
+
 
     /// \return map of refinements
     /// \param direction direction of the refinements
@@ -122,7 +132,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
     void addRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
         auto key = std::make_pair(object, path);
         refinements[std::size_t(direction)][key].insert(position);
-        clearCache();
+        fireChanged();
     }
 
     /**
@@ -171,7 +181,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
         if (oposition == ref->second.end()) throw BadInput("RectilinearMesh2DDivideGenerator", "Specified geometry object does not have refinements at %1%.", *oposition);
         ref->second.erase(oposition);
         if (ref->second.empty()) refinements[std::size_t(direction)].erase(ref);
-        clearCache();
+        fireChanged();
     }
 
     /**
@@ -219,7 +229,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
         else {
             if (ref0 != refinements[0].end()) refinements[0].erase(ref0);
             if (ref1 != refinements[1].end()) refinements[1].erase(ref1);
-            clearCache();
+            fireChanged();
         }
     }
 
@@ -229,7 +239,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
     void clearRefinements() {
         refinements[0].clear();
         refinements[1].clear();
-        clearCache();
+        fireChanged();
     }
 
     /**

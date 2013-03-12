@@ -299,7 +299,7 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         COMPILE_PYTHON_MATERIAL_FUNCTION(nr)
         COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
         COMPILE_PYTHON_MATERIAL_FUNCTION(nR)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(nR_tensor)
+        COMPILE_PYTHON_MATERIAL_FUNCTION2("nR-tensor", nR_tensor)
         else throw XMLUnexpectedElementException(reader, "material parameter tag");
     }
 
