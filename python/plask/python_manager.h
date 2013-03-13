@@ -17,8 +17,6 @@ struct PythonManager: public Manager {
 
     virtual ~PythonManager() {}
 
-    void load(py::object src);
-
     virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name);
 
     virtual void loadConnects(XMLReader& reader);

@@ -34,8 +34,8 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
         std::string param = reader.getNodeName();
         if (param == "mode") {
             m = reader.getAttribute<unsigned short>("m", m);
-            auto alam0 = reader.getAttribute<unsigned short>("lam0");
-            auto ak0 = reader.getAttribute<unsigned short>("k0");
+            auto alam0 = reader.getAttribute<double>("lam0");
+            auto ak0 = reader.getAttribute<double>("k0");
             if (alam0) {
                 if (ak0) throw XMLConflictingAttributesException(reader, "k0", "lam0");
                 k0 = 2e3*M_PI / *alam0;

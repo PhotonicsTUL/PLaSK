@@ -14,6 +14,8 @@
 
 namespace plask { namespace python {
 
+extern py::dict xml_globals;
+
 struct XMLPythonDataSource: public XMLReader::DataSource {
 
     py::object file;
@@ -33,8 +35,13 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
     virtual ~XMLPythonDataSource() {}
 };
 
-void PythonManager::load(py::object src)
+/**
+ * Load data from XML
+ */
+void PythonManager_load(py::object self, py::object src, py::dict vars)
 {
+    PythonManager* manager = py::extract<PythonManager*>(self);
+
     XMLReader::DataSource* source;
 
     std::string str;
@@ -51,9 +58,39 @@ void PythonManager::load(py::object src)
     }
     XMLReader reader(source);
 
-    //TODO: add parsing variables
+    // Variables
+    py::dict locals = vars.copy();
+    if (!vars.has_key("self")) locals["self"] = self;
 
-    loadFromReader(reader);
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> double { return py::extract<double>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> dcomplex { return py::extract<dcomplex>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> size_t { return py::extract<size_t>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> int { return py::extract<int>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> short { return py::extract<short>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> long { return py::extract<long>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> unsigned int { return py::extract<unsigned int>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> unsigned short { return py::extract<unsigned short>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+    reader.stringInterpreter.set(
+        [&](const std::string& str) -> unsigned long { return py::extract<unsigned long>(py::eval(py::str(str), xml_globals, locals)); }
+    );
+
+    manager->loadFromReader(reader);
 }
 
 shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) {
@@ -355,7 +392,8 @@ void register_manager() {
         "GeometryReader(materials=None)\n"
         "    Create manager with specified material database (if None, use default database)\n\n",
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
-        .def("load", &PythonManager::load, "Load data from source (can be a filename, file, or an XML string to read)", py::arg("source"))
+        .def("load", &PythonManager_load, "Load data from source (can be a filename, file, or an XML string to read)",
+             (py::arg("source"), py::arg("vars")=py::dict()))
         .def_readonly("objects", &PythonManager::namedObjects, "Dictionary of all named geometry objects")
         .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
         .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")

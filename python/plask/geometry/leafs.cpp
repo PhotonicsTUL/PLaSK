@@ -30,9 +30,6 @@ static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, shar
 }
 
 
-
-
-
 void register_geometry_leafs()
 {
     py::scope scope;
@@ -47,8 +44,8 @@ void register_geometry_leafs()
         py::no_init
         ); block2D
         .def("__init__", py::make_constructor(&Rectangle_constructor_wh, py::default_call_policies(), (py::arg("width"), py::arg("height"), py::arg("material"))))
-        .def("__init__", py::make_constructor(&Rectangle_constructor_vec, py::default_call_policies(), (py::arg("dimensions"), py::arg("material"))))
-        .add_property("dimensions", py::make_getter(&Block<2>::size, py::return_value_policy<py::return_by_value>()), (void(Block<2>::*)(const Vec<2>&))&Block<2>::setSize, "Dimensions of the rectangle")
+        .def("__init__", py::make_constructor(&Rectangle_constructor_vec, py::default_call_policies(), (py::arg("dims"), py::arg("material"))))
+        .add_property("dims", py::make_getter(&Block<2>::size, py::return_value_policy<py::return_by_value>()), (void(Block<2>::*)(const Vec<2>&))&Block<2>::setSize, "Dimensions of the rectangle")
     ;
     scope.attr("Block2D") = block2D;
 
@@ -59,8 +56,8 @@ void register_geometry_leafs()
         py::no_init
         ); block3D
         .def("__init__", py::make_constructor(&Cuboid_constructor_dwh, py::default_call_policies(), (py::arg("depth"), py::arg("width"), py::arg("height"), py::arg("material"))))
-        .def("__init__", py::make_constructor(&Cuboid_constructor_vec, py::default_call_policies(), (py::arg("dimensions"), py::arg("material"))))
-        .add_property("dimensions", py::make_getter(&Block<3>::size, py::return_value_policy<py::return_by_value>()), (void(Block<3>::*)(const Vec<3>&))&Block<3>::setSize, "Dimensions of the rectangle")
+        .def("__init__", py::make_constructor(&Cuboid_constructor_vec, py::default_call_policies(), (py::arg("dims"), py::arg("material"))))
+        .add_property("dims", py::make_getter(&Block<3>::size, py::return_value_policy<py::return_by_value>()), (void(Block<3>::*)(const Vec<3>&))&Block<3>::setSize, "Dimensions of the rectangle")
     ;
     scope.attr("Block3D") = block3D;
 

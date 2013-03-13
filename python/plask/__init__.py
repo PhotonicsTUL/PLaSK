@@ -116,8 +116,9 @@ del Stack3D
 
 ## ## plask.manager ## ##
 
-def load_xpl(source, destination=None):
+def loadxpl(source, vars={}, destination=None):
     #TODO documentation
+
     if destination is None:
         try:
             destination = __globals
@@ -129,23 +130,23 @@ def load_xpl(source, destination=None):
     except KeyError:
         manager = Manager()
         destination['__manager__'] = manager
-    manager.load(source)
+    manager.load(source, vars)
     manager.export(destination)
     material.update_factories() # There might have been some materials in the source file
     # Set default axes if all loaded geometries share the same
     lst = [ manager.geometries[g].axes for g in manager.geometries ]
     same = lst and lst.count(lst[0]) == len(lst)
     if same: config.axes = lst[0]
-loadxpl = load_xpl
 
-def run_xpl(source):
+def runxpl(source, vars={}):
     '''Load and run the code from the XPL file.
 
        'source' is the name of the XPL file or open file object.
+       'vars' is the optional dictionary with substitution variables
     '''
     env = globals().copy()
     env['plask'] = _sys.modules["plask"]
-    load_xpl(source, env)
+    loadxpl(source, env)
     if type(source) == str:
         filename = source
     else:
@@ -157,7 +158,6 @@ def run_xpl(source):
     except Exception as exc:
         ety, eva, etb = _sys.exc_info()
         _print_exception(ety, eva, etb, env['__manager__'].scriptline, filename, True)
-runxpl = run_xpl
 
 
 ## ##  ## ##
