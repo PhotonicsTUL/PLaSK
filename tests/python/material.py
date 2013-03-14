@@ -17,7 +17,7 @@ class Material(unittest.TestCase):
             ptest.print_ptr(self)
         def __del__(self):
             ptest.print_ptr(self)
-        def VBO(self, T=300.):
+        def VBO(self, T=300., eps=0., point='G'):
             return 2.*T
         def nr(self, wl, T):
             return 3.5
@@ -36,22 +36,21 @@ class Material(unittest.TestCase):
             print(self.composition)
         def __del__(self):
             ptest.print_ptr(self)
-        def VBO(self, T=300.):
+        def VBO(self, T=300., eps=0., point='G'):
             return self.kwargs['dc'] * T
-        def CBO(self, T=300.):
+        def CBO(self, T=300., eps=0., point='G'):
             return self.composition['Ga'] * T
         def nR_tensor(self, wl, T):
             return (3.5, 3.6, 3.7, 0.1, 0.2)
 
     @plask.material.simple
     class WithChar(plask.material.Material):
-        def chi(self, T, p):
+        def chi(self, T, e, p):
             print("WithChar: %s" % p)
             return 1.5
 
     def setUp(self):
         ptest.add_my_material(plask.materialdb)
-
 
     def testMaterial(self):
         '''Test basic behavior of Material class'''

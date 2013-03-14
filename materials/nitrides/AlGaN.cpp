@@ -32,7 +32,7 @@ MI_PROPERTY(AlGaN, absp,
             MIComment("no temperature dependence")
             )
 double AlGaN::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - Eg(T,'G');
+    double a = 1239.84190820754/wl - Eg(T,0,'G');
     return 19000*exp(a/0.019) + 330*exp(a/0.07);
 }
 
@@ -55,7 +55,7 @@ MI_PROPERTY(AlGaN, Eg,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double AlGaN::Eg(double T, char point) const {
+double AlGaN::Eg(double T, double eps, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = 6.28*Al + 3.42*Ga - 0.7*Al*Ga;
     return (tEg);

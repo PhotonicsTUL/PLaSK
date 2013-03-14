@@ -24,7 +24,7 @@ MI_PROPERTY(AlN, absp,
             MIComment("no temperature dependence")
             )
 double AlN::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - Eg(T,'G');
+    double a = 1239.84190820754/wl - Eg(T,0.,'G');
     return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
 }
 
@@ -53,7 +53,7 @@ MI_PROPERTY(AlN, Eg,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double AlN::Eg(double T, char point) const {
+double AlN::Eg(double T, double eps, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = 6.28;
     return (tEg);
@@ -64,7 +64,7 @@ MI_PROPERTY(AlN, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlN::Me(double T, char point) const {
+Tensor2<double> AlN::Me(double T, double eps, char point) const {
     Tensor2<double> tMe(0.,0.);
     if (point == 'G') {
         tMe.c00 = 0.30;

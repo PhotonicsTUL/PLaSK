@@ -111,25 +111,34 @@ class PythonEvalMaterial : public Material
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         return call<rtype>(cls->fun, locals);
 
+#   define PYTHON_EVAL_CALL_3(rtype, fun, arg1, arg2, arg3) \
+        if (cls->fun == NULL) return base->fun(arg1, arg2); \
+        py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
+        locals[BOOST_PP_STRINGIZE(arg3)] = arg3; \
+        return call<rtype>(cls->fun, locals);
+
     virtual double lattC(double T, char x) const { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
-    virtual double Eg(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Eg, T, Point) }
-    virtual double CBO(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, CBO, T, Point) }
-    virtual double VBO(double T) const { PYTHON_EVAL_CALL_1(double, VBO, T) }
-    virtual double Dso(double T) const { PYTHON_EVAL_CALL_1(double, Dso, T) }
-    virtual double Mso(double T) const { PYTHON_EVAL_CALL_1(double, Mso, T) }
-    virtual Tensor2<double> Me(double T, const char Point) const { PYTHON_EVAL_CALL_2(Tensor2<double>, Me, T, Point) }
-    virtual Tensor2<double> Mhh(double T, const char Point) const { PYTHON_EVAL_CALL_2(Tensor2<double>, Mhh, T, Point) }
-    virtual Tensor2<double> Mlh(double T, const char Point) const { PYTHON_EVAL_CALL_2(Tensor2<double>, Mlh, T, Point) }
-    virtual Tensor2<double> Mh(double T, char EqType) const { PYTHON_EVAL_CALL_2(Tensor2<double>, Mh, T, EqType) }
+    virtual double Eg(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, Eg, T, eps, point) }
+    virtual double CBO(double T, double eps, char point) const {
+        try { PYTHON_EVAL_CALL_3(double, CBO, T, eps, point) }
+        catch (NotImplemented) { return VBO(T, eps, point) + Eg(T, eps, point); }
+    }
+    virtual double VBO(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, CBO, T, eps, point) }
+    virtual double Dso(double T, double eps) const { PYTHON_EVAL_CALL_2(double, Dso, T, eps) }
+    virtual double Mso(double T, double eps) const { PYTHON_EVAL_CALL_2(double, Mso, T, eps) }
+    virtual Tensor2<double> Me(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Me, T, eps, point) }
+    virtual Tensor2<double> Mhh(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mhh, T, eps, point) }
+    virtual Tensor2<double> Mlh(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mlh, T, eps, point) }
+    virtual Tensor2<double> Mh(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mh, T, eps, point) }
     virtual double ac(double T) const { PYTHON_EVAL_CALL_1(double, ac, T) }
     virtual double av(double T) const { PYTHON_EVAL_CALL_1(double, av, T) }
     virtual double b(double T) const { PYTHON_EVAL_CALL_1(double, b, T) }
     virtual double c11(double T) const { PYTHON_EVAL_CALL_1(double, c11, T) }
     virtual double c12(double T) const { PYTHON_EVAL_CALL_1(double, c12, T) }
     virtual double eps(double T) const { PYTHON_EVAL_CALL_1(double, eps, T) }
-    virtual double chi(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, chi, T, Point) }
-    virtual double Nc(double T, const char Point) const { PYTHON_EVAL_CALL_2(double, Nc, T, Point) }
-    virtual double Nv(double T) const { PYTHON_EVAL_CALL_1(double, Nv, T) }
+    virtual double chi(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, chi, T, eps, point) }
+    virtual double Nc(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, Nc, T, eps, point) }
+    virtual double Nv(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, Nv, T, eps, point) }
     virtual double Ni(double T) const { PYTHON_EVAL_CALL_1(double, Ni, T) }
     virtual double Nf(double T) const { PYTHON_EVAL_CALL_1(double, Nf, T) }
     virtual double EactD(double T) const { PYTHON_EVAL_CALL_1(double, EactD, T) }
@@ -140,11 +149,8 @@ class PythonEvalMaterial : public Material
     virtual double B(double T) const { PYTHON_EVAL_CALL_1(double, B, T) }
     virtual double C(double T) const { PYTHON_EVAL_CALL_1(double, C, T) }
     virtual double D(double T) const {
-        try {
-            PYTHON_EVAL_CALL_1(double, D, T)
-        } catch (NotImplemented) {
-            return mob(T).c00 * T * 8.6173423e-5;  // D = µ kB T / e
-        }
+        try { PYTHON_EVAL_CALL_1(double, D, T) }
+        catch (NotImplemented) { return mob(T).c00 * T * 8.6173423e-5; } // D = µ kB T / e
     }
     virtual Tensor2<double> thermk(double T, double h)  const { PYTHON_EVAL_CALL_2(Tensor2<double>, thermk, T, h) }
     virtual double dens(double T) const { PYTHON_EVAL_CALL_1(double, dens, T) }

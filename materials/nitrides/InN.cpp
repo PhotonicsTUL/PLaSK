@@ -32,7 +32,7 @@ MI_PROPERTY(InN, Eg,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double InN::Eg(double T, char point) const {
+double InN::Eg(double T, double eps, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = 0.77;
     return (tEg);
@@ -43,7 +43,7 @@ MI_PROPERTY(InN, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> InN::Me(double T, char point) const {
+Tensor2<double> InN::Me(double T, double eps, char point) const {
     Tensor2<double> tMe(0.,0.);
     if (point == 'G') {
         tMe.c00 = 0.065;
@@ -55,7 +55,7 @@ Tensor2<double> InN::Me(double T, char point) const {
 MI_PROPERTY(InN, Mhh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-Tensor2<double> InN::Mhh(double T, char point) const {
+Tensor2<double> InN::Mhh(double T, double eps, char point) const {
     Tensor2<double> tMhh(0.,0.);
     if (point == 'G') {
         tMhh.c00 = 1.8116;
@@ -67,7 +67,7 @@ Tensor2<double> InN::Mhh(double T, char point) const {
 MI_PROPERTY(InN, Mlh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-Tensor2<double> InN::Mlh(double T, char point) const {
+Tensor2<double> InN::Mlh(double T, double eps, char point) const {
     Tensor2<double> tMlh(0.,0.);
     if (point == 'G') {
         tMlh.c00 = 1.8116;

@@ -270,71 +270,80 @@ struct Material {
     /**
      * Get energy gap Eg [eV]
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @param point point in the Brillouin zone [-]
      * @return energy gap Eg [eV]
      */
-    virtual double Eg(double T, char point='G') const;
+    virtual double Eg(double T, double eps=0., char point='G') const;
 
     /**
      * Get conduction band offset CBO [eV].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @param point point in the Brillouin zone [-]
      * @return conduction band offset CBO [eV]
      */
-    virtual double CBO(double T, char point='G') const;
+    virtual double CBO(double T, double eps=0., char point='G') const;
 
     /**
      * Get valence band offset VBO[eV].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @return valence band offset VBO[eV]
      */
-    virtual double VBO(double T) const;
+    virtual double VBO(double T, double eps=0., char point='G') const;
 
     /**
      * Get split-off energy Dso [eV].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @return split-off energy Dso [eV]
      */
-    virtual double Dso(double T) const;
+    virtual double Dso(double T, double eps=0.) const;
 
     /**
      * Get split-off mass Mso [\f$m_0\f$].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @return split-off mass Mso [\f$m_0\f$]
      */
-    virtual double Mso(double T) const;
+    virtual double Mso(double T, double eps=0.) const;
 
     /**
      * Get electron effective mass Me in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @param point point in Brillouin zone [-]
      * @return electron effective mass Me [\f$m_0\f$]
      */
-    virtual Tensor2<double> Me(double T, char point='G') const;
+    virtual Tensor2<double> Me(double T, double eps=0., char point='G') const;
 
     /**
      * Get heavy hole effective mass Mhh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @param point point in Brillouin zone [-]
      * @return heavy hole effective mass Mhh [\f$m_0\f$]
      */
-    virtual Tensor2<double> Mhh(double T, char point='G') const;
+    virtual Tensor2<double> Mhh(double T, double eps=0., char point='G') const;
 
     /**
      * Get light hole effective mass Mlh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @param point point in Brillouin zone [-]
      * @return light hole effective mass Mlh [\f$m_0\f$]
      */
-    virtual Tensor2<double> Mlh(double T, char point='G') const;
+    virtual Tensor2<double> Mlh(double T, double eps=0., char point='G') const;
 
     /**
      * Get hole effective mass Mh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
-     * @param EqType equation type [-]
+     * @param eps lateral strain [-]
+     * @param point point in Brillouin zone [-]
      * @return hole effective mass Mh [\f$m_0\f$]
      */
-    virtual Tensor2<double> Mh(double T, char EqType) const;
+    virtual Tensor2<double> Mh(double T, double eps=0., char point='s') const;
 
     /**
      * Get hydrostatic deformation potential for the conduction band ac [eV].
@@ -381,29 +390,33 @@ struct Material {
     /**
      * Get electron affinity Chi[eV].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @param point point in Brillouin zone [-]
      * @return electron affinity Chi [eV]
      */
-    virtual double chi(double T, char point='G') const;
+    virtual double chi(double T, double eps=0., char point='G') const;
 
     /**
      * Get effective density of states in the conduction band Nc [cm^(-3)].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @param point point in Brillouin zone [-]
      * @return effective density of states in the conduction band Nc [cm^(-3)]
      */
-    virtual double Nc(double T, char point='G') const;
+    virtual double Nc(double T, double eps=0., char point='G') const;
 
     /**
      * Get effective density of states in the valance band Nv [cm^(-3)].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @return effective density of states in the valance band Nv [cm^(-3)]
      */
-    virtual double Nv(double T) const;
+    virtual double Nv(double T, double eps=0., char point='G') const;
 
     /**
      * Get intrinsic carrier concentration Ni [cm^(-3)].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @return intrinsic carrier concentration Ni [cm^(-3)]
      */
     virtual double Ni(double T) const;
@@ -411,6 +424,7 @@ struct Material {
     /**
      * Get free carrier concentration N [cm^(-3)].
      * @param T temperature [K]
+     * @param eps lateral strain [-]
      * @return free carrier concentration N [cm^(-3)]
      */
     virtual double Nf(double T) const;
@@ -672,23 +686,23 @@ struct MixedMaterial: public Material {
 
     virtual double lattC(double T, char x) const;
 
-    virtual double Eg(double T, char point='G') const;
+    virtual double Eg(double T, double eps=0., char point='G') const;
 
-    virtual double CBO(double T, char point='G') const;
+    virtual double CBO(double T, double eps=0., char point='G') const;
 
-    virtual double VBO(double T) const;
+    virtual double VBO(double T, double eps=0., char point='G') const;
 
-    virtual double Dso(double T) const;
+    virtual double Dso(double T, double eps=0.) const;
 
-    virtual double Mso(double T) const;
+    virtual double Mso(double T, double eps=0.) const;
 
-    virtual Tensor2<double> Me(double T, char point='G') const;
+    virtual Tensor2<double> Me(double T, double eps=0., char point='G') const;
 
-    virtual Tensor2<double> Mhh(double T, char point='G') const;
+    virtual Tensor2<double> Mhh(double T, double eps=0., char point='G') const;
 
-    virtual Tensor2<double> Mlh(double T, char point='G') const;
+    virtual Tensor2<double> Mlh(double T, double eps=0., char point='G') const;
 
-    virtual Tensor2<double> Mh(double T, char EqType) const;
+    virtual Tensor2<double> Mh(double T, double eps=0., char point='G') const;
 
     virtual double ac(double T) const;
 
@@ -702,15 +716,15 @@ struct MixedMaterial: public Material {
 
     virtual double eps(double T) const;
 
-    virtual double chi(double T, char point='G') const;
+    virtual double chi(double T, double eps=0., char point='G') const;
 
-    virtual double Nc(double T, char point='G') const;
+    virtual double Nc(double T, double eps=0., char point='G') const;
 
-    virtual double Nv(double T) const;
+    virtual double Nv(double T, double eps=0., char point='G') const;
 
-    virtual double Ni(double T) const;
+    virtual double Ni(double T=0.) const;
 
-    virtual double Nf(double T) const;
+    virtual double Nf(double T=0.) const;
 
     virtual double EactD(double T) const;
 

@@ -32,7 +32,7 @@ MI_PROPERTY(InGaN, absp,
             MIComment("no temperature dependence")
             )
 double InGaN::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - Eg(T,'G');
+    double a = 1239.84190820754/wl - Eg(T, 0, 'G');
     return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
 }
 
@@ -53,7 +53,7 @@ MI_PROPERTY(InGaN, Eg,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double InGaN::Eg(double T, char point) const {
+double InGaN::Eg(double T, double eps, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = 0.77*In + 3.42*Ga - 1.43*In*Ga;
     return (tEg);

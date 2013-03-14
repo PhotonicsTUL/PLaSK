@@ -213,24 +213,27 @@ class PythonMaterial : public Material
 
     virtual Material::Kind kind() const { return attr<Material::Kind>("kind"); }
     virtual double lattC(double T, char x) const { return override<double>("lattC", &Material::lattC, T, x); }
-    virtual double Eg(double T, const char Point) const { return override<double>("Eg", &Material::Eg, T, Point); }
-    virtual double CBO(double T, const char Point) const { return override<double>("CBO", &Material::CBO, T, Point); }
-    virtual double VBO(double T) const { return override<double>("VBO", &Material::VBO, T); }
-    virtual double Dso(double T) const { return override<double>("Dso", &Material::Dso, T); }
-    virtual double Mso(double T) const { return override<double>("Mso", &Material::Mso, T); }
-    virtual Tensor2<double> Me(double T, const char Point) const { return override<Tensor2<double>>("Me", &Material::Me, T, Point); }
-    virtual Tensor2<double> Mhh(double T, const char Point) const { return override<Tensor2<double>>("Mhh", &Material::Mhh, T, Point); }
-    virtual Tensor2<double> Mlh(double T, const char Point) const { return override<Tensor2<double>>("Mlh", &Material::Mlh, T, Point); }
-    virtual Tensor2<double> Mh(double T, char EqType) const { return override<Tensor2<double>>("Mh", &Material::Mh, T, EqType); }
-    virtual double ac(double T) const { return override<double>("ac", &Material::Mso, T); }
-    virtual double av(double T) const { return override<double>("av", &Material::Mso, T); }
-    virtual double b(double T) const { return override<double>("b", &Material::Mso, T); }
-    virtual double c11(double T) const { return override<double>("c11", &Material::Mso, T); }
-    virtual double c12(double T) const {return override<double>("c12", &Material::Mso, T); }
+    virtual double Eg(double T, double eps, char point) const { return override<double>("Eg", &Material::Eg, T, eps, point); }
+    virtual double CBO(double T, double eps, char point) const {
+        try { return override<double>("CBO", &Material::CBO, T, eps, point); }
+        catch (NotImplemented) { return VBO(T, eps, point) + Eg(T, eps, point); }  // D = µ kB T / e
+    }
+    virtual double VBO(double T, double eps, char point) const { return override<double>("VBO", &Material::VBO, T, eps, point); }
+    virtual double Dso(double T, double eps) const { return override<double>("Dso", &Material::Dso, T, eps); }
+    virtual double Mso(double T, double eps) const { return override<double>("Mso", &Material::Mso, T, eps); }
+    virtual Tensor2<double> Me(double T, double eps, char point) const { return override<Tensor2<double>>("Me", &Material::Me, T, eps, point); }
+    virtual Tensor2<double> Mhh(double T, double eps, char point) const { return override<Tensor2<double>>("Mhh", &Material::Mhh, T, eps, point); }
+    virtual Tensor2<double> Mlh(double T, double eps, char point) const { return override<Tensor2<double>>("Mlh", &Material::Mlh, T, eps, point); }
+    virtual Tensor2<double> Mh(double T, double eps, char point) const { return override<Tensor2<double>>("Mh", &Material::Mh, T, eps, point); }
+    virtual double ac(double T) const { return override<double>("ac", &Material::ac, T); }
+    virtual double av(double T) const { return override<double>("av", &Material::av, T); }
+    virtual double b(double T) const { return override<double>("b", &Material::b, T); }
+    virtual double c11(double T) const { return override<double>("c11", &Material::c11, T); }
+    virtual double c12(double T) const {return override<double>("c12", &Material::c12, T); }
     virtual double eps(double T) const { return override<double>("eps", &Material::eps, T); }
-    virtual double chi(double T, const char Point) const { return override<double>("chi", &Material::chi, T, Point); }
-    virtual double Nc(double T, const char Point) const { return override<double>("Nc", &Material::Nc, T, Point); }
-    virtual double Nv(double T) const { return override<double>("Nv", &Material::Nv, T); }
+    virtual double chi(double T, double eps, char point) const { return override<double>("chi", &Material::chi, T, eps, point); }
+    virtual double Nc(double T, double eps, char point) const { return override<double>("Nc", &Material::Nc, T, eps, point); }
+    virtual double Nv(double T, double eps, char point) const { return override<double>("Nv", &Material::Nv, T, eps, point); }
     virtual double Ni(double T) const { return override<double>("Ni", &Material::Ni, T); }
     virtual double Nf(double T) const { return override<double>("Nf", &Material::Nf, T); }
     virtual double EactD(double T) const { return override<double>("EactD", &Material::EactD, T); }
@@ -241,11 +244,8 @@ class PythonMaterial : public Material
     virtual double B(double T) const { return override<double>("B", &Material::B, T); }
     virtual double C(double T) const { return override<double>("C", &Material::C, T); }
     virtual double D(double T) const {
-        try {
-            return override<double>("D", &Material::D, T);
-        } catch (NotImplemented) {
-            return mob(T).c00 * T * 8.6173423e-5;  // D = µ kB T / e
-        }
+        try { return override<double>("D", &Material::D, T); }
+        catch (NotImplemented) { return mob(T).c00 * T * 8.6173423e-5; }  // D = µ kB T / e
     }
     virtual Tensor2<double> thermk(double T, double t) const { return override<Tensor2<double>>("thermk", &Material::thermk, T, t); }
     virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
@@ -600,24 +600,24 @@ void initMaterials() {
         .def("__eq__", (bool(Material::*)(const Material&)const)&Material::operator==)
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")), "Get lattice constant [A]")
-        .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("point")='G'), "Get energy gap Eg [eV]")
-        .def("CBO", &Material::CBO, (py::arg("T")=300., py::arg("point")='G'), "Get conduction band offset CBO [eV]")
-        .def("VBO", &Material::VBO, (py::arg("T")=300.), "Get valance band offset VBO [eV]")
-        .def("Dso", &Material::Dso, (py::arg("T")=300.), "Get split-off energy Dso [eV]")
-        .def("Mso", &Material::Mso, (py::arg("T")=300.), "Get split-off mass Mso [m0]")
-        .def("Me", &Material::Me, (py::arg("T")=300., py::arg("point")='G'), "Get split-off mass Mso [m0]")
-        .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("point")='G'), "Get heavy hole effective mass Mhh [m0]")
-        .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("point")='G'), "Get light hole effective mass Mlh [m0]")
-        .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("eq")/*='G'*/), "Get hole effective mass Mh [m0]")
+        .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("eps")=0, py::arg("point")='G'), "Get energy gap Eg [eV]")
+        .def("CBO", &Material::CBO, (py::arg("T")=300., py::arg("eps")=0, py::arg("point")='G'), "Get conduction band offset CBO [eV]")
+        .def("VBO", &Material::VBO, (py::arg("T")=300., py::arg("eps")=0, py::arg("point")='G'), "Get valance band offset VBO [eV]")
+        .def("Dso", &Material::Dso, (py::arg("T")=300., py::arg("eps")=0), "Get split-off energy Dso [eV]")
+        .def("Mso", &Material::Mso, (py::arg("T")=300., py::arg("eps")=0), "Get split-off mass Mso [m0]")
+        .def("Me", &Material::Me, (py::arg("T")=300., py::arg("eps")=0, py::arg("point")='G'), "Get split-off mass Mso [m0]")
+        .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("eps")=0, py::arg("point")='G'), "Get heavy hole effective mass Mhh [m0]")
+        .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("eps")=0, py::arg("point")='G'), "Get light hole effective mass Mlh [m0]")
+        .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("eps")=0, py::arg("eq")/*='G'*/), "Get hole effective mass Mh [m0]")
         .def("ac", &Material::ac, (py::arg("T")=300.), "Get hydrostatic deformation potential for the conduction band ac [eV]")
         .def("av", &Material::av, (py::arg("T")=300.), "Get hydrostatic deformation potential for the valence band av [eV]")
         .def("b", &Material::b, (py::arg("T")=300.), "Get shear deformation potential b [eV]")
         .def("c11", &Material::c11, (py::arg("T")=300.), "Get elastic constant c11 [GPa]")
         .def("c12", &Material::c12, (py::arg("T")=300.), "Get elastic constant c12 [GPa]")
         .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
-        .def("chi", &Material::chi, (py::arg("T")=300., py::arg("point")='G'), "Get electron affinity Chi [eV]")
-        .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")
-        .def("Nv", &Material::Nv, (py::arg("T")=300.), "Get effective density of states in the valence band Nv [m**(-3)]")
+        .def("chi", &Material::chi, (py::arg("T")=300., py::arg("eps")=0, py::arg("point")='G'), "Get electron affinity Chi [eV]")
+        .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("eps")=0, py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")
+        .def("Nv", &Material::Nv, (py::arg("T")=300., py::arg("eps")=0), "Get effective density of states in the valence band Nv [m**(-3)]")
         .def("Ni", &Material::Ni, (py::arg("T")=300.), "Get intrinsic carrier concentration Ni [m**(-3)]")
         .def("Nf", &Material::Nf, (py::arg("T")=300.), "Get free carrier concentration N [m**(-3)]")
         .def("EactD", &Material::EactD, (py::arg("T")=300.), "Get donor ionisation energy EactD [eV]")

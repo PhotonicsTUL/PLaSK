@@ -29,43 +29,43 @@ MI_PROPERTY(AlGaAs, Eg,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
-double AlGaAs::Eg(double T, char point) const {
+double AlGaAs::Eg(double T, double eps, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = Al*mAlAs.Eg(T, point) + Ga*mGaAs.Eg(T, point) - Al*Ga*(-0.127+1.310*Al);
+    if (point == 'G') tEg = Al*mAlAs.Eg(T,eps,point) + Ga*mGaAs.Eg(T,eps,point) - Al*Ga*(-0.127+1.310*Al);
     return ( tEg );
 }
 
 MI_PROPERTY(AlGaAs, Dso,
             MISource("linear interpolation: AlAs, GaAs")
             )
-double AlGaAs::Dso(double T) const {
-    return ( Al*mAlAs.Dso(T) + Ga*mGaAs.Dso(T) );
+double AlGaAs::Dso(double T, double eps) const {
+    return ( Al*mAlAs.Dso(T,eps) + Ga*mGaAs.Dso(T,eps) );
 }
 
 MI_PROPERTY(AlGaAs, Me,
             MISource("linear interpolation: AlAs, GaAs")
             )
-Tensor2<double> AlGaAs::Me(double T, char point) const {
-    double lMe = Al*mAlAs.Me(T,point).c00 + Ga*mGaAs.Me(T,point).c00,
-           vMe = Al*mAlAs.Me(T,point).c11 + Ga*mGaAs.Me(T,point).c11;
+Tensor2<double> AlGaAs::Me(double T, double eps, char point) const {
+    double lMe = Al*mAlAs.Me(T,eps,point).c00 + Ga*mGaAs.Me(T,eps,point).c00,
+           vMe = Al*mAlAs.Me(T,eps,point).c11 + Ga*mGaAs.Me(T,eps,point).c11;
     return ( Tensor2<double>(lMe,vMe) );
 }
 
 MI_PROPERTY(AlGaAs, Mhh,
             MISource("linear interpolation: AlAs, GaAs")
             )
-Tensor2<double> AlGaAs::Mhh(double T, char point) const {
-    double lMhh = Al*mAlAs.Mhh(T,point).c00 + Ga*mGaAs.Mhh(T,point).c00,
-           vMhh = Al*mAlAs.Mhh(T,point).c11 + Ga*mGaAs.Mhh(T,point).c11;
+Tensor2<double> AlGaAs::Mhh(double T, double eps, char point) const {
+    double lMhh = Al*mAlAs.Mhh(T,eps,point).c00 + Ga*mGaAs.Mhh(T,eps,point).c00,
+           vMhh = Al*mAlAs.Mhh(T,eps,point).c11 + Ga*mGaAs.Mhh(T,eps,point).c11;
     return ( Tensor2<double>(lMhh,vMhh) );
 }
 
 MI_PROPERTY(AlGaAs, Mlh,
             MISource("linear interpolation: AlAs, GaAs")
             )
-Tensor2<double> AlGaAs::Mlh(double T, char point) const {
-    double lMlh = Al*mAlAs.Mlh(T,point).c00 + Ga*mGaAs.Mlh(T,point).c00,
-           vMlh = Al*mAlAs.Mlh(T,point).c11 + Ga*mGaAs.Mlh(T,point).c11;
+Tensor2<double> AlGaAs::Mlh(double T, double eps, char point) const {
+    double lMlh = Al*mAlAs.Mlh(T,eps,point).c00 + Ga*mGaAs.Mlh(T,eps,point).c00,
+           vMlh = Al*mAlAs.Mlh(T,eps,point).c11 + Ga*mGaAs.Mlh(T,eps,point).c11;
     return ( Tensor2<double>(lMlh,vMlh) );
 }
 

@@ -4770,6 +4770,10 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
+eps
+\family default
+ -- lateral strain [-], 
+\family typewriter
 point
 \family default
  -- point in the Brillouin zone [-].
@@ -4806,6 +4810,10 @@ variables:
 T
 \family default
  -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-], 
 \family typewriter
 point
 \family default
@@ -4986,7 +4994,11 @@ variables:
 \family typewriter
 T
 \family default
- -- temperature [K].
+ -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-].
 \end_layout
 
 \begin_layout Labeling
@@ -5086,6 +5098,10 @@ variables:
 T
 \family default
  -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-], 
 \family typewriter
 point
 \family default
@@ -5194,6 +5210,10 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
+eps
+\family default
+ -- lateral strain [-], 
+\family typewriter
 point
 \family default
  -- point in the Brillouin zone [-].
@@ -5235,9 +5255,13 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-EqType
+eps
 \family default
- -- equation type [-].
+ -- lateral strain [-], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
 \end_layout
 
 \begin_layout Labeling
@@ -5275,6 +5299,10 @@ variables:
 T
 \family default
  -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-], 
 \family typewriter
 point
 \family default
@@ -5316,6 +5344,10 @@ variables:
 T
 \family default
  -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-], 
 \family typewriter
 point
 \family default
@@ -5389,7 +5421,11 @@ variables:
 \family typewriter
 T
 \family default
- -- temperature [K].
+ -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-].
 \end_layout
 
 \begin_layout Labeling
@@ -5427,6 +5463,10 @@ variables:
 T
 \family default
  -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-], 
 \family typewriter
 point
 \family default
@@ -5694,7 +5734,15 @@ material!density of states
 \begin_inset Newline newline
 \end_inset
 
-variables: T -- temperature [K].
+variables: T -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-], 
+\family typewriter
+point
+\family default
+ -- point in the Brillouin zone [-].
 \end_layout
 
 \begin_layout Labeling
@@ -5768,7 +5816,11 @@ variables:
 \family typewriter
 T
 \family default
- -- temperature [K].
+ -- temperature [K], 
+\family typewriter
+eps
+\family default
+ -- lateral strain [-].
 \end_layout
 
 \end_deeper

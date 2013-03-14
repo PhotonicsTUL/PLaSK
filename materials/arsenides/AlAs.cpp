@@ -21,7 +21,7 @@ MI_PROPERTY(AlAs, Eg,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
-double AlAs::Eg(double T, char point) const {
+double AlAs::Eg(double T, double eps, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = phys::Varshni(3.099, 0.885e-3, 530., T);
     return ( tEg );
@@ -31,7 +31,7 @@ MI_PROPERTY(AlAs, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
-double AlAs::Dso(double T) const {
+double AlAs::Dso(double T, double eps) const {
     return ( 0.28 );
 }
 
@@ -40,7 +40,7 @@ MI_PROPERTY(AlAs, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlAs::Me(double T, char point) const {
+Tensor2<double> AlAs::Me(double T, double eps, char point) const {
     Tensor2<double> tMe(0., 0.);
     if (point == 'G') {
         tMe.c00 = 0.124;
@@ -53,7 +53,7 @@ MI_PROPERTY(AlAs, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlAs::Mhh(double T, char point) const {
+Tensor2<double> AlAs::Mhh(double T, double eps, char point) const {
     Tensor2<double> tMhh(0.51, 0.51); // [001]
     return ( tMhh );
 }
@@ -62,7 +62,7 @@ MI_PROPERTY(AlAs, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlAs::Mlh(double T, char point) const {
+Tensor2<double> AlAs::Mlh(double T, double eps, char point) const {
     Tensor2<double> tMlh(0.18, 0.18);
     return ( tMlh );
 }
