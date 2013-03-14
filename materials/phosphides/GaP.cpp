@@ -21,7 +21,7 @@ MI_PROPERTY(GaP, Eg,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
-double GaP::Eg(double T, double eps, char point) const {
+double GaP::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = phys::Varshni(2.896, 0.96e-3, 423., T);
     return ( tEg );
@@ -31,7 +31,7 @@ MI_PROPERTY(GaP, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
-double GaP::Dso(double T, double eps) const {
+double GaP::Dso(double T, double e) const {
     return ( 0.08 );
 }
 
@@ -40,7 +40,7 @@ MI_PROPERTY(GaP, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaP::Me(double T, double eps, char point) const {
+Tensor2<double> GaP::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
     if (point == 'G') {
         tMe.c00 = 0.114;
@@ -53,7 +53,7 @@ MI_PROPERTY(GaP, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaP::Mhh(double T, double eps, char point) const {
+Tensor2<double> GaP::Mhh(double T, double e, char point) const {
     Tensor2<double> tMhh(0.34, 0.34); // [001]
     return ( tMhh );
 }
@@ -62,7 +62,7 @@ MI_PROPERTY(GaP, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaP::Mlh(double T, double eps, char point) const {
+Tensor2<double> GaP::Mlh(double T, double e, char point) const {
     Tensor2<double> tMlh(0.20, 0.20);
     return ( tMlh );
 }

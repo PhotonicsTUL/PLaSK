@@ -17,7 +17,7 @@ class Material(unittest.TestCase):
             ptest.print_ptr(self)
         def __del__(self):
             ptest.print_ptr(self)
-        def VBO(self, T=300., eps=0., point='G'):
+        def VBO(self, T=300., e=0., point='G'):
             return 2.*T
         def nr(self, wl, T):
             return 3.5
@@ -36,9 +36,9 @@ class Material(unittest.TestCase):
             print(self.composition)
         def __del__(self):
             ptest.print_ptr(self)
-        def VBO(self, T=300., eps=0., point='G'):
+        def VBO(self, T=300., e=0., point='G'):
             return self.kwargs['dc'] * T
-        def CBO(self, T=300., eps=0., point='G'):
+        def CBO(self, T=300., e=0., point='G'):
             return self.composition['Ga'] * T
         def nR_tensor(self, wl, T):
             return (3.5, 3.6, 3.7, 0.1, 0.2)

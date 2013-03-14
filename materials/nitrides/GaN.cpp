@@ -63,7 +63,7 @@ MI_PROPERTY(GaN, Eg,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double GaN::Eg(double T, double eps, char point) const {
+double GaN::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = 3.42;
     return (tEg);
@@ -74,7 +74,7 @@ MI_PROPERTY(GaN, Me,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaN::Me(double T, double eps, char point) const {
+Tensor2<double> GaN::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0.,0.);
     if (point == 'G') {
         tMe.c00 = 0.186;
@@ -86,7 +86,7 @@ Tensor2<double> GaN::Me(double T, double eps, char point) const {
 MI_PROPERTY(GaN, Mhh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-Tensor2<double> GaN::Mhh(double T, double eps, char point) const {
+Tensor2<double> GaN::Mhh(double T, double e, char point) const {
     Tensor2<double> tMhh(0.,0.);
     if (point == 'G') {
         tMhh.c00 = 1.886;
@@ -98,7 +98,7 @@ Tensor2<double> GaN::Mhh(double T, double eps, char point) const {
 MI_PROPERTY(GaN, Mlh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-Tensor2<double> GaN::Mlh(double T, double eps, char point) const {
+Tensor2<double> GaN::Mlh(double T, double e, char point) const {
     Tensor2<double> tMlh(0.,0.);
     if (point == 'G') {
         tMlh.c00 = 1.887;

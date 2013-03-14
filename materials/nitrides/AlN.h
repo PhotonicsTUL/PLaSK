@@ -21,13 +21,13 @@ struct AlN: public Semiconductor {
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
     virtual double lattC(double T, char x) const;
-    virtual double Eg(double T, double eps, char point) const;
-    virtual Tensor2<double> Me(double T, double eps, char point) const;
+    virtual double Eg(double T, double e, char point) const;
+    virtual Tensor2<double> Me(double T, double e, char point) const;
 /*TODO
-    virtual double Mhh(double T, double eps, char point) const;
+    virtual double Mhh(double T, double e, char point) const;
     virtual double Mhh_l(double T, char point) const;
     virtual double Mhh_v(double T, char point) const;
-    virtual double Mlh(double T, double eps, char point) const;
+    virtual double Mlh(double T, double e, char point) const;
     virtual double Mlh_l(double T, char point) const;
     virtual double Mlh_v(double T, char point) const;
 */

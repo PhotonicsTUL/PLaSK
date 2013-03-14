@@ -56,11 +56,11 @@ double Material::B(double T) const { throwNotImplemented("B(double T)"); return 
 
 double Material::C(double T) const { throwNotImplemented("C(double T)"); return 0; }
 
-double Material::CBO(double T, double eps, char point) const {
-    return VBO(T, eps, point) + Eg(T, eps, point);
+double Material::CBO(double T, double e, char point) const {
+    return VBO(T, e, point) + Eg(T, e, point);
 }
 
-double Material::chi(double T, double eps, char point) const { throwNotImplemented("chi(double T, double eps, char point)"); return 0; }
+double Material::chi(double T, double e, char point) const { throwNotImplemented("chi(double T, double e, char point)"); return 0; }
 
 Tensor2<double> Material::cond(double T) const { throwNotImplemented("cond(double T)"); return 0.; }
 
@@ -73,21 +73,21 @@ double Material::D(double T) const {
 
 double Material::dens(double T) const { throwNotImplemented("dens(double T)"); return 0; }
 
-double Material::Dso(double T, double eps) const { throwNotImplemented("Dso(double T, double eps)"); return 0; }
+double Material::Dso(double T, double e) const { throwNotImplemented("Dso(double T, double e)"); return 0; }
 
 double Material::EactA(double T) const { throwNotImplemented("EactA(double T)"); return 0; }
 double Material::EactD(double T) const { throwNotImplemented("EactD(double T)"); return 0; }
 
-double Material::Eg(double T, double eps, char point) const { throwNotImplemented("Eg(double T, double eps, char point)"); return 0; }
+double Material::Eg(double T, double e, char point) const { throwNotImplemented("Eg(double T, double e, char point)"); return 0; }
 
 double Material::eps(double T) const { throwNotImplemented("eps(double T)"); return 0; }
 
 double Material::lattC(double T, char x) const { throwNotImplemented("lattC(double T, char x)"); return 0; }
 
-Tensor2<double> Material::Me(double T, double eps, char point) const { throwNotImplemented("Me(double T, double eps, char point)"); return 0.; }
-Tensor2<double> Material::Mh(double T, double eps, char point) const { throwNotImplemented("Mh(double T, double eps, char point)"); return 0.; }
-Tensor2<double> Material::Mhh(double T, double eps, char point) const { throwNotImplemented("Mhh(double T, double eps, char point)"); return 0.; }
-Tensor2<double> Material::Mlh(double T, double eps, char point) const { throwNotImplemented("Mlh(double T, double eps, char point)"); return 0.; }
+Tensor2<double> Material::Me(double T, double e, char point) const { throwNotImplemented("Me(double T, double e, char point)"); return 0.; }
+Tensor2<double> Material::Mh(double T, double e, char point) const { throwNotImplemented("Mh(double T, double e, char point)"); return 0.; }
+Tensor2<double> Material::Mhh(double T, double e, char point) const { throwNotImplemented("Mhh(double T, double e, char point)"); return 0.; }
+Tensor2<double> Material::Mlh(double T, double e, char point) const { throwNotImplemented("Mlh(double T, double e, char point)"); return 0.; }
 
 double Material::ac(double T) const { throwNotImplemented("ac(double T)"); return 0; }
 double Material::av(double T) const { throwNotImplemented("av(double T)"); return 0; }
@@ -97,11 +97,11 @@ double Material::c12(double T) const { throwNotImplemented("c12(double T)"); ret
 
 Tensor2<double> Material::mob(double T) const { throwNotImplemented("mob(double T)"); return 0.; }
 
-double Material::Mso(double T, double eps) const { throwNotImplemented("Mso(double T, double eps)"); return 0; }
+double Material::Mso(double T, double e) const { throwNotImplemented("Mso(double T, double e)"); return 0; }
 
-double Material::Nc(double T, double eps, char point) const { throwNotImplemented("Nc(double T, double eps, char point)"); return 0; }
+double Material::Nc(double T, double e, char point) const { throwNotImplemented("Nc(double T, double e, char point)"); return 0; }
 
-double Material::Nv(double T, double eps, char point) const { throwNotImplemented("Nv(double T, double eps, char point)"); return 0; }
+double Material::Nv(double T, double e, char point) const { throwNotImplemented("Nv(double T, double e, char point)"); return 0; }
 
 double Material::Nf(double T) const { throwNotImplemented("Nf(double T)"); return 0; }
 
@@ -123,7 +123,7 @@ double Material::cp(double T) const { throwNotImplemented("cp(double T)"); retur
 
 Tensor2<double> Material::thermk(double T, double h) const { throwNotImplemented("thermk(double T)"); return 0.; }
 
-double Material::VBO(double T, double eps, char point) const { throwNotImplemented("VBO(double T, double eps, char point)"); return 0; }
+double Material::VBO(double T, double e, char point) const { throwNotImplemented("VBO(double T, double e, char point)"); return 0; }
 
 void Material::throwNotImplemented(const std::string& method_name) const {
     throw MaterialMethodNotImplemented(name(), method_name);
@@ -340,12 +340,12 @@ double MixedMaterial::C(double T) const {
     return avg([&](const Material& m) { return m.C(T); });
 }
 
-double MixedMaterial::CBO(double T, double eps, char point) const {
-    return avg([&](const Material& m) { return m.CBO(T, eps, point); });
+double MixedMaterial::CBO(double T, double e, char point) const {
+    return avg([&](const Material& m) { return m.CBO(T, e, point); });
 }
 
-double MixedMaterial::chi(double T, double eps, char point) const {
-    return avg([&](const Material& m) { return m.chi(T, eps, point); });
+double MixedMaterial::chi(double T, double e, char point) const {
+    return avg([&](const Material& m) { return m.chi(T, e, point); });
 }
 
 Tensor2<double> MixedMaterial::cond(double T) const {
@@ -368,7 +368,7 @@ double MixedMaterial::dens(double T) const {
     return avg([&](const Material& m) { return m.dens(T); });
 }
 
-double MixedMaterial::Dso(double T, double eps) const {
+double MixedMaterial::Dso(double T, double e) const {
     return avg([&](const Material& m) { return m.Dso(T); });
 }
 
@@ -379,8 +379,8 @@ double MixedMaterial::EactD(double T) const {
     return avg([&](const Material& m) { return m.EactD(T); });
 }
 
-double MixedMaterial::Eg(double T, double eps, char point) const {
-    return avg([&](const Material& m) { return m.Eg(T, eps, point); });
+double MixedMaterial::Eg(double T, double e, char point) const {
+    return avg([&](const Material& m) { return m.Eg(T, e, point); });
 }
 
 double MixedMaterial::eps(double T) const {
@@ -391,20 +391,20 @@ double MixedMaterial::lattC(double T, char x) const {
     return avg([&](const Material& m) { return m.lattC(T, x); });
 }
 
-Tensor2<double> MixedMaterial::Me(double T, double eps, char point) const {
-    return avg_pairs([&](const Material& m) { return m.Me(T, eps, point); });
+Tensor2<double> MixedMaterial::Me(double T, double e, char point) const {
+    return avg_pairs([&](const Material& m) { return m.Me(T, e, point); });
 }
 
-Tensor2<double> MixedMaterial::Mh(double T, double eps, char point) const {
-    return avg_pairs([&](const Material& m) { return m.Mh(T, eps, point); });
+Tensor2<double> MixedMaterial::Mh(double T, double e, char point) const {
+    return avg_pairs([&](const Material& m) { return m.Mh(T, e, point); });
 }
 
-Tensor2<double> MixedMaterial::Mhh(double T, double eps, char point) const {
-    return avg_pairs([&](const Material& m) { return m.Mhh(T, eps, point); });
+Tensor2<double> MixedMaterial::Mhh(double T, double e, char point) const {
+    return avg_pairs([&](const Material& m) { return m.Mhh(T, e, point); });
 }
 
-Tensor2<double> MixedMaterial::Mlh(double T, double eps, char point) const  {
-    return avg_pairs([&](const Material& m) { return m.Mlh(T, eps, point); });
+Tensor2<double> MixedMaterial::Mlh(double T, double e, char point) const  {
+    return avg_pairs([&](const Material& m) { return m.Mlh(T, e, point); });
 }
 
 double MixedMaterial::ac(double T) const {
@@ -431,16 +431,16 @@ Tensor2<double> MixedMaterial::mob(double T) const {
     return avg_pairs([&](const Material& m) { return m.mob(T); });
 }
 
-double MixedMaterial::Mso(double T, double eps) const {
+double MixedMaterial::Mso(double T, double e) const {
     return avg([&](const Material& m) { return m.Mso(T); });
 }
 
-double MixedMaterial::Nc(double T, double eps, char point) const {
-    return avg([&](const Material& m) { return m.Nc(T, eps, point); });
+double MixedMaterial::Nc(double T, double e, char point) const {
+    return avg([&](const Material& m) { return m.Nc(T, e, point); });
 }
 
-double MixedMaterial::Nv(double T, double eps, char point) const {
-    return avg([&](const Material& m) { return m.Nv(T, eps, point); });
+double MixedMaterial::Nv(double T, double e, char point) const {
+    return avg([&](const Material& m) { return m.Nv(T, e, point); });
 }
 
 double MixedMaterial::Nf(double T) const {
@@ -480,8 +480,8 @@ Tensor2<double> MixedMaterial::thermk(double T, double h) const {
     return avg_pairs([&](const Material& m) { return m.thermk(T, h); });
 }
 
-double MixedMaterial::VBO(double T, double eps, char point) const  {
-    return avg([&](const Material& m) { return m.VBO(T, eps, point); });
+double MixedMaterial::VBO(double T, double e, char point) const  {
+    return avg([&](const Material& m) { return m.VBO(T, e, point); });
 }
 
 bool Material::isEqual(const Material &other) const {

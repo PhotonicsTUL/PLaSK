@@ -53,7 +53,7 @@ MI_PROPERTY(InGaN, Eg,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double InGaN::Eg(double T, double eps, char point) const {
+double InGaN::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = 0.77*In + 3.42*Ga - 1.43*In*Ga;
     return (tEg);

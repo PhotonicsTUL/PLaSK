@@ -118,27 +118,27 @@ class PythonEvalMaterial : public Material
         return call<rtype>(cls->fun, locals);
 
     virtual double lattC(double T, char x) const { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
-    virtual double Eg(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, Eg, T, eps, point) }
-    virtual double CBO(double T, double eps, char point) const {
-        try { PYTHON_EVAL_CALL_3(double, CBO, T, eps, point) }
-        catch (NotImplemented) { return VBO(T, eps, point) + Eg(T, eps, point); }
+    virtual double Eg(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, Eg, T, e, point) }
+    virtual double CBO(double T, double e, char point) const {
+        try { PYTHON_EVAL_CALL_3(double, CBO, T, e, point) }
+        catch (NotImplemented) { return VBO(T, e, point) + Eg(T, e, point); }
     }
-    virtual double VBO(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, CBO, T, eps, point) }
-    virtual double Dso(double T, double eps) const { PYTHON_EVAL_CALL_2(double, Dso, T, eps) }
-    virtual double Mso(double T, double eps) const { PYTHON_EVAL_CALL_2(double, Mso, T, eps) }
-    virtual Tensor2<double> Me(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Me, T, eps, point) }
-    virtual Tensor2<double> Mhh(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mhh, T, eps, point) }
-    virtual Tensor2<double> Mlh(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mlh, T, eps, point) }
-    virtual Tensor2<double> Mh(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mh, T, eps, point) }
+    virtual double VBO(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, CBO, T, e, point) }
+    virtual double Dso(double T, double e) const { PYTHON_EVAL_CALL_2(double, Dso, T, e) }
+    virtual double Mso(double T, double e) const { PYTHON_EVAL_CALL_2(double, Mso, T, e) }
+    virtual Tensor2<double> Me(double T, double e, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Me, T, e, point) }
+    virtual Tensor2<double> Mhh(double T, double e, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mhh, T, e, point) }
+    virtual Tensor2<double> Mlh(double T, double e, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mlh, T, e, point) }
+    virtual Tensor2<double> Mh(double T, double e, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Mh, T, e, point) }
     virtual double ac(double T) const { PYTHON_EVAL_CALL_1(double, ac, T) }
     virtual double av(double T) const { PYTHON_EVAL_CALL_1(double, av, T) }
     virtual double b(double T) const { PYTHON_EVAL_CALL_1(double, b, T) }
     virtual double c11(double T) const { PYTHON_EVAL_CALL_1(double, c11, T) }
     virtual double c12(double T) const { PYTHON_EVAL_CALL_1(double, c12, T) }
     virtual double eps(double T) const { PYTHON_EVAL_CALL_1(double, eps, T) }
-    virtual double chi(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, chi, T, eps, point) }
-    virtual double Nc(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, Nc, T, eps, point) }
-    virtual double Nv(double T, double eps, char point) const { PYTHON_EVAL_CALL_3(double, Nv, T, eps, point) }
+    virtual double chi(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, chi, T, e, point) }
+    virtual double Nc(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, Nc, T, e, point) }
+    virtual double Nv(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, Nv, T, e, point) }
     virtual double Ni(double T) const { PYTHON_EVAL_CALL_1(double, Ni, T) }
     virtual double Nf(double T) const { PYTHON_EVAL_CALL_1(double, Nf, T) }
     virtual double EactD(double T) const { PYTHON_EVAL_CALL_1(double, EactD, T) }

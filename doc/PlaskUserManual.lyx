@@ -4770,7 +4770,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -4811,7 +4811,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -4996,7 +4996,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-].
 \end_layout
@@ -5044,7 +5044,7 @@ T
 \series default
  Donor ionization energy
 \begin_inset Index idx
-status open
+status collapsed
 
 \begin_layout Plain Layout
 material!ionization energy
@@ -5099,7 +5099,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -5210,7 +5210,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -5255,7 +5255,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -5300,7 +5300,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -5345,7 +5345,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -5423,7 +5423,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-].
 \end_layout
@@ -5464,7 +5464,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -5736,7 +5736,7 @@ material!density of states
 
 variables: T -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-], 
 \family typewriter
@@ -5818,7 +5818,7 @@ T
 \family default
  -- temperature [K], 
 \family typewriter
-eps
+e
 \family default
  -- lateral strain [-].
 \end_layout

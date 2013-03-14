@@ -24,7 +24,7 @@ struct AlGaN: public Semiconductor {
     virtual Tensor2<double> thermk(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
-    virtual double Eg(double T, double eps, char point) const;
+    virtual double Eg(double T, double e, char point) const;
     virtual double lattC(double T, char x) const;
 
 protected:

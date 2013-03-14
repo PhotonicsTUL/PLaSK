@@ -29,43 +29,43 @@ MI_PROPERTY(GaInAs, Eg,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("only for Gamma point")
             )
-double GaInAs::Eg(double T, double eps, char point) const {
+double GaInAs::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = Ga*mGaAs.Eg(T,eps,point) + In*mInAs.Eg(T,eps,point) - Ga*In*0.477;
+    if (point == 'G') tEg = Ga*mGaAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Ga*In*0.477;
     return ( tEg );
 }
 
 MI_PROPERTY(GaInAs, Dso,
             MISource("nonlinear interpolation: GaAs, InAs")
             )
-double GaInAs::Dso(double T, double eps) const {
-    return ( Ga*mGaAs.Dso(T, eps) + In*mInAs.Dso(T, eps) - Ga*In*0.15 );
+double GaInAs::Dso(double T, double e) const {
+    return ( Ga*mGaAs.Dso(T, e) + In*mInAs.Dso(T, e) - Ga*In*0.15 );
 }
 
 MI_PROPERTY(GaInAs, Me,
             MISource("nonlinear interpolation: AlAs, GaAs")
             )
-Tensor2<double> GaInAs::Me(double T, double eps, char point) const {
-    double lMe = Ga*mGaAs.Me(T,eps,point).c00 + In*mInAs.Me(T,eps,point).c00 - Ga*In*0.008,
-           vMe = Ga*mGaAs.Me(T,eps,point).c11 + In*mInAs.Me(T,eps,point).c11 - Ga*In*0.008;
+Tensor2<double> GaInAs::Me(double T, double e, char point) const {
+    double lMe = Ga*mGaAs.Me(T,e,point).c00 + In*mInAs.Me(T,e,point).c00 - Ga*In*0.008,
+           vMe = Ga*mGaAs.Me(T,e,point).c11 + In*mInAs.Me(T,e,point).c11 - Ga*In*0.008;
     return ( Tensor2<double>(lMe,vMe) );
 }
 
 MI_PROPERTY(GaInAs, Mhh,
             MISource("linear interpolation: AlAs, GaAs")
             )
-Tensor2<double> GaInAs::Mhh(double T, double eps, char point) const {
-    double lMhh = Ga*mGaAs.Mhh(T,eps,point).c00 + In*mInAs.Mhh(T,eps,point).c00,
-           vMhh = Ga*mGaAs.Mhh(T,eps,point).c11 + In*mInAs.Mhh(T,eps,point).c11;
+Tensor2<double> GaInAs::Mhh(double T, double e, char point) const {
+    double lMhh = Ga*mGaAs.Mhh(T,e,point).c00 + In*mInAs.Mhh(T,e,point).c00,
+           vMhh = Ga*mGaAs.Mhh(T,e,point).c11 + In*mInAs.Mhh(T,e,point).c11;
     return ( Tensor2<double>(lMhh,vMhh) );
 }
 
 MI_PROPERTY(GaInAs, Mlh,
             MISource("linear interpolation: AlAs, GaAs")
             )
-Tensor2<double> GaInAs::Mlh(double T, double eps, char point) const {
-    double lMlh = Ga*mGaAs.Mlh(T,eps,point).c00 + In*mInAs.Mlh(T,eps,point).c00,
-           vMlh = Ga*mGaAs.Mlh(T,eps,point).c11 + In*mInAs.Mlh(T,eps,point).c11;
+Tensor2<double> GaInAs::Mlh(double T, double e, char point) const {
+    double lMlh = Ga*mGaAs.Mlh(T,e,point).c00 + In*mInAs.Mlh(T,e,point).c00,
+           vMlh = Ga*mGaAs.Mlh(T,e,point).c11 + In*mInAs.Mlh(T,e,point).c11;
     return ( Tensor2<double>(lMlh,vMlh) );
 }
 

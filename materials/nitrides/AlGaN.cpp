@@ -55,7 +55,7 @@ MI_PROPERTY(AlGaN, Eg,
             MIComment("only for Gamma point"),
             MIComment("no temperature dependence")
             )
-double AlGaN::Eg(double T, double eps, char point) const {
+double AlGaN::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = 6.28*Al + 3.42*Ga - 0.7*Al*Ga;
     return (tEg);

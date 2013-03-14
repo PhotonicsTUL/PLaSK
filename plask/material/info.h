@@ -36,7 +36,7 @@ struct MaterialInfo {
         b,          ///< shear deformation potential
         c11,        ///< elastic constant
         c12,        ///< elastic constant
-        eps,        ///< dielectric constant
+        e,        ///< dielectric constant
         chi,        ///< electron affinity
         Nc,         ///< effective density of states in the conduction band
         Nv,         ///< effective density of states in the valence band
