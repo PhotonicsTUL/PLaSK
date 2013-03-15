@@ -146,7 +146,7 @@ if True:
 
 import plask
 
-def plot_field(field, levels=16, antialiased=True, **kwargs):
+def plot_field(field, levels=16, antialiased=False, **kwargs):
     '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation
 
@@ -155,7 +155,7 @@ def plot_field(field, levels=16, antialiased=True, **kwargs):
         axis1 = field.mesh.axis1
         data = field.array
     elif type(field.mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
-        axes = [ axis for i,axis in (field.mesh.axis0, field.mesh.axis1, field.mesh.axis2) if len(axis) > 1 ]
+        axes = [ axis for axis in (field.mesh.axis0, field.mesh.axis1, field.mesh.axis2) if len(axis) > 1 ]
         if len(axes) != 2:
             raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
         axis0, axis1 = axes

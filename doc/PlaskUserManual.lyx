@@ -14899,7 +14899,7 @@ Allowed residual error for the iterative algorithm.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-maxiter
+itermax
 \family default
  
 \begin_inset ERT
@@ -14914,7 +14914,7 @@ opt
 
 \end_inset
 
-Maximum number of iterations for iterative algorithm.
+Maximum number of iterations for the iterative algorithm.
 \end_layout
 
 \begin_layout Labeling

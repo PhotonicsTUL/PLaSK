@@ -96,13 +96,16 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
 
   public:
 
-    double bignum;      ///< A big number used for the first boundary condition (see: set Matrix) (TODO: remove this and apply conditions by hand)
+    double bignum;      ///< A big number used for the first boundary condition (see: set Matrix)
 
     double inittemp;    ///< Initial temperature
     double corrlim;     ///< Maximum temperature correction accepted as convergence
     double abscorr;     ///< Maximum absolute temperature correction (useful for single calculations managed by external python script)
     double relcorr;     ///< Maximum relative temperature correction (useful for single calculations managed by external python script)
     CorrectionType corrtype; ///< Type of the returned correction
+
+    double itererr;     ///< Allowed residual iteration for iterative method
+    unsigned itermax;   ///< Maximum nunber of iterations for iterative method
 
     // Boundary conditions
     BoundaryConditions<RectilinearMesh3D,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]

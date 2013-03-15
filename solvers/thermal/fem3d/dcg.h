@@ -27,6 +27,8 @@ struct DCGError: public std::exception {
 
 };
 
+static inline void noUpdate(double*) {}
+
 /**
  * This routine does preconditioned conjugate gradient iteration
  * on the symmetric positive definte system Ax = b.
@@ -39,13 +41,14 @@ struct DCGError: public std::exception {
  * \param[out] err L2 norm of the relative residual error estimate (||b-Ax||/||b||)².
  *
  *                 This estimate of the true error is not always very accurate.
- * \param[in] eps Requested error tollerence.  System is iterated until ||b-Ax||/||b|| < eps.  Normal choice is 1.e-8.
+ * \param[in] eps Requested error tollerence.  System is iterated until ||b-Ax||/||b|| < eps.  Normal choice is 1e-18.
  * \param[in] itmax Maximum number of iterations the user is willing to allow. Default value is 100.
+ * \param[in] updatea Function that updates the matrix A basing on the current solution x
  * \return number of iterations
  * \throw DCGError
  */
 template <typename AFun, typename MFun>
-int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err, int itmax=5000, double eps=1.e-18)
+int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err, int itmax=2000, double eps=1e-18, std::function<void(double*)>updatea=noUpdate)
 {
     double *r = nullptr, *z = nullptr, *p = nullptr;
     double bknum, bkden, bk;
@@ -85,7 +88,7 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
         delete[] p; delete[] z; delete[] r;
         return 0;
     }
-    toobig = err * 1.e6;
+    toobig = err * 1.e8;
 
     // Iterate!!!
     for (register int i = 0; i < itmax; i++) {
@@ -108,7 +111,7 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
             bk    = bknum / bkden;
             bkden = bknum;
 
-            // Calculate p = z + bk*p,
+            // Calculate p = z + bk*p,If we want
             for (register int j = 0; j < n; ++j)
                 p[j] = z[j] + bk*p[j];
         }
@@ -134,6 +137,9 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
             delete[] p; delete[] z; delete[] r;
             throw DCGError("divergence of iteration detected");
         }
+
+        // Update the matrix A
+        updatea(x);
     }
     delete[] p; delete[] z; delete[] r;
     throw DCGError("iteration limit reached");
@@ -146,15 +152,29 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
  */
 struct Atimes {
 
-    const SparseBandMatrix* matrix;
+    const SparseBandMatrix& matrix;
 
-    Atimes(const SparseBandMatrix& matrix): matrix(&matrix) {}
+    Atimes(const SparseBandMatrix& matrix): matrix(matrix) {}
 
     void operator()(double* x, double* y) { // y = A x
-
-
+        ptrdiff_t n = matrix.size;
+        #pragma omp parallel for
+        for (size_t r = 0; r < n; ++r) {
+            y[r] = 0.;
+            // below diagonal
+            for (size_t j = 13; j > 0; --j) {
+                ptrdiff_t c = r - matrix.bno[j];
+                assert(c < n);
+                if (c >= 0) y[r] += matrix.data[j][c] * x[c];
+            }
+            // above diagonal
+            for (size_t j = 0; j < 14; ++j) {
+                ptrdiff_t c = r + matrix.bno[j];
+                assert(c >= 0);
+                if (c < n) y[r] += matrix.data[j][r] * x[c];
+            }
+        }
     }
-
 };
 
 /**
@@ -162,13 +182,13 @@ struct Atimes {
  */
 struct MsolveJacobi {
 
-    const SparseBandMatrix* matrix;
+    const SparseBandMatrix& matrix;
 
-    MsolveJacobi(const SparseBandMatrix& matrix): matrix(&matrix) {}
+    MsolveJacobi(const SparseBandMatrix& matrix): matrix(matrix) {}
 
     void operator()(double* z, double* r) { // z = inv(M) r
-        double* zend = z + matrix->size;
-        for (double* m = matrix->data[0]; z < zend; ++z, ++r, ++m) {
+        double* zend = z + matrix.size;
+        for (double* m = matrix.data[0]; z < zend; ++z, ++r, ++m) {
             *z = *r / *m;
         }
     }

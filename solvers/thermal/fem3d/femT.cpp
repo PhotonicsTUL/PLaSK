@@ -24,10 +24,12 @@ FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std
     SolverWithMesh<Geometry3D, RectilinearMesh3D>(name),
     algorithm(ALGORITHM_BLOCK),
     loopno(0),
-    bignum(1e15),
+    bignum(1e12),
     inittemp(300.),
     corrlim(0.05),
     corrtype(CORRECTION_ABSOLUTE),
+    itererr(1e-18),
+    itermax(2000),
     outTemperature(this, &FiniteElementMethodThermal3DSolver::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal3DSolver::getHeatFluxes)
 {
@@ -75,6 +77,8 @@ void FiniteElementMethodThermal3DSolver::loadConfiguration(XMLReader &source, Ma
                 .value("block", ALGORITHM_BLOCK)
                 .value("iterative", ALGORITHM_ITERATIVE)
                 .get(algorithm);
+            itererr = source.getAttribute<double>("itererr", itererr);
+            itermax = source.getAttribute<unsigned>("itermax", itermax);
             source.requireTagEnd();
         } else
             this->parseStandardConfiguration(source, manager);
@@ -245,9 +249,9 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j <= i; ++j) {
-                A(i,j) += K[i][j];
+                A(idx[i],idx[j]) += K[i][j];
             }
-            B[i] += F[i];
+            B[idx[i]] += F[i];
         }
 
     }
@@ -325,6 +329,7 @@ double FiniteElementMethodThermal3DSolver::compute(int loops) {
         case ALGORITHM_BLOCK: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
     }
+    return 0.;
 }
 
 
@@ -356,15 +361,16 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix& A, DataVe
 
     Atimes atimes(A);
     MsolveJacobi msolve(A);
-    DataVector<double> oX = temperatures.copy(); // We use previous temperatures as initial solution TODO use better error estimation
+    DataVector<double> X = temperatures.copy(); // We use previous temperatures as initial solution
     double err;
     try {
-        int iter = solveDCG(A.size, atimes, msolve, oX.data(), B.data(), err); //TODO add parameters for tolerance and maximum iterations
+        int iter = solveDCG(A.size, atimes, msolve, X.data(), B.data(), err, itermax, itererr);
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
     } catch (DCGError err) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", err.what());
     }
-    B = oX;
+
+    B = X;
 
     // now A contains factorized matrix and B the solutions
 }

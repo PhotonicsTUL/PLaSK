@@ -105,9 +105,9 @@ struct SparseBandMatrix {
      **/
     double& operator()(size_t r, size_t c) {
         if (r < c) std::swap(r, c);
-        size_t* i = std::find(bno, bno+14, r-c);
-        assert(i != bno+14);
-        return data[*i][c];
+        size_t i = std::find(bno, bno+14, r-c) - bno;
+        assert(i != 14);
+        return data[i][c];
     }
 
     /// Clear the matrix

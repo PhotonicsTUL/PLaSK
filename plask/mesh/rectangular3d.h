@@ -984,7 +984,7 @@ private:
         }
 
         Iterator end() const {
-            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, this->mesh.axis1.size(), this->mesh.axis2.size()));
+            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, this->mesh.axis2.size()));
         }
 
         std::size_t size() const {
@@ -1014,7 +1014,7 @@ private:
         }
 
         Iterator end() const {
-            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, endAxis1, endAxis2));
+            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, beginAxis1, endAxis2));
         }
 
         std::size_t size() const {
@@ -1045,7 +1045,7 @@ private:
         }
 
         Iterator end() const {
-            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, this->mesh.axis0.size(), this->mesh.axis2.size()));
+            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, this->mesh.axis2.size()));
         }
 
         std::size_t size() const {
@@ -1075,7 +1075,7 @@ private:
         }
 
         Iterator end() const {
-            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, endAxis0, endAxis2));
+            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, beginAxis0, endAxis2));
         }
 
         std::size_t size() const {
@@ -1107,7 +1107,7 @@ private:
         }
 
         Iterator end() const {
-            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, this->mesh.axis0.size(), this->mesh.axis1.size()));
+            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, this->mesh.axis1.size()));
         }
 
         std::size_t size() const {
@@ -1137,7 +1137,7 @@ private:
         }
 
         Iterator end() const {
-            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, endAxis0, endAxis1));
+            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, beginAxis0, endAxis1));
         }
 
         std::size_t size() const {
