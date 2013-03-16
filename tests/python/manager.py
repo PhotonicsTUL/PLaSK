@@ -38,8 +38,8 @@ class Manager(unittest.TestCase):
                     <postdiv by0="2"/>
                     <warnings multiple="no"/>
                     <refinements>
-                        <vertical object="Block-3" at="1.0"/>
-                        <horizontal object="Block-3" path="Path-4" at="1.0"/>
+                        <axis0 object="Block-3" at="1.0"/>
+                        <axis1 object="Block-3" path="Path-4" at="1.0"/>
                     </refinements>
                 </generator>
             </grids>
@@ -76,8 +76,8 @@ class Manager(unittest.TestCase):
 
 
     def testGenerators(self):
-        self.assertEqual( self.manager.msg.test.prediv, (4,4) )
-        self.assertEqual( self.manager.msg.test.postdiv, (2,3) )
+        self.assertEqual( tuple(self.manager.msg.test.prediv), (4,4) )
+        self.assertEqual( tuple(self.manager.msg.test.postdiv), (2,3) )
         self.assertEqual( self.manager.msg.test.warn_missing, False )
 
         mesh = self.manager.msg.refined.generate(self.manager.obj.Stack_2)

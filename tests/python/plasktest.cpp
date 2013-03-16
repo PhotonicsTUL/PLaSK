@@ -114,6 +114,11 @@ struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::Rect
     virtual void onMeshChange(const typename plask::RectilinearMesh2D::Event& evt) {
         mesh_changed = true;
     }
+    bool getMeshChanged() {
+        bool result = mesh_changed;
+        mesh_changed = false;
+        return result;
+    }
 };
 
 
@@ -239,7 +244,7 @@ BOOST_PYTHON_MODULE(plasktest)
 
     plask::python::ExportSolver<SpaceTest>("SpaceTest")
         .def("initialize", &SpaceTest::initialize)
-        .def_readonly("mesh_changed", &SpaceTest::mesh_changed)
+        .add_property("mesh_changed", &SpaceTest::getMeshChanged)
     ;
 
     plask::python::ExportSolver<SimpleSolver>("SimpleSolver")

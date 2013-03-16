@@ -90,7 +90,7 @@ class RectilinearMeshes(unittest.TestCase):
 
         generator1 = plask.mesh.Rectilinear2D.SimpleGenerator()
         generator2 = plask.mesh.Rectilinear2D.DivideGenerator()
-        generator2.prediv = 2
+        generator2.prediv = 2,2
         generator2.add_refinement("z", rect, 8.)
 
         self.assertEqual( list(generator2.get_refinements("z").values()), [[8.]] )
@@ -125,8 +125,8 @@ class RectilinearMeshes(unittest.TestCase):
           <grids>
             <generator type="rectilinear2d" method="divide" name="refined">
               <refinements>
-                <vertical object="rect" by="5"/>
-                <horizontal object="rect" every="1."/>
+                <axis0 object="rect" by="5"/>
+                <axis1 object="rect" every="1."/>
               </refinements>
             </generator>
           </grids>
@@ -141,7 +141,7 @@ class RectilinearMeshes(unittest.TestCase):
         stack = plask.geometry.Stack2D()
         rect = plask.geometry.Rectangle(2, 2, None)
         stack.append(rect)
-        generator = plask.mesh.Rectilinear2D.SimpleGenerator()
+        generator = plask.mesh.Rectilinear2D.DivideGenerator()
 
         solver = plasktest.SpaceTest()
 
@@ -155,10 +155,18 @@ class RectilinearMeshes(unittest.TestCase):
 
         solver.initialize()
         self.assertTrue(solver.initialized)
+        self.assertFalse(solver.mesh_changed)
+
+        generator.prediv[1] = 2
+        self.assertTrue(solver.mesh_changed)
+        self.assertEqual( list(solver.mesh.axis1), [0., 1., 2.] )
+        generator.prediv = 3,3
+        generator.prediv /= 3
 
         stack.append(rect)
         self.assertFalse(solver.initialized)
         self.assertEqual( list(solver.mesh.axis1), [0., 2., 4.] )
+
 
     def testEvents(self):
         test = plasktest.MeshTest()

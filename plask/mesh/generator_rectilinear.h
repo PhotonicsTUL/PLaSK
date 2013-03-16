@@ -49,18 +49,21 @@ struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3
     virtual shared_ptr<RectilinearMesh3D> generate(const shared_ptr<GeometryObjectD<3>>& geometry);
 };
 
+/**
+ * Dividing generator ensuring no rpaid change of element size
+ */
+template <int dim>
+class RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<dim,RectilinearMesh1D>> {
 
-class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
-
-    size_t pre_divisions[2];
-    size_t post_divisions[2];
+    size_t pre_divisions[dim];
+    size_t post_divisions[dim];
     bool gradual;
 
-    typedef std::map<std::pair<weak_ptr<const GeometryObjectD<2>>,PathHints>, std::set<double>> Refinements;
+    typedef std::map<std::pair<weak_ptr<const GeometryObjectD<dim>>,PathHints>, std::set<double>> Refinements;
 
-    Refinements refinements[2];
+    Refinements refinements[dim];
 
-    RectilinearMesh1D get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<plask::GeometryObjectD<2>>& geometry, size_t dir);
+    RectilinearMesh1D get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryObjectD<dim>>& geometry, size_t dir);
 
   public:
 
@@ -70,40 +73,35 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     /**
      * Create new generator
-     * \param prediv0 Initial mesh division in horizontal direction
-     * \param postdiv0 Final mesh division in horizontal direction
-     * \param prediv1 Initial mesh division in vertical direction (0 means the same as horizontal)
-     * \param postdiv1 Final mesh division in vertical direction (0 means the same as horizontal)
     **/
-    RectilinearMesh2DDivideGenerator(size_t prediv0=1, size_t postdiv0=1, size_t prediv1=0, size_t postdiv1=0) :
+    RectilinearMeshDivideGenerator() :
         gradual(true), warn_multiple(true), warn_missing(true), warn_outside(true)
     {
-        pre_divisions[0] = prediv0;
-        pre_divisions[1] = prediv1? prediv1 : prediv0;
-        post_divisions[0] = postdiv0;
-        post_divisions[1] = postdiv1? postdiv1 : postdiv0;
+        for (int i = 0; i != dim; ++i) {
+            pre_divisions[i] = 1;
+            post_divisions[i] = 1;
+        }
     }
 
-    virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
+    boost::shared_ptr<plask::RectangularMesh<dim,RectilinearMesh1D>>
+    generate(const boost::shared_ptr<plask::GeometryObjectD<dim>>& geometry);
 
     /// Get initial division of the smallest object in the mesh
-    inline std::pair<size_t,size_t> getPreDivision() const { return std::pair<size_t,size_t>(pre_divisions[0], pre_divisions[1]); }
+    inline size_t getPreDivision(typename Primitive<dim>::Direction direction) const { return pre_divisions[std::size_t(direction)]; }
 
     /// Set initial division of the smallest object in the mesh
-    inline void setPreDivision(size_t div0, size_t div1=0) {
-        pre_divisions[0] = div0;
-        pre_divisions[1] = div1? div1 : div0;
-        fireChanged();
+    inline void setPreDivision(typename Primitive<dim>::Direction direction, size_t div) {
+        pre_divisions[std::size_t(direction)] = div;
+        this->fireChanged();
     }
 
     /// Get final division of the smallest object in the mesh
-    inline std::pair<size_t,size_t> getPostDivision() const { return std::pair<size_t,size_t>(post_divisions[0], post_divisions[1]); }
+    inline size_t getPostDivision(typename Primitive<dim>::Direction direction) const { return post_divisions[std::size_t(direction)]; }
 
     /// Set final division of the smallest object in the mesh
-    inline void setPostDivision(size_t div0, size_t div1=0) {
-        post_divisions[0] = div0;
-        post_divisions[1] = div1? div1 : div0;
-        fireChanged();
+    inline void setPostDivision(typename Primitive<dim>::Direction direction, size_t div) {
+        post_divisions[std::size_t(direction)] = div;
+        this->fireChanged();
     }
 
     /// \return true if the adjacent mesh elements cannot differ more than twice in size along each axis
@@ -112,13 +110,13 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
     /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
     void setGradual(bool value) {
         gradual = value;
-        fireChanged();
+        this->fireChanged();
     }
 
 
     /// \return map of refinements
     /// \param direction direction of the refinements
-    const Refinements& getRefinements(Primitive<2>::Direction direction) const {
+    const Refinements& getRefinements(typename Primitive<dim>::Direction direction) const {
         return refinements[std::size_t(direction)];
     }
 
@@ -129,10 +127,10 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path additional path hints pointing to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
+    void addRefinement(typename Primitive<dim>::Direction direction, const weak_ptr<const GeometryObjectD<dim>>& object, const PathHints& path, double position) {
         auto key = std::make_pair(object, path);
         refinements[std::size_t(direction)][key].insert(position);
-        fireChanged();
+        this->fireChanged();
     }
 
     /**
@@ -141,7 +139,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param object refined object
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, double position) {
+    void addRefinement(typename Primitive<dim>::Direction direction, const weak_ptr<const GeometryObjectD<dim>>& object, double position) {
         addRefinement(direction, object, PathHints(), position);
     }
 
@@ -151,8 +149,8 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path path to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(Primitive<2>::Direction direction, const Path& path, double position) {
-        addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
+    void addRefinement(typename Primitive<dim>::Direction direction, const Path& path, double position) {
+        addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<dim>>(path.back()), PathHints(path), position);
     }
 
     /**
@@ -161,9 +159,9 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param subtree subtree to the refined object (only the last path is used)
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(Primitive<2>::Direction direction, const GeometryObject::Subtree& subtree, double position) {
+    void addRefinement(typename Primitive<dim>::Direction direction, const GeometryObject::Subtree& subtree, double position) {
         auto path = subtree.getLastPath();
-        addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
+        addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<dim>>(path.back()), PathHints(path), position);
     }
 
     /**
@@ -173,15 +171,15 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path additional path hints pointing to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path, double position) {
+    void removeRefinement(typename Primitive<dim>::Direction direction, const weak_ptr<const GeometryObjectD<dim>>& object, const PathHints& path, double position) {
         auto key = std::make_pair(object, path);
         auto ref = refinements[std::size_t(direction)].find(key);
-        if (ref == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMesh2DDivideGenerator", "There are no refinements for specified geometry object.");
+        if (ref == refinements[std::size_t(direction)].end()) throw BadInput("RectilinearMeshDivideGenerator", "There are no refinements for specified geometry object.");
         auto oposition = ref->second.find(position);
-        if (oposition == ref->second.end()) throw BadInput("RectilinearMesh2DDivideGenerator", "Specified geometry object does not have refinements at %1%.", *oposition);
+        if (oposition == ref->second.end()) throw BadInput("RectilinearMeshDivideGenerator", "Specified geometry object does not have refinements at %1%.", *oposition);
         ref->second.erase(oposition);
         if (ref->second.empty()) refinements[std::size_t(direction)].erase(ref);
-        fireChanged();
+        this->fireChanged();
     }
 
     /**
@@ -190,7 +188,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param object refined object
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(Primitive<2>::Direction direction, const weak_ptr<const GeometryObjectD<2>>& object, double position) {
+    void removeRefinement(typename Primitive<dim>::Direction direction, const weak_ptr<const GeometryObjectD<dim>>& object, double position) {
         removeRefinement(direction, object, PathHints(), position);
     }
 
@@ -200,8 +198,8 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path path to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(Primitive<2>::Direction direction, const Path& path, double position) {
-        removeRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
+    void removeRefinement(typename Primitive<dim>::Direction direction, const Path& path, double position) {
+        removeRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<dim>>(path.back()), PathHints(path), position);
     }
 
     /**
@@ -210,9 +208,9 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param subtree subtree to the refined object (only the last path is used)
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(Primitive<2>::Direction direction, const GeometryObject::Subtree& subtree, double position) {
+    void removeRefinement(typename Primitive<dim>::Direction direction, const GeometryObject::Subtree& subtree, double position) {
         auto path = subtree.getLastPath();
-        removeRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path), position);
+        removeRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<dim>>(path.back()), PathHints(path), position);
     }
 
     /**
@@ -220,16 +218,16 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param object refined object
      * \param path additional path hints pointing to the refined object
      */
-    void removeRefinements(const weak_ptr<const GeometryObjectD<2>>& object, const PathHints& path=PathHints()) {
+    void removeRefinements(const weak_ptr<const GeometryObjectD<dim>>& object, const PathHints& path=PathHints()) {
         auto key = std::make_pair(object, path);
         auto ref0 = refinements[0].find(key);
         auto ref1 = refinements[1].find(key);
         if (ref0 == refinements[0].end() && ref1 == refinements[1].end())
-            throw BadInput("RectilinearMesh2DDivideGenerator", "There are no refinements for specified geometry object.");
+            throw BadInput("RectilinearMeshDivideGenerator", "There are no refinements for specified geometry object.");
         else {
             if (ref0 != refinements[0].end()) refinements[0].erase(ref0);
             if (ref1 != refinements[1].end()) refinements[1].erase(ref1);
-            fireChanged();
+            this->fireChanged();
         }
     }
 
@@ -239,7 +237,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
     void clearRefinements() {
         refinements[0].clear();
         refinements[1].clear();
-        fireChanged();
+        this->fireChanged();
     }
 
     /**
@@ -247,7 +245,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      * \param path path to the refined object
      */
     void removeRefinements(const Path& path) {
-        removeRefinements(dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path));
+        removeRefinements(dynamic_pointer_cast<const GeometryObjectD<dim>>(path.back()), PathHints(path));
     }
 
     /**
@@ -256,7 +254,7 @@ class RectilinearMesh2DDivideGenerator: public MeshGeneratorOf<RectilinearMesh2D
      */
     void removeRefinements(const GeometryObject::Subtree& subtree) {
         auto path = subtree.getLastPath();
-        removeRefinements(dynamic_pointer_cast<const GeometryObjectD<2>>(path.back()), PathHints(path));
+        removeRefinements(dynamic_pointer_cast<const GeometryObjectD<dim>>(path.back()), PathHints(path));
     }
 
 };

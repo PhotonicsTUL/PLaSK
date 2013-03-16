@@ -13256,12 +13256,7 @@ Contents
 <axis0/>
 \family default
 \series default
- Add refinement to the horizontal axis (i.
-\begin_inset space \thinspace{}
-\end_inset
-
-e.
- additional vertical line).
+ Add refinement to the horizontal axis.
 \end_layout
 
 \begin_deeper
@@ -13335,12 +13330,7 @@ at
 <axis1/>
 \family default
 \series default
- Add refinement to the vertical axis (i.
-\begin_inset space \thinspace{}
-\end_inset
-
-e.
- additional horizontal line).
+ Add refinement to the vertical axis.
 \end_layout
 
 \begin_deeper
@@ -13366,32 +13356,6 @@ Attributes
 \end_layout
 
 \end_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<vertical/>
-\family default
-\series default
- Alias for 
-\family typewriter
-<axis0/>.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<horizontal/>
-\family default
-\series default
- Alias for 
-\family typewriter
-<axis1/>.
-\end_layout
-
 \end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
@@ -13528,6 +13492,493 @@ Simple generator creating the rectangular rectilinear mesh lines at the
  This generator has no configuration.
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<generator type=
+\begin_inset Quotes erd
+\end_inset
+
+rectilinear2d
+\begin_inset Quotes erd
+\end_inset
+
+ method=
+\begin_inset Quotes erd
+\end_inset
+
+divide
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+mesh!generator!dividing
+\end_layout
+
+\end_inset
+
+Generator that divides each geometry object along both axes into a specified
+ number of elements, ensuring that two adjacent do not differ in size more
+ than twice.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<prediv/>
+\family default
+\series default
+ Set number of the initial divisions of each geometry object.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by0
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Number of parts each object is divided into along longitudinal axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by1
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Number of parts each object is divided into along trnasverse axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by2
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Number of parts each object is divided into along vertical axis.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Set all 
+\family typewriter
+by
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+ values all at once.
+ It this attribute is specified, no other ones are allowed.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<postdiv/>
+\family default
+\series default
+ Set number of the final divisions of each geometry object.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<prediv/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<refinements>
+\family default
+\series default
+ Specify list of additional refinements of the generated mesh.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\bar under
+Contents
+\bar default
+: 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis0/>
+\family default
+\series default
+ Add refinement to the longitudinal axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+object
+\family default
+ Name of the geometry object to add additional division to.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+path
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Path name, specifying particular instance of the object given in the 
+\family typewriter
+object
+\family default
+ attribute.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+at
+\family default
+ Position of the refinement line in the local object coordinates.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis1/>
+\family default
+\series default
+ Add refinement to the transverse axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<axis2/>
+\family default
+\series default
+ Add refinement to the vertical axis.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<axis0/>
+\family default
+.
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<warnings/>
+\family default
+\series default
+ Control printing of the warnings.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+missing
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Warn if any refinement references to non-existing object.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+multiple
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Warn if any refinement references to multiple objects.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+outside
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Warn if refining line lies outside of the specified object.
+ Defaults to true.
+ (boolean)
+\end_layout
+
+\end_deeper
+\end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 

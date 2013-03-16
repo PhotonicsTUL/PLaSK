@@ -21,7 +21,7 @@ ExportMeshGenerator(const std::string name) {
     pyclass("Generator", ("Base class for all "+name+" mesh generators.").c_str(), py::no_init);
     pyclass.def("__call__", &MeshGeneratorOf<MeshType>::operator(), "Generate mesh for given geometry or load it from the cache", py::arg("geometry"));
     pyclass.def("generate", &MeshGeneratorOf<MeshType>::generate, "Generate mesh for given geometry omitting the cache", py::arg("geometry"));
-    pyclass.def("clearCache", &MeshGeneratorOf<MeshType>::clearCache, "Clear cache of generated meshes");
+    pyclass.def("clear_cache", &MeshGeneratorOf<MeshType>::clearCache, "Clear cache of generated meshes");
     return pyclass;
 }
 
