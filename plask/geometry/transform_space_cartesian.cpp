@@ -46,7 +46,10 @@ shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>> Extrusion::shallowC
 }
 
 GeometryObject::Subtree Extrusion::getPathsAt(const DVec& point, bool all) const {
-    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(childVec(point), all));
+    if (canBeInside(point))
+        return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(childVec(point), all));
+    else
+        return GeometryObject::Subtree();
 }
 
 void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {

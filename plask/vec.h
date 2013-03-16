@@ -77,7 +77,7 @@ inline Vec<dst_dim, T> vec(const Vec<src_dim, T>& src) {
 }
 
 /**
- * Rotate @p v over up axis to lie on lon-tran plane.
+ * Rotate @p v over up axis to lie on tran-vert plane.
  * @param r vector in 3D space
  * @return vector in 2D space, after rotation, with tran()>=0 and vert()==v.vert()
  */
@@ -86,7 +86,7 @@ inline Vec<2, double> rotateToLonTranAbs(const Vec<3, double>& v) {
 }
 
 /**
- * Rotate @p v over up axis to lie on lon-tran plane.
+ * Rotate @p v over up axis to lie on tran-vert plane.
  * @param r vector in 3D space
  * @return vector in 2D space, after rotation, with sign of tran() same as v.tran() and vert()==v.vert()
  */

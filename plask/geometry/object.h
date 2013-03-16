@@ -211,24 +211,24 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
         Subtree(shared_ptr<const GeometryObject> object, std::vector<Subtree>&& children): object(object), children(std::forward< std::vector<Subtree> >(children)) {}
 
         /**
-         * Construct subtree which consist with given @p root object and @p children or empty object if @p children vector is empty.
+         * Construct subtree which consists of given @p root object and @p children or empty object if @p children vector is empty.
          *
          * This method is used to make set of paths (subtree) longer if this set is not empty.
          * @param root potential root of constructed subtree object
          * @param children potential children of @p root in constructed subtree
-         * @return subtree which consist with given @p root object and @p children or empty object if @p children vector is empty
+         * @return subtree which consists of given @p root object and @p children or empty object if @p children vector is empty
          */
         static Subtree extendIfNotEmpty(shared_ptr<const GeometryObject> root, Subtree&& children) {
             return children.empty() ? Subtree() : Subtree(root, std::vector<Subtree>{ std::forward< Subtree >(children) });
         }
 
         /**
-         * Construct subtree which consist with given @p root object and @p children or empty object if @p children vector is empty.
+         * Construct subtree which consists of given @p root object and @p children or empty object if @p children vector is empty.
          *
          * This method is used to make set of paths (subtree) longer if this set is not empty.
          * @param root potential root of constructed subtree object
          * @param children potential children of @p root in constructed subtree
-         * @return subtree which consist with given @p root object and @p children or empty object if @p children vector is empty
+         * @return subtree which consists of given @p root object and @p children or empty object if @p children vector is empty
          */
         static Subtree extendIfNotEmpty(const GeometryObject* root, Subtree&& children) {
             return children.empty() ? Subtree() : Subtree(root->shared_from_this(), std::vector<Subtree>{ std::forward< Subtree >(children) });

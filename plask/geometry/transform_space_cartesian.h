@@ -63,7 +63,7 @@ class Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
   private:
     /// @return true only if p can be inside this, false if for sure its not inside
-    bool canBeInside(const DVec& p) const { return 0.0 <= p.lon() || p.lon() <= length; }
+    bool canBeInside(const DVec& p) const { return 0.0 <= p.lon() && p.lon() <= length; }
 
     /// @return true only if area can intersects this, false if for sure its not intersects
     bool canIntersect(const Box& area) const { return !(area.lower.lon() > length || area.upper.lon() < 0.0); }

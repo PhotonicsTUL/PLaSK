@@ -88,7 +88,7 @@ struct PythonProfile: public Provider {
 
     /**
      * Create step profile
-     * \param root root geometry
+     * \param geometry root geometry
      * \param default_value default value
      */
     PythonProfile(const Geometry& geometry, py::object default_value=py::object()):
@@ -134,7 +134,7 @@ struct PythonProfile: public Provider {
         for (Vec<DIMS, double> point: dst_mesh) {
             bool assigned = false;
             for (auto place = places.begin(); place != places.end(); ++place) {
-                auto object = dynamic_pointer_cast<GeometryObjectD<DIMS>>(place->object.lock());
+                auto object = place->object.lock();
                 if (!object) continue;
                 if (root->objectIncludes(*object, place->hints, point)) {
                     result[i] = vals[place-places.begin()];

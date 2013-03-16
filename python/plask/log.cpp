@@ -240,7 +240,9 @@ void LoggingConfig::setLoggingDest(py::object dest) {
     throw TypeError("Setting output for current logging system does not make sense.");
 }
 
-
+void print_log(LogLevel level, py::object msg) {
+    writelog(level, py::extract<std::string>(py::str(msg)));
+}
 
 void register_python_log()
 {
@@ -256,7 +258,7 @@ void register_python_log()
     LOG_ENUM(ERROR_DETAIL);
     LOG_ENUM(DEBUG);
 
-    py::def("print_log", (void(*)(LogLevel, const std::string&))&writelog, "Print log message into specified log level", (py::arg("level"), "msg"));
+    py::def("print_log", print_log, "Print log message into specified log level", (py::arg("level"), "msg"));
 
     py::class_<LogOO>("DataLog2",
         "Class used to log relations between two variables (argument and value)\n\n"
