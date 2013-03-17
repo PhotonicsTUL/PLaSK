@@ -2,9 +2,6 @@
 
 #include "femT.h"
 
-#include "band_matrix.h"
-#include "dcg.h"
-
 // LAPACK routines to solve set of linear equations
 #define dpbtrf F77_GLOBAL(dpbtrf,DPBTRF)
 F77SUB dpbtrf(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
@@ -24,12 +21,11 @@ FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std
     SolverWithMesh<Geometry3D, RectilinearMesh3D>(name),
     algorithm(ALGORITHM_BLOCK),
     loopno(0),
-    bignum(1e12),
     inittemp(300.),
     corrlim(0.05),
     corrtype(CORRECTION_ABSOLUTE),
-    itererr(1e-18),
-    itermax(2000),
+    itererr(1e-8),
+    itermax(10000),
     outTemperature(this, &FiniteElementMethodThermal3DSolver::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal3DSolver::getHeatFluxes)
 {
@@ -72,7 +68,6 @@ void FiniteElementMethodThermal3DSolver::loadConfiguration(XMLReader &source, Ma
         }
 
         else if (param == "matrix") {
-            bignum = source.getAttribute<double>("bignum", bignum);
             algorithm = source.enumAttribute<Algorithm>("algorithm")
                 .value("block", ALGORITHM_BLOCK)
                 .value("iterative", ALGORITHM_ITERATIVE)
@@ -253,14 +248,54 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
             }
             B[idx[i]] += F[i];
         }
-
     }
 
+    applyBC(A, B, btemperature);
+}
+
+template <>
+void FiniteElementMethodThermal3DSolver::applyBC<DpbMatrix>(DpbMatrix& A, DataVector<double>& B,
+                                                            const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
-        for (auto idx: cond.place) {
-            A(idx, idx) += bignum;
-            B[idx] += cond.value * bignum;
+        for (auto i: cond.place) {
+            A(i,i) = 1.;
+            register double val = B[i] = cond.value;
+            size_t start = (i > A.bands)? i-A.bands : 0;
+            size_t end = (i + A.bands < A.size)? i+A.bands+1 : A.size;
+            for(size_t j = start; j < i; ++j) {
+                B[j] -= A(i,j) * val;
+                A(i,j) = 0.;
+            }
+            for(size_t j = i+1; j < end; ++j) {
+                B[j] -= A(i,j) * val;
+                A(i,j) = 0.;
+            }
+        }
+    }
+}
+
+template <>
+void FiniteElementMethodThermal3DSolver::applyBC<SparseBandMatrix>(SparseBandMatrix& A, DataVector<double>& B,
+                                                                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature) {
+    // boundary conditions of the first kind
+    for (auto cond: btemperature) {
+        for (auto i: cond.place) {
+            A.data[0][i] = 1.;
+            register double val = B[i] = cond.value;
+            for (int b = 1; b < 14; ++b) {
+                ptrdiff_t d = A.bno[b];
+                ptrdiff_t j1 = i-d;
+                ptrdiff_t j2 = i+d;
+                if (j1 >= 0) {
+                    B[j1] -= A.data[b][j1] * val;
+                    A.data[b][j1] = 0.;
+                }
+                if (j2 < A.size) {
+                    B[j2] -= A.data[b][i] * val;
+                    A.data[b][i] = 0;
+                }
+            }
         }
     }
 }
@@ -359,12 +394,10 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix& A, DataVe
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
-    Atimes atimes(A);
-    MsolveJacobi msolve(A);
     DataVector<double> X = temperatures.copy(); // We use previous temperatures as initial solution
     double err;
     try {
-        int iter = solveDCG(A.size, atimes, msolve, X.data(), B.data(), err, itermax, itererr);
+        int iter = solveDCG(A, &SparseBandMatrix::precondJacobi, X.data(), B.data(), err, itermax, itererr);
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
     } catch (DCGError err) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", err.what());

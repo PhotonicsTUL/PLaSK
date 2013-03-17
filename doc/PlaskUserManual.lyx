@@ -14948,28 +14948,6 @@ slow
 )
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-bignum
-\family default
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-opt 
-\end_layout
-
-\end_inset
-
-Large number for setting boundary conditions of the first kind.
-\end_layout
-
 \end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
@@ -15300,28 +15278,6 @@ iterative
 \end_inset
 
 )
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-bignum
-\family default
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-opt 
-\end_layout
-
-\end_inset
-
-Large number for setting boundary conditions of the first kind.
 \end_layout
 
 \begin_layout Labeling
@@ -15754,28 +15710,6 @@ slow
 \end_inset
 
 )
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-bignum
-\family default
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-opt 
-\end_layout
-
-\end_inset
-
-Large number for setting boundary conditions of the first kind.
 \end_layout
 
 \end_deeper

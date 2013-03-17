@@ -63,7 +63,6 @@ BOOST_PYTHON_MODULE(fem)
         solver.add_boundary_conditions("voltage_boundary", &__Class__::mVConst, "Boundary conditions of the first kind (constant potential)");
         RW_PROPERTY(corrlim, getVCorrLim, setVCorrLim, "Limit for the potential updates");
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
-        RW_PROPERTY(bignum, getBigNum, setBigNum, "Big value for the boundary condition");
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("heat", &__Class__::mHeatMethod, "Chosen method used for computing heats");
         RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
@@ -85,7 +84,6 @@ BOOST_PYTHON_MODULE(fem)
         solver.add_boundary_conditions("voltage_boundary", &__Class__::mVConst, "Boundary conditions of the first kind (constant potential)");
         RW_PROPERTY(corrlim, getVCorrLim, setVCorrLim, "Limit for the potential updates");
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
-        RW_PROPERTY(bignum, getBigNum, setBigNum, "Big value for the boundary condition");
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("heat", &__Class__::mHeatMethod, "Chosen method used for computing heats");
         RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");

@@ -63,7 +63,6 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(inittemp, getTInit, setTInit, "Initial temperature"); // read-write property
         RW_PROPERTY(corrlim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
-        RW_PROPERTY(bignum, getBigNum, setBigNum, "Big value for the first boundary condition"); // read-write property
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
     }
 
@@ -81,7 +80,6 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(inittemp, getTInit, setTInit, "Initial temperature"); // read-write property
         RW_PROPERTY(corrlim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
-        RW_PROPERTY(bignum, getBigNum, setBigNum, "Big value for the first boundary condition"); // read-write property
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
     }
 

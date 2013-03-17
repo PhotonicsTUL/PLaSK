@@ -35,8 +35,6 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   protected:
 
-    double mBigNum;      ///< A big number used for the first boundary condition (see: set Matrix) (TODO: remove this and apply conditions by hand)
-
     int mAOrder,         ///< Number of columns in the main matrix
         mABand;          ///< Number of non-zero rows on and below the main diagonal of the main matrix
 
@@ -139,9 +137,6 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     double getVCorrLim() const { return mVCorrLim; }
     void setVCorrLim(double iVCorrLim) { mVCorrLim = iVCorrLim; }
-
-    double getBigNum() { return mBigNum; }
-    void setBigNum(double iBigNum)  { mBigNum = iBigNum; }
 
     double getBeta() const { return mBeta; }
     void setBeta(double iBeta)  { mBeta = iBeta; }

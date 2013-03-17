@@ -48,7 +48,6 @@ BOOST_PYTHON_MODULE(fem3d)
         RW_FIELD(inittemp, "Initial temperature");
         RW_FIELD(corrlim, "Limit for the temperature updates");
         RW_FIELD(corrtype, "Type of returned correction");
-        RW_FIELD(bignum, "Big value for the first boundary condition");
         RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, "Chosen matrix factorization algorithm");
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(itermax, "Maximum nunber of iterations for iterative method");

@@ -47,8 +47,6 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
   protected:
 
-    double mBigNum;       ///< A big number used for the first boundary condition (see: set Matrix) (TODO: remove this and apply conditions by hand)
-
     int mAOrder,         ///< Number of columns in the main matrix
         mABand;          ///< Number of non-zero rows on and below the main diagonal of the main matrix
 
@@ -125,11 +123,9 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     double getMaxRelTCorr() const { return mMaxRelTCorr; }// result in [%]
 
     void setTCorrLim(double iTCorrLim) { mTCorrLim = iTCorrLim; }
-    void setBigNum(double iBigNum)  { mBigNum = iBigNum; }
     void setTInit(double iTInit)  { mTInit = iTInit; }
 
     double getTCorrLim() const { return mTCorrLim; }
-    double getBigNum() const { return mBigNum; }
     double getTInit() const { return mTInit; }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)

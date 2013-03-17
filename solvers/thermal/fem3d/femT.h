@@ -3,7 +3,8 @@
 
 #include <plask/plask.hpp>
 
-#include "band_matrix.h"
+#include "block_matrix.h"
+#include "iterative_matrix.h"
 
 namespace plask { namespace solvers { namespace thermal3d {
 
@@ -73,6 +74,12 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
                    const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
                   );
 
+    /**
+     * Apply boundary conditions of the first kind
+     */
+    template <typename MatrixT>
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature);
+
     /// Update stored temperatures and calculate corrections
     void saveTemperatures(DataVector<double>& T);
 
@@ -95,8 +102,6 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     double doCompute(int loops=1);
 
   public:
-
-    double bignum;      ///< A big number used for the first boundary condition (see: set Matrix)
 
     double inittemp;    ///< Initial temperature
     double corrlim;     ///< Maximum temperature correction accepted as convergence

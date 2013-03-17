@@ -24,7 +24,7 @@ namespace plask { namespace solvers { namespace electrical {
  */
 struct DpbMatrix {
 
-    std::size_t size;  ///< order of the matrix, i.e. number of columns or rows
+    std::size_t size;   ///< order of the matrix, i.e. number of columns or rows
     std::size_t bands;  ///< size of the band reduced by one
     double* data;       ///< pointer to data
 

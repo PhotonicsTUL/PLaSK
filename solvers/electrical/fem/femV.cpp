@@ -4,7 +4,6 @@ namespace plask { namespace solvers { namespace electrical {
 
 template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DType, RectilinearMesh2D>(name),
-    mBigNum(1e15),
     mJs(1.),
     mBeta(20.),
     mCondJuncX0(1e-6),
@@ -47,7 +46,6 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
         }
 
         else if (param == "matrix") {
-            mBigNum = source.getAttribute<double>("bignum", mBigNum);
             mAlgorithm = source.enumAttribute<Algorithm>("algorithm")
                 .value("block", ALGORITHM_BLOCK)
                 .value("slow", ALGORITHM_SLOW)
@@ -182,9 +180,19 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(DpbMa
 
     // boundary conditions of the first kind
     for (auto tCond: iVConst) {
-        for (auto tIndex: tCond.place) {
-            oA(tIndex, tIndex) += mBigNum;
-            oLoad[tIndex] += tCond.value * mBigNum;
+        for (auto i: tCond.place) {
+            oA(i,i) = 1.;
+            register double val = oLoad[i] = tCond.value;
+            size_t start = (i > oA.bands)? i-oA.bands : 0;
+            size_t end = (i + oA.bands < oA.size)? i+oA.bands+1 : oA.size;
+            for(size_t j = start; j < i; ++j) {
+                oLoad[j] -= oA(i,j) * val;
+                oA(i,j) = 0.;
+            }
+            for(size_t j = i+1; j < end; ++j) {
+                oLoad[j] -= oA(i,j) * val;
+                oA(i,j) = 0.;
+            }
         }
     }
 
@@ -268,9 +276,19 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Dpb
 
     // boundary conditions of the first kind
     for (auto tCond: iVConst) {
-        for (auto tIndex: tCond.place) {
-            oA(tIndex, tIndex) += mBigNum;
-            oLoad[tIndex] += tCond.value * mBigNum;
+        for (auto i: tCond.place) {
+            oA(i,i) = 1.;
+            register double val = oLoad[i] = tCond.value;
+            size_t start = (i > oA.bands)? i-oA.bands : 0;
+            size_t end = (i + oA.bands < oA.size)? i+oA.bands+1 : oA.size;
+            for(size_t j = start; j < i; ++j) {
+                oLoad[j] -= oA(i,j) * val;
+                oA(i,j) = 0.;
+            }
+            for(size_t j = i+1; j < end; ++j) {
+                oLoad[j] -= oA(i,j) * val;
+                oA(i,j) = 0.;
+            }
         }
     }
 

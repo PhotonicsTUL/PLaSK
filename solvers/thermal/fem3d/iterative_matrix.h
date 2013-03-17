@@ -1,10 +1,8 @@
-#ifndef PLASK__MODULE_THERMAL_DCG_H
-#define PLASK__MODULE_THERMAL_DCG_H
+#ifndef PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
+#define PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
 
 #include <algorithm>
 #include <plask/config.h>
-
-#include "band_matrix.h"
 
 // Necessary BLAS routines
 #define ddot F77_GLOBAL(ddot,DDOT)
@@ -27,29 +25,113 @@ struct DCGError: public std::exception {
 
 };
 
-static inline void noUpdate(double*) {}
+struct SparseBandMatrix {
+    const size_t size;  ///< Order of the matrix, i.e. number of columns or rows
+    size_t bno[14];     ///< Vector of non-zero band numbers (shift from diagonal)
+
+    double* data[14];   ///< Data stored in the matrix
+
+    static const size_t bands;
+
+    /**
+     * Create matrix
+     * \param rank size of the matrix
+     * \param major shift of nodes to the next major row (mesh[x,y,z+1])
+     * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
+     */
+    SparseBandMatrix(size_t size, size_t major, size_t minor): size(size) {
+                                      bno[0]  =             0;  bno[1]  =                 1;
+        bno[2]  =         minor - 1;  bno[3]  =         minor;  bno[4]  =         minor + 1;
+        bno[5]  = major - minor - 1;  bno[6]  = major - minor;  bno[7]  = major - minor + 1;
+        bno[8]  = major         - 1;  bno[9]  = major        ;  bno[10] = major         + 1;
+        bno[11] = major + minor - 1;  bno[12] = major + minor;  bno[13] = major + minor + 1;
+
+        for (size_t i = 0; i < 14; ++i) data[i] = new double[size-bno[i]];
+    }
+
+    ~SparseBandMatrix() {
+        for (size_t i = 0; i < 14; ++i) delete[] data[i];
+    }
+
+    /**
+     * Return reference to array element
+     * \param r index of the element row
+     * \param c index of the element column
+     **/
+    double& operator()(size_t r, size_t c) {
+        if (r < c) std::swap(r, c);
+        size_t i = std::find(bno, bno+14, r-c) - bno;
+        assert(i != 14);
+        return data[i][c];
+    }
+
+    /// Clear the matrix
+    void clear() {
+        for (size_t i = 0; i < 14; ++i) std::fill_n(data[i], size-bno[i], 0.);
+    }
+
+    /**
+     * Multiplication functor for symmetric banded matrix
+     */
+    void multiply(double* x, double* y) const { // y = A x
+        ptrdiff_t n = size;
+        #pragma omp parallel for
+        for (size_t r = 0; r < n; ++r) {
+            y[r] = 0.;
+            // below diagonal
+            for (size_t j = 13; j > 0; --j) {
+                ptrdiff_t c = r - bno[j];
+                assert(c < n);
+                if (c >= 0) y[r] += data[j][c] * x[c];
+            }
+            // above diagonal
+            for (size_t j = 0; j < 14; ++j) {
+                ptrdiff_t c = r + bno[j];
+                assert(c >= 0);
+                if (c < n) y[r] += data[j][r] * x[c];
+            }
+        }
+    }
+
+
+    /**
+     * Jacobi preconditioner for symmetric banded matrix (i.e. diagonal scaling)
+     */
+    void precondJacobi(double* z, double* r) const { // z = inv(M) r
+        double* zend = z + size;
+        for (double* m = data[0]; z < zend; ++z, ++r, ++m) {
+            *z = *r / *m;
+        }
+    }
+
+    inline void noUpdate(double*) {}
+};
+
+
 
 /**
  * This routine does preconditioned conjugate gradient iteration
  * on the symmetric positive definte system Ax = b.
  *
- * \param[in] n Size of system to be iterated (ie A is nxn).
- * \param[in] atimes (x, y) Functor that calculates y = A x, given an x vector. Throw exception if an error occures.
+ * \param[in] matrix Matrix to solve
  * \param[in] msolve (z, r) Functor that solves M z = r for z, given a vector r. Throw exception if an error occures.
  * \param[in,out] x Initial guess of the solution.  If no information on the solution is available then use a zero vector or b.
  * \param[in] b Right hand side.
  * \param[out] err L2 norm of the relative residual error estimate (||b-Ax||/||b||)².
  *
  *                 This estimate of the true error is not always very accurate.
- * \param[in] eps Requested error tollerence.  System is iterated until ||b-Ax||/||b|| < eps.  Normal choice is 1e-18.
+ * \param[in] eps Requested error tollerence.  System is iterated until ||b-Ax||/||b|| < eps.  Normal choice is 1e-8.
  * \param[in] itmax Maximum number of iterations the user is willing to allow. Default value is 100.
  * \param[in] updatea Function that updates the matrix A basing on the current solution x
  * \return number of iterations
  * \throw DCGError
  */
-template <typename AFun, typename MFun>
-int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err, int itmax=2000, double eps=1e-18, std::function<void(double*)>updatea=noUpdate)
+template <typename Matrix>
+int solveDCG(Matrix& matrix, void(Matrix::*msolve)(double*,double*)const, double* x, double* b, double& err,
+             int itmax=10000, double eps=1e-8, void(Matrix::*updatea)(double*)=&Matrix::noUpdate)
 {
+    size_t n = matrix.size;
+
     double *r = nullptr, *z = nullptr, *p = nullptr;
     double bknum, bkden, bk;
     double akden, ak;
@@ -77,7 +159,7 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
 
     // Calculate r = b - Ax and initial error.
     try {
-        atimes(x, r);
+        matrix.multiply(x, r);
     } catch (...) {
         delete[] p; delete[] z; delete[] r;
         throw;
@@ -95,7 +177,7 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
 
         // Solve M z = r.
         try {
-            msolve(z, r);
+            (matrix.*msolve)(z, r);
         } catch (...) {
             delete[] p; delete[] z; delete[] r;
             throw;
@@ -117,7 +199,7 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
         }
         // Calculate z = Ap, akden = (p,Ap) and ak.
         try {
-            atimes(p, z);
+            matrix.multiply(p, z);
         } catch (...) {
             delete[] p; delete[] z; delete[] r;
             throw;
@@ -139,7 +221,7 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
         }
 
         // Update the matrix A
-        updatea(x);
+        (matrix.*updatea)(x);
     }
     delete[] p; delete[] z; delete[] r;
     throw DCGError("iteration limit reached");
@@ -147,54 +229,6 @@ int solveDCG(int n, AFun atimes, MFun msolve, double* x, double* b, double& err,
 }
 
 
-/**
- * Multiplication functor for symmetric banded matrix
- */
-struct Atimes {
-
-    const SparseBandMatrix& matrix;
-
-    Atimes(const SparseBandMatrix& matrix): matrix(matrix) {}
-
-    void operator()(double* x, double* y) { // y = A x
-        ptrdiff_t n = matrix.size;
-        #pragma omp parallel for
-        for (size_t r = 0; r < n; ++r) {
-            y[r] = 0.;
-            // below diagonal
-            for (size_t j = 13; j > 0; --j) {
-                ptrdiff_t c = r - matrix.bno[j];
-                assert(c < n);
-                if (c >= 0) y[r] += matrix.data[j][c] * x[c];
-            }
-            // above diagonal
-            for (size_t j = 0; j < 14; ++j) {
-                ptrdiff_t c = r + matrix.bno[j];
-                assert(c >= 0);
-                if (c < n) y[r] += matrix.data[j][r] * x[c];
-            }
-        }
-    }
-};
-
-/**
- * Jacobi preconditioner for symmetric banded matrix (i.e. diagonal scaling)
- */
-struct MsolveJacobi {
-
-    const SparseBandMatrix& matrix;
-
-    MsolveJacobi(const SparseBandMatrix& matrix): matrix(matrix) {}
-
-    void operator()(double* z, double* r) { // z = inv(M) r
-        double* zend = z + matrix.size;
-        for (double* m = matrix.data[0]; z < zend; ++z, ++r, ++m) {
-            *z = *r / *m;
-        }
-    }
-
-};
-
 }}} // namespace plask::solvers::thermal
 
-#endif // PLASK__MODULE_THERMAL_DCG_H
+#endif // PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
