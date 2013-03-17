@@ -356,27 +356,27 @@ namespace detail {
         static void setPre(RectilinearMeshDivideGenerator<dim>& self, py::object val) {
             // try {
             //     size_t v = py::extract<size_t>(val);
-            //     for (int i = 0; i < dim; ++i) self.setPreDivision(typename Primitive<dim>::Direction(i), v);
+            //     for (int i = 0; i < dim; ++i) self.pre_divisions[i] = v;
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                        throw ValueError("Wrong size of prediv (%1% elements provided and %2% required)", py::len(val), dim);
-                    for (int i = 0; i < dim; ++i)
-                        self.setPreDivision(typename Primitive<dim>::Direction(i), py::extract<size_t>(val[i]));
+                    throw ValueError("Wrong size of prediv (%1% elements provided and %2% required)", py::len(val), dim);
+                for (int i = 0; i < dim; ++i) self.pre_divisions[i] = py::extract<size_t>(val[i]);
             // }
+            self.fireChanged();
         }
 
         static void setPost(RectilinearMeshDivideGenerator<dim>& self, py::object val) {
             // try {
             //     size_t v = py::extract<size_t>(val);
-            //     for (int i = 0; i < dim; ++i) self.setPostDivision(typename Primitive<dim>::Direction(i), v);
+            //     for (int i = 0; i < dim; ++i) self.post_divisions[i] = v;
             // } catch (py::error_already_set) {
             //     PyErr_Clear();
                 if (py::len(val) != dim)
-                        throw ValueError("Wrong size of prediv (%1% elements provided and %2% required)", py::len(val), dim);
-                    for (int i = 0; i < dim; ++i)
-                        self.setPostDivision(typename Primitive<dim>::Direction(i), py::extract<size_t>(val[i]));
+                    throw ValueError("Wrong size of prediv (%1% elements provided and %2% required)", py::len(val), dim);
+                for (int i = 0; i < dim; ++i) self.post_divisions[i] = py::extract<size_t>(val[i]);
             // }
+            self.fireChanged();
         }
 
         static void register_proxy(py::scope scope) {

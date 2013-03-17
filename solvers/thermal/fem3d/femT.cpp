@@ -258,18 +258,18 @@ void FiniteElementMethodThermal3DSolver::applyBC<DpbMatrix>(DpbMatrix& A, DataVe
                                                             const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
-        for (auto i: cond.place) {
-            A(i,i) = 1.;
-            register double val = B[i] = cond.value;
-            size_t start = (i > A.bands)? i-A.bands : 0;
-            size_t end = (i + A.bands < A.size)? i+A.bands+1 : A.size;
-            for(size_t j = start; j < i; ++j) {
-                B[j] -= A(i,j) * val;
-                A(i,j) = 0.;
+        for (auto r: cond.place) {
+            A(r,r) = 1.;
+            register double val = B[r] = cond.value;
+            size_t start = (r > A.bands)? r-A.bands : 0;
+            size_t end = (r + A.bands < A.size)? r+A.bands+1 : A.size;
+            for(size_t c = start; c < r; ++c) {
+                B[c] -= A(r,c) * val;
+                A(r,c) = 0.;
             }
-            for(size_t j = i+1; j < end; ++j) {
-                B[j] -= A(i,j) * val;
-                A(i,j) = 0.;
+            for(size_t c = r+1; c < end; ++c) {
+                B[c] -= A(r,c) * val;
+                A(r,c) = 0.;
             }
         }
     }
@@ -280,20 +280,24 @@ void FiniteElementMethodThermal3DSolver::applyBC<SparseBandMatrix>(SparseBandMat
                                                                    const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
-        for (auto i: cond.place) {
-            A.data[0][i] = 1.;
-            register double val = B[i] = cond.value;
-            for (int b = 1; b < 14; ++b) {
-                ptrdiff_t d = A.bno[b];
-                ptrdiff_t j1 = i-d;
-                ptrdiff_t j2 = i+d;
-                if (j1 >= 0) {
-                    B[j1] -= A.data[b][j1] * val;
-                    A.data[b][j1] = 0.;
+        for (auto r: cond.place) {
+            double* rdata = A.data + LDA*r;
+            *rdata = 1.;
+            register double val = B[r] = cond.value;
+            // below diagonal
+            for (register ptrdiff_t i = 13; i > 0; --i) {
+                register ptrdiff_t c = r - A.bno[i];
+                if (c >= 0) {
+                    B[c] -= A.data[LDA*c+i] * val;
+                    A.data[LDA*c+i] = 0.;
                 }
-                if (j2 < A.size) {
-                    B[j2] -= A.data[b][i] * val;
-                    A.data[b][i] = 0;
+            }
+            // above diagonal
+            for (register ptrdiff_t i = 1; i < 14; ++i) {
+                register ptrdiff_t c = r + A.bno[i];
+                if (c < A.size) {
+                    B[c] -= rdata[i] * val;
+                    rdata[i] = 0.;
                 }
             }
         }

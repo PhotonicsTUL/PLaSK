@@ -226,12 +226,9 @@ static shared_ptr<MeshGenerator> readRectilinearMeshDivideGenerator(XMLReader& r
                 if (reader.hasAttribute("by0")) throw XMLConflictingAttributesException(reader, "by", "by0");
                 if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
                 if (reader.hasAttribute("by2")) throw XMLConflictingAttributesException(reader, "by", "by2");
-                for (int i = 0; i < dim; ++i)
-                    result->setPreDivision(typename Primitive<dim>::Direction(i), *into);
+                for (int i = 0; i < dim; ++i) result->pre_divisions[i] = *into;
             } else
-                for (int i = 0; i < dim; ++i)
-                    result->setPreDivision(typename Primitive<dim>::Direction(i),
-                                           reader.getAttribute<size_t>(format("by%1%", i), 1));
+                for (int i = 0; i < dim; ++i) result->pre_divisions[i] = reader.getAttribute<size_t>(format("by%1%", i), 1);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
             boost::optional<size_t> into = reader.getAttribute<size_t>("by");
@@ -239,12 +236,9 @@ static shared_ptr<MeshGenerator> readRectilinearMeshDivideGenerator(XMLReader& r
                 if (reader.hasAttribute("by0")) throw XMLConflictingAttributesException(reader, "by", "by0");
                 if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
                 if (reader.hasAttribute("by2")) throw XMLConflictingAttributesException(reader, "by", "by2");
-                for (int i = 0; i < dim; ++i)
-                    result->setPostDivision(typename Primitive<dim>::Direction(i), *into);
+                for (int i = 0; i < dim; ++i) result->post_divisions[i] = *into;
             } else
-                for (int i = 0; i < dim; ++i)
-                    result->setPostDivision(typename Primitive<dim>::Direction(i),
-                                           reader.getAttribute<size_t>(format("by%1%", i), 1));
+                for (int i = 0; i < dim; ++i) result->post_divisions[i] = reader.getAttribute<size_t>(format("by%1%", i), 1);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "no-gradual") {
             result->setGradual(false);

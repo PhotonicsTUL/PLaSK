@@ -53,7 +53,7 @@ struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3
  * Dividing generator ensuring no rpaid change of element size
  */
 template <int dim>
-class RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<dim,RectilinearMesh1D>> {
+struct RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<dim,RectilinearMesh1D>> {
 
     size_t pre_divisions[dim];
     size_t post_divisions[dim];
@@ -64,8 +64,6 @@ class RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<dim
     Refinements refinements[dim];
 
     RectilinearMesh1D get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryObjectD<dim>>& geometry, size_t dir);
-
-  public:
 
     bool warn_multiple, ///< Warn if a single refinement points to more than one object.
          warn_missing,     ///< Warn if a defined refinement points to object absent from provided geometry.
